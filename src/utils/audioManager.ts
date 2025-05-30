@@ -30,13 +30,9 @@ class AudioManager {
       await Tone.start()
       console.log('Tone.js started successfully')
       
-      // Determine base URL for samples
-      // Use local samples in production to avoid CSP issues
-      const isProduction = window.location.hostname !== 'localhost' && 
-                          !window.location.hostname.includes('127.0.0.1')
-      const baseUrl = isProduction 
-        ? '/audio/salamander/' // Local samples in production
-        : 'https://tonejs.github.io/audio/salamander/' // CDN for development
+      // For now, always use CDN samples since local samples aren't deployed yet
+      // Once samples are added to the repo, we can switch to local loading
+      const baseUrl = 'https://tonejs.github.io/audio/salamander/'
       
       console.log(`Loading piano samples from: ${baseUrl}`)
       

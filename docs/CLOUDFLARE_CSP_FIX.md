@@ -9,7 +9,7 @@ When deployed to Cloudflare Workers, the application encounters CSP violations:
 
 ## Solution
 
-### Option 1: Updated CSP Headers (Implemented)
+### Option 1: Updated CSP Headers (Implemented ✅)
 
 Updated `public/_headers` to allow necessary resources:
 ```
@@ -29,7 +29,9 @@ Key additions:
 - `https://tonejs.github.io` in connect-src and media-src for piano samples
 - `data:` in font-src for inline fonts
 
-### Option 2: Local Audio Samples (Alternative)
+**Current Status**: The audioManager has been updated to always use CDN samples from tonejs.github.io since local samples aren't included in the repository yet.
+
+### Option 2: Local Audio Samples (Future Enhancement)
 
 To avoid external dependencies completely:
 
