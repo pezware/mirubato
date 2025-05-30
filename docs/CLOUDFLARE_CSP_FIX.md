@@ -29,21 +29,25 @@ Key additions:
 - `https://tonejs.github.io` in connect-src and media-src for piano samples
 - `data:` in font-src for inline fonts
 
-**Current Status**: The audioManager has been updated to always use CDN samples from tonejs.github.io since local samples aren't included in the repository yet.
+**Current Status**: The audioManager is configured to always use CDN samples from tonejs.github.io. This is the working solution that avoids the need for local file storage while providing high-quality piano samples globally via CDN.
 
 ### Option 2: Local Audio Samples (Future Enhancement)
 
-To avoid external dependencies completely:
+For better control over audio assets and to reduce external dependencies:
 
-1. **Download samples locally** (optional):
+1. **Download samples locally** (not currently implemented):
    ```bash
    node scripts/download-piano-samples.js
    ```
-   This downloads Salamander Grand Piano samples to `public/audio/salamander/`
+   This would download Salamander Grand Piano samples to `public/audio/salamander/`
 
-2. **AudioManager auto-detection**:
-   - Production: Uses local samples from `/audio/salamander/`
-   - Development: Uses CDN from `https://tonejs.github.io`
+2. **Benefits of local samples**:
+   - No external dependencies
+   - Faster loading for repeat users
+   - Full control over audio assets
+   - Can work offline once cached
+
+Note: The current CDN approach works well and is simpler to maintain. Local samples can be added later if needed.
 
 ## Testing
 
