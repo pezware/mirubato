@@ -2,7 +2,7 @@
 
 ## MIT License
 
-Copyright (c) 2025 Rubato Contributors
+Copyright (c) 2025 Mirubato Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ When using or redistributing content from Rubato that includes educational mater
 
 2. Include attribution to Rubato:
    ```
-   Adapted for use in Rubato - Open Source Sight-Reading Platform
+   Adapted for use in Mirubato - Open Source Sight-Reading Platform
    ```
 
 ### For Public Domain Musical Works
@@ -83,7 +83,7 @@ When using public domain musical content from Rubato:
 1. Acknowledge the source:
    ```
    Musical content sourced from IMSLP (imslp.org), 
-   used in Rubato - Open Source Sight-Reading Platform
+   used in Mirubato - Open Source Sight-Reading Platform
    ```
 
 2. Note that while the compositions are public domain, the digital presentation and educational adaptations made in Rubato are subject to this project's MIT license.
@@ -98,7 +98,7 @@ This project is designed to be compatible with open-source educational initiativ
 
 ## Commercial Use
 
-The MIT license permits commercial use of the Rubato platform. However, users must:
+The MIT license permits commercial use of the Mirubato platform. However, users must:
 
 1. Respect the attribution requirements for CC BY 4.0 educational content
 2. Understand that while the software is freely available, some musical content may have usage restrictions in certain jurisdictions
@@ -125,8 +125,8 @@ While we make every effort to ensure proper licensing and attribution:
 
 For questions about licensing or to report license compliance issues:
 
-- **GitHub Issues**: https://github.com/rubato-app/rubato/issues
-- **Email**: legal@rubato.app (when available)
+- **GitHub Issues**: https://github.com/arbeitandy/mirubato/issues
+- **Email**: legal@mirubato.com (when available)
 - **License Questions**: Tag issues with "license" or "legal"
 
 ## License Compliance Tools

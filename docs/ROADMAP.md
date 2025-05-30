@@ -1,7 +1,7 @@
-# Rubato Development Roadmap
+# Mirubato Development Roadmap
 
 ## Overview
-This roadmap provides a step-by-step checklist for developing Rubato, an open-source sight-reading platform for classical guitar and piano. Each phase emphasizes proper testing, code quality, and educational effectiveness.
+This roadmap provides a step-by-step checklist for developing Mirubato, an open-source sight-reading platform for classical guitar and piano. Each phase emphasizes proper testing, code quality, and educational effectiveness.
 
 ## Current Status: Phase 1 - Week 1-2 ✅
 - **Landing Page**: Complete with interactive piano interface
@@ -22,7 +22,7 @@ This roadmap provides a step-by-step checklist for developing Rubato, an open-so
 
 - [ ] **Authentication System**
   - [ ] Implement magic link email authentication
-  - [ ] Set up Cloudflare Workers for backend API
+  - [ ] Set up Cloudflare Workers for full-stack application
   - [ ] Create JWT token management system
   - [ ] Implement user session handling
   - [ ] **Testing**: Unit tests for auth functions, integration tests for email flow, security testing for JWT implementation

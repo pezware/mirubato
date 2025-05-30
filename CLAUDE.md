@@ -1,7 +1,7 @@
 # CLAUDE.md - Programming Agent Guidelines
 
 ## Project Overview
-Rubato is an open-source sight-reading practice platform for classical guitar and piano. This document provides essential context and principles to guide AI programming agents working on this project.
+Mirubato is an open-source sight-reading practice platform for classical guitar and piano. This document provides essential context and principles to guide AI programming agents working on this project.
 
 ## Core Architecture Principles
 
@@ -12,7 +12,7 @@ Rubato is an open-source sight-reading practice platform for classical guitar an
 - **Authentication**: Magic link email authentication with JWT tokens
 - **Music Notation**: VexFlow.js for rendering staff notation and tablature
 - **Audio**: Tone.js for high-quality instrument samples and audio processing
-- **Deployment**: Cloudflare Pages with automated CI/CD
+- **Deployment**: Cloudflare Workers with automated CI/CD
 
 ### Design Philosophy
 1. **Education-First**: Every feature should enhance musical learning and sight-reading development
@@ -41,7 +41,7 @@ Rubato is an open-source sight-reading practice platform for classical guitar an
 
 ### Code Quality Standards
 ```typescript
-// Example of good TypeScript practices for Rubato
+// Example of good TypeScript practices for Mirubato
 interface NoteExercise {
   id: string;
   instrument: 'guitar' | 'piano';
@@ -292,4 +292,16 @@ describe('NoteGenerator', () => {
 - [ ] Tests written and passing
 - [ ] Documentation updated
 
-This document serves as the foundational guide for any AI programming agent working on Rubato. Always prioritize educational effectiveness, code quality, and user experience in every implementation decision.
+## Additional Documentation
+
+For comprehensive project information, see the following documentation:
+
+- **[Development Setup](docs/DEVELOPMENT_SETUP.md)** - Environment setup and getting started
+- **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Code standards, testing, and best practices
+- **[Infrastructure](docs/INFRASTRUCTURE.md)** - Architecture, deployment, and infrastructure setup
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Step-by-step deployment instructions
+- **[Roadmap](docs/ROADMAP.md)** - Development phases and feature planning
+- **[License](docs/LICENSE.md)** - MIT license and content attribution
+- **[Documentation Updates](docs/DOCUMENTATION_UPDATES.md)** - Recent changes and updates
+
+This document serves as the foundational guide for any AI programming agent working on Mirubato. Always prioritize educational effectiveness, code quality, and user experience in every implementation decision.

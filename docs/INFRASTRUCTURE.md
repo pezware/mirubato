@@ -1,7 +1,7 @@
 # Infrastructure Components and Setup
 
 ## Overview
-This document outlines all the infrastructure components required for developing, testing, and deploying Rubato, the open-source sight-reading platform.
+This document outlines all the infrastructure components required for developing, testing, and deploying Mirubato, the open-source sight-reading platform.
 
 ## Core Infrastructure Stack
 
@@ -56,7 +56,7 @@ npm install -g @playwright/test@1.40.0
 ```bash
 # Repository initialization
 git init
-git remote add origin https://github.com/arbeitandy/rubato.git
+git remote add origin https://github.com/arbeitandy/mirubato.git
 
 # Branch protection rules (configure via GitHub UI)
 # - Require pull request reviews before merging
@@ -165,16 +165,16 @@ Add any other context about the problem here.
 #### Cloudflare Pages Configuration
 ```toml
 # wrangler.toml
-name = "rubato"
+name = "mirubato"
 compatibility_date = "2024-01-15"
 
 [env.staging]
-name = "rubato-staging"
-route = "staging.rubato.app/*"
+name = "mirubato-staging"
+route = "staging.mirubato.com/*"
 
 [env.production]
-name = "rubato-production"
-route = "rubato.app/*"
+name = "mirubato-production"
+route = "mirubato.com/*"
 
 # Build configuration
 [build]
@@ -285,7 +285,7 @@ SENTRY_DSN=# Error tracking (optional)
 ANALYTICS_TOKEN=# Usage analytics (optional)
 
 # Frontend Environment Variables (Vite)
-VITE_API_BASE_URL=https://api.rubato.app
+VITE_API_BASE_URL=https://api.mirubato.com
 VITE_ENVIRONMENT=production
 VITE_SENTRY_DSN=# Client-side error tracking
 VITE_ANALYTICS_ID=# Client-side analytics
@@ -580,7 +580,7 @@ export const securityHeaders = {
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: blob:;
     media-src 'self' blob:;
-    connect-src 'self' https://api.rubato.app;
+    connect-src 'self' https://api.mirubato.com;
     worker-src 'self';
   `.replace(/\s+/g, ' ').trim(),
 
@@ -603,8 +603,8 @@ export const jwtConfig = {
   algorithm: 'HS256' as const,
   expiresIn: '1h',
   refreshExpiresIn: '7d',
-  issuer: 'rubato.app',
-  audience: 'rubato-users'
+  issuer: 'mirubato.com',
+  audience: 'mirubato-users'
 };
 
 // Rate limiting configuration
@@ -662,14 +662,14 @@ export const rateLimits = {
 # Automatic deployment to staging on develop branch
 staging:
   environment: staging
-  url: https://staging.rubato.app
+  url: https://staging.mirubato.com
   auto_deploy: true
   branch: develop
 
   build_settings:
     command: pnpm run build
     environment:
-      VITE_API_BASE_URL: https://api-staging.rubato.app
+      VITE_API_BASE_URL: https://api-staging.mirubato.com
       VITE_ENVIRONMENT: staging
 ```
 
@@ -678,14 +678,14 @@ staging:
 # Manual deployment to production
 production:
   environment: production
-  url: https://rubato.app
+  url: https://mirubato.com
   auto_deploy: false
   branch: main
 
   build_settings:
     command: pnpm run build
     environment:
-      VITE_API_BASE_URL: https://api.rubato.app
+      VITE_API_BASE_URL: https://api.mirubato.com
       VITE_ENVIRONMENT: production
 
   # Production-specific optimizations
@@ -704,9 +704,9 @@ production:
 -- Retention: 30 days for daily, 12 months for weekly, 7 years for yearly
 
 -- Manual backup commands
-wrangler d1 backup create rubato-db --local
-wrangler d1 backup list rubato-db
-wrangler d1 backup restore rubato-db --backup-id=<backup-id>
+wrangler d1 backup create mirubato-db --local
+wrangler d1 backup list mirubato-db
+wrangler d1 backup restore mirubato-db --backup-id=<backup-id>
 ```
 
 #### Disaster Recovery Plan
@@ -761,4 +761,4 @@ wrangler d1 backup restore rubato-db --backup-id=<backup-id>
 - [ ] Code quality gates configured
 - [ ] Security scanning enabled
 
-This infrastructure setup provides a robust, scalable foundation for Rubato while maintaining cost-effectiveness for an open-source educational project.
+This infrastructure setup provides a robust, scalable foundation for Mirubato while maintaining cost-effectiveness for an open-source educational project.

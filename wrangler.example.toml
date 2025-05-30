@@ -2,7 +2,7 @@
 # Copy this to wrangler.toml and fill in your values
 # NEVER commit wrangler.toml with actual secrets
 
-name = "rubato-api"
+name = "mirubato-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-15"
 
@@ -11,25 +11,25 @@ account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
 
 # Development environment
 [env.development]
-name = "rubato-api-dev"
+name = "mirubato-api-dev"
 vars = { ENVIRONMENT = "development" }
 
 # Staging environment
 [env.staging]
-name = "rubato-api-staging"
+name = "mirubato-api-staging"
 vars = { ENVIRONMENT = "staging" }
-route = "api-staging.rubato.app/*"
+route = "api-staging.mirubato.com/*"
 
 # Production environment
 [env.production]
-name = "rubato-api"
+name = "mirubato-api"
 vars = { ENVIRONMENT = "production" }
-route = "api.rubato.app/*"
+route = "api.mirubato.com/*"
 
 # D1 Database bindings
 [[d1_databases]]
 binding = "DATABASE"
-database_name = "rubato-db"
+database_name = "mirubato-db"
 database_id = "YOUR_DATABASE_ID"
 
 # KV namespace bindings (if needed)
@@ -40,7 +40,7 @@ database_id = "YOUR_DATABASE_ID"
 # R2 bucket bindings (for audio samples)
 # [[r2_buckets]]
 # binding = "AUDIO_SAMPLES"
-# bucket_name = "rubato-audio-samples"
+# bucket_name = "mirubato-audio-samples"
 
 # Secrets are set via wrangler CLI:
 # wrangler secret put JWT_SECRET
