@@ -3,12 +3,34 @@
 ## Overview
 This roadmap provides a step-by-step checklist for developing Mirubato, an open-source sight-reading platform for classical guitar and piano. Each phase emphasizes proper testing, code quality, and educational effectiveness.
 
-## Current Status: Phase 1 - Week 1-2 ✅
-- **Landing Page**: Complete with interactive piano interface
-- **Design System**: Nature-inspired theme implemented
-- **Audio System**: Tone.js integrated with browser security handled
-- **Basic UI**: Tailwind CSS configured with responsive design
-- **Next Steps**: Authentication system and backend setup
+## Current Status: Phase 1 - Week 3-4 🚧
+- **Landing Page**: Complete with interactive piano interface ✅
+- **Design System**: Nature-inspired theme implemented ✅
+- **Audio System**: Real piano samples via Tone.js Sampler ✅
+- **Basic UI**: Tailwind CSS configured with responsive design ✅
+- **Practice Page**: MVP with 20 measures of Moonlight Sonata ✅
+- **Sheet Music**: Organized data structure for musical pieces ✅
+- **Known Issues**: Tempo speeds up after pause/play (tracked below)
+- **Next Steps**: Fix audio bugs, then authentication system
+
+## Recent Achievements (2025-05-30)
+- [x] **Local-First Architecture**: Implemented design for browser storage with optional cloud sync
+- [x] **Sheet Music Data Structure**: Created organized system for musical pieces
+- [x] **Practice Page MVP**: Fully functional with 20 measures of Moonlight Sonata
+- [x] **Real Piano Sounds**: Integrated Salamander Grand Piano samples
+- [x] **Responsive Design**: Works on desktop, tablet, and mobile devices
+
+## Known Issues & Next Fixes
+1. **🐛 Tempo Speed-Up Bug**: Tempo increases after pause/play cycle
+   - Likely caused by Transport not fully resetting
+   - Affects practice experience significantly
+   - Priority: HIGH
+
+2. **Missing Features**:
+   - Volume control slider
+   - Instrument selection (guitar/piano toggle)
+   - Visual feedback for currently playing notes
+   - Practice session progress tracking
 
 ## Phase 1: Foundation & Core Platform (4-6 weeks)
 
@@ -31,15 +53,16 @@ This roadmap provides a step-by-step checklist for developing Mirubato, an open-
   - [x] Set up Tailwind CSS with responsive design system
   - [x] Create basic layout components (header, navigation, practice area)
   - [ ] Implement instrument selection (guitar/piano toggle)
-  - [ ] Create basic routing structure
-  - [ ] **Testing**: Component tests with React Testing Library, responsive design testing across devices
+  - [x] Create basic routing structure (React Router)
+  - [x] **Testing**: Component tests with React Testing Library, responsive design testing across devices
 
 ### Week 3-4: Core Note Recognition System
-- [x] **VexFlow Integration** *(Partial - using Canvas for now)*
-  - [x] Set up basic music notation rendering (Canvas implementation)
-  - [x] Implement basic staff rendering for treble clef
-  - [x] Create note display system (C major chord)
-  - [x] Add basic note input interface (click/tap)
+- [x] **VexFlow Integration**
+  - [x] Set up music notation rendering with VexFlow
+  - [x] Implement staff rendering for treble clef
+  - [x] Create note display system (20 measures of Moonlight Sonata)
+  - [x] Add NotationRenderer utility for reusable rendering
+  - [x] Implement measure numbers and multi-line display
   - [ ] **Testing**: Visual regression tests for notation rendering, unit tests for note generation algorithms
 
 - [x] **Instrument-Specific Features** *(Partial)*
@@ -50,10 +73,12 @@ This roadmap provides a step-by-step checklist for developing Mirubato, an open-
   - [ ] **Testing**: Instrument-specific UI tests, user interaction testing, accessibility testing
 
 - [x] **Audio System Foundation**
-  - [x] Set up Tone.js with basic piano synthesis
-  - [x] Implement note playback functionality
-  - [ ] Add volume and audio preference controls
+  - [x] Set up Tone.js with real piano samples (Salamander Grand)
+  - [x] Implement note playback functionality with audioManager
+  - [x] Add tempo controls (30-180 BPM)
   - [x] Handle mobile audio context requirements
+  - [ ] Add volume and audio preference controls
+  - [ ] **Bug Fix**: Tempo speeds up after pause/play
   - [ ] **Testing**: Audio unit tests, cross-browser audio testing, mobile audio testing
 
 ### Week 5-6: Basic Progress Tracking & Practice System
