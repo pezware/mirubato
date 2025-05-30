@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import PianoKey from './PianoKey'
+import PianoChord from './PianoChord'
 
 const LandingPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -27,8 +27,8 @@ const LandingPage: React.FC = () => {
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-lexend font-light text-white mb-6 tracking-wide">
             rubato
           </h1>
-          <p className="text-xl sm:text-2xl text-rubato-wood-200 font-lexend font-extralight tracking-wider">
-            Master the Art of Sight-Reading
+          <p className="text-lg sm:text-xl text-rubato-wood-200 font-light tracking-wide">
+            play with me
           </p>
         </div>
 
@@ -36,12 +36,12 @@ const LandingPage: React.FC = () => {
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="glass-panel p-8 sm:p-12">
             <p className="text-rubato-wood-600 text-center mb-2 text-sm">
-              Click the key to play F#
+              Play the notes shown above
             </p>
             <p className="text-rubato-wood-400 text-center mb-6 text-xs">
               First click enables audio
             </p>
-            <PianoKey note="F#4" />
+            <PianoChord />
           </div>
         </div>
 

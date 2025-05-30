@@ -2,7 +2,7 @@ import * as Tone from 'tone'
 
 class AudioManager {
   private initialized = false
-  private synth: Tone.Synth | null = null
+  private synth: Tone.PolySynth | null = null
 
   async initialize(): Promise<void> {
     if (this.initialized) {
@@ -17,8 +17,22 @@ class AudioManager {
       await Tone.start()
       console.log('Tone.js started successfully')
       
-      // Create a simple synth
-      this.synth = new Tone.Synth().toDestination()
+      // Create a polyphonic synth for playing chords
+      this.synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: {
+          type: 'triangle'
+        },
+        envelope: {
+          attack: 0.02,
+          decay: 0.3,
+          sustain: 0.3,
+          release: 1.2
+        }
+      }).toDestination()
+      
+      // Add a bit of reverb for warmth
+      const reverb = new Tone.Reverb({ decay: 1.5, wet: 0.2 }).toDestination()
+      this.synth.connect(reverb)
       
       this.initialized = true
       console.log('Audio system ready!')
@@ -28,7 +42,7 @@ class AudioManager {
     }
   }
 
-  async playNote(note: string, duration: string = '8n'): Promise<void> {
+  async playNote(note: string | string[], duration: string = '8n'): Promise<void> {
     console.log(`playNote called with: ${note}`)
     
     // Initialize on first play attempt
@@ -41,7 +55,7 @@ class AudioManager {
     }
 
     try {
-      // Play the note
+      // Play the note(s)
       this.synth.triggerAttackRelease(note, duration)
       console.log(`Successfully played: ${note}`)
     } catch (error) {

@@ -63,7 +63,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
       >
         {/* Key Label */}
         <span className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-rubato-wood-600 text-sm font-medium">
-          F#
+          C
         </span>
         
         {/* Visual feedback indicator */}
@@ -75,7 +75,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
       {/* Instruction text that appears after first play */}
       {hasPlayed && (
         <p className="mt-4 text-rubato-leaf-600 text-sm animate-fade-in">
-          Beautiful! You just played F# (F-sharp)
+          Beautiful! You just played a C major chord
         </p>
       )}
       
