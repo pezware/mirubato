@@ -7,7 +7,7 @@ import { moonlightSonata3rdMovement, getPlayableNotes } from '../data/sheetMusic
 
 const Practice: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [tempo, setTempo] = useState(120)
+  const [tempo, setTempo] = useState(50) // Start at slow practice tempo
   const [currentMeasure, setCurrentMeasure] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const notationRef = useRef<HTMLDivElement>(null)
@@ -212,8 +212,8 @@ const Practice: React.FC = () => {
               <label className="text-mirubato-wood-600 text-sm">Tempo:</label>
               <input
                 type="range"
-                min="60"
-                max="200"
+                min="30"
+                max="180"
                 value={tempo}
                 onChange={(e) => {
                 const newTempo = Number(e.target.value)
@@ -226,6 +226,12 @@ const Practice: React.FC = () => {
               />
               <span className="text-mirubato-wood-800 font-mono text-sm w-12">
                 {tempo}
+              </span>
+              <span className="text-mirubato-wood-500 text-xs ml-2">
+                {tempo <= 60 ? '(Slow practice)' : 
+                 tempo <= 100 ? '(Medium)' : 
+                 tempo <= 140 ? '(Target)' : 
+                 '(Performance)'}
               </span>
             </div>
 

@@ -16,7 +16,13 @@ export const moonlightSonata3rdMovement: SheetMusic = {
       keySignature: 'C#m',
       tempo: {
         bpm: 160,
-        marking: 'Presto agitato'
+        marking: 'Presto agitato',
+        practiceTempos: {
+          slow: 50,
+          medium: 80,
+          target: 120,
+          performance: 160
+        }
       },
       notes: [
         // First beat - G# C# E pattern
