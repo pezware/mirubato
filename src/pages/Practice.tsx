@@ -54,16 +54,16 @@ const Practice: React.FC = () => {
   // Initialize synthesizer
   useEffect(() => {
     synthRef.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'triangle' },
+      oscillator: { type: 'sine' }, // Cleaner sound
       envelope: {
-        attack: 0.02,
+        attack: 0.005,  // Very fast attack for piano
         decay: 0.1,
-        sustain: 0.3,
-        release: 0.8,
+        sustain: 0.15,  // Lower sustain for more piano-like
+        release: 0.3,   // Shorter release
       },
     }).toDestination()
     
-    synthRef.current.volume.value = -12 // Reduce volume
+    synthRef.current.volume.value = -8 // Slightly louder
 
     return () => {
       synthRef.current?.dispose()
@@ -207,7 +207,7 @@ const Practice: React.FC = () => {
       
       // Create a new part with the note sequence
       sequenceRef.current = new Tone.Part((time, note) => {
-        synthRef.current?.triggerAttackRelease(note.note, '16n', time)
+        synthRef.current?.triggerAttackRelease(note.note, '32n', time)
         
         // Update current note index for visual feedback
         Tone.Draw.schedule(() => {
@@ -275,7 +275,7 @@ const Practice: React.FC = () => {
             <div>
               <p className="text-mirubato-wood-500 text-sm">Piece</p>
               <p className="font-medium text-mirubato-wood-800">Moonlight Sonata, 3rd Mvt.</p>
-              <p className="text-mirubato-wood-400 text-xs">L. van Beethoven</p>
+              <p className="text-mirubato-wood-400 text-xs">L. van Beethoven (Opening)</p>
             </div>
             <div>
               <p className="text-mirubato-wood-500 text-sm">Key</p>
@@ -335,7 +335,8 @@ const Practice: React.FC = () => {
 
             {/* Measure Progress */}
             <div className="text-mirubato-wood-600 text-sm">
-              Measure: <span className="font-mono">{currentMeasure + 1}/20</span>
+              Measure: <span className="font-mono">{currentMeasure + 1}/2</span>
+              <span className="text-mirubato-wood-400 ml-2">(Demo excerpt)</span>
             </div>
           </div>
         </div>
