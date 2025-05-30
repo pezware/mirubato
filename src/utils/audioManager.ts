@@ -30,6 +30,16 @@ class AudioManager {
       await Tone.start()
       console.log('Tone.js started successfully')
       
+      // Determine base URL for samples
+      // Use local samples in production to avoid CSP issues
+      const isProduction = window.location.hostname !== 'localhost' && 
+                          !window.location.hostname.includes('127.0.0.1')
+      const baseUrl = isProduction 
+        ? '/audio/salamander/' // Local samples in production
+        : 'https://tonejs.github.io/audio/salamander/' // CDN for development
+      
+      console.log(`Loading piano samples from: ${baseUrl}`)
+      
       // Create piano sampler with Salamander Grand Piano samples
       // We'll use a subset of samples to reduce loading time
       // The sampler will automatically pitch-shift to fill in missing notes
@@ -67,7 +77,14 @@ class AudioManager {
           'C8': 'C8.mp3'
         },
         release: 1,
-        baseUrl: 'https://tonejs.github.io/audio/salamander/'
+        baseUrl,
+        onload: () => {
+          console.log('Piano samples loaded successfully')
+        },
+        onerror: (error) => {
+          console.error('Failed to load piano samples:', error)
+          // Try to continue with synthetic sound as fallback
+        }
       }).toDestination()
 
       // Create guitar synth (using synthetic sound for now)
