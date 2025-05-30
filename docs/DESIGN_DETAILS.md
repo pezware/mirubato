@@ -247,9 +247,10 @@ interface FeedbackSystem {
 ## Performance Considerations
 
 ### Audio Latency Optimization
-- Preload audio samples on page load
-- Use Web Audio API scheduling for precise timing
+- Preload audio samples on page load (Salamander Grand Piano samples)
+- Use Web Audio API scheduling for precise timing via Tone.js
 - Implement lookahead scheduling for smooth playback
+- audioManager handles instrument-specific sample loading
 
 ### Rendering Optimization
 - Use React.memo for notation components
@@ -289,6 +290,24 @@ interface FeedbackSystem {
 3. Implement service worker for true offline mode
 4. Add E2E tests for critical user flows
 
+## Current Implementation Details
+
+### Audio System
+- **Library**: Tone.js with Sampler (not @tonejs/piano due to browser compatibility)
+- **Piano Samples**: Salamander Grand Piano loaded from Tone.js CDN
+- **Architecture**: Centralized audioManager in `src/utils/audioManager.ts`
+- **Instruments**: Piano implemented, guitar prepared for future
+
+### Sheet Music System
+- **Data Structure**: TypeScript interfaces in `src/types/sheetMusic.ts`
+- **Storage**: Sheet music data in `src/data/sheetMusic/`
+- **Rendering**: NotationRenderer utility using VexFlow
+- **Current Content**: 20 measures of Moonlight Sonata 3rd Movement
+
+### Known Issues
+- **Tempo Bug**: Playback speeds up after pause/play cycle
+- **Missing**: Volume control, instrument toggle, visual note feedback
+
 ## Decision Log
 
 ### 2025-05-30: Local-First Approach
@@ -305,6 +324,11 @@ interface FeedbackSystem {
 - **Decision**: Use both storage mechanisms for different purposes
 - **Rationale**: Best of both worlds - quick access and unlimited storage
 - **Trade-offs**: More complex implementation, need to maintain consistency
+
+### 2025-05-30: Real Piano Samples via Tone.js Sampler
+- **Decision**: Use Tone.js Sampler instead of @tonejs/piano
+- **Rationale**: @tonejs/piano has EventEmitter browser compatibility issues
+- **Trade-offs**: Slightly larger initial load, but better compatibility
 
 ---
 
