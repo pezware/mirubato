@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Nature-inspired palette from rubato-cover.jpeg
-        rubato: {
+        // Nature-inspired palette from mirubato-cover.jpeg
+        mirubato: {
           // Vibrant greens from the leaves
           leaf: {
             50: '#f7fee7',
@@ -50,7 +50,7 @@ export default {
         'mono': ['JetBrains Mono', 'monospace'],
       },
       backgroundImage: {
-        'rubato-cover': "url('/rubato-cover.jpeg')",
+        'mirubato-cover': "url('/mirubato-cover.jpeg')",
       },
       animation: {
         'key-press': 'keyPress 0.15s ease-out',

@@ -14,10 +14,10 @@ const LandingPage: React.FC = () => {
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('/rubato-cover.jpeg')` }}
+        style={{ backgroundImage: `url('/mirubato-cover.jpeg')` }}
       >
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-rubato-wood-900/20 via-transparent to-rubato-wood-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-mirubato-wood-900/20 via-transparent to-mirubato-wood-900/40" />
       </div>
 
       {/* Content */}
@@ -25,9 +25,9 @@ const LandingPage: React.FC = () => {
         {/* Title Section */}
         <div className={`text-center mb-16 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-lexend font-light text-white mb-6 tracking-wide">
-            rubato
+            mirubato
           </h1>
-          <p className="text-lg sm:text-xl text-rubato-wood-200 font-light tracking-wide">
+          <p className="text-lg sm:text-xl text-mirubato-wood-200 font-light tracking-wide">
             play with me
           </p>
         </div>
@@ -35,10 +35,10 @@ const LandingPage: React.FC = () => {
         {/* Interactive Piano Key */}
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="glass-panel p-8 sm:p-12">
-            <p className="text-rubato-wood-600 text-center mb-2 text-sm">
+            <p className="text-mirubato-wood-600 text-center mb-2 text-sm">
               Play the notes shown below
             </p>
-            <p className="text-rubato-wood-400 text-center mb-6 text-xs">
+            <p className="text-mirubato-wood-400 text-center mb-6 text-xs">
               First click enables audio
             </p>
             <PianoChord />
@@ -47,10 +47,10 @@ const LandingPage: React.FC = () => {
 
         {/* Coming Soon Text */}
         <div className={`mt-16 text-center transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-          <p className="text-rubato-wood-200 text-lg">
+          <p className="text-mirubato-wood-200 text-lg">
             Open-source sight-reading platform for classical guitar and piano
           </p>
-          <p className="text-rubato-leaf-400 text-sm mt-2 font-medium">
+          <p className="text-mirubato-leaf-400 text-sm mt-2 font-medium">
             Coming Soon
           </p>
         </div>
@@ -58,7 +58,7 @@ const LandingPage: React.FC = () => {
 
       {/* Footer */}
       <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-        <p className="text-rubato-wood-300 text-xs">
+        <p className="text-mirubato-wood-300 text-xs">
           An open-source project • MIT License
         </p>
       </div>

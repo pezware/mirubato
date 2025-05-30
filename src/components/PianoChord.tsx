@@ -22,7 +22,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     
     // Set up styling
-    ctx.strokeStyle = '#52525b' // rubato-wood-600
+    ctx.strokeStyle = '#52525b' // mirubato-wood-600
     ctx.fillStyle = '#52525b'
     ctx.lineWidth = 1
 
@@ -120,10 +120,10 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
             key={key.note}
             onClick={() => handleKeyPress(key.note)}
             className={`
-              relative w-12 h-36 bg-white border-2 border-rubato-wood-300
+              relative w-12 h-36 bg-white border-2 border-mirubato-wood-300
               transition-all duration-75 cursor-pointer select-none
-              hover:bg-rubato-wood-50
-              ${pressedKeys.has(key.note) ? 'translate-y-1 shadow-md bg-rubato-wood-100' : 'shadow-lg'}
+              hover:bg-mirubato-wood-50
+              ${pressedKeys.has(key.note) ? 'translate-y-1 shadow-md bg-mirubato-wood-100' : 'shadow-lg'}
               ${key.position === 0 ? 'rounded-bl-md' : ''}
               ${key.position === pianoKeys.length - 1 ? 'rounded-br-md' : ''}
               ${key.position > 0 ? 'border-l-0' : ''}
@@ -131,7 +131,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
             aria-label={`Piano key ${key.note}`}
           >
             {key.label && (
-              <span className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-rubato-wood-400 text-xs">
+              <span className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-mirubato-wood-400 text-xs">
                 {key.label}
               </span>
             )}
@@ -139,18 +139,18 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
         ))}
         
         {/* Black keys (C# and D# for visual accuracy) */}
-        <div className="absolute top-0 left-9 w-6 h-24 bg-rubato-wood-800 rounded-b-sm pointer-events-none" />
-        <div className="absolute top-0 left-[60px] w-6 h-24 bg-rubato-wood-800 rounded-b-sm pointer-events-none" />
+        <div className="absolute top-0 left-9 w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
+        <div className="absolute top-0 left-[60px] w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
       </div>
 
       {/* Chord name hint */}
-      <p className="mt-4 text-rubato-wood-500 text-sm">
+      <p className="mt-4 text-mirubato-wood-500 text-sm">
         C major
       </p>
 
       {/* Success message */}
       {hasPlayed && (
-        <p className="mt-2 text-rubato-leaf-600 text-sm animate-fade-in">
+        <p className="mt-2 text-mirubato-leaf-600 text-sm animate-fade-in">
           Beautiful! Try playing all three notes
         </p>
       )}

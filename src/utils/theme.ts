@@ -4,24 +4,24 @@
 export const theme = {
   colors: {
     primary: {
-      light: '#bef264', // rubato-leaf-300
-      DEFAULT: '#a3e635', // rubato-leaf-400
-      dark: '#65a30d', // rubato-leaf-600
+      light: '#bef264', // mirubato-leaf-300
+      DEFAULT: '#a3e635', // mirubato-leaf-400
+      dark: '#65a30d', // mirubato-leaf-600
     },
     secondary: {
-      light: '#e4e4e7', // rubato-wood-200
-      DEFAULT: '#d4d4d8', // rubato-wood-300
-      dark: '#71717a', // rubato-wood-500
+      light: '#e4e4e7', // mirubato-wood-200
+      DEFAULT: '#d4d4d8', // mirubato-wood-300
+      dark: '#71717a', // mirubato-wood-500
     },
     background: {
-      primary: '#fafafa', // rubato-wood-50
-      secondary: '#f4f4f5', // rubato-wood-100
+      primary: '#fafafa', // mirubato-wood-50
+      secondary: '#f4f4f5', // mirubato-wood-100
       overlay: 'rgba(255, 255, 255, 0.8)',
     },
     text: {
-      primary: '#27272a', // rubato-wood-800
-      secondary: '#52525b', // rubato-wood-600
-      light: '#71717a', // rubato-wood-500
+      primary: '#27272a', // mirubato-wood-800
+      secondary: '#52525b', // mirubato-wood-600
+      light: '#71717a', // mirubato-wood-500
     },
     accent: {
       warm: '#fbbf24',
