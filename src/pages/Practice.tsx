@@ -1,83 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Renderer, Stave, StaveNote, Voice, Formatter, Beam } from 'vexflow'
 import * as Tone from 'tone'
-import { Piano } from '@tonejs/piano'
+import { audioManager } from '../utils/audioManager'
+import { NotationRenderer } from '../utils/notationRenderer'
+import { moonlightSonata3rdMovement, getPlayableNotes } from '../data/sheetMusic'
 
 const Practice: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [tempo, setTempo] = useState(120)
   const [currentMeasure, setCurrentMeasure] = useState(0)
-  const [currentNoteIndex, setCurrentNoteIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const notationRef = useRef<HTMLDivElement>(null)
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
-  const pianoRef = useRef<Piano | null>(null)
   const sequenceRef = useRef<Tone.Part | null>(null)
+  const notationRendererRef = useRef<NotationRenderer | null>(null)
+  
+  // Get the current piece data
+  const currentPiece = moonlightSonata3rdMovement
+  const playableNotes = getPlayableNotes(currentPiece)
 
-  // Define the note sequence for Moonlight Sonata 3rd Movement
-  const noteSequence = [
-    // Measure 1 - C# minor arpeggio pattern
-    { time: 0, note: 'G#4' },
-    { time: 0.0625, note: 'C#5' },
-    { time: 0.125, note: 'E5' },
-    { time: 0.1875, note: 'G#4' },
-    { time: 0.25, note: 'C#5' },
-    { time: 0.3125, note: 'E5' },
-    { time: 0.375, note: 'G#4' },
-    { time: 0.4375, note: 'C#5' },
-    { time: 0.5, note: 'E5' },
-    { time: 0.5625, note: 'G#4' },
-    { time: 0.625, note: 'C#5' },
-    { time: 0.6875, note: 'E5' },
-    { time: 0.75, note: 'G#4' },
-    { time: 0.8125, note: 'C#5' },
-    { time: 0.875, note: 'E5' },
-    { time: 0.9375, note: 'G#4' },
-    // Measure 2 - Continuation and transition to B major
-    { time: 1, note: 'C#5' },
-    { time: 1.0625, note: 'E5' },
-    { time: 1.125, note: 'G#4' },
-    { time: 1.1875, note: 'C#5' },
-    { time: 1.25, note: 'E5' },
-    { time: 1.3125, note: 'G#4' },
-    { time: 1.375, note: 'C#5' },
-    { time: 1.4375, note: 'E5' },
-    { time: 1.5, note: 'D#5' },
-    { time: 1.5625, note: 'F#4' },
-    { time: 1.625, note: 'B4' },
-    { time: 1.6875, note: 'D#5' },
-    { time: 1.75, note: 'F#4' },
-    { time: 1.8125, note: 'B4' },
-    { time: 1.875, note: 'D#5' },
-    { time: 1.9375, note: 'F#4' },
-  ]
-
-  // Initialize piano with real samples
+  // Initialize audio
   useEffect(() => {
-    const loadPiano = async () => {
+    const initializeAudio = async () => {
       setIsLoading(true)
       try {
-        // Create piano instance with reduced velocity layers for faster loading
-        pianoRef.current = new Piano({
-          velocities: 5 // Use 5 velocity layers for good quality/performance balance
-        })
+        // Ensure piano instrument is selected
+        audioManager.setInstrument('piano')
         
-        pianoRef.current.toDestination()
-        
-        // Load the piano samples
-        await pianoRef.current.load()
+        // Initialize the audio system
+        await audioManager.initialize()
         setIsLoading(false)
       } catch (error) {
-        console.error('Failed to load piano samples:', error)
+        console.error('Failed to initialize audio:', error)
         setIsLoading(false)
       }
     }
 
-    loadPiano()
+    initializeAudio()
 
     return () => {
-      pianoRef.current?.dispose()
       sequenceRef.current?.dispose()
     }
   }, [])
@@ -104,107 +65,27 @@ const Practice: React.FC = () => {
   useEffect(() => {
     if (!notationRef.current) return
 
-    // Clear previous content
-    notationRef.current.innerHTML = ''
+    // Create or update notation renderer
+    if (!notationRendererRef.current) {
+      notationRendererRef.current = new NotationRenderer(notationRef.current)
+    }
 
     const { width, scale } = getNotationDimensions()
 
-    // Create renderer
-    const renderer = new Renderer(notationRef.current, Renderer.Backends.SVG)
-    renderer.resize(width, 400)
-    const context = renderer.getContext()
-    context.scale(scale, scale)
+    // Render the current piece using NotationRenderer
+    notationRendererRef.current.render(currentPiece, {
+      width,
+      scale,
+      measuresPerLine: 2
+    })
 
-    // Moonlight Sonata 3rd Movement - First 4 measures (simplified for demo)
-    const staveWidth = (width / scale) - 50
-    const staveX = 25
-
-    // Measure 1
-    const stave1 = new Stave(staveX, 50, staveWidth / 2)
-    stave1.addClef('treble').addTimeSignature('4/4').addKeySignature('C#m')
-    stave1.setContext(context).draw()
-
-    const notes1 = [
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-    ]
-
-    // Create beams for sixteenth notes (4 groups of 4)
-    const beam1 = new Beam(notes1.slice(0, 4))
-    const beam2 = new Beam(notes1.slice(4, 8))
-    const beam3 = new Beam(notes1.slice(8, 12))
-    const beam4 = new Beam(notes1.slice(12, 16))
-
-    const voice1 = new Voice({ num_beats: 4, beat_value: 4 })
-    voice1.addTickables(notes1)
-
-    new Formatter().joinVoices([voice1]).format([voice1], staveWidth / 2 - 50)
-    voice1.draw(context, stave1)
-    beam1.setContext(context).draw()
-    beam2.setContext(context).draw()
-    beam3.setContext(context).draw()
-    beam4.setContext(context).draw()
-
-    // Measure 2 (continuation of pattern)
-    const stave2 = new Stave(stave1.width + stave1.x, 50, staveWidth / 2)
-    stave2.setContext(context).draw()
-
-    const notes2 = [
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['g#/4'], duration: '16' }),
-      new StaveNote({ keys: ['c#/5'], duration: '16' }),
-      new StaveNote({ keys: ['e/5'], duration: '16' }),
-      new StaveNote({ keys: ['d#/5'], duration: '16' }),
-      new StaveNote({ keys: ['f#/4'], duration: '16' }),
-      new StaveNote({ keys: ['b/4'], duration: '16' }),
-      new StaveNote({ keys: ['d#/5'], duration: '16' }),
-      new StaveNote({ keys: ['f#/4'], duration: '16' }),
-      new StaveNote({ keys: ['b/4'], duration: '16' }),
-      new StaveNote({ keys: ['d#/5'], duration: '16' }),
-      new StaveNote({ keys: ['f#/4'], duration: '16' }),
-    ]
-
-    const beam5 = new Beam(notes2.slice(0, 4))
-    const beam6 = new Beam(notes2.slice(4, 8))
-    const beam7 = new Beam(notes2.slice(8, 12))
-    const beam8 = new Beam(notes2.slice(12, 16))
-
-    const voice2 = new Voice({ num_beats: 4, beat_value: 4 })
-    voice2.addTickables(notes2)
-
-    new Formatter().joinVoices([voice2]).format([voice2], staveWidth / 2 - 50)
-    voice2.draw(context, stave2)
-    beam5.setContext(context).draw()
-    beam6.setContext(context).draw()
-    beam7.setContext(context).draw()
-    beam8.setContext(context).draw()
-
-    // Add tempo marking
-    context.setFont('Arial', 14, '')
-    context.fillText('Presto agitato ♩ = 160', staveX, 30)
-
-  }, [viewportWidth])
+    return () => {
+      notationRendererRef.current?.dispose()
+    }
+  }, [viewportWidth, currentPiece])
 
   const handlePlayPause = async () => {
-    if (!isPlaying && pianoRef.current && !isLoading) {
+    if (!isPlaying && !isLoading) {
       await Tone.start()
       
       // Clean up any existing sequence
@@ -216,29 +97,25 @@ const Practice: React.FC = () => {
       const bpm = tempo
       const secondsPerBeat = 60 / bpm
       
-      // Create a new part with the note sequence
+      // Create a new part with the playable notes
       sequenceRef.current = new Tone.Part((time, note) => {
-        // Use piano's keyDown/keyUp for realistic sound
-        pianoRef.current?.keyDown({ note: note.note, time })
-        pianoRef.current?.keyUp({ note: note.note, time: time + 0.1 }) // Short note duration
+        // Use our audio manager to play notes with realistic piano sound
+        audioManager.playNoteAt(note.note, time, '16n', 0.7)
         
-        // Update current note index for visual feedback
+        // Update current measure for visual feedback
         Tone.Draw.schedule(() => {
-          const noteIndex = noteSequence.findIndex(n => n === note)
-          setCurrentNoteIndex(noteIndex)
-          
           // Update measure based on time
           const currentMeasureNum = Math.floor(note.time)
           setCurrentMeasure(currentMeasureNum)
         }, time)
-      }, noteSequence.map(n => ({ 
+      }, playableNotes.map(n => ({ 
         time: n.time * secondsPerBeat, 
         note: n.note 
       })))
 
       // Configure the part
       sequenceRef.current.loop = true
-      sequenceRef.current.loopEnd = 2 * secondsPerBeat // 2 measures
+      sequenceRef.current.loopEnd = currentPiece.measures.length * secondsPerBeat
       
       // Start transport and sequence
       Tone.Transport.bpm.value = bpm
@@ -255,11 +132,7 @@ const Practice: React.FC = () => {
         sequenceRef.current.stop()
       }
       
-      // Stop all piano notes
-      pianoRef.current?.stopAll()
-      
       setIsPlaying(false)
-      setCurrentNoteIndex(0)
       setCurrentMeasure(0)
     }
   }
@@ -290,16 +163,20 @@ const Practice: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-mirubato-wood-500 text-sm">Piece</p>
-              <p className="font-medium text-mirubato-wood-800">Moonlight Sonata, 3rd Mvt.</p>
-              <p className="text-mirubato-wood-400 text-xs">L. van Beethoven (Opening)</p>
+              <p className="font-medium text-mirubato-wood-800">{currentPiece.title}</p>
+              <p className="text-mirubato-wood-400 text-xs">{currentPiece.composer}</p>
             </div>
             <div>
               <p className="text-mirubato-wood-500 text-sm">Key</p>
-              <p className="font-medium text-mirubato-wood-800">C# Minor</p>
+              <p className="font-medium text-mirubato-wood-800">
+                {currentPiece.measures[0]?.keySignature || 'C Major'}
+              </p>
             </div>
             <div>
               <p className="text-mirubato-wood-500 text-sm">Tempo</p>
-              <p className="font-medium text-mirubato-wood-800">Presto agitato</p>
+              <p className="font-medium text-mirubato-wood-800">
+                {currentPiece.measures[0]?.tempo?.marking || 'Moderato'}
+              </p>
             </div>
           </div>
         </div>
@@ -354,7 +231,7 @@ const Practice: React.FC = () => {
 
             {/* Measure Progress */}
             <div className="text-mirubato-wood-600 text-sm">
-              Measure: <span className="font-mono">{currentMeasure + 1}/2</span>
+              Measure: <span className="font-mono">{currentMeasure + 1}/{currentPiece.measures.length}</span>
               <span className="text-mirubato-wood-400 ml-2">(Demo excerpt)</span>
             </div>
           </div>
