@@ -1,4 +1,6 @@
-# Cloudflare Pages Deployment Guide for Rubato
+# Cloudflare Workers Deployment Guide for Rubato
+
+> Note: Cloudflare has converged Pages and Workers. Static sites now use Workers with assets support.
 
 ## Prerequisites
 1. A Cloudflare account (free tier is sufficient)
@@ -7,18 +9,14 @@
 
 ## Initial Setup Steps
 
-### 1. Connect GitHub Repository to Cloudflare Pages
+### 1. Connect GitHub Repository to Cloudflare Workers
 
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Go to **Pages** in the sidebar
-3. Click **Create a project** → **Connect to Git**
+2. Go to **Workers & Pages** in the sidebar
+3. Click **Create** → **Workers** → **Deploy from GitHub**
 4. Authorize Cloudflare to access your GitHub account
 5. Select the `rubato` repository
-6. Configure build settings:
-   - **Production branch**: `main`
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Node version**: `18` or higher
+6. Cloudflare will detect the wrangler.json and configure automatically
 
 ### 2. Set Environment Variables in Cloudflare
 
