@@ -1,0 +1,48 @@
+# Wrangler Configuration Template
+# Copy this to wrangler.toml and fill in your values
+# NEVER commit wrangler.toml with actual secrets
+
+name = "rubato-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+
+# Account ID - get from Cloudflare dashboard
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+
+# Development environment
+[env.development]
+name = "rubato-api-dev"
+vars = { ENVIRONMENT = "development" }
+
+# Staging environment
+[env.staging]
+name = "rubato-api-staging"
+vars = { ENVIRONMENT = "staging" }
+route = "api-staging.rubato.app/*"
+
+# Production environment
+[env.production]
+name = "rubato-api"
+vars = { ENVIRONMENT = "production" }
+route = "api.rubato.app/*"
+
+# D1 Database bindings
+[[d1_databases]]
+binding = "DATABASE"
+database_name = "rubato-db"
+database_id = "YOUR_DATABASE_ID"
+
+# KV namespace bindings (if needed)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "YOUR_KV_NAMESPACE_ID"
+
+# R2 bucket bindings (for audio samples)
+# [[r2_buckets]]
+# binding = "AUDIO_SAMPLES"
+# bucket_name = "rubato-audio-samples"
+
+# Secrets are set via wrangler CLI:
+# wrangler secret put JWT_SECRET
+# wrangler secret put RESEND_API_KEY
+# wrangler secret put CLOUDFLARE_API_TOKEN
