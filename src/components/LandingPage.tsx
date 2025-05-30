@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PianoChord from './PianoChord'
 
 const LandingPage: React.FC = () => {
@@ -50,9 +51,12 @@ const LandingPage: React.FC = () => {
           <p className="text-mirubato-wood-200 text-lg">
             Open-source sight-reading platform for classical guitar and piano
           </p>
-          <p className="text-mirubato-leaf-400 text-sm mt-2 font-medium">
-            Coming Soon
-          </p>
+          <Link 
+            to="/practice" 
+            className="inline-block mt-6 px-8 py-3 bg-mirubato-leaf-400 hover:bg-mirubato-leaf-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
+          >
+            Try Practice Mode (Beta)
+          </Link>
         </div>
       </div>
 
