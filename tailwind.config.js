@@ -50,7 +50,7 @@ export default {
         'mono': ['JetBrains Mono', 'monospace'],
       },
       backgroundImage: {
-        'rubato-cover': "url('/tmp/rubato-cover.jpeg')",
+        'rubato-cover': "url('/rubato-cover.jpeg')",
       },
       animation: {
         'key-press': 'keyPress 0.15s ease-out',
