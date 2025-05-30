@@ -56,7 +56,7 @@ npm install -g @playwright/test@1.40.0
 ```bash
 # Repository initialization
 git init
-git remote add origin https://github.com/rubato-app/rubato.git
+git remote add origin https://github.com/arbeitandy/rubato.git
 
 # Branch protection rules (configure via GitHub UI)
 # - Require pull request reviews before merging
@@ -193,25 +193,25 @@ dir = "dist"
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const router = new Router();
-    
+
     // Authentication routes
     router.post('/api/auth/login', handleLogin);
     router.post('/api/auth/verify', handleVerify);
     router.post('/api/auth/refresh', handleRefresh);
-    
+
     // Practice session routes
     router.post('/api/practice/sessions', handleCreateSession);
     router.get('/api/practice/sessions/:id', handleGetSession);
     router.patch('/api/practice/sessions/:id', handleUpdateSession);
-    
+
     // Exercise routes
     router.get('/api/exercises', handleGetExercises);
     router.post('/api/exercises/generate', handleGenerateExercise);
-    
+
     // User progress routes
     router.get('/api/users/progress', handleGetProgress);
     router.post('/api/users/progress', handleUpdateProgress);
-    
+
     return router.handle(request, env);
   },
 };
@@ -388,7 +388,7 @@ export const performanceMonitor = {
     const start = performance.now();
     callback();
     const latency = performance.now() - start;
-    
+
     // Report if latency is too high
     if (latency > 100) {
       console.warn(`High audio latency detected: ${latency}ms`);
@@ -401,7 +401,7 @@ export const performanceMonitor = {
     const start = performance.now();
     renderFunction();
     const renderTime = performance.now() - start;
-    
+
     if (renderTime > 200) {
       console.warn(`Slow notation rendering: ${renderTime}ms`);
     }
@@ -528,7 +528,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
@@ -583,14 +583,14 @@ export const securityHeaders = {
     connect-src 'self' https://api.rubato.app;
     worker-src 'self';
   `.replace(/\s+/g, ' ').trim(),
-  
+
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': `
-    camera=(), 
-    microphone=(), 
-    geolocation=(), 
+    camera=(),
+    microphone=(),
+    geolocation=(),
     interest-cohort=()
   `.replace(/\s+/g, ' ').trim()
 };
@@ -665,7 +665,7 @@ staging:
   url: https://staging.rubato.app
   auto_deploy: true
   branch: develop
-  
+
   build_settings:
     command: pnpm run build
     environment:
@@ -681,13 +681,13 @@ production:
   url: https://rubato.app
   auto_deploy: false
   branch: main
-  
+
   build_settings:
     command: pnpm run build
     environment:
       VITE_API_BASE_URL: https://api.rubato.app
       VITE_ENVIRONMENT: production
-      
+
   # Production-specific optimizations
   post_processing:
     - bundle_css: true
