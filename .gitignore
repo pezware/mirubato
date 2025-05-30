@@ -1,0 +1,325 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Cloudflare
+.wrangler/
+wrangler.toml.local
+.dev.vars
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+
+# Testing
+coverage/
+*.coverage
+.nyc_output/
+.coverage/
+junit.xml
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Audio samples and media (large files)
+# Note: Add actual audio files to Git LFS or external storage
+*.wav
+*.mp3
+*.ogg
+*.m4a
+*.aiff
+*.flac
+/public/samples/
+/src/assets/audio/
+
+# Generated music notation images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+# Exception: Keep essential SVG icons
+!/src/assets/icons/*.svg
+!/public/favicon.svg
+
+# Documentation generated files
+docs/api/
+docs/coverage/
+*.md.bak
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache/
+.parcel-cache/
+
+# Next.js build output
+.next/
+
+# Nuxt.js build / generate output
+.nuxt/
+
+# Gatsby files
+.cache/
+public/
+
+# Storybook build outputs
+.out/
+.storybook-out/
+
+# Temporary folders
+tmp/
+temp/
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test/
+
+# yarn v2
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Cloudflare Workers
+wrangler.toml
+!wrangler.example.toml
+
+# Database files (if running locally)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Music theory and content generation cache
+.music-cache/
+.exercise-cache/
+
+# Performance and profiling
+.profile/
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+
+# Security and secrets
+.secrets/
+*.pem
+*.key
+*.crt
+*.cert
+
+# Backup files
+*.bak
+*.backup
+*.old
+*~
+
+# Local development utilities
+.local/
+.tools/
+
+# Generated license reports
+licenses.json
+license-report.html
+
+# Analytics and monitoring
+.sentry/
+analytics.json
+
+# Deployment artifacts
+deploy.log
+deployment-manifest.json
+
+# Educational content cache
+content-cache/
+imslp-cache/
+
+# User-generated content (if running locally)
+user-uploads/
+practice-sessions/
+
+# Internationalization
+*.pot
+*.mo
+
+# Documentation dependencies
+sphinx_rtd_theme/
+_build/
+
+# MacOS specific
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows specific
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux specific
+*~
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*.un~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Visual Studio
+.vs/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Automated testing artifacts
+screenshots/
+videos/
+traces/
+test-results.xml
+
+# Bundle analyzer output
+bundle-analyzer-report.html
+webpack-bundle-analyzer-report.html
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Stylelint cache
+.stylelintcache
+
+# TypeScript incremental compilation cache
+*.tsbuildinfo
+
+# Optional REPL history
+.node_repl_history
+
+# Yarn v1
+.yarn-integrity
+
+# Local development overrides
+docker-compose.override.yml
+.docker/
+
+# Monitoring and observability
+.datadog/
+newrelic.js
+
+# Temporary audio processing
+audio-processing/
+temp-audio/
