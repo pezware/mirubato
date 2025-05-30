@@ -431,9 +431,126 @@ useEffect(() => {
 
 ## Security Guidelines
 
+### CRITICAL: Secret Management
+
+**NEVER commit secrets, API keys, or sensitive data to the codebase**
+
+```typescript
+// ❌ NEVER DO THIS - Secrets in code
+const API_KEY = 'sk_live_abc123xyz'; // NEVER hardcode secrets
+const DATABASE_URL = 'postgres://user:password@host:5432/db'; // NEVER hardcode credentials
+const JWT_SECRET = 'my-secret-key'; // NEVER hardcode secrets
+
+// ✅ ALWAYS DO THIS - Use environment variables
+const API_KEY = process.env.API_KEY;
+const DATABASE_URL = process.env.DATABASE_URL;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// ✅ Good: Type-safe environment variable access
+interface EnvConfig {
+  API_KEY: string;
+  DATABASE_URL: string;
+  JWT_SECRET: string;
+  RESEND_API_KEY: string;
+  CLOUDFLARE_API_TOKEN: string;
+  SENTRY_DSN?: string; // Optional
+}
+
+function getEnvVar(key: keyof EnvConfig, required = true): string {
+  const value = process.env[key];
+  if (required && !value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+  return value || '';
+}
+
+// Usage
+const apiKey = getEnvVar('API_KEY');
+const sentryDsn = getEnvVar('SENTRY_DSN', false); // Optional
+```
+
+### Environment Variable Best Practices
+
+#### 1. Use .env Files for Local Development
+```bash
+# .env.local (NEVER commit this file)
+VITE_API_BASE_URL=http://localhost:8787
+VITE_ENVIRONMENT=development
+DATABASE_URL=your_local_database_url
+JWT_SECRET=your_local_jwt_secret
+RESEND_API_KEY=your_resend_api_key
+
+# .env.example (COMMIT this file as a template)
+VITE_API_BASE_URL=
+VITE_ENVIRONMENT=
+DATABASE_URL=
+JWT_SECRET=
+RESEND_API_KEY=
+```
+
+#### 2. Frontend Environment Variables (Vite)
+```typescript
+// ✅ Good: Access Vite environment variables
+const config = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  environment: import.meta.env.VITE_ENVIRONMENT,
+  sentryDsn: import.meta.env.VITE_SENTRY_DSN,
+};
+
+// ✅ Good: Validate environment variables at startup
+function validateEnv() {
+  const required = [
+    'VITE_API_BASE_URL',
+    'VITE_ENVIRONMENT'
+  ];
+  
+  const missing = required.filter(key => !import.meta.env[key]);
+  if (missing.length > 0) {
+    throw new Error(`Missing environment variables: ${missing.join(', ')}`);
+  }
+}
+```
+
+#### 3. Backend Environment Variables (Cloudflare Workers)
+```typescript
+// ✅ Good: Type-safe Workers environment
+interface Env {
+  DATABASE: D1Database;
+  JWT_SECRET: string;
+  RESEND_API_KEY: string;
+  ENVIRONMENT: 'development' | 'staging' | 'production';
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    // Access environment variables through the env parameter
+    const jwtSecret = env.JWT_SECRET;
+    const database = env.DATABASE;
+    
+    // NEVER log sensitive values
+    console.log('Environment:', env.ENVIRONMENT); // OK
+    // console.log('JWT Secret:', env.JWT_SECRET); // NEVER DO THIS
+    
+    return handleRequest(request, env);
+  },
+};
+```
+
+#### 4. Git Configuration
+```bash
+# .gitignore - MUST include these entries
+.env
+.env.local
+.env.*.local
+.env.production
+*.pem
+*.key
+wrangler.toml
+```
+
 ### Authentication Security
 ```typescript
-// ✅ Good: Secure token handling
+// ✅ Good: Secure token handling with environment variables
 class AuthService {
   private readonly TOKEN_KEY = 'rubato_auth_token';
   
@@ -463,7 +580,7 @@ class AuthService {
 
   private securelyStoreToken(token: string): void {
     // Use httpOnly cookies in production
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.VITE_ENVIRONMENT === 'production') {
       // Token should be set as httpOnly cookie by server
     } else {
       localStorage.setItem(this.TOKEN_KEY, token);
@@ -826,14 +943,49 @@ npm install -g @cloudflare/wrangler
 
 ### Environment Variables
 ```bash
-# .env.local
-VITE_API_BASE_URL=http://localhost:8787
-VITE_AUDIO_SAMPLES_URL=http://localhost:3000/samples
-VITE_SENTRY_DSN=your_sentry_dsn
-DATABASE_URL=your_cloudflare_d1_url
-JWT_SECRET=your_jwt_secret
-RESEND_API_KEY=your_email_service_key
+# .env.example (This file SHOULD be committed)
+# Copy this to .env.local and fill in your values
+# NEVER commit .env.local or any file with actual secrets
+
+# Frontend Environment Variables (Vite)
+VITE_API_BASE_URL=
+VITE_AUDIO_SAMPLES_URL=
+VITE_ENVIRONMENT=
+VITE_SENTRY_DSN=
+
+# Backend Environment Variables (Cloudflare Workers)
+# These are configured in Cloudflare dashboard or wrangler.toml
+# DATABASE_URL=
+# JWT_SECRET=
+# RESEND_API_KEY=
+# CLOUDFLARE_API_TOKEN=
 ```
+
+#### Setting Up Environment Variables
+
+1. **Local Development**
+   ```bash
+   # Copy the example file
+   cp .env.example .env.local
+   
+   # Edit .env.local with your actual values
+   # NEVER commit this file
+   ```
+
+2. **Cloudflare Workers (Production)**
+   ```bash
+   # Use wrangler to set secrets
+   wrangler secret put JWT_SECRET
+   wrangler secret put RESEND_API_KEY
+   wrangler secret put DATABASE_URL
+   ```
+
+3. **GitHub Actions (CI/CD)**
+   ```yaml
+   # Set secrets in GitHub repository settings
+   # Settings > Secrets and variables > Actions
+   # Add: CLOUDFLARE_API_TOKEN, etc.
+   ```
 
 ### Development Commands
 ```bash
@@ -1507,14 +1659,49 @@ npm install -g @cloudflare/wrangler
 
 ### Environment Variables
 ```bash
-# .env.local
-VITE_API_BASE_URL=http://localhost:8787
-VITE_AUDIO_SAMPLES_URL=http://localhost:3000/samples
-VITE_SENTRY_DSN=your_sentry_dsn
-DATABASE_URL=your_cloudflare_d1_url
-JWT_SECRET=your_jwt_secret
-RESEND_API_KEY=your_email_service_key
+# .env.example (This file SHOULD be committed)
+# Copy this to .env.local and fill in your values
+# NEVER commit .env.local or any file with actual secrets
+
+# Frontend Environment Variables (Vite)
+VITE_API_BASE_URL=
+VITE_AUDIO_SAMPLES_URL=
+VITE_ENVIRONMENT=
+VITE_SENTRY_DSN=
+
+# Backend Environment Variables (Cloudflare Workers)
+# These are configured in Cloudflare dashboard or wrangler.toml
+# DATABASE_URL=
+# JWT_SECRET=
+# RESEND_API_KEY=
+# CLOUDFLARE_API_TOKEN=
 ```
+
+#### Setting Up Environment Variables
+
+1. **Local Development**
+   ```bash
+   # Copy the example file
+   cp .env.example .env.local
+   
+   # Edit .env.local with your actual values
+   # NEVER commit this file
+   ```
+
+2. **Cloudflare Workers (Production)**
+   ```bash
+   # Use wrangler to set secrets
+   wrangler secret put JWT_SECRET
+   wrangler secret put RESEND_API_KEY
+   wrangler secret put DATABASE_URL
+   ```
+
+3. **GitHub Actions (CI/CD)**
+   ```yaml
+   # Set secrets in GitHub repository settings
+   # Settings > Secrets and variables > Actions
+   # Add: CLOUDFLARE_API_TOKEN, etc.
+   ```
 
 ### Development Commands
 ```bash
