@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design tokens for consistent theming */
+    --color-primary: theme('colors.rubato.leaf.400');
+    --color-primary-dark: theme('colors.rubato.leaf.600');
+    --color-secondary: theme('colors.rubato.wood.300');
+    --color-background: theme('colors.rubato.wood.100');
+    --color-text: theme('colors.rubato.wood.800');
+    --color-text-light: theme('colors.rubato.wood.600');
+    
+    /* Spacing scale */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+    
+    /* Border radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* Reusable component styles */
+  .btn-primary {
+    @apply bg-rubato-leaf-400 text-white px-6 py-3 rounded-lg font-semibold 
+           transition-all duration-200 hover:bg-rubato-leaf-500 
+           active:scale-95 shadow-md hover:shadow-lg;
+  }
+
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-md rounded-xl shadow-lg 
+           border border-rubato-wood-200/50;
+  }
+
+  .piano-key {
+    @apply relative bg-white border-2 border-rubato-wood-300 rounded-b-md 
+           transition-all duration-75 hover:bg-rubato-wood-100 
+           active:bg-rubato-wood-200 cursor-pointer select-none;
+  }
+
+  .piano-key-black {
+    @apply absolute bg-rubato-wood-800 border-2 border-rubato-wood-900 
+           rounded-b-md transition-all duration-75 hover:bg-rubato-wood-700 
+           active:bg-rubato-wood-900 cursor-pointer select-none z-10;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+}

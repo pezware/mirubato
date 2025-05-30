@@ -137,7 +137,7 @@ docs/coverage/
 
 # Gatsby files
 .cache/
-public/
+# public/ - Commented out for Vite projects
 
 # Storybook build outputs
 .out/
