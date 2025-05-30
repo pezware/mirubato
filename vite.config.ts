@@ -19,5 +19,13 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true
+  },
+  optimizeDeps: {
+    // Include Tone.js to ensure it's properly bundled
+    include: ['tone']
+  },
+  build: {
+    // Ensure compatibility with older browsers if needed
+    target: 'es2015'
   }
 })

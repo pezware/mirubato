@@ -12,9 +12,12 @@
     "deploy": "npx wrangler deploy"
   },
   "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tone": "^14.7.77"
+    "react-router-dom": "^7.6.1",
+    "tone": "^14.7.77",
+    "vexflow": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

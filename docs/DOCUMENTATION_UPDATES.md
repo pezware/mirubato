@@ -1,107 +1,62 @@
-# Documentation Updates Required
+# Documentation Updates Log
 
-## Overview
-This document identifies all outdated references that need updating based on the recent migration from Cloudflare Pages to Cloudflare Workers and the domain change from rubato.app to mirubato.com. This document has been superseded by the actual updates made to the documentation.
+## 2025-05-30 Updates
 
-## Files Requiring Updates
+### Updated Files
 
-### 1. README.md
+1. **DEVELOPMENT_SETUP.md**
+   - Updated project structure to include new directories:
+     - `src/data/sheetMusic/` - Sheet music data files
+     - `src/pages/` - Page components
+     - `src/types/` - TypeScript interfaces
+   - Added Practice Page features description
+   - Updated dependencies list with actual packages
+   - Added audioManager and NotationRenderer to utilities
+   - Updated next steps with current bugs and missing features
 
-#### Line 4 - Project Overview
-**Current:**
-```
-An open-source progressive web application focused on sight-reading practice for classical guitar and piano, featuring email authentication, deployable to Cloudflare Pages with Cloudflare Workers for backend functionality.
-```
+2. **DESIGN_DETAILS.md**
+   - Added "Current Implementation Details" section documenting:
+     - Audio system using Tone.js Sampler (not @tonejs/piano)
+     - Sheet music data structure and storage
+     - Known issues (tempo bug)
+   - Updated audio optimization section with Salamander Grand Piano details
+   - Added decision log entry for Tone.js Sampler choice
 
-**Should be:**
-```
-An open-source progressive web application focused on sight-reading practice for classical guitar and piano, featuring email authentication, deployable as a full-stack application on Cloudflare Workers.
-```
+3. **ROADMAP.md**
+   - Updated current status to Week 3-4
+   - Added "Recent Achievements" section
+   - Created "Known Issues & Next Fixes" section with tempo bug as priority
+   - Updated completion status for VexFlow and audio features
+   - Marked React Router as completed
 
-#### Lines 327-340 - Cloudflare Pages Setup Section
-**Current:** Entire section about "Cloudflare Pages Setup"
+### Key Implementation Changes Reflected
 
-**Should be:** Replace with "Cloudflare Workers Setup" section focusing on Workers deployment
+1. **Audio System**
+   - Removed @tonejs/piano due to EventEmitter browser issues
+   - Implemented audioManager using Tone.js Sampler
+   - Uses Salamander Grand Piano samples from Tone.js CDN
 
-#### Lines 862, 288 (multiple occurrences) - API URLs
-**Current:** `https://api.rubato.app`
+2. **Data Organization**
+   - Sheet music now in `src/data/sheetMusic/`
+   - TypeScript interfaces in `src/types/sheetMusic.ts`
+   - Reusable utilities in `src/utils/`
 
-**Should be:** `https://api.mirubato.com`
+3. **Current Features**
+   - Practice page with 20 measures of Moonlight Sonata
+   - Real piano sounds
+   - Tempo control (30-180 BPM)
+   - Responsive design
 
-### 2. DEVELOPMENT_GUIDELINES.md
+### Documents Not Requiring Updates
 
-#### Package Manager Consistency
-- Lines 1652, 1708, 1730, 1734: Updated `npm` references for consistency
+- **DEVELOPMENT_GUIDELINES.md** - Already references audioManager correctly
+- **INFRASTRUCTURE.md** - Infrastructure setup remains the same
+- **DEPLOYMENT_GUIDE.md** - Deployment process unchanged
+- **LICENSE.md** - License information remains valid
 
-#### Line 1580 - API URL
-**Current:** `https://api.rubato.app`
+### Next Documentation Tasks
 
-**Should be:** `https://api.mirubato.com`
-
-### 3. INFRASTRUCTURE.md
-
-#### Line 116 - GitHub Actions Workflow
-**Current:**
-```yaml
-command: pages deploy dist --project-name=rubato-staging
-```
-
-**Should be:**
-```yaml
-command: deploy --name=rubato-staging
-```
-
-#### Lines 165-188 - Cloudflare Pages Configuration
-**Current:** Entire section about "Cloudflare Pages Configuration"
-
-**Should be:** Replace with "Cloudflare Workers Configuration" section
-
-#### Line 288 - Environment Variable
-**Current:** `VITE_API_BASE_URL=https://api.rubato.app`
-
-**Should be:** `VITE_API_BASE_URL=https://api.mirubato.com`
-
-#### Line 574 - Headers Configuration Comment
-**Current:** `// Headers configuration for Cloudflare Pages`
-
-**Should be:** `// Headers configuration for Cloudflare Workers`
-
-#### Lines 662-697 - Deployment Architecture
-**Current:** References to Pages deployment and rubato.app domain
-
-**Should be:** Update to Workers deployment and mirubato.com domain
-
-### 4. CLAUDE.md
-
-#### Line 15 - Deployment
-**Current:** `Deployment: Cloudflare Pages with automated CI/CD`
-
-**Should be:** `Deployment: Cloudflare Workers with automated CI/CD`
-
-### 5. ROADMAP.md
-
-#### Line 28 - Authentication System
-**Current:** `Set up Cloudflare Workers for backend API`
-
-**Should be:** `Set up Cloudflare Workers for full-stack application`
-
-## Additional Considerations
-
-1. **Wrangler Configuration**: All wrangler.toml examples should be updated to reflect Workers deployment instead of Pages
-2. **Build Commands**: Update any build/deploy commands from Pages-specific to Workers-specific
-3. **Domain References**: All references to rubato.app should be updated to mirubato.com
-4. **Architecture Diagrams**: Any diagrams showing Pages + Workers should be updated to show Workers-only architecture
-
-## Implementation Priority
-
-1. **High Priority**: Update deployment instructions and domain references
-2. **Medium Priority**: Update build commands and configuration files
-3. **Low Priority**: Update conceptual references and examples
-
-## Testing After Updates
-
-After making these updates, verify:
-- All deployment instructions work with the new Workers setup
-- All domain references point to mirubato.com
-- Build and deploy commands execute successfully
-- Documentation is internally consistent
+1. Add troubleshooting section for common issues
+2. Create API documentation for audioManager and NotationRenderer
+3. Add sheet music contribution guidelines
+4. Document the tempo bug fix when implemented
