@@ -15,12 +15,13 @@ export const moonlightSonata3rdMovement: SheetMusic = {
       timeSignature: '4/4',
       keySignature: 'C#m',
       tempo: {
-        bpm: 160,
+        bpm: 40,  // Default practice tempo
         marking: 'Presto agitato',
+        originalMarking: '♩ = 160',  // The actual performance tempo
         practiceTempos: {
-          slow: 50,
-          medium: 80,
-          target: 120,
+          slow: 30,
+          medium: 50,
+          target: 80,
           performance: 160
         }
       },

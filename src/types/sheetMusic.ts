@@ -15,6 +15,13 @@ export interface Measure {
   tempo?: {
     bpm: number;
     marking?: string;      // e.g., 'Presto agitato'
+    originalMarking?: string;  // e.g., '♩ = 160'
+    practiceTempos?: {
+      slow: number;
+      medium: number;
+      target: number;
+      performance: number;
+    };
   };
 }
 

@@ -43,8 +43,10 @@ export class NotationRenderer {
     // Add tempo marking if present
     if (sheetMusic.measures[0]?.tempo) {
       this.context.setFont('Arial', 14, '')
+      const tempo = sheetMusic.measures[0].tempo
+      // Show just the tempo marking without BPM for practice
       this.context.fillText(
-        `${sheetMusic.measures[0].tempo.marking} ♩ = ${sheetMusic.measures[0].tempo.bpm}`,
+        tempo.marking,
         staveX,
         30
       )

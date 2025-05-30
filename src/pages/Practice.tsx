@@ -7,7 +7,7 @@ import { moonlightSonata3rdMovement, getPlayableNotes } from '../data/sheetMusic
 
 const Practice: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [tempo, setTempo] = useState(50) // Start at slow practice tempo
+  const [tempo, setTempo] = useState(40) // Start at slow practice tempo
   const [currentMeasure, setCurrentMeasure] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const notationRef = useRef<HTMLDivElement>(null)
@@ -130,7 +130,12 @@ const Practice: React.FC = () => {
       
       if (sequenceRef.current) {
         sequenceRef.current.stop()
+        sequenceRef.current.dispose()
+        sequenceRef.current = null
       }
+      
+      // Reset transport position
+      Tone.Transport.position = 0
       
       setIsPlaying(false)
       setCurrentMeasure(0)
@@ -228,9 +233,9 @@ const Practice: React.FC = () => {
                 {tempo}
               </span>
               <span className="text-mirubato-wood-500 text-xs ml-2">
-                {tempo <= 60 ? '(Slow practice)' : 
-                 tempo <= 100 ? '(Medium)' : 
-                 tempo <= 140 ? '(Target)' : 
+                {tempo <= 40 ? '(Slow practice)' : 
+                 tempo <= 60 ? '(Medium)' : 
+                 tempo <= 100 ? '(Target)' : 
                  '(Performance)'}
               </span>
             </div>
