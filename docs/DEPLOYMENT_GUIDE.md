@@ -1,4 +1,4 @@
-# Cloudflare Workers Deployment Guide for Rubato
+# Cloudflare Workers Deployment Guide for Mirubato
 
 > Note: Cloudflare has converged Pages and Workers. Static sites now use Workers with assets support.
 
@@ -15,7 +15,7 @@
 2. Go to **Workers & Pages** in the sidebar
 3. Click **Create** → **Workers** → **Deploy from GitHub**
 4. Authorize Cloudflare to access your GitHub account
-5. Select the `rubato` repository
+5. Select the `mirubato` repository
 6. Cloudflare will detect the wrangler.json and configure automatically
 
 ### 2. Set Environment Variables in Cloudflare
@@ -76,7 +76,7 @@ wrangler login
 npm run build
 
 # Deploy to Cloudflare Pages
-wrangler pages deploy dist --project-name=rubato
+wrangler pages deploy dist --project-name=mirubato
 ```
 
 ## Build Configuration
@@ -98,7 +98,7 @@ The project uses these build settings:
 ## Preview Deployments
 
 Every pull request automatically creates a preview deployment with a unique URL:
-- Format: `https://<hash>.rubato.pages.dev`
+- Format: `https://<hash>.mirubato.pages.dev`
 - Allows testing changes before merging to main
 
 ## Monitoring & Analytics

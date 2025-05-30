@@ -1,4 +1,4 @@
-# Rubato Development Setup
+# Mirubato Development Setup
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ src/
 
 ## Design System
 
-The project uses a nature-inspired color palette extracted from the rubato-cover.jpeg image:
+The project uses a nature-inspired color palette extracted from the mirubato-cover.jpeg image:
 
 - **Primary (Leaf Green)**: `#a3e635` - Used for interactive elements
 - **Secondary (Wood Gray)**: `#d4d4d8` - Used for backgrounds and panels
@@ -66,7 +66,7 @@ The design system is configured in:
 ## Key Features Implemented
 
 1. **Landing Page**
-   - Full-screen background image from rubato-cover.jpeg
+   - Full-screen background image from mirubato-cover.jpeg
    - Elegant title and subtitle with fade-in animations
    - Glass-morphism effect on content panels
 

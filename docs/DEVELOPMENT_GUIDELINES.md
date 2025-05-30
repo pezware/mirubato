@@ -861,7 +861,7 @@ export const usePracticeSession = (instrument: Instrument) => {
  * 
  * @apiExample {curl} Example Request:
  * curl -X POST \
- *   https://api.rubato.app/api/practice/sessions \
+ *   https://api.mirubato.com/api/practice/sessions \
  *   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
  *   -H 'Content-Type: application/json' \
  *   -d '{
@@ -1577,7 +1577,7 @@ export const usePracticeSession = (instrument: Instrument) => {
  * 
  * @apiExample {curl} Example Request:
  * curl -X POST \
- *   https://api.rubato.app/api/practice/sessions \
+ *   https://api.mirubato.com/api/practice/sessions \
  *   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
  *   -H 'Content-Type: application/json' \
  *   -d '{
@@ -1820,4 +1820,4 @@ A release is ready when:
 - [ ] Release notes prepared
 - [ ] Rollback plan prepared
 
-These guidelines ensure consistent, high-quality development practices that support Rubato's educational mission while maintaining technical excellence and accessibility standards.
+These guidelines ensure consistent, high-quality development practices that support Mirubato's educational mission while maintaining technical excellence and accessibility standards.
