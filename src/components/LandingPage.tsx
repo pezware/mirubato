@@ -36,7 +36,7 @@ const LandingPage: React.FC = () => {
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="glass-panel p-8 sm:p-12">
             <p className="text-rubato-wood-600 text-center mb-2 text-sm">
-              Play the notes shown above
+              Play the notes shown below
             </p>
             <p className="text-rubato-wood-400 text-center mb-6 text-xs">
               First click enables audio
