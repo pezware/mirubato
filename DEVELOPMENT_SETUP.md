@@ -75,6 +75,7 @@ The design system is configured in:
    - Visual feedback on interaction
    - Touch-friendly for mobile devices
    - Powered by Tone.js audio synthesis
+   - Audio initializes on first user interaction (browser requirement)
 
 3. **Design Flexibility**
    - Centralized theme configuration

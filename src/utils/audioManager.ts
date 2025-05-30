@@ -5,58 +5,54 @@ class AudioManager {
   private synth: Tone.Synth | null = null
 
   async initialize(): Promise<void> {
-    if (this.initialized) return
+    if (this.initialized) {
+      console.log('Audio already initialized')
+      return
+    }
 
     try {
-      // Initialize Tone.js audio context
+      console.log('Initializing audio system...')
+      
+      // Start the audio context - requires user gesture
       await Tone.start()
+      console.log('Tone.js started successfully')
       
-      // Create a simple piano-like synth
-      this.synth = new Tone.Synth({
-        oscillator: {
-          type: 'triangle'
-        },
-        envelope: {
-          attack: 0.005,
-          decay: 0.3,
-          sustain: 0.2,
-          release: 1.5
-        }
-      }).toDestination()
-
-      // Add a gentle reverb for more natural sound
-      const reverb = new Tone.Reverb({
-        decay: 2.5,
-        preDelay: 0.01,
-        wet: 0.2
-      }).toDestination()
-      
-      this.synth.connect(reverb)
+      // Create a simple synth
+      this.synth = new Tone.Synth().toDestination()
       
       this.initialized = true
-      console.log('Audio system initialized')
+      console.log('Audio system ready!')
     } catch (error) {
-      console.error('Failed to initialize audio:', error)
-      throw new Error('Audio initialization failed')
+      console.error('Audio initialization error:', error)
+      throw error
     }
   }
 
   async playNote(note: string, duration: string = '8n'): Promise<void> {
-    // Ensure audio is initialized (handles user gesture requirement)
+    console.log(`playNote called with: ${note}`)
+    
+    // Initialize on first play attempt
     if (!this.initialized) {
       await this.initialize()
     }
 
     if (!this.synth) {
-      throw new Error('Synth not initialized')
+      throw new Error('Synth not available')
     }
 
     try {
       // Play the note
       this.synth.triggerAttackRelease(note, duration)
+      console.log(`Successfully played: ${note}`)
     } catch (error) {
-      console.error('Failed to play note:', error)
+      console.error('Error playing note:', error)
+      throw error
     }
+  }
+
+  // Check if audio is ready
+  isInitialized(): boolean {
+    return this.initialized
   }
 
   // Clean up resources
