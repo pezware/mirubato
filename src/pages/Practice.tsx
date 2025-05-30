@@ -243,7 +243,7 @@ const Practice: React.FC = () => {
             {/* Measure Progress */}
             <div className="text-mirubato-wood-600 text-sm">
               Measure: <span className="font-mono">{currentMeasure + 1}/{currentPiece.measures.length}</span>
-              <span className="text-mirubato-wood-400 ml-2">(Demo excerpt)</span>
+              <span className="text-mirubato-wood-400 ml-2">(First 20 measures)</span>
             </div>
           </div>
         </div>

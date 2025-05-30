@@ -19,11 +19,15 @@ export class NotationRenderer {
 
     // Create renderer
     this.renderer = new Renderer(this.container, Renderer.Backends.SVG)
-    this.renderer.resize(options.width, 400) // Height will auto-adjust
+    
+    // Calculate height based on number of measures
+    const measuresPerLine = options.measuresPerLine || 2
+    const numberOfLines = Math.ceil(sheetMusic.measures.length / measuresPerLine)
+    const height = 100 + (numberOfLines * 150) // Base height + lines
+    
+    this.renderer.resize(options.width, height)
     this.context = this.renderer.getContext()
     this.context.scale(options.scale, options.scale)
-
-    const measuresPerLine = options.measuresPerLine || 2
     const staveWidth = (options.width / options.scale - 50) / measuresPerLine
     const staveX = 25
     let currentY = 50
@@ -38,6 +42,12 @@ export class NotationRenderer {
       }
 
       this.renderMeasure(measure, x, currentY, staveWidth, index === 0)
+      
+      // Add measure numbers
+      if (index % measuresPerLine === 0) {
+        this.context.setFont('Arial', 10, '')
+        this.context.fillText(`${index + 1}`, x - 15, currentY + 5)
+      }
     })
 
     // Add tempo marking if present
