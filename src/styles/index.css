@@ -5,12 +5,12 @@
 @layer base {
   :root {
     /* Design tokens for consistent theming */
-    --color-primary: theme('colors.rubato.leaf.400');
-    --color-primary-dark: theme('colors.rubato.leaf.600');
-    --color-secondary: theme('colors.rubato.wood.300');
-    --color-background: theme('colors.rubato.wood.100');
-    --color-text: theme('colors.rubato.wood.800');
-    --color-text-light: theme('colors.rubato.wood.600');
+    --color-primary: theme('colors.mirubato.leaf.400');
+    --color-primary-dark: theme('colors.mirubato.leaf.600');
+    --color-secondary: theme('colors.mirubato.wood.300');
+    --color-background: theme('colors.mirubato.wood.100');
+    --color-text: theme('colors.mirubato.wood.800');
+    --color-text-light: theme('colors.mirubato.wood.600');
     
     /* Spacing scale */
     --space-xs: 0.5rem;
@@ -52,26 +52,26 @@
 @layer components {
   /* Reusable component styles */
   .btn-primary {
-    @apply bg-rubato-leaf-400 text-white px-6 py-3 rounded-lg font-semibold 
-           transition-all duration-200 hover:bg-rubato-leaf-500 
+    @apply bg-mirubato-leaf-400 text-white px-6 py-3 rounded-lg font-semibold 
+           transition-all duration-200 hover:bg-mirubato-leaf-500 
            active:scale-95 shadow-md hover:shadow-lg;
   }
 
   .glass-panel {
     @apply bg-white/80 backdrop-blur-md rounded-xl shadow-lg 
-           border border-rubato-wood-200/50;
+           border border-mirubato-wood-200/50;
   }
 
   .piano-key {
-    @apply relative bg-white border-2 border-rubato-wood-300 rounded-b-md 
-           transition-all duration-75 hover:bg-rubato-wood-100 
-           active:bg-rubato-wood-200 cursor-pointer select-none;
+    @apply relative bg-white border-2 border-mirubato-wood-300 rounded-b-md 
+           transition-all duration-75 hover:bg-mirubato-wood-100 
+           active:bg-mirubato-wood-200 cursor-pointer select-none;
   }
 
   .piano-key-black {
-    @apply absolute bg-rubato-wood-800 border-2 border-rubato-wood-900 
-           rounded-b-md transition-all duration-75 hover:bg-rubato-wood-700 
-           active:bg-rubato-wood-900 cursor-pointer select-none z-10;
+    @apply absolute bg-mirubato-wood-800 border-2 border-mirubato-wood-900 
+           rounded-b-md transition-all duration-75 hover:bg-mirubato-wood-700 
+           active:bg-mirubato-wood-900 cursor-pointer select-none z-10;
   }
 }
 

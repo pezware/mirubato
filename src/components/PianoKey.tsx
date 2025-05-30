@@ -51,37 +51,37 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
         onClick={handleKeyPress}
         className={`
           relative w-16 h-48 bg-white rounded-b-lg shadow-lg
-          border-2 border-rubato-wood-300
+          border-2 border-mirubato-wood-300
           transition-all duration-75 cursor-pointer select-none
-          hover:bg-rubato-wood-50
-          ${isPressed ? 'translate-y-1 shadow-md bg-rubato-wood-100' : 'shadow-xl'}
-          ${hasPlayed ? 'ring-2 ring-rubato-leaf-400/30' : ''}
+          hover:bg-mirubato-wood-50
+          ${isPressed ? 'translate-y-1 shadow-md bg-mirubato-wood-100' : 'shadow-xl'}
+          ${hasPlayed ? 'ring-2 ring-mirubato-leaf-400/30' : ''}
           ${isInitializing ? 'opacity-80' : ''}
           ${className}
         `}
         aria-label={`Piano key for ${note}`}
       >
         {/* Key Label */}
-        <span className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-rubato-wood-600 text-sm font-medium">
+        <span className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-mirubato-wood-600 text-sm font-medium">
           C
         </span>
         
         {/* Visual feedback indicator */}
         {isPressed && (
-          <div className="absolute inset-0 bg-rubato-leaf-400/10 rounded-b-lg animate-pulse" />
+          <div className="absolute inset-0 bg-mirubato-leaf-400/10 rounded-b-lg animate-pulse" />
         )}
       </button>
 
       {/* Instruction text that appears after first play */}
       {hasPlayed && (
-        <p className="mt-4 text-rubato-leaf-600 text-sm animate-fade-in">
+        <p className="mt-4 text-mirubato-leaf-600 text-sm animate-fade-in">
           Beautiful! You just played a C major chord
         </p>
       )}
       
       {/* Loading indicator */}
       {isInitializing && (
-        <p className="mt-4 text-rubato-wood-400 text-sm animate-pulse">
+        <p className="mt-4 text-mirubato-wood-400 text-sm animate-pulse">
           Initializing audio...
         </p>
       )}
