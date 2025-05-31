@@ -24,6 +24,14 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   const notationRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const notationRendererRef = useRef<NotationRenderer | null>(null)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      notationRendererRef.current?.dispose()
+      notationRendererRef.current = null
+    }
+  }, [])
   const touchStartX = useRef<number | null>(null)
 
   // Determine if we should use mobile vertical scroll
@@ -83,9 +91,9 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   useEffect(() => {
     if (!notationRef.current || !sheetMusic.measures.length) return
 
-    if (!notationRendererRef.current) {
-      notationRendererRef.current = new NotationRenderer(notationRef.current)
-    }
+    // Always create a fresh renderer to ensure proper rendering
+    notationRendererRef.current?.dispose()
+    notationRendererRef.current = new NotationRenderer(notationRef.current)
 
     const {
       width,
@@ -121,11 +129,13 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
         width,
         scale,
         measuresPerLine,
+        startMeasureNumber: startMeasure,
       })
     }
 
+    // Cleanup only when component unmounts, not on every render
     return () => {
-      notationRendererRef.current?.dispose()
+      // Don't dispose on every render update
     }
   }, [
     currentPage,
@@ -216,11 +226,13 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   // Mobile portrait: vertical scroll view
   if (isMobilePortrait) {
     return (
-      <div className={`relative ${className}`}>
+      <div
+        className={`relative bg-white rounded-lg ${className.replace('overflow-hidden', '')}`}
+      >
         <div
           ref={scrollContainerRef}
-          className="bg-white rounded-lg overflow-y-auto"
-          style={{ maxHeight: viewportHeight - 200 }} // Leave room for controls
+          className="overflow-y-auto overflow-x-hidden"
+          style={{ maxHeight: viewportHeight - 250 }} // Leave room for header and controls
         >
           <div ref={notationRef} className="p-4" />
         </div>
