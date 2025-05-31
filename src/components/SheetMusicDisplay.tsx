@@ -51,13 +51,22 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   // Calculate responsive dimensions
   const getNotationDimensions = useCallback(() => {
     if (isMobilePortrait) {
-      // Mobile portrait: optimize for readability
+      // Mobile portrait: optimize for readability and viewport usage
       const containerPadding = 16 // Total horizontal padding
+      // Calculate how many measures can fit vertically
+      // Assuming header ~100px, controls ~200px, padding ~50px = 350px total UI
+      const availableHeight = viewportHeight - 350
+      // Each measure needs about 180px height at 0.9 scale
+      const measuresPerPage = Math.max(
+        1,
+        Math.min(4, Math.floor(availableHeight / 180))
+      )
+
       return {
         width: viewportWidth - containerPadding,
         scale: 0.9, // Larger scale for better readability
         measuresPerLine: 1,
-        measuresPerPage: 1, // Show 1 measure per page in portrait
+        measuresPerPage, // Dynamic based on viewport height
       }
     } else if (viewportWidth < 640) {
       // Mobile landscape
@@ -84,7 +93,7 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
         measuresPerPage: 4,
       }
     }
-  }, [viewportWidth, isMobilePortrait])
+  }, [viewportWidth, viewportHeight, isMobilePortrait])
 
   // Calculate total pages based on responsive dimensions
   const dimensions = getNotationDimensions()
