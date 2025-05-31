@@ -18,8 +18,8 @@
 4. Authorize Cloudflare to access your GitHub account
 5. Select the `mirubato` repository
 6. Configure build settings:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
+   - Build command: `cd frontend && npm install && npm run build`
+   - Build output directory: `frontend/dist`
    - Root directory: `/` (project root)
 
 ### 2. Backend Setup (Cloudflare Workers)
@@ -126,7 +126,9 @@ npm install -g wrangler
 # Login to Cloudflare
 wrangler login
 
-# Build the project
+# Build the frontend project
+cd frontend
+npm install
 npm run build
 
 # Deploy to Cloudflare Pages
