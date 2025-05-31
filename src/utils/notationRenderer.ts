@@ -5,11 +5,12 @@ export interface RenderOptions {
   width: number
   scale: number
   measuresPerLine?: number
+  startMeasureNumber?: number
 }
 
 export class NotationRenderer {
   private renderer: Renderer | null = null
-  private context: any = null
+  private context: ReturnType<Renderer['getContext']> | null = null
 
   constructor(private container: HTMLDivElement) {}
 
@@ -19,66 +20,81 @@ export class NotationRenderer {
 
     // Create renderer
     this.renderer = new Renderer(this.container, Renderer.Backends.SVG)
-    
+
     // Calculate height based on number of measures
     const measuresPerLine = options.measuresPerLine || 2
-    const numberOfLines = Math.ceil(sheetMusic.measures.length / measuresPerLine)
-    const height = 100 + (numberOfLines * 150) // Base height + lines
-    
+    const numberOfLines = Math.ceil(
+      sheetMusic.measures.length / measuresPerLine
+    )
+    // Adjust height based on layout
+    const lineHeight = measuresPerLine === 1 ? 150 : 150 // Consistent line height
+    const baseHeight = measuresPerLine === 1 ? 60 : 100
+    const height = baseHeight + numberOfLines * lineHeight
+
     this.renderer.resize(options.width, height)
     this.context = this.renderer.getContext()
     this.context.scale(options.scale, options.scale)
-    const staveWidth = (options.width / options.scale - 50) / measuresPerLine
-    const staveX = 25
-    let currentY = 50
+
+    // Calculate available width after scaling
+    const scaledWidth = options.width / options.scale
+    // Dynamic margin based on measures per line
+    const margin = measuresPerLine === 1 ? 40 : 20 // More margin for single measure
+    const staveWidth = (scaledWidth - margin * 2) / measuresPerLine
+    const staveX = margin
+    let currentY = measuresPerLine === 1 ? 40 : 40 // Consistent top padding
 
     // Render measures
     sheetMusic.measures.forEach((measure, index) => {
       const x = staveX + (index % measuresPerLine) * staveWidth
-      
+
       // Start new line if needed
       if (index > 0 && index % measuresPerLine === 0) {
-        currentY += 150
+        currentY += lineHeight
       }
 
       this.renderMeasure(measure, x, currentY, staveWidth, index === 0)
-      
+
       // Add measure numbers
-      if (index % measuresPerLine === 0) {
+      if (index % measuresPerLine === 0 && this.context) {
         this.context.setFont('Arial', 10, '')
-        this.context.fillText(`${index + 1}`, x - 15, currentY + 5)
+        const measureNumber = (options.startMeasureNumber || 0) + index + 1
+        this.context.fillText(`${measureNumber}`, x - 12, currentY + 5)
       }
     })
 
     // Add tempo marking if present
-    if (sheetMusic.measures[0]?.tempo) {
+    if (sheetMusic.measures[0]?.tempo && this.context) {
       this.context.setFont('Arial', 14, '')
       const tempo = sheetMusic.measures[0].tempo
       // Show just the tempo marking without BPM for practice
-      this.context.fillText(
-        tempo.marking,
-        staveX,
-        30
-      )
+      this.context.fillText(tempo.marking || '', staveX, 30)
     }
   }
 
-  private renderMeasure(measure: Measure, x: number, y: number, width: number, isFirst: boolean) {
+  private renderMeasure(
+    measure: Measure,
+    x: number,
+    y: number,
+    width: number,
+    isFirst: boolean
+  ) {
     // Create stave
     const stave = new Stave(x, y, width)
-    
+
     // Add clef, time signature, and key signature for first measure
     if (isFirst) {
       if (measure.clef) stave.addClef(measure.clef)
       if (measure.timeSignature) stave.addTimeSignature(measure.timeSignature)
       if (measure.keySignature) stave.addKeySignature(measure.keySignature)
     }
-    
-    stave.setContext(this.context).draw()
+
+    if (this.context) {
+      stave.setContext(this.context).draw()
+    }
 
     // Convert measure notes to VexFlow notes
-    const vexNotes = measure.notes.map(note => 
-      new StaveNote({ keys: note.keys, duration: note.duration })
+    const vexNotes = measure.notes.map(
+      note => new StaveNote({ keys: note.keys, duration: note.duration })
     )
 
     // Create beams for sixteenth notes (group by 4)
@@ -94,13 +110,17 @@ export class NotationRenderer {
     voice.addTickables(vexNotes)
 
     // Format and draw
-    new Formatter().joinVoices([voice]).format([voice], width - 50)
-    voice.draw(this.context, stave)
+    new Formatter().joinVoices([voice]).format([voice], width - 20)
+    if (this.context) {
+      voice.draw(this.context, stave)
+    }
 
     // Draw beams
-    beams.forEach(beam => {
-      beam.setContext(this.context).draw()
-    })
+    if (this.context) {
+      beams.forEach(beam => {
+        beam.setContext(this.context!).draw()
+      })
+    }
   }
 
   dispose() {

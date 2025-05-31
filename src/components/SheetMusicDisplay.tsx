@@ -22,14 +22,20 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const notationRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const notationRendererRef = useRef<NotationRenderer | null>(null)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      notationRendererRef.current?.dispose()
+      notationRendererRef.current = null
+    }
+  }, [])
   const touchStartX = useRef<number | null>(null)
 
-  // Determine if we should use mobile vertical scroll
+  // Determine if we're in mobile portrait
   const isMobilePortrait =
     viewportWidth < 640 && viewportHeight > viewportWidth * 1.2
-  const totalPages = Math.ceil(sheetMusic.measures.length / measuresPerPage)
 
   // Handle responsive sizing
   useEffect(() => {
@@ -45,18 +51,28 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   // Calculate responsive dimensions
   const getNotationDimensions = useCallback(() => {
     if (isMobilePortrait) {
-      // Mobile portrait: full width, vertical scroll
+      // Mobile portrait: optimize for readability and viewport usage
+      const containerPadding = 16 // Total horizontal padding
+      // Calculate how many measures can fit vertically
+      // More accurate calculation: header ~80px, piece info ~60px, controls ~180px, padding ~30px = 350px
+      const availableHeight = viewportHeight - 350
+      // Each measure needs about 150px height at 0.9 scale (reduced for better fit)
+      const measuresPerPage = Math.max(
+        2, // Minimum 2 measures to better use space
+        Math.min(4, Math.floor(availableHeight / 150))
+      )
+
       return {
-        width: viewportWidth - 32,
-        scale: 1.0,
+        width: viewportWidth - containerPadding,
+        scale: 0.8, // Slightly smaller to fit more measures
         measuresPerLine: 1,
-        measuresPerPage: sheetMusic.measures.length, // All measures in one scroll
+        measuresPerPage, // Dynamic based on viewport height
       }
     } else if (viewportWidth < 640) {
       // Mobile landscape
       return {
-        width: viewportWidth - 48,
-        scale: 0.8,
+        width: viewportWidth - 32,
+        scale: 0.85,
         measuresPerLine: 2,
         measuresPerPage: 2,
       }
@@ -77,15 +93,23 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
         measuresPerPage: 4,
       }
     }
-  }, [viewportWidth, isMobilePortrait, sheetMusic.measures.length])
+  }, [viewportWidth, viewportHeight, isMobilePortrait])
+
+  // Calculate total pages based on responsive dimensions
+  const dimensions = getNotationDimensions()
+  const effectiveMeasuresPerPage =
+    dimensions.measuresPerPage || measuresPerPage || 4
+  const totalPages = Math.ceil(
+    sheetMusic.measures.length / effectiveMeasuresPerPage
+  )
 
   // Render music notation
   useEffect(() => {
     if (!notationRef.current || !sheetMusic.measures.length) return
 
-    if (!notationRendererRef.current) {
-      notationRendererRef.current = new NotationRenderer(notationRef.current)
-    }
+    // Always create a fresh renderer to ensure proper rendering
+    notationRendererRef.current?.dispose()
+    notationRendererRef.current = new NotationRenderer(notationRef.current)
 
     const {
       width,
@@ -94,38 +118,31 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
       measuresPerPage: responsiveMeasuresPerPage,
     } = getNotationDimensions()
 
-    if (isMobilePortrait) {
-      // Render all measures for vertical scroll
-      notationRendererRef.current.render(sheetMusic, {
-        width,
-        scale,
-        measuresPerLine,
-      })
-    } else {
-      // Render current page only
-      const effectiveMeasuresPerPage =
-        responsiveMeasuresPerPage || measuresPerPage
-      const startMeasure = currentPage * effectiveMeasuresPerPage
-      const endMeasure = Math.min(
-        startMeasure + effectiveMeasuresPerPage,
-        sheetMusic.measures.length
-      )
-      const pageMeasures = sheetMusic.measures.slice(startMeasure, endMeasure)
+    // Always render current page only (no scrolling)
+    const effectiveMeasuresPerPage =
+      responsiveMeasuresPerPage || measuresPerPage
+    const startMeasure = currentPage * effectiveMeasuresPerPage
+    const endMeasure = Math.min(
+      startMeasure + effectiveMeasuresPerPage,
+      sheetMusic.measures.length
+    )
+    const pageMeasures = sheetMusic.measures.slice(startMeasure, endMeasure)
 
-      const pageSheetMusic: SheetMusic = {
-        ...sheetMusic,
-        measures: pageMeasures,
-      }
-
-      notationRendererRef.current.render(pageSheetMusic, {
-        width,
-        scale,
-        measuresPerLine,
-      })
+    const pageSheetMusic: SheetMusic = {
+      ...sheetMusic,
+      measures: pageMeasures,
     }
 
+    notationRendererRef.current.render(pageSheetMusic, {
+      width,
+      scale,
+      measuresPerLine,
+      startMeasureNumber: startMeasure,
+    })
+
+    // Cleanup only when component unmounts, not on every render
     return () => {
-      notationRendererRef.current?.dispose()
+      // Don't dispose on every render update
     }
   }, [
     currentPage,
@@ -136,9 +153,9 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
     isMobilePortrait,
   ])
 
-  // Auto-flip pages when playing (future feature)
+  // Auto-flip pages when playing
   useEffect(() => {
-    if (currentPlayingMeasure !== undefined && !isMobilePortrait) {
+    if (currentPlayingMeasure !== undefined) {
       const { measuresPerPage: responsiveMeasuresPerPage } =
         getNotationDimensions()
       const effectiveMeasuresPerPage =
@@ -159,7 +176,6 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
     getNotationDimensions,
     measuresPerPage,
     onPageChange,
-    isMobilePortrait,
   ])
 
   // Handle page navigation
@@ -179,12 +195,11 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
 
   // Touch handlers for swipe navigation
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (isMobilePortrait) return // No swipe in scroll mode
     touchStartX.current = e.touches[0].clientX
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (isMobilePortrait || !touchStartX.current) return
+    if (!touchStartX.current) return
 
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchStartX.current - touchEndX
@@ -202,8 +217,6 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
 
   // Keyboard navigation
   useEffect(() => {
-    if (isMobilePortrait) return
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') goToPage(currentPage - 1)
       if (e.key === 'ArrowRight') goToPage(currentPage + 1)
@@ -211,35 +224,23 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentPage, totalPages, isMobilePortrait, goToPage])
+  }, [currentPage, totalPages, goToPage])
 
-  // Mobile portrait: vertical scroll view
-  if (isMobilePortrait) {
-    return (
-      <div className={`relative ${className}`}>
-        <div
-          ref={scrollContainerRef}
-          className="bg-white rounded-lg overflow-y-auto"
-          style={{ maxHeight: viewportHeight - 200 }} // Leave room for controls
-        >
-          <div ref={notationRef} className="p-4" />
-        </div>
-      </div>
-    )
-  }
-
-  // Desktop/tablet/landscape: page-based view
+  // Page-based view for all screen sizes
   return (
     <div className={`relative ${className}`}>
       {/* Sheet Music Container */}
       <div
-        className={`bg-white rounded-lg transition-opacity duration-150 relative ${
+        className={`bg-white rounded-lg transition-opacity duration-150 relative overflow-hidden ${
           isTransitioning ? 'opacity-50' : 'opacity-100'
         }`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div ref={notationRef} className="p-4 sm:p-6" />
+        <div
+          ref={notationRef}
+          className={`${isMobilePortrait ? 'p-2' : 'p-4 sm:p-6'}`}
+        />
 
         {/* Full-side click areas for page navigation */}
         <button

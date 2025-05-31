@@ -60,7 +60,15 @@ export const CircularControl: React.FC<CircularControlProps> = ({
 
   const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (disabled) return
-    e.preventDefault()
+
+    // Only prevent default for mouse events
+    // Touch events need special handling to avoid passive listener issues
+    if ('touches' in e) {
+      // For touch events, we'll handle this differently
+    } else {
+      e.preventDefault()
+    }
+
     setIsDragging(true)
   }
 
@@ -113,7 +121,10 @@ export const CircularControl: React.FC<CircularControlProps> = ({
         className={`cursor-pointer select-none ${disabled ? 'opacity-50' : ''}`}
         onMouseDown={handleStart}
         onTouchStart={handleStart}
-        style={{ opacity }}
+        style={{
+          opacity,
+          touchAction: 'none', // Prevents scrolling while dragging on touch devices
+        }}
       >
         {/* Background circle */}
         <circle

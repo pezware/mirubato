@@ -32,16 +32,21 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - [x] **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
 - [x] **Tempo Bug Fixed**: Resolved tempo speedup issue after pause/resume
 - [x] **MusicPlayer Component**: Created reusable music player controls
+- [x] **Practice Page Redesign**: Elegant controls with circular volume control
+- [x] **Mobile Optimizations**: Dynamic measures per page, responsive scaling
+- [x] **Page-Based Navigation**: Consistent flipping behavior across all devices
 
 ## Known Issues & Next Fixes 🐛
 
 1. ~~**Tempo Speed-Up Bug**: Tempo increases after pause/play cycle~~ ✅ FIXED (2025-05-31)
+2. ~~**Volume Control**: Missing volume slider~~ ✅ IMPLEMENTED (2025-05-31)
+3. ~~**Mobile Display Issues**: Sheet music overflow and poor space utilization~~ ✅ FIXED (2025-05-31)
 
-2. **Missing Features**:
-   - Volume control slider
+4. **Missing Features**:
    - Instrument selection (guitar/piano toggle)
-   - Visual feedback for currently playing notes
+   - Visual feedback highlighting for currently playing notes
    - Practice session progress tracking
+   - More flexible viewport fitting for different devices
 
 ## Phase 0: Testing Infrastructure Setup ✅ COMPLETE
 
