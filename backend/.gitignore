@@ -1,34 +1,189 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# Build output
+# Build outputs
 dist/
-.wrangler/
+build/
+*.local
+
+# Test coverage
+coverage/
+*.coverage
+.nyc_output/
+junit.xml
+test-results/
 
 # Environment files
 .env
 .env.local
-.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
 .dev.vars
 
-# Test coverage
-coverage/
-*.lcov
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
 # Logs
+logs/
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Cloudflare
-.mf/
+# Editor directories and files
+.idea/
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
 
-# TypeScript
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# TypeScript cache
 *.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Testing artifacts
+test-results.xml
+*.test.log
+
+# Bundle analyzer
+bundle-analyzer-report.html
+stats.json
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Lock files (if using different package managers)
+# Uncomment if not using npm
+# package-lock.json
+# Uncomment if not using yarn
+# yarn.lock
+# Uncomment if not using pnpm
+# pnpm-lock.yaml
+
+# Optional npm cache directory
+.npm/
+
+# Yarn
+.yarn-integrity
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Output of 'npm pack'
+*.tgz
+
+# Optional REPL history
+.node_repl_history
+
+# Generated files
+*.generated.ts
+*.generated.js
+src/types/generated/
+
+# Source maps
+*.map
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Local development overrides
+*.local.*
+!*.local.example
+
+# Performance profiling
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+
+# Debug files
+debug/
+.debug/
+
+# Cloudflare Workers
+.wrangler/
+wrangler.toml
+!wrangler.example.toml
+.mf/
+worker-bundle.js
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+.sqlite-db/
+
+# D1 local databases
+.wrangler/state/
+
+# KV namespaces local
+.wrangler/kv-namespaces/
+
+# R2 buckets local
+.wrangler/r2/
+
+# Miniflare
+.miniflare/
+
+# Workers Sites
+worker-site/
+
+# Migrations temp files
+migrations/*.tmp
+migrations/*.bak
+
+# GraphQL Code Generation
+codegen-temp/
+
+# API documentation
+api-docs/
+openapi.json
+swagger.json
+
+# Sentry
+.sentryclirc
+
+# Analytics
+analytics.json
+.analytics/
+
+# Certificates (local dev)
+*.pem
+*.key
+*.crt
+*.cert
+!*.example.pem
+
+# Email templates cache
+email-templates-cache/
