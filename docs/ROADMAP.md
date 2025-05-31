@@ -30,15 +30,12 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - [x] **CSP Issues Fixed**: Resolved Content Security Policy violations for Cloudflare deployment
 - [x] **Type Safety**: Fixed all TypeScript errors in test files
 - [x] **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
+- [x] **Tempo Bug Fixed**: Resolved tempo speedup issue after pause/resume
+- [x] **MusicPlayer Component**: Created reusable music player controls
 
 ## Known Issues & Next Fixes 🐛
 
-1. **Tempo Speed-Up Bug**: Tempo increases after pause/play cycle
-
-   - Likely caused by Transport not fully resetting
-   - Affects practice experience significantly
-   - Priority: HIGH
-   - Tracked in: Phase 1 - Practice Frontend Implementation
+1. ~~**Tempo Speed-Up Bug**: Tempo increases after pause/play cycle~~ ✅ FIXED (2025-05-31)
 
 2. **Missing Features**:
    - Volume control slider
@@ -354,6 +351,22 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
     - Cache invalidation
     - Batch processing
     - Rate limiting
+
+### Week 19-20: Enhanced Player Features
+
+- [ ] **Advanced Playback Controls**
+  - [ ] Tempo adjustment while paused
+  - [ ] A-B loop practice sections
+  - [ ] Playback speed ramping
+  - [ ] Bookmark positions
+  - [ ] **Unit Tests**:
+    - Tempo change persistence
+    - Loop boundary validation
+    - Bookmark management
+  - [ ] **Integration Tests**:
+    - Full playback workflow
+    - State persistence
+    - Multi-device sync
 
 ## Testing Standards
 
