@@ -31,9 +31,13 @@ export class NotationRenderer {
     this.renderer.resize(options.width, height)
     this.context = this.renderer.getContext()
     this.context.scale(options.scale, options.scale)
-    const staveWidth = (options.width / options.scale - 50) / measuresPerLine
-    const staveX = 25
-    let currentY = 50
+
+    // Calculate available width after scaling
+    const scaledWidth = options.width / options.scale
+    const margin = 20 // Smaller margin for mobile
+    const staveWidth = (scaledWidth - margin * 2) / measuresPerLine
+    const staveX = margin
+    let currentY = 40 // Less top padding
 
     // Render measures
     sheetMusic.measures.forEach((measure, index) => {
@@ -50,7 +54,7 @@ export class NotationRenderer {
       if (index % measuresPerLine === 0 && this.context) {
         this.context.setFont('Arial', 10, '')
         const measureNumber = (options.startMeasureNumber || 0) + index + 1
-        this.context.fillText(`${measureNumber}`, x - 15, currentY + 5)
+        this.context.fillText(`${measureNumber}`, x - 12, currentY + 5)
       }
     })
 
@@ -102,7 +106,7 @@ export class NotationRenderer {
     voice.addTickables(vexNotes)
 
     // Format and draw
-    new Formatter().joinVoices([voice]).format([voice], width - 50)
+    new Formatter().joinVoices([voice]).format([voice], width - 20)
     if (this.context) {
       voice.draw(this.context, stave)
     }

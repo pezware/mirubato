@@ -52,17 +52,18 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
   const getNotationDimensions = useCallback(() => {
     if (isMobilePortrait) {
       // Mobile portrait: page-based view with smaller scale
+      // Account for: container padding (16px) + notation padding (8px) = 24px total
       return {
-        width: viewportWidth - 16, // Less padding for mobile
-        scale: 0.6, // Even smaller scale to fit better in portrait
+        width: Math.min(viewportWidth - 24, 400), // Max width of 400px for mobile
+        scale: 0.5, // Smaller scale for better fit
         measuresPerLine: 1,
         measuresPerPage: 1, // Show 1 measure per page in portrait for better readability
       }
     } else if (viewportWidth < 640) {
       // Mobile landscape
       return {
-        width: viewportWidth - 48,
-        scale: 0.8,
+        width: Math.min(viewportWidth - 48, 600),
+        scale: 0.7,
         measuresPerLine: 2,
         measuresPerPage: 2,
       }
@@ -221,7 +222,7 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
     <div className={`relative ${className}`}>
       {/* Sheet Music Container */}
       <div
-        className={`bg-white rounded-lg transition-opacity duration-150 relative ${
+        className={`bg-white rounded-lg transition-opacity duration-150 relative overflow-hidden ${
           isTransitioning ? 'opacity-50' : 'opacity-100'
         }`}
         onTouchStart={handleTouchStart}
@@ -229,7 +230,7 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
       >
         <div
           ref={notationRef}
-          className={`${isMobilePortrait ? 'p-2' : 'p-4 sm:p-6'}`}
+          className={`${isMobilePortrait ? 'p-2' : 'p-4 sm:p-6'} overflow-hidden`}
         />
 
         {/* Full-side click areas for page navigation */}
