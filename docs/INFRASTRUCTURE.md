@@ -295,10 +295,12 @@ VITE_ANALYTICS_ID=# Client-side analytics
 
 #### Audio Samples Storage
 ```bash
-# Cloudflare R2 (S3-compatible) for audio files
-# Alternative: Use CDN for audio samples
+# Currently using Tone.js CDN for audio samples
+# URL: https://tonejs.github.io/audio/salamander/
+# This provides Salamander Grand Piano samples globally via CDN
 
-# Sample organization structure:
+# Future enhancement: Cloudflare R2 (S3-compatible) for custom audio files
+# Sample organization structure when using local storage:
 /audio-samples/
   /guitar/
     /classical/

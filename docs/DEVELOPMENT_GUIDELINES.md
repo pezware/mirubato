@@ -949,7 +949,7 @@ npm install -g @cloudflare/wrangler
 
 # Frontend Environment Variables (Vite)
 VITE_API_BASE_URL=
-VITE_AUDIO_SAMPLES_URL=
+VITE_AUDIO_SAMPLES_URL=  # Currently using https://tonejs.github.io/audio/salamander/
 VITE_ENVIRONMENT=
 VITE_SENTRY_DSN=
 
@@ -1665,7 +1665,7 @@ npm install -g @cloudflare/wrangler
 
 # Frontend Environment Variables (Vite)
 VITE_API_BASE_URL=
-VITE_AUDIO_SAMPLES_URL=
+VITE_AUDIO_SAMPLES_URL=  # Currently using https://tonejs.github.io/audio/salamander/
 VITE_ENVIRONMENT=
 VITE_SENTRY_DSN=
 

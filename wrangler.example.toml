@@ -37,7 +37,8 @@ database_id = "YOUR_DATABASE_ID"
 # binding = "CACHE"
 # id = "YOUR_KV_NAMESPACE_ID"
 
-# R2 bucket bindings (for audio samples)
+# R2 bucket bindings (for future local audio samples)
+# Currently using Tone.js CDN: https://tonejs.github.io/audio/salamander/
 # [[r2_buckets]]
 # binding = "AUDIO_SAMPLES"
 # bucket_name = "mirubato-audio-samples"
