@@ -142,10 +142,10 @@ const Practice: React.FC = () => {
         </div>
 
         {/* Notation Display */}
-        <div className="relative mb-4">
+        <div className="relative mb-4 max-w-full">
           <SheetMusicDisplay
             sheetMusic={currentPiece}
-            className="shadow-sm border border-mirubato-wood-100 rounded-xl overflow-hidden"
+            className="shadow-sm border border-mirubato-wood-100 rounded-xl"
             currentPlayingMeasure={currentPlayingMeasure}
           />
         </div>

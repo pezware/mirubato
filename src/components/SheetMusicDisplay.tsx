@@ -225,14 +225,27 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
 
   // Mobile portrait: vertical scroll view
   if (isMobilePortrait) {
+    // Calculate available height for the scroll container
+    // Account for header (~64px), piece info (~80px), controls (~200px), and padding
+    const scrollHeight = Math.max(
+      400, // minimum height
+      Math.min(
+        viewportHeight - 350, // leave room for other UI elements
+        viewportHeight * 0.6 // max 60% of viewport
+      )
+    )
+
     return (
       <div
-        className={`relative bg-white rounded-lg ${className.replace('overflow-hidden', '')}`}
+        className={`bg-white rounded-lg ${className.replace('overflow-hidden', '')}`}
       >
         <div
           ref={scrollContainerRef}
-          className="overflow-y-auto overflow-x-hidden"
-          style={{ maxHeight: viewportHeight - 250 }} // Leave room for header and controls
+          className="overflow-y-scroll overflow-x-hidden relative border border-mirubato-wood-100"
+          style={{
+            height: `${scrollHeight}px`,
+            // Smooth scrolling on iOS is now default in modern browsers
+          }}
         >
           <div ref={notationRef} className="p-4" />
         </div>
