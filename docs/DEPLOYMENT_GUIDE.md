@@ -1,41 +1,93 @@
 # Cloudflare Workers Deployment Guide for Mirubato
 
-> Note: Cloudflare has converged Pages and Workers. Static sites now use Workers with assets support.
+> Note: This guide covers deployment of both the frontend (Pages) and backend (Workers with GraphQL API).
 
 ## Prerequisites
+
 1. A Cloudflare account (free tier is sufficient)
 2. Your domain (mirubato.com) added to Cloudflare
 3. GitHub repository connected to Cloudflare Pages
 
 ## Initial Setup Steps
 
-### 1. Connect GitHub Repository to Cloudflare Workers
+### 1. Frontend Setup (Cloudflare Pages)
 
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. Go to **Workers & Pages** in the sidebar
-3. Click **Create** → **Workers** → **Deploy from GitHub**
+3. Click **Create** → **Pages** → **Connect to Git**
 4. Authorize Cloudflare to access your GitHub account
 5. Select the `mirubato` repository
-6. Cloudflare will detect the wrangler.json and configure automatically
+6. Configure build settings:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+   - Root directory: `/` (project root)
 
-### 2. Set Environment Variables in Cloudflare
+### 2. Backend Setup (Cloudflare Workers)
 
-In your Cloudflare Pages project settings:
+1. Create D1 Database:
 
-1. Go to **Settings** → **Environment variables**
-2. Add the following for Production:
+   ```bash
+   # Create production database
+   wrangler d1 create mirubato-db
+
+   # Note the database_id returned - add it to backend/wrangler.toml
+   ```
+
+2. Apply database migrations:
+
+   ```bash
+   cd backend
+   wrangler d1 migrations apply mirubato-db --local=false
+   ```
+
+3. Deploy the Worker:
+   ```bash
+   cd backend
+   wrangler deploy --env production
+   ```
+
+### 3. Set Environment Variables
+
+#### Frontend (Pages) Environment Variables:
+
+1. Go to your Pages project → **Settings** → **Environment variables**
+2. Add for Production:
    ```
    VITE_ENVIRONMENT = production
+   VITE_API_BASE_URL = https://api.mirubato.com/graphql
    ```
 
-### 3. Configure Custom Domain
+#### Backend (Workers) Environment Variables:
+
+1. Go to your Worker → **Settings** → **Variables**
+2. Add the following secrets:
+   ```
+   JWT_SECRET = [generate a strong random secret]
+   EMAIL_API_KEY = [your email service API key]
+   ```
+3. Environment variables are also configured in wrangler.toml:
+   ```toml
+   [vars]
+   ENVIRONMENT = "production"
+   ```
+
+### 4. Configure Custom Domains
+
+#### Frontend Domain:
 
 1. In your Pages project, go to **Custom domains**
 2. Click **Set up a custom domain**
-3. Enter `mirubato.com`
-4. Follow the DNS configuration steps:
-   - Cloudflare will automatically add the necessary CNAME record
-   - If using apex domain, it will use CNAME flattening
+3. Enter `mirubato.com` (or `rubato.pezware.com`)
+4. Cloudflare will handle DNS automatically
+
+#### Backend API Domain:
+
+1. In your Worker settings, go to **Triggers** → **Custom Domains**
+2. Add `api.mirubato.com` (or `api.rubato.pezware.com`)
+3. Configure the route pattern:
+   ```
+   api.mirubato.com/*
+   ```
 
 ### 4. GitHub Secrets Setup
 
@@ -65,6 +117,8 @@ With the GitHub Actions workflow we created, deployments happen automatically:
 
 ### Method 3: Manual Deployment via Wrangler CLI
 
+#### Deploy Frontend:
+
 ```bash
 # Install Wrangler
 npm install -g wrangler
@@ -79,9 +133,22 @@ npm run build
 wrangler pages deploy dist --project-name=mirubato
 ```
 
+#### Deploy Backend:
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Deploy to production
+wrangler deploy --env production
+
+# Deploy to staging (optional)
+wrangler deploy --env staging
+```
+
 ## Build Configuration
 
-The project uses these build settings:
+### Frontend Build Settings:
 
 ```json
 {
@@ -95,9 +162,34 @@ The project uses these build settings:
 }
 ```
 
+### Backend Configuration (wrangler.toml):
+
+```toml
+name = "mirubato-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+node_compat = true
+
+[env.production]
+name = "mirubato-api-production"
+route = { pattern = "api.mirubato.com/*", zone_name = "mirubato.com" }
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+name = "mirubato-api-staging"
+route = { pattern = "api-staging.mirubato.com/*", zone_name = "mirubato.com" }
+vars = { ENVIRONMENT = "staging" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-db"
+database_id = "your-database-id-here"
+```
+
 ## Preview Deployments
 
 Every pull request automatically creates a preview deployment with a unique URL:
+
 - Format: `https://<hash>.mirubato.pages.dev`
 - Allows testing changes before merging to main
 
@@ -110,16 +202,19 @@ Every pull request automatically creates a preview deployment with a unique URL:
 ## Troubleshooting
 
 ### Build Failures
+
 - Check Node version compatibility (requires 18+)
 - Verify all dependencies are in package.json
 - Check build logs in Cloudflare dashboard
 
 ### Domain Not Working
+
 - Ensure DNS records are properly configured
 - Wait for DNS propagation (can take up to 48 hours)
 - Check SSL certificate status in Cloudflare
 
 ### Asset Loading Issues
+
 - Verify all assets are in the `public` folder
 - Check that paths don't start with `/tmp/`
 - Ensure case-sensitive file names match
@@ -143,10 +238,51 @@ Cloudflare Pages automatically adds basic security headers. For custom headers, 
   - Unlimited bandwidth
   - Custom domain support
 
+## Database Management
+
+### Running Migrations:
+
+```bash
+# Apply migrations to production
+cd backend
+wrangler d1 migrations apply mirubato-db --local=false
+
+# Apply migrations to local development
+wrangler d1 migrations apply mirubato-db --local
+```
+
+### Creating New Migrations:
+
+```bash
+# Create a new migration file
+wrangler d1 migrations create mirubato-db "add_new_feature"
+```
+
+## Monitoring & Debugging
+
+### Backend Logs:
+
+```bash
+# Tail production logs
+wrangler tail --env production
+
+# Tail with filtering
+wrangler tail --env production --search "error"
+```
+
+### GraphQL Playground:
+
+- Development: http://localhost:8787/graphql
+- Staging: https://api-staging.mirubato.com/graphql (if introspection enabled)
+- Production: Disabled for security
+
 ## Next Steps
 
 After deployment:
-1. Test the live site at mirubato.com
-2. Enable Web Analytics
-3. Set up error monitoring (when adding more features)
-4. Configure staging environment (optional)
+
+1. Test the live site at your domain
+2. Test GraphQL API at api.yourdomain.com/graphql
+3. Enable Web Analytics for frontend
+4. Monitor Worker analytics and logs
+5. Set up alerts for errors
+6. Configure staging environment for testing
