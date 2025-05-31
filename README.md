@@ -1,8 +1,8 @@
-# Mirubato
+# mirubato
 
 Open-source sight-reading platform for classical guitar and piano, featuring real-time audio playback and progressive exercises.
 
-![Mirubato Screenshot](https://github.com/arbeitandy/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
+![mirubato Screenshot](https://github.com/arbeitandy/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
 
 ## Features
 
@@ -76,15 +76,23 @@ We welcome contributions from developers, music educators, and musicians! Please
 
 ## Educational Foundation
 
-Mirubato integrates proven pedagogical methods:
+mirubato integrates proven pedagogical methods:
 
 - **"Keep Going Method"** - Continuous reading without stopping
 - **Progressive difficulty** - Gradual skill development
 - **Multi-sensory learning** - Visual notation with audio feedback
 
 Educational content sources:
-- *Sight-Reading for Guitar: The Keep Going Method* (CC BY 4.0)
+- [*Sight-Reading for Guitar: The Keep Going Method*](https://press.rebus.community/sightreadingforguitar/) by Philip Hii (CC BY 4.0)
 - IMSLP public domain classical repertoire
+
+### Special Thanks
+
+We extend our heartfelt gratitude to:
+- **Philip Hii** - Author of *Sight-Reading for Guitar: The Keep Going Method*
+- **Rebus Community** - For open-sourcing this invaluable educational resource
+
+Their commitment to open education makes projects like mirubato possible, helping democratize music education worldwide.
 
 ## License
 
