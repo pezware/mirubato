@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals'
 import { render, screen } from '../tests/utils/test-utils'
 import LandingPage from './LandingPage'
 

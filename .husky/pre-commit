@@ -7,5 +7,5 @@ npx lint-staged
 # Run unit tests before commit
 npm run test:unit -- --passWithNoTests --watchAll=false
 
-# Check TypeScript types (skip for now due to test type issues)
-# npm run type-check
+# Check TypeScript types
+npm run type-check
