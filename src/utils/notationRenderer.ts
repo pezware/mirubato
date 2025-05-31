@@ -26,7 +26,10 @@ export class NotationRenderer {
     const numberOfLines = Math.ceil(
       sheetMusic.measures.length / measuresPerLine
     )
-    const height = 100 + numberOfLines * 150 // Base height + lines
+    // More height for single measures to center better
+    const lineHeight = measuresPerLine === 1 ? 200 : 150
+    const baseHeight = measuresPerLine === 1 ? 150 : 100
+    const height = baseHeight + numberOfLines * lineHeight
 
     this.renderer.resize(options.width, height)
     this.context = this.renderer.getContext()
@@ -34,10 +37,11 @@ export class NotationRenderer {
 
     // Calculate available width after scaling
     const scaledWidth = options.width / options.scale
-    const margin = 20 // Smaller margin for mobile
+    // Dynamic margin based on measures per line
+    const margin = measuresPerLine === 1 ? 40 : 20 // More margin for single measure
     const staveWidth = (scaledWidth - margin * 2) / measuresPerLine
     const staveX = margin
-    let currentY = 40 // Less top padding
+    let currentY = measuresPerLine === 1 ? 60 : 40 // More top padding for single measure
 
     // Render measures
     sheetMusic.measures.forEach((measure, index) => {
