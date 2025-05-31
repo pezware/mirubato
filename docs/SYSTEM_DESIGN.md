@@ -2,21 +2,23 @@
 
 ## Overview
 
-This document outlines the database schema, API architecture, and system design for mirubato. The design follows a semi-backend architecture using Cloudflare Workers for data management and a React frontend for presentation.
+This document outlines the database schema, API architecture, and system design for mirubato. The design follows a GraphQL-first architecture using Apollo Server on Cloudflare Workers for the backend and React with Apollo Client for the frontend.
 
 ## Architecture Principles
 
-1. **API-First Design**: All data operations go through RESTful APIs
-2. **Modular Services**: Separate concerns into distinct service modules
-3. **Extensibility**: Design for future features without breaking changes
-4. **Offline-First**: Support local caching and sync when online
-5. **Performance**: Optimize for fast response times and minimal latency
+1. **GraphQL-First Design**: All data operations go through a unified GraphQL API
+2. **Type Safety**: Strong typing from GraphQL schema to TypeScript interfaces
+3. **Modular Services**: Separate concerns into distinct service modules and resolvers
+4. **Offline-First**: Apollo Client cache with offline queue support
+5. **Performance**: Optimize queries, use DataLoader pattern, edge caching
+6. **Real-time Ready**: Design supports future GraphQL subscriptions
 
 ## Database Schema (Cloudflare D1)
 
 ### Core Tables
 
 #### 1. users
+
 ```sql
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
@@ -37,6 +39,7 @@ CREATE INDEX idx_users_last_login ON users(last_login_at);
 ```
 
 #### 2. sheet_music
+
 ```sql
 CREATE TABLE sheet_music (
   id TEXT PRIMARY KEY,
@@ -71,6 +74,7 @@ CREATE INDEX idx_sheet_music_grade ON sheet_music(grade_level);
 ```
 
 #### 3. practice_sessions
+
 ```sql
 CREATE TABLE practice_sessions (
   id TEXT PRIMARY KEY,
@@ -93,6 +97,7 @@ CREATE INDEX idx_sessions_date ON practice_sessions(session_date);
 ```
 
 #### 4. practice_logs
+
 ```sql
 CREATE TABLE practice_logs (
   id TEXT PRIMARY KEY,
@@ -108,30 +113,30 @@ CREATE TABLE practice_logs (
   start_time DATETIME NOT NULL,
   end_time DATETIME,
   duration_seconds INTEGER,
-  
+
   -- Piece details
   composer TEXT,
   work_title TEXT,
   opus_number TEXT,
   movement_section TEXT, -- e.g., "1st movement, measures 1-32"
-  
+
   -- Practice details
   tempo_practiced INTEGER, -- BPM
   target_tempo INTEGER, -- Performance tempo goal
   focus_areas JSON, -- ["accuracy", "rhythm", "dynamics", "articulation", "memorization"]
-  
+
   -- Assessment
   self_rating INTEGER CHECK (self_rating BETWEEN 1 AND 10),
   accuracy_percentage REAL,
   notes_played INTEGER,
   notes_correct INTEGER,
-  
+
   -- Additional data
   practice_notes TEXT,
   audio_recording_url TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE SET NULL,
   FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id) ON DELETE SET NULL
@@ -144,6 +149,7 @@ CREATE INDEX idx_logs_sheet_music ON practice_logs(sheet_music_id);
 ```
 
 #### 5. progress_tracking
+
 ```sql
 CREATE TABLE progress_tracking (
   id TEXT PRIMARY KEY,
@@ -153,21 +159,21 @@ CREATE TABLE progress_tracking (
   current_level INTEGER DEFAULT 1,
   current_grade TEXT,
   experience_points INTEGER DEFAULT 0,
-  
+
   -- Metrics
   total_practice_time INTEGER DEFAULT 0, -- seconds
   consecutive_days INTEGER DEFAULT 0,
   last_practice_date DATE,
   accuracy_trend REAL, -- Moving average
   speed_trend REAL, -- Moving average of tempo achievements
-  
+
   -- Achievements
   achievements JSON, -- ["first_piece", "7_day_streak", "100_pieces"]
   milestones JSON, -- [{"date": "2024-01-15", "achievement": "Grade 3 completed"}]
-  
+
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   UNIQUE(user_id, instrument, skill_area)
 );
@@ -177,6 +183,7 @@ CREATE INDEX idx_progress_instrument ON progress_tracking(user_id, instrument);
 ```
 
 #### 6. user_sheet_music_progress
+
 ```sql
 CREATE TABLE user_sheet_music_progress (
   id TEXT PRIMARY KEY,
@@ -193,7 +200,7 @@ CREATE TABLE user_sheet_music_progress (
   is_bookmarked BOOLEAN DEFAULT FALSE,
   difficulty_rating INTEGER CHECK (difficulty_rating BETWEEN 1 AND 5),
   notes TEXT,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id) ON DELETE CASCADE,
   UNIQUE(user_id, sheet_music_id)
@@ -204,13 +211,14 @@ CREATE INDEX idx_user_music_starred ON user_sheet_music_progress(user_id, is_sta
 ```
 
 #### 7. practice_templates
+
 ```sql
 CREATE TABLE practice_templates (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   template_name TEXT NOT NULL,
   activity_type TEXT NOT NULL,
-  
+
   -- Pre-filled fields
   composer TEXT,
   work_title TEXT,
@@ -218,10 +226,10 @@ CREATE TABLE practice_templates (
   movement_section TEXT,
   tempo INTEGER,
   focus_areas JSON,
-  
+
   is_active BOOLEAN DEFAULT TRUE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
@@ -231,7 +239,7 @@ CREATE TABLE practice_templates (
 ```sql
 -- Daily practice summary
 CREATE VIEW daily_practice_summary AS
-SELECT 
+SELECT
   user_id,
   DATE(start_time) as practice_date,
   COUNT(DISTINCT session_id) as sessions,
@@ -244,7 +252,7 @@ GROUP BY user_id, DATE(start_time);
 
 -- User statistics
 CREATE VIEW user_statistics AS
-SELECT 
+SELECT
   u.id as user_id,
   u.primary_instrument,
   COUNT(DISTINCT DATE(pl.start_time)) as total_practice_days,
@@ -257,227 +265,401 @@ LEFT JOIN practice_logs pl ON u.id = pl.user_id
 GROUP BY u.id;
 ```
 
-## API Architecture
+## API Architecture (GraphQL)
 
-### Service Modules
+### GraphQL Schema Overview
 
-#### 1. Authentication Service (`/api/auth`)
-```typescript
-// Endpoints
-POST   /api/auth/login          // Magic link login
-POST   /api/auth/verify         // Verify magic link token
-POST   /api/auth/refresh        // Refresh JWT token
-POST   /api/auth/logout         // Logout user
-GET    /api/auth/me            // Get current user
-```
+```graphql
+type Query {
+  # User queries
+  me: User
+  user(id: ID!): User
 
-#### 2. User Service (`/api/users`)
-```typescript
-// Endpoints
-GET    /api/users/me           // Get current user profile
-PUT    /api/users/me           // Update user profile
-GET    /api/users/me/progress  // Get progress summary
-PUT    /api/users/me/preferences // Update preferences
-DELETE /api/users/me           // Delete account
-```
+  # Sheet music queries
+  listSheetMusic(
+    filter: SheetMusicFilterInput
+    limit: Int
+    offset: Int
+  ): SheetMusicConnection!
+  sheetMusic(id: ID!): SheetMusic
+  randomSheetMusic(instrument: Instrument!, difficulty: Difficulty): SheetMusic
 
-#### 3. Sheet Music Service (`/api/sheet-music`)
-```typescript
-// Endpoints
-GET    /api/sheet-music        // List with filters
-GET    /api/sheet-music/:id    // Get specific piece
-GET    /api/sheet-music/random // Get random piece with criteria
-GET    /api/sheet-music/recommended // Get AI recommendations
-POST   /api/sheet-music        // Create (admin/future)
-PUT    /api/sheet-music/:id    // Update (admin/future)
-```
+  # Practice queries
+  myPracticeSessions(
+    instrument: Instrument
+    limit: Int
+    offset: Int
+  ): PracticeSessionConnection!
+  practiceSession(id: ID!): PracticeSession
 
-#### 4. Practice Service (`/api/practice`)
-```typescript
-// Endpoints
-// Sessions
-POST   /api/practice/sessions/start    // Start new session
-PUT    /api/practice/sessions/:id/end  // End session
-GET    /api/practice/sessions         // List sessions
-GET    /api/practice/sessions/:id     // Get session details
-
-// Logs
-POST   /api/practice/logs             // Create practice log
-PUT    /api/practice/logs/:id         // Update practice log
-GET    /api/practice/logs             // List logs with filters
-GET    /api/practice/logs/:id         // Get specific log
-DELETE /api/practice/logs/:id         // Delete log
-
-// Quick logging
-POST   /api/practice/quick-log        // Quick log entry
-GET    /api/practice/templates        // Get user templates
-POST   /api/practice/templates        // Save as template
-```
-
-#### 5. Progress Service (`/api/progress`)
-```typescript
-// Endpoints
-GET    /api/progress/overview         // Overall progress
-GET    /api/progress/instrument/:instrument // By instrument
-GET    /api/progress/streaks          // Practice streaks
-GET    /api/progress/achievements     // User achievements
-GET    /api/progress/statistics       // Detailed stats
-```
-
-#### 6. Analytics Service (`/api/analytics`)
-```typescript
-// Endpoints
-GET    /api/analytics/practice-time   // Time analysis
-GET    /api/analytics/repertoire      // Repertoire analysis
-GET    /api/analytics/improvement     // Progress trends
-GET    /api/analytics/export          // Export data (PDF/CSV)
-```
-
-### Data Transfer Objects (DTOs)
-
-```typescript
-// Request DTOs
-interface QuickLogRequest {
-  activityType: ActivityType;
-  duration: number;
-  piece?: {
-    composer?: string;
-    title?: string;
-    section?: string;
-  };
-  tempo?: number;
-  selfRating?: number;
-  notes?: string;
+  # Progress queries
+  myProgress(instrument: Instrument): ProgressOverview!
+  myAchievements: [Achievement!]!
 }
 
-interface PracticeSessionRequest {
-  sessionType: 'guided' | 'free_practice' | 'assessment';
-  instrument: 'piano' | 'guitar';
+type Mutation {
+  # Authentication
+  requestMagicLink(email: String!): AuthPayload!
+  verifyMagicLink(token: String!): TokenPayload!
+  refreshToken(refreshToken: String!): TokenPayload!
+  logout: AuthPayload!
+  deleteAccount: AuthPayload!
+
+  # User management
+  updateUser(input: UpdateUserInput!): User!
+
+  # Practice sessions
+  startPracticeSession(input: StartPracticeSessionInput!): PracticeSession!
+  pausePracticeSession(sessionId: ID!): PracticeSession!
+  resumePracticeSession(sessionId: ID!): PracticeSession!
+  completePracticeSession(
+    input: CompletePracticeSessionInput!
+  ): PracticeSession!
+
+  # Practice logging
+  createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
+  updatePracticeLog(id: ID!, input: UpdatePracticeLogInput!): PracticeLog!
+  deletePracticeLog(id: ID!): DeletePayload!
 }
 
-// Response DTOs
-interface ProgressResponse {
-  currentLevel: number;
-  experiencePoints: number;
-  consecutiveDays: number;
-  totalPracticeTime: number;
-  achievements: Achievement[];
-  recentActivity: PracticeLog[];
+type Subscription {
+  # Future: Real-time practice updates
+  practiceSessionUpdated(sessionId: ID!): PracticeSession!
+  achievementUnlocked: Achievement!
+}
+```
+
+### Resolver Architecture
+
+```typescript
+// Resolver structure
+const resolvers = {
+  Query: {
+    // User queries
+    me: (parent, args, context) => context.services.user.getCurrentUser(),
+    user: (parent, { id }, context) => context.services.user.getUserById(id),
+
+    // Sheet music queries
+    listSheetMusic: (parent, args, context) =>
+      context.services.sheetMusic.list(args.filter, args.limit, args.offset),
+
+    // Practice queries
+    myPracticeSessions: (parent, args, context) =>
+      context.services.practice.getUserSessions(context.user.id, args),
+  },
+
+  Mutation: {
+    // Authentication mutations
+    requestMagicLink: (parent, { email }, context) =>
+      context.services.auth.requestMagicLink(email),
+
+    verifyMagicLink: (parent, { token }, context) =>
+      context.services.auth.verifyMagicLink(token),
+
+    // Practice mutations
+    startPracticeSession: (parent, { input }, context) =>
+      context.services.practice.startSession(context.user.id, input),
+  },
+
+  // Type resolvers
+  User: {
+    preferences: (user, args, context) =>
+      context.services.user.getPreferences(user.id),
+
+    stats: (user, args, context) => context.services.user.getStats(user.id),
+  },
+
+  PracticeSession: {
+    user: (session, args, context) =>
+      context.dataloaders.user.load(session.userId),
+
+    sheetMusic: (session, args, context) =>
+      session.sheetMusicId
+        ? context.dataloaders.sheetMusic.load(session.sheetMusicId)
+        : null,
+  },
+}
+```
+
+### Service Layer Architecture
+
+```typescript
+// Service interfaces
+interface AuthService {
+  requestMagicLink(email: string): Promise<AuthPayload>
+  verifyMagicLink(token: string): Promise<TokenPayload>
+  refreshToken(refreshToken: string): Promise<TokenPayload>
+  logout(userId: string): Promise<AuthPayload>
+}
+
+interface UserService {
+  getCurrentUser(): Promise<User | null>
+  getUserById(id: string): Promise<User | null>
+  updateUser(id: string, input: UpdateUserInput): Promise<User>
+  getPreferences(userId: string): Promise<UserPreferences>
+  getStats(userId: string): Promise<UserStats>
+}
+
+interface PracticeService {
+  startSession(
+    userId: string,
+    input: StartPracticeSessionInput
+  ): Promise<PracticeSession>
+  pauseSession(sessionId: string): Promise<PracticeSession>
+  completeSession(
+    sessionId: string,
+    input: CompletePracticeSessionInput
+  ): Promise<PracticeSession>
+  createLog(userId: string, input: CreatePracticeLogInput): Promise<PracticeLog>
+}
+```
+
+### GraphQL Type Definitions
+
+```graphql
+# Core types
+type User {
+  id: ID!
+  email: String!
+  displayName: String
+  primaryInstrument: Instrument!
+  preferences: UserPreferences!
+  stats: UserStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PracticeSession {
+  id: ID!
+  user: User!
+  instrument: Instrument!
+  sheetMusic: SheetMusic
+  sessionType: SessionType!
+  startedAt: DateTime!
+  completedAt: DateTime
+  pausedDuration: Int!
+  accuracy: Float
+  notesAttempted: Int!
+  notesCorrect: Int!
+  logs: [PracticeLog!]!
+}
+
+type SheetMusic {
+  id: ID!
+  title: String!
+  composer: String!
+  instrument: Instrument!
+  difficulty: Difficulty!
+  measures: [Measure!]!
+  metadata: SheetMusicMetadata
+}
+
+# Input types
+input CreatePracticeLogInput {
+  sessionId: ID!
+  activityType: ActivityType!
+  durationSeconds: Int!
+  tempoPracticed: Int
+  targetTempo: Int
+  focusAreas: [String!]
+  selfRating: Int
+  notes: String
+}
+
+# Enums
+enum Instrument {
+  PIANO
+  GUITAR
+}
+
+enum SessionType {
+  FREE_PRACTICE
+  GUIDED_PRACTICE
+  ASSESSMENT
 }
 ```
 
 ## Frontend Architecture
 
-### State Management
+### Apollo Client State Management
 
 ```typescript
-// Store structure using Zustand
-interface AppStore {
-  // User state
-  user: User | null;
-  preferences: UserPreferences;
-  
-  // Practice state
-  currentSession: PracticeSession | null;
-  practiceTimer: Timer;
-  
-  // Sheet music state
-  currentPiece: SheetMusic | null;
-  upcomingPieces: SheetMusic[];
-  
-  // Progress state
-  userProgress: Progress;
-  recentLogs: PracticeLog[];
-  
-  // Actions
-  actions: {
-    auth: AuthActions;
-    practice: PracticeActions;
-    progress: ProgressActions;
-  };
+// Apollo Client configuration
+const client = new ApolloClient({
+  uri: '/graphql',
+  cache: new InMemoryCache({
+    typePolicies: {
+      User: {
+        keyFields: ['id'],
+      },
+      PracticeSession: {
+        keyFields: ['id'],
+        fields: {
+          logs: {
+            merge(existing = [], incoming) {
+              return [...existing, ...incoming]
+            },
+          },
+        },
+      },
+    },
+  }),
+  link: ApolloLink.from([authLink, errorLink, retryLink, httpLink]),
+})
+
+// Local state management
+const localState = {
+  // Reactive variables for UI state
+  currentSessionVar: makeVar<PracticeSession | null>(null),
+  practiceTimerVar: makeVar<Timer>({ elapsed: 0, isRunning: false }),
+  offlineQueueVar: makeVar<QueuedMutation[]>([]),
+
+  // Type policies for cache
+  typePolicies: {
+    Query: {
+      fields: {
+        currentSession: {
+          read() {
+            return currentSessionVar()
+          },
+        },
+        practiceTimer: {
+          read() {
+            return practiceTimerVar()
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
-### Service Layer
+### Frontend Service Layer
 
 ```typescript
-// API Client
-class MirubatoAPI {
-  private client: HTTPClient;
-  
-  auth: AuthService;
-  users: UserService;
-  sheetMusic: SheetMusicService;
-  practice: PracticeService;
-  progress: ProgressService;
-  analytics: AnalyticsService;
+// GraphQL hooks generated by codegen
+import { useQuery, useMutation } from '@apollo/client'
+import {
+  useMeQuery,
+  useStartPracticeSessionMutation,
+  useCreatePracticeLogMutation,
+} from './__generated__/graphql'
+
+// Custom hooks for business logic
+function usePracticeSession() {
+  const [startSession] = useStartPracticeSessionMutation({
+    update(cache, { data }) {
+      // Update cache with new session
+      currentSessionVar(data?.startPracticeSession || null)
+    },
+  })
+
+  const [createLog] = useCreatePracticeLogMutation({
+    optimisticResponse: vars => ({
+      createPracticeLog: {
+        __typename: 'PracticeLog',
+        id: 'temp-' + Date.now(),
+        ...vars.input,
+      },
+    }),
+  })
+
+  return { startSession, createLog }
 }
 
-// Offline sync manager
-class OfflineManager {
-  private queue: OfflineRequest[];
-  
-  async sync(): Promise<void>;
-  async queueRequest(request: OfflineRequest): Promise<void>;
-}
+// Offline sync with Apollo
+const offlineLink = new QueueLink({
+  storage: window.localStorage,
+  key: 'offline-queue',
+})
+
+const retryLink = new RetryLink({
+  delay: {
+    initial: 300,
+    max: Infinity,
+    jitter: true,
+  },
+  attempts: {
+    max: 5,
+    retryIf: error => {
+      return !!error && !error.networkError?.statusCode
+    },
+  },
+})
 ```
 
 ## Data Flow
 
-### 1. Practice Session Flow
+### 1. GraphQL Practice Session Flow
+
 ```
-Frontend                    API                         D1
-   |                         |                          |
-   |--Start Session--------->|                          |
-   |                         |--Create Session--------->|
-   |<--Session ID------------|                          |
-   |                         |                          |
-   |--Log Activity---------->|                          |
-   |                         |--Store Log-------------->|
-   |                         |--Update Progress-------->|
-   |<--Confirmation----------|                          |
-   |                         |                          |
-   |--End Session----------->|                          |
-   |                         |--Update Session--------->|
-   |                         |--Calculate Stats------->|
-   |<--Session Summary-------|                          |
+Frontend              Apollo Client         GraphQL API           D1
+   |                      |                      |                 |
+   |--Start Session------>|                      |                 |
+   |                      |--mutation----------->|                 |
+   |                      | startPracticeSession |                 |
+   |                      |                      |--Create-------->|
+   |                      |<--Session Data-------|<--Session ID----|
+   |<--Update Cache-------|                      |                 |
+   |                      |                      |                 |
+   |--Log Activity------->|                      |                 |
+   |                      |--mutation----------->|                 |
+   |                      | createPracticeLog   |                 |
+   |                      |--Optimistic Update   |                 |
+   |<--Immediate UI-------|                      |                 |
+   |                      |                      |--Store--------->|
+   |                      |<--Confirmation-------|                 |
+   |                      |                      |                 |
+   |--Complete Session--->|                      |                 |
+   |                      |--mutation----------->|                 |
+   |                      | completePracticeSession              |
+   |                      |                      |--Update------->|
+   |                      |                      |--Calculate---->|
+   |                      |<--Final Data---------|<--Stats--------|
+   |<--Session Summary----|                      |                 |
 ```
 
-### 2. Offline Sync Flow
+### 2. Apollo Offline Sync Flow
+
 ```
-Frontend (Offline)          LocalStorage              API (When Online)
-   |                           |                          |
-   |--Practice Log------------>|                          |
-   |                           |--Queue Entry----->       |
-   |<--Queued Confirmation-----|                          |
-   |                           |                          |
-   |                           |                          |
-   [User Goes Online]          |                          |
-   |                           |                          |
-   |--Sync Request------------>|                          |
-   |                           |--Get Queue------->       |
-   |                           |<--Queued Items----       |
-   |                           |                          |
-   |                           |--Send Items------------->|
-   |                           |                   Process & Store
-   |<--Sync Complete-----------|<--Confirmation----------|
+Frontend            Apollo Cache      IndexedDB       GraphQL API (Online)
+   |                    |                 |                  |
+   |--Mutation--------->|                 |                  |
+   |                    |--Optimistic---->|                  |
+   |<--UI Update--------|                 |                  |
+   |                    |--Queue--------->|                  |
+   |                    |                 |--Store Entry     |
+   |                    |                 |                  |
+   [Network Restored]   |                 |                  |
+   |                    |                 |                  |
+   |                    |--Check Queue    |                  |
+   |                    |<--Pending Ops---|                  |
+   |                    |                 |                  |
+   |                    |--Replay Mutations---------------->|
+   |                    |                 |           Process & Store
+   |                    |<--Real Response-------------------|
+   |<--Final Update-----|                 |                  |
+   |                    |--Clear--------->|                  |
 ```
 
 ## Scalability Considerations
 
 ### 1. Database Optimization
+
 - Partition practice_logs by date for large datasets
 - Create materialized views for complex analytics
 - Use JSON columns for flexible schema evolution
 - Implement data archival for old practice logs
 
 ### 2. Caching Strategy
+
 - Cache sheet music data at edge (Cloudflare CDN)
 - Cache user progress in Workers KV
 - Use browser local storage for offline data
 - Implement ETags for efficient updates
 
 ### 3. Performance Targets
+
 - API response time: < 100ms (p95)
 - Sheet music load time: < 200ms
 - Practice log save: < 50ms
@@ -486,16 +668,19 @@ Frontend (Offline)          LocalStorage              API (When Online)
 ## Security Considerations
 
 ### 1. Authentication
+
 - JWT tokens with short expiration (15 minutes)
 - Refresh tokens stored securely
 - Magic links expire after single use or 10 minutes
 
 ### 2. Authorization
+
 - Row-level security for user data
 - API rate limiting per user
 - Validate all inputs against schema
 
 ### 3. Data Privacy
+
 - Encrypt sensitive data at rest
 - GDPR compliance for EU users
 - Data export and deletion capabilities
@@ -503,16 +688,19 @@ Frontend (Offline)          LocalStorage              API (When Online)
 ## Migration Strategy
 
 ### Phase 1: Core Tables
+
 1. Create users and authentication
 2. Create sheet_music and initial data
 3. Basic practice_sessions
 
 ### Phase 2: Practice Logging
+
 1. Create practice_logs
 2. Create progress_tracking
 3. Implement basic analytics
 
 ### Phase 3: Advanced Features
+
 1. Create user_sheet_music_progress
 2. Create practice_templates
 3. Implement recommendation engine
@@ -520,6 +708,7 @@ Frontend (Offline)          LocalStorage              API (When Online)
 ## Monitoring and Observability
 
 ### Metrics to Track
+
 - API response times
 - Database query performance
 - User engagement (DAU, session length)
@@ -527,6 +716,7 @@ Frontend (Offline)          LocalStorage              API (When Online)
 - Error rates by endpoint
 
 ### Logging Strategy
+
 - Structured JSON logs
 - Request/response correlation IDs
 - User action audit trail
@@ -535,6 +725,7 @@ Frontend (Offline)          LocalStorage              API (When Online)
 ## Future Extensibility
 
 ### Planned Extensions
+
 1. **Social Features**: Add tables for friends, challenges, leaderboards
 2. **Teacher Mode**: Add teacher-student relationships, assignments
 3. **AI Recommendations**: Store ML model outputs and user feedback
@@ -542,6 +733,7 @@ Frontend (Offline)          LocalStorage              API (When Online)
 5. **Group Practice**: Add ensemble/duet support
 
 ### Schema Evolution
+
 - Use JSON columns for flexible attributes
 - Version API endpoints for breaking changes
 - Maintain backward compatibility
@@ -549,20 +741,33 @@ Frontend (Offline)          LocalStorage              API (When Online)
 
 ## Development Guidelines
 
-### 1. API Conventions
-- RESTful endpoints with consistent naming
-- Use HTTP status codes correctly
-- Include pagination for list endpoints
-- Version APIs when breaking changes needed
+### 1. GraphQL Conventions
+
+- Use nullable types appropriately
+- Implement proper error handling with extensions
+- Use DataLoader pattern to avoid N+1 queries
+- Include field descriptions in schema
+- Follow relay-style pagination for connections
 
 ### 2. Database Conventions
-- Use UUIDs for all primary keys
-- Include created_at/updated_at timestamps
-- Soft delete with is_active flags
+
+- Use nanoid for all primary keys
+- Include created_at/updated_at timestamps with triggers
+- Implement soft delete where appropriate
 - Foreign key constraints for data integrity
+- Use JSON columns for flexible data
 
 ### 3. Testing Strategy
-- Unit tests for all services
-- Integration tests for API endpoints
-- Load testing for performance
-- End-to-end tests for critical flows
+
+- Unit tests for all resolvers and services
+- Integration tests for GraphQL queries/mutations
+- Mock D1 database for testing
+- Test error cases and edge conditions
+- Performance testing with query complexity analysis
+
+### 4. Code Generation
+
+- Generate TypeScript types from GraphQL schema
+- Use generated hooks in frontend
+- Keep schema as single source of truth
+- Run codegen in CI/CD pipeline

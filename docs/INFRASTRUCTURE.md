@@ -1,6 +1,7 @@
 # Infrastructure Components and Setup
 
 ## Overview
+
 This document outlines all the infrastructure components required for developing, testing, and deploying Mirubato, the open-source sight-reading platform.
 
 ## Core Infrastructure Stack
@@ -8,6 +9,7 @@ This document outlines all the infrastructure components required for developing
 ### 1. Development Environment
 
 #### Required Software
+
 ```bash
 # Node.js Version Manager
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -24,6 +26,7 @@ npm install -g @playwright/test@1.40.0
 ```
 
 #### Development Dependencies
+
 ```json
 {
   "devDependencies": {
@@ -50,9 +53,98 @@ npm install -g @playwright/test@1.40.0
 }
 ```
 
-### 2. Version Control & Collaboration
+### 2. Backend Infrastructure
+
+#### GraphQL Backend with Apollo Server
+
+```typescript
+// backend/src/index.ts
+import { ApolloServer } from '@apollo/server'
+import { startServerAndCreateCloudflareWorkersHandler } from '@as-integrations/cloudflare-workers'
+import { schema } from './schema'
+import { resolvers } from './resolvers'
+import { createContext } from './types/context'
+
+export default {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
+    const server = new ApolloServer({
+      typeDefs: schema,
+      resolvers,
+      introspection: env.ENVIRONMENT !== 'production',
+    })
+
+    const handler = startServerAndCreateCloudflareWorkersHandler(server, {
+      context: async ({ request }) => createContext({ request, env }),
+    })
+
+    return handler(request, env, ctx)
+  },
+}
+```
+
+#### Backend Project Structure
+
+```
+backend/
+├── src/
+│   ├── __tests__/           # Test files
+│   │   ├── unit/
+│   │   └── integration/
+│   ├── resolvers/           # GraphQL resolvers
+│   │   ├── auth.ts
+│   │   ├── user.ts
+│   │   ├── practice.ts
+│   │   └── sheetMusic.ts
+│   ├── services/            # Business logic
+│   │   ├── auth.ts
+│   │   ├── user.ts
+│   │   ├── email.ts
+│   │   └── rateLimiter.ts
+│   ├── schema/              # GraphQL schema
+│   │   └── schema.graphql
+│   ├── types/               # TypeScript types
+│   │   ├── context.ts
+│   │   ├── generated/       # Generated from GraphQL
+│   │   └── shared.ts
+│   ├── utils/               # Utilities
+│   └── index.ts             # Entry point
+├── migrations/              # D1 database migrations
+├── wrangler.toml           # Cloudflare Workers config
+├── codegen.yml             # GraphQL code generation
+└── package.json
+```
+
+#### Backend Dependencies
+
+```json
+{
+  "dependencies": {
+    "@apollo/server": "^4.10.0",
+    "@as-integrations/cloudflare-workers": "^0.1.1",
+    "graphql": "^16.8.1",
+    "graphql-tag": "^2.12.6",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.0.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript": "^4.0.1",
+    "@graphql-codegen/typescript-resolvers": "^4.0.1",
+    "wrangler": "^3.25.0"
+  }
+}
+```
+
+### 3. Version Control & Collaboration
 
 #### GitHub Repository Setup
+
 ```bash
 # Repository initialization
 git init
@@ -66,15 +158,16 @@ git remote add origin https://github.com/arbeitandy/mirubato.git
 ```
 
 #### GitHub Actions Workflows
+
 ```yaml
 # .github/workflows/ci.yml
 name: Continuous Integration
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -117,52 +210,65 @@ jobs:
 ```
 
 #### Issue Templates
+
 ```markdown
 # .github/ISSUE_TEMPLATE/bug_report.md
+
 ---
+
 name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: 'bug'
 assignees: ''
+
 ---
 
 ## Bug Description
+
 A clear and concise description of what the bug is.
 
 ## Steps to Reproduce
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
 ## Expected Behavior
+
 A clear and concise description of what you expected to happen.
 
 ## Actual Behavior
+
 What actually happened instead.
 
 ## Environment
+
 - Browser: [e.g. Chrome 120, Safari 17]
 - Device: [e.g. iPhone 12, Desktop]
 - OS: [e.g. iOS 17, macOS 14]
 - Instrument Mode: [e.g. Guitar, Piano]
 
 ## Musical Context
+
 - What type of exercise were you practicing?
 - What difficulty level?
 - Any specific musical notation involved?
 
 ## Screenshots
+
 If applicable, add screenshots to help explain your problem.
 
 ## Additional Context
+
 Add any other context about the problem here.
 ```
 
 ### 3. Cloudflare Infrastructure
 
 #### Cloudflare Pages Configuration
+
 ```toml
 # wrangler.toml
 name = "mirubato"
@@ -187,113 +293,205 @@ format = "service-worker"
 dir = "dist"
 ```
 
-#### Cloudflare Workers (Backend API)
-```typescript
-// workers/api/src/index.ts
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const router = new Router();
+#### Cloudflare Workers GraphQL Configuration
 
-    // Authentication routes
-    router.post('/api/auth/login', handleLogin);
-    router.post('/api/auth/verify', handleVerify);
-    router.post('/api/auth/refresh', handleRefresh);
+```toml
+# backend/wrangler.toml
+name = "mirubato-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+node_compat = true
 
-    // Practice session routes
-    router.post('/api/practice/sessions', handleCreateSession);
-    router.get('/api/practice/sessions/:id', handleGetSession);
-    router.patch('/api/practice/sessions/:id', handleUpdateSession);
+[env.staging]
+name = "mirubato-api-staging"
+route = "api-staging.mirubato.com/*"
+vars = { ENVIRONMENT = "staging" }
 
-    // Exercise routes
-    router.get('/api/exercises', handleGetExercises);
-    router.post('/api/exercises/generate', handleGenerateExercise);
+[env.production]
+name = "mirubato-api-production"
+route = "api.mirubato.com/*"
+vars = { ENVIRONMENT = "production" }
 
-    // User progress routes
-    router.get('/api/users/progress', handleGetProgress);
-    router.post('/api/users/progress', handleUpdateProgress);
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-db"
+database_id = "your-database-id"
 
-    return router.handle(request, env);
-  },
-};
+# Environment variables (configure in Cloudflare dashboard)
+# JWT_SECRET
+# EMAIL_API_KEY
+# SENTRY_DSN
 ```
 
-#### Cloudflare D1 Database
+#### GraphQL API Architecture
+
+```typescript
+// GraphQL Schema Overview
+type Query {
+  # User queries
+  me: User
+  user(id: ID!): User
+
+  # Sheet music queries
+  listSheetMusic(filter: SheetMusicFilterInput, limit: Int, offset: Int): SheetMusicConnection!
+  sheetMusic(id: ID!): SheetMusic
+  randomSheetMusic(instrument: Instrument!, difficulty: Difficulty, maxDuration: Int): SheetMusic
+
+  # Practice queries
+  myPracticeSessions(instrument: Instrument, limit: Int, offset: Int): PracticeSessionConnection!
+  practiceSession(id: ID!): PracticeSession
+}
+
+type Mutation {
+  # Authentication
+  requestMagicLink(email: String!): AuthPayload!
+  verifyMagicLink(token: String!): TokenPayload!
+  refreshToken(refreshToken: String!): TokenPayload!
+  logout: AuthPayload!
+  deleteAccount: AuthPayload!
+
+  # User management
+  updateUser(input: UpdateUserInput!): User!
+
+  # Practice sessions
+  startPracticeSession(input: StartPracticeSessionInput!): PracticeSession!
+  pausePracticeSession(sessionId: ID!): PracticeSession!
+  resumePracticeSession(sessionId: ID!): PracticeSession!
+  completePracticeSession(input: CompletePracticeSessionInput!): PracticeSession!
+  createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
+}
+```
+
+#### Cloudflare D1 Database Schema (Updated)
+
 ```sql
--- migrations/0001_initial.sql
+-- backend/migrations/0001_create_users.sql
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  primary_instrument TEXT NOT NULL DEFAULT 'piano',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  last_login DATETIME,
-  preferences TEXT -- JSON blob
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TRIGGER update_users_updated_at
+AFTER UPDATE ON users
+BEGIN
+  UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- backend/migrations/0002_create_user_preferences.sql
+CREATE TABLE user_preferences (
+  user_id TEXT PRIMARY KEY,
+  preferences TEXT NOT NULL, -- JSON with theme, notationSize, etc.
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- backend/migrations/0003_create_sheet_music.sql
+CREATE TABLE sheet_music (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  composer TEXT NOT NULL,
+  opus TEXT,
+  movement TEXT,
+  instrument TEXT NOT NULL,
+  difficulty TEXT NOT NULL,
+  difficulty_level INTEGER NOT NULL,
+  grade_level TEXT,
+  duration_seconds INTEGER NOT NULL,
+  time_signature TEXT NOT NULL,
+  key_signature TEXT NOT NULL,
+  tempo_marking TEXT,
+  suggested_tempo INTEGER NOT NULL,
+  style_period TEXT NOT NULL,
+  tags TEXT NOT NULL, -- JSON array
+  measures_data TEXT NOT NULL, -- JSON
+  metadata TEXT, -- JSON
+  thumbnail TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- backend/migrations/0004_create_practice_sessions.sql
 CREATE TABLE practice_sessions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  instrument TEXT NOT NULL CHECK (instrument IN ('guitar', 'piano')),
-  difficulty INTEGER NOT NULL CHECK (difficulty BETWEEN 1 AND 10),
-  started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  completed_at DATETIME,
-  total_exercises INTEGER DEFAULT 0,
-  correct_answers INTEGER DEFAULT 0,
-  session_data TEXT, -- JSON blob
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
-CREATE TABLE user_progress (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
   instrument TEXT NOT NULL,
-  skill_area TEXT NOT NULL, -- 'notes', 'rhythm', 'chords', etc.
-  level INTEGER DEFAULT 1,
-  accuracy_percentage REAL DEFAULT 0.0,
-  practice_minutes INTEGER DEFAULT 0,
-  last_practiced DATETIME,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  sheet_music_id TEXT,
+  session_type TEXT NOT NULL,
+  started_at DATETIME NOT NULL,
+  completed_at DATETIME,
+  paused_duration INTEGER DEFAULT 0,
+  accuracy_percentage REAL,
+  notes_attempted INTEGER DEFAULT 0,
+  notes_correct INTEGER DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id)
 );
 
-CREATE TABLE exercise_attempts (
+-- backend/migrations/0005_create_practice_logs.sql
+CREATE TABLE practice_logs (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL,
-  exercise_type TEXT NOT NULL,
-  exercise_data TEXT NOT NULL, -- JSON blob
-  user_answer TEXT,
-  correct_answer TEXT,
-  is_correct BOOLEAN,
-  response_time_ms INTEGER,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (session_id) REFERENCES practice_sessions(id)
+  activity_type TEXT NOT NULL,
+  duration_seconds INTEGER NOT NULL,
+  tempo_practiced INTEGER,
+  target_tempo INTEGER,
+  focus_areas TEXT, -- JSON array
+  self_rating INTEGER,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE CASCADE
 );
 
--- Indexes for performance
-CREATE INDEX idx_sessions_user_id ON practice_sessions(user_id);
-CREATE INDEX idx_progress_user_instrument ON user_progress(user_id, instrument);
-CREATE INDEX idx_attempts_session_id ON exercise_attempts(session_id);
-CREATE INDEX idx_attempts_timestamp ON exercise_attempts(timestamp);
+-- Performance indexes
+CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
+CREATE INDEX idx_sessions_user_instrument ON practice_sessions(user_id, instrument);
+CREATE INDEX idx_sheet_music_instrument ON sheet_music(instrument);
+CREATE INDEX idx_logs_session ON practice_logs(session_id);
 ```
 
 #### Environment Variables Setup
+
 ```bash
-# Cloudflare Workers Environment Variables
+# Backend Environment Variables (Cloudflare Workers)
 ENVIRONMENT=production
-DATABASE_URL=# Cloudflare D1 database URL
 JWT_SECRET=# Strong random secret for JWT signing
-RESEND_API_KEY=# Email service API key
+EMAIL_API_KEY=# Email service API key (Resend/SendGrid)
 SENTRY_DSN=# Error tracking (optional)
 ANALYTICS_TOKEN=# Usage analytics (optional)
 
 # Frontend Environment Variables (Vite)
-VITE_API_BASE_URL=https://api.mirubato.com
+VITE_API_BASE_URL=https://api.mirubato.com/graphql
 VITE_ENVIRONMENT=production
 VITE_SENTRY_DSN=# Client-side error tracking
 VITE_ANALYTICS_ID=# Client-side analytics
 ```
 
+#### GraphQL Code Generation
+
+```yaml
+# backend/codegen.yml
+overwrite: true
+schema: 'src/schema/schema.graphql'
+generates:
+  src/types/generated/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-resolvers'
+    config:
+      contextType: ../context#GraphQLContext
+      useIndexSignature: true
+      enumsAsTypes: true
+      scalars:
+        DateTime: string
+        JSON: 'Record<string, any>'
+```
+
 ### 4. Content Delivery & Storage
 
 #### Audio Samples Storage
+
 ```bash
 # Currently using Tone.js CDN for audio samples
 # URL: https://tonejs.github.io/audio/salamander/
@@ -320,31 +518,33 @@ VITE_ANALYTICS_ID=# Client-side analytics
 ```
 
 #### Static Assets CDN
+
 ```javascript
 // Configure in vite.config.ts
 export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        assetFileNames: (assetInfo) => {
+        assetFileNames: assetInfo => {
           // Organize assets by type for better caching
           if (assetInfo.name?.endsWith('.mp3')) {
-            return 'audio/[name]-[hash][extname]';
+            return 'audio/[name]-[hash][extname]'
           }
           if (assetInfo.name?.endsWith('.woff2')) {
-            return 'fonts/[name]-[hash][extname]';
+            return 'fonts/[name]-[hash][extname]'
           }
-          return 'assets/[name]-[hash][extname]';
-        }
-      }
-    }
-  }
-});
+          return 'assets/[name]-[hash][extname]'
+        },
+      },
+    },
+  },
+})
 ```
 
 ### 5. Monitoring & Observability
 
 #### Error Tracking (Sentry)
+
 ```typescript
 // src/lib/monitoring.ts
 import * as Sentry from '@sentry/react';
@@ -382,53 +582,55 @@ export const MusicErrorBoundary = Sentry.withErrorBoundary(
 ```
 
 #### Performance Monitoring
+
 ```typescript
 // src/lib/performance.ts
 export const performanceMonitor = {
   // Audio latency monitoring
   measureAudioLatency: (callback: () => void) => {
-    const start = performance.now();
-    callback();
-    const latency = performance.now() - start;
+    const start = performance.now()
+    callback()
+    const latency = performance.now() - start
 
     // Report if latency is too high
     if (latency > 100) {
-      console.warn(`High audio latency detected: ${latency}ms`);
+      console.warn(`High audio latency detected: ${latency}ms`)
       // Send to monitoring service
     }
   },
 
   // Notation rendering performance
   measureNotationRender: (renderFunction: () => void) => {
-    const start = performance.now();
-    renderFunction();
-    const renderTime = performance.now() - start;
+    const start = performance.now()
+    renderFunction()
+    const renderTime = performance.now() - start
 
     if (renderTime > 200) {
-      console.warn(`Slow notation rendering: ${renderTime}ms`);
+      console.warn(`Slow notation rendering: ${renderTime}ms`)
     }
   },
 
   // Core Web Vitals tracking
   trackWebVitals: () => {
     import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
-      onCLS(console.log);
-      onFID(console.log);
-      onFCP(console.log);
-      onLCP(console.log);
-      onTTFB(console.log);
-    });
-  }
-};
+      onCLS(console.log)
+      onFID(console.log)
+      onFCP(console.log)
+      onLCP(console.log)
+      onTTFB(console.log)
+    })
+  },
+}
 ```
 
 #### Analytics (Privacy-Focused)
+
 ```typescript
 // src/lib/analytics.ts
 interface AnalyticsEvent {
-  event: string;
-  properties: Record<string, any>;
-  timestamp: number;
+  event: string
+  properties: Record<string, any>
+  timestamp: number
 }
 
 export const analytics = {
@@ -437,8 +639,8 @@ export const analytics = {
     track('practice_session_started', {
       instrument,
       difficulty,
-      timestamp: Date.now()
-    });
+      timestamp: Date.now(),
+    })
   },
 
   trackExerciseComplete: (
@@ -451,8 +653,8 @@ export const analytics = {
       instrument,
       exercise_type: exerciseType,
       accuracy,
-      duration_ms: duration
-    });
+      duration_ms: duration,
+    })
   },
 
   // Educational effectiveness tracking
@@ -465,10 +667,10 @@ export const analytics = {
     track('skill_improvement', {
       instrument,
       skill_area: skillArea,
-      improvement_percentage: afterAccuracy - beforeAccuracy
-    });
-  }
-};
+      improvement_percentage: afterAccuracy - beforeAccuracy,
+    })
+  },
+}
 
 function track(event: string, properties: Record<string, any>) {
   // Only track anonymized, educational-focused metrics
@@ -477,51 +679,85 @@ function track(event: string, properties: Record<string, any>) {
     fetch('/api/analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, properties })
-    });
+      body: JSON.stringify({ event, properties }),
+    })
   }
 }
 ```
 
 ### 6. Testing Infrastructure
 
-#### Unit & Integration Testing
-```javascript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+#### Frontend Testing (Jest)
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-        '**/*.d.ts',
-        '**/*.config.*'
-      ],
-      thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80
-        }
-      }
-    }
-  }
-});
+```javascript
+// jest.config.mjs
+export default {
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup/unit.setup.ts'],
+  testMatch: [
+    '<rootDir>/src/**/__tests__/**/*.{ts,tsx}',
+    '<rootDir>/src/**/*.{spec,test}.{ts,tsx}',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+}
+```
+
+#### Backend Testing (Jest)
+
+```javascript
+// backend/jest.config.mjs
+export default {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          moduleResolution: 'node',
+          allowSyntheticDefaultImports: true,
+        },
+      },
+    ],
+  },
+  testMatch: [
+    '<rootDir>/src/**/__tests__/**/*.test.ts',
+    '<rootDir>/src/**/*.test.ts',
+  ],
+  setupFilesAfterEnv: ['<rootDir>/src/test-utils/setup.ts'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+}
 ```
 
 #### End-to-End Testing (Playwright)
+
 ```typescript
 // playwright.config.ts
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
@@ -535,7 +771,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
   },
 
   projects: [
@@ -564,14 +800,15 @@ export default defineConfig({
   webServer: {
     command: 'pnpm run preview',
     port: 4173,
-    reuseExistingServer: !process.env.CI
-  }
-});
+    reuseExistingServer: !process.env.CI,
+  },
+})
 ```
 
 ### 7. Security Infrastructure
 
 #### Content Security Policy
+
 ```typescript
 // Headers configuration for Cloudflare Pages
 export const securityHeaders = {
@@ -584,7 +821,9 @@ export const securityHeaders = {
     media-src 'self' blob:;
     connect-src 'self' https://api.mirubato.com;
     worker-src 'self';
-  `.replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\s+/g, ' ')
+    .trim(),
 
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
@@ -594,11 +833,14 @@ export const securityHeaders = {
     microphone=(),
     geolocation=(),
     interest-cohort=()
-  `.replace(/\s+/g, ' ').trim()
-};
+  `
+    .replace(/\s+/g, ' ')
+    .trim(),
+}
 ```
 
 #### Authentication Security
+
 ```typescript
 // JWT configuration for Workers
 export const jwtConfig = {
@@ -606,20 +848,21 @@ export const jwtConfig = {
   expiresIn: '1h',
   refreshExpiresIn: '7d',
   issuer: 'mirubato.com',
-  audience: 'mirubato-users'
-};
+  audience: 'mirubato-users',
+}
 
 // Rate limiting configuration
 export const rateLimits = {
   auth: { requests: 5, window: '15m' },
   api: { requests: 100, window: '15m' },
-  practice: { requests: 200, window: '15m' }
-};
+  practice: { requests: 200, window: '15m' },
+}
 ```
 
 ### 8. Development Tools & Automation
 
 #### Pre-commit Hooks (Husky)
+
 ```json
 {
   "husky": {
@@ -629,18 +872,14 @@ export const rateLimits = {
     }
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,css}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,css}": ["prettier --write"]
   }
 }
 ```
 
 #### Code Quality Tools
+
 ```json
 {
   "scripts": {
@@ -660,6 +899,7 @@ export const rateLimits = {
 ### 9. Deployment Pipeline
 
 #### Staging Environment
+
 ```yaml
 # Automatic deployment to staging on develop branch
 staging:
@@ -676,6 +916,7 @@ staging:
 ```
 
 #### Production Environment
+
 ```yaml
 # Manual deployment to production
 production:
@@ -701,6 +942,7 @@ production:
 ### 10. Backup & Recovery
 
 #### Database Backup Strategy
+
 ```sql
 -- Automated daily backups via Cloudflare D1
 -- Retention: 30 days for daily, 12 months for weekly, 7 years for yearly
@@ -712,6 +954,7 @@ wrangler d1 backup restore mirubato-db --backup-id=<backup-id>
 ```
 
 #### Disaster Recovery Plan
+
 1. **Code Recovery**: Git repository with multiple remotes
 2. **Database Recovery**: Automated D1 backups + manual exports
 3. **CDN Recovery**: Assets stored in multiple locations
@@ -721,6 +964,7 @@ wrangler d1 backup restore mirubato-db --backup-id=<backup-id>
 ### 11. Cost Estimation
 
 #### Cloudflare Costs (Monthly)
+
 - **Pages**: $0 (within free tier for open source)
 - **Workers**: ~$5-20 (based on requests)
 - **D1 Database**: ~$0-5 (based on storage and queries)
@@ -728,6 +972,7 @@ wrangler d1 backup restore mirubato-db --backup-id=<backup-id>
 - **Domain**: ~$10/year
 
 #### Additional Services
+
 - **Sentry** (Error Tracking): $0-26/month
 - **GitHub** (Repository): $0 (open source)
 - **Email Service** (Resend): $0-20/month
@@ -737,27 +982,42 @@ wrangler d1 backup restore mirubato-db --backup-id=<backup-id>
 ### 12. Setup Checklist
 
 #### Initial Setup
+
 - [ ] GitHub repository created with proper settings
 - [ ] Cloudflare account set up with domain
 - [ ] D1 database created and configured
-- [ ] Workers deployed with environment variables
-- [ ] Pages deployment configured
+- [ ] Backend Workers deployed with environment variables
+- [ ] Frontend Pages deployment configured
 - [ ] DNS records pointed to Cloudflare
 - [ ] SSL certificates configured
 - [ ] Monitoring tools set up (Sentry, analytics)
 
-#### Development Environment
+#### Backend Development Environment
+
+- [ ] Backend directory structure created
+- [ ] GraphQL schema defined
+- [ ] Apollo Server configured for Workers
+- [ ] D1 migrations created and applied
+- [ ] GraphQL code generation working
+- [ ] Backend tests passing (23 unit/integration tests)
+- [ ] JWT authentication implemented
+- [ ] Rate limiting configured
+
+#### Frontend Development Environment
+
 - [ ] Node.js and pnpm installed
-- [ ] Wrangler CLI configured
+- [ ] Vite development server running
+- [ ] Apollo Client ready for integration
 - [ ] Environment variables set up locally
 - [ ] Git hooks configured (Husky)
 - [ ] VS Code extensions installed
-- [ ] Local development server running
-- [ ] Tests passing
+- [ ] Frontend tests passing
 
 #### CI/CD Pipeline
+
 - [ ] GitHub Actions workflows configured
-- [ ] Staging environment deployed
+- [ ] Backend staging environment deployed
+- [ ] Frontend staging environment deployed
 - [ ] Production deployment ready
 - [ ] Automated testing running
 - [ ] Code quality gates configured

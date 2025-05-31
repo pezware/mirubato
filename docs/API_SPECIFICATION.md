@@ -2,13 +2,27 @@
 
 ## Overview
 
-This document provides detailed API specifications for all mirubato endpoints. The API follows RESTful principles and uses JSON for request/response bodies.
+This document provides detailed API specifications for all mirubato endpoints. The primary API is GraphQL-based, running on Cloudflare Workers with Apollo Server. The API uses JWT tokens for authentication and follows GraphQL best practices for queries and mutations.
 
 ## Base URL
 
 ```
-Production: https://api.mirubato.com
-Development: http://localhost:8787
+Production: https://api.mirubato.com/graphql
+Development: http://localhost:8787/graphql
+```
+
+## GraphQL Endpoint
+
+All GraphQL requests are sent as POST requests to the `/graphql` endpoint.
+
+### Request Format
+
+```json
+{
+  "query": "query { ... }",
+  "variables": { ... },
+  "operationName": "..."
+}
 ```
 
 ## Authentication
@@ -22,6 +36,7 @@ Authorization: Bearer <jwt_token>
 ## Common Response Formats
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -34,6 +49,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -50,6 +66,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 ### Pagination Response
+
 ```json
 {
   "success": true,
@@ -64,14 +81,77 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-## Endpoints
+## GraphQL Schema Overview
 
-### Authentication Endpoints
+### Core Types
 
-#### POST /api/auth/login
-Request magic link for email authentication.
+```graphql
+type User {
+  id: ID!
+  email: String!
+  displayName: String
+  primaryInstrument: Instrument!
+  preferences: UserPreferences!
+  stats: UserStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
 
-**Request:**
+type SheetMusic {
+  id: ID!
+  title: String!
+  composer: String!
+  opus: String
+  movement: String
+  instrument: Instrument!
+  difficulty: Difficulty!
+  difficultyLevel: Int!
+  gradeLevel: String
+  durationSeconds: Int!
+  timeSignature: String!
+  keySignature: String!
+  tempoMarking: String
+  suggestedTempo: Int!
+  stylePeriod: StylePeriod!
+  tags: [String!]!
+  measures: [Measure!]!
+  metadata: SheetMusicMetadata
+  thumbnail: String
+}
+
+type PracticeSession {
+  id: ID!
+  user: User!
+  instrument: Instrument!
+  sheetMusic: SheetMusic
+  sessionType: SessionType!
+  startedAt: DateTime!
+  completedAt: DateTime
+  pausedDuration: Int!
+  accuracy: Float
+  notesAttempted: Int!
+  notesCorrect: Int!
+  logs: [PracticeLog!]!
+}
+```
+
+## Queries and Mutations
+
+### Authentication
+
+#### Request Magic Link
+
+```graphql
+mutation RequestMagicLink($email: String!) {
+  requestMagicLink(email: $email) {
+    success
+    message
+  }
+}
+```
+
+**Variables:**
+
 ```json
 {
   "email": "user@example.com"
@@ -79,19 +159,38 @@ Request magic link for email authentication.
 ```
 
 **Response:**
+
 ```json
 {
-  "success": true,
   "data": {
-    "message": "Magic link sent to your email"
+    "requestMagicLink": {
+      "success": true,
+      "message": "Magic link sent to your email"
+    }
   }
 }
 ```
 
-#### POST /api/auth/verify
-Verify magic link token and get JWT.
+#### Verify Magic Link
 
-**Request:**
+```graphql
+mutation VerifyMagicLink($token: String!) {
+  verifyMagicLink(token: $token) {
+    accessToken
+    refreshToken
+    expiresIn
+    user {
+      id
+      email
+      displayName
+      primaryInstrument
+    }
+  }
+}
+```
+
+**Variables:**
+
 ```json
 {
   "token": "magic_link_token_from_email"
@@ -99,85 +198,185 @@ Verify magic link token and get JWT.
 ```
 
 **Response:**
+
 ```json
 {
-  "success": true,
   "data": {
-    "accessToken": "jwt_access_token",
-    "refreshToken": "jwt_refresh_token",
-    "expiresIn": 900,
-    "user": {
+    "verifyMagicLink": {
+      "accessToken": "jwt_access_token",
+      "refreshToken": "jwt_refresh_token",
+      "expiresIn": 900,
+      "user": {
+        "id": "user_123",
+        "email": "user@example.com",
+        "displayName": "John Doe",
+        "primaryInstrument": "PIANO"
+      }
+    }
+  }
+}
+```
+
+### User Queries
+
+#### Get Current User
+
+```graphql
+query Me {
+  me {
+    id
+    email
+    displayName
+    primaryInstrument
+    preferences {
+      theme
+      notationSize
+      practiceReminders
+      dailyGoalMinutes
+      customSettings
+    }
+    stats {
+      totalPracticeTime
+      consecutiveDays
+      piecesCompleted
+      accuracyAverage
+    }
+    createdAt
+    updatedAt
+  }
+}
+```
+
+**Headers Required:**
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "me": {
       "id": "user_123",
       "email": "user@example.com",
       "displayName": "John Doe",
-      "primaryInstrument": "piano"
+      "primaryInstrument": "PIANO",
+      "preferences": {
+        "theme": "LIGHT",
+        "notationSize": "MEDIUM",
+        "practiceReminders": true,
+        "dailyGoalMinutes": 15,
+        "customSettings": {}
+      },
+      "stats": {
+        "totalPracticeTime": 45300,
+        "consecutiveDays": 7,
+        "piecesCompleted": 42,
+        "accuracyAverage": 0.85
+      },
+      "createdAt": "2024-01-01T10:00:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
     }
   }
 }
 ```
 
-### User Endpoints
+#### Update User Profile
 
-#### GET /api/users/me
-Get current user profile.
+```graphql
+mutation UpdateUser($input: UpdateUserInput!) {
+  updateUser(input: $input) {
+    id
+    displayName
+    primaryInstrument
+    preferences {
+      theme
+      notationSize
+    }
+  }
+}
+```
 
-**Response:**
+**Variables:**
+
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "user_123",
-    "email": "user@example.com",
-    "displayName": "John Doe",
-    "primaryInstrument": "piano",
-    "skillLevel": "intermediate",
+  "input": {
+    "displayName": "Jane Doe",
+    "primaryInstrument": "GUITAR",
     "preferences": {
-      "theme": "light",
-      "notationSize": "medium",
-      "practiceReminders": true,
-      "dailyGoalMinutes": 15
-    },
-    "stats": {
-      "totalPracticeTime": 45300,
-      "consecutiveDays": 7,
-      "piecesCompleted": 42
+      "theme": "DARK",
+      "notationSize": "LARGE"
     }
   }
 }
 ```
 
-#### PUT /api/users/me
-Update user profile.
+### Sheet Music Queries
 
-**Request:**
-```json
-{
-  "displayName": "Jane Doe",
-  "primaryInstrument": "guitar",
-  "skillLevel": "advanced",
-  "preferences": {
-    "theme": "dark",
-    "notationSize": "large"
+#### List Sheet Music
+
+```graphql
+query ListSheetMusic(
+  $filter: SheetMusicFilterInput
+  $limit: Int
+  $offset: Int
+) {
+  listSheetMusic(filter: $filter, limit: $limit, offset: $offset) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        composer
+        opus
+        movement
+        instrument
+        difficulty
+        difficultyLevel
+        gradeLevel
+        durationSeconds
+        timeSignature
+        keySignature
+        tempoMarking
+        suggestedTempo
+        stylePeriod
+        tags
+        thumbnail
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    totalCount
   }
 }
 ```
 
-### Sheet Music Endpoints
+**Variables:**
 
-#### GET /api/sheet-music
-List sheet music with filters.
-
-**Query Parameters:**
-- `instrument`: piano | guitar | both
-- `difficulty`: 1-10
-- `style`: baroque | classical | romantic | modern | contemporary
-- `duration`: max duration in seconds
-- `tags`: comma-separated tags
-- `search`: search in title/composer
-- `page`: page number (default: 1)
-- `perPage`: items per page (default: 20)
+```json
+{
+  "filter": {
+    "instrument": "PIANO",
+    "difficulty": "INTERMEDIATE",
+    "stylePeriod": "CLASSICAL",
+    "maxDuration": 600,
+    "tags": ["sonata", "virtuosic"],
+    "search": "beethoven"
+  },
+  "limit": 20,
+  "offset": 0
+}
+```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -204,16 +403,45 @@ List sheet music with filters.
 }
 ```
 
-#### GET /api/sheet-music/random
-Get random sheet music based on criteria.
+#### Get Random Sheet Music
 
-**Query Parameters:**
-- `instrument`: required
-- `difficulty`: optional difficulty range (e.g., "3-5")
-- `style`: optional style period
-- `maxDuration`: optional max duration in seconds
+```graphql
+query RandomSheetMusic(
+  $instrument: Instrument!
+  $difficulty: Difficulty
+  $maxDuration: Int
+) {
+  randomSheetMusic(
+    instrument: $instrument
+    difficulty: $difficulty
+    maxDuration: $maxDuration
+  ) {
+    id
+    title
+    composer
+    instrument
+    difficulty
+    measures {
+      number
+      notes {
+        keys
+        duration
+        time
+      }
+      timeSignature
+      keySignature
+      clef
+      tempo {
+        bpm
+        marking
+      }
+    }
+  }
+}
+```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -221,62 +449,80 @@ Get random sheet music based on criteria.
     "id": "sheet_456",
     "title": "Etude Op. 60, No. 3",
     "composer": "Fernando Sor",
-    "instrument": "guitar",
+    "instrument": "guitar"
     // ... full sheet music object
   }
 }
 ```
 
-### Practice Endpoints
+### Practice Session Mutations
 
-#### POST /api/practice/sessions/start
-Start a new practice session.
+#### Start Practice Session
 
-**Request:**
-```json
-{
-  "sessionType": "free_practice",
-  "instrument": "piano"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "sessionId": "session_789",
-    "startTime": "2024-01-15T10:30:00Z",
-    "sessionType": "free_practice",
-    "instrument": "piano"
+```graphql
+mutation StartPracticeSession($input: StartPracticeSessionInput!) {
+  startPracticeSession(input: $input) {
+    id
+    instrument
+    sessionType
+    startedAt
+    sheetMusic {
+      id
+      title
+    }
   }
 }
 ```
 
-#### POST /api/practice/logs
-Create a practice log entry.
+**Variables:**
 
-**Request:**
 ```json
 {
-  "sessionId": "session_789",
-  "activityType": "repertoire",
-  "sheetMusicId": "sheet_123",
-  "instrument": "piano",
-  "duration": 900,
-  "composer": "Beethoven",
-  "workTitle": "Moonlight Sonata",
-  "opusNumber": "Op. 27 No. 2",
-  "movementSection": "3rd movement, measures 1-50",
-  "tempoPracticed": 120,
-  "targetTempo": 160,
-  "focusAreas": ["accuracy", "dynamics", "tempo"],
-  "selfRating": 7,
-  "practiceNotes": "Worked on maintaining tempo in arpeggios"
+  "input": {
+    "sessionType": "FREE_PRACTICE",
+    "instrument": "PIANO",
+    "sheetMusicId": "sheet_123"
+  }
+}
+```
+
+#### Create Practice Log
+
+```graphql
+mutation CreatePracticeLog($input: CreatePracticeLogInput!) {
+  createPracticeLog(input: $input) {
+    id
+    activityType
+    durationSeconds
+    tempoPracticed
+    targetTempo
+    focusAreas
+    selfRating
+    notes
+    createdAt
+  }
+}
+```
+
+**Variables:**
+
+```json
+{
+  "input": {
+    "sessionId": "session_789",
+    "activityType": "REPERTOIRE",
+    "durationSeconds": 900,
+    "tempoPracticed": 120,
+    "targetTempo": 160,
+    "focusAreas": ["accuracy", "dynamics", "tempo"],
+    "selfRating": 7,
+    "notes": "Worked on maintaining tempo in arpeggios"
+  }
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -288,9 +534,11 @@ Create a practice log entry.
 ```
 
 #### POST /api/practice/quick-log
+
 Quick practice log for professionals.
 
 **Request:**
+
 ```json
 {
   "activityType": "scales",
@@ -304,12 +552,64 @@ Quick practice log for professionals.
 }
 ```
 
-### Progress Endpoints
+### Complete Practice Session
 
-#### GET /api/progress/overview
-Get user's overall progress.
+```graphql
+mutation CompletePracticeSession($input: CompletePracticeSessionInput!) {
+  completePracticeSession(input: $input) {
+    id
+    completedAt
+    accuracy
+    notesAttempted
+    notesCorrect
+  }
+}
+```
+
+**Variables:**
+
+```json
+{
+  "input": {
+    "sessionId": "session_789",
+    "accuracy": 0.85,
+    "notesAttempted": 150,
+    "notesCorrect": 128
+  }
+}
+```
+
+### Progress Queries
+
+#### Get User Progress
+
+```graphql
+query MyPracticeSessions($instrument: Instrument, $limit: Int, $offset: Int) {
+  myPracticeSessions(instrument: $instrument, limit: $limit, offset: $offset) {
+    edges {
+      node {
+        id
+        instrument
+        sessionType
+        startedAt
+        completedAt
+        accuracy
+        notesAttempted
+        notesCorrect
+        logs {
+          activityType
+          durationSeconds
+          selfRating
+        }
+      }
+    }
+    totalCount
+  }
+}
+```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -362,15 +662,18 @@ Get user's overall progress.
 ### Analytics Endpoints
 
 #### GET /api/analytics/practice-time
+
 Get practice time analytics.
 
 **Query Parameters:**
+
 - `period`: day | week | month | year
 - `startDate`: ISO date string
 - `endDate`: ISO date string
 - `groupBy`: day | week | month
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -404,15 +707,18 @@ Get practice time analytics.
 ```
 
 #### GET /api/analytics/export
+
 Export practice data.
 
 **Query Parameters:**
+
 - `format`: pdf | csv | json
 - `startDate`: ISO date string
 - `endDate`: ISO date string
 - `includeDetails`: true | false
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -423,17 +729,38 @@ Export practice data.
 }
 ```
 
-## Error Codes
+## GraphQL Error Handling
 
-| Code | Description |
-|------|-------------|
-| `AUTH_REQUIRED` | Authentication required |
-| `TOKEN_EXPIRED` | JWT token has expired |
-| `INVALID_TOKEN` | Invalid or malformed token |
-| `NOT_FOUND` | Resource not found |
-| `VALIDATION_ERROR` | Request validation failed |
-| `RATE_LIMIT` | Rate limit exceeded |
-| `SERVER_ERROR` | Internal server error |
+GraphQL errors are returned in the standard format:
+
+```json
+{
+  "errors": [
+    {
+      "message": "Authentication required",
+      "extensions": {
+        "code": "UNAUTHENTICATED",
+        "details": { ... }
+      },
+      "path": ["me"],
+      "locations": [{ "line": 2, "column": 3 }]
+    }
+  ],
+  "data": null
+}
+```
+
+### Error Codes
+
+| Code                        | Description              |
+| --------------------------- | ------------------------ |
+| `UNAUTHENTICATED`           | Authentication required  |
+| `FORBIDDEN`                 | Insufficient permissions |
+| `BAD_USER_INPUT`            | Invalid input data       |
+| `NOT_FOUND`                 | Resource not found       |
+| `INTERNAL_SERVER_ERROR`     | Server error             |
+| `GRAPHQL_VALIDATION_FAILED` | Query validation failed  |
+| `RATE_LIMITED`              | Too many requests        |
 
 ## Rate Limiting
 
@@ -442,6 +769,7 @@ Export practice data.
 - **Practice logging**: 300 requests per hour
 
 Headers included in response:
+
 ```
 X-RateLimit-Limit: 120
 X-RateLimit-Remaining: 115
@@ -451,6 +779,7 @@ X-RateLimit-Reset: 1705317000
 ## Webhooks (Future)
 
 For future integrations, webhooks can be configured for:
+
 - Practice goal achievements
 - Streak milestones
 - Level progression
@@ -459,13 +788,47 @@ For future integrations, webhooks can be configured for:
 ## API Versioning
 
 The API uses URL versioning. Current version is v1. Future versions will be:
+
 - `/api/v2/...` for version 2
 - Legacy versions supported for 6 months after deprecation
+
+## GraphQL Code Generation
+
+The backend uses GraphQL Code Generator to create TypeScript types from the schema:
+
+```bash
+# Generate types
+npm run codegen
+```
+
+Frontend can use the same schema for client-side code generation:
+
+```typescript
+// Example with Apollo Client
+import { gql, useQuery } from '@apollo/client'
+import { MeQuery } from './__generated__/graphql'
+
+const ME_QUERY = gql`
+  query Me {
+    me {
+      id
+      email
+      displayName
+    }
+  }
+`
+
+function Profile() {
+  const { data, loading } = useQuery<MeQuery>(ME_QUERY)
+  // TypeScript knows the exact shape of data
+}
+```
 
 ## SDK Support
 
 Official SDKs planned for:
-- JavaScript/TypeScript
-- Python
+
+- JavaScript/TypeScript (Apollo Client)
+- React Native
 - Swift (iOS)
 - Kotlin (Android)

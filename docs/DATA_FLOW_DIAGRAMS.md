@@ -7,34 +7,38 @@
 │                         Frontend (React)                         │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │   Pages     │  │  Components  │  │    State (Zustand)     │ │
+│  │   Pages     │  │  Components  │  │    State Management    │ │
 │  │             │  │              │  │                        │ │
-│  │ • Practice  │  │ • Sheet      │  │ • User State          │ │
-│  │ • Progress  │  │   Music      │  │ • Practice State      │ │
-│  │ • Analytics │  │ • Timer      │  │ • Progress Cache      │ │
+│  │ • Landing   │  │ • Sheet      │  │ • Apollo Client       │ │
+│  │ • Practice  │  │   Music      │  │ • Local State         │ │
+│  │ • Progress  │  │ • MusicPlayer│  │ • Cache Management    │ │
 │  │ • Profile   │  │ • Piano Keys │  │ • Offline Queue       │ │
 │  └─────────────┘  └──────────────┘  └────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────┤
 │                    Service Layer (TypeScript)                    │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │ API Client  │  │Offline Manager│ │   Audio Manager        │ │
+│  │Apollo Client│  │Offline Manager│ │   Audio Manager        │ │
+│  │  + GraphQL  │  │ + IndexedDB  │  │   + Tone.js           │ │
 │  └─────────────┘  └──────────────┘  └────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                                 │
-                                │ HTTPS
+                                │ GraphQL over HTTPS
                                 ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Cloudflare Workers (API)                      │
+│              Cloudflare Workers (GraphQL API)                    │
 ├─────────────────────────────────────────────────────────────────┤
+│                    Apollo Server + GraphQL                       │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │Auth Service │  │Practice Svc  │  │  Analytics Service     │ │
-│  ├─────────────┤  ├──────────────┤  ├────────────────────────┤ │
-│  │User Service │  │Progress Svc  │  │  Sheet Music Service   │ │
+│  │  Resolvers  │  │   Services   │  │      Utilities         │ │
+│  │             │  │              │  │                        │ │
+│  │ • Query     │  │ • AuthService│  │ • JWT Handler         │ │
+│  │ • Mutation  │  │ • UserService│  │ • Rate Limiter        │ │
+│  │ • Scalars   │  │ • EmailService│ │ • Error Handler       │ │
 │  └─────────────┘  └──────────────┘  └────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────┤
-│                     Middleware & Utilities                       │
+│                     GraphQL Context & Auth                       │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │JWT Handler  │  │Rate Limiter  │  │  Request Validator     │ │
+│  │Context Builder│ │Auth Middleware│ │  Schema Validation     │ │
 │  └─────────────┘  └──────────────┘  └────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                                 │
@@ -44,8 +48,8 @@
 │                        Cloudflare D1                             │
 │                      (SQLite Database)                           │
 ├─────────────────────────────────────────────────────────────────┤
-│  • users            • practice_logs      • progress_tracking    │
-│  • sheet_music      • practice_sessions  • user_sheet_progress  │
+│  • users             • practice_sessions   • sheet_music        │
+│  • user_preferences  • practice_logs       • auth_tokens        │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ↓
@@ -58,78 +62,89 @@
 └─────────────┴─────────────┴────────────────┴───────────────────┘
 ```
 
-## Authentication Flow
+## Authentication Flow (GraphQL)
 
 ```
-User                Frontend            API                 Email Service
- │                     │                 │                      │
- ├──Enter Email────────►│                 │                      │
- │                     ├──POST /login────►│                      │
- │                     │                 ├──Generate Token────►  │
- │                     │                 ├──Send Email─────────►│
- │                     │◄──202 Accepted──┤                      │
- │◄──Check Email───────┤                 │                      │
- │                     │                 │                      │
- ├──Click Link─────────►│                 │                      │
- │                     ├──POST /verify───►│                      │
- │                     │                 ├──Validate Token      │
- │                     │                 ├──Create JWT          │
- │                     │◄──200 OK────────┤                      │
- │                     ├──Store Token    │                      │
- │                     ├──Redirect───────►│                      │
- │◄──Logged In─────────┤                 │                      │
+User              Frontend          GraphQL API           Email Service
+ │                   │                   │                     │
+ ├──Enter Email──────►│                   │                     │
+ │                   ├──mutation─────────►│                     │
+ │                   │ requestMagicLink  │                     │
+ │                   │                   ├──Generate Token──►   │
+ │                   │                   ├──Queue Email────────►│
+ │                   │◄──success─────────┤                     │
+ │◄──Check Email─────┤                   │                     │
+ │                   │                   │                     │
+ ├──Click Link───────►│                   │                     │
+ │                   ├──mutation─────────►│                     │
+ │                   │ verifyMagicLink  │                     │
+ │                   │                   ├──Validate Token     │
+ │                   │                   ├──Create JWT         │
+ │                   │                   ├──Create User        │
+ │                   │◄──TokenPayload────┤                     │
+ │                   ├──Store Tokens     │                     │
+ │                   ├──Update Apollo    │                     │
+ │◄──Navigate────────┤                   │                     │
 ```
 
-## Practice Session Flow
+## Practice Session Flow (GraphQL)
 
 ```
-User            Frontend          API            D1 Database      Cache
- │                 │               │                  │             │
- ├──Start Practice─►│               │                  │             │
- │                 ├──POST /start──►│                  │             │
- │                 │               ├──Create Session──►│             │
- │                 │               │◄──Session ID──────┤             │
- │                 │◄──Session─────┤                  │             │
- │                 ├──Start Timer  │                  │             │
- │◄──Timer Running─┤               │                  │             │
- │                 │               │                  │             │
- ├──Play Notes────►│               │                  │             │
- │                 ├──Local State  │                  │             │
- │◄──Feedback──────┤               │                  │             │
- │                 │               │                  │             │
- ├──End Practice──►│               │                  │             │
- │                 ├──POST /log────►│                  │             │
- │                 │               ├──Save Log────────►│             │
- │                 │               ├──Update Progress─►│             │
- │                 │               ├──Clear Cache─────────────────►│
- │                 │◄──Summary─────┤                  │             │
- │◄──Show Results──┤               │                  │             │
+User          Frontend        GraphQL API      D1 Database    Apollo Cache
+ │               │                 │                │              │
+ ├──Start────────►│                 │                │              │
+ │               ├──mutation───────►│                │              │
+ │               │startPracticeSession              │              │
+ │               │                 ├──Create────────►│              │
+ │               │                 │◄──Session ID───┤              │
+ │               │◄──Session Data──┤                │              │
+ │               ├──Cache Update───────────────────────────────────►│
+ │               ├──Start Timer    │                │              │
+ │◄──Playing─────┤                 │                │              │
+ │               │                 │                │              │
+ ├──Complete─────►│                 │                │              │
+ │               ├──mutation───────►│                │              │
+ │               │completePracticeSession           │              │
+ │               │                 ├──Update────────►│              │
+ │               │                 ├──Calculate Stats│              │
+ │               │◄──Updated Session┤                │              │
+ │               ├──Update Cache───────────────────────────────────►│
+ │◄──Results─────┤                 │                │              │
+ │               │                 │                │              │
+ ├──Log Activity─►│                 │                │              │
+ │               ├──mutation───────►│                │              │
+ │               │createPracticeLog│                │              │
+ │               │                 ├──Save─────────►│              │
+ │               │◄──Log Created───┤                │              │
 ```
 
-## Offline Practice Sync
+## Offline Practice Sync (GraphQL)
 
 ```
-User (Offline)   Frontend       LocalStorage      API (Online)     D1
- │                 │                 │               │               │
- ├──Practice───────►│                 │               │               │
- │                 ├──No Network     │               │               │
- │                 ├──Store Local────►│               │               │
- │                 │◄──Saved─────────┤               │               │
- │◄──Confirmed─────┤                 │               │               │
- │                 │                 │               │               │
- │ [Time Passes]   │                 │               │               │
- │                 │                 │               │               │
- ├──Open App───────►│                 │               │               │
- │                 ├──Check Network  │               │               │
- │                 ├──Network OK     │               │               │
- │                 ├──Get Queue──────►│               │               │
- │                 │◄──5 Logs────────┤               │               │
- │                 ├──POST /sync─────────────────────►│               │
- │                 │                 │               ├──Batch Save──►│
- │                 │                 │               │◄──Success─────┤
- │                 │◄──Synced────────────────────────┤               │
- │                 ├──Clear Queue────►│               │               │
- │◄──Updated───────┤                 │               │               │
+User (Offline) Frontend    IndexedDB    Apollo Cache  GraphQL API    D1
+ │               │            │             │            │            │
+ ├──Practice─────►│            │             │            │            │
+ │               ├─No Network │             │            │            │
+ │               ├─Store──────►│             │            │            │
+ │               ├─Optimistic─────────────────►│            │            │
+ │               │◄─Saved─────┤             │            │            │
+ │◄─Confirmed────┤            │             │            │            │
+ │               │            │             │            │            │
+ │ [Reconnect]   │            │             │            │            │
+ │               │            │             │            │            │
+ ├──Open App─────►│            │             │            │            │
+ │               ├─Check Net  │             │            │            │
+ │               ├─Online     │             │            │            │
+ │               ├─Get Queue──►│             │            │            │
+ │               │◄─5 Items───┤             │            │            │
+ │               ├─mutation batch──────────────────────────►│            │
+ │               │ syncOfflineLogs          │            │            │
+ │               │            │             │            ├─Batch──────►│
+ │               │            │             │            │◄─Success───┤
+ │               │◄─Synced────────────────────────────────┤            │
+ │               ├─Clear──────►│             │            │            │
+ │               ├─Update Cache────────────────►│            │            │
+ │◄─All Synced───┤            │             │            │            │
 ```
 
 ## Progress Calculation Flow
@@ -154,23 +169,24 @@ Practice Log      API             D1 Database       Analytics Engine
     │              │◄──Success────────┤                    │
 ```
 
-## Sheet Music Recommendation Flow
+## GraphQL Query Flow Example
 
 ```
-User           Frontend         API          ML Service      D1
- │               │               │               │           │
- ├──Request──────►│               │               │           │
- │               ├──GET /recommended             │           │
- │               │               ├──Get History──────────────►│
- │               │               │◄──User Data───────────────┤
- │               │               ├──ML Request──►│           │
- │               │               │               ├─Analyze   │
- │               │               │               ├─Score     │
- │               │               │               ├─Rank      │
- │               │               │◄──Top 10──────┤           │
- │               │               ├──Get Details─────────────►│
- │               │◄──Sheet Music─┤◄──Full Data───────────────┤
- │◄──Display─────┤               │               │           │
+User          Frontend      Apollo Client    GraphQL API      Services
+ │               │               │               │               │
+ ├──Browse───────►│               │               │               │
+ │               ├──query────────►│               │               │
+ │               │listSheetMusic │               │               │
+ │               │               ├──Request──────►│               │
+ │               │               │               ├──Resolver─────►│
+ │               │               │               │ (SheetMusic)  │
+ │               │               │               │◄──Filter/Sort─┤
+ │               │               │               ├──Check Auth   │
+ │               │               │               ├──Apply Filters│
+ │               │               │◄──Response─────┤               │
+ │               │◄──Cached Data─┤               │               │
+ │               ├──Update UI    │               │               │
+ │◄──Display─────┤               │               │               │
 ```
 
 ## Analytics Export Flow
@@ -189,22 +205,25 @@ User          Frontend          API           D1          File Storage
  │◄──Download───┤                │             │               │
 ```
 
-## Real-time Features (Future)
+## Real-time Features with GraphQL Subscriptions (Future)
 
 ```
-User A          Server          Pub/Sub         Server         User B
- │               │                │               │              │
- ├──Join Duet───►│                │               │              │
- │               ├──Subscribe─────►│               │              │
- │               │                │◄──Subscribe───┤◄──Join───────┤
- │               ├──Notify────────►│──User A──────►│              │
- │               │                │               ├──Notify──────►│
- │               │                │               │              │
- ├──Play Note───►│                │               │              │
- │               ├──Publish───────►│──Note Event──►│              │
- │               │                │               ├──Broadcast───►│
- │               │                │               │              │
- │               │◄──Feedback─────┤◄──Score──────┤◄──Play Note──┤
+User A        Apollo Client   GraphQL API    PubSub      Apollo Client   User B
+ │               │               │             │             │              │
+ ├──Join─────────►│               │             │             │              │
+ │               ├──subscription─►│             │             │              │
+ │               │ duetSession  │             │             │              │
+ │               │               ├─Subscribe──►│             │              │
+ │               │               │             │◄─Subscribe─┤◄─Join────────┤
+ │               │               ├─Notify─────►│─User A────►│              │
+ │               │               │             │             ├─Notify──────►│
+ │               │               │             │             │              │
+ ├──Play Note────►│               │             │             │              │
+ │               ├──mutation─────►│             │             │              │
+ │               │ playNote     │             │             │              │
+ │               │               ├─Publish────►│─Event─────►│              │
+ │               │               │             │             ├─Push────────►│
+ │               │◄──Update──────┤◄─Feedback──┤◄─Score─────┤◄─Play────────┤
 ```
 
 ## Caching Strategy
@@ -238,23 +257,24 @@ User A          Server          Pub/Sub         Server         User B
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Error Handling Flow
+## GraphQL Error Handling Flow
 
 ```
-Frontend          API            Error Handler      Logging
-  │               │                   │               │
-  ├──Request──────►│                   │               │
-  │               ├──Process          │               │
-  │               ├──Error Occurs     │               │
-  │               ├──Catch Error──────►│               │
-  │               │                   ├──Log Error────►│
-  │               │                   ├──Categorize   │
-  │               │                   ├──Format       │
-  │               │◄──Error Response──┤               │
-  │◄──4xx/5xx─────┤                   │               │
-  ├──Retry Logic  │                   │               │
-  ├──Show Error   │                   │               │
-  │               │                   │               │
+Frontend      Apollo Client    GraphQL API    Error Handler    Sentry
+  │               │                 │               │            │
+  ├──Action───────►│                 │               │            │
+  │               ├──mutation/query─►│               │            │
+  │               │                 ├──Execute      │            │
+  │               │                 ├──Error────────►│            │
+  │               │                 │               ├──Classify  │
+  │               │                 │               ├──Log──────►│
+  │               │                 │               ├──Format    │
+  │               │◄──GraphQL Error─┤◄──Formatted───┤            │
+  │               ├──Parse Error    │               │            │
+  │               ├──Retry?         │               │            │
+  │◄──User Error──┤                 │               │            │
+  ├──Show Toast   │                 │               │            │
+  │               │                 │               │            │
 ```
 
 ## Data Privacy & GDPR Flow
