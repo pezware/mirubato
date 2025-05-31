@@ -5,30 +5,37 @@ import LandingPage from './LandingPage'
 describe('LandingPage', () => {
   it('renders the main heading', () => {
     render(<LandingPage />)
-    
+
     const heading = screen.getByText(/mirubato/i)
     expect(heading).toBeInTheDocument()
   })
 
   it('renders the tagline', () => {
     render(<LandingPage />)
-    
-    const tagline = screen.getByText(/open-source sight-reading practice/i)
+
+    const tagline = screen.getByText(/play with me/i)
     expect(tagline).toBeInTheDocument()
   })
 
-  it('renders the start practice button', () => {
+  it('renders the start practice link', () => {
     render(<LandingPage />)
-    
-    const button = screen.getByRole('link', { name: /start practice/i })
-    expect(button).toBeInTheDocument()
-    expect(button).toHaveAttribute('href', '/practice')
+
+    const link = screen.getByRole('link', { name: /Try Practice Mode/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/practice')
   })
 
-  it('renders the piano chord component', () => {
+  it('renders the piano instructions', () => {
     render(<LandingPage />)
-    
-    const pianoSection = screen.getByText(/interactive piano/i)
-    expect(pianoSection).toBeInTheDocument()
+
+    const instructions = screen.getByText(/Play the notes shown below/i)
+    expect(instructions).toBeInTheDocument()
+  })
+
+  it('renders the audio enable warning', () => {
+    render(<LandingPage />)
+
+    const warning = screen.getByText(/First click enables audio/i)
+    expect(warning).toBeInTheDocument()
   })
 })

@@ -1,10 +1,24 @@
 /** @type {import('jest').Config} */
 export default {
   displayName: 'unit',
-  preset: './jest.config.mjs',
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup/unit.setup.ts'],
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^tone$': '<rootDir>/src/__mocks__/tone.ts',
+    '^vexflow$': '<rootDir>/src/__mocks__/vexflow.ts',
+    '^.*/audioManager$': '<rootDir>/src/__mocks__/audioManager.ts'
+  },
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: '<rootDir>/tsconfig.test.json'
+    }]
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@tonejs|tone|vexflow)/)'
+  ],
   coverageThreshold: {
     global: {
       branches: 80,
@@ -12,5 +26,12 @@ export default {
       lines: 80,
       statements: 80
     }
-  }
+  },
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/vite-env.d.ts',
+    '!src/main.tsx',
+    '!src/index.js'
+  ],
 }

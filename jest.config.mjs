@@ -13,7 +13,7 @@ export default {
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
-          tsconfig: '<rootDir>/tsconfig.json'
+          tsconfig: '<rootDir>/tsconfig.test.json'
         }]
       },
       coverageThreshold: {
@@ -32,7 +32,7 @@ export default {
       setupFilesAfterEnv: ['<rootDir>/tests/setup/integration.setup.ts'],
       transform: {
         '^.+\\.ts$': ['ts-jest', {
-          tsconfig: '<rootDir>/tsconfig.json'
+          tsconfig: '<rootDir>/tsconfig.test.json'
         }]
       }
     }
