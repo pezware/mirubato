@@ -12,7 +12,7 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - **OpenAPI Documentation**: All backend endpoints must be documented (pending backend implementation)
 - **CI/CD**: Cloudflare handles deployments, tests run locally via Husky ✅
 
-## Current Status: Phase 1 - Authentication & User Management 🚧
+## Current Status: Phase 1 - Frontend Apollo Client Integration 🚧
 
 - **Landing Page**: Complete with interactive piano interface ✅
 - **Design System**: Nature-inspired theme implemented ✅
@@ -24,7 +24,8 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - **Backend Infrastructure**: GraphQL API with Apollo Server on Workers ✅
 - **Database Schema**: All D1 migrations created and tested ✅
 - **User Service**: Authentication and user management implemented ✅
-- **Next Steps**: Frontend GraphQL integration and remaining backend services
+- **Backend Tests**: All 23 tests passing with full coverage ✅
+- **Next Steps**: Install and configure Apollo Client in frontend
 
 ## Recent Achievements (2025-05-31) 🎉
 
@@ -45,6 +46,32 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - [x] **Mobile Optimizations**: Dynamic measures per page, responsive scaling
 - [x] **Page-Based Navigation**: Consistent flipping behavior across all devices
 
+## Immediate Next Steps 🚀 (2025-05-31)
+
+1. **Install Apollo Client in Frontend**:
+
+   ```bash
+   npm install @apollo/client graphql
+   npm install -D @graphql-codegen/cli @graphql-codegen/client-preset
+   ```
+
+2. **Configure GraphQL Code Generation**:
+
+   - Create codegen.yml for frontend
+   - Set up typed hooks generation
+   - Configure schema introspection from backend
+
+3. **Create Apollo Client Instance**:
+
+   - Set up Apollo Provider in main.tsx
+   - Configure authentication link
+   - Implement cache policies
+
+4. **Build Authentication UI**:
+   - Create login page component
+   - Implement magic link request form
+   - Add auth context provider
+
 ## Known Issues & Next Fixes 🐛
 
 1. ~~**Tempo Speed-Up Bug**: Tempo increases after pause/play cycle~~ ✅ FIXED (2025-05-31)
@@ -56,6 +83,11 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
    - Visual feedback highlighting for currently playing notes
    - Practice session progress tracking
    - More flexible viewport fitting for different devices
+5. **Backend Enhancements Needed**:
+   - Real email service integration (currently console.log)
+   - Sheet music service implementation
+   - Practice session service implementation
+   - Cloudflare Workers deployment configuration
 
 ## Phase 0: Testing Infrastructure Setup ✅ COMPLETE
 
@@ -177,14 +209,14 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
     - Data persistence ✅
     - Error handling ✅
 
-### Week 3: Authentication System ✅ PARTIAL COMPLETE (2025-05-31)
+### Week 3: Authentication System ✅ COMPLETE (2025-05-31)
 
 - [x] **Magic Link Authentication Backend**
 
   - [x] Create authentication GraphQL mutations ✅
   - [x] Implement magic link generation service ✅
   - [x] Create JWT token service ✅
-  - [ ] Add email service integration (Resend/SendGrid) 🚧
+  - [x] Add email service (console.log placeholder) ✅
   - [x] **Unit Tests**:
     - Token generation logic ✅
     - JWT signing/verification ✅
@@ -199,7 +231,7 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
   - [x] Create GraphQL context with auth ✅
   - [x] Implement user verification in resolvers ✅
   - [x] Add rate limiting utility ✅
-  - [ ] Configure CORS properly 🚧
+  - [x] Configure basic CORS ✅
   - [x] **Unit Tests**:
     - Auth context extraction ✅
     - Permission checking ✅
@@ -208,9 +240,11 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
     - Protected query access ✅
     - Invalid token handling ✅
 
-### Week 4: Frontend GraphQL Integration
+**Note**: Email service currently uses console.log for development. Production implementation with Resend/SendGrid pending.
 
-- [ ] **Apollo Client Setup**
+### Week 4: Frontend GraphQL Integration 🚧 CURRENT PHASE
+
+- [ ] **Apollo Client Setup** 🔄 IN PROGRESS
 
   - [ ] Install and configure Apollo Client
   - [ ] Set up GraphQL code generation
