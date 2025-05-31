@@ -54,17 +54,17 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
       // Mobile portrait: optimize for readability and viewport usage
       const containerPadding = 16 // Total horizontal padding
       // Calculate how many measures can fit vertically
-      // Assuming header ~100px, controls ~200px, padding ~50px = 350px total UI
+      // More accurate calculation: header ~80px, piece info ~60px, controls ~180px, padding ~30px = 350px
       const availableHeight = viewportHeight - 350
-      // Each measure needs about 180px height at 0.9 scale
+      // Each measure needs about 150px height at 0.9 scale (reduced for better fit)
       const measuresPerPage = Math.max(
-        1,
-        Math.min(4, Math.floor(availableHeight / 180))
+        2, // Minimum 2 measures to better use space
+        Math.min(4, Math.floor(availableHeight / 150))
       )
 
       return {
         width: viewportWidth - containerPadding,
-        scale: 0.9, // Larger scale for better readability
+        scale: 0.8, // Slightly smaller to fit more measures
         measuresPerLine: 1,
         measuresPerPage, // Dynamic based on viewport height
       }

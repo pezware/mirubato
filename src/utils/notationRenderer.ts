@@ -27,8 +27,8 @@ export class NotationRenderer {
       sheetMusic.measures.length / measuresPerLine
     )
     // Adjust height based on layout
-    const lineHeight = measuresPerLine === 1 ? 180 : 150
-    const baseHeight = measuresPerLine === 1 ? 80 : 100
+    const lineHeight = measuresPerLine === 1 ? 150 : 150 // Consistent line height
+    const baseHeight = measuresPerLine === 1 ? 60 : 100
     const height = baseHeight + numberOfLines * lineHeight
 
     this.renderer.resize(options.width, height)
