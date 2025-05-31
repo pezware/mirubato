@@ -27,11 +27,15 @@ export default {
     },
     {
       displayName: 'integration',
-      testMatch: ['<rootDir>/tests/integration/**/*.test.ts'],
-      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/integration/**/*.test.{ts,tsx}'],
+      testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/tests/setup/integration.setup.ts'],
+      moduleNameMapper: {
+        '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+        '^@/(.*)$': '<rootDir>/src/$1'
+      },
       transform: {
-        '^.+\\.ts$': ['ts-jest', {
+        '^.+\\.(ts|tsx)$': ['ts-jest', {
           tsconfig: '<rootDir>/tsconfig.test.json'
         }]
       }
@@ -41,10 +45,12 @@ export default {
   // Common configuration
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
+    '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/vite-env.d.ts',
     '!src/main.tsx',
-    '!src/index.js'
+    '!src/index.js',
+    '!src/tests/**/*'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
