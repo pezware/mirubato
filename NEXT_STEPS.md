@@ -8,15 +8,24 @@
 - ✅ Sheet music display with page-based navigation
 - ✅ Responsive design for mobile/tablet/desktop
 - ✅ Practice page migration complete
+- ✅ Mobile display optimizations implemented
 
-## Recently Completed: Practice Page Migration
+## Recently Completed: Practice Page Redesign & Migration
 
-### Successfully Migrated Features
+### Successfully Implemented Features
 
-1. **Volume Control** - Wired to Tone.js Master volume (0-100 to -60dB to 0dB)
-2. **Visual Feedback** - Current playing measure tracked and passed to SheetMusicDisplay
-3. **Responsive Layouts** - All breakpoints working (mobile/tablet/desktop)
-4. **Page Navigation** - Full-side tap areas and keyboard support active
+1. **Volume Control** - Circular control wired to Tone.js Master volume (0-100 to -60dB to 0dB)
+2. **Visual Feedback** - Current playing measure tracked and auto page-flip ready
+3. **Responsive Layouts** - Optimized for mobile portrait, landscape, tablet, and desktop
+4. **Page Navigation** - Full-side tap areas, swipe gestures, and keyboard support
+5. **Mobile Optimizations** - Dynamic measures per page based on viewport height
+
+### Bug Fixes Completed
+
+1. **CircularControl** - Fixed passive event listener warnings with touch-action CSS
+2. **Measure Numbers** - Correct numbering after page flips using startMeasureNumber
+3. **Sheet Music Overflow** - Prevented horizontal scrolling with proper width calculations
+4. **Mobile Portrait Display** - Shows 2+ measures per page to better utilize screen space
 
 ### New Components in Production
 
@@ -26,10 +35,10 @@
 
 ### Key Design Features Live
 
-- **Mobile Portrait**: Vertical scroll for natural reading
-- **Page Navigation**: Full-side tap areas (left/right thirds)
+- **Page-Based Navigation**: No scrolling - consistent flipping across all devices
+- **Dynamic Measures**: 1-4 measures per page based on available viewport
 - **Ghost Controls**: 5% opacity for future features testing
-- **Responsive Layouts**: Optimized for each device size
+- **Responsive Scaling**: Different scales for optimal readability per device type
 
 ### Documentation Created
 
@@ -39,28 +48,37 @@
 
 ## Immediate Next Steps
 
-### 1. Add Tests for New Components
+### 1. Improve Dynamic Viewport Fitting
+
+- Implement more flexible height calculations for different devices
+- Consider using CSS container queries for better responsiveness
+- Add viewport-based scale adjustments
+- Test on various device sizes (iPhone SE, Pro, Pro Max, iPads)
+
+### 2. Add Tests for New Components
 
 - Write unit tests for CircularControl
 - Write unit tests for SheetMusicDisplay
 - Write integration tests for Practice page
 - Ensure 80% coverage threshold is maintained
 
-### 2. Enhance Visual Feedback
+### 3. Enhance Visual Feedback
 
 - Add measure highlighting in SheetMusicDisplay when playing
 - Consider note-level progress indicator
 - Add smooth transitions between measures
+- Visual indication of current playing position
 
-### 3. Complete Auto Page-Flip Feature
+### 4. Complete Auto Page-Flip Feature
 
 - Measure tracking already implemented in MusicPlayer ✅
 - SheetMusicDisplay already receives currentPlayingMeasure ✅
 - Test auto-flip behavior at various tempos
 - Add smooth page transition animations
+- Add user preference to disable auto-flip
 - See `docs/FEATURE_AUTO_PAGE_FLIP.md` for full spec
 
-### 4. Authentication System (Phase 1)
+### 5. Authentication System (Phase 1)
 
 - Create login page with email input
 - Implement magic link backend with Cloudflare Workers
