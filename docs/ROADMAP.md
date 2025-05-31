@@ -109,71 +109,380 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 
 ## Phase 1: Foundation & Core Platform (6-8 weeks)
 
-### Week 1-2: Authentication System with Testing
+### Week 1: Backend Infrastructure Setup
+
+- [ ] **Backend Project Structure**
+
+  - [ ] Create backend directory with TypeScript setup
+  - [ ] Configure Cloudflare Workers with wrangler.toml
+  - [ ] Set up GraphQL with Apollo Server for Workers
+  - [ ] Configure D1 database bindings
+  - [ ] **Unit Tests**:
+    - GraphQL schema validation
+    - Resolver type checking
+    - Context initialization
+  - [ ] **Integration Tests**:
+    - GraphQL endpoint health check
+    - Database connection verification
+
+- [ ] **GraphQL Schema Foundation**
+  - [ ] Define core GraphQL types (User, SheetMusic, PracticeSession)
+  - [ ] Create shared TypeScript types between frontend/backend
+  - [ ] Implement schema code generation
+  - [ ] Set up GraphQL playground for development
+  - [ ] **Unit Tests**:
+    - Schema type validation
+    - Resolver return type checking
+  - [ ] **Documentation**:
+    - GraphQL schema documentation
+    - Type definitions reference
+
+### Week 2: Database Schema & User Model
+
+- [ ] **Database Schema Implementation**
+
+  - [ ] Create D1 migrations for users table
+  - [ ] Create practice_sessions table
+  - [ ] Create sheet_music table
+  - [ ] Create user_preferences table
+  - [ ] **Unit Tests**:
+    - Migration rollback/forward
+    - Schema constraints validation
+  - [ ] **Integration Tests**:
+    - Database CRUD operations
+    - Foreign key constraints
+    - Index performance
+
+- [ ] **User Service & Repository**
+  - [ ] Implement User model with TypeScript
+  - [ ] Create UserRepository with D1
+  - [ ] Add UserService business logic layer
+  - [ ] Implement data validation with Zod
+  - [ ] **Unit Tests**:
+    - User model validation
+    - Repository methods
+    - Service layer logic
+  - [ ] **Integration Tests**:
+    - User creation flow
+    - Data persistence
+    - Error handling
+
+### Week 3: Authentication System
 
 - [ ] **Magic Link Authentication Backend**
 
-  - [ ] Create /api/auth/login endpoint
+  - [ ] Create authentication GraphQL mutations
   - [ ] Implement magic link generation service
-  - [ ] Create /api/auth/verify endpoint
-  - [ ] Implement JWT token service
-  - [ ] **OpenAPI**: Document all auth endpoints
+  - [ ] Create JWT token service
+  - [ ] Add email service integration (Resend/SendGrid)
   - [ ] **Unit Tests**:
     - Token generation logic
     - JWT signing/verification
     - Email validation
-    - Rate limiting logic
+    - Magic link expiration
   - [ ] **Integration Tests**:
-    - Full auth flow E2E
-    - Invalid token handling
-    - Token expiration
-    - Rate limit enforcement
+    - Complete auth flow
+    - Token refresh mechanism
+    - Rate limiting
 
-- [ ] **Frontend Authentication Flow**
-  - [ ] Create login page component
-  - [ ] Implement auth context/store
+- [ ] **Authentication Middleware**
+  - [ ] Create GraphQL context with auth
+  - [ ] Implement authorization directives
+  - [ ] Add rate limiting middleware
+  - [ ] Configure CORS properly
+  - [ ] **Unit Tests**:
+    - Auth context extraction
+    - Permission checking
+    - Rate limit logic
+  - [ ] **Integration Tests**:
+    - Protected query access
+    - Invalid token handling
+
+### Week 4: Frontend GraphQL Integration
+
+- [ ] **Apollo Client Setup**
+
+  - [ ] Install and configure Apollo Client
+  - [ ] Set up GraphQL code generation
+  - [ ] Create typed hooks for queries/mutations
+  - [ ] Implement authentication link
+  - [ ] **Unit Tests**:
+    - Client initialization
+    - Auth header injection
+    - Cache configuration
+  - [ ] **Integration Tests**:
+    - Query execution
+    - Mutation handling
+    - Error states
+
+- [ ] **Authentication UI Integration**
+  - [ ] Create login page with magic link
+  - [ ] Implement auth context provider
   - [ ] Add protected route wrapper
-  - [ ] Handle token refresh logic
+  - [ ] Handle token storage and refresh
   - [ ] **Unit Tests**:
     - Auth hook functionality
     - Protected route behavior
-    - Token storage/retrieval
-  - [ ] **Integration Tests**:
-    - Login flow with mocked API
-    - Token refresh flow
+    - Token persistence
+  - [ ] **E2E Tests**:
+    - Complete login flow
+    - Session persistence
     - Logout functionality
 
-### Week 3-4: User Management System
+### Week 5: Sheet Music Service
 
-- [ ] **User Service Backend**
+- [ ] **Sheet Music GraphQL API**
 
-  - [ ] Create /api/users/me endpoint
-  - [ ] Implement user profile update
-  - [ ] Create preferences management
-  - [ ] Add user deletion with GDPR compliance
-  - [ ] **OpenAPI**: Document user endpoints with schemas
+  - [ ] Create SheetMusic type and resolvers
+  - [ ] Implement sheet music queries (list, get, search)
+  - [ ] Add filtering and pagination
+  - [ ] Create recommendation engine
   - [ ] **Unit Tests**:
-    - User data validation
-    - Preference merging logic
-    - GDPR data export formatting
+    - Search algorithm
+    - Filter combinations
+    - Pagination logic
   - [ ] **Integration Tests**:
-    - Profile CRUD operations
-    - Preference persistence
-    - Account deletion flow
+    - Query performance
+    - Full-text search
+    - Recommendation accuracy
 
-- [ ] **Database Schema Implementation**
-  - [ ] Create D1 migrations for users table
-  - [ ] Implement user repository pattern
-  - [ ] Add database connection pooling
-  - [ ] Create migration test framework
+- [ ] **Sheet Music Repository**
+  - [ ] Implement SheetMusicRepository
+  - [ ] Add caching layer for frequent queries
+  - [ ] Create data import scripts
+  - [ ] Handle large JSON data (measures)
   - [ ] **Unit Tests**:
     - Repository methods
-    - Data transformation
-    - Query builders
+    - Cache invalidation
+    - Data transformations
   - [ ] **Integration Tests**:
-    - Migration up/down
+    - Bulk operations
+    - Concurrent access
     - Data integrity
-    - Transaction handling
+
+### Week 6: Practice Session Management
+
+- [ ] **Practice Session GraphQL API**
+
+  - [ ] Create PracticeSession mutations
+  - [ ] Implement session lifecycle (start/pause/complete)
+  - [ ] Add practice logging mutations
+  - [ ] Create progress tracking queries
+  - [ ] **Unit Tests**:
+    - Session state machine
+    - Progress calculations
+    - Data validation
+  - [ ] **Integration Tests**:
+    - Complete session flow
+    - Concurrent sessions
+    - Data consistency
+
+- [ ] **Frontend Practice Integration**
+  - [ ] Integrate practice page with GraphQL
+  - [ ] Add session tracking to MusicPlayer
+  - [ ] Implement progress saving
+  - [ ] Create offline queue for sync
+  - [ ] **Unit Tests**:
+    - Session hooks
+    - Offline storage
+    - Sync logic
+  - [ ] **E2E Tests**:
+    - Full practice flow
+    - Offline/online transition
+    - Progress persistence
+
+### Week 7-8: User Profile & Preferences
+
+- [ ] **User Profile Management**
+
+  - [ ] Create user profile GraphQL queries/mutations
+  - [ ] Implement preferences management
+  - [ ] Add instrument selection
+  - [ ] Add user deletion with GDPR compliance
+  - [ ] **Unit Tests**:
+    - User data validation
+    - Preference merging
+    - GDPR compliance
+  - [ ] **Integration Tests**:
+    - Profile updates
+    - Preference persistence
+    - Account deletion
+
+- [ ] **Frontend Profile UI**
+  - [ ] Create user profile page
+  - [ ] Build settings interface
+  - [ ] Add instrument switcher
+  - [ ] Implement theme preferences
+  - [ ] **Unit Tests**:
+    - Profile form validation
+    - Settings state management
+    - Theme switching
+  - [ ] **E2E Tests**:
+    - Profile editing
+    - Preference saving
+    - Instrument switching
+
+## Backend Architecture Details
+
+### GraphQL Schema Structure
+
+```graphql
+# Core Types
+type User {
+  id: ID!
+  email: String!
+  displayName: String
+  primaryInstrument: Instrument!
+  preferences: UserPreferences!
+  stats: UserStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SheetMusic {
+  id: ID!
+  title: String!
+  composer: String!
+  opus: String
+  movement: String
+  instrument: Instrument!
+  difficulty: Difficulty!
+  measures: [Measure!]!
+  metadata: SheetMusicMetadata
+}
+
+type PracticeSession {
+  id: ID!
+  user: User!
+  instrument: Instrument!
+  sheetMusic: SheetMusic
+  startedAt: DateTime!
+  completedAt: DateTime
+  accuracy: Float
+  notesAttempted: Int!
+  notesCorrect: Int!
+  logs: [PracticeLog!]!
+}
+
+# Enums
+enum Instrument {
+  PIANO
+  GUITAR
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+```
+
+### Database Schema (D1)
+
+```sql
+-- Users table
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  primary_instrument TEXT NOT NULL DEFAULT 'piano',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User preferences (JSON stored)
+CREATE TABLE user_preferences (
+  user_id TEXT PRIMARY KEY,
+  preferences TEXT NOT NULL, -- JSON
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Practice sessions
+CREATE TABLE practice_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  instrument TEXT NOT NULL,
+  sheet_music_id TEXT,
+  started_at DATETIME NOT NULL,
+  completed_at DATETIME,
+  accuracy_percentage REAL,
+  notes_attempted INTEGER DEFAULT 0,
+  notes_correct INTEGER DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id)
+);
+
+-- Sheet music library
+CREATE TABLE sheet_music (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  composer TEXT NOT NULL,
+  opus TEXT,
+  movement TEXT,
+  instrument TEXT NOT NULL,
+  difficulty INTEGER NOT NULL,
+  measures_data TEXT NOT NULL, -- JSON
+  metadata TEXT, -- JSON
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Practice logs for detailed tracking
+CREATE TABLE practice_logs (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL,
+  activity_type TEXT NOT NULL,
+  duration_seconds INTEGER NOT NULL,
+  tempo_practiced INTEGER,
+  target_tempo INTEGER,
+  focus_areas TEXT, -- JSON array
+  self_rating INTEGER,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE CASCADE
+);
+
+-- Indexes for performance
+CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
+CREATE INDEX idx_sessions_user_instrument ON practice_sessions(user_id, instrument);
+CREATE INDEX idx_sheet_music_instrument ON sheet_music(instrument);
+CREATE INDEX idx_logs_session ON practice_logs(session_id);
+```
+
+### Testing Strategy
+
+#### Backend Testing Structure
+
+```
+backend/
+├── src/
+│   ├── __tests__/
+│   │   ├── unit/
+│   │   │   ├── services/
+│   │   │   ├── resolvers/
+│   │   │   └── utils/
+│   │   └── integration/
+│   │       ├── auth.test.ts
+│   │       ├── user.test.ts
+│   │       └── practice.test.ts
+│   └── test-utils/
+│       ├── db.ts
+│       └── graphql.ts
+```
+
+#### Frontend Testing Updates
+
+```
+src/
+├── services/
+│   └── api/
+│       ├── __tests__/
+│       │   ├── client.test.ts
+│       │   └── hooks.test.ts
+│       └── __mocks__/
+│           └── graphql.ts
+```
+
+## Phase 2: Progress & Analytics (6-8 weeks)
 
 ### Week 5-6: Sheet Music Service
 
