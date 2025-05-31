@@ -11,7 +11,7 @@
     --color-background: theme('colors.mirubato.wood.100');
     --color-text: theme('colors.mirubato.wood.800');
     --color-text-light: theme('colors.mirubato.wood.600');
-    
+
     /* Spacing scale */
     --space-xs: 0.5rem;
     --space-sm: 1rem;
@@ -19,13 +19,13 @@
     --space-lg: 2rem;
     --space-xl: 3rem;
     --space-2xl: 4rem;
-    
+
     /* Border radius */
     --radius-sm: 0.25rem;
     --radius-md: 0.5rem;
     --radius-lg: 1rem;
     --radius-xl: 1.5rem;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -43,7 +43,11 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -80,13 +84,37 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .animate-in {
     animation: fadeIn 0.5s ease-out;
   }
-  
+
   .full-bleed {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
+  }
+
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    80% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+
+  .animate-fade-in-out {
+    animation: fadeInOut 3s ease-in-out;
+    animation-fill-mode: forwards;
   }
 }

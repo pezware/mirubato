@@ -2,166 +2,88 @@
 
 ## Current State (2025-05-31)
 
-- ✅ Testing infrastructure complete (Jest, Husky, pre-commit hooks)
-- ✅ CSP issues fixed for Cloudflare deployment
-- ✅ Basic practice page with Moonlight Sonata (20 measures)
-- ✅ Audio system using Tone.js with Salamander piano samples from CDN
-- ✅ Tempo bug fixed - pause/resume now works correctly
-- ✅ MusicPlayer component created for reusability
+- ✅ Testing infrastructure complete
+- ✅ Tempo bug fixed with reusable MusicPlayer component
+- ✅ Practice page redesigned with elegant controls
+- ✅ Sheet music display with page-based navigation
+- ✅ Responsive design for mobile/tablet/desktop
+- 🚧 Practice page at `/practice-redesign` for testing
 
-## Completed: Tempo Bug Fix ✅
+## Recently Completed: Practice Page Redesign
 
-The tempo speed-up bug has been successfully fixed:
+### New Components Created
 
-### Solution Implemented
+1. **CircularControl** - Elegant volume control mimicking vintage dashboards
+2. **SheetMusicDisplay** - Page-based sheet music with smart navigation
+3. **Enhanced MusicPlayer** - Reusable player controls
 
-- **Root Cause**: Tone.Part was using absolute time values that accumulated on pause/resume
-- **Fix**: Used Transport time notation (bars:beats:sixteenths) for proper BPM-relative scheduling
-- **Improvements**:
-  - Added proper pause/resume functionality (maintains position)
-  - Added stop button to reset to beginning
-  - Created reusable MusicPlayer component
-  - Disabled tempo adjustment during pause with visual feedback
+### Key Design Features
 
-### MusicPlayer Component
+- **Mobile Portrait**: Vertical scroll for natural reading
+- **Page Navigation**: Full-side tap areas (left/right thirds)
+- **Ghost Controls**: 5% opacity for future features testing
+- **Responsive Layouts**: Optimized for each device size
 
-Created a modular, reusable music player that can be used throughout the app:
+### Documentation Created
 
-```typescript
-<MusicPlayer
-  notes={playableNotes}
-  initialTempo={60}
-  showStopButton={true}
-  showTempoControl={true}
-  showMeasureProgress={true}
-  onPlayStateChange={(playing, paused) => {...}}
-  onTempoChange={(tempo) => {...}}
-  compact={false}
-/>
-```
+- `docs/PRACTICE_PAGE_DESIGN.md` - Complete design system
+- `docs/PRACTICE_CONTROLS_GUIDE.md` - Visual guide for controls
+- `docs/FEATURE_AUTO_PAGE_FLIP.md` - Spec for future auto-flip feature
 
-## Next Features (After Bug Fix)
+## Immediate Next Steps
 
-### 1. Volume Control
+### 1. Implement Volume Control ✅
 
-- Add volume slider component in Practice.tsx
-- Use `Tone.Master.volume.value` or create a Gain node
-- Range: -60 to 0 (in decibels)
+- Already created CircularControl component
+- Need to wire up to Tone.js Master volume
+- Test on all devices
 
 ### 2. Visual Feedback for Playing Notes
 
-- In `scheduleNotes()`, add visual highlighting
-- Track current measure/note position
-- Update UI to show which note is currently playing
-- Consider adding a progress bar for the piece
+- Implement currentPlayingMeasure tracking in MusicPlayer
+- Add highlighting to current measure in SheetMusicDisplay
+- Consider progress indicator on notes
 
-### 3. Authentication System (Phase 1)
+### 3. Complete Practice Page Migration
 
-Following the roadmap, implement magic link auth:
+- Move redesigned page from `/practice-redesign` to `/practice`
+- Add tests for new components
+- Ensure all features work correctly
 
-#### Backend Setup (Cloudflare Workers)
+### 4. Auto Page-Flip Feature
 
-1. Create `src/api/` directory structure
-2. Implement endpoints:
-   - `POST /api/auth/login` - Send magic link email
-   - `POST /api/auth/verify` - Verify token and return JWT
-   - `POST /api/auth/refresh` - Refresh JWT token
-3. Use Cloudflare D1 for user storage
-4. Use Resend API for sending emails
+- Implement measure tracking in MusicPlayer
+- Connect to SheetMusicDisplay's currentPlayingMeasure prop
+- Test smooth transitions at various tempos
+- See `docs/FEATURE_AUTO_PAGE_FLIP.md` for full spec
 
-#### Frontend Auth
+### 5. Authentication System (Phase 1)
 
-1. Create login page component
-2. Implement auth context using Zustand
-3. Add protected route wrapper
-4. Handle JWT storage and refresh
+- Create login page with email input
+- Implement magic link backend
+- Set up Cloudflare D1 database
+- Add user session management
 
-### 4. Database Schema Implementation
-
-Set up Cloudflare D1 with migrations:
-
-```sql
--- First migration
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE practice_sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  started_at DATETIME NOT NULL,
-  duration_seconds INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
-
-## Development Workflow Reminders
-
-### Testing
-
-- All commits now require passing tests
-- Run `npm test` to verify before committing
-- Add tests for new features:
-  ```typescript
-  // Example for volume control
-  describe('VolumeControl', () => {
-    it('should adjust master volume', () => {
-      // Test implementation
-    })
-  })
-  ```
-
-### Commit Messages
-
-Use conventional commits:
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation
-- `test:` for test additions
-- `refactor:` for code refactoring
-
-### Project Structure
-
-```
-src/
-├── api/          # Backend API (to be created)
-├── components/   # Reusable React components
-├── pages/        # Page components
-├── utils/        # Utilities (audioManager, etc.)
-├── data/         # Sheet music data
-├── types/        # TypeScript types
-└── __mocks__/    # Jest mocks
-```
-
-## Quick Start for Next Session
+## Quick Commands
 
 ```bash
-# Start development
-npm run dev
+# Development
+npm run dev              # Start dev server
+npm test                 # Run tests
+npm run type-check       # Check TypeScript
 
-# Run tests
-npm test
+# View new design
+# Navigate to http://localhost:3000/practice-redesign
 
-# Check types
-npm run type-check
-
-# If working on backend
-npx wrangler dev
+# Testing responsive design
+# Use Chrome DevTools device emulator
+# Test portrait/landscape orientations
 ```
 
-## Resources
+## Key Files to Review
 
-- [Tone.js Transport docs](https://tonejs.github.io/docs/14.7.77/Transport)
-- [Cloudflare D1 docs](https://developers.cloudflare.com/d1/)
-- [Cloudflare Workers docs](https://developers.cloudflare.com/workers/)
-- [Magic link auth pattern](https://www.cloudflare.com/learning/access-management/what-is-magic-link-authentication/)
-
-## Contact Points
-
-- Main repo: https://github.com/arbeitandy/mirubato
-- Issues: Track bugs and features in GitHub Issues
-- Design docs: See `/docs` directory for architecture decisions
+- `/src/components/CircularControl.tsx` - Volume control component
+- `/src/components/SheetMusicDisplay.tsx` - Page-based sheet music
+- `/src/pages/PracticeRedesign.tsx` - New practice page design
+- `/docs/PRACTICE_PAGE_DESIGN.md` - Design documentation
+- `/docs/FEATURE_AUTO_PAGE_FLIP.md` - Auto-flip specification
