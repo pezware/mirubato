@@ -2,6 +2,7 @@ import { localStorageService } from '../../../services/localStorage'
 import {
   Instrument,
   Theme,
+  NotationSize,
   SessionType,
   ActivityType,
 } from '@mirubato/shared/types'
@@ -26,6 +27,9 @@ describe('localStorageService', () => {
         primaryInstrument: Instrument.PIANO,
         preferences: {
           theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
           notificationSettings: {
             practiceReminders: false,
             emailUpdates: false,
@@ -39,6 +43,8 @@ describe('localStorageService', () => {
         stats: {
           totalPracticeTime: 0,
           consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
           lastPracticeDate: null,
           averageAccuracy: 0,
         },
@@ -81,6 +87,9 @@ describe('localStorageService', () => {
         lastSyncedAt: new Date().toISOString(),
         preferences: {
           theme: Theme.DARK,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: true,
+          dailyGoalMinutes: 45,
           notificationSettings: {
             practiceReminders: true,
             emailUpdates: true,
@@ -94,6 +103,8 @@ describe('localStorageService', () => {
         stats: {
           totalPracticeTime: 3600,
           consecutiveDays: 5,
+          piecesCompleted: 0,
+          accuracyAverage: 85,
           lastPracticeDate: new Date().toISOString().split('T')[0],
           averageAccuracy: 85,
         },
@@ -184,7 +195,7 @@ describe('localStorageService', () => {
       // Should update total practice time (30 minutes - 5 minutes paused = 25 minutes = 1500 seconds)
       expect(updatedUserData?.stats.totalPracticeTime).toBe(1500)
       // Should update average accuracy
-      expect(updatedUserData?.stats.averageAccuracy).toBe(90)
+      expect(updatedUserData?.stats.accuracyAverage).toBe(90)
       // Should update consecutive days
       expect(updatedUserData?.stats.consecutiveDays).toBe(1)
       // Should update last practice date
@@ -228,7 +239,7 @@ describe('localStorageService', () => {
 
       const updatedUserData = localStorageService.getUserData()
       // Average of 80 and 90 should be 85
-      expect(updatedUserData?.stats.averageAccuracy).toBe(85)
+      expect(updatedUserData?.stats.accuracyAverage).toBe(85)
     })
   })
 
@@ -410,6 +421,9 @@ describe('localStorageService', () => {
       localStorageService.getUserData() // Initialize user
       const newPreferences = {
         theme: Theme.DARK,
+        notationSize: NotationSize.MEDIUM,
+        practiceReminders: true,
+        dailyGoalMinutes: 45,
         notificationSettings: {
           practiceReminders: true,
           emailUpdates: false,

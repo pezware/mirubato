@@ -21,14 +21,6 @@ const config: CodegenConfig = {
         withComponent: false,
       },
     },
-    'src/gql/apollo-helpers.ts': {
-      plugins: ['typescript-react-apollo'],
-      config: {
-        withHooks: true,
-        withHOC: false,
-        withComponent: false,
-      },
-    },
   },
   hooks: {
     afterAllFileWrite: ['prettier --write'],
