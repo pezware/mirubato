@@ -21,7 +21,14 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
 
   // Check if origin is allowed based on configuration
   const environment = env.ENVIRONMENT as 'production' | 'development'
-  if (isOriginAllowed(origin, environment)) {
+  const isAllowed = isOriginAllowed(origin, environment)
+
+  // Log for debugging (remove in production)
+  console.log(
+    `CORS check: origin="${origin}", env="${environment}", allowed=${isAllowed}`
+  )
+
+  if (isAllowed) {
     corsHeaders['Access-Control-Allow-Origin'] = origin
   }
 
