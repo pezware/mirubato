@@ -83,6 +83,13 @@ export function isOriginAllowed(
     ) {
       return true
     }
+
+    // In development, also check production patterns for preview deployments
+    for (const pattern of corsConfig.production.patterns) {
+      if (matchesPattern(origin, pattern)) {
+        return true
+      }
+    }
   }
 
   return false
