@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
+    "@mirubato/shared": "*",
     "@types/react-router-dom": "^5.3.3",
     "graphql": "^16.11.0",
     "react": "^18.2.0",

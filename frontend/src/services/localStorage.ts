@@ -1,62 +1,20 @@
 // Local storage service for managing user data (both anonymous and authenticated)
+import {
+  Instrument,
+  Theme,
+  LocalPracticeSession,
+  PracticeLog,
+  LocalUserData,
+} from '@mirubato/shared/types'
 
-export interface LocalUserData {
-  id: string // For anonymous users, this will be a local UUID
-  isAnonymous: boolean
-  displayName?: string
-  primaryInstrument: 'PIANO' | 'GUITAR'
-  preferences: UserPreferences
-  stats: UserStats
-  lastSyncedAt?: string // ISO date string, only for authenticated users
-}
-
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto'
-  notificationSettings: {
-    practiceReminders: boolean
-    emailUpdates: boolean
-  }
-  practiceSettings: {
-    defaultSessionDuration: number // in minutes
-    defaultTempo: number
-    metronomeSoundEnabled: boolean
-  }
-}
-
-export interface UserStats {
-  totalPracticeTime: number // in seconds
-  consecutiveDays: number
-  lastPracticeDate?: string // ISO date string
-  averageAccuracy: number
-}
-
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: 'PIANO' | 'GUITAR'
-  sheetMusicId?: string
-  sheetMusicTitle?: string
-  startedAt: string // ISO date string
-  completedAt?: string // ISO date string
-  duration: number // in seconds
-  accuracy?: number
-  notesAttempted: number
-  notesCorrect: number
-  isSynced: boolean // false for local-only sessions
-}
-
-export interface PracticeLog {
-  id: string
-  sessionId: string
-  activityType: 'practice' | 'sight-reading' | 'technique' | 'repertoire'
-  durationSeconds: number
-  tempoPracticed?: number
-  targetTempo?: number
-  focusAreas?: string[]
-  selfRating?: number // 1-5
-  notes?: string
-  createdAt: string // ISO date string
-}
+// Re-export types for backward compatibility
+export type {
+  UserPreferences,
+  UserStats,
+  PracticeLog,
+  LocalUserData,
+} from '@mirubato/shared/types'
+export type PracticeSession = LocalPracticeSession
 
 const STORAGE_KEYS = {
   USER_DATA: 'mirubato_user_data',
@@ -77,12 +35,16 @@ class LocalStorageService {
   }
 
   createAnonymousUser(): LocalUserData {
+    const now = new Date().toISOString()
     const anonymousUser: LocalUserData = {
       id: `anon_${crypto.randomUUID()}`,
+      email: '', // Empty for anonymous users
       isAnonymous: true,
-      primaryInstrument: 'PIANO',
+      primaryInstrument: Instrument.PIANO,
+      createdAt: now,
+      updatedAt: now,
       preferences: {
-        theme: 'auto',
+        theme: Theme.AUTO,
         notificationSettings: {
           practiceReminders: false,
           emailUpdates: false,
@@ -152,8 +114,13 @@ class LocalStorageService {
     if (!userData) return
 
     // Update total practice time
-    if (session.duration) {
-      userData.stats.totalPracticeTime += session.duration
+    if (session.completedAt) {
+      const duration =
+        (new Date(session.completedAt).getTime() -
+          new Date(session.startedAt).getTime()) /
+          1000 -
+        session.pausedDuration
+      userData.stats.totalPracticeTime += duration
     }
 
     // Update last practice date and consecutive days
@@ -181,12 +148,12 @@ class LocalStorageService {
     }
 
     // Update average accuracy
-    if (session.accuracy !== undefined) {
+    if (session.accuracyPercentage !== undefined) {
       const sessions = this.getPracticeSessions().filter(
-        s => s.accuracy !== undefined
+        s => s.accuracyPercentage !== undefined
       )
       const totalAccuracy = sessions.reduce(
-        (sum, s) => sum + (s.accuracy || 0),
+        (sum, s) => sum + (s.accuracyPercentage || 0),
         0
       )
       userData.stats.averageAccuracy = totalAccuracy / sessions.length
