@@ -328,6 +328,11 @@ describe('NoteGenerator', () => {
 - **Feature Branches**: Create feature branches for all new work
 - **Pull Requests**: All changes must go through code review
 - **Testing**: All tests must pass before merging
+- **Pre-commit Hooks**: NEVER bypass pre-commit hooks with `--no-verify`
+  - Always fix linting errors, type errors, and failing tests
+  - Pre-commit hooks ensure code quality and prevent broken commits
+  - If hooks fail, fix the issues rather than skipping verification
+  - The project uses husky and lint-staged for automated quality checks
 
 ### Code Review Checklist
 

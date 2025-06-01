@@ -1,88 +1,91 @@
 // Local storage service for managing user data (both anonymous and authenticated)
+import {
+  Instrument,
+  Theme,
+  NotationSize,
+  LocalPracticeSession,
+  PracticeLog,
+  LocalUserData,
+  UserPreferences,
+} from '@mirubato/shared/types'
 
-export interface LocalUserData {
-  id: string // For anonymous users, this will be a local UUID
-  isAnonymous: boolean
-  displayName?: string
-  primaryInstrument: 'PIANO' | 'GUITAR'
-  preferences: UserPreferences
-  stats: UserStats
-  lastSyncedAt?: string // ISO date string, only for authenticated users
-}
-
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto'
-  notificationSettings: {
-    practiceReminders: boolean
-    emailUpdates: boolean
-  }
-  practiceSettings: {
-    defaultSessionDuration: number // in minutes
-    defaultTempo: number
-    metronomeSoundEnabled: boolean
-  }
-}
-
-export interface UserStats {
-  totalPracticeTime: number // in seconds
-  consecutiveDays: number
-  lastPracticeDate?: string // ISO date string
-  averageAccuracy: number
-}
-
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: 'PIANO' | 'GUITAR'
-  sheetMusicId?: string
-  sheetMusicTitle?: string
-  startedAt: string // ISO date string
-  completedAt?: string // ISO date string
-  duration: number // in seconds
-  accuracy?: number
-  notesAttempted: number
-  notesCorrect: number
-  isSynced: boolean // false for local-only sessions
-}
-
-export interface PracticeLog {
-  id: string
-  sessionId: string
-  activityType: 'practice' | 'sight-reading' | 'technique' | 'repertoire'
-  durationSeconds: number
-  tempoPracticed?: number
-  targetTempo?: number
-  focusAreas?: string[]
-  selfRating?: number // 1-5
-  notes?: string
-  createdAt: string // ISO date string
-}
+// Re-export types for backward compatibility
+export type {
+  UserPreferences,
+  UserStats,
+  PracticeLog,
+  LocalUserData,
+} from '@mirubato/shared/types'
+export type PracticeSession = LocalPracticeSession
 
 const STORAGE_KEYS = {
   USER_DATA: 'mirubato_user_data',
   PRACTICE_SESSIONS: 'mirubato_practice_sessions',
   PRACTICE_LOGS: 'mirubato_practice_logs',
   PENDING_SYNC: 'mirubato_pending_sync',
+  SESSION_ID_MAP: 'mirubato_session_id_map', // Maps local IDs to remote IDs
 }
 
 class LocalStorageService {
   // User Data Management
   getUserData(): LocalUserData | null {
-    const data = localStorage.getItem(STORAGE_KEYS.USER_DATA)
-    return data ? JSON.parse(data) : null
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_DATA)
+      if (!data) {
+        // Initialize anonymous user if no data exists
+        const anonymousUser = this.createAnonymousUser()
+        this.setUserData(anonymousUser)
+        return anonymousUser
+      }
+      const userData = JSON.parse(data)
+
+      // Validate required fields
+      if (
+        !userData.id ||
+        typeof userData.isAnonymous !== 'boolean' ||
+        !userData.preferences ||
+        !userData.stats
+      ) {
+        // Create new anonymous user if data is invalid
+        const anonymousUser = this.createAnonymousUser()
+        this.setUserData(anonymousUser)
+        return anonymousUser
+      }
+
+      return userData
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      // Create new anonymous user if data is corrupted
+      const anonymousUser = this.createAnonymousUser()
+      this.setUserData(anonymousUser)
+      return anonymousUser
+    }
   }
 
   setUserData(userData: LocalUserData): void {
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData))
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData))
+    } catch (error) {
+      console.error('Error saving user data:', error)
+      // Silently fail for quota exceeded errors
+    }
   }
 
   createAnonymousUser(): LocalUserData {
+    const now = new Date().toISOString()
     const anonymousUser: LocalUserData = {
       id: `anon_${crypto.randomUUID()}`,
+      email: '', // Empty for anonymous users
       isAnonymous: true,
-      primaryInstrument: 'PIANO',
+      primaryInstrument: Instrument.PIANO,
+      createdAt: now,
+      updatedAt: now,
       preferences: {
-        theme: 'auto',
+        theme: Theme.AUTO,
+        notationSize: NotationSize.MEDIUM,
+        practiceReminders: false,
+        dailyGoalMinutes: 30,
+        // Keep legacy structure for backward compatibility
         notificationSettings: {
           practiceReminders: false,
           emailUpdates: false,
@@ -96,7 +99,10 @@ class LocalStorageService {
       stats: {
         totalPracticeTime: 0,
         consecutiveDays: 0,
-        averageAccuracy: 0,
+        piecesCompleted: 0,
+        accuracyAverage: 0,
+        lastPracticeDate: null,
+        averageAccuracy: 0, // For backward compatibility
       },
     }
     this.setUserData(anonymousUser)
@@ -105,27 +111,60 @@ class LocalStorageService {
 
   // Practice Sessions Management
   getPracticeSessions(): PracticeSession[] {
-    const data = localStorage.getItem(STORAGE_KEYS.PRACTICE_SESSIONS)
-    return data ? JSON.parse(data) : []
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PRACTICE_SESSIONS)
+      if (!data) return []
+
+      const sessions = JSON.parse(data)
+      if (!Array.isArray(sessions)) return []
+
+      // Filter out invalid sessions
+      return sessions.filter(session => {
+        return (
+          session &&
+          session.id &&
+          session.userId &&
+          session.instrument &&
+          session.sessionType &&
+          session.startedAt &&
+          typeof session.pausedDuration === 'number' &&
+          typeof session.notesAttempted === 'number' &&
+          typeof session.notesCorrect === 'number' &&
+          // Validate enum values
+          ['PIANO', 'GUITAR'].includes(session.instrument) &&
+          ['FREE_PRACTICE', 'GUIDED_PRACTICE', 'ASSESSMENT'].includes(
+            session.sessionType
+          )
+        )
+      })
+    } catch (error) {
+      console.error('Error parsing practice sessions:', error)
+      return []
+    }
   }
 
   savePracticeSession(session: PracticeSession): void {
-    const sessions = this.getPracticeSessions()
-    const index = sessions.findIndex(s => s.id === session.id)
+    try {
+      const sessions = this.getPracticeSessions()
+      const index = sessions.findIndex(s => s.id === session.id)
 
-    if (index >= 0) {
-      sessions[index] = session
-    } else {
-      sessions.push(session)
+      if (index >= 0) {
+        sessions[index] = session
+      } else {
+        sessions.push(session)
+      }
+
+      localStorage.setItem(
+        STORAGE_KEYS.PRACTICE_SESSIONS,
+        JSON.stringify(sessions)
+      )
+
+      // Update user stats
+      this.updateUserStats(session)
+    } catch (error) {
+      console.error('Error saving practice session:', error)
+      // Silently fail for quota exceeded errors
     }
-
-    localStorage.setItem(
-      STORAGE_KEYS.PRACTICE_SESSIONS,
-      JSON.stringify(sessions)
-    )
-
-    // Update user stats
-    this.updateUserStats(session)
   }
 
   // Practice Logs Management
@@ -146,14 +185,24 @@ class LocalStorageService {
     localStorage.setItem(STORAGE_KEYS.PRACTICE_LOGS, JSON.stringify(logs))
   }
 
+  getLogsBySessionId(sessionId: string): PracticeLog[] {
+    const logs = this.getPracticeLogs()
+    return logs.filter(log => log.sessionId === sessionId)
+  }
+
   // User Stats Update
   private updateUserStats(session: PracticeSession): void {
     const userData = this.getUserData()
     if (!userData) return
 
     // Update total practice time
-    if (session.duration) {
-      userData.stats.totalPracticeTime += session.duration
+    if (session.completedAt) {
+      const duration =
+        (new Date(session.completedAt).getTime() -
+          new Date(session.startedAt).getTime()) /
+          1000 -
+        session.pausedDuration
+      userData.stats.totalPracticeTime += duration
     }
 
     // Update last practice date and consecutive days
@@ -181,15 +230,16 @@ class LocalStorageService {
     }
 
     // Update average accuracy
-    if (session.accuracy !== undefined) {
+    if (session.accuracyPercentage !== undefined) {
       const sessions = this.getPracticeSessions().filter(
-        s => s.accuracy !== undefined
+        s => s.accuracyPercentage !== undefined
       )
       const totalAccuracy = sessions.reduce(
-        (sum, s) => sum + (s.accuracy || 0),
+        (sum, s) => sum + (s.accuracyPercentage || 0),
         0
       )
-      userData.stats.averageAccuracy = totalAccuracy / sessions.length
+      userData.stats.accuracyAverage = totalAccuracy / sessions.length
+      userData.stats.averageAccuracy = userData.stats.accuracyAverage // For backward compatibility
     }
 
     this.setUserData(userData)
@@ -200,8 +250,14 @@ class LocalStorageService {
     sessions: PracticeSession[]
     logs: PracticeLog[]
   } {
-    const data = localStorage.getItem(STORAGE_KEYS.PENDING_SYNC)
-    return data ? JSON.parse(data) : { sessions: [], logs: [] }
+    // Get all unsynced sessions
+    const sessions = this.getPracticeSessions().filter(s => !s.isSynced)
+
+    // For now, we consider all logs as needing sync
+    // In a real implementation, we'd track sync status for logs too
+    const logs = this.getPracticeLogs()
+
+    return { sessions, logs }
   }
 
   markAsSynced(sessionIds: string[], logIds: string[]): void {
@@ -227,11 +283,12 @@ class LocalStorageService {
   }
 
   // Migration from anonymous to authenticated user
-  migrateToAuthenticatedUser(authenticatedUserId: string): void {
+  migrateToAuthenticatedUser(authenticatedUserId: string, email: string): void {
     const userData = this.getUserData()
     if (userData && userData.isAnonymous) {
       // Update user data
       userData.id = authenticatedUserId
+      userData.email = email
       userData.isAnonymous = false
       userData.lastSyncedAt = new Date().toISOString()
       this.setUserData(userData)
@@ -253,6 +310,57 @@ class LocalStorageService {
         STORAGE_KEYS.PENDING_SYNC,
         JSON.stringify({ sessions, logs })
       )
+    }
+  }
+
+  // Update user preferences
+  updateUserPreferences(preferences: UserPreferences): void {
+    const userData = this.getUserData()
+    if (userData) {
+      userData.preferences = preferences
+      userData.updatedAt = new Date().toISOString()
+      this.setUserData(userData)
+    }
+  }
+
+  // Update primary instrument
+  updatePrimaryInstrument(instrument: Instrument): void {
+    const userData = this.getUserData()
+    if (userData) {
+      userData.primaryInstrument = instrument
+      userData.updatedAt = new Date().toISOString()
+      this.setUserData(userData)
+    }
+  }
+
+  // Session ID mapping for remote sync
+  updateSessionRemoteId(localId: string, remoteId: string): void {
+    try {
+      const idMap = this.getSessionIdMap()
+      idMap[localId] = remoteId
+      localStorage.setItem(STORAGE_KEYS.SESSION_ID_MAP, JSON.stringify(idMap))
+    } catch (error) {
+      console.error('Error updating session remote ID:', error)
+    }
+  }
+
+  getRemoteSessionId(localId: string): string | null {
+    try {
+      const idMap = this.getSessionIdMap()
+      return idMap[localId] || null
+    } catch (error) {
+      console.error('Error getting remote session ID:', error)
+      return null
+    }
+  }
+
+  private getSessionIdMap(): Record<string, string> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SESSION_ID_MAP)
+      return data ? JSON.parse(data) : {}
+    } catch (error) {
+      console.error('Error parsing session ID map:', error)
+      return {}
     }
   }
 

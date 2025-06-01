@@ -11,21 +11,16 @@ export const GET_CURRENT_USER = gql`
       updatedAt
       preferences {
         theme
-        notificationSettings {
-          practiceReminders
-          emailUpdates
-        }
-        practiceSettings {
-          defaultSessionDuration
-          defaultTempo
-          metronomeSoundEnabled
-        }
+        notationSize
+        practiceReminders
+        dailyGoalMinutes
+        customSettings
       }
       stats {
         totalPracticeTime
         consecutiveDays
-        lastPracticeDate
-        averageAccuracy
+        piecesCompleted
+        accuracyAverage
       }
     }
   }
@@ -45,16 +40,14 @@ export const UPDATE_USER_PROFILE = gql`
 
 export const UPDATE_USER_PREFERENCES = gql`
   mutation UpdateUserPreferences($preferences: UserPreferencesInput!) {
-    updateUserPreferences(preferences: $preferences) {
-      theme
-      notificationSettings {
+    updateUser(input: { preferences: $preferences }) {
+      id
+      preferences {
+        theme
+        notationSize
         practiceReminders
-        emailUpdates
-      }
-      practiceSettings {
-        defaultSessionDuration
-        defaultTempo
-        metronomeSoundEnabled
+        dailyGoalMinutes
+        customSettings
       }
     }
   }
