@@ -7,26 +7,11 @@ import { verifyJWT } from './utils/auth'
 import { createRateLimiter } from './utils/rateLimiter'
 import { typeDefs } from './schema'
 import { logRequest } from './middleware/logging'
+import { isOriginAllowed } from './config/cors'
 
 // Helper to get CORS headers based on origin
 function getCorsHeaders(request: Request, env: Env): Record<string, string> {
   const origin = request.headers.get('Origin') || ''
-
-  // Allowed origins
-  const allowedOrigins =
-    env.ENVIRONMENT === 'production'
-      ? [
-          'https://mirubato.com',
-          'https://www.mirubato.com',
-          'https://mirubato.arbeitandy.workers.dev',
-          'https://mirubato.pages.dev',
-        ]
-      : [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'http://127.0.0.1:3000',
-          'http://127.0.0.1:5173',
-        ]
 
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -34,22 +19,10 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
     'Access-Control-Max-Age': '86400',
   }
 
-  // Only set origin if it's in the allowed list
-  if (allowedOrigins.includes(origin)) {
+  // Check if origin is allowed based on configuration
+  const environment = env.ENVIRONMENT as 'production' | 'development'
+  if (isOriginAllowed(origin, environment)) {
     corsHeaders['Access-Control-Allow-Origin'] = origin
-  } else if (env.ENVIRONMENT === 'production') {
-    // In production, also allow Cloudflare preview deployments
-    if (origin.endsWith('.workers.dev') || origin.endsWith('.pages.dev')) {
-      corsHeaders['Access-Control-Allow-Origin'] = origin
-    }
-  } else if (env.ENVIRONMENT === 'development') {
-    // In development, allow any localhost origin
-    if (
-      origin.startsWith('http://localhost:') ||
-      origin.startsWith('http://127.0.0.1:')
-    ) {
-      corsHeaders['Access-Control-Allow-Origin'] = origin
-    }
   }
 
   return corsHeaders
