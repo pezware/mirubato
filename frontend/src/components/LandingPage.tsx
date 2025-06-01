@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PianoChord from './PianoChord'
+import { AuthModal } from './AuthModal'
 
 const LandingPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
     // Trigger fade-in animation after component mounts
@@ -13,7 +15,7 @@ const LandingPage: React.FC = () => {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url('/mirubato-cover.jpeg')` }}
       >
@@ -21,10 +23,22 @@ const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-mirubato-wood-900/20 via-transparent to-mirubato-wood-900/40" />
       </div>
 
+      {/* Sign In Button - Top Right */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          onClick={() => setShowAuthModal(true)}
+          className="px-4 py-2 text-sm font-medium text-white/90 hover:text-white border border-white/30 hover:border-white/50 rounded-lg backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all"
+        >
+          Sign In
+        </button>
+      </div>
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
         {/* Title Section */}
-        <div className={`text-center mb-16 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div
+          className={`text-center mb-16 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        >
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-lexend font-light text-white mb-6 tracking-wide">
             mirubato
           </h1>
@@ -34,7 +48,9 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* Interactive Piano Key */}
-        <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div
+          className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        >
           <div className="glass-panel p-8 sm:p-12">
             <p className="text-mirubato-wood-600 text-center mb-2 text-sm">
               Play the notes shown below
@@ -47,12 +63,14 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* Coming Soon Text */}
-        <div className={`mt-16 text-center transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className={`mt-16 text-center transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        >
           <p className="text-mirubato-wood-200 text-lg">
             Open-source sight-reading platform for classical guitar and piano
           </p>
-          <Link 
-            to="/practice" 
+          <Link
+            to="/practice"
             className="inline-block mt-6 px-8 py-3 bg-mirubato-leaf-400 hover:bg-mirubato-leaf-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
           >
             Try Practice Mode (Beta)
@@ -66,6 +84,11 @@ const LandingPage: React.FC = () => {
           An open-source project • MIT License
         </p>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   )
 }

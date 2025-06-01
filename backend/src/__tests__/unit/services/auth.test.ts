@@ -2,16 +2,16 @@ import { AuthService } from '../../../services/auth'
 import { createMockDB, MockD1Database } from '../../../test-utils/db'
 import { createMockKV } from '../../../test-utils/graphql'
 import type { User } from '../../../types/shared'
-import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
+import type { KVNamespace } from '@cloudflare/workers-types'
 
 describe('AuthService', () => {
   let authService: AuthService
-  let mockDB: MockD1Database
+  let _mockDB: MockD1Database
   let mockKV: ReturnType<typeof createMockKV>
   const testSecret = 'test-jwt-secret'
 
   beforeEach(() => {
-    mockDB = createMockDB() as unknown as MockD1Database
+    _mockDB = createMockDB() as unknown as MockD1Database
     mockKV = createMockKV()
     authService = new AuthService(mockKV as unknown as KVNamespace, testSecret)
   })

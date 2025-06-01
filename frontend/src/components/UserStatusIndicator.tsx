@@ -1,10 +1,10 @@
-import React from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import { AuthModal } from './AuthModal'
 
 export const UserStatusIndicator: React.FC = () => {
   const { user, isAnonymous, syncToCloud } = useAuth()
-  const navigate = useNavigate()
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   if (!user) return null
 
@@ -19,7 +19,7 @@ export const UserStatusIndicator: React.FC = () => {
             </span>
           </div>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => setShowAuthModal(true)}
             className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Save Progress to Cloud
@@ -55,6 +55,15 @@ export const UserStatusIndicator: React.FC = () => {
           </button>
         </>
       )}
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          // Modal will stay open to show success message
+          // User can close it manually after checking email
+        }}
+      />
     </div>
   )
 }

@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react'
+import React, { createContext, useState, useEffect, useCallback } from 'react'
 import { useApolloClient, useMutation } from '@apollo/client'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -40,15 +34,7 @@ interface AuthContextType {
   localUserData: LocalUserData | null
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -117,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     initAuth()
-  }, [apolloClient])
+  }, [apolloClient, user])
 
   const login = useCallback(
     async (token: string) => {

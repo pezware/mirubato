@@ -69,7 +69,7 @@ const UPDATE_USER = gql`
 `
 
 export class DataSyncService {
-  constructor(private apolloClient: ApolloClient<any>) {}
+  constructor(private apolloClient: ApolloClient<unknown>) {}
 
   // Sync all pending data to the cloud
   async syncAllPendingData(): Promise<{
@@ -258,6 +258,6 @@ export class DataSyncService {
 }
 
 // Singleton instance factory
-export const createDataSyncService = (apolloClient: ApolloClient<any>) => {
+export const createDataSyncService = (apolloClient: ApolloClient<unknown>) => {
   return new DataSyncService(apolloClient)
 }
