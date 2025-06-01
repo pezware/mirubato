@@ -3,6 +3,7 @@ import {
   MAGIC_LINK_HTML_TEMPLATE,
   MAGIC_LINK_TEXT_TEMPLATE,
 } from '../templates/email/compiled-templates'
+import { getConfig } from '@mirubato/shared/config/environment'
 
 export class EmailService {
   constructor(private env: Env) {}
@@ -25,6 +26,7 @@ export class EmailService {
   }
 
   private async sendViaResend(email: string, loginUrl: string): Promise<void> {
+    const config = getConfig()
     const html = this.getHtmlContent(loginUrl)
     const text = this.getTextContent(loginUrl)
 
@@ -35,7 +37,7 @@ export class EmailService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Mirubato <noreply@mirubato.com>',
+        from: `${config.email.from.name} <${config.email.from.email}>`,
         to: email,
         subject: 'Your Mirubato sign-in link',
         html,
@@ -50,10 +52,13 @@ export class EmailService {
   }
 
   private getLoginUrl(token: string): string {
+    const config = getConfig()
+    const env = config.currentEnvironment
+
+    // Get the first frontend URL
     const baseUrl =
-      this.env.ENVIRONMENT === 'production'
-        ? 'https://mirubato.com'
-        : 'http://localhost:3000'
+      env.frontend.url || env.frontend.urls?.[0] || 'http://localhost:3000'
+
     return `${baseUrl}/auth/verify?token=${token}`
   }
 

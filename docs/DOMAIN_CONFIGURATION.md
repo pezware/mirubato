@@ -1,37 +1,42 @@
 # Domain Configuration Guide
 
-This guide explains how to configure Mirubato for different domain names.
+**Note: This guide has been updated to use the new Unified Configuration System**
 
-## Quick Start - Automated Approach (Recommended)
+## Quick Start - Unified Configuration (Recommended)
 
 If you're deploying Mirubato to a different domain (e.g., `newrubato.com` instead of `mirubato.com`):
 
-1. **Edit the domain configuration file**: `config/domains.json`
+1. **Edit the unified configuration file**: `config/environments.json`
 
    ```json
    {
-     "primaryDomain": "newrubato.com",
-     "apiSubdomain": "api",
-     "cloudflare": {
-       "accountName": "youraccount",
-       "frontendWorkerName": "newrubato",
-       "backendWorkerName": "newrubato-backend"
-     }
+     "MYDOMAIN": "newrubato.com",
+     "MYTEAM": "youraccount",
+     ...
    }
    ```
 
-2. **Run the update script**:
+2. **Generate configuration files**:
 
    ```bash
-   node scripts/update-domains.js
+   # Generate wrangler.json files for production
+   node scripts/generate-wrangler-config.js both production
+
+   # Generate .env files for production
+   node scripts/generate-env-files.js both production
    ```
 
-3. **Review and commit the changes**:
+3. **Deploy to Cloudflare**:
+
    ```bash
-   git diff
-   git add .
-   git commit -m "chore: update domain configuration to newrubato.com"
+   # Deploy backend
+   cd backend && wrangler deploy
+
+   # Deploy frontend
+   cd frontend && wrangler deploy
    ```
+
+For detailed information, see [UNIFIED_CONFIGURATION.md](./UNIFIED_CONFIGURATION.md)
 
 ## Manual Configuration
 
