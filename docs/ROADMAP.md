@@ -25,7 +25,62 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - **Database Schema**: All D1 migrations created and tested ✅
 - **User Service**: Authentication and user management implemented ✅
 - **Backend Tests**: All 23 tests passing with full coverage ✅
+- **Cloudflare Deployment**: Both frontend and backend successfully deployed as Workers ✅
 - **Next Steps**: Install and configure Apollo Client in frontend
+
+## Recent Achievements (2025-06-01) 🎉
+
+### Infrastructure & Deployment
+
+- [x] **Cloudflare Workers Migration**: Successfully migrated from Pages to Workers for both frontend and backend
+- [x] **Build Configuration**: Fixed all build issues (husky, node_compat, database_id)
+- [x] **D1 Database**: Created and configured with proper migrations
+- [x] **Worker Names**: Aligned with Cloudflare CI expectations (mirubato-frontend, mirubato-backend)
+- [x] **Compatibility Date**: Updated to support Node.js built-in modules (2024-09-23)
+
+### Code Quality & Documentation
+
+- [x] **Code Review**: Reviewed alignment with DEVELOPMENT_GUIDELINES.md and SYSTEM_DESIGN.md
+- [x] **Documentation Updates**: Updated CLAUDE.md with critical deployment information
+- [x] **File Cleanup**: Removed unnecessary files (install.sh, wrangler.example.toml)
+
+## Code Alignment Status 📊
+
+### Frontend Structure
+
+**Current State:**
+
+- Components are in a flat structure (not following atomic design)
+- Missing Apollo Client integration
+- No hooks implementation yet
+- Limited TypeScript types
+- Basic utility functions implemented
+
+**Needed Improvements:**
+
+- [ ] Reorganize components into atoms/molecules/organisms/templates
+- [ ] Install and configure Apollo Client
+- [ ] Implement custom hooks for business logic
+- [ ] Add comprehensive TypeScript types
+- [ ] Create service layer for API communication
+
+### Backend Structure
+
+**Well Aligned:**
+
+- ✅ GraphQL schema matches system design
+- ✅ Service layer architecture implemented
+- ✅ Resolver structure follows best practices
+- ✅ Authentication system complete
+- ✅ Database migrations in place
+
+**Missing Features:**
+
+- [ ] Progress tracking tables (progress_tracking, user_sheet_music_progress)
+- [ ] Practice templates table
+- [ ] Sheet music service implementation
+- [ ] Practice session service implementation
+- [ ] Email service (currently console.log)
 
 ## Recent Achievements (2025-05-31) 🎉
 
