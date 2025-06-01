@@ -1,0 +1,21 @@
+{
+  "name": "mirubato-api",
+  "main": "dist/index.js",
+  "compatibility_date": "2024-01-15",
+  "node_compat": true,
+  "workers_dev": true,
+  "vars": {
+    "ENVIRONMENT": "development"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mirubato-dev",
+      "database_id": ""
+    }
+  ],
+  "build": {
+    "command": "npm run build"
+  },
+  "compatibility_flags": ["nodejs_compat"]
+}
