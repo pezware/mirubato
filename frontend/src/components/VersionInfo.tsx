@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { endpoints } from '@/config/endpoints'
 
 interface VersionData {
   buildTime: string
@@ -19,10 +20,7 @@ export function VersionInfo() {
       .catch(err => console.error('Failed to load version info:', err))
 
     // Fetch backend version
-    const backendUrl =
-      import.meta.env.VITE_GRAPHQL_ENDPOINT?.replace('/graphql', '/health') ||
-      '/health'
-    fetch(backendUrl)
+    fetch(endpoints.health)
       .then(res => {
         const version = res.headers.get('X-Version')
         if (version) setBackendVersion(version)

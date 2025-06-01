@@ -6,14 +6,11 @@ import {
 } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
-
-// Get the GraphQL endpoint from environment variables
-const GRAPHQL_ENDPOINT =
-  import.meta.env.VITE_GRAPHQL_ENDPOINT || 'http://localhost:8787/graphql'
+import { endpoints } from '@/config/endpoints'
 
 // Create HTTP link
 const httpLink = createHttpLink({
-  uri: GRAPHQL_ENDPOINT,
+  uri: endpoints.graphql,
   // Don't include credentials since we're using JWT in headers
 })
 
