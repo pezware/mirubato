@@ -33,6 +33,6 @@
       "@/types/*": ["src/types/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "codegen.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -101,6 +101,9 @@ docs/coverage/
 # TypeScript cache
 *.tsbuildinfo
 
+# GraphQL Code Generation
+frontend/src/gql/
+
 # Optional npm cache directory
 .npm/
 
