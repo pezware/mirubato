@@ -9,12 +9,12 @@ npm install --ignore-workspaces
 
 # Install backend dependencies
 echo "Installing backend dependencies..."
-cd backend && npm install
+cd backend && npm install --ignore-scripts
 cd ..
 
 # Install frontend dependencies  
 echo "Installing frontend dependencies..."
-cd frontend && npm install
+cd frontend && npm install --ignore-scripts
 cd ..
 
 echo "Installation complete!"

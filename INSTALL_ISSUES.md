@@ -20,13 +20,13 @@ Until the workspace issues are resolved, install dependencies separately:
 ./install.sh
 
 # Option 2: Manual installation
-# Install backend
+# Install backend (skip root prepare script)
 cd backend
-npm install
+npm install --ignore-scripts
 
 # Install frontend (in a new terminal)
 cd frontend  
-npm install
+npm install --ignore-scripts
 ```
 
 ## Alternative Solutions
