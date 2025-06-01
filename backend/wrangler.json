@@ -17,5 +17,11 @@
   "build": {
     "command": "npm run build"
   },
+  "kv_namespaces": [
+    {
+      "binding": "MIRUBATO_MAGIC_LINKS",
+      "id": "dd28d41a9bd24a7084e400f84f0758fb"
+    }
+  ],
   "compatibility_flags": ["nodejs_compat"]
 }

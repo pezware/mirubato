@@ -15,13 +15,13 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
       try {
         console.log('Context env:', {
-          hasCache: !!context.env.CACHE,
+          hasMagicLinksKV: !!context.env.MIRUBATO_MAGIC_LINKS,
           hasJwtSecret: !!context.env.JWT_SECRET,
           environment: context.env.ENVIRONMENT,
         })
 
         const authService = new AuthService(
-          context.env.CACHE,
+          context.env.MIRUBATO_MAGIC_LINKS,
           context.env.JWT_SECRET
         )
         const emailService = new EmailService(context.env)
@@ -45,7 +45,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
     verifyMagicLink: async (_, { token }, context) => {
       const authService = new AuthService(
-        context.env.CACHE,
+        context.env.MIRUBATO_MAGIC_LINKS,
         context.env.JWT_SECRET
       )
       const userService = new UserService(context.env.DB)
@@ -76,7 +76,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
     refreshToken: async (_, { refreshToken }, context) => {
       const authService = new AuthService(
-        context.env.CACHE,
+        context.env.MIRUBATO_MAGIC_LINKS,
         context.env.JWT_SECRET
       )
       const userService = new UserService(context.env.DB)
