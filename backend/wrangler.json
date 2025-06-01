@@ -1,7 +1,7 @@
 {
-  "name": "mirubato-api",
+  "name": "mirubato-backend",
   "main": "dist/index.js",
-  "compatibility_date": "2024-01-15",
+  "compatibility_date": "2024-09-23",
   "workers_dev": true,
   "vars": {
     "ENVIRONMENT": "development"
