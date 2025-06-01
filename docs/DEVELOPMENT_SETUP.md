@@ -147,7 +147,7 @@ backend/
 
 ### Overview
 
-The frontend uses Apollo Client to communicate with the backend GraphQL API. Both frontend and backend are deployed as separate Cloudflare Workers, with the frontend serving the React app and the backend providing the GraphQL API.
+The frontend uses Apollo Client to communicate with the backend GraphQL API. Both frontend and backend are deployed as separate Cloudflare Workers.
 
 ### Architecture
 
@@ -166,154 +166,18 @@ The frontend uses Apollo Client to communicate with the backend GraphQL API. Bot
    (HTML/JS/CSS)               (SQLite)
 ```
 
-### Frontend Apollo Client Configuration
+### Key Configuration Files
 
-The Apollo Client is configured in `frontend/src/lib/apollo/client.ts`:
-
-```typescript
-import {
-  ApolloClient,
-  InMemoryCache,
-  createHttpLink,
-  from,
-} from '@apollo/client'
-import { setContext } from '@apollo/client/link/context'
-import { onError } from '@apollo/client/link/error'
-
-// HTTP connection to the API
-const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_ENDPOINT || 'http://localhost:8787/graphql',
-})
-
-// Authentication link - adds JWT token to requests
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('authToken')
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  }
-})
-
-// Error handling link
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
-    )
-  }
-  if (networkError) {
-    console.error(`[Network error]: ${networkError}`)
-  }
-})
-
-// Apollo Client instance
-export const apolloClient = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
-  cache: new InMemoryCache({
-    typePolicies: {
-      User: { keyFields: ['id'] },
-      SheetMusic: { keyFields: ['id'] },
-      PracticeSession: { keyFields: ['id'] },
-    },
-  }),
-})
-```
-
-### Using Apollo Client in Components
-
-1. **Wrap your app with ApolloProvider** (`frontend/src/main.tsx`):
-
-```typescript
-import { ApolloProvider } from '@apollo/client'
-import { apolloClient } from './lib/apollo/client'
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ApolloProvider client={apolloClient}>
-      <App />
-    </ApolloProvider>
-  </React.StrictMode>
-)
-```
-
-2. **Query data in components**:
-
-```typescript
-import { useQuery, gql } from '@apollo/client'
-
-const GET_USER = gql`
-  query GetUser {
-    me {
-      id
-      email
-      displayName
-      primaryInstrument
-    }
-  }
-`
-
-function Profile() {
-  const { loading, error, data } = useQuery(GET_USER)
-
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error.message}</p>
-
-  return <div>Welcome, {data.me.displayName}!</div>
-}
-```
-
-3. **Mutations for data updates**:
-
-```typescript
-import { useMutation, gql } from '@apollo/client'
-
-const UPDATE_PRIMARY_INSTRUMENT = gql`
-  mutation UpdatePrimaryInstrument($instrument: Instrument!) {
-    updatePrimaryInstrument(instrument: $instrument) {
-      id
-      primaryInstrument
-    }
-  }
-`
-
-function InstrumentSelector() {
-  const [updateInstrument] = useMutation(UPDATE_PRIMARY_INSTRUMENT)
-
-  const handleChange = (instrument: Instrument) => {
-    updateInstrument({
-      variables: { instrument },
-      optimisticResponse: {
-        updatePrimaryInstrument: {
-          id: 'temp-id',
-          primaryInstrument: instrument,
-        },
-      },
-    })
-  }
-
-  return (
-    <select onChange={(e) => handleChange(e.target.value as Instrument)}>
-      <option value="PIANO">Piano</option>
-      <option value="GUITAR">Guitar</option>
-    </select>
-  )
-}
-```
+- **Apollo Client**: `frontend/src/lib/apollo/client.ts`
+- **GraphQL Queries**: `frontend/src/lib/apollo/queries/`
+- **AuthContext**: `frontend/src/contexts/AuthContext.tsx`
+- **Environment Variables**: `frontend/.env.local` and `frontend/.env.production`
 
 ## Shared Types Package
 
 ### Purpose
 
-The `@mirubato/shared` package ensures type consistency between frontend and backend, especially important for:
-
-- Local storage data structures
-- GraphQL type definitions
-- Data validation
-- Database schema alignment
+The `@mirubato/shared` package ensures type consistency between frontend and backend. It is used during build time only and is NOT deployed as a separate service.
 
 ### Structure
 
@@ -326,87 +190,11 @@ shared/
 └── tsconfig.json
 ```
 
-### Key Types
+### Usage
 
-The shared package defines all core data structures:
-
-```typescript
-// Enums that match database constraints
-export enum Instrument {
-  PIANO = 'PIANO',
-  GUITAR = 'GUITAR',
-}
-
-export enum SessionType {
-  FREE_PRACTICE = 'FREE_PRACTICE',
-  GUIDED_PRACTICE = 'GUIDED_PRACTICE',
-  ASSESSMENT = 'ASSESSMENT',
-}
-
-// User and practice data types
-export interface User {
-  id: string
-  email: string
-  displayName?: string | null
-  primaryInstrument: Instrument
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: Instrument
-  sheetMusicId?: string | null
-  sessionType: SessionType
-  startedAt: string
-  completedAt?: string | null
-  pausedDuration: number
-  accuracyPercentage?: number | null
-  notesAttempted: number
-  notesCorrect: number
-}
-
-// Local storage specific types
-export interface LocalPracticeSession extends PracticeSession {
-  isSynced: boolean
-  sheetMusicTitle?: string
-}
-```
-
-### Using Shared Types
-
-1. **Import in frontend**:
-
-```typescript
-import {
-  Instrument,
-  SessionType,
-  LocalPracticeSession,
-} from '@mirubato/shared/types'
-```
-
-2. **Import in backend**:
-
-```typescript
-import {
-  Instrument,
-  SessionType,
-  PracticeSession,
-} from '@mirubato/shared/types'
-```
-
-3. **Data validation**:
-
-```typescript
-import { DataValidator } from '@mirubato/shared/types'
-
-// Validate data before saving
-if (DataValidator.validatePracticeSession(sessionData)) {
-  // Safe to save
-  localStorageService.savePracticeSession(sessionData)
-}
-```
+- Frontend imports: `import { Instrument, SessionType } from '@mirubato/shared/types'`
+- Backend imports: `import { User, PracticeSession } from '@mirubato/shared/types'`
+- Data validation: `import { DataValidator } from '@mirubato/shared/types'`
 
 ## Local-First Architecture
 
@@ -419,225 +207,121 @@ Mirubato uses a local-first approach where:
 3. **Optional cloud sync** for registered users
 4. **Seamless migration** from anonymous to authenticated
 
-### Data Flow
+### Key Services
 
-```
-┌─────────────────┐
-│   User Action   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐     ┌─────────────────┐
-│  Local Storage  │────>│  Apollo Cache   │
-└────────┬────────┘     └─────────────────┘
-         │                       │
-         │                       │ (if authenticated)
-         │                       ▼
-         │              ┌─────────────────┐
-         │              │  GraphQL API    │
-         │              └────────┬────────┘
-         │                       │
-         │                       ▼
-         │              ┌─────────────────┐
-         └─────────────>│  Data Sync      │
-                        │  Service        │
-                        └─────────────────┘
-```
-
-### Implementation Details
-
-1. **Anonymous User Creation**:
-
-```typescript
-// Automatically created on first visit
-const anonymousUser = {
-  id: `anon_${crypto.randomUUID()}`,
-  email: '',
-  isAnonymous: true,
-  primaryInstrument: Instrument.PIANO,
-  // ... preferences and stats
-}
-```
-
-2. **Local Storage Service** (`frontend/src/services/localStorage.ts`):
-
-   - Manages all local data
-   - Provides same API as GraphQL mutations
-   - Handles data validation
-   - Tracks sync status
-
-3. **AuthContext Integration**:
-
-   - Detects user authentication state
-   - Triggers data migration on login
-   - Manages sync operations
-
-4. **Data Sync Service** (`frontend/src/services/dataSync.ts`):
-   - Batch syncs local data to cloud
-   - Handles conflicts
-   - Provides progress feedback
+- **Local Storage Service**: `frontend/src/services/localStorage.ts`
+- **Data Sync Service**: `frontend/src/services/dataSync.ts`
+- **Auth Context**: `frontend/src/contexts/AuthContext.tsx`
 
 ## Development Workflow
 
 ### Adding New Features
 
-1. **Define types in shared package**:
-
-```typescript
-// shared/types/index.ts
-export interface NewFeature {
-  id: string
-  // ... fields
-}
-```
-
-2. **Update GraphQL schema**:
-
-```graphql
-# backend/src/schema/schema.graphql
-type NewFeature {
-  id: ID!
-  # ... fields
-}
-```
-
+1. **Define types in shared package**: Update `shared/types/index.ts`
+2. **Update GraphQL schema**: Edit `backend/src/schema/schema.graphql`
 3. **Generate GraphQL types**:
-
-```bash
-cd frontend && npm run codegen
-cd ../backend && npm run codegen
-```
-
-4. **Implement backend resolver**:
-
-```typescript
-// backend/src/resolvers/newFeature.ts
-export const newFeatureResolvers = {
-  Query: {
-    getNewFeature: async (_, { id }, context) => {
-      // Implementation
-    },
-  },
-  Mutation: {
-    createNewFeature: async (_, args, context) => {
-      // Implementation
-    },
-  },
-}
-```
-
+   ```bash
+   cd frontend && npm run codegen
+   cd ../backend && npm run codegen
+   ```
+4. **Implement backend resolver** in `backend/src/resolvers/`
 5. **Add frontend functionality**:
    - Local storage support
    - GraphQL queries/mutations
    - UI components
    - Data sync logic
 
-### Testing Apollo Integration
+### Testing
 
-1. **Unit tests**: Mock Apollo Client
-
-```typescript
-import { MockedProvider } from '@apollo/client/testing'
-
-const mocks = [{
-  request: { query: GET_USER },
-  result: { data: { me: mockUser } },
-}]
-
-render(
-  <MockedProvider mocks={mocks}>
-    <Profile />
-  </MockedProvider>
-)
-```
-
-2. **Integration tests**: Use MSW for API mocking
-
-```typescript
-import { setupServer } from 'msw/node'
-import { graphql } from 'msw'
-
-const server = setupServer(
-  graphql.query('GetUser', (req, res, ctx) => {
-    return res(ctx.data({ me: mockUser }))
-  })
-)
-```
+- **Unit tests**: Use `MockedProvider` from `@apollo/client/testing`
+- **Integration tests**: Use MSW for API mocking
+- **Run tests**: `npm test` or `npm test -w @mirubato/frontend`
 
 ## Deployment
 
+### Important Notes
+
+- **Automatic Deployment**: Cloudflare automatically builds and deploys when code is pushed to GitHub
+- **No Manual Commands**: You do NOT need to run `wrangler deploy` manually
+- **Shared Package**: The `@mirubato/shared` package is used during build time only and is NOT deployed
+- **Custom Domains**: Must be configured in Cloudflare Dashboard (not in wrangler.json)
+
 ### Environment Configuration
 
-Both frontend and backend are deployed as Cloudflare Workers:
-
-1. **Frontend Worker** (`frontend/wrangler.json`):
+#### Frontend (`frontend/wrangler.json`)
 
 ```json
 {
-  "name": "mirubato-frontend",
-  "compatibility_date": "2024-12-18",
-  "main": "dist/index.js",
-  "site": {
-    "bucket": "./dist"
-  },
-  "env": {
-    "production": {
-      "vars": {
-        "VITE_GRAPHQL_ENDPOINT": "https://api.mirubato.com/graphql"
-      }
-    }
+  "name": "mirubato",
+  "main": "src/index.js",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
   }
 }
 ```
 
-2. **Backend Worker** (`backend/wrangler.json`):
+#### Backend (`backend/wrangler.json`)
 
 ```json
 {
   "name": "mirubato-backend",
-  "compatibility_date": "2024-12-18",
   "main": "dist/index.js",
+  "compatibility_date": "2024-09-23",
+  "workers_dev": true,
+  "vars": {
+    "ENVIRONMENT": "development"
+  },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "mirubato-db",
-      "database_id": "your-database-id"
+      "database_name": "mirubato-dev",
+      "database_id": "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
     }
-  ]
+  ],
+  "build": {
+    "command": "npm run build"
+  },
+  "compatibility_flags": ["nodejs_compat"]
 }
 ```
 
-### CORS Configuration
+### Custom Domain Setup
 
-The backend includes CORS headers for the frontend:
+1. **Frontend Domain** (mirubato.com):
 
-```typescript
-// backend/src/index.ts
-const cors = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-}
-```
+   - Configure in Cloudflare Dashboard → Workers & Pages → Custom Domains
+   - Add `mirubato.com` to the frontend Worker
 
-### Production Deployment
+2. **Backend Domain** (api.mirubato.com):
+   - Configure in Cloudflare Dashboard → Workers & Pages → Custom Domains
+   - Add `api.mirubato.com` to the backend Worker
 
-1. **Deploy backend first**:
+### Environment Variables
+
+1. **Frontend Production** (`.env.production`):
+
+   ```env
+   VITE_GRAPHQL_ENDPOINT=https://api.mirubato.com/graphql
+   VITE_PUBLIC_URL=https://mirubato.com
+   ```
+
+2. **Backend Production**:
+   - Set in Cloudflare Dashboard → Workers → Settings → Variables
+   - Add `FRONTEND_URL=https://mirubato.com` for CORS
+
+### GraphQL Code Generation
+
+The `npm run codegen` command must be run locally before pushing changes:
 
 ```bash
-cd backend
-npm run build
-wrangler deploy
-# Note the deployed URL
+# After updating GraphQL schema or queries
+cd frontend && npm run codegen
+cd ../backend && npm run codegen
 ```
 
-2. **Update frontend environment**:
-
-```bash
-# Update VITE_GRAPHQL_ENDPOINT with backend URL
-cd frontend
-npm run build
-wrangler deploy
-```
+This generates TypeScript types from the GraphQL schema and is NOT part of the Cloudflare build process.
 
 ## Available Scripts
 
