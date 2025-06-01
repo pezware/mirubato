@@ -1,0 +1,14 @@
+Welcome to Mirubato!
+
+Sign in to your account by clicking the link below:
+
+{{LOGIN_URL}}
+
+This magic link will expire in 15 minutes.
+
+Didn't request this?
+If you didn't request this login link, you can safely ignore this email. No one can access your account without clicking the link above.
+
+---
+Mirubato - Open-source sight-reading practice platform
+https://mirubato.com

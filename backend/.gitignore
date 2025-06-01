@@ -187,3 +187,6 @@ analytics.json
 
 # Email templates cache
 email-templates-cache/
+
+# Generated email templates
+src/templates/email/compiled-templates.ts

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useMutation } from '@apollo/client'
 import { REQUEST_MAGIC_LINK } from '../graphql/queries/auth'
+import { createPortal } from 'react-dom'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -18,7 +19,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [step, setStep] = useState<'email' | 'sent'>('email')
   const [error, setError] = useState('')
 
-  const [requestMagicLink] = useMutation(REQUEST_MAGIC_LINK)
+  const [requestMagicLink] = useMutation(REQUEST_MAGIC_LINK, {
+    onError: error => {
+      // Handle GraphQL errors more gracefully
+      if (error.networkError) {
+        setError(
+          'Unable to connect to server. Please check your connection and try again.'
+        )
+      } else if (error.graphQLErrors?.length > 0) {
+        setError(error.graphQLErrors[0].message)
+      } else {
+        setError('An unexpected error occurred. Please try again.')
+      }
+    },
+  })
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -27,6 +41,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setStep('email')
       setError('')
       setIsSubmitting(false)
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      // Re-enable body scroll when modal closes
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
     }
   }, [isOpen])
 
@@ -49,13 +72,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setError('')
 
     try {
-      await requestMagicLink({
+      const result = await requestMagicLink({
         variables: { email: email.trim() },
       })
-      setStep('sent')
-      onSuccess?.()
+
+      if (result.data?.requestMagicLink?.success) {
+        setStep('sent')
+        onSuccess?.()
+      } else {
+        setError(
+          result.data?.requestMagicLink?.message || 'Failed to send magic link'
+        )
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send magic link')
+      // Error is already handled by onError callback
+      console.error('Magic link request failed:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -67,12 +98,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null
 
-  return (
+  // Use React Portal to render modal at document root level
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200">
+      <div
+        className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl"
+        style={{
+          animation: 'modalSlideIn 0.2s ease-out',
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -117,6 +159,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     autoFocus
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -201,6 +244,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+
+      <style>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>,
+    document.body
   )
 }

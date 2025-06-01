@@ -7,25 +7,39 @@ import { isValidEmail } from '../utils/auth'
 export const authResolvers: { Mutation: MutationResolvers } = {
   Mutation: {
     requestMagicLink: async (_, { email }, context) => {
+      console.log('requestMagicLink called with:', email)
+
       if (!isValidEmail(email)) {
         throw new Error('Invalid email address')
       }
 
-      const authService = new AuthService(
-        context.env.CACHE,
-        context.env.JWT_SECRET
-      )
-      const emailService = new EmailService(context.env)
+      try {
+        console.log('Context env:', {
+          hasCache: !!context.env.CACHE,
+          hasJwtSecret: !!context.env.JWT_SECRET,
+          environment: context.env.ENVIRONMENT,
+        })
 
-      // Generate and store magic link
-      const magicLink = await authService.createMagicLink(email)
+        const authService = new AuthService(
+          context.env.CACHE,
+          context.env.JWT_SECRET
+        )
+        const emailService = new EmailService(context.env)
 
-      // Send email
-      await emailService.sendMagicLinkEmail(email, magicLink)
+        // Generate and store magic link
+        const magicLink = await authService.createMagicLink(email)
+        console.log('Magic link created:', magicLink)
 
-      return {
-        success: true,
-        message: 'Magic link sent to your email',
+        // Send email
+        await emailService.sendMagicLinkEmail(email, magicLink)
+
+        return {
+          success: true,
+          message: 'Magic link sent to your email',
+        }
+      } catch (error) {
+        console.error('requestMagicLink error:', error)
+        throw error
       }
     },
 

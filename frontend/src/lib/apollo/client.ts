@@ -14,7 +14,7 @@ const GRAPHQL_ENDPOINT =
 // Create HTTP link
 const httpLink = createHttpLink({
   uri: GRAPHQL_ENDPOINT,
-  credentials: 'include', // Include cookies for CORS
+  // Don't include credentials since we're using JWT in headers
 })
 
 // Create auth link to add JWT token to requests

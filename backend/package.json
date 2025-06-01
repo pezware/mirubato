@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "tsc",
+    "build": "npm run build:templates && tsc",
+    "build:templates": "node scripts/build-email-templates.js",
     "deploy": "wrangler deploy",
     "test": "jest",
     "test:unit": "jest --testPathPattern=unit",
