@@ -29,6 +29,7 @@ export const corsConfig: CorsConfig = {
     patterns: [
       // Frontend preview deployments
       'https://mirubato.arbeitandy.workers.dev',
+      // Frontend deployments with any prefix (e.g., feature-branch-mirubato, 7a80e837-mirubato)
       'https://*-mirubato.arbeitandy.workers.dev',
       // Backend preview deployments (for testing GraphQL playground)
       'https://mirubato-backend.arbeitandy.workers.dev',
