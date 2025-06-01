@@ -13,11 +13,7 @@ describe('AuthService', () => {
   beforeEach(() => {
     mockDB = createMockDB() as unknown as MockD1Database
     mockKV = createMockKV()
-    authService = new AuthService(
-      mockDB as unknown as D1Database,
-      mockKV as unknown as KVNamespace,
-      testSecret
-    )
+    authService = new AuthService(mockKV as unknown as KVNamespace, testSecret)
   })
 
   describe('createMagicLink', () => {

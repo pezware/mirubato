@@ -12,7 +12,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
       }
 
       const authService = new AuthService(
-        context.env.DB,
         context.env.CACHE,
         context.env.JWT_SECRET
       )
@@ -32,7 +31,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
     verifyMagicLink: async (_, { token }, context) => {
       const authService = new AuthService(
-        context.env.DB,
         context.env.CACHE,
         context.env.JWT_SECRET
       )
@@ -64,7 +62,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
     refreshToken: async (_, { refreshToken }, context) => {
       const authService = new AuthService(
-        context.env.DB,
         context.env.CACHE,
         context.env.JWT_SECRET
       )

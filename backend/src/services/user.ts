@@ -1,7 +1,7 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import { nanoid } from 'nanoid'
 import type { User, UserPreferences, UserStats } from '../types/shared'
-import type { UpdateUserInput } from '../types/generated/graphql'
+import type { UpdateUserInput, Instrument } from '../types/generated/graphql'
 
 export class UserService {
   constructor(private db: D1Database) {}

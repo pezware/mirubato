@@ -16,13 +16,11 @@ const server = new ApolloServer<GraphQLContext>({
 
 // Create the Cloudflare Workers handler
 const handleGraphQL = startServerAndCreateCloudflareWorkersHandler(server, {
-  context: async ({
-    request,
-    env,
-  }: {
-    request: Request
-    env: Env
-  }): Promise<GraphQLContext> => {
+  context: async (integrationContext: unknown): Promise<GraphQLContext> => {
+    const { request, env } = integrationContext as {
+      request: Request
+      env: Env
+    }
     const requestId = nanoid()
     const ip = request.headers.get('CF-Connecting-IP') || undefined
 
@@ -63,7 +61,7 @@ export default {
 
     // Handle GraphQL endpoint
     if (url.pathname === '/graphql') {
-      return handleGraphQL(request, env)
+      return handleGraphQL({ request, env } as never)
     }
 
     // Health check endpoint

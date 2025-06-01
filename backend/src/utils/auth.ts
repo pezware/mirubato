@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import * as jwt from 'jsonwebtoken'
 import { nanoid } from 'nanoid'
 import type { User } from '../types/shared'
 
@@ -25,20 +25,18 @@ export function generateMagicLinkToken(): string {
 export async function createJWT(
   user: User,
   secret: string,
-  expiresIn: string = '15m'
+  expiresIn = '15m'
 ): Promise<string> {
-  return jwt.sign(
-    {
-      sub: user.id,
-      email: user.email,
-      user,
-    },
-    secret,
-    {
-      expiresIn,
-      issuer: 'mirubato',
-    }
-  )
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    user,
+  }
+
+  return jwt.sign(payload, secret, {
+    expiresIn: expiresIn as any,
+    issuer: 'mirubato',
+  })
 }
 
 // Create a refresh token
