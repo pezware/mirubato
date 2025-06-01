@@ -2,894 +2,371 @@
 
 ## Overview
 
-This roadmap provides a comprehensive development plan for Mirubato with strict testing requirements. Every feature must include unit tests, integration tests, and OpenAPI documentation for backend endpoints.
-
-## Testing Infrastructure Requirements ✅
-
-- **Pre-commit Hooks**: Husky enforces test passing before commits ✅
-- **Unit Tests**: Jest with minimum 80% coverage ✅
-- **Integration Tests**: API and database testing configured ✅
-- **OpenAPI Documentation**: All backend endpoints must be documented (pending backend implementation)
-- **CI/CD**: Cloudflare handles deployments, tests run locally via Husky ✅
+This roadmap provides a comprehensive development plan for Mirubato with strict testing requirements. Every feature must include unit tests, integration tests, and documentation for all endpoints.
 
 ## Current Status: Phase 1 - Frontend Apollo Client Integration 🚧
 
-- **Landing Page**: Complete with interactive piano interface ✅
-- **Design System**: Nature-inspired theme implemented ✅
-- **Audio System**: Real piano samples via Tone.js Sampler ✅
-- **Practice Page**: MVP with 20 measures of Moonlight Sonata ✅
-- **System Design**: Complete database schema and API architecture ✅
-- **Testing Infrastructure**: Jest, Husky, and pre-commit hooks implemented ✅
-- **CSP Configuration**: Fixed for Cloudflare Workers deployment ✅
-- **Backend Infrastructure**: GraphQL API with Apollo Server on Workers ✅
-- **Database Schema**: All D1 migrations created and tested ✅
-- **User Service**: Authentication and user management implemented ✅
-- **Backend Tests**: All 23 tests passing with full coverage ✅
-- **Cloudflare Deployment**: Both frontend and backend successfully deployed as Workers ✅
-- **Next Steps**: Install and configure Apollo Client in frontend
+The project has completed the initial infrastructure setup and is now focused on connecting the frontend to the backend through Apollo Client integration.
 
-## Recent Achievements (2025-06-01) 🎉
+## Completed Achievements ✅
 
-### Infrastructure & Deployment
+### Phase 0: Testing Infrastructure (COMPLETE)
 
-- [x] **Cloudflare Workers Migration**: Successfully migrated from Pages to Workers for both frontend and backend
-- [x] **Build Configuration**: Fixed all build issues (husky, node_compat, database_id)
-- [x] **D1 Database**: Created and configured with proper migrations
-- [x] **Worker Names**: Aligned with Cloudflare CI expectations (mirubato-frontend, mirubato-backend)
-- [x] **Compatibility Date**: Updated to support Node.js built-in modules (2024-09-23)
+#### Testing Framework Implementation
+
+- **Jest Configuration**: TypeScript with ESM support, unit/integration test separation, 80% coverage thresholds
+- **React Testing Library**: Custom render with providers, MSW for API mocking, testing utilities
+- **Integration Test Environment**: Supertest for API testing, test database setup structure, API test helpers
+- **Pre-commit Hooks**: Husky and lint-staged configured, automated test runs before commits, commit message linting
+- **Monorepo Scripts**: Organized workspace scripts for frontend/backend separation
+
+### Infrastructure & Deployment (2025-06-01)
+
+- **Cloudflare Workers Migration**: Both frontend and backend deployed as Workers
+- **Build Configuration**: Fixed all build issues (husky, node_compat, database_id)
+- **D1 Database**: Created and configured with proper migrations
+- **Worker Names**: Aligned with Cloudflare CI expectations
+- **Compatibility Date**: Updated to support Node.js built-in modules
+
+### Backend Implementation (2025-05-31)
+
+- **GraphQL Infrastructure**: Apollo Server on Cloudflare Workers
+- **Database Schema**: 5 D1 migrations with proper relationships and indexes
+- **Authentication System**: Magic link auth with JWT tokens
+- **User Service**: Full CRUD operations with preferences and statistics
+- **Testing**: 23 passing tests with unit and integration coverage
+- **Type Safety**: GraphQL schema with TypeScript generation
+
+### Frontend Core Features (2025-05-31)
+
+- **Landing Page**: Interactive piano interface with nature-inspired theme
+- **Practice Page**: MVP with sheet music display and audio playback
+- **Audio System**: Real piano samples via Tone.js Sampler
+- **Music Player**: Reusable controls with circular volume control
+- **Mobile Optimizations**: Dynamic measures per page, responsive scaling
+- **Bug Fixes**: Tempo speed-up issue resolved, page-based navigation
 
 ### Code Quality & Documentation
 
-- [x] **Code Review**: Reviewed alignment with DEVELOPMENT_GUIDELINES.md and SYSTEM_DESIGN.md
-- [x] **Documentation Updates**: Updated CLAUDE.md with critical deployment information
-- [x] **File Cleanup**: Removed unnecessary files (install.sh, wrangler.example.toml)
-
-## Code Alignment Status 📊
-
-### Frontend Structure
-
-**Current State:**
-
-- Components are in a flat structure (not following atomic design)
-- Missing Apollo Client integration
-- No hooks implementation yet
-- Limited TypeScript types
-- Basic utility functions implemented
-
-**Needed Improvements:**
-
-- [ ] Reorganize components into atoms/molecules/organisms/templates
-- [ ] Install and configure Apollo Client
-- [ ] Implement custom hooks for business logic
-- [ ] Add comprehensive TypeScript types
-- [ ] Create service layer for API communication
-
-### Backend Structure
-
-**Well Aligned:**
-
-- ✅ GraphQL schema matches system design
-- ✅ Service layer architecture implemented
-- ✅ Resolver structure follows best practices
-- ✅ Authentication system complete
-- ✅ Database migrations in place
-
-**Missing Features:**
-
-- [ ] Progress tracking tables (progress_tracking, user_sheet_music_progress)
-- [ ] Practice templates table
-- [ ] Sheet music service implementation
-- [ ] Practice session service implementation
-- [ ] Email service (currently console.log)
-
-## Recent Achievements (2025-05-31) 🎉
-
-- [x] **Backend Infrastructure Complete**: GraphQL backend with Apollo Server on Cloudflare Workers
-- [x] **GraphQL Schema Implementation**: Complete type system for User, SheetMusic, PracticeSession
-- [x] **Database Schema**: 5 D1 migrations with proper relationships and indexes
-- [x] **Authentication System**: Magic link auth with JWT tokens implemented
-- [x] **User Service**: Full CRUD operations with preferences and statistics
-- [x] **Backend Testing**: 23 passing tests with unit and integration coverage
-- [x] **Testing Infrastructure Complete**: Jest, React Testing Library, and Husky configured
-- [x] **Pre-commit Hooks**: Automated testing, linting, and type-checking before commits
-- [x] **CSP Issues Fixed**: Resolved Content Security Policy violations for Cloudflare deployment
-- [x] **Type Safety**: Fixed all TypeScript errors in test files
-- [x] **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
-- [x] **Tempo Bug Fixed**: Resolved tempo speedup issue after pause/resume
-- [x] **MusicPlayer Component**: Created reusable music player controls
-- [x] **Practice Page Redesign**: Elegant controls with circular volume control
-- [x] **Mobile Optimizations**: Dynamic measures per page, responsive scaling
-- [x] **Page-Based Navigation**: Consistent flipping behavior across all devices
-- [x] **Monorepo Structure**: Reorganized project into frontend/backend folders for better separation
-
-## Immediate Next Steps 🚀 (2025-05-31)
-
-1. **Install Apollo Client in Frontend**:
-
-   ```bash
-   # From root directory with workspace flag
-   npm install @apollo/client graphql -w @mirubato/frontend
-   npm install -D @graphql-codegen/cli @graphql-codegen/client-preset -w @mirubato/frontend
-   ```
-
-2. **Configure GraphQL Code Generation**:
-
-   - Create codegen.yml for frontend
-   - Set up typed hooks generation
-   - Configure schema introspection from backend
-
-3. **Create Apollo Client Instance**:
-
-   - Set up Apollo Provider in main.tsx
-   - Configure authentication link
-   - Implement cache policies
-
-4. **Build Authentication UI**:
-   - Create login page component
-   - Implement magic link request form
-   - Add auth context provider
-
-## Known Issues & Next Fixes 🐛
-
-1. ~~**Tempo Speed-Up Bug**: Tempo increases after pause/play cycle~~ ✅ FIXED (2025-05-31)
-2. ~~**Volume Control**: Missing volume slider~~ ✅ IMPLEMENTED (2025-05-31)
-3. ~~**Mobile Display Issues**: Sheet music overflow and poor space utilization~~ ✅ FIXED (2025-05-31)
-
-4. **Missing Features**:
-   - Instrument selection (guitar/piano toggle)
-   - Visual feedback highlighting for currently playing notes
-   - Practice session progress tracking
-   - More flexible viewport fitting for different devices
-5. **Backend Enhancements Needed**:
-   - Real email service integration (currently console.log)
-   - Sheet music service implementation
-   - Practice session service implementation
-   - Cloudflare Workers deployment configuration
-
-## Phase 0: Testing Infrastructure Setup ✅ COMPLETE
-
-### Testing Framework Implementation
-
-- [x] **Jest Configuration**
-
-  - [x] Install Jest, @types/jest, ts-jest
-  - [x] Configure jest.config.mjs for TypeScript with ESM
-  - [x] Set up separate configs for unit and integration tests
-  - [x] Add coverage reporting with thresholds (80%)
-  - [x] **Tests**: Verify Jest runs with sample tests
-
-- [x] **React Testing Library Setup**
-
-  - [x] Install @testing-library/react, @testing-library/jest-dom
-  - [x] Configure custom render with providers
-  - [x] Set up MSW for API mocking
-  - [x] Create testing utilities and helpers
-  - [x] **Tests**: Component rendering smoke tests (LandingPage)
-
-- [x] **Integration Test Environment**
-
-  - [x] Install supertest for API testing
-  - [x] Configure test database setup (D1 test instance pending)
-  - [x] Set up test data factories structure
-  - [x] Create API test helpers structure
-  - [x] **Tests**: Sample integration test setup ready
-
-- [x] **Pre-commit Hooks with Husky**
-
-  - [x] Install husky and lint-staged
-  - [x] Configure pre-commit hook for tests
-  - [x] Add commit message linting with commitlint
-  - [x] Tests run automatically before commits
-  - [x] **Validation**: Test hooks work correctly
-
-- [ ] **OpenAPI Documentation Setup** (Pending backend implementation)
-
-  - [ ] Install @cloudflare/workers-types
-  - [ ] Install chanfana for Workers OpenAPI
-  - [ ] Set up OpenAPI schema generation
-  - [ ] Configure Swagger UI for development
-  - [ ] **Tests**: Validate OpenAPI schema generation
-
-- [x] **Update package.json Scripts** (Now organized as monorepo)
-  ```json
-  {
-    "scripts": {
-      "dev": "npm run dev -w @mirubato/frontend",
-      "dev:backend": "npm run dev -w @mirubato/backend",
-      "build": "npm run build -w @mirubato/frontend",
-      "build:backend": "npm run build -w @mirubato/backend",
-      "test": "npm run test --workspaces",
-      "test:unit": "npm run test:unit --workspaces",
-      "test:integration": "npm run test:integration --workspaces",
-      "test:coverage": "npm run test:coverage --workspaces",
-      "prepare": "husky install"
-    }
-  }
-  ```
-
-## Phase 1: Foundation & Core Platform (6-8 weeks)
-
-### Week 1: Backend Infrastructure Setup ✅ COMPLETE (2025-05-31)
-
-- [x] **Backend Project Structure**
-
-  - [x] Create backend directory with TypeScript setup
-  - [x] Configure Cloudflare Workers with wrangler.toml
-  - [x] Set up GraphQL with Apollo Server for Workers
-  - [x] Configure D1 database bindings
-  - [x] **Unit Tests**:
-    - GraphQL schema validation ✅
-    - Resolver type checking ✅
-    - Context initialization ✅
-  - [x] **Integration Tests**:
-    - GraphQL endpoint health check ✅
-    - Database connection verification ✅
-
-- [x] **GraphQL Schema Foundation**
-  - [x] Define core GraphQL types (User, SheetMusic, PracticeSession) ✅
-  - [x] Create shared TypeScript types between frontend/backend ✅
-  - [x] Implement schema code generation ✅
-  - [x] Set up GraphQL playground for development ✅
-  - [x] **Unit Tests**:
-    - Schema type validation ✅
-    - Resolver return type checking ✅
-  - [x] **Documentation**:
-    - GraphQL schema documentation ✅
-    - Type definitions reference ✅
-
-### Week 2: Database Schema & User Model ✅ COMPLETE (2025-05-31)
-
-- [x] **Database Schema Implementation**
-
-  - [x] Create D1 migrations for users table ✅
-  - [x] Create practice_sessions table ✅
-  - [x] Create sheet_music table ✅
-  - [x] Create user_preferences table ✅
-  - [x] Create practice_logs table ✅
-  - [x] **Unit Tests**:
-    - Migration structure validation ✅
-    - Schema constraints validation ✅
-  - [x] **Integration Tests**:
-    - Database CRUD operations ✅
-    - Foreign key constraints ✅
-    - Index performance ✅
-
-- [x] **User Service & Repository**
-  - [x] Implement User model with TypeScript ✅
-  - [x] Create UserService with D1 integration ✅
-  - [x] Add UserService business logic layer ✅
-  - [x] Implement data validation with Zod ✅
-  - [x] **Unit Tests**:
-    - User model validation ✅
-    - Service methods ✅
-    - Business logic ✅
-  - [x] **Integration Tests**:
-    - User creation flow ✅
-    - Data persistence ✅
-    - Error handling ✅
-
-### Week 3: Authentication System ✅ COMPLETE (2025-05-31)
-
-- [x] **Magic Link Authentication Backend**
-
-  - [x] Create authentication GraphQL mutations ✅
-  - [x] Implement magic link generation service ✅
-  - [x] Create JWT token service ✅
-  - [x] Add email service (console.log placeholder) ✅
-  - [x] **Unit Tests**:
-    - Token generation logic ✅
-    - JWT signing/verification ✅
-    - Email validation ✅
-    - Magic link expiration ✅
-  - [x] **Integration Tests**:
-    - Complete auth flow ✅
-    - Token refresh mechanism ✅
-    - Rate limiting ✅
-
-- [x] **Authentication Middleware**
-  - [x] Create GraphQL context with auth ✅
-  - [x] Implement user verification in resolvers ✅
-  - [x] Add rate limiting utility ✅
-  - [x] Configure basic CORS ✅
-  - [x] **Unit Tests**:
-    - Auth context extraction ✅
-    - Permission checking ✅
-    - Rate limit logic ✅
-  - [x] **Integration Tests**:
-    - Protected query access ✅
-    - Invalid token handling ✅
-
-**Note**: Email service currently uses console.log for development. Production implementation with Resend/SendGrid pending.
-
-### Week 4: Frontend GraphQL Integration 🚧 CURRENT PHASE
-
-- [ ] **Apollo Client Setup** 🔄 IN PROGRESS
-
-  - [ ] Install and configure Apollo Client
-  - [ ] Set up GraphQL code generation
-  - [ ] Create typed hooks for queries/mutations
-  - [ ] Implement authentication link
-  - [ ] **Unit Tests**:
-    - Client initialization
-    - Auth header injection
-    - Cache configuration
-  - [ ] **Integration Tests**:
-    - Query execution
-    - Mutation handling
-    - Error states
-
-- [ ] **Authentication UI Integration**
-  - [ ] Create login page with magic link
-  - [ ] Implement auth context provider
-  - [ ] Add protected route wrapper
-  - [ ] Handle token storage and refresh
-  - [ ] **Unit Tests**:
-    - Auth hook functionality
-    - Protected route behavior
-    - Token persistence
-  - [ ] **E2E Tests**:
-    - Complete login flow
-    - Session persistence
-    - Logout functionality
-
-### Week 5: Sheet Music Service
-
-- [ ] **Sheet Music GraphQL API**
-
-  - [ ] Create SheetMusic type and resolvers
-  - [ ] Implement sheet music queries (list, get, search)
-  - [ ] Add filtering and pagination
-  - [ ] Create recommendation engine
-  - [ ] **Unit Tests**:
-    - Search algorithm
-    - Filter combinations
-    - Pagination logic
-  - [ ] **Integration Tests**:
-    - Query performance
-    - Full-text search
-    - Recommendation accuracy
-
-- [ ] **Sheet Music Repository**
-  - [ ] Implement SheetMusicRepository
-  - [ ] Add caching layer for frequent queries
-  - [ ] Create data import scripts
-  - [ ] Handle large JSON data (measures)
-  - [ ] **Unit Tests**:
-    - Repository methods
-    - Cache invalidation
-    - Data transformations
-  - [ ] **Integration Tests**:
-    - Bulk operations
-    - Concurrent access
-    - Data integrity
-
-### Week 6: Practice Session Management
-
-- [ ] **Practice Session GraphQL API**
-
-  - [ ] Create PracticeSession mutations
-  - [ ] Implement session lifecycle (start/pause/complete)
-  - [ ] Add practice logging mutations
-  - [ ] Create progress tracking queries
-  - [ ] **Unit Tests**:
-    - Session state machine
-    - Progress calculations
-    - Data validation
-  - [ ] **Integration Tests**:
-    - Complete session flow
-    - Concurrent sessions
-    - Data consistency
-
-- [ ] **Frontend Practice Integration**
-  - [ ] Integrate practice page with GraphQL
-  - [ ] Add session tracking to MusicPlayer
-  - [ ] Implement progress saving
-  - [ ] Create offline queue for sync
-  - [ ] **Unit Tests**:
-    - Session hooks
-    - Offline storage
-    - Sync logic
-  - [ ] **E2E Tests**:
-    - Full practice flow
-    - Offline/online transition
-    - Progress persistence
-
-### Week 7-8: User Profile & Preferences
-
-- [ ] **User Profile Management**
-
-  - [ ] Create user profile GraphQL queries/mutations
-  - [ ] Implement preferences management
-  - [ ] Add instrument selection
-  - [ ] Add user deletion with GDPR compliance
-  - [ ] **Unit Tests**:
-    - User data validation
-    - Preference merging
-    - GDPR compliance
-  - [ ] **Integration Tests**:
-    - Profile updates
-    - Preference persistence
-    - Account deletion
-
-- [ ] **Frontend Profile UI**
-  - [ ] Create user profile page
-  - [ ] Build settings interface
-  - [ ] Add instrument switcher
-  - [ ] Implement theme preferences
-  - [ ] **Unit Tests**:
-    - Profile form validation
-    - Settings state management
-    - Theme switching
-  - [ ] **E2E Tests**:
-    - Profile editing
-    - Preference saving
-    - Instrument switching
-
-## Backend Architecture Details
-
-### GraphQL Schema Structure
-
-```graphql
-# Core Types
-type User {
-  id: ID!
-  email: String!
-  displayName: String
-  primaryInstrument: Instrument!
-  preferences: UserPreferences!
-  stats: UserStats!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type SheetMusic {
-  id: ID!
-  title: String!
-  composer: String!
-  opus: String
-  movement: String
-  instrument: Instrument!
-  difficulty: Difficulty!
-  measures: [Measure!]!
-  metadata: SheetMusicMetadata
-}
-
-type PracticeSession {
-  id: ID!
-  user: User!
-  instrument: Instrument!
-  sheetMusic: SheetMusic
-  startedAt: DateTime!
-  completedAt: DateTime
-  accuracy: Float
-  notesAttempted: Int!
-  notesCorrect: Int!
-  logs: [PracticeLog!]!
-}
-
-# Enums
-enum Instrument {
-  PIANO
-  GUITAR
-}
-
-enum Difficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
-```
-
-### Database Schema (D1)
-
-```sql
--- Users table
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  primary_instrument TEXT NOT NULL DEFAULT 'piano',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- User preferences (JSON stored)
-CREATE TABLE user_preferences (
-  user_id TEXT PRIMARY KEY,
-  preferences TEXT NOT NULL, -- JSON
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Practice sessions
-CREATE TABLE practice_sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  instrument TEXT NOT NULL,
-  sheet_music_id TEXT,
-  started_at DATETIME NOT NULL,
-  completed_at DATETIME,
-  accuracy_percentage REAL,
-  notes_attempted INTEGER DEFAULT 0,
-  notes_correct INTEGER DEFAULT 0,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id)
-);
-
--- Sheet music library
-CREATE TABLE sheet_music (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  composer TEXT NOT NULL,
-  opus TEXT,
-  movement TEXT,
-  instrument TEXT NOT NULL,
-  difficulty INTEGER NOT NULL,
-  measures_data TEXT NOT NULL, -- JSON
-  metadata TEXT, -- JSON
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Practice logs for detailed tracking
-CREATE TABLE practice_logs (
-  id TEXT PRIMARY KEY,
-  session_id TEXT NOT NULL,
-  activity_type TEXT NOT NULL,
-  duration_seconds INTEGER NOT NULL,
-  tempo_practiced INTEGER,
-  target_tempo INTEGER,
-  focus_areas TEXT, -- JSON array
-  self_rating INTEGER,
-  notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE CASCADE
-);
-
--- Indexes for performance
-CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
-CREATE INDEX idx_sessions_user_instrument ON practice_sessions(user_id, instrument);
-CREATE INDEX idx_sheet_music_instrument ON sheet_music(instrument);
-CREATE INDEX idx_logs_session ON practice_logs(session_id);
-```
-
-### Testing Strategy
-
-#### Backend Testing Structure
-
-```
-backend/
-├── src/
-│   ├── __tests__/
-│   │   ├── unit/
-│   │   │   ├── services/
-│   │   │   ├── resolvers/
-│   │   │   └── utils/
-│   │   └── integration/
-│   │       ├── auth.test.ts
-│   │       ├── user.test.ts
-│   │       └── practice.test.ts
-│   └── test-utils/
-│       ├── db.ts
-│       └── graphql.ts
-```
-
-#### Frontend Testing Updates
-
-```
-src/
-├── services/
-│   └── api/
-│       ├── __tests__/
-│       │   ├── client.test.ts
-│       │   └── hooks.test.ts
-│       └── __mocks__/
-│           └── graphql.ts
-```
-
-## Phase 2: Progress & Analytics (6-8 weeks)
-
-### Week 5-6: Sheet Music Service
-
-- [ ] **Sheet Music API Backend**
-
-  - [ ] Create /api/sheet-music endpoints
-  - [ ] Implement filtering and search
-  - [ ] Add recommendation endpoint
-  - [ ] Create admin endpoints for content
-  - [ ] **OpenAPI**: Full schema for sheet music resources
-  - [ ] **Unit Tests**:
-    - Search algorithm logic
-    - Difficulty calculation
-    - Recommendation scoring
-  - [ ] **Integration Tests**:
-    - Search with filters
-    - Pagination handling
-    - Content retrieval
-
-- [ ] **Sheet Music Frontend Components**
-  - [ ] Create sheet music browser
-  - [ ] Implement filter controls
-  - [ ] Add notation preview
-  - [ ] Build recommendation display
-  - [ ] **Unit Tests**:
-    - Filter state management
-    - Search debouncing
-    - Preview rendering
-  - [ ] **Component Tests**:
-    - User interaction flows
-    - Responsive behavior
-    - Accessibility compliance
-
-### Week 7-8: Practice Session System
-
-- [ ] **Practice Service Backend**
-
-  - [ ] Create session management endpoints
-  - [ ] Implement practice logging API
-  - [ ] Add quick-log endpoint
-  - [ ] Create template system
-  - [ ] **OpenAPI**: Document practice endpoints
-  - [ ] **Unit Tests**:
-    - Session state management
-    - Log validation rules
-    - Template merging
-  - [ ] **Integration Tests**:
-    - Complete session lifecycle
-    - Concurrent session handling
-    - Data consistency
-
-- [ ] **Practice Frontend Implementation**
-  - [ ] Fix tempo speed-up bug
-  - [ ] Add volume control
-  - [ ] Implement practice timer
-  - [ ] Create session UI
-  - [ ] **Unit Tests**:
-    - Timer accuracy
-    - Audio state management
-    - Session data handling
-  - [ ] **Integration Tests**:
-    - Full practice flow
-    - Offline queue sync
-    - Audio playback
-
-## Phase 2: Progress & Analytics (6-8 weeks)
-
-### Week 9-10: Progress Tracking System
-
-- [ ] **Progress Service Backend**
-
-  - [ ] Create progress calculation engine
-  - [ ] Implement achievement system
-  - [ ] Add streak tracking
-  - [ ] Build level progression
-  - [ ] **OpenAPI**: Progress endpoint schemas
-  - [ ] **Unit Tests**:
-    - XP calculation algorithms
-    - Achievement unlock logic
-    - Streak calculation
-    - Level boundaries
-  - [ ] **Integration Tests**:
-    - Progress updates
-    - Achievement notifications
-    - Data aggregation
-
-- [ ] **Progress UI Components**
-  - [ ] Create progress dashboard
-  - [ ] Build achievement gallery
-  - [ ] Add streak calendar
-  - [ ] Implement level indicator
-  - [ ] **Unit Tests**:
-    - Progress calculations
-    - Chart rendering logic
-    - Achievement state
-  - [ ] **Visual Tests**:
-    - Chart accuracy
-    - Responsive layouts
-    - Animation behavior
-
-### Week 11-12: Analytics Service
-
-- [ ] **Analytics Backend**
-
-  - [ ] Create analytics aggregation
-  - [ ] Implement export functionality
-  - [ ] Add reporting endpoints
-  - [ ] Build data warehouse views
-  - [ ] **OpenAPI**: Analytics endpoint documentation
-  - [ ] **Unit Tests**:
-    - Aggregation algorithms
-    - Export formatting
-    - Date range handling
-  - [ ] **Integration Tests**:
-    - Large dataset handling
-    - Export generation
-    - Query performance
-
-- [ ] **Analytics Frontend**
-  - [ ] Create analytics dashboard
-  - [ ] Build report builder
-  - [ ] Add export UI
-  - [ ] Implement visualizations
-  - [ ] **Unit Tests**:
-    - Data transformation
-    - Chart configurations
-    - Export options
-  - [ ] **Integration Tests**:
-    - Report generation
-    - Real-time updates
-    - Export downloads
-
-## Phase 3: Advanced Features (8-10 weeks)
-
-### Week 13-14: Professional Practice Features
-
-- [ ] **Quick Practice Timer Backend**
-  - [ ] Create timer service
-  - [ ] Implement quick-log processing
-  - [ ] Add template management
-  - [ ] Build activity categorization
-  - [ ] **OpenAPI**: Timer and logging endpoints
-  - [ ] **Unit Tests**:
-    - Timer accuracy
-    - Category validation
-    - Template application
-  - [ ] **Integration Tests**:
-    - Timer lifecycle
-    - Quick-log creation
-    - Template CRUD
-
-### Week 15-16: Offline Sync System
-
-- [ ] **Offline Queue Implementation**
-  - [ ] Create offline storage service
-  - [ ] Implement sync algorithm
-  - [ ] Add conflict resolution
-  - [ ] Build retry mechanism
-  - [ ] **Unit Tests**:
-    - Queue management
-    - Sync logic
-    - Conflict resolution
-  - [ ] **Integration Tests**:
-    - Full sync flow
-    - Network failure handling
-    - Data integrity
-
-### Week 17-18: Performance Optimization
-
-- [ ] **Backend Optimization**
-  - [ ] Implement caching layer
-  - [ ] Add database indexing
-  - [ ] Optimize query performance
-  - [ ] Add request batching
-  - [ ] **Performance Tests**:
-    - Load testing
-    - Query benchmarks
-    - Cache hit rates
-  - [ ] **Integration Tests**:
-    - Cache invalidation
-    - Batch processing
-    - Rate limiting
-
-### Week 19-20: Enhanced Player Features
-
-- [ ] **Advanced Playback Controls**
-  - [ ] Tempo adjustment while paused
-  - [ ] A-B loop practice sections
-  - [ ] Playback speed ramping
-  - [ ] Bookmark positions
-  - [ ] **Unit Tests**:
-    - Tempo change persistence
-    - Loop boundary validation
-    - Bookmark management
-  - [ ] **Integration Tests**:
-    - Full playback workflow
-    - State persistence
-    - Multi-device sync
-
-## Testing Standards
-
-### Unit Test Requirements
-
-```typescript
-// Example unit test structure
-describe('AuthService', () => {
-  describe('generateMagicLink', () => {
-    it('should generate valid magic link token', () => {
-      // Test implementation
-    })
-
-    it('should expire after 10 minutes', () => {
-      // Test implementation
-    })
-
-    it('should rate limit requests', () => {
-      // Test implementation
-    })
-  })
-})
-```
-
-### Integration Test Requirements
-
-```typescript
-// Example integration test
-describe('POST /api/auth/login', () => {
-  it('should send magic link email', async () => {
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'test@example.com' })
-
-    expect(response.status).toBe(202)
-    expect(mockEmailService).toHaveBeenCalled()
-  })
-})
-```
-
-### OpenAPI Documentation Requirements
-
-```typescript
-// Example OpenAPI documentation
-@OpenAPIRoute({
-  method: 'post',
-  path: '/api/auth/login',
-  summary: 'Request magic link',
-  request: {
-    body: z.object({
-      email: z.string().email()
-    })
-  },
-  responses: {
-    202: {
-      description: 'Magic link sent',
-      schema: z.object({
-        success: z.boolean(),
-        message: z.string()
-      })
-    }
-  }
-})
-```
-
-## CI/CD Pipeline
-
-### GitHub Actions Workflow
-
-```yaml
-name: CI/CD Pipeline
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: npm ci
-      - name: Run unit tests
-        run: npm run test:unit
-      - name: Run integration tests
-        run: npm run test:integration
-      - name: Generate coverage report
-        run: npm run test:coverage
-      - name: Generate OpenAPI spec
-        run: npm run openapi:generate
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-```
+- **Testing Infrastructure**: Jest, React Testing Library, and Husky configured
+- **Type Safety**: Fixed all TypeScript errors in test files
+- **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
+- **Documentation Updates**: Updated critical deployment information
+- **CSP Configuration**: Fixed for Cloudflare Workers deployment
+
+## Pending Development 🚧
+
+### Phase 1: Frontend Apollo Client Integration (Current Phase)
+
+#### Week 1: Apollo Client Setup
+
+- **Apollo Client Installation**
+
+  - Install @apollo/client and graphql dependencies
+  - Install GraphQL code generation tools
+  - Configure workspace dependencies
+
+- **GraphQL Code Generation**
+
+  - Create codegen configuration for frontend
+  - Set up typed hooks generation
+  - Configure schema introspection from backend
+
+- **Apollo Client Configuration**
+  - Set up Apollo Provider in main application
+  - Configure authentication link for JWT tokens
+  - Implement cache policies and error handling
+
+#### Week 2: Authentication UI
+
+- **Login Page Development**
+
+  - Create login page component with routing
+  - Implement magic link request form
+  - Add form validation and error handling
+
+- **Authentication Flow**
+  - Build auth context provider
+  - Implement token storage and refresh
+  - Create protected route wrapper
+  - Handle authentication states
+
+#### Week 3: Connect Existing Features
+
+- **Practice Page Integration**
+
+  - Connect practice page to GraphQL API
+  - Implement session tracking with backend
+  - Add progress saving functionality
+
+- **User Profile Integration**
+  - Create user profile queries
+  - Implement preferences management
+  - Add instrument selection UI
+
+### Phase 2: Core Feature Implementation
+
+#### Sheet Music Service
+
+- **Backend Implementation**
+
+  - Complete sheet music service with CRUD operations
+  - Implement filtering and search functionality
+  - Add recommendation engine
+  - Create data import scripts
+
+- **Frontend Integration**
+  - Build sheet music browser component
+  - Implement filter controls
+  - Add notation preview
+  - Create recommendation display
+
+#### Practice Session Management
+
+- **Backend Services**
+
+  - Implement session lifecycle (start/pause/complete)
+  - Create practice logging system
+  - Add progress tracking queries
+  - Build statistics aggregation
+
+- **Frontend Features**
+  - Integrate session tracking in MusicPlayer
+  - Add practice timer component
+  - Implement offline queue for sync
+  - Create progress visualization
+
+#### Email Service
+
+- **Production Implementation**
+  - Integrate real email provider (Resend/SendGrid)
+  - Create email templates
+  - Implement rate limiting
+  - Add email verification
+
+### Phase 3: Advanced Features
+
+#### Progress & Analytics
+
+- **Progress Tracking**
+
+  - Create progress calculation engine
+  - Implement achievement system
+  - Add streak tracking
+  - Build level progression
+
+- **Analytics Dashboard**
+  - Create analytics aggregation service
+  - Build report generation
+  - Add export functionality
+  - Implement data visualizations
+
+#### Professional Features
+
+- **Quick Practice Timer**
+
+  - Create timer service
+  - Implement quick-log processing
+  - Add template management
+  - Build activity categorization
+
+- **Offline Sync**
+  - Create offline storage service
+  - Implement sync algorithm
+  - Add conflict resolution
+  - Build retry mechanism
+
+#### Enhanced Player
+
+- **Advanced Controls**
+  - A-B loop for practice sections
+  - Playback speed ramping
+  - Bookmark positions
+  - Tempo adjustment while paused
+
+### Phase 4: Multi-Instrument Support
+
+#### Guitar-Specific Features
+
+- **Notation Support**
+  - Implement tablature rendering
+  - Add position markers (I-XIX)
+  - String indication system
+  - Classical fingering notation (p,i,m,a)
+
+#### Piano-Specific Features
+
+- **Grand Staff Support**
+  - Proper treble/bass clef coordination
+  - Hand independence tracking
+  - Pedaling notation
+  - Piano fingering numbers (1-5)
+
+## Technical Debt & Improvements
+
+### Frontend Architecture
+
+- Reorganize components into atomic design structure
+- Implement custom hooks for business logic
+- Add comprehensive TypeScript types
+- Create service layer for API communication
+
+### Backend Enhancements
+
+- Add missing database tables (progress_tracking, practice_templates)
+- Implement caching layer for performance
+- Add request batching for optimization
+- Complete OpenAPI documentation
+
+### Testing & Quality
+
+- Achieve 80% test coverage across all modules
+- Add performance benchmarks
+- Implement visual regression testing
+- Create E2E test suite
+
+## Success Metrics
+
+### Development Metrics
+
+- Test Coverage: >80% for all modules
+- Build Time: <2 minutes for full test suite
+- Bundle Size: <500KB initial load
+- API Response: <100ms p95
+
+### User Experience Metrics
+
+- Audio Latency: <50ms
+- Page Load: <3 seconds
+- Error Rate: <0.1%
+- Mobile Performance: >90 Lighthouse score
 
 ## Definition of Done
 
 A feature is considered complete when:
 
-1. ✅ All unit tests pass with >80% coverage
-2. ✅ All integration tests pass
-3. ✅ OpenAPI documentation is complete
-4. ✅ Code passes linting and formatting
-5. ✅ Feature works on all supported browsers
-6. ✅ Accessibility requirements are met
-7. ✅ Performance benchmarks are satisfied
-8. ✅ Security review is complete
-9. ✅ Documentation is updated
-10. ✅ Code review is approved
+1. All unit tests pass with >80% coverage
+2. Integration tests validate the feature
+3. Documentation is updated
+4. Code passes linting and type-checking
+5. Feature works across all supported browsers
+6. Accessibility requirements are met
+7. Performance benchmarks are satisfied
+8. Code review is approved
+
+### Phase 3: Advanced Features
+
+#### Progress & Analytics
+
+- **Progress Tracking**
+
+  - Create progress calculation engine
+  - Implement achievement system
+  - Add streak tracking
+  - Build level progression
+
+- **Analytics Dashboard**
+  - Create analytics aggregation service
+  - Build report generation
+  - Add export functionality
+  - Implement data visualizations
+
+#### Professional Practice Features
+
+- **Quick Practice Timer**
+
+  - Create timer service
+  - Implement quick-log processing
+  - Add template management
+  - Build activity categorization
+
+- **Offline Sync**
+  - Create offline storage service
+  - Implement sync algorithm
+  - Add conflict resolution
+  - Build retry mechanism
+
+#### Performance Optimization
+
+- **Backend Optimization**
+
+  - Implement caching layer
+  - Add database indexing
+  - Optimize query performance
+  - Add request batching
+
+- **Frontend Performance**
+  - Code splitting implementation
+  - Image optimization
+  - Bundle size reduction
+  - Service worker caching
+
+#### Enhanced Player Features
+
+- **Advanced Controls**
+
+  - A-B loop for practice sections
+  - Playback speed ramping
+  - Bookmark positions
+  - Tempo adjustment while paused
+
+- **Visual Enhancements**
+  - Note highlighting during playback
+  - Progress indicators
+  - Visual metronome
+  - Practice history timeline
+
+## Testing Standards
+
+### Unit Test Requirements
+
+- Comprehensive unit tests for all business logic
+- Mock external dependencies appropriately
+- Test edge cases and error conditions
+- Maintain clear test descriptions
+- See `DEVELOPMENT_GUIDELINES.md` for testing patterns
+
+### Integration Test Requirements
+
+- Test complete API workflows end-to-end
+- Verify database operations
+- Test authentication flows
+- Validate error handling
+- See `DEVELOPMENT_GUIDELINES.md` for integration test examples
+
+### OpenAPI Documentation Requirements
+
+- Document all API endpoints
+- Include request/response schemas
+- Provide clear endpoint descriptions
+- Add authentication requirements
+- See `API_SPECIFICATION.md` for schema details
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+- Automated test execution on push/PR
+- Unit and integration test runs
+- Code coverage reporting
+- OpenAPI spec generation
+- Automated coverage uploads
+- See `.github/workflows` for implementation
+
+## Definition of Done
+
+A feature is considered complete when:
+
+1. All unit tests pass with >80% coverage
+2. Integration tests validate the feature
+3. OpenAPI documentation is complete
+4. Code passes linting and formatting
+5. Feature works on all supported browsers
+6. Accessibility requirements are met
+7. Performance benchmarks are satisfied
+8. Security review is complete
+9. Documentation is updated
+10. Code review is approved
 
 ## Success Metrics
 
