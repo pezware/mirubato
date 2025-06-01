@@ -15,7 +15,12 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
   // Allowed origins
   const allowedOrigins =
     env.ENVIRONMENT === 'production'
-      ? ['https://mirubato.com', 'https://www.mirubato.com']
+      ? [
+          'https://mirubato.com',
+          'https://www.mirubato.com',
+          'https://mirubato.arbeitandy.workers.dev',
+          'https://mirubato.pages.dev',
+        ]
       : [
           'http://localhost:3000',
           'http://localhost:5173',
@@ -32,6 +37,11 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
   // Only set origin if it's in the allowed list
   if (allowedOrigins.includes(origin)) {
     corsHeaders['Access-Control-Allow-Origin'] = origin
+  } else if (env.ENVIRONMENT === 'production') {
+    // In production, also allow Cloudflare preview deployments
+    if (origin.endsWith('.workers.dev') || origin.endsWith('.pages.dev')) {
+      corsHeaders['Access-Control-Allow-Origin'] = origin
+    }
   } else if (env.ENVIRONMENT === 'development') {
     // In development, allow any localhost origin
     if (
