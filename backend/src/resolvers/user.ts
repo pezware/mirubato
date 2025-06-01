@@ -1,69 +1,79 @@
-import type { UserResolvers } from '../types/generated/graphql'
+import type {
+  QueryResolvers,
+  MutationResolvers,
+  UserResolvers,
+} from '../types/generated/graphql'
 import { UserService } from '../services/user'
 
-export const userResolvers: UserResolvers = {
-  Query: {
-    me: async (_parent, _args, context) => {
-      if (!context.user) {
-        return null
-      }
+const Query: Partial<QueryResolvers> = {
+  me: async (_parent, _args, context) => {
+    if (!context.user) {
+      return null
+    }
 
-      const userService = new UserService(context.env.DB)
-      return userService.getUserById(context.user.id)
-    },
-
-    user: async (_parent, { id }, context) => {
-      const userService = new UserService(context.env.DB)
-      return userService.getUserById(id)
-    },
+    const userService = new UserService(context.env.DB)
+    return userService.getUserById(context.user.id)
   },
 
-  Mutation: {
-    updateUser: async (_parent, { input }, context) => {
-      if (!context.user) {
-        throw new Error('Authentication required')
-      }
+  user: async (_parent, { id }, context) => {
+    const userService = new UserService(context.env.DB)
+    return userService.getUserById(id)
+  },
+}
 
-      const userService = new UserService(context.env.DB)
-      return userService.updateUser(context.user.id, input)
-    },
+const Mutation: Partial<MutationResolvers> = {
+  updateUser: async (_parent, { input }, context) => {
+    if (!context.user) {
+      throw new Error('Authentication required')
+    }
 
-    deleteAccount: async (_parent, _args, context) => {
-      if (!context.user) {
-        throw new Error('Authentication required')
-      }
-
-      const userService = new UserService(context.env.DB)
-      await userService.deleteUser(context.user.id)
-
-      return {
-        success: true,
-        message: 'Account deleted successfully',
-      }
-    },
+    const userService = new UserService(context.env.DB)
+    return userService.updateUser(context.user.id, input)
   },
 
-  User: {
-    primaryInstrument: parent => {
-      // Ensure primaryInstrument is always returned as uppercase enum value
-      return parent.primaryInstrument?.toUpperCase() || 'PIANO'
-    },
+  deleteAccount: async (_parent, _args, context) => {
+    if (!context.user) {
+      throw new Error('Authentication required')
+    }
 
-    preferences: async (parent, _args, _context) => {
-      // Preferences are stored as JSON in the database
-      return (
-        parent.preferences || {
-          theme: 'LIGHT',
-          notationSize: 'MEDIUM',
-          practiceReminders: true,
-          dailyGoalMinutes: 30,
-        }
-      )
-    },
+    const userService = new UserService(context.env.DB)
+    await userService.deleteUser(context.user.id)
 
-    stats: async (parent, _args, context) => {
-      const userService = new UserService(context.env.DB)
-      return userService.getUserStats(parent.id)
-    },
+    return {
+      success: true,
+      message: 'Account deleted successfully',
+    }
   },
+}
+
+const User: UserResolvers = {
+  primaryInstrument: parent => {
+    // Ensure primaryInstrument is always returned as uppercase enum value
+    return (parent.primaryInstrument?.toUpperCase() || 'PIANO') as
+      | 'GUITAR'
+      | 'PIANO'
+  },
+
+  preferences: async (parent, _args, _context) => {
+    // Preferences are stored as JSON in the database
+    return (
+      parent.preferences || {
+        theme: 'LIGHT',
+        notationSize: 'MEDIUM',
+        practiceReminders: true,
+        dailyGoalMinutes: 30,
+      }
+    )
+  },
+
+  stats: async (parent, _args, context) => {
+    const userService = new UserService(context.env.DB)
+    return userService.getUserStats(parent.id)
+  },
+}
+
+export const userResolvers = {
+  Query,
+  Mutation,
+  User,
 }

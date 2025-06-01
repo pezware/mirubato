@@ -29,6 +29,7 @@ export class EmailService {
     // });
   }
 
+  // @ts-expect-error - This method is prepared for future email integration
   private getMagicLinkEmailTemplate(token: string): string {
     const loginUrl = `${this.env.ENVIRONMENT === 'production' ? 'https://mirubato.com' : 'http://localhost:5173'}/auth/verify?token=${token}`
 

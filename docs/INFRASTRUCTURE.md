@@ -546,7 +546,7 @@ export default defineConfig({
 #### Error Tracking (Sentry)
 
 ```typescript
-// src/lib/monitoring.ts
+// frontend/src/lib/monitoring.ts
 import * as Sentry from '@sentry/react';
 
 Sentry.init({
@@ -584,7 +584,7 @@ export const MusicErrorBoundary = Sentry.withErrorBoundary(
 #### Performance Monitoring
 
 ```typescript
-// src/lib/performance.ts
+// frontend/src/lib/performance.ts
 export const performanceMonitor = {
   // Audio latency monitoring
   measureAudioLatency: (callback: () => void) => {
@@ -626,7 +626,7 @@ export const performanceMonitor = {
 #### Analytics (Privacy-Focused)
 
 ```typescript
-// src/lib/analytics.ts
+// frontend/src/lib/analytics.ts
 interface AnalyticsEvent {
   event: string
   properties: Record<string, any>
@@ -690,7 +690,7 @@ function track(event: string, properties: Record<string, any>) {
 #### Frontend Testing (Jest)
 
 ```javascript
-// jest.config.mjs
+// frontend/jest.config.mjs
 export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',

@@ -5,6 +5,7 @@ node_modules/
 
 # Build outputs
 dist/
+dist-ssr/
 build/
 *.local
 
@@ -22,7 +23,6 @@ test-results/
 .env.test.local
 .env.production.local
 .env.*.local
-.dev.vars
 
 # Logs
 logs/
@@ -66,9 +66,23 @@ tsconfig.tsbuildinfo
 # Prettier cache
 .prettiercache
 
+# Stylelint cache
+.stylelintcache
+
+# Parcel cache
+.cache/
+.parcel-cache/
+
+# Vite cache
+.vite/
+
 # Testing artifacts
+playwright-report/
+playwright/.cache/
+screenshots/
+videos/
+traces/
 test-results.xml
-*.test.log
 
 # Bundle analyzer
 bundle-analyzer-report.html
@@ -101,12 +115,28 @@ temp/
 # Output of 'npm pack'
 *.tgz
 
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
 # Optional REPL history
 .node_repl_history
 
+# Storybook build outputs
+storybook-static/
+.out/
+.storybook-out/
+
 # Generated files
 *.generated.ts
+*.generated.tsx
 *.generated.js
+*.generated.jsx
+
+# GraphQL Code Generation
+src/__generated__/
 src/types/generated/
 
 # Source maps
@@ -130,46 +160,25 @@ src/types/generated/
 debug/
 .debug/
 
-# Cloudflare Workers
+# Cloudflare
 .wrangler/
-wrangler.toml
-!wrangler.example.toml
-.mf/
-worker-bundle.js
+.dev.vars
 
-# Database files
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
-.sqlite-db/
+# Audio processing temp files
+audio-temp/
+audio-cache/
 
-# D1 local databases
-.wrangler/state/
+# VexFlow rendering cache
+.vexflow-cache/
 
-# KV namespaces local
-.wrangler/kv-namespaces/
+# Music notation temp files
+notation-temp/
+*.musicxml.tmp
+*.mei.tmp
 
-# R2 buckets local
-.wrangler/r2/
-
-# Miniflare
-.miniflare/
-
-# Workers Sites
-worker-site/
-
-# Migrations temp files
-migrations/*.tmp
-migrations/*.bak
-
-# GraphQL Code Generation
-codegen-temp/
-
-# API documentation
-api-docs/
-openapi.json
-swagger.json
+# PWA
+sw.js
+workbox-*.js
 
 # Sentry
 .sentryclirc
@@ -177,13 +186,3 @@ swagger.json
 # Analytics
 analytics.json
 .analytics/
-
-# Certificates (local dev)
-*.pem
-*.key
-*.crt
-*.cert
-!*.example.pem
-
-# Email templates cache
-email-templates-cache/

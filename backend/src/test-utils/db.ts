@@ -120,8 +120,16 @@ export class MockD1Database implements Partial<D1Database> {
 
         return {
           results: rows,
-          success: true,
-          meta: {},
+          success: true as const,
+          meta: {
+            duration: 0,
+            size_after: 0,
+            rows_read: rows.length,
+            rows_written: 0,
+            changed_db: false,
+            last_row_id: 0,
+            changes: 0,
+          },
         }
       },
       async run() {
@@ -180,17 +188,28 @@ export class MockD1Database implements Partial<D1Database> {
         }
 
         return {
-          success: true,
+          success: true as const,
+          results: [],
           meta: {
             changes: 1,
             last_row_id: 1,
+            duration: 0,
+            size_after: 0,
+            rows_read: 0,
+            rows_written: 1,
+            changed_db: false,
           },
         }
       },
       async raw() {
         const tableName = self.extractTableName(query)
         const rows = self.data.get(tableName) || []
-        return rows.map(row => Object.values(row))
+        if (rows.length === 0) {
+          return [[], []] as [string[], ...any[]]
+        }
+        const headers = Object.keys(rows[0])
+        const values = rows.map(row => Object.values(row))
+        return [headers, ...values] as [string[], ...any[]]
       },
     }
 
@@ -201,8 +220,11 @@ export class MockD1Database implements Partial<D1Database> {
     return Promise.all(statements.map(stmt => stmt.all()))
   }
 
-  exec(query: string) {
-    return Promise.resolve()
+  exec(_query: string) {
+    return Promise.resolve({
+      count: 0,
+      duration: 0,
+    })
   }
 
   // Helper methods for testing

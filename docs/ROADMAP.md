@@ -45,14 +45,16 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
 - [x] **Practice Page Redesign**: Elegant controls with circular volume control
 - [x] **Mobile Optimizations**: Dynamic measures per page, responsive scaling
 - [x] **Page-Based Navigation**: Consistent flipping behavior across all devices
+- [x] **Monorepo Structure**: Reorganized project into frontend/backend folders for better separation
 
 ## Immediate Next Steps 🚀 (2025-05-31)
 
 1. **Install Apollo Client in Frontend**:
 
    ```bash
-   npm install @apollo/client graphql
-   npm install -D @graphql-codegen/cli @graphql-codegen/client-preset
+   # From root directory with workspace flag
+   npm install @apollo/client graphql -w @mirubato/frontend
+   npm install -D @graphql-codegen/cli @graphql-codegen/client-preset -w @mirubato/frontend
    ```
 
 2. **Configure GraphQL Code Generation**:
@@ -133,16 +135,18 @@ This roadmap provides a comprehensive development plan for Mirubato with strict 
   - [ ] Configure Swagger UI for development
   - [ ] **Tests**: Validate OpenAPI schema generation
 
-- [x] **Update package.json Scripts**
+- [x] **Update package.json Scripts** (Now organized as monorepo)
   ```json
   {
     "scripts": {
-      "test": "jest",
-      "test:unit": "jest --config jest.unit.config.mjs",
-      "test:integration": "jest --config jest.integration.config.mjs",
-      "test:coverage": "jest --coverage",
-      "test:watch": "jest --watch",
-      "openapi:generate": "echo 'OpenAPI generation not yet implemented'",
+      "dev": "npm run dev -w @mirubato/frontend",
+      "dev:backend": "npm run dev -w @mirubato/backend",
+      "build": "npm run build -w @mirubato/frontend",
+      "build:backend": "npm run build -w @mirubato/backend",
+      "test": "npm run test --workspaces",
+      "test:unit": "npm run test:unit --workspaces",
+      "test:integration": "npm run test:integration --workspaces",
+      "test:coverage": "npm run test:coverage --workspaces",
       "prepare": "husky install"
     }
   }

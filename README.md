@@ -1,95 +1,128 @@
-# Mirubato: Open-Source Multi-Instrument Sight-Reading Platform
+# mirubato
 
-![Mirubato Screenshot](public/mirubato-screenshot.jpg)
+Open-source sight-reading platform for classical guitar and piano, featuring real-time audio playback and progressive exercises.
 
-## Project Overview
-An open-source progressive web application focused on sight-reading practice for classical guitar and piano, featuring email authentication, deployable as a full-stack application on Cloudflare Workers.
+![mirubato Screenshot](https://github.com/arbeitandy/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
 
-## ✨ Features
+## Features
 
-- **Multi-Instrument Support**: Classical guitar and piano sight-reading
-- **Interactive Audio**: High-quality instrument samples powered by Tone.js
-- **Educational Focus**: Based on proven sight-reading pedagogies
-- **Progressive Difficulty**: Adaptive learning system
-- **Open Source**: MIT license with open educational resources
-- **Mobile-First**: Responsive design optimized for practice on any device
+- 🎸 **Multi-instrument support** - Classical guitar and piano
+- 🎵 **Real-time audio** - High-quality samples with Tone.js
+- 📱 **Mobile-first** - Practice on any device
+- 🎯 **Progressive learning** - Adaptive difficulty system
+- 🌐 **Open source** - MIT licensed with open educational resources
 
-## 🚀 Quick Start
+## Project Structure
+
+```
+mirubato/
+├── frontend/          # React frontend with Vite
+├── backend/           # GraphQL API on Cloudflare Workers
+├── docs/              # Documentation
+└── package.json       # Monorepo configuration
+```
+
+## Quick Start
 
 ```bash
-# Install dependencies
-npm install
+# Clone the repository
+git clone https://github.com/arbeitandy/mirubato.git
+cd mirubato
 
-# Start development server
-npm run dev
+# Install dependencies
+npm install  # See INSTALL_ISSUES.md if you encounter errors
+
+# Start development servers
+npm run dev          # Frontend (http://localhost:3000)
+npm run dev:backend  # Backend (http://localhost:8787)
+
+# Run tests
+npm test
 
 # Build for production
 npm run build
-
-# Deploy to Cloudflare Workers
-npm run deploy
 ```
 
-## 🎵 Educational Foundation
+## Documentation
 
-Mirubato integrates open educational resources:
+- 📖 **[Development Setup](docs/DEVELOPMENT_SETUP.md)** - Environment setup and getting started
+- 🛠️ **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Code standards and best practices
+- 🏗️ **[System Design](docs/SYSTEM_DESIGN.md)** - Architecture and database schema
+- 🚀 **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Deploy to Cloudflare
+- 📋 **[Roadmap](docs/ROADMAP.md)** - Development phases and progress
 
-- **Sight-Reading for Guitar: The Keep Going Method** (CC BY 4.0)
-- **IMSLP Public Domain Classical Repertoire** 
-- **Research-Based Pedagogical Approaches**
+## Technology Stack
 
-## 🛠 Technology Stack
+| Component | Technology |
+|-----------|------------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| Backend | GraphQL, Apollo Server, Cloudflare Workers |
+| Database | Cloudflare D1 (SQLite) |
+| Audio | Tone.js, Web Audio API |
+| Notation | VexFlow.js |
+| Auth | Magic links with JWT |
 
-- **Frontend**: React 18+ with TypeScript, Vite, Tailwind CSS
-- **Audio**: Tone.js for professional-grade Web Audio synthesis
-- **Music Notation**: VexFlow.js for accurate musical notation rendering
-- **Backend**: Cloudflare Workers with D1 database
-- **Authentication**: Magic link email authentication with JWT
-- **Deployment**: Cloudflare Workers with static assets
+## Contributing
 
-## 📚 Documentation
+We welcome contributions from developers, music educators, and musicians! Please read our [Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md) before submitting a PR.
 
-- **[Development Setup](docs/DEVELOPMENT_SETUP.md)** - Get started with local development
-- **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Code standards and best practices
-- **[Infrastructure](docs/INFRASTRUCTURE.md)** - Architecture and deployment setup
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Step-by-step deployment instructions
-- **[Roadmap](docs/ROADMAP.md)** - Development phases and feature planning
-- **[License](docs/LICENSE.md)** - MIT license and content attribution
+### Areas for Contribution
 
-## 🎯 Current Status: Phase 1 - Foundation
+- 🎨 **UI/UX** - Design improvements and accessibility
+- 🎼 **Content** - Sheet music and exercises
+- 🧪 **Testing** - Unit and integration tests
+- 📚 **Documentation** - Tutorials and guides
+- 🌍 **Localization** - Translations
 
-✅ **Completed:**
-- Landing page with interactive piano interface
-- Nature-inspired design system implementation
-- Tone.js audio integration with browser security handling
-- Tailwind CSS responsive design framework
-- Project structure and build pipeline
+## Educational Foundation
 
-🔄 **In Progress:**
-- User authentication system
-- VexFlow music notation integration
-- Practice session management
+mirubato integrates proven pedagogical methods:
 
-## 🌟 Getting Involved
+- **"Keep Going Method"** - Continuous reading without stopping
+- **Progressive difficulty** - Gradual skill development
+- **Multi-sensory learning** - Visual notation with audio feedback
 
-Mirubato is built for the open-source music education community. We welcome contributions from:
+Educational content sources:
+- [*Sight-Reading for Guitar: The Keep Going Method*](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0)
+- IMSLP public domain classical repertoire
 
-- **Developers**: Frontend, backend, and audio programming
-- **Music Educators**: Pedagogical guidance and content review
-- **Musicians**: User testing and feedback
-- **Designers**: UI/UX improvements and accessibility
+### Special Thanks
 
-## 📄 License
+We extend our heartfelt gratitude to:
+- **Chelsea Green** - Author of *Sight-Reading for Guitar: The Keep Going Method*
+- **Rebus Community** - For open-sourcing this invaluable educational resource
 
-MIT License - see [LICENSE.md](docs/LICENSE.md) for details.
+Their commitment to open education makes projects like mirubato possible, helping democratize music education worldwide.
 
-Educational content is licensed under CC BY 4.0 and includes proper attribution to original creators.
+## License
 
-## 🎼 About the Project
+MIT License - see [LICENSE](docs/LICENSE.md)
 
-Mirubato aims to democratize sight-reading education by providing high-quality, open-source tools for classical guitar and piano students worldwide. The platform emphasizes the "Keep Going Method" - continuous reading without stopping for mistakes - which has proven effective in developing fluent sight-reading skills.
+Educational content is licensed under CC BY 4.0 with proper attribution.
+
+## Status
+
+🚧 **Phase 1: Foundation** (Current)
+
+✅ Completed:
+- Monorepo structure with frontend/backend separation
+- GraphQL backend with authentication
+- Landing page with interactive piano
+- Music player with tempo control
+
+🔄 In Progress:
+- Apollo Client integration
+- User authentication UI
+- Sheet music service
+
+See [Roadmap](docs/ROADMAP.md) for detailed progress.
+
+## Links
+
+- **Live Demo**: Coming soon at [mirubato.com](https://mirubato.com)
+- **Repository**: [github.com/arbeitandy/mirubato](https://github.com/arbeitandy/mirubato)
+- **Issues**: [GitHub Issues](https://github.com/arbeitandy/mirubato/issues)
 
 ---
 
-**Live Demo**: Coming soon at [mirubato.com](https://mirubato.com)  
-**Repository**: [github.com/arbeitandy/mirubato](https://github.com/arbeitandy/mirubato)
+Built with ❤️ for the open-source music education community

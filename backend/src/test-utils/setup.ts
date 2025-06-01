@@ -2,11 +2,11 @@
 import { TextEncoder, TextDecoder } from 'util'
 
 // Polyfill for Cloudflare Workers environment
-global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder as any
+;(global as any).TextEncoder = TextEncoder
+;(global as any).TextDecoder = TextDecoder as any
 
 // Mock crypto for JWT operations
-global.crypto = {
+;(global as any).crypto = {
   subtle: {
     digest: jest.fn(),
     sign: jest.fn(),

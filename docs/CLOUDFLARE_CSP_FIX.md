@@ -11,7 +11,7 @@ When deployed to Cloudflare Workers, the application encounters CSP violations:
 
 ### Option 1: Updated CSP Headers (Implemented ✅)
 
-Updated `public/_headers` to allow necessary resources:
+Updated `frontend/public/_headers` to allow necessary resources:
 ```
 Content-Security-Policy: 
   default-src 'self'; 
@@ -37,9 +37,9 @@ For better control over audio assets and to reduce external dependencies:
 
 1. **Download samples locally** (not currently implemented):
    ```bash
-   node scripts/download-piano-samples.js
+   node frontend/scripts/download-piano-samples.js
    ```
-   This would download Salamander Grand Piano samples to `public/audio/salamander/`
+   This would download Salamander Grand Piano samples to `frontend/public/audio/salamander/`
 
 2. **Benefits of local samples**:
    - No external dependencies

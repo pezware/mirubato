@@ -26,13 +26,13 @@ export function createMockKV(): any {
     async get(key: string) {
       return store.get(key) || null
     },
-    async put(key: string, value: string, options?: any) {
+    async put(key: string, value: string, _options?: any) {
       store.set(key, value)
     },
     async delete(key: string) {
       store.delete(key)
     },
-    async list(options?: any) {
+    async list(_options?: any) {
       return {
         keys: Array.from(store.keys()).map(name => ({ name })),
       }

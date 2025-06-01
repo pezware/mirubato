@@ -1,9 +1,11 @@
 {
-  "*.{ts,tsx}": [
-    "eslint --fix",
-    "jest --bail --findRelatedTests --passWithNoTests"
+  "backend/**/*.{ts,tsx}": [
+    "cd backend && eslint --fix",
+    "cd backend && jest --bail --findRelatedTests --passWithNoTests"
   ],
-  "*.{js,jsx,ts,tsx,json,css,md}": [
-    "prettier --write"
-  ]
+  "frontend/**/*.{ts,tsx}": [
+    "cd frontend && eslint --fix",
+    "cd frontend && jest --bail --findRelatedTests --passWithNoTests"
+  ],
+  "*.{js,jsx,ts,tsx,json,css,md}": ["prettier --write"]
 }

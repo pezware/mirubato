@@ -1,4 +1,4 @@
-import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
+import type { KVNamespace } from '@cloudflare/workers-types'
 import {
   generateMagicLinkToken,
   createJWT,
@@ -12,7 +12,6 @@ export class AuthService {
   private readonly MAGIC_LINK_PREFIX = 'magic_link:'
 
   constructor(
-    private db: D1Database,
     private kv: KVNamespace,
     private jwtSecret: string
   ) {}
