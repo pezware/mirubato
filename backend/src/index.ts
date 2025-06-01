@@ -7,7 +7,7 @@ import { verifyJWT } from './utils/auth'
 import { createRateLimiter } from './utils/rateLimiter'
 import { typeDefs } from './schema'
 import { logRequest } from './middleware/logging'
-import { isOriginAllowed } from './config/cors'
+import { isOriginAllowed, corsConfig } from './config/cors'
 
 // Helper to get CORS headers based on origin
 function getCorsHeaders(request: Request, env: Env): Record<string, string> {
@@ -20,16 +20,22 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
   }
 
   // Check if origin is allowed based on configuration
-  const environment = env.ENVIRONMENT as 'production' | 'development'
+  // Default to production if ENVIRONMENT is not set
+  const environment = (env.ENVIRONMENT || 'production') as
+    | 'production'
+    | 'development'
   const isAllowed = isOriginAllowed(origin, environment)
 
   // Log for debugging (remove in production)
   console.log(
-    `CORS check: origin="${origin}", env="${environment}", allowed=${isAllowed}`
+    `CORS check: origin="${origin}", env="${environment}" (raw: ${env.ENVIRONMENT}), allowed=${isAllowed}`
   )
 
   if (isAllowed) {
     corsHeaders['Access-Control-Allow-Origin'] = origin
+  } else if (origin) {
+    // Log why origin was rejected
+    console.log(`CORS rejected: origin "${origin}" not in allowed list`)
   }
 
   return corsHeaders
@@ -71,6 +77,36 @@ export default {
           JSON.stringify({
             message: 'Backend is working!',
             env: env.ENVIRONMENT,
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        ),
+        request,
+        env
+      )
+    }
+
+    // Debug CORS endpoint
+    if (url.pathname === '/debug/cors') {
+      const origin = request.headers.get('Origin') || 'no-origin'
+      const environment = (env.ENVIRONMENT || 'production') as
+        | 'production'
+        | 'development'
+      const isAllowed = isOriginAllowed(origin, environment)
+
+      return addCorsHeaders(
+        new Response(
+          JSON.stringify({
+            origin,
+            environment,
+            envRaw: env.ENVIRONMENT,
+            isAllowed,
+            corsConfig: {
+              production: corsConfig.production.domains,
+              patterns: corsConfig.production.patterns,
+            },
             timestamp: new Date().toISOString(),
           }),
           {
