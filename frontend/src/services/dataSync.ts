@@ -7,40 +7,62 @@ import {
   DataConverters,
   DataValidator,
   LocalUserData,
+  SessionType,
+  ActivityType,
 } from '@mirubato/shared/types'
 import { localStorageService } from './localStorage'
 
-// GraphQL mutations for syncing data
-const SYNC_PRACTICE_SESSION = gql`
-  mutation SyncPracticeSession($session: PracticeSessionInput!) {
-    syncPracticeSession(session: $session) {
+// GraphQL mutations for creating practice sessions and logs
+const START_PRACTICE_SESSION = gql`
+  mutation StartPracticeSession($input: StartPracticeSessionInput!) {
+    startPracticeSession(input: $input) {
       id
-      success
-    }
-  }
-`
-
-const SYNC_PRACTICE_LOGS = gql`
-  mutation SyncPracticeLogs($logs: [PracticeLogInput!]!) {
-    syncPracticeLogs(logs: $logs) {
-      syncedIds
-      failedIds
-    }
-  }
-`
-
-const SYNC_USER_PREFERENCES = gql`
-  mutation SyncUserPreferences($preferences: UserPreferencesInput!) {
-    updateUserPreferences(preferences: $preferences) {
-      theme
-      notificationSettings {
-        practiceReminders
-        emailUpdates
+      user {
+        id
       }
-      practiceSettings {
-        defaultSessionDuration
-        defaultTempo
-        metronomeSoundEnabled
+      instrument
+      sessionType
+      startedAt
+    }
+  }
+`
+
+const COMPLETE_PRACTICE_SESSION = gql`
+  mutation CompletePracticeSession($input: CompletePracticeSessionInput!) {
+    completePracticeSession(input: $input) {
+      id
+      completedAt
+      accuracy
+      notesAttempted
+      notesCorrect
+    }
+  }
+`
+
+const CREATE_PRACTICE_LOG = gql`
+  mutation CreatePracticeLog($input: CreatePracticeLogInput!) {
+    createPracticeLog(input: $input) {
+      id
+      session {
+        id
+      }
+      activityType
+      durationSeconds
+      createdAt
+    }
+  }
+`
+
+const UPDATE_USER = gql`
+  mutation UpdateUser($input: UpdateUserInput!) {
+    updateUser(input: $input) {
+      id
+      preferences {
+        theme
+        notationSize
+        practiceReminders
+        dailyGoalMinutes
+        customSettings
       }
     }
   }
@@ -63,7 +85,7 @@ export class DataSyncService {
       // Get pending sync data
       const pendingData = localStorageService.getPendingSyncData()
 
-      // Sync sessions
+      // Sync sessions - for each session, we need to create it first, then complete it
       for (const session of pendingData.sessions) {
         try {
           await this.syncSession(session)
@@ -74,15 +96,14 @@ export class DataSyncService {
         }
       }
 
-      // Sync logs in batches
-      const logBatches = this.batchArray(pendingData.logs, 50) // Batch size of 50
-      for (const batch of logBatches) {
+      // Sync logs individually (no batch mutation available)
+      for (const log of pendingData.logs) {
         try {
-          const syncedIds = await this.syncLogBatch(batch)
-          logsSynced += syncedIds.length
+          await this.syncLog(log)
+          logsSynced++
         } catch (error) {
           errors.push(error as Error)
-          console.error('Failed to sync log batch:', error)
+          console.error('Failed to sync log:', log.id, error)
         }
       }
 
@@ -111,58 +132,91 @@ export class DataSyncService {
     // Convert to database format
     const dbSession = DataConverters.localSessionToDbSession(session)
 
-    const { data } = await this.apolloClient.mutate({
-      mutation: SYNC_PRACTICE_SESSION,
+    // First, start the practice session
+    const { data: startData } = await this.apolloClient.mutate({
+      mutation: START_PRACTICE_SESSION,
       variables: {
-        session: {
-          id: dbSession.id,
-          userId: dbSession.userId,
+        input: {
+          sessionType: dbSession.sessionType as SessionType,
           instrument: dbSession.instrument,
           sheetMusicId: dbSession.sheetMusicId,
-          sessionType: dbSession.sessionType,
-          startedAt: dbSession.startedAt,
-          completedAt: dbSession.completedAt,
-          pausedDuration: dbSession.pausedDuration,
-          accuracyPercentage: dbSession.accuracyPercentage,
-          notesAttempted: dbSession.notesAttempted,
-          notesCorrect: dbSession.notesCorrect,
         },
       },
     })
 
-    if (!data?.syncPracticeSession?.success) {
-      throw new Error(`Failed to sync session: ${session.id}`)
+    const remoteSessionId = startData?.startPracticeSession?.id
+
+    if (!remoteSessionId) {
+      throw new Error(
+        `Failed to start practice session for local session: ${session.id}`
+      )
     }
+
+    // If the session is completed, complete it on the server
+    if (dbSession.completedAt) {
+      const { data: completeData } = await this.apolloClient.mutate({
+        mutation: COMPLETE_PRACTICE_SESSION,
+        variables: {
+          input: {
+            sessionId: remoteSessionId,
+            accuracy: dbSession.accuracyPercentage
+              ? dbSession.accuracyPercentage / 100
+              : undefined,
+            notesAttempted: dbSession.notesAttempted,
+            notesCorrect: dbSession.notesCorrect,
+          },
+        },
+      })
+
+      if (!completeData?.completePracticeSession?.id) {
+        throw new Error(
+          `Failed to complete practice session: ${remoteSessionId}`
+        )
+      }
+    }
+
+    // Update local storage to map local ID to remote ID
+    localStorageService.updateSessionRemoteId(session.id, remoteSessionId)
   }
 
-  // Sync a batch of practice logs
-  private async syncLogBatch(logs: PracticeLog[]): Promise<string[]> {
-    // Validate all logs
-    const validLogs = logs.filter(log => DataValidator.validatePracticeLog(log))
+  // Sync a single practice log
+  private async syncLog(log: PracticeLog): Promise<void> {
+    // Validate log
+    if (!DataValidator.validatePracticeLog(log)) {
+      throw new Error('Invalid log data')
+    }
 
-    if (validLogs.length === 0) {
-      return []
+    // Get the remote session ID if available
+    const remoteSessionId = localStorageService.getRemoteSessionId(
+      log.sessionId
+    )
+    if (!remoteSessionId) {
+      throw new Error(
+        `No remote session ID found for local session: ${log.sessionId}`
+      )
     }
 
     const { data } = await this.apolloClient.mutate({
-      mutation: SYNC_PRACTICE_LOGS,
+      mutation: CREATE_PRACTICE_LOG,
       variables: {
-        logs: validLogs.map(log => ({
-          id: log.id,
-          sessionId: log.sessionId,
-          activityType: log.activityType,
+        input: {
+          sessionId: remoteSessionId,
+          activityType: log.activityType as ActivityType,
           durationSeconds: log.durationSeconds,
           tempoPracticed: log.tempoPracticed,
           targetTempo: log.targetTempo,
           focusAreas: log.focusAreas,
           selfRating: log.selfRating,
           notes: log.notes,
-          createdAt: log.createdAt,
-        })),
+        },
       },
     })
 
-    return data?.syncPracticeLogs?.syncedIds || []
+    if (!data?.createPracticeLog?.id) {
+      throw new Error(
+        `Failed to create practice log for session: ${remoteSessionId}`
+      )
+    }
   }
 
   // Sync user preferences
@@ -172,20 +226,19 @@ export class DataSyncService {
     }
 
     await this.apolloClient.mutate({
-      mutation: SYNC_USER_PREFERENCES,
+      mutation: UPDATE_USER,
       variables: {
-        preferences: userData.preferences,
+        input: {
+          preferences: {
+            theme: userData.preferences.theme,
+            notationSize: userData.preferences.notationSize,
+            practiceReminders: userData.preferences.practiceReminders,
+            dailyGoalMinutes: userData.preferences.dailyGoalMinutes,
+            customSettings: userData.preferences.customSettings,
+          },
+        },
       },
     })
-  }
-
-  // Helper to batch arrays
-  private batchArray<T>(array: T[], batchSize: number): T[][] {
-    const batches: T[][] = []
-    for (let i = 0; i < array.length; i += batchSize) {
-      batches.push(array.slice(i, i + batchSize))
-    }
-    return batches
   }
 
   // Check for conflicts between local and remote data

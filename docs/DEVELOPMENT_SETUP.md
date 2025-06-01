@@ -328,6 +328,15 @@ cd ../backend && npm run codegen
 - This generates TypeScript types from the GraphQL schema
 - This is NOT part of the Cloudflare build process - must be done locally
 
+**Common Schema Alignment Issues:**
+
+When updating GraphQL queries, ensure they match the backend schema exactly:
+
+- Token field: Use `accessToken` (not `authToken`)
+- User preferences: Use flat structure with `theme`, `notationSize`, `practiceReminders`, `dailyGoalMinutes`
+- Mutations: Use `updateUser` for preferences updates (no separate `updateUserPreferences`)
+- Practice sessions: Use `startPracticeSession` and `completePracticeSession` (no sync mutations)
+
 ## Available Scripts
 
 ### Root Scripts (Monorepo)

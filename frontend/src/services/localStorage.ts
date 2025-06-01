@@ -22,6 +22,7 @@ const STORAGE_KEYS = {
   PRACTICE_SESSIONS: 'mirubato_practice_sessions',
   PRACTICE_LOGS: 'mirubato_practice_logs',
   PENDING_SYNC: 'mirubato_pending_sync',
+  SESSION_ID_MAP: 'mirubato_session_id_map', // Maps local IDs to remote IDs
 }
 
 class LocalStorageService {
@@ -321,6 +322,37 @@ class LocalStorageService {
       userData.primaryInstrument = instrument
       userData.updatedAt = new Date().toISOString()
       this.setUserData(userData)
+    }
+  }
+
+  // Session ID mapping for remote sync
+  updateSessionRemoteId(localId: string, remoteId: string): void {
+    try {
+      const idMap = this.getSessionIdMap()
+      idMap[localId] = remoteId
+      localStorage.setItem(STORAGE_KEYS.SESSION_ID_MAP, JSON.stringify(idMap))
+    } catch (error) {
+      console.error('Error updating session remote ID:', error)
+    }
+  }
+
+  getRemoteSessionId(localId: string): string | null {
+    try {
+      const idMap = this.getSessionIdMap()
+      return idMap[localId] || null
+    } catch (error) {
+      console.error('Error getting remote session ID:', error)
+      return null
+    }
+  }
+
+  private getSessionIdMap(): Record<string, string> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SESSION_ID_MAP)
+      return data ? JSON.parse(data) : {}
+    } catch (error) {
+      console.error('Error parsing session ID map:', error)
+      return {}
     }
   }
 

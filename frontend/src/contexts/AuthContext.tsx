@@ -129,11 +129,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (data?.verifyMagicLink) {
           const {
-            authToken,
+            accessToken,
             refreshToken,
             user: authenticatedUser,
           } = data.verifyMagicLink
-          setAuthTokens(authToken, refreshToken)
+          setAuthTokens(accessToken, refreshToken)
 
           // Migrate anonymous user data to authenticated user
           if (localUserData?.isAnonymous) {
@@ -201,8 +201,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
 
       if (data?.refreshToken) {
-        const { authToken, refreshToken: newRefreshToken } = data.refreshToken
-        setAuthTokens(authToken, newRefreshToken)
+        const { accessToken, refreshToken: newRefreshToken } = data.refreshToken
+        setAuthTokens(accessToken, newRefreshToken)
       }
     } catch (error) {
       console.error('Token refresh failed:', error)
