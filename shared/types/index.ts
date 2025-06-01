@@ -125,8 +125,19 @@ export const Validators = {
   },
 
   isValidEmail: (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    // Simple email validation to avoid ReDoS vulnerability
+    // Check basic structure: something@something.something
+    if (typeof email !== 'string' || email.length > 254) return false
+    const parts = email.split('@')
+    if (parts.length !== 2) return false
+    const [local, domain] = parts
+    if (!local || !domain) return false
+    if (local.length > 64) return false
+    // Check domain has at least one dot
+    const domainParts = domain.split('.')
+    if (domainParts.length < 2) return false
+    // Check each part is non-empty
+    return domainParts.every(part => part.length > 0)
   },
 
   isValidISODate: (date: string): boolean => {

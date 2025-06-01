@@ -5,6 +5,7 @@ import {
   LocalPracticeSession,
   PracticeLog,
   LocalUserData,
+  UserPreferences,
 } from '@mirubato/shared/types'
 
 // Re-export types for backward compatibility
@@ -26,12 +27,46 @@ const STORAGE_KEYS = {
 class LocalStorageService {
   // User Data Management
   getUserData(): LocalUserData | null {
-    const data = localStorage.getItem(STORAGE_KEYS.USER_DATA)
-    return data ? JSON.parse(data) : null
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_DATA)
+      if (!data) {
+        // Initialize anonymous user if no data exists
+        const anonymousUser = this.createAnonymousUser()
+        this.setUserData(anonymousUser)
+        return anonymousUser
+      }
+      const userData = JSON.parse(data)
+
+      // Validate required fields
+      if (
+        !userData.id ||
+        typeof userData.isAnonymous !== 'boolean' ||
+        !userData.preferences ||
+        !userData.stats
+      ) {
+        // Create new anonymous user if data is invalid
+        const anonymousUser = this.createAnonymousUser()
+        this.setUserData(anonymousUser)
+        return anonymousUser
+      }
+
+      return userData
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      // Create new anonymous user if data is corrupted
+      const anonymousUser = this.createAnonymousUser()
+      this.setUserData(anonymousUser)
+      return anonymousUser
+    }
   }
 
   setUserData(userData: LocalUserData): void {
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData))
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData))
+    } catch (error) {
+      console.error('Error saving user data:', error)
+      // Silently fail for quota exceeded errors
+    }
   }
 
   createAnonymousUser(): LocalUserData {
@@ -58,6 +93,7 @@ class LocalStorageService {
       stats: {
         totalPracticeTime: 0,
         consecutiveDays: 0,
+        lastPracticeDate: null,
         averageAccuracy: 0,
       },
     }
@@ -67,27 +103,60 @@ class LocalStorageService {
 
   // Practice Sessions Management
   getPracticeSessions(): PracticeSession[] {
-    const data = localStorage.getItem(STORAGE_KEYS.PRACTICE_SESSIONS)
-    return data ? JSON.parse(data) : []
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PRACTICE_SESSIONS)
+      if (!data) return []
+
+      const sessions = JSON.parse(data)
+      if (!Array.isArray(sessions)) return []
+
+      // Filter out invalid sessions
+      return sessions.filter(session => {
+        return (
+          session &&
+          session.id &&
+          session.userId &&
+          session.instrument &&
+          session.sessionType &&
+          session.startedAt &&
+          typeof session.pausedDuration === 'number' &&
+          typeof session.notesAttempted === 'number' &&
+          typeof session.notesCorrect === 'number' &&
+          // Validate enum values
+          ['PIANO', 'GUITAR'].includes(session.instrument) &&
+          ['FREE_PRACTICE', 'GUIDED_PRACTICE', 'ASSESSMENT'].includes(
+            session.sessionType
+          )
+        )
+      })
+    } catch (error) {
+      console.error('Error parsing practice sessions:', error)
+      return []
+    }
   }
 
   savePracticeSession(session: PracticeSession): void {
-    const sessions = this.getPracticeSessions()
-    const index = sessions.findIndex(s => s.id === session.id)
+    try {
+      const sessions = this.getPracticeSessions()
+      const index = sessions.findIndex(s => s.id === session.id)
 
-    if (index >= 0) {
-      sessions[index] = session
-    } else {
-      sessions.push(session)
+      if (index >= 0) {
+        sessions[index] = session
+      } else {
+        sessions.push(session)
+      }
+
+      localStorage.setItem(
+        STORAGE_KEYS.PRACTICE_SESSIONS,
+        JSON.stringify(sessions)
+      )
+
+      // Update user stats
+      this.updateUserStats(session)
+    } catch (error) {
+      console.error('Error saving practice session:', error)
+      // Silently fail for quota exceeded errors
     }
-
-    localStorage.setItem(
-      STORAGE_KEYS.PRACTICE_SESSIONS,
-      JSON.stringify(sessions)
-    )
-
-    // Update user stats
-    this.updateUserStats(session)
   }
 
   // Practice Logs Management
@@ -106,6 +175,11 @@ class LocalStorageService {
     const logs = this.getPracticeLogs()
     logs.push(log)
     localStorage.setItem(STORAGE_KEYS.PRACTICE_LOGS, JSON.stringify(logs))
+  }
+
+  getLogsBySessionId(sessionId: string): PracticeLog[] {
+    const logs = this.getPracticeLogs()
+    return logs.filter(log => log.sessionId === sessionId)
   }
 
   // User Stats Update
@@ -167,8 +241,14 @@ class LocalStorageService {
     sessions: PracticeSession[]
     logs: PracticeLog[]
   } {
-    const data = localStorage.getItem(STORAGE_KEYS.PENDING_SYNC)
-    return data ? JSON.parse(data) : { sessions: [], logs: [] }
+    // Get all unsynced sessions
+    const sessions = this.getPracticeSessions().filter(s => !s.isSynced)
+
+    // For now, we consider all logs as needing sync
+    // In a real implementation, we'd track sync status for logs too
+    const logs = this.getPracticeLogs()
+
+    return { sessions, logs }
   }
 
   markAsSynced(sessionIds: string[], logIds: string[]): void {
@@ -194,11 +274,12 @@ class LocalStorageService {
   }
 
   // Migration from anonymous to authenticated user
-  migrateToAuthenticatedUser(authenticatedUserId: string): void {
+  migrateToAuthenticatedUser(authenticatedUserId: string, email: string): void {
     const userData = this.getUserData()
     if (userData && userData.isAnonymous) {
       // Update user data
       userData.id = authenticatedUserId
+      userData.email = email
       userData.isAnonymous = false
       userData.lastSyncedAt = new Date().toISOString()
       this.setUserData(userData)
@@ -220,6 +301,26 @@ class LocalStorageService {
         STORAGE_KEYS.PENDING_SYNC,
         JSON.stringify({ sessions, logs })
       )
+    }
+  }
+
+  // Update user preferences
+  updateUserPreferences(preferences: UserPreferences): void {
+    const userData = this.getUserData()
+    if (userData) {
+      userData.preferences = preferences
+      userData.updatedAt = new Date().toISOString()
+      this.setUserData(userData)
+    }
+  }
+
+  // Update primary instrument
+  updatePrimaryInstrument(instrument: Instrument): void {
+    const userData = this.getUserData()
+    if (userData) {
+      userData.primaryInstrument = instrument
+      userData.updatedAt = new Date().toISOString()
+      this.setUserData(userData)
     }
   }
 

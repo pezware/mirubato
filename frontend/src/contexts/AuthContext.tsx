@@ -137,7 +137,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           // Migrate anonymous user data to authenticated user
           if (localUserData?.isAnonymous) {
-            localStorageService.migrateToAuthenticatedUser(authenticatedUser.id)
+            localStorageService.migrateToAuthenticatedUser(
+              authenticatedUser.id,
+              authenticatedUser.email
+            )
             // TODO: Trigger sync to cloud
           }
 
