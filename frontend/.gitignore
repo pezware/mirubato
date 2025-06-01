@@ -9,6 +9,9 @@ dist-ssr/
 build/
 *.local
 
+# Generated version file
+public/version.json
+
 # Test coverage
 coverage/
 *.coverage

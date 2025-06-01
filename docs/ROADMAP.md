@@ -95,7 +95,23 @@ The project has completed magic link authentication flow implementation. Now foc
 - [ ] Create development seed data scripts
 - [ ] Add API versioning strategy
 
-### 9. **Documentation Updates** (Low Priority)
+### 9. **Configuration & Code Organization** (High Priority)
+
+- [ ] **Unify Configuration Management**:
+  - [ ] Consolidate all environment configurations into a centralized system
+  - [ ] Create a single source of truth for domain names, API endpoints, and service URLs
+  - [ ] Implement environment-specific overrides without code duplication
+  - [ ] Support for build-time and runtime configuration
+  - [ ] Simplify deployment to different domains/environments
+- [ ] **Code Cleanup & Redundancy Removal**:
+  - [ ] Audit and remove duplicate code across frontend/backend
+  - [ ] Identify and consolidate repeated utility functions
+  - [ ] Remove unused dependencies and dead code
+  - [ ] Standardize file organization and naming conventions
+  - [ ] Eliminate redundant configuration files
+  - [ ] Merge similar test utilities and mocks
+
+### 10. **Documentation Updates** (Low Priority)
 
 - [ ] Document all API endpoints with OpenAPI
 - [ ] Add JSDoc comments to all functions
@@ -104,7 +120,7 @@ The project has completed magic link authentication flow implementation. Now foc
 - [ ] Add troubleshooting guide
 - [ ] Create contributor guidelines
 
-### 10. **Address TODO Comments** (Ongoing)
+### 11. **Address TODO Comments** (Ongoing)
 
 - [ ] Backend TODOs:
   - Load user data in JWT verification (`index.ts`)

@@ -1,0 +1,19 @@
+{
+  "// IMPORTANT": "To change domains, update this file and rebuild both frontend and backend",
+  "primaryDomain": "mirubato.com",
+  "apiSubdomain": "api",
+  "cloudflare": {
+    "accountName": "arbeitandy",
+    "frontendWorkerName": "mirubato",
+    "backendWorkerName": "mirubato-backend"
+  },
+  "// Example for different domain": {
+    "primaryDomain": "newrubato.com",
+    "apiSubdomain": "api",
+    "cloudflare": {
+      "accountName": "youraccount",
+      "frontendWorkerName": "newrubato",
+      "backendWorkerName": "newrubato-backend"
+    }
+  }
+}
