@@ -30,7 +30,7 @@ git clone https://github.com/arbeitandy/mirubato.git
 cd mirubato
 
 # Install dependencies
-npm install
+npm install  # See INSTALL_ISSUES.md if you encounter errors
 
 # Start development servers
 npm run dev          # Frontend (http://localhost:3000)
