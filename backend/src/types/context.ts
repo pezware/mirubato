@@ -7,7 +7,7 @@ import type { User } from './shared'
 
 export interface Env {
   DB: D1Database
-  CACHE: KVNamespace
+  CACHE?: KVNamespace
   RATE_LIMITER?: DurableObjectNamespace
   JWT_SECRET: string
   ENVIRONMENT: 'development' | 'production'

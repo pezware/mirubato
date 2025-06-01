@@ -14,15 +14,8 @@
       "database_id": "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
     }
   ],
-  "kv_namespaces": [
-    {
-      "binding": "CACHE",
-      "id": "local-cache-namespace"
-    }
-  ],
   "build": {
-    "command": "npm run build",
-    "watch_paths": ["src/**/*.ts", "!src/templates/email/compiled-templates.ts"]
+    "command": "npm run build"
   },
   "compatibility_flags": ["nodejs_compat"]
 }
