@@ -12,6 +12,11 @@ export interface Env {
   JWT_SECRET: string
   ENVIRONMENT: 'development' | 'production'
   RESEND_API_KEY?: string
+  CF_VERSION_METADATA?: {
+    id: string
+    tag?: string
+    timestamp?: string
+  }
 }
 
 export interface GraphQLContext {

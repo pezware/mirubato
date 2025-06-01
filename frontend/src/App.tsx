@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
 import AuthVerify from './pages/AuthVerify'
+import { VersionInfo } from './components/VersionInfo'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/profile" element={<div>Profile Page (TODO)</div>} />
             <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
           </Routes>
+          <VersionInfo />
         </div>
       </AuthProvider>
     </Router>

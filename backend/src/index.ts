@@ -211,17 +211,23 @@ export default {
     }
 
     // Health check endpoint
-    if (url.pathname === '/health') {
-      return addCorsHeaders(
-        new Response(
-          JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }),
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        ),
-        request,
-        env
+    if (url.pathname === '/health' || url.pathname === '/livez') {
+      const response = new Response(
+        JSON.stringify({
+          status: 'ok',
+          timestamp: new Date().toISOString(),
+          version: env.CF_VERSION_METADATA?.id || 'unknown',
+          environment: env.ENVIRONMENT || 'unknown',
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Version': env.CF_VERSION_METADATA?.id || 'unknown',
+            'X-Environment': env.ENVIRONMENT || 'unknown',
+          },
+        }
       )
+      return addCorsHeaders(response, request, env)
     }
 
     // 404 for other routes
