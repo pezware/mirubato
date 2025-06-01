@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
+import AuthVerify from './pages/AuthVerify'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<div>Login Page (TODO)</div>} />
+            <Route path="/auth/verify" element={<AuthVerify />} />
             <Route
               path="/magic-link"
               element={<div>Magic Link Verification (TODO)</div>}

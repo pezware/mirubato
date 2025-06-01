@@ -9,7 +9,7 @@ export function createMockContext(
   return {
     env: {
       DB: createMockDB(),
-      CACHE: createMockKV(),
+      MIRUBATO_MAGIC_LINKS: createMockKV(),
       RATE_LIMITER: {} as any,
       JWT_SECRET: 'test-secret',
       ENVIRONMENT: 'development',

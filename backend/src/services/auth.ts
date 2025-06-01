@@ -12,7 +12,7 @@ export class AuthService {
   private readonly MAGIC_LINK_PREFIX = 'magic_link:'
 
   constructor(
-    private kv: KVNamespace,
+    private magicLinksKV: KVNamespace,
     private jwtSecret: string
   ) {}
 
@@ -21,7 +21,7 @@ export class AuthService {
     const key = `${this.MAGIC_LINK_PREFIX}${token}`
 
     // Store email with token in KV
-    await this.kv.put(key, email, {
+    await this.magicLinksKV.put(key, email, {
       expirationTtl: this.MAGIC_LINK_TTL,
     })
 
@@ -30,14 +30,14 @@ export class AuthService {
 
   async verifyMagicLink(token: string): Promise<string | null> {
     const key = `${this.MAGIC_LINK_PREFIX}${token}`
-    const email = await this.kv.get(key)
+    const email = await this.magicLinksKV.get(key)
 
     if (!email) {
       return null
     }
 
     // Delete the token after use
-    await this.kv.delete(key)
+    await this.magicLinksKV.delete(key)
 
     return email
   }

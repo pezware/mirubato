@@ -25,7 +25,7 @@ export function generateMagicLinkToken(): string {
 export async function createJWT(
   user: User,
   secret: string,
-  expiresIn = '15m'
+  expiresIn: string | number = '15m'
 ): Promise<string> {
   const payload = {
     sub: user.id,
@@ -33,8 +33,9 @@ export async function createJWT(
     user,
   }
 
+  // @ts-ignore - JWT library type definitions have compatibility issues
   return jwt.sign(payload, secret, {
-    expiresIn: expiresIn as any,
+    expiresIn,
     issuer: 'mirubato',
   })
 }

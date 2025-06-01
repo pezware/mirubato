@@ -7,10 +7,11 @@ import type { User } from './shared'
 
 export interface Env {
   DB: D1Database
-  CACHE: KVNamespace
-  RATE_LIMITER: DurableObjectNamespace
+  MIRUBATO_MAGIC_LINKS: KVNamespace
+  RATE_LIMITER?: DurableObjectNamespace
   JWT_SECRET: string
   ENVIRONMENT: 'development' | 'production'
+  RESEND_API_KEY?: string
 }
 
 export interface GraphQLContext {

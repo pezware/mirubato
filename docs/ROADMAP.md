@@ -4,18 +4,128 @@
 
 This roadmap provides a comprehensive development plan for Mirubato with strict testing requirements. Every feature must include unit tests, integration tests, and documentation for all endpoints.
 
-## Current Status: Phase 1 - Testing & Authentication UI 🚧
+## Current Status: Phase 1 - Code Quality & Testing 🚧
 
-The project has completed Apollo Client integration and local-first architecture. Now focusing on comprehensive testing and building the authentication UI.
+The project has completed magic link authentication flow implementation. Now focusing on critical code quality improvements before proceeding with additional features.
 
-## Immediate Next Steps 🚀 (2025-06-01)
+## Immediate Priority: Code Quality Improvements 🔧 (Critical)
 
-1. **Write Unit Tests**:
+### 1. **TypeScript Type Safety** (High Priority)
 
-   - Test localStorage service methods
-   - Test AuthContext with anonymous/authenticated flows
-   - Test UserStatusIndicator component
-   - Test SaveProgressPrompt component
+- [ ] Replace all `any` types with proper TypeScript interfaces
+  - `/shared/types/validation.ts` - Fix validation function types
+  - `/backend/src/test-utils/*.ts` - Type test utilities properly
+  - All resolver return types should be strictly typed
+- [ ] Create missing interfaces for component props
+- [ ] Add strict null checks across the codebase
+
+### 2. **Production Code Cleanup** (High Priority)
+
+- [ ] Remove all console.log statements and implement proper logging service
+  - Backend: Use structured logging with log levels
+  - Frontend: Use debug-only logging that's stripped in production
+- [ ] Extract hardcoded values to configuration
+  - Localhost URLs → environment variables
+  - Magic numbers (timeouts, durations) → named constants
+  - API endpoints → centralized config
+
+### 3. **Test Coverage** (Critical)
+
+- [ ] Backend Services Tests:
+  - [ ] EmailService tests with mocked email provider
+  - [ ] RateLimiter service tests
+  - [ ] All resolver tests (practice, sheetMusic, scalars)
+  - [ ] Middleware tests (logging, error handling)
+- [ ] Frontend Component Tests:
+  - [ ] MusicPlayer component with audio mocking
+  - [ ] PianoKey and PianoChord interaction tests
+  - [ ] ProtectedRoute authentication flow tests
+  - [ ] SaveProgressPrompt behavior tests
+  - [ ] UserStatusIndicator state tests
+- [ ] Frontend Page Tests:
+  - [ ] Practice page integration tests
+  - [ ] AuthVerify page with various token states
+- [ ] Frontend Service/Utils Tests:
+  - [ ] dataSync service with conflict resolution
+  - [ ] audioManager with Tone.js mocking
+  - [ ] notationRenderer with VexFlow mocking
+
+### 4. **Security Enhancements** (Critical)
+
+- [ ] Implement Content Security Policy properly
+- [ ] Add rate limiting to all public endpoints
+- [ ] Implement proper JWT refresh token rotation
+- [ ] Add request validation middleware
+- [ ] Implement row-level security in D1 queries
+- [ ] Add CSRF protection for state-changing operations
+
+### 5. **Error Handling & Resilience** (High Priority)
+
+- [ ] Add error boundaries to all React components
+- [ ] Implement retry logic for failed API calls
+- [ ] Add graceful degradation for offline mode
+- [ ] Improve error messages for user-facing errors
+- [ ] Add request timeout handling
+- [ ] Implement circuit breaker pattern for external services
+
+### 6. **Accessibility Improvements** (Required)
+
+- [ ] Add missing ARIA labels to all interactive elements
+- [ ] Implement keyboard navigation for piano interface
+- [ ] Add screen reader support for music notation
+- [ ] Ensure proper focus management in modals
+- [ ] Add skip navigation links
+- [ ] Test with screen readers (NVDA, JAWS, VoiceOver)
+
+### 7. **Performance Optimizations** (Medium Priority)
+
+- [ ] Implement code splitting for routes
+- [ ] Lazy load heavy dependencies (Tone.js, VexFlow)
+- [ ] Add service worker for offline support
+- [ ] Optimize bundle size (currently 1.8MB)
+- [ ] Implement virtual scrolling for long lists
+- [ ] Add image optimization for music assets
+
+### 8. **Development Workflow** (Medium Priority)
+
+- [ ] Set up proper logging infrastructure
+- [ ] Add performance monitoring (Web Vitals)
+- [ ] Implement feature flags for gradual rollout
+- [ ] Add database migration validation
+- [ ] Create development seed data scripts
+- [ ] Add API versioning strategy
+
+### 9. **Documentation Updates** (Low Priority)
+
+- [ ] Document all API endpoints with OpenAPI
+- [ ] Add JSDoc comments to all functions
+- [ ] Create component storybook
+- [ ] Write deployment runbook
+- [ ] Add troubleshooting guide
+- [ ] Create contributor guidelines
+
+### 10. **Address TODO Comments** (Ongoing)
+
+- [ ] Backend TODOs:
+  - Load user data in JWT verification (`index.ts`)
+  - Implement all sheet music resolvers
+  - Implement all practice session resolvers
+  - Complete user preferences in UserService
+  - Add token blacklisting for logout
+- [ ] Frontend TODOs:
+  - Implement cloud sync trigger after auth
+  - Complete ProtectedRoute implementation
+  - Add save progress functionality
+  - Implement data sync queue management
+
+## Immediate Next Steps 🚀 (After Quality Improvements)
+
+1. **Complete Authentication Flow Testing**:
+
+   - Test magic link email delivery
+   - Test token verification edge cases
+   - Test auth state persistence
+   - Test logout functionality
 
 2. **Write Integration Tests**:
 
@@ -24,156 +134,110 @@ The project has completed Apollo Client integration and local-first architecture
    - Test local storage data integrity
    - Test Apollo Client error handling
 
-3. **Build Authentication UI**:
-
-   - Create Login page with magic link form
-   - Create Magic Link verification page
-   - Add loading and error states
-   - Ensure mobile responsiveness
-
-4. **Run GraphQL Code Generation**:
-   ```bash
-   cd frontend && npm run codegen
-   ```
+3. **Cloud Sync Implementation**:
+   - Implement GraphQL mutations for session sync
+   - Create sync queue management
+   - Handle conflict resolution
+   - Add progress indicators
 
 ## Completed Achievements ✅
 
-### Phase 0: Testing Infrastructure (COMPLETE)
+### Phase 0: Testing Infrastructure (COMPLETE) ✅
 
 #### Testing Framework Implementation
 
-- **Jest Configuration**: TypeScript with ESM support, unit/integration test separation, 80% coverage thresholds
-- **React Testing Library**: Custom render with providers, MSW for API mocking, testing utilities
-- **Integration Test Environment**: Supertest for API testing, test database setup structure, API test helpers
-- **Pre-commit Hooks**: Husky and lint-staged configured, automated test runs before commits, commit message linting
-- **Monorepo Scripts**: Organized workspace scripts for frontend/backend separation
+- ✅ **Jest Configuration**: TypeScript with ESM support, unit/integration test separation, 80% coverage thresholds
+- ✅ **React Testing Library**: Custom render with providers, MSW for API mocking, testing utilities
+- ✅ **Integration Test Environment**: Supertest for API testing, test database setup structure, API test helpers
+- ✅ **Pre-commit Hooks**: Husky and lint-staged configured, automated test runs before commits, commit message linting
+- ✅ **Monorepo Scripts**: Organized workspace scripts for frontend/backend separation
 
-### Infrastructure & Deployment (2025-06-01)
+### Infrastructure & Deployment (COMPLETE) ✅
 
-- **Cloudflare Workers Migration**: Both frontend and backend deployed as Workers
-- **Build Configuration**: Fixed all build issues (husky, node_compat, database_id)
-- **D1 Database**: Created and configured with proper migrations
-- **Worker Names**: Aligned with Cloudflare CI expectations
-- **Compatibility Date**: Updated to support Node.js built-in modules
+- ✅ **Cloudflare Workers Migration**: Both frontend and backend deployed as Workers
+- ✅ **Build Configuration**: Fixed all build issues (husky, node_compat, database_id)
+- ✅ **D1 Database**: Created and configured with proper migrations
+- ✅ **Worker Names**: Aligned with Cloudflare CI expectations
+- ✅ **Compatibility Date**: Updated to support Node.js built-in modules
+- ✅ **Email Templates**: External templates with build-time compilation
 
-### Backend Implementation (2025-05-31)
+### Backend Implementation (COMPLETE) ✅
 
-- **GraphQL Infrastructure**: Apollo Server on Cloudflare Workers
-- **Database Schema**: 5 D1 migrations with proper relationships and indexes
-- **Authentication System**: Magic link auth with JWT tokens
-- **User Service**: Full CRUD operations with preferences and statistics
-- **Testing**: 23 passing tests with unit and integration coverage
-- **Type Safety**: GraphQL schema with TypeScript generation
+- ✅ **GraphQL Infrastructure**: Apollo Server on Cloudflare Workers
+- ✅ **Database Schema**: 5 D1 migrations with proper relationships and indexes
+- ✅ **Authentication System**: Magic link auth with JWT tokens
+- ✅ **User Service**: Full CRUD operations with preferences and statistics
+- ✅ **Testing**: 23 passing tests with unit and integration coverage
+- ✅ **Type Safety**: GraphQL schema with TypeScript generation
+- ✅ **Email Service**: Magic link email sending with external templates
 
-### Frontend Core Features (2025-05-31)
+### Frontend Core Features (COMPLETE) ✅
 
-- **Landing Page**: Interactive piano interface with nature-inspired theme
-- **Practice Page**: MVP with sheet music display and audio playback
-- **Audio System**: Real piano samples via Tone.js Sampler
-- **Music Player**: Reusable controls with circular volume control
-- **Mobile Optimizations**: Dynamic measures per page, responsive scaling
-- **Bug Fixes**: Tempo speed-up issue resolved, page-based navigation
+- ✅ **Landing Page**: Interactive piano interface with nature-inspired theme
+- ✅ **Practice Page**: MVP with sheet music display and audio playback
+- ✅ **Audio System**: Real piano samples via Tone.js Sampler
+- ✅ **Music Player**: Reusable controls with circular volume control
+- ✅ **Mobile Optimizations**: Dynamic measures per page, responsive scaling
+- ✅ **Bug Fixes**: Tempo speed-up issue resolved, page-based navigation
 
-### Code Quality & Documentation
+### Phase 1: Authentication UI (COMPLETE) ✅
 
-- **Testing Infrastructure**: Jest, React Testing Library, and Husky configured
-- **Type Safety**: Fixed all TypeScript errors in test files
-- **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
-- **Documentation Updates**: Updated critical deployment information
-- **CSP Configuration**: Fixed for Cloudflare Workers deployment
+#### Authentication Flow Implementation
 
-### Phase 1: Apollo Client & Local-First Architecture (2025-06-01) ✅
+- ✅ **Auth Modal**: Responsive popup with email validation
+- ✅ **Magic Link Request**: Frontend integration with backend
+- ✅ **Email Templates**: Professional HTML/text templates
+- ✅ **Auth Verification Page**: `/auth/verify` route with token handling
+- ✅ **Error Handling**: User-friendly error messages
+- ✅ **Loading States**: Proper loading indicators
+- ✅ **Mobile Responsive**: Works on laptop, tablet, and phone
+- ✅ **CORS Configuration**: Fixed for local and production
+- ✅ **Environment Setup**: Production environment files
+
+### Code Quality & Documentation (PARTIAL) ⚠️
+
+- ✅ **Testing Infrastructure**: Jest, React Testing Library, and Husky configured
+- ✅ **Type Safety**: Fixed initial TypeScript errors in test files
+- ✅ **Mocking Framework**: Created mocks for Tone.js, VexFlow, and audioManager
+- ✅ **Documentation Updates**: Updated critical deployment information
+- ✅ **CSP Configuration**: Fixed for Cloudflare Workers deployment
+- ⚠️ **Test Coverage**: Need to improve from current state
+- ⚠️ **Type Safety**: Still have `any` types to replace
+- ⚠️ **Production Readiness**: console.log statements to remove
+
+### Apollo Client & Local-First Architecture (COMPLETE) ✅
 
 #### Apollo Client Integration
 
-- **Dependencies**: Installed @apollo/client and GraphQL packages
-- **Client Configuration**: Created Apollo Client with auth links and error handling
-- **Code Generation**: Set up GraphQL code generation with TypeScript support
-- **Provider Setup**: Integrated ApolloProvider in main application
-- **GraphQL Queries**: Created auth and user queries/mutations
-- **Environment Variables**: Added support for GraphQL endpoint configuration
+- ✅ **Dependencies**: Installed @apollo/client and GraphQL packages
+- ✅ **Client Configuration**: Created Apollo Client with auth links and error handling
+- ✅ **Code Generation**: Set up GraphQL code generation with TypeScript support
+- ✅ **Provider Setup**: Integrated ApolloProvider in main application
+- ✅ **GraphQL Queries**: Created auth and user queries/mutations
+- ✅ **Environment Variables**: Added support for GraphQL endpoint configuration
 
 #### Local-First Architecture
 
-- **Anonymous Users**: Automatic anonymous user creation on first visit
-- **Local Storage Service**: Comprehensive service for practice data persistence
-- **AuthContext Enhancement**: Support for both anonymous and authenticated users
-- **Data Migration**: Seamless migration from anonymous to authenticated user
-- **User Status Indicator**: Visual indicator for guest vs authenticated status
-- **Save Progress Prompt**: Non-intrusive prompt to encourage sign-up
-- **Full Offline Functionality**: Complete app features available without registration
+- ✅ **Anonymous Users**: Automatic anonymous user creation on first visit
+- ✅ **Local Storage Service**: Comprehensive service for practice data persistence
+- ✅ **AuthContext Enhancement**: Support for both anonymous and authenticated users
+- ✅ **Data Migration**: Seamless migration from anonymous to authenticated user
+- ✅ **User Status Indicator**: Visual indicator for guest vs authenticated status
+- ✅ **Save Progress Prompt**: Non-intrusive prompt to encourage sign-up
+- ✅ **Full Offline Functionality**: Complete app features available without registration
 
-#### Shared Types Package (2025-06-01)
+#### Shared Types Package
 
-- **@mirubato/shared Package**: Created unified type definitions for data consistency
-- **Data Validation**: Comprehensive validation for all entity types
-- **Migration Utilities**: Schema change handling with data migrations
-- **Data Sync Service**: Batch processing with conflict detection
-- **Type Consistency**: Ensured alignment between local storage and D1 database
-- **Monorepo Structure**: Added shared package to npm workspaces
+- ✅ **@mirubato/shared Package**: Created unified type definitions for data consistency
+- ✅ **Data Validation**: Comprehensive validation for all entity types
+- ✅ **Migration Utilities**: Schema change handling with data migrations
+- ✅ **Data Sync Service**: Batch processing with conflict detection
+- ✅ **Type Consistency**: Ensured alignment between local storage and D1 database
+- ✅ **Monorepo Structure**: Added shared package to npm workspaces
 
 ## Pending Development 🚧
 
-### Phase 1: Testing & Authentication UI (Current Phase)
-
-#### Week 1: Comprehensive Testing
-
-- **Unit Tests for New Features**
-
-  - localStorage service unit tests
-  - AuthContext with anonymous user tests
-  - UserStatusIndicator component tests
-  - SaveProgressPrompt component tests
-
-- **Integration Tests**
-
-  - Anonymous user flow testing
-  - Authentication flow testing
-  - Local to cloud data migration testing
-  - Practice session persistence testing
-
-- **E2E Tests**
-  - Complete user journey from anonymous to authenticated
-  - Practice session with local storage
-  - Data sync verification
-
-#### Week 2: Authentication UI
-
-- **Login Page Development**
-
-  - Create login page component with magic link form
-  - Add email validation and error handling
-  - Implement success/error messaging
-  - Mobile-responsive design
-
-- **Magic Link Verification Page**
-  - Create verification page for email links
-  - Handle token validation
-  - Show loading and success states
-  - Auto-redirect after verification
-
-#### Week 3: Cloud Sync Implementation
-
-- **Practice Session Sync**
-
-  - Implement GraphQL mutations for session sync
-  - Create sync queue management
-  - Handle conflict resolution
-  - Add progress indicators
-
-- **User Data Sync**
-
-  - Sync preferences to cloud
-  - Implement two-way sync
-  - Handle offline changes
-  - Add sync status indicators
-
-- **User Profile Integration**
-  - Create user profile queries
-  - Implement preferences management
-  - Add instrument selection UI
-
-### Phase 2: Core Feature Implementation
+### Phase 2: Core Feature Implementation (After Quality Improvements)
 
 #### Sheet Music Service
 
@@ -204,14 +268,6 @@ The project has completed Apollo Client integration and local-first architecture
   - Add practice timer component
   - Implement offline queue for sync
   - Create progress visualization
-
-#### Email Service
-
-- **Production Implementation**
-  - Integrate real email provider (Resend/SendGrid)
-  - Create email templates
-  - Implement rate limiting
-  - Add email verification
 
 ### Phase 3: Advanced Features
 
@@ -287,13 +343,6 @@ The project has completed Apollo Client integration and local-first architecture
 - Add request batching for optimization
 - Complete OpenAPI documentation
 
-### Testing & Quality
-
-- Achieve 80% test coverage across all modules
-- Add performance benchmarks
-- Implement visual regression testing
-- Create E2E test suite
-
 ## Success Metrics
 
 ### Development Metrics
@@ -319,9 +368,13 @@ A feature is considered complete when:
 3. Documentation is updated
 4. Code passes linting and type-checking
 5. Feature works across all supported browsers
-6. Accessibility requirements are met
+6. Accessibility requirements are met (WCAG 2.1 AA)
 7. Performance benchmarks are satisfied
-8. Code review is approved
+8. Security review is complete
+9. No `any` types remain
+10. No console.log statements in production code
+11. All TODO comments are resolved or tracked
+12. Code review is approved
 
 ## Testing Standards
 
@@ -331,7 +384,7 @@ A feature is considered complete when:
 - Mock external dependencies appropriately
 - Test edge cases and error conditions
 - Maintain clear test descriptions
-- See `DEVELOPMENT_GUIDELINES.md` for testing patterns
+- Minimum 80% coverage, 90% for critical paths
 
 ### Integration Test Requirements
 
@@ -339,15 +392,16 @@ A feature is considered complete when:
 - Verify database operations
 - Test authentication flows
 - Validate error handling
-- See `DEVELOPMENT_GUIDELINES.md` for integration test examples
+- Test data sync and conflict resolution
 
-### OpenAPI Documentation Requirements
+### Code Quality Requirements
 
-- Document all API endpoints
-- Include request/response schemas
-- Provide clear endpoint descriptions
-- Add authentication requirements
-- See `API_SPECIFICATION.md` for schema details
+- No TypeScript `any` types
+- Proper error boundaries and handling
+- Structured logging (no console.log)
+- Configuration externalized
+- Comprehensive JSDoc comments
+- ARIA labels on all interactive elements
 
 ## CI/CD Pipeline
 
@@ -356,44 +410,7 @@ A feature is considered complete when:
 - Automated test execution on push/PR
 - Unit and integration test runs
 - Code coverage reporting
-- OpenAPI spec generation
-- Automated coverage uploads
-- See `.github/workflows` for implementation
-
-## Definition of Done
-
-A feature is considered complete when:
-
-1. All unit tests pass with >80% coverage
-2. Integration tests validate the feature
-3. OpenAPI documentation is complete
-4. Code passes linting and formatting
-5. Feature works on all supported browsers
-6. Accessibility requirements are met
-7. Performance benchmarks are satisfied
-8. Security review is complete
-9. Documentation is updated
-10. Code review is approved
-
-## Success Metrics
-
-### Code Quality Metrics
-
-- **Test Coverage**: >80% for all modules
-- **API Documentation**: 100% of endpoints documented
-- **Build Time**: <2 minutes for full test suite
-- **Bundle Size**: <500KB initial load
-
-### Performance Metrics
-
-- **API Response**: <100ms p95
-- **Test Execution**: <30s for unit tests
-- **Database Queries**: <50ms p95
-- **Audio Latency**: <50ms
-
-### Reliability Metrics
-
-- **Test Flakiness**: <1% flaky tests
-- **API Uptime**: >99.9%
-- **Error Rate**: <0.1%
-- **Rollback Time**: <5 minutes
+- Bundle size analysis
+- Accessibility testing
+- Security scanning
+- Type checking enforcement
