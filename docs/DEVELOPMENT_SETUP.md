@@ -103,7 +103,7 @@ This file contains:
 ```json
 {
   "MYDOMAIN": "mirubato.com",  // Your primary domain
-  "MYTEAM": "arbeitandy",       // Your Cloudflare account name
+  "MYTEAM": "pezware",          // Your Cloudflare account name
 
   "environments": {
     "local": { ... },          // Local development

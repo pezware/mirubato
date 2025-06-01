@@ -1,14 +1,14 @@
 {
   "// Configuration Guide": {
     "MYDOMAIN": "Your primary domain (e.g., mirubato.com)",
-    "MYTEAM": "Your Cloudflare team/account name (e.g., arbeitandy)",
+    "MYTEAM": "Your Cloudflare team/account name (e.g., pezware)",
     "environments": "Define your different environments with their specific settings"
   },
 
   "// To customize": "Replace MYDOMAIN and MYTEAM with your values",
 
   "MYDOMAIN": "mirubato.com",
-  "MYTEAM": "arbeitandy",
+  "MYTEAM": "pezware",
 
   "environments": {
     "local": {
@@ -39,15 +39,15 @@
       "frontend": {
         "urlPattern": "https://*-mirubato.{MYTEAM}.workers.dev",
         "examples": [
-          "https://7a80e837-mirubato.arbeitandy.workers.dev",
-          "https://feature-branch-mirubato.arbeitandy.workers.dev"
+          "https://7a80e837-mirubato.pezware.workers.dev",
+          "https://feature-branch-mirubato.pezware.workers.dev"
         ]
       },
       "backend": {
         "urlPattern": "https://*-mirubato-backend.{MYTEAM}.workers.dev",
         "examples": [
-          "https://1fe7f83d-mirubato-backend.arbeitandy.workers.dev",
-          "https://feature-branch-mirubato-backend.arbeitandy.workers.dev"
+          "https://1fe7f83d-mirubato-backend.pezware.workers.dev",
+          "https://feature-branch-mirubato-backend.pezware.workers.dev"
         ]
       },
       "database": {

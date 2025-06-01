@@ -39,7 +39,7 @@ const filesToUpdate = [
         'g'
       )
       content = content.replace(
-        /arbeitandy\.workers\.dev/g,
+        /pezware\.workers\.dev/g,
         `${config.cloudflare.accountName}.workers.dev`
       )
 
@@ -80,7 +80,7 @@ const filesToUpdate = [
 
       // Update worker names and account
       content = content.replace(
-        /arbeitandy\.workers\.dev/g,
+        /pezware\.workers\.dev/g,
         `${config.cloudflare.accountName}.workers.dev`
       )
       content = content.replace(

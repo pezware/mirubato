@@ -27,6 +27,7 @@ SOFTWARE.
 ### Educational Content
 
 #### Sight-Reading for Guitar: The Keep Going Method
+
 - **Source**: https://press.rebus.community/sightreadingforguitar/
 - **License**: Creative Commons Attribution 4.0 International License (CC BY 4.0)
 - **Author**: Chelsea Green
@@ -34,6 +35,7 @@ SOFTWARE.
 - **Attribution**: "Sight-Reading for Guitar: The Keep Going Method" by Chelsea Green is licensed under CC BY 4.0. Available at https://press.rebus.community/sightreadingforguitar/
 
 #### Public Domain Musical Works
+
 - **Source**: IMSLP (International Music Score Library Project)
 - **License**: Public Domain
 - **Usage**: Classical guitar and piano repertoire from composers whose works are in the public domain
@@ -44,16 +46,19 @@ SOFTWARE.
 This project uses various open-source software packages, each with their own licenses:
 
 #### Core Dependencies
+
 - **React**: MIT License
 - **TypeScript**: Apache License 2.0
 - **Vite**: MIT License
 - **Tailwind CSS**: MIT License
 
 #### Music-Specific Dependencies
+
 - **VexFlow**: MIT License - Music notation rendering
 - **Tone.js**: MIT License - Web Audio API wrapper
 
 #### Development Dependencies
+
 - **ESLint**: MIT License
 - **Prettier**: MIT License
 - **Vitest**: MIT License
@@ -63,12 +68,14 @@ For a complete list of dependencies and their licenses, see the `package.json` f
 ## Content Attribution Requirements
 
 ### For Educational Content
+
 When using or redistributing content from Rubato that includes educational materials from "Sight-Reading for Guitar: The Keep Going Method":
 
 1. Include attribution to the original work:
+
    ```
-   Educational content adapted from "Sight-Reading for Guitar: The Keep Going Method" 
-   by Chelsea Green, licensed under CC BY 4.0. 
+   Educational content adapted from "Sight-Reading for Guitar: The Keep Going Method"
+   by Chelsea Green, licensed under CC BY 4.0.
    Available at: https://press.rebus.community/sightreadingforguitar/
    ```
 
@@ -78,11 +85,13 @@ When using or redistributing content from Rubato that includes educational mater
    ```
 
 ### For Public Domain Musical Works
+
 When using public domain musical content from Rubato:
 
 1. Acknowledge the source:
+
    ```
-   Musical content sourced from IMSLP (imslp.org), 
+   Musical content sourced from IMSLP (imslp.org),
    used in Mirubato - Open Source Sight-Reading Platform
    ```
 
@@ -125,7 +134,7 @@ While we make every effort to ensure proper licensing and attribution:
 
 For questions about licensing or to report license compliance issues:
 
-- **GitHub Issues**: https://github.com/arbeitandy/mirubato/issues
+- **GitHub Issues**: https://github.com/pezware/mirubato/issues
 - **Email**: legal@mirubato.com (when available)
 - **License Questions**: Tag issues with "license" or "legal"
 

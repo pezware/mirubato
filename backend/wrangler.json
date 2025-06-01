@@ -4,14 +4,13 @@
   "compatibility_date": "2024-09-23",
   "workers_dev": true,
   "vars": {
-    "ENVIRONMENT": "development",
-    "JWT_SECRET": "dev-secret-key-change-in-production"
+    "ENVIRONMENT": "development"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "mirubato-dev",
-      "database_id": "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+      "database_id": "your-database-id-here"
     }
   ],
   "build": {
@@ -20,7 +19,7 @@
   "kv_namespaces": [
     {
       "binding": "MIRUBATO_MAGIC_LINKS",
-      "id": "dd28d41a9bd24a7084e400f84f0758fb"
+      "id": "your-kv-namespace-id-here"
     }
   ],
   "compatibility_flags": ["nodejs_compat"]
