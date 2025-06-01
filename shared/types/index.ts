@@ -22,9 +22,15 @@ export enum ActivityType {
 }
 
 export enum Theme {
-  LIGHT = 'light',
-  DARK = 'dark',
-  AUTO = 'auto',
+  LIGHT = 'LIGHT',
+  DARK = 'DARK',
+  AUTO = 'AUTO',
+}
+
+export enum NotationSize {
+  SMALL = 'SMALL',
+  MEDIUM = 'MEDIUM',
+  LARGE = 'LARGE',
 }
 
 // User related types
@@ -39,11 +45,16 @@ export interface User {
 
 export interface UserPreferences {
   theme: Theme
-  notificationSettings: {
+  notationSize: NotationSize
+  practiceReminders: boolean
+  dailyGoalMinutes: number
+  customSettings?: Record<string, any>
+  // Legacy nested structure - for backward compatibility only
+  notificationSettings?: {
     practiceReminders: boolean
     emailUpdates: boolean
   }
-  practiceSettings: {
+  practiceSettings?: {
     defaultSessionDuration: number // in minutes
     defaultTempo: number
     metronomeSoundEnabled: boolean
@@ -53,8 +64,11 @@ export interface UserPreferences {
 export interface UserStats {
   totalPracticeTime: number // in seconds
   consecutiveDays: number
+  piecesCompleted: number
+  accuracyAverage: number
+  // Legacy field for backward compatibility
   lastPracticeDate?: string | null // ISO date string
-  averageAccuracy: number
+  averageAccuracy?: number // Deprecated, use accuracyAverage
 }
 
 // Practice session types

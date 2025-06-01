@@ -2,6 +2,7 @@
 import {
   Instrument,
   Theme,
+  NotationSize,
   LocalPracticeSession,
   PracticeLog,
   LocalUserData,
@@ -81,6 +82,10 @@ class LocalStorageService {
       updatedAt: now,
       preferences: {
         theme: Theme.AUTO,
+        notationSize: NotationSize.MEDIUM,
+        practiceReminders: false,
+        dailyGoalMinutes: 30,
+        // Keep legacy structure for backward compatibility
         notificationSettings: {
           practiceReminders: false,
           emailUpdates: false,
@@ -94,8 +99,10 @@ class LocalStorageService {
       stats: {
         totalPracticeTime: 0,
         consecutiveDays: 0,
+        piecesCompleted: 0,
+        accuracyAverage: 0,
         lastPracticeDate: null,
-        averageAccuracy: 0,
+        averageAccuracy: 0, // For backward compatibility
       },
     }
     this.setUserData(anonymousUser)
@@ -231,7 +238,8 @@ class LocalStorageService {
         (sum, s) => sum + (s.accuracyPercentage || 0),
         0
       )
-      userData.stats.averageAccuracy = totalAccuracy / sessions.length
+      userData.stats.accuracyAverage = totalAccuracy / sessions.length
+      userData.stats.averageAccuracy = userData.stats.accuracyAverage // For backward compatibility
     }
 
     this.setUserData(userData)
