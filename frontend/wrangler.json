@@ -1,8 +1,0 @@
-{
-  "name": "mirubato-frontend",
-  "compatibility_date": "2024-05-30",
-  "assets": {
-    "directory": "./dist"
-  },
-  "main": "src/index.js"
-}
