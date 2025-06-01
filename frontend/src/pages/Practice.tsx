@@ -5,7 +5,12 @@ import {
   moonlightSonata3rdMovement,
   getPlayableNotes,
 } from '../data/sheetMusic'
-import { MusicPlayer, CircularControl } from '../components'
+import {
+  MusicPlayer,
+  CircularControl,
+  UserStatusIndicator,
+  SaveProgressPrompt,
+} from '../components'
 import { SheetMusicDisplay } from '../components/SheetMusicDisplay'
 import * as Tone from 'tone'
 
@@ -87,6 +92,9 @@ const Practice: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              {/* User Status */}
+              <UserStatusIndicator />
+
               {/* Mode Selector - Hidden on mobile */}
               {!isMobile && (
                 <div className="flex bg-mirubato-wood-50 rounded-lg p-1">
@@ -287,6 +295,9 @@ const Practice: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Save Progress Prompt for Anonymous Users */}
+      <SaveProgressPrompt triggerAfterSessions={3} triggerAfterMinutes={30} />
     </div>
   )
 }

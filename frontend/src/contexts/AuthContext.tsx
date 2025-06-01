@@ -18,21 +18,26 @@ import {
   clearAuthTokens,
   isAuthenticated as checkIsAuthenticated,
 } from '../lib/apollo/client'
+import { localStorageService, LocalUserData } from '../services/localStorage'
 
 interface User {
   id: string
-  email: string
+  email?: string // Optional for anonymous users
   displayName: string | null
   primaryInstrument: 'PIANO' | 'GUITAR'
+  isAnonymous: boolean
 }
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   isAuthenticated: boolean
+  isAnonymous: boolean
   login: (token: string) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<void>
+  syncToCloud: () => Promise<void>
+  localUserData: LocalUserData | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -51,6 +56,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [localUserData, setLocalUserData] = useState<LocalUserData | null>(null)
   const [loading, setLoading] = useState(true)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
@@ -59,9 +65,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [refreshTokenMutation] = useMutation(REFRESH_TOKEN)
   const [logoutMutation] = useMutation(LOGOUT)
 
-  // Check if user is already authenticated on mount
+  // Initialize user (authenticated or anonymous) on mount
   useEffect(() => {
     const initAuth = async () => {
+      // First, check for authenticated user
       if (checkIsAuthenticated()) {
         try {
           const { data } = await apolloClient.query({
@@ -69,7 +76,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             fetchPolicy: 'network-only',
           })
           if (data?.me) {
-            setUser(data.me)
+            setUser({
+              ...data.me,
+              isAnonymous: false,
+            })
+            // Also load local data for authenticated user
+            const localData = localStorageService.getUserData()
+            setLocalUserData(localData)
           }
         } catch (error) {
           console.error('Failed to fetch current user:', error)
@@ -77,6 +90,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           clearAuthTokens()
         }
       }
+
+      // If no authenticated user, check for anonymous user
+      if (!user) {
+        let localData = localStorageService.getUserData()
+
+        // Create anonymous user if none exists
+        if (!localData) {
+          localData = localStorageService.createAnonymousUser()
+        }
+
+        setLocalUserData(localData)
+
+        // Create user object from local data
+        if (localData.isAnonymous) {
+          setUser({
+            id: localData.id,
+            displayName: localData.displayName || null,
+            primaryInstrument: localData.primaryInstrument,
+            isAnonymous: true,
+          })
+        }
+      }
+
       setLoading(false)
     }
 
@@ -92,9 +128,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         })
 
         if (data?.verifyMagicLink) {
-          const { authToken, refreshToken, user } = data.verifyMagicLink
+          const {
+            authToken,
+            refreshToken,
+            user: authenticatedUser,
+          } = data.verifyMagicLink
           setAuthTokens(authToken, refreshToken)
-          setUser(user)
+
+          // Migrate anonymous user data to authenticated user
+          if (localUserData?.isAnonymous) {
+            localStorageService.migrateToAuthenticatedUser(authenticatedUser.id)
+            // TODO: Trigger sync to cloud
+          }
+
+          setUser({
+            ...authenticatedUser,
+            isAnonymous: false,
+          })
+
+          // Update local user data
+          const updatedLocalData = localStorageService.getUserData()
+          setLocalUserData(updatedLocalData)
+
           navigate('/practice')
         }
       } catch (error) {
@@ -104,20 +159,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false)
       }
     },
-    [verifyMagicLink, navigate]
+    [verifyMagicLink, navigate, localUserData]
   )
 
   const logout = useCallback(async () => {
     try {
-      await logoutMutation()
+      if (!user?.isAnonymous) {
+        await logoutMutation()
+      }
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
       clearAuthTokens()
-      setUser(null)
+
+      // Create new anonymous user after logout
+      const newAnonymousUser = localStorageService.createAnonymousUser()
+      setLocalUserData(newAnonymousUser)
+      setUser({
+        id: newAnonymousUser.id,
+        displayName: null,
+        primaryInstrument: newAnonymousUser.primaryInstrument,
+        isAnonymous: true,
+      })
+
       navigate('/')
     }
-  }, [logoutMutation, navigate])
+  }, [logoutMutation, navigate, user])
 
   const refreshAuth = useCallback(async () => {
     const refreshToken = localStorage.getItem('refresh-token')
@@ -143,13 +210,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [refreshTokenMutation, navigate])
 
+  const syncToCloud = useCallback(async () => {
+    if (!user || user.isAnonymous) {
+      // Redirect to login if anonymous
+      navigate('/login')
+      return
+    }
+
+    try {
+      const pendingData = localStorageService.getPendingSyncData()
+
+      // TODO: Implement actual sync mutations
+      console.log('Syncing to cloud:', pendingData)
+
+      // For now, just mark as synced
+      const sessionIds = pendingData.sessions.map(s => s.id)
+      const logIds = pendingData.logs.map(l => l.id)
+      localStorageService.markAsSynced(sessionIds, logIds)
+    } catch (error) {
+      console.error('Sync failed:', error)
+      throw error
+    }
+  }, [user, navigate])
+
   const value = {
     user,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !user.isAnonymous,
+    isAnonymous: !!user?.isAnonymous,
     login,
     logout,
     refreshAuth,
+    syncToCloud,
+    localUserData,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

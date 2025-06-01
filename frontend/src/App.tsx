@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
-import { ProtectedRoute } from './components/ProtectedRoute'
 import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
 
@@ -16,14 +15,9 @@ function App() {
               path="/magic-link"
               element={<div>Magic Link Verification (TODO)</div>}
             />
-            <Route
-              path="/practice"
-              element={
-                <ProtectedRoute>
-                  <Practice />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/practice" element={<Practice />} />
+            <Route path="/profile" element={<div>Profile Page (TODO)</div>} />
+            <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
           </Routes>
         </div>
       </AuthProvider>
