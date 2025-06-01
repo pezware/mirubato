@@ -2,7 +2,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli'
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: 'http://localhost:8787/graphql', // Backend GraphQL endpoint
+  schema: '../backend/src/schema/schema.graphql', // Use schema file directly
   documents: ['src/**/*.{ts,tsx}', '!src/gql/**/*'], // Where to look for GraphQL operations
   generates: {
     'src/gql/': {

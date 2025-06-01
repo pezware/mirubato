@@ -321,7 +321,12 @@ cd frontend && npm run codegen
 cd ../backend && npm run codegen
 ```
 
-This generates TypeScript types from the GraphQL schema and is NOT part of the Cloudflare build process.
+**Important Notes:**
+
+- Frontend codegen uses the schema file directly from `../backend/src/schema/schema.graphql`
+- Backend server does NOT need to be running for codegen
+- This generates TypeScript types from the GraphQL schema
+- This is NOT part of the Cloudflare build process - must be done locally
 
 ## Available Scripts
 
