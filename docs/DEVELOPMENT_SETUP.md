@@ -779,3 +779,42 @@ npm run test:watch
    cd backend
    npm run build:templates
    ```
+
+## CORS Configuration
+
+The backend API uses a configurable CORS setup located at `backend/src/config/cors.ts`.
+
+### How to Customize CORS
+
+1. **Production Domains**: Add your custom domains to `corsConfig.production.domains`:
+
+   ```typescript
+   domains: ['https://yourdomain.com', 'https://www.yourdomain.com']
+   ```
+
+2. **Preview Deployments**: Update the patterns with your Cloudflare account name:
+
+   ```typescript
+   patterns: [
+     'https://your-app.your-account.workers.dev',
+     'https://*-your-app.your-account.workers.dev',
+   ]
+   ```
+
+3. **Development Origins**: Add any local development URLs you use:
+   ```typescript
+   origins: ['http://localhost:3000', 'http://localhost:8080']
+   ```
+
+### Pattern Matching
+
+The configuration supports wildcard patterns using `*`:
+
+- `https://*.example.com` - Matches any subdomain of example.com
+- `https://*-preview.workers.dev` - Matches any preview deployment
+
+### CORS Security Notes
+
+- Be careful with wildcard patterns - only use them for trusted domains
+- The generic patterns (`https://*.workers.dev`) are included for convenience but can be removed for stricter security
+- Always use HTTPS in production

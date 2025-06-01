@@ -20,7 +20,9 @@ export interface CorsConfig {
 
 export const corsConfig: CorsConfig = {
   production: {
-    // Add your production domains here
+    // Frontend production domains that can access the API
+    // Note: The backend domain (api.mirubato.com) doesn't need to be here
+    // as CORS is for cross-origin requests from frontend to backend
     domains: ['https://mirubato.com', 'https://www.mirubato.com'],
     // Patterns for Cloudflare Workers preview deployments
     // Replace 'arbeitandy' with your Cloudflare account name
@@ -28,6 +30,9 @@ export const corsConfig: CorsConfig = {
       // Frontend preview deployments
       'https://mirubato.arbeitandy.workers.dev',
       'https://*-mirubato.arbeitandy.workers.dev',
+      // Backend preview deployments (for testing GraphQL playground)
+      'https://mirubato-backend.arbeitandy.workers.dev',
+      'https://*-mirubato-backend.arbeitandy.workers.dev',
       // Generic Cloudflare patterns (optional - remove if too permissive)
       'https://*.workers.dev',
       'https://*.pages.dev',
