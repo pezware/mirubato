@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "tsc",
+    "prebuild": "node scripts/update-version.js",
+    "build": "node build.js",
     "build:templates": "node scripts/build-email-templates.js",
     "build:with-templates": "npm run build:templates && tsc",
     "deploy": "wrangler deploy",
