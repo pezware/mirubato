@@ -33,7 +33,7 @@ describe('AudioManager', () => {
       toDestination: jest.fn().mockReturnThis(),
       dispose: jest.fn(),
     }
-    mockTone.Reverb = jest.fn().mockReturnValue(mockReverb)
+    ;(mockTone.Reverb as any) = jest.fn().mockReturnValue(mockReverb)
 
     // Mock piano sampler
     mockPianoSampler = {
@@ -42,7 +42,7 @@ describe('AudioManager', () => {
       triggerAttackRelease: jest.fn(),
       dispose: jest.fn(),
     }
-    mockTone.Sampler = jest.fn().mockReturnValue(mockPianoSampler)
+    ;(mockTone.Sampler as any) = jest.fn().mockReturnValue(mockPianoSampler)
 
     // Mock guitar synth
     mockGuitarSynth = {
@@ -51,8 +51,8 @@ describe('AudioManager', () => {
       triggerAttackRelease: jest.fn(),
       dispose: jest.fn(),
     }
-    mockTone.PolySynth = jest.fn().mockReturnValue(mockGuitarSynth)
-    mockTone.Synth = jest.fn()
+    ;(mockTone.PolySynth as any) = jest.fn().mockReturnValue(mockGuitarSynth)
+    ;(mockTone.Synth as any) = jest.fn()
   })
 
   afterEach(() => {
@@ -123,33 +123,32 @@ describe('AudioManager', () => {
     })
 
     it('handles sample loading errors but continues', async () => {
-      const onErrorCallback = jest.fn()
-      mockTone.Sampler.mockImplementation(config => {
+      mockTone.Sampler.mockImplementation((config?: any) => {
         // Simulate calling the onerror callback
-        if (config.onerror) {
-          config.onerror('Sample load error')
+        if (config?.onerror) {
+          config.onerror(new Error('Sample load error'))
         }
         return mockPianoSampler
-      })
+      }) as any
 
       await audioManager.initialize()
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Failed to load piano samples:',
-        'Sample load error'
+        new Error('Sample load error')
       )
       // Should still initialize successfully with fallback
       expect(audioManager.isInitialized()).toBe(true)
     })
 
     it('logs successful sample loading', async () => {
-      mockTone.Sampler.mockImplementation(config => {
+      mockTone.Sampler.mockImplementation((config?: any) => {
         // Simulate calling the onload callback
-        if (config.onload) {
+        if (config?.onload) {
           config.onload()
         }
         return mockPianoSampler
-      })
+      }) as any
 
       await audioManager.initialize()
 
@@ -235,8 +234,8 @@ describe('AudioManager', () => {
         triggerAttackRelease: jest.fn(),
         dispose: jest.fn(),
       }
-      mockTone.Sampler.mockReturnValue(newPianoSampler)
-      mockTone.PolySynth.mockReturnValue(newGuitarSynth)
+      mockTone.Sampler.mockReturnValue(newPianoSampler as any)
+      mockTone.PolySynth.mockReturnValue(newGuitarSynth as any)
 
       jest.clearAllMocks()
 
@@ -327,8 +326,8 @@ describe('AudioManager', () => {
         triggerAttackRelease: jest.fn(),
         dispose: jest.fn(),
       }
-      mockTone.Sampler.mockReturnValue(newPianoSampler)
-      mockTone.PolySynth.mockReturnValue(newGuitarSynth)
+      mockTone.Sampler.mockReturnValue(newPianoSampler as any)
+      mockTone.PolySynth.mockReturnValue(newGuitarSynth as any)
 
       jest.clearAllMocks()
 

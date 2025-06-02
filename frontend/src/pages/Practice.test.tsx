@@ -1,4 +1,3 @@
-import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Practice from './Practice'
@@ -68,10 +67,14 @@ describe('Practice Page', () => {
     mockAudioManager.initialize.mockResolvedValue()
     mockAudioManager.setInstrument.mockReturnValue()
 
-    // Mock Tone.Master.volume
-    mockTone.Master = {
-      volume: { value: 0 },
-    } as any
+    // Mock Tone.Master.volume - Create a mock object that simulates Tone.Master
+    Object.defineProperty(mockTone, 'Master', {
+      value: {
+        volume: { value: 0 },
+      },
+      writable: true,
+      configurable: true,
+    })
   })
 
   const renderPractice = () => {

@@ -15,6 +15,13 @@ import {
   isAuthenticated as checkIsAuthenticated,
 } from '../lib/apollo/client'
 import { localStorageService } from '../services/localStorage'
+import {
+  Theme,
+  NotationSize,
+  Instrument,
+  SessionType,
+  ActivityType,
+} from '@mirubato/shared/types'
 
 // Mock dependencies
 jest.mock('react-router-dom', () => ({
@@ -94,9 +101,24 @@ describe('AuthContext', () => {
     it('creates anonymous user when no user exists', async () => {
       const mockAnonymousUser = {
         id: 'anon-123',
+        email: '',
         displayName: null,
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockLocalStorage.getUserData.mockReturnValue(null)
@@ -117,9 +139,24 @@ describe('AuthContext', () => {
     it('loads existing anonymous user', async () => {
       const mockAnonymousUser = {
         id: 'anon-existing',
+        email: '',
         displayName: 'Guest User',
-        primaryInstrument: 'GUITAR' as const,
+        primaryInstrument: Instrument.GUITAR,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockLocalStorage.getUserData.mockReturnValue(mockAnonymousUser)
@@ -148,8 +185,22 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       })
 
       const mocks = [
@@ -206,16 +257,31 @@ describe('AuthContext', () => {
     it('successfully logs in and migrates anonymous user data', async () => {
       const mockAnonymousUser = {
         id: 'anon-123',
+        email: '',
         displayName: null,
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       const mockAuthenticatedUser = {
         id: 'user-456',
         email: 'new@example.com',
         displayName: 'New User',
-        primaryInstrument: 'PIANO',
+        primaryInstrument: Instrument.PIANO,
       }
 
       mockLocalStorage.getUserData
@@ -224,6 +290,20 @@ describe('AuthContext', () => {
         .mockReturnValueOnce({
           ...mockAuthenticatedUser,
           isAnonymous: false,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          preferences: {
+            theme: Theme.AUTO,
+            notationSize: NotationSize.MEDIUM,
+            practiceReminders: false,
+            dailyGoalMinutes: 30,
+          },
+          stats: {
+            totalPracticeTime: 0,
+            consecutiveDays: 0,
+            piecesCompleted: 0,
+            accuracyAverage: 0,
+          },
         }) // After migration
 
       const mocks = [
@@ -316,15 +396,44 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       const mockNewAnonymousUser = {
         id: 'anon-new',
+        email: '',
         displayName: null,
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)
@@ -381,15 +490,44 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       const mockNewAnonymousUser = {
         id: 'anon-new',
+        email: '',
         displayName: null,
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)
@@ -561,9 +699,24 @@ describe('AuthContext', () => {
     it('redirects anonymous users to login', async () => {
       const mockAnonymousUser = {
         id: 'anon-123',
+        email: '',
         displayName: null,
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockLocalStorage.getUserData.mockReturnValue(mockAnonymousUser)
@@ -588,13 +741,65 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       const mockPendingData = {
-        sessions: [{ id: 'session-1' }, { id: 'session-2' }],
-        logs: [{ id: 'log-1' }, { id: 'log-2' }],
+        sessions: [
+          {
+            id: 'session-1',
+            userId: 'user-123',
+            instrument: Instrument.PIANO,
+            sessionType: SessionType.FREE_PRACTICE,
+            startedAt: '2024-01-01T00:00:00.000Z',
+            pausedDuration: 0,
+            notesAttempted: 100,
+            notesCorrect: 90,
+            isSynced: false,
+          },
+          {
+            id: 'session-2',
+            userId: 'user-123',
+            instrument: Instrument.PIANO,
+            sessionType: SessionType.GUIDED_PRACTICE,
+            startedAt: '2024-01-01T01:00:00.000Z',
+            pausedDuration: 0,
+            notesAttempted: 50,
+            notesCorrect: 45,
+            isSynced: false,
+          },
+        ],
+        logs: [
+          {
+            id: 'log-1',
+            sessionId: 'session-1',
+            activityType: ActivityType.SIGHT_READING,
+            durationSeconds: 300,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+          {
+            id: 'log-2',
+            sessionId: 'session-2',
+            activityType: ActivityType.SCALES,
+            durationSeconds: 600,
+            createdAt: '2024-01-01T01:00:00.000Z',
+          },
+        ],
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)
@@ -640,8 +845,22 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)
@@ -693,8 +912,22 @@ describe('AuthContext', () => {
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test User',
-        primaryInstrument: 'PIANO' as const,
+        primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)

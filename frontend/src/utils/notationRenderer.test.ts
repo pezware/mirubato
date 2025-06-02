@@ -1,5 +1,5 @@
 import { NotationRenderer } from './notationRenderer'
-import { SheetMusic, Measure } from '../types/sheetMusic'
+import { SheetMusic } from '../types/sheetMusic'
 
 // Mock VexFlow
 jest.mock('vexflow', () => {
@@ -103,16 +103,18 @@ describe('NotationRenderer', () => {
     title: 'Test Piece',
     composer: 'Test Composer',
     instrument: 'piano',
+    difficulty: 'intermediate',
     measures: Array.from({ length: measureCount }, (_, i) => ({
+      number: i + 1,
       clef: i === 0 ? 'treble' : undefined,
       timeSignature: i === 0 ? '4/4' : undefined,
       keySignature: i === 0 ? 'C' : undefined,
       tempo: i === 0 ? { bpm: 120, marking: 'Allegro' } : undefined,
       notes: [
-        { keys: ['c/4'], duration: '4' },
-        { keys: ['d/4'], duration: '4' },
-        { keys: ['e/4'], duration: '4' },
-        { keys: ['f/4'], duration: '4' },
+        { keys: ['c/4'], duration: '4', time: 0 },
+        { keys: ['d/4'], duration: '4', time: 1 },
+        { keys: ['e/4'], duration: '4', time: 2 },
+        { keys: ['f/4'], duration: '4', time: 3 },
       ],
     })),
   })
@@ -218,17 +220,19 @@ describe('NotationRenderer', () => {
         title: 'Test',
         composer: 'Test',
         instrument: 'piano',
+        difficulty: 'intermediate',
         measures: [
           {
+            number: 1,
             notes: [
-              { keys: ['c/4'], duration: '16' },
-              { keys: ['d/4'], duration: '16' },
-              { keys: ['e/4'], duration: '16' },
-              { keys: ['f/4'], duration: '16' },
-              { keys: ['g/4'], duration: '16' },
-              { keys: ['a/4'], duration: '16' },
-              { keys: ['b/4'], duration: '16' },
-              { keys: ['c/5'], duration: '16' },
+              { keys: ['c/4'], duration: '16', time: 0 },
+              { keys: ['d/4'], duration: '16', time: 0.25 },
+              { keys: ['e/4'], duration: '16', time: 0.5 },
+              { keys: ['f/4'], duration: '16', time: 0.75 },
+              { keys: ['g/4'], duration: '16', time: 1 },
+              { keys: ['a/4'], duration: '16', time: 1.25 },
+              { keys: ['b/4'], duration: '16', time: 1.5 },
+              { keys: ['c/5'], duration: '16', time: 1.75 },
             ],
           },
         ],
@@ -255,9 +259,11 @@ describe('NotationRenderer', () => {
         title: 'Test',
         composer: 'Test',
         instrument: 'piano',
+        difficulty: 'intermediate',
         measures: [
           {
-            notes: [{ keys: ['c/4'], duration: '4' }],
+            number: 1,
+            notes: [{ keys: ['c/4'], duration: '4', time: 0 }],
           },
         ],
       }
@@ -325,6 +331,7 @@ describe('NotationRenderer', () => {
         title: 'Test',
         composer: 'Test',
         instrument: 'piano',
+        difficulty: 'intermediate',
         measures: [],
       }
 
@@ -358,12 +365,14 @@ describe('NotationRenderer', () => {
         title: 'Test',
         composer: 'Test',
         instrument: 'piano',
+        difficulty: 'intermediate',
         measures: [
           {
+            number: 1,
             notes: [
-              { keys: ['c/4'], duration: '16' },
-              { keys: ['d/4'], duration: '16' },
-              { keys: ['e/4'], duration: '16' }, // Only 3 sixteenth notes
+              { keys: ['c/4'], duration: '16', time: 0 },
+              { keys: ['d/4'], duration: '16', time: 0.25 },
+              { keys: ['e/4'], duration: '16', time: 0.5 }, // Only 3 sixteenth notes
             ],
           },
         ],
