@@ -336,6 +336,7 @@ describe('Practice Resolvers', () => {
 
   describe('Future Implementation Tests', () => {
     // These tests are skipped but document expected behavior for future implementation
+    // TODO: Implement practiceSession query by ID in resolver
     it.skip('practiceSession should fetch session by ID', async () => {
       // Future test when implemented
       const result = await practiceResolvers.Query.practiceSession(
@@ -352,6 +353,7 @@ describe('Practice Resolvers', () => {
       })
     })
 
+    // TODO: Implement myPracticeSessions query in resolver
     it.skip('myPracticeSessions should return user sessions', async () => {
       // Future test when implemented
       const result = await practiceResolvers.Query.myPracticeSessions(
@@ -365,6 +367,7 @@ describe('Practice Resolvers', () => {
       expect(result.totalCount).toBeGreaterThan(0)
     })
 
+    // TODO: Implement startPracticeSession mutation in resolver
     it.skip('startPracticeSession should create new session', async () => {
       // Future test when implemented
       const input = {
@@ -388,6 +391,7 @@ describe('Practice Resolvers', () => {
       })
     })
 
+    // TODO: Add authentication check for practice mutations
     it.skip('should require authentication for mutations', async () => {
       // Future test when auth is implemented
       const input = {

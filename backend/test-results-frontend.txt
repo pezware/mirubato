@@ -1,0 +1,46 @@
+
+> @mirubato/backend@0.1.0 test
+> jest --no-coverage --no-watch --passWithNoTests
+
+PASS src/__tests__/integration/auth.test.ts
+  ● Console
+
+    console.log
+      requestMagicLink called with: test@example.com
+
+      at Object.requestMagicLink (src/resolvers/auth.ts:10:15)
+
+    console.log
+      Context env: {
+        hasMagicLinksKV: true,
+        hasJwtSecret: true,
+        environment: 'development'
+      }
+
+      at Object.requestMagicLink (src/resolvers/auth.ts:17:17)
+
+    console.log
+      Magic link created: mock_id_200000000000000000000000
+
+      at Object.requestMagicLink (src/resolvers/auth.ts:31:17)
+
+    console.log
+      Magic link for test@example.com: http://localhost:3000/auth/verify?token=mock_id_200000000000000000000000
+
+      at EmailService.sendMagicLinkEmail (src/services/email.ts:16:15)
+
+    console.log
+      requestMagicLink called with: invalid-email
+
+      at Object.requestMagicLink (src/resolvers/auth.ts:10:15)
+
+PASS src/__tests__/unit/services/user.test.ts
+PASS src/__tests__/unit/services/auth.test.ts
+PASS src/__tests__/unit/resolvers/practice.test.ts
+PASS src/__tests__/unit/resolvers/sheetMusic.test.ts
+
+Test Suites: 5 passed, 5 total
+Tests:       8 skipped, 59 passed, 67 total
+Snapshots:   0 total
+Time:        0.529 s, estimated 1 s
+Ran all test suites.

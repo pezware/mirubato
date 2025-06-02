@@ -353,6 +353,7 @@ describe('SheetMusic Resolvers', () => {
 
   describe('Future Implementation Tests', () => {
     // These tests are skipped but document expected behavior
+    // TODO: Implement sheetMusic query by ID in resolver
     it.skip('sheetMusic should fetch by ID', async () => {
       const result = await sheetMusicResolvers.Query.sheetMusic(
         {},
@@ -369,6 +370,7 @@ describe('SheetMusic Resolvers', () => {
       })
     })
 
+    // TODO: Implement listSheetMusic query with filtering in resolver
     it.skip('listSheetMusic should return filtered results', async () => {
       const result = await sheetMusicResolvers.Query.listSheetMusic(
         {},
@@ -385,6 +387,7 @@ describe('SheetMusic Resolvers', () => {
       })
     })
 
+    // TODO: Implement randomSheetMusic query in resolver
     it.skip('randomSheetMusic should return random piece matching criteria', async () => {
       const result = await sheetMusicResolvers.Query.randomSheetMusic(
         {},
@@ -400,6 +403,7 @@ describe('SheetMusic Resolvers', () => {
       })
     })
 
+    // TODO: Implement pagination support in listSheetMusic resolver
     it.skip('should handle pagination properly', async () => {
       const firstPage = await sheetMusicResolvers.Query.listSheetMusic(
         {},
