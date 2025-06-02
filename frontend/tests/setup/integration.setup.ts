@@ -3,9 +3,35 @@ import { beforeAll, afterAll, beforeEach } from '@jest/globals'
 import { TextEncoder, TextDecoder } from 'util'
 import '@testing-library/jest-dom'
 
+// Polyfill fetch for Apollo Client
+import fetch from 'cross-fetch'
+global.fetch = fetch
+
 // Polyfill TextEncoder/TextDecoder for jsdom
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder
+
+// Mock the config modules to avoid import.meta issues
+jest.mock('@/config/env', () => ({
+  env: {
+    VITE_GRAPHQL_ENDPOINT: 'http://localhost:8787/graphql',
+    MODE: 'test',
+    DEV: false,
+    PROD: false,
+    SSR: false,
+  },
+}))
+
+jest.mock('@/config/endpoints', () => ({
+  endpoints: {
+    graphql: 'http://localhost:8787/graphql',
+    health: 'http://localhost:8787/health',
+  },
+  getEndpoints: () => ({
+    graphql: 'http://localhost:8787/graphql',
+    health: 'http://localhost:8787/health',
+  }),
+}))
 
 // Set test environment variables
 process.env.NODE_ENV = 'test'

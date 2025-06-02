@@ -71,18 +71,28 @@ mirubato/
 - [ ] Generate configs for your environment
 - [ ] Check `/health` endpoint if working with production
 
+### When Writing New Code
+
+- [ ] **Write tests FIRST** - Follow Test-Driven Development (TDD)
+- [ ] Ensure >80% test coverage (90% for critical paths)
+- [ ] No function is complete without tests
+- [ ] Tests are the primary metric of feature completeness
+
 ### Before Committing
 
+- [ ] All tests pass with proper coverage
 - [ ] Let pre-commit hooks run (NEVER use `--no-verify`)
-- [ ] Ensure tests pass
+- [ ] No `console.log` statements in code
+- [ ] No `any` types in TypeScript
 - [ ] Update CLAUDE.md if you discover new patterns
 
 ### Key Principles
 
-1. **Education First**: Features must enhance sight-reading learning
-2. **Instrument Specific**: Guitar ≠ Piano (positions, fingerings, notation)
-3. **Mobile First**: Test on actual devices
-4. **Open Source**: Keep endpoints public for debugging
+1. **Test First**: Write tests before implementation - tests define the spec
+2. **Education First**: Features must enhance sight-reading learning
+3. **Instrument Specific**: Guitar ≠ Piano (positions, fingerings, notation)
+4. **Mobile First**: Test on actual devices
+5. **Open Source**: Keep endpoints public for debugging
 
 ## 🎯 Focus Areas
 
@@ -133,11 +143,56 @@ node scripts/generate-wrangler-config.js backend [env]
 cd backend && wrangler d1 migrations apply DB --remote
 ```
 
+## 🧪 Testing Guidelines
+
+### Test-Driven Development (TDD)
+
+1. **Write the test first** - The test defines the expected behavior
+2. **Run the test** - It should fail (red)
+3. **Write minimal code** - Just enough to make the test pass (green)
+4. **Refactor** - Improve the code while keeping tests passing
+
+### Coverage Requirements
+
+- **Overall**: Minimum 80% coverage
+- **Critical Paths**: Minimum 90% coverage (auth, payments, core features)
+- **New Code**: Must have tests before merging
+
+### Running Tests
+
+```bash
+# Run all tests with coverage
+npm run test:coverage
+
+# Run specific workspace tests
+npm test -w @mirubato/frontend
+npm test -w @mirubato/backend
+
+# Run specific test file
+npm test -- src/utils/audioManager.test.ts
+
+# Watch mode for development
+npm test -- --watch
+```
+
+### Current Test Status (as of latest update)
+
+- **Frontend Coverage**: ~29% (Target: 80%)
+  - ✅ AuthContext: 100%
+  - ✅ notationRenderer: 100%
+  - ✅ audioManager: 91.54%
+  - ✅ Practice page: 91.66%
+- **Backend Coverage**: ~43% (Target: 80%)
+  - ✅ practice resolver: 100%
+  - ✅ sheetMusic resolver: 100%
+  - ✅ auth service: 100%
+
 ## 📚 Key Documentation
 
 - **Setup**: `docs/DEVELOPMENT_SETUP.md`
 - **Guidelines**: `docs/DEVELOPMENT_GUIDELINES.md`
 - **Infrastructure**: `docs/INFRASTRUCTURE.md`
+- **Roadmap**: `docs/ROADMAP.md` (includes detailed test coverage status)
 
 ## 🎓 Educational Context
 

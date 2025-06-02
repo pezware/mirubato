@@ -33,7 +33,7 @@ export async function createJWT(
     user,
   }
 
-  // @ts-ignore - JWT library type definitions have compatibility issues
+  // @ts-expect-error - JWT library type definitions have compatibility issues
   return jwt.sign(payload, secret, {
     expiresIn,
     issuer: 'mirubato',

@@ -1,7 +1,9 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
+import { MockedProvider } from '@apollo/client/testing'
 import Practice from '../../src/pages/Practice'
+import { AuthProvider } from '../../src/contexts/AuthContext'
 import { audioManager } from '../../src/utils/audioManager'
 import * as Tone from 'tone'
 
@@ -49,9 +51,15 @@ const mockToneMaster = {
 
 ;(Tone.Master as unknown as typeof mockToneMaster) = mockToneMaster
 
-// Helper to render component with router
+// Helper to render component with router and auth context
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>)
+  return render(
+    <MockedProvider mocks={[]} addTypename={false}>
+      <BrowserRouter>
+        <AuthProvider>{component}</AuthProvider>
+      </BrowserRouter>
+    </MockedProvider>
+  )
 }
 
 describe('Practice Page Integration', () => {
@@ -256,9 +264,13 @@ describe('Practice Page Integration', () => {
       })
 
       rerender(
-        <BrowserRouter>
-          <Practice />
-        </BrowserRouter>
+        <MockedProvider mocks={[]} addTypename={false}>
+          <BrowserRouter>
+            <AuthProvider>
+              <Practice />
+            </AuthProvider>
+          </BrowserRouter>
+        </MockedProvider>
       )
 
       // Mobile size (50px)
