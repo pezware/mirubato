@@ -97,7 +97,7 @@ describe('Authentication Integration Tests', () => {
         { token: 'valid-token' },
         {
           env: {
-            CACHE: mockKV,
+            MIRUBATO_MAGIC_LINKS: mockKV,
             DB: mockDB as unknown as D1Database,
             JWT_SECRET: 'test-secret',
             ENVIRONMENT: 'development',

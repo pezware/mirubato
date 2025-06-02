@@ -6,13 +6,19 @@ import { nanoid } from 'nanoid'
 export function createMockContext(
   overrides?: Partial<GraphQLContext>
 ): GraphQLContext {
+  const defaultEnv = {
+    DB: createMockDB(),
+    MIRUBATO_MAGIC_LINKS: createMockKV(),
+    CACHE: createMockKV(),
+    RATE_LIMITER: {} as any,
+    JWT_SECRET: 'test-secret',
+    ENVIRONMENT: 'development',
+  }
+
   return {
     env: {
-      DB: createMockDB(),
-      MIRUBATO_MAGIC_LINKS: createMockKV(),
-      RATE_LIMITER: {} as any,
-      JWT_SECRET: 'test-secret',
-      ENVIRONMENT: 'development',
+      ...defaultEnv,
+      ...(overrides?.env || {}),
     },
     requestId: nanoid(),
     ...overrides,
