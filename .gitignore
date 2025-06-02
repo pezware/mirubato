@@ -24,6 +24,8 @@ build/
 .wrangler/
 wrangler.toml.local
 .dev.vars
+backend/wrangler.json
+frontend/wrangler.json
 
 # Editor directories and files
 .vscode/

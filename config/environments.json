@@ -58,7 +58,7 @@
       "kv": {
         "magicLinks": {
           "binding": "MIRUBATO_MAGIC_LINKS",
-          "id": "dd28d41a9bd24a7084e400f84f0758fb"
+          "id": "2632e7dcffe745f1a34ba6a3b029bd4c"
         }
       },
       "environment": "development"
@@ -75,12 +75,12 @@
       "database": {
         "name": "mirubato-staging",
         "binding": "DB",
-        "id": "staging-database-id-here"
+        "id": "01fd5633-05a7-4297-9d31-ee5a7c4b1221"
       },
       "kv": {
         "magicLinks": {
           "binding": "MIRUBATO_MAGIC_LINKS",
-          "id": "staging-kv-namespace-id-here"
+          "id": "1389dbc875e8413fb5e01c4f9f95da28"
         }
       },
       "environment": "staging"
@@ -97,12 +97,12 @@
       "database": {
         "name": "mirubato-prod",
         "binding": "DB",
-        "id": "production-database-id-here"
+        "id": "31ecc854-aecf-4994-8bda-7a9cd3055122"
       },
       "kv": {
         "magicLinks": {
           "binding": "MIRUBATO_MAGIC_LINKS",
-          "id": "production-kv-namespace-id-here"
+          "id": "d323a9723d424eed9a8aab2b1b9e15b0"
         }
       },
       "environment": "production"
