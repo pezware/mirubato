@@ -1,0 +1,32 @@
+{
+  "name": "mirubato-backend",
+  "main": "dist/index.js",
+  "compatibility_date": "2024-09-23",
+  "workers_dev": false,
+  "vars": {
+    "ENVIRONMENT": "production"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mirubato-prod",
+      "database_id": "31ecc854-aecf-4994-8bda-7a9cd3055122"
+    }
+  ],
+  "build": {
+    "command": "npm run build"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "MIRUBATO_MAGIC_LINKS",
+      "id": "d323a9723d424eed9a8aab2b1b9e15b0"
+    }
+  ],
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.mirubato.com/*",
+      "custom_domain": true
+    }
+  ]
+}
