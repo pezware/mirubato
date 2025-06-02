@@ -343,6 +343,128 @@ describe('NoteGenerator', () => {
 - [ ] Tests written and passing
 - [ ] Documentation updated
 
+## Production Debugging Tools & Workflows
+
+As an AI programming agent, you have access to production endpoints that can help diagnose issues when direct access is limited. Since Mirubato is open source, these endpoints are intentionally exposed for transparency and debugging.
+
+### Available Production Endpoints
+
+1. **Health Check Endpoint**: `https://api.mirubato.com/health`
+
+   - Returns backend status, environment, and version information
+   - Useful for verifying deployment success and backend availability
+   - Example response:
+     ```json
+     {
+       "message": "Backend is working!",
+       "env": "production",
+       "version": "8ee6d82d (main)",
+       "timestamp": "2025-06-02T00:00:00.000Z"
+     }
+     ```
+
+2. **GraphQL Endpoint**: `https://api.mirubato.com/graphql`
+
+   - Publicly accessible GraphQL playground in production
+   - Use for testing queries, checking schema, and debugging data issues
+   - Introspection is enabled for open-source transparency
+
+3. **CORS Debug Endpoint**: `https://api.mirubato.com/debug/cors`
+   - Returns CORS configuration and origin validation
+   - Helps diagnose cross-origin issues
+
+### Debugging Workflows
+
+#### 1. Deployment Verification
+
+When a deployment is reported complete:
+
+```bash
+# Check backend health and version
+curl https://api.mirubato.com/health
+
+# Verify frontend is accessible
+curl -I https://mirubato.com
+```
+
+#### 2. GraphQL Schema Verification
+
+Use the GraphQL playground or introspection:
+
+```graphql
+# Test basic query
+query HealthCheck {
+  __typename
+}
+
+# Check schema changes
+query IntrospectionQuery {
+  __schema {
+    types {
+      name
+      fields {
+        name
+        type {
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+#### 3. CORS Issue Diagnosis
+
+When users report CORS errors:
+
+```bash
+# Test from different origins
+curl -H "Origin: https://mirubato.com" https://api.mirubato.com/debug/cors
+curl -H "Origin: https://localhost:3000" https://api.mirubato.com/debug/cors
+```
+
+#### 4. Performance Monitoring
+
+Check response times and availability:
+
+```bash
+# Time backend response
+time curl https://api.mirubato.com/health
+
+# Check GraphQL response time
+time curl -X POST https://api.mirubato.com/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ __typename }"}'
+```
+
+### Production Debugging Best Practices
+
+1. **Version Tracking**: Always check `/health` to confirm which version is deployed
+2. **Non-Destructive Testing**: Use read-only queries when testing production
+3. **Error Pattern Recognition**: Look for patterns in error messages and timestamps
+4. **Cross-Reference Logs**: Correlate frontend errors with backend health checks
+5. **Schema Validation**: Verify GraphQL schema matches expected types
+
+### Limited Access Strategies
+
+When you cannot directly access production logs or infrastructure:
+
+1. **Indirect Observation**: Use health endpoints to infer system state
+2. **Error Reproduction**: Try to reproduce issues locally with similar data
+3. **Version Comparison**: Compare working vs failing versions using git history
+4. **Schema Introspection**: Use GraphQL introspection to understand data structure
+5. **CORS Testing**: Verify origin policies match deployment configuration
+
+### Common Production Issues & Quick Checks
+
+| Issue            | Quick Check     | Debug Command                                                 |
+| ---------------- | --------------- | ------------------------------------------------------------- |
+| Backend down     | Health endpoint | `curl https://api.mirubato.com/health`                        |
+| CORS errors      | Debug endpoint  | `curl -H "Origin: [url]" https://api.mirubato.com/debug/cors` |
+| GraphQL errors   | Playground      | Navigate to `https://api.mirubato.com/graphql`                |
+| Version mismatch | Health check    | Check version in `/health` response                           |
+| Auth issues      | Test mutation   | Try login mutation in GraphQL playground                      |
+
 ## Additional Documentation
 
 For comprehensive project information, see the following documentation:
