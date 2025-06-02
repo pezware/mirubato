@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Script to update domain configuration across the codebase
- * Usage: node scripts/update-domains.js
+ * DEPRECATED: This script is replaced by the unified configuration system
  *
- * This script reads from config/domains.json and updates all necessary files
+ * Please use the new configuration system instead:
+ * 1. Edit config/environments.json
+ * 2. Run: node scripts/generate-wrangler-config.js
+ * 3. Run: node scripts/generate-env-files.js
+ *
+ * See docs/UNIFIED_CONFIGURATION.md for details
  */
 
 import fs from 'fs'
@@ -35,7 +39,7 @@ const filesToUpdate = [
         'g'
       )
       content = content.replace(
-        /arbeitandy\.workers\.dev/g,
+        /pezware\.workers\.dev/g,
         `${config.cloudflare.accountName}.workers.dev`
       )
 
@@ -76,7 +80,7 @@ const filesToUpdate = [
 
       // Update worker names and account
       content = content.replace(
-        /arbeitandy\.workers\.dev/g,
+        /pezware\.workers\.dev/g,
         `${config.cloudflare.accountName}.workers.dev`
       )
       content = content.replace(
@@ -121,6 +125,15 @@ const filesToUpdate = [
     },
   },
 ]
+
+// Show deprecation warning
+console.log('⚠️  WARNING: This script is DEPRECATED!')
+console.log('Please use the new unified configuration system:')
+console.log('1. Edit config/environments.json')
+console.log('2. Run: node scripts/generate-wrangler-config.js')
+console.log('3. Run: node scripts/generate-env-files.js')
+console.log('See docs/UNIFIED_CONFIGURATION.md for details\n')
+console.log('Continuing with legacy script...\n')
 
 // Update each file
 console.log('Updating domain configuration...\n')

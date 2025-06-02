@@ -13,13 +13,13 @@ describe('CORS Configuration', () => {
       it('should allow Cloudflare preview deployments with hash prefix', () => {
         expect(
           isOriginAllowed(
-            'https://7a80e837-mirubato.arbeitandy.workers.dev',
+            'https://7a80e837-mirubato.pezware.workers.dev',
             'production'
           )
         ).toBe(true)
         expect(
           isOriginAllowed(
-            'https://abc123-mirubato.arbeitandy.workers.dev',
+            'https://abc123-mirubato.pezware.workers.dev',
             'production'
           )
         ).toBe(true)
@@ -28,13 +28,13 @@ describe('CORS Configuration', () => {
       it('should allow Cloudflare preview deployments with branch prefix', () => {
         expect(
           isOriginAllowed(
-            'https://feature-auth-mirubato.arbeitandy.workers.dev',
+            'https://feature-auth-mirubato.pezware.workers.dev',
             'production'
           )
         ).toBe(true)
         expect(
           isOriginAllowed(
-            'https://bugfix-cors-mirubato.arbeitandy.workers.dev',
+            'https://bugfix-cors-mirubato.pezware.workers.dev',
             'production'
           )
         ).toBe(true)
@@ -43,13 +43,13 @@ describe('CORS Configuration', () => {
       it('should allow backend preview deployments', () => {
         expect(
           isOriginAllowed(
-            'https://mirubato-backend.arbeitandy.workers.dev',
+            'https://mirubato-backend.pezware.workers.dev',
             'production'
           )
         ).toBe(true)
         expect(
           isOriginAllowed(
-            'https://feature-mirubato-backend.arbeitandy.workers.dev',
+            'https://feature-mirubato-backend.pezware.workers.dev',
             'production'
           )
         ).toBe(true)

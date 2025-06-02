@@ -148,7 +148,7 @@ backend/
 ```bash
 # Repository initialization
 git init
-git remote add origin https://github.com/arbeitandy/mirubato.git
+git remote add origin https://github.com/pezware/mirubato.git
 
 # Branch protection rules (configure via GitHub UI)
 # - Require pull request reviews before merging

@@ -2,8 +2,19 @@
   "name": "mirubato",
   "main": "src/index.js",
   "compatibility_date": "2025-01-01",
+  "workers_dev": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "mirubato.com/*",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.mirubato.com/*",
+      "custom_domain": true
+    }
+  ]
 }

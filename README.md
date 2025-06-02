@@ -2,7 +2,7 @@
 
 Open-source sight-reading platform for classical guitar and piano, featuring real-time audio playback and progressive exercises.
 
-![mirubato Screenshot](https://github.com/arbeitandy/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
+![mirubato Screenshot](https://github.com/pezware/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
 
 ## Features
 
@@ -26,7 +26,7 @@ mirubato/
 
 ```bash
 # Clone the repository
-git clone https://github.com/arbeitandy/mirubato.git
+git clone https://github.com/pezware/mirubato.git
 cd mirubato
 
 # Install dependencies
@@ -53,14 +53,14 @@ npm run build
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| Backend | GraphQL, Apollo Server, Cloudflare Workers |
-| Database | Cloudflare D1 (SQLite) |
-| Audio | Tone.js, Web Audio API |
-| Notation | VexFlow.js |
-| Auth | Magic links with JWT |
+| Component | Technology                                 |
+| --------- | ------------------------------------------ |
+| Frontend  | React 18, TypeScript, Vite, Tailwind CSS   |
+| Backend   | GraphQL, Apollo Server, Cloudflare Workers |
+| Database  | Cloudflare D1 (SQLite)                     |
+| Audio     | Tone.js, Web Audio API                     |
+| Notation  | VexFlow.js                                 |
+| Auth      | Magic links with JWT                       |
 
 ## Contributing
 
@@ -83,13 +83,15 @@ mirubato integrates proven pedagogical methods:
 - **Multi-sensory learning** - Visual notation with audio feedback
 
 Educational content sources:
-- [*Sight-Reading for Guitar: The Keep Going Method*](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0)
+
+- [_Sight-Reading for Guitar: The Keep Going Method_](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0)
 - IMSLP public domain classical repertoire
 
 ### Special Thanks
 
 We extend our heartfelt gratitude to:
-- **Chelsea Green** - Author of *Sight-Reading for Guitar: The Keep Going Method*
+
+- **Chelsea Green** - Author of _Sight-Reading for Guitar: The Keep Going Method_
 - **Rebus Community** - For open-sourcing this invaluable educational resource
 
 Their commitment to open education makes projects like mirubato possible, helping democratize music education worldwide.
@@ -105,12 +107,14 @@ Educational content is licensed under CC BY 4.0 with proper attribution.
 🚧 **Phase 1: Foundation** (Current)
 
 ✅ Completed:
+
 - Monorepo structure with frontend/backend separation
 - GraphQL backend with authentication
 - Landing page with interactive piano
 - Music player with tempo control
 
 🔄 In Progress:
+
 - Apollo Client integration
 - User authentication UI
 - Sheet music service
@@ -120,8 +124,8 @@ See [Roadmap](docs/ROADMAP.md) for detailed progress.
 ## Links
 
 - **Live Demo**: Coming soon at [mirubato.com](https://mirubato.com)
-- **Repository**: [github.com/arbeitandy/mirubato](https://github.com/arbeitandy/mirubato)
-- **Issues**: [GitHub Issues](https://github.com/arbeitandy/mirubato/issues)
+- **Repository**: [github.com/pezware/mirubato](https://github.com/pezware/mirubato)
+- **Issues**: [GitHub Issues](https://github.com/pezware/mirubato/issues)
 
 ---
 

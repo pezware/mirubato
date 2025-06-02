@@ -2,16 +2,15 @@
   "name": "mirubato-backend",
   "main": "dist/index.js",
   "compatibility_date": "2024-09-23",
-  "workers_dev": true,
+  "workers_dev": false,
   "vars": {
-    "ENVIRONMENT": "development",
-    "JWT_SECRET": "dev-secret-key-change-in-production"
+    "ENVIRONMENT": "production"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "mirubato-dev",
-      "database_id": "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+      "database_name": "mirubato-prod",
+      "database_id": "31ecc854-aecf-4994-8bda-7a9cd3055122"
     }
   ],
   "build": {
@@ -20,8 +19,14 @@
   "kv_namespaces": [
     {
       "binding": "MIRUBATO_MAGIC_LINKS",
-      "id": "dd28d41a9bd24a7084e400f84f0758fb"
+      "id": "d323a9723d424eed9a8aab2b1b9e15b0"
     }
   ],
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "api.mirubato.com/*",
+      "custom_domain": true
+    }
+  ]
 }
