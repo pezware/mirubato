@@ -37,13 +37,15 @@ export function VersionInfo() {
   if (!version) return null
 
   return (
-    <div className="fixed bottom-0 right-0 p-2 text-xs text-gray-500 bg-white/80 backdrop-blur-sm rounded-tl-lg shadow-sm">
-      <div>
-        Frontend: {version.shortHash} ({version.branch})
-      </div>
-      <div>Backend: {backendVersion}</div>
-      <div className="text-[10px] text-gray-400">
-        Built: {new Date(version.buildTime).toLocaleString()}
+    <div className="fixed bottom-0 right-0 p-2 text-xs text-gray-300 bg-white/20 backdrop-blur-sm rounded-tl-lg">
+      <div className="opacity-30 hover:opacity-70 transition-opacity duration-300">
+        <div>
+          Frontend: {version.shortHash} ({version.branch})
+        </div>
+        <div>Backend: {backendVersion}</div>
+        <div className="text-[10px]">
+          Built: {new Date(version.buildTime).toLocaleString()}
+        </div>
       </div>
     </div>
   )
