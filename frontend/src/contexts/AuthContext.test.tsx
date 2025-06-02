@@ -47,7 +47,32 @@ jest.mock('../services/localStorage', () => ({
 // Test component to consume context
 const TestComponent: React.FC = () => {
   const context = React.useContext(AuthContext)
+  const [error, setError] = React.useState<Error | null>(null)
   if (!context) throw new Error('AuthContext not provided')
+
+  const handleLogin = async () => {
+    try {
+      await context.login('test-token')
+    } catch (err) {
+      setError(err as Error)
+    }
+  }
+
+  const handleRefresh = async () => {
+    try {
+      await context.refreshAuth()
+    } catch (err) {
+      setError(err as Error)
+    }
+  }
+
+  const handleSync = async () => {
+    try {
+      await context.syncToCloud()
+    } catch (err) {
+      setError(err as Error)
+    }
+  }
 
   return (
     <div>
@@ -57,10 +82,11 @@ const TestComponent: React.FC = () => {
       </div>
       <div data-testid="is-anonymous">{String(context.isAnonymous)}</div>
       <div data-testid="loading">{String(context.loading)}</div>
-      <button onClick={() => context.login('test-token')}>Login</button>
+      {error && <div data-testid="error">{error.message}</div>}
+      <button onClick={handleLogin}>Login</button>
       <button onClick={() => context.logout()}>Logout</button>
-      <button onClick={() => context.refreshAuth()}>Refresh</button>
-      <button onClick={() => context.syncToCloud()}>Sync</button>
+      <button onClick={handleRefresh}>Refresh</button>
+      <button onClick={handleSync}>Sync</button>
     </div>
   )
 }
@@ -371,20 +397,17 @@ describe('AuthContext', () => {
 
       // Click login button
       await act(async () => {
-        try {
-          await screen.getByText('Login').click()
-        } catch (error) {
-          // Expected to throw
-        }
+        screen.getByText('Login').click()
       })
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith(
-          'Login failed:',
-          expect.any(Error)
-        )
+        expect(screen.getByTestId('error')).toHaveTextContent('Invalid token')
       })
 
+      expect(console.error).toHaveBeenCalledWith(
+        'Login failed:',
+        expect.any(Error)
+      )
       expect(mockSetAuthTokens).not.toHaveBeenCalled()
       expect(mockNavigate).not.toHaveBeenCalledWith('/practice')
     })
@@ -651,20 +674,17 @@ describe('AuthContext', () => {
 
       // Click refresh button
       await act(async () => {
-        try {
-          await screen.getByText('Refresh').click()
-        } catch (error) {
-          // Expected to throw
-        }
+        screen.getByText('Refresh').click()
       })
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith(
-          'Token refresh failed:',
-          expect.any(Error)
-        )
+        expect(screen.getByTestId('error')).toHaveTextContent('Token expired')
       })
 
+      expect(console.error).toHaveBeenCalledWith(
+        'Token refresh failed:',
+        expect.any(Error)
+      )
       expect(mockClearAuthTokens).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/login')
     })
@@ -686,11 +706,13 @@ describe('AuthContext', () => {
 
       // Click refresh button
       await act(async () => {
-        try {
-          await screen.getByText('Refresh').click()
-        } catch (error) {
-          expect(error).toEqual(new Error('No refresh token available'))
-        }
+        screen.getByText('Refresh').click()
+      })
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toHaveTextContent(
+          'No refresh token available'
+        )
       })
     })
   })
@@ -890,19 +912,17 @@ describe('AuthContext', () => {
 
       // Click sync button
       await act(async () => {
-        try {
-          await screen.getByText('Sync').click()
-        } catch (error) {
-          // Expected to throw
-        }
+        screen.getByText('Sync').click()
       })
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith(
-          'Sync failed:',
-          expect.any(Error)
-        )
+        expect(screen.getByTestId('error')).toHaveTextContent('Sync data error')
       })
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Sync failed:',
+        expect.any(Error)
+      )
     })
   })
 

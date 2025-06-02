@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { audioManager } from './audioManager'
 import * as Tone from 'tone'
 
@@ -173,12 +174,9 @@ describe('AudioManager', () => {
   })
 
   describe('Note Playing', () => {
-    beforeEach(async () => {
+    it('plays a single note on piano', async () => {
       await audioManager.initialize()
       jest.clearAllMocks()
-    })
-
-    it('plays a single note on piano', async () => {
       await audioManager.playNote('C4')
 
       expect(mockPianoSampler.triggerAttackRelease).toHaveBeenCalledWith(
@@ -193,6 +191,8 @@ describe('AudioManager', () => {
     })
 
     it('plays multiple notes (chord) on piano', async () => {
+      await audioManager.initialize()
+      jest.clearAllMocks()
       await audioManager.playNote(['C4', 'E4', 'G4'], '4n', 0.5)
 
       expect(mockPianoSampler.triggerAttackRelease).toHaveBeenCalledWith(
@@ -204,6 +204,8 @@ describe('AudioManager', () => {
     })
 
     it('plays a note on guitar', async () => {
+      await audioManager.initialize()
+      jest.clearAllMocks()
       audioManager.setInstrument('guitar')
       await audioManager.playNote('E3', '16n', 0.9)
 
@@ -222,6 +224,10 @@ describe('AudioManager', () => {
       audioManager.dispose() // Reset state
 
       // Need to recreate ALL mocks since dispose was called
+      const newReverb = {
+        toDestination: jest.fn().mockReturnThis(),
+        dispose: jest.fn(),
+      }
       const newPianoSampler = {
         toDestination: jest.fn().mockReturnThis(),
         connect: jest.fn(),
@@ -234,8 +240,9 @@ describe('AudioManager', () => {
         triggerAttackRelease: jest.fn(),
         dispose: jest.fn(),
       }
-      mockTone.Sampler.mockReturnValue(newPianoSampler as any)
-      mockTone.PolySynth.mockReturnValue(newGuitarSynth as any)
+      ;(mockTone.Reverb as any) = jest.fn().mockReturnValue(newReverb)
+      ;(mockTone.Sampler as any) = jest.fn().mockReturnValue(newPianoSampler)
+      ;(mockTone.PolySynth as any) = jest.fn().mockReturnValue(newGuitarSynth)
 
       jest.clearAllMocks()
 
@@ -246,7 +253,6 @@ describe('AudioManager', () => {
     })
 
     it('handles play errors gracefully', async () => {
-      // Need to initialize first
       await audioManager.initialize()
       jest.clearAllMocks()
 
@@ -278,13 +284,8 @@ describe('AudioManager', () => {
 
   describe('Scheduled Note Playing', () => {
     it('schedules a note at specific time on piano', async () => {
-      // First ensure we're not already initialized
-      audioManager.dispose()
-
-      // Now initialize with fresh state
       await audioManager.initialize()
       jest.clearAllMocks()
-
       await audioManager.playNoteAt('D4', 1.5, '8n', 0.7)
 
       expect(mockPianoSampler.triggerAttackRelease).toHaveBeenCalledWith(
@@ -314,6 +315,10 @@ describe('AudioManager', () => {
       audioManager.dispose()
 
       // Need to recreate ALL mocks since dispose was called
+      const newReverb = {
+        toDestination: jest.fn().mockReturnThis(),
+        dispose: jest.fn(),
+      }
       const newPianoSampler = {
         toDestination: jest.fn().mockReturnThis(),
         connect: jest.fn(),
@@ -326,8 +331,9 @@ describe('AudioManager', () => {
         triggerAttackRelease: jest.fn(),
         dispose: jest.fn(),
       }
-      mockTone.Sampler.mockReturnValue(newPianoSampler as any)
-      mockTone.PolySynth.mockReturnValue(newGuitarSynth as any)
+      ;(mockTone.Reverb as any) = jest.fn().mockReturnValue(newReverb)
+      ;(mockTone.Sampler as any) = jest.fn().mockReturnValue(newPianoSampler)
+      ;(mockTone.PolySynth as any) = jest.fn().mockReturnValue(newGuitarSynth)
 
       jest.clearAllMocks()
 
@@ -338,8 +344,6 @@ describe('AudioManager', () => {
     })
 
     it('handles scheduling errors gracefully', async () => {
-      // Ensure clean state
-      audioManager.dispose()
       await audioManager.initialize()
       jest.clearAllMocks()
 

@@ -4,6 +4,7 @@ import { resolvers } from '../../resolvers'
 import {
   executeGraphQLQuery,
   createMockContext,
+  createMockKV,
   mockUser,
 } from '../../test-utils/graphql'
 import { createMockDB, MockD1Database } from '../../test-utils/db'
@@ -81,11 +82,11 @@ describe('Authentication Integration Tests', () => {
 
     it('should verify valid magic link and return tokens', async () => {
       // Set up mock data
-      const mockContext = createMockContext()
       const email = 'test@example.com'
+      const mockKV = createMockKV()
 
       // Store magic link in KV
-      await mockContext.env.CACHE.put('magic_link:valid-token', email)
+      await mockKV.put('magic_link:valid-token', email)
 
       // Mock user doesn't exist yet
       mockDB.setMockData('users', [])
@@ -94,7 +95,14 @@ describe('Authentication Integration Tests', () => {
         server,
         VERIFY_MAGIC_LINK,
         { token: 'valid-token' },
-        { env: { ...mockContext.env, DB: mockDB as unknown as D1Database } }
+        {
+          env: {
+            CACHE: mockKV,
+            DB: mockDB as unknown as D1Database,
+            JWT_SECRET: 'test-secret',
+            ENVIRONMENT: 'development',
+          },
+        }
       )
 
       expect(result.body.singleResult.errors).toBeUndefined()

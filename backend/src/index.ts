@@ -75,7 +75,7 @@ export default {
       // Try to load version info
       let versionInfo = { shortHash: 'unknown', branch: 'unknown' }
       try {
-        // @ts-ignore - version.json is generated at build time
+        // @ts-expect-error - version.json is generated at build time
         const version = await import('./version.json')
         versionInfo = version.default || version
       } catch (e) {
