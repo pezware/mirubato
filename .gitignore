@@ -213,6 +213,10 @@ wrangler.toml
 licenses.json
 license-report.html
 
+# Generated version files
+backend/src/version.json
+frontend/public/version.json
+
 # Analytics and monitoring
 .sentry/
 analytics.json
