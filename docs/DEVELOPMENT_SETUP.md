@@ -209,18 +209,32 @@ After creating these resources, update `config/environments.json` with the IDs r
 
 ### Step 3: Run Database Migrations
 
+**Important**: Before running migrations, you must generate the appropriate wrangler.json configuration for your target environment.
+
 ```bash
+# First, generate the wrangler configuration for your environment
+node scripts/generate-wrangler-config.js backend [environment]
+
+# Then apply migrations
 cd backend
 
-# Apply to development database
-wrangler d1 migrations apply mirubato-dev --local
+# For local development
+wrangler d1 migrations apply DB --local
 
-# Apply to staging database
+# For staging (generate staging config first)
+node ../scripts/generate-wrangler-config.js backend staging
+wrangler d1 migrations apply DB --remote
+# OR
 wrangler d1 migrations apply mirubato-staging --remote
 
-# Apply to production database
+# For production (generate production config first)
+node ../scripts/generate-wrangler-config.js backend production
+wrangler d1 migrations apply DB --remote
+# OR
 wrangler d1 migrations apply mirubato-prod --remote
 ```
+
+**Note**: The `--env` flag may show warnings but will work correctly. Our configuration system generates separate wrangler.json files per environment rather than using environment sections.
 
 ### Step 4: Generate Configuration Files
 
@@ -236,25 +250,46 @@ node scripts/generate-env-files.js both production
 
 ### Step 5: Deploy to Cloudflare
 
+**Important**: Database migrations are NOT run automatically during deployment. Always run migrations manually before deploying code that depends on schema changes.
+
 #### Deploy to Staging
 
 ```bash
-# Deploy backend
-cd backend && wrangler deploy --env staging
+# 1. Generate staging configuration
+node scripts/generate-wrangler-config.js both staging
 
-# Deploy frontend
-cd ../frontend && wrangler deploy --env staging
+# 2. Run any pending migrations (if needed)
+cd backend && wrangler d1 migrations apply DB --remote
+
+# 3. Deploy backend
+wrangler deploy
+
+# 4. Deploy frontend
+cd ../frontend && wrangler deploy
 ```
 
 #### Deploy to Production
 
 ```bash
-# Deploy backend
-cd backend && wrangler deploy --env production
+# 1. Generate production configuration
+node scripts/generate-wrangler-config.js both production
 
-# Deploy frontend
-cd ../frontend && wrangler deploy --env production
+# 2. Run any pending migrations (if needed)
+cd backend && wrangler d1 migrations apply DB --remote
+
+# 3. Deploy backend
+wrangler deploy
+
+# 4. Deploy frontend
+cd ../frontend && wrangler deploy
 ```
+
+**Migration Best Practices**:
+
+- Always test migrations in staging before production
+- Review migration files before applying
+- Keep migrations separate from deployments
+- Never run migrations automatically in CI/CD
 
 ### Step 6: Configure Environment Variables
 
@@ -412,6 +447,16 @@ Mirubato uses a local-first approach where:
 3. **Database connection issues**: Ensure D1 database ID is correctly set in wrangler.json
 
 4. **Email not sending**: Verify RESEND_API_KEY is set in environment variables
+
+5. **Migration errors "Couldn't find a D1 DB with binding"**:
+
+   - Generate the correct wrangler.json for your environment first
+   - Use `wrangler d1 migrations apply DB --remote` (using the binding name)
+   - Or regenerate config: `node scripts/generate-wrangler-config.js backend [environment]`
+
+6. **"No environment found" warning**:
+   - This is expected - we use separate wrangler.json files per environment
+   - The warning can be safely ignored if migrations are working
 
 ### Development Tips
 
