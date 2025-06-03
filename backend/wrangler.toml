@@ -32,6 +32,7 @@ custom_domain = true
 [env.local]
 name = "mirubato-backend-local"
 workers_dev = true
+routes = []  # Override routes to prevent inheriting production routes
 
 [env.local.vars]
 ENVIRONMENT = "development"
