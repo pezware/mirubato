@@ -7,20 +7,11 @@ import { isValidEmail } from '../utils/auth'
 export const authResolvers: { Mutation: MutationResolvers } = {
   Mutation: {
     requestMagicLink: async (_, { email }, context) => {
-      console.log('requestMagicLink called with:', email)
-
       if (!isValidEmail(email)) {
         throw new Error('Invalid email address')
       }
 
       try {
-        console.log('Context env:', {
-          hasMagicLinksKV: !!context.env.MIRUBATO_MAGIC_LINKS,
-          hasJwtSecret: !!context.env.JWT_SECRET,
-          environment: context.env.ENVIRONMENT,
-          hasResendApiKey: !!context.env.RESEND_API_KEY,
-        })
-
         const authService = new AuthService(
           context.env.MIRUBATO_MAGIC_LINKS,
           context.env.JWT_SECRET
@@ -29,7 +20,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
 
         // Generate and store magic link
         const magicLink = await authService.createMagicLink(email)
-        console.log('Magic link created:', magicLink)
 
         // Send email
         await emailService.sendMagicLinkEmail(email, magicLink)
@@ -45,11 +35,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
     },
 
     verifyMagicLink: async (_, { token }, context) => {
-      console.log(
-        'verifyMagicLink called with token:',
-        token?.slice(0, 8) + '...'
-      )
-
       try {
         const authService = new AuthService(
           context.env.MIRUBATO_MAGIC_LINKS,
@@ -58,33 +43,22 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         const userService = new UserService(context.env.DB)
 
         // Verify magic link token
-        console.log('Verifying magic link token...')
         const email = await authService.verifyMagicLink(token)
-        console.log(
-          'Magic link verification result:',
-          email ? 'success' : 'failed'
-        )
 
         if (!email) {
           throw new Error('Invalid or expired magic link')
         }
 
         // Get or create user
-        console.log('Getting or creating user for email:', email)
         let user = await userService.getUserByEmail(email)
         if (!user) {
-          console.log('Creating new user')
           user = await userService.createUser({ email })
-        } else {
-          console.log('Found existing user:', user.id)
         }
 
         // Generate tokens
-        console.log('Generating tokens for user:', user.id)
         const { accessToken, refreshToken } =
           await authService.generateTokens(user)
 
-        console.log('verifyMagicLink completed successfully')
         return {
           accessToken,
           refreshToken,

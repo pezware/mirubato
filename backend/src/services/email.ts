@@ -60,10 +60,6 @@ export class EmailService {
     const envKey =
       this.env.ENVIRONMENT === 'production' ? 'production' : 'local'
 
-    console.log(
-      `EmailService: Environment=${this.env.ENVIRONMENT}, using config=${envKey}`
-    )
-
     const config = getConfig(envKey)
     const env = config.currentEnvironment
 
@@ -71,12 +67,7 @@ export class EmailService {
     const baseUrl =
       env.frontend.url || env.frontend.urls?.[0] || 'http://localhost:3000'
 
-    console.log(`EmailService: Generated base URL=${baseUrl}`)
-
-    const fullUrl = `${baseUrl}/auth/verify?token=${token}`
-    console.log(`EmailService: Full magic link URL=${fullUrl}`)
-
-    return fullUrl
+    return `${baseUrl}/auth/verify?token=${token}`
   }
 
   private getHtmlContent(loginUrl: string): string {

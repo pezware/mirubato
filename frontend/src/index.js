@@ -9,11 +9,21 @@ export default {
 
       // If it's a 404 and not a file with an extension, serve index.html for client-side routing
       if (response.status === 404 && !url.pathname.includes('.')) {
-        const indexRequest = new Request(
-          new URL('/index.html', request.url).toString(),
-          request
+        // Create a new request for index.html but preserve the original URL
+        // This is important for client-side routing to work with query parameters
+        const indexRequest = new Request(request)
+        const indexUrl = new URL('/index.html', request.url)
+
+        // Fetch index.html but keep the original request URL for the browser
+        response = await env.ASSETS.fetch(
+          new Request(indexUrl.toString(), {
+            ...indexRequest,
+            headers: indexRequest.headers,
+          })
         )
-        response = await env.ASSETS.fetch(indexRequest)
+
+        // Clone the response to modify headers if needed
+        response = new Response(response.body, response)
       }
 
       return response

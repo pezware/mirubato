@@ -15,7 +15,7 @@ const httpLink = createHttpLink({
 })
 
 // Create auth link to add JWT token to requests
-const authLink = setContext((_, { headers }) => {
+const authLink = setContext((_, { headers, operationName }) => {
   // Get the authentication token from local storage if it exists
   const token = localStorage.getItem('auth-token')
 
@@ -24,6 +24,8 @@ const authLink = setContext((_, { headers }) => {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : '',
+      // Add Apollo operation name to prevent CSRF issues
+      'x-apollo-operation-name': operationName || '',
     },
   }
 })

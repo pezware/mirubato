@@ -119,6 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             refreshToken,
             user: authenticatedUser,
           } = data.verifyMagicLink
+
           setAuthTokens(accessToken, refreshToken)
 
           // Migrate anonymous user data to authenticated user
