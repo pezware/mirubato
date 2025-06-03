@@ -2,6 +2,7 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach } from '@jest/globals'
+import './apollo-setup'
 
 // Polyfill fetch for Apollo Client
 import fetch from 'cross-fetch'
