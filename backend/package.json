@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --env local",
     "build:dev": "tsc",
     "prebuild": "node scripts/update-version.js",
     "build": "node build.js",
@@ -23,8 +23,11 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "db:generate": "wrangler d1 migrations create",
-    "db:migrate": "wrangler d1 migrations apply --local",
-    "db:migrate:prod": "wrangler d1 migrations apply",
+    "db:migrate": "wrangler d1 migrations apply DB --env local --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:migrate:dev": "wrangler d1 migrations apply DB --env dev --remote",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
+    "db:migrate:production": "wrangler d1 migrations apply DB --env production --remote",
     "codegen": "graphql-codegen"
   },
   "dependencies": {

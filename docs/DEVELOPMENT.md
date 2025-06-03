@@ -86,29 +86,31 @@ We use `wrangler.toml` files that define all environments in a single file. No m
 
 #### Available Environments
 
-1. **Local Development** (default)
+1. **Production** (default - no `--env` flag)
+
+   - This is the default configuration used by Cloudflare's automated deployment
+   - Frontend: `https://{MYDOMAIN}`, `https://www.{MYDOMAIN}`
+   - Backend: `https://api.{MYDOMAIN}`
+   - Uses production database and KV namespaces
+
+2. **Local Development** (`--env local`)
 
    - Uses placeholder IDs for D1 and KV namespaces
    - Frontend: `http://localhost:3000`
    - Backend: `http://localhost:8787`
    - GraphQL Playground: `http://localhost:8787/graphql`
 
-2. **Development/Preview** (`--env dev`)
+3. **Development/Preview** (`--env dev`)
 
    - Deploys to Cloudflare with dev database and KV namespaces
    - Frontend: `https://*-mirubato.{MYTEAM}.workers.dev`
    - Backend: `https://*-mirubato-backend.{MYTEAM}.workers.dev`
 
-3. **Staging** (`--env staging`)
+4. **Staging** (`--env staging`)
 
    - Uses staging database and KV namespaces
    - Frontend: `https://mirubato-staging.{MYTEAM}.workers.dev`
    - Backend: `https://mirubato-backend-staging.{MYTEAM}.workers.dev`
-
-4. **Production** (`--env production`)
-   - Uses production database and KV namespaces
-   - Frontend: `https://{MYDOMAIN}`, `https://www.{MYDOMAIN}`
-   - Backend: `https://api.{MYDOMAIN}`
 
 ### Local Development
 
@@ -182,16 +184,19 @@ After creating resources, update the IDs in `backend/wrangler.toml` and `fronten
 cd backend
 
 # Apply migrations to local database
-wrangler d1 migrations apply DB --local
+npm run db:migrate
+
+# Apply to production (default environment)
+npm run db:migrate:remote
 
 # Apply to dev environment
-wrangler d1 migrations apply DB --env dev --remote
+npm run db:migrate:dev
 
 # Apply to staging
-wrangler d1 migrations apply DB --env staging --remote
+npm run db:migrate:staging
 
-# Apply to production
-wrangler d1 migrations apply DB --env production --remote
+# Apply to production explicitly
+npm run db:migrate:production
 ```
 
 ### Step 4: Deploy

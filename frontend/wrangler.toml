@@ -4,12 +4,26 @@ name = "mirubato"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
-# Local development environment (default when no --env flag is used)
-workers_dev = true
+# Top-level configuration is production (default when no --env flag is used)
+# This is used by Cloudflare's automated deployment system
+workers_dev = false
 
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+
+[[routes]]
+pattern = "mirubato.com/*"
+custom_domain = true
+
+[[routes]]
+pattern = "www.mirubato.com/*"
+custom_domain = true
+
+# Local development configuration (for local dev server)
+[env.local]
+name = "mirubato-local"
+workers_dev = true
 
 # Preview/Dev environment (for wrangler deploy --env dev)
 [env.dev]
@@ -20,16 +34,3 @@ workers_dev = true
 [env.staging]
 name = "mirubato-staging"
 workers_dev = true
-
-# Production environment
-[env.production]
-name = "mirubato"
-workers_dev = false
-
-[[env.production.routes]]
-pattern = "mirubato.com/*"
-custom_domain = true
-
-[[env.production.routes]]
-pattern = "www.mirubato.com/*"
-custom_domain = true

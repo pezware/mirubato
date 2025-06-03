@@ -5,26 +5,51 @@ main = "dist/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Local development environment (default when no --env flag is used)
-workers_dev = true
+# Top-level configuration is production (default when no --env flag is used)
+# This is used by Cloudflare's automated deployment system
+workers_dev = false
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "mirubato-dev"
-database_id = "your-database-id-here"  # Local dev uses placeholder
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
 
 [[kv_namespaces]]
 binding = "MIRUBATO_MAGIC_LINKS"
-id = "your-kv-namespace-id-here"  # Local dev uses placeholder
+id = "d323a9723d424eed9a8aab2b1b9e15b0"
 
-[dev]
+[build]
+command = "npm run build"
+
+[[routes]]
+pattern = "api.mirubato.com/*"
+custom_domain = true
+
+# Local development configuration (for local dev server)
+[env.local]
+name = "mirubato-backend-local"
+workers_dev = true
+
+[env.local.vars]
+ENVIRONMENT = "development"
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "placeholder-for-local-dev"  # Local dev uses placeholder
+
+[[env.local.kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "placeholder-for-local-dev"  # Local dev uses placeholder
+
+[env.local.dev]
 port = 8787
 local_protocol = "http"
 
-[build]
+[env.local.build]
 command = "npm run build:dev"
 
 # Preview/Dev environment (for wrangler deploy --env dev)
