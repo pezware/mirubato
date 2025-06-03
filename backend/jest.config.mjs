@@ -20,7 +20,7 @@ export default {
     '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(nanoid)/)'
+    'node_modules/(?!(nanoid|@as-integrations|@apollo)/)'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',

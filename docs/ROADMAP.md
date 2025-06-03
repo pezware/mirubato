@@ -19,13 +19,50 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 - **Frontend**: ~65% (Target: 80%)
 - **Backend**: ~50% (Target: 80%)
 
-## Phase 2: Core Module Implementation 🚧 (Current)
+## Phase 2: Core Module Implementation ✅ (Completed) → Quality Improvements 🚧 (Current)
 
 ### Completed Core Modules
 
 - ✅ **EventBus Module**: Singleton publish/subscribe system with pattern matching, priorities, and event history (>95% test coverage)
 - ✅ **Enhanced Storage Module**: LocalStorage abstraction with TTL support, metadata tracking, and namespace isolation (>88% test coverage)
 - ✅ **Sync Module**: Queue-based synchronization with retry logic, conflict resolution strategies, and batch processing (>92% test coverage)
+- ✅ **Practice Session Module**: Complete session management with persistence, analytics, and templates
+- ✅ **Performance Tracking Module**: Real-time feedback, analysis, and recommendation system
+
+### Current Quality Improvement Tasks
+
+#### High Priority (In Progress) 🚧
+
+1. **Backend Infrastructure Testing**
+
+   - [ ] Add tests for `index.ts` (main server file) - 0% coverage
+   - [ ] Add tests for `cors.ts` (security configuration) - 0% coverage
+   - [ ] Add tests for `rateLimiter.ts` (rate limiting) - 0% coverage
+   - [ ] Target: Bring backend coverage from 45.69% → 65%+
+
+2. **Frontend Test Quality**
+   - [ ] Fix Apollo Client mock warnings in all test files
+   - [ ] Improve test setup with proper GraphQL mock provider
+   - [ ] Eliminate test noise and improve debugging experience
+
+#### Medium Priority (Next Phase)
+
+3. **Storage Module Enhancement**
+
+   - [ ] Implement IndexedDB adapter (architecture already prepared)
+   - [ ] Add performance benchmarks for large datasets
+   - [ ] Implement data compression for practice logs
+
+4. **Module Integration Testing**
+
+   - [ ] Add integration tests between EventBus ↔ Storage ↔ Sync
+   - [ ] Test module lifecycle dependencies
+   - [ ] Validate event flow across module boundaries
+
+5. **Performance & Monitoring**
+   - [ ] Add EventBus performance testing under high load
+   - [ ] Implement metrics collection for all modules
+   - [ ] Add health check endpoints for module status
 
 ### Risk Assessment
 
