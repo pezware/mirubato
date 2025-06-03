@@ -1,186 +1,257 @@
 # Test Quality Report - Mirubato Project
 
-**Report Date**: 2025-06-02  
+**Report Date**: 2025-01-06  
 **Analysis Performed By**: Claude Code
-**Last Updated**: 2025-06-02 (removed audioManager tests)
+**Branch**: test/comprehensive-test-review
 
 ## Executive Summary
 
-Overall test suite health: **MODERATE** ⚠️
+Overall test suite health: **IMPROVING** ⚠️
 
-- Total Tests: **212** (145 frontend + 67 backend)
-- Working Tests: **204** (96.2%)
-- Skipped Tests: **8** (3.8%)
-- Removed Tests: **23** (audioManager tests removed due to unfixable singleton issues)
+This report provides a comprehensive analysis of the test suite quality for the Mirubato project. Both frontend and backend have made significant progress toward the 80% coverage target, with backend improving from 45.69% to 74.13% coverage.
 
-## Test Coverage Summary
+### Overall Coverage Status
 
-### Frontend Coverage: 58.85% (Target: 80%) ⚠️
-
-- **Statements**: 58.85%
-- **Branches**: 51.58%
-- **Functions**: 55.20%
-- **Lines**: 58.29%
-
-### Backend Coverage: 45.69% (Target: 80%) ⚠️
-
-- **Statements**: 45.69%
-- **Branches**: 26.95%
-- **Functions**: 51.25%
-- **Lines**: 46.04%
+| Component | Current Coverage | Previous Coverage | Target | Status                   |
+| --------- | ---------------- | ----------------- | ------ | ------------------------ |
+| Frontend  | 71.45%           | 58.85%            | 80%    | ❌ Below target (-8.55%) |
+| Backend   | 74.13%           | 45.69%            | 80%    | ❌ Below target (-5.87%) |
 
 ## Frontend Test Suite
 
 ### Status: PASSING ✅
 
-- **Total Test Suites**: 9 (was 10, removed audioManager.test.ts)
-- **Total Tests**: 145 (was 168, removed 23 audioManager tests)
-- **Passing Tests**: 145
+- **Total Test Suites**: 21
+- **Total Tests**: 241 (up from 145)
+- **Passing Tests**: 241
 - **Skipped Tests**: 0
 - **Success Rate**: 100%
 
-### Coverage by Component
+### Coverage Summary
 
-| Component                          | Coverage | Status                              |
-| ---------------------------------- | -------- | ----------------------------------- |
-| `utils/audioManager.ts`            | 0%       | ❌ Tests removed (singleton issues) |
-| `utils/notationRenderer.ts`        | 100%     | ✅ Perfect                          |
-| `contexts/AuthContext.tsx`         | 100%     | ✅ Perfect                          |
-| `pages/Practice.tsx`               | 91.66%   | ✅ Excellent                        |
-| `components/CircularControl.tsx`   | 96.55%   | ✅ Excellent                        |
-| `components/AuthModal.tsx`         | 90.9%    | ✅ Excellent                        |
-| `components/LandingPage.tsx`       | 84.61%   | ✅ Good                             |
-| `components/SheetMusicDisplay.tsx` | 93.68%   | ✅ Excellent                        |
-| `components/MusicPlayer.tsx`       | 0%       | ❌ No tests                         |
-| `components/PianoKey.tsx`          | 17.39%   | ❌ Low                              |
-| `components/ProtectedRoute.tsx`    | 41.66%   | ⚠️ Needs work                       |
+```
+Statements   : 71.45% (1120/1567) - up from 58.85%
+Branches     : 59.97% (301/502) - up from 51.58%
+Functions    : 71.28% (209/293) - up from 55.20%
+Lines        : 71.62% (1062/1483) - up from 58.29%
+```
 
-### Removed Tests
+### High Coverage Areas (✅ >90%)
 
-The entire `audioManager.test.ts` file (23 tests) was removed because:
+| Component                                 | Coverage | Status       |
+| ----------------------------------------- | -------- | ------------ |
+| `contexts/AuthContext.tsx`                | 100%     | ✅ Perfect   |
+| `utils/notationRenderer.ts`               | 100%     | ✅ Perfect   |
+| `modules/core/EventBus.ts`                | 100%     | ✅ Perfect   |
+| `modules/infrastructure/SyncModule.ts`    | 96.15%   | ✅ Excellent |
+| `components/CircularControl.tsx`          | 96.55%   | ✅ Excellent |
+| `components/SheetMusicDisplay.tsx`        | 93.68%   | ✅ Excellent |
+| `modules/infrastructure/StorageModule.ts` | 93.51%   | ✅ Excellent |
+| `pages/Practice.tsx`                      | 90.69%   | ✅ Excellent |
+| `components/AuthModal.tsx`                | 90.9%    | ✅ Excellent |
 
-- The audioManager is a singleton that maintains state between tests
-- Jest's module mocking couldn't properly reset the singleton state
-- Mock setup was conflicting with the manual Tone.js mock
-- Tests were consistently failing in the pre-commit hook
-- Decision: Remove tests rather than maintain broken/skipped tests
+### Low Coverage Areas (❌ <50%)
 
-### Notable Warnings
+| Component                       | Coverage | Priority    |
+| ------------------------------- | -------- | ----------- |
+| `components/MusicPlayer.tsx`    | 0%       | 🔴 Critical |
+| `services/dataSync.ts`          | 0%       | 🔴 Critical |
+| `components/VersionInfo.tsx`    | 0%       | 🟡 Low      |
+| `config/endpoints.ts`           | 0%       | 🟡 Low      |
+| `gql/*` (generated files)       | 0%       | ⚪ Exclude  |
+| `utils/audioManager.ts`         | 9.85%    | 🔴 Critical |
+| `components/PianoKey.tsx`       | 17.39%   | 🟠 Medium   |
+| `components/ProtectedRoute.tsx` | 41.66%   | 🟠 Medium   |
+| `lib/apollo/client.ts`          | 42.85%   | 🟠 Medium   |
 
-- Multiple Apollo Client mock warnings in various test files
-- These are non-critical and related to AuthContext initialization in tests
-- Can be addressed by improving mock setup in test utilities
+### Notable Test Quality Issues
+
+1. **Console Errors in Tests**:
+
+   - JSON parsing errors in localStorage tests
+   - QuotaExceededError simulations showing as errors
+   - EventBus error handling test logging
+
+2. **AudioManager Coverage**: Previously removed tests due to singleton issues, now at 9.85% coverage
 
 ## Backend Test Suite
 
-### Status: PASSING ✅
+### Status: PASSING ✅ (with coverage warnings)
 
-- **Total Test Suites**: 5
-- **Total Tests**: 67
-- **Passing Tests**: 59
+- **Total Test Suites**: 8
+- **Total Tests**: 136
+- **Passing Tests**: 128
 - **Skipped Tests**: 8 (future features)
-- **Success Rate**: 100% (for implemented features)
+- **Success Rate**: 100%
 
-### Coverage by Module
+### Coverage Summary
 
-| Module                    | Coverage | Status      |
-| ------------------------- | -------- | ----------- |
-| `resolvers/practice.ts`   | 100%     | ✅ Perfect  |
-| `resolvers/sheetMusic.ts` | 100%     | ✅ Perfect  |
-| `services/auth.ts`        | 100%     | ✅ Perfect  |
-| `services/user.ts`        | 100%     | ✅ Perfect  |
-| `resolvers/auth.ts`       | 70.27%   | ⚠️ Good     |
-| `index.ts`                | 0%       | ❌ No tests |
-| `config/cors.ts`          | 0%       | ❌ No tests |
-| `middleware/logging.ts`   | 0%       | ❌ No tests |
+```
+Statements   : 74.13% (358/483) - up from 45.69%
+Branches     : 72.35% (71/98) - up from 26.95%
+Functions    : 70.88% (112/158) - up from 51.25%
+Lines        : 74.05% (347/469) - up from 46.04%
+```
 
-### Skipped Tests (Future Features)
+### High Coverage Areas (✅ 100%)
 
-All skipped tests are intentionally disabled as they test unimplemented features:
+| Module                    | Coverage | Status              |
+| ------------------------- | -------- | ------------------- |
+| `src/index.ts`            | 100%     | ✅ Perfect (was 0%) |
+| `config/cors.ts`          | 100%     | ✅ Perfect (was 0%) |
+| `utils/rateLimiter.ts`    | 100%     | ✅ Perfect          |
+| `resolvers/practice.ts`   | 100%     | ✅ Perfect          |
+| `resolvers/sheetMusic.ts` | 100%     | ✅ Perfect          |
+| `services/auth.ts`        | 100%     | ✅ Perfect          |
 
-#### Sheet Music Resolver (4 tests)
+### Low Coverage Areas (❌ <50%)
 
-1. `sheetMusic should fetch by ID` - TODO: Implement query
-2. `listSheetMusic should return filtered results` - TODO: Implement filtering
-3. `randomSheetMusic should return random piece` - TODO: Implement randomization
-4. `should handle pagination properly` - TODO: Implement pagination
+| Module                  | Coverage | Priority  |
+| ----------------------- | -------- | --------- |
+| `middleware/logging.ts` | 0%       | 🟠 Medium |
+| `src/version.ts`        | 0%       | 🟡 Low    |
+| `resolvers/scalars.ts`  | 8%       | 🟠 Medium |
+| `resolvers/user.ts`     | 41.66%   | 🟠 Medium |
+| `services/email.ts`     | 50%      | 🟠 Medium |
 
-#### Practice Resolver (4 tests)
+### Test Quality Issues
 
-1. `practiceSession should fetch session by ID` - TODO: Implement query
-2. `myPracticeSessions should return user sessions` - TODO: Implement query
-3. `startPracticeSession should create new session` - TODO: Implement mutation
-4. `should require authentication for mutations` - TODO: Add auth checks
+1. **Console Logs**: Multiple console.log statements in tests (should be mocked)
+2. **Skipped Tests**: 8 tests for unimplemented features (good documentation)
+
+## Significant Improvements Since Last Report
+
+### Frontend
+
+1. **+12.6% overall coverage** (58.85% → 71.45%)
+2. **96 new tests added** (145 → 241)
+3. New module tests with excellent coverage:
+   - EventBus (100%)
+   - StorageModule (93.51%)
+   - SyncModule (96.15%)
+   - PerformanceTrackingModule (87.61%)
+   - PracticeSessionModule (87.11%)
+
+### Backend
+
+1. **+28.44% overall coverage** (45.69% → 74.13%)
+2. **Critical infrastructure now tested**:
+   - Main server file (index.ts): 0% → 100%
+   - CORS configuration: 0% → 100%
+   - Rate limiter maintains 100%
 
 ## Recommendations
 
-### Immediate Actions
+### Immediate Actions (High Priority)
 
-1. **Rewrite audioManager as testable service**: The singleton pattern makes it untestable with Jest
-   - Consider dependency injection or factory pattern
-   - Separate Tone.js initialization from the manager class
-2. **Apollo Mock Warnings**: Create a proper mock provider for AuthContext to eliminate warnings
-3. **Critical Coverage Gaps**:
-   - Add tests for `MusicPlayer.tsx` (0% coverage)
-   - Improve tests for `PianoKey.tsx` (17.39% coverage)
-   - Add tests for `audioManager.ts` after refactoring (0% coverage)
-   - Add tests for backend `index.ts`, `cors.ts`, and `logging.ts`
+#### Frontend
 
-### Future Actions
+1. **Fix AudioManager Architecture** (9.85% coverage)
+   - Refactor from singleton to dependency injection
+   - Add comprehensive tests after refactoring
+2. **Add MusicPlayer Tests** (0% coverage)
+   - Critical component needs immediate attention
+3. **Add dataSync Service Tests** (0% coverage)
 
-1. **Implement Skipped Features**: The 8 backend tests document expected behavior for planned features
-2. **Increase Overall Coverage**:
-   - Frontend: 58.85% → 80% (need +21.15%)
-   - Backend: 45.69% → 80% (need +34.31%)
+   - Essential for offline functionality
 
-## Test Categories
+4. **Clean Up Test Console Errors**
+   - Mock localStorage quota errors properly
+   - Suppress expected error logs in tests
 
-### High-Quality Tests ✅
+#### Backend
 
-- `notationRenderer.test.ts` - 100% coverage, comprehensive
-- `AuthContext.test.tsx` - 100% coverage, well-structured
-- `Practice.test.tsx` - 91.66% coverage, thorough component testing
-- `auth.service.test.ts` - 100% coverage, good unit tests
-- All resolver tests - Well-structured with proper mocking
+1. **Add Logging Middleware Tests** (0% coverage)
 
-### Tests Needing Attention ⚠️
+   - Mock console methods
+   - Test log formatting and levels
 
-- `audioManager.test.ts` - 2 flaky tests need fixing
-- Integration tests with Apollo warnings need mock improvements
-- Components with 0% coverage need test files created
+2. **Complete User Resolver Tests** (41.66% → 80%)
 
-## Coverage Improvement Priority
+   - Add error scenarios
+   - Test edge cases
 
-### Frontend (in order of priority)
+3. **Improve GraphQL Scalars Tests** (8% → 80%)
+   - Test serialization/parsing
+   - Add invalid input tests
 
-1. `MusicPlayer.tsx` - Core component with 0% coverage
-2. `PianoKey.tsx` - Interactive component with only 17.39% coverage
-3. `ProtectedRoute.tsx` - Auth component with 41.66% coverage
-4. `App.tsx` - Main app component with 0% coverage
+### Medium Priority
 
-### Backend (in order of priority)
+1. **Improve Branch Coverage**
 
-1. `index.ts` - Main server file with 0% coverage
-2. `config/cors.ts` - Security configuration with 0% coverage
-3. `middleware/logging.ts` - Logging middleware with 0% coverage
-4. `resolvers/auth.ts` - Improve from 70.27% to 80%+
+   - Frontend: 59.97% → 80%
+   - Focus on error paths and edge cases
+
+2. **Complete Service Tests**
+
+   - Email service: 50% → 80%
+   - Add mock email provider tests
+
+3. **Component Tests**
+   - PianoKey: 17.39% → 80%
+   - ProtectedRoute: 41.66% → 80%
+
+### Low Priority
+
+1. **Configuration Files**
+
+   - Consider excluding from coverage
+   - Or add simple import tests
+
+2. **Generated Files**
+   - Exclude GraphQL generated files from coverage
+
+## Test Infrastructure Quality
+
+### Strengths
+
+- Well-organized test structure
+- Comprehensive test utilities
+- Good Apollo Client mock setup
+- Fast backend tests (~1 second)
+- Excellent module test coverage
+
+### Areas for Improvement
+
+- Reduce test execution time (frontend: ~10s)
+- Standardize error mocking patterns
+- Create shared test factories
+- Add coverage trend tracking
+
+## Coverage Gap Analysis
+
+### To Reach 80% Target
+
+#### Frontend
+
+- **Need**: +8.55% coverage
+- **Focus Areas**:
+  - MusicPlayer component (high impact)
+  - AudioManager refactoring
+  - dataSync service
+  - Improve branch coverage
+
+#### Backend
+
+- **Need**: +5.87% coverage
+- **Focus Areas**:
+  - Logging middleware
+  - GraphQL scalars
+  - User resolver completion
+  - Email service improvements
 
 ## Conclusion
 
-The test suite health has been downgraded to **MODERATE** after removing the untestable audioManager tests. Key issues:
+The project has made **significant progress** in test coverage:
 
-1. **Removed 23 tests** from audioManager due to unfixable singleton/mocking issues
-2. **Frontend coverage dropped** from 63.88% to 58.85%
-3. Apollo Client mock warnings remain (cosmetic but should be fixed)
-4. Eight backend tests remain skipped (documenting future features)
-5. Critical components lack tests (MusicPlayer, audioManager, backend index.ts)
+- Frontend improved by **+12.6%** (58.85% → 71.45%)
+- Backend improved by **+28.44%** (45.69% → 74.13%)
 
-### Key Takeaways:
+Both components are now within reach of the 80% target. The test infrastructure is solid with well-structured utilities and good patterns established. Key remaining work involves:
 
-- **96.2% of remaining tests pass** - Good stability for existing tests
-- **audioManager needs architectural refactoring** to be testable
-- **21.15% coverage gap** to reach 80% target for frontend
-- **34.31% coverage gap** to reach 80% target for backend
-- Test infrastructure is solid, but coverage is insufficient
+1. Addressing critical 0% coverage components
+2. Refactoring audioManager for testability
+3. Cleaning up test console output
+4. Improving branch coverage through error path testing
 
-The project attempted to follow TDD principles but encountered architectural issues with singleton patterns that prevented proper testing. A refactoring of audioManager to use dependency injection would allow proper testing to be restored.
+With focused effort on the high-priority items, the project can achieve the 80% coverage target within the next sprint.
