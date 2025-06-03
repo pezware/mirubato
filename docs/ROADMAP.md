@@ -17,7 +17,7 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 ### Test Coverage Progress
 
 - **Frontend**: ~65% (Target: 80%)
-- **Backend**: ~50% (Target: 80%)
+- **Backend**: ~74% (Target: 80%) ✅ Significant improvement!
 
 ## Phase 2: Core Module Implementation ✅ (Completed) → Quality Improvements 🚧 (Current)
 
@@ -31,14 +31,15 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 
 ### Current Quality Improvement Tasks
 
+#### High Priority ✅ (Completed)
+
+1. **Backend Infrastructure Testing** ✅
+   - ✅ Add tests for `index.ts` (main server file) - now 100% coverage
+   - ✅ Add tests for `cors.ts` (security configuration) - maintained 100% coverage
+   - ✅ Add tests for `rateLimiter.ts` (rate limiting) - maintained 100% coverage
+   - ✅ Target achieved: Backend coverage improved from 45.69% → 74.13%
+
 #### High Priority (In Progress) 🚧
-
-1. **Backend Infrastructure Testing**
-
-   - [ ] Add tests for `index.ts` (main server file) - 0% coverage
-   - [ ] Add tests for `cors.ts` (security configuration) - 0% coverage
-   - [ ] Add tests for `rateLimiter.ts` (rate limiting) - 0% coverage
-   - [ ] Target: Bring backend coverage from 45.69% → 65%+
 
 2. **Frontend Test Quality**
    - [ ] Fix Apollo Client mock warnings in all test files
