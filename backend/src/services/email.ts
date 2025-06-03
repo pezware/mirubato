@@ -26,7 +26,11 @@ export class EmailService {
   }
 
   private async sendViaResend(email: string, loginUrl: string): Promise<void> {
-    const config = getConfig()
+    // Use the same environment logic as getLoginUrl
+    const envKey =
+      this.env.ENVIRONMENT === 'production' ? 'production' : 'local'
+
+    const config = getConfig(envKey)
     const html = this.getHtmlContent(loginUrl)
     const text = this.getTextContent(loginUrl)
 
@@ -52,14 +56,27 @@ export class EmailService {
   }
 
   private getLoginUrl(token: string): string {
-    const config = getConfig()
+    // Get the correct environment configuration based on the current deployment
+    const envKey =
+      this.env.ENVIRONMENT === 'production' ? 'production' : 'local'
+
+    console.log(
+      `EmailService: Environment=${this.env.ENVIRONMENT}, using config=${envKey}`
+    )
+
+    const config = getConfig(envKey)
     const env = config.currentEnvironment
 
     // Get the first frontend URL
     const baseUrl =
       env.frontend.url || env.frontend.urls?.[0] || 'http://localhost:3000'
 
-    return `${baseUrl}/auth/verify?token=${token}`
+    console.log(`EmailService: Generated base URL=${baseUrl}`)
+
+    const fullUrl = `${baseUrl}/auth/verify?token=${token}`
+    console.log(`EmailService: Full magic link URL=${fullUrl}`)
+
+    return fullUrl
   }
 
   private getHtmlContent(loginUrl: string): string {

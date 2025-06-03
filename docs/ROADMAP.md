@@ -244,6 +244,18 @@ Current Status: Frontend ~60% | Backend ~50% (Target: 80%)
 - ✅ **CORS Configuration**: Fixed for local and production
 - ✅ **Environment Setup**: Production environment files
 
+#### Authentication Bug Fixes (June 2025)
+
+- ✅ **Production CORS Fix**: Resolved missing `Access-Control-Allow-Origin` header
+  - Fixed `isOriginAllowed()` to use correct environment configuration
+  - Properly passes environment context to unified config system
+- ✅ **Magic Link URL Generation**: Fixed localhost URLs in production emails
+  - Updated `EmailService.getLoginUrl()` to use environment-specific configuration
+  - Ensures production emails use `https://mirubato.com` URLs
+- ✅ **Enhanced Auth Debugging**: Added comprehensive logging to auth resolver
+  - Helps diagnose magic link verification issues
+  - Provides detailed error tracking in development
+
 ### Code Quality & Documentation (PARTIAL) ⚠️
 
 - ✅ **Testing Infrastructure**: Jest, React Testing Library, and Husky configured
