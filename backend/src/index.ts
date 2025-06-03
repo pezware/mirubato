@@ -15,7 +15,8 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
 
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, x-apollo-operation-name, apollo-require-preflight',
     'Access-Control-Max-Age': '86400',
   }
 
@@ -26,16 +27,8 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
     | 'development'
   const isAllowed = isOriginAllowed(origin, environment)
 
-  // Log for debugging (remove in production)
-  console.log(
-    `CORS check: origin="${origin}", env="${environment}" (raw: ${env.ENVIRONMENT}), allowed=${isAllowed}`
-  )
-
   if (isAllowed) {
     corsHeaders['Access-Control-Allow-Origin'] = origin
-  } else if (origin) {
-    // Log why origin was rejected
-    console.log(`CORS rejected: origin "${origin}" not in allowed list`)
   }
 
   return corsHeaders

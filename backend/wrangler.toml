@@ -12,6 +12,9 @@ workers_dev = false
 [vars]
 ENVIRONMENT = "production"
 
+[observability]
+enabled = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "mirubato-prod"
@@ -44,7 +47,7 @@ database_id = "placeholder-for-local-dev"  # Local dev uses placeholder
 
 [[env.local.kv_namespaces]]
 binding = "MIRUBATO_MAGIC_LINKS"
-id = "placeholder-for-local-dev"  # Local dev uses placeholder
+id = "2632e7dcffe745f1a34ba6a3b029bd4c"  # Using preview namespace for debugging
 
 [env.local.dev]
 port = 8787
