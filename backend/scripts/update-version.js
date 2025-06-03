@@ -28,8 +28,15 @@ const versionInfo = {
   shortHash,
 }
 
-// Write to src directory so it can be imported
-const outputPath = join(__dirname, '..', 'src', 'version.json')
-writeFileSync(outputPath, JSON.stringify(versionInfo, null, 2))
+// Write JSON file to src directory
+const jsonOutputPath = join(__dirname, '..', 'src', 'version.json')
+writeFileSync(jsonOutputPath, JSON.stringify(versionInfo, null, 2))
+
+// Also write a TypeScript file for more reliable importing
+const tsOutputPath = join(__dirname, '..', 'src', 'version.ts')
+const tsContent = `// Auto-generated version info
+export const versionInfo = ${JSON.stringify(versionInfo, null, 2)} as const
+`
+writeFileSync(tsOutputPath, tsContent)
 
 console.log('Version info updated:', versionInfo)

@@ -72,31 +72,16 @@ export default {
 
     // Health endpoint
     if (url.pathname === '/health' || url.pathname === '/test') {
-      // Try to load version info
-      let versionInfo = { shortHash: 'unknown', branch: 'unknown' }
-      try {
-        const version = await import('./version.json')
-        const versionData = version.default || version
-        versionInfo = {
-          shortHash: versionData.shortHash || 'unknown',
-          branch: versionData.branch || 'unknown',
-        }
-      } catch (e) {
-        // Version file might not exist in dev
-      }
-
       return addCorsHeaders(
         new Response(
           JSON.stringify({
             message: 'Backend is working!',
             env: env.ENVIRONMENT,
-            version: `${versionInfo.shortHash} (${versionInfo.branch})`,
             timestamp: new Date().toISOString(),
           }),
           {
             headers: {
               'Content-Type': 'application/json',
-              'X-Version': `${versionInfo.shortHash} (${versionInfo.branch})`,
             },
           }
         ),

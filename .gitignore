@@ -216,6 +216,7 @@ license-report.html
 
 # Generated version files
 backend/src/version.json
+backend/src/version.ts
 frontend/public/version.json
 
 # Analytics and monitoring

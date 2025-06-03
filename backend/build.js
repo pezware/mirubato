@@ -17,6 +17,8 @@ const versionDest = join(__dirname, 'dist', 'version.json')
 if (existsSync(versionSrc)) {
   console.log('Copying version.json to dist...')
   copyFileSync(versionSrc, versionDest)
+} else {
+  console.log('Warning: version.json not found in src/')
 }
 
 console.log('Build complete!')
