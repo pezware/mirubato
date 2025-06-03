@@ -7,6 +7,10 @@ class AudioManager {
   private currentInstrument: 'piano' | 'guitar' = 'piano'
   private loadingPromise: Promise<void> | null = null
 
+  isInitialized(): boolean {
+    return this.initialized
+  }
+
   async initialize(): Promise<void> {
     if (this.initialized) {
       console.log('Audio already initialized')
@@ -25,96 +29,98 @@ class AudioManager {
   private async _initializeInternal(): Promise<void> {
     try {
       console.log('Initializing audio system...')
-      
+
       // Start the audio context - requires user gesture
       await Tone.start()
       console.log('Tone.js started successfully')
-      
+
       // For now, always use CDN samples since local samples aren't deployed yet
       // Once samples are added to the repo, we can switch to local loading
       const baseUrl = 'https://tonejs.github.io/audio/salamander/'
-      
+
       console.log(`Loading piano samples from: ${baseUrl}`)
-      
+
       // Create piano sampler with Salamander Grand Piano samples
       // We'll use a subset of samples to reduce loading time
       // The sampler will automatically pitch-shift to fill in missing notes
       this.pianoSampler = new Tone.Sampler({
         urls: {
-          'A0': 'A0.mp3',
-          'C1': 'C1.mp3',
+          A0: 'A0.mp3',
+          C1: 'C1.mp3',
           'D#1': 'Ds1.mp3',
           'F#1': 'Fs1.mp3',
-          'A1': 'A1.mp3',
-          'C2': 'C2.mp3',
+          A1: 'A1.mp3',
+          C2: 'C2.mp3',
           'D#2': 'Ds2.mp3',
           'F#2': 'Fs2.mp3',
-          'A2': 'A2.mp3',
-          'C3': 'C3.mp3',
+          A2: 'A2.mp3',
+          C3: 'C3.mp3',
           'D#3': 'Ds3.mp3',
           'F#3': 'Fs3.mp3',
-          'A3': 'A3.mp3',
-          'C4': 'C4.mp3',
+          A3: 'A3.mp3',
+          C4: 'C4.mp3',
           'D#4': 'Ds4.mp3',
           'F#4': 'Fs4.mp3',
-          'A4': 'A4.mp3',
-          'C5': 'C5.mp3',
+          A4: 'A4.mp3',
+          C5: 'C5.mp3',
           'D#5': 'Ds5.mp3',
           'F#5': 'Fs5.mp3',
-          'A5': 'A5.mp3',
-          'C6': 'C6.mp3',
+          A5: 'A5.mp3',
+          C6: 'C6.mp3',
           'D#6': 'Ds6.mp3',
           'F#6': 'Fs6.mp3',
-          'A6': 'A6.mp3',
-          'C7': 'C7.mp3',
+          A6: 'A6.mp3',
+          C7: 'C7.mp3',
           'D#7': 'Ds7.mp3',
           'F#7': 'Fs7.mp3',
-          'A7': 'A7.mp3',
-          'C8': 'C8.mp3'
+          A7: 'A7.mp3',
+          C8: 'C8.mp3',
         },
         release: 1,
         baseUrl,
         onload: () => {
           console.log('Piano samples loaded successfully')
         },
-        onerror: (error) => {
+        onerror: error => {
           console.error('Failed to load piano samples:', error)
           // Try to continue with synthetic sound as fallback
-        }
+        },
       }).toDestination()
 
       // Create guitar synth (using synthetic sound for now)
       this.guitarSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
-          type: 'triangle'
+          type: 'triangle',
         },
         envelope: {
           attack: 0.005,
           decay: 0.1,
           sustain: 0.3,
-          release: 1
-        }
+          release: 1,
+        },
       }).toDestination()
-      
+
       // Add reverb for both instruments
-      const reverb = new Tone.Reverb({ 
-        decay: 2.5, 
+      const reverb = new Tone.Reverb({
+        decay: 2.5,
         wet: 0.15,
-        preDelay: 0.01
+        preDelay: 0.01,
       }).toDestination()
-      
+
       this.pianoSampler.connect(reverb)
       this.guitarSynth.connect(reverb)
-      
+
       // Wait for piano samples to load
       console.log('Loading piano samples...')
       await new Promise<void>((resolve, reject) => {
-        Tone.loaded().then(() => {
-          console.log('Piano samples loaded successfully')
-          resolve()
-        }).catch(reject)
+        Tone.loaded()
+          .then(() => {
+            console.log('Piano samples loaded successfully')
+            resolve()
+          })
+          .catch(reject)
       })
-      
+
       this.initialized = true
       console.log('Audio system ready!')
     } catch (error) {
@@ -135,9 +141,15 @@ class AudioManager {
     return this.currentInstrument
   }
 
-  async playNote(note: string | string[], duration: string = '8n', velocity: number = 0.8): Promise<void> {
-    console.log(`playNote called with: ${note}, instrument: ${this.currentInstrument}`)
-    
+  async playNote(
+    note: string | string[],
+    duration: string = '8n',
+    velocity: number = 0.8
+  ): Promise<void> {
+    console.log(
+      `playNote called with: ${note}, instrument: ${this.currentInstrument}`
+    )
+
     // Initialize on first play attempt
     if (!this.initialized) {
       await this.initialize()
@@ -146,14 +158,24 @@ class AudioManager {
     try {
       if (this.currentInstrument === 'piano' && this.pianoSampler) {
         // For piano, use the sampler
-        this.pianoSampler.triggerAttackRelease(note, duration, undefined, velocity)
+        this.pianoSampler.triggerAttackRelease(
+          note,
+          duration,
+          undefined,
+          velocity
+        )
       } else if (this.currentInstrument === 'guitar' && this.guitarSynth) {
         // For guitar, use the synth (for now)
-        this.guitarSynth.triggerAttackRelease(note, duration, undefined, velocity)
+        this.guitarSynth.triggerAttackRelease(
+          note,
+          duration,
+          undefined,
+          velocity
+        )
       } else {
         throw new Error(`${this.currentInstrument} not available`)
       }
-      
+
       console.log(`Successfully played: ${note} on ${this.currentInstrument}`)
     } catch (error) {
       console.error('Error playing note:', error)
@@ -162,7 +184,12 @@ class AudioManager {
   }
 
   // Play a note with specific timing
-  async playNoteAt(note: string | string[], time: number, duration: string = '8n', velocity: number = 0.8): Promise<void> {
+  async playNoteAt(
+    note: string | string[],
+    time: number,
+    duration: string = '8n',
+    velocity: number = 0.8
+  ): Promise<void> {
     if (!this.initialized) {
       await this.initialize()
     }
@@ -177,11 +204,6 @@ class AudioManager {
       console.error('Error scheduling note:', error)
       throw error
     }
-  }
-
-  // Check if audio is ready
-  isInitialized(): boolean {
-    return this.initialized
   }
 
   // Check if currently loading

@@ -31,17 +31,9 @@ const Practice: React.FC = () => {
   const currentPiece = moonlightSonata3rdMovement
   const playableNotes = getPlayableNotes(currentPiece)
 
-  // Initialize audio
+  // Set instrument to piano (but don't initialize audio yet)
   useEffect(() => {
-    const initializeAudio = async () => {
-      try {
-        audioManager.setInstrument('piano')
-        await audioManager.initialize()
-      } catch (error) {
-        console.error('Failed to initialize audio:', error)
-      }
-    }
-    initializeAudio()
+    audioManager.setInstrument('piano')
   }, [])
 
   // Handle responsive sizing

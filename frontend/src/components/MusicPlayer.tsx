@@ -56,20 +56,8 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
   const sequenceRef = useRef<Tone.Part | null>(null)
 
-  // Initialize audio on mount
+  // Clean up on unmount
   useEffect(() => {
-    const initialize = async () => {
-      setIsLoading(true)
-      try {
-        await audioManager.initialize()
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Failed to initialize audio:', error)
-        setIsLoading(false)
-      }
-    }
-    initialize()
-
     return () => {
       sequenceRef.current?.dispose()
       Tone.Transport.stop()
@@ -89,7 +77,20 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
   const handlePlayPause = async () => {
     if (!isPlaying && !isLoading) {
-      await Tone.start()
+      try {
+        // Initialize audio if not already initialized
+        if (!audioManager.isInitialized()) {
+          setIsLoading(true)
+          await audioManager.initialize()
+          setIsLoading(false)
+        }
+
+        await Tone.start()
+      } catch (error) {
+        console.error('Failed to initialize audio:', error)
+        setIsLoading(false)
+        return
+      }
 
       if (!isPaused) {
         // Clean up any existing sequence

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Practice from './Practice'
 import { audioManager } from '../utils/audioManager'
@@ -67,6 +67,7 @@ describe('Practice Page', () => {
     jest.clearAllMocks()
     mockAudioManager.initialize.mockResolvedValue()
     mockAudioManager.setInstrument.mockReturnValue()
+    mockAudioManager.isInitialized.mockReturnValue(true) // Default to initialized
 
     // Mock Tone.Master.volume - Create a mock object that simulates Tone.Master
     Object.defineProperty(mockTone, 'Master', {
@@ -154,31 +155,10 @@ describe('Practice Page', () => {
   })
 
   describe('Audio Initialization', () => {
-    it('initializes audio manager on mount', async () => {
+    it('sets instrument to piano on mount', () => {
       renderPractice()
 
-      await waitFor(() => {
-        expect(mockAudioManager.setInstrument).toHaveBeenCalledWith('piano')
-        expect(mockAudioManager.initialize).toHaveBeenCalled()
-      })
-    })
-
-    it('handles audio initialization errors', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation()
-      mockAudioManager.initialize.mockRejectedValue(
-        new Error('Audio init failed')
-      )
-
-      renderPractice()
-
-      await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith(
-          'Failed to initialize audio:',
-          expect.any(Error)
-        )
-      })
-
-      consoleError.mockRestore()
+      expect(mockAudioManager.setInstrument).toHaveBeenCalledWith('piano')
     })
   })
 
