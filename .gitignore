@@ -173,7 +173,8 @@ temp/
 .pnp.*
 
 # Cloudflare Workers
-wrangler.toml
+# Note: We're now committing wrangler.toml with all environments
+# wrangler.toml
 !wrangler.example.toml
 
 # Database files (if running locally)

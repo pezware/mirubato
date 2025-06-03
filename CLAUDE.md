@@ -5,23 +5,25 @@
 ### Deployment Architecture (2025)
 
 - **Frontend & Backend**: Both are Cloudflare Workers (NOT Pages)
-- **Configuration**: Unified config in `config/environments.json`
-- **Deployment**: Auto-triggered by GitHub push (no GitHub Actions needed)
-- **Key Files**: `frontend/wrangler.json`, `backend/wrangler.json`
+- **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
+- **Deployment**: Auto-triggered by GitHub push (uses top-level production config)
+- **Key Files**: `frontend/wrangler.toml`, `backend/wrangler.toml`
 
 ### Essential Commands
 
 ```bash
 # Local Development
-npm install                                          # Install all dependencies
-node scripts/generate-wrangler-config.js both local  # Generate local configs
-npm run dev                                          # Start frontend (port 3000)
-npm run dev:backend                                  # Start backend (port 8787)
+npm install                    # Install all dependencies
+npm run dev                    # Start frontend (port 3000)
+npm run dev:backend            # Start backend (port 8787) - uses --env local
 
 # Deployment
-node scripts/generate-wrangler-config.js both production
-cd backend && wrangler deploy
-cd ../frontend && wrangler deploy
+cd backend && wrangler deploy              # Deploy to production (default)
+cd backend && wrangler deploy --env dev    # Deploy to development
+cd backend && wrangler deploy --env staging # Deploy to staging
+
+cd frontend && wrangler deploy             # Deploy to production (default)
+cd frontend && wrangler deploy --env dev   # Deploy to development
 ```
 
 ### Project Structure
@@ -29,11 +31,12 @@ cd ../frontend && wrangler deploy
 ```
 mirubato/
 ├── frontend/          # React app → Cloudflare Worker
+│   └── wrangler.toml  # All environments defined here
 ├── backend/           # GraphQL API → Cloudflare Worker
+│   └── wrangler.toml  # All environments defined here
 ├── shared/            # Shared types & configs
-├── config/
-│   └── environments.json  # ⚡ All env configs here
-└── scripts/           # Config generation scripts
+└── config/
+    └── environments.json  # Domain and team configuration
 ```
 
 ## 🛠 Quick Debugging Tools
@@ -125,9 +128,10 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 
 ### Configuration System
 
-1. Edit `config/environments.json` (single source of truth)
-2. Run generation scripts
-3. Deploy with wrangler
+1. **Environment-based**: All environments defined in `wrangler.toml`
+2. **Production default**: Top-level config is production (no --env flag needed)
+3. **Local development**: Uses `--env local` for placeholder values
+4. **No manual generation**: Direct deployment with wrangler
 
 ### Environment Detection
 
@@ -138,9 +142,15 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 ### Database Migrations
 
 ```bash
-# Generate config first!
-node scripts/generate-wrangler-config.js backend [env]
-cd backend && wrangler d1 migrations apply DB --remote
+cd backend
+
+# Local migrations
+npm run db:migrate
+
+# Remote migrations by environment
+npm run db:migrate:dev         # Development environment
+npm run db:migrate:staging     # Staging environment
+npm run db:migrate:production  # Production environment
 ```
 
 ## 🧪 Testing Guidelines
@@ -189,7 +199,7 @@ npm test -- --watch
 
 ## 📚 Key Documentation
 
-- **Setup**: `docs/DEVELOPMENT_SETUP.md`
+- **Development**: `docs/DEVELOPMENT.md` (setup, development, deployment)
 - **Guidelines**: `docs/DEVELOPMENT_GUIDELINES.md`
 - **Infrastructure**: `docs/INFRASTRUCTURE.md`
 - **Roadmap**: `docs/ROADMAP.md` (includes detailed test coverage status)

@@ -1,0 +1,36 @@
+# Mirubato Frontend Worker Configuration
+# This file defines all environments - no manual config generation needed
+name = "mirubato"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Top-level configuration is production (default when no --env flag is used)
+# This is used by Cloudflare's automated deployment system
+workers_dev = false
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+[[routes]]
+pattern = "mirubato.com/*"
+custom_domain = true
+
+[[routes]]
+pattern = "www.mirubato.com/*"
+custom_domain = true
+
+# Local development configuration (for local dev server)
+[env.local]
+name = "mirubato-local"
+workers_dev = true
+
+# Preview/Dev environment (for wrangler deploy --env dev)
+[env.dev]
+name = "mirubato-dev"
+workers_dev = true
+
+# Staging environment
+[env.staging]
+name = "mirubato-staging"
+workers_dev = true

@@ -132,7 +132,7 @@ debug/
 
 # Cloudflare Workers
 .wrangler/
-wrangler.toml
+# wrangler.toml - Now committed with all environments
 !wrangler.example.toml
 .mf/
 worker-bundle.js

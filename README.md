@@ -45,10 +45,9 @@ npm run build
 
 ## Documentation
 
-- 📖 **[Development Setup](docs/DEVELOPMENT_SETUP.md)** - Environment setup and getting started
+- 📖 **[Development Guide](docs/DEVELOPMENT.md)** - Setup, development, and deployment
 - 🛠️ **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Code standards and best practices
 - 🏗️ **[System Design](docs/SYSTEM_DESIGN.md)** - Architecture and database schema
-- 🚀 **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Deploy to Cloudflare
 - 📋 **[Roadmap](docs/ROADMAP.md)** - Development phases and progress
 
 ## Technology Stack
