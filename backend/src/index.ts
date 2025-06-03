@@ -7,7 +7,7 @@ import { verifyJWT } from './utils/auth'
 import { createRateLimiter } from './utils/rateLimiter'
 import { typeDefs } from './schema'
 import { logRequest } from './middleware/logging'
-import { isOriginAllowed, corsConfig } from './config/cors'
+import { isOriginAllowed, getCorsConfig } from './config/cors'
 
 // Helper to get CORS headers based on origin
 function getCorsHeaders(request: Request, env: Env): Record<string, string> {
@@ -76,7 +76,11 @@ export default {
       let versionInfo = { shortHash: 'unknown', branch: 'unknown' }
       try {
         const version = await import('./version.json')
-        versionInfo = version.default || version
+        const versionData = version.default || version
+        versionInfo = {
+          shortHash: versionData.shortHash || 'unknown',
+          branch: versionData.branch || 'unknown',
+        }
       } catch (e) {
         // Version file might not exist in dev
       }
@@ -108,6 +112,7 @@ export default {
         | 'production'
         | 'development'
       const isAllowed = isOriginAllowed(origin, environment)
+      const corsConfig = getCorsConfig(environment)
 
       return addCorsHeaders(
         new Response(
@@ -119,6 +124,7 @@ export default {
             corsConfig: {
               production: corsConfig.production.domains,
               patterns: corsConfig.production.patterns,
+              development: corsConfig.development.origins,
             },
             timestamp: new Date().toISOString(),
           }),

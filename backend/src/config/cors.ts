@@ -23,8 +23,18 @@ export interface CorsConfig {
  * Get CORS configuration based on the unified config
  * This is kept for backward compatibility but uses the new system internally
  */
-export function getCorsConfig(): CorsConfig {
-  const config = getConfig()
+export function getCorsConfig(
+  environment?: 'production' | 'development'
+): CorsConfig {
+  // Use the provided environment or try to detect it
+  const envKey =
+    environment === 'production'
+      ? 'production'
+      : environment === 'development'
+        ? 'local'
+        : undefined
+
+  const config = getConfig(envKey)
   const origins = getCorsOrigins(config)
 
   // Separate exact domains from patterns
@@ -32,7 +42,12 @@ export function getCorsConfig(): CorsConfig {
   const patterns = origins.filter(origin => origin.includes('*'))
 
   // Always include generic patterns for Cloudflare deployments
-  patterns.push('https://*.workers.dev', 'https://*.pages.dev')
+  if (!patterns.includes('https://*.workers.dev')) {
+    patterns.push('https://*.workers.dev')
+  }
+  if (!patterns.includes('https://*.pages.dev')) {
+    patterns.push('https://*.pages.dev')
+  }
 
   return {
     production: {
