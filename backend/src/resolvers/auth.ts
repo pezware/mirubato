@@ -18,6 +18,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
           hasMagicLinksKV: !!context.env.MIRUBATO_MAGIC_LINKS,
           hasJwtSecret: !!context.env.JWT_SECRET,
           environment: context.env.ENVIRONMENT,
+          hasResendApiKey: !!context.env.RESEND_API_KEY,
         })
 
         const authService = new AuthService(
