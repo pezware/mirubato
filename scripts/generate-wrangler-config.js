@@ -51,7 +51,7 @@ function generateBackendConfig(environment = 'production') {
       },
     ],
     build: {
-      command: 'npm run build',
+      command: environment === 'local' ? 'npm run build:dev' : 'npm run build',
     },
     kv_namespaces: [
       {

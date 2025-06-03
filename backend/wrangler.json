@@ -14,8 +14,7 @@
     }
   ],
   "build": {
-    "command": "npm run build",
-    "watch_paths": ["src/**/*.ts", "src/**/*.js"]
+    "command": "npm run build:dev"
   },
   "kv_namespaces": [
     {
