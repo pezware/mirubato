@@ -1,4 +1,28 @@
-// Mock all external dependencies
+import { Env } from '../../types/context'
+
+// Mock all dependencies before they are imported
+jest.mock('@apollo/server', () => ({
+  ApolloServer: jest.fn().mockImplementation(() => ({
+    start: jest.fn(),
+  })),
+}))
+
+jest.mock('@as-integrations/cloudflare-workers', () => ({
+  startServerAndCreateCloudflareWorkersHandler: jest.fn(),
+}))
+
+jest.mock('../../resolvers', () => ({
+  resolvers: {},
+}))
+
+jest.mock('../../schema', () => ({
+  typeDefs: 'type Query { test: String }',
+}))
+
+jest.mock('nanoid', () => ({
+  nanoid: jest.fn(() => 'mock-id-123'),
+}))
+
 jest.mock('../../utils/auth', () => ({
   verifyJWT: jest.fn(),
 }))
@@ -16,200 +40,18 @@ jest.mock('../../config/cors', () => ({
   getCorsConfig: jest.fn(),
 }))
 
-jest.mock('@apollo/server', () => ({
-  ApolloServer: jest.fn(),
-}))
-
-jest.mock('@as-integrations/cloudflare-workers', () => ({
-  startServerAndCreateCloudflareWorkersHandler: jest.fn(),
-}))
-
-jest.mock('../../resolvers', () => ({
-  resolvers: {},
-}))
-
-jest.mock('../../schema', () => ({
-  typeDefs: 'type Query { test: String }',
-}))
-
-jest.mock('nanoid', () => ({
-  nanoid: () => 'mock-id-123',
-}))
-
-import { Env } from '../../types/context'
-
-// Create a mock handler function that simulates the main handler behavior
-const createMockHandler = () => {
-  const { verifyJWT } = require('../../utils/auth')
-  const { createRateLimiter } = require('../../utils/rateLimiter')
-  const { logRequest } = require('../../middleware/logging')
-  const { isOriginAllowed, getCorsConfig } = require('../../config/cors')
-
-  return {
-    async fetch(request: Request, env: Env): Promise<Response> {
-      const url = new URL(request.url)
-
-      // Helper to get CORS headers
-      const getCorsHeaders = (
-        request: Request,
-        env: Env
-      ): Record<string, string> => {
-        const origin = request.headers.get('Origin') || ''
-        const environment = (env.ENVIRONMENT || 'production') as
-          | 'production'
-          | 'development'
-        const isAllowed = isOriginAllowed(origin, environment)
-
-        const corsHeaders: Record<string, string> = {
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers':
-            'Content-Type, Authorization, x-apollo-operation-name, apollo-require-preflight',
-          'Access-Control-Max-Age': '86400',
-        }
-
-        if (isAllowed) {
-          corsHeaders['Access-Control-Allow-Origin'] = origin
-        }
-
-        return corsHeaders
-      }
-
-      // Helper to add CORS headers
-      const addCorsHeaders = (
-        response: Response,
-        request: Request,
-        env: Env
-      ): Response => {
-        const newResponse = new Response(response.body, response)
-        const corsHeaders = getCorsHeaders(request, env)
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-          newResponse.headers.set(key, value)
-        })
-        return newResponse
-      }
-
-      // Handle CORS preflight requests
-      if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          status: 204,
-          headers: getCorsHeaders(request, env),
-        })
-      }
-
-      // Health endpoints
-      if (
-        url.pathname === '/health' ||
-        url.pathname === '/test' ||
-        url.pathname === '/livez'
-      ) {
-        const data =
-          url.pathname === '/test'
-            ? {
-                message: 'Backend is working!',
-                env: env.ENVIRONMENT,
-                timestamp: new Date().toISOString(),
-              }
-            : {
-                status: 'ok',
-                timestamp: new Date().toISOString(),
-                version: env.CF_VERSION_METADATA?.id || 'unknown',
-                environment: env.ENVIRONMENT || 'unknown',
-              }
-
-        const response = new Response(JSON.stringify(data), {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(url.pathname !== '/test' && {
-              'X-Version': env.CF_VERSION_METADATA?.id || 'unknown',
-              'X-Environment': env.ENVIRONMENT || 'unknown',
-            }),
-          },
-        })
-        return addCorsHeaders(response, request, env)
-      }
-
-      // Debug CORS endpoint
-      if (url.pathname === '/debug/cors') {
-        const origin = request.headers.get('Origin') || 'no-origin'
-        const environment = (env.ENVIRONMENT || 'production') as
-          | 'production'
-          | 'development'
-        const isAllowed = isOriginAllowed(origin, environment)
-        const corsConfig = getCorsConfig(environment)
-
-        const response = new Response(
-          JSON.stringify({
-            origin,
-            environment,
-            envRaw: env.ENVIRONMENT,
-            isAllowed,
-            corsConfig: {
-              production: corsConfig.production.domains,
-              patterns: corsConfig.production.patterns,
-              development: corsConfig.development.origins,
-            },
-            timestamp: new Date().toISOString(),
-          }),
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        )
-        return addCorsHeaders(response, request, env)
-      }
-
-      // GraphQL endpoint
-      if (url.pathname === '/graphql') {
-        if (env.ENVIRONMENT === 'development') {
-          await logRequest(request)
-        }
-
-        try {
-          // Simulate GraphQL handler
-          const response = new Response(
-            JSON.stringify({ data: { test: 'success' } }),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          )
-          return addCorsHeaders(response, request, env)
-        } catch (error) {
-          const response = new Response(
-            JSON.stringify({
-              error: 'Internal server error',
-              message: error instanceof Error ? error.message : 'Unknown error',
-              stack:
-                env.ENVIRONMENT === 'development' && error instanceof Error
-                  ? error.stack
-                  : undefined,
-            }),
-            {
-              status: 500,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          )
-          return addCorsHeaders(response, request, env)
-        }
-      }
-
-      // 404 for other routes
-      return addCorsHeaders(
-        new Response('Not Found', { status: 404 }),
-        request,
-        env
-      )
-    },
-  }
-}
+// Now import the handler after all mocks are set up
+import handler from '../../index'
+import { ApolloServer } from '@apollo/server'
+import { startServerAndCreateCloudflareWorkersHandler } from '@as-integrations/cloudflare-workers'
+import { verifyJWT } from '../../utils/auth'
+import { createRateLimiter } from '../../utils/rateLimiter'
+import { logRequest } from '../../middleware/logging'
+import { isOriginAllowed, getCorsConfig } from '../../config/cors'
 
 describe('Cloudflare Workers Handler', () => {
   let mockEnv: Env
-  let handler: any
-
-  const { verifyJWT } = require('../../utils/auth')
-  const { createRateLimiter } = require('../../utils/rateLimiter')
-  const { logRequest } = require('../../middleware/logging')
-  const { isOriginAllowed, getCorsConfig } = require('../../config/cors')
+  let mockGraphQLHandler: jest.Mock
 
   beforeEach(() => {
     // Reset all mocks
@@ -221,11 +63,15 @@ describe('Cloudflare Workers Handler', () => {
       JWT_SECRET: 'test-secret',
       RATE_LIMITER: {} as any,
       CF_VERSION_METADATA: { id: 'test-version-123' },
+      DATABASE: {} as any,
+      BACKEND_URL: 'https://api.example.com',
+      SENDGRID_API_KEY: 'test-sendgrid-key',
+      EMAIL_FROM: 'test@example.com',
     } as Env
 
     // Setup default mock implementations
-    isOriginAllowed.mockReturnValue(true)
-    getCorsConfig.mockReturnValue({
+    ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
+    ;(getCorsConfig as jest.Mock).mockReturnValue({
       production: {
         domains: ['example.com'],
         patterns: [],
@@ -238,13 +84,20 @@ describe('Cloudflare Workers Handler', () => {
     const mockRateLimiter = {
       checkLimit: jest.fn().mockResolvedValue(true),
     }
-    createRateLimiter.mockReturnValue(mockRateLimiter)
+    ;(createRateLimiter as jest.Mock).mockReturnValue(mockRateLimiter)
+    ;(logRequest as jest.Mock).mockResolvedValue(undefined)
+    ;(verifyJWT as jest.Mock).mockResolvedValue({ user: { id: 'test-user' } })
 
-    logRequest.mockResolvedValue(undefined)
-    verifyJWT.mockResolvedValue({ user: { id: 'test-user' } })
-
-    // Create handler instance
-    handler = createMockHandler()
+    // Setup Apollo Server mock
+    mockGraphQLHandler = jest.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: { test: 'success' } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+    ;(
+      startServerAndCreateCloudflareWorkersHandler as jest.Mock
+    ).mockReturnValue(mockGraphQLHandler)
   })
 
   describe('CORS Handling', () => {
@@ -267,10 +120,11 @@ describe('Cloudflare Workers Handler', () => {
       expect(response.headers.get('Access-Control-Allow-Headers')).toContain(
         'Content-Type'
       )
+      expect(response.headers.get('Access-Control-Max-Age')).toBe('86400')
     })
 
     it('should add CORS headers to allowed origins', async () => {
-      isOriginAllowed.mockReturnValue(true)
+      ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
 
       const request = new Request('https://api.example.com/health', {
         headers: { Origin: 'https://example.com' },
@@ -284,7 +138,7 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should not add origin header for disallowed origins', async () => {
-      isOriginAllowed.mockReturnValue(false)
+      ;(isOriginAllowed as jest.Mock).mockReturnValue(false)
 
       const request = new Request('https://api.example.com/health', {
         headers: { Origin: 'https://malicious.com' },
@@ -297,11 +151,37 @@ describe('Cloudflare Workers Handler', () => {
         'GET, POST, OPTIONS'
       )
     })
+
+    it('should handle requests without origin header', async () => {
+      const request = new Request('https://api.example.com/health')
+
+      const response = await handler.fetch(request, mockEnv)
+
+      expect(isOriginAllowed).toHaveBeenCalledWith('', 'development')
+      expect(response.status).toBe(200)
+    })
   })
 
   describe('Health Endpoints', () => {
     it('should respond to /health endpoint', async () => {
       const request = new Request('https://api.example.com/health')
+
+      const response = await handler.fetch(request, mockEnv)
+
+      expect(response.status).toBe(200)
+
+      const data = await response.json()
+      expect(data).toEqual({
+        message: 'Backend is working!',
+        env: 'development',
+        timestamp: expect.any(String),
+      })
+
+      expect(response.headers.get('Content-Type')).toBe('application/json')
+    })
+
+    it('should respond to /livez endpoint', async () => {
+      const request = new Request('https://api.example.com/livez')
 
       const response = await handler.fetch(request, mockEnv)
 
@@ -320,20 +200,9 @@ describe('Cloudflare Workers Handler', () => {
       expect(response.headers.get('X-Environment')).toBe('development')
     })
 
-    it('should respond to /livez endpoint', async () => {
-      const request = new Request('https://api.example.com/livez')
-
-      const response = await handler.fetch(request, mockEnv)
-
-      expect(response.status).toBe(200)
-
-      const data = await response.json()
-      expect(data.status).toBe('ok')
-    })
-
     it('should handle missing version metadata', async () => {
       const envWithoutVersion = { ...mockEnv, CF_VERSION_METADATA: undefined }
-      const request = new Request('https://api.example.com/health')
+      const request = new Request('https://api.example.com/livez')
 
       const response = await handler.fetch(request, envWithoutVersion)
 
@@ -352,6 +221,18 @@ describe('Cloudflare Workers Handler', () => {
       const data = await response.json()
       expect(data.message).toBe('Backend is working!')
       expect(data.env).toBe('development')
+      expect(data.timestamp).toBeDefined()
+    })
+
+    it('should handle missing environment', async () => {
+      const envWithoutEnv = { ...mockEnv, ENVIRONMENT: undefined }
+      const request = new Request('https://api.example.com/livez')
+
+      const response = await handler.fetch(request, envWithoutEnv)
+
+      const data = await response.json()
+      expect(data.environment).toBe('unknown')
+      expect(response.headers.get('X-Environment')).toBe('unknown')
     })
   })
 
@@ -413,6 +294,7 @@ describe('Cloudflare Workers Handler', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'CF-Connecting-IP': '192.168.1.1',
         },
         body: JSON.stringify({
           query: '{ test }',
@@ -424,6 +306,144 @@ describe('Cloudflare Workers Handler', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data).toEqual({ data: { test: 'success' } })
+
+      // Verify Apollo Server was created
+      expect(ApolloServer).toHaveBeenCalledWith({
+        typeDefs: expect.any(String),
+        resolvers: expect.any(Object),
+        introspection: true,
+      })
+
+      // Verify handler was created with proper context
+      expect(startServerAndCreateCloudflareWorkersHandler).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          context: expect.any(Function),
+        })
+      )
+    })
+
+    it('should create GraphQL context with user when authenticated', async () => {
+      ;(verifyJWT as jest.Mock).mockResolvedValue({
+        user: { id: 'authenticated-user' },
+      })
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer valid-token',
+          'CF-Connecting-IP': '192.168.1.1',
+        },
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      // Get the context function that was passed to the handler
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+
+      // Call the context function
+      const context = await contextFn({ request })
+
+      expect(context).toEqual({
+        env: mockEnv,
+        user: { id: 'authenticated-user' },
+        requestId: 'mock-id-123',
+        ip: '192.168.1.1',
+      })
+
+      expect(verifyJWT).toHaveBeenCalledWith('valid-token', 'test-secret')
+    })
+
+    it('should handle invalid JWT gracefully', async () => {
+      ;(verifyJWT as jest.Mock).mockRejectedValue(new Error('Invalid token'))
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer invalid-token',
+        },
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      // Get the context function
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+
+      // Call the context function - should not throw
+      const context = await contextFn({ request })
+
+      expect(context.user).toBeUndefined()
+    })
+
+    it('should apply rate limiting when RATE_LIMITER is available', async () => {
+      const mockCheckLimit = jest.fn().mockResolvedValue(false)
+      ;(createRateLimiter as jest.Mock).mockReturnValue({
+        checkLimit: mockCheckLimit,
+      })
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CF-Connecting-IP': '192.168.1.1',
+        },
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      // Get the context function
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+
+      // Call the context function - should throw due to rate limit
+      await expect(contextFn({ request })).rejects.toThrow(
+        'Rate limit exceeded'
+      )
+
+      expect(createRateLimiter).toHaveBeenCalledWith(
+        mockEnv.RATE_LIMITER,
+        '192.168.1.1'
+      )
+      expect(mockCheckLimit).toHaveBeenCalled()
+    })
+
+    it('should skip rate limiting when RATE_LIMITER is not available', async () => {
+      const envWithoutRateLimiter = { ...mockEnv, RATE_LIMITER: undefined }
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, envWithoutRateLimiter)
+
+      // Get the context function
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+
+      // Call the context function - should not throw
+      const context = await contextFn({ request })
+
+      expect(context).toBeDefined()
+      expect(createRateLimiter).not.toHaveBeenCalled()
     })
 
     it('should log requests in development', async () => {
@@ -447,6 +467,85 @@ describe('Cloudflare Workers Handler', () => {
       await handler.fetch(request, prodEnv)
 
       expect(logRequest).not.toHaveBeenCalled()
+    })
+
+    it('should handle GraphQL handler errors', async () => {
+      mockGraphQLHandler.mockRejectedValue(
+        new Error('GraphQL processing failed')
+      )
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      const response = await handler.fetch(request, mockEnv)
+
+      expect(response.status).toBe(500)
+      const data = await response.json()
+      expect(data).toEqual({
+        error: 'Internal server error',
+        message: 'GraphQL processing failed',
+        stack: expect.stringContaining('GraphQL processing failed'),
+      })
+    })
+
+    it('should not include stack trace in production', async () => {
+      mockGraphQLHandler.mockRejectedValue(
+        new Error('GraphQL processing failed')
+      )
+
+      const prodEnv = { ...mockEnv, ENVIRONMENT: 'production' }
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      const response = await handler.fetch(request, prodEnv)
+
+      expect(response.status).toBe(500)
+      const data = await response.json()
+      expect(data.stack).toBeUndefined()
+    })
+
+    it('should log error responses in development', async () => {
+      mockGraphQLHandler.mockResolvedValue(
+        new Response(JSON.stringify({ errors: ['Test error'] }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'GraphQL error response:',
+        JSON.stringify({ errors: ['Test error'] })
+      )
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      mockGraphQLHandler.mockRejectedValue('String error')
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      const response = await handler.fetch(request, mockEnv)
+
+      expect(response.status).toBe(500)
+      const data = await response.json()
+      expect(data.message).toBe('Unknown error')
     })
   })
 
@@ -485,15 +584,115 @@ describe('Cloudflare Workers Handler', () => {
       expect(isOriginAllowed).toHaveBeenCalledWith('no-origin', 'production')
     })
 
-    it('should handle missing CF_VERSION_METADATA', async () => {
-      const envWithoutVersion = { ...mockEnv, CF_VERSION_METADATA: undefined }
+    it('should handle edge cases in environment detection', async () => {
+      // Test with empty string environment
+      const envEmptyString = { ...mockEnv, ENVIRONMENT: '' }
+      const request = new Request('https://api.example.com/debug/cors')
 
-      const request = new Request('https://api.example.com/health')
-
-      const response = await handler.fetch(request, envWithoutVersion)
-
+      const response = await handler.fetch(request, envEmptyString)
       const data = await response.json()
-      expect(data.version).toBe('unknown')
+
+      // Empty string should be treated as production
+      expect(data.environment).toBe('production')
+    })
+  })
+
+  describe('Console Logging', () => {
+    let consoleSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+    })
+
+    afterEach(() => {
+      consoleSpy.mockRestore()
+    })
+
+    it('should log GraphQL context creation', async () => {
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      // Get and call the context function
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+      await contextFn({ request })
+
+      expect(consoleSpy).toHaveBeenCalledWith('Creating GraphQL context')
+    })
+
+    it('should log GraphQL response status', async () => {
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      expect(consoleSpy).toHaveBeenCalledWith('GraphQL response status:', 200)
+    })
+
+    it('should log GraphQL handler errors', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockGraphQLHandler.mockRejectedValue(new Error('Test error'))
+
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'GraphQL handler error:',
+        expect.any(Error)
+      )
+
+      consoleErrorSpy.mockRestore()
+    })
+  })
+
+  describe('Request IP Handling', () => {
+    it('should extract IP from CF-Connecting-IP header', async () => {
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        headers: {
+          'CF-Connecting-IP': '10.0.0.1',
+        },
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+      const context = await contextFn({ request })
+
+      expect(context.ip).toBe('10.0.0.1')
+    })
+
+    it('should handle missing CF-Connecting-IP header', async () => {
+      const request = new Request('https://api.example.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query: '{ test }' }),
+      })
+
+      await handler.fetch(request, mockEnv)
+
+      const handlerCall = (
+        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      ).mock.calls[0]
+      const contextFn = handlerCall[1].context
+      const context = await contextFn({ request })
+
+      expect(context.ip).toBeUndefined()
     })
   })
 })
