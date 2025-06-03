@@ -41,6 +41,7 @@ const mockAudioManager = {
   initialize: jest.fn().mockResolvedValue(true),
   playNote: jest.fn(),
   stop: jest.fn(),
+  isInitialized: jest.fn().mockReturnValue(false),
 }
 
 ;(audioManager as unknown as typeof mockAudioManager) = mockAudioManager
@@ -104,13 +105,15 @@ describe('Practice Page Integration', () => {
       expect(screen.getByTestId('music-player')).toBeInTheDocument()
     })
 
-    it('initializes audio on mount', async () => {
+    it('sets instrument to piano on mount', async () => {
       renderWithRouter(<Practice />)
 
       await waitFor(() => {
         expect(mockAudioManager.setInstrument).toHaveBeenCalledWith('piano')
-        expect(mockAudioManager.initialize).toHaveBeenCalled()
       })
+
+      // Audio initialization happens when play is clicked, not on mount
+      expect(mockAudioManager.initialize).not.toHaveBeenCalled()
     })
   })
 
@@ -289,26 +292,28 @@ describe('Practice Page Integration', () => {
   })
 
   describe('Error Handling', () => {
-    it('handles audio initialization failure gracefully', async () => {
+    it('renders page even when audio is not available', async () => {
       // Mock console.error to prevent error output in tests
       const consoleError = jest.spyOn(console, 'error').mockImplementation()
 
       // Make initialization fail
+      mockAudioManager.isInitialized = jest.fn().mockReturnValue(false)
       mockAudioManager.initialize.mockRejectedValueOnce(
         new Error('Audio failed')
       )
 
       renderWithRouter(<Practice />)
 
-      await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith(
-          'Failed to initialize audio:',
-          expect.any(Error)
-        )
-      })
-
-      // Page should still render
+      // Page should still render all components
       expect(screen.getByText('mirubato')).toBeInTheDocument()
+      expect(screen.getByText(/Moonlight/)).toBeInTheDocument()
+      expect(screen.getByTestId('music-player')).toBeInTheDocument()
+
+      // User can still interact with controls
+      fireEvent.click(screen.getByText('Play'))
+
+      // Since MusicPlayer is mocked, we just verify the UI is functional
+      expect(screen.getByText('Play')).toBeInTheDocument()
 
       consoleError.mockRestore()
     })
