@@ -25,7 +25,7 @@ id = "d323a9723d424eed9a8aab2b1b9e15b0"
 command = "npm run build"
 
 [[routes]]
-pattern = "api.mirubato.com/*"
+pattern = "api.mirubato.com"
 custom_domain = true
 
 # Local development configuration (for local dev server)
@@ -114,5 +114,5 @@ id = "d323a9723d424eed9a8aab2b1b9e15b0"
 command = "npm run build"
 
 [[env.production.routes]]
-pattern = "api.mirubato.com/*"
+pattern = "api.mirubato.com"
 custom_domain = true
