@@ -14,7 +14,10 @@
     }
   ],
   "build": {
-    "command": "npm run build"
+    "command": "npm run build",
+    "watch_paths": {
+      "exclude": ["src/version.json", "dist/**"]
+    }
   },
   "kv_namespaces": [
     {

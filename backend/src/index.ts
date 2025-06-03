@@ -76,7 +76,11 @@ export default {
       let versionInfo = { shortHash: 'unknown', branch: 'unknown' }
       try {
         const version = await import('./version.json')
-        versionInfo = version.default || version
+        const versionData = version.default || version
+        versionInfo = {
+          shortHash: versionData.shortHash || 'unknown',
+          branch: versionData.branch || 'unknown',
+        }
       } catch (e) {
         // Version file might not exist in dev
       }
