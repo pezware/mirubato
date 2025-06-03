@@ -1,0 +1,35 @@
+# Mirubato Frontend Worker Configuration
+# This file defines all environments - no manual config generation needed
+name = "mirubato"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Local development environment (default when no --env flag is used)
+workers_dev = true
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Preview/Dev environment (for wrangler deploy --env dev)
+[env.dev]
+name = "mirubato-dev"
+workers_dev = true
+
+# Staging environment
+[env.staging]
+name = "mirubato-staging"
+workers_dev = true
+
+# Production environment
+[env.production]
+name = "mirubato"
+workers_dev = false
+
+[[env.production.routes]]
+pattern = "mirubato.com/*"
+custom_domain = true
+
+[[env.production.routes]]
+pattern = "www.mirubato.com/*"
+custom_domain = true

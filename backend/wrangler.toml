@@ -1,0 +1,92 @@
+# Mirubato Backend Worker Configuration
+# This file defines all environments - no manual config generation needed
+name = "mirubato-backend"
+main = "dist/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Local development environment (default when no --env flag is used)
+workers_dev = true
+
+[vars]
+ENVIRONMENT = "development"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "your-database-id-here"  # Local dev uses placeholder
+
+[[kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "your-kv-namespace-id-here"  # Local dev uses placeholder
+
+[dev]
+port = 8787
+local_protocol = "http"
+
+[build]
+command = "npm run build:dev"
+
+# Preview/Dev environment (for wrangler deploy --env dev)
+[env.dev]
+name = "mirubato-backend-dev"
+workers_dev = true
+
+[env.dev.vars]
+ENVIRONMENT = "development"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+
+[[env.dev.kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "2632e7dcffe745f1a34ba6a3b029bd4c"
+
+[env.dev.build]
+command = "npm run build"
+
+# Staging environment
+[env.staging]
+name = "mirubato-backend-staging"
+workers_dev = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-staging"
+database_id = "01fd5633-05a7-4297-9d31-ee5a7c4b1221"
+
+[[env.staging.kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "1389dbc875e8413fb5e01c4f9f95da28"
+
+[env.staging.build]
+command = "npm run build"
+
+# Production environment
+[env.production]
+name = "mirubato-backend"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+[[env.production.kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "d323a9723d424eed9a8aab2b1b9e15b0"
+
+[env.production.build]
+command = "npm run build"
+
+[[env.production.routes]]
+pattern = "api.mirubato.com/*"
+custom_domain = true
