@@ -13,11 +13,11 @@ directory = "./dist"
 binding = "ASSETS"
 
 [[routes]]
-pattern = "mirubato.com/*"
+pattern = "mirubato.com"
 custom_domain = true
 
 [[routes]]
-pattern = "www.mirubato.com/*"
+pattern = "www.mirubato.com"
 custom_domain = true
 
 # Local development configuration (for local dev server)
