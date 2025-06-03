@@ -1,5 +1,5 @@
 // Mock for Tone.js
-export const Transport = {
+const Transport = {
   start: jest.fn(),
   stop: jest.fn(),
   pause: jest.fn(),
@@ -13,35 +13,40 @@ export const Transport = {
   position: 0,
 }
 
-export const Sampler = jest.fn().mockImplementation(() => ({
+const Sampler = jest.fn().mockImplementation(() => ({
   toDestination: jest.fn().mockReturnThis(),
   triggerAttackRelease: jest.fn(),
   connect: jest.fn().mockReturnThis(),
   dispose: jest.fn(),
 }))
 
-export const PolySynth = jest.fn().mockImplementation(() => ({
+const PolySynth = jest.fn().mockImplementation(() => ({
   toDestination: jest.fn().mockReturnThis(),
   triggerAttackRelease: jest.fn(),
   connect: jest.fn().mockReturnThis(),
   dispose: jest.fn(),
 }))
 
-export const Synth = jest.fn().mockImplementation(() => ({
+const Synth = jest.fn().mockImplementation(() => ({
   toDestination: jest.fn().mockReturnThis(),
   triggerAttackRelease: jest.fn(),
 }))
 
-export const Reverb = jest.fn().mockImplementation(() => ({
+const Reverb = jest.fn().mockImplementation(() => ({
   toDestination: jest.fn().mockReturnThis(),
   connect: jest.fn().mockReturnThis(),
 }))
 
-export const start = jest.fn().mockResolvedValue(undefined)
-export const loaded = jest.fn().mockResolvedValue(undefined)
-export const now = jest.fn().mockReturnValue(0)
+const start = jest.fn().mockResolvedValue(undefined)
+const loaded = jest.fn().mockResolvedValue(undefined)
+const now = jest.fn().mockReturnValue(0)
 
-export default {
+// Export everything both as named exports and on the namespace
+// to support both import styles
+export { Transport, Sampler, PolySynth, Synth, Reverb, start, loaded, now }
+
+// This ensures import * as Tone works correctly
+const Tone = {
   Transport,
   Sampler,
   PolySynth,
@@ -51,3 +56,5 @@ export default {
   loaded,
   now,
 }
+
+export default Tone
