@@ -72,9 +72,10 @@ export const corsConfig = getCorsConfig()
  */
 export function isOriginAllowed(
   origin: string,
-  _environment: 'production' | 'development'
+  environment: 'production' | 'development'
 ): boolean {
-  // Use the unified system's origin checking
-  // Note: environment parameter is kept for backward compatibility but not used
-  return checkOrigin(origin)
+  // Use the unified system's origin checking with the correct environment
+  const envKey = environment === 'production' ? 'production' : 'local'
+  const config = getConfig(envKey)
+  return checkOrigin(origin, config)
 }
