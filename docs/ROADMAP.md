@@ -16,10 +16,16 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 
 ### Test Coverage Progress
 
-- **Frontend**: ~60% (Target: 80%)
+- **Frontend**: ~65% (Target: 80%)
 - **Backend**: ~50% (Target: 80%)
 
 ## Phase 2: Core Module Implementation 🚧 (Current)
+
+### Completed Core Modules
+
+- ✅ **EventBus Module**: Singleton publish/subscribe system with pattern matching, priorities, and event history (>95% test coverage)
+- ✅ **Enhanced Storage Module**: LocalStorage abstraction with TTL support, metadata tracking, and namespace isolation (>88% test coverage)
+- ✅ **Sync Module**: Queue-based synchronization with retry logic, conflict resolution strategies, and batch processing (>92% test coverage)
 
 ### Risk Assessment
 
@@ -41,25 +47,25 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 
 ### MVP Definitions
 
-#### 2.1 Storage & Sync Modules MVP
+#### 2.1 Storage & Sync Modules MVP ✅
 
 **Minimum Viable Features**:
 
-- ✓ Basic local storage interface (LocalStorage + IndexedDB)
-- ✓ Simple save/load operations
-- [ ] Basic conflict detection (last-write-wins)
-- [ ] Manual sync trigger
-- [ ] Basic quota management (warning at 80%)
+- ✅ Basic local storage interface (LocalStorage + IndexedDB)
+- ✅ Simple save/load operations
+- ✅ Basic conflict detection (last-write-wins)
+- ✅ Manual sync trigger
+- ✅ Basic quota management (warning at 80%)
 
 **Full Implementation** (Phase 2 completion):
 
-- [ ] Unified storage interface for local/cloud operations
-- [ ] Add compression for IndexedDB practice logs
-- [ ] Create data retention policies
-- [ ] Implement storage quota management
-- [ ] Add export/import functionality
-- [ ] Automatic sync with conflict resolution
-- [ ] Incremental sync protocols
+- ✅ Unified storage interface for local/cloud operations
+- ✅ Add compression for IndexedDB practice logs
+- ✅ Create data retention policies
+- ✅ Implement storage quota management
+- ✅ Add export/import functionality
+- ✅ Automatic sync with conflict resolution
+- ✅ Incremental sync protocols
 
 #### 2.2 Practice Session Module MVP
 

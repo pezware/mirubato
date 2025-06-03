@@ -565,6 +565,11 @@ describe('SyncModule', () => {
       )
       await syncModuleWithShortInterval.initialize()
 
+      // Mock simulateApiCall to always succeed for this test
+      jest
+        .spyOn(syncModuleWithShortInterval as any, 'simulateApiCall')
+        .mockResolvedValue(undefined)
+
       await syncModuleWithShortInterval.queueOperation({
         id: 'op1',
         type: 'create',
