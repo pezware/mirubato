@@ -10,6 +10,7 @@ import {
   CircularControl,
   UserStatusIndicator,
   SaveProgressPrompt,
+  AudioPermissionPrompt,
 } from '../components'
 import { SheetMusicDisplay } from '../components/SheetMusicDisplay'
 import * as Tone from 'tone'
@@ -18,6 +19,10 @@ type PracticeMode = 'practice' | 'sight-read' | 'debug'
 
 const Practice: React.FC = () => {
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
+  const [audioInitialized, setAudioInitialized] = useState(
+    audioManager.isInitialized()
+  )
+  const [audioLoading, setAudioLoading] = useState(false)
 
   // Control states
   const [mode, setMode] = useState<PracticeMode>('practice')
@@ -31,18 +36,21 @@ const Practice: React.FC = () => {
   const currentPiece = moonlightSonata3rdMovement
   const playableNotes = getPlayableNotes(currentPiece)
 
-  // Initialize audio
-  useEffect(() => {
-    const initializeAudio = async () => {
-      try {
-        audioManager.setInstrument('piano')
-        await audioManager.initialize()
-      } catch (error) {
-        console.error('Failed to initialize audio:', error)
-      }
+  // Initialize audio only after user interaction
+  const handleAudioPermission = async () => {
+    try {
+      setAudioLoading(true)
+      audioManager.setInstrument('piano')
+      await audioManager.initialize()
+      setAudioInitialized(true)
+    } catch (error) {
+      console.error('Failed to initialize audio:', error)
+      // Still allow user to proceed, they just won't hear sounds
+      setAudioInitialized(true)
+    } finally {
+      setAudioLoading(false)
     }
-    initializeAudio()
-  }, [])
+  }
 
   // Handle responsive sizing
   useEffect(() => {
@@ -64,6 +72,14 @@ const Practice: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-mirubato-wood-50 to-white">
+      {/* Show audio permission prompt if not initialized */}
+      {!audioInitialized && (
+        <AudioPermissionPrompt
+          onAllow={handleAudioPermission}
+          isLoading={audioLoading}
+        />
+      )}
+
       {/* Header */}
       <header className="bg-white/80 backdrop-blur shadow-sm border-b border-mirubato-wood-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">

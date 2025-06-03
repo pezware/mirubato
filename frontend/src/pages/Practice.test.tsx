@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import Practice from './Practice'
 import { audioManager } from '../utils/audioManager'
@@ -29,6 +30,14 @@ jest.mock('../components', () => ({
   ),
   UserStatusIndicator: () => <div data-testid="user-status-indicator" />,
   SaveProgressPrompt: () => <div data-testid="save-progress-prompt" />,
+  AudioPermissionPrompt: ({ onAllow, isLoading }: any) => (
+    <div data-testid="audio-permission-prompt">
+      <h2>Enable Audio</h2>
+      <button onClick={onAllow} disabled={isLoading}>
+        {isLoading ? 'Loading Audio...' : 'Start Practicing'}
+      </button>
+    </div>
+  ),
 }))
 
 jest.mock('../components/SheetMusicDisplay', () => ({
@@ -67,6 +76,7 @@ describe('Practice Page', () => {
     jest.clearAllMocks()
     mockAudioManager.initialize.mockResolvedValue()
     mockAudioManager.setInstrument.mockReturnValue()
+    mockAudioManager.isInitialized.mockReturnValue(true) // Default to initialized
 
     // Mock Tone.Master.volume - Create a mock object that simulates Tone.Master
     Object.defineProperty(mockTone, 'Master', {
@@ -154,8 +164,27 @@ describe('Practice Page', () => {
   })
 
   describe('Audio Initialization', () => {
-    it('initializes audio manager on mount', async () => {
+    it('shows audio permission prompt when not initialized', () => {
+      mockAudioManager.isInitialized.mockReturnValue(false)
       renderPractice()
+
+      expect(screen.getByText('Enable Audio')).toBeInTheDocument()
+      expect(screen.getByText('Start Practicing')).toBeInTheDocument()
+    })
+
+    it('does not show audio permission prompt when already initialized', () => {
+      mockAudioManager.isInitialized.mockReturnValue(true)
+      renderPractice()
+
+      expect(screen.queryByText('Enable Audio')).not.toBeInTheDocument()
+    })
+
+    it('initializes audio when permission is granted', async () => {
+      mockAudioManager.isInitialized.mockReturnValue(false)
+      renderPractice()
+
+      const startButton = screen.getByText('Start Practicing')
+      await userEvent.click(startButton)
 
       await waitFor(() => {
         expect(mockAudioManager.setInstrument).toHaveBeenCalledWith('piano')
@@ -163,13 +192,17 @@ describe('Practice Page', () => {
       })
     })
 
-    it('handles audio initialization errors', async () => {
+    it('handles audio initialization errors gracefully', async () => {
       const consoleError = jest.spyOn(console, 'error').mockImplementation()
+      mockAudioManager.isInitialized.mockReturnValue(false)
       mockAudioManager.initialize.mockRejectedValue(
         new Error('Audio init failed')
       )
 
       renderPractice()
+
+      const startButton = screen.getByText('Start Practicing')
+      await userEvent.click(startButton)
 
       await waitFor(() => {
         expect(consoleError).toHaveBeenCalledWith(
@@ -177,6 +210,9 @@ describe('Practice Page', () => {
           expect.any(Error)
         )
       })
+
+      // Should still allow user to proceed
+      expect(screen.queryByText('Enable Audio')).not.toBeInTheDocument()
 
       consoleError.mockRestore()
     })
