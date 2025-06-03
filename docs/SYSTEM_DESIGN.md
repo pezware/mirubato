@@ -2,772 +2,909 @@
 
 ## Overview
 
-This document outlines the database schema, API architecture, and system design for mirubato. The design follows a GraphQL-first architecture using Apollo Server on Cloudflare Workers for the backend and React with Apollo Client for the frontend.
+Mirubato is an open-source sight-reading practice platform built with a local-first, modular architecture. Users can practice immediately without authentication, with all data stored locally. Authentication enables optional cloud synchronization for cross-device access and backup.
 
-## Architecture Principles
+## Core Design Principles
 
-1. **GraphQL-First Design**: All data operations go through a unified GraphQL API
-2. **Type Safety**: Strong typing from GraphQL schema to TypeScript interfaces
-3. **Modular Services**: Separate concerns into distinct service modules and resolvers
-4. **Offline-First**: Apollo Client cache with offline queue support
-5. **Performance**: Optimize queries, use DataLoader pattern, edge caching
-6. **Real-time Ready**: Design supports future GraphQL subscriptions
+1. **Local-First Architecture**: Full functionality without login; authentication adds cloud sync
+2. **Modular Design**: Clear separation of concerns with well-defined module interfaces
+3. **GraphQL-First API**: Unified data operations with strong typing
+4. **Offline-First**: Complete offline functionality with intelligent sync
+5. **Progressive Enhancement**: Basic features work immediately, advanced features add value
+6. **Type Safety**: End-to-end typing from GraphQL schema to TypeScript
+7. **Educational Focus**: Every feature designed to enhance sight-reading learning
+
+## System Architecture
+
+### High-Level Architecture
+
+The system follows a three-tier architecture with clear separation between presentation, business logic, and data layers:
+
+- **Presentation Layer**: React components with Apollo Client
+- **Business Logic Layer**: Modular services with middleware
+- **Data Layer**: Hybrid local/cloud storage with sync capabilities
+
+### Data Storage Strategy
+
+#### Without Authentication (Local-Only)
+
+- **LocalStorage**: User preferences, session summaries, progress tracking
+- **IndexedDB**: Complete practice data, sheet music cache, detailed logs
+- **Apollo Cache**: Runtime state and query results
+
+#### With Authentication (Local + Cloud Sync)
+
+- **Local Storage**: Same as above (primary data source)
+- **Cloud Storage**: Cloudflare D1 database (backup and sync)
+- **Sync Strategy**: Incremental sync with conflict resolution
+
+## Module Architecture
+
+### Core Modules
+
+#### 1. User Management Module
+
+**Purpose**: Handle user profiles, preferences, and authentication state
+**Interfaces**:
+
+- `initializeUser()` - Create local user profile
+- `authenticateUser(email)` - Request magic link
+- `verifyAuthentication(token)` - Verify magic link
+- `getUserProfile()` - Get current user data
+- `updateUserPreferences(preferences)` - Update settings
+- `getUserInstruments()` - Get instrument configuration
+- `setUserLevel(instrument, level)` - Update proficiency
+
+#### 2. Practice Session Module
+
+**Purpose**: Manage practice session lifecycle
+**Interfaces**:
+
+- `startSession(type, params)` - Begin new session
+- `pauseSession()` - Pause active session
+- `resumeSession()` - Resume paused session
+- `endSession()` - Complete and save session
+- `getActiveSession()` - Get current session state
+- `getSessionHistory(filters)` - Query past sessions
+- `syncSessions()` - Sync local sessions to cloud (if authenticated)
+
+#### 3. Sheet Music Module
+
+**Purpose**: Handle music generation, selection, and rendering
+**Interfaces**:
+
+- `generateExercise(params)` - Create algorithmic exercise
+- `getSheetMusic(id)` - Retrieve specific piece
+- `searchSheetMusic(filters)` - Search music library
+- `renderNotation(musicData, instrument)` - Generate visual notation
+- `getRecommendedMusic(userLevel)` - Get personalized suggestions
+- `cacheSheetMusic(id)` - Store for offline use
+
+#### 4. Audio Engine Module
+
+**Purpose**: Manage audio playback and timing
+**Interfaces**:
+
+- `initializeAudio()` - Setup Web Audio context
+- `loadInstrumentSamples(instrument)` - Load sound samples
+- `playNote(pitch, duration)` - Play single note
+- `playSequence(notes, tempo)` - Play note sequence
+- `startMetronome(bpm, timeSignature)` - Metronome control
+- `stopAllAudio()` - Stop all playing sounds
+
+#### 5. Performance Tracking Module
+
+**Purpose**: Monitor practice performance and accuracy
+**Interfaces**:
+
+- `startTracking(sheetMusicId)` - Begin tracking
+- `recordNoteEvent(note, timing, accuracy)` - Log performance
+- `calculateAccuracy()` - Real-time accuracy metrics
+- `generateFeedback()` - Create performance feedback
+- `getPerformanceMetrics()` - Get session metrics
+- `savePerformance()` - Store results locally
+
+#### 6. Progress Analytics Module
+
+**Purpose**: Analyze long-term progress and achievements
+**Interfaces**:
+
+- `getProgressReport(timeRange)` - Generate reports
+- `getSkillProgression(skill)` - Track skill development
+- `getPracticeStreak()` - Calculate consistency
+- `getAchievements()` - Check milestones
+- `exportAnalytics(format)` - Export data
+- `syncProgress()` - Sync to cloud (if authenticated)
+
+#### 7. Practice Logger Module
+
+**Purpose**: Professional practice journaling
+**Interfaces**:
+
+- `startPracticeTimer(activityType)` - Quick timer
+- `stopPracticeTimer()` - End timing
+- `createPracticeEntry(details)` - Detailed log
+- `getPracticeJournal(filters)` - Query logs
+- `getTimeAnalytics()` - Time statistics
+- `createPracticeTemplate(template)` - Save templates
+
+#### 8. Curriculum Module
+
+**Purpose**: Manage learning progression
+**Interfaces**:
+
+- `getCurrentLevel(instrument)` - Get proficiency
+- `getNextExercises()` - Get recommendations
+- `assessReadiness(nextLevel)` - Check advancement
+- `unlockLevel(level)` - Progress level
+- `getStudyPlan()` - Get curriculum path
+
+### Infrastructure Modules
+
+#### 9. Storage Module
+
+**Purpose**: Abstract storage operations
+**Interfaces**:
+
+- `saveLocal(key, data)` - Save to local storage
+- `loadLocal(key)` - Load from local storage
+- `saveCloud(key, data)` - Save to cloud (if authenticated)
+- `loadCloud(key)` - Load from cloud
+- `syncData()` - Synchronize local/cloud
+
+#### 10. Sync Module
+
+**Purpose**: Handle data synchronization
+**Interfaces**:
+
+- `queueOperation(operation)` - Add to sync queue
+- `processSyncQueue()` - Process pending syncs
+- `resolveConflicts(local, remote)` - Handle conflicts
+- `getSyncStatus()` - Get sync state
+- `forceSyncAll()` - Manual full sync
+
+## Module Dependencies
+
+### Dependency Graph
+
+```
+User Management
+  └─> Storage Module (for preferences)
+
+Practice Session
+  ├─> User Management (for user context)
+  ├─> Sheet Music (for content)
+  ├─> Audio Engine (for playback)
+  ├─> Performance Tracking (for metrics)
+  └─> Storage Module (for persistence)
+
+Sheet Music
+  └─> Storage Module (for caching)
+
+Audio Engine
+  └─> (No dependencies - standalone)
+
+Performance Tracking
+  ├─> Practice Session (for context)
+  └─> Storage Module (for metrics storage)
+
+Progress Analytics
+  ├─> Performance Tracking (for data)
+  ├─> Practice Logger (for history)
+  └─> Storage Module (for persistence)
+
+Practice Logger
+  ├─> User Management (for user context)
+  └─> Storage Module (for journal entries)
+
+Curriculum
+  ├─> Progress Analytics (for assessment)
+  ├─> Sheet Music (for content)
+  └─> User Management (for level tracking)
+
+Storage Module
+  └─> Sync Module (for cloud operations)
+
+Sync Module
+  └─> (No module dependencies - infrastructure)
+```
+
+### Initialization Order
+
+1. **Infrastructure Layer**: Storage Module, Sync Module
+2. **Core Services**: Audio Engine, User Management
+3. **Content Layer**: Sheet Music Module
+4. **Session Layer**: Practice Session, Performance Tracking
+5. **Analytics Layer**: Practice Logger, Progress Analytics
+6. **Learning Layer**: Curriculum Module
+
+### Interface Contracts
+
+Each module must:
+
+- Export a typed interface definition
+- Provide initialization method returning Promise
+- Handle graceful degradation if dependencies unavailable
+- Emit lifecycle events (initialized, error, shutdown)
+
+## Event Bus Architecture
+
+### Event System Design
+
+#### Event Naming Convention
+
+- **Format**: `module:action:status`
+- **Examples**:
+  - `session:start:success`
+  - `sync:conflict:resolved`
+  - `audio:playback:error`
+
+#### Event Categories
+
+1. **Lifecycle Events**
+
+   - `module:init:start`
+   - `module:init:complete`
+   - `module:init:error`
+   - `module:shutdown:complete`
+
+2. **Data Events**
+
+   - `data:create:success`
+   - `data:update:success`
+   - `data:delete:success`
+   - `data:sync:required`
+
+3. **User Action Events**
+
+   - `user:login:success`
+   - `user:practice:start`
+   - `user:achievement:unlocked`
+
+4. **System Events**
+   - `system:online:true`
+   - `system:storage:low`
+   - `system:error:critical`
+
+#### Event Payload Structure
+
+```
+interface EventPayload {
+  eventId: string;          // Unique event identifier
+  timestamp: number;        // Unix timestamp
+  source: string;           // Module name
+  type: string;             // Event type
+  data: any;                // Event-specific data
+  metadata: {
+    userId?: string;
+    sessionId?: string;
+    version: string;
+  };
+}
+```
+
+#### Event Priority Levels
+
+1. **CRITICAL** (0): System failures, data corruption
+2. **HIGH** (1): User actions, data changes
+3. **NORMAL** (2): Progress updates, analytics
+4. **LOW** (3): Debug information, metrics
+
+#### Subscription Patterns
+
+- **Direct Subscription**: For specific events
+- **Pattern Subscription**: Using wildcards (`session:*:success`)
+- **Priority Subscription**: Only high-priority events
+- **Filtered Subscription**: Based on metadata criteria
+
+## Data Migration Strategy
+
+### Schema Versioning
+
+#### Version Management
+
+- Each storage schema has version number
+- Version stored in metadata: `_schema_version`
+- Migrations run automatically on version mismatch
+- Rollback supported for one version
+
+#### Migration Process
+
+1. **Detection Phase**
+
+   - Check current schema version
+   - Compare with application version
+   - Identify required migrations
+
+2. **Backup Phase**
+
+   - Create backup of current data
+   - Store in temporary IndexedDB
+   - Verify backup integrity
+
+3. **Migration Phase**
+
+   - Run migrations sequentially
+   - Validate each step
+   - Update version number
+
+4. **Verification Phase**
+   - Test data integrity
+   - Verify functionality
+   - Clean up backup if successful
+
+### Backward Compatibility
+
+#### Compatibility Rules
+
+- Support current version and one version back
+- Graceful degradation for older versions
+- Clear upgrade prompts for unsupported versions
+- Data export available before forced upgrade
+
+#### Data Upgrade Paths
+
+1. **Additive Changes**: New fields with defaults
+2. **Transformative Changes**: Data conversion functions
+3. **Destructive Changes**: User confirmation required
+4. **Format Changes**: Automatic conversion utilities
+
+## Error Recovery Patterns
+
+### Module-Specific Recovery
+
+#### User Management Module
+
+- **Auth Failure**: Fallback to anonymous mode
+- **Profile Corruption**: Restore from backup
+- **Preference Errors**: Reset to defaults
+- **Token Expiry**: Automatic refresh attempt
+
+#### Practice Session Module
+
+- **Session Crash**: Auto-save every 30 seconds
+- **Data Loss**: Recover from temporary storage
+- **Sync Failure**: Queue for later retry
+- **State Corruption**: Rebuild from events
+
+#### Audio Engine Module
+
+- **Context Failure**: Reinitialize audio context
+- **Sample Load Error**: Use fallback samples
+- **Playback Failure**: Silent mode with visual cue
+- **Memory Issues**: Clear unused buffers
+
+#### Storage Module
+
+- **Quota Exceeded**: Clean old data automatically
+- **Corruption**: Restore from cloud if available
+- **Access Denied**: Fallback to memory storage
+- **Sync Conflict**: User choice or auto-resolve
+
+### Recovery Strategies
+
+#### Automatic Recovery
+
+1. **Retry Logic**: Exponential backoff
+2. **Circuit Breaker**: Prevent cascade failures
+3. **Fallback Services**: Degraded functionality
+4. **Self-Healing**: Automatic cleanup and repair
+
+#### User Notification Strategies
+
+1. **Silent Recovery**: No user interruption
+2. **Info Toast**: Non-blocking notification
+3. **Warning Dialog**: User acknowledgment
+4. **Error Screen**: Full attention required
+
+#### Recovery Priorities
+
+1. **Preserve User Data**: Never lose practice progress
+2. **Maintain Functionality**: Degraded better than broken
+3. **Clear Communication**: Explain what happened
+4. **Quick Resolution**: Minimize disruption
+
+## Module Communication Patterns
+
+### Communication Types
+
+#### 1. Request/Response Pattern
+
+- **Use Case**: Synchronous data fetching
+- **Example**: Getting user preferences
+- **Timeout**: 5 seconds default
+- **Retry**: 3 attempts with backoff
+
+#### 2. Publish/Subscribe Pattern
+
+- **Use Case**: Event-driven updates
+- **Example**: Practice session events
+- **Delivery**: At-least-once guarantee
+- **Ordering**: FIFO within priority
+
+#### 3. Command/Query Pattern
+
+- **Use Case**: CQRS implementation
+- **Commands**: State-changing operations
+- **Queries**: Read-only operations
+- **Benefits**: Optimized for each use case
+
+#### 4. Message Queue Pattern
+
+- **Use Case**: Offline operations
+- **Example**: Sync queue management
+- **Persistence**: IndexedDB backed
+- **Processing**: Batch or individual
+
+## State Management Strategy
+
+### State Categories
+
+#### Local State
+
+- Component-specific UI state
+- Temporary form data
+- Animation states
+- Not persisted
+
+#### Module State
+
+- Module-specific business logic
+- Cached computations
+- Active session data
+- Persisted selectively
+
+#### Global State
+
+- User authentication status
+- Application preferences
+- Active practice session
+- Cross-module shared data
+
+#### Persistent State
+
+- User progress data
+- Practice history
+- Achievements
+- Sheet music cache
+
+### State Synchronization
+
+#### Sync Patterns
+
+1. **Immediate Sync**: Critical data (preferences)
+2. **Batched Sync**: Performance data (5-minute intervals)
+3. **Lazy Sync**: Large data (on-demand)
+4. **Differential Sync**: Only changed data
+
+#### Conflict Resolution
+
+1. **Last Write Wins**: Simple data (preferences)
+2. **Merge Strategy**: Additive data (practice logs)
+3. **User Choice**: Conflicting changes
+4. **Custom Resolution**: Complex data structures
+
+## Testing Strategy Per Module
+
+### Unit Testing Requirements
+
+#### Module Interface Tests
+
+- All public methods tested
+- Edge cases covered
+- Error conditions verified
+- Performance benchmarks met
+
+#### Mock Strategies
+
+- Dependency injection for testing
+- Mock event bus for isolation
+- Fake storage for speed
+- Stubbed network calls
+
+### Integration Testing Scenarios
+
+#### Cross-Module Flows
+
+1. **User Registration Flow**: User → Storage → Sync
+2. **Practice Session Flow**: Session → Audio → Performance → Storage
+3. **Progress Sync Flow**: Analytics → Sync → Storage → Cloud
+4. **Offline Recovery Flow**: Queue → Sync → Conflict Resolution
+
+### Performance Benchmarks
+
+#### Module-Specific Metrics
+
+- **User Management**: Login < 2s
+- **Audio Engine**: Latency < 50ms
+- **Sheet Music**: Render < 200ms
+- **Storage**: Save < 100ms
+- **Sync**: Queue processing < 5s
+
+## Monitoring & Observability Design
+
+### Key Metrics Per Module
+
+#### User Management
+
+- Authentication success rate
+- Token refresh frequency
+- Profile update latency
+- Active user count
+
+#### Practice Session
+
+- Session completion rate
+- Average session duration
+- Crash frequency
+- Recovery success rate
+
+#### Performance Tracking
+
+- Accuracy trends
+- Note timing precision
+- Feedback generation time
+- Data point frequency
+
+### Health Check System
+
+#### Module Health Indicators
+
+- **Green**: Fully operational
+- **Yellow**: Degraded performance
+- **Red**: Critical failure
+- **Gray**: Not initialized
+
+#### Health Check Endpoints
+
+- `/health/modules` - Individual module status
+- `/health/dependencies` - Dependency health
+- `/health/storage` - Storage availability
+- `/health/sync` - Sync queue status
+
+### Debug Mode Capabilities
+
+#### Debug Features
+
+1. **Event Stream Viewer**: Real-time event monitoring
+2. **State Inspector**: Current state visualization
+3. **Performance Profiler**: Module timing analysis
+4. **Storage Explorer**: Local data inspection
+
+## Plugin Architecture (Future)
+
+### Plugin System Design
+
+#### Plugin Interface
+
+- Standard lifecycle hooks
+- Typed configuration schema
+- Sandboxed execution
+- Resource limits enforced
+
+#### Extension Points
+
+1. **Custom Exercises**: Music generation algorithms
+2. **Instrument Plugins**: New instrument support
+3. **Analytics Plugins**: Custom progress tracking
+4. **UI Themes**: Visual customization
+
+#### Plugin Security
+
+- Capability-based permissions
+- Sandboxed execution environment
+- Resource usage monitoring
+- User consent for data access
+
+## Middleware Layer
+
+### Data Sync Middleware
+
+- Intercepts all data operations
+- Manages offline queue for mutations
+- Handles conflict resolution (last-write-wins for preferences, merge for sessions)
+- Coordinates local/cloud synchronization
+
+### Cache Middleware
+
+- Apollo Client cache management
+- Sheet music prefetching strategy
+- Audio sample preloading
+- Session data caching
+
+### Analytics Middleware
+
+- Privacy-compliant event tracking
+- Performance metric collection
+- Educational effectiveness measurement
+- Usage pattern analysis
+
+### Error Handling Middleware
+
+- Audio context recovery
+- Network error resilience
+- Notation rendering fallbacks
+- User-friendly error messages
+
+## Service Layer Architecture
+
+### GraphQL Services (Backend)
+
+- **AuthService**: Authentication and JWT management
+- **UserService**: User data and preferences
+- **SessionService**: Practice session operations
+- **MusicService**: Sheet music CRUD
+- **ProgressService**: Analytics and reporting
+- **LoggerService**: Practice journal management
+
+### Client Services (Frontend)
+
+- **LocalStorageService**: Browser storage abstraction
+- **IndexedDBService**: Large data persistence
+- **AudioContextService**: Web Audio API wrapper
+- **NotationService**: VexFlow integration
+- **SyncService**: Data synchronization logic
+
+## Data Flow Patterns
+
+### Local-First Practice Flow
+
+1. User starts practice without login
+2. Session data stored in IndexedDB
+3. Progress tracked in LocalStorage
+4. No network calls required
+
+### Authenticated Sync Flow
+
+1. User logs in via magic link
+2. Local data queued for sync
+3. Incremental sync to cloud
+4. Conflict resolution applied
+5. Cross-device access enabled
+
+### Module Communication Pattern
+
+- Modules communicate through defined interfaces only
+- Events published through central event bus
+- State managed by Apollo Client reactive variables
+- Middleware intercepts cross-cutting concerns
 
 ## Database Schema (Cloudflare D1)
 
 ### Core Tables
 
-#### 1. users
-
-```sql
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  avatar_url TEXT,
-  primary_instrument TEXT CHECK (primary_instrument IN ('piano', 'guitar')),
-  skill_level TEXT CHECK (skill_level IN ('beginner', 'intermediate', 'advanced', 'professional')),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  last_login_at DATETIME,
-  preferences JSON, -- User preferences like theme, notation size, etc.
-  is_active BOOLEAN DEFAULT TRUE
-);
-
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_last_login ON users(last_login_at);
-```
-
-#### 2. sheet_music
-
-```sql
-CREATE TABLE sheet_music (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  composer TEXT,
-  opus TEXT,
-  catalog_number TEXT, -- e.g., "BWV 846", "K. 331"
-  instrument TEXT NOT NULL CHECK (instrument IN ('piano', 'guitar', 'both')),
-  difficulty_level INTEGER CHECK (difficulty_level BETWEEN 1 AND 10),
-  grade_level TEXT, -- e.g., "ABRSM Grade 3", "RCM Level 5"
-  duration_seconds INTEGER,
-  time_signature TEXT,
-  key_signature TEXT,
-  tempo_marking TEXT, -- e.g., "Allegro", "Andante"
-  suggested_tempo INTEGER, -- BPM
-  style_period TEXT, -- Baroque, Classical, Romantic, Modern, Contemporary
-  tags JSON, -- ["sight-reading", "scales", "arpeggios", "etude"]
-  source_type TEXT CHECK (source_type IN ('generated', 'public_domain', 'licensed', 'user_created')),
-  source_attribution TEXT,
-  license_type TEXT,
-  notation_data JSON, -- VexFlow data or MusicXML reference
-  audio_reference_url TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  is_active BOOLEAN DEFAULT TRUE
-);
-
-CREATE INDEX idx_sheet_music_instrument ON sheet_music(instrument);
-CREATE INDEX idx_sheet_music_difficulty ON sheet_music(difficulty_level);
-CREATE INDEX idx_sheet_music_style ON sheet_music(style_period);
-CREATE INDEX idx_sheet_music_grade ON sheet_music(grade_level);
-```
-
-#### 3. practice_sessions
-
-```sql
-CREATE TABLE practice_sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  session_date DATE NOT NULL,
-  start_time DATETIME NOT NULL,
-  end_time DATETIME,
-  duration_seconds INTEGER,
-  session_type TEXT CHECK (session_type IN ('guided', 'free_practice', 'assessment')),
-  total_exercises INTEGER DEFAULT 0,
-  completed_exercises INTEGER DEFAULT 0,
-  accuracy_percentage REAL,
-  notes TEXT, -- Session notes
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_sessions_user_date ON practice_sessions(user_id, session_date);
-CREATE INDEX idx_sessions_date ON practice_sessions(session_date);
-```
-
-#### 4. practice_logs
-
-```sql
-CREATE TABLE practice_logs (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  session_id TEXT,
-  sheet_music_id TEXT,
-  activity_type TEXT NOT NULL CHECK (activity_type IN (
-    'sight_reading', 'scales', 'arpeggios', 'etudes', 'repertoire',
-    'memorization', 'slow_practice', 'mental_practice', 'ensemble_reading',
-    'transposition', 'score_reduction', 'technique', 'warm_up'
-  )),
-  instrument TEXT NOT NULL CHECK (instrument IN ('piano', 'guitar')),
-  start_time DATETIME NOT NULL,
-  end_time DATETIME,
-  duration_seconds INTEGER,
-
-  -- Piece details
-  composer TEXT,
-  work_title TEXT,
-  opus_number TEXT,
-  movement_section TEXT, -- e.g., "1st movement, measures 1-32"
-
-  -- Practice details
-  tempo_practiced INTEGER, -- BPM
-  target_tempo INTEGER, -- Performance tempo goal
-  focus_areas JSON, -- ["accuracy", "rhythm", "dynamics", "articulation", "memorization"]
-
-  -- Assessment
-  self_rating INTEGER CHECK (self_rating BETWEEN 1 AND 10),
-  accuracy_percentage REAL,
-  notes_played INTEGER,
-  notes_correct INTEGER,
-
-  -- Additional data
-  practice_notes TEXT,
-  audio_recording_url TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE SET NULL,
-  FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id) ON DELETE SET NULL
-);
-
-CREATE INDEX idx_logs_user_date ON practice_logs(user_id, start_time);
-CREATE INDEX idx_logs_activity ON practice_logs(activity_type);
-CREATE INDEX idx_logs_session ON practice_logs(session_id);
-CREATE INDEX idx_logs_sheet_music ON practice_logs(sheet_music_id);
-```
-
-#### 5. progress_tracking
-
-```sql
-CREATE TABLE progress_tracking (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  instrument TEXT NOT NULL,
-  skill_area TEXT NOT NULL, -- 'sight_reading', 'technique', 'theory', etc.
-  current_level INTEGER DEFAULT 1,
-  current_grade TEXT,
-  experience_points INTEGER DEFAULT 0,
-
-  -- Metrics
-  total_practice_time INTEGER DEFAULT 0, -- seconds
-  consecutive_days INTEGER DEFAULT 0,
-  last_practice_date DATE,
-  accuracy_trend REAL, -- Moving average
-  speed_trend REAL, -- Moving average of tempo achievements
-
-  -- Achievements
-  achievements JSON, -- ["first_piece", "7_day_streak", "100_pieces"]
-  milestones JSON, -- [{"date": "2024-01-15", "achievement": "Grade 3 completed"}]
-
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE(user_id, instrument, skill_area)
-);
-
-CREATE INDEX idx_progress_user ON progress_tracking(user_id);
-CREATE INDEX idx_progress_instrument ON progress_tracking(user_id, instrument);
-```
-
-#### 6. user_sheet_music_progress
-
-```sql
-CREATE TABLE user_sheet_music_progress (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  sheet_music_id TEXT NOT NULL,
-  first_attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  last_attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  times_practiced INTEGER DEFAULT 1,
-  best_accuracy REAL,
-  average_accuracy REAL,
-  best_tempo INTEGER,
-  is_completed BOOLEAN DEFAULT FALSE,
-  is_starred BOOLEAN DEFAULT FALSE,
-  is_bookmarked BOOLEAN DEFAULT FALSE,
-  difficulty_rating INTEGER CHECK (difficulty_rating BETWEEN 1 AND 5),
-  notes TEXT,
-
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (sheet_music_id) REFERENCES sheet_music(id) ON DELETE CASCADE,
-  UNIQUE(user_id, sheet_music_id)
-);
-
-CREATE INDEX idx_user_music_progress ON user_sheet_music_progress(user_id, sheet_music_id);
-CREATE INDEX idx_user_music_starred ON user_sheet_music_progress(user_id, is_starred);
-```
-
-#### 7. practice_templates
-
-```sql
-CREATE TABLE practice_templates (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  template_name TEXT NOT NULL,
-  activity_type TEXT NOT NULL,
-
-  -- Pre-filled fields
-  composer TEXT,
-  work_title TEXT,
-  opus_number TEXT,
-  movement_section TEXT,
-  tempo INTEGER,
-  focus_areas JSON,
-
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-### Analytics Views
-
-```sql
--- Daily practice summary
-CREATE VIEW daily_practice_summary AS
-SELECT
-  user_id,
-  DATE(start_time) as practice_date,
-  COUNT(DISTINCT session_id) as sessions,
-  SUM(duration_seconds) as total_seconds,
-  COUNT(*) as activities,
-  AVG(self_rating) as avg_rating,
-  AVG(accuracy_percentage) as avg_accuracy
-FROM practice_logs
-GROUP BY user_id, DATE(start_time);
-
--- User statistics
-CREATE VIEW user_statistics AS
-SELECT
-  u.id as user_id,
-  u.primary_instrument,
-  COUNT(DISTINCT DATE(pl.start_time)) as total_practice_days,
-  SUM(pl.duration_seconds) as total_practice_seconds,
-  COUNT(DISTINCT pl.sheet_music_id) as unique_pieces,
-  AVG(pl.self_rating) as avg_self_rating,
-  AVG(pl.accuracy_percentage) as avg_accuracy
-FROM users u
-LEFT JOIN practice_logs pl ON u.id = pl.user_id
-GROUP BY u.id;
-```
-
-## API Architecture (GraphQL)
-
-### GraphQL Schema Overview
-
-```graphql
-type Query {
-  # User queries
-  me: User
-  user(id: ID!): User
-
-  # Sheet music queries
-  listSheetMusic(
-    filter: SheetMusicFilterInput
-    limit: Int
-    offset: Int
-  ): SheetMusicConnection!
-  sheetMusic(id: ID!): SheetMusic
-  randomSheetMusic(instrument: Instrument!, difficulty: Difficulty): SheetMusic
-
-  # Practice queries
-  myPracticeSessions(
-    instrument: Instrument
-    limit: Int
-    offset: Int
-  ): PracticeSessionConnection!
-  practiceSession(id: ID!): PracticeSession
-
-  # Progress queries
-  myProgress(instrument: Instrument): ProgressOverview!
-  myAchievements: [Achievement!]!
-}
-
-type Mutation {
-  # Authentication
-  requestMagicLink(email: String!): AuthPayload!
-  verifyMagicLink(token: String!): TokenPayload!
-  refreshToken(refreshToken: String!): TokenPayload!
-  logout: AuthPayload!
-  deleteAccount: AuthPayload!
-
-  # User management
-  updateUser(input: UpdateUserInput!): User!
-
-  # Practice sessions
-  startPracticeSession(input: StartPracticeSessionInput!): PracticeSession!
-  pausePracticeSession(sessionId: ID!): PracticeSession!
-  resumePracticeSession(sessionId: ID!): PracticeSession!
-  completePracticeSession(
-    input: CompletePracticeSessionInput!
-  ): PracticeSession!
-
-  # Practice logging
-  createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
-  updatePracticeLog(id: ID!, input: UpdatePracticeLogInput!): PracticeLog!
-  deletePracticeLog(id: ID!): DeletePayload!
-}
-
-type Subscription {
-  # Future: Real-time practice updates
-  practiceSessionUpdated(sessionId: ID!): PracticeSession!
-  achievementUnlocked: Achievement!
-}
-```
-
-### Resolver Architecture
-
-```typescript
-// Resolver structure
-const resolvers = {
-  Query: {
-    // User queries
-    me: (parent, args, context) => context.services.user.getCurrentUser(),
-    user: (parent, { id }, context) => context.services.user.getUserById(id),
-
-    // Sheet music queries
-    listSheetMusic: (parent, args, context) =>
-      context.services.sheetMusic.list(args.filter, args.limit, args.offset),
-
-    // Practice queries
-    myPracticeSessions: (parent, args, context) =>
-      context.services.practice.getUserSessions(context.user.id, args),
-  },
-
-  Mutation: {
-    // Authentication mutations
-    requestMagicLink: (parent, { email }, context) =>
-      context.services.auth.requestMagicLink(email),
-
-    verifyMagicLink: (parent, { token }, context) =>
-      context.services.auth.verifyMagicLink(token),
-
-    // Practice mutations
-    startPracticeSession: (parent, { input }, context) =>
-      context.services.practice.startSession(context.user.id, input),
-  },
-
-  // Type resolvers
-  User: {
-    preferences: (user, args, context) =>
-      context.services.user.getPreferences(user.id),
-
-    stats: (user, args, context) => context.services.user.getStats(user.id),
-  },
-
-  PracticeSession: {
-    user: (session, args, context) =>
-      context.dataloaders.user.load(session.userId),
-
-    sheetMusic: (session, args, context) =>
-      session.sheetMusicId
-        ? context.dataloaders.sheetMusic.load(session.sheetMusicId)
-        : null,
-  },
-}
-```
-
-### Service Layer Architecture
-
-```typescript
-// Service interfaces
-interface AuthService {
-  requestMagicLink(email: string): Promise<AuthPayload>
-  verifyMagicLink(token: string): Promise<TokenPayload>
-  refreshToken(refreshToken: string): Promise<TokenPayload>
-  logout(userId: string): Promise<AuthPayload>
-}
-
-interface UserService {
-  getCurrentUser(): Promise<User | null>
-  getUserById(id: string): Promise<User | null>
-  updateUser(id: string, input: UpdateUserInput): Promise<User>
-  getPreferences(userId: string): Promise<UserPreferences>
-  getStats(userId: string): Promise<UserStats>
-}
-
-interface PracticeService {
-  startSession(
-    userId: string,
-    input: StartPracticeSessionInput
-  ): Promise<PracticeSession>
-  pauseSession(sessionId: string): Promise<PracticeSession>
-  completeSession(
-    sessionId: string,
-    input: CompletePracticeSessionInput
-  ): Promise<PracticeSession>
-  createLog(userId: string, input: CreatePracticeLogInput): Promise<PracticeLog>
-}
-```
-
-### GraphQL Type Definitions
-
-```graphql
-# Core types
-type User {
-  id: ID!
-  email: String!
-  displayName: String
-  primaryInstrument: Instrument!
-  preferences: UserPreferences!
-  stats: UserStats!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type PracticeSession {
-  id: ID!
-  user: User!
-  instrument: Instrument!
-  sheetMusic: SheetMusic
-  sessionType: SessionType!
-  startedAt: DateTime!
-  completedAt: DateTime
-  pausedDuration: Int!
-  accuracy: Float
-  notesAttempted: Int!
-  notesCorrect: Int!
-  logs: [PracticeLog!]!
-}
-
-type SheetMusic {
-  id: ID!
-  title: String!
-  composer: String!
-  instrument: Instrument!
-  difficulty: Difficulty!
-  measures: [Measure!]!
-  metadata: SheetMusicMetadata
-}
-
-# Input types
-input CreatePracticeLogInput {
-  sessionId: ID!
-  activityType: ActivityType!
-  durationSeconds: Int!
-  tempoPracticed: Int
-  targetTempo: Int
-  focusAreas: [String!]
-  selfRating: Int
-  notes: String
-}
-
-# Enums
-enum Instrument {
-  PIANO
-  GUITAR
-}
-
-enum SessionType {
-  FREE_PRACTICE
-  GUIDED_PRACTICE
-  ASSESSMENT
-}
-```
-
-## Frontend Architecture
-
-### Apollo Client State Management
-
-```typescript
-// Apollo Client configuration
-const client = new ApolloClient({
-  uri: '/graphql',
-  cache: new InMemoryCache({
-    typePolicies: {
-      User: {
-        keyFields: ['id'],
-      },
-      PracticeSession: {
-        keyFields: ['id'],
-        fields: {
-          logs: {
-            merge(existing = [], incoming) {
-              return [...existing, ...incoming]
-            },
-          },
-        },
-      },
-    },
-  }),
-  link: ApolloLink.from([authLink, errorLink, retryLink, httpLink]),
-})
-
-// Local state management
-const localState = {
-  // Reactive variables for UI state
-  currentSessionVar: makeVar<PracticeSession | null>(null),
-  practiceTimerVar: makeVar<Timer>({ elapsed: 0, isRunning: false }),
-  offlineQueueVar: makeVar<QueuedMutation[]>([]),
-
-  // Type policies for cache
-  typePolicies: {
-    Query: {
-      fields: {
-        currentSession: {
-          read() {
-            return currentSessionVar()
-          },
-        },
-        practiceTimer: {
-          read() {
-            return practiceTimerVar()
-          },
-        },
-      },
-    },
-  },
-}
-```
-
-### Frontend Service Layer
-
-```typescript
-// GraphQL hooks generated by codegen
-import { useQuery, useMutation } from '@apollo/client'
-import {
-  useMeQuery,
-  useStartPracticeSessionMutation,
-  useCreatePracticeLogMutation,
-} from './__generated__/graphql'
-
-// Custom hooks for business logic
-function usePracticeSession() {
-  const [startSession] = useStartPracticeSessionMutation({
-    update(cache, { data }) {
-      // Update cache with new session
-      currentSessionVar(data?.startPracticeSession || null)
-    },
-  })
-
-  const [createLog] = useCreatePracticeLogMutation({
-    optimisticResponse: vars => ({
-      createPracticeLog: {
-        __typename: 'PracticeLog',
-        id: 'temp-' + Date.now(),
-        ...vars.input,
-      },
-    }),
-  })
-
-  return { startSession, createLog }
-}
-
-// Offline sync with Apollo
-const offlineLink = new QueueLink({
-  storage: window.localStorage,
-  key: 'offline-queue',
-})
-
-const retryLink = new RetryLink({
-  delay: {
-    initial: 300,
-    max: Infinity,
-    jitter: true,
-  },
-  attempts: {
-    max: 5,
-    retryIf: error => {
-      return !!error && !error.networkError?.statusCode
-    },
-  },
-})
-```
-
-## Data Flow
-
-### 1. GraphQL Practice Session Flow
-
-```
-Frontend              Apollo Client         GraphQL API           D1
-   |                      |                      |                 |
-   |--Start Session------>|                      |                 |
-   |                      |--mutation----------->|                 |
-   |                      | startPracticeSession |                 |
-   |                      |                      |--Create-------->|
-   |                      |<--Session Data-------|<--Session ID----|
-   |<--Update Cache-------|                      |                 |
-   |                      |                      |                 |
-   |--Log Activity------->|                      |                 |
-   |                      |--mutation----------->|                 |
-   |                      | createPracticeLog   |                 |
-   |                      |--Optimistic Update   |                 |
-   |<--Immediate UI-------|                      |                 |
-   |                      |                      |--Store--------->|
-   |                      |<--Confirmation-------|                 |
-   |                      |                      |                 |
-   |--Complete Session--->|                      |                 |
-   |                      |--mutation----------->|                 |
-   |                      | completePracticeSession              |
-   |                      |                      |--Update------->|
-   |                      |                      |--Calculate---->|
-   |                      |<--Final Data---------|<--Stats--------|
-   |<--Session Summary----|                      |                 |
-```
-
-### 2. Apollo Offline Sync Flow
-
-```
-Frontend            Apollo Cache      IndexedDB       GraphQL API (Online)
-   |                    |                 |                  |
-   |--Mutation--------->|                 |                  |
-   |                    |--Optimistic---->|                  |
-   |<--UI Update--------|                 |                  |
-   |                    |--Queue--------->|                  |
-   |                    |                 |--Store Entry     |
-   |                    |                 |                  |
-   [Network Restored]   |                 |                  |
-   |                    |                 |                  |
-   |                    |--Check Queue    |                  |
-   |                    |<--Pending Ops---|                  |
-   |                    |                 |                  |
-   |                    |--Replay Mutations---------------->|
-   |                    |                 |           Process & Store
-   |                    |<--Real Response-------------------|
-   |<--Final Update-----|                 |                  |
-   |                    |--Clear--------->|                  |
-```
-
-## Scalability Considerations
-
-### 1. Database Optimization
-
-- Partition practice_logs by date for large datasets
-- Create materialized views for complex analytics
-- Use JSON columns for flexible schema evolution
-- Implement data archival for old practice logs
-
-### 2. Caching Strategy
-
-- Cache sheet music data at edge (Cloudflare CDN)
-- Cache user progress in Workers KV
-- Use browser local storage for offline data
-- Implement ETags for efficient updates
-
-### 3. Performance Targets
-
-- API response time: < 100ms (p95)
-- Sheet music load time: < 200ms
-- Practice log save: < 50ms
-- Analytics generation: < 500ms
-
-## Security Considerations
-
-### 1. Authentication
-
-- JWT tokens with short expiration (15 minutes)
-- Refresh tokens stored securely
-- Magic links expire after single use or 10 minutes
-
-### 2. Authorization
-
-- Row-level security for user data
-- API rate limiting per user
-- Validate all inputs against schema
-
-### 3. Data Privacy
-
-- Encrypt sensitive data at rest
-- GDPR compliance for EU users
-- Data export and deletion capabilities
-
-## Migration Strategy
-
-### Phase 1: Core Tables
-
-1. Create users and authentication
-2. Create sheet_music and initial data
-3. Basic practice_sessions
-
-### Phase 2: Practice Logging
-
-1. Create practice_logs
-2. Create progress_tracking
-3. Implement basic analytics
-
-### Phase 3: Advanced Features
-
-1. Create user_sheet_music_progress
-2. Create practice_templates
-3. Implement recommendation engine
+#### users
+
+- id (TEXT PRIMARY KEY)
+- email (TEXT UNIQUE NOT NULL)
+- display_name (TEXT)
+- avatar_url (TEXT)
+- primary_instrument (TEXT)
+- skill_level (TEXT)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+- last_login_at (DATETIME)
+- preferences (JSON)
+- is_active (BOOLEAN)
+
+#### sheet_music
+
+- id (TEXT PRIMARY KEY)
+- title (TEXT NOT NULL)
+- composer (TEXT)
+- instrument (TEXT NOT NULL)
+- difficulty_level (INTEGER)
+- notation_data (JSON)
+- metadata (JSON)
+- created_at (DATETIME)
+
+#### practice_sessions
+
+- id (TEXT PRIMARY KEY)
+- user_id (TEXT NOT NULL)
+- session_date (DATE NOT NULL)
+- start_time (DATETIME NOT NULL)
+- end_time (DATETIME)
+- duration_seconds (INTEGER)
+- session_type (TEXT)
+- accuracy_percentage (REAL)
+- created_at (DATETIME)
+
+#### practice_logs
+
+- id (TEXT PRIMARY KEY)
+- user_id (TEXT NOT NULL)
+- session_id (TEXT)
+- sheet_music_id (TEXT)
+- activity_type (TEXT NOT NULL)
+- start_time (DATETIME NOT NULL)
+- duration_seconds (INTEGER)
+- practice_details (JSON)
+- created_at (DATETIME)
+
+#### progress_tracking
+
+- id (TEXT PRIMARY KEY)
+- user_id (TEXT NOT NULL)
+- instrument (TEXT NOT NULL)
+- skill_area (TEXT NOT NULL)
+- current_level (INTEGER)
+- metrics (JSON)
+- achievements (JSON)
+- updated_at (DATETIME)
+
+## GraphQL API Design
+
+### Schema Principles
+
+- Nullable types for optional fields
+- Input types for mutations
+- Connection types for pagination
+- Strong typing throughout
+
+### Query Types
+
+- User queries (profile, preferences)
+- Sheet music queries (list, search, recommendations)
+- Practice queries (sessions, logs, progress)
+- Analytics queries (reports, achievements)
+
+### Mutation Types
+
+- Authentication mutations (magic link flow)
+- User mutations (profile updates)
+- Practice mutations (session management)
+- Logger mutations (journal entries)
+
+### Subscription Types (Future)
+
+- Real-time practice updates
+- Achievement notifications
+- Collaborative features
+
+## Performance Considerations
+
+### Frontend Performance
+
+- React.memo for expensive components
+- Virtual scrolling for long lists
+- SVG caching for notation
+- Lazy loading for routes
+
+### Audio Performance
+
+- Preloaded instrument samples
+- Web Audio API scheduling
+- Efficient buffer management
+- Low-latency playback
+
+### Storage Performance
+
+- IndexedDB for large datasets
+- Compression for practice logs
+- Retention policies
+- Efficient sync protocols
+
+### Network Performance
+
+- GraphQL query batching
+- Edge caching (Cloudflare)
+- Optimistic updates
+- Minimal data transfer
+
+## Security Architecture
+
+### Authentication Security
+
+- Magic links (no passwords)
+- JWT with short expiration
+- Refresh token rotation
+- Secure token storage
+
+### Data Security
+
+- Row-level security in D1
+- Input validation (Zod schemas)
+- Rate limiting per endpoint
+- CORS configuration
+
+### Privacy Protection
+
+- Local-first data storage
+- Opt-in cloud sync
+- Data export capability
+- GDPR compliance
+
+## Deployment Architecture
+
+### Environment Strategy
+
+- Local development environment
+- Development cloud environment
+- Staging environment
+- Production environment
+
+### Infrastructure Components
+
+- Frontend: Cloudflare Workers
+- Backend: Cloudflare Workers
+- Database: Cloudflare D1
+- Cache: Cloudflare KV
+- Files: Cloudflare R2 (future)
+
+### CI/CD Pipeline
+
+- Automated testing (unit, integration)
+- Branch-based deployments
+- Environment promotion
+- Rollback capabilities
 
 ## Monitoring and Observability
 
-### Metrics to Track
+### Application Monitoring
 
+- Error tracking (Sentry)
+- Performance monitoring
+- User analytics
+- Educational metrics
+
+### Infrastructure Monitoring
+
+- Worker performance
+- Database query times
+- Cache hit rates
 - API response times
-- Database query performance
-- User engagement (DAU, session length)
-- Practice streak retention
-- Error rates by endpoint
 
-### Logging Strategy
+### Business Metrics
 
-- Structured JSON logs
-- Request/response correlation IDs
-- User action audit trail
-- Performance timing logs
+- User engagement
+- Practice consistency
+- Learning outcomes
+- Feature adoption
 
-## Future Extensibility
+## Future Architecture Extensions
 
-### Planned Extensions
+### Planned Modules
 
-1. **Social Features**: Add tables for friends, challenges, leaderboards
-2. **Teacher Mode**: Add teacher-student relationships, assignments
-3. **AI Recommendations**: Store ML model outputs and user feedback
-4. **Multi-instrument**: Extend schema for more instruments
-5. **Group Practice**: Add ensemble/duet support
+- **MIDI Module**: Hardware instrument input
+- **Teacher Module**: Assignment management
+- **Social Module**: Friends and challenges
+- **AI Module**: Adaptive difficulty
+- **Collaboration Module**: Real-time multiplayer
 
-### Schema Evolution
+### Technical Enhancements
 
-- Use JSON columns for flexible attributes
-- Version API endpoints for breaking changes
-- Maintain backward compatibility
-- Document all schema changes
+- Service Worker for true offline
+- WebAssembly for performance
+- GraphQL subscriptions
+- Advanced caching strategies
 
 ## Development Guidelines
 
-### 1. GraphQL Conventions
+### Module Development
 
-- Use nullable types appropriately
-- Implement proper error handling with extensions
-- Use DataLoader pattern to avoid N+1 queries
-- Include field descriptions in schema
-- Follow relay-style pagination for connections
+- Define clear interfaces first
+- Write comprehensive tests
+- Document public APIs
+- Follow single responsibility
 
-### 2. Database Conventions
+### API Development
 
-- Use nanoid for all primary keys
-- Include created_at/updated_at timestamps with triggers
-- Implement soft delete where appropriate
-- Foreign key constraints for data integrity
-- Use JSON columns for flexible data
+- Schema-first design
+- Consistent naming conventions
+- Proper error handling
+- Performance optimization
 
-### 3. Testing Strategy
+### Testing Strategy
 
-- Unit tests for all resolvers and services
-- Integration tests for GraphQL queries/mutations
-- Mock D1 database for testing
-- Test error cases and edge conditions
-- Performance testing with query complexity analysis
+- Unit tests per module
+- Integration tests for flows
+- E2E tests for critical paths
+- Performance benchmarks
 
-### 4. Code Generation
+### Documentation Requirements
 
-- Generate TypeScript types from GraphQL schema
-- Use generated hooks in frontend
-- Keep schema as single source of truth
-- Run codegen in CI/CD pipeline
+- Module API documentation
+- Integration examples
+- Architecture decisions
+- Migration guides
