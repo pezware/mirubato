@@ -21,77 +21,143 @@ This roadmap outlines the phased development plan for Mirubato, organized around
 
 ## Phase 2: Core Module Implementation 🚧 (Current)
 
-### 2.1 Complete Storage & Sync Modules
+### Risk Assessment
 
-**Purpose**: Enable full local-first functionality with optional cloud sync
+#### Technical Risks
 
-#### Storage Module Enhancement
+- **Storage Quota Limits**: Mobile browsers have strict storage limits
+  - _Mitigation_: Implement data compression and rotation policies
+- **Audio Context Restrictions**: Autoplay policies on mobile
+  - _Mitigation_: User interaction required before audio initialization
+- **IndexedDB Reliability**: Browser inconsistencies
+  - _Mitigation_: Fallback to LocalStorage for critical data
 
-- [ ] Implement unified storage interface for local/cloud operations
+#### Dependencies
+
+- **External Libraries**: Tone.js, VexFlow stability
+  - _Mitigation_: Pin versions, maintain fallback rendering
+- **Browser APIs**: Web Audio, IndexedDB support
+  - _Mitigation_: Feature detection and graceful degradation
+
+### MVP Definitions
+
+#### 2.1 Storage & Sync Modules MVP
+
+**Minimum Viable Features**:
+
+- ✓ Basic local storage interface (LocalStorage + IndexedDB)
+- ✓ Simple save/load operations
+- [ ] Basic conflict detection (last-write-wins)
+- [ ] Manual sync trigger
+- [ ] Basic quota management (warning at 80%)
+
+**Full Implementation** (Phase 2 completion):
+
+- [ ] Unified storage interface for local/cloud operations
 - [ ] Add compression for IndexedDB practice logs
 - [ ] Create data retention policies
 - [ ] Implement storage quota management
 - [ ] Add export/import functionality
+- [ ] Automatic sync with conflict resolution
+- [ ] Incremental sync protocols
 
-#### Sync Module Implementation
+#### 2.2 Practice Session Module MVP
 
-- [ ] Build sync queue management system
-- [ ] Implement conflict resolution strategies
-- [ ] Add incremental sync protocols
-- [ ] Create sync status indicators
-- [ ] Handle offline-to-online transitions
+**Minimum Viable Features**:
 
-### 2.2 Practice Session Module
+- ✓ Start/stop session functionality
+- ✓ Basic session data structure
+- [ ] Session persistence across refresh
+- [ ] Basic session history (last 10)
 
-**Purpose**: Complete session lifecycle management
+**Full Implementation**:
 
-- [ ] Implement session state machine (start/pause/resume/end)
-- [ ] Add session persistence to IndexedDB
-- [ ] Create session recovery after browser refresh
-- [ ] Build session history browser
-- [ ] Implement session analytics collection
+- [ ] Complete state machine (start/pause/resume/end)
+- [ ] Full session history with search
+- [ ] Session analytics and insights
+- [ ] Session templates
+- [ ] Batch operations
 
-### 2.3 Performance Tracking Module
+#### 2.3 Performance Tracking Module MVP
 
-**Purpose**: Real-time practice feedback
+**Minimum Viable Features**:
 
-- [ ] Implement note accuracy detection algorithm
-- [ ] Create timing precision measurement
-- [ ] Build visual feedback system
-- [ ] Add performance metrics calculation
-- [ ] Implement session summary generation
+- [ ] Basic accuracy calculation (correct/total notes)
+- [ ] Simple timing detection (early/on-time/late)
+- [ ] Basic visual feedback (color coding)
+
+**Full Implementation**:
+
+- [ ] Advanced accuracy algorithms
+- [ ] Precise timing measurement
+- [ ] Detailed performance analytics
+- [ ] ML-based pattern detection
+- [ ] Personalized feedback generation
 
 ## Phase 3: Advanced Features & Professional Tools
 
-### 3.1 Progress Analytics Module
+### Risk Assessment
 
-**Purpose**: Long-term progress tracking and insights
+#### Phase 3 Risks
 
-- [ ] Build progress calculation engine
-- [ ] Implement achievement system
-- [ ] Create practice streak tracking
-- [ ] Add skill progression analytics
-- [ ] Build report generation (PDF/CSV export)
+- **Data Volume**: Large practice logs may overwhelm storage
+  - _Mitigation_: Implement data archival and summarization
+- **Complex Analytics**: Performance impact of calculations
+  - _Mitigation_: Web Worker for heavy computations
+- **User Adoption**: Professional features may intimidate beginners
+  - _Mitigation_: Progressive disclosure, guided tutorials
 
-### 3.2 Practice Logger Module
+### MVP Definitions
 
-**Purpose**: Professional practice journaling
+#### 3.1 Progress Analytics Module MVP
 
-- [ ] Create quick timer interface
-- [ ] Build detailed log entry forms
-- [ ] Implement practice templates
-- [ ] Add time analytics dashboard
-- [ ] Create practice journal export
+**Minimum Viable Features**:
 
-### 3.3 Curriculum Module
+- [ ] Basic progress tracking (sessions completed, time practiced)
+- [ ] Simple achievement badges (10 sessions, 1 hour, etc.)
+- [ ] Basic streak counter
+- [ ] Weekly summary view
 
-**Purpose**: Structured learning paths
+**Full Implementation**:
 
-- [ ] Implement level assessment system
-- [ ] Create exercise recommendation engine
-- [ ] Build progress-based unlocking
-- [ ] Add personalized study plans
-- [ ] Implement spaced repetition scheduling
+- [ ] Advanced analytics engine
+- [ ] Custom achievement system
+- [ ] Detailed progression metrics
+- [ ] Exportable reports (PDF/CSV)
+- [ ] Comparative analytics
+
+#### 3.2 Practice Logger Module MVP
+
+**Minimum Viable Features**:
+
+- [ ] Simple start/stop timer
+- [ ] Basic activity categories
+- [ ] Quick notes field
+- [ ] Daily log view
+
+**Full Implementation**:
+
+- [ ] Detailed entry forms
+- [ ] Practice templates
+- [ ] Time analytics dashboard
+- [ ] Journal export
+- [ ] Integration with calendar apps
+
+#### 3.3 Curriculum Module MVP
+
+**Minimum Viable Features**:
+
+- [ ] Basic level system (1-10)
+- [ ] Simple exercise progression
+- [ ] Manual level advancement
+
+**Full Implementation**:
+
+- [ ] Automated assessment
+- [ ] AI-powered recommendations
+- [ ] Personalized study plans
+- [ ] Spaced repetition
+- [ ] Multi-path curricula
 
 ## Phase 4: Enhanced Musical Features
 
@@ -255,12 +321,163 @@ A module is complete when:
 9. **Code Reviewed**: Approved by team
 10. **Deployed**: Available in production
 
+## Technical Debt Management
+
+### Debt Tracking System
+
+#### Categories
+
+1. **Code Quality Debt**
+
+   - TypeScript `any` types
+   - Missing tests
+   - Console.log statements
+   - Duplicated code
+
+2. **Architecture Debt**
+
+   - Module boundary violations
+   - Direct dependencies instead of interfaces
+   - Missing abstraction layers
+   - Tight coupling
+
+3. **Performance Debt**
+
+   - Unoptimized queries
+   - Large bundle sizes
+   - Memory leaks
+   - Inefficient algorithms
+
+4. **Security Debt**
+   - Unvalidated inputs
+   - Missing rate limiting
+   - Weak authentication
+   - Data exposure risks
+
+### Management Strategy
+
+#### Debt Budget
+
+- **Per Sprint**: 20% capacity for debt reduction
+- **Quarterly**: Full debt audit and prioritization
+- **Emergency**: Stop-the-line for critical security debt
+
+#### Refactoring Triggers
+
+1. **Immediate**: Security vulnerabilities
+2. **Next Sprint**: Performance below SLA
+3. **Next Phase**: Architecture impediments
+4. **Backlog**: Code quality improvements
+
+#### Quality Gates
+
+- **Phase Transitions**: Debt must be below threshold
+- **Major Features**: No new debt introduction
+- **Releases**: Security debt must be zero
+
+## User Validation Milestones
+
+### Phase 2 Validation
+
+- **Week 4**: Alpha testing with 5 musicians
+- **Week 8**: Beta testing with 20 users
+- **Week 12**: Public beta launch
+
+### Phase 3 Validation
+
+- **Professional Musicians**: 10 user interviews
+- **Music Teachers**: 5 classroom trials
+- **Students**: 50 user feedback survey
+
+### Success Criteria
+
+- **Engagement**: 70% weekly active users
+- **Retention**: 60% 30-day retention
+- **Satisfaction**: 4.5/5 average rating
+- **Performance**: <100ms interaction latency
+
+## Parallel Development Tracks
+
+### Track Organization
+
+#### Track 1: Core Infrastructure (Backend Team)
+
+- **Independent Modules**:
+  - Storage Module enhancement
+  - Sync Module implementation
+  - GraphQL API extensions
+  - Database optimizations
+
+#### Track 2: User Experience (Frontend Team)
+
+- **Independent Modules**:
+  - UI component library
+  - Responsive design system
+  - Animation framework
+  - Accessibility features
+
+#### Track 3: Musical Features (Domain Team)
+
+- **Independent Modules**:
+  - Sheet music algorithms
+  - Audio processing
+  - Music theory engine
+  - Notation rendering
+
+### Synchronization Points
+
+#### Weekly
+
+- Cross-track standup
+- Dependency review
+- Integration planning
+
+#### Bi-weekly
+
+- Module integration testing
+- Performance benchmarking
+- User testing sessions
+
+#### Monthly
+
+- Architecture review
+- Tech debt assessment
+- Roadmap adjustment
+
+### Dependency Management
+
+#### Blocking Dependencies
+
+- **Phase 2**: Storage must complete before Sync
+- **Phase 3**: Performance Tracking required for Analytics
+- **Phase 4**: Audio Engine needed for advanced features
+
+#### Parallel Opportunities
+
+1. **Phase 2**: Storage and Session modules in parallel
+2. **Phase 3**: All three modules can start simultaneously
+3. **Phase 4**: Sheet Music and Audio enhancements in parallel
+
 ## Timeline Estimates
 
-- **Phase 2**: 2-3 months (Core modules)
-- **Phase 3**: 2-3 months (Professional features)
-- **Phase 4**: 3-4 months (Musical enhancements)
-- **Phase 5**: 2 months (Infrastructure)
-- **Phase 6**: Ongoing (Future extensions)
+### Adjusted for Parallel Tracks
 
-**Note**: All timelines are estimates and subject to change based on user feedback and priorities.
+- **Phase 2**: 2 months (with 3 parallel tracks)
+- **Phase 3**: 2 months (with parallel development)
+- **Phase 4**: 3 months (musical complexity)
+- **Phase 5**: 1.5 months (infrastructure sprint)
+- **Phase 6**: Ongoing (quarterly releases)
+
+### Critical Path
+
+1. Storage Module → Sync Module → Cloud Features
+2. Session Module → Performance Tracking → Analytics
+3. Audio Engine → Advanced Playback → MIDI Support
+
+### Buffer Time
+
+- **Per Phase**: 2-week buffer for unexpected issues
+- **Integration**: 1 week between phases
+- **User Testing**: 2 weeks per major release
+
+**Note**: All timelines assume full team capacity and no major technical blockers. Regular reassessment based on velocity and user feedback.

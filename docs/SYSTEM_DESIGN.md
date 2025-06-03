@@ -163,6 +163,439 @@ The system follows a three-tier architecture with clear separation between prese
 - `getSyncStatus()` - Get sync state
 - `forceSyncAll()` - Manual full sync
 
+## Module Dependencies
+
+### Dependency Graph
+
+```
+User Management
+  └─> Storage Module (for preferences)
+
+Practice Session
+  ├─> User Management (for user context)
+  ├─> Sheet Music (for content)
+  ├─> Audio Engine (for playback)
+  ├─> Performance Tracking (for metrics)
+  └─> Storage Module (for persistence)
+
+Sheet Music
+  └─> Storage Module (for caching)
+
+Audio Engine
+  └─> (No dependencies - standalone)
+
+Performance Tracking
+  ├─> Practice Session (for context)
+  └─> Storage Module (for metrics storage)
+
+Progress Analytics
+  ├─> Performance Tracking (for data)
+  ├─> Practice Logger (for history)
+  └─> Storage Module (for persistence)
+
+Practice Logger
+  ├─> User Management (for user context)
+  └─> Storage Module (for journal entries)
+
+Curriculum
+  ├─> Progress Analytics (for assessment)
+  ├─> Sheet Music (for content)
+  └─> User Management (for level tracking)
+
+Storage Module
+  └─> Sync Module (for cloud operations)
+
+Sync Module
+  └─> (No module dependencies - infrastructure)
+```
+
+### Initialization Order
+
+1. **Infrastructure Layer**: Storage Module, Sync Module
+2. **Core Services**: Audio Engine, User Management
+3. **Content Layer**: Sheet Music Module
+4. **Session Layer**: Practice Session, Performance Tracking
+5. **Analytics Layer**: Practice Logger, Progress Analytics
+6. **Learning Layer**: Curriculum Module
+
+### Interface Contracts
+
+Each module must:
+
+- Export a typed interface definition
+- Provide initialization method returning Promise
+- Handle graceful degradation if dependencies unavailable
+- Emit lifecycle events (initialized, error, shutdown)
+
+## Event Bus Architecture
+
+### Event System Design
+
+#### Event Naming Convention
+
+- **Format**: `module:action:status`
+- **Examples**:
+  - `session:start:success`
+  - `sync:conflict:resolved`
+  - `audio:playback:error`
+
+#### Event Categories
+
+1. **Lifecycle Events**
+
+   - `module:init:start`
+   - `module:init:complete`
+   - `module:init:error`
+   - `module:shutdown:complete`
+
+2. **Data Events**
+
+   - `data:create:success`
+   - `data:update:success`
+   - `data:delete:success`
+   - `data:sync:required`
+
+3. **User Action Events**
+
+   - `user:login:success`
+   - `user:practice:start`
+   - `user:achievement:unlocked`
+
+4. **System Events**
+   - `system:online:true`
+   - `system:storage:low`
+   - `system:error:critical`
+
+#### Event Payload Structure
+
+```
+interface EventPayload {
+  eventId: string;          // Unique event identifier
+  timestamp: number;        // Unix timestamp
+  source: string;           // Module name
+  type: string;             // Event type
+  data: any;                // Event-specific data
+  metadata: {
+    userId?: string;
+    sessionId?: string;
+    version: string;
+  };
+}
+```
+
+#### Event Priority Levels
+
+1. **CRITICAL** (0): System failures, data corruption
+2. **HIGH** (1): User actions, data changes
+3. **NORMAL** (2): Progress updates, analytics
+4. **LOW** (3): Debug information, metrics
+
+#### Subscription Patterns
+
+- **Direct Subscription**: For specific events
+- **Pattern Subscription**: Using wildcards (`session:*:success`)
+- **Priority Subscription**: Only high-priority events
+- **Filtered Subscription**: Based on metadata criteria
+
+## Data Migration Strategy
+
+### Schema Versioning
+
+#### Version Management
+
+- Each storage schema has version number
+- Version stored in metadata: `_schema_version`
+- Migrations run automatically on version mismatch
+- Rollback supported for one version
+
+#### Migration Process
+
+1. **Detection Phase**
+
+   - Check current schema version
+   - Compare with application version
+   - Identify required migrations
+
+2. **Backup Phase**
+
+   - Create backup of current data
+   - Store in temporary IndexedDB
+   - Verify backup integrity
+
+3. **Migration Phase**
+
+   - Run migrations sequentially
+   - Validate each step
+   - Update version number
+
+4. **Verification Phase**
+   - Test data integrity
+   - Verify functionality
+   - Clean up backup if successful
+
+### Backward Compatibility
+
+#### Compatibility Rules
+
+- Support current version and one version back
+- Graceful degradation for older versions
+- Clear upgrade prompts for unsupported versions
+- Data export available before forced upgrade
+
+#### Data Upgrade Paths
+
+1. **Additive Changes**: New fields with defaults
+2. **Transformative Changes**: Data conversion functions
+3. **Destructive Changes**: User confirmation required
+4. **Format Changes**: Automatic conversion utilities
+
+## Error Recovery Patterns
+
+### Module-Specific Recovery
+
+#### User Management Module
+
+- **Auth Failure**: Fallback to anonymous mode
+- **Profile Corruption**: Restore from backup
+- **Preference Errors**: Reset to defaults
+- **Token Expiry**: Automatic refresh attempt
+
+#### Practice Session Module
+
+- **Session Crash**: Auto-save every 30 seconds
+- **Data Loss**: Recover from temporary storage
+- **Sync Failure**: Queue for later retry
+- **State Corruption**: Rebuild from events
+
+#### Audio Engine Module
+
+- **Context Failure**: Reinitialize audio context
+- **Sample Load Error**: Use fallback samples
+- **Playback Failure**: Silent mode with visual cue
+- **Memory Issues**: Clear unused buffers
+
+#### Storage Module
+
+- **Quota Exceeded**: Clean old data automatically
+- **Corruption**: Restore from cloud if available
+- **Access Denied**: Fallback to memory storage
+- **Sync Conflict**: User choice or auto-resolve
+
+### Recovery Strategies
+
+#### Automatic Recovery
+
+1. **Retry Logic**: Exponential backoff
+2. **Circuit Breaker**: Prevent cascade failures
+3. **Fallback Services**: Degraded functionality
+4. **Self-Healing**: Automatic cleanup and repair
+
+#### User Notification Strategies
+
+1. **Silent Recovery**: No user interruption
+2. **Info Toast**: Non-blocking notification
+3. **Warning Dialog**: User acknowledgment
+4. **Error Screen**: Full attention required
+
+#### Recovery Priorities
+
+1. **Preserve User Data**: Never lose practice progress
+2. **Maintain Functionality**: Degraded better than broken
+3. **Clear Communication**: Explain what happened
+4. **Quick Resolution**: Minimize disruption
+
+## Module Communication Patterns
+
+### Communication Types
+
+#### 1. Request/Response Pattern
+
+- **Use Case**: Synchronous data fetching
+- **Example**: Getting user preferences
+- **Timeout**: 5 seconds default
+- **Retry**: 3 attempts with backoff
+
+#### 2. Publish/Subscribe Pattern
+
+- **Use Case**: Event-driven updates
+- **Example**: Practice session events
+- **Delivery**: At-least-once guarantee
+- **Ordering**: FIFO within priority
+
+#### 3. Command/Query Pattern
+
+- **Use Case**: CQRS implementation
+- **Commands**: State-changing operations
+- **Queries**: Read-only operations
+- **Benefits**: Optimized for each use case
+
+#### 4. Message Queue Pattern
+
+- **Use Case**: Offline operations
+- **Example**: Sync queue management
+- **Persistence**: IndexedDB backed
+- **Processing**: Batch or individual
+
+## State Management Strategy
+
+### State Categories
+
+#### Local State
+
+- Component-specific UI state
+- Temporary form data
+- Animation states
+- Not persisted
+
+#### Module State
+
+- Module-specific business logic
+- Cached computations
+- Active session data
+- Persisted selectively
+
+#### Global State
+
+- User authentication status
+- Application preferences
+- Active practice session
+- Cross-module shared data
+
+#### Persistent State
+
+- User progress data
+- Practice history
+- Achievements
+- Sheet music cache
+
+### State Synchronization
+
+#### Sync Patterns
+
+1. **Immediate Sync**: Critical data (preferences)
+2. **Batched Sync**: Performance data (5-minute intervals)
+3. **Lazy Sync**: Large data (on-demand)
+4. **Differential Sync**: Only changed data
+
+#### Conflict Resolution
+
+1. **Last Write Wins**: Simple data (preferences)
+2. **Merge Strategy**: Additive data (practice logs)
+3. **User Choice**: Conflicting changes
+4. **Custom Resolution**: Complex data structures
+
+## Testing Strategy Per Module
+
+### Unit Testing Requirements
+
+#### Module Interface Tests
+
+- All public methods tested
+- Edge cases covered
+- Error conditions verified
+- Performance benchmarks met
+
+#### Mock Strategies
+
+- Dependency injection for testing
+- Mock event bus for isolation
+- Fake storage for speed
+- Stubbed network calls
+
+### Integration Testing Scenarios
+
+#### Cross-Module Flows
+
+1. **User Registration Flow**: User → Storage → Sync
+2. **Practice Session Flow**: Session → Audio → Performance → Storage
+3. **Progress Sync Flow**: Analytics → Sync → Storage → Cloud
+4. **Offline Recovery Flow**: Queue → Sync → Conflict Resolution
+
+### Performance Benchmarks
+
+#### Module-Specific Metrics
+
+- **User Management**: Login < 2s
+- **Audio Engine**: Latency < 50ms
+- **Sheet Music**: Render < 200ms
+- **Storage**: Save < 100ms
+- **Sync**: Queue processing < 5s
+
+## Monitoring & Observability Design
+
+### Key Metrics Per Module
+
+#### User Management
+
+- Authentication success rate
+- Token refresh frequency
+- Profile update latency
+- Active user count
+
+#### Practice Session
+
+- Session completion rate
+- Average session duration
+- Crash frequency
+- Recovery success rate
+
+#### Performance Tracking
+
+- Accuracy trends
+- Note timing precision
+- Feedback generation time
+- Data point frequency
+
+### Health Check System
+
+#### Module Health Indicators
+
+- **Green**: Fully operational
+- **Yellow**: Degraded performance
+- **Red**: Critical failure
+- **Gray**: Not initialized
+
+#### Health Check Endpoints
+
+- `/health/modules` - Individual module status
+- `/health/dependencies` - Dependency health
+- `/health/storage` - Storage availability
+- `/health/sync` - Sync queue status
+
+### Debug Mode Capabilities
+
+#### Debug Features
+
+1. **Event Stream Viewer**: Real-time event monitoring
+2. **State Inspector**: Current state visualization
+3. **Performance Profiler**: Module timing analysis
+4. **Storage Explorer**: Local data inspection
+
+## Plugin Architecture (Future)
+
+### Plugin System Design
+
+#### Plugin Interface
+
+- Standard lifecycle hooks
+- Typed configuration schema
+- Sandboxed execution
+- Resource limits enforced
+
+#### Extension Points
+
+1. **Custom Exercises**: Music generation algorithms
+2. **Instrument Plugins**: New instrument support
+3. **Analytics Plugins**: Custom progress tracking
+4. **UI Themes**: Visual customization
+
+#### Plugin Security
+
+- Capability-based permissions
+- Sandboxed execution environment
+- Resource usage monitoring
+- User consent for data access
+
 ## Middleware Layer
 
 ### Data Sync Middleware
