@@ -44,33 +44,55 @@ export const authResolvers: { Mutation: MutationResolvers } = {
     },
 
     verifyMagicLink: async (_, { token }, context) => {
-      const authService = new AuthService(
-        context.env.MIRUBATO_MAGIC_LINKS,
-        context.env.JWT_SECRET
+      console.log(
+        'verifyMagicLink called with token:',
+        token?.slice(0, 8) + '...'
       )
-      const userService = new UserService(context.env.DB)
 
-      // Verify magic link token
-      const email = await authService.verifyMagicLink(token)
-      if (!email) {
-        throw new Error('Invalid or expired magic link')
-      }
+      try {
+        const authService = new AuthService(
+          context.env.MIRUBATO_MAGIC_LINKS,
+          context.env.JWT_SECRET
+        )
+        const userService = new UserService(context.env.DB)
 
-      // Get or create user
-      let user = await userService.getUserByEmail(email)
-      if (!user) {
-        user = await userService.createUser({ email })
-      }
+        // Verify magic link token
+        console.log('Verifying magic link token...')
+        const email = await authService.verifyMagicLink(token)
+        console.log(
+          'Magic link verification result:',
+          email ? 'success' : 'failed'
+        )
 
-      // Generate tokens
-      const { accessToken, refreshToken } =
-        await authService.generateTokens(user)
+        if (!email) {
+          throw new Error('Invalid or expired magic link')
+        }
 
-      return {
-        accessToken,
-        refreshToken,
-        expiresIn: 900, // 15 minutes
-        user,
+        // Get or create user
+        console.log('Getting or creating user for email:', email)
+        let user = await userService.getUserByEmail(email)
+        if (!user) {
+          console.log('Creating new user')
+          user = await userService.createUser({ email })
+        } else {
+          console.log('Found existing user:', user.id)
+        }
+
+        // Generate tokens
+        console.log('Generating tokens for user:', user.id)
+        const { accessToken, refreshToken } =
+          await authService.generateTokens(user)
+
+        console.log('verifyMagicLink completed successfully')
+        return {
+          accessToken,
+          refreshToken,
+          expiresIn: 900, // 15 minutes
+          user,
+        }
+      } catch (error) {
+        console.error('verifyMagicLink error:', error)
+        throw error
       }
     },
 
