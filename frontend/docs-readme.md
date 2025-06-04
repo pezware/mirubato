@@ -8,7 +8,7 @@ This repository uses automated documentation generation for the frontend TypeScr
 
 1. **API Documentation**: Auto-generated from TypeScript source code using TypeDoc
 
-   - Available at: https://pezware.github.io/mirubato/api-docs/
+   - Available at: https://docs.mirubato.com
    - Includes all modules, components, services, and utilities
    - Updated automatically on every push to main
 
