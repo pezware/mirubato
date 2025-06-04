@@ -2,6 +2,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Practice from './Practice'
+import { AudioProvider } from '../contexts/AudioContext'
 import { audioManager } from '../utils/audioManager'
 import * as Tone from 'tone'
 
@@ -68,6 +69,7 @@ describe('Practice Page', () => {
     mockAudioManager.initialize.mockResolvedValue()
     mockAudioManager.setInstrument.mockReturnValue()
     mockAudioManager.isInitialized.mockReturnValue(true) // Default to initialized
+    mockAudioManager.getInstrument = jest.fn().mockReturnValue('piano')
 
     // Mock Tone.Master.volume - Create a mock object that simulates Tone.Master
     Object.defineProperty(mockTone, 'Master', {
@@ -82,7 +84,9 @@ describe('Practice Page', () => {
   const renderPractice = () => {
     return render(
       <BrowserRouter>
-        <Practice />
+        <AudioProvider audioManager={mockAudioManager as any}>
+          <Practice />
+        </AudioProvider>
       </BrowserRouter>
     )
   }

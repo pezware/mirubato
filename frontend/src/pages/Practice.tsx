@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { audioManager } from '../utils/audioManager'
+import { useAudioManager } from '../contexts/AudioContext'
 import {
   moonlightSonata3rdMovement,
   getPlayableNotes,
@@ -17,6 +17,7 @@ import * as Tone from 'tone'
 type PracticeMode = 'practice' | 'sight-read' | 'debug'
 
 const Practice: React.FC = () => {
+  const audioManager = useAudioManager()
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
 
   // Control states
@@ -34,7 +35,7 @@ const Practice: React.FC = () => {
   // Set instrument to piano (but don't initialize audio yet)
   useEffect(() => {
     audioManager.setInstrument('piano')
-  }, [])
+  }, [audioManager])
 
   // Handle responsive sizing
   useEffect(() => {
