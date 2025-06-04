@@ -5,6 +5,32 @@ import {
   EventCallback,
 } from './types'
 
+/**
+ * Central event bus for module communication using pub/sub pattern.
+ * Provides event subscription, publishing, and history management for decoupled architecture.
+ *
+ * @category Core
+ * @subcategory Infrastructure
+ * @example
+ * ```typescript
+ * const eventBus = EventBus.getInstance();
+ *
+ * // Subscribe to events
+ * const subscriptionId = eventBus.subscribe('user:login', (payload) => {
+ *   console.log('User logged in:', payload.data.userId);
+ * });
+ *
+ * // Publish events
+ * await eventBus.publish({
+ *   source: 'auth',
+ *   type: 'user:login',
+ *   data: { userId: '123', timestamp: Date.now() }
+ * });
+ *
+ * // Unsubscribe when done
+ * eventBus.unsubscribe(subscriptionId);
+ * ```
+ */
 export class EventBus {
   private static instance: EventBus | null = null
   private subscriptions: Map<string, EventSubscription[]> = new Map()
@@ -14,6 +40,13 @@ export class EventBus {
 
   private constructor() {}
 
+  /**
+   * Gets the singleton instance of EventBus.
+   * Creates a new instance if none exists.
+   *
+   * @returns The EventBus singleton instance
+   * @static
+   */
   static getInstance(): EventBus {
     if (!EventBus.instance) {
       EventBus.instance = new EventBus()
@@ -21,10 +54,41 @@ export class EventBus {
     return EventBus.instance
   }
 
+  /**
+   * Resets the singleton instance (primarily for testing).
+   * Use with caution as this will clear all subscriptions and history.
+   *
+   * @static
+   */
   static resetInstance(): void {
     EventBus.instance = null
   }
 
+  /**
+   * Subscribes to events matching a pattern.
+   * Supports wildcard patterns and priority-based execution order.
+   *
+   * @param pattern - Event type pattern to match (supports wildcards like 'user:*')
+   * @param callback - Function to call when matching events are published
+   * @param options - Optional subscription configuration
+   * @param options.priority - Execution priority (lower numbers execute first)
+   * @param options.filter - Additional filter function for fine-grained matching
+   * @returns Subscription ID for later unsubscription
+   *
+   * @example
+   * ```typescript
+   * // Basic subscription
+   * const id = eventBus.subscribe('practice:session:start', (payload) => {
+   *   console.log('Practice started:', payload.data);
+   * });
+   *
+   * // Wildcard subscription with priority
+   * const id2 = eventBus.subscribe('practice:*', handlePracticeEvent, {
+   *   priority: EventPriority.HIGH,
+   *   filter: (payload) => payload.data.userId === currentUser.id
+   * });
+   * ```
+   */
   subscribe(
     pattern: string,
     callback: EventCallback,
@@ -56,6 +120,20 @@ export class EventBus {
     return subscription.id
   }
 
+  /**
+   * Unsubscribes from events using the subscription ID.
+   *
+   * @param subscriptionId - The subscription ID returned by subscribe()
+   * @returns True if subscription was found and removed, false otherwise
+   *
+   * @example
+   * ```typescript
+   * const id = eventBus.subscribe('user:logout', handleLogout);
+   * // Later...
+   * const success = eventBus.unsubscribe(id);
+   * console.log(success ? 'Unsubscribed' : 'Subscription not found');
+   * ```
+   */
   unsubscribe(subscriptionId: string): boolean {
     for (const [pattern, subs] of this.subscriptions.entries()) {
       const index = subs.findIndex(sub => sub.id === subscriptionId)
@@ -70,6 +148,35 @@ export class EventBus {
     return false
   }
 
+  /**
+   * Publishes an event to all matching subscribers.
+   * Automatically adds eventId and timestamp to the payload.
+   *
+   * @param event - Event data without eventId and timestamp (added automatically)
+   * @returns Promise that resolves when all subscribers have been notified
+   *
+   * @example
+   * ```typescript
+   * // Simple event
+   * await eventBus.publish({
+   *   source: 'practice',
+   *   type: 'session:complete',
+   *   data: { duration: 1800, score: 85 }
+   * });
+   *
+   * // Complex event with metadata
+   * await eventBus.publish({
+   *   source: 'analytics',
+   *   type: 'progress:milestone',
+   *   data: {
+   *     userId: '123',
+   *     milestone: 'first_perfect_score',
+   *     achievedAt: Date.now()
+   *   },
+   *   metadata: { importance: 'high' }
+   * });
+   * ```
+   */
   async publish(
     event: Omit<EventPayload, 'eventId' | 'timestamp'>
   ): Promise<void> {
@@ -120,6 +227,32 @@ export class EventBus {
     return false
   }
 
+  /**
+   * Retrieves event history with optional filtering.
+   * Useful for debugging, analytics, and event replay scenarios.
+   *
+   * @param filter - Optional filter criteria
+   * @param filter.source - Filter by event source
+   * @param filter.type - Filter by event type (supports wildcards)
+   * @param filter.limit - Maximum number of events to return (from most recent)
+   * @param filter.since - Only events after this timestamp
+   * @returns Array of matching events in chronological order
+   *
+   * @example
+   * ```typescript
+   * // Get all events from practice module
+   * const practiceEvents = eventBus.getEventHistory({
+   *   source: 'practice',
+   *   limit: 50
+   * });
+   *
+   * // Get recent error events
+   * const recentErrors = eventBus.getEventHistory({
+   *   type: '*:error',
+   *   since: Date.now() - (60 * 1000) // Last minute
+   * });
+   * ```
+   */
   getEventHistory(filter?: {
     source?: string
     type?: string
@@ -149,10 +282,31 @@ export class EventBus {
     return events
   }
 
+  /**
+   * Clears all event history.
+   * Use with caution as this removes debugging information.
+   *
+   * @example
+   * ```typescript
+   * // Clear history for memory management
+   * eventBus.clearHistory();
+   * ```
+   */
   clearHistory(): void {
     this.eventHistory = []
   }
 
+  /**
+   * Gets the total number of active subscriptions across all patterns.
+   * Useful for monitoring and debugging subscription leaks.
+   *
+   * @returns Total number of active subscriptions
+   *
+   * @example
+   * ```typescript
+   * console.log(`Active subscriptions: ${eventBus.getSubscriptionCount()}`);
+   * ```
+   */
   getSubscriptionCount(): number {
     let count = 0
     for (const subs of this.subscriptions.values()) {

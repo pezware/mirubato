@@ -1,16 +1,28 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/modules"],
+  "entryPoints": [
+    "./src/modules",
+    "./src/components",
+    "./src/utils",
+    "./src/contexts",
+    "./src/services"
+  ],
   "entryPointStrategy": "expand",
-  "out": "./public/docs",
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**"],
+  "out": "./docs",
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/node_modules/**",
+    "**/__mocks__/**"
+  ],
   "includeVersion": true,
-  "name": "Mirubato Module Documentation",
+  "name": "Mirubato API Documentation",
   "navigationLinks": {
     "GitHub": "https://github.com/pezware/mirubato",
-    "App": "https://mirubato.com"
+    "App": "https://mirubato.com",
+    "Live Demo": "https://mirubato.com"
   },
-  "plugin": ["typedoc-plugin-markdown"],
   "readme": "none",
   "excludePrivate": true,
   "excludeProtected": true,
@@ -18,9 +30,61 @@
   "disableSources": false,
   "sort": ["source-order"],
   "categorizeByGroup": true,
+  "kindSortOrder": [
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Method",
+    "Function",
+    "Variable"
+  ],
   "validation": {
     "notExported": true,
     "invalidLink": true,
     "notDocumented": false
-  }
+  },
+  "groupOrder": [
+    "Modules",
+    "Components",
+    "Services",
+    "Utilities",
+    "Contexts",
+    "Types",
+    "Interfaces",
+    "Classes",
+    "Enums",
+    "Variables",
+    "Functions"
+  ],
+  "categoryOrder": [
+    "Core",
+    "Infrastructure",
+    "Practice",
+    "Performance",
+    "Analytics",
+    "Curriculum",
+    "Visualization",
+    "Audio",
+    "UI Components",
+    "Services",
+    "Utilities",
+    "Other"
+  ],
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "searchInComments": true,
+  "titleLink": "https://mirubato.com",
+  "customCss": "./typedoc-theme.css",
+  "hideGenerator": false
 }
