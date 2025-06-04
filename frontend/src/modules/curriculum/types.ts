@@ -286,6 +286,7 @@ export interface TechnicalExercise {
     | 'pattern'
     | 'etude'
     | 'finger-independence'
+    | 'technique'
   instrument: 'piano' | 'guitar'
   level: number // 1-10
   key?: string

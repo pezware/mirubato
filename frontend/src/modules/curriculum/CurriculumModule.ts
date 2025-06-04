@@ -23,13 +23,11 @@ import type {
   PracticeProgress,
   TechnicalExercise,
   TechnicalType,
-  TechnicalVariation,
   MusicContent,
   DifficultyAssessment,
   PerformanceReadiness,
   MaintenanceSchedule,
   PieceAnalytics,
-  ExerciseGenerationParams,
 } from './types'
 
 interface CacheEntry<T> {

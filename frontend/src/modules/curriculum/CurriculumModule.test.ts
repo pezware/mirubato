@@ -9,13 +9,7 @@ import type {
   AssessmentResult,
   CurriculumFilters,
   PracticeConfig,
-  PracticeSession,
-  TechnicalExercise,
   TechnicalType,
-  DifficultyAssessment,
-  PerformanceReadiness,
-  MaintenanceSchedule,
-  ExerciseGenerationParams,
 } from './types'
 import type { EventPayload } from '../core/types'
 
