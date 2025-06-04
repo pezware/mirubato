@@ -45,8 +45,7 @@ npm run build
 
 ### Development Tools
 
-- 🔍 **[Debug Dashboard](http://localhost:3000/debug)** - Module health monitoring and system diagnostics
-- 📚 **[API Documentation](http://localhost:3000/docs)** - Auto-generated module documentation
+- 🔍 **[Debug Dashboard](https://mirubato.com/debug)** - Module health monitoring and system diagnostics
 
 ## Documentation
 
@@ -108,22 +107,31 @@ Educational content is licensed under CC BY 4.0 with proper attribution.
 
 ## Status
 
-🚧 **Phase 1: Foundation** (Current)
+🚧 **Phase 3: Advanced Features & Professional Tools** (Current)
 
 ✅ Completed:
 
-- Monorepo structure with frontend/backend separation
-- GraphQL backend with authentication
-- Landing page with interactive piano
-- Music player with tempo control
+**Phase 1 & 2**:
+
+- Core infrastructure: Auth, storage, audio, sheet music display
+- EventBus & Storage modules with TTL, metadata, namespaces
+- Sync module with retry logic and conflict resolution
+- Practice Session & Performance Tracking modules
+- Test coverage: Backend 74%, Frontend 65%+
+
+**Phase 3 Progress**:
+
+- ✅ Progress Analytics Module (90%+ test coverage)
+- ✅ Practice Logger Module (90.4% test coverage)
+- ✅ Curriculum Module (87.37% test coverage)
 
 🔄 In Progress:
 
-- Apollo Client integration
-- User authentication UI
-- Sheet music service
+- RepertoireManager Module
+- AudioFeedback Module
+- Visualization Module
 
-See [Roadmap](docs/ROADMAP.md) for detailed progress.
+See [Roadmap](docs/ROADMAP.md) and [Phase 3 Architecture](docs/PHASE3_MODULE_ARCHITECTURE.md) for detailed progress.
 
 ## Links
 
