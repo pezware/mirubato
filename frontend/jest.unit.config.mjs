@@ -9,8 +9,7 @@ export default {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^tone$': '<rootDir>/src/__mocks__/tone.ts',
-    '^vexflow$': '<rootDir>/src/__mocks__/vexflow.ts',
-    '^.*/audioManager$': '<rootDir>/src/__mocks__/audioManager.ts'
+    '^vexflow$': '<rootDir>/src/__mocks__/vexflow.ts'
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {

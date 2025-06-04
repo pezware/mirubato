@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from 'tone'
-import { audioManager } from '../utils/audioManager'
+import { useAudioManager } from '../contexts/AudioContext'
 
 export interface PlayableNote {
   note: string
@@ -48,6 +48,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
   className = '',
   compact = false,
 }) => {
+  const audioManager = useAudioManager()
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [tempo, setTempo] = useState(initialTempo)
