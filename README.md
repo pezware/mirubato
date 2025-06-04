@@ -43,6 +43,11 @@ npm test
 npm run build
 ```
 
+### Development Tools
+
+- 🔍 **[Debug Dashboard](http://localhost:3000/debug)** - Module health monitoring and system diagnostics
+- 📚 **[API Documentation](http://localhost:3000/docs)** - Auto-generated module documentation
+
 ## Documentation
 
 - 📖 **[Development Guide](docs/DEVELOPMENT.md)** - Setup, development, and deployment

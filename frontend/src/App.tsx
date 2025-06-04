@@ -4,6 +4,7 @@ import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
 import AuthVerify from './pages/AuthVerify'
 import Debug from './pages/Debug'
+import Docs from './pages/Docs'
 import { VersionInfo } from './components/VersionInfo'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/profile" element={<div>Profile Page (TODO)</div>} />
             <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
             <Route path="/debug" element={<Debug />} />
+            <Route path="/docs/*" element={<Docs />} />
           </Routes>
           <VersionInfo />
         </div>

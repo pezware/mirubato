@@ -10,6 +10,7 @@ import type { ModuleHealth, ModuleInterface } from '../modules/core/types'
 import type { ProgressReport } from '../modules/analytics/types'
 import { endpoints } from '../config/endpoints'
 import { env } from '../config/env'
+import { version } from '../config/version'
 // import environments from '../../../config/environments.json'
 
 interface ModuleStatus {
@@ -209,7 +210,20 @@ export default function Debug() {
             </div>
             <div>
               <p className="text-gray-400">Frontend Version:</p>
-              <p className="font-mono">dev</p>
+              <p className="font-mono">
+                {version.gitCommit !== 'unknown' ? (
+                  <a
+                    href={`https://github.com/pezware/mirubato/commit/${version.gitCommit}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    {version.gitCommit}
+                  </a>
+                ) : (
+                  version.frontend
+                )}
+              </p>
             </div>
             <div>
               <p className="text-gray-400">Backend Version:</p>
