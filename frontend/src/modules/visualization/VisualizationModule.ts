@@ -27,13 +27,11 @@ import type {
   ProgressVisualizationData,
   HeatmapData,
   RadarChartData,
-  TreeVisualizationData,
   DashboardLayout,
   ChartInteractionEvent,
   VisualizationAnalytics,
   VisualizationPerformanceMetrics,
   ChartStyling,
-  ResponsiveConfig,
   VisualizationError,
 } from './types'
 
@@ -768,7 +766,7 @@ export class VisualizationModule implements ModuleInterface {
     return description + '.'
   }
 
-  async getChartStyling(chartType: ChartType): Promise<ChartStyling> {
+  async getChartStyling(_chartType: ChartType): Promise<ChartStyling> {
     const baseColors = this.getChartColors()
 
     return {
@@ -899,8 +897,10 @@ export class VisualizationModule implements ModuleInterface {
 
     if (spec.dimensions) {
       if (
-        (spec.dimensions.width && spec.dimensions.width <= 0) ||
-        (spec.dimensions.height && spec.dimensions.height <= 0)
+        (typeof spec.dimensions.width === 'number' &&
+          spec.dimensions.width <= 0) ||
+        (typeof spec.dimensions.height === 'number' &&
+          spec.dimensions.height <= 0)
       ) {
         throw new Error('Invalid dimensions: width and height must be positive')
       }
@@ -1001,7 +1001,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private createChartConfig(
     data: ChartData,
-    dimensions: { width: number; height: number }
+    _dimensions: { width: number; height: number }
   ): any {
     const styling = this.getChartColors()
 
@@ -1074,7 +1074,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private async exportAsPNG(
     chartId: string,
-    options: VisualizationExportOptions
+    _options: VisualizationExportOptions
   ): Promise<VisualizationExportResult> {
     // In a real implementation, this would render the chart and export as PNG
     const mockData = 'data:image/png;base64,test'
@@ -1090,7 +1090,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private async exportAsSVG(
     chartId: string,
-    options: VisualizationExportOptions
+    _options: VisualizationExportOptions
   ): Promise<VisualizationExportResult> {
     const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400">
       <text x="400" y="200" text-anchor="middle">Chart: ${chartId}</text>
@@ -1107,7 +1107,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private async exportAsPDF(
     chartId: string,
-    options: VisualizationExportOptions
+    _options: VisualizationExportOptions
   ): Promise<VisualizationExportResult> {
     // Mock PDF export
     const pdfData = `PDF content for chart ${chartId}`
@@ -1123,7 +1123,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private async exportAsCSV(
     chartId: string,
-    options: VisualizationExportOptions
+    _options: VisualizationExportOptions
   ): Promise<VisualizationExportResult> {
     const csvData = `Date,Value\n2025-01-01,75\n2025-01-02,80`
 
@@ -1138,7 +1138,7 @@ export class VisualizationModule implements ModuleInterface {
 
   private async exportAsJSON(
     chartId: string,
-    options: VisualizationExportOptions
+    _options: VisualizationExportOptions
   ): Promise<VisualizationExportResult> {
     const jsonData = JSON.stringify({
       chartId,

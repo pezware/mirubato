@@ -7,8 +7,6 @@ import type {
   ChartType,
   VisualizationExportOptions,
   ProgressVisualizationData,
-  HeatmapData,
-  RadarChartData,
   DashboardLayout,
   ChartInteractionEvent,
 } from './types'
@@ -26,7 +24,7 @@ jest.mock('chart.js', () => {
     render: jest.fn(),
   }))
 
-  mockChart.register = jest.fn()
+  ;(mockChart as any).register = jest.fn()
 
   return {
     Chart: mockChart,
@@ -784,7 +782,7 @@ describe('VisualizationModule', () => {
       )
 
       expect(mobileSpec.dimensions.width).toBeLessThan(
-        testChartSpec.dimensions.width!
+        testChartSpec.dimensions.width as number
       )
       expect(mobileSpec.interactivity.zoom).toBe(false) // Disabled for mobile
     })
