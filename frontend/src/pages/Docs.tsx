@@ -37,7 +37,7 @@ export default function Docs() {
 
   const renderMarkdown = (md: string) => {
     // Basic markdown to HTML conversion
-    let html = md
+    const html = md
       // Headers
       .replace(
         /^### (.*$)/gim,

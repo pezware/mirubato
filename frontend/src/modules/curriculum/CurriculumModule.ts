@@ -1616,25 +1616,25 @@ export class CurriculumModule implements ModuleInterface {
 
   private assessRhythmicDifficulty(content: MusicContent): number {
     // Simplified assessment - would analyze actual rhythmic patterns in real implementation
-    let score = Math.min(8, Math.floor(content.measures / 20) + 1)
+    const score = Math.min(8, Math.floor(content.measures / 20) + 1)
     return score
   }
 
   private assessHarmonicDifficulty(content: MusicContent): number {
     // Simplified assessment - would analyze harmonic complexity
-    let score = Math.min(7, Math.floor(content.measures / 30) + 2)
+    const score = Math.min(7, Math.floor(content.measures / 30) + 2)
     return score
   }
 
   private assessMusicalDifficulty(content: MusicContent): number {
     // Simplified assessment - would analyze musical expression requirements
-    let score = Math.min(6, Math.floor(content.measures / 25) + 1)
+    const score = Math.min(6, Math.floor(content.measures / 25) + 1)
     return score
   }
 
   private assessCognitiveDifficulty(content: MusicContent): number {
     // Simplified assessment - would analyze reading complexity
-    let score = Math.min(9, Math.floor(content.measures / 15) + 1)
+    const score = Math.min(9, Math.floor(content.measures / 15) + 1)
     return score
   }
 

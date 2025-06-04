@@ -1,11 +1,40 @@
 import * as Tone from 'tone'
+import {
+  AudioManagerInterface,
+  AudioManagerConfig,
+} from './audioManagerInterface'
 
-class AudioManager {
+/**
+ * Audio Manager implementation using Tone.js
+ * @category Audio
+ * @subcategory Core Implementation
+ */
+export class AudioManager implements AudioManagerInterface {
   private initialized = false
   private pianoSampler: Tone.Sampler | null = null
   private guitarSynth: Tone.PolySynth | null = null
-  private currentInstrument: 'piano' | 'guitar' = 'piano'
+  private currentInstrument: 'piano' | 'guitar'
   private loadingPromise: Promise<void> | null = null
+  private config: AudioManagerConfig
+  private toneInstance: typeof Tone
+
+  constructor(
+    config: AudioManagerConfig = {},
+    toneInstance: typeof Tone = Tone
+  ) {
+    this.config = {
+      samplesBaseUrl: 'https://tonejs.github.io/audio/salamander/',
+      defaultInstrument: 'piano',
+      reverb: {
+        decay: 2.5,
+        wet: 0.15,
+        preDelay: 0.01,
+      },
+      ...config,
+    }
+    this.currentInstrument = this.config.defaultInstrument || 'piano'
+    this.toneInstance = toneInstance
+  }
 
   isInitialized(): boolean {
     return this.initialized
@@ -31,19 +60,17 @@ class AudioManager {
       console.log('Initializing audio system...')
 
       // Start the audio context - requires user gesture
-      await Tone.start()
+      await this.toneInstance.start()
       console.log('Tone.js started successfully')
 
-      // For now, always use CDN samples since local samples aren't deployed yet
-      // Once samples are added to the repo, we can switch to local loading
-      const baseUrl = 'https://tonejs.github.io/audio/salamander/'
+      const baseUrl = this.config.samplesBaseUrl!
 
       console.log(`Loading piano samples from: ${baseUrl}`)
 
       // Create piano sampler with Salamander Grand Piano samples
       // We'll use a subset of samples to reduce loading time
       // The sampler will automatically pitch-shift to fill in missing notes
-      this.pianoSampler = new Tone.Sampler({
+      this.pianoSampler = new this.toneInstance.Sampler({
         urls: {
           A0: 'A0.mp3',
           C1: 'C1.mp3',
@@ -88,23 +115,26 @@ class AudioManager {
       }).toDestination()
 
       // Create guitar synth (using synthetic sound for now)
-      this.guitarSynth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: {
-          type: 'triangle',
-        },
-        envelope: {
-          attack: 0.005,
-          decay: 0.1,
-          sustain: 0.3,
-          release: 1,
-        },
-      }).toDestination()
+      this.guitarSynth = new this.toneInstance.PolySynth(
+        this.toneInstance.Synth,
+        {
+          oscillator: {
+            type: 'triangle',
+          },
+          envelope: {
+            attack: 0.005,
+            decay: 0.1,
+            sustain: 0.3,
+            release: 1,
+          },
+        }
+      ).toDestination()
 
       // Add reverb for both instruments
-      const reverb = new Tone.Reverb({
-        decay: 2.5,
-        wet: 0.15,
-        preDelay: 0.01,
+      const reverb = new this.toneInstance.Reverb({
+        decay: this.config.reverb!.decay,
+        wet: this.config.reverb!.wet,
+        preDelay: this.config.reverb!.preDelay,
       }).toDestination()
 
       this.pianoSampler.connect(reverb)
@@ -113,7 +143,8 @@ class AudioManager {
       // Wait for piano samples to load
       console.log('Loading piano samples...')
       await new Promise<void>((resolve, reject) => {
-        Tone.loaded()
+        this.toneInstance
+          .loaded()
           .then(() => {
             console.log('Piano samples loaded successfully')
             resolve()
@@ -226,5 +257,14 @@ class AudioManager {
   }
 }
 
-// Export singleton instance
-export const audioManager = new AudioManager()
+// Create a factory function for creating AudioManager instances
+export function createAudioManager(
+  config?: AudioManagerConfig,
+  toneInstance?: typeof Tone
+): AudioManagerInterface {
+  return new AudioManager(config, toneInstance)
+}
+
+// Default instance for backward compatibility
+// This will be deprecated in favor of dependency injection
+export const audioManager = createAudioManager()
