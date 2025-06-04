@@ -321,7 +321,9 @@ describe('Practice Page', () => {
       // Force re-render to check updated state
       rerender(
         <BrowserRouter>
-          <Practice />
+          <AudioProvider audioManager={mockAudioManager as any}>
+            <Practice />
+          </AudioProvider>
         </BrowserRouter>
       )
 
