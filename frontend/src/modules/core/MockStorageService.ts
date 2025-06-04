@@ -9,7 +9,7 @@ export class MockStorageService {
     return this.storage.get(key) || null
   }
 
-  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T>(key: string, value: T, _ttl?: number): Promise<void> {
     this.storage.set(key, value)
     // Ignore TTL in mock
   }

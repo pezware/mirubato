@@ -522,7 +522,7 @@ export class PracticeSessionModule implements ModuleInterface {
     if (this.currentSession.performance) {
       const prevTotal = stats.averageAccuracy * (stats.totalSessions - 1)
       stats.averageAccuracy =
-        (prevTotal + this.currentSession.performance.accuracy) /
+        (prevTotal + this.currentSession.performance.accuracy.percentage) /
         stats.totalSessions
     }
 
@@ -557,7 +557,7 @@ export class PracticeSessionModule implements ModuleInterface {
       const prevAccuracy =
         instrumentStats.averageAccuracy * (instrumentStats.sessionCount - 1)
       instrumentStats.averageAccuracy =
-        (prevAccuracy + this.currentSession.performance.accuracy) /
+        (prevAccuracy + this.currentSession.performance.accuracy.percentage) /
         instrumentStats.sessionCount
     }
 

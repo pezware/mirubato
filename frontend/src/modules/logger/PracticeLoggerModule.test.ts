@@ -505,8 +505,8 @@ describe('PracticeLoggerModule', () => {
       }
 
       // Get the event handler
-      const eventHandler = eventBus.subscribe.mock.calls.find(
-        call => call[0] === 'practice:session:ended'
+      const eventHandler = (subscribeSpy as jest.Mock).mock.calls.find(
+        (call: any[]) => call[0] === 'practice:session:ended'
       )?.[1]
 
       await eventHandler?.(sessionEndedEvent)
@@ -555,8 +555,8 @@ describe('PracticeLoggerModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = eventBus.subscribe.mock.calls.find(
-        call => call[0] === 'progress:milestone:achieved'
+      const eventHandler = (subscribeSpy as jest.Mock).mock.calls.find(
+        (call: any[]) => call[0] === 'progress:milestone:achieved'
       )?.[1]
 
       await eventHandler?.(milestoneEvent)

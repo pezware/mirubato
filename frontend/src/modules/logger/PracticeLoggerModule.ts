@@ -50,10 +50,7 @@ export class PracticeLoggerModule implements ModuleInterface {
         metadata: { version: this.version },
       })
 
-      // Initialize storage if needed
-      if (this.storage.initialize) {
-        await this.storage.initialize()
-      }
+      // Storage initialization handled by constructor
 
       // Set up event subscriptions
       this.setupEventSubscriptions()

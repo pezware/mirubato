@@ -12,6 +12,9 @@ import {
   UserScopedEntity,
 } from '../core/sharedTypes'
 
+// Re-export shared types
+export { SkillLevel, FocusArea, MusicGenre } from '../core/sharedTypes'
+
 export interface CurriculumConfig {
   instrument: Instrument
   skillLevel: SkillLevel
@@ -121,7 +124,7 @@ export interface RepertoirePiece {
   id: string
   title: string
   composer: string
-  instrument: 'piano' | 'guitar'
+  instrument: Instrument
   difficulty: number // 1-10
   genre: MusicGenre
   duration?: number // seconds
@@ -270,7 +273,7 @@ export interface TechnicalExercise {
     | 'etude'
     | 'finger-independence'
     | 'technique'
-  instrument: 'piano' | 'guitar'
+  instrument: Instrument
   level: number // 1-10
   key?: string
   pattern?: string

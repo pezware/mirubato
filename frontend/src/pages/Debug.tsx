@@ -50,6 +50,7 @@ export default function Debug() {
       const performanceModule = new PerformanceTrackingModule(storageModule)
       const analyticsModule = new ProgressAnalyticsModule(
         eventBus,
+        undefined,
         storageModule
       )
 

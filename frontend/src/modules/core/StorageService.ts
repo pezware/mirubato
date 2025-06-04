@@ -162,7 +162,7 @@ export class StorageService {
    */
   destroy(): void {
     // Clear all pending requests
-    for (const [requestId, pendingRequest] of this.pendingRequests) {
+    for (const [, pendingRequest] of this.pendingRequests) {
       clearTimeout(pendingRequest.timeout)
       pendingRequest.reject(new Error('StorageService destroyed'))
     }
