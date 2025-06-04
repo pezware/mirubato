@@ -106,6 +106,43 @@ mirubato/
 - **Auth**: Magic links + JWT
 - **Music**: VexFlow.js (notation) + Tone.js (audio)
 
+### Module Implementation Guidelines
+
+When implementing any new module, **ALWAYS** follow these steps:
+
+1. **Write Tests First (TDD)**
+
+   - Create comprehensive test suite BEFORE implementation
+   - Aim for >80% coverage (90% for critical modules)
+   - Tests define the specification
+
+2. **Add TypeDoc Documentation**
+
+   - Document all public interfaces with JSDoc comments
+   - Include examples in documentation
+   - Run `npm run docs:generate` to verify
+
+3. **Verify Test Coverage**
+   - Run `npm test -- --coverage` for the module
+   - Ensure coverage meets requirements
+   - No module is complete without proper tests
+
+Example workflow:
+
+```bash
+# 1. Create test file first
+touch src/modules/newModule/NewModule.test.ts
+
+# 2. Write tests that define behavior
+# 3. Implement module to make tests pass
+# 4. Add JSDoc comments
+# 5. Generate and verify documentation
+npm run docs:generate
+
+# 6. Check coverage
+npm test -- src/modules/newModule --coverage
+```
+
 ### Musical Implementation
 
 ```typescript

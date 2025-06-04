@@ -14,6 +14,28 @@ import type {
   ConsistencyMetrics,
 } from './types'
 
+/**
+ * Progress Analytics Module
+ *
+ * Provides comprehensive analytics and insights for user practice sessions.
+ * This module tracks performance metrics, identifies areas for improvement,
+ * and monitors progress over time.
+ *
+ * @module ProgressAnalyticsModule
+ * @implements {ProgressAnalyticsModuleInterface}
+ *
+ * @example
+ * ```typescript
+ * const analytics = new ProgressAnalyticsModule(eventBus, storageModule);
+ * await analytics.initialize();
+ *
+ * // Get progress report
+ * const report = await analytics.getProgressReport('user123', {
+ *   start: Date.now() - 7 * 24 * 60 * 60 * 1000,
+ *   end: Date.now()
+ * });
+ * ```
+ */
 export class ProgressAnalyticsModule
   implements ProgressAnalyticsModuleInterface
 {
@@ -116,6 +138,21 @@ export class ProgressAnalyticsModule
     return { ...this.health }
   }
 
+  /**
+   * Generates a comprehensive progress report for a user within a specified time range
+   *
+   * @param userId - The unique identifier of the user
+   * @param timeRange - The time range for the report (start and end timestamps)
+   * @returns A promise that resolves to a detailed progress report
+   *
+   * @example
+   * ```typescript
+   * const report = await analytics.getProgressReport('user123', {
+   *   start: Date.now() - 7 * 24 * 60 * 60 * 1000, // Last 7 days
+   *   end: Date.now()
+   * });
+   * ```
+   */
   async getProgressReport(
     userId: string,
     timeRange: TimeRange
@@ -151,6 +188,12 @@ export class ProgressAnalyticsModule
     }
   }
 
+  /**
+   * Identifies areas where the user needs improvement based on performance data
+   *
+   * @param userId - The unique identifier of the user
+   * @returns A promise that resolves to an array of weak areas with suggestions
+   */
   async getWeakAreas(userId: string): Promise<WeakArea[]> {
     try {
       const performanceData = await this.storageModule.loadLocal<any[]>(
@@ -182,6 +225,12 @@ export class ProgressAnalyticsModule
     }
   }
 
+  /**
+   * Provides personalized practice recommendations based on identified weak areas
+   *
+   * @param userId - The unique identifier of the user
+   * @returns A promise that resolves to prioritized focus areas with exercises
+   */
   async getSuggestedFocus(userId: string): Promise<FocusArea[]> {
     const weakAreas = await this.getWeakAreas(userId)
 
@@ -193,6 +242,12 @@ export class ProgressAnalyticsModule
     }))
   }
 
+  /**
+   * Checks if any milestones were achieved during a practice session
+   *
+   * @param sessionData - The data from the completed practice session
+   * @returns A promise that resolves to an array of achieved milestones
+   */
   async checkMilestones(sessionData: SessionData): Promise<Milestone[]> {
     const achievedMilestones: Milestone[] = []
 
@@ -245,6 +300,13 @@ export class ProgressAnalyticsModule
     }
   }
 
+  /**
+   * Analyzes accuracy trends over a specified number of days
+   *
+   * @param userId - The unique identifier of the user
+   * @param days - Number of days to analyze
+   * @returns A promise that resolves to trend data with improvement analysis
+   */
   async getAccuracyTrend(userId: string, days: number): Promise<TrendData> {
     try {
       const sessions = await this.getRecentSessions(userId, days)
@@ -276,6 +338,12 @@ export class ProgressAnalyticsModule
     }
   }
 
+  /**
+   * Evaluates practice consistency including streaks and session frequency
+   *
+   * @param userId - The unique identifier of the user
+   * @returns A promise that resolves to consistency metrics
+   */
   async getPracticeConsistency(userId: string): Promise<ConsistencyMetrics> {
     try {
       const practiceData = await this.storageModule.loadLocal<{

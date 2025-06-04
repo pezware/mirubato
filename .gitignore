@@ -97,6 +97,7 @@ pids/
 docs/api/
 docs/coverage/
 *.md.bak
+public/docs/
 
 # TypeScript cache
 *.tsbuildinfo
