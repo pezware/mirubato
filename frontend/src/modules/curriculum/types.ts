@@ -8,7 +8,6 @@ import {
   SkillLevel,
   MusicGenre,
   FocusArea,
-  EntityBase,
   UserScopedEntity,
 } from '../core/sharedTypes'
 
@@ -176,7 +175,7 @@ export interface CurriculumRecommendation {
 }
 
 export interface CurriculumFilters {
-  instrument?: 'piano' | 'guitar'
+  instrument?: Instrument
   skillLevel?: SkillLevel
   genre?: MusicGenre[]
   focusArea?: FocusArea[]

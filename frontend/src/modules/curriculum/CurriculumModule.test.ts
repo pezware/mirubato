@@ -15,6 +15,7 @@ import type {
   AssessmentResult,
   CurriculumFilters,
   PracticeConfig,
+  PracticeSession,
   TechnicalType,
 } from './types'
 import type { EventPayload } from '../core/types'
@@ -29,11 +30,11 @@ describe('CurriculumModule', () => {
   // Test data
   const testUserId = 'test-user-123'
   const testConfig: CurriculumConfig = {
-    instrument: 'piano',
-    skillLevel: 'intermediate',
+    instrument: Instrument.PIANO,
+    skillLevel: SkillLevel.INTERMEDIATE,
     weeklyPracticeTarget: 300, // 5 hours
-    preferredGenres: ['classical', 'jazz'],
-    focusAreas: ['sight-reading', 'technique'],
+    preferredGenres: [MusicGenre.CLASSICAL, MusicGenre.JAZZ],
+    focusAreas: [FocusArea.SIGHT_READING, FocusArea.TECHNIQUE],
     autoProgress: true,
   }
 
@@ -375,8 +376,8 @@ describe('CurriculumModule', () => {
       }
 
       const filters: CurriculumFilters = {
-        instrument: 'piano',
-        genre: ['classical', 'jazz'],
+        instrument: Instrument.PIANO,
+        genre: [MusicGenre.CLASSICAL, MusicGenre.JAZZ],
         difficulty: { min: 4, max: 8 },
       }
 
@@ -531,10 +532,10 @@ describe('CurriculumModule', () => {
     it('should track skill progress over time', async () => {
       const skillProgress = await curriculum.getSkillProgress(
         testUserId,
-        'sight-reading'
+        FocusArea.SIGHT_READING
       )
 
-      expect(skillProgress).toHaveProperty('skill', 'sight-reading')
+      expect(skillProgress).toHaveProperty('skill', FocusArea.SIGHT_READING)
       expect(skillProgress).toHaveProperty('currentLevel')
       expect(skillProgress).toHaveProperty('history')
     })
@@ -582,9 +583,9 @@ describe('CurriculumModule', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Check that path was updated in storage
-      const updatedPath = await mockStorage.get(`path:${path.id}`)
+      const updatedPath = await mockStorage.get<LearningPath>(`path:${path.id}`)
       expect(updatedPath).toBeDefined()
-      expect(updatedPath.phases[0].modules[0].progress).toBeGreaterThan(0)
+      expect(updatedPath?.phases[0].modules[0].progress).toBeGreaterThan(0)
     })
 
     it('should unlock achievements when milestones are reached', async () => {
@@ -882,11 +883,11 @@ describe('CurriculumModule', () => {
         await curriculum.updatePracticeProgress(session.id, progressUpdate)
 
         // Check that session was updated in storage
-        const updatedSession = await mockStorage.get(
+        const updatedSession = await mockStorage.get<PracticeSession>(
           `practice:session:${session.id}`
         )
         expect(updatedSession).toBeDefined()
-        expect(updatedSession.overallProgress).toMatchObject({
+        expect(updatedSession?.overallProgress).toMatchObject({
           accuracy: 0.95,
           tempoAchieved: 80,
           qualityScore: 0.92,

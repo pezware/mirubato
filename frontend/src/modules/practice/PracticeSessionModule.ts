@@ -12,6 +12,8 @@ import {
   PracticeStats,
   Mistake,
 } from './types'
+import { MistakeType } from '../core/sharedTypes'
+import { Instrument } from '../../../../shared/types'
 
 export class PracticeSessionModule implements ModuleInterface {
   name = 'PracticeSession'
@@ -95,7 +97,10 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async shutdown(): Promise<void> {
     // Save current session if active
-    if (this.currentSession && this.currentSession.status === 'active') {
+    if (
+      this.currentSession &&
+      this.currentSession.status === SessionStatus.ACTIVE
+    ) {
       await this.pauseSession()
     }
 
@@ -135,14 +140,14 @@ export class PracticeSessionModule implements ModuleInterface {
   private setupEventSubscriptions(): void {
     // Subscribe to performance events
     this.eventBus.subscribe('performance:note:played', async payload => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.recordNotePerformance(payload.data)
       }
     })
 
     // Subscribe to navigation events
     this.eventBus.subscribe('navigation:leaving:practice', async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.pauseSession()
       }
     })
@@ -151,7 +156,7 @@ export class PracticeSessionModule implements ModuleInterface {
   async startSession(
     sheetMusicId: string,
     sheetMusicTitle: string,
-    instrument: 'piano' | 'guitar',
+    instrument: Instrument,
     userId?: string
   ): Promise<PracticeSession> {
     // End any existing session
@@ -159,20 +164,23 @@ export class PracticeSessionModule implements ModuleInterface {
       await this.endSession(SessionStatus.ABANDONED)
     }
 
+    const now = Date.now()
     const session: PracticeSession = {
-      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `session_${now}_${Math.random().toString(36).substr(2, 9)}`,
       userId: userId || 'anonymous',
-      startTime: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+      startTime: now,
       sheetMusicId,
       sheetMusicTitle,
       instrument,
       tempo: 120,
-      status: 'active',
+      status: SessionStatus.ACTIVE,
       totalPausedDuration: 0,
       performance: {
         notesPlayed: 0,
         correctNotes: 0,
-        accuracy: 100,
+        accuracy: { percentage: 100, notesCorrect: 0, notesTotal: 0 },
         averageTiming: 0,
         mistakes: [],
         progress: 0,
@@ -201,7 +209,10 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async pauseSession(): Promise<void> {
-    if (!this.currentSession || this.currentSession.status !== 'active') {
+    if (
+      !this.currentSession ||
+      this.currentSession.status !== SessionStatus.ACTIVE
+    ) {
       return
     }
 
@@ -232,7 +243,7 @@ export class PracticeSessionModule implements ModuleInterface {
       this.currentSession.pausedTime = undefined
     }
 
-    this.currentSession.status = 'active'
+    this.currentSession.status = SessionStatus.ACTIVE
 
     await this.eventBus.publish({
       source: this.name,
@@ -255,10 +266,14 @@ export class PracticeSessionModule implements ModuleInterface {
     // Calculate final stats
     if (this.currentSession.performance) {
       const perf = this.currentSession.performance
-      perf.accuracy =
-        perf.notesPlayed > 0
-          ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
-          : 100
+      perf.accuracy = {
+        percentage:
+          perf.notesPlayed > 0
+            ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
+            : 100,
+        notesCorrect: perf.correctNotes,
+        notesTotal: perf.notesPlayed,
+      }
     }
 
     await this.saveSession()
@@ -397,11 +412,21 @@ export class PracticeSessionModule implements ModuleInterface {
         timestamp: Date.now(),
         noteExpected: data.expected,
         notePlayed: data.played,
-        type: data.played ? 'wrong_note' : 'missed_note',
+        type: data.played ? MistakeType.WRONG_NOTE : MistakeType.MISSED_NOTE,
         measure: data.measure,
         beat: data.beat,
       }
       perf.mistakes.push(mistake)
+    }
+
+    // Update accuracy metrics
+    perf.accuracy = {
+      percentage:
+        perf.notesPlayed > 0
+          ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
+          : 100,
+      notesCorrect: perf.correctNotes,
+      notesTotal: perf.notesPlayed,
     }
 
     // Update average timing
@@ -469,7 +494,7 @@ export class PracticeSessionModule implements ModuleInterface {
       }
 
       // Restore timers if active
-      if (activeSession.status === 'active') {
+      if (activeSession.status === SessionStatus.ACTIVE) {
         this.startAutoSave()
         this.startSessionTimer()
       }
@@ -485,7 +510,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private startAutoSave(): void {
     this.autoSaveTimer = setInterval(async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.saveSession()
       }
     }, this.config.autoSaveInterval)
@@ -493,7 +518,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private startSessionTimer(): void {
     this.sessionTimer = setInterval(async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         const duration = Date.now() - this.currentSession.startTime
         if (duration >= this.config.maxSessionDuration) {
           await this.endSession(SessionStatus.COMPLETED)

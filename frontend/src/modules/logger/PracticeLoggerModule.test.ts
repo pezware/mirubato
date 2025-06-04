@@ -177,8 +177,10 @@ describe('PracticeLoggerModule', () => {
       expect(updated.notes).toBe('Updated notes')
       expect(updated.mood).toBe('excited')
       // Entry should have been updated in storage
-      const updatedEntry = await mockStorage.get(`logbook:${entry.id}`)
-      expect(updatedEntry.notes).toBe('Updated notes')
+      const updatedEntry = await mockStorage.get<LogbookEntry>(
+        `logbook:${entry.id}`
+      )
+      expect(updatedEntry?.notes).toBe('Updated notes')
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'logger:entry:updated',
@@ -524,7 +526,7 @@ describe('PracticeLoggerModule', () => {
       // Check if any entry has the session ID
       let foundSessionEntry = false
       for (const key of logbookKeys) {
-        const entry = await mockStorage.get(key)
+        const entry = await mockStorage.get<LogbookEntry>(key)
         if (entry && entry.sessionId === 'session-123') {
           foundSessionEntry = true
           break
@@ -565,9 +567,9 @@ describe('PracticeLoggerModule', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Goal progress should have been updated
-      const updatedGoal = await mockStorage.get(`goal:${goal.id}`)
+      const updatedGoal = await mockStorage.get<Goal>(`goal:${goal.id}`)
       expect(updatedGoal).toBeDefined()
-      expect(updatedGoal.progress).toBeGreaterThan(goal.progress)
+      expect(updatedGoal?.progress).toBeGreaterThan(goal.progress)
     })
   })
 

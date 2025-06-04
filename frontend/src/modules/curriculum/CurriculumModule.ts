@@ -2,8 +2,9 @@
  * Curriculum Module - Manages structured learning paths and repertoire
  */
 
-import { EventBus, StorageService } from '../core'
+import { EventBus, StorageService, SkillLevel } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import { Instrument } from '../../../../shared/types'
 import type {
   CurriculumConfig,
   LearningPath,
@@ -15,7 +16,6 @@ import type {
   CurriculumRecommendation,
   CurriculumFilters,
   CurriculumStats,
-  SkillLevel,
   FocusArea,
   PracticeSession,
   PracticeConfig,
@@ -254,10 +254,20 @@ export class CurriculumModule implements ModuleInterface {
 
     // Apply filters
     if (filters.instrument) {
-      pieces = pieces.filter(p => p.instrument === filters.instrument)
+      pieces = pieces.filter(
+        p =>
+          p.instrument === filters.instrument ||
+          p.instrument.toLowerCase() === filters.instrument!.toLowerCase()
+      )
     }
     if (filters.genre?.length) {
-      pieces = pieces.filter(p => filters.genre!.includes(p.genre))
+      pieces = pieces.filter(
+        p =>
+          filters.genre!.includes(p.genre) ||
+          filters
+            .genre!.map(g => g.toLowerCase())
+            .includes(p.genre.toLowerCase())
+      )
     }
     if (filters.difficulty) {
       pieces = pieces.filter(
@@ -292,7 +302,12 @@ export class CurriculumModule implements ModuleInterface {
           let score = 0.5 // Base score
 
           // Genre preference
-          if (this.config.preferredGenres.includes(piece.genre)) {
+          if (
+            this.config.preferredGenres.includes(piece.genre) ||
+            this.config.preferredGenres
+              .map(g => g.toLowerCase())
+              .includes(piece.genre.toLowerCase())
+          ) {
             score += 0.2
           }
 
@@ -597,7 +612,7 @@ export class CurriculumModule implements ModuleInterface {
   private validateLearningPath(
     path: Omit<LearningPath, 'id' | 'createdAt' | 'updatedAt'>
   ): void {
-    if (!['piano', 'guitar'].includes(path.instrument)) {
+    if (!['piano', 'guitar', 'PIANO', 'GUITAR'].includes(path.instrument)) {
       throw new Error('Unsupported instrument')
     }
     if (!path.userId) {
@@ -618,12 +633,15 @@ export class CurriculumModule implements ModuleInterface {
   }
 
   private generateDefaultPhases(
-    instrument: 'piano' | 'guitar',
+    instrument: Instrument,
     skillLevel: SkillLevel
   ): Phase[] {
     const phases: Phase[] = []
 
-    if (instrument === 'piano' && skillLevel === 'intermediate') {
+    if (
+      instrument.toLowerCase() === 'piano' &&
+      skillLevel === SkillLevel.INTERMEDIATE
+    ) {
       phases.push({
         id: `phase_${Date.now()}_1`,
         pathId: '', // Will be set by parent
@@ -676,7 +694,7 @@ export class CurriculumModule implements ModuleInterface {
 
   private generateModulesForPhase(
     phaseType: string,
-    _instrument: 'piano' | 'guitar',
+    _instrument: Instrument,
     _skillLevel: SkillLevel
   ): CurriculumModuleType[] {
     const modules: CurriculumModuleType[] = []
@@ -1381,7 +1399,7 @@ export class CurriculumModule implements ModuleInterface {
       level,
       key,
       fingering:
-        this.config.instrument === 'piano'
+        this.config.instrument.toLowerCase() === 'piano'
           ? [1, 2, 3, 1, 2, 3, 4, 5]
           : [0, 2, 3, 0, 2, 3, 4, 0],
       variations: [
@@ -1424,7 +1442,9 @@ export class CurriculumModule implements ModuleInterface {
       level,
       key,
       fingering:
-        this.config.instrument === 'piano' ? [1, 2, 3, 5] : [1, 2, 4, 1],
+        this.config.instrument.toLowerCase() === 'piano'
+          ? [1, 2, 3, 5]
+          : [1, 2, 4, 1],
       variations: [
         {
           id: 'v1',

@@ -1,9 +1,8 @@
 import { PracticeSessionModule } from './PracticeSessionModule'
-import { EventBus, MockStorageService } from '../core'
+import { EventBus, MockStorageService, SessionStatus } from '../core'
 import { PracticeSession, SessionTemplate } from './types'
-
-// Helper to flush promises
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
+import { MistakeType } from '../core/sharedTypes'
+import { Instrument } from '../../../../shared/types'
 
 describe('PracticeSessionModule', () => {
   let practiceModule: PracticeSessionModule
@@ -72,9 +71,9 @@ describe('PracticeSessionModule', () => {
         startTime: Date.now() - 1000,
         sheetMusicId: 'music_123',
         sheetMusicTitle: 'Test Piece',
-        instrument: 'PIANO',
+        instrument: Instrument.PIANO,
         tempo: 120,
-        status: 'active',
+        status: SessionStatus.ACTIVE,
         totalPausedDuration: 0,
       }
 
@@ -104,9 +103,9 @@ describe('PracticeSessionModule', () => {
         startTime: Date.now() - 10000, // Started 10 seconds ago
         sheetMusicId: 'music_123',
         sheetMusicTitle: 'Test Piece',
-        instrument: 'PIANO',
+        instrument: Instrument.PIANO,
         tempo: 120,
-        status: 'active',
+        status: SessionStatus.ACTIVE,
         totalPausedDuration: 0,
       }
 
@@ -133,7 +132,7 @@ describe('PracticeSessionModule', () => {
       await practiceModule.startSession(
         'music_123',
         'Test Piece',
-        'piano',
+        Instrument.PIANO,
         'user_123'
       )
 
@@ -154,7 +153,7 @@ describe('PracticeSessionModule', () => {
       expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            status: 'paused',
+            status: SessionStatus.PAUSED,
           }),
         ])
       )
@@ -170,7 +169,7 @@ describe('PracticeSessionModule', () => {
       const session = await practiceModule.startSession(
         'music_123',
         'Test Piece',
-        'piano',
+        Instrument.PIANO,
         'user_123'
       )
 
@@ -178,8 +177,8 @@ describe('PracticeSessionModule', () => {
         userId: 'user_123',
         sheetMusicId: 'music_123',
         sheetMusicTitle: 'Test Piece',
-        instrument: 'piano',
-        status: 'active',
+        instrument: Instrument.PIANO,
+        status: SessionStatus.ACTIVE,
         tempo: 120,
         totalPausedDuration: 0,
       })
@@ -188,7 +187,7 @@ describe('PracticeSessionModule', () => {
       expect(session.performance).toEqual({
         notesPlayed: 0,
         correctNotes: 0,
-        accuracy: 100,
+        accuracy: { percentage: 100, notesCorrect: 0, notesTotal: 0 },
         averageTiming: 0,
         mistakes: [],
         progress: 0,
@@ -207,13 +206,13 @@ describe('PracticeSessionModule', () => {
       const session1 = await practiceModule.startSession(
         'music_123',
         'Test Piece 1',
-        'piano'
+        Instrument.PIANO
       )
 
       const session2 = await practiceModule.startSession(
         'music_456',
         'Test Piece 2',
-        'guitar'
+        Instrument.GUITAR
       )
 
       expect(publishSpy).toHaveBeenCalledWith(
@@ -222,18 +221,22 @@ describe('PracticeSessionModule', () => {
           data: {
             session: expect.objectContaining({
               id: session1.id,
-              status: 'abandoned',
+              status: SessionStatus.ABANDONED,
             }),
           },
         })
       )
 
-      expect(session2.instrument).toBe('guitar')
+      expect(session2.instrument).toBe(Instrument.GUITAR)
       expect(practiceModule.getCurrentSession()?.id).toBe(session2.id)
     })
 
     it('should pause and resume session', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       await practiceModule.pauseSession()
 
@@ -245,7 +248,7 @@ describe('PracticeSessionModule', () => {
       )
 
       const pausedSession = practiceModule.getCurrentSession()
-      expect(pausedSession?.status).toBe('paused')
+      expect(pausedSession?.status).toBe(SessionStatus.PAUSED)
       expect(pausedSession?.pausedTime).toBeDefined()
 
       // Wait a bit before resuming
@@ -261,15 +264,19 @@ describe('PracticeSessionModule', () => {
       )
 
       const resumedSession = practiceModule.getCurrentSession()
-      expect(resumedSession?.status).toBe('active')
+      expect(resumedSession?.status).toBe(SessionStatus.ACTIVE)
       expect(resumedSession?.pausedTime).toBeUndefined()
       expect(resumedSession?.totalPausedDuration).toBeGreaterThan(0)
     })
 
     it('should end session with completion status', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
-      await practiceModule.endSession('completed')
+      await practiceModule.endSession(SessionStatus.COMPLETED)
 
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -277,7 +284,7 @@ describe('PracticeSessionModule', () => {
           source: 'PracticeSession',
           data: {
             session: expect.objectContaining({
-              status: 'completed',
+              status: SessionStatus.COMPLETED,
               endTime: expect.any(Number),
             }),
           },
@@ -288,7 +295,11 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should auto-save session periodically', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       // Wait for auto-save interval
       await new Promise(resolve => setTimeout(resolve, 150))
@@ -298,7 +309,7 @@ describe('PracticeSessionModule', () => {
       expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            status: 'active',
+            status: SessionStatus.ACTIVE,
           }),
         ])
       )
@@ -321,7 +332,11 @@ describe('PracticeSessionModule', () => {
       )
       await shortTimeoutModule.initialize()
 
-      await shortTimeoutModule.startSession('music_123', 'Test Piece', 'piano')
+      await shortTimeoutModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       // Wait for timeout to trigger (timer checks every minute but we can wait longer)
       await new Promise(resolve => setTimeout(resolve, 150))
@@ -345,7 +360,11 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should record note performance directly', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       // Test direct performance recording via private method
       const data = {
@@ -363,14 +382,18 @@ describe('PracticeSessionModule', () => {
       expect(session?.performance).toMatchObject({
         notesPlayed: 1,
         correctNotes: 1,
-        accuracy: 100,
+        accuracy: { percentage: 100, notesCorrect: 1, notesTotal: 1 },
         averageTiming: 10,
         progress: 25,
       })
     })
 
     it('should record mistakes directly', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       const data = {
         correct: false,
@@ -387,14 +410,18 @@ describe('PracticeSessionModule', () => {
       expect(session?.performance?.mistakes[0]).toMatchObject({
         noteExpected: 'C4',
         notePlayed: 'D4',
-        type: 'wrong_note',
+        type: MistakeType.WRONG_NOTE,
         measure: 1,
         beat: 2,
       })
     })
 
     it('should calculate accuracy correctly', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       // Record some notes directly
       for (let i = 0; i < 10; i++) {
@@ -424,29 +451,34 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should get session history', async () => {
+      const now = Date.now()
       const mockSessions: PracticeSession[] = [
         {
           id: 'session_1',
           userId: 'user_123',
-          startTime: Date.now() - 3600000,
-          endTime: Date.now() - 3000000,
+          createdAt: now - 3600000,
+          updatedAt: now - 3000000,
+          startTime: now - 3600000,
+          endTime: now - 3000000,
           sheetMusicId: 'music_1',
           sheetMusicTitle: 'Piece 1',
-          instrument: 'piano',
+          instrument: Instrument.PIANO,
           tempo: 120,
-          status: 'completed',
+          status: SessionStatus.COMPLETED,
           totalPausedDuration: 0,
         },
         {
           id: 'session_2',
           userId: 'user_123',
-          startTime: Date.now() - 7200000,
-          endTime: Date.now() - 6600000,
+          createdAt: now - 7200000,
+          updatedAt: now - 6600000,
+          startTime: now - 7200000,
+          endTime: now - 6600000,
           sheetMusicId: 'music_2',
           sheetMusicTitle: 'Piece 2',
-          instrument: 'guitar',
+          instrument: Instrument.GUITAR,
           tempo: 100,
-          status: 'completed',
+          status: SessionStatus.COMPLETED,
           totalPausedDuration: 0,
         },
       ]
@@ -510,7 +542,7 @@ describe('PracticeSessionModule', () => {
       await practiceModule.startSession(
         'music_123',
         'Test Piece',
-        'piano',
+        Instrument.PIANO,
         'user_123'
       )
 
@@ -620,7 +652,11 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should restart auto-save when interval changes', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       const saveSpy = jest.spyOn(practiceModule as any, 'startAutoSave')
 
@@ -641,7 +677,11 @@ describe('PracticeSessionModule', () => {
       const handler = jest.fn()
       const unsubscribe = practiceModule.onSessionStart(handler)
 
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       expect(handler).toHaveBeenCalled()
 
@@ -649,7 +689,11 @@ describe('PracticeSessionModule', () => {
       unsubscribe()
       handler.mockClear()
 
-      await practiceModule.startSession('music_456', 'Test Piece 2', 'piano')
+      await practiceModule.startSession(
+        'music_456',
+        'Test Piece 2',
+        Instrument.PIANO
+      )
       expect(handler).not.toHaveBeenCalled()
     })
 
@@ -657,20 +701,28 @@ describe('PracticeSessionModule', () => {
       const handler = jest.fn()
       practiceModule.onSessionEnd(handler)
 
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
       await practiceModule.endSession()
 
       expect(handler).toHaveBeenCalled()
     })
 
     it('should pause session on navigation away', async () => {
-      await practiceModule.startSession('music_123', 'Test Piece', 'piano')
+      await practiceModule.startSession(
+        'music_123',
+        'Test Piece',
+        Instrument.PIANO
+      )
 
       // Test navigation pause directly
       await practiceModule.pauseSession()
 
       const session = practiceModule.getCurrentSession()
-      expect(session?.status).toBe('paused')
+      expect(session?.status).toBe(SessionStatus.PAUSED)
     })
   })
 

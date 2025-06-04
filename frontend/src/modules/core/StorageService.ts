@@ -16,11 +16,13 @@ export class StorageService {
     }
   > = new Map()
   private readonly REQUEST_TIMEOUT = 2000 // 2 seconds (shorter for tests)
-  private isTestMode: boolean = false
 
   constructor(eventBus?: EventBus, options?: { testMode?: boolean }) {
     this.eventBus = eventBus || EventBus.getInstance()
-    this.isTestMode = options?.testMode ?? false
+    // testMode can be used later for test-specific behavior
+    if (options?.testMode) {
+      // In test mode, we might use shorter timeouts or different behavior
+    }
     this.initializeResponseHandler()
   }
 
