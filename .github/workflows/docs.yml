@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+  issues: write
+
 jobs:
   build-docs:
     runs-on: ubuntu-latest
@@ -39,12 +46,13 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '📚 Documentation preview will be available after this PR is merged at: https://pezware.github.io/mirubato/api-docs/'
+              body: '📚 Documentation will be available after this PR is merged at: https://docs.mirubato.com'
             });
 
       - name: Deploy to GitHub Pages
@@ -53,6 +61,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./frontend/docs
-          destination_dir: api-docs
           enable_jekyll: false
           cname: docs.mirubato.com
