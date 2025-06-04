@@ -24,6 +24,14 @@ jest.mock('../config/env', () => ({
   },
 }))
 
+jest.mock('../config/version', () => ({
+  version: {
+    frontend: 'test-version',
+    gitCommit: 'test-commit',
+    buildTime: '2024-01-01T00:00:00.000Z',
+  },
+}))
+
 // Mock fetch
 global.fetch = jest.fn()
 
