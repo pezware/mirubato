@@ -1,0 +1,26 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/modules"],
+  "entryPointStrategy": "expand",
+  "out": "./public/docs",
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**"],
+  "includeVersion": true,
+  "name": "Mirubato Module Documentation",
+  "navigationLinks": {
+    "GitHub": "https://github.com/pezware/mirubato",
+    "App": "https://mirubato.com"
+  },
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "disableSources": false,
+  "sort": ["source-order"],
+  "categorizeByGroup": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  }
+}
