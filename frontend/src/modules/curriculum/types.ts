@@ -88,11 +88,15 @@ export type ModuleType =
   | 'piece'
   | 'exercise'
   | 'scale'
+  | 'arpeggio'
   | 'chord-progression'
   | 'sight-reading'
   | 'ear-training'
   | 'theory'
   | 'technique'
+  | 'finger-independence'
+  | 'pattern'
+  | 'etude'
 
 export interface ModuleContent {
   pieceId?: string
@@ -208,4 +212,213 @@ export interface CurriculumStats {
   skillProgress: Array<{ skill: FocusArea; level: number }>
   streakDays: number
   lastPracticeDate: number
+}
+
+// Enhanced Practice Feature Types
+
+export interface PracticeSession {
+  id: string
+  userId: string
+  pieceId: string
+  config: PracticeConfig
+  startTime: number
+  endTime?: number
+  status: 'active' | 'paused' | 'completed' | 'cancelled'
+  repetitions: PracticeRepetition[]
+  overallProgress: PracticeProgress
+  metadata?: Record<string, any>
+}
+
+export interface PracticeConfig {
+  type: 'full' | 'section' | 'measures' | 'phrase' | 'pattern'
+  focus: 'accuracy' | 'tempo' | 'dynamics' | 'articulation' | 'memorization'
+  measures?: { start: number; end: number }
+  hands?: 'both' | 'left' | 'right' | 'alternating'
+  tempo?: {
+    start: number
+    target: number
+    increment: number
+    rampType: 'linear' | 'exponential' | 'stepped'
+  }
+  repetitions?: {
+    target: number
+    qualityThreshold: number
+    maxAttempts: number
+  }
+  metronome?: {
+    enabled: boolean
+    subdivision: 'quarter' | 'eighth' | 'sixteenth'
+    accent: 'downbeat' | 'strong' | 'all'
+  }
+}
+
+export interface PracticeRepetition {
+  id: string
+  sessionId: string
+  attempt: number
+  startTime: number
+  endTime: number
+  tempo: number
+  accuracy: number
+  quality: number // 0-1 calculated quality score
+  notes?: string
+  audioRecordingId?: string
+}
+
+export interface PracticeProgress {
+  sessionId: string
+  accuracy: number
+  tempoAchieved: number
+  repetitionsCompleted: number
+  qualityScore: number
+  timeSpent: number
+  status: 'improving' | 'stable' | 'struggling'
+  recommendations?: string[]
+}
+
+export interface TechnicalExercise {
+  id: string
+  name: string
+  category:
+    | 'scale'
+    | 'arpeggio'
+    | 'chord'
+    | 'pattern'
+    | 'etude'
+    | 'finger-independence'
+  instrument: 'piano' | 'guitar'
+  level: number // 1-10
+  key?: string
+  pattern?: string
+  handPosition?: 'parallel' | 'contrary' | 'alternating'
+  fingering?: number[]
+  variations?: TechnicalVariation[]
+  generatedContent?: MusicContent
+  estimatedDuration: number // minutes
+  metadata?: {
+    focus: string[]
+    benefits: string[]
+    prerequisites: string[]
+  }
+}
+
+export interface TechnicalVariation {
+  id: string
+  name: string
+  description: string
+  rhythmPattern?: string
+  dynamicPattern?: string
+  articulationPattern?: string
+  tempoMultiplier?: number
+  difficulty: number
+}
+
+export interface MusicContent {
+  notation?: string // VexFlow notation data
+  midiData?: ArrayBuffer
+  audioUrl?: string
+  sheetMusicUrl?: string
+  fingering?: number[][]
+  measures: number
+}
+
+export interface DifficultyAssessment {
+  pieceId: string
+  overall: number // 1-10 scale
+  factors: {
+    technical: number // finger patterns, stretches, coordination
+    rhythmic: number // rhythm complexity, polyrhythms
+    harmonic: number // chord progressions, key changes
+    musical: number // phrasing, dynamics, expression
+    cognitive: number // reading complexity, memorization
+  }
+  prerequisites: string[]
+  estimatedLearningTime: number // hours
+  recommendedPreparation: string[]
+  assessedAt: number
+  assessor: 'algorithm' | 'teacher' | 'community'
+}
+
+export interface PerformanceReadiness {
+  pieceId: string
+  userId: string
+  overallReadiness: number // 0-100%
+  criteria: {
+    technical: { score: number; notes: string[] }
+    musical: { score: number; notes: string[] }
+    memorization: { score: number; notes: string[] }
+    stability: { score: number; notes: string[] }
+    polish: { score: number; notes: string[] }
+  }
+  recommendedActions: string[]
+  estimatedTimeToReadiness: number // hours
+  assessedAt: number
+  performanceDate?: number
+}
+
+export interface MaintenanceSchedule {
+  pieceId: string
+  userId: string
+  lastPracticed: number
+  practiceFrequency: number // sessions per week
+  skill: 'maintaining' | 'declining' | 'forgotten'
+  priority: 'high' | 'medium' | 'low'
+  recommendedFrequency: 'daily' | 'weekly' | 'biweekly' | 'monthly'
+  nextPracticeDate: number
+  maintenanceType: 'full-runthrough' | 'problem-spots' | 'memory-refresh'
+  estimatedTime: number // minutes needed
+}
+
+export interface PieceAnalytics {
+  pieceId: string
+  userId: string
+  totalPracticeTime: number
+  sessionsCount: number
+  averageAccuracy: number
+  bestAccuracy: number
+  tempoProgress: {
+    initial: number
+    current: number
+    target: number
+  }
+  problemAreas: Array<{
+    measures: { start: number; end: number }
+    difficulty: string
+    practiceTime: number
+    improvementRate: number
+  }>
+  performanceHistory: Array<{
+    date: number
+    type: 'practice' | 'lesson' | 'performance'
+    quality: number
+    notes?: string
+  }>
+  updatedAt: number
+}
+
+export type TechnicalType =
+  | 'major-scale'
+  | 'minor-scale'
+  | 'chromatic-scale'
+  | 'major-arpeggio'
+  | 'minor-arpeggio'
+  | 'dominant-seventh'
+  | 'diminished-seventh'
+  | 'chord-progression'
+  | 'hanon-exercise'
+  | 'finger-independence'
+  | 'alberti-bass'
+  | 'tremolo'
+  | 'trill'
+  | 'octave-study'
+
+export interface ExerciseGenerationParams {
+  type: TechnicalType
+  key?: string
+  level: number
+  handPosition?: 'parallel' | 'contrary' | 'alternating'
+  octaves?: number
+  tempo?: { min: number; max: number }
+  articulation?: 'legato' | 'staccato' | 'mixed'
+  dynamics?: 'uniform' | 'crescendo' | 'varied'
 }

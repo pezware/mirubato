@@ -8,6 +8,14 @@ import type {
   ProgressUpdate,
   AssessmentResult,
   CurriculumFilters,
+  PracticeConfig,
+  PracticeSession,
+  TechnicalExercise,
+  TechnicalType,
+  DifficultyAssessment,
+  PerformanceReadiness,
+  MaintenanceSchedule,
+  ExerciseGenerationParams,
 } from './types'
 import type { EventPayload } from '../core/types'
 
@@ -810,6 +818,495 @@ describe('CurriculumModule', () => {
       expect(results).toHaveLength(20)
       // loadLocal is called 20 times for pagination + 1 for repertoire data in init
       expect(mockStorage.loadLocal).toHaveBeenCalledTimes(21)
+    })
+  })
+
+  describe('Enhanced Practice Features', () => {
+    beforeEach(async () => {
+      await curriculum.initialize()
+    })
+
+    describe('Granular Practice Sessions', () => {
+      const testPracticeConfig: PracticeConfig = {
+        type: 'measures',
+        focus: 'tempo',
+        measures: { start: 16, end: 32 },
+        hands: 'right',
+        tempo: {
+          start: 60,
+          target: 120,
+          increment: 10,
+          rampType: 'linear',
+        },
+        repetitions: {
+          target: 5,
+          qualityThreshold: 0.9,
+          maxAttempts: 10,
+        },
+        metronome: {
+          enabled: true,
+          subdivision: 'quarter',
+          accent: 'downbeat',
+        },
+      }
+
+      it('should create a focused practice session', async () => {
+        const session = await curriculum.createPracticeSession(
+          'piece-1',
+          testPracticeConfig
+        )
+
+        expect(session).toHaveProperty('id')
+        expect(session.pieceId).toBe('piece-1')
+        expect(session.config).toEqual(testPracticeConfig)
+        expect(session.status).toBe('active')
+        expect(session.repetitions).toEqual([])
+
+        expect(mockEventBus.publish).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'curriculum:practice:session:created',
+            data: { session },
+          })
+        )
+      })
+
+      it('should track practice repetitions with quality metrics', async () => {
+        const session = await curriculum.createPracticeSession(
+          'piece-1',
+          testPracticeConfig
+        )
+
+        // Mock the stored session for updatePracticeProgress
+        mockStorage.loadLocal.mockResolvedValueOnce(session)
+
+        const progressUpdate = {
+          sessionId: session.id,
+          accuracy: 0.95,
+          tempoAchieved: 80,
+          qualityScore: 0.92,
+          timeSpent: 180,
+        }
+
+        await curriculum.updatePracticeProgress(session.id, progressUpdate)
+
+        expect(mockStorage.saveLocal).toHaveBeenCalledWith(
+          `practice:session:${session.id}`,
+          expect.objectContaining({
+            overallProgress: expect.objectContaining({
+              accuracy: 0.95,
+              tempoAchieved: 80,
+              qualityScore: 0.92,
+            }),
+          })
+        )
+      })
+
+      it('should handle different practice types (measures, phrases, sections)', async () => {
+        const configs = [
+          { ...testPracticeConfig, type: 'measures' as const },
+          { ...testPracticeConfig, type: 'phrase' as const },
+          { ...testPracticeConfig, type: 'section' as const },
+          { ...testPracticeConfig, type: 'full' as const },
+        ]
+
+        for (const config of configs) {
+          const session = await curriculum.createPracticeSession(
+            'piece-1',
+            config
+          )
+          expect(session.config.type).toBe(config.type)
+        }
+      })
+
+      it('should support hand-specific practice', async () => {
+        const leftHandConfig = { ...testPracticeConfig, hands: 'left' as const }
+        const session = await curriculum.createPracticeSession(
+          'piece-1',
+          leftHandConfig
+        )
+
+        expect(session.config.hands).toBe('left')
+      })
+    })
+
+    describe('Technical Exercise Generation', () => {
+      it('should generate major scale exercises', async () => {
+        const exercise = await curriculum.generateTechnicalExercise(
+          'major-scale',
+          5
+        )
+
+        expect(exercise).toHaveProperty('id')
+        expect(exercise.category).toBe('scale')
+        expect(exercise.level).toBe(5)
+        expect(exercise.name).toContain('Major Scale')
+        expect(exercise.estimatedDuration).toBeGreaterThan(0)
+      })
+
+      it('should generate arpeggios with variations', async () => {
+        const exercise = await curriculum.generateTechnicalExercise(
+          'major-arpeggio',
+          3
+        )
+
+        expect(exercise.category).toBe('arpeggio')
+        expect(exercise.variations).toBeDefined()
+        expect(exercise.variations!.length).toBeGreaterThan(0)
+        expect(exercise.fingering).toBeDefined()
+      })
+
+      it('should generate finger independence exercises', async () => {
+        const exercise = await curriculum.generateTechnicalExercise(
+          'finger-independence',
+          4
+        )
+
+        expect(exercise.category).toBe('finger-independence')
+        expect(exercise.metadata?.focus).toContain('finger-independence')
+        expect(exercise.metadata?.benefits).toBeDefined()
+      })
+
+      it('should create exercise with proper difficulty progression', async () => {
+        const beginner = await curriculum.generateTechnicalExercise(
+          'major-scale',
+          1
+        )
+        const advanced = await curriculum.generateTechnicalExercise(
+          'major-scale',
+          9
+        )
+
+        expect(beginner.level).toBeLessThan(advanced.level)
+        expect(beginner.estimatedDuration).toBeLessThan(
+          advanced.estimatedDuration
+        )
+      })
+    })
+
+    describe('Difficulty Assessment', () => {
+      it('should evaluate piece difficulty across multiple factors', async () => {
+        const assessment = await curriculum.evaluateDifficulty({
+          notation: 'mock-vexflow-data',
+          measures: 64,
+          fingering: [[1, 2, 3, 4, 5]],
+        })
+
+        expect(assessment).toHaveProperty('overall')
+        expect(assessment.overall).toBeGreaterThanOrEqual(1)
+        expect(assessment.overall).toBeLessThanOrEqual(10)
+
+        expect(assessment.factors).toHaveProperty('technical')
+        expect(assessment.factors).toHaveProperty('rhythmic')
+        expect(assessment.factors).toHaveProperty('harmonic')
+        expect(assessment.factors).toHaveProperty('musical')
+        expect(assessment.factors).toHaveProperty('cognitive')
+
+        expect(assessment.estimatedLearningTime).toBeGreaterThan(0)
+        expect(assessment.prerequisites).toBeDefined()
+        expect(assessment.recommendedPreparation).toBeDefined()
+      })
+
+      it('should provide appropriate prerequisites for complex pieces', async () => {
+        const complexPiece = {
+          notation: 'complex-vexflow-data',
+          measures: 200,
+          fingering: [[1, 2, 3, 4, 5, 1, 2, 3]],
+        }
+
+        const assessment = await curriculum.evaluateDifficulty(complexPiece)
+
+        expect(assessment.overall).toBeGreaterThanOrEqual(7)
+        expect(assessment.prerequisites.length).toBeGreaterThan(0)
+        expect(assessment.recommendedPreparation.length).toBeGreaterThan(0)
+      })
+    })
+
+    describe('Performance Readiness Assessment', () => {
+      it('should assess performance readiness across multiple criteria', async () => {
+        // Mock piece analytics data
+        const mockAnalytics = {
+          pieceId: 'piece-1',
+          userId: testUserId,
+          totalPracticeTime: 3600,
+          sessionsCount: 10,
+          averageAccuracy: 0.85,
+          bestAccuracy: 0.95,
+          tempoProgress: {
+            initial: 60,
+            current: 100,
+            target: 120,
+          },
+          problemAreas: [],
+          performanceHistory: [
+            {
+              date: Date.now() - 10 * 24 * 60 * 60 * 1000,
+              type: 'performance' as const,
+              quality: 4,
+            },
+          ],
+          updatedAt: Date.now(),
+        }
+
+        mockStorage.loadLocal.mockResolvedValueOnce(mockAnalytics)
+
+        const readiness = await curriculum.assessPerformanceReadiness(
+          'piece-1',
+          testUserId
+        )
+
+        expect(readiness).toHaveProperty('overallReadiness')
+        expect(readiness.overallReadiness).toBeGreaterThanOrEqual(0)
+        expect(readiness.overallReadiness).toBeLessThanOrEqual(100)
+
+        expect(readiness.criteria).toHaveProperty('technical')
+        expect(readiness.criteria).toHaveProperty('musical')
+        expect(readiness.criteria).toHaveProperty('memorization')
+        expect(readiness.criteria).toHaveProperty('stability')
+        expect(readiness.criteria).toHaveProperty('polish')
+
+        expect(readiness.recommendedActions).toBeDefined()
+        expect(readiness.estimatedTimeToReadiness).toBeGreaterThanOrEqual(0)
+      })
+
+      it('should provide specific recommendations based on weaknesses', async () => {
+        // Mock piece analytics showing weak memorization
+        const mockAnalytics = {
+          pieceId: 'piece-1',
+          userId: testUserId,
+          totalPracticeTime: 1200, // Less than 30 minutes
+          sessionsCount: 3,
+          averageAccuracy: 0.7,
+          bestAccuracy: 0.85,
+          tempoProgress: {
+            initial: 60,
+            current: 70,
+            target: 120,
+          },
+          problemAreas: [],
+          performanceHistory: [], // No recent performance history
+          updatedAt: Date.now(),
+        }
+
+        mockStorage.loadLocal.mockResolvedValueOnce(mockAnalytics)
+
+        const readiness = await curriculum.assessPerformanceReadiness(
+          'piece-1',
+          testUserId
+        )
+
+        expect(readiness.criteria.memorization.score).toBeLessThan(70)
+        expect(readiness.recommendedActions.join(' ')).toMatch(/memori/i)
+      })
+    })
+
+    describe('Maintenance Scheduling', () => {
+      it('should generate maintenance schedule for learned pieces', async () => {
+        // Mock user with several pieces at different stages
+        const mockPieces = [
+          {
+            pieceId: 'piece-1',
+            userId: testUserId,
+            totalPracticeTime: 3600,
+            sessionsCount: 10,
+            averageAccuracy: 0.95,
+            bestAccuracy: 0.98,
+            tempoProgress: { initial: 60, current: 120, target: 120 },
+            problemAreas: [],
+            performanceHistory: [],
+            updatedAt: Date.now() - 7 * 24 * 60 * 60 * 1000, // 1 week ago
+          },
+          {
+            pieceId: 'piece-2',
+            userId: testUserId,
+            totalPracticeTime: 1800,
+            sessionsCount: 5,
+            averageAccuracy: 0.8,
+            bestAccuracy: 0.85,
+            tempoProgress: { initial: 60, current: 100, target: 120 },
+            problemAreas: [],
+            performanceHistory: [],
+            updatedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 1 month ago
+          },
+        ]
+
+        mockStorage.getKeys.mockResolvedValueOnce([
+          `analytics:piece:piece-1:${testUserId}`,
+          `analytics:piece:piece-2:${testUserId}`,
+        ])
+        // First call loads piece-1, second call loads piece-2
+        mockStorage.loadLocal
+          .mockResolvedValueOnce(mockPieces[0])
+          .mockResolvedValueOnce(mockPieces[1])
+        // Additional calls for readiness checks return null
+        mockStorage.loadLocal
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce(null)
+
+        const schedule =
+          await curriculum.scheduleMaintenancePractice(testUserId)
+
+        expect(schedule.length).toBeGreaterThanOrEqual(1)
+        // Check that at least one piece has proper maintenance scheduling
+        expect(schedule[0]).toHaveProperty('priority')
+        expect(schedule[0]).toHaveProperty('skill')
+        expect(schedule[0]).toHaveProperty('nextPracticeDate')
+      })
+
+      it('should prioritize pieces based on upcoming performances', async () => {
+        const performanceDate = Date.now() + 7 * 24 * 60 * 60 * 1000 // Next week
+
+        const mockAnalytics = {
+          pieceId: 'piece-1',
+          userId: testUserId,
+          totalPracticeTime: 3600,
+          sessionsCount: 10,
+          averageAccuracy: 0.95,
+          bestAccuracy: 0.98,
+          tempoProgress: { initial: 60, current: 120, target: 120 },
+          problemAreas: [],
+          performanceHistory: [],
+          updatedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
+        }
+
+        const mockReadiness = {
+          pieceId: 'piece-1',
+          userId: testUserId,
+          performanceDate,
+          overallReadiness: 75,
+        }
+
+        mockStorage.getKeys.mockResolvedValueOnce([
+          `analytics:piece:piece-1:${testUserId}`,
+        ])
+        mockStorage.loadLocal
+          .mockResolvedValueOnce(mockAnalytics)
+          .mockResolvedValueOnce(mockReadiness)
+
+        const schedule =
+          await curriculum.scheduleMaintenancePractice(testUserId)
+
+        expect(schedule[0].priority).toBe('high')
+        expect(schedule[0].maintenanceType).toBe('full-runthrough')
+      })
+    })
+
+    describe('Integration with Existing Modules', () => {
+      it('should integrate with progress analytics for adaptive learning', async () => {
+        const analyticsEvent: EventPayload = {
+          eventId: 'evt_analytics_123',
+          timestamp: Date.now(),
+          source: 'ProgressAnalyticsModule',
+          type: 'progress:weak:areas:identified',
+          data: {
+            userId: testUserId,
+            weakAreas: [{ type: 'rhythm', accuracy: 0.65 }],
+          },
+          metadata: { version: '1.0.0' },
+        }
+
+        const eventHandler = mockEventBus.subscribe.mock.calls.find(
+          call => call[0] === 'progress:weak:areas:identified'
+        )?.[1]
+
+        if (eventHandler) {
+          await eventHandler(analyticsEvent)
+
+          // Should generate targeted exercises for weak areas
+          expect(mockEventBus.publish).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'curriculum:exercise:recommended',
+              data: expect.objectContaining({
+                focus: 'rhythm',
+              }),
+            })
+          )
+        }
+      })
+
+      it('should coordinate with practice logger for comprehensive tracking', async () => {
+        const logEntry = {
+          id: 'log-123',
+          userId: testUserId,
+          pieces: [{ id: 'piece-1', title: 'Test Piece' }],
+          duration: 1800,
+          practiceType: 'focused',
+          measures: { start: 1, end: 16 },
+        }
+
+        const loggerEvent: EventPayload = {
+          eventId: 'evt_logger_456',
+          timestamp: Date.now(),
+          source: 'PracticeLoggerModule',
+          type: 'logger:focused:practice:completed',
+          data: { entry: logEntry },
+          metadata: { version: '1.0.0' },
+        }
+
+        const eventHandler = mockEventBus.subscribe.mock.calls.find(
+          call => call[0] === 'logger:focused:practice:completed'
+        )?.[1]
+
+        if (eventHandler) {
+          await eventHandler(loggerEvent)
+
+          // Should update piece analytics with focused practice data
+          expect(mockStorage.saveLocal).toHaveBeenCalledWith(
+            expect.stringMatching(/analytics:piece-1/),
+            expect.objectContaining({
+              practiceSegments: expect.arrayContaining([
+                expect.objectContaining({
+                  measures: { start: 1, end: 16 },
+                  practiceTime: 1800,
+                }),
+              ]),
+            })
+          )
+        }
+      })
+    })
+
+    describe('Error Handling for Enhanced Features', () => {
+      it('should handle invalid practice configurations', async () => {
+        const invalidConfig: PracticeConfig = {
+          type: 'measures',
+          focus: 'tempo',
+          measures: { start: 50, end: 10 }, // Invalid range
+          tempo: { start: -10, target: 200, increment: 5, rampType: 'linear' },
+          repetitions: { target: 0, qualityThreshold: 1.5, maxAttempts: -1 },
+        }
+
+        await expect(
+          curriculum.createPracticeSession('piece-1', invalidConfig)
+        ).rejects.toThrow(/invalid/i)
+      })
+
+      it('should handle missing piece data gracefully', async () => {
+        mockStorage.loadLocal.mockResolvedValueOnce(null)
+
+        const readiness = await curriculum.assessPerformanceReadiness(
+          'non-existent-piece',
+          testUserId
+        )
+
+        expect(readiness.overallReadiness).toBe(0)
+        expect(readiness.recommendedActions).toContain('Piece not found')
+      })
+
+      it('should validate technical exercise parameters', async () => {
+        await expect(
+          curriculum.generateTechnicalExercise(
+            'major-scale' as TechnicalType,
+            15
+          )
+        ).rejects.toThrow(/invalid level/i)
+
+        await expect(
+          curriculum.generateTechnicalExercise(
+            'invalid-type' as TechnicalType,
+            5
+          )
+        ).rejects.toThrow(/unsupported exercise type/i)
+      })
     })
   })
 })
