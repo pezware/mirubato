@@ -8,7 +8,7 @@
     "./src/services"
   ],
   "entryPointStrategy": "expand",
-  "out": "./public/docs",
+  "out": "./docs",
   "exclude": [
     "**/*.test.ts",
     "**/*.test.tsx",
@@ -21,9 +21,8 @@
   "navigationLinks": {
     "GitHub": "https://github.com/pezware/mirubato",
     "App": "https://mirubato.com",
-    "Main Docs": "https://mirubato.com/docs"
+    "Live Demo": "https://mirubato.com"
   },
-  "plugin": ["typedoc-plugin-markdown"],
   "readme": "none",
   "excludePrivate": true,
   "excludeProtected": true,
@@ -31,6 +30,21 @@
   "disableSources": false,
   "sort": ["source-order"],
   "categorizeByGroup": true,
+  "kindSortOrder": [
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Method",
+    "Function",
+    "Variable"
+  ],
   "validation": {
     "notExported": true,
     "invalidLink": true,
@@ -68,5 +82,9 @@
     "private": false,
     "inherited": true,
     "external": false
-  }
+  },
+  "searchInComments": true,
+  "titleLink": "https://mirubato.com",
+  "customCss": "./typedoc-theme.css",
+  "hideGenerator": false
 }

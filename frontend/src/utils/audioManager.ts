@@ -5,9 +5,28 @@ import {
 } from './audioManagerInterface'
 
 /**
- * Audio Manager implementation using Tone.js
+ * Audio Manager implementation using Tone.js for music practice applications.
+ * Provides note playback, chord support, and instrument switching for piano and guitar.
+ *
  * @category Audio
  * @subcategory Core Implementation
+ * @example
+ * ```typescript
+ * const audioManager = new AudioManager({
+ *   defaultInstrument: 'piano',
+ *   reverb: { decay: 2.0, wet: 0.1 }
+ * });
+ *
+ * await audioManager.initialize();
+ *
+ * // Play individual notes
+ * audioManager.playNote('C4');
+ * audioManager.playNote(['C4', 'E4', 'G4']); // C major chord
+ *
+ * // Switch instruments
+ * audioManager.setInstrument('guitar');
+ * audioManager.playNote('E2'); // Low E string
+ * ```
  */
 export class AudioManager implements AudioManagerInterface {
   private initialized = false
@@ -18,6 +37,12 @@ export class AudioManager implements AudioManagerInterface {
   private config: AudioManagerConfig
   private toneInstance: typeof Tone
 
+  /**
+   * Creates a new AudioManager instance with optional configuration.
+   *
+   * @param config - Configuration options for audio settings
+   * @param toneInstance - Tone.js instance for dependency injection (mainly for testing)
+   */
   constructor(
     config: AudioManagerConfig = {},
     toneInstance: typeof Tone = Tone
@@ -36,10 +61,31 @@ export class AudioManager implements AudioManagerInterface {
     this.toneInstance = toneInstance
   }
 
+  /**
+   * Checks if the audio system has been initialized.
+   *
+   * @returns True if audio system is ready for playback
+   */
   isInitialized(): boolean {
     return this.initialized
   }
 
+  /**
+   * Initializes the audio system and loads instrument samples.
+   * Must be called before any audio playback. Safe to call multiple times.
+   *
+   * @returns Promise that resolves when audio system is ready
+   *
+   * @example
+   * ```typescript
+   * const audioManager = new AudioManager();
+   * await audioManager.initialize();
+   *
+   * if (audioManager.isInitialized()) {
+   *   audioManager.playNote('C4');
+   * }
+   * ```
+   */
   async initialize(): Promise<void> {
     if (this.initialized) {
       console.log('Audio already initialized')

@@ -189,3 +189,7 @@ workbox-*.js
 # Analytics
 analytics.json
 .analytics/
+
+# Generated documentation
+docs/
+public/docs/
