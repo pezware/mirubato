@@ -1,516 +1,296 @@
-# Mirubato Development Roadmap
+# Rubato Development Roadmap
 
 ## Overview
 
-This roadmap outlines the phased development plan for Mirubato, organized around the modular architecture defined in SYSTEM_DESIGN.md. Each phase builds upon the previous, with a focus on local-first functionality and progressive enhancement through authentication.
+This roadmap outlines the phased development plan for Rubato, an educational sight-reading platform for piano and guitar. Each phase builds upon the previous, with a focus on local-first functionality and progressive enhancement.
 
-## Current Status: Phase 3 - Advanced Features & Professional Tools 🚧
+## Current Status: Phase 3 - Advanced Learning Platform ✅ COMPLETED
 
-### Previously Completed (Phase 1 & 2)
+### Phase 3 Final Status
 
-- ✅ **Core Infrastructure**: Testing, auth, storage, audio, sheet music display
-- ✅ **EventBus Module**: Publish/subscribe system with pattern matching
-- ✅ **Enhanced Storage Module**: LocalStorage with TTL, metadata, namespaces
-- ✅ **Sync Module**: Queue-based sync with retry logic and conflict resolution
-- ✅ **Practice Session Module**: Complete session management
-- ✅ **Performance Tracking Module**: Real-time feedback and analysis
-- ✅ **Test Coverage Improvements**: Backend 74%, Frontend 65%
+All Phase 3 MVP modules have been successfully implemented with comprehensive test coverage:
 
-### Current Phase 3 Implementation Progress
+- ✅ **ProgressAnalyticsModule**: 85%+ test coverage - Advanced analytics with trend analysis, milestone tracking, and improvement recommendations
+- ✅ **PracticeLoggerModule**: 85%+ test coverage - Professional practice journaling with goal tracking and export functionality
+- ✅ **CurriculumModule**: 85%+ test coverage - Enhanced learning path management with granular practice features and technical exercises
+- ✅ **VisualizationModule**: 85%+ test coverage - Comprehensive data visualization with Chart.js integration for progress insights
 
-- ✅ **Progress Analytics Module**: 90%+ test coverage
-- ✅ **Practice Logger Module**: 90.4% test coverage
-- ✅ **Curriculum Module**: 87.37% test coverage
-- 🚧 **Remaining Modules**: In progress
+**Architecture Quality**: All modules follow event-driven architecture with EventBus communication, ensuring proper module independence and scalability.
 
-See [PHASE3_MODULE_ARCHITECTURE.md](./PHASE3_MODULE_ARCHITECTURE.md) for detailed architecture and implementation plans.
+## Previously Completed Phases
 
-## Phase 2: Core Module Implementation ✅ (Completed)
+### Phase 1: Foundation ✅ COMPLETED
 
-### Completed Core Modules
+- ✅ **Core Infrastructure**: Authentication, storage, audio processing, notation display
+- ✅ **Basic Components**: UI foundation, responsive design, accessibility features
+- ✅ **Development Tools**: Testing framework, CI/CD pipeline, documentation system
 
-- ✅ **EventBus Module**: Singleton publish/subscribe system with pattern matching, priorities, and event history (>95% test coverage)
-- ✅ **Enhanced Storage Module**: LocalStorage abstraction with TTL support, metadata tracking, and namespace isolation (>88% test coverage)
-- ✅ **Sync Module**: Queue-based synchronization with retry logic, conflict resolution strategies, and batch processing (>92% test coverage)
-- ✅ **Practice Session Module**: Complete session management with persistence, analytics, and templates
-- ✅ **Performance Tracking Module**: Real-time feedback, analysis, and recommendation system
+### Phase 2: Core Modules ✅ COMPLETED
 
-### Current Quality Improvement Tasks
+- ✅ **EventBus Module**: Singleton publish/subscribe system (95%+ test coverage)
+- ✅ **StorageModule**: Local storage with TTL and metadata (88%+ test coverage)
+- ✅ **SyncModule**: Queue-based cloud synchronization (92%+ test coverage)
+- ✅ **PracticeSessionModule**: Complete session management with analytics
+- ✅ **PerformanceTrackingModule**: Real-time feedback and performance analysis
 
-#### High Priority ✅ (Completed)
+## Current Focus: Architecture Improvements
 
-1. **Backend Infrastructure Testing** ✅
-   - ✅ Add tests for `index.ts` (main server file) - now 100% coverage
-   - ✅ Add tests for `cors.ts` (security configuration) - maintained 100% coverage
-   - ✅ Add tests for `rateLimiter.ts` (rate limiting) - maintained 100% coverage
-   - ✅ Target achieved: Backend coverage improved from 45.69% → 74.13%
+### High Priority - Immediate Actions
 
-#### High Priority ✅ (Completed)
+#### 1. **Module Decoupling Improvements** 🔴 **CRITICAL**
 
-2. **Frontend Test Quality** ✅
-   - ✅ Fix Apollo Client mock warnings in all test files
-   - ✅ Improve test setup with proper GraphQL mock provider
-   - ✅ Eliminate test noise and improve debugging experience
-   - ✅ Add comprehensive test documentation
+- **Issue**: Direct StorageModule dependencies in 7 out of 8 business modules violate event-driven architecture
+- **Impact**: Tight coupling prevents independent testing and module replacement
+- **Solution**: Implement event-driven storage patterns
+  - Create storage request/response events (`storage:save:request`, `storage:load:request`)
+  - Remove direct StorageModule imports from business modules
+  - Add storage service abstraction via EventBus
 
-#### Medium Priority (Next Phase)
+#### 2. **Type Consistency Consolidation** 🟡 **MEDIUM PRIORITY**
 
-3. **Storage Module Enhancement**
+- **Issue**: Duplicate and inconsistent type definitions across modules
+- **Actions**:
+  - Centralize `Instrument`, `SkillLevel`, and music-related types in shared module
+  - Standardize accuracy representation (currently mixed 0-1 and 0-100 scales)
+  - Create shared base interfaces for entities (`EntityBase`, `UserScopedEntity`)
+  - Consolidate configuration interface naming patterns
 
-   - [ ] Implement IndexedDB adapter (architecture already prepared)
-   - [ ] Add performance benchmarks for large datasets
-   - [ ] Implement data compression for practice logs
+#### 3. **Documentation Reorganization** 🟢 **LOW PRIORITY**
 
-4. **Module Integration Testing**
-
-   - [ ] Add integration tests between EventBus ↔ Storage ↔ Sync
-   - [ ] Test module lifecycle dependencies
-   - [ ] Validate event flow across module boundaries
-
-5. **Performance & Monitoring**
-   - [ ] Add EventBus performance testing under high load
-   - [ ] Implement metrics collection for all modules
-   - [ ] Add health check endpoints for module status
-
-### Risk Assessment
-
-#### Technical Risks
-
-- **Storage Quota Limits**: Mobile browsers have strict storage limits
-  - _Mitigation_: Implement data compression and rotation policies
-- **Audio Context Restrictions**: Autoplay policies on mobile
-  - _Mitigation_: User interaction required before audio initialization
-- **IndexedDB Reliability**: Browser inconsistencies
-  - _Mitigation_: Fallback to LocalStorage for critical data
-
-#### Dependencies
-
-- **External Libraries**: Tone.js, VexFlow stability
-  - _Mitigation_: Pin versions, maintain fallback rendering
-- **Browser APIs**: Web Audio, IndexedDB support
-  - _Mitigation_: Feature detection and graceful degradation
-
-### MVP Definitions
-
-#### 2.1 Storage & Sync Modules MVP ✅
-
-**Minimum Viable Features**:
-
-- ✅ Basic local storage interface (LocalStorage + IndexedDB)
-- ✅ Simple save/load operations
-- ✅ Basic conflict detection (last-write-wins)
-- ✅ Manual sync trigger
-- ✅ Basic quota management (warning at 80%)
-
-**Full Implementation** (Phase 2 completion):
-
-- ✅ Unified storage interface for local/cloud operations
-- ✅ Add compression for IndexedDB practice logs
-- ✅ Create data retention policies
-- ✅ Implement storage quota management
-- ✅ Add export/import functionality
-- ✅ Automatic sync with conflict resolution
-- ✅ Incremental sync protocols
-
-#### 2.2 Practice Session Module MVP
-
-**Minimum Viable Features**:
-
-- ✓ Start/stop session functionality
-- ✓ Basic session data structure
-- [ ] Session persistence across refresh
-- [ ] Basic session history (last 10)
-
-**Full Implementation**:
-
-- [ ] Complete state machine (start/pause/resume/end)
-- [ ] Full session history with search
-- [ ] Session analytics and insights
-- [ ] Session templates
-- [ ] Batch operations
-
-#### 2.3 Performance Tracking Module MVP
-
-**Minimum Viable Features**:
-
-- [ ] Basic accuracy calculation (correct/total notes)
-- [ ] Simple timing detection (early/on-time/late)
-- [ ] Basic visual feedback (color coding)
-
-**Full Implementation**:
-
-- [ ] Advanced accuracy algorithms
-- [ ] Precise timing measurement
-- [ ] Detailed performance analytics
-- [ ] ML-based pattern detection
-- [ ] Personalized feedback generation
-
-## Phase 3: Advanced Features & Professional Tools 🚧 (Current)
-
-### Implementation Status
-
-Phase 3 introduces advanced modules for professional practice management and learning optimization:
-
-- ✅ **Progress Analytics Module**: Completed with 90%+ test coverage
-- ✅ **Practice Logger Module**: Completed with 90.4% test coverage
-- 🚧 **Curriculum Module**: Completed with 87.37% test coverage
-- 🚧 **Remaining Modules**: RepertoireManager, AudioFeedback, Visualization
-
-For detailed architecture, implementation plans, and module specifications, see:
-**[📘 PHASE3_MODULE_ARCHITECTURE.md](./PHASE3_MODULE_ARCHITECTURE.md)**
-
-### Completed Phase 3 Modules
-
-1. **Progress Analytics Module** ✅
-
-   - Advanced analytics engine with trend analysis
-   - Achievement system with milestone tracking
-   - Weak area detection and improvement recommendations
-   - Test coverage: 90%+
-
-2. **Practice Logger Module** ✅
-
-   - Professional practice journaling
-   - Goal tracking with milestones
-   - Export functionality (JSON/CSV)
-   - Event-driven integration
-   - Test coverage: 90.4%
-
-3. **Curriculum Module** ✅
-   - Learning path management with phases
-   - Repertoire search and recommendations
-   - Progress tracking and assessments
-   - Import/export capabilities
-   - Test coverage: 87.37%
-
-### Current Timeline
-
-- **Weeks 1-2**: Progress Analytics Module ✅ (Completed)
-- **Weeks 3-4**: Practice Logger Module ✅ (Completed)
-- **Weeks 5-6**: Curriculum Module ✅ (Completed)
-- **Week 7**: Remaining modules (RepertoireManager, AudioFeedback, Visualization)
-- **Week 8**: Integration testing & documentation
+- **Actions**:
+  - Remove superseded PHASE3_MODULE_ARCHITECTURE.md ✅ COMPLETED
+  - Update module architecture documentation to reflect current implementation
+  - Consolidate development guidelines in single source
 
 ## Phase 4: Enhanced Musical Features
 
-### 4.1 Advanced Sheet Music Module
+### Planned Timeline: Q3 2025
 
-**Purpose**: Comprehensive music library and generation
+#### 4.1 Advanced Sheet Music Module
 
-- [ ] Implement algorithmic exercise generation
-- [ ] Add music search and filtering
-- [ ] Create difficulty assessment algorithm
-- [ ] Build music recommendation system
-- [ ] Add MusicXML import support
+**Purpose**: Comprehensive music library and intelligent exercise generation
 
-### 4.2 Enhanced Audio Engine Module
+**Features**:
 
-**Purpose**: Professional audio capabilities
+- [ ] Algorithmic exercise generation based on user progress
+- [ ] Music search and filtering with advanced criteria
+- [ ] AI-powered difficulty assessment algorithm
+- [ ] Personalized music recommendation system
+- [ ] MusicXML import/export support
+- [ ] Integration with IMSLP public domain library
 
-- [ ] Add metronome with visual sync
-- [ ] Implement tempo ramping
-- [ ] Add A-B loop functionality
-- [ ] Create multi-instrument support
-- [ ] Build MIDI input integration
+**Dependencies**: Requires VisualizationModule for difficulty visualization
 
-### 4.3 Multi-Instrument Support
+#### 4.2 Enhanced Audio Engine Module
+
+**Purpose**: Professional-grade audio capabilities
+
+**Features**:
+
+- [ ] Precision metronome with visual synchronization
+- [ ] Intelligent tempo ramping for practice sessions
+- [ ] A-B loop functionality for difficult passages
+- [ ] Multi-instrument audio sample support
+- [ ] MIDI input integration for hardware keyboards
+- [ ] Real-time audio analysis and feedback
+
+**Dependencies**: Requires PerformanceTrackingModule integration
+
+#### 4.3 Multi-Instrument Support
 
 **Purpose**: Expand beyond piano to guitar and other instruments
 
-#### Guitar Features
+**Guitar Features**:
 
-- [ ] Implement tablature rendering
-- [ ] Add fretboard position markers
-- [ ] Create fingering notation (p,i,m,a)
-- [ ] Build chord diagram support
+- [ ] Professional tablature rendering with VexFlow
+- [ ] Interactive fretboard position markers
+- [ ] Classical fingering notation (p,i,m,a)
+- [ ] Chord diagram support and progression analysis
+- [ ] Position-based sight-reading exercises
 
-#### Additional Instruments
+**Additional Instruments**:
 
-- [ ] Add instrument-specific notation
-- [ ] Create custom audio samples
-- [ ] Implement transposition support
-- [ ] Build instrument-specific exercises
+- [ ] Violin clef and positioning support
+- [ ] Wind instrument transposition tools
+- [ ] Percussion notation and rhythm focus
+- [ ] Bass clef instruments (cello, bass)
 
-## Phase 5: Infrastructure & Middleware
+## Phase 5: Platform Enhancements
 
-### 5.1 Middleware Layer Implementation
+### Planned Timeline: Q4 2025
 
-**Purpose**: Cross-cutting concerns and optimization
+#### 5.1 Social Learning Features
 
-#### Cache Middleware
+**Purpose**: Community-driven learning and collaboration
 
-- [ ] Implement intelligent prefetching
-- [ ] Add Apollo cache persistence
-- [ ] Create cache invalidation strategies
-- [ ] Build offline cache management
+**Features**:
 
-#### Analytics Middleware
+- [ ] **Social Module**: Friend connections, practice challenges, community leaderboards
+- [ ] **Teacher Module**: Assignment creation, student progress tracking, grade book integration
+- [ ] **Collaboration Module**: Real-time ensemble practice, virtual duets
+- [ ] **Community Content**: User-generated exercises, rating system
 
-- [ ] Implement privacy-focused tracking
-- [ ] Add educational effectiveness metrics
-- [ ] Create usage pattern analysis
-- [ ] Build A/B testing framework
+#### 5.2 Advanced Analytics & AI
 
-#### Error Handling Middleware
+**Purpose**: Intelligent learning optimization
 
-- [ ] Implement comprehensive error recovery
-- [ ] Add user-friendly error messages
-- [ ] Create error reporting system
-- [ ] Build graceful degradation
+**Features**:
 
-### 5.2 Performance Optimizations
+- [ ] **AI Module**: Machine learning for adaptive difficulty adjustment
+- [ ] **Learning Analytics**: Detailed cognitive load analysis, optimal practice timing
+- [ ] **Predictive Modeling**: Performance outcome prediction, personalized learning paths
+- [ ] **Comparative Analytics**: Peer comparison, cohort analysis
 
-**Purpose**: Ensure smooth experience across all devices
+#### 5.3 Performance & Infrastructure
 
-- [ ] Implement code splitting by route
-- [ ] Add service worker for offline mode
-- [ ] Optimize bundle size (<500KB initial)
-- [ ] Implement virtual scrolling
-- [ ] Add progressive image loading
+**Purpose**: Enterprise-grade scalability and performance
 
-## Phase 6: Future Modules & Extensions
+**Features**:
 
-### 6.1 Social & Collaboration Modules
+- [ ] **WebAssembly Module**: Performance-critical audio processing
+- [ ] **Service Worker**: Comprehensive offline functionality
+- [ ] **CDN Integration**: Global content delivery optimization
+- [ ] **Progressive Web App**: Native app experience
 
-- [ ] **Social Module**: Friends, challenges, leaderboards
-- [ ] **Teacher Module**: Assignment creation and tracking
-- [ ] **Collaboration Module**: Real-time duets/ensembles
+## Phase 6: Professional Tools
 
-### 6.2 Advanced Technology Integration
+### Planned Timeline: Q1 2026
 
-- [ ] **AI Module**: Machine learning for adaptive difficulty
-- [ ] **MIDI Module**: Direct hardware integration
-- [ ] **WebAssembly Module**: Performance-critical operations
+#### 6.1 Teacher & Institution Tools
 
-## Code Quality Requirements
+**Purpose**: Educational institution integration
 
-### Testing Standards
+**Features**:
 
-- **Unit Tests**: 80% coverage minimum (90% for critical paths)
-- **Integration Tests**: All API endpoints and user flows
-- **E2E Tests**: Critical user journeys
-- **Performance Tests**: Audio latency, render performance
+- [ ] **Classroom Management**: Multi-student session monitoring
+- [ ] **Curriculum Integration**: Standards alignment (RCM, ABRSM, etc.)
+- [ ] **Assessment Tools**: Formal evaluation and grading systems
+- [ ] **Reporting Dashboard**: Institutional progress tracking
 
-### Development Standards
+#### 6.2 Advanced Performance Analysis
 
-- **TypeScript**: No `any` types allowed
-- **Documentation**: All modules fully documented
-- **Accessibility**: WCAG 2.1 AA compliance
-- **Security**: OWASP compliance
+**Purpose**: Professional-level practice insights
 
-## Module Implementation Guidelines
+**Features**:
 
-### For Each Module
+- [ ] **Video Integration**: Practice session recording and analysis
+- [ ] **Biomechanical Analysis**: Posture and technique optimization
+- [ ] **Performance Anxiety Tools**: Breathing exercises, mental preparation
+- [ ] **Professional Portfolio**: Audition preparation, repertoire tracking
 
-1. **Design First**: Define clear interfaces before implementation
-2. **Test First**: Write tests before code (TDD)
-3. **Local First**: Ensure offline functionality
-4. **Document**: Complete API documentation
-5. **Review**: Architecture and code review
+## Quality Standards & Requirements
 
-### Integration Points
+### Architecture Standards
 
-- Modules communicate only through defined interfaces
-- Events published to central event bus
-- State managed by Apollo Client
-- Middleware handles cross-cutting concerns
+- **Module Independence**: No direct dependencies between business modules
+- **Event-Driven Communication**: All inter-module communication via EventBus
+- **Local-First Design**: Full offline functionality with optional cloud sync
+- **Test Coverage**: Minimum 85% coverage, 95% for critical paths
 
-## Success Metrics
+### Performance Requirements
 
-### Technical Metrics
+- **Initial Load**: < 2 seconds on 3G connection
+- **Audio Latency**: < 50ms for real-time feedback
+- **Bundle Size**: Main bundle < 500KB, feature chunks < 200KB
+- **Memory Usage**: < 50MB baseline, no memory leaks
 
-- Test Coverage: >80% overall, >90% critical paths
-- Bundle Size: <500KB initial load
-- API Response: <100ms p95
-- Audio Latency: <50ms
+### Accessibility & Standards
 
-### User Experience Metrics
+- **WCAG 2.1 AA**: Full compliance for screen readers and keyboard navigation
+- **Cross-Browser**: Support for all modern browsers (Chrome 90+, Firefox 88+, Safari 14+)
+- **Mobile-First**: Responsive design with touch-optimized interactions
+- **Internationalization**: Unicode support, RTL text handling
 
-- Page Load: <3 seconds
-- Error Rate: <0.1%
-- Mobile Performance: >90 Lighthouse
-- Accessibility: WCAG 2.1 AA
+### Educational Quality
 
-### Educational Metrics
+- **Musical Accuracy**: All content verified by music educators
+- **Pedagogical Soundness**: Evidence-based learning progression
+- **Adaptive Learning**: Difficulty adjustment based on performance data
+- **Progress Tracking**: Meaningful metrics for skill development
 
-- User Engagement: Daily active usage
-- Progress Tracking: Measurable improvement
-- Retention: 30-day retention >60%
-- Learning Outcomes: Skill progression data
+## Implementation Strategy
+
+### Development Principles
+
+1. **Test-Driven Development**: Write tests before implementation
+2. **Module-First Architecture**: Complete individual modules before integration
+3. **User-Centered Design**: Regular user testing and feedback integration
+4. **Incremental Delivery**: Ship small, valuable improvements frequently
+
+### Risk Management
+
+#### Technical Risks
+
+- **Browser Audio Limitations**: Mobile autoplay policies, latency issues
+  - _Mitigation_: User gesture requirements, Web Audio API optimization
+- **Storage Quota Limits**: LocalStorage/IndexedDB restrictions on mobile
+  - _Mitigation_: Data compression, automatic cleanup, quota monitoring
+- **Third-Party Dependencies**: VexFlow, Tone.js version compatibility
+  - _Mitigation_: Version pinning, fallback implementations
+
+#### Educational Risks
+
+- **Content Quality**: Ensuring pedagogical effectiveness
+  - _Mitigation_: Music educator review board, user outcome tracking
+- **Skill Assessment Accuracy**: Proper difficulty progression
+  - _Mitigation_: A/B testing, learning analytics validation
+
+### Success Metrics
+
+#### Technical Metrics
+
+- **Test Coverage**: >85% overall, >95% critical paths
+- **Performance**: Web Vitals scores >90
+- **Reliability**: <0.1% error rate
+- **Security**: Zero critical vulnerabilities
+
+#### User Experience Metrics
+
+- **Engagement**: 70% weekly active users
+- **Retention**: 60% 30-day retention rate
+- **Satisfaction**: 4.5/5 average user rating
+- **Learning Outcomes**: Measurable skill improvement
+
+#### Educational Effectiveness
+
+- **Practice Consistency**: Daily practice streak tracking
+- **Skill Progression**: Level advancement timing
+- **Knowledge Retention**: Long-term performance tracking
+- **Teacher Adoption**: Classroom integration success rate
+
+## Long-Term Vision
+
+### 3-Year Goals
+
+- **Market Position**: Leading educational sight-reading platform
+- **User Base**: 10,000+ active monthly users
+- **Content Library**: 1,000+ exercises across multiple difficulty levels
+- **Institution Adoption**: 100+ schools and music programs
+
+### 5-Year Goals
+
+- **Global Reach**: Multi-language support, international curriculum alignment
+- **AI Integration**: Fully adaptive personalized learning experiences
+- **Ecosystem**: Third-party plugin support, developer API
+- **Research Impact**: Published studies on digital music education effectiveness
+
+---
 
 ## Definition of Done
 
-A module is complete when:
+A feature/module is complete when:
 
-1. **Interface Defined**: Clear API documentation
-2. **Tests Written**: >80% coverage with TDD
-3. **Implementation Complete**: All interfaces implemented
-4. **Integration Tested**: Works with other modules
-5. **Documentation Updated**: User and developer docs
-6. **Performance Validated**: Meets benchmarks
-7. **Accessibility Verified**: WCAG compliance
-8. **Security Reviewed**: No vulnerabilities
-9. **Code Reviewed**: Approved by team
-10. **Deployed**: Available in production
+1. **✅ Requirements Met**: All acceptance criteria satisfied
+2. **✅ Tests Comprehensive**: >85% coverage with edge cases
+3. **✅ Code Reviewed**: Architecture and implementation approved
+4. **✅ Documentation Updated**: User and developer documentation current
+5. **✅ Accessibility Verified**: WCAG 2.1 AA compliance confirmed
+6. **✅ Performance Validated**: Meets all performance benchmarks
+7. **✅ Security Reviewed**: No vulnerabilities, secure by design
+8. **✅ User Tested**: Validated with target user groups
+9. **✅ Integration Tested**: Works seamlessly with existing modules
+10. **✅ Deployed Successfully**: Available in production environment
 
-## Technical Debt Management
+---
 
-### Debt Tracking System
-
-#### Categories
-
-1. **Code Quality Debt**
-
-   - TypeScript `any` types
-   - Missing tests
-   - Console.log statements
-   - Duplicated code
-
-2. **Architecture Debt**
-
-   - Module boundary violations
-   - Direct dependencies instead of interfaces
-   - Missing abstraction layers
-   - Tight coupling
-
-3. **Performance Debt**
-
-   - Unoptimized queries
-   - Large bundle sizes
-   - Memory leaks
-   - Inefficient algorithms
-
-4. **Security Debt**
-   - Unvalidated inputs
-   - Missing rate limiting
-   - Weak authentication
-   - Data exposure risks
-
-### Management Strategy
-
-#### Debt Budget
-
-- **Per Sprint**: 20% capacity for debt reduction
-- **Quarterly**: Full debt audit and prioritization
-- **Emergency**: Stop-the-line for critical security debt
-
-#### Refactoring Triggers
-
-1. **Immediate**: Security vulnerabilities
-2. **Next Sprint**: Performance below SLA
-3. **Next Phase**: Architecture impediments
-4. **Backlog**: Code quality improvements
-
-#### Quality Gates
-
-- **Phase Transitions**: Debt must be below threshold
-- **Major Features**: No new debt introduction
-- **Releases**: Security debt must be zero
-
-## User Validation Milestones
-
-### Phase 2 Validation
-
-- **Week 4**: Alpha testing with 5 musicians
-- **Week 8**: Beta testing with 20 users
-- **Week 12**: Public beta launch
-
-### Phase 3 Validation
-
-- **Professional Musicians**: 10 user interviews
-- **Music Teachers**: 5 classroom trials
-- **Students**: 50 user feedback survey
-
-### Success Criteria
-
-- **Engagement**: 70% weekly active users
-- **Retention**: 60% 30-day retention
-- **Satisfaction**: 4.5/5 average rating
-- **Performance**: <100ms interaction latency
-
-## Parallel Development Tracks
-
-### Track Organization
-
-#### Track 1: Core Infrastructure (Backend Team)
-
-- **Independent Modules**:
-  - Storage Module enhancement
-  - Sync Module implementation
-  - GraphQL API extensions
-  - Database optimizations
-
-#### Track 2: User Experience (Frontend Team)
-
-- **Independent Modules**:
-  - UI component library
-  - Responsive design system
-  - Animation framework
-  - Accessibility features
-
-#### Track 3: Musical Features (Domain Team)
-
-- **Independent Modules**:
-  - Sheet music algorithms
-  - Audio processing
-  - Music theory engine
-  - Notation rendering
-
-### Synchronization Points
-
-#### Weekly
-
-- Cross-track standup
-- Dependency review
-- Integration planning
-
-#### Bi-weekly
-
-- Module integration testing
-- Performance benchmarking
-- User testing sessions
-
-#### Monthly
-
-- Architecture review
-- Tech debt assessment
-- Roadmap adjustment
-
-### Dependency Management
-
-#### Blocking Dependencies
-
-- **Phase 2**: Storage must complete before Sync
-- **Phase 3**: Performance Tracking required for Analytics
-- **Phase 4**: Audio Engine needed for advanced features
-
-#### Parallel Opportunities
-
-1. **Phase 2**: Storage and Session modules in parallel
-2. **Phase 3**: All three modules can start simultaneously
-3. **Phase 4**: Sheet Music and Audio enhancements in parallel
-
-## Timeline Estimates
-
-### Adjusted for Parallel Tracks
-
-- **Phase 1**: ✅ Completed
-- **Phase 2**: ✅ Completed (2 months actual)
-- **Phase 3**: 🚧 In Progress (2 months estimated, started June 2025)
-- **Phase 4**: 3 months (musical complexity)
-- **Phase 5**: 1.5 months (infrastructure sprint)
-- **Phase 6**: Ongoing (quarterly releases)
-
-### Critical Path
-
-1. Storage Module → Sync Module → Cloud Features
-2. Session Module → Performance Tracking → Analytics
-3. Audio Engine → Advanced Playback → MIDI Support
-
-### Buffer Time
-
-- **Per Phase**: 2-week buffer for unexpected issues
-- **Integration**: 1 week between phases
-- **User Testing**: 2 weeks per major release
-
-**Note**: All timelines assume full team capacity and no major technical blockers. Regular reassessment based on velocity and user feedback.
+_This roadmap is a living document, updated quarterly based on user feedback, technical discoveries, and educational research. All dates are estimates subject to revision based on development velocity and prioritization changes._
