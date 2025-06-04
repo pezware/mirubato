@@ -1,5 +1,9 @@
-import { ModuleInterface, ModuleHealth, EventBus } from '../core'
-import { StorageModule } from '../infrastructure'
+import {
+  ModuleInterface,
+  ModuleHealth,
+  EventBus,
+  StorageService,
+} from '../core'
 import {
   PerformanceData,
   PerformanceMetrics,
@@ -20,7 +24,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageModule: StorageModule
+  private storageService: StorageService
   private config: PerformanceConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -33,12 +37,9 @@ export class PerformanceTrackingModule implements ModuleInterface {
   private feedbackCallbacks: Set<(feedback: RealTimeFeedback) => void> =
     new Set()
 
-  constructor(
-    storageModule: StorageModule,
-    config?: Partial<PerformanceConfig>
-  ) {
-    this.storageModule = storageModule
+  constructor(config?: Partial<PerformanceConfig>, storageService?: any) {
     this.eventBus = EventBus.getInstance()
+    this.storageService = storageService || new StorageService(this.eventBus)
 
     this.config = {
       timingToleranceMs: 50,
@@ -667,15 +668,14 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   async getSessionData(sessionId: string): Promise<PerformanceData[]> {
     const allData =
-      (await this.storageModule.loadLocal<PerformanceData[]>(
-        'performance_data'
-      )) || []
+      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
+      []
     return allData.filter(d => d.sessionId === sessionId)
   }
 
   async getAnalysis(sessionId: string): Promise<PerformanceAnalysis | null> {
     const allAnalyses =
-      (await this.storageModule.loadLocal<PerformanceAnalysis[]>(
+      (await this.storageService.get<PerformanceAnalysis[]>(
         'performance_analyses'
       )) || []
     return allAnalyses.find(a => a.sessionId === sessionId) || null
@@ -683,9 +683,8 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   async getUserStats(userId: string): Promise<PerformanceMetrics> {
     const allData =
-      (await this.storageModule.loadLocal<PerformanceData[]>(
-        'performance_data'
-      )) || []
+      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
+      []
     const userData = allData.filter(d => d.userId === userId)
     return this.calculateOverallMetrics(userData)
   }
@@ -711,12 +710,11 @@ export class PerformanceTrackingModule implements ModuleInterface {
     if (this.currentSessionData.length === 0) return
 
     const existingData =
-      (await this.storageModule.loadLocal<PerformanceData[]>(
-        'performance_data'
-      )) || []
+      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
+      []
     const updatedData = [...existingData, ...this.currentSessionData]
 
-    await this.storageModule.saveLocal('performance_data', updatedData)
+    await this.storageService.set('performance_data', updatedData)
 
     // Emit sync event
     await this.eventBus.publish({
@@ -733,18 +731,18 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   private async saveAnalysis(analysis: PerformanceAnalysis): Promise<void> {
     const existingAnalyses =
-      (await this.storageModule.loadLocal<PerformanceAnalysis[]>(
+      (await this.storageService.get<PerformanceAnalysis[]>(
         'performance_analyses'
       )) || []
     const updatedAnalyses = [...existingAnalyses, analysis]
 
-    await this.storageModule.saveLocal('performance_analyses', updatedAnalyses)
+    await this.storageService.set('performance_analyses', updatedAnalyses)
   }
 
   // Testing helpers
   async clearAllData(): Promise<void> {
-    await this.storageModule.deleteLocal('performance_data')
-    await this.storageModule.deleteLocal('performance_analyses')
+    await this.storageService.remove('performance_data')
+    await this.storageService.remove('performance_analyses')
   }
 
   getCurrentSessionData(): PerformanceData[] {

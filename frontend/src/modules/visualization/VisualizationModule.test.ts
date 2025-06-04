@@ -1,6 +1,5 @@
 import { VisualizationModule } from './VisualizationModule'
-import { EventBus } from '../core/EventBus'
-import { StorageModule } from '../infrastructure/StorageModule'
+import { EventBus, MockStorageService } from '../core'
 import type {
   VisualizationConfig,
   ChartSpecification,
@@ -11,10 +10,6 @@ import type {
   ChartInteractionEvent,
 } from './types'
 import type { EventPayload } from '../core/types'
-
-// Mock dependencies
-jest.mock('../core/EventBus')
-jest.mock('../infrastructure/StorageModule')
 
 // Mock Chart.js
 jest.mock('chart.js', () => {
@@ -77,8 +72,10 @@ Object.defineProperty(global, 'HTMLCanvasElement', {
 
 describe('VisualizationModule', () => {
   let visualization: VisualizationModule
-  let mockEventBus: jest.Mocked<EventBus>
-  let mockStorage: jest.Mocked<StorageModule>
+  let eventBus: EventBus
+  let mockStorage: MockStorageService
+  let publishSpy: jest.SpyInstance
+  let subscribeSpy: jest.SpyInstance
 
   const testConfig: VisualizationConfig = {
     library: 'chartjs',
@@ -115,27 +112,27 @@ describe('VisualizationModule', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Create mock instances
-    mockEventBus = {
-      getInstance: jest.fn().mockReturnThis(),
-      publish: jest.fn().mockResolvedValue(undefined),
-      subscribe: jest.fn(),
-      unsubscribe: jest.fn(),
-    } as any
+    EventBus.resetInstance()
+    eventBus = EventBus.getInstance()
+    publishSpy = jest.spyOn(eventBus, 'publish')
+    subscribeSpy = jest.spyOn(eventBus, 'subscribe')
 
-    mockStorage = {
-      initialize: jest.fn().mockResolvedValue(undefined),
-      saveLocal: jest.fn().mockResolvedValue(undefined),
-      loadLocal: jest.fn().mockResolvedValue(null),
-      deleteLocal: jest.fn().mockResolvedValue(undefined),
-      getKeys: jest.fn().mockResolvedValue([]),
-      clearLocal: jest.fn().mockResolvedValue(undefined),
-    } as any
+    // Use mock storage service for tests
+    mockStorage = new MockStorageService()
 
-    // Set up EventBus singleton
-    ;(EventBus.getInstance as jest.Mock).mockReturnValue(mockEventBus)
+    // Create module with mock storage
+    visualization = new VisualizationModule(testConfig, mockStorage)
+  })
 
-    visualization = new VisualizationModule(mockStorage, testConfig)
+  afterEach(async () => {
+    if (visualization) {
+      await visualization.shutdown()
+    }
+    if (mockStorage) {
+      mockStorage.destroy()
+    }
+    jest.clearAllMocks()
+    EventBus.resetInstance()
   })
 
   describe('Module Lifecycle', () => {
@@ -144,12 +141,12 @@ describe('VisualizationModule', () => {
 
       expect(visualization.name).toBe('VisualizationModule')
       expect(visualization.version).toBe('1.0.0')
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:init:start',
         })
       )
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:init:complete',
         })
@@ -159,26 +156,29 @@ describe('VisualizationModule', () => {
     it('should set up event subscriptions', async () => {
       await visualization.initialize()
 
-      expect(mockEventBus.subscribe).toHaveBeenCalledWith(
+      expect(subscribeSpy).toHaveBeenCalledWith(
         'progress:report:ready',
         expect.any(Function)
       )
-      expect(mockEventBus.subscribe).toHaveBeenCalledWith(
+      expect(subscribeSpy).toHaveBeenCalledWith(
         'curriculum:analytics:ready',
         expect.any(Function)
       )
-      expect(mockEventBus.subscribe).toHaveBeenCalledWith(
+      expect(subscribeSpy).toHaveBeenCalledWith(
         'logger:report:generated',
         expect.any(Function)
       )
-      expect(mockEventBus.subscribe).toHaveBeenCalledWith(
+      expect(subscribeSpy).toHaveBeenCalledWith(
         'practice:session:ended',
         expect.any(Function)
       )
     })
 
     it('should handle initialization errors gracefully', async () => {
-      mockStorage.initialize.mockRejectedValueOnce(new Error('Storage error'))
+      // Mock subscribe to throw error during initialization
+      subscribeSpy.mockImplementationOnce(() => {
+        throw new Error('Storage error')
+      })
 
       await visualization.initialize()
 
@@ -191,13 +191,9 @@ describe('VisualizationModule', () => {
       await visualization.initialize()
       await visualization.shutdown()
 
-      expect(mockEventBus.unsubscribe).toHaveBeenCalledWith(
-        'progress:report:ready'
-      )
-      expect(mockEventBus.unsubscribe).toHaveBeenCalledWith(
-        'curriculum:analytics:ready'
-      )
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      // EventBus doesn't have unsubscribe method in our implementation
+      // Shutdown should clear subscriptions internally
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:shutdown:complete',
         })
@@ -215,11 +211,11 @@ describe('VisualizationModule', () => {
 
       expect(chart.id).toBe(testChartSpec.id)
       expect(chart.type).toBe(testChartSpec.type)
-      expect(mockStorage.saveLocal).toHaveBeenCalledWith(
-        `chart:${testChartSpec.id}`,
-        chart
-      )
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      // Check storage state directly
+      const storedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      expect(storedChart).toEqual(chart)
+
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:chart:created',
           data: { chart },
@@ -234,14 +230,10 @@ describe('VisualizationModule', () => {
         { ...testChartSpec, id: 'chart-3', userId: 'user-2' },
       ]
 
-      mockStorage.getKeys.mockResolvedValueOnce([
-        'chart:progress-chart-1',
-        'chart:chart-2',
-        'chart:chart-3',
-      ])
-      mockCharts.forEach(chart => {
-        mockStorage.loadLocal.mockResolvedValueOnce(chart)
-      })
+      // Set up storage state directly
+      for (const chart of mockCharts) {
+        await mockStorage.set(`chart:${chart.id}`, chart)
+      }
 
       const userCharts = await visualization.getUserCharts('user-1')
 
@@ -251,7 +243,7 @@ describe('VisualizationModule', () => {
 
     it('should update chart specification', async () => {
       const existingChart = { ...testChartSpec, userId: 'user-1' }
-      mockStorage.loadLocal.mockResolvedValueOnce(existingChart)
+      await mockStorage.set(`chart:${testChartSpec.id}`, existingChart)
 
       const updates = {
         dimensions: { width: 1000, height: 500 },
@@ -265,19 +257,19 @@ describe('VisualizationModule', () => {
 
       expect(updatedChart.dimensions.width).toBe(1000)
       expect(updatedChart.interactivity.zoom).toBe(false)
-      expect(mockStorage.saveLocal).toHaveBeenCalledWith(
-        `chart:${testChartSpec.id}`,
-        updatedChart
-      )
+      // Check storage state directly
+      const storedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      expect(storedChart).toEqual(updatedChart)
     })
 
     it('should delete a chart', async () => {
       await visualization.deleteChart(testChartSpec.id)
 
-      expect(mockStorage.deleteLocal).toHaveBeenCalledWith(
-        `chart:${testChartSpec.id}`
-      )
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      // Verify chart was deleted from storage
+      const deletedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      expect(deletedChart).toBeNull()
+
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:chart:deleted',
           data: { chartId: testChartSpec.id },
@@ -409,7 +401,7 @@ describe('VisualizationModule', () => {
       )
 
       expect(canvas).toBeDefined()
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:rendered',
           data: expect.objectContaining({
@@ -444,7 +436,7 @@ describe('VisualizationModule', () => {
       expect(result.mimeType).toBe('image/png')
       expect(result.filename).toMatch(/\.png$/)
       expect(result.data).toBeDefined()
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:exported',
           data: expect.objectContaining({
@@ -541,10 +533,9 @@ describe('VisualizationModule', () => {
       expect(dashboard.name).toBe('Practice Dashboard')
       expect(dashboard.charts).toHaveLength(2)
       expect(dashboard.id).toBeDefined()
-      expect(mockStorage.saveLocal).toHaveBeenCalledWith(
-        `dashboard:${dashboard.id}`,
-        dashboard
-      )
+      // Check that dashboard was saved to storage
+      const savedDashboard = await mockStorage.get(`dashboard:${dashboard.id}`)
+      expect(savedDashboard).toEqual(dashboard)
     })
 
     it('should get user dashboards', async () => {
@@ -571,13 +562,10 @@ describe('VisualizationModule', () => {
         },
       ]
 
-      mockStorage.getKeys.mockResolvedValueOnce([
-        'dashboard:dash-1',
-        'dashboard:dash-2',
-      ])
-      mockDashboards.forEach(dash => {
-        mockStorage.loadLocal.mockResolvedValueOnce(dash)
-      })
+      // Set up storage state directly
+      for (const dash of mockDashboards) {
+        await mockStorage.set(`dashboard:${dash.id}`, dash)
+      }
 
       const userDashboards = await visualization.getUserDashboards('user-1')
 
@@ -597,7 +585,11 @@ describe('VisualizationModule', () => {
         updatedAt: Date.now(),
       }
 
-      mockStorage.loadLocal.mockResolvedValueOnce(existingDashboard)
+      // Set up existing dashboard in storage
+      await mockStorage.set(
+        `dashboard:${existingDashboard.id}`,
+        existingDashboard
+      )
 
       const updates = {
         name: 'Updated Dashboard',
@@ -640,14 +632,14 @@ describe('VisualizationModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = mockEventBus.subscribe.mock.calls.find(
+      const eventHandler = subscribeSpy.mock.calls.find(
         call => call[0] === 'progress:report:ready'
       )?.[1]
 
       await eventHandler?.(progressEvent)
 
       // Should update relevant charts with new data
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:data:updated',
         })
@@ -672,13 +664,13 @@ describe('VisualizationModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = mockEventBus.subscribe.mock.calls.find(
+      const eventHandler = subscribeSpy.mock.calls.find(
         call => call[0] === 'curriculum:analytics:ready'
       )?.[1]
 
       await eventHandler?.(analyticsEvent)
 
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:data:updated',
         })
@@ -699,7 +691,7 @@ describe('VisualizationModule', () => {
 
       await visualization.handleChartInteraction(interactionEvent)
 
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:interaction',
           data: { interaction: interactionEvent },
@@ -823,8 +815,8 @@ describe('VisualizationModule', () => {
       }
 
       const contrastModule = new VisualizationModule(
-        mockStorage,
-        highContrastConfig
+        highContrastConfig,
+        mockStorage
       )
       await contrastModule.initialize()
 
@@ -923,7 +915,7 @@ describe('VisualizationModule', () => {
       )
 
       expect(result).toBeNull()
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:error',
         })
@@ -979,14 +971,14 @@ describe('VisualizationModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = mockEventBus.subscribe.mock.calls.find(
+      const eventHandler = subscribeSpy.mock.calls.find(
         call => call[0] === 'progress:report:ready'
       )?.[1]
 
       await eventHandler?.(updateEvent)
 
       // Cache should be invalidated and fresh data processed
-      expect(mockEventBus.publish).toHaveBeenCalledWith(
+      expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'visualization:cache:invalidated',
         })
@@ -1012,14 +1004,14 @@ describe('VisualizationModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = mockEventBus.subscribe.mock.calls.find(
+      const eventHandler = subscribeSpy.mock.calls.find(
         call => call[0] === 'progress:milestone:achieved'
       )?.[1]
 
       if (eventHandler) {
         await eventHandler(progressEvent)
 
-        expect(mockEventBus.publish).toHaveBeenCalledWith(
+        expect(publishSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             type: 'visualization:milestone:highlighted',
           })
@@ -1041,14 +1033,14 @@ describe('VisualizationModule', () => {
         metadata: { version: '1.0.0' },
       }
 
-      const eventHandler = mockEventBus.subscribe.mock.calls.find(
+      const eventHandler = subscribeSpy.mock.calls.find(
         call => call[0] === 'curriculum:path:completed'
       )?.[1]
 
       if (eventHandler) {
         await eventHandler(curriculumEvent)
 
-        expect(mockEventBus.publish).toHaveBeenCalledWith(
+        expect(publishSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             type: 'visualization:tree:updated',
           })

@@ -1,4 +1,10 @@
-import { ModuleInterface, ModuleHealth, EventBus } from '../core'
+import {
+  ModuleInterface,
+  ModuleHealth,
+  EventBus,
+  StorageRequestEvent,
+  StorageResponseEvent,
+} from '../core'
 import { StorageAdapter, StorageConfig, StorageMetadata } from './types'
 
 export class LocalStorageAdapter implements StorageAdapter {
@@ -144,6 +150,12 @@ export class StorageModule implements ModuleInterface {
         metadata: { version: this.version },
       })
 
+      // Subscribe to storage request events for event-driven access
+      this.eventBus.subscribe(
+        'storage:request',
+        this.handleStorageRequest.bind(this)
+      )
+
       // Test storage availability
       const testKey = '_storage_test'
       await this.adapter.set(testKey, { test: true })
@@ -204,6 +216,65 @@ export class StorageModule implements ModuleInterface {
 
   getHealth(): ModuleHealth {
     return { ...this.health }
+  }
+
+  // Event-driven storage request handler
+  private async handleStorageRequest(event: any): Promise<void> {
+    const request = event.data as StorageRequestEvent
+    let response: StorageResponseEvent
+
+    try {
+      let data: any = undefined
+
+      switch (request.operation) {
+        case 'get':
+          if (!request.key) throw new Error('Key is required for get operation')
+          data = await this.adapter.get(request.key)
+          break
+
+        case 'set':
+          if (!request.key) throw new Error('Key is required for set operation')
+          await this.adapter.set(request.key, request.data, request.ttl)
+          break
+
+        case 'remove':
+          if (!request.key)
+            throw new Error('Key is required for remove operation')
+          await this.adapter.remove(request.key)
+          break
+
+        case 'clear':
+          await this.adapter.clear()
+          break
+
+        case 'getKeys':
+          data = await this.adapter.getKeys()
+          break
+
+        default:
+          throw new Error(`Unknown storage operation: ${request.operation}`)
+      }
+
+      response = {
+        requestId: request.requestId,
+        success: true,
+        data,
+      }
+    } catch (error) {
+      response = {
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown storage error',
+      }
+    }
+
+    // Emit the response event
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'storage:response',
+      data: response,
+      metadata: { version: this.version },
+    })
   }
 
   // Storage operations

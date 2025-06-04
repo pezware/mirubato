@@ -1,2 +1,5 @@
 export { EventBus } from './EventBus'
+export { StorageService } from './StorageService'
+export { MockStorageService } from './MockStorageService'
 export * from './types'
+export * from './sharedTypes'

@@ -1,15 +1,21 @@
 // Practice module types and interfaces
 
-export interface PracticeSession {
-  id: string
-  userId: string
+import {
+  Instrument,
+  SessionStatus,
+  MistakeType,
+  AccuracyMetrics,
+  UserScopedEntity,
+} from '../core/sharedTypes'
+
+export interface PracticeSession extends UserScopedEntity {
   startTime: number
   endTime?: number
   sheetMusicId: string
   sheetMusicTitle: string
-  instrument: 'piano' | 'guitar'
+  instrument: Instrument
   tempo: number
-  status: 'active' | 'paused' | 'completed' | 'abandoned'
+  status: SessionStatus
   pausedTime?: number
   totalPausedDuration: number
   performance?: SessionPerformance
@@ -19,7 +25,7 @@ export interface PracticeSession {
 export interface SessionPerformance {
   notesPlayed: number
   correctNotes: number
-  accuracy: number
+  accuracy: AccuracyMetrics
   averageTiming: number // ms off from perfect timing
   mistakes: Mistake[]
   progress: number // 0-100 percentage of piece completed
@@ -29,7 +35,7 @@ export interface Mistake {
   timestamp: number
   noteExpected: string
   notePlayed?: string
-  type: 'wrong_note' | 'missed_note' | 'extra_note' | 'timing'
+  type: MistakeType
   measure?: number
   beat?: number
 }

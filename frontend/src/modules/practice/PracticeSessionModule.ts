@@ -1,5 +1,10 @@
-import { ModuleInterface, ModuleHealth, EventBus } from '../core'
-import { StorageModule } from '../infrastructure'
+import {
+  ModuleInterface,
+  ModuleHealth,
+  EventBus,
+  StorageService,
+  SessionStatus,
+} from '../core'
 import {
   PracticeSession,
   PracticeConfig,
@@ -7,13 +12,15 @@ import {
   PracticeStats,
   Mistake,
 } from './types'
+import { MistakeType } from '../core/sharedTypes'
+import { Instrument } from '../../../../shared/types'
 
 export class PracticeSessionModule implements ModuleInterface {
   name = 'PracticeSession'
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageModule: StorageModule
+  private storageService: StorageService
   private config: PracticeConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -26,9 +33,9 @@ export class PracticeSessionModule implements ModuleInterface {
   private sessionStartHandlers: Set<() => void> = new Set()
   private sessionEndHandlers: Set<() => void> = new Set()
 
-  constructor(storageModule: StorageModule, config?: Partial<PracticeConfig>) {
-    this.storageModule = storageModule
+  constructor(config?: Partial<PracticeConfig>, storageService?: any) {
     this.eventBus = EventBus.getInstance()
+    this.storageService = storageService || new StorageService(this.eventBus)
 
     this.config = {
       autoSaveInterval: 30000, // 30 seconds
@@ -90,7 +97,10 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async shutdown(): Promise<void> {
     // Save current session if active
-    if (this.currentSession && this.currentSession.status === 'active') {
+    if (
+      this.currentSession &&
+      this.currentSession.status === SessionStatus.ACTIVE
+    ) {
       await this.pauseSession()
     }
 
@@ -130,14 +140,14 @@ export class PracticeSessionModule implements ModuleInterface {
   private setupEventSubscriptions(): void {
     // Subscribe to performance events
     this.eventBus.subscribe('performance:note:played', async payload => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.recordNotePerformance(payload.data)
       }
     })
 
     // Subscribe to navigation events
     this.eventBus.subscribe('navigation:leaving:practice', async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.pauseSession()
       }
     })
@@ -146,28 +156,31 @@ export class PracticeSessionModule implements ModuleInterface {
   async startSession(
     sheetMusicId: string,
     sheetMusicTitle: string,
-    instrument: 'piano' | 'guitar',
+    instrument: Instrument,
     userId?: string
   ): Promise<PracticeSession> {
     // End any existing session
     if (this.currentSession) {
-      await this.endSession('abandoned')
+      await this.endSession(SessionStatus.ABANDONED)
     }
 
+    const now = Date.now()
     const session: PracticeSession = {
-      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `session_${now}_${Math.random().toString(36).substr(2, 9)}`,
       userId: userId || 'anonymous',
-      startTime: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+      startTime: now,
       sheetMusicId,
       sheetMusicTitle,
       instrument,
       tempo: 120,
-      status: 'active',
+      status: SessionStatus.ACTIVE,
       totalPausedDuration: 0,
       performance: {
         notesPlayed: 0,
         correctNotes: 0,
-        accuracy: 100,
+        accuracy: { percentage: 100, notesCorrect: 0, notesTotal: 0 },
         averageTiming: 0,
         mistakes: [],
         progress: 0,
@@ -196,11 +209,14 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async pauseSession(): Promise<void> {
-    if (!this.currentSession || this.currentSession.status !== 'active') {
+    if (
+      !this.currentSession ||
+      this.currentSession.status !== SessionStatus.ACTIVE
+    ) {
       return
     }
 
-    this.currentSession.status = 'paused'
+    this.currentSession.status = SessionStatus.PAUSED
     this.currentSession.pausedTime = Date.now()
 
     await this.saveSession()
@@ -214,7 +230,10 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async resumeSession(): Promise<void> {
-    if (!this.currentSession || this.currentSession.status !== 'paused') {
+    if (
+      !this.currentSession ||
+      this.currentSession.status !== SessionStatus.PAUSED
+    ) {
       return
     }
 
@@ -224,7 +243,7 @@ export class PracticeSessionModule implements ModuleInterface {
       this.currentSession.pausedTime = undefined
     }
 
-    this.currentSession.status = 'active'
+    this.currentSession.status = SessionStatus.ACTIVE
 
     await this.eventBus.publish({
       source: this.name,
@@ -235,7 +254,7 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async endSession(
-    status: 'completed' | 'abandoned' = 'completed'
+    status: SessionStatus = SessionStatus.COMPLETED
   ): Promise<void> {
     if (!this.currentSession) {
       return
@@ -247,10 +266,14 @@ export class PracticeSessionModule implements ModuleInterface {
     // Calculate final stats
     if (this.currentSession.performance) {
       const perf = this.currentSession.performance
-      perf.accuracy =
-        perf.notesPlayed > 0
-          ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
-          : 100
+      perf.accuracy = {
+        percentage:
+          perf.notesPlayed > 0
+            ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
+            : 100,
+        notesCorrect: perf.correctNotes,
+        notesTotal: perf.notesPlayed,
+      }
     }
 
     await this.saveSession()
@@ -288,9 +311,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async getSessionHistory(limit = 10, offset = 0): Promise<PracticeSession[]> {
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     return sessions
       .sort((a, b) => b.startTime - a.startTime)
@@ -298,7 +320,7 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async getStats(userId?: string): Promise<PracticeStats> {
-    const stats = await this.storageModule.loadLocal<PracticeStats>(
+    const stats = await this.storageService.get<PracticeStats>(
       `practice_stats_${userId || 'anonymous'}`
     )
 
@@ -317,9 +339,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async applyTemplate(templateId: string): Promise<void> {
     const templates =
-      (await this.storageModule.loadLocal<SessionTemplate[]>(
-        'session_templates'
-      )) || []
+      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
+      []
 
     const template = templates.find(t => t.id === templateId)
     if (!template) {
@@ -339,9 +360,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async saveTemplate(template: SessionTemplate): Promise<void> {
     const templates =
-      (await this.storageModule.loadLocal<SessionTemplate[]>(
-        'session_templates'
-      )) || []
+      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
+      []
 
     const existingIndex = templates.findIndex(t => t.id === template.id)
     if (existingIndex >= 0) {
@@ -350,7 +370,7 @@ export class PracticeSessionModule implements ModuleInterface {
       templates.push(template)
     }
 
-    await this.storageModule.saveLocal('session_templates', templates)
+    await this.storageService.set('session_templates', templates)
   }
 
   updateConfig(config: Partial<PracticeConfig>): void {
@@ -392,11 +412,21 @@ export class PracticeSessionModule implements ModuleInterface {
         timestamp: Date.now(),
         noteExpected: data.expected,
         notePlayed: data.played,
-        type: data.played ? 'wrong_note' : 'missed_note',
+        type: data.played ? MistakeType.WRONG_NOTE : MistakeType.MISSED_NOTE,
         measure: data.measure,
         beat: data.beat,
       }
       perf.mistakes.push(mistake)
+    }
+
+    // Update accuracy metrics
+    perf.accuracy = {
+      percentage:
+        perf.notesPlayed > 0
+          ? Math.round((perf.correctNotes / perf.notesPlayed) * 100)
+          : 100,
+      notesCorrect: perf.correctNotes,
+      notesTotal: perf.notesPlayed,
     }
 
     // Update average timing
@@ -416,9 +446,8 @@ export class PracticeSessionModule implements ModuleInterface {
     if (!this.currentSession) return
 
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     const existingIndex = sessions.findIndex(
       s => s.id === this.currentSession!.id
@@ -430,7 +459,7 @@ export class PracticeSessionModule implements ModuleInterface {
       sessions.push(this.currentSession)
     }
 
-    await this.storageModule.saveLocal('practice_sessions', sessions)
+    await this.storageService.set('practice_sessions', sessions)
 
     await this.eventBus.publish({
       source: this.name,
@@ -446,12 +475,12 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private async restoreActiveSession(): Promise<void> {
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     const activeSession = sessions.find(
-      s => s.status === 'active' || s.status === 'paused'
+      s =>
+        s.status === SessionStatus.ACTIVE || s.status === SessionStatus.PAUSED
     )
 
     if (activeSession) {
@@ -460,12 +489,12 @@ export class PracticeSessionModule implements ModuleInterface {
       // Check if session is too old (> max duration)
       const sessionAge = Date.now() - activeSession.startTime
       if (sessionAge > this.config.maxSessionDuration) {
-        await this.endSession('abandoned')
+        await this.endSession(SessionStatus.ABANDONED)
         return
       }
 
       // Restore timers if active
-      if (activeSession.status === 'active') {
+      if (activeSession.status === SessionStatus.ACTIVE) {
         this.startAutoSave()
         this.startSessionTimer()
       }
@@ -481,7 +510,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private startAutoSave(): void {
     this.autoSaveTimer = setInterval(async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         await this.saveSession()
       }
     }, this.config.autoSaveInterval)
@@ -489,10 +518,10 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private startSessionTimer(): void {
     this.sessionTimer = setInterval(async () => {
-      if (this.currentSession?.status === 'active') {
+      if (this.currentSession?.status === SessionStatus.ACTIVE) {
         const duration = Date.now() - this.currentSession.startTime
         if (duration >= this.config.maxSessionDuration) {
-          await this.endSession('completed')
+          await this.endSession(SessionStatus.COMPLETED)
         }
       }
     }, 60000) // Check every minute
@@ -518,7 +547,7 @@ export class PracticeSessionModule implements ModuleInterface {
     if (this.currentSession.performance) {
       const prevTotal = stats.averageAccuracy * (stats.totalSessions - 1)
       stats.averageAccuracy =
-        (prevTotal + this.currentSession.performance.accuracy) /
+        (prevTotal + this.currentSession.performance.accuracy.percentage) /
         stats.totalSessions
     }
 
@@ -553,11 +582,11 @@ export class PracticeSessionModule implements ModuleInterface {
       const prevAccuracy =
         instrumentStats.averageAccuracy * (instrumentStats.sessionCount - 1)
       instrumentStats.averageAccuracy =
-        (prevAccuracy + this.currentSession.performance.accuracy) /
+        (prevAccuracy + this.currentSession.performance.accuracy.percentage) /
         instrumentStats.sessionCount
     }
 
-    await this.storageModule.saveLocal(
+    await this.storageService.set(
       `practice_stats_${userId || 'anonymous'}`,
       stats
     )
@@ -565,12 +594,10 @@ export class PracticeSessionModule implements ModuleInterface {
 
   // Testing helpers
   async clearHistory(): Promise<void> {
-    await this.storageModule.saveLocal('practice_sessions', [])
+    await this.storageService.set('practice_sessions', [])
   }
 
   async clearStats(userId?: string): Promise<void> {
-    await this.storageModule.deleteLocal(
-      `practice_stats_${userId || 'anonymous'}`
-    )
+    await this.storageService.remove(`practice_stats_${userId || 'anonymous'}`)
   }
 }

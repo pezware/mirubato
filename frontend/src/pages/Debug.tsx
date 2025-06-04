@@ -46,10 +46,11 @@ export default function Debug() {
       const eventBus = EventBus.getInstance()
       const storageModule = new StorageModule()
       const syncModule = new SyncModule(storageModule)
-      const practiceModule = new PracticeSessionModule(storageModule)
-      const performanceModule = new PerformanceTrackingModule(storageModule)
+      const practiceModule = new PracticeSessionModule({}, storageModule)
+      const performanceModule = new PerformanceTrackingModule({}, storageModule)
       const analyticsModule = new ProgressAnalyticsModule(
         eventBus,
+        undefined,
         storageModule
       )
 

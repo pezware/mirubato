@@ -1,5 +1,4 @@
-import { EventBus } from '../core/EventBus'
-import { StorageModule } from '../infrastructure/StorageModule'
+import { EventBus, StorageService } from '../core'
 import type { EventPayload, ModuleHealth } from '../core/types'
 import type {
   ProgressAnalyticsModuleInterface,
@@ -50,11 +49,14 @@ export class ProgressAnalyticsModule
   private config: Required<ProgressAnalyticsModuleConfig>
   private subscriptions: string[] = []
 
+  private storageService: StorageService
+
   constructor(
     private eventBus: EventBus,
-    private storageModule: StorageModule,
-    config?: Partial<ProgressAnalyticsModuleConfig>
+    config?: Partial<ProgressAnalyticsModuleConfig>,
+    storageService?: any
   ) {
+    this.storageService = storageService || new StorageService(this.eventBus)
     this.config = {
       milestoneThresholds: {
         accuracy: [0.7, 0.8, 0.9, 0.95],
@@ -196,7 +198,7 @@ export class ProgressAnalyticsModule
    */
   async getWeakAreas(userId: string): Promise<WeakArea[]> {
     try {
-      const performanceData = await this.storageModule.loadLocal<any[]>(
+      const performanceData = await this.storageService.get<any[]>(
         `analytics:performance:${userId}`
       )
 
@@ -290,7 +292,7 @@ export class ProgressAnalyticsModule
 
   async getMilestoneHistory(userId: string): Promise<Milestone[]> {
     try {
-      const milestones = await this.storageModule.loadLocal<Milestone[]>(
+      const milestones = await this.storageService.get<Milestone[]>(
         `analytics:milestones:${userId}`
       )
       return Array.isArray(milestones) ? milestones : []
@@ -346,7 +348,7 @@ export class ProgressAnalyticsModule
    */
   async getPracticeConsistency(userId: string): Promise<ConsistencyMetrics> {
     try {
-      const practiceData = await this.storageModule.loadLocal<{
+      const practiceData = await this.storageService.get<{
         sessions: Array<{ date: number }>
       }>(`analytics:practice:${userId}`)
 
@@ -397,7 +399,7 @@ export class ProgressAnalyticsModule
 
     // Store performance data for analysis
     const key = `analytics:performance:${userId}`
-    const existing = (await this.storageModule.loadLocal<any[]>(key)) || []
+    const existing = (await this.storageService.get<any[]>(key)) || []
 
     existing.push({
       timestamp: event.timestamp,
@@ -405,7 +407,7 @@ export class ProgressAnalyticsModule
       noteData,
     })
 
-    await this.storageModule.saveLocal(key, existing)
+    await this.storageService.set(key, existing)
   }
 
   private async handleSessionEnded(event: EventPayload): Promise<void> {
@@ -447,7 +449,7 @@ export class ProgressAnalyticsModule
     userId: string,
     timeRange: TimeRange
   ): Promise<SessionData[]> {
-    const sessions = await this.storageModule.loadLocal<SessionData[]>(
+    const sessions = await this.storageService.get<SessionData[]>(
       `analytics:sessions:${userId}`
     )
 
@@ -565,7 +567,7 @@ export class ProgressAnalyticsModule
     const existing = await this.getMilestoneHistory(userId)
     existing.push(milestone)
 
-    await this.storageModule.saveLocal(key, existing)
+    await this.storageService.set(key, existing)
   }
 
   private async getRecentSessions(
@@ -573,7 +575,7 @@ export class ProgressAnalyticsModule
     days: number
   ): Promise<SessionData[]> {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
-    const sessions = await this.storageModule.loadLocal<SessionData[]>(
+    const sessions = await this.storageService.get<SessionData[]>(
       `analytics:sessions:${userId}`
     )
 

@@ -2,9 +2,9 @@
  * Curriculum Module - Manages structured learning paths and repertoire
  */
 
-import { EventBus } from '../core/EventBus'
-import { StorageModule } from '../infrastructure/StorageModule'
+import { EventBus, StorageService, SkillLevel } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import { Instrument } from '../../../../shared/types'
 import type {
   CurriculumConfig,
   LearningPath,
@@ -16,7 +16,6 @@ import type {
   CurriculumRecommendation,
   CurriculumFilters,
   CurriculumStats,
-  SkillLevel,
   FocusArea,
   PracticeSession,
   PracticeConfig,
@@ -41,7 +40,7 @@ export class CurriculumModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageModule
+  private storage: StorageService
   private config: Required<CurriculumConfig>
   private health: ModuleHealth = {
     status: 'gray',
@@ -50,9 +49,9 @@ export class CurriculumModule implements ModuleInterface {
   private cache = new Map<string, CacheEntry<any>>()
   private readonly CACHE_TTL = 60000 // 1 minute
 
-  constructor(storage: StorageModule, config: CurriculumConfig) {
+  constructor(config: CurriculumConfig, storageService?: any) {
     this.eventBus = EventBus.getInstance()
-    this.storage = storage
+    this.storage = storageService || new StorageService(this.eventBus)
     this.config = {
       ...config,
       preferredGenres: config.preferredGenres || [],
@@ -70,10 +69,7 @@ export class CurriculumModule implements ModuleInterface {
         metadata: { version: this.version },
       })
 
-      // Initialize storage if needed
-      if (this.storage.initialize) {
-        await this.storage.initialize()
-      }
+      // Storage initialization handled by constructor
 
       // Load repertoire data
       await this.loadRepertoireData()
@@ -146,7 +142,7 @@ export class CurriculumModule implements ModuleInterface {
       updatedAt: now,
     }
 
-    await this.storage.saveLocal(`path:${newPath.id}`, newPath)
+    await this.storage.set(`path:${newPath.id}`, newPath)
     this.invalidateCache(`paths:${path.userId}`)
 
     await this.eventBus.publish({
@@ -167,7 +163,7 @@ export class CurriculumModule implements ModuleInterface {
     const keys = await this.storage.getKeys()
     const pathKeys = keys.filter((k: string) => k.startsWith('path:'))
     const pathPromises = pathKeys.map((key: string) =>
-      this.storage.loadLocal<LearningPath>(key)
+      this.storage.get<LearningPath>(key)
     )
     const loadedPaths = await Promise.all(pathPromises)
     const activePaths = loadedPaths
@@ -184,9 +180,7 @@ export class CurriculumModule implements ModuleInterface {
   async updateProgress(update: ProgressUpdate): Promise<LearningPath> {
     this.validateProgressUpdate(update)
 
-    const path = await this.storage.loadLocal<LearningPath>(
-      `path:${update.pathId}`
-    )
+    const path = await this.storage.get<LearningPath>(`path:${update.pathId}`)
     if (!path) {
       throw new Error('Learning path not found')
     }
@@ -211,7 +205,7 @@ export class CurriculumModule implements ModuleInterface {
       updatedPath = this.handleAutoProgression(updatedPath)
     }
 
-    await this.storage.saveLocal(`path:${update.pathId}`, updatedPath)
+    await this.storage.set(`path:${update.pathId}`, updatedPath)
     this.invalidateCache(`paths:${path.userId}`)
 
     await this.eventBus.publish({
@@ -227,7 +221,7 @@ export class CurriculumModule implements ModuleInterface {
   // Repertoire Management
 
   async addRepertoirePiece(piece: RepertoirePiece): Promise<RepertoirePiece> {
-    await this.storage.saveLocal(`repertoire:${piece.id}`, piece)
+    await this.storage.set(`repertoire:${piece.id}`, piece)
     this.invalidateCache('repertoire:all')
 
     await this.eventBus.publish({
@@ -253,17 +247,27 @@ export class CurriculumModule implements ModuleInterface {
     // Only load the pieces we need for pagination
     const piecesToLoad = repKeys.slice(offset, offset + limit)
     const piecePromises = piecesToLoad.map((key: string) =>
-      this.storage.loadLocal<RepertoirePiece>(key)
+      this.storage.get<RepertoirePiece>(key)
     )
     const loadedPieces = await Promise.all(piecePromises)
     let pieces = loadedPieces.filter((p): p is RepertoirePiece => p !== null)
 
     // Apply filters
     if (filters.instrument) {
-      pieces = pieces.filter(p => p.instrument === filters.instrument)
+      pieces = pieces.filter(
+        p =>
+          p.instrument === filters.instrument ||
+          p.instrument.toLowerCase() === filters.instrument!.toLowerCase()
+      )
     }
     if (filters.genre?.length) {
-      pieces = pieces.filter(p => filters.genre!.includes(p.genre))
+      pieces = pieces.filter(
+        p =>
+          filters.genre!.includes(p.genre) ||
+          filters
+            .genre!.map(g => g.toLowerCase())
+            .includes(p.genre.toLowerCase())
+      )
     }
     if (filters.difficulty) {
       pieces = pieces.filter(
@@ -298,7 +302,12 @@ export class CurriculumModule implements ModuleInterface {
           let score = 0.5 // Base score
 
           // Genre preference
-          if (this.config.preferredGenres.includes(piece.genre)) {
+          if (
+            this.config.preferredGenres.includes(piece.genre) ||
+            this.config.preferredGenres
+              .map(g => g.toLowerCase())
+              .includes(piece.genre.toLowerCase())
+          ) {
             score += 0.2
           }
 
@@ -361,7 +370,7 @@ export class CurriculumModule implements ModuleInterface {
     const assessmentId = `assessment_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`
-    await this.storage.saveLocal(`assessment:${assessmentId}`, assessment)
+    await this.storage.set(`assessment:${assessmentId}`, assessment)
 
     await this.eventBus.publish({
       source: this.name,
@@ -377,7 +386,7 @@ export class CurriculumModule implements ModuleInterface {
       const pathKeys = keys.filter((k: string) => k.startsWith('path:'))
 
       for (const pathKey of pathKeys) {
-        const path = await this.storage.loadLocal<LearningPath>(pathKey)
+        const path = await this.storage.get<LearningPath>(pathKey)
         if (path) {
           const hasModule = path.phases.some(phase =>
             phase.modules.some(m => m.id === assessment.moduleId)
@@ -405,7 +414,7 @@ export class CurriculumModule implements ModuleInterface {
 
     const allPaths: LearningPath[] = []
     for (const key of userPathKeys) {
-      const path = await this.storage.loadLocal<LearningPath>(key)
+      const path = await this.storage.get<LearningPath>(key)
       if (path && path.userId === userId) {
         allPaths.push(path)
       }
@@ -500,15 +509,13 @@ export class CurriculumModule implements ModuleInterface {
 
     // Import paths
     for (const path of data.paths) {
-      const existing = await this.storage.loadLocal<LearningPath>(
-        `path:${path.id}`
-      )
+      const existing = await this.storage.get<LearningPath>(`path:${path.id}`)
       if (existing && !options?.overwrite) {
         result.conflicts.push(`Path: ${path.name}`)
         continue
       }
       path.userId = userId // Assign to current user
-      await this.storage.saveLocal(`path:${path.id}`, path)
+      await this.storage.set(`path:${path.id}`, path)
       result.imported.paths++
     }
 
@@ -598,17 +605,14 @@ export class CurriculumModule implements ModuleInterface {
       }
 
       // Store patterns for recommendation engine
-      await this.storage.saveLocal(
-        `patterns:${entry.userId}:${Date.now()}`,
-        patterns
-      )
+      await this.storage.set(`patterns:${entry.userId}:${Date.now()}`, patterns)
     }
   }
 
   private validateLearningPath(
     path: Omit<LearningPath, 'id' | 'createdAt' | 'updatedAt'>
   ): void {
-    if (!['piano', 'guitar'].includes(path.instrument)) {
+    if (!['piano', 'guitar', 'PIANO', 'GUITAR'].includes(path.instrument)) {
       throw new Error('Unsupported instrument')
     }
     if (!path.userId) {
@@ -629,12 +633,15 @@ export class CurriculumModule implements ModuleInterface {
   }
 
   private generateDefaultPhases(
-    instrument: 'piano' | 'guitar',
+    instrument: Instrument,
     skillLevel: SkillLevel
   ): Phase[] {
     const phases: Phase[] = []
 
-    if (instrument === 'piano' && skillLevel === 'intermediate') {
+    if (
+      instrument.toLowerCase() === 'piano' &&
+      skillLevel === SkillLevel.INTERMEDIATE
+    ) {
       phases.push({
         id: `phase_${Date.now()}_1`,
         pathId: '', // Will be set by parent
@@ -687,7 +694,7 @@ export class CurriculumModule implements ModuleInterface {
 
   private generateModulesForPhase(
     phaseType: string,
-    _instrument: 'piano' | 'guitar',
+    _instrument: Instrument,
     _skillLevel: SkillLevel
   ): CurriculumModuleType[] {
     const modules: CurriculumModuleType[] = []
@@ -879,9 +886,7 @@ export class CurriculumModule implements ModuleInterface {
 
   private async loadRepertoireData(): Promise<void> {
     try {
-      const repertoireData = await this.storage.loadLocal(
-        'curriculum:repertoire'
-      )
+      const repertoireData = await this.storage.get('curriculum:repertoire')
       if (repertoireData) {
         // Repertoire data loaded
       }
@@ -963,7 +968,7 @@ export class CurriculumModule implements ModuleInterface {
       session.overallProgress.sessionId = session.id
 
       // Store the session
-      await this.storage.saveLocal(`practice:session:${session.id}`, session)
+      await this.storage.set(`practice:session:${session.id}`, session)
 
       // Publish event
       await this.eventBus.publish({
@@ -988,7 +993,7 @@ export class CurriculumModule implements ModuleInterface {
     progress: Partial<PracticeProgress>
   ): Promise<void> {
     try {
-      const session = await this.storage.loadLocal<PracticeSession>(
+      const session = await this.storage.get<PracticeSession>(
         `practice:session:${sessionId}`
       )
 
@@ -1039,7 +1044,7 @@ export class CurriculumModule implements ModuleInterface {
       }
 
       // Save updated session
-      await this.storage.saveLocal(`practice:session:${sessionId}`, session)
+      await this.storage.set(`practice:session:${sessionId}`, session)
 
       // Publish progress update
       await this.eventBus.publish({
@@ -1091,7 +1096,7 @@ export class CurriculumModule implements ModuleInterface {
       const exercise = await generator(level)
 
       // Store the generated exercise
-      await this.storage.saveLocal(`exercise:${exercise.id}`, exercise)
+      await this.storage.set(`exercise:${exercise.id}`, exercise)
 
       return exercise
     } catch (error) {
@@ -1167,7 +1172,7 @@ export class CurriculumModule implements ModuleInterface {
   ): Promise<PerformanceReadiness> {
     try {
       // Load piece analytics
-      const analytics = await this.storage.loadLocal<PieceAnalytics>(
+      const analytics = await this.storage.get<PieceAnalytics>(
         `analytics:piece:${pieceId}:${userId}`
       )
 
@@ -1246,7 +1251,7 @@ export class CurriculumModule implements ModuleInterface {
       )
 
       for (const key of analyticsKeys) {
-        const analytics = await this.storage.loadLocal<PieceAnalytics>(key)
+        const analytics = await this.storage.get<PieceAnalytics>(key)
         if (!analytics) continue
 
         const daysSinceLastPractice = Math.floor(
@@ -1277,7 +1282,7 @@ export class CurriculumModule implements ModuleInterface {
 
         // Check for upcoming performances
         const performanceReadiness =
-          await this.storage.loadLocal<PerformanceReadiness>(
+          await this.storage.get<PerformanceReadiness>(
             `readiness:${analytics.pieceId}:${userId}`
           )
 
@@ -1394,7 +1399,7 @@ export class CurriculumModule implements ModuleInterface {
       level,
       key,
       fingering:
-        this.config.instrument === 'piano'
+        this.config.instrument.toLowerCase() === 'piano'
           ? [1, 2, 3, 1, 2, 3, 4, 5]
           : [0, 2, 3, 0, 2, 3, 4, 0],
       variations: [
@@ -1437,7 +1442,9 @@ export class CurriculumModule implements ModuleInterface {
       level,
       key,
       fingering:
-        this.config.instrument === 'piano' ? [1, 2, 3, 5] : [1, 2, 4, 1],
+        this.config.instrument.toLowerCase() === 'piano'
+          ? [1, 2, 3, 5]
+          : [1, 2, 4, 1],
       variations: [
         {
           id: 'v1',
