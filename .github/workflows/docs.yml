@@ -7,16 +7,21 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
   pull-requests: write
   issues: write
 
-jobs:
-  build-docs:
-    runs-on: ubuntu-latest
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -33,8 +38,9 @@ jobs:
         working-directory: ./frontend
         run: |
           npm run docs:generate
+          echo "docs.mirubato.com" > docs/CNAME
           
-      - name: Upload documentation artifacts
+      - name: Upload documentation artifacts (PR preview)
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
@@ -55,11 +61,25 @@ jobs:
               body: '📚 Documentation will be available after this PR is merged at: https://docs.mirubato.com'
             });
 
-      - name: Deploy to GitHub Pages
+      - name: Setup Pages
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend/docs
-          enable_jekyll: false
-          cname: docs.mirubato.com
+          path: ./frontend/docs
+
+  # Deployment job
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
