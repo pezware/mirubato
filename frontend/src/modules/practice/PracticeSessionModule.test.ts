@@ -1,36 +1,39 @@
 import { PracticeSessionModule } from './PracticeSessionModule'
-import { StorageModule } from '../infrastructure'
-import { EventBus } from '../core'
+import { EventBus, MockStorageService } from '../core'
 import { PracticeSession, SessionTemplate } from './types'
 
 // Helper to flush promises
-// const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
+const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 describe('PracticeSessionModule', () => {
   let practiceModule: PracticeSessionModule
-  let storageModule: StorageModule
+  let mockStorage: MockStorageService
   let eventBus: EventBus
   let publishSpy: jest.SpyInstance
 
-  beforeEach(() => {
+  beforeEach(async () => {
     EventBus.resetInstance()
     eventBus = EventBus.getInstance()
     publishSpy = jest.spyOn(eventBus, 'publish')
 
-    storageModule = new StorageModule({ namespace: 'test' })
-    jest.spyOn(storageModule, 'loadLocal').mockResolvedValue(null)
-    jest.spyOn(storageModule, 'saveLocal').mockResolvedValue(undefined)
-    jest.spyOn(storageModule, 'deleteLocal').mockResolvedValue(undefined)
+    // Use mock storage service for tests
+    mockStorage = new MockStorageService()
 
-    practiceModule = new PracticeSessionModule(storageModule, {
-      autoSaveInterval: 100, // Short interval for testing
-      maxSessionDuration: 5000, // 5 seconds for testing
-    })
+    practiceModule = new PracticeSessionModule(
+      {
+        autoSaveInterval: 100, // Short interval for testing
+        maxSessionDuration: 5000, // 5 seconds for testing
+      },
+      mockStorage
+    )
   })
 
   afterEach(async () => {
     if (practiceModule) {
       await practiceModule.shutdown()
+    }
+    if (mockStorage) {
+      mockStorage.destroy()
     }
     jest.clearAllMocks()
     jest.clearAllTimers()
@@ -64,18 +67,19 @@ describe('PracticeSessionModule', () => {
       const activeSession: PracticeSession = {
         id: 'session_123',
         userId: 'user_123',
+        createdAt: Date.now() - 2000,
+        updatedAt: Date.now() - 1000,
         startTime: Date.now() - 1000,
         sheetMusicId: 'music_123',
         sheetMusicTitle: 'Test Piece',
-        instrument: 'piano',
+        instrument: 'PIANO',
         tempo: 120,
         status: 'active',
         totalPausedDuration: 0,
       }
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce([
-        activeSession,
-      ])
+      // Set up storage state directly
+      await mockStorage.set('practice_sessions', [activeSession])
 
       await practiceModule.initialize()
 
@@ -95,18 +99,19 @@ describe('PracticeSessionModule', () => {
       const oldSession: PracticeSession = {
         id: 'session_old',
         userId: 'user_123',
+        createdAt: Date.now() - 11000,
+        updatedAt: Date.now() - 10000,
         startTime: Date.now() - 10000, // Started 10 seconds ago
         sheetMusicId: 'music_123',
         sheetMusicTitle: 'Test Piece',
-        instrument: 'piano',
+        instrument: 'PIANO',
         tempo: 120,
         status: 'active',
         totalPausedDuration: 0,
       }
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce([
-        oldSession,
-      ])
+      // Set up storage state directly
+      await mockStorage.set('practice_sessions', [oldSession])
 
       await practiceModule.initialize()
 
@@ -144,9 +149,9 @@ describe('PracticeSessionModule', () => {
         })
       )
 
-      // Session should be paused
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'practice_sessions',
+      // Session should be paused in storage
+      const sessions = await mockStorage.get('practice_sessions')
+      expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             status: 'paused',
@@ -288,8 +293,9 @@ describe('PracticeSessionModule', () => {
       // Wait for auto-save interval
       await new Promise(resolve => setTimeout(resolve, 150))
 
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'practice_sessions',
+      // Check that session was saved
+      const sessions = await mockStorage.get('practice_sessions')
+      expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             status: 'active',
@@ -307,9 +313,12 @@ describe('PracticeSessionModule', () => {
 
     it('should handle session timeout', async () => {
       // Test session timeout by checking max duration enforcement
-      const shortTimeoutModule = new PracticeSessionModule(storageModule, {
-        maxSessionDuration: 100, // Very short for testing
-      })
+      const shortTimeoutModule = new PracticeSessionModule(
+        {
+          maxSessionDuration: 100, // Very short for testing
+        },
+        mockStorage
+      )
       await shortTimeoutModule.initialize()
 
       await shortTimeoutModule.startSession('music_123', 'Test Piece', 'piano')
@@ -442,9 +451,8 @@ describe('PracticeSessionModule', () => {
         },
       ]
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce(
-        mockSessions
-      )
+      // Set up storage state
+      await mockStorage.set('practice_sessions', mockSessions)
 
       const history = await practiceModule.getSessionHistory(10, 0)
 
@@ -471,7 +479,8 @@ describe('PracticeSessionModule', () => {
         },
       }
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce(mockStats)
+      // Set up storage state
+      await mockStorage.set('practice_stats_user_123', mockStats)
 
       const stats = await practiceModule.getStats('user_123')
 
@@ -479,28 +488,24 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should update user stats after session', async () => {
-      // Mock existing stats
-      ;(storageModule.loadLocal as jest.Mock).mockImplementation(key => {
-        if (key === 'practice_stats_user_123') {
-          return Promise.resolve({
-            totalSessions: 5,
-            totalPracticeTime: 18000000,
-            averageSessionLength: 3600000,
+      // Mock existing stats - set them in storage directly
+      const existingStats = {
+        totalSessions: 5,
+        totalPracticeTime: 18000000,
+        averageSessionLength: 3600000,
+        averageAccuracy: 80,
+        streakDays: 2,
+        lastPracticeDate: Date.now() - 86400000, // Yesterday
+        instrumentStats: {
+          piano: {
+            totalTime: 18000000,
+            sessionCount: 5,
             averageAccuracy: 80,
-            streakDays: 2,
-            lastPracticeDate: Date.now() - 86400000, // Yesterday
-            instrumentStats: {
-              piano: {
-                totalTime: 18000000,
-                sessionCount: 5,
-                averageAccuracy: 80,
-                piecesPlayed: 10,
-              },
-            },
-          })
-        }
-        return Promise.resolve(null)
-      })
+            piecesPlayed: 10,
+          },
+        },
+      }
+      await mockStorage.set('practice_stats_user_123', existingStats)
 
       await practiceModule.startSession(
         'music_123',
@@ -519,8 +524,8 @@ describe('PracticeSessionModule', () => {
       await practiceModule.endSession()
 
       // Check stats were updated
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'practice_stats_user_123',
+      const savedStats = await mockStorage.get('practice_stats_user_123')
+      expect(savedStats).toEqual(
         expect.objectContaining({
           totalSessions: 6,
           totalPracticeTime: expect.any(Number),
@@ -553,10 +558,8 @@ describe('PracticeSessionModule', () => {
 
       await practiceModule.saveTemplate(template)
 
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'session_templates',
-        [template]
-      )
+      const savedTemplates = await mockStorage.get('session_templates')
+      expect(savedTemplates).toEqual([template])
     })
 
     it('should apply session template', async () => {
@@ -570,7 +573,8 @@ describe('PracticeSessionModule', () => {
         },
       }
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce([template])
+      // Set up storage state
+      await mockStorage.set('session_templates', [template])
 
       await practiceModule.applyTemplate('template_1')
 
@@ -588,7 +592,8 @@ describe('PracticeSessionModule', () => {
     })
 
     it('should throw error for non-existent template', async () => {
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce([])
+      // Set up empty storage state
+      await mockStorage.set('session_templates', [])
 
       await expect(
         practiceModule.applyTemplate('non_existent')
@@ -677,18 +682,15 @@ describe('PracticeSessionModule', () => {
     it('should clear session history', async () => {
       await practiceModule.clearHistory()
 
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'practice_sessions',
-        []
-      )
+      const sessions = await mockStorage.get('practice_sessions')
+      expect(sessions).toEqual([])
     })
 
     it('should clear user stats', async () => {
       await practiceModule.clearStats('user_123')
 
-      expect(storageModule.deleteLocal).toHaveBeenCalledWith(
-        'practice_stats_user_123'
-      )
+      const stats = await mockStorage.get('practice_stats_user_123')
+      expect(stats).toBeNull()
     })
   })
 })

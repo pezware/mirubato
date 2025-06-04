@@ -1,5 +1,10 @@
-import { ModuleInterface, ModuleHealth, EventBus } from '../core'
-import { StorageModule } from '../infrastructure'
+import {
+  ModuleInterface,
+  ModuleHealth,
+  EventBus,
+  StorageService,
+  SessionStatus,
+} from '../core'
 import {
   PracticeSession,
   PracticeConfig,
@@ -13,7 +18,7 @@ export class PracticeSessionModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageModule: StorageModule
+  private storageService: StorageService
   private config: PracticeConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -26,9 +31,9 @@ export class PracticeSessionModule implements ModuleInterface {
   private sessionStartHandlers: Set<() => void> = new Set()
   private sessionEndHandlers: Set<() => void> = new Set()
 
-  constructor(storageModule: StorageModule, config?: Partial<PracticeConfig>) {
-    this.storageModule = storageModule
+  constructor(config?: Partial<PracticeConfig>, storageService?: any) {
     this.eventBus = EventBus.getInstance()
+    this.storageService = storageService || new StorageService(this.eventBus)
 
     this.config = {
       autoSaveInterval: 30000, // 30 seconds
@@ -151,7 +156,7 @@ export class PracticeSessionModule implements ModuleInterface {
   ): Promise<PracticeSession> {
     // End any existing session
     if (this.currentSession) {
-      await this.endSession('abandoned')
+      await this.endSession(SessionStatus.ABANDONED)
     }
 
     const session: PracticeSession = {
@@ -200,7 +205,7 @@ export class PracticeSessionModule implements ModuleInterface {
       return
     }
 
-    this.currentSession.status = 'paused'
+    this.currentSession.status = SessionStatus.PAUSED
     this.currentSession.pausedTime = Date.now()
 
     await this.saveSession()
@@ -214,7 +219,10 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async resumeSession(): Promise<void> {
-    if (!this.currentSession || this.currentSession.status !== 'paused') {
+    if (
+      !this.currentSession ||
+      this.currentSession.status !== SessionStatus.PAUSED
+    ) {
       return
     }
 
@@ -235,7 +243,7 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async endSession(
-    status: 'completed' | 'abandoned' = 'completed'
+    status: SessionStatus = SessionStatus.COMPLETED
   ): Promise<void> {
     if (!this.currentSession) {
       return
@@ -288,9 +296,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async getSessionHistory(limit = 10, offset = 0): Promise<PracticeSession[]> {
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     return sessions
       .sort((a, b) => b.startTime - a.startTime)
@@ -298,7 +305,7 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async getStats(userId?: string): Promise<PracticeStats> {
-    const stats = await this.storageModule.loadLocal<PracticeStats>(
+    const stats = await this.storageService.get<PracticeStats>(
       `practice_stats_${userId || 'anonymous'}`
     )
 
@@ -317,9 +324,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async applyTemplate(templateId: string): Promise<void> {
     const templates =
-      (await this.storageModule.loadLocal<SessionTemplate[]>(
-        'session_templates'
-      )) || []
+      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
+      []
 
     const template = templates.find(t => t.id === templateId)
     if (!template) {
@@ -339,9 +345,8 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async saveTemplate(template: SessionTemplate): Promise<void> {
     const templates =
-      (await this.storageModule.loadLocal<SessionTemplate[]>(
-        'session_templates'
-      )) || []
+      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
+      []
 
     const existingIndex = templates.findIndex(t => t.id === template.id)
     if (existingIndex >= 0) {
@@ -350,7 +355,7 @@ export class PracticeSessionModule implements ModuleInterface {
       templates.push(template)
     }
 
-    await this.storageModule.saveLocal('session_templates', templates)
+    await this.storageService.set('session_templates', templates)
   }
 
   updateConfig(config: Partial<PracticeConfig>): void {
@@ -416,9 +421,8 @@ export class PracticeSessionModule implements ModuleInterface {
     if (!this.currentSession) return
 
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     const existingIndex = sessions.findIndex(
       s => s.id === this.currentSession!.id
@@ -430,7 +434,7 @@ export class PracticeSessionModule implements ModuleInterface {
       sessions.push(this.currentSession)
     }
 
-    await this.storageModule.saveLocal('practice_sessions', sessions)
+    await this.storageService.set('practice_sessions', sessions)
 
     await this.eventBus.publish({
       source: this.name,
@@ -446,12 +450,12 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private async restoreActiveSession(): Promise<void> {
     const sessions =
-      (await this.storageModule.loadLocal<PracticeSession[]>(
-        'practice_sessions'
-      )) || []
+      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
+      []
 
     const activeSession = sessions.find(
-      s => s.status === 'active' || s.status === 'paused'
+      s =>
+        s.status === SessionStatus.ACTIVE || s.status === SessionStatus.PAUSED
     )
 
     if (activeSession) {
@@ -460,7 +464,7 @@ export class PracticeSessionModule implements ModuleInterface {
       // Check if session is too old (> max duration)
       const sessionAge = Date.now() - activeSession.startTime
       if (sessionAge > this.config.maxSessionDuration) {
-        await this.endSession('abandoned')
+        await this.endSession(SessionStatus.ABANDONED)
         return
       }
 
@@ -492,7 +496,7 @@ export class PracticeSessionModule implements ModuleInterface {
       if (this.currentSession?.status === 'active') {
         const duration = Date.now() - this.currentSession.startTime
         if (duration >= this.config.maxSessionDuration) {
-          await this.endSession('completed')
+          await this.endSession(SessionStatus.COMPLETED)
         }
       }
     }, 60000) // Check every minute
@@ -557,7 +561,7 @@ export class PracticeSessionModule implements ModuleInterface {
         instrumentStats.sessionCount
     }
 
-    await this.storageModule.saveLocal(
+    await this.storageService.set(
       `practice_stats_${userId || 'anonymous'}`,
       stats
     )
@@ -565,12 +569,10 @@ export class PracticeSessionModule implements ModuleInterface {
 
   // Testing helpers
   async clearHistory(): Promise<void> {
-    await this.storageModule.saveLocal('practice_sessions', [])
+    await this.storageService.set('practice_sessions', [])
   }
 
   async clearStats(userId?: string): Promise<void> {
-    await this.storageModule.deleteLocal(
-      `practice_stats_${userId || 'anonymous'}`
-    )
+    await this.storageService.remove(`practice_stats_${userId || 'anonymous'}`)
   }
 }

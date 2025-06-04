@@ -4,6 +4,7 @@ export default {
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup/unit.setup.ts'],
+  testTimeout: 10000, // 10 seconds global timeout to prevent hanging
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@/(.*)$': '<rootDir>/src/$1',

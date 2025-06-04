@@ -1,6 +1,5 @@
 import { PerformanceTrackingModule } from './PerformanceTrackingModule'
-import { StorageModule } from '../infrastructure'
-import { EventBus } from '../core'
+import { EventBus, MockStorageService } from '../core'
 import { PerformanceData, RealTimeFeedback } from './types'
 
 // Helper to flush promises
@@ -8,7 +7,7 @@ const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 describe('PerformanceTrackingModule', () => {
   let performanceModule: PerformanceTrackingModule
-  let storageModule: StorageModule
+  let mockStorage: MockStorageService
   let eventBus: EventBus
   let publishSpy: jest.SpyInstance
 
@@ -17,21 +16,25 @@ describe('PerformanceTrackingModule', () => {
     eventBus = EventBus.getInstance()
     publishSpy = jest.spyOn(eventBus, 'publish')
 
-    storageModule = new StorageModule({ namespace: 'test' })
-    jest.spyOn(storageModule, 'loadLocal').mockResolvedValue(null)
-    jest.spyOn(storageModule, 'saveLocal').mockResolvedValue(undefined)
-    jest.spyOn(storageModule, 'deleteLocal').mockResolvedValue(undefined)
+    // Use mock storage service for tests
+    mockStorage = new MockStorageService()
 
-    performanceModule = new PerformanceTrackingModule(storageModule, {
-      timingToleranceMs: 50,
-      enableRealTimeAnalysis: true,
-      feedbackDelay: 0, // No delay for testing
-    })
+    performanceModule = new PerformanceTrackingModule(
+      {
+        timingToleranceMs: 50,
+        enableRealTimeAnalysis: true,
+        feedbackDelay: 0, // No delay for testing
+      },
+      mockStorage
+    )
   })
 
   afterEach(async () => {
     if (performanceModule) {
       await performanceModule.shutdown()
+    }
+    if (mockStorage) {
+      mockStorage.destroy()
     }
     jest.clearAllMocks()
     EventBus.resetInstance()
@@ -85,8 +88,8 @@ describe('PerformanceTrackingModule', () => {
       )
 
       // Should save session data before shutdown
-      expect(storageModule.saveLocal).toHaveBeenCalledWith(
-        'performance_data',
+      const savedData = await mockStorage.get('performance_data')
+      expect(savedData).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             sessionId: 'session_123',
@@ -491,7 +494,8 @@ describe('PerformanceTrackingModule', () => {
         },
       ]
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce(mockData)
+      // Set up storage state directly
+      await mockStorage.set('performance_data', mockData)
 
       const sessionData = await performanceModule.getSessionData('session_123')
 
@@ -535,7 +539,8 @@ describe('PerformanceTrackingModule', () => {
         },
       ]
 
-      ;(storageModule.loadLocal as jest.Mock).mockResolvedValueOnce(mockData)
+      // Set up storage state directly
+      await mockStorage.set('performance_data', mockData)
 
       const userStats = await performanceModule.getUserStats('user_123')
 
@@ -665,12 +670,17 @@ describe('PerformanceTrackingModule', () => {
     })
 
     it('should clear all data', async () => {
+      // Add some data first
+      await mockStorage.set('performance_data', [{ id: 'test' }])
+      await mockStorage.set('performance_analyses', [{ id: 'test2' }])
+
       await performanceModule.clearAllData()
 
-      expect(storageModule.deleteLocal).toHaveBeenCalledWith('performance_data')
-      expect(storageModule.deleteLocal).toHaveBeenCalledWith(
-        'performance_analyses'
-      )
+      // Check that data was cleared
+      const perfData = await mockStorage.get('performance_data')
+      const analysesData = await mockStorage.get('performance_analyses')
+      expect(perfData).toBeNull()
+      expect(analysesData).toBeNull()
     })
 
     it('should return current session data', () => {

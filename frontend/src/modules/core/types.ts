@@ -43,3 +43,19 @@ export interface ModuleHealth {
 }
 
 export type EventCallback = (payload: EventPayload) => void | Promise<void>
+
+// Storage event types for decoupled storage access
+export interface StorageRequestEvent {
+  operation: 'get' | 'set' | 'remove' | 'clear' | 'getKeys'
+  key?: string
+  data?: any
+  ttl?: number
+  requestId: string
+}
+
+export interface StorageResponseEvent {
+  requestId: string
+  success: boolean
+  data?: any
+  error?: string
+}

@@ -3,8 +3,17 @@
  * Manages structured learning paths and repertoire for musicians
  */
 
+import {
+  Instrument,
+  SkillLevel,
+  MusicGenre,
+  FocusArea,
+  EntityBase,
+  UserScopedEntity,
+} from '../core/sharedTypes'
+
 export interface CurriculumConfig {
-  instrument: 'piano' | 'guitar'
+  instrument: Instrument
   skillLevel: SkillLevel
   weeklyPracticeTarget: number // minutes
   preferredGenres?: MusicGenre[]
@@ -12,36 +21,10 @@ export interface CurriculumConfig {
   autoProgress?: boolean
 }
 
-export type SkillLevel =
-  | 'beginner'
-  | 'intermediate'
-  | 'advanced'
-  | 'professional'
-
-export type MusicGenre =
-  | 'classical'
-  | 'jazz'
-  | 'pop'
-  | 'rock'
-  | 'folk'
-  | 'blues'
-  | 'latin'
-  | 'contemporary'
-
-export type FocusArea =
-  | 'sight-reading'
-  | 'technique'
-  | 'repertoire'
-  | 'theory'
-  | 'improvisation'
-  | 'performance'
-
-export interface LearningPath {
-  id: string
-  userId: string
+export interface LearningPath extends UserScopedEntity {
   name: string
   description: string
-  instrument: 'piano' | 'guitar'
+  instrument: Instrument
   skillLevel: SkillLevel
   phases: Phase[]
   currentPhaseId: string
