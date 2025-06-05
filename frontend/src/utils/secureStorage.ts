@@ -20,6 +20,7 @@ const getOrCreateEncryptionKey = (): string => {
     // Generate a random key for this session
     key = nanoid(32)
     sessionStorage.setItem(KEY_NAME, key)
+    return key
   }
 
   return key
