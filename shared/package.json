@@ -7,6 +7,7 @@
   "types": "types/index.ts",
   "scripts": {
     "type-check": "tsc --noEmit",
+    "lint": "echo 'No linting needed for shared types'",
     "test": "echo 'No tests for shared types'",
     "test:unit": "echo 'No tests for shared types'",
     "test:integration": "echo 'No tests for shared types'",
