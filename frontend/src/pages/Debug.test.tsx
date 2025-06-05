@@ -299,7 +299,7 @@ describe('Debug Page', () => {
   })
 
   it('handles backend health fetch failure gracefully', async () => {
-    ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/health')) {
         return Promise.reject(new Error('Network error'))
       }

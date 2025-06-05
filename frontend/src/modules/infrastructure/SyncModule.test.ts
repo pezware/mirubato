@@ -96,7 +96,7 @@ describe('SyncModule', () => {
     })
 
     it('should handle initialization failure', async () => {
-      ;(storageModule.loadLocal as jest.Mock).mockRejectedValueOnce(
+      (storageModule.loadLocal as jest.Mock).mockRejectedValueOnce(
         new Error('Load failed')
       )
 
