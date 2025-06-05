@@ -1,11 +1,20 @@
 import { practiceResolvers } from '../../../resolvers/practice'
-import type { GraphQLContext } from '../../../types/context'
-import type { User } from '../../../types/generated/graphql'
+import type { GraphQLContext, Env } from '../../../types/context'
+import type { User, GraphQLResolveInfo } from '../../../types/generated/graphql'
+import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
 
 describe('Practice Resolvers', () => {
+  // Mock environment
+  const mockEnv: Env = {
+    DB: {} as D1Database,
+    MIRUBATO_MAGIC_LINKS: {} as KVNamespace,
+    JWT_SECRET: 'test-secret',
+    ENVIRONMENT: 'development',
+  }
+
   // Mock context
   const mockContext: GraphQLContext = {
-    env: {} as any,
+    env: mockEnv,
     user: {
       id: 'user-123',
       email: 'test@example.com',
@@ -14,13 +23,13 @@ describe('Practice Resolvers', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as User,
-    request: {} as Request,
+    requestId: 'test-request-id',
   }
 
   const mockContextWithoutUser: GraphQLContext = {
-    env: {} as any,
-    user: null,
-    request: {} as Request,
+    env: mockEnv,
+    user: undefined,
+    requestId: 'test-request-id',
   }
 
   describe('Query Resolvers', () => {
@@ -30,7 +39,7 @@ describe('Practice Resolvers', () => {
           {},
           { id: 'session-123' },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -43,7 +52,7 @@ describe('Practice Resolvers', () => {
           {},
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -63,7 +72,7 @@ describe('Practice Resolvers', () => {
           {},
           { instrument: 'GUITAR' },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -83,7 +92,7 @@ describe('Practice Resolvers', () => {
           {},
           { offset: 10, limit: 50 },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -104,7 +113,7 @@ describe('Practice Resolvers', () => {
           {},
           { instrument: 'PIANO' },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeDefined()
@@ -126,7 +135,7 @@ describe('Practice Resolvers', () => {
             {},
             { input },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
         ).rejects.toThrow('Not implemented')
       })
@@ -139,7 +148,7 @@ describe('Practice Resolvers', () => {
             {},
             { sessionId: 'session-123' },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
         ).rejects.toThrow('Not implemented')
       })
@@ -152,7 +161,7 @@ describe('Practice Resolvers', () => {
             {},
             { sessionId: 'session-123' },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
         ).rejects.toThrow('Not implemented')
       })
@@ -172,7 +181,7 @@ describe('Practice Resolvers', () => {
             {},
             { input },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
         ).rejects.toThrow('Not implemented')
       })
@@ -191,7 +200,7 @@ describe('Practice Resolvers', () => {
             {},
             { input },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
         ).rejects.toThrow('Not implemented')
       })
@@ -220,7 +229,7 @@ describe('Practice Resolvers', () => {
           mockSession,
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -233,7 +242,7 @@ describe('Practice Resolvers', () => {
           mockSession,
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -246,7 +255,7 @@ describe('Practice Resolvers', () => {
           mockSession,
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual([])
@@ -260,7 +269,7 @@ describe('Practice Resolvers', () => {
         {},
         {},
         mockContextWithoutUser,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       // Currently returns empty result regardless of auth
@@ -290,7 +299,7 @@ describe('Practice Resolvers', () => {
           {},
           { input },
           mockContextWithoutUser,
-          {} as any
+          {} as GraphQLResolveInfo
         )
       ).rejects.toThrow('Not implemented')
     })
@@ -305,7 +314,7 @@ describe('Practice Resolvers', () => {
           {},
           { instrument },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeDefined()
@@ -325,7 +334,7 @@ describe('Practice Resolvers', () => {
           {},
           { offset, limit },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeDefined()
@@ -343,7 +352,7 @@ describe('Practice Resolvers', () => {
         {},
         { id: 'session-123' },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result).toMatchObject({
@@ -360,7 +369,7 @@ describe('Practice Resolvers', () => {
         {},
         {},
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result.edges.length).toBeGreaterThan(0)
@@ -379,7 +388,7 @@ describe('Practice Resolvers', () => {
         {},
         { input },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result).toMatchObject({
@@ -404,7 +413,7 @@ describe('Practice Resolvers', () => {
           {},
           { input },
           mockContextWithoutUser,
-          {} as any
+          {} as GraphQLResolveInfo
         )
       ).rejects.toThrow('Unauthorized')
     })

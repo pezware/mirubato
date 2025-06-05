@@ -1,11 +1,20 @@
 import { sheetMusicResolvers } from '../../../resolvers/sheetMusic'
-import type { GraphQLContext } from '../../../types/context'
-import type { User } from '../../../types/generated/graphql'
+import type { GraphQLContext, Env } from '../../../types/context'
+import type { User, GraphQLResolveInfo } from '../../../types/generated/graphql'
+import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
 
 describe('SheetMusic Resolvers', () => {
+  // Mock environment
+  const mockEnv: Env = {
+    DB: {} as D1Database,
+    MIRUBATO_MAGIC_LINKS: {} as KVNamespace,
+    JWT_SECRET: 'test-secret',
+    ENVIRONMENT: 'development',
+  }
+
   // Mock context
   const mockContext: GraphQLContext = {
-    env: {} as any,
+    env: mockEnv,
     user: {
       id: 'user-123',
       email: 'test@example.com',
@@ -14,13 +23,13 @@ describe('SheetMusic Resolvers', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as User,
-    request: {} as Request,
+    requestId: 'test-request-id',
   }
 
   const mockContextWithoutUser: GraphQLContext = {
-    env: {} as any,
-    user: null,
-    request: {} as Request,
+    env: mockEnv,
+    user: undefined,
+    requestId: 'test-request-id',
   }
 
   describe('Query Resolvers', () => {
@@ -30,7 +39,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { id: 'music-123' },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -44,7 +53,7 @@ describe('SheetMusic Resolvers', () => {
             {},
             { id },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
 
           expect(result).toBeNull()
@@ -58,7 +67,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -85,7 +94,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { filter },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -105,7 +114,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { offset: 10, limit: 50 },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toEqual({
@@ -125,7 +134,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { filter: { instrument: 'PIANO' } },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeDefined()
@@ -154,7 +163,7 @@ describe('SheetMusic Resolvers', () => {
             {},
             { filter },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
 
           expect(result).toBeDefined()
@@ -170,7 +179,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           {},
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -181,7 +190,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { instrument: 'GUITAR' },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -192,7 +201,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { difficulty: 3 },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -203,7 +212,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { maxDuration: 300 }, // 5 minutes
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -218,7 +227,7 @@ describe('SheetMusic Resolvers', () => {
             maxDuration: 180, // 3 minutes
           },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeNull()
@@ -232,7 +241,7 @@ describe('SheetMusic Resolvers', () => {
             {},
             { difficulty },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
 
           expect(result).toBeNull()
@@ -247,7 +256,7 @@ describe('SheetMusic Resolvers', () => {
             {},
             { maxDuration },
             mockContext,
-            {} as any
+            {} as GraphQLResolveInfo
           )
 
           expect(result).toBeNull()
@@ -263,7 +272,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         { id: 'music-123' },
         mockContextWithoutUser,
-        {} as any
+        {} as GraphQLResolveInfo
       )
       expect(sheetMusicResult).toBeNull()
 
@@ -272,7 +281,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         {},
         mockContextWithoutUser,
-        {} as any
+        {} as GraphQLResolveInfo
       )
       expect(listResult.edges).toEqual([])
 
@@ -281,7 +290,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         {},
         mockContextWithoutUser,
-        {} as any
+        {} as GraphQLResolveInfo
       )
       expect(randomResult).toBeNull()
     })
@@ -300,7 +309,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         { filter: {} },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result).toBeDefined()
@@ -320,7 +329,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { offset, limit },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
 
         expect(result).toBeDefined()
@@ -336,7 +345,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { filter: { instrument } },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
         expect(listResult.edges).toEqual([])
 
@@ -344,7 +353,7 @@ describe('SheetMusic Resolvers', () => {
           {},
           { instrument },
           mockContext,
-          {} as any
+          {} as GraphQLResolveInfo
         )
         expect(randomResult).toBeNull()
       }
@@ -359,7 +368,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         { id: 'music-123' },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result).toMatchObject({
@@ -376,7 +385,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         { filter: { instrument: 'PIANO', difficulty: 3 } },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result.edges.length).toBeGreaterThan(0)
@@ -393,7 +402,7 @@ describe('SheetMusic Resolvers', () => {
         {},
         { instrument: 'GUITAR', difficulty: 2 },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(result).toMatchObject({
@@ -409,14 +418,14 @@ describe('SheetMusic Resolvers', () => {
         {},
         { offset: 0, limit: 10 },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       const secondPage = await sheetMusicResolvers.Query.listSheetMusic(
         {},
         { offset: 10, limit: 10 },
         mockContext,
-        {} as any
+        {} as GraphQLResolveInfo
       )
 
       expect(firstPage.pageInfo.hasNextPage).toBe(true)

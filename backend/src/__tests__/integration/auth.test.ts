@@ -3,7 +3,6 @@ import { typeDefs } from '../../schema'
 import { resolvers } from '../../resolvers'
 import {
   executeGraphQLQuery,
-  createMockContext,
   createMockKV,
   mockUser,
 } from '../../test-utils/graphql'

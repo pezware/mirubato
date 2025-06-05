@@ -20,8 +20,8 @@ const mockGetCorsOrigins = getCorsOrigins as jest.MockedFunction<
 const mockCheckOrigin = checkOrigin as jest.MockedFunction<typeof checkOrigin>
 
 describe('CORS Configuration', () => {
-  let getCorsConfig: any
-  let isOriginAllowed: any
+  let getCorsConfig: typeof import('../../../config/cors').getCorsConfig
+  let isOriginAllowed: typeof import('../../../config/cors').isOriginAllowed
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -270,7 +270,7 @@ describe('CORS Configuration', () => {
       mockGetConfig.mockReturnValue(mockConfig)
       mockCheckOrigin.mockReturnValue(false)
 
-      const result = isOriginAllowed(null as any, 'production')
+      const result = isOriginAllowed(null as unknown as string, 'production')
 
       expect(mockCheckOrigin).toHaveBeenCalledWith(null, mockConfig)
       expect(result).toBe(false)
@@ -278,7 +278,7 @@ describe('CORS Configuration', () => {
   })
 
   describe('corsConfig export', () => {
-    it('should export a static configuration', () => {
+    it('should export a static configuration', async () => {
       // Mock the configuration for this test
       const mockConfig = { frontend: { url: 'https://example.com' } }
       const mockOrigins = ['https://example.com']
@@ -287,7 +287,8 @@ describe('CORS Configuration', () => {
       mockGetCorsOrigins.mockReturnValue(mockOrigins)
 
       // Import corsConfig after setting up mocks
-      const { corsConfig } = require('../../../config/cors')
+      const corsModule = await import('../../../config/cors')
+      const { corsConfig } = corsModule
 
       // The corsConfig is initialized when the module is imported
       // We should test that it exists and has the expected structure

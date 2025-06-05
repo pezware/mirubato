@@ -1,9 +1,12 @@
 import {
   createRateLimiter,
   RateLimiterDurableObject,
-  RateLimiter,
 } from '../../../utils/rateLimiter'
-import type { DurableObjectNamespace } from '@cloudflare/workers-types'
+import type {
+  DurableObjectNamespace,
+  DurableObjectId,
+  DurableObjectStub,
+} from '@cloudflare/workers-types'
 
 describe('Rate Limiter', () => {
   describe('createRateLimiter', () => {
@@ -11,11 +14,11 @@ describe('Rate Limiter', () => {
 
     beforeEach(() => {
       mockNamespace = {
-        get: jest.fn(),
-        idFromName: jest.fn(),
-        idFromString: jest.fn(),
-        newUniqueId: jest.fn(),
-      } as any
+        get: jest.fn().mockReturnValue({} as DurableObjectStub),
+        idFromName: jest.fn().mockReturnValue({} as DurableObjectId),
+        idFromString: jest.fn().mockReturnValue({} as DurableObjectId),
+        newUniqueId: jest.fn().mockReturnValue({} as DurableObjectId),
+      } as unknown as jest.Mocked<DurableObjectNamespace>
     })
 
     it('should create a rate limiter instance', () => {
@@ -80,7 +83,7 @@ describe('Rate Limiter', () => {
       const request = new Request('https://example.com?id=user1')
 
       const response = await durableObject.fetch(request)
-      const data = await response.json()
+      const data = (await response.json()) as { allowed: boolean }
 
       expect(response.status).toBe(200)
       expect(data).toEqual({ allowed: true })
@@ -93,8 +96,8 @@ describe('Rate Limiter', () => {
       const response1 = await durableObject.fetch(request1)
       const response2 = await durableObject.fetch(request2)
 
-      const data1 = await response1.json()
-      const data2 = await response2.json()
+      const data1 = (await response1.json()) as { allowed: boolean }
+      const data2 = (await response2.json()) as { allowed: boolean }
 
       expect(data1.allowed).toBe(true)
       expect(data2.allowed).toBe(true)
@@ -104,7 +107,7 @@ describe('Rate Limiter', () => {
       const request = new Request('https://example.com')
 
       const response = await durableObject.fetch(request)
-      const data = await response.json()
+      const data = (await response.json()) as { allowed: boolean }
 
       expect(data.allowed).toBe(true)
     })
@@ -119,7 +122,9 @@ describe('Rate Limiter', () => {
       }
 
       const responses = await Promise.all(requests)
-      const data = await Promise.all(responses.map(r => r.json()))
+      const data = (await Promise.all(responses.map(r => r.json()))) as {
+        allowed: boolean
+      }[]
 
       // All should be allowed
       expect(data.every(d => d.allowed)).toBe(true)
@@ -135,7 +140,9 @@ describe('Rate Limiter', () => {
       }
 
       const responses = await Promise.all(requests)
-      const data = await Promise.all(responses.map(r => r.json()))
+      const data = (await Promise.all(responses.map(r => r.json()))) as {
+        allowed: boolean
+      }[]
 
       // First 120 should be allowed, remaining should be blocked
       const allowedCount = data.filter(d => d.allowed).length
@@ -170,7 +177,9 @@ describe('Rate Limiter', () => {
       }
 
       const responses = await Promise.all(requests)
-      const data = await Promise.all(responses.map(r => r.json()))
+      const data = (await Promise.all(responses.map(r => r.json()))) as {
+        allowed: boolean
+      }[]
 
       // All should be allowed since previous requests are outside the window
       expect(data.every(d => d.allowed)).toBe(true)
@@ -188,13 +197,13 @@ describe('Rate Limiter', () => {
       // user1 should be blocked
       const blockedRequest = new Request(`https://example.com?id=user1`)
       const blockedResponse = await durableObject.fetch(blockedRequest)
-      const blockedData = await blockedResponse.json()
+      const blockedData = (await blockedResponse.json()) as { allowed: boolean }
       expect(blockedData.allowed).toBe(false)
 
       // user2 should still be allowed
       const allowedRequest = new Request(`https://example.com?id=user2`)
       const allowedResponse = await durableObject.fetch(allowedRequest)
-      const allowedData = await allowedResponse.json()
+      const allowedData = (await allowedResponse.json()) as { allowed: boolean }
       expect(allowedData.allowed).toBe(true)
     })
 
@@ -203,14 +212,14 @@ describe('Rate Limiter', () => {
       for (let i = 0; i < 120; i++) {
         const request = new Request(`https://example.com?id=user1`)
         const response = await durableObject.fetch(request)
-        const data = await response.json()
+        const data = (await response.json()) as { allowed: boolean }
         expect(data.allowed).toBe(true)
       }
 
       // 121st request should be blocked
       const request = new Request(`https://example.com?id=user1`)
       const response = await durableObject.fetch(request)
-      const data = await response.json()
+      const data = (await response.json()) as { allowed: boolean }
       expect(data.allowed).toBe(false)
     })
 
@@ -227,7 +236,7 @@ describe('Rate Limiter', () => {
       const request = new Request('https://example.com?id=')
 
       const response = await durableObject.fetch(request)
-      const data = await response.json()
+      const data = (await response.json()) as { allowed: boolean }
 
       expect(response.status).toBe(200)
       expect(data.allowed).toBe(true)
@@ -249,7 +258,7 @@ describe('Rate Limiter', () => {
       // This request should count against the limit
       request = new Request(`https://example.com?id=user1`)
       let response = await durableObject.fetch(request)
-      let data = await response.json()
+      let data = (await response.json()) as { allowed: boolean }
       expect(data.allowed).toBe(true)
 
       // Advance time to just over the window (60.1 seconds from original)
@@ -258,7 +267,7 @@ describe('Rate Limiter', () => {
       // Now the first request should be cleaned up
       request = new Request(`https://example.com?id=user1`)
       response = await durableObject.fetch(request)
-      data = await response.json()
+      data = (await response.json()) as { allowed: boolean }
       expect(data.allowed).toBe(true)
 
       mockNow.mockRestore()
@@ -274,7 +283,9 @@ describe('Rate Limiter', () => {
       const responses = await Promise.all(
         concurrentRequests.map(req => durableObject.fetch(req))
       )
-      const data = await Promise.all(responses.map(r => r.json()))
+      const data = (await Promise.all(responses.map(r => r.json()))) as {
+        allowed: boolean
+      }[]
 
       // All should be allowed since we're well under the limit
       expect(data.every(d => d.allowed)).toBe(true)
