@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react'
 import { render as rtlRender, RenderOptions } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { MockedProvider, MockedResponse } from '@apollo/client/testing'
-import { InMemoryCache } from '@apollo/client'
+import { InMemoryCache, FetchResult } from '@apollo/client'
 import { GET_CURRENT_USER } from '../../graphql/queries/user'
 
 // Create a new cache instance for each test to avoid cross-test pollution
@@ -115,8 +115,8 @@ export const createReusableMock = (
   }
   return {
     request,
-    result: { data },
-    newData: () => ({ data }),
+    result: { data } as FetchResult<Record<string, unknown>>,
+    newData: () => ({ data }) as FetchResult<Record<string, unknown>>,
   }
 }
 

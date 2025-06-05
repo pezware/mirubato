@@ -419,16 +419,20 @@ export class PracticeLoggerModule implements ModuleInterface {
   // Private Helper Methods
 
   private setupEventSubscriptions(): void {
-    this.eventBus.subscribe('practice:session:ended', this.handleSessionEnded)
+    this.eventBus.subscribe(
+      'practice:session:ended',
+      this.handleSessionEnded.bind(this)
+    )
     this.eventBus.subscribe(
       'progress:milestone:achieved',
-      this.handleMilestoneAchieved
+      this.handleMilestoneAchieved.bind(this)
     )
   }
 
   private handleSessionEnded = async (event: EventPayload): Promise<void> => {
-    if (event.data?.session) {
-      const session = event.data.session
+    const data = event.data as { session?: PracticeSessionData }
+    if (data?.session) {
+      const session = data.session
       const entry: Omit<LogbookEntry, 'id'> = {
         userId: session.userId,
         timestamp: Date.now(),
@@ -452,8 +456,9 @@ export class PracticeLoggerModule implements ModuleInterface {
   private handleMilestoneAchieved = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.linkedGoals) {
-      for (const goalId of event.data.linkedGoals) {
+    const data = event.data as { linkedGoals?: string[] }
+    if (data?.linkedGoals) {
+      for (const goalId of data.linkedGoals) {
         const goal = await this.storage.get<Goal>(`goal:${goalId}`)
         if (goal && goal.status === 'active') {
           // Increment progress based on milestone importance

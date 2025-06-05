@@ -5,6 +5,7 @@ import {
   StorageService,
   SessionStatus,
   IStorageService,
+  EventPayload,
 } from '../core'
 import {
   PracticeSession,
@@ -144,18 +145,24 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private setupEventSubscriptions(): void {
     // Subscribe to performance events
-    this.eventBus.subscribe('performance:note:played', async payload => {
-      if (this.currentSession?.status === SessionStatus.ACTIVE) {
-        await this.recordNotePerformance(payload.data)
+    this.eventBus.subscribe(
+      'performance:note:played',
+      async (payload: EventPayload) => {
+        if (this.currentSession?.status === SessionStatus.ACTIVE) {
+          await this.recordNotePerformance(payload.data as NotePerformanceData)
+        }
       }
-    })
+    )
 
     // Subscribe to navigation events
-    this.eventBus.subscribe('navigation:leaving:practice', async () => {
-      if (this.currentSession?.status === SessionStatus.ACTIVE) {
-        await this.pauseSession()
+    this.eventBus.subscribe(
+      'navigation:leaving:practice',
+      async (_payload: EventPayload) => {
+        if (this.currentSession?.status === SessionStatus.ACTIVE) {
+          await this.pauseSession()
+        }
       }
-    })
+    )
   }
 
   async startSession(

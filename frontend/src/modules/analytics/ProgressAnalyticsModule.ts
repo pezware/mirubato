@@ -1,6 +1,10 @@
 import { EventBus, StorageService } from '../core'
 import type { EventPayload, ModuleHealth, IStorageService } from '../core/types'
 import type {
+  PerformanceNoteEventData,
+  SessionEndedEventData,
+} from '../core/eventTypes'
+import type {
   ProgressAnalyticsModuleInterface,
   ProgressAnalyticsModuleConfig,
   TimeRange,
@@ -404,7 +408,8 @@ export class ProgressAnalyticsModule
 
   // Private helper methods
   private async handlePerformanceNote(event: EventPayload): Promise<void> {
-    const { userId, accuracy, noteData } = event.data
+    const data = event.data as PerformanceNoteEventData
+    const { userId, accuracy, noteData } = data
 
     // Store performance data for analysis
     const key = `analytics:performance:${userId}`
@@ -424,14 +429,15 @@ export class ProgressAnalyticsModule
   }
 
   private async handleSessionEnded(event: EventPayload): Promise<void> {
-    const { sessionId, userId, summary } = event.data
+    const data = event.data as SessionEndedEventData
+    const { sessionId, userId, summary } = data
 
     // Process session data
     const sessionData: SessionData = {
       sessionId,
       userId,
       accuracy: summary.accuracy,
-      duration: summary.duration,
+      duration: summary.totalTime || 0,
       timestamp: event.timestamp,
       notesPlayed: summary.notesPlayed,
     }

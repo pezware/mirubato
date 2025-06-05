@@ -421,9 +421,10 @@ describe('SyncModule', () => {
       const local = { id: 1, localField: 'local', updatedAt: Date.now() }
       const remote = {
         id: 1,
+        localField: '',
         remoteField: 'remote',
         updatedAt: Date.now() - 1000,
-      }
+      } as any
 
       const resolved = await syncModuleWithMerge.resolveConflicts(local, remote)
       expect(resolved).toEqual({

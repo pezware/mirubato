@@ -43,14 +43,14 @@ export class StorageService implements IStorageService {
   }
 
   private async makeRequest<T>(request: StorageRequestEvent): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.pendingRequests.delete(request.requestId)
         reject(new Error(`Storage request timeout: ${request.operation}`))
       }, this.REQUEST_TIMEOUT)
 
       this.pendingRequests.set(request.requestId, {
-        resolve,
+        resolve: resolve as (value: unknown) => void,
         reject,
         timeout,
       })

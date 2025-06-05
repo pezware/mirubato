@@ -32,6 +32,7 @@ export interface NoteEventData {
   handPosition?: string
   guitarPosition?: string
   timingDelta?: number
+  rhythmScore?: number
 }
 
 export interface PerformanceData {

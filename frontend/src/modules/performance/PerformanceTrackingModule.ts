@@ -4,6 +4,7 @@ import {
   EventBus,
   StorageService,
   IStorageService,
+  EventPayload,
 } from '../core'
 import {
   PerformanceData,
@@ -132,22 +133,36 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   private setupEventSubscriptions(): void {
     // Subscribe to practice session events
-    this.eventBus.subscribe('practice:session:started', async payload => {
-      this.startSessionTracking(payload.data.session.id)
-    })
+    this.eventBus.subscribe(
+      'practice:session:started',
+      async (payload: EventPayload) => {
+        const data = payload.data as { session: { id: string } }
+        this.startSessionTracking(data.session.id)
+      }
+    )
 
-    this.eventBus.subscribe('practice:session:ended', async payload => {
-      await this.endSessionTracking(payload.data.session.id)
-    })
+    this.eventBus.subscribe(
+      'practice:session:ended',
+      async (payload: EventPayload) => {
+        const data = payload.data as { session: { id: string } }
+        await this.endSessionTracking(data.session.id)
+      }
+    )
 
     // Subscribe to note events from audio input or practice modules
-    this.eventBus.subscribe('audio:note:detected', async payload => {
-      await this.recordNoteEvent(payload.data)
-    })
+    this.eventBus.subscribe(
+      'audio:note:detected',
+      async (payload: EventPayload) => {
+        await this.recordNoteEvent(payload.data as NoteEventData)
+      }
+    )
 
-    this.eventBus.subscribe('practice:note:played', async payload => {
-      await this.recordNoteEvent(payload.data)
-    })
+    this.eventBus.subscribe(
+      'practice:note:played',
+      async (payload: EventPayload) => {
+        await this.recordNoteEvent(payload.data as NoteEventData)
+      }
+    )
   }
 
   startSessionTracking(sessionId: string): void {

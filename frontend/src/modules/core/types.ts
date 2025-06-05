@@ -1,11 +1,11 @@
 // Core module types and interfaces
 
-export interface EventPayload {
+export interface EventPayload<T = unknown> {
   eventId: string
   timestamp: number
   source: string
   type: string
-  data: unknown
+  data: T
   metadata: {
     userId?: string
     sessionId?: string

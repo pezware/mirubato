@@ -246,7 +246,7 @@ describe('EventBus', () => {
       const callback = jest.fn()
 
       eventBus.subscribe('test:event', callback, {
-        filter: payload => payload.data.important === true,
+        filter: payload => (payload.data as any).important === true,
       })
 
       await eventBus.publish({
@@ -405,7 +405,7 @@ describe('EventBus', () => {
 
       const history = bus.getEventHistory()
       expect(history.length).toBeLessThanOrEqual(1000)
-      expect(history[0].data.index).toBeGreaterThanOrEqual(5)
+      expect((history[0].data as any).index).toBeGreaterThanOrEqual(5)
     })
   })
 
@@ -441,7 +441,7 @@ describe('EventBus', () => {
         },
         {
           priority: EventPriority.HIGH,
-          filter: payload => payload.data.value > 5,
+          filter: payload => (payload.data as any).value > 5,
         }
       )
 
@@ -462,7 +462,7 @@ describe('EventBus', () => {
         },
         {
           priority: EventPriority.NORMAL,
-          filter: payload => payload.data.value > 5,
+          filter: payload => (payload.data as any).value > 5,
         }
       )
 
