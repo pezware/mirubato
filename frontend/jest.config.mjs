@@ -9,7 +9,8 @@ export default {
       setupFilesAfterEnv: ['<rootDir>/src/tests/setup/unit.setup.ts'],
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^@/(.*)$': '<rootDir>/src/$1'
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -32,7 +33,8 @@ export default {
       setupFilesAfterEnv: ['<rootDir>/tests/setup/integration.setup.ts'],
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^@/(.*)$': '<rootDir>/src/$1'
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -61,7 +63,7 @@ export default {
   // Ignore patterns
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/tmp/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@tonejs|tone|vexflow)/)'
+    'node_modules/(?!(@tonejs|tone|vexflow|nanoid)/)'
   ],
   
   // Verbose output

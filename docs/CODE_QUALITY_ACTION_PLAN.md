@@ -4,16 +4,28 @@
 
 This document outlines the comprehensive action plan for improving code quality in the Mirubato project. Based on the analysis of documentation and frontend modules, we've identified critical issues that need immediate attention.
 
-## Current Status
+## Current Status (Updated: 2025-01-06)
 
 - **Frontend Coverage**: ~29% → 71.45% (Target: 80%) - 8.55% below target
 - **Backend Coverage**: ~43% → 74.13% (Target: 80%) - 5.87% below target
 - **Branch Coverage**: ~60% (Target: 80%)
-- **Critical Issues**: Module coupling, zero-coverage components, type safety, documentation navigation
+- **Critical Issues**: Module coupling, zero-coverage components, type safety, security vulnerabilities, accessibility gaps
 
 ## Completed Items (Latest Update)
 
-✅ **ESLint Configuration Update** (2025-02-06)
+✅ **Type Safety Improvements** (2025-01-06)
+
+- Fixed all `any` types in production code across frontend and backend
+- Created proper interfaces for storage and event handling
+- Added typed event payloads for event-driven architecture
+
+✅ **Backend Linter Fixes** (2025-01-06)
+
+- Resolved ESLint no-extra-semi errors with proper ASI handling
+- Added necessary eslint-disable comments for semicolon prefixes
+- Achieved 0 linter errors in backend
+
+✅ **ESLint Configuration Update** (2025-01-05)
 
 - Configured ESLint to differentiate between test and production code
 - Kept `no-explicit-any` as error for production code to maintain quality standards
@@ -21,40 +33,94 @@ This document outlines the comprehensive action plan for improving code quality 
 - Added pretest hooks and lint:fix scripts
 - Fixed Jest configuration issues preventing tests from running
 
+## Executive Summary (2025-01-06)
+
+Based on comprehensive frontend code analysis, we've identified critical security vulnerabilities and quality issues that require immediate attention:
+
+### 🚨 Critical Findings:
+
+1. **No Error Boundaries** - Application can crash from any component error
+2. **Security Vulnerabilities** - Unencrypted tokens, client-side validation only
+3. **Zero Test Coverage** - Critical auth components (ProtectedRoute) have no tests
+4. **Accessibility Violations** - No keyboard navigation, poor contrast ratios
+5. **Performance Issues** - Large bundle size, no code splitting, memory leaks
+
+### 📊 Key Metrics:
+
+- **6 components with 0% test coverage** (including auth components)
+- **41 ESLint warnings** in frontend (any types in tests)
+- **Multiple console statements** in production code
+- **No WCAG compliance** for accessibility
+
+### 💰 Business Impact:
+
+- **Security Risk**: Exposed tokens and debug info could lead to data breaches
+- **User Experience**: App crashes and poor accessibility limit user adoption
+- **Maintenance Cost**: Poor code organization increases development time
+- **Legal Risk**: Accessibility violations may lead to compliance issues
+
 ## Priority Levels
 
-- 🔴 **TOP PRIORITY**: Must be completed first
-- 🟠 **HIGH PRIORITY**: Critical for code quality
-- 🟡 **MEDIUM PRIORITY**: Important improvements
-- 🟢 **LOW PRIORITY**: Nice to have
+- 🔴 **TOP PRIORITY**: Security fixes and crash prevention (Week 1-2)
+- 🟠 **HIGH PRIORITY**: Accessibility and architecture fixes (Week 3-4)
+- 🟡 **MEDIUM PRIORITY**: Code quality improvements (Week 5-6)
+- 🟢 **LOW PRIORITY**: Performance and design system (Week 7-8)
 
 ## Action Items
 
 ### 🔴 TOP PRIORITY
 
-#### 1. Add Tests for Zero-Coverage Critical Components
+#### 1. Add Error Boundaries and Critical Security Fixes
+
+**Objective**: Prevent app crashes and secure sensitive data
+
+**Critical Issues**:
+
+- **No error boundaries** in entire application
+- **Unencrypted token storage** in AuthContext
+- **Client-side only validation** in AuthModal
+- **Debug mode exposes internal state** publicly
+
+**Actions**:
+
+1. Add error boundary wrapper to App.tsx
+2. Add error boundaries to Practice and sheet music rendering
+3. Implement secure token storage with encryption
+4. Add server-side email validation
+5. Restrict Debug page to development only
+
+**Success Criteria**:
+
+- All pages wrapped in error boundaries
+- Tokens encrypted in storage
+- Debug page disabled in production
+- No sensitive data in browser storage
+
+#### 2. Add Tests for Zero-Coverage Critical Components
 
 **Objective**: Achieve minimum 80% coverage for critical components
 
 **Components to Test**:
 
-- ✅ `MusicPlayer.tsx` (0% → 80%+) - **COMPLETED**
-- ✅ `dataSync.ts` (0% → 80%+) - **COMPLETED**
-- ✅ `audioManager.ts` (9.85% → 91.54%) - **COMPLETED**
-- ✅ `middleware/logging.ts` (0% → 100%) - **COMPLETED**
+- `ProtectedRoute.tsx` (0%) - **Critical auth component**
+- `PianoKey.tsx` (0%) - Interactive component
+- `PianoChord.tsx` (0%) - Complex canvas rendering
+- `UserStatusIndicator.tsx` (0%) - User state display
+- `SaveProgressPrompt.tsx` (0%) - Business logic
+- `VersionInfo.tsx` (0%) - Version display
 
 **Actions**:
 
-1. ✅ Write comprehensive unit tests for MusicPlayer component - **COMPLETED**
-2. ✅ Create dataSync service tests with mock API calls - **COMPLETED**
-3. ✅ Refactor audioManager to enable proper testing (see item 2) - **COMPLETED**
-4. Add logging middleware tests with proper mocking
+1. Write tests for ProtectedRoute with auth scenarios
+2. Add interaction tests for Piano components
+3. Test SaveProgressPrompt trigger logic
+4. Mock canvas for PianoChord tests
 
 **Success Criteria**:
 
 - All critical components have >80% coverage
+- Auth flows properly tested
 - No console errors in tests
-- All tests pass in CI/CD pipeline
 
 #### 2. ✅ Refactor AudioManager from Singleton to Dependency Injection - **COMPLETED**
 
@@ -145,6 +211,33 @@ export class AudioManager implements AudioManagerInterface {
 
 ### 🟠 HIGH PRIORITY
 
+#### 3. Fix Accessibility Issues
+
+**Objective**: Make the application usable for all users
+
+**Critical Issues**:
+
+- No keyboard navigation in CircularControl
+- Missing ARIA labels on interactive elements
+- No screen reader support for sheet music
+- Very low contrast ghost controls (0.05 opacity)
+- No focus management in modals
+
+**Actions**:
+
+1. Add keyboard navigation to all interactive components
+2. Implement proper ARIA labels and roles
+3. Add alternative text for visual elements
+4. Implement high contrast mode
+5. Add focus trapping in modals
+
+**Success Criteria**:
+
+- WCAG 2.1 AA compliance
+- All components keyboard navigable
+- Screen reader tested
+- Contrast ratios meet standards
+
 #### 4. Fix Module Decoupling - Implement True Event-Driven Storage
 
 **Objective**: Remove direct dependencies between business modules and storage
@@ -163,32 +256,6 @@ export class AudioManager implements AudioManagerInterface {
 4. Use EventBus for all storage operations
 5. Add proper error handling for storage failures
 
-**Implementation Example**:
-
-```typescript
-// Before
-const data = await this.storageService.get('key')
-
-// After
-const data = await new Promise((resolve, reject) => {
-  const subscription = this.eventBus.subscribe(
-    'storage:read:response',
-    payload => {
-      if (payload.requestId === requestId) {
-        subscription.unsubscribe()
-        resolve(payload.data)
-      }
-    }
-  )
-
-  this.eventBus.emit('storage:read:request', {
-    requestId,
-    key: 'key',
-    userId,
-  })
-})
-```
-
 **Success Criteria**:
 
 - No direct storage dependencies in business modules
@@ -197,140 +264,238 @@ const data = await new Promise((resolve, reject) => {
 
 ### 🟡 MEDIUM PRIORITY
 
-#### 5. Fix Type Safety Issues - Remove All `any` Types
+#### 5. Refactor Practice.tsx Component
 
-**Objective**: Achieve 100% type safety
+**Objective**: Break down monolithic component for better maintainability
+
+**Current Issues**:
+
+- 299 lines doing too much
+- Re-renders on every viewport resize
+- No memoization of expensive computations
+- Mixed concerns (layout, controls, notation)
 
 **Actions**:
 
-1. Replace all `any` types with proper interfaces
-2. Add runtime validation with zod
-3. Create shared type definitions
-4. Add strict TypeScript rules
-
-**Files to Update**:
-
-- `ProgressAnalyticsModule.ts`: Line 201
-- `PerformanceTrackingModule.ts`: Line 187
-- `PracticeSessionModule.ts`: Line 402
-- All other instances of `any`
+1. Split into PracticeHeader, PracticeControls, PracticeNotation
+2. Implement React.memo for child components
+3. Use useCallback for event handlers
+4. Extract viewport logic to custom hook
+5. Add performance profiling
 
 **Success Criteria**:
 
-- No `any` types in codebase
-- All data validated at runtime
-- TypeScript strict mode enabled
+- No component exceeds 150 lines
+- Reduced re-renders by 50%
+- Clear separation of concerns
 
-#### 6. Implement Proper Error Handling and Logging
+#### 6. Remove Console Statements and Implement Logging
 
-**Objective**: Replace console.error with structured logging
+**Objective**: Replace console.\* with structured logging
+
+**Files with console statements**:
+
+- `PianoChord.tsx` (line 70)
+- `AuthModal.tsx` (line 89)
+- `Multiple test files`
 
 **Actions**:
 
 1. Create LoggerInterface
-2. Implement structured logger
-3. Add log levels (ERROR, WARN, INFO, DEBUG)
-4. Integrate with monitoring service
-5. Remove all console.\* statements
+2. Implement structured logger with levels
+3. Add telemetry integration
+4. Remove ALL console.\* statements
+5. Add error tracking service
 
 **Success Criteria**:
 
-- No console statements in production code
-- All errors properly logged
-- Monitoring dashboard available
+- Zero console statements in production
+- All errors tracked in telemetry
+- Structured logs with context
 
-#### 7. Add Input Validation Across Modules
+#### 7. Fix Component Styling Issues
 
-**Objective**: Validate all external inputs
+**Objective**: Consistent styling approach across components
+
+**Current Issues**:
+
+- Inline styles in AuthModal, PianoChord
+- Mixed className and style props
+- No CSS modules or styled-components
+- Hard-coded values
 
 **Actions**:
 
-1. Install and configure zod
-2. Create validation schemas for all DTOs
-3. Add validation middleware
-4. Validate all event payloads
-5. Add sanitization for user inputs
+1. Migrate to CSS modules or styled-components
+2. Extract all inline styles
+3. Create theme constants
+4. Implement responsive design tokens
+5. Add CSS-in-JS solution
+
+**Success Criteria**:
+
+- No inline styles
+- Consistent theming
+- Responsive by default
+
+#### 8. Add Input Validation and CSRF Protection
+
+**Objective**: Secure all user inputs and API calls
+
+**Actions**:
+
+1. Add server-side email validation
+2. Implement CSRF tokens for mutations
+3. Add rate limiting on client
+4. Validate all form inputs
+5. Sanitize user-generated content
 
 **Success Criteria**:
 
 - All inputs validated
-- Clear validation error messages
-- No security vulnerabilities
+- CSRF protection enabled
+- No XSS vulnerabilities
 
 ### 🟢 LOW PRIORITY
 
-#### 8. Refactor Large Modules (>300 lines)
+#### 9. Optimize Bundle Size and Performance
 
-**Objective**: Improve maintainability
+**Objective**: Improve load time and runtime performance
 
-**Modules to Refactor**:
+**Current Issues**:
 
-- `PerformanceTrackingModule` (750+ lines)
-- Other modules exceeding 300 lines
+- All piano samples loaded upfront
+- No route-based code splitting
+- Large bundle size
+- No progressive enhancement
 
 **Actions**:
 
-1. Apply Single Responsibility Principle
-2. Extract helper functions
-3. Create sub-modules for complex logic
-4. Add proper abstractions
+1. Implement lazy loading for routes
+2. Load piano samples on demand
+3. Add webpack bundle analyzer
+4. Implement service worker
+5. Add performance monitoring
 
 **Success Criteria**:
 
-- No module exceeds 300 lines
-- Clear separation of concerns
-- Improved testability
+- Initial bundle < 200KB
+- Time to interactive < 3s
+- Lighthouse score > 90
+
+#### 10. Implement Component Library and Design System
+
+**Objective**: Consistent UI/UX across application
+
+**Actions**:
+
+1. Create component library structure
+2. Document all components with Storybook
+3. Create design tokens
+4. Implement theme provider
+5. Add visual regression tests
+
+**Success Criteria**:
+
+- All components documented
+- Consistent design language
+- Theme switching capability
+
+#### 11. Add E2E Tests for Critical Flows
+
+**Objective**: Ensure critical user journeys work end-to-end
+
+**Test Scenarios**:
+
+1. User registration and login
+2. Practice session flow
+3. Sheet music navigation
+4. Progress tracking
+5. Error recovery
+
+**Success Criteria**:
+
+- All critical paths tested
+- Tests run in CI/CD
+- < 5 minute test suite
 
 ## Implementation Timeline
 
-### Week 1-2: TOP PRIORITY Items
+### Week 1: TOP PRIORITY - Security & Stability
 
-- [x] Start with AudioManager refactoring (enables testing) - **COMPLETED**
-- [x] Add tests for zero-coverage components - **MOSTLY COMPLETED** (3/4 done)
-- [ ] Set up better-docs infrastructure
+- [ ] Add error boundaries to prevent crashes
+- [ ] Implement secure token storage
+- [ ] Add tests for ProtectedRoute and auth components
+- [ ] Disable Debug page in production
 
-### Week 3-4: HIGH PRIORITY Items
+### Week 2: TOP PRIORITY - Testing & Coverage
+
+- [ ] Complete tests for zero-coverage components
+- [ ] Add interaction tests for Piano components
+- [ ] Test SaveProgressPrompt business logic
+- [ ] Achieve 80% coverage target
+
+### Week 3: HIGH PRIORITY - Accessibility
+
+- [ ] Add keyboard navigation to all components
+- [ ] Implement ARIA labels and roles
+- [ ] Fix contrast ratios
+- [ ] Add focus management
+
+### Week 4: HIGH PRIORITY - Architecture
 
 - [ ] Implement event-driven storage
-- [ ] Complete documentation migration
-- [ ] Deploy documentation pipeline
+- [ ] Remove direct module dependencies
+- [ ] Add proper error handling
 
-### Week 5-6: MEDIUM PRIORITY Items
+### Week 5-6: MEDIUM PRIORITY - Code Quality
 
-- [ ] Fix type safety issues
-- [ ] Implement proper logging
+- [ ] Refactor Practice.tsx into smaller components
+- [ ] Remove all console statements
+- [ ] Fix inline styles
 - [ ] Add input validation
 
-### Week 7-8: LOW PRIORITY Items
+### Week 7-8: LOW PRIORITY - Optimization
 
-- [ ] Refactor large modules
-- [ ] Performance optimizations
-- [ ] Final cleanup
+- [ ] Optimize bundle size
+- [ ] Implement lazy loading
+- [ ] Add E2E tests
+- [ ] Create design system
 
 ## Success Metrics
 
-1. **Test Coverage**:
+1. **Security**:
 
-   - Frontend: 80%+ overall, 90%+ for critical paths
+   - Zero unencrypted tokens in storage
+   - All inputs validated server-side
+   - Debug mode disabled in production
+   - CSRF protection enabled
+
+2. **Test Coverage**:
+
+   - Frontend: 80%+ overall, 90%+ for auth/critical paths
    - Backend: 80%+ overall, 90%+ for critical paths
-   - Branch coverage: 80%+
+   - 100% coverage for security components
 
-2. **Code Quality**:
+3. **Accessibility**:
 
-   - 0 `any` types
+   - WCAG 2.1 AA compliant
+   - Keyboard navigable
+   - Screen reader tested
+   - Contrast ratios > 4.5:1
+
+4. **Performance**:
+
+   - Initial bundle < 200KB
+   - Time to interactive < 3s
+   - Lighthouse score > 90
+   - No memory leaks
+
+5. **Code Quality**:
    - 0 console statements
-   - All modules <300 lines
-
-3. **Documentation**:
-
-   - Auto-generated on push
-   - Live component previews
-   - Clear navigation structure
-
-4. **Architecture**:
-   - True event-driven architecture
-   - No direct module coupling
-   - Proper dependency injection
+   - 0 inline styles
+   - No components > 150 lines
+   - 100% TypeScript coverage
 
 ## Risk Mitigation
 

@@ -18,7 +18,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // TODO: Replace with a proper loading component
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+        <div
+          data-testid="loading-spinner"
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"
+        ></div>
       </div>
     )
   }
