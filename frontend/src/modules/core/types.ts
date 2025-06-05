@@ -5,7 +5,7 @@ export interface EventPayload {
   timestamp: number
   source: string
   type: string
-  data: any
+  data: unknown
   metadata: {
     userId?: string
     sessionId?: string
@@ -48,7 +48,7 @@ export type EventCallback = (payload: EventPayload) => void | Promise<void>
 export interface StorageRequestEvent {
   operation: 'get' | 'set' | 'remove' | 'clear' | 'getKeys'
   key?: string
-  data?: any
+  data?: unknown
   ttl?: number
   requestId: string
 }
@@ -56,6 +56,16 @@ export interface StorageRequestEvent {
 export interface StorageResponseEvent {
   requestId: string
   success: boolean
-  data?: any
+  data?: unknown
   error?: string
+}
+
+// Common interface for storage services
+export interface IStorageService {
+  get<T>(key: string): Promise<T | null>
+  set<T>(key: string, value: T, ttl?: number): Promise<void>
+  remove(key: string): Promise<void>
+  clear(): Promise<void>
+  getKeys(): Promise<string[]>
+  destroy?(): void
 }

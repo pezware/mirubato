@@ -247,10 +247,13 @@ export class SyncModule implements ModuleInterface {
     }
   }
 
-  async resolveConflicts(local: any, remote: any): Promise<any> {
+  async resolveConflicts<T extends { updatedAt?: number }>(
+    local: T,
+    remote: T
+  ): Promise<T> {
     switch (this.conflictResolution.strategy) {
       case 'lastWriteWins':
-        return local.updatedAt > remote.updatedAt ? local : remote
+        return (local.updatedAt || 0) > (remote.updatedAt || 0) ? local : remote
 
       case 'merge':
         // Simple merge strategy - combine properties

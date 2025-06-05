@@ -19,7 +19,7 @@ export interface PracticeSession extends UserScopedEntity {
   pausedTime?: number
   totalPausedDuration: number
   performance?: SessionPerformance
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface SessionPerformance {
@@ -81,4 +81,14 @@ export interface InstrumentStats {
   sessionCount: number
   averageAccuracy: number
   piecesPlayed: number
+}
+
+export interface NotePerformanceData {
+  correct?: boolean
+  expected: string
+  played?: string
+  measure?: number
+  beat?: number
+  timingDelta?: number
+  progress?: number
 }

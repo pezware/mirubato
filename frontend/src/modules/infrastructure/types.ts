@@ -28,7 +28,7 @@ export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
   resource: string
-  data: any
+  data: unknown
   timestamp: number
   status: 'pending' | 'syncing' | 'completed' | 'failed'
   retryCount: number
@@ -42,7 +42,7 @@ export interface SyncConfig {
   syncInterval: number
 }
 
-export interface ConflictResolution {
+export interface ConflictResolution<T = unknown> {
   strategy: 'lastWriteWins' | 'merge' | 'userChoice' | 'custom'
-  resolver?: (local: any, remote: any) => any
+  resolver?: (local: T, remote: T) => T
 }

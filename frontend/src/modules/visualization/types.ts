@@ -99,14 +99,14 @@ export interface ChartDataset {
     pointStyle?: 'circle' | 'square' | 'triangle'
     lineStyle?: 'solid' | 'dashed' | 'dotted'
   }
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface DataPoint {
   x: number | string
   y: number
   label?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface VisualizationExportOptions {
@@ -163,13 +163,13 @@ export interface DashboardChart {
   }
   title?: string
   refreshRate?: number // seconds
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
 }
 
 export interface ChartFilter {
   field: string
   operator: 'equals' | 'contains' | 'range' | 'in' | 'exists'
-  value: any
+  value: unknown
   label?: string
 }
 
@@ -248,7 +248,7 @@ export interface TreeVisualizationData {
     level: number
     parentId?: string
     status: 'locked' | 'active' | 'completed' | 'mastered'
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }>
   connections: Array<{
     from: string
@@ -312,7 +312,7 @@ export interface VisualizationError {
   severity: 'low' | 'medium' | 'high'
   chartId?: string
   timestamp: number
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   suggestions?: string[]
 }
 

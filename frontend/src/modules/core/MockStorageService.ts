@@ -1,12 +1,14 @@
+import { IStorageService } from './types'
+
 /**
  * Mock storage service for testing - provides same interface as StorageService
  * but uses in-memory storage instead of event-driven architecture
  */
-export class MockStorageService {
-  private storage: Map<string, any> = new Map()
+export class MockStorageService implements IStorageService {
+  private storage: Map<string, unknown> = new Map()
 
   async get<T>(key: string): Promise<T | null> {
-    return this.storage.get(key) || null
+    return (this.storage.get(key) as T) || null
   }
 
   async set<T>(key: string, value: T, _ttl?: number): Promise<void> {
@@ -31,7 +33,7 @@ export class MockStorageService {
     return this.storage.size
   }
 
-  getAllData(): Record<string, any> {
+  getAllData(): Record<string, unknown> {
     return Object.fromEntries(this.storage)
   }
 

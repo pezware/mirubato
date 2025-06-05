@@ -3,6 +3,7 @@ import {
   ModuleHealth,
   EventBus,
   StorageService,
+  IStorageService,
 } from '../core'
 import {
   PerformanceData,
@@ -11,12 +12,14 @@ import {
   PerformanceConfig,
   RealTimeFeedback,
   NoteEvent,
+  NoteEventData,
   TimingData,
   AccuracyData,
   DifficultyContext,
   ProblemArea,
   ProgressPoint,
   Recommendation,
+  Improvement,
 } from './types'
 
 export class PerformanceTrackingModule implements ModuleInterface {
@@ -24,7 +27,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageService: StorageService
+  private storageService: IStorageService
   private config: PerformanceConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -37,7 +40,10 @@ export class PerformanceTrackingModule implements ModuleInterface {
   private feedbackCallbacks: Set<(feedback: RealTimeFeedback) => void> =
     new Set()
 
-  constructor(config?: Partial<PerformanceConfig>, storageService?: any) {
+  constructor(
+    config?: Partial<PerformanceConfig>,
+    storageService?: IStorageService
+  ) {
     this.eventBus = EventBus.getInstance()
     this.storageService = storageService || new StorageService(this.eventBus)
 
@@ -185,7 +191,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return analysis
   }
 
-  async recordNoteEvent(data: any): Promise<void> {
+  async recordNoteEvent(data: NoteEventData): Promise<void> {
     if (!this.currentSessionId) {
       return
     }
@@ -277,7 +283,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return analysis
   }
 
-  private parseNoteEvent(data: any): NoteEvent {
+  private parseNoteEvent(data: NoteEventData): NoteEvent {
     return {
       expected: {
         pitch: data.expectedNote || data.expected || 'C4',
@@ -288,7 +294,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
       },
       played: data.playedNote
         ? {
-            pitch: data.playedNote || data.played,
+            pitch: data.playedNote || data.played || 'C4',
             duration: data.playedDuration || 500,
             velocity: data.playedVelocity || 64,
             finger: data.playedFinger,
@@ -302,7 +308,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private parseTimingData(data: any): TimingData {
+  private parseTimingData(data: NoteEventData): TimingData {
     const expectedTime = data.expectedTime || Date.now()
     const actualTime = data.actualTime || data.timestamp || Date.now()
 
@@ -315,7 +321,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private calculateAccuracy(data: any): AccuracyData {
+  private calculateAccuracy(data: NoteEventData): AccuracyData {
     const isCorrect = data.correct === true || data.type === 'correct'
     const pitchAccuracy = this.calculatePitchAccuracy(data)
     const timingAccuracy = this.calculateTimingAccuracy(data)
@@ -330,19 +336,21 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private assessDifficulty(data: any): DifficultyContext {
+  private assessDifficulty(data: NoteEventData): DifficultyContext {
     return {
       key: data.key || 'C major',
       timeSignature: data.timeSignature || '4/4',
       tempo: data.tempo || 120,
       complexity: this.calculateComplexity(data),
       handPosition: data.handPosition,
-      guitarPosition: data.guitarPosition,
+      guitarPosition: data.guitarPosition
+        ? parseInt(data.guitarPosition, 10)
+        : undefined,
     }
   }
 
   private determineNoteEventType(
-    data: any
+    data: NoteEventData
   ): 'correct' | 'wrong_note' | 'missed_note' | 'extra_note' {
     if (data.correct === true || data.type === 'correct') return 'correct'
     if (
@@ -357,7 +365,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return 'wrong_note'
   }
 
-  private calculatePitchAccuracy(data: any): number {
+  private calculatePitchAccuracy(data: NoteEventData): number {
     if (data.correct === true) return 1.0
     if (!data.expected || !data.played) return 0.0
 
@@ -365,7 +373,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return data.expected === data.played ? 1.0 : 0.0
   }
 
-  private calculateTimingAccuracy(data: any): number {
+  private calculateTimingAccuracy(data: NoteEventData): number {
     const timingDelta = Math.abs(data.timingDelta || 0)
     const tolerance = this.config.timingToleranceMs
 
@@ -375,12 +383,12 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return Math.max(0, 1 - (timingDelta - tolerance) / (tolerance * 2))
   }
 
-  private calculateRhythmAccuracy(data: any): number {
+  private calculateRhythmAccuracy(data: NoteEventData): number {
     // Simplified rhythm accuracy - could be enhanced
     return data.rhythmScore || this.calculateTimingAccuracy(data)
   }
 
-  private calculateComplexity(data: any): number {
+  private calculateComplexity(data: NoteEventData): number {
     let complexity = 1
 
     // Tempo factor
@@ -544,7 +552,9 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return problemAreas
   }
 
-  private calculateImprovements(_sessionData: PerformanceData[]): any[] {
+  private calculateImprovements(
+    _sessionData: PerformanceData[]
+  ): Improvement[] {
     // For now, return empty array - could be enhanced to compare with previous sessions
     return []
   }

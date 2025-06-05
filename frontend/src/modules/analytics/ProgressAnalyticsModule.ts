@@ -1,5 +1,5 @@
 import { EventBus, StorageService } from '../core'
-import type { EventPayload, ModuleHealth } from '../core/types'
+import type { EventPayload, ModuleHealth, IStorageService } from '../core/types'
 import type {
   ProgressAnalyticsModuleInterface,
   ProgressAnalyticsModuleConfig,
@@ -8,6 +8,7 @@ import type {
   WeakArea,
   FocusArea,
   SessionData,
+  PerformanceData,
   Milestone,
   TrendData,
   ConsistencyMetrics,
@@ -49,12 +50,12 @@ export class ProgressAnalyticsModule
   private config: Required<ProgressAnalyticsModuleConfig>
   private subscriptions: string[] = []
 
-  private storageService: StorageService
+  private storageService: IStorageService
 
   constructor(
     private eventBus: EventBus,
     config?: Partial<ProgressAnalyticsModuleConfig>,
-    storageService?: any
+    storageService?: IStorageService
   ) {
     this.storageService = storageService || new StorageService(this.eventBus)
     this.config = {
@@ -198,7 +199,7 @@ export class ProgressAnalyticsModule
    */
   async getWeakAreas(userId: string): Promise<WeakArea[]> {
     try {
-      const performanceData = await this.storageService.get<any[]>(
+      const performanceData = await this.storageService.get<PerformanceData[]>(
         `analytics:performance:${userId}`
       )
 
@@ -349,7 +350,7 @@ export class ProgressAnalyticsModule
   async getPracticeConsistency(userId: string): Promise<ConsistencyMetrics> {
     try {
       const practiceData = await this.storageService.get<{
-        sessions: Array<{ date: number }>
+        sessions: SessionData[]
       }>(`analytics:practice:${userId}`)
 
       if (!practiceData?.sessions) {
@@ -362,22 +363,30 @@ export class ProgressAnalyticsModule
         }
       }
 
-      const sessionDates = practiceData.sessions.map((s: any) =>
-        new Date(s.date).toDateString()
+      const sessionDates = practiceData.sessions.map((s: SessionData) =>
+        new Date(s.date || s.timestamp).toDateString()
       )
       const uniqueDays = new Set(sessionDates)
 
       const { currentStreak, longestStreak } = this.calculateStreaks(
-        practiceData.sessions
+        practiceData.sessions.map((s: SessionData) => ({
+          date: s.date || s.timestamp,
+        }))
       )
-      const missedDays = this.findMissedDays(practiceData.sessions)
+      const missedDays = this.findMissedDays(
+        practiceData.sessions.map((s: SessionData) => ({
+          date: s.date || s.timestamp,
+        }))
+      )
 
       return {
         daysActive: uniqueDays.size,
         currentStreak,
         longestStreak,
         averageSessionsPerWeek: this.calculateAverageSessionsPerWeek(
-          practiceData.sessions
+          practiceData.sessions.map((s: SessionData) => ({
+            date: s.date || s.timestamp,
+          }))
         ),
         missedDays,
       }
@@ -399,13 +408,17 @@ export class ProgressAnalyticsModule
 
     // Store performance data for analysis
     const key = `analytics:performance:${userId}`
-    const existing = (await this.storageService.get<any[]>(key)) || []
+    const existing =
+      (await this.storageService.get<PerformanceData[]>(key)) || []
 
-    existing.push({
-      timestamp: event.timestamp,
-      accuracy,
-      noteData,
-    })
+    // Convert noteData to proper performance data
+    if (noteData && typeof noteData === 'object' && 'type' in noteData) {
+      existing.push({
+        type: noteData.type as 'rhythm' | 'pitch' | 'key_signature' | 'tempo',
+        accuracy,
+        count: 1,
+      })
+    }
 
     await this.storageService.set(key, existing)
   }
@@ -616,7 +629,7 @@ export class ProgressAnalyticsModule
     return ((last - first) / first) * 100
   }
 
-  private calculateStreaks(sessions: any[]): {
+  private calculateStreaks(sessions: Array<{ date: number }>): {
     currentStreak: number
     longestStreak: number
   } {
@@ -662,7 +675,7 @@ export class ProgressAnalyticsModule
     return { currentStreak, longestStreak }
   }
 
-  private findMissedDays(sessions: any[]): number[] {
+  private findMissedDays(sessions: Array<{ date: number }>): number[] {
     // Return timestamps of missed days in the last 30 days
     const missedDays: number[] = []
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -683,7 +696,9 @@ export class ProgressAnalyticsModule
     return missedDays
   }
 
-  private calculateAverageSessionsPerWeek(sessions: any[]): number {
+  private calculateAverageSessionsPerWeek(
+    sessions: Array<{ date: number }>
+  ): number {
     if (!sessions || sessions.length === 0) return 0
 
     const firstDate = new Date(Math.min(...sessions.map(s => s.date)))

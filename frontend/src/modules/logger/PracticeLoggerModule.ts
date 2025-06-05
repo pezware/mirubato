@@ -3,7 +3,12 @@
  */
 
 import { EventBus, StorageService } from '../core'
-import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import type {
+  ModuleInterface,
+  ModuleHealth,
+  EventPayload,
+  IStorageService,
+} from '../core/types'
 import type {
   LogbookEntry,
   Goal,
@@ -14,6 +19,7 @@ import type {
   LoggerConfig,
   GoalMilestone,
   PieceReference,
+  PracticeSessionData,
 } from './types'
 
 export class PracticeLoggerModule implements ModuleInterface {
@@ -21,7 +27,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
@@ -33,7 +39,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     defaultMood: 'neutral',
   }
 
-  constructor(config?: LoggerConfig, storageService?: any) {
+  constructor(config?: LoggerConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     if (config) {
@@ -477,7 +483,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     entries: LogbookEntry[],
     options: ExportOptions
   ): Promise<ExportResult> {
-    const exportData: any = { entries }
+    const exportData: Record<string, unknown> = { entries }
 
     if (options.includeGoals) {
       const keys = await this.storage.getKeys()
@@ -620,7 +626,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     )
   }
 
-  private generateAutoTags(session: any): string[] {
+  private generateAutoTags(session: PracticeSessionData): string[] {
     const tags: string[] = []
 
     // Add tags based on session data

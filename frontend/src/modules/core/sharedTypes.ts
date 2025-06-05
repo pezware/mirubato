@@ -146,7 +146,7 @@ export interface TimeRange {
 export interface MetricDataPoint {
   timestamp: number
   value: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 // Health check status for modules
@@ -163,16 +163,16 @@ export const ValidationHelpers = {
     return typeof accuracy === 'number' && accuracy >= 0 && accuracy <= 100
   },
 
-  isValidSkillLevel: (level: any): level is SkillLevel => {
-    return Object.values(SkillLevel).includes(level)
+  isValidSkillLevel: (level: unknown): level is SkillLevel => {
+    return Object.values(SkillLevel).includes(level as SkillLevel)
   },
 
-  isValidInstrument: (instrument: any): instrument is Instrument => {
-    return Object.values(Instrument).includes(instrument)
+  isValidInstrument: (instrument: unknown): instrument is Instrument => {
+    return Object.values(Instrument).includes(instrument as Instrument)
   },
 
-  isValidSessionStatus: (status: any): status is SessionStatus => {
-    return Object.values(SessionStatus).includes(status)
+  isValidSessionStatus: (status: unknown): status is SessionStatus => {
+    return Object.values(SessionStatus).includes(status as SessionStatus)
   },
 
   isValidTimestamp: (timestamp: number): boolean => {

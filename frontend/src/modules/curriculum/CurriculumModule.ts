@@ -3,7 +3,12 @@
  */
 
 import { EventBus, StorageService, SkillLevel } from '../core'
-import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import type {
+  ModuleInterface,
+  ModuleHealth,
+  EventPayload,
+  IStorageService,
+} from '../core/types'
 import { Instrument } from '../../../../shared/types'
 import type {
   CurriculumConfig,
@@ -40,16 +45,16 @@ export class CurriculumModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private config: Required<CurriculumConfig>
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
   }
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private readonly CACHE_TTL = 60000 // 1 minute
 
-  constructor(config: CurriculumConfig, storageService?: any) {
+  constructor(config: CurriculumConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     this.config = {
@@ -598,7 +603,7 @@ export class CurriculumModule implements ModuleInterface {
 
       // Analyze practice patterns
       const patterns = {
-        pieceIds: entry.pieces.map((p: any) => p.id),
+        pieceIds: entry.pieces.map((p: { id: string }) => p.id),
         techniques: entry.techniques,
         duration: entry.duration,
         mood: entry.mood,

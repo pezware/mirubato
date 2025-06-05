@@ -4,6 +4,7 @@ import {
   EventBus,
   StorageService,
   SessionStatus,
+  IStorageService,
 } from '../core'
 import {
   PracticeSession,
@@ -11,6 +12,7 @@ import {
   SessionTemplate,
   PracticeStats,
   Mistake,
+  NotePerformanceData,
 } from './types'
 import { MistakeType } from '../core/sharedTypes'
 import { Instrument } from '../../../../shared/types'
@@ -20,7 +22,7 @@ export class PracticeSessionModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageService: StorageService
+  private storageService: IStorageService
   private config: PracticeConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -33,7 +35,10 @@ export class PracticeSessionModule implements ModuleInterface {
   private sessionStartHandlers: Set<() => void> = new Set()
   private sessionEndHandlers: Set<() => void> = new Set()
 
-  constructor(config?: Partial<PracticeConfig>, storageService?: any) {
+  constructor(
+    config?: Partial<PracticeConfig>,
+    storageService?: IStorageService
+  ) {
     this.eventBus = EventBus.getInstance()
     this.storageService = storageService || new StorageService(this.eventBus)
 
@@ -399,7 +404,9 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   // Private methods
-  private async recordNotePerformance(data: any): Promise<void> {
+  private async recordNotePerformance(
+    data: NotePerformanceData
+  ): Promise<void> {
     if (!this.currentSession?.performance) return
 
     const perf = this.currentSession.performance

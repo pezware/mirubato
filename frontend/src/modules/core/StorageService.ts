@@ -1,16 +1,21 @@
 import { EventBus } from './EventBus'
-import { StorageRequestEvent, StorageResponseEvent } from './types'
+import {
+  StorageRequestEvent,
+  StorageResponseEvent,
+  IStorageService,
+  EventPayload,
+} from './types'
 
 /**
  * Event-driven storage service that decouples business modules from direct storage dependencies.
  * Uses the EventBus to communicate with the actual storage implementation.
  */
-export class StorageService {
+export class StorageService implements IStorageService {
   private eventBus: EventBus
   private pendingRequests: Map<
     string,
     {
-      resolve: (value: any) => void
+      resolve: (value: unknown) => void
       reject: (error: Error) => void
       timeout: NodeJS.Timeout
     }
@@ -68,7 +73,7 @@ export class StorageService {
     })
   }
 
-  private async handleStorageResponse(event: any): Promise<void> {
+  private async handleStorageResponse(event: EventPayload): Promise<void> {
     const response = event.data as StorageResponseEvent
     const pendingRequest = this.pendingRequests.get(response.requestId)
 

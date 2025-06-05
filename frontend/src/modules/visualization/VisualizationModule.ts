@@ -13,8 +13,9 @@ import {
   Legend,
   BarElement,
   ArcElement,
+  ChartConfiguration,
 } from 'chart.js'
-import { EventBus, StorageService } from '../core'
+import { EventBus, StorageService, IStorageService } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
 import type {
   VisualizationConfig,
@@ -58,13 +59,13 @@ export class VisualizationModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private config: Required<VisualizationConfig>
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
   }
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private performanceMetrics = new Map<
     string,
     VisualizationPerformanceMetrics
@@ -72,7 +73,7 @@ export class VisualizationModule implements ModuleInterface {
   private analytics = new Map<string, VisualizationAnalytics>()
   private readonly CACHE_TTL = 300000 // 5 minutes
 
-  constructor(config: VisualizationConfig, storageService?: any) {
+  constructor(config: VisualizationConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     this.config = {
@@ -998,7 +999,7 @@ export class VisualizationModule implements ModuleInterface {
   private createChartConfig(
     data: ChartData,
     _dimensions: { width: number; height: number }
-  ): any {
+  ): ChartConfiguration {
     const styling = this.getChartColors()
 
     return {

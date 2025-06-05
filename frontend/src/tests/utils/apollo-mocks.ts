@@ -6,7 +6,7 @@ import {
   LOGOUT,
   REQUEST_MAGIC_LINK,
 } from '../../graphql/queries/auth'
-import { Instrument, Theme, NotationSize } from '@mirubato/shared/types'
+import { Instrument, Theme, NotationSize, User } from '@mirubato/shared/types'
 
 // Common user data for tests
 export const mockAnonymousUser = {
@@ -55,7 +55,7 @@ export const mockAuthenticatedUser = {
 
 // Factory functions for creating mocks
 export const createGetCurrentUserMock = (
-  user: any = null,
+  user: User | null = null,
   options: { delay?: number; error?: Error } = {}
 ): MockedResponse => {
   const base = {
@@ -94,7 +94,7 @@ export const createVerifyMagicLinkMock = (
   response: {
     accessToken: string
     refreshToken: string
-    user: any
+    user: User
   },
   options: { delay?: number; error?: Error } = {}
 ): MockedResponse => {

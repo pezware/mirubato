@@ -34,7 +34,7 @@ const createDefaultMocks = (): MockedResponse[] => [
 // Suppress Apollo warnings during tests
 if (typeof jest !== 'undefined') {
   const originalWarn = console.warn
-  global.console.warn = (...args: any[]) => {
+  global.console.warn = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('No more mocked responses') ||
@@ -104,7 +104,7 @@ const customRender = (ui: ReactElement, options?: CustomRenderOptions) => {
 // Helper to create a mock that can be used multiple times
 export const createReusableMock = (
   request: MockedResponse['request'],
-  data: any,
+  data: unknown,
   error?: Error
 ): MockedResponse => {
   if (error) {
