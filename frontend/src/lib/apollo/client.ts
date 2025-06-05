@@ -7,6 +7,7 @@ import {
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
 import { endpoints } from '@/config/endpoints'
+import { tokenStorage } from '@/utils/secureStorage'
 
 // Create HTTP link
 const httpLink = createHttpLink({
@@ -16,8 +17,8 @@ const httpLink = createHttpLink({
 
 // Create auth link to add JWT token to requests
 const authLink = setContext((_, { headers, operationName }) => {
-  // Get the authentication token from local storage if it exists
-  const token = localStorage.getItem('auth-token')
+  // Get the authentication token from secure storage
+  const token = tokenStorage.getAccessToken()
 
   // Return the headers to the context so httpLink can read them
   return {
@@ -40,9 +41,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
       // Handle specific error codes
       if (extensions?.code === 'UNAUTHENTICATED') {
-        // Clear token and redirect to login
-        localStorage.removeItem('auth-token')
-        localStorage.removeItem('refresh-token')
+        // Clear tokens and redirect to login
+        tokenStorage.clearTokens()
         window.location.href = '/login'
       }
     })
@@ -54,7 +54,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     // Handle network errors
     if ('statusCode' in networkError && networkError.statusCode === 401) {
       // Token might be expired, try to refresh
-      const refreshToken = localStorage.getItem('refresh-token')
+      const refreshToken = tokenStorage.getRefreshToken()
       if (refreshToken) {
         // TODO: Implement token refresh logic
         console.log('Token refresh needed')
@@ -87,20 +87,23 @@ export const apolloClient = new ApolloClient({
 })
 
 // Helper function to set auth tokens
-export const setAuthTokens = (authToken: string, refreshToken: string) => {
-  localStorage.setItem('auth-token', authToken)
-  localStorage.setItem('refresh-token', refreshToken)
+export const setAuthTokens = (
+  authToken: string,
+  refreshToken: string,
+  expiresIn?: number
+) => {
+  tokenStorage.setAccessToken(authToken, expiresIn)
+  tokenStorage.setRefreshToken(refreshToken)
 }
 
 // Helper function to clear auth tokens
 export const clearAuthTokens = () => {
-  localStorage.removeItem('auth-token')
-  localStorage.removeItem('refresh-token')
+  tokenStorage.clearTokens()
   // Reset Apollo Client store
   apolloClient.resetStore()
 }
 
 // Helper function to check if user is authenticated
 export const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('auth-token')
+  return !!tokenStorage.getAccessToken()
 }

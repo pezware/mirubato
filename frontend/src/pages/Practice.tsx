@@ -12,6 +12,7 @@ import {
   SaveProgressPrompt,
 } from '../components'
 import { SheetMusicDisplay } from '../components/SheetMusicDisplay'
+import { SheetMusicErrorBoundary } from '../components/ErrorBoundary'
 import * as Tone from 'tone'
 
 type PracticeMode = 'practice' | 'sight-read' | 'debug'
@@ -144,11 +145,20 @@ const Practice: React.FC = () => {
 
         {/* Notation Display */}
         <div className="relative mb-4 w-full">
-          <SheetMusicDisplay
-            sheetMusic={currentPiece}
-            className="shadow-sm border border-mirubato-wood-100 rounded-xl"
-            currentPlayingMeasure={currentPlayingMeasure}
-          />
+          <SheetMusicErrorBoundary
+            onError={error => {
+              // Log error for monitoring
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Sheet music rendering error:', error)
+              }
+            }}
+          >
+            <SheetMusicDisplay
+              sheetMusic={currentPiece}
+              className="shadow-sm border border-mirubato-wood-100 rounded-xl"
+              currentPlayingMeasure={currentPlayingMeasure}
+            />
+          </SheetMusicErrorBoundary>
         </div>
 
         {/* Controls Section */}
