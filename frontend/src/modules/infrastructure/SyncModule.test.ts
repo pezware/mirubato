@@ -96,7 +96,7 @@ describe('SyncModule', () => {
     })
 
     it('should handle initialization failure', async () => {
-      ;(storageModule.loadLocal as jest.Mock).mockRejectedValueOnce(
+      (storageModule.loadLocal as jest.Mock).mockRejectedValueOnce(
         new Error('Load failed')
       )
 
@@ -418,14 +418,20 @@ describe('SyncModule', () => {
       )
       await syncModuleWithMerge.initialize()
 
-      const local = { id: 1, localField: 'local' }
-      const remote = { id: 1, remoteField: 'remote' }
+      const local = { id: 1, localField: 'local', updatedAt: Date.now() }
+      const remote = {
+        id: 1,
+        localField: '',
+        remoteField: 'remote',
+        updatedAt: Date.now() - 1000,
+      } as any
 
       const resolved = await syncModuleWithMerge.resolveConflicts(local, remote)
       expect(resolved).toEqual({
         id: 1,
         localField: 'local',
         remoteField: 'remote',
+        updatedAt: local.updatedAt, // merge strategy keeps the most recent updatedAt
       })
 
       // Clean up
@@ -446,8 +452,9 @@ describe('SyncModule', () => {
       )
       await syncModuleWithCustom.initialize()
 
-      const local = { id: 1, value: 'local' }
-      const remote = { id: 1, value: 'remote' }
+      const now = Date.now()
+      const local = { id: 1, value: 'local', updatedAt: now }
+      const remote = { id: 1, value: 'remote', updatedAt: now - 1000 }
 
       const resolved = await syncModuleWithCustom.resolveConflicts(
         local,
@@ -459,6 +466,7 @@ describe('SyncModule', () => {
         id: 1,
         value: 'remote',
         resolved: true,
+        updatedAt: now - 1000, // custom resolver merges all properties, remote overrides local
       })
 
       // Clean up
@@ -473,8 +481,8 @@ describe('SyncModule', () => {
       )
       await syncModuleWithUserChoice.initialize()
 
-      const local = { id: 1, value: 'local' }
-      const remote = { id: 1, value: 'remote' }
+      const local = { id: 1, value: 'local', updatedAt: Date.now() }
+      const remote = { id: 1, value: 'remote', updatedAt: Date.now() - 1000 }
 
       const resolved = await syncModuleWithUserChoice.resolveConflicts(
         local,

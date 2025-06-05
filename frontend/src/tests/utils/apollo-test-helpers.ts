@@ -1,12 +1,13 @@
 import { MockedResponse } from '@apollo/client/testing'
 import { GET_CURRENT_USER } from '../../graphql/queries/user'
+import { User } from '@mirubato/shared/types'
 
 /**
  * Creates a mock that can be reused multiple times for GET_CURRENT_USER queries
  * This helps prevent "No more mocked responses" warnings in tests
  */
 export const createInfiniteGetCurrentUserMock = (
-  user: any = null
+  user: User | null = null
 ): MockedResponse => ({
   request: {
     query: GET_CURRENT_USER,
@@ -30,7 +31,7 @@ export const createInfiniteGetCurrentUserMock = (
  */
 export const withDefaultUserMock = (
   mocks: MockedResponse[],
-  defaultUser: any = null
+  defaultUser: User | null = null
 ): MockedResponse[] => {
   // Check if there's already a GET_CURRENT_USER mock
   const hasUserMock = mocks.some(

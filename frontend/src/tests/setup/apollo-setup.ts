@@ -2,7 +2,7 @@
 const originalWarn = console.warn
 
 beforeAll(() => {
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     // Filter out common Apollo testing warnings
     const message = args[0]
     if (typeof message === 'string') {

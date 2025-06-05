@@ -3,7 +3,12 @@
  */
 
 import { EventBus, StorageService } from '../core'
-import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import type {
+  ModuleInterface,
+  ModuleHealth,
+  EventPayload,
+  IStorageService,
+} from '../core/types'
 import type {
   LogbookEntry,
   Goal,
@@ -14,6 +19,7 @@ import type {
   LoggerConfig,
   GoalMilestone,
   PieceReference,
+  PracticeSessionData,
 } from './types'
 
 export class PracticeLoggerModule implements ModuleInterface {
@@ -21,7 +27,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
@@ -33,7 +39,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     defaultMood: 'neutral',
   }
 
-  constructor(config?: LoggerConfig, storageService?: any) {
+  constructor(config?: LoggerConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     if (config) {
@@ -413,16 +419,20 @@ export class PracticeLoggerModule implements ModuleInterface {
   // Private Helper Methods
 
   private setupEventSubscriptions(): void {
-    this.eventBus.subscribe('practice:session:ended', this.handleSessionEnded)
+    this.eventBus.subscribe(
+      'practice:session:ended',
+      this.handleSessionEnded.bind(this)
+    )
     this.eventBus.subscribe(
       'progress:milestone:achieved',
-      this.handleMilestoneAchieved
+      this.handleMilestoneAchieved.bind(this)
     )
   }
 
   private handleSessionEnded = async (event: EventPayload): Promise<void> => {
-    if (event.data?.session) {
-      const session = event.data.session
+    const data = event.data as { session?: PracticeSessionData }
+    if (data?.session) {
+      const session = data.session
       const entry: Omit<LogbookEntry, 'id'> = {
         userId: session.userId,
         timestamp: Date.now(),
@@ -446,8 +456,9 @@ export class PracticeLoggerModule implements ModuleInterface {
   private handleMilestoneAchieved = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.linkedGoals) {
-      for (const goalId of event.data.linkedGoals) {
+    const data = event.data as { linkedGoals?: string[] }
+    if (data?.linkedGoals) {
+      for (const goalId of data.linkedGoals) {
         const goal = await this.storage.get<Goal>(`goal:${goalId}`)
         if (goal && goal.status === 'active') {
           // Increment progress based on milestone importance
@@ -477,7 +488,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     entries: LogbookEntry[],
     options: ExportOptions
   ): Promise<ExportResult> {
-    const exportData: any = { entries }
+    const exportData: Record<string, unknown> = { entries }
 
     if (options.includeGoals) {
       const keys = await this.storage.getKeys()
@@ -620,7 +631,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     )
   }
 
-  private generateAutoTags(session: any): string[] {
+  private generateAutoTags(session: PracticeSessionData): string[] {
     const tags: string[] = []
 
     // Add tags based on session data

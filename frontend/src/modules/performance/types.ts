@@ -1,5 +1,40 @@
 // Performance tracking module types and interfaces
 
+export interface NoteEventData {
+  userId?: string
+  expectedNote?: string
+  expected?: string
+  expectedDuration?: number
+  expectedVelocity?: number
+  expectedFinger?: number
+  expectedPosition?: string
+  playedNote?: string
+  played?: string
+  playedDuration?: number
+  playedVelocity?: number
+  playedFinger?: number
+  playedPosition?: string
+  measure?: number
+  beat?: number
+  voiceIndex?: number
+  expectedTime?: number
+  actualTime?: number
+  timestamp?: number
+  tempo?: number
+  timeSignature?: string
+  isCorrect?: boolean
+  correct?: boolean // alias for isCorrect
+  key?: string
+  intervalDifficulty?: number
+  rhythmComplexity?: number
+  technicalDemand?: number
+  type?: 'correct' | 'wrong_note' | 'missed_note' | 'extra_note'
+  handPosition?: string
+  guitarPosition?: string
+  timingDelta?: number
+  rhythmScore?: number
+}
+
 export interface PerformanceData {
   id: string
   sessionId: string

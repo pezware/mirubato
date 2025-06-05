@@ -13,8 +13,9 @@ import {
   Legend,
   BarElement,
   ArcElement,
+  ChartConfiguration,
 } from 'chart.js'
-import { EventBus, StorageService } from '../core'
+import { EventBus, StorageService, IStorageService } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
 import type {
   VisualizationConfig,
@@ -58,13 +59,13 @@ export class VisualizationModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private config: Required<VisualizationConfig>
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
   }
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private performanceMetrics = new Map<
     string,
     VisualizationPerformanceMetrics
@@ -72,7 +73,7 @@ export class VisualizationModule implements ModuleInterface {
   private analytics = new Map<string, VisualizationAnalytics>()
   private readonly CACHE_TTL = 300000 // 5 minutes
 
-  constructor(config: VisualizationConfig, storageService?: any) {
+  constructor(config: VisualizationConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     this.config = {
@@ -789,40 +790,41 @@ export class VisualizationModule implements ModuleInterface {
   private setupEventSubscriptions(): void {
     this.eventBus.subscribe(
       'progress:report:ready',
-      this.handleProgressReportEvent
+      this.handleProgressReportEvent.bind(this)
     )
     this.eventBus.subscribe(
       'curriculum:analytics:ready',
-      this.handleCurriculumAnalyticsEvent
+      this.handleCurriculumAnalyticsEvent.bind(this)
     )
     this.eventBus.subscribe(
       'logger:report:generated',
-      this.handleLoggerReportEvent
+      this.handleLoggerReportEvent.bind(this)
     )
     this.eventBus.subscribe(
       'practice:session:ended',
-      this.handlePracticeSessionEvent
+      this.handlePracticeSessionEvent.bind(this)
     )
     this.eventBus.subscribe(
       'progress:milestone:achieved',
-      this.handleMilestoneEvent
+      this.handleMilestoneEvent.bind(this)
     )
     this.eventBus.subscribe(
       'curriculum:path:completed',
-      this.handlePathCompletionEvent
+      this.handlePathCompletionEvent.bind(this)
     )
   }
 
   private handleProgressReportEvent = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.userId) {
-      this.invalidateCache(`progress:${event.data.userId}`)
+    const data = event.data as { userId?: string }
+    if (data?.userId) {
+      this.invalidateCache(`progress:${data.userId}`)
 
       await this.eventBus.publish({
         source: this.name,
         type: 'visualization:data:updated',
-        data: { source: 'progress', userId: event.data.userId },
+        data: { source: 'progress', userId: data.userId },
         metadata: { version: this.version },
       })
     }
@@ -831,13 +833,14 @@ export class VisualizationModule implements ModuleInterface {
   private handleCurriculumAnalyticsEvent = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.userId) {
-      this.invalidateCache(`curriculum:${event.data.userId}`)
+    const data = event.data as { userId?: string }
+    if (data?.userId) {
+      this.invalidateCache(`curriculum:${data.userId}`)
 
       await this.eventBus.publish({
         source: this.name,
         type: 'visualization:data:updated',
-        data: { source: 'curriculum', userId: event.data.userId },
+        data: { source: 'curriculum', userId: data.userId },
         metadata: { version: this.version },
       })
     }
@@ -846,13 +849,14 @@ export class VisualizationModule implements ModuleInterface {
   private handleLoggerReportEvent = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.userId) {
-      this.invalidateCache(`logger:${event.data.userId}`)
+    const data = event.data as { userId?: string }
+    if (data?.userId) {
+      this.invalidateCache(`logger:${data.userId}`)
 
       await this.eventBus.publish({
         source: this.name,
         type: 'visualization:data:updated',
-        data: { source: 'logger', userId: event.data.userId },
+        data: { source: 'logger', userId: data.userId },
         metadata: { version: this.version },
       })
     }
@@ -861,8 +865,9 @@ export class VisualizationModule implements ModuleInterface {
   private handlePracticeSessionEvent = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.session?.userId) {
-      this.invalidateCache(`heatmap:${event.data.session.userId}`)
+    const data = event.data as { session?: { userId?: string } }
+    if (data?.session?.userId) {
+      this.invalidateCache(`heatmap:${data.session.userId}`)
     }
   }
 
@@ -998,7 +1003,7 @@ export class VisualizationModule implements ModuleInterface {
   private createChartConfig(
     data: ChartData,
     _dimensions: { width: number; height: number }
-  ): any {
+  ): ChartConfiguration {
     const styling = this.getChartColors()
 
     return {
@@ -1016,7 +1021,7 @@ export class VisualizationModule implements ModuleInterface {
       options: {
         responsive: false,
         maintainAspectRatio: false,
-        animation: this.config.animations,
+        animation: this.config.animations ? {} : false,
         plugins: {
           title: {
             display: true,
@@ -1052,8 +1057,8 @@ export class VisualizationModule implements ModuleInterface {
     }
   }
 
-  private mapChartTypeToChartJS(type: ChartType): string {
-    const mapping: Record<ChartType, string> = {
+  private mapChartTypeToChartJS(type: ChartType): ChartConfiguration['type'] {
+    const mapping: Record<ChartType, ChartConfiguration['type']> = {
       progressLine: 'line',
       practiceTimeBar: 'bar',
       accuracyHistogram: 'bar',

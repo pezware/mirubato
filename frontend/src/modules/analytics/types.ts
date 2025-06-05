@@ -70,6 +70,14 @@ export interface SessionData {
   timestamp: number
   notesPlayed: number
   exerciseType?: string
+  date?: number
+}
+
+export interface PerformanceData {
+  type: 'rhythm' | 'pitch' | 'key_signature' | 'tempo'
+  accuracy: number
+  count?: number
+  occurrences?: number
 }
 
 export interface ProgressAnalyticsModuleConfig {

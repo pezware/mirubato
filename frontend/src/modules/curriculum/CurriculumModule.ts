@@ -3,7 +3,17 @@
  */
 
 import { EventBus, StorageService, SkillLevel } from '../core'
-import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import type {
+  ModuleInterface,
+  ModuleHealth,
+  EventPayload,
+  IStorageService,
+} from '../core/types'
+import type {
+  SessionEventData,
+  MilestoneEventData,
+  LoggerEntryEventData,
+} from '../core/eventTypes'
 import { Instrument } from '../../../../shared/types'
 import type {
   CurriculumConfig,
@@ -40,16 +50,16 @@ export class CurriculumModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: StorageService
+  private storage: IStorageService
   private config: Required<CurriculumConfig>
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
   }
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private readonly CACHE_TTL = 60000 // 1 minute
 
-  constructor(config: CurriculumConfig, storageService?: any) {
+  constructor(config: CurriculumConfig, storageService?: IStorageService) {
     this.eventBus = EventBus.getInstance()
     this.storage = storageService || new StorageService(this.eventBus)
     this.config = {
@@ -533,20 +543,24 @@ export class CurriculumModule implements ModuleInterface {
   private setupEventSubscriptions(): void {
     this.eventBus.subscribe(
       'practice:session:ended',
-      this.handlePracticeSessionEnded
+      this.handlePracticeSessionEnded.bind(this)
     )
     this.eventBus.subscribe(
       'progress:milestone:achieved',
-      this.handleMilestoneAchieved
+      this.handleMilestoneAchieved.bind(this)
     )
-    this.eventBus.subscribe('logger:entry:created', this.handleLoggerEntry)
+    this.eventBus.subscribe(
+      'logger:entry:created',
+      this.handleLoggerEntry.bind(this)
+    )
   }
 
   private handlePracticeSessionEnded = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.session) {
-      const session = event.data.session
+    const data = event.data as SessionEventData
+    if (data?.session) {
+      const session = data.session
 
       // Find learning path containing this piece
       const paths = await this.getActivePaths(session.userId)
@@ -556,7 +570,9 @@ export class CurriculumModule implements ModuleInterface {
           for (const module of phase.modules) {
             if (module.content.pieceId === session.pieceId) {
               // Calculate progress based on practice performance
-              const accuracy = session.notesCorrect / session.notesAttempted
+              const accuracy =
+                (session.notesCorrect as number) /
+                (session.notesAttempted as number)
               const progressIncrement = Math.min(20, accuracy * 20) // Up to 20% per session
 
               await this.updateProgress({
@@ -564,7 +580,7 @@ export class CurriculumModule implements ModuleInterface {
                 phaseId: phase.id,
                 moduleId: module.id,
                 progress: Math.min(100, module.progress + progressIncrement),
-                timeSpent: session.duration,
+                timeSpent: (session.duration as number) || 0,
               })
 
               return
@@ -578,14 +594,15 @@ export class CurriculumModule implements ModuleInterface {
   private handleMilestoneAchieved = async (
     event: EventPayload
   ): Promise<void> => {
-    if (event.data?.userId) {
+    const data = event.data as MilestoneEventData
+    if (data?.userId) {
       await this.eventBus.publish({
         source: this.name,
         type: 'curriculum:achievement:unlocked',
         data: {
-          userId: event.data.userId,
+          userId: data.userId,
           achievement: 'milestone_master',
-          milestone: event.data.milestone,
+          milestone: data.milestone,
         },
         metadata: { version: this.version },
       })
@@ -593,12 +610,13 @@ export class CurriculumModule implements ModuleInterface {
   }
 
   private handleLoggerEntry = async (event: EventPayload): Promise<void> => {
-    if (event.data?.entry) {
-      const entry = event.data.entry
+    const data = event.data as LoggerEntryEventData
+    if (data?.entry) {
+      const entry = data.entry
 
       // Analyze practice patterns
       const patterns = {
-        pieceIds: entry.pieces.map((p: any) => p.id),
+        pieceIds: (entry.pieces as Array<{ id: string }>)?.map(p => p.id) || [],
         techniques: entry.techniques,
         duration: entry.duration,
         mood: entry.mood,

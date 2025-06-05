@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EventBus } from '../modules/core/EventBus'
+import { StorageService } from '../modules/core/StorageService'
 import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { SyncModule } from '../modules/infrastructure/SyncModule'
 import { PracticeSessionModule } from '../modules/practice/PracticeSessionModule'
@@ -27,13 +28,26 @@ interface BackendHealth {
   environment: string
 }
 
+interface CorsDebugInfo {
+  origin?: string
+  headers?: Record<string, string>
+  method?: string
+  credentials?: boolean
+}
+
+interface StorageInfo {
+  usage: number
+  quota: number
+  percentage: number
+}
+
 export default function Debug() {
   const [modules, setModules] = useState<ModuleStatus[]>([])
   const [backendHealth, setBackendHealth] = useState<BackendHealth | null>(null)
-  const [corsDebug, setCorsDebug] = useState<any>(null)
+  const [corsDebug, setCorsDebug] = useState<CorsDebugInfo | null>(null)
   const [analyticsPreview, setAnalyticsPreview] =
     useState<ProgressReport | null>(null)
-  const [storageInfo, setStorageInfo] = useState<any>(null)
+  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -45,13 +59,17 @@ export default function Debug() {
       // Get module instances
       const eventBus = EventBus.getInstance()
       const storageModule = new StorageModule()
+      const storageService = new StorageService(eventBus)
       const syncModule = new SyncModule(storageModule)
-      const practiceModule = new PracticeSessionModule({}, storageModule)
-      const performanceModule = new PerformanceTrackingModule({}, storageModule)
+      const practiceModule = new PracticeSessionModule({}, storageService)
+      const performanceModule = new PerformanceTrackingModule(
+        {},
+        storageService
+      )
       const analyticsModule = new ProgressAnalyticsModule(
         eventBus,
         undefined,
-        storageModule
+        storageService
       )
 
       // Collect module status
@@ -60,7 +78,7 @@ export default function Debug() {
           name: 'EventBus',
           version: '1.0.0',
           health: { status: 'green', lastCheck: Date.now() },
-          instance: eventBus as any,
+          instance: eventBus as unknown as ModuleInterface,
         },
         {
           name: storageModule.name,

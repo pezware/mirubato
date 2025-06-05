@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Debug from './Debug'
 import { EventBus } from '../modules/core/EventBus'
+import { StorageService } from '../modules/core/StorageService'
 import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { SyncModule } from '../modules/infrastructure/SyncModule'
 import { PracticeSessionModule } from '../modules/practice/PracticeSessionModule'
@@ -11,6 +12,7 @@ import { endpoints } from '../config/endpoints'
 
 // Mock modules
 jest.mock('../modules/core/EventBus')
+jest.mock('../modules/core/StorageService')
 jest.mock('../modules/infrastructure/StorageModule')
 jest.mock('../modules/infrastructure/SyncModule')
 jest.mock('../modules/practice/PracticeSessionModule')
@@ -113,10 +115,22 @@ describe('Debug Page', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Mock EventBus.getInstance
-    ;(EventBus.getInstance as jest.Mock).mockReturnValue(mockEventBus)
+    // Mock EventBus.getInstance with required methods
+    ;(EventBus.getInstance as jest.Mock).mockReturnValue({
+      ...mockEventBus,
+      subscribe: jest.fn(),
+      publish: jest.fn().mockResolvedValue(undefined),
+    })
 
     // Mock module constructors
+    ;(StorageService as jest.Mock).mockImplementation(() => ({
+      get: jest.fn(),
+      set: jest.fn(),
+      remove: jest.fn(),
+      clear: jest.fn(),
+      getKeys: jest.fn().mockResolvedValue([]),
+      destroy: jest.fn(),
+    }))
     ;(StorageModule as jest.Mock).mockImplementation(() => mockStorageModule)
     ;(SyncModule as jest.Mock).mockImplementation(() => mockSyncModule)
     ;(PracticeSessionModule as jest.Mock).mockImplementation(
@@ -285,7 +299,7 @@ describe('Debug Page', () => {
   })
 
   it('handles backend health fetch failure gracefully', async () => {
-    ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/health')) {
         return Promise.reject(new Error('Network error'))
       }

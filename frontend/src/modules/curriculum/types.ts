@@ -96,7 +96,7 @@ export interface Resource {
   type: 'video' | 'audio' | 'pdf' | 'link' | 'sheet-music'
   title: string
   url?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface AssessmentCriteria {
@@ -137,7 +137,7 @@ export interface RepertoirePiece {
     tempo?: number
     year?: number
     movements?: string[]
-    [key: string]: any
+    [key: string]: unknown
   }
 }
 
@@ -171,7 +171,7 @@ export interface CurriculumRecommendation {
   reason: string
   score: number // 0-1 relevance score
   createdAt: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface CurriculumFilters {
@@ -211,7 +211,7 @@ export interface PracticeSession {
   status: 'active' | 'paused' | 'completed' | 'cancelled'
   repetitions: PracticeRepetition[]
   overallProgress: PracticeProgress
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface PracticeConfig {

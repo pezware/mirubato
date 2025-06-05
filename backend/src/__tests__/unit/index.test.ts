@@ -1,4 +1,10 @@
 import { Env } from '../../types/context'
+import type {
+  D1Database,
+  KVNamespace,
+  DurableObjectNamespace,
+} from '@cloudflare/workers-types'
+import type { RateLimiter } from '../../utils/rateLimiter'
 
 // Mock all dependencies before they are imported
 jest.mock('@apollo/server', () => ({
@@ -61,13 +67,11 @@ describe('Cloudflare Workers Handler', () => {
     mockEnv = {
       ENVIRONMENT: 'development',
       JWT_SECRET: 'test-secret',
-      RATE_LIMITER: {} as any,
+      RATE_LIMITER: {} as DurableObjectNamespace,
       CF_VERSION_METADATA: { id: 'test-version-123' },
-      DATABASE: {} as any,
-      BACKEND_URL: 'https://api.example.com',
-      SENDGRID_API_KEY: 'test-sendgrid-key',
-      EMAIL_FROM: 'test@example.com',
-    } as Env
+      DB: {} as D1Database,
+      MIRUBATO_MAGIC_LINKS: {} as KVNamespace,
+    }
 
     // Setup default mock implementations
     ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
@@ -81,7 +85,7 @@ describe('Cloudflare Workers Handler', () => {
       },
     })
 
-    const mockRateLimiter = {
+    const mockRateLimiter: RateLimiter = {
       checkLimit: jest.fn().mockResolvedValue(true),
     }
     ;(createRateLimiter as jest.Mock).mockReturnValue(mockRateLimiter)
@@ -170,7 +174,11 @@ describe('Cloudflare Workers Handler', () => {
 
       expect(response.status).toBe(200)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        message: string
+        env: string
+        timestamp: string
+      }
       expect(data).toEqual({
         message: 'Backend is working!',
         env: 'development',
@@ -187,7 +195,12 @@ describe('Cloudflare Workers Handler', () => {
 
       expect(response.status).toBe(200)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        status: string
+        timestamp: string
+        version: string
+        environment: string
+      }
       expect(data).toEqual({
         status: 'ok',
         timestamp: expect.any(String),
@@ -206,7 +219,12 @@ describe('Cloudflare Workers Handler', () => {
 
       const response = await handler.fetch(request, envWithoutVersion)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        status: string
+        timestamp: string
+        version: string
+        environment: string
+      }
       expect(data.version).toBe('unknown')
       expect(response.headers.get('X-Version')).toBe('unknown')
     })
@@ -218,7 +236,11 @@ describe('Cloudflare Workers Handler', () => {
 
       expect(response.status).toBe(200)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        message: string
+        env: string
+        timestamp: string
+      }
       expect(data.message).toBe('Backend is working!')
       expect(data.env).toBe('development')
       expect(data.timestamp).toBeDefined()
@@ -230,7 +252,12 @@ describe('Cloudflare Workers Handler', () => {
 
       const response = await handler.fetch(request, envWithoutEnv)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        status: string
+        timestamp: string
+        version: string
+        environment: string
+      }
       expect(data.environment).toBe('unknown')
       expect(response.headers.get('X-Environment')).toBe('unknown')
     })
@@ -246,7 +273,18 @@ describe('Cloudflare Workers Handler', () => {
 
       expect(response.status).toBe(200)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        origin: string
+        environment: string
+        envRaw: string
+        isAllowed: boolean
+        corsConfig: {
+          production: string[]
+          patterns: unknown[]
+          development: string[]
+        }
+        timestamp: string
+      }
       expect(data).toEqual({
         origin: 'https://example.com',
         environment: 'development',
@@ -272,7 +310,7 @@ describe('Cloudflare Workers Handler', () => {
 
       const response = await handler.fetch(request, mockEnv)
 
-      const data = await response.json()
+      const data = (await response.json()) as { origin: string }
       expect(data.origin).toBe('no-origin')
     })
 
@@ -282,7 +320,10 @@ describe('Cloudflare Workers Handler', () => {
 
       const response = await handler.fetch(request, envWithoutEnvironment)
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        environment: string
+        envRaw?: string
+      }
       expect(data.environment).toBe('production')
       expect(data.envRaw).toBeUndefined()
     })
@@ -304,13 +345,13 @@ describe('Cloudflare Workers Handler', () => {
       const response = await handler.fetch(request, mockEnv)
 
       expect(response.status).toBe(200)
-      const data = await response.json()
+      const data = (await response.json()) as { data: { test: string } }
       expect(data).toEqual({ data: { test: 'success' } })
 
       // Verify Apollo Server was created
       expect(ApolloServer).toHaveBeenCalledWith({
         typeDefs: expect.any(String),
-        resolvers: expect.any(Object),
+        resolvers: expect.any(Object) as Record<string, unknown>,
         introspection: true,
       })
 
@@ -482,7 +523,11 @@ describe('Cloudflare Workers Handler', () => {
       const response = await handler.fetch(request, mockEnv)
 
       expect(response.status).toBe(500)
-      const data = await response.json()
+      const data = (await response.json()) as {
+        error: string
+        message: string
+        stack?: string
+      }
       expect(data).toEqual({
         error: 'Internal server error',
         message: 'GraphQL processing failed',
@@ -504,7 +549,11 @@ describe('Cloudflare Workers Handler', () => {
       const response = await handler.fetch(request, prodEnv)
 
       expect(response.status).toBe(500)
-      const data = await response.json()
+      const data = (await response.json()) as {
+        error: string
+        message: string
+        stack?: string
+      }
       expect(data.stack).toBeUndefined()
     })
 
@@ -544,7 +593,7 @@ describe('Cloudflare Workers Handler', () => {
       const response = await handler.fetch(request, mockEnv)
 
       expect(response.status).toBe(500)
-      const data = await response.json()
+      const data = (await response.json()) as { error: string; message: string }
       expect(data.message).toBe('Unknown error')
     })
   })
@@ -586,11 +635,11 @@ describe('Cloudflare Workers Handler', () => {
 
     it('should handle edge cases in environment detection', async () => {
       // Test with empty string environment
-      const envEmptyString = { ...mockEnv, ENVIRONMENT: '' }
+      const envEmptyString = { ...mockEnv, ENVIRONMENT: '' as const }
       const request = new Request('https://api.example.com/debug/cors')
 
       const response = await handler.fetch(request, envEmptyString)
-      const data = await response.json()
+      const data = (await response.json()) as { environment: string }
 
       // Empty string should be treated as production
       expect(data.environment).toBe('production')

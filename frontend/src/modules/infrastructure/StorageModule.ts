@@ -4,6 +4,7 @@ import {
   EventBus,
   StorageRequestEvent,
   StorageResponseEvent,
+  EventPayload,
 } from '../core'
 import { StorageAdapter, StorageConfig, StorageMetadata } from './types'
 
@@ -219,12 +220,12 @@ export class StorageModule implements ModuleInterface {
   }
 
   // Event-driven storage request handler
-  private async handleStorageRequest(event: any): Promise<void> {
+  private async handleStorageRequest(event: EventPayload): Promise<void> {
     const request = event.data as StorageRequestEvent
     let response: StorageResponseEvent
 
     try {
-      let data: any = undefined
+      let data: unknown = undefined
 
       switch (request.operation) {
         case 'get':

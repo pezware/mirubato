@@ -15,7 +15,7 @@ export interface LogbookEntry {
   mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
   tags: string[]
   sessionId?: string // Links to practice session
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface PieceReference {
@@ -110,4 +110,12 @@ export interface LoggerEvents {
   'logger:goal:completed': { goal: Goal }
   'logger:export:ready': { result: ExportResult }
   'logger:report:generated': { report: PracticeReport }
+}
+
+export interface PracticeSessionData {
+  id: string
+  userId: string
+  duration: number
+  accuracy?: number
+  pieces?: PieceReference[]
 }

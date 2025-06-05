@@ -1,4 +1,4 @@
-import { ModuleInterface, ModuleHealth, EventBus } from '../core'
+import { ModuleInterface, ModuleHealth, EventBus, EventPayload } from '../core'
 import { StorageModule } from './StorageModule'
 import { SyncOperation, SyncConfig, ConflictResolution } from './types'
 
@@ -121,22 +121,33 @@ export class SyncModule implements ModuleInterface {
 
   private setupEventSubscriptions(): void {
     // Subscribe to data sync required events
-    this.eventBus.subscribe('data:sync:required', async payload => {
-      await this.queueOperation({
-        id: `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: payload.data.operation === 'save' ? 'create' : 'update',
-        resource: payload.data.key,
-        data: payload.data.data,
-        timestamp: Date.now(),
-        status: 'pending',
-        retryCount: 0,
-      })
-    })
+    this.eventBus.subscribe(
+      'data:sync:required',
+      async (payload: EventPayload) => {
+        const data = payload.data as {
+          operation: string
+          key: string
+          data: unknown
+        }
+        await this.queueOperation({
+          id: `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: data.operation === 'save' ? 'create' : 'update',
+          resource: data.key,
+          data: data.data,
+          timestamp: Date.now(),
+          status: 'pending',
+          retryCount: 0,
+        })
+      }
+    )
 
     // Subscribe to sync request events
-    this.eventBus.subscribe('sync:request:initiated', async () => {
-      await this.processSyncQueue()
-    })
+    this.eventBus.subscribe(
+      'sync:request:initiated',
+      async (_payload: EventPayload) => {
+        await this.processSyncQueue()
+      }
+    )
   }
 
   private startSyncTimer(): void {
@@ -247,10 +258,13 @@ export class SyncModule implements ModuleInterface {
     }
   }
 
-  async resolveConflicts(local: any, remote: any): Promise<any> {
+  async resolveConflicts<T extends { updatedAt?: number }>(
+    local: T,
+    remote: T
+  ): Promise<T> {
     switch (this.conflictResolution.strategy) {
       case 'lastWriteWins':
-        return local.updatedAt > remote.updatedAt ? local : remote
+        return (local.updatedAt || 0) > (remote.updatedAt || 0) ? local : remote
 
       case 'merge':
         // Simple merge strategy - combine properties
@@ -268,7 +282,7 @@ export class SyncModule implements ModuleInterface {
 
       case 'custom':
         if (this.conflictResolution.resolver) {
-          return this.conflictResolution.resolver(local, remote)
+          return this.conflictResolution.resolver(local, remote) as T
         }
         return local
 

@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react'
 import { render as rtlRender, RenderOptions } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { MockedProvider, MockedResponse } from '@apollo/client/testing'
-import { InMemoryCache } from '@apollo/client'
+import { InMemoryCache, FetchResult } from '@apollo/client'
 import { GET_CURRENT_USER } from '../../graphql/queries/user'
 
 // Create a new cache instance for each test to avoid cross-test pollution
@@ -34,7 +34,7 @@ const createDefaultMocks = (): MockedResponse[] => [
 // Suppress Apollo warnings during tests
 if (typeof jest !== 'undefined') {
   const originalWarn = console.warn
-  global.console.warn = (...args: any[]) => {
+  global.console.warn = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('No more mocked responses') ||
@@ -104,7 +104,7 @@ const customRender = (ui: ReactElement, options?: CustomRenderOptions) => {
 // Helper to create a mock that can be used multiple times
 export const createReusableMock = (
   request: MockedResponse['request'],
-  data: any,
+  data: unknown,
   error?: Error
 ): MockedResponse => {
   if (error) {
@@ -115,8 +115,8 @@ export const createReusableMock = (
   }
   return {
     request,
-    result: { data },
-    newData: () => ({ data }),
+    result: { data } as FetchResult<Record<string, unknown>>,
+    newData: () => ({ data }) as FetchResult<Record<string, unknown>>,
   }
 }
 
