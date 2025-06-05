@@ -15,7 +15,10 @@ export const SaveProgressPrompt: React.FC<SaveProgressPromptProps> = ({
   const { isAnonymous, localUserData } = useAuth()
   const navigate = useNavigate()
   const [showPrompt, setShowPrompt] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
+  const [dismissed, setDismissed] = useState(() => {
+    // Initialize from sessionStorage
+    return sessionStorage.getItem('mirubato_save_prompt_dismissed') === 'true'
+  })
 
   useEffect(() => {
     if (!isAnonymous || dismissed) return
@@ -49,16 +52,6 @@ export const SaveProgressPrompt: React.FC<SaveProgressPromptProps> = ({
   const handleSaveToCloud = () => {
     navigate('/login')
   }
-
-  useEffect(() => {
-    // Check if already dismissed this session
-    const alreadyDismissed = sessionStorage.getItem(
-      'mirubato_save_prompt_dismissed'
-    )
-    if (alreadyDismissed === 'true') {
-      setDismissed(true)
-    }
-  }, [])
 
   if (!showPrompt || !isAnonymous) return null
 
