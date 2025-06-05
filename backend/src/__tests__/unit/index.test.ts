@@ -74,7 +74,9 @@ describe('Cloudflare Workers Handler', () => {
     }
 
     // Setup default mock implementations
+    // eslint-disable-next-line no-extra-semi
     ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
+    // eslint-disable-next-line no-extra-semi
     ;(getCorsConfig as jest.Mock).mockReturnValue({
       production: {
         domains: ['example.com'],
@@ -128,6 +130,7 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should add CORS headers to allowed origins', async () => {
+      // eslint-disable-next-line no-extra-semi
       ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
 
       const request = new Request('https://api.example.com/health', {
@@ -142,6 +145,7 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should not add origin header for disallowed origins', async () => {
+      // eslint-disable-next-line no-extra-semi
       ;(isOriginAllowed as jest.Mock).mockReturnValue(false)
 
       const request = new Request('https://api.example.com/health', {
@@ -365,6 +369,7 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should create GraphQL context with user when authenticated', async () => {
+      // eslint-disable-next-line no-extra-semi
       ;(verifyJWT as jest.Mock).mockResolvedValue({
         user: { id: 'authenticated-user' },
       })
@@ -401,6 +406,7 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should handle invalid JWT gracefully', async () => {
+      // eslint-disable-next-line no-extra-semi
       ;(verifyJWT as jest.Mock).mockRejectedValue(new Error('Invalid token'))
 
       const request = new Request('https://api.example.com/graphql', {
