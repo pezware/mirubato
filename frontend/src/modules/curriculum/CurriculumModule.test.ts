@@ -1,12 +1,12 @@
 import { CurriculumModule } from './CurriculumModule'
 import {
   EventBus,
-  MockStorageService,
   Instrument,
   SkillLevel,
   MusicGenre,
   FocusArea,
 } from '../core'
+import { MockEventDrivenStorage } from '../core/MockEventDrivenStorage'
 import type {
   LearningPath,
   RepertoirePiece,
@@ -23,7 +23,7 @@ import type { EventPayload } from '../core/types'
 describe('CurriculumModule', () => {
   let curriculum: CurriculumModule
   let eventBus: EventBus
-  let mockStorage: MockStorageService
+  let mockStorage: MockEventDrivenStorage
   let publishSpy: jest.SpyInstance
   let subscribeSpy: jest.SpyInstance
 
@@ -83,7 +83,7 @@ describe('CurriculumModule', () => {
     subscribeSpy = jest.spyOn(eventBus, 'subscribe')
 
     // Use mock storage service for tests
-    mockStorage = new MockStorageService()
+    mockStorage = new MockEventDrivenStorage()
 
     curriculum = new CurriculumModule(testConfig, mockStorage)
   })
@@ -94,7 +94,7 @@ describe('CurriculumModule', () => {
       await curriculum.shutdown()
     }
     if (mockStorage) {
-      mockStorage.destroy()
+      mockStorage.clear()
     }
     jest.clearAllMocks()
     EventBus.resetInstance()
@@ -194,7 +194,7 @@ describe('CurriculumModule', () => {
       expect(path.phases.length).toBeGreaterThan(0) // Should generate default phases
       expect(path.currentPhaseId).toBe(path.phases[0].id)
       // Check that path was saved to storage
-      const savedPath = await mockStorage.get(`path:${path.id}`)
+      const savedPath = await mockStorage.read(`path:${path.id}`)
       expect(savedPath).toEqual(path)
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -237,7 +237,7 @@ describe('CurriculumModule', () => {
       ]
       // Set up storage state directly
       for (const path of mockPaths) {
-        await mockStorage.set(`path:${path.id}`, path)
+        await mockStorage.write(`path:${path.id}`, path)
       }
 
       const activePaths = await curriculum.getActivePaths(testUserId)
@@ -295,7 +295,7 @@ describe('CurriculumModule', () => {
       path.phases[0].modules[0].progress = 100
 
       // Store the updated path
-      await mockStorage.set(`path:${path.id}`, path)
+      await mockStorage.write(`path:${path.id}`, path)
 
       const update: ProgressUpdate = {
         pathId: path.id,
@@ -327,7 +327,7 @@ describe('CurriculumModule', () => {
       })
 
       // Store the updated path
-      await mockStorage.set(`path:${path.id}`, path)
+      await mockStorage.write(`path:${path.id}`, path)
 
       const update: ProgressUpdate = {
         pathId: path.id,
@@ -354,7 +354,7 @@ describe('CurriculumModule', () => {
       const piece = await curriculum.addRepertoirePiece(testPiece)
 
       // Check that piece was saved to storage
-      const savedPiece = await mockStorage.get(`repertoire:${piece.id}`)
+      const savedPiece = await mockStorage.read(`repertoire:${piece.id}`)
       expect(savedPiece).toEqual(piece)
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -372,7 +372,7 @@ describe('CurriculumModule', () => {
       ]
       // Set up storage state directly
       for (const piece of mockPieces) {
-        await mockStorage.set(`repertoire:${piece.id}`, piece)
+        await mockStorage.write(`repertoire:${piece.id}`, piece)
       }
 
       const filters: CurriculumFilters = {
@@ -396,7 +396,7 @@ describe('CurriculumModule', () => {
       ]
       // Set up storage state directly
       for (const piece of mockPieces) {
-        await mockStorage.set(`repertoire:${piece.id}`, piece)
+        await mockStorage.write(`repertoire:${piece.id}`, piece)
       }
 
       const recommendations = await curriculum.getRecommendations(
@@ -419,7 +419,7 @@ describe('CurriculumModule', () => {
       }))
       // Set up storage state directly
       for (const piece of mockPieces) {
-        await mockStorage.set(`repertoire:${piece.id}`, piece)
+        await mockStorage.write(`repertoire:${piece.id}`, piece)
       }
 
       const intermediate = await curriculum.getRepertoireByDifficulty(4, 7)
@@ -518,7 +518,7 @@ describe('CurriculumModule', () => {
       // Call for all paths
       // Set up storage state directly
       for (const path of mockPaths) {
-        await mockStorage.set(`path:${path.id}`, path)
+        await mockStorage.write(`path:${path.id}`, path)
       }
 
       const stats = await curriculum.getCurriculumStats(testUserId)
@@ -551,7 +551,7 @@ describe('CurriculumModule', () => {
 
       // Mock storage to return the path
       // Store the updated path
-      await mockStorage.set(`path:${path.id}`, path)
+      await mockStorage.write(`path:${path.id}`, path)
 
       const sessionEvent: EventPayload = {
         eventId: 'evt_test_123',
@@ -583,7 +583,9 @@ describe('CurriculumModule', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Check that path was updated in storage
-      const updatedPath = await mockStorage.get<LearningPath>(`path:${path.id}`)
+      const updatedPath = await mockStorage.read<LearningPath>(
+        `path:${path.id}`
+      )
       expect(updatedPath).toBeDefined()
       expect(updatedPath?.phases[0].modules[0].progress).toBeGreaterThan(0)
     })
@@ -654,7 +656,7 @@ describe('CurriculumModule', () => {
     it('should export curriculum data', async () => {
       // Set up mock data
       const mockPath = { ...testPath, id: 'path-1' }
-      await mockStorage.set(`path:${mockPath.id}`, mockPath)
+      await mockStorage.write(`path:${mockPath.id}`, mockPath)
 
       const exportData = await curriculum.exportCurriculum(testUserId)
 
@@ -691,7 +693,7 @@ describe('CurriculumModule', () => {
     it('should handle import conflicts', async () => {
       const now = Date.now()
       // Set up existing path with same ID
-      await mockStorage.set('path:path-1', {
+      await mockStorage.write('path:path-1', {
         ...testPath,
         id: 'path-1',
         createdAt: now,
@@ -724,7 +726,7 @@ describe('CurriculumModule', () => {
 
     it('should handle storage errors gracefully', async () => {
       jest
-        .spyOn(mockStorage, 'set')
+        .spyOn(mockStorage, 'write')
         .mockRejectedValueOnce(new Error('Storage failed'))
 
       await expect(curriculum.createLearningPath(testPath)).rejects.toThrow(
@@ -796,7 +798,7 @@ describe('CurriculumModule', () => {
       }))
       // Set up storage with many pieces
       for (const piece of mockPieces) {
-        await mockStorage.set(`repertoire:${piece.id}`, piece)
+        await mockStorage.write(`repertoire:${piece.id}`, piece)
       }
 
       const results = await curriculum.searchRepertoire(
@@ -870,7 +872,7 @@ describe('CurriculumModule', () => {
         )
 
         // Store the session for updatePracticeProgress
-        await mockStorage.set(`practice:session:${session.id}`, session)
+        await mockStorage.write(`practice:session:${session.id}`, session)
 
         const progressUpdate = {
           sessionId: session.id,
@@ -883,7 +885,7 @@ describe('CurriculumModule', () => {
         await curriculum.updatePracticeProgress(session.id, progressUpdate)
 
         // Check that session was updated in storage
-        const updatedSession = await mockStorage.get<PracticeSession>(
+        const updatedSession = await mockStorage.read<PracticeSession>(
           `practice:session:${session.id}`
         )
         expect(updatedSession).toBeDefined()
@@ -1041,7 +1043,7 @@ describe('CurriculumModule', () => {
         }
 
         // Store analytics before calling assessPerformanceReadiness
-        await mockStorage.set(
+        await mockStorage.write(
           `analytics:piece:piece-1:${testUserId}`,
           mockAnalytics
         )
@@ -1084,7 +1086,7 @@ describe('CurriculumModule', () => {
           updatedAt: Date.now(),
         }
 
-        await mockStorage.set(
+        await mockStorage.write(
           `analytics:piece:piece-1:${testUserId}`,
           mockAnalytics
         )
@@ -1131,7 +1133,7 @@ describe('CurriculumModule', () => {
 
         // Store the analytics data
         for (const piece of mockPieces) {
-          await mockStorage.set(
+          await mockStorage.write(
             `analytics:piece:${piece.pieceId}:${testUserId}`,
             piece
           )
@@ -1171,11 +1173,14 @@ describe('CurriculumModule', () => {
         }
 
         // Store analytics and readiness data
-        await mockStorage.set(
+        await mockStorage.write(
           `analytics:piece:piece-1:${testUserId}`,
           mockAnalytics
         )
-        await mockStorage.set(`readiness:piece-1:${testUserId}`, mockReadiness)
+        await mockStorage.write(
+          `readiness:piece-1:${testUserId}`,
+          mockReadiness
+        )
 
         const schedule =
           await curriculum.scheduleMaintenancePractice(testUserId)

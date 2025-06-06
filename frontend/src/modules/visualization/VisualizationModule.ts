@@ -15,7 +15,7 @@ import {
   ArcElement,
   ChartConfiguration,
 } from 'chart.js'
-import { EventBus, StorageService, IStorageService } from '../core'
+import { EventBus, EventDrivenStorage } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
 import type {
   VisualizationConfig,
@@ -59,7 +59,7 @@ export class VisualizationModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: IStorageService
+  private storage: EventDrivenStorage
   private config: Required<VisualizationConfig>
   private health: ModuleHealth = {
     status: 'gray',
@@ -73,9 +73,12 @@ export class VisualizationModule implements ModuleInterface {
   private analytics = new Map<string, VisualizationAnalytics>()
   private readonly CACHE_TTL = 300000 // 5 minutes
 
-  constructor(config: VisualizationConfig, storageService?: IStorageService) {
+  constructor(
+    config: VisualizationConfig,
+    storageService?: EventDrivenStorage
+  ) {
     this.eventBus = EventBus.getInstance()
-    this.storage = storageService || new StorageService(this.eventBus)
+    this.storage = storageService || new EventDrivenStorage()
     this.config = {
       library: config.library || 'chartjs',
       theme: config.theme || 'light',
@@ -166,7 +169,7 @@ export class VisualizationModule implements ModuleInterface {
         createdAt: Date.now(),
       }
 
-      await this.storage.set(`chart:${spec.id}`, chart)
+      await this.storage.write(`chart:${spec.id}`, chart)
       this.invalidateCache(`charts:${chart.userId}`)
 
       await this.eventBus.publish({
@@ -193,10 +196,9 @@ export class VisualizationModule implements ModuleInterface {
       >(cacheKey)
     if (cached) return cached
 
-    const keys = await this.storage.getKeys()
-    const chartKeys = keys.filter((k: string) => k.startsWith('chart:'))
-    const chartPromises = chartKeys.map((key: string) =>
-      this.storage.get<
+    const keys = await this.storage.getKeys('chart:')
+    const chartPromises = keys.map((key: string) =>
+      this.storage.read<
         ChartSpecification & { userId: string; createdAt: number }
       >(key)
     )
@@ -216,7 +218,7 @@ export class VisualizationModule implements ModuleInterface {
     chartId: string,
     updates: Partial<ChartSpecification>
   ): Promise<ChartSpecification & { userId: string; createdAt: number }> {
-    const existingChart = await this.storage.get<
+    const existingChart = await this.storage.read<
       ChartSpecification & { userId: string; createdAt: number }
     >(`chart:${chartId}`)
 
@@ -231,7 +233,7 @@ export class VisualizationModule implements ModuleInterface {
       updatedAt: Date.now(),
     }
 
-    await this.storage.set(`chart:${chartId}`, updatedChart)
+    await this.storage.write(`chart:${chartId}`, updatedChart)
     this.invalidateCache(`charts:${existingChart.userId}`)
 
     await this.eventBus.publish({
@@ -245,11 +247,11 @@ export class VisualizationModule implements ModuleInterface {
   }
 
   async deleteChart(chartId: string): Promise<void> {
-    const chart = await this.storage.get<
+    const chart = await this.storage.read<
       ChartSpecification & { userId: string }
     >(`chart:${chartId}`)
 
-    await this.storage.remove(`chart:${chartId}`)
+    await this.storage.delete(`chart:${chartId}`)
 
     if (chart) {
       this.invalidateCache(`charts:${chart.userId}`)
@@ -558,7 +560,7 @@ export class VisualizationModule implements ModuleInterface {
       updatedAt: Date.now(),
     }
 
-    await this.storage.set(`dashboard:${dashboard.id}`, dashboard)
+    await this.storage.write(`dashboard:${dashboard.id}`, dashboard)
     this.invalidateCache(`dashboards:${dashboard.userId}`)
 
     await this.eventBus.publish({
@@ -576,10 +578,9 @@ export class VisualizationModule implements ModuleInterface {
     const cached = this.getFromCache<DashboardLayout[]>(cacheKey)
     if (cached) return cached
 
-    const keys = await this.storage.getKeys()
-    const dashboardKeys = keys.filter((k: string) => k.startsWith('dashboard:'))
-    const dashboardPromises = dashboardKeys.map((key: string) =>
-      this.storage.get<DashboardLayout>(key)
+    const keys = await this.storage.getKeys('dashboard:')
+    const dashboardPromises = keys.map((key: string) =>
+      this.storage.read<DashboardLayout>(key)
     )
     const loadedDashboards = await Promise.all(dashboardPromises)
     const userDashboards = loadedDashboards
@@ -594,7 +595,7 @@ export class VisualizationModule implements ModuleInterface {
     dashboardId: string,
     updates: Partial<Omit<DashboardLayout, 'id' | 'createdAt'>>
   ): Promise<DashboardLayout> {
-    const existingDashboard = await this.storage.get<DashboardLayout>(
+    const existingDashboard = await this.storage.read<DashboardLayout>(
       `dashboard:${dashboardId}`
     )
 
@@ -609,7 +610,7 @@ export class VisualizationModule implements ModuleInterface {
       updatedAt: Date.now(),
     }
 
-    await this.storage.set(`dashboard:${dashboardId}`, updatedDashboard)
+    await this.storage.write(`dashboard:${dashboardId}`, updatedDashboard)
     this.invalidateCache(`dashboards:${existingDashboard.userId}`)
 
     await this.eventBus.publish({

@@ -1,5 +1,5 @@
-import { EventBus, StorageService } from '../core'
-import type { EventPayload, ModuleHealth, IStorageService } from '../core/types'
+import { EventBus, EventDrivenStorage } from '../core'
+import type { EventPayload, ModuleHealth } from '../core/types'
 import type {
   PerformanceNoteEventData,
   SessionEndedEventData,
@@ -54,14 +54,14 @@ export class ProgressAnalyticsModule
   private config: Required<ProgressAnalyticsModuleConfig>
   private subscriptions: string[] = []
 
-  private storageService: IStorageService
+  private storage: EventDrivenStorage
 
   constructor(
     private eventBus: EventBus,
     config?: Partial<ProgressAnalyticsModuleConfig>,
-    storageService?: IStorageService
+    storage?: EventDrivenStorage
   ) {
-    this.storageService = storageService || new StorageService(this.eventBus)
+    this.storage = storage || new EventDrivenStorage()
     this.config = {
       milestoneThresholds: {
         accuracy: [0.7, 0.8, 0.9, 0.95],
@@ -203,7 +203,7 @@ export class ProgressAnalyticsModule
    */
   async getWeakAreas(userId: string): Promise<WeakArea[]> {
     try {
-      const performanceData = await this.storageService.get<PerformanceData[]>(
+      const performanceData = await this.storage.read<PerformanceData[]>(
         `analytics:performance:${userId}`
       )
 
@@ -297,7 +297,7 @@ export class ProgressAnalyticsModule
 
   async getMilestoneHistory(userId: string): Promise<Milestone[]> {
     try {
-      const milestones = await this.storageService.get<Milestone[]>(
+      const milestones = await this.storage.read<Milestone[]>(
         `analytics:milestones:${userId}`
       )
       return Array.isArray(milestones) ? milestones : []
@@ -353,7 +353,7 @@ export class ProgressAnalyticsModule
    */
   async getPracticeConsistency(userId: string): Promise<ConsistencyMetrics> {
     try {
-      const practiceData = await this.storageService.get<{
+      const practiceData = await this.storage.read<{
         sessions: SessionData[]
       }>(`analytics:practice:${userId}`)
 
@@ -413,8 +413,7 @@ export class ProgressAnalyticsModule
 
     // Store performance data for analysis
     const key = `analytics:performance:${userId}`
-    const existing =
-      (await this.storageService.get<PerformanceData[]>(key)) || []
+    const existing = (await this.storage.read<PerformanceData[]>(key)) || []
 
     // Convert noteData to proper performance data
     if (noteData && typeof noteData === 'object' && 'type' in noteData) {
@@ -425,7 +424,7 @@ export class ProgressAnalyticsModule
       })
     }
 
-    await this.storageService.set(key, existing)
+    await this.storage.write(key, existing)
   }
 
   private async handleSessionEnded(event: EventPayload): Promise<void> {
@@ -468,7 +467,7 @@ export class ProgressAnalyticsModule
     userId: string,
     timeRange: TimeRange
   ): Promise<SessionData[]> {
-    const sessions = await this.storageService.get<SessionData[]>(
+    const sessions = await this.storage.read<SessionData[]>(
       `analytics:sessions:${userId}`
     )
 
@@ -586,7 +585,7 @@ export class ProgressAnalyticsModule
     const existing = await this.getMilestoneHistory(userId)
     existing.push(milestone)
 
-    await this.storageService.set(key, existing)
+    await this.storage.write(key, existing)
   }
 
   private async getRecentSessions(
@@ -594,7 +593,7 @@ export class ProgressAnalyticsModule
     days: number
   ): Promise<SessionData[]> {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
-    const sessions = await this.storageService.get<SessionData[]>(
+    const sessions = await this.storage.read<SessionData[]>(
       `analytics:sessions:${userId}`
     )
 

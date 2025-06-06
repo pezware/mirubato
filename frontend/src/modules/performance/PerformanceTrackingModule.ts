@@ -2,9 +2,8 @@ import {
   ModuleInterface,
   ModuleHealth,
   EventBus,
-  StorageService,
-  IStorageService,
   EventPayload,
+  EventDrivenStorage,
 } from '../core'
 import {
   PerformanceData,
@@ -28,7 +27,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageService: IStorageService
+  private storage: EventDrivenStorage
   private config: PerformanceConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -43,10 +42,10 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   constructor(
     config?: Partial<PerformanceConfig>,
-    storageService?: IStorageService
+    storage?: EventDrivenStorage
   ) {
     this.eventBus = EventBus.getInstance()
-    this.storageService = storageService || new StorageService(this.eventBus)
+    this.storage = storage || new EventDrivenStorage()
 
     this.config = {
       timingToleranceMs: 50,
@@ -693,14 +692,13 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   async getSessionData(sessionId: string): Promise<PerformanceData[]> {
     const allData =
-      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
-      []
+      (await this.storage.read<PerformanceData[]>('performance_data')) || []
     return allData.filter(d => d.sessionId === sessionId)
   }
 
   async getAnalysis(sessionId: string): Promise<PerformanceAnalysis | null> {
     const allAnalyses =
-      (await this.storageService.get<PerformanceAnalysis[]>(
+      (await this.storage.read<PerformanceAnalysis[]>(
         'performance_analyses'
       )) || []
     return allAnalyses.find(a => a.sessionId === sessionId) || null
@@ -708,8 +706,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   async getUserStats(userId: string): Promise<PerformanceMetrics> {
     const allData =
-      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
-      []
+      (await this.storage.read<PerformanceData[]>('performance_data')) || []
     const userData = allData.filter(d => d.userId === userId)
     return this.calculateOverallMetrics(userData)
   }
@@ -735,11 +732,10 @@ export class PerformanceTrackingModule implements ModuleInterface {
     if (this.currentSessionData.length === 0) return
 
     const existingData =
-      (await this.storageService.get<PerformanceData[]>('performance_data')) ||
-      []
+      (await this.storage.read<PerformanceData[]>('performance_data')) || []
     const updatedData = [...existingData, ...this.currentSessionData]
 
-    await this.storageService.set('performance_data', updatedData)
+    await this.storage.write('performance_data', updatedData)
 
     // Emit sync event
     await this.eventBus.publish({
@@ -756,18 +752,18 @@ export class PerformanceTrackingModule implements ModuleInterface {
 
   private async saveAnalysis(analysis: PerformanceAnalysis): Promise<void> {
     const existingAnalyses =
-      (await this.storageService.get<PerformanceAnalysis[]>(
+      (await this.storage.read<PerformanceAnalysis[]>(
         'performance_analyses'
       )) || []
     const updatedAnalyses = [...existingAnalyses, analysis]
 
-    await this.storageService.set('performance_analyses', updatedAnalyses)
+    await this.storage.write('performance_analyses', updatedAnalyses)
   }
 
   // Testing helpers
   async clearAllData(): Promise<void> {
-    await this.storageService.remove('performance_data')
-    await this.storageService.remove('performance_analyses')
+    await this.storage.delete('performance_data')
+    await this.storage.delete('performance_analyses')
   }
 
   getCurrentSessionData(): PerformanceData[] {

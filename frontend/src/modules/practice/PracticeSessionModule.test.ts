@@ -1,12 +1,13 @@
 import { PracticeSessionModule } from './PracticeSessionModule'
-import { EventBus, MockStorageService, SessionStatus } from '../core'
+import { EventBus, SessionStatus } from '../core'
+import { MockEventDrivenStorage } from '../core/MockEventDrivenStorage'
 import { PracticeSession, SessionTemplate } from './types'
 import { MistakeType } from '../core/sharedTypes'
 import { Instrument } from '../../../../shared/types'
 
 describe('PracticeSessionModule', () => {
   let practiceModule: PracticeSessionModule
-  let mockStorage: MockStorageService
+  let mockStorage: MockEventDrivenStorage
   let eventBus: EventBus
   let publishSpy: jest.SpyInstance
 
@@ -16,7 +17,7 @@ describe('PracticeSessionModule', () => {
     publishSpy = jest.spyOn(eventBus, 'publish')
 
     // Use mock storage service for tests
-    mockStorage = new MockStorageService()
+    mockStorage = new MockEventDrivenStorage()
 
     practiceModule = new PracticeSessionModule(
       {
@@ -32,7 +33,8 @@ describe('PracticeSessionModule', () => {
       await practiceModule.shutdown()
     }
     if (mockStorage) {
-      mockStorage.destroy()
+      mockStorage.clear()
+      mockStorage.cleanup()
     }
     jest.clearAllMocks()
     jest.clearAllTimers()
@@ -78,7 +80,7 @@ describe('PracticeSessionModule', () => {
       }
 
       // Set up storage state directly
-      await mockStorage.set('practice_sessions', [activeSession])
+      await mockStorage.write('practice_sessions', [activeSession])
 
       await practiceModule.initialize()
 
@@ -110,7 +112,7 @@ describe('PracticeSessionModule', () => {
       }
 
       // Set up storage state directly
-      await mockStorage.set('practice_sessions', [oldSession])
+      await mockStorage.write('practice_sessions', [oldSession])
 
       await practiceModule.initialize()
 
@@ -149,7 +151,7 @@ describe('PracticeSessionModule', () => {
       )
 
       // Session should be paused in storage
-      const sessions = await mockStorage.get('practice_sessions')
+      const sessions = await mockStorage.read('practice_sessions')
       expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -305,7 +307,7 @@ describe('PracticeSessionModule', () => {
       await new Promise(resolve => setTimeout(resolve, 150))
 
       // Check that session was saved
-      const sessions = await mockStorage.get('practice_sessions')
+      const sessions = await mockStorage.read('practice_sessions')
       expect(sessions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -484,7 +486,7 @@ describe('PracticeSessionModule', () => {
       ]
 
       // Set up storage state
-      await mockStorage.set('practice_sessions', mockSessions)
+      await mockStorage.write('practice_sessions', mockSessions)
 
       const history = await practiceModule.getSessionHistory(10, 0)
 
@@ -512,7 +514,7 @@ describe('PracticeSessionModule', () => {
       }
 
       // Set up storage state
-      await mockStorage.set('practice_stats_user_123', mockStats)
+      await mockStorage.write('practice_stats_user_123', mockStats)
 
       const stats = await practiceModule.getStats('user_123')
 
@@ -537,7 +539,7 @@ describe('PracticeSessionModule', () => {
           },
         },
       }
-      await mockStorage.set('practice_stats_user_123', existingStats)
+      await mockStorage.write('practice_stats_user_123', existingStats)
 
       await practiceModule.startSession(
         'music_123',
@@ -556,7 +558,7 @@ describe('PracticeSessionModule', () => {
       await practiceModule.endSession()
 
       // Check stats were updated
-      const savedStats = await mockStorage.get('practice_stats_user_123')
+      const savedStats = await mockStorage.read('practice_stats_user_123')
       expect(savedStats).toEqual(
         expect.objectContaining({
           totalSessions: 6,
@@ -590,7 +592,7 @@ describe('PracticeSessionModule', () => {
 
       await practiceModule.saveTemplate(template)
 
-      const savedTemplates = await mockStorage.get('session_templates')
+      const savedTemplates = await mockStorage.read('session_templates')
       expect(savedTemplates).toEqual([template])
     })
 
@@ -606,7 +608,7 @@ describe('PracticeSessionModule', () => {
       }
 
       // Set up storage state
-      await mockStorage.set('session_templates', [template])
+      await mockStorage.write('session_templates', [template])
 
       await practiceModule.applyTemplate('template_1')
 
@@ -625,7 +627,7 @@ describe('PracticeSessionModule', () => {
 
     it('should throw error for non-existent template', async () => {
       // Set up empty storage state
-      await mockStorage.set('session_templates', [])
+      await mockStorage.write('session_templates', [])
 
       await expect(
         practiceModule.applyTemplate('non_existent')
@@ -734,14 +736,14 @@ describe('PracticeSessionModule', () => {
     it('should clear session history', async () => {
       await practiceModule.clearHistory()
 
-      const sessions = await mockStorage.get('practice_sessions')
+      const sessions = await mockStorage.read('practice_sessions')
       expect(sessions).toEqual([])
     })
 
     it('should clear user stats', async () => {
       await practiceModule.clearStats('user_123')
 
-      const stats = await mockStorage.get('practice_stats_user_123')
+      const stats = await mockStorage.read('practice_stats_user_123')
       expect(stats).toBeNull()
     })
   })
