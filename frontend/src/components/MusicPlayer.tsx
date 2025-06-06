@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from 'tone'
 import { useAudioManager } from '../contexts/AudioContext'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('MusicPlayer')
 
 export interface PlayableNote {
   note: string
@@ -88,7 +91,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
         await Tone.start()
       } catch (error) {
-        console.error('Failed to initialize audio:', error)
+        logger.warn('Failed to initialize audio', { error })
         setIsLoading(false)
         return
       }

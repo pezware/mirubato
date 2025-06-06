@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('VersionInfo')
 
 interface VersionData {
   buildTime: string
@@ -15,7 +18,7 @@ export function VersionInfo() {
     fetch('/version.json')
       .then(res => res.json())
       .then(data => setVersion(data))
-      .catch(err => console.error('Failed to load version info:', err))
+      .catch(err => logger.debug('Failed to load version info', { error: err }))
   }, [])
 
   if (!version) return null

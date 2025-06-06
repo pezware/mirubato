@@ -7,12 +7,15 @@ import {
   LOGOUT,
 } from '../graphql/queries/auth'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
+import { createLogger } from '../utils/logger'
 import {
   setAuthTokens,
   clearAuthTokens,
   isAuthenticated as checkIsAuthenticated,
 } from '../lib/apollo/client'
 import { localStorageService, LocalUserData } from '../services/localStorage'
+
+const logger = createLogger('AuthContext')
 
 interface User {
   id: string
@@ -211,14 +214,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const pendingData = localStorageService.getPendingSyncData()
 
       // TODO: Implement actual sync mutations
-      console.log('Syncing to cloud:', pendingData)
+      logger.info('Syncing to cloud', {
+        sessionCount: pendingData.sessions.length,
+        logCount: pendingData.logs.length,
+      })
 
       // For now, just mark as synced
       const sessionIds = pendingData.sessions.map(s => s.id)
       const logIds = pendingData.logs.map(l => l.id)
       localStorageService.markAsSynced(sessionIds, logIds)
     } catch (error) {
-      console.error('Sync failed:', error)
+      logger.error('Sync failed', error)
       throw error
     }
   }, [user, navigate])

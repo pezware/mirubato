@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { audioManager } from '../utils/audioManager'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('PianoChord')
 
 interface PianoChordProps {
   className?: string
@@ -20,7 +23,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
+
     // Set up styling
     ctx.strokeStyle = '#52525b' // mirubato-wood-600
     ctx.fillStyle = '#52525b'
@@ -30,7 +33,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
     const staffTop = 20
     const lineSpacing = 8
     for (let i = 0; i < 5; i++) {
-      const y = staffTop + (i * lineSpacing)
+      const y = staffTop + i * lineSpacing
       ctx.beginPath()
       ctx.moveTo(10, y)
       ctx.lineTo(140, y)
@@ -48,50 +51,53 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
     ctx.moveTo(noteX - 10, staffTop + 40)
     ctx.lineTo(noteX + 10, staffTop + 40)
     ctx.stroke()
-    
+
     // Draw note heads
     ctx.beginPath()
     // C note
     ctx.ellipse(noteX, staffTop + 40, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
-    
+
     // E note (bottom line)
     ctx.beginPath()
     ctx.ellipse(noteX + 25, staffTop + 32, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
-    
+
     // G note (second line)
     ctx.beginPath()
     ctx.ellipse(noteX + 50, staffTop + 24, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
   }, [])
 
-  const handleKeyPress = useCallback(async (note: string) => {
-    console.log('Piano key pressed:', note)
-    
-    try {
-      // Add to pressed keys
-      setPressedKeys(prev => new Set(prev).add(note))
-      
-      // Play the individual note
-      await audioManager.playNote(note, '2n')
-      
-      if (!hasPlayed) {
-        setHasPlayed(true)
-      }
+  const handleKeyPress = useCallback(
+    async (note: string) => {
+      logger.debug('Piano key pressed', { note })
 
-      // Remove from pressed keys after a delay
-      setTimeout(() => {
-        setPressedKeys(prev => {
-          const next = new Set(prev)
-          next.delete(note)
-          return next
-        })
-      }, 150)
-    } catch (error) {
-      console.error('Failed to play note:', error)
-    }
-  }, [hasPlayed])
+      try {
+        // Add to pressed keys
+        setPressedKeys(prev => new Set(prev).add(note))
+
+        // Play the individual note
+        await audioManager.playNote(note, '2n')
+
+        if (!hasPlayed) {
+          setHasPlayed(true)
+        }
+
+        // Remove from pressed keys after a delay
+        setTimeout(() => {
+          setPressedKeys(prev => {
+            const next = new Set(prev)
+            next.delete(note)
+            return next
+          })
+        }, 150)
+      } catch (error) {
+        logger.error('Failed to play note', error, { note })
+      }
+    },
+    [hasPlayed]
+  )
 
   const pianoKeys = [
     { note: 'C4', label: '', isWhite: true, position: 0 },
@@ -105,7 +111,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
     <div className={`flex flex-col items-center ${className}`}>
       {/* Musical notation */}
       <div className="mb-4">
-        <canvas 
+        <canvas
           ref={canvasRef}
           width={150}
           height={80}
@@ -115,7 +121,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
 
       {/* Piano keys */}
       <div className="flex relative">
-        {pianoKeys.map((key) => (
+        {pianoKeys.map(key => (
           <button
             key={key.note}
             onClick={() => handleKeyPress(key.note)}
@@ -137,16 +143,14 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
             )}
           </button>
         ))}
-        
+
         {/* Black keys (C# and D# for visual accuracy) */}
         <div className="absolute top-0 left-9 w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
         <div className="absolute top-0 left-[60px] w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
       </div>
 
       {/* Chord name hint */}
-      <p className="mt-4 text-mirubato-wood-500 text-sm">
-        C major
-      </p>
+      <p className="mt-4 text-mirubato-wood-500 text-sm">C major</p>
 
       {/* Success message */}
       {hasPlayed && (

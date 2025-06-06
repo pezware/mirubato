@@ -4,13 +4,21 @@ import { VersionInfo } from './VersionInfo'
 // Mock fetch globally
 global.fetch = jest.fn()
 
+// Mock the logger
+jest.mock('../utils/logger', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}))
+
 describe('VersionInfo', () => {
   const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
     jest.clearAllMocks()
-    // Mock console.error to reduce noise
-    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -57,13 +65,8 @@ describe('VersionInfo', () => {
     const { container } = render(<VersionInfo />)
 
     await waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith(
-        'Failed to load version info:',
-        error
-      )
+      expect(container.firstChild).toBeNull()
     })
-
-    expect(container.firstChild).toBeNull()
   })
 
   it('has correct styling', async () => {
@@ -147,10 +150,8 @@ describe('VersionInfo', () => {
     const { container } = render(<VersionInfo />)
 
     await waitFor(() => {
-      expect(console.error).toHaveBeenCalled()
+      expect(container.firstChild).toBeNull()
     })
-
-    expect(container.firstChild).toBeNull()
   })
 
   it('only fetches version info once on mount', () => {

@@ -9,6 +9,16 @@ jest.mock('../utils/audioManager', () => ({
   },
 }))
 
+// Mock the logger
+jest.mock('../utils/logger', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}))
+
 describe('PianoKey', () => {
   const mockPlayNote = audioManager.playNote as jest.MockedFunction<
     typeof audioManager.playNote
@@ -120,12 +130,12 @@ describe('PianoKey', () => {
     const button = screen.getByRole('button')
     fireEvent.click(button)
 
-    await waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith('Failed to play note:', error)
-    })
-
     // Should clear initialization state on error
-    expect(screen.queryByText('Initializing audio...')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Initializing audio...')
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('adds ring styling after first play', async () => {

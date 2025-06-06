@@ -1,5 +1,8 @@
 import React, { useState, useCallback } from 'react'
 import { audioManager } from '../utils/audioManager'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('PianoKey')
 
 interface PianoKeyProps {
   note: string
@@ -12,21 +15,21 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
   const [isInitializing, setIsInitializing] = useState(false)
 
   const handleKeyPress = useCallback(async () => {
-    console.log('Piano key clicked!')
-    
+    logger.debug('Piano key clicked', { note })
+
     try {
       setIsPressed(true)
-      
+
       // Show initializing state on first click
       if (!hasPlayed) {
         setIsInitializing(true)
       }
-      
-      console.log('Attempting to play note:', note)
-      
+
+      logger.debug('Attempting to play note', { note })
+
       // Play the note - this will initialize audio on first click
       await audioManager.playNote(note)
-      
+
       // Mark that we've played at least once (for visual feedback)
       if (!hasPlayed) {
         setHasPlayed(true)
@@ -37,7 +40,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
         setIsPressed(false)
       }, 150)
     } catch (error) {
-      console.error('Failed to play note:', error)
+      logger.error('Failed to play note', error, { note })
       setIsInitializing(false)
     } finally {
       setIsInitializing(false)
@@ -65,7 +68,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
         <span className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-mirubato-wood-600 text-sm font-medium">
           C
         </span>
-        
+
         {/* Visual feedback indicator */}
         {isPressed && (
           <div className="absolute inset-0 bg-mirubato-leaf-400/10 rounded-b-lg animate-pulse" />
@@ -78,7 +81,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
           Beautiful! You just played a C major chord
         </p>
       )}
-      
+
       {/* Loading indicator */}
       {isInitializing && (
         <p className="mt-4 text-mirubato-wood-400 text-sm animate-pulse">

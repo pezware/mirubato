@@ -289,6 +289,7 @@ describe('Debug Page', () => {
   })
 
   it('handles backend health fetch failure gracefully', async () => {
+    // eslint-disable-next-line no-extra-semi
     ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/health')) {
         return Promise.reject(new Error('Network error'))
