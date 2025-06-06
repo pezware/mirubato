@@ -63,11 +63,7 @@ jest.mock('../components/ExerciseGenerator/ExercisePreview', () => ({
   ),
 }))
 
-jest.mock('../components/ProtectedRoute', () => ({
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}))
+// ProtectedRoute is no longer used in ExerciseLibrary
 
 describe('ExerciseLibrary', () => {
   const mockUser = {
@@ -382,8 +378,8 @@ describe('ExerciseLibrary', () => {
     })
   })
 
-  it('shows login message when user is not authenticated', async () => {
-    // Override the useAuth mock for this test
+  it('shows waiting message when user session is not ready', async () => {
+    // Override the useAuth mock for this test - user still null after initialization
     ;(useAuth as jest.Mock).mockReturnValue({
       user: null,
       loading: false,
@@ -393,12 +389,17 @@ describe('ExerciseLibrary', () => {
 
     renderExerciseLibrary()
 
+    // Wait for module to initialize
+    await waitFor(() => {
+      expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
+    })
+
     const generateButton = screen.getByTestId('generate-button')
     fireEvent.click(generateButton)
 
     await waitFor(() => {
       expect(
-        screen.getByText('Please log in to generate exercises')
+        screen.getByText('Please wait for user session to initialize.')
       ).toBeInTheDocument()
     })
   })
@@ -424,5 +425,47 @@ describe('ExerciseLibrary', () => {
     unmount()
 
     expect(mockSheetMusicModule.destroy).toHaveBeenCalled()
+  })
+
+  it('works properly for anonymous users', async () => {
+    // Mock an anonymous user with an ID
+    const anonymousUser = {
+      id: 'anonymous-456',
+      displayName: null,
+      primaryInstrument: 'PIANO' as const,
+      isAnonymous: true,
+    }
+
+    ;(useAuth as jest.Mock).mockReturnValue({
+      user: anonymousUser,
+      loading: false,
+      isAuthenticated: false,
+      isAnonymous: true,
+    })
+
+    renderExerciseLibrary()
+
+    // Wait for module to initialize
+    await waitFor(() => {
+      expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
+    })
+
+    // Should be able to generate exercises
+    const generateButton = screen.getByTestId('generate-button')
+    fireEvent.click(generateButton)
+
+    await waitFor(() => {
+      expect(mockSheetMusicModule.generateExercise).toHaveBeenCalledWith({
+        type: ExerciseType.SIGHT_READING,
+        keySignature: KeySignature.C_MAJOR,
+        timeSignature: TimeSignature.FOUR_FOUR,
+        clef: Clef.TREBLE,
+        range: { lowest: 'C4', highest: 'C6' },
+        difficulty: 5,
+        measures: 8,
+        tempo: 120,
+        userId: 'anonymous-456',
+      })
+    })
   })
 })
