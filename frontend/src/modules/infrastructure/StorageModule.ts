@@ -5,6 +5,11 @@ import {
   StorageRequestEvent,
   StorageResponseEvent,
   EventPayload,
+  StorageReadEventData,
+  StorageWriteEventData,
+  StorageDeleteEventData,
+  StorageGetKeysEventData,
+  StorageResponseEventData,
 } from '../core'
 import { StorageAdapter, StorageConfig, StorageMetadata } from './types'
 
@@ -155,6 +160,21 @@ export class StorageModule implements ModuleInterface {
       this.eventBus.subscribe(
         'storage:request',
         this.handleStorageRequest.bind(this)
+      )
+
+      // Subscribe to new event-driven storage events
+      this.eventBus.subscribe('storage:read', this.handleStorageRead.bind(this))
+      this.eventBus.subscribe(
+        'storage:write',
+        this.handleStorageWrite.bind(this)
+      )
+      this.eventBus.subscribe(
+        'storage:delete',
+        this.handleStorageDelete.bind(this)
+      )
+      this.eventBus.subscribe(
+        'storage:getKeys',
+        this.handleStorageGetKeys.bind(this)
       )
 
       // Test storage availability
@@ -440,5 +460,116 @@ export class StorageModule implements ModuleInterface {
       available: 0,
       quota: 0,
     }
+  }
+
+  // New event-driven storage handlers
+  private async handleStorageRead(event: EventPayload): Promise<void> {
+    const request = event.data as StorageReadEventData
+    let response: StorageResponseEventData
+
+    try {
+      const data = await this.adapter.get(request.key)
+      response = {
+        requestId: request.requestId,
+        success: true,
+        data: data !== null ? data : request.defaultValue,
+      }
+    } catch (error) {
+      response = {
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown storage error',
+      }
+    }
+
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'storage:response',
+      data: response,
+      metadata: { version: this.version },
+    })
+  }
+
+  private async handleStorageWrite(event: EventPayload): Promise<void> {
+    const request = event.data as StorageWriteEventData
+    let response: StorageResponseEventData
+
+    try {
+      await this.adapter.set(request.key, request.data, request.ttl)
+      response = {
+        requestId: request.requestId,
+        success: true,
+      }
+    } catch (error) {
+      response = {
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown storage error',
+      }
+    }
+
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'storage:response',
+      data: response,
+      metadata: { version: this.version },
+    })
+  }
+
+  private async handleStorageDelete(event: EventPayload): Promise<void> {
+    const request = event.data as StorageDeleteEventData
+    let response: StorageResponseEventData
+
+    try {
+      await this.adapter.remove(request.key)
+      response = {
+        requestId: request.requestId,
+        success: true,
+      }
+    } catch (error) {
+      response = {
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown storage error',
+      }
+    }
+
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'storage:response',
+      data: response,
+      metadata: { version: this.version },
+    })
+  }
+
+  private async handleStorageGetKeys(event: EventPayload): Promise<void> {
+    const request = event.data as StorageGetKeysEventData
+    let response: StorageResponseEventData
+
+    try {
+      const allKeys = await this.adapter.getKeys()
+      const filteredKeys = request.prefix
+        ? allKeys.filter(key => key.startsWith(request.prefix!))
+        : allKeys
+
+      response = {
+        requestId: request.requestId,
+        success: true,
+        data: filteredKeys,
+      }
+    } catch (error) {
+      response = {
+        requestId: request.requestId,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown storage error',
+      }
+    }
+
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'storage:response',
+      data: response,
+      metadata: { version: this.version },
+    })
   }
 }

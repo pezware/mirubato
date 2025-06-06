@@ -1,12 +1,12 @@
 import { PracticeLoggerModule } from './PracticeLoggerModule'
-import { EventBus, MockStorageService } from '../core'
+import { EventBus, MockEventDrivenStorage } from '../core'
 import type { LogbookEntry, Goal, LogFilters, ExportOptions } from './types'
 import type { EventPayload } from '../core/types'
 
 describe('PracticeLoggerModule', () => {
   let logger: PracticeLoggerModule
   let eventBus: EventBus
-  let mockStorage: MockStorageService
+  let mockStorage: MockEventDrivenStorage
   let publishSpy: jest.SpyInstance
   let subscribeSpy: jest.SpyInstance
 
@@ -55,7 +55,7 @@ describe('PracticeLoggerModule', () => {
     subscribeSpy = jest.spyOn(eventBus, 'subscribe')
 
     // Use mock storage service for tests
-    mockStorage = new MockStorageService()
+    mockStorage = new MockEventDrivenStorage()
 
     logger = new PracticeLoggerModule(
       {
@@ -71,7 +71,7 @@ describe('PracticeLoggerModule', () => {
       await logger.shutdown()
     }
     if (mockStorage) {
-      mockStorage.destroy()
+      mockStorage.clear()
     }
     jest.clearAllMocks()
     EventBus.resetInstance()
@@ -147,7 +147,7 @@ describe('PracticeLoggerModule', () => {
       expect(entry).toMatchObject(testEntry)
       expect(entry.id).toBeDefined()
       // Check that entry was saved to storage
-      const savedEntry = await mockStorage.get(`logbook:${entry.id}`)
+      const savedEntry = await mockStorage.read(`logbook:${entry.id}`)
       expect(savedEntry).toEqual(entry)
       expect(publishSpy).toHaveBeenCalledWith({
         source: 'PracticeLoggerModule',
@@ -177,7 +177,7 @@ describe('PracticeLoggerModule', () => {
       expect(updated.notes).toBe('Updated notes')
       expect(updated.mood).toBe('excited')
       // Entry should have been updated in storage
-      const updatedEntry = await mockStorage.get<LogbookEntry>(
+      const updatedEntry = await mockStorage.read<LogbookEntry>(
         `logbook:${entry.id}`
       )
       expect(updatedEntry?.notes).toBe('Updated notes')
@@ -195,7 +195,7 @@ describe('PracticeLoggerModule', () => {
       await logger.deleteLogEntry(entry.id)
 
       // Entry should have been deleted from storage
-      const deletedEntry = await mockStorage.get(`logbook:${entry.id}`)
+      const deletedEntry = await mockStorage.read(`logbook:${entry.id}`)
       expect(deletedEntry).toBeNull()
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -213,7 +213,7 @@ describe('PracticeLoggerModule', () => {
       ]
       // Set up storage state directly
       for (const entry of mockEntries) {
-        await mockStorage.set(`logbook:${entry.id}`, entry)
+        await mockStorage.write(`logbook:${entry.id}`, entry)
       }
 
       const filters: LogFilters = {
@@ -238,7 +238,7 @@ describe('PracticeLoggerModule', () => {
       ]
       // Set up storage state directly
       for (const entry of mockEntries) {
-        await mockStorage.set(`logbook:${entry.id}`, entry)
+        await mockStorage.write(`logbook:${entry.id}`, entry)
       }
 
       const filters: LogFilters = {
@@ -266,7 +266,7 @@ describe('PracticeLoggerModule', () => {
       expect(goal.createdAt).toBeDefined()
       expect(goal.updatedAt).toBeDefined()
       // Check that goal was saved to storage
-      const savedGoal = await mockStorage.get(`goal:${goal.id}`)
+      const savedGoal = await mockStorage.read(`goal:${goal.id}`)
       expect(savedGoal).toEqual(goal)
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -349,7 +349,7 @@ describe('PracticeLoggerModule', () => {
       ]
       // Set up storage state directly
       for (const goal of mockGoals) {
-        await mockStorage.set(`goal:${goal.id}`, goal)
+        await mockStorage.write(`goal:${goal.id}`, goal)
       }
 
       const activeGoals = await logger.getActiveGoals(testUserId)
@@ -369,7 +369,7 @@ describe('PracticeLoggerModule', () => {
 
     it('should export logs as JSON', async () => {
       // Set up storage state directly
-      await mockStorage.set('logbook:1', { ...testEntry, id: '1' })
+      await mockStorage.write('logbook:1', { ...testEntry, id: '1' })
       // Entry should already be in storage from create
 
       const exportOptions: ExportOptions = {
@@ -392,7 +392,7 @@ describe('PracticeLoggerModule', () => {
 
     it('should export logs as CSV', async () => {
       // Set up storage state directly
-      await mockStorage.set('logbook:1', { ...testEntry, id: '1' })
+      await mockStorage.write('logbook:1', { ...testEntry, id: '1' })
       // Entry should already be in storage from create
 
       const exportOptions: ExportOptions = {
@@ -428,7 +428,7 @@ describe('PracticeLoggerModule', () => {
       ]
       // Set up storage state directly
       for (const entry of mockEntries) {
-        await mockStorage.set(`logbook:${entry.id}`, entry)
+        await mockStorage.write(`logbook:${entry.id}`, entry)
       }
 
       const report = await logger.generatePracticeReport({
@@ -455,7 +455,7 @@ describe('PracticeLoggerModule', () => {
     it('should include goals in export when requested', async () => {
       // First call for log entries
       // Set up storage state directly
-      await mockStorage.set('logbook:1', { ...testEntry, id: '1' })
+      await mockStorage.write('logbook:1', { ...testEntry, id: '1' })
       // Entry should already be in storage from create
 
       // Second call for goals - a goal is already created in beforeEach
@@ -526,7 +526,7 @@ describe('PracticeLoggerModule', () => {
       // Check if any entry has the session ID
       let foundSessionEntry = false
       for (const key of logbookKeys) {
-        const entry = await mockStorage.get<LogbookEntry>(key)
+        const entry = await mockStorage.read<LogbookEntry>(key)
         if (entry && entry.sessionId === 'session-123') {
           foundSessionEntry = true
           break
@@ -567,7 +567,7 @@ describe('PracticeLoggerModule', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Goal progress should have been updated
-      const updatedGoal = await mockStorage.get<Goal>(`goal:${goal.id}`)
+      const updatedGoal = await mockStorage.read<Goal>(`goal:${goal.id}`)
       expect(updatedGoal).toBeDefined()
       expect(updatedGoal?.progress).toBeGreaterThan(goal.progress)
     })
@@ -580,7 +580,7 @@ describe('PracticeLoggerModule', () => {
 
     it('should handle storage errors gracefully', async () => {
       jest
-        .spyOn(mockStorage, 'set')
+        .spyOn(mockStorage, 'write')
         .mockRejectedValueOnce(new Error('Storage failed'))
 
       try {
@@ -646,7 +646,7 @@ describe('PracticeLoggerModule', () => {
       }))
       // Set up storage state directly
       for (const entry of mockEntries) {
-        await mockStorage.set(`logbook:${entry.id}`, entry)
+        await mockStorage.write(`logbook:${entry.id}`, entry)
       }
 
       const filters: LogFilters = {

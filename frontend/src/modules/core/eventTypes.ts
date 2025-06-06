@@ -66,3 +66,41 @@ export interface StorageOperationEventData {
   key: string
   data: unknown
 }
+
+// Enhanced storage event types for true event-driven storage
+export interface StorageReadEventData {
+  key: string
+  requestId: string
+  defaultValue?: unknown
+}
+
+export interface StorageWriteEventData {
+  key: string
+  data: unknown
+  requestId: string
+  ttl?: number
+}
+
+export interface StorageDeleteEventData {
+  key: string
+  requestId: string
+}
+
+export interface StorageGetKeysEventData {
+  requestId: string
+  prefix?: string
+}
+
+export interface StorageResponseEventData {
+  requestId: string
+  success: boolean
+  data?: unknown
+  error?: string
+}
+
+export interface StorageErrorEventData {
+  operation: 'read' | 'write' | 'delete' | 'clear'
+  key?: string
+  error: string
+  requestId?: string
+}
