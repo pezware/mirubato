@@ -114,6 +114,7 @@ describe('Debug Page', () => {
     jest.clearAllMocks()
 
     // Mock EventBus.getInstance with required methods
+    // eslint-disable-next-line no-extra-semi
     ;(EventBus.getInstance as jest.Mock).mockReturnValue({
       ...mockEventBus,
       subscribe: jest.fn(),
@@ -121,14 +122,19 @@ describe('Debug Page', () => {
     })
 
     // Mock module constructors
+    // eslint-disable-next-line no-extra-semi
     ;(StorageModule as jest.Mock).mockImplementation(() => mockStorageModule)
+    // eslint-disable-next-line no-extra-semi
     ;(SyncModule as jest.Mock).mockImplementation(() => mockSyncModule)
+    // eslint-disable-next-line no-extra-semi
     ;(PracticeSessionModule as jest.Mock).mockImplementation(
       () => mockPracticeModule
     )
+    // eslint-disable-next-line no-extra-semi
     ;(PerformanceTrackingModule as jest.Mock).mockImplementation(
       () => mockPerformanceModule
     )
+    // eslint-disable-next-line no-extra-semi
     ;(ProgressAnalyticsModule as jest.Mock).mockImplementation(
       () => mockAnalyticsModule
     )
@@ -147,6 +153,7 @@ describe('Debug Page', () => {
     })
 
     // Mock fetch responses
+    // eslint-disable-next-line no-extra-semi
     ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/health')) {
         return Promise.resolve({
@@ -289,6 +296,7 @@ describe('Debug Page', () => {
   })
 
   it('handles backend health fetch failure gracefully', async () => {
+    // eslint-disable-next-line no-extra-semi
     ;(global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/health')) {
         return Promise.reject(new Error('Network error'))
