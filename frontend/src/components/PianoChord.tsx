@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { audioManager } from '../utils/audioManager'
 import { createLogger } from '../utils/logger'
+import { theme } from '../utils/theme'
+import styles from './PianoChord.module.css'
 
 const logger = createLogger('PianoChord')
 
@@ -30,8 +32,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
     ctx.lineWidth = 1
 
     // Draw staff lines
-    const staffTop = 20
-    const lineSpacing = 8
+    const { staffTop, lineSpacing, noteX, notePositions } = theme.piano.notation
     for (let i = 0; i < 5; i++) {
       const y = staffTop + i * lineSpacing
       ctx.beginPath()
@@ -46,26 +47,25 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
 
     // Draw notes for C major chord
     // C (on ledger line below staff)
-    const noteX = 60
     ctx.beginPath()
-    ctx.moveTo(noteX - 10, staffTop + 40)
-    ctx.lineTo(noteX + 10, staffTop + 40)
+    ctx.moveTo(noteX - 10, staffTop + notePositions.C)
+    ctx.lineTo(noteX + 10, staffTop + notePositions.C)
     ctx.stroke()
 
     // Draw note heads
     ctx.beginPath()
     // C note
-    ctx.ellipse(noteX, staffTop + 40, 5, 4, 0, 0, 2 * Math.PI)
+    ctx.ellipse(noteX, staffTop + notePositions.C, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
 
     // E note (bottom line)
     ctx.beginPath()
-    ctx.ellipse(noteX + 25, staffTop + 32, 5, 4, 0, 0, 2 * Math.PI)
+    ctx.ellipse(noteX + 25, staffTop + notePositions.E, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
 
     // G note (second line)
     ctx.beginPath()
-    ctx.ellipse(noteX + 50, staffTop + 24, 5, 4, 0, 0, 2 * Math.PI)
+    ctx.ellipse(noteX + 50, staffTop + notePositions.G, 5, 4, 0, 0, 2 * Math.PI)
     ctx.fill()
   }, [])
 
@@ -91,7 +91,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
             next.delete(note)
             return next
           })
-        }, 150)
+        }, parseInt(theme.animation.duration.fast))
       } catch (error) {
         logger.error('Failed to play note', error, { note })
       }
@@ -113,8 +113,8 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
       <div className="mb-4">
         <canvas
           ref={canvasRef}
-          width={150}
-          height={80}
+          width={theme.sizes.piano.canvas.width}
+          height={theme.sizes.piano.canvas.height}
           className="bg-white/50 rounded-lg p-2"
         />
       </div>
@@ -145,8 +145,8 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
         ))}
 
         {/* Black keys (C# and D# for visual accuracy) */}
-        <div className="absolute top-0 left-9 w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
-        <div className="absolute top-0 left-[60px] w-6 h-24 bg-mirubato-wood-800 rounded-b-sm pointer-events-none" />
+        <div className={`${styles.blackKey} ${styles.blackKeyCSharp}`} />
+        <div className={`${styles.blackKey} ${styles.blackKeyDSharp}`} />
       </div>
 
       {/* Chord name hint */}
