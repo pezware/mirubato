@@ -7,12 +7,12 @@ import {
   TimeSignature,
   Clef,
   RepertoireStatus,
-  ExerciseParameters,
   GeneratedExercise,
   UserRepertoire,
   PerformanceEntry,
   MusicSearchCriteria,
   SheetMusicModuleConfig,
+  TechnicalElement,
 } from '../types'
 
 describe('SheetMusicLibraryModule', () => {
@@ -302,13 +302,97 @@ describe('SheetMusicLibraryModule', () => {
     })
   })
 
-  describe('Not Implemented Features', () => {
+  describe('Exercise Generation', () => {
     beforeEach(async () => {
       await module.initialize()
     })
 
-    it('should throw for generateExercise', async () => {
-      const params: ExerciseParameters = {
+    it('should generate a sight-reading exercise', async () => {
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.SIGHT_READING,
+        keySignature: KeySignature.C_MAJOR,
+        timeSignature: TimeSignature.FOUR_FOUR,
+        clef: Clef.TREBLE,
+        range: { lowest: 'C4', highest: 'C6' },
+        difficulty: 5,
+        measures: 8,
+        tempo: 120,
+      }
+
+      const exercise = await module.generateExercise(params)
+
+      expect(exercise).toMatchObject({
+        id: expect.any(String),
+        userId: 'user-1',
+        type: ExerciseType.SIGHT_READING,
+        parameters: params,
+        measures: expect.any(Array),
+        metadata: {
+          title: expect.any(String),
+          description: expect.any(String),
+          focusAreas: expect.any(Array),
+          estimatedDuration: expect.any(Number),
+          tags: expect.any(Array),
+        },
+        createdAt: expect.any(Date),
+        expiresAt: expect.any(Date),
+      })
+
+      expect(exercise.measures).toHaveLength(8)
+      expect(exercise.metadata.title).toContain('Sight-reading')
+      expect(exercise.metadata.tags).toContain('sight_reading')
+      expect(exercise.metadata.tags).toContain('intermediate')
+    })
+
+    it('should generate a technical exercise', async () => {
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.TECHNICAL,
+        keySignature: KeySignature.G_MAJOR,
+        timeSignature: TimeSignature.THREE_FOUR,
+        clef: Clef.BASS,
+        range: { lowest: 'E2', highest: 'E4' },
+        difficulty: 7,
+        measures: 16,
+        tempo: 90,
+        technicalElements: [
+          TechnicalElement.SCALES,
+          TechnicalElement.ARPEGGIOS,
+        ],
+      }
+
+      const exercise = await module.generateExercise(params)
+
+      expect(exercise).toMatchObject({
+        id: expect.any(String),
+        userId: 'user-1',
+        type: ExerciseType.TECHNICAL,
+        parameters: params,
+        measures: expect.any(Array),
+        metadata: {
+          title: expect.stringContaining('Technical exercise'),
+          description: expect.stringContaining('scales, arpeggios'),
+          focusAreas: expect.arrayContaining(['scales', 'arpeggios']),
+          estimatedDuration: expect.any(Number),
+          tags: expect.arrayContaining([
+            'technical',
+            'advanced',
+            'scales',
+            'arpeggios',
+          ]),
+        },
+        createdAt: expect.any(Date),
+        expiresAt: expect.any(Date),
+      })
+
+      expect(exercise.measures).toHaveLength(16)
+    })
+
+    it('should throw error for unimplemented exercise types', async () => {
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.RHYTHM,
         keySignature: KeySignature.C_MAJOR,
         timeSignature: TimeSignature.FOUR_FOUR,
         clef: Clef.TREBLE,
@@ -319,8 +403,94 @@ describe('SheetMusicLibraryModule', () => {
       }
 
       await expect(module.generateExercise(params)).rejects.toThrow(
-        'Not implemented yet'
+        'Exercise type RHYTHM not implemented yet'
       )
+    })
+
+    it('should throw error when module not initialized', async () => {
+      await module.destroy()
+
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.SIGHT_READING,
+        keySignature: KeySignature.C_MAJOR,
+        timeSignature: TimeSignature.FOUR_FOUR,
+        clef: Clef.TREBLE,
+        range: { lowest: 'C4', highest: 'C6' },
+        difficulty: 5,
+        measures: 8,
+        tempo: 120,
+      }
+
+      await expect(module.generateExercise(params)).rejects.toThrow(
+        'Module not initialized'
+      )
+    })
+
+    it('should save generated exercise automatically', async () => {
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.SIGHT_READING,
+        keySignature: KeySignature.C_MAJOR,
+        timeSignature: TimeSignature.FOUR_FOUR,
+        clef: Clef.TREBLE,
+        range: { lowest: 'C4', highest: 'C6' },
+        difficulty: 5,
+        measures: 8,
+        tempo: 120,
+      }
+
+      const eventSpy = jest.fn()
+      eventBus.subscribe('sheet-music:exercise-generated', eventSpy)
+
+      const exercise = await module.generateExercise(params)
+
+      // Verify it was saved
+      const loaded = await module.loadExercise(exercise.id)
+      expect(loaded).toEqual(exercise)
+
+      // Verify event was emitted
+      expect(eventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'sheet-music:exercise-generated',
+          source: 'sheet-music',
+          data: expect.objectContaining({
+            exercise,
+            timestamp: expect.any(Date),
+          }),
+        })
+      )
+    })
+
+    it('should respect max exercises per user limit', async () => {
+      // This is handled by the config but could be tested in the future
+      const params = {
+        userId: 'user-1',
+        type: ExerciseType.SIGHT_READING,
+        keySignature: KeySignature.C_MAJOR,
+        timeSignature: TimeSignature.FOUR_FOUR,
+        clef: Clef.TREBLE,
+        range: { lowest: 'C4', highest: 'C6' },
+        difficulty: 5,
+        measures: 8,
+        tempo: 120,
+      }
+
+      // Generate multiple exercises
+      for (let i = 0; i < 5; i++) {
+        await module.generateExercise(params)
+      }
+
+      const exercises = await module.listUserExercises('user-1')
+      expect(exercises.length).toBeLessThanOrEqual(
+        mockConfig.maxExercisesPerUser!
+      )
+    })
+  })
+
+  describe('Not Implemented Features', () => {
+    beforeEach(async () => {
+      await module.initialize()
     })
 
     it('should throw for searchMusic', async () => {

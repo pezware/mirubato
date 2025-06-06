@@ -39,7 +39,13 @@ import {
   ExerciseGeneratedEvent,
   RepertoireStatusChangedEvent,
   PracticeSessionRecordedEvent,
+  ExerciseType,
+  ExerciseMetadata,
+  Measure,
 } from './types'
+import { SightReadingGenerator } from './generators/SightReadingGenerator'
+import { TechnicalExerciseGenerator } from './generators/TechnicalExerciseGenerator'
+import { nanoid } from 'nanoid'
 
 const DEFAULT_CONFIG: SheetMusicModuleConfig = {
   maxExercisesPerUser: 100,
@@ -61,6 +67,8 @@ export class SheetMusicLibraryModule
   private state: SheetMusicModuleState
   private initialized = false
   private lastHealthCheck = 0
+  private sightReadingGenerator: SightReadingGenerator
+  private technicalExerciseGenerator: TechnicalExerciseGenerator
 
   constructor(
     eventBus: EventBus,
@@ -77,6 +85,10 @@ export class SheetMusicLibraryModule
       userRepertoire: new Map(),
     }
     this.lastHealthCheck = Date.now()
+
+    // Initialize exercise generators
+    this.sightReadingGenerator = new SightReadingGenerator()
+    this.technicalExerciseGenerator = new TechnicalExerciseGenerator()
   }
 
   // ============== Module Lifecycle ==============
@@ -135,10 +147,63 @@ export class SheetMusicLibraryModule
   // ============== Exercise Generation ==============
 
   async generateExercise(
-    _params: ExerciseParameters
+    params: ExerciseParameters & { userId: string; type: ExerciseType }
   ): Promise<GeneratedExercise> {
-    // Implementation will be added in next task
-    throw new Error('Not implemented yet')
+    if (!this.initialized) {
+      throw new Error('Module not initialized')
+    }
+
+    // Generate measures based on exercise type
+    let measures
+    switch (params.type) {
+      case ExerciseType.SIGHT_READING:
+        measures = this.sightReadingGenerator.generate(params)
+        break
+      case ExerciseType.TECHNICAL: {
+        // For technical exercises, add default technicalType if not provided
+        const technicalParams = {
+          ...params,
+          technicalType: 'scale' as const,
+        }
+        measures = this.technicalExerciseGenerator.generate(technicalParams)
+        break
+      }
+      case ExerciseType.RHYTHM:
+      case ExerciseType.HARMONY:
+        // These will be implemented in future phases
+        throw new Error(`Exercise type ${params.type} not implemented yet`)
+      default:
+        throw new Error(`Unknown exercise type: ${params.type}`)
+    }
+
+    // Create metadata based on exercise type and parameters
+    const metadata: ExerciseMetadata = {
+      title: this.generateExerciseTitle(params),
+      description: this.generateExerciseDescription(params),
+      focusAreas: this.identifyFocusAreas(params),
+      estimatedDuration: this.estimateDuration(measures, params.tempo),
+      prerequisites: [],
+      tags: this.generateTags(params),
+    }
+
+    // Create the exercise object
+    const exercise: GeneratedExercise = {
+      id: nanoid(),
+      userId: params.userId,
+      type: params.type,
+      parameters: params,
+      measures,
+      metadata,
+      createdAt: new Date(),
+      expiresAt: new Date(
+        Date.now() + this.config.exerciseExpirationDays * 24 * 60 * 60 * 1000
+      ),
+    }
+
+    // Save the exercise
+    await this.saveExercise(exercise)
+
+    return exercise
   }
 
   async saveExercise(exercise: GeneratedExercise): Promise<void> {
@@ -446,5 +511,121 @@ export class SheetMusicLibraryModule
   private async saveState(): Promise<void> {
     // Save critical state to storage for recovery
     // This is called on destroy
+  }
+
+  // ============== Exercise Metadata Helpers ==============
+
+  private generateExerciseTitle(
+    params: ExerciseParameters & { type: ExerciseType }
+  ): string {
+    const keyName = params.keySignature.replace(/_/g, ' ').toLowerCase()
+    const typeName = params.type.replace(/_/g, ' ').toLowerCase()
+
+    switch (params.type) {
+      case ExerciseType.SIGHT_READING:
+        return `Sight-reading in ${keyName} - Level ${params.difficulty}`
+      case ExerciseType.TECHNICAL: {
+        const elements = params.technicalElements?.join(', ') || 'scales'
+        return `Technical exercise: ${elements} in ${keyName}`
+      }
+      default:
+        return `${typeName} exercise in ${keyName}`
+    }
+  }
+
+  private generateExerciseDescription(
+    params: ExerciseParameters & { type: ExerciseType }
+  ): string {
+    const keyName = params.keySignature.replace(/_/g, ' ').toLowerCase()
+    const tempo = params.tempo
+    const measures = params.measures
+
+    switch (params.type) {
+      case ExerciseType.SIGHT_READING:
+        return `A ${measures}-measure sight-reading exercise in ${keyName} at ${tempo} BPM, difficulty level ${params.difficulty}/10`
+      case ExerciseType.TECHNICAL: {
+        const elements =
+          params.technicalElements?.join(', ') || 'technical patterns'
+        return `Practice ${elements} in ${keyName} at ${tempo} BPM across ${measures} measures`
+      }
+      default:
+        return `${measures}-measure exercise in ${keyName} at ${tempo} BPM`
+    }
+  }
+
+  private identifyFocusAreas(
+    params: ExerciseParameters & { type: ExerciseType }
+  ): string[] {
+    const areas: string[] = []
+
+    // Add type-specific focus areas
+    switch (params.type) {
+      case ExerciseType.SIGHT_READING:
+        areas.push('note reading', 'rhythm accuracy')
+        // Check for sight-reading specific parameters
+        if ('includeAccidentals' in params && params.includeAccidentals) {
+          areas.push('accidentals')
+        }
+        if ('includeDynamics' in params && params.includeDynamics) {
+          areas.push('dynamics')
+        }
+        break
+      case ExerciseType.TECHNICAL:
+        if (params.technicalElements) {
+          areas.push(...params.technicalElements)
+        }
+        areas.push('finger independence', 'technique')
+        break
+    }
+
+    // Add general focus areas based on parameters
+    if (params.difficulty >= 7) areas.push('advanced technique')
+    if (params.tempo >= 120) areas.push('speed')
+    if (params.rhythmicPatterns?.some(p => p.includes('syncopation')))
+      areas.push('syncopation')
+
+    return [...new Set(areas)] // Remove duplicates
+  }
+
+  private estimateDuration(measures: Measure[], tempo: number): number {
+    // Estimate based on 4/4 time signature as default
+    // Each measure in 4/4 at given tempo
+    const beatsPerMeasure = 4
+    const secondsPerBeat = 60 / tempo
+    const secondsPerMeasure = beatsPerMeasure * secondsPerBeat
+
+    return Math.ceil(measures.length * secondsPerMeasure)
+  }
+
+  private generateTags(
+    params: ExerciseParameters & { type: ExerciseType }
+  ): string[] {
+    const tags: string[] = []
+
+    // Add type tag
+    tags.push(params.type.toLowerCase())
+
+    // Add difficulty tag
+    if (params.difficulty <= 3) tags.push('beginner')
+    else if (params.difficulty <= 6) tags.push('intermediate')
+    else tags.push('advanced')
+
+    // Add key signature tag
+    tags.push(params.keySignature.toLowerCase().replace(/_/g, '-'))
+
+    // Add time signature tag
+    tags.push(params.timeSignature.replace('/', '-'))
+
+    // Add technical elements
+    if (params.technicalElements) {
+      tags.push(...params.technicalElements.map(e => e.toLowerCase()))
+    }
+
+    // Add instrument if specified
+    if (params.instrumentParams?.instrument) {
+      tags.push(params.instrumentParams.instrument)
+    }
+
+    return tags
   }
 }
