@@ -1,5 +1,5 @@
 import { VisualizationModule } from './VisualizationModule'
-import { EventBus, MockStorageService } from '../core'
+import { EventBus, MockEventDrivenStorage } from '../core'
 import type {
   VisualizationConfig,
   ChartSpecification,
@@ -73,7 +73,7 @@ Object.defineProperty(global, 'HTMLCanvasElement', {
 describe('VisualizationModule', () => {
   let visualization: VisualizationModule
   let eventBus: EventBus
-  let mockStorage: MockStorageService
+  let mockStorage: MockEventDrivenStorage
   let publishSpy: jest.SpyInstance
   let subscribeSpy: jest.SpyInstance
 
@@ -117,8 +117,8 @@ describe('VisualizationModule', () => {
     publishSpy = jest.spyOn(eventBus, 'publish')
     subscribeSpy = jest.spyOn(eventBus, 'subscribe')
 
-    // Use mock storage service for tests
-    mockStorage = new MockStorageService()
+    // Use mock event-driven storage for tests
+    mockStorage = new MockEventDrivenStorage()
 
     // Create module with mock storage
     visualization = new VisualizationModule(testConfig, mockStorage)
@@ -129,7 +129,7 @@ describe('VisualizationModule', () => {
       await visualization.shutdown()
     }
     if (mockStorage) {
-      mockStorage.destroy()
+      mockStorage.clear()
     }
     jest.clearAllMocks()
     EventBus.resetInstance()
@@ -212,7 +212,7 @@ describe('VisualizationModule', () => {
       expect(chart.id).toBe(testChartSpec.id)
       expect(chart.type).toBe(testChartSpec.type)
       // Check storage state directly
-      const storedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      const storedChart = await mockStorage.read(`chart:${testChartSpec.id}`)
       expect(storedChart).toEqual(chart)
 
       expect(publishSpy).toHaveBeenCalledWith(
@@ -232,7 +232,7 @@ describe('VisualizationModule', () => {
 
       // Set up storage state directly
       for (const chart of mockCharts) {
-        await mockStorage.set(`chart:${chart.id}`, chart)
+        await mockStorage.write(`chart:${chart.id}`, chart)
       }
 
       const userCharts = await visualization.getUserCharts('user-1')
@@ -243,7 +243,7 @@ describe('VisualizationModule', () => {
 
     it('should update chart specification', async () => {
       const existingChart = { ...testChartSpec, userId: 'user-1' }
-      await mockStorage.set(`chart:${testChartSpec.id}`, existingChart)
+      await mockStorage.write(`chart:${testChartSpec.id}`, existingChart)
 
       const updates = {
         dimensions: { width: 1000, height: 500 },
@@ -258,7 +258,7 @@ describe('VisualizationModule', () => {
       expect(updatedChart.dimensions.width).toBe(1000)
       expect(updatedChart.interactivity.zoom).toBe(false)
       // Check storage state directly
-      const storedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      const storedChart = await mockStorage.read(`chart:${testChartSpec.id}`)
       expect(storedChart).toEqual(updatedChart)
     })
 
@@ -266,7 +266,7 @@ describe('VisualizationModule', () => {
       await visualization.deleteChart(testChartSpec.id)
 
       // Verify chart was deleted from storage
-      const deletedChart = await mockStorage.get(`chart:${testChartSpec.id}`)
+      const deletedChart = await mockStorage.read(`chart:${testChartSpec.id}`)
       expect(deletedChart).toBeNull()
 
       expect(publishSpy).toHaveBeenCalledWith(
@@ -534,7 +534,7 @@ describe('VisualizationModule', () => {
       expect(dashboard.charts).toHaveLength(2)
       expect(dashboard.id).toBeDefined()
       // Check that dashboard was saved to storage
-      const savedDashboard = await mockStorage.get(`dashboard:${dashboard.id}`)
+      const savedDashboard = await mockStorage.read(`dashboard:${dashboard.id}`)
       expect(savedDashboard).toEqual(dashboard)
     })
 
@@ -564,7 +564,7 @@ describe('VisualizationModule', () => {
 
       // Set up storage state directly
       for (const dash of mockDashboards) {
-        await mockStorage.set(`dashboard:${dash.id}`, dash)
+        await mockStorage.write(`dashboard:${dash.id}`, dash)
       }
 
       const userDashboards = await visualization.getUserDashboards('user-1')
@@ -586,7 +586,7 @@ describe('VisualizationModule', () => {
       }
 
       // Set up existing dashboard in storage
-      await mockStorage.set(
+      await mockStorage.write(
         `dashboard:${existingDashboard.id}`,
         existingDashboard
       )

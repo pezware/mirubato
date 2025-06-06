@@ -2,13 +2,8 @@
  * Practice Logger Module - Professional practice logbook for musicians
  */
 
-import { EventBus, StorageService } from '../core'
-import type {
-  ModuleInterface,
-  ModuleHealth,
-  EventPayload,
-  IStorageService,
-} from '../core/types'
+import { EventBus, EventDrivenStorage } from '../core'
+import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
 import type {
   LogbookEntry,
   Goal,
@@ -27,7 +22,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: IStorageService
+  private storage: EventDrivenStorage
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
@@ -39,9 +34,9 @@ export class PracticeLoggerModule implements ModuleInterface {
     defaultMood: 'neutral',
   }
 
-  constructor(config?: LoggerConfig, storageService?: IStorageService) {
+  constructor(config?: LoggerConfig, storage?: EventDrivenStorage) {
     this.eventBus = EventBus.getInstance()
-    this.storage = storageService || new StorageService(this.eventBus)
+    this.storage = storage || new EventDrivenStorage()
     if (config) {
       this.config = { ...this.config, ...config }
     }
@@ -110,7 +105,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }
 
-    await this.storage.set(`logbook:${newEntry.id}`, newEntry)
+    await this.storage.write(`logbook:${newEntry.id}`, newEntry)
 
     await this.eventBus.publish({
       source: this.name,
@@ -126,7 +121,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     id: string,
     updates: Partial<LogbookEntry>
   ): Promise<LogbookEntry> {
-    const existing = await this.storage.get<LogbookEntry>(`logbook:${id}`)
+    const existing = await this.storage.read<LogbookEntry>(`logbook:${id}`)
     if (!existing) {
       throw new Error('Entry not found')
     }
@@ -137,7 +132,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       id, // Ensure ID cannot be changed
     }
 
-    await this.storage.set(`logbook:${id}`, updated)
+    await this.storage.write(`logbook:${id}`, updated)
 
     await this.eventBus.publish({
       source: this.name,
@@ -150,7 +145,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   }
 
   async deleteLogEntry(id: string): Promise<void> {
-    await this.storage.remove(`logbook:${id}`)
+    await this.storage.delete(`logbook:${id}`)
 
     await this.eventBus.publish({
       source: this.name,
@@ -172,7 +167,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     const keys = await this.storage.getKeys()
     const logbookKeys = keys.filter((k: string) => k.startsWith('logbook:'))
     const entryPromises = logbookKeys.map((key: string) =>
-      this.storage.get<LogbookEntry>(key)
+      this.storage.read<LogbookEntry>(key)
     )
     const loadedEntries = await Promise.all(entryPromises)
     let entries = loadedEntries.filter((e): e is LogbookEntry => e !== null)
@@ -231,7 +226,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       updatedAt: now,
     }
 
-    await this.storage.set(`goal:${newGoal.id}`, newGoal)
+    await this.storage.write(`goal:${newGoal.id}`, newGoal)
 
     await this.eventBus.publish({
       source: this.name,
@@ -244,7 +239,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   }
 
   async updateGoalProgress(goalId: string, progress: number): Promise<Goal> {
-    const goal = await this.storage.get<Goal>(`goal:${goalId}`)
+    const goal = await this.storage.read<Goal>(`goal:${goalId}`)
     if (!goal) {
       throw new Error('Goal not found')
     }
@@ -261,7 +256,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       updatedGoal.completedAt = Date.now()
     }
 
-    await this.storage.set(`goal:${goalId}`, updatedGoal)
+    await this.storage.write(`goal:${goalId}`, updatedGoal)
 
     await this.eventBus.publish({
       source: this.name,
@@ -287,7 +282,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     milestoneId: string,
     completed: boolean
   ): Promise<Goal> {
-    const goal = await this.storage.get<Goal>(`goal:${goalId}`)
+    const goal = await this.storage.read<Goal>(`goal:${goalId}`)
     if (!goal) {
       throw new Error('Goal not found')
     }
@@ -302,13 +297,13 @@ export class PracticeLoggerModule implements ModuleInterface {
       updatedAt: Date.now(),
     }
 
-    await this.storage.set(`goal:${goalId}`, updatedGoal)
+    await this.storage.write(`goal:${goalId}`, updatedGoal)
 
     return updatedGoal
   }
 
   async linkEntryToGoal(entryId: string, goalId: string): Promise<Goal> {
-    const goal = await this.storage.get<Goal>(`goal:${goalId}`)
+    const goal = await this.storage.read<Goal>(`goal:${goalId}`)
     if (!goal) {
       throw new Error('Goal not found')
     }
@@ -319,7 +314,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       updatedAt: Date.now(),
     }
 
-    await this.storage.set(`goal:${goalId}`, updatedGoal)
+    await this.storage.write(`goal:${goalId}`, updatedGoal)
 
     return updatedGoal
   }
@@ -328,7 +323,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     const keys = await this.storage.getKeys()
     const goalKeys = keys.filter((k: string) => k.startsWith('goal:'))
     const goalPromises = goalKeys.map((key: string) =>
-      this.storage.get<Goal>(key)
+      this.storage.read<Goal>(key)
     )
     const loadedGoals = await Promise.all(goalPromises)
     return loadedGoals
@@ -459,7 +454,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     const data = event.data as { linkedGoals?: string[] }
     if (data?.linkedGoals) {
       for (const goalId of data.linkedGoals) {
-        const goal = await this.storage.get<Goal>(`goal:${goalId}`)
+        const goal = await this.storage.read<Goal>(`goal:${goalId}`)
         if (goal && goal.status === 'active') {
           // Increment progress based on milestone importance
           const progressIncrement = 100 / (goal.milestones.length || 1)
@@ -494,7 +489,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       const keys = await this.storage.getKeys()
       const goalKeys = keys.filter((k: string) => k.startsWith('goal:'))
       const goalPromises = goalKeys.map((key: string) =>
-        this.storage.get<Goal>(key)
+        this.storage.read<Goal>(key)
       )
       const loadedGoals = await Promise.all(goalPromises)
       exportData.goals = loadedGoals.filter((g): g is Goal => g !== null)

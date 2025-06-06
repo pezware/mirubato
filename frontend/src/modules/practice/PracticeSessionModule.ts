@@ -2,11 +2,10 @@ import {
   ModuleInterface,
   ModuleHealth,
   EventBus,
-  StorageService,
   SessionStatus,
-  IStorageService,
   EventPayload,
 } from '../core'
+import { EventDrivenStorage } from '../core/eventDrivenStorage'
 import {
   PracticeSession,
   PracticeConfig,
@@ -23,7 +22,7 @@ export class PracticeSessionModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storageService: IStorageService
+  private storage: EventDrivenStorage
   private config: PracticeConfig
   private health: ModuleHealth = {
     status: 'gray',
@@ -36,12 +35,9 @@ export class PracticeSessionModule implements ModuleInterface {
   private sessionStartHandlers: Set<() => void> = new Set()
   private sessionEndHandlers: Set<() => void> = new Set()
 
-  constructor(
-    config?: Partial<PracticeConfig>,
-    storageService?: IStorageService
-  ) {
+  constructor(config?: Partial<PracticeConfig>, storage?: EventDrivenStorage) {
     this.eventBus = EventBus.getInstance()
-    this.storageService = storageService || new StorageService(this.eventBus)
+    this.storage = storage || new EventDrivenStorage()
 
     this.config = {
       autoSaveInterval: 30000, // 30 seconds
@@ -323,8 +319,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async getSessionHistory(limit = 10, offset = 0): Promise<PracticeSession[]> {
     const sessions =
-      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
-      []
+      (await this.storage.read<PracticeSession[]>('practice_sessions')) || []
 
     return sessions
       .sort((a, b) => b.startTime - a.startTime)
@@ -332,7 +327,7 @@ export class PracticeSessionModule implements ModuleInterface {
   }
 
   async getStats(userId?: string): Promise<PracticeStats> {
-    const stats = await this.storageService.get<PracticeStats>(
+    const stats = await this.storage.read<PracticeStats>(
       `practice_stats_${userId || 'anonymous'}`
     )
 
@@ -351,8 +346,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async applyTemplate(templateId: string): Promise<void> {
     const templates =
-      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
-      []
+      (await this.storage.read<SessionTemplate[]>('session_templates')) || []
 
     const template = templates.find(t => t.id === templateId)
     if (!template) {
@@ -372,8 +366,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   async saveTemplate(template: SessionTemplate): Promise<void> {
     const templates =
-      (await this.storageService.get<SessionTemplate[]>('session_templates')) ||
-      []
+      (await this.storage.read<SessionTemplate[]>('session_templates')) || []
 
     const existingIndex = templates.findIndex(t => t.id === template.id)
     if (existingIndex >= 0) {
@@ -382,7 +375,7 @@ export class PracticeSessionModule implements ModuleInterface {
       templates.push(template)
     }
 
-    await this.storageService.set('session_templates', templates)
+    await this.storage.write('session_templates', templates)
   }
 
   updateConfig(config: Partial<PracticeConfig>): void {
@@ -460,8 +453,7 @@ export class PracticeSessionModule implements ModuleInterface {
     if (!this.currentSession) return
 
     const sessions =
-      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
-      []
+      (await this.storage.read<PracticeSession[]>('practice_sessions')) || []
 
     const existingIndex = sessions.findIndex(
       s => s.id === this.currentSession!.id
@@ -473,7 +465,7 @@ export class PracticeSessionModule implements ModuleInterface {
       sessions.push(this.currentSession)
     }
 
-    await this.storageService.set('practice_sessions', sessions)
+    await this.storage.write('practice_sessions', sessions)
 
     await this.eventBus.publish({
       source: this.name,
@@ -489,8 +481,7 @@ export class PracticeSessionModule implements ModuleInterface {
 
   private async restoreActiveSession(): Promise<void> {
     const sessions =
-      (await this.storageService.get<PracticeSession[]>('practice_sessions')) ||
-      []
+      (await this.storage.read<PracticeSession[]>('practice_sessions')) || []
 
     const activeSession = sessions.find(
       s =>
@@ -600,18 +591,15 @@ export class PracticeSessionModule implements ModuleInterface {
         instrumentStats.sessionCount
     }
 
-    await this.storageService.set(
-      `practice_stats_${userId || 'anonymous'}`,
-      stats
-    )
+    await this.storage.write(`practice_stats_${userId || 'anonymous'}`, stats)
   }
 
   // Testing helpers
   async clearHistory(): Promise<void> {
-    await this.storageService.set('practice_sessions', [])
+    await this.storage.write('practice_sessions', [])
   }
 
   async clearStats(userId?: string): Promise<void> {
-    await this.storageService.remove(`practice_stats_${userId || 'anonymous'}`)
+    await this.storage.delete(`practice_stats_${userId || 'anonymous'}`)
   }
 }

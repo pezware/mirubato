@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EventBus } from '../modules/core/EventBus'
-import { StorageService } from '../modules/core/StorageService'
+import { EventDrivenStorage } from '../modules/core/eventDrivenStorage'
 import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { SyncModule } from '../modules/infrastructure/SyncModule'
 import { PracticeSessionModule } from '../modules/practice/PracticeSessionModule'
@@ -59,17 +59,17 @@ export default function Debug() {
       // Get module instances
       const eventBus = EventBus.getInstance()
       const storageModule = new StorageModule()
-      const storageService = new StorageService(eventBus)
+      const eventDrivenStorage = new EventDrivenStorage()
       const syncModule = new SyncModule(storageModule)
-      const practiceModule = new PracticeSessionModule({}, storageService)
+      const practiceModule = new PracticeSessionModule({}, eventDrivenStorage)
       const performanceModule = new PerformanceTrackingModule(
         {},
-        storageService
+        eventDrivenStorage
       )
       const analyticsModule = new ProgressAnalyticsModule(
         eventBus,
         undefined,
-        storageService
+        eventDrivenStorage
       )
 
       // Collect module status

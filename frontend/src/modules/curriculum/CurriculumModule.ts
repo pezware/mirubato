@@ -2,13 +2,9 @@
  * Curriculum Module - Manages structured learning paths and repertoire
  */
 
-import { EventBus, StorageService, SkillLevel } from '../core'
-import type {
-  ModuleInterface,
-  ModuleHealth,
-  EventPayload,
-  IStorageService,
-} from '../core/types'
+import { EventBus, SkillLevel } from '../core'
+import { EventDrivenStorage } from '../core/eventDrivenStorage'
+import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
 import type {
   SessionEventData,
   MilestoneEventData,
@@ -50,7 +46,7 @@ export class CurriculumModule implements ModuleInterface {
   public readonly version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: IStorageService
+  private storage: EventDrivenStorage
   private config: Required<CurriculumConfig>
   private health: ModuleHealth = {
     status: 'gray',
@@ -59,9 +55,9 @@ export class CurriculumModule implements ModuleInterface {
   private cache = new Map<string, CacheEntry<unknown>>()
   private readonly CACHE_TTL = 60000 // 1 minute
 
-  constructor(config: CurriculumConfig, storageService?: IStorageService) {
+  constructor(config: CurriculumConfig, storageService?: EventDrivenStorage) {
     this.eventBus = EventBus.getInstance()
-    this.storage = storageService || new StorageService(this.eventBus)
+    this.storage = storageService || new EventDrivenStorage()
     this.config = {
       ...config,
       preferredGenres: config.preferredGenres || [],
@@ -152,7 +148,7 @@ export class CurriculumModule implements ModuleInterface {
       updatedAt: now,
     }
 
-    await this.storage.set(`path:${newPath.id}`, newPath)
+    await this.storage.write(`path:${newPath.id}`, newPath)
     this.invalidateCache(`paths:${path.userId}`)
 
     await this.eventBus.publish({
@@ -173,7 +169,7 @@ export class CurriculumModule implements ModuleInterface {
     const keys = await this.storage.getKeys()
     const pathKeys = keys.filter((k: string) => k.startsWith('path:'))
     const pathPromises = pathKeys.map((key: string) =>
-      this.storage.get<LearningPath>(key)
+      this.storage.read<LearningPath>(key)
     )
     const loadedPaths = await Promise.all(pathPromises)
     const activePaths = loadedPaths
@@ -190,7 +186,7 @@ export class CurriculumModule implements ModuleInterface {
   async updateProgress(update: ProgressUpdate): Promise<LearningPath> {
     this.validateProgressUpdate(update)
 
-    const path = await this.storage.get<LearningPath>(`path:${update.pathId}`)
+    const path = await this.storage.read<LearningPath>(`path:${update.pathId}`)
     if (!path) {
       throw new Error('Learning path not found')
     }
@@ -215,7 +211,7 @@ export class CurriculumModule implements ModuleInterface {
       updatedPath = this.handleAutoProgression(updatedPath)
     }
 
-    await this.storage.set(`path:${update.pathId}`, updatedPath)
+    await this.storage.write(`path:${update.pathId}`, updatedPath)
     this.invalidateCache(`paths:${path.userId}`)
 
     await this.eventBus.publish({
@@ -231,7 +227,7 @@ export class CurriculumModule implements ModuleInterface {
   // Repertoire Management
 
   async addRepertoirePiece(piece: RepertoirePiece): Promise<RepertoirePiece> {
-    await this.storage.set(`repertoire:${piece.id}`, piece)
+    await this.storage.write(`repertoire:${piece.id}`, piece)
     this.invalidateCache('repertoire:all')
 
     await this.eventBus.publish({
@@ -257,7 +253,7 @@ export class CurriculumModule implements ModuleInterface {
     // Only load the pieces we need for pagination
     const piecesToLoad = repKeys.slice(offset, offset + limit)
     const piecePromises = piecesToLoad.map((key: string) =>
-      this.storage.get<RepertoirePiece>(key)
+      this.storage.read<RepertoirePiece>(key)
     )
     const loadedPieces = await Promise.all(piecePromises)
     let pieces = loadedPieces.filter((p): p is RepertoirePiece => p !== null)
@@ -380,7 +376,7 @@ export class CurriculumModule implements ModuleInterface {
     const assessmentId = `assessment_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`
-    await this.storage.set(`assessment:${assessmentId}`, assessment)
+    await this.storage.write(`assessment:${assessmentId}`, assessment)
 
     await this.eventBus.publish({
       source: this.name,
@@ -396,7 +392,7 @@ export class CurriculumModule implements ModuleInterface {
       const pathKeys = keys.filter((k: string) => k.startsWith('path:'))
 
       for (const pathKey of pathKeys) {
-        const path = await this.storage.get<LearningPath>(pathKey)
+        const path = await this.storage.read<LearningPath>(pathKey)
         if (path) {
           const hasModule = path.phases.some(phase =>
             phase.modules.some(m => m.id === assessment.moduleId)
@@ -424,7 +420,7 @@ export class CurriculumModule implements ModuleInterface {
 
     const allPaths: LearningPath[] = []
     for (const key of userPathKeys) {
-      const path = await this.storage.get<LearningPath>(key)
+      const path = await this.storage.read<LearningPath>(key)
       if (path && path.userId === userId) {
         allPaths.push(path)
       }
@@ -519,13 +515,13 @@ export class CurriculumModule implements ModuleInterface {
 
     // Import paths
     for (const path of data.paths) {
-      const existing = await this.storage.get<LearningPath>(`path:${path.id}`)
+      const existing = await this.storage.read<LearningPath>(`path:${path.id}`)
       if (existing && !options?.overwrite) {
         result.conflicts.push(`Path: ${path.name}`)
         continue
       }
       path.userId = userId // Assign to current user
-      await this.storage.set(`path:${path.id}`, path)
+      await this.storage.write(`path:${path.id}`, path)
       result.imported.paths++
     }
 
@@ -623,7 +619,10 @@ export class CurriculumModule implements ModuleInterface {
       }
 
       // Store patterns for recommendation engine
-      await this.storage.set(`patterns:${entry.userId}:${Date.now()}`, patterns)
+      await this.storage.write(
+        `patterns:${entry.userId}:${Date.now()}`,
+        patterns
+      )
     }
   }
 
@@ -904,7 +903,7 @@ export class CurriculumModule implements ModuleInterface {
 
   private async loadRepertoireData(): Promise<void> {
     try {
-      const repertoireData = await this.storage.get('curriculum:repertoire')
+      const repertoireData = await this.storage.read('curriculum:repertoire')
       if (repertoireData) {
         // Repertoire data loaded
       }
@@ -986,7 +985,7 @@ export class CurriculumModule implements ModuleInterface {
       session.overallProgress.sessionId = session.id
 
       // Store the session
-      await this.storage.set(`practice:session:${session.id}`, session)
+      await this.storage.write(`practice:session:${session.id}`, session)
 
       // Publish event
       await this.eventBus.publish({
@@ -1011,7 +1010,7 @@ export class CurriculumModule implements ModuleInterface {
     progress: Partial<PracticeProgress>
   ): Promise<void> {
     try {
-      const session = await this.storage.get<PracticeSession>(
+      const session = await this.storage.read<PracticeSession>(
         `practice:session:${sessionId}`
       )
 
@@ -1062,7 +1061,7 @@ export class CurriculumModule implements ModuleInterface {
       }
 
       // Save updated session
-      await this.storage.set(`practice:session:${sessionId}`, session)
+      await this.storage.write(`practice:session:${sessionId}`, session)
 
       // Publish progress update
       await this.eventBus.publish({
@@ -1114,7 +1113,7 @@ export class CurriculumModule implements ModuleInterface {
       const exercise = await generator(level)
 
       // Store the generated exercise
-      await this.storage.set(`exercise:${exercise.id}`, exercise)
+      await this.storage.write(`exercise:${exercise.id}`, exercise)
 
       return exercise
     } catch (error) {
@@ -1190,7 +1189,7 @@ export class CurriculumModule implements ModuleInterface {
   ): Promise<PerformanceReadiness> {
     try {
       // Load piece analytics
-      const analytics = await this.storage.get<PieceAnalytics>(
+      const analytics = await this.storage.read<PieceAnalytics>(
         `analytics:piece:${pieceId}:${userId}`
       )
 
@@ -1269,7 +1268,7 @@ export class CurriculumModule implements ModuleInterface {
       )
 
       for (const key of analyticsKeys) {
-        const analytics = await this.storage.get<PieceAnalytics>(key)
+        const analytics = await this.storage.read<PieceAnalytics>(key)
         if (!analytics) continue
 
         const daysSinceLastPractice = Math.floor(
@@ -1300,7 +1299,7 @@ export class CurriculumModule implements ModuleInterface {
 
         // Check for upcoming performances
         const performanceReadiness =
-          await this.storage.get<PerformanceReadiness>(
+          await this.storage.read<PerformanceReadiness>(
             `readiness:${analytics.pieceId}:${userId}`
           )
 
