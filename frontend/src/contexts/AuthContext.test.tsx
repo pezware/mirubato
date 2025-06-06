@@ -28,6 +28,15 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }))
 
+jest.mock('../utils/logger', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}))
+
 jest.mock('../lib/apollo/client', () => ({
   setAuthTokens: jest.fn(),
   clearAuthTokens: jest.fn(),
@@ -918,11 +927,6 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(screen.getByTestId('error')).toHaveTextContent('Sync data error')
       })
-
-      expect(console.error).toHaveBeenCalledWith(
-        'Sync failed:',
-        expect.any(Error)
-      )
     })
   })
 

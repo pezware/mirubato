@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useMutation } from '@apollo/client'
 import { REQUEST_MAGIC_LINK } from '../graphql/queries/auth'
 import { createPortal } from 'react-dom'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('AuthModal')
 
 interface AuthModalProps {
   isOpen: boolean
@@ -86,7 +89,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
     } catch (err) {
       // Error is already handled by onError callback
-      console.error('Magic link request failed:', err)
+      logger.error('Magic link request failed', err, { email })
     } finally {
       setIsSubmitting(false)
     }
