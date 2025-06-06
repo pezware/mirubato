@@ -3,6 +3,8 @@ import { useMutation } from '@apollo/client'
 import { REQUEST_MAGIC_LINK } from '../graphql/queries/auth'
 import { createPortal } from 'react-dom'
 import { createLogger } from '../utils/logger'
+import { theme } from '../utils/theme'
+import styles from './AuthModal.module.css'
 
 const logger = createLogger('AuthModal')
 
@@ -104,19 +106,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Use React Portal to render modal at document root level
   return createPortal(
     <div
-      className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
-      }}
+      className={`fixed inset-0 flex items-center justify-center p-4 ${styles.modalOverlay}`}
+      style={{ zIndex: theme.zIndex.modal }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl"
-        style={{
-          animation: 'modalSlideIn 0.2s ease-out',
-        }}
+        className={`w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl ${styles.modalContent}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
@@ -247,19 +242,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes modalSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>,
     document.body
   )
