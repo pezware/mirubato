@@ -41,7 +41,9 @@ function App() {
                   path="/settings"
                   element={<div>Settings Page (TODO)</div>}
                 />
-                <Route path="/debug" element={<Debug />} />
+                {process.env.NODE_ENV === 'development' && (
+                  <Route path="/debug" element={<Debug />} />
+                )}
                 <Route path="/docs/*" element={<Docs />} />
               </Routes>
               <VersionInfo />
