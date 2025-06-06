@@ -1,6 +1,4 @@
 export { EventBus } from './EventBus'
-export { StorageService } from './StorageService'
-export { MockStorageService } from './MockStorageService'
 export { EventDrivenStorage, eventDrivenStorage } from './eventDrivenStorage'
 export { MockEventDrivenStorage } from './MockEventDrivenStorage'
 export * from './types'
