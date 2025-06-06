@@ -99,6 +99,9 @@ docs/coverage/
 *.md.bak
 public/docs/
 
+# Prevent redundant frontend folder
+frontend/frontend/
+
 # TypeScript cache
 *.tsbuildinfo
 
