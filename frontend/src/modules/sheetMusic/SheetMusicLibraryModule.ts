@@ -66,7 +66,10 @@ export class SheetMusicLibraryModule
   private config: SheetMusicModuleConfig
   private state: SheetMusicModuleState
   private initialized = false
-  private lastHealthCheck = 0
+  private health: ModuleHealth = {
+    status: 'gray',
+    lastCheck: Date.now(),
+  }
   private sightReadingGenerator: SightReadingGenerator
   private technicalExerciseGenerator: TechnicalExerciseGenerator
 
@@ -84,8 +87,6 @@ export class SheetMusicLibraryModule
       recommendations: new Map(),
       userRepertoire: new Map(),
     }
-    this.lastHealthCheck = Date.now()
-
     // Initialize exercise generators
     this.sightReadingGenerator = new SightReadingGenerator()
     this.technicalExerciseGenerator = new TechnicalExerciseGenerator()
@@ -107,6 +108,11 @@ export class SheetMusicLibraryModule
       this.schedulePeriodicTasks()
 
       this.initialized = true
+      this.health = {
+        status: 'green',
+        message: 'Module initialized successfully',
+        lastCheck: Date.now(),
+      }
     } catch (error) {
       throw new Error(`Failed to initialize SheetMusicLibraryModule: ${error}`)
     }
@@ -123,6 +129,11 @@ export class SheetMusicLibraryModule
     this.state.userRepertoire.clear()
 
     this.initialized = false
+    this.health = {
+      status: 'gray',
+      message: 'Module shut down',
+      lastCheck: Date.now(),
+    }
   }
 
   async shutdown(): Promise<void> {
@@ -131,17 +142,8 @@ export class SheetMusicLibraryModule
   }
 
   getHealth(): ModuleHealth {
-    const now = Date.now()
-    const previousCheck = this.lastHealthCheck
-    this.lastHealthCheck = now
-
-    return {
-      status: this.initialized ? 'green' : 'red',
-      message: this.initialized
-        ? `Module is healthy (last check was ${now - previousCheck}ms ago)`
-        : 'Module not initialized',
-      lastCheck: now,
-    }
+    this.health.lastCheck = Date.now()
+    return this.health
   }
 
   // ============== Exercise Generation ==============

@@ -59,7 +59,8 @@ describe('SheetMusicLibraryModule', () => {
       await module.destroy()
 
       const health = module.getHealth()
-      expect(health.status).toBe('red')
+      expect(health.status).toBe('gray')
+      expect(health.message).toBe('Module shut down')
     })
 
     it('should report health metrics', async () => {
@@ -67,7 +68,7 @@ describe('SheetMusicLibraryModule', () => {
 
       const health = module.getHealth()
       expect(health.status).toBe('green')
-      expect(health.message).toMatch(/Module is healthy/)
+      expect(health.message).toBe('Module initialized successfully')
       expect(health.lastCheck).toBeGreaterThan(0)
     })
   })
