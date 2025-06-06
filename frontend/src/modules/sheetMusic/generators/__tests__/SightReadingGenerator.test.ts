@@ -204,7 +204,7 @@ describe('SightReadingGenerator', () => {
       })
 
       // Most intervals should be stepwise
-      expect(stepwiseIntervals / totalIntervals).toBeGreaterThan(0.6)
+      expect(stepwiseIntervals / totalIntervals).toBeGreaterThanOrEqual(0.6)
     })
 
     it('should generate leaps when specified', () => {

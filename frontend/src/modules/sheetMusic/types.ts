@@ -872,8 +872,136 @@ export function transposeNote(note: string, semitones: number): string {
  * Gets all notes in a scale starting from a given root
  */
 export function getScaleNotes(root: string, scaleType: ScaleType): string[] {
+  // If root doesn't have an octave, we just return note names without octaves
+  const hasOctave = /[0-9]$/.test(root)
+
+  if (!hasOctave) {
+    const intervals = SCALE_INTERVALS[scaleType]
+    const noteNames = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ]
+    const rootIndex = noteNames.findIndex(
+      n => n === root || n === root.replace('b', '#')
+    )
+
+    if (rootIndex === -1) {
+      // Handle flats
+      const flatMap: Record<string, string> = {
+        Db: 'C#',
+        Eb: 'D#',
+        Gb: 'F#',
+        Ab: 'G#',
+        Bb: 'A#',
+      }
+      const sharpRoot = flatMap[root] || root
+      const newRootIndex = noteNames.indexOf(sharpRoot)
+      if (newRootIndex === -1) throw new Error(`Invalid root note: ${root}`)
+
+      return intervals.map(interval => {
+        const noteIndex = (newRootIndex + interval) % 12
+        return noteNames[noteIndex]
+      })
+    }
+
+    return intervals.map(interval => {
+      const noteIndex = (rootIndex + interval) % 12
+      return noteNames[noteIndex]
+    })
+  }
+
+  // Original behavior for notes with octaves
   const rootMidi = noteToMidi(root)
   const intervals = SCALE_INTERVALS[scaleType]
+  return intervals.map(interval => midiToNote(rootMidi + interval))
+}
+
+/**
+ * Gets all notes in a chord starting from a given root
+ */
+export function getChordNotes(
+  root: string,
+  chordType: string | ChordType
+): string[] {
+  // Map string chord types to ChordType enum
+  const chordTypeMap: Record<string, ChordType> = {
+    major: ChordType.MAJOR,
+    minor: ChordType.MINOR,
+    diminished: ChordType.DIMINISHED,
+    augmented: ChordType.AUGMENTED,
+    dominant7: ChordType.DOMINANT_SEVENTH,
+    maj7: ChordType.MAJOR_SEVENTH,
+    min7: ChordType.MINOR_SEVENTH,
+    halfDim7: ChordType.HALF_DIMINISHED,
+    dim7: ChordType.FULLY_DIMINISHED,
+  }
+
+  const mappedChordType =
+    typeof chordType === 'string'
+      ? chordTypeMap[chordType] || ChordType.MAJOR
+      : chordType
+
+  const intervals = CHORD_INTERVALS[mappedChordType]
+
+  // If root doesn't have an octave, return note names without octaves
+  const hasOctave = /[0-9]$/.test(root)
+
+  if (!hasOctave) {
+    const noteNames = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ]
+    const rootIndex = noteNames.findIndex(
+      n => n === root || n === root.replace('b', '#')
+    )
+
+    if (rootIndex === -1) {
+      // Handle flats
+      const flatMap: Record<string, string> = {
+        Db: 'C#',
+        Eb: 'D#',
+        Gb: 'F#',
+        Ab: 'G#',
+        Bb: 'A#',
+      }
+      const sharpRoot = flatMap[root] || root
+      const newRootIndex = noteNames.indexOf(sharpRoot)
+      if (newRootIndex === -1) throw new Error(`Invalid root note: ${root}`)
+
+      return intervals.map(interval => {
+        const noteIndex = (newRootIndex + interval) % 12
+        return noteNames[noteIndex]
+      })
+    }
+
+    return intervals.map(interval => {
+      const noteIndex = (rootIndex + interval) % 12
+      return noteNames[noteIndex]
+    })
+  }
+
+  // Original behavior for notes with octaves
+  const rootMidi = noteToMidi(root)
   return intervals.map(interval => midiToNote(rootMidi + interval))
 }
 
