@@ -59,13 +59,3 @@ export interface StorageResponseEvent {
   data?: unknown
   error?: string
 }
-
-// Common interface for storage services
-export interface IStorageService {
-  get<T>(key: string): Promise<T | null>
-  set<T>(key: string, value: T, ttl?: number): Promise<void>
-  remove(key: string): Promise<void>
-  clear(): Promise<void>
-  getKeys(): Promise<string[]>
-  destroy?(): void
-}
