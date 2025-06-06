@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { NotationRenderer } from '../utils/notationRenderer'
-import { SheetMusic } from '../types/sheetMusic'
+import type { SheetMusic } from '../modules/sheetMusic/types'
 
 interface SheetMusicDisplayProps {
   sheetMusic: SheetMusic

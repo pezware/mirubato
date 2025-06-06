@@ -1,5 +1,6 @@
 import { Renderer, Stave, StaveNote, Voice, Formatter, Beam } from 'vexflow'
-import { SheetMusic, Measure } from '../types/sheetMusic'
+import type { SheetMusic, Measure } from '../modules/sheetMusic/types'
+import { convertMeasureForVexFlow } from './sheetMusicTypeConverters'
 
 export interface RenderOptions {
   width: number
@@ -66,8 +67,8 @@ export class NotationRenderer {
     if (sheetMusic.measures[0]?.tempo && this.context) {
       this.context.setFont('Arial', 14, '')
       const tempo = sheetMusic.measures[0].tempo
-      // Show just the tempo marking without BPM for practice
-      this.context.fillText(tempo.marking || '', staveX, 30)
+      // Show tempo as BPM
+      this.context.fillText(`♩ = ${tempo}`, staveX, 30)
     }
   }
 
@@ -78,14 +79,19 @@ export class NotationRenderer {
     width: number,
     isFirst: boolean
   ) {
+    // Convert measure to VexFlow-compatible format
+    const vexMeasure = convertMeasureForVexFlow(measure)
+
     // Create stave
     const stave = new Stave(x, y, width)
 
     // Add clef, time signature, and key signature for first measure
     if (isFirst) {
-      if (measure.clef) stave.addClef(measure.clef)
-      if (measure.timeSignature) stave.addTimeSignature(measure.timeSignature)
-      if (measure.keySignature) stave.addKeySignature(measure.keySignature)
+      if (vexMeasure.clef) stave.addClef(vexMeasure.clef)
+      if (vexMeasure.timeSignature)
+        stave.addTimeSignature(vexMeasure.timeSignature)
+      if (vexMeasure.keySignature)
+        stave.addKeySignature(vexMeasure.keySignature)
     }
 
     if (this.context) {
@@ -93,7 +99,7 @@ export class NotationRenderer {
     }
 
     // Convert measure notes to VexFlow notes
-    const vexNotes = measure.notes.map(
+    const vexNotes = vexMeasure.notes.map(
       note => new StaveNote({ keys: note.keys, duration: note.duration })
     )
 
