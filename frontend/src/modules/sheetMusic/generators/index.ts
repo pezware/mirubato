@@ -5,3 +5,4 @@
  */
 
 export { ExerciseGenerator } from './ExerciseGenerator'
+export { SightReadingGenerator } from './SightReadingGenerator'
