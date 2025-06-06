@@ -14,6 +14,7 @@ import {
   RepertoireStatus,
   GeneratedExercise,
   SheetMusicModuleConfig,
+  TechnicalElement,
 } from '../types'
 
 describe('SheetMusicLibraryModule - Edge Cases', () => {
@@ -89,14 +90,17 @@ describe('SheetMusicLibraryModule - Edge Cases', () => {
         difficulty: 8,
         measures: 16,
         tempo: 144,
-        technicalElements: ['scales', 'arpeggios', 'chromatic'],
+        technicalElements: [
+          TechnicalElement.SCALES,
+          TechnicalElement.ARPEGGIOS,
+        ],
       }
 
       const exercise = await module.generateExercise(params)
       expect(exercise).toBeDefined()
       expect(exercise.type).toBe(ExerciseType.TECHNICAL)
       expect(exercise.metadata.focusAreas).toEqual(
-        expect.arrayContaining(['scales', 'arpeggios', 'chromatic'])
+        expect.arrayContaining(['scales', 'arpeggios'])
       )
     })
   })
@@ -181,7 +185,7 @@ describe('SheetMusicLibraryModule - Edge Cases', () => {
       expect(exercises).toHaveLength(50)
 
       // Verify each user can retrieve their exercise
-      const retrievalPromises = exercises.map((exercise, i) =>
+      const retrievalPromises = exercises.map((_, i) =>
         module.listUserExercises(`concurrent-user-${i}`)
       )
 
@@ -364,9 +368,9 @@ describe('SheetMusicLibraryModule - Edge Cases', () => {
       // Multiple concurrent status updates
       const updates = [
         RepertoireStatus.LEARNING,
-        RepertoireStatus.PRACTICING,
         RepertoireStatus.MEMORIZED,
-        RepertoireStatus.PERFORMANCE_READY,
+        RepertoireStatus.FORGOTTEN,
+        RepertoireStatus.DROPPED,
       ]
 
       const updatePromises = updates.map(

@@ -12,6 +12,7 @@ import {
   TimeSignature,
   Clef,
   SheetMusicModuleConfig,
+  TechnicalElement,
 } from '../types'
 
 describe('SheetMusicLibraryModule - Performance Tests', () => {
@@ -279,7 +280,11 @@ describe('SheetMusicLibraryModule - Performance Tests', () => {
         difficulty: 9,
         measures: 32,
         tempo: 144,
-        technicalElements: ['scales', 'arpeggios', 'chromatic', 'octaves'],
+        technicalElements: [
+          TechnicalElement.SCALES,
+          TechnicalElement.ARPEGGIOS,
+          TechnicalElement.OCTAVES,
+        ],
       }
 
       const startTime = performance.now()

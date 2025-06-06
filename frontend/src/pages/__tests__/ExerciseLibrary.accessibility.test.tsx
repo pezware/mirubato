@@ -31,7 +31,13 @@ jest.mock('../../hooks/useAuth')
 
 // Mock components
 jest.mock('../../components/ExerciseGenerator/ExerciseParameterForm', () => ({
-  ExerciseParameterForm: ({ onGenerate, isLoading }) => (
+  ExerciseParameterForm: ({
+    onGenerate,
+    isLoading,
+  }: {
+    onGenerate: (params: any) => void
+    isLoading: boolean
+  }) => (
     <div data-testid="exercise-parameter-form">
       <button
         onClick={() =>
