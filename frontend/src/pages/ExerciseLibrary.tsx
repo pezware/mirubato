@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EventBus } from '../modules/core/EventBus'
 import { EventDrivenStorage } from '../modules/core/eventDrivenStorage'
+import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { SheetMusicLibraryModule } from '../modules/sheetMusic/SheetMusicLibraryModule'
 import { ExerciseParameterForm } from '../components/ExerciseGenerator/ExerciseParameterForm'
 import { ExercisePreview } from '../components/ExerciseGenerator/ExercisePreview'
@@ -37,10 +38,16 @@ const ExerciseLibrary: React.FC = () => {
   // Initialize the sheet music module
   useEffect(() => {
     let module: SheetMusicLibraryModule | null = null
+    let storageModule: StorageModule | null = null
 
     const initModule = async () => {
       try {
         const eventBus = EventBus.getInstance()
+
+        // Initialize StorageModule first to handle storage events
+        storageModule = new StorageModule()
+        await storageModule.initialize()
+
         const storage = new EventDrivenStorage()
         module = new SheetMusicLibraryModule(eventBus, storage)
         await module.initialize()
@@ -62,6 +69,7 @@ const ExerciseLibrary: React.FC = () => {
     return () => {
       // Cleanup on unmount
       module?.destroy()
+      storageModule?.shutdown()
     }
   }, [user?.id])
 
