@@ -31,13 +31,7 @@ jest.mock('../../hooks/useAuth')
 
 // Mock components
 jest.mock('../../components/ExerciseGenerator/ExerciseParameterForm', () => ({
-  ExerciseParameterForm: ({
-    onGenerate,
-    isLoading,
-  }: {
-    onGenerate: (params: any) => void
-    isLoading: boolean
-  }) => (
+  ExerciseParameterForm: ({ onGenerate, isLoading }) => (
     <div data-testid="exercise-parameter-form">
       <button
         onClick={() =>
@@ -193,9 +187,9 @@ describe('ExerciseLibrary - Accessibility', () => {
     it('should have proper navigation structure', () => {
       renderExerciseLibrary()
 
-      // Tab navigation should be accessible
+      // Tab navigation should be accessible - use exact text to avoid conflicts
       const generateTab = screen.getByRole('button', {
-        name: /generate new exercise/i,
+        name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
@@ -218,7 +212,7 @@ describe('ExerciseLibrary - Accessibility', () => {
 
       // Tab buttons should be focusable
       const generateTab = screen.getByRole('button', {
-        name: /generate new exercise/i,
+        name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
@@ -361,7 +355,7 @@ describe('ExerciseLibrary - Accessibility', () => {
 
       // Tab navigation should not lose focus
       const generateTab = screen.getByRole('button', {
-        name: /generate new exercise/i,
+        name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
