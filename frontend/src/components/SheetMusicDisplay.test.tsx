@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SheetMusicDisplay } from './SheetMusicDisplay'
-import { SheetMusic } from '../types/sheetMusic'
+import type { SheetMusic } from '../modules/sheetMusic/types'
+import {
+  KeySignature,
+  TimeSignature,
+  NoteDuration,
+} from '../modules/sheetMusic/types'
 import { NotationRenderer } from '../utils/notationRenderer'
 
 // Mock the NotationRenderer
@@ -20,46 +25,53 @@ describe('SheetMusicDisplay', () => {
     id: 'test-piece',
     title: 'Test Piece',
     composer: 'Test Composer',
-    instrument: 'piano',
-    difficulty: 'intermediate',
+    instrument: 'PIANO',
+    difficulty: 'INTERMEDIATE',
+    difficultyLevel: 6,
+    durationSeconds: 120,
+    timeSignature: '4/4',
+    keySignature: 'C',
+    suggestedTempo: 120,
+    stylePeriod: 'CLASSICAL',
+    tags: ['test'],
     measures: [
       {
         number: 1,
         notes: [
-          { keys: ['c/4'], duration: 'q', time: 0 },
-          { keys: ['d/4'], duration: 'q', time: 1 },
-          { keys: ['e/4'], duration: 'q', time: 2 },
-          { keys: ['f/4'], duration: 'q', time: 3 },
+          { keys: ['c/4'], duration: NoteDuration.QUARTER, time: 0 },
+          { keys: ['d/4'], duration: NoteDuration.QUARTER, time: 1 },
+          { keys: ['e/4'], duration: NoteDuration.QUARTER, time: 2 },
+          { keys: ['f/4'], duration: NoteDuration.QUARTER, time: 3 },
         ],
-        timeSignature: '4/4',
-        keySignature: 'C',
-        tempo: { bpm: 120 },
+        timeSignature: TimeSignature.FOUR_FOUR,
+        keySignature: KeySignature.C_MAJOR,
+        tempo: 120,
       },
       {
         number: 2,
         notes: [
-          { keys: ['g/4'], duration: 'q', time: 4 },
-          { keys: ['a/4'], duration: 'q', time: 5 },
-          { keys: ['b/4'], duration: 'q', time: 6 },
-          { keys: ['c/5'], duration: 'q', time: 7 },
+          { keys: ['g/4'], duration: NoteDuration.QUARTER, time: 4 },
+          { keys: ['a/4'], duration: NoteDuration.QUARTER, time: 5 },
+          { keys: ['b/4'], duration: NoteDuration.QUARTER, time: 6 },
+          { keys: ['c/5'], duration: NoteDuration.QUARTER, time: 7 },
         ],
       },
       {
         number: 3,
         notes: [
-          { keys: ['b/4'], duration: 'h', time: 8 },
-          { keys: ['a/4'], duration: 'h', time: 10 },
+          { keys: ['b/4'], duration: NoteDuration.HALF, time: 8 },
+          { keys: ['a/4'], duration: NoteDuration.HALF, time: 10 },
         ],
       },
       {
         number: 4,
-        notes: [{ keys: ['g/4'], duration: 'w', time: 12 }],
+        notes: [{ keys: ['g/4'], duration: NoteDuration.WHOLE, time: 12 }],
       },
       {
         number: 5,
         notes: [
-          { keys: ['f/4'], duration: 'h', time: 16 },
-          { keys: ['e/4'], duration: 'h', time: 18 },
+          { keys: ['f/4'], duration: NoteDuration.HALF, time: 16 },
+          { keys: ['e/4'], duration: NoteDuration.HALF, time: 18 },
         ],
       },
     ],

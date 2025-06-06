@@ -68,30 +68,23 @@ export const ExercisePreview: React.FC<ExercisePreviewProps> = ({
       const containerWidth = notationRef.current.offsetWidth || 800
 
       try {
-        // Convert measures to notation renderer format
-        const notationMeasures = currentPageMeasures.map(measure => {
-          // Convert tempo if present (first measure only)
-          const tempo = measure.tempo
-            ? {
-                bpm: measure.tempo,
-                marking: `♩ = ${measure.tempo}`,
-              }
-            : undefined
-
-          return {
-            ...measure,
-            tempo,
-          }
-        })
+        // Measures are already in the correct format for the new SheetMusic type
 
         notationRendererRef.current.render(
           {
             id: exercise.id,
             title: exercise.metadata.title,
             composer: 'Generated Exercise',
-            instrument: 'piano' as const,
-            difficulty: 'intermediate' as const,
-            measures: notationMeasures,
+            instrument: 'PIANO' as const,
+            difficulty: 'INTERMEDIATE' as const,
+            difficultyLevel: exercise.parameters.difficulty,
+            durationSeconds: exercise.metadata.estimatedDuration,
+            timeSignature: exercise.parameters.timeSignature,
+            keySignature: exercise.parameters.keySignature,
+            suggestedTempo: exercise.parameters.tempo,
+            stylePeriod: 'CONTEMPORARY',
+            tags: exercise.metadata.tags,
+            measures: currentPageMeasures,
           },
           {
             width: containerWidth,

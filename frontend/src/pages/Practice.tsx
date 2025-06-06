@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAudioManager } from '../contexts/AudioContext'
 import {
   moonlightSonata3rdMovement,
-  getPlayableNotes,
+  getMoonlightNotes,
 } from '../data/sheetMusic'
 import {
   SaveProgressPrompt,
@@ -27,7 +27,7 @@ const Practice: React.FC = () => {
 
   // Get the current piece data
   const currentPiece = moonlightSonata3rdMovement
-  const playableNotes = getPlayableNotes(currentPiece)
+  const playableNotes = getMoonlightNotes()
 
   // Set instrument to piano (but don't initialize audio yet)
   useEffect(() => {

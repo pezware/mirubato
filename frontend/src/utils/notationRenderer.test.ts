@@ -1,5 +1,11 @@
 import { NotationRenderer } from './notationRenderer'
-import { SheetMusic } from '../types/sheetMusic'
+import type { SheetMusic } from '../modules/sheetMusic/types'
+import {
+  KeySignature,
+  TimeSignature,
+  Clef,
+  NoteDuration,
+} from '../modules/sheetMusic/types'
 
 // Mock VexFlow
 jest.mock('vexflow', () => {
@@ -102,19 +108,26 @@ describe('NotationRenderer', () => {
     id: 'test-piece',
     title: 'Test Piece',
     composer: 'Test Composer',
-    instrument: 'piano',
-    difficulty: 'intermediate',
+    instrument: 'PIANO',
+    difficulty: 'INTERMEDIATE',
+    difficultyLevel: 6,
+    durationSeconds: 120,
+    timeSignature: '4/4',
+    keySignature: 'C',
+    suggestedTempo: 120,
+    stylePeriod: 'CLASSICAL',
+    tags: ['test'],
     measures: Array.from({ length: measureCount }, (_, i) => ({
       number: i + 1,
-      clef: i === 0 ? 'treble' : undefined,
-      timeSignature: i === 0 ? '4/4' : undefined,
-      keySignature: i === 0 ? 'C' : undefined,
-      tempo: i === 0 ? { bpm: 120, marking: 'Allegro' } : undefined,
+      clef: i === 0 ? Clef.TREBLE : undefined,
+      timeSignature: i === 0 ? TimeSignature.FOUR_FOUR : undefined,
+      keySignature: i === 0 ? KeySignature.C_MAJOR : undefined,
+      tempo: i === 0 ? 120 : undefined,
       notes: [
-        { keys: ['c/4'], duration: '4', time: 0 },
-        { keys: ['d/4'], duration: '4', time: 1 },
-        { keys: ['e/4'], duration: '4', time: 2 },
-        { keys: ['f/4'], duration: '4', time: 3 },
+        { keys: ['c/4'], duration: NoteDuration.QUARTER, time: 0 },
+        { keys: ['d/4'], duration: NoteDuration.QUARTER, time: 1 },
+        { keys: ['e/4'], duration: NoteDuration.QUARTER, time: 2 },
+        { keys: ['f/4'], duration: NoteDuration.QUARTER, time: 3 },
       ],
     })),
   })
@@ -154,7 +167,7 @@ describe('NotationRenderer', () => {
       expect(mockFormatter.format).toHaveBeenCalledTimes(2)
 
       // Check tempo marking
-      expect(mockContext.fillText).toHaveBeenCalledWith('Allegro', 20, 30)
+      expect(mockContext.fillText).toHaveBeenCalledWith('♩ = 120', 20, 30)
     })
 
     it('renders with custom measures per line', () => {
@@ -219,20 +232,27 @@ describe('NotationRenderer', () => {
         id: 'test',
         title: 'Test',
         composer: 'Test',
-        instrument: 'piano',
-        difficulty: 'intermediate',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
         measures: [
           {
             number: 1,
             notes: [
-              { keys: ['c/4'], duration: '16', time: 0 },
-              { keys: ['d/4'], duration: '16', time: 0.25 },
-              { keys: ['e/4'], duration: '16', time: 0.5 },
-              { keys: ['f/4'], duration: '16', time: 0.75 },
-              { keys: ['g/4'], duration: '16', time: 1 },
-              { keys: ['a/4'], duration: '16', time: 1.25 },
-              { keys: ['b/4'], duration: '16', time: 1.5 },
-              { keys: ['c/5'], duration: '16', time: 1.75 },
+              { keys: ['c/4'], duration: NoteDuration.SIXTEENTH, time: 0 },
+              { keys: ['d/4'], duration: NoteDuration.SIXTEENTH, time: 0.25 },
+              { keys: ['e/4'], duration: NoteDuration.SIXTEENTH, time: 0.5 },
+              { keys: ['f/4'], duration: NoteDuration.SIXTEENTH, time: 0.75 },
+              { keys: ['g/4'], duration: NoteDuration.SIXTEENTH, time: 1 },
+              { keys: ['a/4'], duration: NoteDuration.SIXTEENTH, time: 1.25 },
+              { keys: ['b/4'], duration: NoteDuration.SIXTEENTH, time: 1.5 },
+              { keys: ['c/5'], duration: NoteDuration.SIXTEENTH, time: 1.75 },
             ],
           },
         ],
@@ -258,12 +278,19 @@ describe('NotationRenderer', () => {
         id: 'test',
         title: 'Test',
         composer: 'Test',
-        instrument: 'piano',
-        difficulty: 'intermediate',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
         measures: [
           {
             number: 1,
-            notes: [{ keys: ['c/4'], duration: '4', time: 0 }],
+            notes: [{ keys: ['c/4'], duration: NoteDuration.QUARTER, time: 0 }],
           },
         ],
       }
@@ -330,8 +357,15 @@ describe('NotationRenderer', () => {
         id: 'test',
         title: 'Test',
         composer: 'Test',
-        instrument: 'piano',
-        difficulty: 'intermediate',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
         measures: [],
       }
 
@@ -364,15 +398,22 @@ describe('NotationRenderer', () => {
         id: 'test',
         title: 'Test',
         composer: 'Test',
-        instrument: 'piano',
-        difficulty: 'intermediate',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
         measures: [
           {
             number: 1,
             notes: [
-              { keys: ['c/4'], duration: '16', time: 0 },
-              { keys: ['d/4'], duration: '16', time: 0.25 },
-              { keys: ['e/4'], duration: '16', time: 0.5 }, // Only 3 sixteenth notes
+              { keys: ['c/4'], duration: NoteDuration.SIXTEENTH, time: 0 },
+              { keys: ['d/4'], duration: NoteDuration.SIXTEENTH, time: 0.25 },
+              { keys: ['e/4'], duration: NoteDuration.SIXTEENTH, time: 0.5 }, // Only 3 sixteenth notes
             ],
           },
         ],

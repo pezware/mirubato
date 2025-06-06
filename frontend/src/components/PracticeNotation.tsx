@@ -1,7 +1,7 @@
 import React from 'react'
 import { SheetMusicDisplay } from './SheetMusicDisplay'
 import { SheetMusicErrorBoundary } from './ErrorBoundary'
-import type { SheetMusic } from '../types/sheetMusic'
+import type { SheetMusic } from '../modules/sheetMusic/types'
 
 interface PracticeNotationProps {
   sheetMusic: SheetMusic
@@ -26,8 +26,9 @@ export const PracticeNotation: React.FC<PracticeNotationProps> = ({
             </span>
           </div>
           <div className="text-mirubato-wood-500">
-            {sheetMusic.measures[0]?.keySignature} •{' '}
-            {sheetMusic.measures[0]?.tempo?.marking}
+            {sheetMusic.keySignature} •{' '}
+            {sheetMusic.measures[0]?.tempo &&
+              `♩ = ${sheetMusic.measures[0].tempo}`}
           </div>
         </div>
       </div>

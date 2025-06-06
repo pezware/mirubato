@@ -111,14 +111,25 @@ jest.mock('../data/sheetMusic', () => ({
     id: 'moonlight-3rd',
     title: 'Moonlight Sonata, 3rd Movement',
     composer: 'L. van Beethoven',
+    instrument: 'PIANO',
+    difficulty: 'ADVANCED',
+    difficultyLevel: 9,
+    durationSeconds: 300,
+    timeSignature: '4/4',
+    keySignature: 'C#m',
+    suggestedTempo: 160,
+    stylePeriod: 'CLASSICAL',
+    tags: ['sonata', 'beethoven'],
     measures: [
       {
-        keySignature: 'C# minor',
-        tempo: { marking: 'Presto agitato', bpm: 160 },
+        number: 1,
+        notes: [],
+        keySignature: 'C_SHARP_MINOR',
+        tempo: 160,
       },
     ],
   },
-  getPlayableNotes: () => [
+  getMoonlightNotes: () => [
     { note: 'C4', time: 0 },
     { note: 'D4', time: 0.5 },
     { note: 'E4', time: 1 },
