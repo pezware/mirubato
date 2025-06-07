@@ -4,6 +4,263 @@
 
 This document consolidates the remaining Phase 4 tasks after completing Phase 1 (Exercise Generation Core). Tasks have been reprioritized to focus on backend data layer, storage, curated repertoire, and UI/UX as top priorities.
 
+## MVP Simplification Plan (2 Weeks) - TOP PRIORITY
+
+### Goal: "Practice Mode Only" - A Stable, Usable Product
+
+Focus on delivering a simple, bug-free practice experience with 10 curated pieces and preset practice workouts.
+
+### Week 1: Stabilization & Bug Fixes
+
+#### Day 1-2: Module Simplification
+
+**Objective**: Disable complex features to reduce bugs and complexity
+
+**Tasks:**
+
+1. Keep only essential modules active:
+
+   - EventBus (core infrastructure)
+   - StorageModule (local storage only, no sync)
+   - SheetMusicLibraryModule (display & generate only)
+   - PracticeSessionModule (simplified tracking)
+   - AudioContext (playback only)
+
+2. Temporarily disable:
+
+   - PerformanceTrackingModule
+   - ProgressAnalyticsModule
+   - CurriculumModule
+   - PracticeLoggerModule
+   - VisualizationModule
+   - SyncModule
+
+3. Update module initialization to skip disabled modules
+4. Remove UI components that depend on disabled modules
+5. Test that core functionality still works
+
+#### Day 3-4: Fix VexFlow Rendering Bugs
+
+**Objective**: Ensure sheet music displays correctly without crashes
+
+**Tasks:**
+
+1. Fix measure width calculations
+2. Implement proper cleanup on component unmount
+3. Handle window resize events correctly
+4. Fix page turning/scrolling issues
+5. Ensure consistent rendering across devices
+6. Add error boundaries around VexFlow components
+
+#### Day 5: Fix Audio Playback Issues
+
+**Objective**: Reliable audio playback and metronome sync
+
+**Tasks:**
+
+1. Fix mobile audio context initialization
+2. Ensure metronome syncs with notation
+3. Proper cleanup of Tone.js resources
+4. Fix timing issues between audio and visual
+5. Add loading states for audio samples
+6. Test on multiple devices (iOS, Android, Desktop)
+
+### Week 2: Content & Polish
+
+#### Day 1-2: Add 10 Curated Pieces
+
+**Objective**: Provide quality content for immediate use
+
+**Piano Pieces (5):**
+
+1. Bach - Minuet in G (from Anna Magdalena Notebook)
+2. Mozart - Sonata K.545, 1st movement (first page only)
+3. Clementi - Sonatina Op.36 No.1, 1st movement
+4. Schumann - "Melody" from Album for the Young Op.68
+5. Chopin - Prelude Op.28 No.7 (A major)
+
+**Guitar Pieces (5):**
+
+1. Sor - Study Op.60 No.1 (C major)
+2. Giuliani - Arpeggio Study Op.1a No.1
+3. Carcassi - Etude Op.60 No.1 (C major)
+4. Tárrega - "Lágrima"
+5. Anonymous - "Romance" (Spanish Romance)
+
+**Implementation:**
+
+1. Source public domain scores from IMSLP/Mutopia
+2. Convert to internal format
+3. Add metadata (difficulty, duration, key)
+4. Create thumbnail previews
+5. Add to seed data
+6. Test loading and playback
+
+#### Day 3: Implement Preset Practice Workouts
+
+**Objective**: Simplify practice generation with presets
+
+**Preset Workouts:**
+
+```typescript
+const PRESET_WORKOUTS = [
+  {
+    name: 'Daily Sight-Reading (Easy)',
+    params: {
+      difficulty: 2,
+      measures: 8,
+      keySignature: 'C',
+      timeSignature: '4/4',
+    },
+  },
+  {
+    name: 'Scale Practice (Major Keys)',
+    params: {
+      type: 'scales',
+      keys: ['C', 'G', 'D', 'A', 'E'],
+      pattern: 'ascending-descending',
+    },
+  },
+  {
+    name: 'Rhythm Training (4/4 Time)',
+    params: {
+      focus: 'rhythm',
+      timeSignature: '4/4',
+      difficulty: 3,
+    },
+  },
+  {
+    name: 'Interval Recognition',
+    params: {
+      intervals: ['M3', 'P5', 'P8'],
+      direction: 'both',
+    },
+  },
+]
+```
+
+**Tasks:**
+
+1. Create preset workout UI component
+2. Implement one-click practice generation
+3. Store presets in configuration
+4. Allow quick access from main page
+5. Test all preset generations
+
+#### Day 4: Simplify UI to Single "Practice" Mode
+
+**Objective**: Remove confusion between practice/exercise modes
+
+**UI Simplification:**
+
+```tsx
+// Main Practice Page Structure
+<PracticePage>
+  <PracticeSelector>
+    <Section title="Featured Pieces">
+      <CuratedPieces pieces={repertoire} />
+    </Section>
+    <Section title="Practice Workouts">
+      <PresetWorkouts workouts={presets} />
+    </Section>
+  </PracticeSelector>
+
+  <PracticeDisplay>
+    <SheetMusicDisplay />
+    <SimpleControls>
+      <PlayPauseButton />
+      <TempoSlider min={40} max={200} />
+      <MetronomeToggle />
+      <VolumeControl />
+    </SimpleControls>
+  </PracticeDisplay>
+</PracticePage>
+```
+
+**Tasks:**
+
+1. Rename "Exercise Library" to "Practice"
+2. Consolidate all practice-related UI
+3. Remove advanced settings and options
+4. Simplify navigation to single page
+5. Update routing and menu items
+6. Ensure mobile responsiveness
+
+#### Day 5: Testing & Final Bug Fixes
+
+**Objective**: Ensure stable, bug-free experience
+
+**Testing Checklist:**
+
+1. Load each of the 10 curated pieces
+2. Test all preset workouts
+3. Verify audio playback on all devices
+4. Check page turning/scrolling
+5. Test tempo changes during playback
+6. Verify metronome sync
+7. Test on slow connections
+8. Check memory usage over time
+9. Verify local storage works
+10. Test error handling
+
+### Implementation Guidelines
+
+#### Storage Simplification
+
+```typescript
+// Simplified storage - just last 10 practice sessions
+interface SimplifiedStorage {
+  recentPractices: {
+    id: string
+    pieceTitle: string
+    date: Date
+    duration: number
+  }[]
+
+  settings: {
+    tempo: number
+    metronomeEnabled: boolean
+    volume: number
+  }
+}
+```
+
+#### Error Handling Pattern
+
+```typescript
+// Consistent error handling across all components
+try {
+  // Operation
+} catch (error) {
+  console.error('Practice error:', error)
+  showUserMessage('Something went wrong. Please refresh and try again.')
+  // Graceful fallback
+}
+```
+
+### Success Criteria
+
+1. **Performance**: Page loads in <2 seconds
+2. **Stability**: No crashes during normal use
+3. **Mobile**: Works on iOS Safari, Android Chrome
+4. **Audio**: Stays in sync with notation
+5. **Usability**: New user can start practicing in <30 seconds
+
+### What We Defer to Later Phases
+
+1. User accounts & cloud sync
+2. Progress tracking & analytics
+3. Complex difficulty assessment
+4. AI-powered features
+5. Social/sharing features
+6. Professional practice logging
+7. Spaced repetition algorithms
+8. Advanced search & filtering
+9. MusicXML import/export
+10. Performance recording
+
+---
+
 ## Priority 1: Backend Data Layer & Storage (Week 1)
 
 ### Task 1.1: Create Database Migrations
