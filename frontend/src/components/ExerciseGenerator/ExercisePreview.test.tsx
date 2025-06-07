@@ -224,15 +224,15 @@ describe('ExercisePreview', () => {
       expect(mockAudioManager.initialize).toHaveBeenCalled()
       // Check that playNoteAt was called for each note
       expect(mockAudioManager.playNoteAt).toHaveBeenCalledWith(
-        'c4',
+        'C4',
         expect.any(Number),
-        NoteDuration.QUARTER,
+        '4n', // Tone.js duration format
         0.8
       )
       expect(mockAudioManager.playNoteAt).toHaveBeenCalledWith(
-        'd4',
+        'D4',
         expect.any(Number),
-        NoteDuration.QUARTER,
+        '4n', // Tone.js duration format
         0.8
       )
 

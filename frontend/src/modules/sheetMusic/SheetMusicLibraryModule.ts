@@ -66,7 +66,10 @@ export class SheetMusicLibraryModule
   private config: SheetMusicModuleConfig
   private state: SheetMusicModuleState
   private initialized = false
-  private lastHealthCheck = 0
+  private health: ModuleHealth = {
+    status: 'gray',
+    lastCheck: Date.now(),
+  }
   private sightReadingGenerator: SightReadingGenerator
   private technicalExerciseGenerator: TechnicalExerciseGenerator
 
@@ -84,8 +87,6 @@ export class SheetMusicLibraryModule
       recommendations: new Map(),
       userRepertoire: new Map(),
     }
-    this.lastHealthCheck = Date.now()
-
     // Initialize exercise generators
     this.sightReadingGenerator = new SightReadingGenerator()
     this.technicalExerciseGenerator = new TechnicalExerciseGenerator()
@@ -107,6 +108,11 @@ export class SheetMusicLibraryModule
       this.schedulePeriodicTasks()
 
       this.initialized = true
+      this.health = {
+        status: 'green',
+        message: 'Module initialized successfully',
+        lastCheck: Date.now(),
+      }
     } catch (error) {
       throw new Error(`Failed to initialize SheetMusicLibraryModule: ${error}`)
     }
@@ -123,6 +129,11 @@ export class SheetMusicLibraryModule
     this.state.userRepertoire.clear()
 
     this.initialized = false
+    this.health = {
+      status: 'gray',
+      message: 'Module shut down',
+      lastCheck: Date.now(),
+    }
   }
 
   async shutdown(): Promise<void> {
@@ -131,17 +142,8 @@ export class SheetMusicLibraryModule
   }
 
   getHealth(): ModuleHealth {
-    const now = Date.now()
-    const previousCheck = this.lastHealthCheck
-    this.lastHealthCheck = now
-
-    return {
-      status: this.initialized ? 'green' : 'red',
-      message: this.initialized
-        ? `Module is healthy (last check was ${now - previousCheck}ms ago)`
-        : 'Module not initialized',
-      lastCheck: now,
-    }
+    this.health.lastCheck = Date.now()
+    return this.health
   }
 
   // ============== Exercise Generation ==============
@@ -262,6 +264,63 @@ export class SheetMusicLibraryModule
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
+  }
+
+  async deleteExercise(exerciseId: string, userId: string): Promise<void> {
+    if (!this.initialized) {
+      throw new Error('Module not initialized')
+    }
+
+    // Load the exercise to verify ownership
+    const exercise = await this.loadExercise(exerciseId)
+
+    if (!exercise) {
+      throw new Error(`Exercise with id ${exerciseId} not found`)
+    }
+
+    if (exercise.userId !== userId) {
+      throw new Error(
+        'Unauthorized: Cannot delete exercise owned by another user'
+      )
+    }
+
+    try {
+      // Delete from storage
+      const key = `exercise:${userId}:${exerciseId}`
+      await this.storage.delete(key)
+
+      // Remove from internal cache
+      this.state.exercises.delete(exerciseId)
+
+      // Publish deletion event
+      this.eventBus.publish({
+        source: 'sheet-music',
+        type: 'sheet-music:exercise-deleted',
+        data: {
+          exerciseId,
+          userId,
+          exerciseType: exercise.type,
+          timestamp: new Date(),
+        },
+        metadata: { version: '1.0.0' },
+      })
+
+      // Update health status on successful deletion
+      this.health = {
+        status: 'green',
+        message: `Exercise ${exerciseId} deleted successfully`,
+        lastCheck: Date.now(),
+      }
+    } catch (error) {
+      // Update health status on error
+      this.health = {
+        status: 'yellow',
+        message: `Failed to delete exercise: ${error}`,
+        lastCheck: Date.now(),
+      }
+
+      throw new Error(`Failed to delete exercise: ${error}`)
+    }
   }
 
   // ============== Music Search ==============

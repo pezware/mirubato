@@ -490,6 +490,7 @@ export interface SheetMusicModuleInterface {
   saveExercise(exercise: GeneratedExercise): Promise<void>
   loadExercise(id: string): Promise<GeneratedExercise | null>
   listUserExercises(userId: string): Promise<GeneratedExercise[]>
+  deleteExercise(exerciseId: string, userId: string): Promise<void>
 
   // Music search and library
   searchMusic(criteria: MusicSearchCriteria): Promise<SearchResults>

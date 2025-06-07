@@ -5,9 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
 import AuthVerify from './pages/AuthVerify'
-import Debug from './pages/Debug'
 import Docs from './pages/Docs'
-import ExerciseLibrary from './pages/ExerciseLibrary'
 import { VersionInfo } from './components/VersionInfo'
 
 function App() {
@@ -34,7 +32,7 @@ function App() {
                   element={<div>Magic Link Verification (TODO)</div>}
                 />
                 <Route path="/practice" element={<Practice />} />
-                <Route path="/exercises" element={<ExerciseLibrary />} />
+                <Route path="/exercises" element={<Practice />} />
                 <Route
                   path="/profile"
                   element={<div>Profile Page (TODO)</div>}
@@ -43,9 +41,6 @@ function App() {
                   path="/settings"
                   element={<div>Settings Page (TODO)</div>}
                 />
-                {process.env.NODE_ENV === 'development' && (
-                  <Route path="/debug" element={<Debug />} />
-                )}
                 <Route path="/docs/*" element={<Docs />} />
               </Routes>
               <VersionInfo />

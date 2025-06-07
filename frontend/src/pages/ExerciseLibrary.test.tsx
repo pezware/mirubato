@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/AuthContext'
 import { useAuth } from '../hooks/useAuth'
 import ExerciseLibrary from './ExerciseLibrary'
 import { EventBus } from '../modules/core/EventBus'
+import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { SheetMusicLibraryModule } from '../modules/sheetMusic/SheetMusicLibraryModule'
 import {
   ExerciseType,
@@ -16,6 +17,7 @@ import {
 // Mock the modules
 jest.mock('../modules/core/EventBus')
 jest.mock('../modules/core/eventDrivenStorage')
+jest.mock('../modules/infrastructure/StorageModule')
 jest.mock('../modules/sheetMusic/SheetMusicLibraryModule')
 jest.mock('../utils/logger')
 
@@ -112,6 +114,7 @@ describe('ExerciseLibrary', () => {
   }
 
   let mockSheetMusicModule: jest.Mocked<SheetMusicLibraryModule>
+  let mockStorageModule: jest.Mocked<StorageModule>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -129,6 +132,13 @@ describe('ExerciseLibrary', () => {
       publish: jest.fn(),
       subscribe: jest.fn(),
     })
+
+    // Setup StorageModule mock
+    mockStorageModule = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      shutdown: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<StorageModule>
+    ;(StorageModule as jest.Mock).mockImplementation(() => mockStorageModule)
 
     // Setup SheetMusicLibraryModule mock
     mockSheetMusicModule = {
@@ -419,12 +429,18 @@ describe('ExerciseLibrary', () => {
     })
   })
 
-  it('cleans up module on unmount', () => {
+  it('cleans up module on unmount', async () => {
     const { unmount } = renderExerciseLibrary()
+
+    // Wait for module initialization
+    await waitFor(() => {
+      expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
+    })
 
     unmount()
 
     expect(mockSheetMusicModule.destroy).toHaveBeenCalled()
+    expect(mockStorageModule.shutdown).toHaveBeenCalled()
   })
 
   it('works properly for anonymous users', async () => {

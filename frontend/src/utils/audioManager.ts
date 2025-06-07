@@ -272,10 +272,23 @@ export class AudioManager implements AudioManagerInterface {
     }
 
     try {
+      // Calculate time relative to Tone.js current time
+      const toneTime = this.toneInstance.now() + time
+
       if (this.currentInstrument === 'piano' && this.pianoSampler) {
-        this.pianoSampler.triggerAttackRelease(note, duration, time, velocity)
+        this.pianoSampler.triggerAttackRelease(
+          note,
+          duration,
+          toneTime,
+          velocity
+        )
       } else if (this.currentInstrument === 'guitar' && this.guitarSynth) {
-        this.guitarSynth.triggerAttackRelease(note, duration, time, velocity)
+        this.guitarSynth.triggerAttackRelease(
+          note,
+          duration,
+          toneTime,
+          velocity
+        )
       }
     } catch (error) {
       console.error('Error scheduling note:', error)

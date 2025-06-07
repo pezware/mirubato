@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import Practice from './Practice'
 import { AudioProvider } from '../contexts/AudioContext'
+import { AuthContext } from '../contexts/AuthContext'
 import { audioManager } from '../utils/audioManager'
 import * as Tone from 'tone'
 
@@ -10,6 +11,11 @@ import * as Tone from 'tone'
 jest.mock('../utils/audioManager')
 jest.mock('tone')
 jest.mock('../hooks/useViewport')
+jest.mock('../modules/core/EventBus')
+jest.mock('../modules/infrastructure/StorageModule')
+jest.mock('../modules/sheetMusic/SheetMusicLibraryModule')
+jest.mock('../modules/core/eventDrivenStorage')
+jest.mock('../utils/logger')
 
 // Import the hook to be mocked
 import { useViewport } from '../hooks/useViewport'
@@ -42,8 +48,7 @@ jest.mock('../components', () => ({
       {!isMobile && (
         <div>
           <button onClick={() => onModeChange('practice')}>Practice</button>
-          <button onClick={() => onModeChange('sight-read')}>Sight Read</button>
-          <button onClick={() => onModeChange('debug')}>Debug</button>
+          <button onClick={() => onModeChange('exercise')}>Exercise</button>
         </div>
       )}
       {isMobile && <button data-testid="mobile-menu">Menu</button>}
@@ -166,13 +171,33 @@ describe('Practice Page', () => {
     })
   })
 
+  const mockAuthContext = {
+    user: {
+      id: 'test-user',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      primaryInstrument: 'PIANO' as const,
+      isAnonymous: false,
+    },
+    loading: false,
+    isAuthenticated: true,
+    isAnonymous: false,
+    login: jest.fn(),
+    logout: jest.fn(),
+    refreshAuth: jest.fn(),
+    syncToCloud: jest.fn(),
+    localUserData: null,
+  }
+
   const renderPractice = () => {
     return render(
-      <BrowserRouter>
-        <AudioProvider audioManager={mockAudioManager as any}>
-          <Practice />
-        </AudioProvider>
-      </BrowserRouter>
+      <MemoryRouter>
+        <AuthContext.Provider value={mockAuthContext}>
+          <AudioProvider audioManager={mockAudioManager as any}>
+            <Practice />
+          </AudioProvider>
+        </AuthContext.Provider>
+      </MemoryRouter>
     )
   }
 
@@ -211,8 +236,7 @@ describe('Practice Page', () => {
       renderPractice()
 
       expect(screen.getByText('Practice')).toBeInTheDocument()
-      expect(screen.getByText('Sight Read')).toBeInTheDocument()
-      expect(screen.getByText('Debug')).toBeInTheDocument()
+      expect(screen.getByText('Exercise')).toBeInTheDocument()
     })
 
     it('hides mode selector on mobile', () => {
@@ -227,8 +251,7 @@ describe('Practice Page', () => {
       renderPractice()
 
       // On mobile, mode selector buttons should not be present
-      expect(screen.queryByText('Sight Read')).not.toBeInTheDocument()
-      expect(screen.queryByText('Debug')).not.toBeInTheDocument()
+      expect(screen.queryByText('Exercise')).not.toBeInTheDocument()
     })
 
     it('shows mobile menu button on mobile', () => {
@@ -257,37 +280,18 @@ describe('Practice Page', () => {
     it('changes mode when mode buttons are clicked', () => {
       renderPractice()
 
-      const sightReadButton = screen.getByText('Sight Read')
-      const debugButton = screen.getByText('Debug')
+      const exerciseButton = screen.getByText('Exercise')
 
       // Initially practice mode is displayed
       expect(screen.getByText('practice')).toBeInTheDocument()
 
-      // Click sight read
-      fireEvent.click(sightReadButton)
+      // Click exercise
+      fireEvent.click(exerciseButton)
 
       // The component should re-render with new mode
       // We can't check className on mocked components, so check for mode display
       expect(screen.queryByText('practice')).not.toBeInTheDocument()
-      expect(screen.getByText('sight-read')).toBeInTheDocument()
-
-      // Click debug
-      fireEvent.click(debugButton)
-      expect(screen.queryByText('sight-read')).not.toBeInTheDocument()
-      expect(screen.getByText('debug')).toBeInTheDocument()
-    })
-
-    it('shows debug controls in debug mode', () => {
-      renderPractice()
-
-      // Switch to debug mode
-      fireEvent.click(screen.getByText('Debug'))
-
-      // Check for debug controls
-      expect(
-        screen.getByText('Show all controls at full opacity')
-      ).toBeInTheDocument()
-      expect(screen.getByRole('checkbox')).toBeInTheDocument()
+      expect(screen.getByText('exercise')).toBeInTheDocument()
     })
 
     it('shows ghost controls in practice mode', () => {
@@ -407,11 +411,13 @@ describe('Practice Page', () => {
 
       // Force re-render to check updated state
       rerender(
-        <BrowserRouter>
-          <AudioProvider audioManager={mockAudioManager as any}>
-            <Practice />
-          </AudioProvider>
-        </BrowserRouter>
+        <MemoryRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <AudioProvider audioManager={mockAudioManager as any}>
+              <Practice />
+            </AudioProvider>
+          </AuthContext.Provider>
+        </MemoryRouter>
       )
 
       // Mobile menu button should appear
@@ -447,33 +453,6 @@ describe('Practice Page', () => {
 
       expect(screen.getByText('×')).toBeInTheDocument()
       expect(screen.queryByText(/Back/)).not.toBeInTheDocument()
-    })
-  })
-
-  describe('Debug Mode Features', () => {
-    beforeEach(() => {
-      mockUseViewport.mockReturnValue({
-        viewportWidth: 1200,
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-      })
-    })
-
-    it('toggles ghost control visibility in debug mode', () => {
-      renderPractice()
-
-      // Switch to debug mode
-      fireEvent.click(screen.getByText('Debug'))
-
-      const checkbox = screen.getByRole('checkbox')
-
-      // Initially unchecked (ghost controls visible at 5%)
-      expect(checkbox).not.toBeChecked()
-
-      // Toggle to show controls at full opacity
-      fireEvent.click(checkbox)
-      expect(checkbox).toBeChecked()
     })
   })
 })

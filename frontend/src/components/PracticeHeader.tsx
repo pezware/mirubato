@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { UserStatusIndicator } from './UserStatusIndicator'
 
-export type PracticeMode = 'practice' | 'sight-read' | 'debug'
+export type PracticeMode = 'practice' | 'exercise'
 
 interface PracticeHeaderProps {
   mode: PracticeMode
@@ -37,9 +37,12 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
                 </svg>
               </button>
             )}
-            <h1 className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800">
+            <Link
+              to="/"
+              className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
+            >
               mirubato
-            </h1>
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -49,32 +52,21 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
             {/* Mode Selector - Hidden on mobile */}
             {!isMobile && (
               <div className="flex bg-mirubato-wood-50 rounded-lg p-1">
-                {(['practice', 'sight-read', 'debug'] as PracticeMode[]).map(
-                  m => (
-                    <button
-                      key={m}
-                      onClick={() => onModeChange(m)}
-                      className={`px-3 py-1 rounded-md text-sm transition-all ${
-                        mode === m
-                          ? 'bg-white text-mirubato-wood-800 shadow-sm'
-                          : 'text-mirubato-wood-500 hover:text-mirubato-wood-700'
-                      }`}
-                    >
-                      {m === 'sight-read'
-                        ? 'Sight Read'
-                        : m.charAt(0).toUpperCase() + m.slice(1)}
-                    </button>
-                  )
-                )}
+                {(['practice', 'exercise'] as PracticeMode[]).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => onModeChange(m)}
+                    className={`px-3 py-1 rounded-md text-sm transition-all ${
+                      mode === m
+                        ? 'bg-white text-mirubato-wood-800 shadow-sm'
+                        : 'text-mirubato-wood-500 hover:text-mirubato-wood-700'
+                    }`}
+                  >
+                    {m.charAt(0).toUpperCase() + m.slice(1)}
+                  </button>
+                ))}
               </div>
             )}
-
-            <Link
-              to="/"
-              className="text-mirubato-wood-600 hover:text-mirubato-wood-800 transition-colors text-sm"
-            >
-              {isMobile ? '×' : '← Back'}
-            </Link>
           </div>
         </div>
       </div>
