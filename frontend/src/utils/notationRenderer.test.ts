@@ -423,6 +423,129 @@ describe('NotationRenderer', () => {
 
       // Should not create beam for incomplete group
       expect(VexFlow.Beam).not.toHaveBeenCalled()
+
+      // Should add rests to complete the measure
+      // 3 sixteenth notes = 0.75 beats, need 3.25 more beats
+      expect(VexFlow.StaveNote).toHaveBeenCalledWith(
+        expect.objectContaining({ duration: expect.stringMatching(/r$/) })
+      )
+    })
+
+    it('handles empty measures by adding appropriate rest', () => {
+      const sheetMusic: SheetMusic = {
+        id: 'test',
+        title: 'Test',
+        composer: 'Test',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
+        measures: [
+          {
+            number: 1,
+            notes: [],
+            timeSignature: TimeSignature.FOUR_FOUR,
+          },
+          {
+            number: 2,
+            notes: [],
+            timeSignature: TimeSignature.THREE_FOUR,
+          },
+        ],
+      }
+
+      renderer.render(sheetMusic, { width: 800, scale: 1.0 })
+
+      // Should create whole rest for 4/4 measure
+      expect(VexFlow.StaveNote).toHaveBeenCalledWith({
+        keys: ['b/4'],
+        duration: 'wr',
+      })
+    })
+
+    it('completes incomplete measures with rests', () => {
+      const sheetMusic: SheetMusic = {
+        id: 'test',
+        title: 'Test',
+        composer: 'Test',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '4/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
+        measures: [
+          {
+            number: 1,
+            notes: [
+              { keys: ['c/4'], duration: NoteDuration.QUARTER, time: 0 },
+              { keys: ['d/4'], duration: NoteDuration.QUARTER, time: 1 },
+              // Missing 2 beats
+            ],
+          },
+        ],
+      }
+
+      renderer.render(sheetMusic, { width: 800, scale: 1.0 })
+
+      // Should add rests for missing beats
+      const staveNoteCalls = (VexFlow.StaveNote as unknown as jest.Mock).mock
+        .calls
+      const restCalls = staveNoteCalls.filter(
+        call => call[0].duration && call[0].duration.endsWith('r')
+      )
+
+      expect(restCalls.length).toBeGreaterThan(0)
+    })
+
+    it('handles different time signatures correctly', () => {
+      const sheetMusic: SheetMusic = {
+        id: 'test',
+        title: 'Test',
+        composer: 'Test',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 6,
+        durationSeconds: 60,
+        timeSignature: '3/4',
+        keySignature: 'C',
+        suggestedTempo: 120,
+        stylePeriod: 'CLASSICAL',
+        tags: ['test'],
+        measures: [
+          {
+            number: 1,
+            notes: [
+              { keys: ['c/4'], duration: NoteDuration.QUARTER, time: 0 },
+              // Missing 2 beats in 3/4 time
+            ],
+            timeSignature: TimeSignature.THREE_FOUR,
+          },
+        ],
+      }
+
+      renderer.render(sheetMusic, { width: 800, scale: 1.0 })
+
+      // Should complete measure with appropriate rests
+      const staveNoteCalls = (VexFlow.StaveNote as unknown as jest.Mock).mock
+        .calls
+      const noteCalls = staveNoteCalls.filter(
+        call => !call[0].duration.endsWith('r')
+      )
+      const restCalls = staveNoteCalls.filter(
+        call => call[0].duration && call[0].duration.endsWith('r')
+      )
+
+      expect(noteCalls.length).toBe(1) // One note
+      expect(restCalls.length).toBeGreaterThan(0) // At least one rest
     })
   })
 })

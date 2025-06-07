@@ -131,12 +131,11 @@ const Practice: React.FC = () => {
   }
 
   const handleDeleteExercise = async (exerciseId: string) => {
-    if (!storageModule) return
+    if (!sheetMusicModule || !user) return
 
     try {
-      // Delete from storage directly
-      const key = `exercise:${user?.id}:${exerciseId}`
-      await storageModule.deleteLocal(key)
+      // Delete through the module to ensure cache is updated
+      await sheetMusicModule.deleteExercise(exerciseId, user.id)
 
       // Update local state
       setExercises(exercises.filter(e => e.id !== exerciseId))

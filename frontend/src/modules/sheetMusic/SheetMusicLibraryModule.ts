@@ -266,6 +266,63 @@ export class SheetMusicLibraryModule
     )
   }
 
+  async deleteExercise(exerciseId: string, userId: string): Promise<void> {
+    if (!this.initialized) {
+      throw new Error('Module not initialized')
+    }
+
+    // Load the exercise to verify ownership
+    const exercise = await this.loadExercise(exerciseId)
+
+    if (!exercise) {
+      throw new Error(`Exercise with id ${exerciseId} not found`)
+    }
+
+    if (exercise.userId !== userId) {
+      throw new Error(
+        'Unauthorized: Cannot delete exercise owned by another user'
+      )
+    }
+
+    try {
+      // Delete from storage
+      const key = `exercise:${userId}:${exerciseId}`
+      await this.storage.delete(key)
+
+      // Remove from internal cache
+      this.state.exercises.delete(exerciseId)
+
+      // Publish deletion event
+      this.eventBus.publish({
+        source: 'sheet-music',
+        type: 'sheet-music:exercise-deleted',
+        data: {
+          exerciseId,
+          userId,
+          exerciseType: exercise.type,
+          timestamp: new Date(),
+        },
+        metadata: { version: '1.0.0' },
+      })
+
+      // Update health status on successful deletion
+      this.health = {
+        status: 'green',
+        message: `Exercise ${exerciseId} deleted successfully`,
+        lastCheck: Date.now(),
+      }
+    } catch (error) {
+      // Update health status on error
+      this.health = {
+        status: 'yellow',
+        message: `Failed to delete exercise: ${error}`,
+        lastCheck: Date.now(),
+      }
+
+      throw new Error(`Failed to delete exercise: ${error}`)
+    }
+  }
+
   // ============== Music Search ==============
 
   async searchMusic(criteria: MusicSearchCriteria): Promise<SearchResults> {

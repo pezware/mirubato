@@ -110,19 +110,6 @@ export class NotationRenderer {
       stave.setContext(this.context).draw()
     }
 
-    // Convert measure notes to VexFlow notes
-    const vexNotes = vexMeasure.notes.map(
-      note => new StaveNote({ keys: note.keys, duration: note.duration })
-    )
-
-    // Create beams for sixteenth notes (group by 4)
-    const beams: Beam[] = []
-    for (let i = 0; i < vexNotes.length; i += 4) {
-      if (i + 3 < vexNotes.length && vexNotes[i].getDuration() === '16') {
-        beams.push(new Beam(vexNotes.slice(i, i + 4)))
-      }
-    }
-
     // Parse time signature for voice configuration
     let numBeats = 4
     let beatValue = 4
@@ -133,6 +120,66 @@ export class NotationRenderer {
       if (!isNaN(beats) && !isNaN(value)) {
         numBeats = beats
         beatValue = value
+      }
+    }
+
+    // Check if measure has any notes
+    if (!vexMeasure.notes || vexMeasure.notes.length === 0) {
+      // Add a whole rest for empty measures
+      const restDuration = this.getRestDurationForTimeSignature(
+        numBeats,
+        beatValue
+      )
+      const vexNotes = [
+        new StaveNote({ keys: ['b/4'], duration: restDuration + 'r' }),
+      ]
+
+      // Create voice and add the rest
+      const voice = new Voice({ numBeats, beatValue })
+      voice.addTickables(vexNotes)
+
+      // Format and draw
+      new Formatter().joinVoices([voice]).format([voice], width - 20)
+      if (this.context) {
+        voice.draw(this.context, stave)
+      }
+      return
+    }
+
+    // Convert measure notes to VexFlow notes
+    const vexNotes = vexMeasure.notes.map(
+      note => new StaveNote({ keys: note.keys, duration: note.duration })
+    )
+
+    // Calculate total duration of notes in the measure
+    const totalDuration = this.calculateTotalDuration(vexNotes)
+    const expectedDuration = (numBeats / beatValue) * 4 // Convert to quarter note units
+
+    // If measure is incomplete, add rests to fill it
+    if (totalDuration < expectedDuration) {
+      const remainingDuration = expectedDuration - totalDuration
+      const rests = this.createRestsForDuration(remainingDuration)
+      vexNotes.push(...rests)
+    }
+
+    // Create beams for sixteenth notes (group by 4)
+    // Only beam actual notes, not rests
+    const beams: Beam[] = []
+    let noteGroup: StaveNote[] = []
+
+    for (const vexNote of vexNotes) {
+      const duration = vexNote.getDuration()
+      // Check if it's a sixteenth note (not a rest)
+      if (duration === '16') {
+        noteGroup.push(vexNote)
+        // Create beam when we have 4 sixteenth notes
+        if (noteGroup.length === 4) {
+          beams.push(new Beam(noteGroup))
+          noteGroup = []
+        }
+      } else {
+        // Reset group if we encounter a non-sixteenth note or rest
+        noteGroup = []
       }
     }
 
@@ -152,6 +199,82 @@ export class NotationRenderer {
         beam.setContext(this.context!).draw()
       })
     }
+  }
+
+  private getRestDurationForTimeSignature(
+    numBeats: number,
+    beatValue: number
+  ): string {
+    // Calculate the rest duration based on time signature
+    const totalQuarterNotes = (numBeats / beatValue) * 4
+
+    // Map quarter note values to VexFlow duration strings
+    if (totalQuarterNotes >= 4) return 'w' // whole rest
+    if (totalQuarterNotes >= 2) return 'h' // half rest
+    if (totalQuarterNotes >= 1) return 'q' // quarter rest
+    if (totalQuarterNotes >= 0.5) return '8' // eighth rest
+    return '16' // sixteenth rest as fallback
+  }
+
+  private calculateTotalDuration(notes: StaveNote[]): number {
+    // Calculate total duration in quarter note units
+    let total = 0
+    for (const note of notes) {
+      const duration = note.getDuration()
+      switch (duration) {
+        case 'w':
+          total += 4
+          break
+        case 'h':
+          total += 2
+          break
+        case 'q':
+          total += 1
+          break
+        case '8':
+          total += 0.5
+          break
+        case '16':
+          total += 0.25
+          break
+        case '32':
+          total += 0.125
+          break
+      }
+    }
+    return total
+  }
+
+  private createRestsForDuration(duration: number): StaveNote[] {
+    // Create rests to fill the given duration (in quarter note units)
+    const rests: StaveNote[] = []
+    let remaining = duration
+
+    // Fill with the largest possible rests first
+    while (remaining > 0) {
+      if (remaining >= 4) {
+        rests.push(new StaveNote({ keys: ['b/4'], duration: 'wr' }))
+        remaining -= 4
+      } else if (remaining >= 2) {
+        rests.push(new StaveNote({ keys: ['b/4'], duration: 'hr' }))
+        remaining -= 2
+      } else if (remaining >= 1) {
+        rests.push(new StaveNote({ keys: ['b/4'], duration: 'qr' }))
+        remaining -= 1
+      } else if (remaining >= 0.5) {
+        rests.push(new StaveNote({ keys: ['b/4'], duration: '8r' }))
+        remaining -= 0.5
+      } else if (remaining >= 0.25) {
+        rests.push(new StaveNote({ keys: ['b/4'], duration: '16r' }))
+        remaining -= 0.25
+      } else {
+        // For very small remaining durations, use 32nd rest
+        rests.push(new StaveNote({ keys: ['b/4'], duration: '32r' }))
+        remaining -= 0.125
+      }
+    }
+
+    return rests
   }
 
   dispose() {
