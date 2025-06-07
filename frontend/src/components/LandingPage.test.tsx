@@ -19,7 +19,7 @@ describe('LandingPage', () => {
   it('renders the start practice link', () => {
     render(<LandingPage />)
 
-    const link = screen.getByRole('link', { name: /Try Practice Mode/i })
+    const link = screen.getByRole('link', { name: /Start Practice/i })
     expect(link).toBeInTheDocument()
     expect(link).toHaveAttribute('href', '/practice')
   })

@@ -5,16 +5,10 @@ import { UserStatusIndicator } from './UserStatusIndicator'
 export type PracticeMode = 'practice' | 'exercise'
 
 interface PracticeHeaderProps {
-  mode: PracticeMode
-  onModeChange: (mode: PracticeMode) => void
   isMobile: boolean
 }
 
-export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
-  mode,
-  onModeChange,
-  isMobile,
-}) => {
+export const PracticeHeader: React.FC<PracticeHeaderProps> = ({ isMobile }) => {
   return (
     <header className="bg-white/80 backdrop-blur shadow-sm border-b border-mirubato-wood-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -48,25 +42,6 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
           <div className="flex items-center gap-4">
             {/* User Status */}
             <UserStatusIndicator />
-
-            {/* Mode Selector - Hidden on mobile */}
-            {!isMobile && (
-              <div className="flex bg-mirubato-wood-50 rounded-lg p-1">
-                {(['practice', 'exercise'] as PracticeMode[]).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => onModeChange(m)}
-                    className={`px-3 py-1 rounded-md text-sm transition-all ${
-                      mode === m
-                        ? 'bg-white text-mirubato-wood-800 shadow-sm'
-                        : 'text-mirubato-wood-500 hover:text-mirubato-wood-700'
-                    }`}
-                  >
-                    {m.charAt(0).toUpperCase() + m.slice(1)}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
