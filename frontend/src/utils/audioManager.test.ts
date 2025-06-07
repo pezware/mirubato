@@ -6,6 +6,7 @@ import { AudioManagerInterface } from './audioManagerInterface'
 const mockTone = {
   start: jest.fn().mockResolvedValue(undefined),
   loaded: jest.fn().mockResolvedValue(undefined),
+  now: jest.fn().mockReturnValue(0),
   Sampler: jest.fn().mockImplementation(() => ({
     toDestination: jest.fn().mockReturnThis(),
     connect: jest.fn(),
@@ -190,7 +191,7 @@ describe('AudioManager', () => {
         expect(pianoSampler.triggerAttackRelease).toHaveBeenCalledWith(
           'D4',
           '16n',
-          1.5,
+          1.5, // now() returns 0, so 0 + 1.5 = 1.5
           0.7
         )
       })

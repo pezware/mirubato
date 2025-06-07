@@ -1,5 +1,9 @@
 import { Renderer, Stave, StaveNote, Voice, Formatter, Beam } from 'vexflow'
-import type { SheetMusic, Measure } from '../modules/sheetMusic/types'
+import type {
+  SheetMusic,
+  Measure,
+  TimeSignature,
+} from '../modules/sheetMusic/types'
 import { convertMeasureForVexFlow } from './sheetMusicTypeConverters'
 
 export interface RenderOptions {
@@ -53,7 +57,14 @@ export class NotationRenderer {
         currentY += lineHeight
       }
 
-      this.renderMeasure(measure, x, currentY, staveWidth, index === 0)
+      this.renderMeasure(
+        measure,
+        x,
+        currentY,
+        staveWidth,
+        index === 0,
+        sheetMusic.timeSignature as TimeSignature
+      )
 
       // Add measure numbers
       if (index % measuresPerLine === 0 && this.context) {
@@ -77,7 +88,8 @@ export class NotationRenderer {
     x: number,
     y: number,
     width: number,
-    isFirst: boolean
+    isFirst: boolean,
+    timeSignature?: TimeSignature // Pass time signature for all measures
   ) {
     // Convert measure to VexFlow-compatible format
     const vexMeasure = convertMeasureForVexFlow(measure)
@@ -111,8 +123,21 @@ export class NotationRenderer {
       }
     }
 
+    // Parse time signature for voice configuration
+    let numBeats = 4
+    let beatValue = 4
+    // Use the measure's time signature if available, otherwise use the passed time signature
+    const timeSig = vexMeasure.timeSignature || timeSignature
+    if (timeSig) {
+      const [beats, value] = timeSig.split('/').map(Number)
+      if (!isNaN(beats) && !isNaN(value)) {
+        numBeats = beats
+        beatValue = value
+      }
+    }
+
     // Create voice and add notes
-    const voice = new Voice({ numBeats: 4, beatValue: 4 })
+    const voice = new Voice({ numBeats, beatValue })
     voice.addTickables(vexNotes)
 
     // Format and draw

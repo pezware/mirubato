@@ -226,13 +226,13 @@ describe('ExercisePreview', () => {
       expect(mockAudioManager.playNoteAt).toHaveBeenCalledWith(
         'c4',
         expect.any(Number),
-        NoteDuration.QUARTER,
+        '4n', // Tone.js duration format
         0.8
       )
       expect(mockAudioManager.playNoteAt).toHaveBeenCalledWith(
         'd4',
         expect.any(Number),
-        NoteDuration.QUARTER,
+        '4n', // Tone.js duration format
         0.8
       )
 
