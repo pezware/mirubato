@@ -4,7 +4,7 @@
 
 ```bash
 # Clone and install
-git clone https://github.com/yourusername/rubato.git
+git clone https://github.com/pezware/mirubato.git
 cd rubato
 npm install
 
@@ -330,16 +330,6 @@ wrangler d1 execute rubato-db --local --command "SELECT * FROM users"
 ```bash
 wrangler tail --env production
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Write tests first (TDD)
-4. Ensure tests pass: `npm test`
-5. Commit changes: `git commit -m 'feat: add amazing feature'`
-6. Push branch: `git push origin feature/amazing-feature`
-7. Open Pull Request
 
 ## Additional Resources
 
