@@ -22,21 +22,13 @@ npm run dev:backend         # Backend: localhost:8787
 | --------------- | -------------------------------------------------- | ------------------------------------- |
 | **🔗 API Docs** | **[docs.mirubato.com](https://docs.mirubato.com)** | **Complete TypeScript API reference** |
 | 📖 Development  | [Setup Guide](docs/DEVELOPMENT.md)                 | Installation and development          |
-| 🛠️ Guidelines   | [Code Standards](docs/DEVELOPMENT_GUIDELINES.md)   | Best practices and conventions        |
-| 🏗️ Architecture | [System Design](docs/SYSTEM_DESIGN.md)             | Database schema and infrastructure    |
 | 📋 Progress     | [Roadmap](docs/ROADMAP.md)                         | Development phases and milestones     |
 
 ## Technology Stack
 
-**Frontend**: React 18, TypeScript, Vite, Tailwind CSS  
-**Backend**: GraphQL, Cloudflare Workers, D1 (SQLite)  
+**Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+**Backend**: GraphQL, Cloudflare Workers, D1 (SQLite)
 **Audio**: Tone.js, Web Audio API, VexFlow.js notation
-
-## Contributing
-
-Read our [Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md) before contributing. We welcome:
-
-🎨 UI/UX improvements • 🎼 Musical content • 🧪 Tests • 📚 Documentation • 🌍 Translations
 
 ## Educational Foundation
 
