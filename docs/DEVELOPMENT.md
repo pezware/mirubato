@@ -1,433 +1,349 @@
-# Mirubato Development Guide
-
-This guide covers both local development setup and deployment procedures for Mirubato.
-
-## Table of Contents
-
-- [Project Structure](#project-structure)
-- [Quick Start](#quick-start)
-- [Development Setup](#development-setup)
-- [Deployment](#deployment)
-- [Authentication System](#authentication-system)
-- [Local-First Architecture](#local-first-architecture)
-- [Development Workflow](#development-workflow)
-- [Troubleshooting](#troubleshooting)
-
-## Project Structure
-
-Mirubato is organized as a monorepo with separate frontend and backend packages, plus a shared types package:
-
-```
-mirubato/
-├── frontend/              # React frontend application
-│   ├── src/              # Frontend source code
-│   ├── public/           # Static assets
-│   ├── tests/            # Frontend tests
-│   ├── wrangler.toml     # Cloudflare Workers config
-│   └── package.json      # Frontend dependencies
-├── backend/              # GraphQL API (Cloudflare Workers)
-│   ├── src/              # Backend source code
-│   ├── migrations/       # Database migrations
-│   ├── wrangler.toml     # Cloudflare Workers config
-│   └── package.json      # Backend dependencies
-├── shared/               # Shared types and utilities
-│   ├── types/            # TypeScript type definitions
-│   │   ├── index.ts      # Main types export
-│   │   └── validation.ts # Data validation utilities
-│   ├── config/           # Unified configuration
-│   │   └── environment.ts # Environment detection and config
-│   └── package.json      # Shared package configuration
-├── config/               # Global configuration
-│   └── environments.json # Environment settings (IDs, domains)
-├── scripts/              # Build and utility scripts
-├── docs/                 # Documentation
-└── package.json          # Root monorepo configuration
-```
+# Development Guide
 
 ## Quick Start
 
-### 1. Clone and Install
-
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/mirubato.git
-cd mirubato
-
-# Install all dependencies (root + workspaces)
+# Clone and install
+git clone https://github.com/yourusername/rubato.git
+cd rubato
 npm install
+
+# Start development
+npm run dev              # Frontend (http://localhost:3000)
+npm run dev:backend      # Backend (http://localhost:8787)
+
+# Run tests
+npm test                 # All tests
+npm run test:coverage    # With coverage report
 ```
 
-### 2. Configure Your Domain
+## Project Structure
 
-Edit `config/environments.json` to set your domain and Cloudflare team:
-
-```json
-{
-  "MYDOMAIN": "yourdomain.com",
-  "MYTEAM": "yourteam"
-}
+```
+rubato/
+├── frontend/            # React PWA (Cloudflare Worker)
+├── backend/             # GraphQL API (Cloudflare Worker)
+├── shared/              # Shared types and utilities
+└── docs/                # Documentation
 ```
 
-### 3. Start Development Servers
+## Essential Resources
 
-```bash
-# Start frontend (http://localhost:3000)
-npm run dev
-
-# Start backend in another terminal (http://localhost:8787)
-npm run dev:backend
-```
+- **Live API**: https://api.rubato.pezware.com/graphql
+- **API Playground**: https://api.rubato.pezware.com/graphql (introspection enabled)
+- **Documentation**: https://docs.rubato.pezware.com/
+- **Health Check**: https://api.rubato.pezware.com/health
 
 ## Development Setup
 
-### Environment Configuration
+### Prerequisites
 
-We use `wrangler.toml` files that define all environments in a single file. No manual configuration generation is needed.
-
-#### Available Environments
-
-1. **Production** (default - no `--env` flag)
-
-   - This is the default configuration used by Cloudflare's automated deployment
-   - Frontend: `https://{MYDOMAIN}`, `https://www.{MYDOMAIN}`
-   - Backend: `https://api.{MYDOMAIN}`
-   - Uses production database and KV namespaces
-
-2. **Local Development** (`--env local`)
-
-   - Uses placeholder IDs for D1 and KV namespaces
-   - Frontend: `http://localhost:3000`
-   - Backend: `http://localhost:8787`
-   - GraphQL Playground: `http://localhost:8787/graphql`
-
-3. **Development/Preview** (`--env dev`)
-
-   - Deploys to Cloudflare with dev database and KV namespaces
-   - Frontend: `https://*-mirubato.{MYTEAM}.workers.dev`
-   - Backend: `https://*-mirubato-backend.{MYTEAM}.workers.dev`
-
-4. **Staging** (`--env staging`)
-
-   - Uses staging database and KV namespaces
-   - Frontend: `https://mirubato-staging.{MYTEAM}.workers.dev`
-   - Backend: `https://mirubato-backend-staging.{MYTEAM}.workers.dev`
-
-### Local Development
-
-```bash
-# Backend development server
-cd backend
-npm run dev
-
-# Frontend development server (in another terminal)
-cd frontend
-npm run dev
-```
+- Node.js 18+
+- npm 9+
+- Wrangler CLI (`npm install -g wrangler`)
 
 ### Environment Variables
 
-For local development, create `.dev.vars` file in the backend directory:
-
-```
-JWT_SECRET=your-local-jwt-secret
-RESEND_API_KEY=your-local-api-key
-```
-
-For environment-specific local secrets, create `.dev.vars.<environment>`:
-
-- `.dev.vars.dev`
-- `.dev.vars.staging`
-
-## Deployment
-
-### Prerequisites
-
-1. **Cloudflare Account**: Create a free account at cloudflare.com
-2. **Wrangler CLI**: Installed automatically with npm install
-3. **Domain Name**: Optional for staging, required for production
-
-### Step 1: Create Cloudflare Resources
-
-#### Create D1 Databases
+Create `.env.local` files:
 
 ```bash
-# Development database (if not exists)
-wrangler d1 create mirubato-dev
+# backend/.env.local
+JWT_SECRET=your-secret-key-here
+RESEND_API_KEY=your-resend-api-key
+FRONTEND_URL=http://localhost:3000
+IS_DEV=true
 
-# Staging database
-wrangler d1 create mirubato-staging
-
-# Production database
-wrangler d1 create mirubato-prod
+# frontend/.env.local
+VITE_API_URL=http://localhost:8787/graphql
+VITE_APP_URL=http://localhost:3000
 ```
 
-#### Create KV Namespaces
+### Database Setup
 
 ```bash
-# Development KV namespace
-wrangler kv:namespace create "MIRUBATO_MAGIC_LINKS" --preview
-
-# Staging KV namespace
-wrangler kv:namespace create "MIRUBATO_MAGIC_LINKS" --env staging
-
-# Production KV namespace
-wrangler kv:namespace create "MIRUBATO_MAGIC_LINKS" --env production
-```
-
-### Step 2: Update Configuration
-
-After creating resources, update the IDs in `backend/wrangler.toml` and `frontend/wrangler.toml` with the IDs returned by Wrangler.
-
-### Step 3: Run Database Migrations
-
-```bash
+# Create local D1 database
 cd backend
+wrangler d1 create rubato-db --local
 
-# Apply migrations to local database
+# Run migrations
 npm run db:migrate
-
-# Apply to production (default environment)
-npm run db:migrate:remote
-
-# Apply to dev environment
-npm run db:migrate:dev
-
-# Apply to staging
-npm run db:migrate:staging
-
-# Apply to production explicitly
-npm run db:migrate:production
 ```
 
-### Step 4: Deploy
+## Key Development Commands
 
-#### Backend Deployment
+### Frontend Development
 
 ```bash
-cd backend
-
-# Deploy to development
-npm run deploy:dev
-
-# Deploy to staging
-npm run deploy:staging
-
-# Deploy to production
-npm run deploy:production
+npm run dev                      # Start dev server
+npm run build                    # Build for production
+npm run preview                  # Preview production build
+npm run test:unit                # Run unit tests
+npm run docs:generate            # Generate TypeDoc documentation
 ```
 
-#### Frontend Deployment
+### Backend Development
 
 ```bash
-cd frontend
-
-# Build the frontend first
-npm run build
-
-# Deploy to development
-npm run deploy:dev
-
-# Deploy to staging
-npm run deploy:staging
-
-# Deploy to production
-npm run deploy:production
+npm run dev:backend              # Start local server
+npm run build:backend            # Build for deployment
+npm run db:migrate               # Run local migrations
+npm run codegen                  # Generate GraphQL types
 ```
-
-### Step 5: Configure Secrets
-
-Secrets must be set per environment:
-
-```bash
-# Set JWT secret for production
-wrangler secret put JWT_SECRET --env production
-
-# Set email API key for production
-wrangler secret put RESEND_API_KEY --env production
-```
-
-### Step 6: Custom Domain Setup (Production)
-
-1. **Frontend Domain** (yourdomain.com):
-
-   - Go to Workers & Pages → Your Frontend Worker → Triggers
-   - Add custom domains: `yourdomain.com` and `www.yourdomain.com`
-   - Configure DNS as instructed
-
-2. **Backend Domain** (api.yourdomain.com):
-   - Go to Workers & Pages → Your Backend Worker → Triggers
-   - Add custom domain: `api.yourdomain.com`
-   - Configure DNS as instructed
-
-## Authentication System
-
-Mirubato uses a passwordless magic link authentication system:
-
-1. User enters email address
-2. Backend generates a unique token and stores it in KV namespace
-3. Email is sent with a magic link containing the token
-4. User clicks the link and is redirected to `/auth/verify?token=...`
-5. Backend verifies the token and issues JWT tokens
-6. User is logged in and redirected to the practice page
-
-### Email Service Setup
-
-1. **Create Resend Account**: Sign up at resend.com
-2. **Verify Domain**: Add your domain to Resend and verify DNS records
-3. **Get API Key**: Copy your API key from Resend dashboard
-4. **Configure**: Add `RESEND_API_KEY` to backend environment variables
-
-## Local-First Architecture
-
-Mirubato uses a local-first approach where:
-
-1. **Anonymous users** can use all features without registration
-2. **Data is stored locally** in the browser's localStorage
-3. **Optional cloud sync** for registered users
-4. **Seamless migration** from anonymous to authenticated
-
-### Key Services
-
-- **Local Storage Service**: `frontend/src/services/localStorage.ts`
-- **Data Sync Service**: `frontend/src/services/dataSync.ts`
-- **Auth Context**: `frontend/src/contexts/AuthContext.tsx`
-
-## Development Workflow
-
-### Adding New Features
-
-1. **Define types in shared package**: Update `shared/types/index.ts`
-2. **Update GraphQL schema**: Edit `backend/src/schema/schema.graphql`
-3. **Generate GraphQL types**:
-   ```bash
-   cd frontend && npm run codegen
-   cd ../backend && npm run codegen
-   ```
-4. **Implement backend resolver** in `backend/src/resolvers/`
-5. **Add frontend functionality**
 
 ### Testing
 
 ```bash
-# Run all tests
-npm test
-
-# Unit tests only
-npm test:unit
-
-# Integration tests
-npm test:integration
-
-# Test coverage
-npm test:coverage
+npm test                         # Run all tests
+npm run test:coverage            # Generate coverage report
+npm run test:watch               # Watch mode
+npm run lint                     # Run ESLint
+npm run typecheck                # Run TypeScript checks
 ```
 
-### Available Scripts
+## Deployment
 
-#### Root Level
-
-- `npm run dev` - Start frontend development server
-- `npm run dev:backend` - Start backend development server
-- `npm test` - Run all workspace tests
-- `npm run lint` - Run ESLint on all workspaces
-- `npm run type-check` - TypeScript checking
-
-#### Backend Scripts
-
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development (skips version generation)
-- `npm run deploy:dev` - Deploy to development
-- `npm run deploy:staging` - Deploy to staging
-- `npm run deploy:production` - Deploy to production
-
-#### Frontend Scripts
-
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run deploy:dev` - Deploy to development
-- `npm run deploy:staging` - Deploy to staging
-- `npm run deploy:production` - Deploy to production
-
-## Cloudflare Build Integration
-
-For automatic deployments via Cloudflare's GitHub integration:
-
-1. **Build Command**: `npm run build`
-2. **Deploy Command**: `npm run deploy:version` (for version uploads)
-3. **Root Directory**: `/backend` or `/frontend` (depending on which app)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CORS errors**
-
-   - Check that the backend is running
-   - Verify frontend is configured with correct GraphQL endpoint
-   - Each environment has its own CORS configuration
-
-2. **TypeScript errors with shared types**
-
-   - Run `npm install` from root to link workspaces
-
-3. **Database connection issues**
-
-   - Ensure D1 database ID is correctly set in wrangler.toml
-   - Verify you've run migrations for your environment
-
-4. **Email not sending**
-
-   - Verify RESEND_API_KEY is set in environment variables
-   - Check Resend dashboard for domain verification
-
-5. **Build loops in development**
-   - The wrangler.toml configuration uses different build commands:
-     - Local/dev uses `npm run build:dev` (skips version generation)
-     - Staging/production uses `npm run build` (includes version generation)
-
-### Development Tips
-
-1. **GraphQL Playground**: Access at `http://localhost:8787/graphql`
-2. **Apollo DevTools**: Install browser extension for debugging
-3. **Hot Reload**: Both frontend and backend support hot reload
-4. **Type Safety**: Run `npm run type-check` frequently
-
-## Best Practices
-
-1. **Always test in staging** before deploying to production
-2. **Use version uploads** for production deployments to enable rollbacks
-3. **Set secrets per environment** - never commit secrets to the repository
-4. **Monitor deployments** via the Cloudflare dashboard
-5. **Run migrations manually** before deploying code that depends on schema changes
-
-## Rollback Procedure
-
-If a deployment causes issues:
+### Production Deployment
 
 ```bash
-# List available versions
-wrangler versions list --env production
+# Deploy backend
+cd backend
+wrangler deploy --env production
 
-# Deploy a previous version
-wrangler versions deploy <version-id> --env production
+# Deploy frontend
+cd frontend
+wrangler deploy --env production
+
+# Run production migrations
+npm run db:migrate:production
 ```
 
-## Security Notes
+### Environment Management
 
-- **JWT Secret**: Use a strong, random secret in production
-- **CORS**: Configuration is centralized in `backend/src/config/cors.ts`
-- **Environment Variables**: Never commit secrets to the repository
-- **KV Namespace**: Magic link tokens expire after 1 hour
+- **Local**: Development with local D1 database
+- **Staging**: Test environment at `*.workers.dev`
+- **Production**: Live at `rubato.pezware.com`
 
-## Next Steps
+### Secrets Management
 
-After setting up your development environment:
+```bash
+# Set production secrets
+wrangler secret put JWT_SECRET --env production
+wrangler secret put RESEND_API_KEY --env production
+```
 
-1. Run the application locally to ensure everything works
-2. Create your Cloudflare resources (databases and KV namespaces)
-3. Deploy to staging for testing
-4. Configure custom domains for production
-5. Set up email service with Resend
-6. Deploy to production
+## Architecture Overview
 
-For any issues or questions, refer to the troubleshooting section or create an issue in the GitHub repository.
+### Frontend (React + TypeScript)
+
+- **State**: Module-based with EventBus
+- **Styling**: Tailwind CSS
+- **Music**: VexFlow (notation) + Tone.js (audio)
+- **Build**: Vite
+
+### Backend (Cloudflare Workers)
+
+- **API**: GraphQL with Apollo Server
+- **Database**: D1 (SQLite)
+- **Auth**: Magic links with JWT
+- **Email**: Resend API
+
+### Key Modules
+
+1. **SheetMusic**: Exercise generation, music library
+2. **Practice**: Session tracking, performance metrics
+3. **Audio**: Playback, metronome, audio synthesis
+4. **Analytics**: Progress tracking, insights
+
+## Testing Guidelines
+
+### Coverage Requirements
+
+- **Minimum**: 80% overall coverage
+- **Critical paths**: 90% (auth, payments, core features)
+- **New code**: Must have tests before merging
+
+### Test Structure
+
+```typescript
+// Unit test example
+describe('SheetMusicModule', () => {
+  it('should generate exercises with correct parameters', () => {
+    // Test implementation
+  })
+})
+
+// Integration test example
+describe('Practice Session Flow', () => {
+  it('should track complete practice session', async () => {
+    // Test implementation
+  })
+})
+```
+
+## Code Standards
+
+### TypeScript
+
+```typescript
+// Use explicit types
+interface PracticeSession {
+  id: string
+  userId: string
+  startTime: Date
+  // ...
+}
+
+// Avoid any
+function processMusic(data: MusicData): ProcessedMusic {
+  // Implementation
+}
+```
+
+### React Components
+
+```tsx
+// Functional components with TypeScript
+interface Props {
+  sheetMusic: SheetMusic
+  onPlay: () => void
+}
+
+export const MusicPlayer: React.FC<Props> = ({ sheetMusic, onPlay }) => {
+  // Component logic
+}
+```
+
+### Music-Specific Guidelines
+
+```typescript
+// Always handle audio context
+await Tone.start() // Required for mobile
+
+// Proper measure tracking
+const currentMeasure = Math.floor(currentBeat / beatsPerMeasure)
+
+// Instrument-specific logic
+if (instrument === 'guitar') {
+  // Handle fret positions
+} else if (instrument === 'piano') {
+  // Handle hand positions
+}
+```
+
+## Common Issues & Solutions
+
+### CSP Headers for Audio
+
+The app requires specific CSP headers for Tone.js Web Workers. These are configured in `frontend/public/_headers`:
+
+```
+/assets/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' https://tonejs.github.io
+```
+
+### Mobile Audio Context
+
+Always initialize audio context on user interaction:
+
+```typescript
+button.addEventListener('click', async () => {
+  await Tone.start()
+  // Now audio will work
+})
+```
+
+### VexFlow Rendering
+
+Ensure proper cleanup to avoid memory leaks:
+
+```typescript
+useEffect(() => {
+  const renderer = new Renderer(div, Renderer.Backends.SVG)
+  // ... rendering logic
+
+  return () => {
+    // Cleanup
+    div.innerHTML = ''
+  }
+}, [measures])
+```
+
+## Performance Considerations
+
+### Targets
+
+- Initial load: <2s
+- API response: <100ms
+- Frame rate: 60fps for animations
+- Memory: <100MB usage
+
+### Optimizations
+
+1. **Lazy load** sheet music pages
+2. **Cache** generated exercises in IndexedDB
+3. **Debounce** search and filter operations
+4. **Use Web Workers** for heavy computations
+
+## Security Guidelines
+
+### Environment Variables
+
+- Never commit `.env` files
+- Use `wrangler secret` for production
+- Rotate secrets regularly
+
+### API Security
+
+- All mutations require authentication
+- Rate limiting enforced (20-120 req/min)
+- Input validation on all endpoints
+
+### Data Privacy
+
+- Local-first architecture
+- Minimal data collection
+- GDPR compliant data export/deletion
+
+## Debugging
+
+### Local Development
+
+```bash
+# Frontend debugging
+npm run dev
+# Open Chrome DevTools
+
+# Backend debugging
+npm run dev:backend
+# Check terminal output
+
+# Database inspection
+wrangler d1 execute rubato-db --local --command "SELECT * FROM users"
+```
+
+### Production Debugging
+
+- Check health endpoint: https://api.rubato.pezware.com/health
+- View Cloudflare dashboard for Worker logs
+- Use Wrangler tail for real-time logs:
+
+```bash
+wrangler tail --env production
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Write tests first (TDD)
+4. Ensure tests pass: `npm test`
+5. Commit changes: `git commit -m 'feat: add amazing feature'`
+6. Push branch: `git push origin feature/amazing-feature`
+7. Open Pull Request
+
+## Additional Resources
+
+- [GraphQL Schema Explorer](https://api.rubato.pezware.com/graphql)
+- [Module Documentation](https://docs.rubato.pezware.com/)
+- [VexFlow Documentation](https://www.vexflow.com/)
+- [Tone.js Documentation](https://tonejs.github.io/)
