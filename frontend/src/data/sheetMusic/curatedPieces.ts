@@ -22,6 +22,14 @@ import { bachMinuetInG } from './bachMinuetInG'
 import { mozartSonataK545 } from './mozartSonataK545'
 import { chopinPreludeOp28No4 } from './chopinPreludeOp28No4'
 
+// Import preset workout exercises
+import {
+  dailySightReadingEasy,
+  scalePracticeMajor,
+  rhythmTraining4_4,
+  intervalRecognition,
+} from './workouts'
+
 // ============== Piano Pieces ==============
 
 // Bach, Mozart, and Chopin pieces are imported from individual files
@@ -661,4 +669,25 @@ export function getCuratedPiecesByDifficulty(
 ): SheetMusic[] {
   const allPieces = getCuratedPieces()
   return allPieces.filter(piece => piece.difficulty === difficulty)
+}
+
+// ============== Workout Functions ==============
+
+/**
+ * Get all preset workout exercises (4 workouts)
+ */
+export function getPresetWorkouts(): SheetMusic[] {
+  return [
+    dailySightReadingEasy,
+    scalePracticeMajor,
+    rhythmTraining4_4,
+    intervalRecognition,
+  ]
+}
+
+/**
+ * Get all content including curated pieces and workouts
+ */
+export function getAllSheetMusic(): SheetMusic[] {
+  return [...getCuratedPieces(), ...getPresetWorkouts()]
 }

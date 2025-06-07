@@ -451,7 +451,6 @@ describe('ExerciseLibrary', () => {
       primaryInstrument: 'PIANO' as const,
       isAnonymous: true,
     }
-
     ;(useAuth as jest.Mock).mockReturnValue({
       user: anonymousUser,
       loading: false,

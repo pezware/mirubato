@@ -13,6 +13,8 @@ export {
   getPieceById,
   getCuratedPiecesByInstrument,
   getCuratedPiecesByDifficulty,
+  getPresetWorkouts,
+  getAllSheetMusic,
 } from './curatedPieces'
 
 // Future pieces can be added here:

@@ -53,6 +53,8 @@ import {
   getPieceById,
   getCuratedPiecesByInstrument,
   getCuratedPiecesByDifficulty,
+  getPresetWorkouts,
+  getAllSheetMusic,
 } from '../../data/sheetMusic'
 
 const DEFAULT_CONFIG: SheetMusicModuleConfig = {
@@ -396,6 +398,20 @@ export class SheetMusicLibraryModule
    */
   getCuratedGuitarPieces(): SheetMusic[] {
     return getCuratedGuitarPieces()
+  }
+
+  /**
+   * Get preset workout exercises (4 workouts)
+   */
+  getPresetWorkouts(): SheetMusic[] {
+    return getPresetWorkouts()
+  }
+
+  /**
+   * Get all sheet music including curated pieces and workouts
+   */
+  getAllSheetMusic(): SheetMusic[] {
+    return getAllSheetMusic()
   }
 
   // ============== Difficulty Assessment ==============

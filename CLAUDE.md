@@ -237,8 +237,7 @@ npm test -- --watch
 ## 📚 Key Documentation
 
 - **Development**: `docs/DEVELOPMENT.md` (setup, development, deployment)
-- **Guidelines**: `docs/DEVELOPMENT_GUIDELINES.md`
-- **Infrastructure**: `docs/INFRASTRUCTURE.md`
+- **Infrastructure**: `docs/DESIGN.md`
 - **Roadmap**: `docs/ROADMAP.md` (includes detailed test coverage status)
 
 ## 🎓 Educational Context
