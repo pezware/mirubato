@@ -48,63 +48,141 @@ interface ModuleInterface {
 }
 ```
 
-### Core Modules
+### Implemented Modules
 
-#### 1. **User Management Module**
+#### Core Infrastructure
 
-- Handles authentication via magic links
-- Manages user preferences and settings
-- Stores user profile data
-- Emits: `user:login`, `user:logout`, `user:updated`
+##### 1. **EventBus**
 
-#### 2. **Practice Session Module**
+- Central event-driven communication system
+- Singleton pattern with pub/sub architecture
+- Priority-based event execution
+- Event history tracking (last 1000 events)
+- Wildcard pattern matching for subscriptions
 
-- Tracks practice sessions with start/stop/pause
-- Records practice metrics and performance
-- Manages session templates and goals
-- Emits: `session:started`, `session:ended`, `session:paused`
+##### 2. **Storage Services**
 
-#### 3. **Sheet Music Module**
+- Abstract storage layer with event-driven capabilities
+- `StorageService`: Base interface for all storage operations
+- `EventDrivenStorage`: Event-based storage implementation
+- `MockStorageService`: Testing implementation
+- Request/response pattern for all operations
 
-- Generates exercises algorithmically
-- Manages music library and repertoire
-- Tracks learning status (Learning, Memorized, Forgotten)
-- Imports/exports MusicXML
-- Emits: `sheetMusic:loaded`, `exercise:generated`
+#### Infrastructure Modules
 
-#### 4. **Audio Engine Module**
+##### 3. **StorageModule**
 
-- Handles audio playback with Tone.js
-- Manages metronome and backing tracks
-- Records practice audio (future)
-- Emits: `audio:started`, `audio:stopped`, `note:played`
+- Local storage management with adapter pattern
+- LocalStorage adapter (IndexedDB adapter pending)
+- TTL support for cached data
+- Storage quota management
+- Emits: `data:create:*`, `data:read:*`, `data:delete:*`, `data:sync:required`
+- Consumes: `storage:request`, `storage:read`, `storage:write`, `storage:delete`
 
-#### 5. **Performance Tracking Module**
+##### 4. **SyncModule**
 
-- Analyzes practice performance in real-time
-- Identifies problem areas and patterns
-- Tracks accuracy and timing metrics
-- Emits: `performance:analyzed`, `mistake:detected`
+- Data synchronization between local and cloud storage
+- Sync queue management with retry logic
+- Exponential backoff for failed operations
+- Conflict resolution strategies
+- Batch sync operations
+- Emits: `sync:operation:queued`, `sync:operation:success`, `sync:operation:failed`
+- Consumes: `data:sync:required`, `sync:request:initiated`
 
-#### 6. **Progress Analytics Module**
+#### Domain Modules
 
-- Generates practice insights and reports
-- Tracks long-term progress trends
-- Identifies strengths and weaknesses
-- Emits: `progress:calculated`, `milestone:achieved`
+##### 5. **PracticeSessionModule**
 
-#### 7. **Curriculum Module**
+- Practice session lifecycle management
+- Session start/pause/resume/end functionality
+- Auto-save with configurable intervals
+- Session statistics and performance tracking
+- Multi-instrument support
+- Emits: `practice:session:started`, `practice:session:paused`, `practice:session:ended`
+- Consumes: `performance:note:played`, `navigation:leaving:practice`
 
-- Manages learning paths and goals
-- Recommends next pieces to learn
-- Adapts to user progress
-- Emits: `curriculum:updated`, `goal:completed`
+##### 6. **SheetMusicLibraryModule**
 
-#### 8. **Infrastructure Modules**
+- Sheet music library and exercise generation
+- Algorithmic exercise generation (sight-reading, technical)
+- User repertoire tracking with status management
+- Performance history recording
+- Exercise metadata and expiration management
+- Emits: `sheet-music:exercise-generated`, `sheet-music:repertoire-status-changed`
+- Consumes: `practice:session-completed`
+- Status: Partial (search, import/export pending)
 
-- **Storage Module**: Handles IndexedDB and LocalStorage
-- **Sync Module**: Manages offline/online data sync
-- **Logger Module**: Centralized error and event logging
+##### 7. **PerformanceTrackingModule**
+
+- Real-time performance analysis
+- Note event recording with timing precision
+- Performance metrics calculation (accuracy, timing, rhythm)
+- Problem area identification
+- Real-time feedback generation
+- Emits: `performance:tracking:started`, `performance:note:recorded`
+- Consumes: `audio:note:detected`, `practice:note:played`
+
+##### 8. **ProgressAnalyticsModule**
+
+- Comprehensive analytics and progress tracking
+- Progress report generation with visualizations
+- Weak area identification algorithms
+- Milestone tracking and achievements
+- Practice consistency metrics
+- Personalized recommendation generation
+- Emits: `progress:milestone:achieved`, `progress:report:ready`
+- Consumes: `performance:note:recorded`, `practice:session:ended`
+
+##### 9. **CurriculumModule**
+
+- Learning path creation and management
+- Repertoire organization and tracking
+- Technical exercise generation (14 types)
+- Difficulty evaluation and progression
+- Performance readiness assessment
+- Maintenance scheduling for memorized pieces
+- Emits: `curriculum:path:created`, `curriculum:progress:updated`
+- Consumes: `practice:session:ended`, `progress:milestone:achieved`
+
+##### 10. **PracticeLoggerModule**
+
+- Professional practice logbook management
+- Goal tracking with milestone support
+- Practice report generation (daily, weekly, monthly)
+- Export functionality (JSON, CSV, PDF pending)
+- Auto-tagging based on performance data
+- Practice streak calculation
+- Emits: `logger:entry:created`, `logger:goal:completed`, `logger:export:ready`
+- Consumes: `practice:session:ended`, `progress:milestone:achieved`
+
+##### 11. **VisualizationModule**
+
+- Data visualization using Chart.js
+- Multiple chart types (line, bar, radar, heatmap, tree)
+- Dashboard creation and management
+- Export functionality (PNG, SVG, PDF, CSV, JSON)
+- Responsive adaptations for different devices
+- Accessibility features (ARIA labels, keyboard nav)
+- Emits: `visualization:chart:created`, `visualization:exported`
+- Consumes: `progress:report:ready`, `practice:session:ended`
+
+### Context-Based Services
+
+While not implemented as modules, these services provide essential functionality through React Context:
+
+#### **AuthContext**
+
+- User authentication via magic links
+- JWT token management
+- User profile and preferences
+- Session persistence
+
+#### **AudioContext**
+
+- Audio playback with Tone.js
+- Metronome functionality
+- MIDI support (future)
+- Mobile audio context handling
 
 ### Module Communication
 
@@ -142,17 +220,37 @@ interface EventPayload<T = any> {
 
 ```mermaid
 graph TD
-    Storage --> EventBus
-    EventBus --> User
-    User --> Audio
-    User --> SheetMusic
-    Audio --> Practice
-    SheetMusic --> Practice
-    Practice --> Performance
-    Performance --> Analytics
-    Analytics --> Curriculum
-    Storage --> Sync
+    EventBus --> StorageServices
+    StorageServices --> StorageModule
+    StorageModule --> SyncModule
+    StorageModule --> PracticeSessionModule
+    StorageModule --> SheetMusicLibraryModule
+    PracticeSessionModule --> PerformanceTrackingModule
+    PerformanceTrackingModule --> ProgressAnalyticsModule
+    ProgressAnalyticsModule --> CurriculumModule
+    PracticeSessionModule --> PracticeLoggerModule
+    ProgressAnalyticsModule --> VisualizationModule
+    CurriculumModule --> VisualizationModule
+    PracticeLoggerModule --> VisualizationModule
 ```
+
+#### Event Flow Patterns
+
+1. **Practice Flow**:
+
+   - User Action → PracticeSessionModule → PerformanceTrackingModule → ProgressAnalyticsModule → VisualizationModule
+
+2. **Learning Flow**:
+
+   - CurriculumModule → SheetMusicLibraryModule → PracticeSessionModule → PracticeLoggerModule
+
+3. **Storage Flow**:
+
+   - All modules → EventDrivenStorage → StorageModule → SyncModule → Cloud (pending)
+
+4. **Analytics Flow**:
+   - PerformanceTrackingModule → ProgressAnalyticsModule → VisualizationModule
+   - PracticeLoggerModule → VisualizationModule
 
 ## Data Architecture
 
