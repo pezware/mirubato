@@ -69,21 +69,12 @@ const LandingPage: React.FC = () => {
           <p className="text-mirubato-wood-200 text-lg">
             Open-source sight-reading platform for classical guitar and piano
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              to="/practice"
-              className="inline-block mt-6 px-8 py-3 bg-mirubato-leaf-400 hover:bg-mirubato-leaf-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
-            >
-              Try Practice Mode (Beta)
-            </Link>
-            <Link
-              to="/practice"
-              state={{ startInExerciseMode: true }}
-              className="inline-block mt-6 px-8 py-3 bg-mirubato-wood-600 hover:bg-mirubato-wood-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
-            >
-              Exercise Library (New!)
-            </Link>
-          </div>
+          <Link
+            to="/practice"
+            className="inline-block mt-6 px-8 py-3 bg-mirubato-leaf-400 hover:bg-mirubato-leaf-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
+          >
+            Start Practice
+          </Link>
         </div>
       </div>
 

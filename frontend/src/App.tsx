@@ -3,7 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { AudioProvider } from './contexts/AudioContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import LandingPage from './components/LandingPage'
-import Practice from './pages/Practice'
+import PracticeSimplified from './pages/PracticeSimplified'
 import AuthVerify from './pages/AuthVerify'
 import Docs from './pages/Docs'
 import { VersionInfo } from './components/VersionInfo'
@@ -31,8 +31,8 @@ function App() {
                   path="/magic-link"
                   element={<div>Magic Link Verification (TODO)</div>}
                 />
-                <Route path="/practice" element={<Practice />} />
-                <Route path="/exercises" element={<Practice />} />
+                <Route path="/practice" element={<PracticeSimplified />} />
+                <Route path="/exercises" element={<PracticeSimplified />} />
                 <Route
                   path="/profile"
                   element={<div>Profile Page (TODO)</div>}

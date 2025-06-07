@@ -149,7 +149,7 @@ const Practice: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-mirubato-wood-50 to-white">
-      <PracticeHeader mode={mode} onModeChange={setMode} isMobile={isMobile} />
+      <PracticeHeader isMobile={isMobile} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
