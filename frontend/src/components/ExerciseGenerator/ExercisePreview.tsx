@@ -136,6 +136,22 @@ export const ExercisePreview: React.FC<ExercisePreviewProps> = ({
         let currentTime = 0
         for (const measure of currentPageMeasures) {
           for (const note of measure.notes) {
+            // Skip rests
+            if (note.rest || note.keys[0] === 'r') {
+              // Still need to advance time for rests
+              const timingDurationMap: Record<string, number> = {
+                w: 4,
+                h: 2,
+                q: 1,
+                '8': 0.5,
+                '16': 0.25,
+              }
+              currentTime +=
+                (timingDurationMap[note.duration] || 1) *
+                (60 / exercise.parameters.tempo)
+              continue
+            }
+
             // Convert VexFlow duration format to Tone.js format
             const toneDurationMap: Record<string, string> = {
               w: '1n', // whole note
@@ -145,8 +161,14 @@ export const ExercisePreview: React.FC<ExercisePreviewProps> = ({
               '16': '16n', // sixteenth note
             }
 
+            // Convert VexFlow note format (e.g., "c/4") to Tone.js format (e.g., "C4")
+            const vexNote = note.keys[0]
+            const convertedNote = vexNote
+              .replace('/', '')
+              .replace(/^([a-g])/, match => match.toUpperCase())
+
             await audioManager.playNoteAt(
-              note.keys[0].replace('/', ''), // Convert notation format to note format
+              convertedNote,
               currentTime,
               toneDurationMap[note.duration] || '4n', // Convert to Tone.js duration format
               0.8

@@ -77,7 +77,8 @@ const LandingPage: React.FC = () => {
               Try Practice Mode (Beta)
             </Link>
             <Link
-              to="/exercises"
+              to="/practice"
+              state={{ startInExerciseMode: true }}
               className="inline-block mt-6 px-8 py-3 bg-mirubato-wood-600 hover:bg-mirubato-wood-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
             >
               Exercise Library (New!)
