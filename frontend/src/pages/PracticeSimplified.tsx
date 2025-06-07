@@ -56,7 +56,7 @@ const PracticeSimplified: React.FC = () => {
   )
   const [selectedExercise, setSelectedExercise] =
     useState<GeneratedExercise | null>(null)
-  const [currentPlayingMeasure, setCurrentPlayingMeasure] = useState<
+  const [currentPlayingMeasure, _setCurrentPlayingMeasure] = useState<
     number | undefined
   >()
 
