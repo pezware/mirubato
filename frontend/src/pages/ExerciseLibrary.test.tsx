@@ -148,6 +148,9 @@ describe('ExerciseLibrary', () => {
       generateExercise: jest.fn().mockResolvedValue(mockExercise),
       saveExercise: jest.fn().mockResolvedValue(undefined),
       loadExercise: jest.fn().mockResolvedValue(mockExercise),
+      getCuratedPieces: jest.fn().mockReturnValue([]),
+      getPresetWorkouts: jest.fn().mockReturnValue([]),
+      getAllSheetMusic: jest.fn().mockReturnValue([]),
     } as unknown as jest.Mocked<SheetMusicLibraryModule>
     ;(SheetMusicLibraryModule as jest.Mock).mockImplementation(
       () => mockSheetMusicModule
@@ -183,10 +186,16 @@ describe('ExerciseLibrary', () => {
     })
   })
 
-  it('displays tabs for generate and library', async () => {
+  it('displays tabs for featured, generate and library', async () => {
     renderExerciseLibrary()
 
-    expect(screen.getByText('Generate New Exercise')).toBeInTheDocument()
+    // Check tab buttons exist
+    expect(
+      screen.getByRole('button', { name: 'Featured Content' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    ).toBeInTheDocument()
 
     // Wait for exercises to load
     await waitFor(() => {
@@ -194,10 +203,18 @@ describe('ExerciseLibrary', () => {
     })
   })
 
-  it('switches between generate and library tabs', async () => {
+  it('switches between featured, generate and library tabs', async () => {
     renderExerciseLibrary()
 
-    // Initially on generate tab
+    // Initially on featured tab - check the heading exists
+    expect(
+      screen.getByRole('heading', { name: 'Featured Content' })
+    ).toBeInTheDocument()
+
+    // Click generate tab
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    )
     expect(screen.getByTestId('exercise-parameter-form')).toBeInTheDocument()
 
     // Wait for exercises to load first
@@ -221,6 +238,11 @@ describe('ExerciseLibrary', () => {
     await waitFor(() => {
       expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
     })
+
+    // Switch to generate tab first
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    )
 
     const generateButton = screen.getByTestId('generate-button')
     fireEvent.click(generateButton)
@@ -378,6 +400,11 @@ describe('ExerciseLibrary', () => {
       expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
     })
 
+    // Switch to generate tab first
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    )
+
     const generateButton = screen.getByTestId('generate-button')
     fireEvent.click(generateButton)
 
@@ -403,6 +430,11 @@ describe('ExerciseLibrary', () => {
     await waitFor(() => {
       expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
     })
+
+    // Switch to generate tab first
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    )
 
     const generateButton = screen.getByTestId('generate-button')
     fireEvent.click(generateButton)
@@ -464,6 +496,11 @@ describe('ExerciseLibrary', () => {
     await waitFor(() => {
       expect(mockSheetMusicModule.initialize).toHaveBeenCalled()
     })
+
+    // Switch to generate tab first
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate New Exercise' })
+    )
 
     // Should be able to generate exercises
     const generateButton = screen.getByTestId('generate-button')
