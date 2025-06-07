@@ -8,7 +8,7 @@
 // Import functions that we will implement
 import {
   getCuratedPieces,
-  getCuratedPianoHo,
+  getCuratedPianoPieces,
   getCuratedGuitarPieces,
   getPieceById,
   getCuratedPiecesByInstrument,
@@ -59,7 +59,7 @@ describe('Curated Pieces Module', () => {
 
   describe('Piano Pieces', () => {
     it('should include Bach Minuet in G', () => {
-      const pieces = getCuratedPianoHo()
+      const pieces = getCuratedPianoPieces()
       const bachMinuet = pieces.find(
         piece =>
           piece.composer === 'Johann Sebastian Bach' &&
@@ -72,7 +72,7 @@ describe('Curated Pieces Module', () => {
     })
 
     it('should include Mozart Sonata K.545', () => {
-      const pieces = getCuratedPianoHo()
+      const pieces = getCuratedPianoPieces()
       const mozartSonata = pieces.find(
         piece =>
           piece.composer === 'Wolfgang Amadeus Mozart' &&
@@ -84,7 +84,7 @@ describe('Curated Pieces Module', () => {
     })
 
     it('should include Clementi Sonatina Op.36 No.1', () => {
-      const pieces = getCuratedPianoHo()
+      const pieces = getCuratedPianoPieces()
       const clementiSonatina = pieces.find(
         piece =>
           piece.composer === 'Muzio Clementi' && piece.opus?.includes('Op.36')
@@ -94,7 +94,7 @@ describe('Curated Pieces Module', () => {
     })
 
     it('should include Schumann Melody', () => {
-      const pieces = getCuratedPianoHo()
+      const pieces = getCuratedPianoPieces()
       const schumannMelody = pieces.find(
         piece =>
           piece.composer === 'Robert Schumann' && piece.title.includes('Melody')
@@ -104,15 +104,15 @@ describe('Curated Pieces Module', () => {
       expect(schumannMelody?.opus?.includes('Op.68')).toBe(true)
     })
 
-    it('should include Chopin Prelude Op.28 No.7', () => {
-      const pieces = getCuratedPianoHo()
+    it('should include Chopin Prelude Op.28 No.4', () => {
+      const pieces = getCuratedPianoPieces()
       const chopinPrelude = pieces.find(
         piece =>
-          piece.composer === 'Frederic Chopin' && piece.opus?.includes('Op.28')
+          piece.composer === 'Frédéric Chopin' && piece.opus?.includes('Op.28')
       )
       expect(chopinPrelude).toBeDefined()
       expect(chopinPrelude?.stylePeriod).toBe('ROMANTIC')
-      expect(chopinPrelude?.keySignature).toBe('A major')
+      expect(chopinPrelude?.keySignature).toBe('E minor')
     })
   })
 

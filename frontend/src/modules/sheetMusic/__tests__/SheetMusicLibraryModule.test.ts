@@ -683,7 +683,7 @@ describe('SheetMusicLibraryModule', () => {
         'Wolfgang Amadeus Mozart',
         'Muzio Clementi',
         'Robert Schumann',
-        'Frederic Chopin',
+        'Frédéric Chopin',
       ]
 
       const composers = pianoPieces.map(p => p.composer)
@@ -712,18 +712,20 @@ describe('SheetMusicLibraryModule', () => {
 
     it('should get specific curated pieces by ID', async () => {
       // Test Bach Minuet
-      const bachMinuet = await module.getSheetMusic('bach-minuet-g-anh114')
+      const bachMinuet = await module.getSheetMusic(
+        'bach-minuet-in-g-major-bwv-anh-114'
+      )
       expect(bachMinuet).toBeDefined()
       expect(bachMinuet?.composer).toBe('Johann Sebastian Bach')
       expect(bachMinuet?.title).toContain('Minuet in G')
 
       // Test Chopin Prelude
       const chopinPrelude = await module.getSheetMusic(
-        'chopin-prelude-op28-no7'
+        'prlude-opus-28-no-4-in-e-minor-chopin'
       )
       expect(chopinPrelude).toBeDefined()
-      expect(chopinPrelude?.composer).toBe('Frederic Chopin')
-      expect(chopinPrelude?.opus).toBe('Op.28 No.7')
+      expect(chopinPrelude?.composer).toBe('Frédéric Chopin')
+      expect(chopinPrelude?.opus).toBe('Op.28 No.4')
 
       // Test Spanish Romance
       const spanishRomance = await module.getSheetMusic(

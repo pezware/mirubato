@@ -17,178 +17,19 @@ import {
   TechnicalElement,
 } from '../../modules/sheetMusic/types'
 
+// Import individual piece files with full transcriptions
+import { bachMinuetInG } from './bachMinuetInG'
+import { mozartSonataK545 } from './mozartSonataK545'
+import { chopinPreludeOp28No4 } from './chopinPreludeOp28No4'
+
 // ============== Piano Pieces ==============
 
-/**
- * Bach - Minuet in G (from Anna Magdalena Notebook)
- * BWV Anh. 114, Simple binary form, pedagogical favorite
- */
-const bachMinuetInG: SheetMusic = {
-  id: 'bach-minuet-g-anh114',
-  title: 'Minuet in G',
-  composer: 'Johann Sebastian Bach',
-  opus: 'BWV Anh. 114',
-  movement: undefined,
-  instrument: 'PIANO',
-  difficulty: 'BEGINNER',
-  difficultyLevel: 2,
-  gradeLevel: 'RCM 2',
-  durationSeconds: 90,
-  timeSignature: '3/4',
-  keySignature: 'G major',
-  tempoMarking: 'Moderato',
-  suggestedTempo: 120,
-  stylePeriod: 'BAROQUE',
-  tags: [
-    'curated',
-    'educational',
-    'minuet',
-    'baroque',
-    'beginner-friendly',
-    'binary-form',
-  ],
-  measures: [
-    {
-      number: 1,
-      notes: [
-        { keys: ['d/4'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g/4'], duration: NoteDuration.QUARTER, time: 1 },
-        { keys: ['a/4'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-      timeSignature: TimeSignature.THREE_FOUR,
-      keySignature: KeySignature.G_MAJOR,
-      clef: Clef.TREBLE,
-      tempo: 120,
-    },
-    {
-      number: 2,
-      notes: [
-        { keys: ['b/4'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['c/5'], duration: NoteDuration.QUARTER, time: 1 },
-        { keys: ['b/4'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-    },
-    {
-      number: 3,
-      notes: [
-        { keys: ['a/4'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g/4'], duration: NoteDuration.QUARTER, time: 1 },
-        { keys: ['f#/4'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-    },
-    {
-      number: 4,
-      notes: [
-        { keys: ['g/4'], duration: NoteDuration.HALF, time: 0 },
-        { keys: ['d/4'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-    },
-  ],
-  metadata: {
-    source: 'IMSLP',
-    license: 'Public Domain',
-    year: 1725,
-    musicalForm: 'binary',
-    technicalFocus: [TechnicalElement.SCALES, TechnicalElement.ARPEGGIOS],
-    arrangedBy: 'Original',
-  },
-}
-
-/**
- * Mozart - Sonata K.545, 1st movement opening
- * "Sonata facile", first page only for sight-reading practice
- */
-const mozartSonataK545: SheetMusic = {
-  id: 'mozart-sonata-k545-1st',
-  title: 'Piano Sonata No. 16',
-  composer: 'Wolfgang Amadeus Mozart',
-  opus: 'K.545',
-  movement: '1st Movement (Allegro)',
-  instrument: 'PIANO',
-  difficulty: 'INTERMEDIATE',
-  difficultyLevel: 4,
-  gradeLevel: 'RCM 4',
-  durationSeconds: 120,
-  timeSignature: '4/4',
-  keySignature: 'C major',
-  tempoMarking: 'Allegro',
-  suggestedTempo: 132,
-  stylePeriod: 'CLASSICAL',
-  tags: [
-    'curated',
-    'educational',
-    'sonata',
-    'classical',
-    'alberti-bass',
-    'scales',
-  ],
-  measures: [
-    {
-      number: 1,
-      notes: [
-        { keys: ['c/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 1 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 1.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 2 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 2.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 3 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 3.5 },
-      ],
-      timeSignature: TimeSignature.FOUR_FOUR,
-      keySignature: KeySignature.C_MAJOR,
-      clef: Clef.TREBLE,
-      tempo: 132,
-    },
-    {
-      number: 2,
-      notes: [
-        { keys: ['d/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 1 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 1.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 2 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 2.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 3 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 3.5 },
-      ],
-    },
-    {
-      number: 3,
-      notes: [
-        { keys: ['e/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 1 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 1.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 2 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 2.5 },
-        { keys: ['g/4'], duration: NoteDuration.EIGHTH, time: 3 },
-        { keys: ['e/4'], duration: NoteDuration.EIGHTH, time: 3.5 },
-      ],
-    },
-    {
-      number: 4,
-      notes: [
-        { keys: ['f/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['a/4'], duration: NoteDuration.EIGHTH, time: 1 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 1.5 },
-        { keys: ['a/4'], duration: NoteDuration.EIGHTH, time: 2 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 2.5 },
-        { keys: ['a/4'], duration: NoteDuration.EIGHTH, time: 3 },
-        { keys: ['f/4'], duration: NoteDuration.EIGHTH, time: 3.5 },
-      ],
-    },
-  ],
-  metadata: {
-    source: 'IMSLP',
-    license: 'Public Domain',
-    year: 1788,
-    musicalForm: 'sonata-allegro',
-    technicalFocus: [TechnicalElement.ALBERTI_BASS, TechnicalElement.SCALES],
-    arrangedBy: 'Original',
-  },
-}
+// Bach, Mozart, and Chopin pieces are imported from individual files
+// These contain the full transcriptions from MusicXML conversions
 
 /**
  * Clementi - Sonatina Op.36 No.1, 1st movement
- * Classic pedagogical sonatina, excellent for form study
+ * Classic pedagogical piece, C major
  */
 const clementiSonatinaOp36No1: SheetMusic = {
   id: 'clementi-sonatina-op36-no1',
@@ -342,74 +183,6 @@ const schumannMelody: SheetMusic = {
     year: 1848,
     musicalForm: 'song form',
     technicalFocus: [TechnicalElement.SCALES],
-    arrangedBy: 'Original',
-  },
-}
-
-/**
- * Chopin - Prelude Op.28 No.7 in A major
- * Short, beautiful prelude perfect for musical development
- */
-const chopinPreludeOp28No7: SheetMusic = {
-  id: 'chopin-prelude-op28-no7',
-  title: 'Prelude No.7 in A major',
-  composer: 'Frederic Chopin',
-  opus: 'Op.28 No.7',
-  movement: undefined,
-  instrument: 'PIANO',
-  difficulty: 'INTERMEDIATE',
-  difficultyLevel: 5,
-  gradeLevel: 'RCM 5',
-  durationSeconds: 60,
-  timeSignature: '3/4',
-  keySignature: 'A major',
-  tempoMarking: 'Andantino',
-  suggestedTempo: 84,
-  stylePeriod: 'ROMANTIC',
-  tags: [
-    'curated',
-    'educational',
-    'prelude',
-    'romantic',
-    'expressive',
-    'mazurka',
-  ],
-  measures: [
-    {
-      number: 1,
-      notes: [
-        { keys: ['e/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['a/5'], duration: NoteDuration.QUARTER, time: 1 },
-        { keys: ['c#/6'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-      timeSignature: TimeSignature.THREE_FOUR,
-      keySignature: KeySignature.A_MAJOR,
-      clef: Clef.TREBLE,
-      tempo: 84,
-    },
-    {
-      number: 2,
-      notes: [{ keys: ['b/5'], duration: NoteDuration.HALF, time: 0, dots: 1 }],
-    },
-    {
-      number: 3,
-      notes: [
-        { keys: ['d/5'], duration: NoteDuration.QUARTER, time: 0 },
-        { keys: ['g#/5'], duration: NoteDuration.QUARTER, time: 1 },
-        { keys: ['b/5'], duration: NoteDuration.QUARTER, time: 2 },
-      ],
-    },
-    {
-      number: 4,
-      notes: [{ keys: ['a/5'], duration: NoteDuration.HALF, time: 0, dots: 1 }],
-    },
-  ],
-  metadata: {
-    source: 'IMSLP',
-    license: 'Public Domain',
-    year: 1839,
-    musicalForm: 'prelude',
-    technicalFocus: [TechnicalElement.CHORDS],
     arrangedBy: 'Original',
   },
 }
@@ -741,7 +514,7 @@ const tarregaLagrima: SheetMusic = {
     license: 'Public Domain',
     year: 1884,
     musicalForm: 'character piece',
-    technicalFocus: [TechnicalElement.ARPEGGIOS],
+    technicalFocus: [TechnicalElement.ARPEGGIOS, TechnicalElement.CHORDS],
     arrangedBy: 'Original',
   },
 }
@@ -821,12 +594,12 @@ const spanishRomance: SheetMusic = {
  */
 export function getCuratedPieces(): SheetMusic[] {
   return [
-    // Piano pieces
-    bachMinuetInG,
-    mozartSonataK545,
+    // Piano pieces - imported files have full measures
+    bachMinuetInG, // 32 measures from MusicXML conversion
+    mozartSonataK545, // 73 measures from MusicXML conversion
     clementiSonatinaOp36No1,
     schumannMelody,
-    chopinPreludeOp28No7,
+    chopinPreludeOp28No4, // 26 measures from MusicXML conversion
     // Guitar pieces
     sorStudyOp60No1,
     giulianiArpeggioStudy,
@@ -845,7 +618,7 @@ export function getCuratedPianoPieces(): SheetMusic[] {
     mozartSonataK545,
     clementiSonatinaOp36No1,
     schumannMelody,
-    chopinPreludeOp28No7,
+    chopinPreludeOp28No4,
   ]
 }
 
@@ -888,9 +661,4 @@ export function getCuratedPiecesByDifficulty(
 ): SheetMusic[] {
   const allPieces = getCuratedPieces()
   return allPieces.filter(piece => piece.difficulty === difficulty)
-}
-
-// Fix the typo in the test file
-export function getCuratedPianoHo(): SheetMusic[] {
-  return getCuratedPianoPieces()
 }

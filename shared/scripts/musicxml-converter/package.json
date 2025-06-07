@@ -1,0 +1,21 @@
+{
+  "name": "musicxml-converter",
+  "version": "1.0.0",
+  "description": "Convert MusicXML files to Rubato SheetMusic format",
+  "type": "module",
+  "main": "convert.js",
+  "scripts": {
+    "convert": "node dist/convert.js",
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.3.6",
+    "yauzl": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/yauzl": "^2.10.3",
+    "typescript": "^5.3.3"
+  }
+}
