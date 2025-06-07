@@ -153,7 +153,5 @@ export const scalePracticeMajor: SheetMusic = {
     musicalForm: 'exercise',
     technicalFocus: [TechnicalElement.SCALES],
     arrangedBy: 'Mirubato Practice Generator',
-    practiceNotes:
-      'Practice each scale slowly and evenly. Focus on finger position and smooth transitions between notes.',
   },
 }

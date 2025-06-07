@@ -28,7 +28,7 @@ import {
   scalePracticeMajor,
   rhythmTraining4_4,
   intervalRecognition,
-} from './workouts'
+} from './workouts/index'
 
 // ============== Piano Pieces ==============
 

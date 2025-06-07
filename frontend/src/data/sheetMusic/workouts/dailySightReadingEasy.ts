@@ -125,7 +125,5 @@ export const dailySightReadingEasy: SheetMusic = {
     musicalForm: 'exercise',
     technicalFocus: [TechnicalElement.SCALES],
     arrangedBy: 'Mirubato Practice Generator',
-    practiceNotes:
-      'Focus on steady tempo and accurate note reading. Try to play through without stopping.',
   },
 }

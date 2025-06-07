@@ -17,7 +17,6 @@ import {
   KeySignature,
   Clef,
   TechnicalElement,
-  RhythmicPattern,
 } from '../../../modules/sheetMusic/types'
 
 export const rhythmTraining4_4: SheetMusic = {
@@ -107,7 +106,7 @@ export const rhythmTraining4_4: SheetMusic = {
         { keys: ['b/4'], duration: NoteDuration.QUARTER, time: 3, rest: true },
       ],
     },
-    // Measure 8: Syncopation
+    // Measure 8: Syncopated rhythm
     {
       number: 8,
       notes: [
@@ -140,10 +139,7 @@ export const rhythmTraining4_4: SheetMusic = {
     license: 'CC BY 4.0',
     year: 2024,
     musicalForm: 'exercise',
-    technicalFocus: [TechnicalElement.RHYTHM],
-    rhythmicPatterns: [RhythmicPattern.STRAIGHT, RhythmicPattern.SYNCOPATED],
+    technicalFocus: [TechnicalElement.SCALES],
     arrangedBy: 'Mirubato Practice Generator',
-    practiceNotes:
-      'Count aloud while playing. Use a metronome set to 80 bpm. Focus on precise timing and steady tempo.',
   },
 }

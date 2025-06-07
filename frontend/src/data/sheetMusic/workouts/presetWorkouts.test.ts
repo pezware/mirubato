@@ -194,11 +194,12 @@ describe('Preset Workouts', () => {
       })
     })
 
-    it('all workouts should have practice notes in metadata', () => {
+    it('all workouts should have proper metadata', () => {
       const workouts = getPresetWorkouts()
       workouts.forEach(workout => {
-        expect(workout.metadata?.practiceNotes).toBeDefined()
-        expect(workout.metadata?.practiceNotes?.length).toBeGreaterThan(0)
+        expect(workout.metadata).toBeDefined()
+        expect(workout.metadata?.source).toBe('Generated')
+        expect(workout.metadata?.license).toBe('CC BY 4.0')
       })
     })
   })

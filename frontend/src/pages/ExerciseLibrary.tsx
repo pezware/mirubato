@@ -20,6 +20,9 @@ import {
   ExerciseParameters,
   SheetMusic,
   SightReadingExerciseParameters,
+  KeySignature,
+  TimeSignature,
+  Clef,
 } from '../modules/sheetMusic/types'
 import { TechnicalExerciseParameters } from '../modules/sheetMusic/generators/TechnicalExerciseGenerator'
 import { logger } from '../utils/logger'
@@ -52,29 +55,39 @@ const ExerciseLibrary: React.FC = () => {
   // Convert SheetMusic to GeneratedExercise format for preview
   const convertToGeneratedExercise = useCallback(
     (sheetMusic: SheetMusic): GeneratedExercise => {
+      // Convert string key/time signatures to enums
+      const keySignature = sheetMusic.keySignature.includes('major')
+        ? KeySignature.C_MAJOR // Default for now
+        : KeySignature.A_MINOR
+      const timeSignature =
+        sheetMusic.timeSignature === '4/4'
+          ? TimeSignature.FOUR_FOUR
+          : sheetMusic.timeSignature === '3/4'
+            ? TimeSignature.THREE_FOUR
+            : TimeSignature.FOUR_FOUR
+
       return {
         id: sheetMusic.id,
-        type: ExerciseType.SIGHT_READING, // Default type
+        type: ExerciseType.SIGHT_READING,
         userId: user?.id || 'anonymous',
         parameters: {
-          type: ExerciseType.SIGHT_READING,
-          instrument: sheetMusic.instrument,
+          keySignature,
+          timeSignature,
+          clef: Clef.TREBLE,
+          range: { lowest: 'C4', highest: 'C6' },
           difficulty: sheetMusic.difficultyLevel,
           measures: sheetMusic.measures.length,
-          keySignature: sheetMusic.keySignature,
-          timeSignature: sheetMusic.timeSignature,
           tempo: sheetMusic.suggestedTempo,
-        } as SightReadingExerciseParameters,
+        },
+        measures: sheetMusic.measures,
         metadata: {
           title: sheetMusic.title,
           description:
             `${sheetMusic.composer} - ${sheetMusic.opus || ''}`.trim(),
-          difficulty: sheetMusic.difficultyLevel,
+          focusAreas: sheetMusic.metadata?.technicalFocus?.map(t => t) || [],
           estimatedDuration: sheetMusic.durationSeconds,
           tags: sheetMusic.tags || [],
-          generatedAt: new Date(),
         },
-        sheetMusic: sheetMusic,
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       }
@@ -338,7 +351,7 @@ const ExerciseLibrary: React.FC = () => {
                           {workout.title}
                         </h4>
                         <p className="text-sm text-gray-600">
-                          {workout.metadata?.practiceNotes}
+                          Level {workout.difficultyLevel} • {workout.gradeLevel}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {workout.tags?.slice(0, 3).map(tag => (

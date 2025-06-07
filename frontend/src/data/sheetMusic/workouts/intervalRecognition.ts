@@ -17,7 +17,6 @@ import {
   KeySignature,
   Clef,
   TechnicalElement,
-  Interval,
 } from '../../../modules/sheetMusic/types'
 
 export const intervalRecognition: SheetMusic = {
@@ -129,10 +128,7 @@ export const intervalRecognition: SheetMusic = {
     license: 'CC BY 4.0',
     year: 2024,
     musicalForm: 'exercise',
-    technicalFocus: [TechnicalElement.INTERVALS],
-    intervals: [Interval.MAJOR_THIRD, Interval.PERFECT_FIFTH, Interval.OCTAVE],
+    technicalFocus: [TechnicalElement.SCALES],
     arrangedBy: 'Mirubato Practice Generator',
-    practiceNotes:
-      'Listen carefully to each interval. Try to sing the interval before playing the second note. Practice both melodic (sequential) and harmonic (simultaneous) intervals.',
   },
 }
