@@ -623,6 +623,132 @@ describe('SheetMusicLibraryModule', () => {
     })
   })
 
+  describe('Curated Pieces', () => {
+    beforeEach(async () => {
+      await module.initialize()
+    })
+
+    it('should return all 10 curated pieces', () => {
+      const pieces = module.getCuratedPieces()
+      expect(pieces).toHaveLength(10)
+
+      // Check that we have pieces from both instruments
+      const pianoPieces = pieces.filter(p => p.instrument === 'PIANO')
+      const guitarPieces = pieces.filter(p => p.instrument === 'GUITAR')
+      expect(pianoPieces).toHaveLength(5)
+      expect(guitarPieces).toHaveLength(5)
+    })
+
+    it('should filter pieces by instrument', () => {
+      const pianoPieces = module.getCuratedPiecesByInstrument('PIANO')
+      const guitarPieces = module.getCuratedPiecesByInstrument('GUITAR')
+
+      expect(pianoPieces).toHaveLength(5)
+      expect(guitarPieces).toHaveLength(5)
+
+      pianoPieces.forEach(piece => {
+        expect(piece.instrument).toBe('PIANO')
+      })
+
+      guitarPieces.forEach(piece => {
+        expect(piece.instrument).toBe('GUITAR')
+      })
+    })
+
+    it('should filter pieces by difficulty', () => {
+      const beginnerPieces = module.getCuratedPiecesByDifficulty('BEGINNER')
+      const intermediatePieces =
+        module.getCuratedPiecesByDifficulty('INTERMEDIATE')
+      const advancedPieces = module.getCuratedPiecesByDifficulty('ADVANCED')
+
+      beginnerPieces.forEach(piece => {
+        expect(piece.difficulty).toBe('BEGINNER')
+      })
+
+      intermediatePieces.forEach(piece => {
+        expect(piece.difficulty).toBe('INTERMEDIATE')
+      })
+
+      advancedPieces.forEach(piece => {
+        expect(piece.difficulty).toBe('ADVANCED')
+      })
+    })
+
+    it('should get curated piano pieces only', () => {
+      const pianoPieces = module.getCuratedPianoPieces()
+      expect(pianoPieces).toHaveLength(5)
+
+      const expectedComposers = [
+        'Johann Sebastian Bach',
+        'Wolfgang Amadeus Mozart',
+        'Muzio Clementi',
+        'Robert Schumann',
+        'Frederic Chopin',
+      ]
+
+      const composers = pianoPieces.map(p => p.composer)
+      expectedComposers.forEach(composer => {
+        expect(composers).toContain(composer)
+      })
+    })
+
+    it('should get curated guitar pieces only', () => {
+      const guitarPieces = module.getCuratedGuitarPieces()
+      expect(guitarPieces).toHaveLength(5)
+
+      const expectedComposers = [
+        'Fernando Sor',
+        'Mauro Giuliani',
+        'Matteo Carcassi',
+        'Francisco Tárrega',
+        'Anonymous',
+      ]
+
+      const composers = guitarPieces.map(p => p.composer)
+      expectedComposers.forEach(composer => {
+        expect(composers).toContain(composer)
+      })
+    })
+
+    it('should get specific curated pieces by ID', async () => {
+      // Test Bach Minuet
+      const bachMinuet = await module.getSheetMusic('bach-minuet-g-anh114')
+      expect(bachMinuet).toBeDefined()
+      expect(bachMinuet?.composer).toBe('Johann Sebastian Bach')
+      expect(bachMinuet?.title).toContain('Minuet in G')
+
+      // Test Chopin Prelude
+      const chopinPrelude = await module.getSheetMusic(
+        'chopin-prelude-op28-no7'
+      )
+      expect(chopinPrelude).toBeDefined()
+      expect(chopinPrelude?.composer).toBe('Frederic Chopin')
+      expect(chopinPrelude?.opus).toBe('Op.28 No.7')
+
+      // Test Spanish Romance
+      const spanishRomance = await module.getSheetMusic(
+        'spanish-romance-anonymous'
+      )
+      expect(spanishRomance).toBeDefined()
+      expect(spanishRomance?.composer).toBe('Anonymous')
+      expect(spanishRomance?.title).toContain('Romance')
+    })
+
+    it('should return null for non-existent piece ID', async () => {
+      const nonExistentPiece = await module.getSheetMusic('non-existent-piece')
+      expect(nonExistentPiece).toBeNull()
+    })
+
+    it('should have all pieces with educational tags', () => {
+      const allPieces = module.getCuratedPieces()
+      allPieces.forEach(piece => {
+        expect(piece.tags).toContain('curated')
+        expect(piece.tags).toContain('educational')
+        expect(piece.metadata?.license).toBe('Public Domain')
+      })
+    })
+  })
+
   describe('Error Handling', () => {
     const mockExercise: GeneratedExercise = {
       id: 'exercise-1',

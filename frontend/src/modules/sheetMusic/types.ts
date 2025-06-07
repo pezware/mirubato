@@ -496,6 +496,15 @@ export interface SheetMusicModuleInterface {
   searchMusic(criteria: MusicSearchCriteria): Promise<SearchResults>
   getSheetMusic(id: string): Promise<SheetMusic | null>
 
+  // Curated pieces
+  getCuratedPieces(): SheetMusic[]
+  getCuratedPiecesByInstrument(instrument: 'PIANO' | 'GUITAR'): SheetMusic[]
+  getCuratedPiecesByDifficulty(
+    difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  ): SheetMusic[]
+  getCuratedPianoPieces(): SheetMusic[]
+  getCuratedGuitarPieces(): SheetMusic[]
+
   // Difficulty assessment
   assessDifficulty(
     sheetMusicId: string,
