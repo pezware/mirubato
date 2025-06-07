@@ -40,17 +40,10 @@ jest.mock('../components', () => ({
   ),
   UserStatusIndicator: () => <div data-testid="user-status-indicator" />,
   SaveProgressPrompt: () => <div data-testid="save-progress-prompt" />,
-  PracticeHeader: ({ mode, onModeChange, isMobile }: any) => (
+  PracticeHeader: ({ isMobile }: any) => (
     <div data-testid="practice-header">
       <h1>mirubato</h1>
-      <div>{mode}</div>
       <div data-testid="user-status-indicator" />
-      {!isMobile && (
-        <div>
-          <button onClick={() => onModeChange('practice')}>Practice</button>
-          <button onClick={() => onModeChange('exercise')}>Exercise</button>
-        </div>
-      )}
       {isMobile && <button data-testid="mobile-menu">Menu</button>}
       <a href="/">{isMobile ? '×' : '← Back'}</a>
     </div>
@@ -225,7 +218,7 @@ describe('Practice Page', () => {
       expect(screen.getByTestId('save-progress-prompt')).toBeInTheDocument()
     })
 
-    it('renders mode selector on desktop', () => {
+    it('renders simplified header on desktop', () => {
       // Mock desktop viewport
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
@@ -235,11 +228,16 @@ describe('Practice Page', () => {
 
       renderPractice()
 
-      expect(screen.getByText('Practice')).toBeInTheDocument()
-      expect(screen.getByText('Exercise')).toBeInTheDocument()
+      // Should render header without mode selector
+      expect(screen.getByText('mirubato')).toBeInTheDocument()
+      expect(screen.getByTestId('user-status-indicator')).toBeInTheDocument()
+
+      // Mode selector should not be present
+      expect(screen.queryByText('Practice')).not.toBeInTheDocument()
+      expect(screen.queryByText('Exercise')).not.toBeInTheDocument()
     })
 
-    it('hides mode selector on mobile', () => {
+    it('renders simplified header on mobile', () => {
       // Mock mobile viewport
       mockUseViewport.mockReturnValue({
         viewportWidth: 500,
@@ -251,7 +249,11 @@ describe('Practice Page', () => {
       renderPractice()
 
       // On mobile, mode selector buttons should not be present
+      expect(screen.queryByText('Practice')).not.toBeInTheDocument()
       expect(screen.queryByText('Exercise')).not.toBeInTheDocument()
+
+      // Should still show the main header elements
+      expect(screen.getByText('mirubato')).toBeInTheDocument()
     })
 
     it('shows mobile menu button on mobile', () => {
@@ -277,30 +279,21 @@ describe('Practice Page', () => {
   })
 
   describe('Mode Selection', () => {
-    it('changes mode when mode buttons are clicked', () => {
+    it('renders without mode selector (simplified interface)', () => {
       renderPractice()
 
-      const exerciseButton = screen.getByText('Exercise')
+      // The simplified header should not have mode buttons
+      expect(screen.queryByText('Exercise')).not.toBeInTheDocument()
 
-      // Initially practice mode is displayed
-      expect(screen.getByText('practice')).toBeInTheDocument()
-
-      // Click exercise
-      fireEvent.click(exerciseButton)
-
-      // The component should re-render with new mode
-      // We can't check className on mocked components, so check for mode display
-      expect(screen.queryByText('practice')).not.toBeInTheDocument()
-      expect(screen.getByText('exercise')).toBeInTheDocument()
+      // Should still render the practice interface
+      expect(screen.getByTestId('practice-notation')).toBeInTheDocument()
+      expect(screen.getByTestId('practice-controls')).toBeInTheDocument()
     })
 
-    it('shows ghost controls in practice mode', () => {
+    it('shows ghost controls by default', () => {
       renderPractice()
 
-      // Ensure we're in practice mode
-      fireEvent.click(screen.getByText('Practice'))
-
-      // Check for ghost control buttons
+      // Check for ghost control buttons (should be visible with low opacity)
       expect(screen.getByText('Loop A-B')).toBeInTheDocument()
       expect(screen.getByText('Metronome')).toBeInTheDocument()
       expect(screen.getByText('Note Hints')).toBeInTheDocument()
@@ -383,8 +376,8 @@ describe('Practice Page', () => {
 
       renderPractice()
 
-      // Mode selector should be visible on tablet
-      expect(screen.getByText('Practice')).toBeInTheDocument()
+      // Mode selector should not be present (simplified interface)
+      expect(screen.queryByText('Practice')).not.toBeInTheDocument()
 
       // Music player should be present in tablet layout
       expect(screen.getByTestId('music-player')).toBeInTheDocument()
