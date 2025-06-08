@@ -158,6 +158,9 @@ describe('ExerciseLibrary - Accessibility', () => {
       generateExercise: jest.fn().mockResolvedValue(mockExercise),
       saveExercise: jest.fn().mockResolvedValue(undefined),
       loadExercise: jest.fn().mockResolvedValue(mockExercise),
+      getCuratedPieces: jest.fn().mockReturnValue([]),
+      getPresetWorkouts: jest.fn().mockReturnValue([]),
+      getAllSheetMusic: jest.fn().mockReturnValue([]),
     } as unknown as jest.Mocked<SheetMusicLibraryModule>
     ;(SheetMusicLibraryModule as jest.Mock).mockImplementation(
       () => mockSheetMusicModule
@@ -194,11 +197,15 @@ describe('ExerciseLibrary - Accessibility', () => {
       renderExerciseLibrary()
 
       // Tab navigation should be accessible - use exact text to avoid conflicts
+      const featuredTab = screen.getByRole('button', {
+        name: 'Featured Content',
+      })
       const generateTab = screen.getByRole('button', {
         name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
+      expect(featuredTab).toBeInTheDocument()
       expect(generateTab).toBeInTheDocument()
       expect(libraryTab).toBeInTheDocument()
     })
@@ -217,17 +224,27 @@ describe('ExerciseLibrary - Accessibility', () => {
       renderExerciseLibrary()
 
       // Tab buttons should be focusable
+      const featuredTab = screen.getByRole('button', {
+        name: 'Featured Content',
+      })
       const generateTab = screen.getByRole('button', {
         name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
+      expect(featuredTab).not.toHaveAttribute('tabindex', '-1')
       expect(generateTab).not.toHaveAttribute('tabindex', '-1')
       expect(libraryTab).not.toHaveAttribute('tabindex', '-1')
     })
 
     it('should support keyboard interaction on interactive elements', () => {
       renderExerciseLibrary()
+
+      // Switch to generate tab first
+      const generateTab = screen.getByRole('button', {
+        name: 'Generate New Exercise',
+      })
+      generateTab.click()
 
       // Generate button should be keyboard accessible
       const generateButton = screen.getByTestId('generate-button')
@@ -258,6 +275,12 @@ describe('ExerciseLibrary - Accessibility', () => {
       )
 
       renderExerciseLibrary()
+
+      // Switch to generate tab first
+      const generateTab = screen.getByRole('button', {
+        name: 'Generate New Exercise',
+      })
+      generateTab.click()
 
       const generateButton = screen.getByTestId('generate-button')
       // Should show loading text when generating
@@ -314,6 +337,12 @@ describe('ExerciseLibrary - Accessibility', () => {
     it('should associate labels with form controls', () => {
       renderExerciseLibrary()
 
+      // Switch to generate tab first
+      const generateTab = screen.getByRole('button', {
+        name: 'Generate New Exercise',
+      })
+      generateTab.click()
+
       // Form elements in the exercise generator should have proper labels
       const parameterForm = screen.getByTestId('exercise-parameter-form')
       expect(parameterForm).toBeInTheDocument()
@@ -340,6 +369,12 @@ describe('ExerciseLibrary - Accessibility', () => {
     it('should provide form validation feedback', () => {
       renderExerciseLibrary()
 
+      // Switch to generate tab first
+      const generateTab = screen.getByRole('button', {
+        name: 'Generate New Exercise',
+      })
+      generateTab.click()
+
       // Error messages should be properly associated with form controls
       // This test ensures the structure supports accessibility
       expect(screen.getByTestId('exercise-parameter-form')).toBeInTheDocument()
@@ -360,12 +395,16 @@ describe('ExerciseLibrary - Accessibility', () => {
       renderExerciseLibrary()
 
       // Tab navigation should not lose focus
+      const featuredTab = screen.getByRole('button', {
+        name: 'Featured Content',
+      })
       const generateTab = screen.getByRole('button', {
         name: 'Generate New Exercise',
       })
       const libraryTab = screen.getByRole('button', { name: /my exercises/i })
 
-      // Both tabs should be reachable
+      // All tabs should be reachable
+      expect(featuredTab).toBeVisible()
       expect(generateTab).toBeVisible()
       expect(libraryTab).toBeVisible()
     })

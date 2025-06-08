@@ -46,6 +46,16 @@ import {
 import { SightReadingGenerator } from './generators/SightReadingGenerator'
 import { TechnicalExerciseGenerator } from './generators/TechnicalExerciseGenerator'
 import { nanoid } from 'nanoid'
+import {
+  getCuratedPieces,
+  getCuratedPianoPieces,
+  getCuratedGuitarPieces,
+  getPieceById,
+  getCuratedPiecesByInstrument,
+  getCuratedPiecesByDifficulty,
+  getPresetWorkouts,
+  getAllSheetMusic,
+} from '../../data/sheetMusic'
 
 const DEFAULT_CONFIG: SheetMusicModuleConfig = {
   maxExercisesPerUser: 100,
@@ -340,8 +350,68 @@ export class SheetMusicLibraryModule
   }
 
   async getSheetMusic(id: string): Promise<SheetMusic | null> {
+    // First check if it's a curated piece
+    const curatedPiece = getPieceById(id)
+    if (curatedPiece) {
+      return curatedPiece
+    }
+
+    // Otherwise look in storage
     const key = `sheet-music:${id}`
     return await this.storage.read<SheetMusic>(key)
+  }
+
+  // ============== Curated Pieces ==============
+
+  /**
+   * Get all curated pieces (10 pieces total)
+   */
+  getCuratedPieces(): SheetMusic[] {
+    return getCuratedPieces()
+  }
+
+  /**
+   * Get curated pieces filtered by instrument
+   */
+  getCuratedPiecesByInstrument(instrument: 'PIANO' | 'GUITAR'): SheetMusic[] {
+    return getCuratedPiecesByInstrument(instrument)
+  }
+
+  /**
+   * Get curated pieces filtered by difficulty
+   */
+  getCuratedPiecesByDifficulty(
+    difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  ): SheetMusic[] {
+    return getCuratedPiecesByDifficulty(difficulty)
+  }
+
+  /**
+   * Get curated piano pieces (5 pieces)
+   */
+  getCuratedPianoPieces(): SheetMusic[] {
+    return getCuratedPianoPieces()
+  }
+
+  /**
+   * Get curated guitar pieces (5 pieces)
+   */
+  getCuratedGuitarPieces(): SheetMusic[] {
+    return getCuratedGuitarPieces()
+  }
+
+  /**
+   * Get preset workout exercises (4 workouts)
+   */
+  getPresetWorkouts(): SheetMusic[] {
+    return getPresetWorkouts()
+  }
+
+  /**
+   * Get all sheet music including curated pieces and workouts
+   */
+  getAllSheetMusic(): SheetMusic[] {
+    return getAllSheetMusic()
   }
 
   // ============== Difficulty Assessment ==============
