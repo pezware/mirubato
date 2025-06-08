@@ -4,14 +4,11 @@
  * Converted from MusicXML
  */
 
-import type { SheetMusic } from '../../modules/sheetMusic/types'
+import type { SheetMusic } from '../../../frontend/src/modules/sheetMusic/types'
 import {
-  NoteDuration,
   TimeSignature,
   KeySignature,
-  Clef,
-  TechnicalElement,
-} from '../../modules/sheetMusic/types'
+} from '../../../frontend/src/modules/sheetMusic/types'
 
 export const prlude_opus_28_no_4_in_e_minor_chopin: SheetMusic = {
   id: 'prlude-opus-28-no-4-in-e-minor-chopin',

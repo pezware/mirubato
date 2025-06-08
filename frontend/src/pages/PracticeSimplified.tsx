@@ -75,51 +75,83 @@ const PracticeSimplified: React.FC = () => {
     audioManager.setInstrument('piano')
   }, [audioManager])
 
-  // Initialize modules
+  // Initialize content - simplified approach for guest access
   useEffect(() => {
     let mounted = true
     let storageModule: StorageModule | null = null
     let sheetMusicModule: SheetMusicLibraryModule | null = null
 
-    const initializeModules = async () => {
-      if (!user) return
-
+    const initializeContent = async () => {
       try {
-        // Initialize storage module first
-        storageModule = new StorageModule()
-        await storageModule.initialize()
-
-        // Create event-driven storage and sheet music module
-        const eventBus = EventBus.getInstance()
-        const eventStorage = new EventDrivenStorage()
-        sheetMusicModule = new SheetMusicLibraryModule(eventBus, eventStorage)
-        await sheetMusicModule.initialize()
+        // Load curated pieces directly (available to all users)
+        const { getCuratedPieces, getPresetWorkouts } = await import(
+          '../data/sheetMusic'
+        )
+        const pieces = getCuratedPieces()
+        const workouts = getPresetWorkouts()
 
         if (mounted) {
-          // Load user's exercises
-          const userExercises = await sheetMusicModule.listUserExercises(
-            user.id
-          )
-          setExercises(userExercises)
-
-          // Load curated pieces and workouts
-          const pieces = sheetMusicModule.getCuratedPieces()
-          const workouts = sheetMusicModule.getPresetWorkouts()
           setCuratedPieces(pieces)
           setPresetWorkouts(workouts)
-          setSheetMusicModule(sheetMusicModule)
 
           // Set default selected piece
           if (pieces.length > 0 && !selectedPiece) {
             setSelectedPiece(pieces[0])
           }
+
+          logger.info('Loaded curated content', {
+            piecesCount: pieces.length,
+            workoutsCount: workouts.length,
+          })
+        }
+
+        // If user is logged in, initialize modules for user-specific features
+        if (user) {
+          try {
+            const eventBus = EventBus.getInstance()
+            const eventStorage = new EventDrivenStorage()
+            sheetMusicModule = new SheetMusicLibraryModule(
+              eventBus,
+              eventStorage
+            )
+            await sheetMusicModule.initialize()
+
+            // Initialize storage module for user data
+            storageModule = new StorageModule()
+            await storageModule.initialize()
+
+            // Load user's exercises
+            const userExercises = await sheetMusicModule.listUserExercises(
+              user.id
+            )
+            if (mounted) {
+              setExercises(userExercises)
+              setSheetMusicModule(sheetMusicModule)
+            }
+
+            logger.info('Initialized user-specific modules', {
+              userExercises: userExercises.length,
+            })
+          } catch (moduleError) {
+            logger.warn(
+              'Failed to initialize user modules, continuing with guest mode',
+              {
+                error: moduleError,
+              }
+            )
+          }
         }
       } catch (error) {
-        logger.error('Failed to initialize modules', { error })
+        logger.error('Failed to load practice content', { error })
+        // Fallback: try to set at least empty arrays to show the UI
+        if (mounted) {
+          setCuratedPieces([])
+          setPresetWorkouts([])
+        }
       }
     }
 
-    initializeModules()
+    initializeContent()
 
     return () => {
       mounted = false
@@ -149,60 +181,74 @@ const PracticeSimplified: React.FC = () => {
             {/* Featured Pieces */}
             <div>
               <h3 className="text-lg font-medium text-mirubato-wood-700 mb-3">
-                Featured Pieces
+                Featured Pieces{' '}
+                {curatedPieces.length > 0 && `(${curatedPieces.length})`}
               </h3>
               <div className="space-y-2">
-                {curatedPieces.map(piece => (
-                  <button
-                    key={piece.id}
-                    onClick={() => {
-                      setSelectedContent('curated')
-                      setSelectedPiece(piece)
-                    }}
-                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
-                      selectedContent === 'curated' &&
-                      selectedPiece?.id === piece.id
-                        ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
-                        : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
-                    }`}
-                  >
-                    <h4 className="font-medium text-mirubato-wood-800">
-                      {piece.title}
-                    </h4>
-                    <p className="text-sm text-mirubato-wood-600">
-                      {piece.composer} • Difficulty {piece.difficultyLevel}/10
-                    </p>
-                  </button>
-                ))}
+                {curatedPieces.length === 0 ? (
+                  <div className="text-center py-8 text-mirubato-wood-500">
+                    Loading pieces...
+                  </div>
+                ) : (
+                  curatedPieces.map(piece => (
+                    <button
+                      key={piece.id}
+                      onClick={() => {
+                        setSelectedContent('curated')
+                        setSelectedPiece(piece)
+                      }}
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                        selectedContent === 'curated' &&
+                        selectedPiece?.id === piece.id
+                          ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
+                          : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
+                      }`}
+                    >
+                      <h4 className="font-medium text-mirubato-wood-800">
+                        {piece.title}
+                      </h4>
+                      <p className="text-sm text-mirubato-wood-600">
+                        {piece.composer} • Difficulty {piece.difficultyLevel}/10
+                      </p>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
             {/* Practice Workouts */}
             <div>
               <h3 className="text-lg font-medium text-mirubato-wood-700 mb-3">
-                Practice Workouts
+                Practice Workouts{' '}
+                {presetWorkouts.length > 0 && `(${presetWorkouts.length})`}
               </h3>
               <div className="space-y-2">
-                {presetWorkouts.map(workout => (
-                  <button
-                    key={workout.id}
-                    onClick={() => handleSelectWorkout(workout)}
-                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
-                      selectedContent === 'workout' &&
-                      selectedPiece?.id === workout.id
-                        ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
-                        : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
-                    }`}
-                  >
-                    <h4 className="font-medium text-mirubato-wood-800">
-                      {workout.title}
-                    </h4>
-                    <p className="text-sm text-mirubato-wood-600">
-                      {workout.composer} •{' '}
-                      {workout.metadata?.musicalForm || 'Exercise'}
-                    </p>
-                  </button>
-                ))}
+                {presetWorkouts.length === 0 ? (
+                  <div className="text-center py-8 text-mirubato-wood-500">
+                    Loading workouts...
+                  </div>
+                ) : (
+                  presetWorkouts.map(workout => (
+                    <button
+                      key={workout.id}
+                      onClick={() => handleSelectWorkout(workout)}
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                        selectedContent === 'workout' &&
+                        selectedPiece?.id === workout.id
+                          ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
+                          : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
+                      }`}
+                    >
+                      <h4 className="font-medium text-mirubato-wood-800">
+                        {workout.title}
+                      </h4>
+                      <p className="text-sm text-mirubato-wood-600">
+                        {workout.composer} •{' '}
+                        {workout.metadata?.musicalForm || 'Exercise'}
+                      </p>
+                    </button>
+                  ))
+                )}
               </div>
 
               {/* User's exercises if any */}
