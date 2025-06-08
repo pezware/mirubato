@@ -76,7 +76,7 @@ describe('Curated Pieces Module', () => {
       const mozartSonata = pieces.find(
         piece =>
           piece.composer === 'Wolfgang Amadeus Mozart' &&
-          piece.opus?.includes('K.545')
+          piece.opus?.includes('K. 545')
       )
       expect(mozartSonata).toBeDefined()
       expect(mozartSonata?.stylePeriod).toBe('CLASSICAL')
@@ -108,7 +108,7 @@ describe('Curated Pieces Module', () => {
       const pieces = getCuratedPianoPieces()
       const chopinPrelude = pieces.find(
         piece =>
-          piece.composer === 'Frédéric Chopin' && piece.opus?.includes('Op.28')
+          piece.composer === 'Frédéric Chopin' && piece.opus?.includes('Op. 28')
       )
       expect(chopinPrelude).toBeDefined()
       expect(chopinPrelude?.stylePeriod).toBe('ROMANTIC')

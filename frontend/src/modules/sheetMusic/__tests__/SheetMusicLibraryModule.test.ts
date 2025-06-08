@@ -721,11 +721,11 @@ describe('SheetMusicLibraryModule', () => {
 
       // Test Chopin Prelude
       const chopinPrelude = await module.getSheetMusic(
-        'prlude-opus-28-no-4-in-e-minor-chopin'
+        'chopin-prelude-op28-no4'
       )
       expect(chopinPrelude).toBeDefined()
       expect(chopinPrelude?.composer).toBe('Frédéric Chopin')
-      expect(chopinPrelude?.opus).toBe('Op.28 No.4')
+      expect(chopinPrelude?.opus).toBe('Op. 28, No. 4')
 
       // Test Spanish Romance
       const spanishRomance = await module.getSheetMusic(
