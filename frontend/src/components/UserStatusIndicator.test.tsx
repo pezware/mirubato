@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { UserStatusIndicator } from './UserStatusIndicator'
 import { useAuth } from '../hooks/useAuth'
-import { AuthModal } from './AuthModal'
 
 // Mock dependencies
 jest.mock('../hooks/useAuth')
@@ -61,7 +60,7 @@ describe('UserStatusIndicator', () => {
     render(<UserStatusIndicator />)
 
     expect(screen.getByText('Guest Mode')).toBeInTheDocument()
-    expect(screen.getByText('Save Progress to Cloud')).toBeInTheDocument()
+    // Note: "Save Progress to Cloud" only shows in production environment
 
     // Check for pulsing indicator
     const indicator = screen.getByText('Guest Mode').previousElementSibling
@@ -125,7 +124,7 @@ describe('UserStatusIndicator', () => {
     expect(mockSyncToCloud).toHaveBeenCalledTimes(1)
   })
 
-  it('opens auth modal when save progress is clicked', () => {
+  it('does not show save to cloud button in development', () => {
     mockUseAuth.mockReturnValue(
       createMockAuth({
         user: { id: 'anon-123', email: null },
@@ -135,65 +134,7 @@ describe('UserStatusIndicator', () => {
 
     render(<UserStatusIndicator />)
 
-    const saveButton = screen.getByText('Save Progress to Cloud')
-    fireEvent.click(saveButton)
-
-    expect(screen.getByTestId('auth-modal')).toBeInTheDocument()
-  })
-
-  it('closes auth modal when onClose is called', () => {
-    mockUseAuth.mockReturnValue(
-      createMockAuth({
-        user: { id: 'anon-123', email: null },
-        isAnonymous: true,
-      })
-    )
-
-    render(<UserStatusIndicator />)
-
-    // Open modal
-    const saveButton = screen.getByText('Save Progress to Cloud')
-    fireEvent.click(saveButton)
-    expect(screen.getByTestId('auth-modal')).toBeInTheDocument()
-
-    // Close modal
-    const closeButton = screen.getByText('Close Modal')
-    fireEvent.click(closeButton)
-    expect(screen.queryByTestId('auth-modal')).not.toBeInTheDocument()
-  })
-
-  it('passes correct props to AuthModal', () => {
-    mockUseAuth.mockReturnValue(
-      createMockAuth({
-        user: { id: 'anon-123', email: null },
-        isAnonymous: true,
-      })
-    )
-
-    render(<UserStatusIndicator />)
-
-    // Initially closed
-    expect(AuthModal).toHaveBeenCalledWith(
-      expect.objectContaining({
-        isOpen: false,
-        onClose: expect.any(Function),
-        onSuccess: expect.any(Function),
-      }),
-      {}
-    )
-
-    // Open modal
-    const saveButton = screen.getByText('Save Progress to Cloud')
-    fireEvent.click(saveButton)
-
-    // Now open
-    expect(AuthModal).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        isOpen: true,
-        onClose: expect.any(Function),
-        onSuccess: expect.any(Function),
-      }),
-      {}
-    )
+    expect(screen.getByText('Guest Mode')).toBeInTheDocument()
+    expect(screen.queryByText('Save Progress to Cloud')).not.toBeInTheDocument()
   })
 })

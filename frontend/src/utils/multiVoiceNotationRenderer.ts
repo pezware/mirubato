@@ -100,6 +100,7 @@ interface LayoutSystem {
  */
 export class MultiVoiceNotationRenderer {
   private renderer: Renderer | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private context: any = null
   // private factory: Factory | null = null
   private options: MultiVoiceRenderOptions
@@ -120,6 +121,7 @@ export class MultiVoiceNotationRenderer {
     this.container.innerHTML = ''
 
     // Create renderer
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.renderer = new Renderer(this.container as any, Renderer.Backends.SVG)
 
     // Configure renderer
@@ -433,6 +435,7 @@ export class MultiVoiceNotationRenderer {
     // Add dots
     if (note.dots) {
       for (let i = 0; i < note.dots; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(vexNote as any).addDotToAll?.()
       }
     }

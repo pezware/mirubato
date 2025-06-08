@@ -17,10 +17,12 @@ import {
   TechnicalElement,
 } from '../../modules/sheetMusic/types'
 
-// Import individual piece files with full transcriptions
-import { bachMinuetInG } from './bachMinuetInG'
-import { mozartSonataK545 } from './mozartSonataK545'
-import { chopinPreludeOp28No4 } from './chopinPreludeOp28No4'
+// Import multi-voice pieces from original MXL conversions
+import {
+  bachMinuetInGMultiVoice,
+  mozartSonataK545MultiVoice,
+  chopinPreludeOp28No4MultiVoice,
+} from './multiVoice/convertedPieces'
 
 // Import preset workout exercises
 import {
@@ -602,12 +604,12 @@ const spanishRomance: SheetMusic = {
  */
 export function getCuratedPieces(): SheetMusic[] {
   return [
-    // Piano pieces - imported files have full measures
-    bachMinuetInG, // 32 measures from MusicXML conversion
-    mozartSonataK545, // 73 measures from MusicXML conversion
+    // Piano pieces - multi-voice conversions from original MXL files
+    bachMinuetInGMultiVoice, // 32 measures from original MXL
+    mozartSonataK545MultiVoice, // 73 measures from original MXL
     clementiSonatinaOp36No1,
     schumannMelody,
-    chopinPreludeOp28No4, // 26 measures from MusicXML conversion
+    chopinPreludeOp28No4MultiVoice, // 26 measures from original MXL
     // Guitar pieces
     sorStudyOp60No1,
     giulianiArpeggioStudy,
@@ -622,11 +624,11 @@ export function getCuratedPieces(): SheetMusic[] {
  */
 export function getCuratedPianoPieces(): SheetMusic[] {
   return [
-    bachMinuetInG,
-    mozartSonataK545,
+    bachMinuetInGMultiVoice,
+    mozartSonataK545MultiVoice,
     clementiSonatinaOp36No1,
     schumannMelody,
-    chopinPreludeOp28No4,
+    chopinPreludeOp28No4MultiVoice,
   ]
 }
 

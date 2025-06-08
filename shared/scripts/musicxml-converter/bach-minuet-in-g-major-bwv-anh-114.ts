@@ -4,14 +4,11 @@
  * Converted from MusicXML
  */
 
-import type { SheetMusic } from '../../modules/sheetMusic/types'
+import type { SheetMusic } from '../../../frontend/src/modules/sheetMusic/types'
 import {
-  NoteDuration,
   TimeSignature,
   KeySignature,
-  Clef,
-  TechnicalElement,
-} from '../../modules/sheetMusic/types'
+} from '../../../frontend/src/modules/sheetMusic/types'
 
 export const bach_minuet_in_g_major_bwv_anh_114: SheetMusic = {
   id: 'bach-minuet-in-g-major-bwv-anh-114',

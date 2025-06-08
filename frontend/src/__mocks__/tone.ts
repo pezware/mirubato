@@ -8,6 +8,7 @@ const Transport = {
     value: 120,
     rampTo: jest.fn(),
   },
+  playbackRate: 1,
   state: 'stopped',
   schedule: jest.fn(),
   position: 0,

@@ -4,14 +4,11 @@
  * Converted from MusicXML
  */
 
-import type { SheetMusic } from '../../modules/sheetMusic/types'
+import type { SheetMusic } from '../../../frontend/src/modules/sheetMusic/types'
 import {
-  NoteDuration,
   TimeSignature,
   KeySignature,
-  Clef,
-  TechnicalElement,
-} from '../../modules/sheetMusic/types'
+} from '../../../frontend/src/modules/sheetMusic/types'
 
 export const mozart_piano_sonata_no_16_allegro: SheetMusic = {
   id: 'mozart-piano-sonata-no-16-allegro',

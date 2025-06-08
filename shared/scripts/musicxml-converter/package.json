@@ -6,6 +6,7 @@
   "main": "convert.js",
   "scripts": {
     "convert": "node dist/convert.js",
+    "convert:mxl": "npm run build && node dist/convertMXL.js",
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },

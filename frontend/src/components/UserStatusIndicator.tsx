@@ -1,12 +1,18 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { AuthModal } from './AuthModal'
+import { env } from '../config/env'
 
 export const UserStatusIndicator: React.FC = () => {
   const { user, isAnonymous, syncToCloud } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   if (!user) return null
+
+  // Check if we're running on Cloudflare (production environment)
+  const isCloudflareEnvironment =
+    env.PROD && window.location.hostname !== 'localhost'
+  const showCloudSaveOption = isAnonymous && isCloudflareEnvironment
 
   return (
     <div className="flex items-center gap-3">
@@ -18,12 +24,14 @@ export const UserStatusIndicator: React.FC = () => {
               Guest Mode
             </span>
           </div>
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
-          >
-            Save Progress to Cloud
-          </button>
+          {showCloudSaveOption && (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              Save Progress to Cloud
+            </button>
+          )}
         </>
       ) : (
         <>
@@ -56,14 +64,16 @@ export const UserStatusIndicator: React.FC = () => {
         </>
       )}
 
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={() => {
-          // Modal will stay open to show success message
-          // User can close it manually after checking email
-        }}
-      />
+      {isCloudflareEnvironment && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            // Modal will stay open to show success message
+            // User can close it manually after checking email
+          }}
+        />
+      )}
     </div>
   )
 }
