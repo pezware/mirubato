@@ -1,0 +1,2979 @@
+{
+  "title": "Untitled",
+  "composer": "Unknown",
+  "copyright": "Public Domain (PianoXML typeset)",
+  "parts": [
+    {
+      "id": "P1",
+      "name": "Piano",
+      "instrument": "piano",
+      "staves": ["P1-staff1", "P1-staff2"],
+      "midiProgram": 0,
+      "volume": 100
+    }
+  ],
+  "measures": [
+    {
+      "number": 1,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 0,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 1,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 1.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 2,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 2.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "bass",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "h",
+                  "time": 0,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 2,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/4"],
+                  "duration": "h",
+                  "time": 2,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "q",
+                  "time": 2,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ],
+      "timeSignature": "3/4",
+      "keySignature": "G"
+    },
+    {
+      "number": 2,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 3,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 4,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 3,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["e/5"],
+                  "duration": "q",
+                  "time": 6,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 7,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 7.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "8",
+                  "time": 8,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "8",
+                  "time": 8.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["c/4"],
+                  "duration": "h",
+                  "time": 6,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["g/5"],
+                  "duration": "q",
+                  "time": 9,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 10,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 11,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 9,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["c/5"],
+                  "duration": "q",
+                  "time": 12,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 13,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 13.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 14,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 14.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["a/3"],
+                  "duration": "h",
+                  "time": 12,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 15,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 16,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 16.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 17,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 17.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "h",
+                  "time": 15,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["f#/4"],
+                  "duration": "q",
+                  "time": 18,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 19,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 19.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 20,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 20.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 18,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 19,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 20,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 21,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "h",
+                  "time": 22,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 21,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/3"],
+                  "duration": "8",
+                  "time": 22,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/4"],
+                  "duration": "8",
+                  "time": 22.5,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "8",
+                  "time": 23,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "8",
+                  "time": 23.5,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 24,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 25,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 25.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 26,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 26.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 24,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "q",
+                  "time": 26,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 27,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 28,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 29,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 27,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 28,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 29,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["e/5"],
+                  "duration": "q",
+                  "time": 30,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 31,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 31.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "8",
+                  "time": 32,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "8",
+                  "time": 32.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["c/4"],
+                  "duration": "h",
+                  "time": 30,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["g/5"],
+                  "duration": "q",
+                  "time": 33,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 34,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 35,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 33,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/4"],
+                  "duration": "8",
+                  "time": 34,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "8",
+                  "time": 34.5,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "8",
+                  "time": 35,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "8",
+                  "time": 35.5,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["c/5"],
+                  "duration": "q",
+                  "time": 36,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 37,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 37.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 38,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 38.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["a/3"],
+                  "duration": "h",
+                  "time": 36,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/3"],
+                  "duration": "q",
+                  "time": 38,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 39,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "8",
+                  "time": 40,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 40.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 41,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 41.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "h",
+                  "time": 39,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 41,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["a/4"],
+                  "duration": "q",
+                  "time": 42,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 43,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 43.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 44,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "8",
+                  "time": 44.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["c/4"],
+                  "duration": "q",
+                  "time": 42,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 43,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/3"],
+                  "duration": "q",
+                  "time": 44,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["g/4"],
+                  "duration": "h",
+                  "time": 45,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "h",
+                  "time": 45,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/2"],
+                  "duration": "q",
+                  "time": 47,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/5"],
+                  "duration": "q",
+                  "time": 48,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/5"],
+                  "duration": "8",
+                  "time": 49,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/5"],
+                  "duration": "8",
+                  "time": 49.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/5"],
+                  "duration": "8",
+                  "time": 50,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/5"],
+                  "duration": "8",
+                  "time": 50.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "h",
+                  "time": 48,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["a/5"],
+                  "duration": "q",
+                  "time": 51,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 52,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "8",
+                  "time": 52.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "8",
+                  "time": 53,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 53.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["f#/3"],
+                  "duration": "h",
+                  "time": 51,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["g/5"],
+                  "duration": "q",
+                  "time": 54,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "8",
+                  "time": 55,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "8",
+                  "time": 55.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/5"],
+                  "duration": "8",
+                  "time": 56,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 56.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["e/3"],
+                  "duration": "q",
+                  "time": 54,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 55,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/3"],
+                  "duration": "q",
+                  "time": 56,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["c#/5"],
+                  "duration": "q",
+                  "time": 57,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "accidental": "sharp",
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 58,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c#/5"],
+                  "duration": "8",
+                  "time": 58.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "q",
+                  "time": 59,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["a/3"],
+                  "duration": "h",
+                  "time": 57,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/2"],
+                  "duration": "q",
+                  "time": 59,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 60,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 60.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c#/5"],
+                  "duration": "8",
+                  "time": 61,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "accidental": "sharp",
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 61.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "8",
+                  "time": 62,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "8",
+                  "time": 62.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["a/3"],
+                  "duration": "h",
+                  "time": 60,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["g/5"],
+                  "duration": "q",
+                  "time": 63,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/5"],
+                  "duration": "q",
+                  "time": 64,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["e/5"],
+                  "duration": "q",
+                  "time": 65,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 63,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 64,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c#/4"],
+                  "duration": "q",
+                  "time": 65,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "accidental": "sharp",
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["f#/5"],
+                  "duration": "q",
+                  "time": 66,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "q",
+                  "time": 67,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["c#/5"],
+                  "duration": "q",
+                  "time": 68,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "accidental": "sharp",
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 66,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/3"],
+                  "duration": "q",
+                  "time": 67,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "q",
+                  "time": 68,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "h",
+                  "time": 69,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "q",
+                  "time": 69,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/3"],
+                  "duration": "q",
+                  "time": 70,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/4"],
+                  "duration": "q",
+                  "time": 71,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [],
+              "stemDirection": "auto"
+            },
+            {
+              "id": "P1-voice2",
+              "name": "Voice 2",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 0,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 1,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "8",
+                  "time": 1.5,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 2,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 72,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 74,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            },
+            {
+              "id": "P1-voice6",
+              "name": "Voice 6",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 0,
+                  "voiceId": "P1-voice6",
+                  "staffId": "P1-staff2",
+                  "rest": true
+                },
+                {
+                  "keys": ["d/4"],
+                  "duration": "h",
+                  "time": 1,
+                  "voiceId": "P1-voice6",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [],
+              "stemDirection": "auto"
+            },
+            {
+              "id": "P1-voice2",
+              "name": "Voice 2",
+              "notes": [
+                {
+                  "keys": ["e/5"],
+                  "duration": "q",
+                  "time": 3,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 4,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "8",
+                  "time": 4.5,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 5,
+                  "voiceId": "P1-voice2",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["c/4"],
+                  "duration": "h",
+                  "time": 75,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/4"],
+                  "duration": "q",
+                  "time": 77,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            },
+            {
+              "id": "P1-voice6",
+              "name": "Voice 6",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 3,
+                  "voiceId": "P1-voice6",
+                  "staffId": "P1-staff2",
+                  "rest": true
+                },
+                {
+                  "keys": ["e/4"],
+                  "duration": "h",
+                  "time": 4,
+                  "voiceId": "P1-voice6",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/5"],
+                  "duration": "q",
+                  "time": 72,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["c/5"],
+                  "duration": "q",
+                  "time": 73,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 74,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "q",
+                  "time": 78,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/3"],
+                  "duration": "q",
+                  "time": 79,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 80,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 75,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 75.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "8",
+                  "time": 76,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 76.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "q",
+                  "time": 77,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "h",
+                  "time": 81,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 83,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": true
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["d/4"],
+                  "duration": "8",
+                  "time": 78,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["e/4"],
+                  "duration": "8",
+                  "time": 78.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "8",
+                  "time": 79,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "8",
+                  "time": 79.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "8",
+                  "time": 80,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 80.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["d/3"],
+                  "duration": "h",
+                  "time": 84,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            },
+            {
+              "id": "P1-voice6",
+              "name": "Voice 6",
+              "notes": [
+                {
+                  "keys": ["f#/3"],
+                  "duration": "q",
+                  "time": 6,
+                  "voiceId": "P1-voice6",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["c/5"],
+                  "duration": "q",
+                  "time": 81,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/4"],
+                  "duration": "q",
+                  "time": 82,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["a/4"],
+                  "duration": "q",
+                  "time": 83,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["e/3"],
+                  "duration": "q",
+                  "time": 87,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 88,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["f#/3"],
+                  "duration": "q",
+                  "time": 89,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "down"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/4"],
+                  "duration": "8",
+                  "time": 84,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/5"],
+                  "duration": "8",
+                  "time": 84.5,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "q",
+                  "time": 85,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["f#/4"],
+                  "duration": "q",
+                  "time": 86,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 90,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["b/2"],
+                  "duration": "q",
+                  "time": 91,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["d/3"],
+                  "duration": "q",
+                  "time": 92,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "staves": [
+        {
+          "id": "P1-staff1",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice1",
+              "name": "Voice 1",
+              "notes": [
+                {
+                  "keys": ["b/3"],
+                  "duration": "h",
+                  "time": 87,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["d/4"],
+                  "duration": "h",
+                  "time": 90,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                },
+                {
+                  "keys": ["g/4"],
+                  "duration": "h",
+                  "time": 90,
+                  "voiceId": "P1-voice1",
+                  "staffId": "P1-staff1",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "up"
+            }
+          ],
+          "name": "Staff 1"
+        },
+        {
+          "id": "P1-staff2",
+          "clef": "treble",
+          "voices": [
+            {
+              "id": "P1-voice5",
+              "name": "Voice 5",
+              "notes": [
+                {
+                  "keys": ["g/3"],
+                  "duration": "q",
+                  "time": 93,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["d/3"],
+                  "duration": "q",
+                  "time": 94,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "down"
+                },
+                {
+                  "keys": ["g/2"],
+                  "duration": "q",
+                  "time": 95,
+                  "voiceId": "P1-voice5",
+                  "staffId": "P1-staff2",
+                  "rest": false,
+                  "stem": "up"
+                }
+              ],
+              "stemDirection": "auto"
+            }
+          ],
+          "name": "Staff 2"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2016-05-01T00:00:00.000Z",
+    "modifiedAt": "2025-06-08T19:28:41.312Z",
+    "source": "MusicXML import",
+    "encodingSoftware": "MuseScore 2.0.3",
+    "tags": ["imported", "musicxml", "multi-voice"]
+  }
+}

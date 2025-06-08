@@ -19,10 +19,11 @@ import {
 
 // Import multi-voice pieces from original MXL conversions
 import {
-  bachMinuetInGMultiVoice,
-  mozartSonataK545MultiVoice,
-  chopinPreludeOp28No4MultiVoice,
+  bachMinuetMultiVoiceScore,
+  mozartSonataMultiVoiceScore,
+  chopinPreludeMultiVoiceScore,
 } from './multiVoice/convertedPieces'
+import { scoreToSheetMusic } from '../../modules/sheetMusic/multiVoiceConverters'
 
 // Import preset workout exercises
 import {
@@ -36,6 +37,85 @@ import {
 
 // Bach, Mozart, and Chopin pieces are imported from individual files
 // These contain the full transcriptions from MusicXML conversions
+
+// Convert multi-voice Score format to SheetMusic format
+const bachMinuetInGMultiVoice: SheetMusic = {
+  ...scoreToSheetMusic(bachMinuetMultiVoiceScore),
+  id: 'bach-minuet-in-g-bwv-anh-114',
+  title: 'Minuet in G',
+  composer: 'Johann Sebastian Bach',
+  opus: 'BWV Anh. 114',
+  difficulty: 'BEGINNER',
+  difficultyLevel: 3,
+  gradeLevel: 'RCM 3',
+  durationSeconds: 90,
+  keySignature: 'G major',
+  stylePeriod: 'BAROQUE',
+  tags: ['curated', 'educational', 'baroque', 'classical', 'minuet', 'piano'],
+  metadata: {
+    source: 'IMSLP',
+    license: 'Public Domain',
+    year: 1725,
+    musicalForm: 'minuet',
+    technicalFocus: [TechnicalElement.ARPEGGIOS],
+    arrangedBy: 'Original',
+  },
+}
+
+const mozartSonataK545MultiVoice: SheetMusic = {
+  ...scoreToSheetMusic(mozartSonataMultiVoiceScore),
+  id: 'mozart-sonata-k545',
+  title: 'Sonata in C major',
+  composer: 'Wolfgang Amadeus Mozart',
+  opus: 'K. 545',
+  movement: '1st Movement (Allegro)',
+  instrument: 'PIANO',
+  difficulty: 'INTERMEDIATE',
+  difficultyLevel: 5,
+  gradeLevel: 'RCM 5',
+  durationSeconds: 180,
+  keySignature: 'C major',
+  stylePeriod: 'CLASSICAL',
+  tags: ['curated', 'educational', 'sonata', 'classical', 'piano'],
+  metadata: {
+    source: 'IMSLP',
+    license: 'Public Domain',
+    year: 1788,
+    musicalForm: 'sonata',
+    technicalFocus: [TechnicalElement.SCALES, TechnicalElement.ARPEGGIOS],
+    arrangedBy: 'Original',
+  },
+}
+
+const chopinPreludeOp28No4MultiVoice: SheetMusic = {
+  ...scoreToSheetMusic(chopinPreludeMultiVoiceScore),
+  id: 'chopin-prelude-op28-no4',
+  title: 'Prelude in E minor',
+  composer: 'Frédéric Chopin',
+  opus: 'Op. 28 No. 4',
+  difficulty: 'INTERMEDIATE',
+  difficultyLevel: 6,
+  gradeLevel: 'RCM 7',
+  durationSeconds: 120,
+  stylePeriod: 'ROMANTIC',
+  keySignature: 'E minor',
+  tags: [
+    'curated',
+    'educational',
+    'prelude',
+    'romantic',
+    'expressive',
+    'piano',
+  ],
+  metadata: {
+    source: 'IMSLP',
+    license: 'Public Domain',
+    year: 1839,
+    musicalForm: 'prelude',
+    technicalFocus: [TechnicalElement.CHORDS],
+    arrangedBy: 'Original',
+  },
+}
 
 /**
  * Clementi - Sonatina Op.36 No.1, 1st movement

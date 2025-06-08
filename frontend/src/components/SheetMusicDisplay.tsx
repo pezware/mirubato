@@ -126,11 +126,22 @@ export const SheetMusicDisplay: React.FC<SheetMusicDisplayProps> = ({
       startMeasure + effectiveMeasuresPerPage,
       sheetMusic.measures.length
     )
-    const pageMeasures = sheetMusic.measures.slice(startMeasure, endMeasure)
+    const pageMeasures = sheetMusic.measures
+      .slice(startMeasure, endMeasure)
+      .map(measure => ({
+        ...measure,
+        notes: measure.notes || [],
+      }))
 
     const pageSheetMusic: SheetMusic = {
       ...sheetMusic,
       measures: pageMeasures,
+    }
+
+    // Add validation before rendering
+    if (!pageSheetMusic.measures || pageSheetMusic.measures.length === 0) {
+      console.warn('No measures to render')
+      return
     }
 
     notationRendererRef.current.render(pageSheetMusic, {

@@ -125,6 +125,18 @@ export const stringToNoteDuration: Record<string, NoteDuration> = {
 }
 
 /**
+ * Maps NoteDuration enum to VexFlow duration strings
+ */
+export const noteDurationToVexFlow: Record<NoteDuration, string> = {
+  [NoteDuration.WHOLE]: 'w',
+  [NoteDuration.HALF]: 'h',
+  [NoteDuration.QUARTER]: 'q',
+  [NoteDuration.EIGHTH]: '8',
+  [NoteDuration.SIXTEENTH]: '16',
+  [NoteDuration.THIRTY_SECOND]: '32',
+}
+
+/**
  * Maps old instrument strings to new format
  */
 export const stringToInstrument = (instrument: string): 'PIANO' | 'GUITAR' => {
@@ -145,24 +157,92 @@ export const stringToDifficulty = (
  */
 export function convertMeasureForVexFlow(measure: NewMeasure): {
   number: number
-  notes: Array<{ keys: string[]; duration: string; time: number }>
+  notes: Array<{
+    keys: string[]
+    duration: string
+    time: number
+    rest?: boolean
+  }>
   timeSignature?: string
   keySignature?: string
   clef?: string
   tempo?: number
 } {
+  // Map clef enum to VexFlow string
+  let vexFlowClef: string | undefined
+  if (measure.clef) {
+    switch (measure.clef) {
+      case Clef.TREBLE:
+        vexFlowClef = 'treble'
+        break
+      case Clef.BASS:
+        vexFlowClef = 'bass'
+        break
+      case Clef.ALTO:
+        vexFlowClef = 'alto'
+        break
+      case Clef.TENOR:
+        vexFlowClef = 'tenor'
+        break
+      case Clef.GRAND_STAFF:
+        // VexFlow doesn't have grand staff as a clef type
+        // For grand staff, we typically render treble clef
+        vexFlowClef = 'treble'
+        break
+      default:
+        vexFlowClef = 'treble'
+    }
+  }
+
+  // Convert time signature enum to VexFlow format
+  let vexFlowTimeSignature: string | undefined
+  if (measure.timeSignature) {
+    // If it's already a string (like "3/4"), use it directly
+    if (typeof measure.timeSignature === 'string') {
+      vexFlowTimeSignature = measure.timeSignature
+    } else {
+      // Otherwise map from enum
+      switch (measure.timeSignature) {
+        case TimeSignature.FOUR_FOUR:
+          vexFlowTimeSignature = '4/4'
+          break
+        case TimeSignature.THREE_FOUR:
+          vexFlowTimeSignature = '3/4'
+          break
+        case TimeSignature.TWO_FOUR:
+          vexFlowTimeSignature = '2/4'
+          break
+        case TimeSignature.SIX_EIGHT:
+          vexFlowTimeSignature = '6/8'
+          break
+        case TimeSignature.TWELVE_EIGHT:
+          vexFlowTimeSignature = '12/8'
+          break
+        case TimeSignature.FIVE_FOUR:
+          vexFlowTimeSignature = '5/4'
+          break
+        case TimeSignature.SEVEN_EIGHT:
+          vexFlowTimeSignature = '7/8'
+          break
+        default:
+          vexFlowTimeSignature = '4/4'
+      }
+    }
+  }
+
   return {
     number: measure.number,
-    notes: measure.notes.map(note => ({
+    notes: (measure.notes || []).map(note => ({
       keys: note.keys,
       duration: note.duration, // NoteDuration enum values are already VexFlow compatible
       time: note.time,
+      rest: note.rest, // Pass through rest property
     })),
-    timeSignature: measure.timeSignature,
+    timeSignature: vexFlowTimeSignature,
     keySignature: measure.keySignature
       ? keySignatureToVexFlow[measure.keySignature]
       : undefined,
-    clef: measure.clef,
+    clef: vexFlowClef,
     tempo: measure.tempo,
   }
 }

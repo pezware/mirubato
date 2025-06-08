@@ -18,3 +18,30 @@ export { PracticeNotation } from './PracticeNotation'
 export * from './ExerciseGenerator'
 export { MultiVoiceSheetMusicDisplay } from './MultiVoiceSheetMusicDisplay'
 export { MultiVoicePlayer } from './MultiVoicePlayer'
+
+// Phase 5 Multi-Voice UI Components
+export { VoiceControl } from './VoiceControl'
+export type { VoiceControlProps } from './VoiceControl'
+
+export {
+  StaffDisplayOptions,
+  defaultDisplayOptions,
+  displayPresets,
+} from './StaffDisplayOptions'
+export type {
+  StaffDisplayOptions as StaffDisplayOptionsType,
+  StaffDisplayOptionsProps,
+} from './StaffDisplayOptions'
+
+export {
+  PracticeModeSelector,
+  PracticeMode as MultiVoicePracticeMode,
+  practiceModePresets,
+} from './PracticeModeSelector'
+export type {
+  PracticeModeConfig,
+  PracticeModeSelectorProps,
+} from './PracticeModeSelector'
+
+export { MultiVoicePracticeView } from './MultiVoicePracticeView'
+export type { MultiVoicePracticeViewProps } from './MultiVoicePracticeView'
