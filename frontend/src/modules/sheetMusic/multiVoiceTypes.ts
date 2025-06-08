@@ -295,7 +295,7 @@ export function isMultiVoiceMeasure(
     measure !== undefined &&
     typeof measure === 'object' &&
     'staves' in measure &&
-    Array.isArray((measure as any).staves)
+    Array.isArray((measure as Record<string, unknown>).staves)
   )
 }
 
@@ -303,14 +303,15 @@ export function isMultiVoiceMeasure(
  * Type guard to check if data is a Score
  */
 export function isScore(data: unknown): data is Score {
+  const obj = data as Record<string, unknown>
   return (
     data !== null &&
     data !== undefined &&
     typeof data === 'object' &&
     'parts' in data &&
-    Array.isArray((data as any).parts) &&
+    Array.isArray(obj.parts) &&
     'measures' in data &&
-    Array.isArray((data as any).measures) &&
-    (data as any).measures.every(isMultiVoiceMeasure)
+    Array.isArray(obj.measures) &&
+    (obj.measures as unknown[]).every(isMultiVoiceMeasure)
   )
 }

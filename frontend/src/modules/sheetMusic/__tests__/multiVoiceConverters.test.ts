@@ -13,6 +13,7 @@ import {
   NoteDuration,
   TimeSignature,
   KeySignature,
+  DynamicMarking,
 } from '../types'
 import { Score } from '../multiVoiceTypes'
 
@@ -124,7 +125,7 @@ describe('Multi-Voice Converters', () => {
             number: 1,
             notes: [],
             tempo: 120,
-            dynamics: 'f' as any,
+            dynamics: 'f' as DynamicMarking,
             rehearsalMark: 'A',
             barLine: 'double',
             repeatCount: 2,
