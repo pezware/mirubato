@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAudioManager } from '../contexts/AudioContext'
 import { useAuth } from '../hooks/useAuth'
-import { moonlightSonata3rdMovement } from '../data/sheetMusic'
 import {
   SaveProgressPrompt,
   PracticeHeader,
@@ -49,11 +48,9 @@ const PracticeSimplified: React.FC = () => {
   const [volume, setVolume] = useState(75) // 0-100
   const [tempo, setTempo] = useState(90)
   const [selectedContent, setSelectedContent] = useState<
-    'curated' | 'exercise'
+    'curated' | 'exercise' | 'workout'
   >('curated')
-  const [selectedPiece, setSelectedPiece] = useState<SheetMusic>(
-    moonlightSonata3rdMovement
-  )
+  const [selectedPiece, setSelectedPiece] = useState<SheetMusic | null>(null)
   const [selectedExercise, setSelectedExercise] =
     useState<GeneratedExercise | null>(null)
   const [currentPlayingMeasure, _setCurrentPlayingMeasure] = useState<
@@ -62,6 +59,10 @@ const PracticeSimplified: React.FC = () => {
 
   // Module states
   const [exercises, setExercises] = useState<GeneratedExercise[]>([])
+  const [curatedPieces, setCuratedPieces] = useState<SheetMusic[]>([])
+  const [presetWorkouts, setPresetWorkouts] = useState<SheetMusic[]>([])
+  const [_sheetMusicModule, setSheetMusicModule] =
+    useState<SheetMusicLibraryModule | null>(null)
 
   // Get the current piece data
   const currentPiece =
@@ -100,6 +101,18 @@ const PracticeSimplified: React.FC = () => {
             user.id
           )
           setExercises(userExercises)
+
+          // Load curated pieces and workouts
+          const pieces = sheetMusicModule.getCuratedPieces()
+          const workouts = sheetMusicModule.getPresetWorkouts()
+          setCuratedPieces(pieces)
+          setPresetWorkouts(workouts)
+          setSheetMusicModule(sheetMusicModule)
+
+          // Set default selected piece
+          if (pieces.length > 0 && !selectedPiece) {
+            setSelectedPiece(pieces[0])
+          }
         }
       } catch (error) {
         logger.error('Failed to initialize modules', { error })
@@ -115,57 +128,9 @@ const PracticeSimplified: React.FC = () => {
     }
   }, [user])
 
-  const curatedPieces = [
-    moonlightSonata3rdMovement,
-    // TODO: Add more curated pieces
-  ]
-
-  const presetWorkouts = [
-    {
-      id: 'sight-reading-easy',
-      name: 'Daily Sight-Reading (Easy)',
-      description: '8 measures in C major',
-      params: {
-        difficulty: 2,
-        measures: 8,
-        keySignature: 'C',
-        timeSignature: '4/4',
-      },
-    },
-    {
-      id: 'scale-practice',
-      name: 'Scale Practice (Major Keys)',
-      description: 'Practice major scales',
-      params: {
-        type: 'scales',
-        keys: ['C', 'G', 'D', 'A', 'E'],
-        pattern: 'ascending-descending',
-      },
-    },
-    {
-      id: 'rhythm-training',
-      name: 'Rhythm Training (4/4 Time)',
-      description: 'Focus on rhythm patterns',
-      params: {
-        focus: 'rhythm',
-        timeSignature: '4/4',
-        difficulty: 3,
-      },
-    },
-    {
-      id: 'interval-recognition',
-      name: 'Interval Recognition',
-      description: 'Practice major thirds, perfect fifths, and octaves',
-      params: {
-        intervals: ['M3', 'P5', 'P8'],
-        direction: 'both',
-      },
-    },
-  ]
-
-  const handleGenerateWorkout = async (params: Record<string, unknown>) => {
-    // TODO: Implement workout generation
-    console.log('Generate workout with params:', params)
+  const handleSelectWorkout = (workout: SheetMusic) => {
+    setSelectedContent('workout')
+    setSelectedPiece(workout)
   }
 
   return (
@@ -196,7 +161,7 @@ const PracticeSimplified: React.FC = () => {
                     }}
                     className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                       selectedContent === 'curated' &&
-                      selectedPiece.id === piece.id
+                      selectedPiece?.id === piece.id
                         ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
                         : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
                     }`}
@@ -205,7 +170,7 @@ const PracticeSimplified: React.FC = () => {
                       {piece.title}
                     </h4>
                     <p className="text-sm text-mirubato-wood-600">
-                      {piece.composer} • Difficulty {piece.difficulty}/10
+                      {piece.composer} • Difficulty {piece.difficultyLevel}/10
                     </p>
                   </button>
                 ))}
@@ -221,14 +186,20 @@ const PracticeSimplified: React.FC = () => {
                 {presetWorkouts.map(workout => (
                   <button
                     key={workout.id}
-                    onClick={() => handleGenerateWorkout(workout.params)}
-                    className="w-full text-left p-3 rounded-lg border-2 border-mirubato-wood-200 hover:border-mirubato-wood-300 transition-all"
+                    onClick={() => handleSelectWorkout(workout)}
+                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                      selectedContent === 'workout' &&
+                      selectedPiece?.id === workout.id
+                        ? 'border-mirubato-leaf-500 bg-mirubato-leaf-50'
+                        : 'border-mirubato-wood-200 hover:border-mirubato-wood-300'
+                    }`}
                   >
                     <h4 className="font-medium text-mirubato-wood-800">
-                      {workout.name}
+                      {workout.title}
                     </h4>
                     <p className="text-sm text-mirubato-wood-600">
-                      {workout.description}
+                      {workout.composer} •{' '}
+                      {workout.metadata?.musicalForm || 'Exercise'}
                     </p>
                   </button>
                 ))}
@@ -271,10 +242,12 @@ const PracticeSimplified: React.FC = () => {
         </div>
 
         {/* Sheet Music Display */}
-        <PracticeNotation
-          sheetMusic={currentPiece}
-          currentPlayingMeasure={currentPlayingMeasure}
-        />
+        {currentPiece && (
+          <PracticeNotation
+            sheetMusic={currentPiece}
+            currentPlayingMeasure={currentPlayingMeasure}
+          />
+        )}
 
         {/* Simple Controls */}
         <div className="mt-6 bg-white rounded-lg shadow-sm p-4">

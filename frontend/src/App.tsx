@@ -32,7 +32,6 @@ function App() {
                   element={<div>Magic Link Verification (TODO)</div>}
                 />
                 <Route path="/practice" element={<PracticeSimplified />} />
-                <Route path="/exercises" element={<PracticeSimplified />} />
                 <Route
                   path="/profile"
                   element={<div>Profile Page (TODO)</div>}
