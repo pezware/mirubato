@@ -713,7 +713,7 @@ describe('SheetMusicLibraryModule', () => {
     it('should get specific curated pieces by ID', async () => {
       // Test Bach Minuet
       const bachMinuet = await module.getSheetMusic(
-        'bach-minuet-in-g-major-bwv-anh-114'
+        'bach-minuet-in-g-bwv-anh-114'
       )
       expect(bachMinuet).toBeDefined()
       expect(bachMinuet?.composer).toBe('Johann Sebastian Bach')
@@ -725,7 +725,7 @@ describe('SheetMusicLibraryModule', () => {
       )
       expect(chopinPrelude).toBeDefined()
       expect(chopinPrelude?.composer).toBe('Frédéric Chopin')
-      expect(chopinPrelude?.opus).toBe('Op. 28, No. 4')
+      expect(chopinPrelude?.opus).toBe('Op. 28 No. 4')
 
       // Test Spanish Romance
       const spanishRomance = await module.getSheetMusic(
