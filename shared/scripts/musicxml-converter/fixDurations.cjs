@@ -73,17 +73,17 @@ function fixFile(filePath) {
   
   // Replace time signatures
   Object.entries(timeSignatureMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/]/g, '\\$&'), 'g'), to);
+    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
   });
   
   // Replace key signatures
   Object.entries(keySignatureMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/]/g, '\\$&'), 'g'), to);
+    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
   });
   
   // Replace clefs
   Object.entries(clefMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/]/g, '\\$&'), 'g'), to);
+    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
   });
   
   // Remove unused import

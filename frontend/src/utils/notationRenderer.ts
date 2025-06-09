@@ -300,7 +300,7 @@ export class NotationRenderer {
             beam.setContext(this.context!).draw()
           })
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           `Error formatting/drawing measure ${measure.number}:`,
           error

@@ -18,8 +18,18 @@ import {
   isScore,
   VOICE_CONFIGURATIONS,
 } from './multiVoiceTypes'
-import { ExerciseParameters } from './types'
+import { ExerciseParameters, SheetMusicModuleConfig } from './types'
 import { nanoid } from 'nanoid'
+
+/**
+ * Voice configuration interface
+ */
+interface VoiceConfig {
+  id: string
+  name: string
+  range: { low: string; high: string }
+  clef: string
+}
 
 /**
  * Extended interface for multi-voice sheet music module
@@ -109,7 +119,11 @@ export class SheetMusicLibraryModuleMultiVoice
   extends SheetMusicLibraryModule
   implements MultiVoiceSheetMusicModuleInterface
 {
-  constructor(eventBus: EventBus, storage: EventDrivenStorage, config?: any) {
+  constructor(
+    eventBus: EventBus,
+    storage: EventDrivenStorage,
+    config?: SheetMusicModuleConfig
+  ) {
     super(eventBus, storage, config)
   }
 
@@ -500,7 +514,10 @@ export class SheetMusicLibraryModuleMultiVoice
 
   // ============== Private Helper Methods ==============
 
-  private getVoiceConfiguration(preset: string, voiceCount: number): any[] {
+  private getVoiceConfiguration(
+    preset: string,
+    voiceCount: number
+  ): VoiceConfig[] {
     switch (preset) {
       case 'piano':
         return [
@@ -534,7 +551,7 @@ export class SheetMusicLibraryModuleMultiVoice
             clef: 'treble',
           },
         ]
-      default:
+      default: {
         // Generate generic voices
         const voices = []
         for (let i = 0; i < voiceCount; i++) {
@@ -546,10 +563,11 @@ export class SheetMusicLibraryModuleMultiVoice
           })
         }
         return voices
+      }
     }
   }
 
-  private createParts(voiceConfig: any[], preset: string): Part[] {
+  private createParts(voiceConfig: VoiceConfig[], preset: string): Part[] {
     if (preset === 'piano') {
       return [
         {
@@ -576,7 +594,7 @@ export class SheetMusicLibraryModuleMultiVoice
 
   private generateMultiVoiceMeasures(
     params: ExerciseParameters,
-    voiceConfig: any[],
+    voiceConfig: VoiceConfig[],
     includeCounterpoint: boolean,
     voiceIndependence: number,
     harmonicProgression?: string[]
@@ -596,7 +614,7 @@ export class SheetMusicLibraryModuleMultiVoice
         staves.push(
           {
             id: 'treble-staff',
-            clef: 'treble' as any,
+            clef: 'treble',
             voices: this.generateVoicesForStaff(
               voiceConfig.filter(v => v.clef === 'treble'),
               params,
@@ -607,7 +625,7 @@ export class SheetMusicLibraryModuleMultiVoice
           },
           {
             id: 'bass-staff',
-            clef: 'bass' as any,
+            clef: 'bass',
             voices: this.generateVoicesForStaff(
               voiceConfig.filter(v => v.clef === 'bass'),
               params,
@@ -622,7 +640,7 @@ export class SheetMusicLibraryModuleMultiVoice
         voiceConfig.forEach(voice => {
           staves.push({
             id: `${voice.id}-staff`,
-            clef: voice.clef as any,
+            clef: voice.clef,
             voices: [
               {
                 id: voice.id,
@@ -652,7 +670,7 @@ export class SheetMusicLibraryModuleMultiVoice
   }
 
   private generateVoicesForStaff(
-    voiceConfigs: any[],
+    voiceConfigs: VoiceConfig[],
     params: ExerciseParameters,
     measureIndex: number,
     _includeCounterpoint: boolean,
@@ -666,7 +684,7 @@ export class SheetMusicLibraryModuleMultiVoice
   }
 
   private generateNotesForVoice(
-    _voiceConfig: any,
+    _voiceConfig: VoiceConfig,
     _params: ExerciseParameters,
     _measureIndex: number,
     _harmonicProgression?: string[]
@@ -678,25 +696,25 @@ export class SheetMusicLibraryModuleMultiVoice
     return [
       {
         keys: ['c/4'],
-        duration: 'q' as any,
+        duration: 'q',
         time: 0,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['e/4'],
-        duration: 'q' as any,
+        duration: 'q',
         time: 1,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['g/4'],
-        duration: 'q' as any,
+        duration: 'q',
         time: 2,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['c/5'],
-        duration: 'q' as any,
+        duration: 'q',
         time: 3,
         voiceId: _voiceConfig.id,
       },

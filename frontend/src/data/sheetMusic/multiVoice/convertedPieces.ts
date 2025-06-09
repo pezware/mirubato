@@ -70,6 +70,6 @@ export function getMultiVoicePiecesByDifficulty(
 
 // For backward compatibility, export placeholders with proper names
 // These will be used by components that expect SheetMusic format
-export const bachMinuetInGMultiVoice = bachMinuetMultiVoice as any
+export const bachMinuetInGMultiVoice = bachMinuetMultiVoice as unknown
 export { mozartSonataK545MultiVoice }
 export { chopinPreludeOp28No4MultiVoice }
