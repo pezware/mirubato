@@ -15,8 +15,8 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const fur_elise_easy_piano: Score = {
-  title: 'Fur Elise',
-  composer: 'Unknown',
+  title: 'Für Elise (Easy Piano)',
+  composer: 'Ludwig van Beethoven',
   parts: [
     {
       id: 'P1',
@@ -164,7 +164,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -240,7 +240,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -335,7 +335,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -430,7 +430,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -536,7 +536,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -612,7 +612,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -706,7 +706,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -800,7 +800,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -894,7 +894,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -988,7 +988,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1082,7 +1082,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1141,7 +1141,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1211,7 +1211,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1316,7 +1316,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1392,7 +1392,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1487,7 +1487,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1582,7 +1582,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1688,7 +1688,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1764,7 +1764,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1858,7 +1858,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1917,7 +1917,7 @@ export const fur_elise_easy_piano: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',

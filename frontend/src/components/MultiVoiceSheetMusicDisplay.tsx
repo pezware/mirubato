@@ -59,9 +59,10 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const rendererRef = useRef<MultiVoiceNotationRenderer | null>(null)
+  const mountedRef = useRef(true)
   const [isRendering, setIsRendering] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const { viewportWidth: width } = useViewport()
+  const { viewportWidth } = useViewport()
 
   // Calculate responsive width
   const getResponsiveWidth = () => {
@@ -70,41 +71,44 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
     return Math.min(containerWidth, 1200) // Max width of 1200px
   }
 
-  // Initialize renderer
+  // Initialize renderer only once
   useEffect(() => {
+    mountedRef.current = true
+
     if (!containerRef.current) return
 
     try {
-      // Clean up previous renderer
-      if (rendererRef.current) {
-        rendererRef.current.destroy()
-      }
+      // Only create renderer if it doesn't exist
+      if (!rendererRef.current) {
+        // Create new renderer with responsive width
+        const responsiveOptions: Partial<MultiVoiceRenderOptions> = {
+          ...options,
+          width: getResponsiveWidth(),
+        }
 
-      // Create new renderer with responsive width
-      const responsiveOptions: Partial<MultiVoiceRenderOptions> = {
-        ...options,
-        width: getResponsiveWidth(),
+        rendererRef.current = new MultiVoiceNotationRenderer(
+          containerRef.current,
+          responsiveOptions
+        )
       }
-
-      rendererRef.current = new MultiVoiceNotationRenderer(
-        containerRef.current,
-        responsiveOptions
-      )
     } catch (err) {
       const error =
         err instanceof Error ? err : new Error('Failed to initialize renderer')
-      setError(error)
-      onRenderError?.(error)
+      if (mountedRef.current) {
+        setError(error)
+        onRenderError?.(error)
+      }
     }
 
     // Cleanup on unmount
     return () => {
+      mountedRef.current = false
       if (rendererRef.current) {
         rendererRef.current.destroy()
         rendererRef.current = null
       }
     }
-  }, [options, onRenderError]) // Include dependencies
+  }, []) // Empty dependencies - only run once
 
   // Update options when they change
   useEffect(() => {
@@ -128,25 +132,41 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
     if (!rendererRef.current || !score) return
 
     const renderScore = async () => {
-      setIsRendering(true)
-      setError(null)
+      if (mountedRef.current) {
+        setIsRendering(true)
+        setError(null)
+      }
 
       try {
-        // Clear previous rendering
-        rendererRef.current!.clear()
+        // Add a small delay to ensure container is ready
+        await new Promise(resolve => setTimeout(resolve, 100))
 
-        // Render the score
-        rendererRef.current!.renderScore(score)
+        // Double-check renderer still exists and component is mounted
+        if (!rendererRef.current || !mountedRef.current) {
+          console.warn(
+            'Renderer was destroyed or component unmounted before rendering could complete'
+          )
+          return
+        }
+
+        // Render the score (clear is handled internally by renderScore)
+        rendererRef.current.renderScore(score)
 
         // Notify completion
-        onRenderComplete?.()
+        if (mountedRef.current) {
+          onRenderComplete?.()
+        }
       } catch (err) {
         const error =
           err instanceof Error ? err : new Error('Failed to render score')
-        setError(error)
-        onRenderError?.(error)
+        if (mountedRef.current) {
+          setError(error)
+          onRenderError?.(error)
+        }
       } finally {
-        setIsRendering(false)
+        if (mountedRef.current) {
+          setIsRendering(false)
+        }
       }
     }
 
@@ -158,12 +178,15 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
     if (!rendererRef.current) return
 
     const handleResize = () => {
+      // Don't resize while rendering
+      if (isRendering) return
+
       if (rendererRef.current && containerRef.current) {
         const newWidth = getResponsiveWidth()
         rendererRef.current.resize(newWidth, options.height || 800)
 
         // Re-render the score with new dimensions
-        if (score) {
+        if (score && !isRendering) {
           try {
             rendererRef.current.renderScore(score)
           } catch (err) {
@@ -190,7 +213,7 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
       window.removeEventListener('resize', debouncedResize)
       clearTimeout(resizeTimeout)
     }
-  }, [score, options.height, width, onRenderError])
+  }, [score, options.height, onRenderError, viewportWidth, isRendering])
 
   return (
     <div className={`multi-voice-sheet-music-display ${className}`}>

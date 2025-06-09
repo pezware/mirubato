@@ -159,12 +159,22 @@ describe('MultiVoiceSheetMusicDisplay', () => {
 
   it('should render score when provided', async () => {
     const score = createTestScore()
-    render(<MultiVoiceSheetMusicDisplay score={score} />)
+    const { container } = render(<MultiVoiceSheetMusicDisplay score={score} />)
 
-    await waitFor(() => {
-      expect(mockRenderer.clear).toHaveBeenCalled()
-      expect(mockRenderer.renderScore).toHaveBeenCalledWith(score)
-    })
+    // Wait for the 100ms delay and rendering
+    // Since renderScore is called inside MultiVoiceNotationRenderer.renderScore which calls clear(),
+    // we just need to verify renderScore was called
+    await waitFor(
+      () => {
+        expect(mockRenderer.renderScore).toHaveBeenCalledWith(score)
+      },
+      { timeout: 300 }
+    )
+
+    // Component should still be in the DOM
+    expect(
+      container.querySelector('.multi-voice-sheet-music-display')
+    ).toBeInTheDocument()
   })
 
   it('should handle custom options', () => {
@@ -222,40 +232,49 @@ describe('MultiVoiceSheetMusicDisplay', () => {
     })
   })
 
-  it('should show loading state while rendering', () => {
+  it('should show loading state while rendering', async () => {
     const score = createTestScore()
 
-    // Make renderScore async
+    // Make renderScore take some time
     mockRenderer.renderScore.mockImplementation(() => {
-      return new Promise(() => {
-        // Simulating async behavior
-      })
+      return new Promise(resolve => setTimeout(resolve, 50))
     })
 
     render(<MultiVoiceSheetMusicDisplay score={score} />)
 
-    // Loading should not be visible initially due to React state updates
-    // But we can verify the renderer was called
-    expect(mockRenderer.renderScore).toHaveBeenCalled()
+    // Wait for the initial delay (100ms) and then check if renderScore is called
+    await waitFor(
+      () => {
+        expect(mockRenderer.renderScore).toHaveBeenCalled()
+      },
+      { timeout: 200 }
+    )
   })
 
   it('should handle window resize', async () => {
     const score = createTestScore()
     render(<MultiVoiceSheetMusicDisplay score={score} />)
 
+    // Wait for initial render to complete
+    await waitFor(() => {
+      expect(mockRenderer.renderScore).toHaveBeenCalledWith(score)
+    })
+
     // Simulate window resize
     global.dispatchEvent(new Event('resize'))
 
-    // Wait for debounced resize
+    // Wait for debounced resize (300ms timeout + extra time)
     await waitFor(
       () => {
         expect(mockRenderer.resize).toHaveBeenCalled()
       },
-      { timeout: 400 }
+      { timeout: 500 }
     )
 
     // Should re-render after resize
-    expect(mockRenderer.renderScore).toHaveBeenCalledTimes(2)
+    await waitFor(() => {
+      expect(mockRenderer.renderScore).toHaveBeenCalledTimes(2)
+    })
   })
 
   it('should clean up on unmount', () => {

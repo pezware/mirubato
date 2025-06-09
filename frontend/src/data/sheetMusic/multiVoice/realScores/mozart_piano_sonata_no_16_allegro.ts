@@ -15,13 +15,13 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const mozart_piano_sonata_no_16_allegro: Score = {
-  title: 'Untitled',
-  composer: 'Unknown',
+  title: 'Piano Sonata No. 16 in C Major, K. 545 - I. Allegro',
+  composer: 'W.A. Mozart',
   parts: [
     {
       id: 'P1',
-      name: '',
-      instrument: 'unknown',
+      name: 'Piano',
+      instrument: 'piano',
       staves: ['P1-staff1', 'P1-staff2'],
       midiProgram: 0,
     },
@@ -73,7 +73,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -224,7 +224,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -356,7 +356,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -514,7 +514,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -965,7 +965,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1185,7 +1185,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1405,7 +1405,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1626,7 +1626,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1819,7 +1819,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1961,7 +1961,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2191,7 +2191,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2258,7 +2258,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2500,7 +2500,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2713,7 +2713,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2953,7 +2953,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3166,7 +3166,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3501,7 +3501,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3701,7 +3701,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3908,7 +3908,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4126,7 +4126,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4258,7 +4258,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4526,7 +4526,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4766,7 +4766,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4951,7 +4951,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5265,7 +5265,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5633,7 +5633,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5847,7 +5847,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -6246,7 +6246,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -6460,7 +6460,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -6704,7 +6704,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -7099,7 +7099,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -7320,7 +7320,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -7533,7 +7533,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -7742,7 +7742,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8161,7 +8161,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8428,7 +8428,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8534,7 +8534,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8683,7 +8683,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8816,7 +8816,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -8976,7 +8976,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -9431,7 +9431,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -9653,7 +9653,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -9874,7 +9874,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -9984,7 +9984,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -10205,7 +10205,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -10426,7 +10426,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -10646,7 +10646,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -10959,7 +10959,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -11152,7 +11152,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -11294,7 +11294,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -11524,7 +11524,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -11591,7 +11591,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -11833,7 +11833,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -12045,7 +12045,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -12285,7 +12285,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -12762,7 +12762,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -12971,7 +12971,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -13180,7 +13180,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -13389,7 +13389,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -13769,7 +13769,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -14137,7 +14137,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -14323,7 +14323,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -14635,7 +14635,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -14846,7 +14846,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -14993,7 +14993,7 @@ export const mozart_piano_sonata_no_16_allegro: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',

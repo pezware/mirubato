@@ -63,6 +63,8 @@ export interface MultiVoiceRenderOptions {
   measuresPerSystem: number
   /** Whether to auto-layout the score */
   autoLayout: boolean
+  /** Whether to use strict timing validation */
+  strictTiming: boolean
 }
 
 /**
@@ -72,7 +74,7 @@ const DEFAULT_OPTIONS: MultiVoiceRenderOptions = {
   width: 1200,
   height: 800,
   padding: {
-    top: 40,
+    top: 60,
     right: 40,
     bottom: 40,
     left: 40,
@@ -80,10 +82,11 @@ const DEFAULT_OPTIONS: MultiVoiceRenderOptions = {
   scale: 1.0,
   showMeasureNumbers: true,
   showVoiceNames: false,
-  staveSpacing: 80,
-  systemSpacing: 100,
-  measuresPerSystem: 4,
+  staveSpacing: 120,
+  systemSpacing: 140,
+  measuresPerSystem: 3, // Reduce measures per system for better spacing
   autoLayout: true,
+  strictTiming: false, // Default to lenient mode for compatibility
 }
 
 /**
@@ -116,19 +119,33 @@ export class MultiVoiceNotationRenderer {
   /**
    * Sets up the VexFlow renderer
    */
-  private setupRenderer(): void {
-    // Clear existing content
-    this.container.innerHTML = ''
+  private setupRenderer(forceRecreate: boolean = false): void {
+    // Only clear and recreate if necessary
+    if (!this.renderer || forceRecreate) {
+      // Clear existing content only if we're forcing recreation
+      if (forceRecreate) {
+        this.container.innerHTML = ''
+      }
 
-    // Create renderer
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.renderer = new Renderer(this.container as any, Renderer.Backends.SVG)
+      // Create renderer with SVG backend
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.renderer = new Renderer(this.container as any, Renderer.Backends.SVG)
+    }
 
-    // Configure renderer
+    // Configure/reconfigure renderer
     this.renderer.resize(this.options.width, this.options.height)
     this.context = this.renderer.getContext()
-    this.context.setFont('Arial', 10)
+    this.context.setFont('Arial', 10, 'normal')
+
+    // Disable any debug output
+    if (this.context.setDebug) {
+      this.context.setDebug(false)
+    }
+
+    // Reset scale to 1 before applying new scale
+    this.context.scale(1 / this.previousScale, 1 / this.previousScale)
     this.context.scale(this.options.scale, this.options.scale)
+    this.previousScale = this.options.scale
 
     // Create factory for easier API
     // this.factory = new Factory({
@@ -136,30 +153,66 @@ export class MultiVoiceNotationRenderer {
     // })
   }
 
+  private previousScale: number = 1
+
   /**
    * Renders a complete score
    */
   public renderScore(score: Score): void {
-    if (!this.context) {
+    if (!this.context || !this.renderer) {
       throw new Error('Renderer not initialized')
     }
 
-    // Clear previous rendering
-    this.context.clear()
+    // Clear previous rendering using our custom clear method
+    this.clear()
 
-    // Calculate layout
-    const systems = this.layoutSystems(score)
+    // Re-setup the context after clearing
+    this.context = this.renderer.getContext()
+    this.context.setFont('Arial', 8, 'normal')
+    this.context.scale(this.options.scale, this.options.scale)
 
-    // Render each system
-    let currentY = this.options.padding.top
-    for (const system of systems) {
-      this.renderSystem(system, currentY)
-      currentY +=
-        this.calculateSystemHeight(system) + this.options.systemSpacing
+    try {
+      // Validate score has measures
+      if (!score.measures || score.measures.length === 0) {
+        console.warn('Score has no measures to render')
+        return
+      }
+
+      // Calculate layout
+      const systems = this.layoutSystems(score)
+
+      // Render each system
+      let currentY = this.options.padding.top
+      for (const system of systems) {
+        try {
+          this.renderSystem(system, currentY)
+          currentY +=
+            this.calculateSystemHeight(system) + this.options.systemSpacing
+        } catch (systemError) {
+          console.error(
+            `Error rendering system starting at measure ${system.startMeasure + 1}:`,
+            systemError
+          )
+          // Continue with next system
+          currentY += 100 // Default spacing on error
+        }
+      }
+
+      // Add score title and composer
+      this.renderScoreHeader(score)
+    } catch (error) {
+      console.error('Error rendering score:', error)
+      // Show error message on canvas
+      this.context.save()
+      this.context.setFont('Arial', 14, 'normal')
+      this.context.fillText(
+        'Error rendering score. See console for details.',
+        20,
+        50
+      )
+      this.context.restore()
+      throw error // Re-throw to be handled by parent component
     }
-
-    // Add score title and composer
-    this.renderScoreHeader(score)
   }
 
   /**
@@ -189,7 +242,7 @@ export class MultiVoiceNotationRenderer {
    */
   private renderSystem(system: LayoutSystem, y: number): void {
     const measures = system.measures
-    const measureWidth = this.calculateMeasureWidth(measures.length)
+    const measureWidth = this.calculateMeasureWidth(measures)
     let currentX = this.options.padding.left
 
     // Group staves by part
@@ -325,6 +378,11 @@ export class MultiVoiceNotationRenderer {
       const stave = staves.get(staff.id)
       if (!stave) continue
 
+      // Skip empty staves
+      if (!staff.voices || staff.voices.length === 0) {
+        continue
+      }
+
       for (const voice of staff.voices) {
         const vexNotes = this.convertVoiceToVexFlow(voice, staff, measure)
         const vexVoice = new VexVoice({
@@ -332,9 +390,31 @@ export class MultiVoiceNotationRenderer {
           beatValue: this.getBeatValueFromTimeSignature(measure.timeSignature),
         })
 
-        vexVoice.addTickables(vexNotes)
-        vexVoices.push(vexVoice)
-        voiceNoteMap.set(voice, vexNotes)
+        // Set VexFlow timing strictness based on options
+        vexVoice.setStrict(this.options.strictTiming)
+
+        try {
+          vexVoice.addTickables(vexNotes)
+          vexVoices.push(vexVoice)
+          voiceNoteMap.set(voice, vexNotes)
+        } catch (error) {
+          console.warn(
+            `Voice formatting error in measure ${measure.number}:`,
+            error
+          )
+          // Try again with mode SOFT
+          try {
+            vexVoice.setMode(VexVoice.Mode.SOFT)
+            vexVoice.addTickables(vexNotes)
+            vexVoices.push(vexVoice)
+            voiceNoteMap.set(voice, vexNotes)
+          } catch (softError) {
+            console.warn(
+              `Voice still failed in SOFT mode, skipping voice ${voice.id} in measure ${measure.number}`
+            )
+            continue
+          }
+        }
 
         // Apply stem direction
         if (voice.stemDirection && voice.stemDirection !== 'auto') {
@@ -373,8 +453,53 @@ export class MultiVoiceNotationRenderer {
 
       // Format each group
       for (const group of groups) {
-        const staveWidth = staves.values().next().value?.getWidth() || 200
-        formatter.joinVoices(group).format(group, staveWidth - 120)
+        if (group.length === 0) continue
+
+        try {
+          const staveWidth = staves.values().next().value?.getWidth() || 200
+          // Only format if all voices have notes
+          const allVoicesHaveNotes = group.every(v => {
+            try {
+              return v.getTickables().length > 0
+            } catch (e) {
+              return false
+            }
+          })
+
+          if (allVoicesHaveNotes) {
+            // Calculate note density to adjust spacing
+            const totalNotes = group.reduce((sum, voice) => {
+              try {
+                return sum + voice.getTickables().length
+              } catch (e) {
+                return sum
+              }
+            }, 0)
+
+            // Increase spacing for dense passages
+            const spacingMultiplier = Math.max(1, totalNotes / 8)
+            const formatWidth = Math.max(
+              staveWidth - 80,
+              150 * spacingMultiplier
+            )
+
+            // In non-strict mode, let VexFlow auto-justify
+            if (!this.options.strictTiming) {
+              formatter.joinVoices(group)
+              formatter.format(group, formatWidth, {
+                autoBeam: true,
+              })
+            } else {
+              formatter.joinVoices(group).format(group, formatWidth)
+            }
+          }
+        } catch (formatError) {
+          console.warn(
+            `Error formatting voice group in measure ${measure.number}:`,
+            formatError
+          )
+          // Continue with next group
+        }
       }
 
       // Draw all voices
@@ -400,16 +525,171 @@ export class MultiVoiceNotationRenderer {
   private convertVoiceToVexFlow(
     voice: Voice,
     staff: Staff,
-    _measure: MultiVoiceMeasure
+    measure: MultiVoiceMeasure
   ): StaveNote[] {
     const notes: StaveNote[] = []
 
+    // If voice has no notes, create a whole rest
+    if (!voice.notes || voice.notes.length === 0) {
+      const wholeRest = new StaveNote({
+        keys: ['b/4'],
+        duration: 'wr',
+        clef: this.mapClefToVexFlow(staff.clef).toLowerCase(),
+      })
+      return [wholeRest]
+    }
+
+    // Calculate total duration needed for the measure
+    const beatsNeeded = this.getBeatsFromTimeSignature(measure.timeSignature)
+    const beatValue = this.getBeatValueFromTimeSignature(measure.timeSignature)
+    const totalDurationNeeded = (beatsNeeded / beatValue) * 4 // Convert to quarter note units
+
+    // Calculate current total duration
+    let currentTotalDuration = 0
     for (const note of voice.notes) {
       const vexNote = this.createVexFlowNote(note, staff.clef)
       notes.push(vexNote)
+      currentTotalDuration += this.getNoteDurationValue(
+        note.duration,
+        note.dots
+      )
+    }
+
+    // If not in strict timing mode, return notes as-is and let VexFlow handle it
+    if (!this.options.strictTiming) {
+      return notes
+    }
+
+    // Check if voice duration matches measure duration (only in strict mode)
+    const tolerance = 0.0625 // 1/16th note tolerance for rounding errors
+
+    if (Math.abs(currentTotalDuration - totalDurationNeeded) < tolerance) {
+      // Close enough, consider it complete
+      return notes
+    } else if (currentTotalDuration < totalDurationNeeded) {
+      // Voice is incomplete, add rests to fill the measure
+      const remainingDuration = totalDurationNeeded - currentTotalDuration
+      // Only log significant gaps
+      if (remainingDuration > 0.25) {
+        console.log(
+          `Voice ${voice.id} in measure ${measure.number}: Adding ${remainingDuration} quarter notes of rest (had ${currentTotalDuration}, needs ${totalDurationNeeded})`
+        )
+      }
+      const restDurations = this.calculateRestDurations(remainingDuration)
+
+      for (const restDuration of restDurations) {
+        const rest = new StaveNote({
+          keys: ['b/4'],
+          duration: this.mapDurationToVexFlow(restDuration) + 'r',
+          clef: this.mapClefToVexFlow(staff.clef).toLowerCase(),
+        })
+        notes.push(rest)
+      }
+    } else if (currentTotalDuration > totalDurationNeeded + tolerance) {
+      // Voice has too many notes
+      // First check if this might be due to grace notes or tuplets
+      const excess = currentTotalDuration - totalDurationNeeded
+
+      // If the excess is small, it might be a rounding error or grace notes
+      if (excess <= 0.5) {
+        // Try to let VexFlow handle it with setStrict(false)
+        console.log(
+          `Voice ${voice.id} in measure ${measure.number}: Slight timing overflow (${excess}), letting VexFlow handle it`
+        )
+        return notes
+      }
+
+      // Otherwise, we need to handle the overflow
+      console.warn(
+        `Voice ${voice.id} in measure ${measure.number}: Has too many notes (${currentTotalDuration} vs ${totalDurationNeeded} needed). Attempting to fix...`
+      )
+
+      // Recalculate notes to fit
+      const fittingNotes: StaveNote[] = []
+      let accumulatedDuration = 0
+
+      for (const note of voice.notes) {
+        const noteDuration = this.getNoteDurationValue(note.duration, note.dots)
+        if (accumulatedDuration + noteDuration <= totalDurationNeeded) {
+          const vexNote = this.createVexFlowNote(note, staff.clef)
+          fittingNotes.push(vexNote)
+          accumulatedDuration += noteDuration
+        } else {
+          // This note would exceed the measure, stop here
+          break
+        }
+      }
+
+      // If we stopped mid-measure, add a rest to complete it
+      if (accumulatedDuration < totalDurationNeeded) {
+        const remainingDuration = totalDurationNeeded - accumulatedDuration
+        const restDurations = this.calculateRestDurations(remainingDuration)
+
+        for (const restDuration of restDurations) {
+          const rest = new StaveNote({
+            keys: ['b/4'],
+            duration: this.mapDurationToVexFlow(restDuration) + 'r',
+            clef: this.mapClefToVexFlow(staff.clef).toLowerCase(),
+          })
+          fittingNotes.push(rest)
+        }
+      }
+
+      return fittingNotes
     }
 
     return notes
+  }
+
+  /**
+   * Gets the duration value in quarter note units
+   */
+  private getNoteDurationValue(duration: NoteDuration, dots?: number): number {
+    const durationValues: Record<NoteDuration, number> = {
+      [NoteDuration.WHOLE]: 4,
+      [NoteDuration.HALF]: 2,
+      [NoteDuration.QUARTER]: 1,
+      [NoteDuration.EIGHTH]: 0.5,
+      [NoteDuration.SIXTEENTH]: 0.25,
+      [NoteDuration.THIRTY_SECOND]: 0.125,
+      // [NoteDuration.SIXTY_FOURTH]: 0.0625, // Not available in current enum
+    }
+    let value = durationValues[duration] || 1
+
+    // Apply dots (each dot adds half the previous value)
+    if (dots) {
+      let dotValue = value / 2
+      for (let i = 0; i < dots; i++) {
+        value += dotValue
+        dotValue /= 2
+      }
+    }
+
+    return value
+  }
+
+  /**
+   * Calculates rest durations to fill remaining time
+   */
+  private calculateRestDurations(remainingDuration: number): NoteDuration[] {
+    const durations: NoteDuration[] = []
+    const durationMap: Array<[number, NoteDuration]> = [
+      [4, NoteDuration.WHOLE],
+      [2, NoteDuration.HALF],
+      [1, NoteDuration.QUARTER],
+      [0.5, NoteDuration.EIGHTH],
+      [0.25, NoteDuration.SIXTEENTH],
+    ]
+
+    let remaining = remainingDuration
+    for (const [value, duration] of durationMap) {
+      while (remaining >= value) {
+        durations.push(duration)
+        remaining -= value
+      }
+    }
+
+    return durations
   }
 
   /**
@@ -427,16 +707,27 @@ export class MultiVoiceNotationRenderer {
 
     // Add accidentals
     if (note.accidental && !note.rest) {
-      note.keys.forEach((_key, index) => {
-        vexNote.addModifier(new Accidental(note.accidental!), index)
-      })
+      const mappedAccidental = this.mapAccidentalToVexFlow(note.accidental)
+      // Only add accidental if it maps to a valid VexFlow symbol
+      if (
+        mappedAccidental &&
+        ['#', 'b', 'n', '##', 'bb'].includes(mappedAccidental)
+      ) {
+        note.keys.forEach((_key, index) => {
+          vexNote.addModifier(new Accidental(mappedAccidental), index)
+        })
+      } else {
+        console.warn(
+          `Unknown accidental type: "${note.accidental}" - skipping accidental display`
+        )
+      }
     }
 
     // Add dots
     if (note.dots) {
       for (let i = 0; i < note.dots; i++) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (vexNote as any).addDotToAll?.()
+        ;(vexNote as any).addDotToAll?.()
       }
     }
 
@@ -447,21 +738,21 @@ export class MultiVoiceNotationRenderer {
       )
     }
 
-    // Add dynamics
-    if (note.dynamic) {
+    // Add dynamics (only if it's a valid dynamic marking)
+    if (note.dynamic && this.isValidDynamic(note.dynamic)) {
       vexNote.addModifier(
-        new Annotation(note.dynamic).setVerticalJustification(
-          Annotation.VerticalJustify.BOTTOM
-        )
+        new Annotation(note.dynamic)
+          .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
+          .setFont('Arial', 8, 'italic')
       )
     }
 
-    // Add fingering
-    if (note.fingering) {
+    // Add fingering (only if it's a valid fingering)
+    if (note.fingering && this.isValidFingering(note.fingering)) {
       vexNote.addModifier(
-        new Annotation(note.fingering).setVerticalJustification(
-          Annotation.VerticalJustify.TOP
-        )
+        new Annotation(note.fingering)
+          .setVerticalJustification(Annotation.VerticalJustify.TOP)
+          .setFont('Arial', 8, 'normal')
       )
     }
 
@@ -469,22 +760,37 @@ export class MultiVoiceNotationRenderer {
   }
 
   /**
-   * Adds beams and ties to notes
+   * Adds beams and ties to notes with improved spacing
    */
   private addBeamsAndTies(voiceNoteMap: Map<Voice, StaveNote[]>): void {
     for (const [voice, notes] of voiceNoteMap) {
-      // Auto-beam eighth notes and shorter
+      // Auto-beam eighth notes and shorter with better grouping
       const beamableNotes: StaveNote[] = []
+      let beamCount = 0
+
       for (const note of notes) {
         const duration = (note as StaveNote & { duration?: string }).duration
         if (duration && ['8', '16', '32'].includes(duration)) {
           beamableNotes.push(note)
-        } else if (beamableNotes.length > 1) {
-          const beam = new Beam(beamableNotes)
-          beam.setContext(this.context).draw()
-          beamableNotes.length = 0
+          beamCount++
+
+          // Limit beam groups to 4 notes for better readability
+          if (beamCount >= 4) {
+            if (beamableNotes.length > 1) {
+              const beam = new Beam(beamableNotes)
+              beam.setContext(this.context).draw()
+            }
+            beamableNotes.length = 0
+            beamCount = 0
+          }
         } else {
+          // End current beam group
+          if (beamableNotes.length > 1) {
+            const beam = new Beam(beamableNotes)
+            beam.setContext(this.context).draw()
+          }
           beamableNotes.length = 0
+          beamCount = 0
         }
       }
 
@@ -546,14 +852,42 @@ export class MultiVoiceNotationRenderer {
   }
 
   /**
-   * Calculates measure width
+   * Calculates measure width with dynamic sizing based on note density
    */
-  private calculateMeasureWidth(measureCount: number): number {
+  private calculateMeasureWidth(measures: MultiVoiceMeasure[]): number {
     const availableWidth =
       this.options.width -
       this.options.padding.left -
       this.options.padding.right
-    return availableWidth / measureCount
+
+    // Calculate total note density across all measures
+    const measureComplexities: number[] = []
+
+    for (const measure of measures) {
+      let measureComplexity = 1 // Base complexity
+
+      for (const staff of measure.staves) {
+        for (const voice of staff.voices) {
+          // Add complexity based on number of notes
+          measureComplexity += voice.notes.length * 0.1
+
+          // Add complexity for shorter note values
+          for (const note of voice.notes) {
+            if (note.duration.includes('16')) measureComplexity += 0.3
+            else if (note.duration.includes('8')) measureComplexity += 0.2
+            else if (note.duration.includes('32')) measureComplexity += 0.4
+          }
+        }
+      }
+
+      measureComplexities.push(measureComplexity)
+    }
+
+    // Minimum width per measure to prevent overcrowding
+    const minWidth = 180
+    const baseWidth = Math.max(availableWidth / measures.length, minWidth)
+
+    return baseWidth
   }
 
   /**
@@ -620,6 +954,35 @@ export class MultiVoiceNotationRenderer {
   }
 
   /**
+   * Maps MusicXML accidental names to VexFlow symbols
+   */
+  private mapAccidentalToVexFlow(accidental: string): string {
+    const accidentalMap: Record<string, string> = {
+      sharp: '#',
+      flat: 'b',
+      natural: 'n',
+      'double-sharp': '##',
+      'double-flat': 'bb',
+      'sharp-sharp': '##',
+      'flat-flat': 'bb',
+      // Additional mappings for common variations
+      '#': '#',
+      b: 'b',
+      n: 'n',
+      '##': '##',
+      bb: 'bb',
+      x: '##', // Double sharp alternate notation
+      'natural-sharp': '#', // Cancels previous flat
+      'natural-flat': 'b', // Cancels previous sharp
+    }
+    const mapped = accidentalMap[accidental.toLowerCase()]
+    if (!mapped) {
+      console.warn(`Unmapped accidental type: "${accidental}"`)
+    }
+    return mapped || ''
+  }
+
+  /**
    * Gets number of beats from time signature
    */
   private getBeatsFromTimeSignature(timeSignature?: TimeSignature): number {
@@ -638,11 +1001,44 @@ export class MultiVoiceNotationRenderer {
   }
 
   /**
+   * Validates if a string is a valid dynamic marking
+   */
+  private isValidDynamic(dynamic: string): boolean {
+    const validDynamics = [
+      'ppp',
+      'pp',
+      'p',
+      'mp',
+      'mf',
+      'f',
+      'ff',
+      'fff',
+      'sfz',
+      'sf',
+      'fp',
+      'fz',
+      'cresc',
+      'dim',
+      'decresc',
+    ]
+    return validDynamics.includes(dynamic.toLowerCase())
+  }
+
+  /**
+   * Validates if a string is a valid fingering
+   */
+  private isValidFingering(fingering: string): boolean {
+    // Valid fingerings are numbers 1-5 or special markings
+    return /^[1-5]$|^[pima]$|^t$|^th$/i.test(fingering)
+  }
+
+  /**
    * Updates rendering options
    */
   public updateOptions(options: Partial<MultiVoiceRenderOptions>): void {
     this.options = { ...this.options, ...options }
-    this.setupRenderer()
+    // Don't force recreate when updating options
+    this.setupRenderer(false)
   }
 
   /**
@@ -651,7 +1047,8 @@ export class MultiVoiceNotationRenderer {
   public resize(width: number, height: number): void {
     this.options.width = width
     this.options.height = height
-    this.setupRenderer()
+    // Don't force recreate when resizing
+    this.setupRenderer(false)
   }
 
   /**
@@ -659,7 +1056,19 @@ export class MultiVoiceNotationRenderer {
    */
   public clear(): void {
     if (this.context) {
-      this.context.clear()
+      // Clear using context method if available
+      if (this.context.clear) {
+        this.context.clear()
+      }
+
+      // Also clear the SVG element directly
+      const svg = this.container.querySelector('svg')
+      if (svg) {
+        // Keep the SVG element but clear its contents
+        while (svg.firstChild) {
+          svg.removeChild(svg.firstChild)
+        }
+      }
     }
   }
 
@@ -668,6 +1077,8 @@ export class MultiVoiceNotationRenderer {
    */
   public destroy(): void {
     this.clear()
+    // Clear the container completely on destroy
+    this.container.innerHTML = ''
     this.renderer = null
     this.context = null
     // this.factory = null

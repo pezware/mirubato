@@ -15,8 +15,8 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const greensleeves_for_piano_easy_and_beautiful: Score = {
-  title: 'Greensleeves',
-  composer: 'Unknown',
+  title: 'Greensleeves (Piano Arrangement)',
+  composer: 'Traditional English',
   parts: [
     {
       id: 'P1',
@@ -117,7 +117,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -204,7 +204,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -282,7 +282,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -369,7 +369,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -447,7 +447,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -535,7 +535,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -614,7 +614,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -693,7 +693,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -781,7 +781,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -886,7 +886,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -964,7 +964,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1068,7 +1068,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1164,7 +1164,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1254,7 +1254,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1325,7 +1325,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1395,7 +1395,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1446,7 +1446,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1534,7 +1534,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1612,7 +1612,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1699,7 +1699,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1777,7 +1777,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1865,7 +1865,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1944,7 +1944,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2014,7 +2014,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2093,7 +2093,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2190,7 +2190,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2268,7 +2268,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2372,7 +2372,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2468,7 +2468,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2566,7 +2566,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2637,7 +2637,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2707,7 +2707,7 @@ export const greensleeves_for_piano_easy_and_beautiful: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',

@@ -16,8 +16,8 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const bach_minuet_in_g_major_bwv_anh_114: Score = {
-  title: 'Untitled',
-  composer: 'Unknown',
+  title: 'Minuet in G Major, BWV Anh. 114',
+  composer: 'J.S. Bach',
   copyright: 'Public Domain (PianoXML typeset)',
   parts: [
     {
@@ -192,7 +192,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -279,7 +279,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -348,7 +348,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -435,7 +435,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -522,7 +522,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -609,7 +609,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -687,7 +687,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -810,7 +810,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -888,7 +888,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -993,7 +993,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1062,7 +1062,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1185,7 +1185,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1281,7 +1281,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1377,7 +1377,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1446,7 +1446,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1542,7 +1542,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1629,7 +1629,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1716,7 +1716,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1813,7 +1813,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1919,7 +1919,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1988,7 +1988,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2077,7 +2077,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2146,7 +2146,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2248,7 +2248,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2365,7 +2365,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2467,7 +2467,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2572,7 +2572,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2676,7 +2676,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2761,7 +2761,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2857,7 +2857,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2944,7 +2944,7 @@ export const bach_minuet_in_g_major_bwv_anh_114: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',

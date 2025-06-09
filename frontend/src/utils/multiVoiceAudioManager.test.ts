@@ -241,20 +241,20 @@ describe('MultiVoiceAudioManager', () => {
 
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
-        ['c/4'],
+        ['C4'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
       )
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
-        ['e/4'],
+        ['E4'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
       )
       // Should not play left hand notes
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
-        ['c/3'],
+        ['C3'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
@@ -269,14 +269,14 @@ describe('MultiVoiceAudioManager', () => {
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
       // Should play right hand
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
-        ['c/4'],
+        ['C4'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
       )
       // Should not play muted left hand
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
-        ['c/3'],
+        ['C3'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
@@ -299,13 +299,13 @@ describe('MultiVoiceAudioManager', () => {
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
       // Should only play soloed voice
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
-        ['c/4'],
+        ['C4'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
       )
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
-        ['c/3'],
+        ['C3'],
         expect.any(String),
         expect.any(Number),
         expect.any(Number)
@@ -348,7 +348,7 @@ describe('MultiVoiceAudioManager', () => {
       // Find the call for rightHand voice
       const rightHandCall = mockSampler.triggerAttackRelease.mock.calls.find(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0][0] === 'c/4' || call[0][0] === 'e/4'
+        (call: any[]) => call[0][0] === 'C4' || call[0][0] === 'E4'
       )
       expect(rightHandCall).toBeDefined()
       // Velocity is voice volume * 0.8

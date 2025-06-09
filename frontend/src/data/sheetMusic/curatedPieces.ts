@@ -18,12 +18,13 @@ import {
 } from '../../modules/sheetMusic/types'
 
 // Import multi-voice pieces from original MXL conversions
-import {
-  bachMinuetMultiVoiceScore,
-  mozartSonataMultiVoiceScore,
-  chopinPreludeMultiVoiceScore,
-} from './multiVoice/convertedPieces'
-import { scoreToSheetMusic } from '../../modules/sheetMusic/multiVoiceConverters'
+// Commented out to prevent conversion logs in multi-voice only mode
+// import {
+//   bachMinuetMultiVoiceScore,
+//   mozartSonataMultiVoiceScore,
+//   chopinPreludeMultiVoiceScore,
+// } from './multiVoice/convertedPieces'
+// import { scoreToSheetMusic } from '../../modules/sheetMusic/multiVoiceConverters'
 
 // Import preset workout exercises
 import {
@@ -39,12 +40,14 @@ import {
 // These contain the full transcriptions from MusicXML conversions
 
 // Convert multi-voice Score format to SheetMusic format
+// Create placeholder for multi-voice only mode
 const bachMinuetInGMultiVoice: SheetMusic = {
-  ...scoreToSheetMusic(bachMinuetMultiVoiceScore),
+  // Placeholder - using multi-voice version directly in Practice.tsx
   id: 'bach-minuet-in-g-bwv-anh-114',
   title: 'Minuet in G',
   composer: 'Johann Sebastian Bach',
   opus: 'BWV Anh. 114',
+  instrument: 'PIANO',
   difficulty: 'BEGINNER',
   difficultyLevel: 3,
   gradeLevel: 'RCM 3',
@@ -60,10 +63,13 @@ const bachMinuetInGMultiVoice: SheetMusic = {
     technicalFocus: [TechnicalElement.ARPEGGIOS],
     arrangedBy: 'Original',
   },
+  measures: [], // Placeholder - using multi-voice version
+  timeSignature: '3/4' as const,
+  suggestedTempo: 120,
 }
 
 const mozartSonataK545MultiVoice: SheetMusic = {
-  ...scoreToSheetMusic(mozartSonataMultiVoiceScore),
+  // Placeholder - using multi-voice version directly
   id: 'mozart-sonata-k545',
   title: 'Sonata in C major',
   composer: 'Wolfgang Amadeus Mozart',
@@ -85,14 +91,18 @@ const mozartSonataK545MultiVoice: SheetMusic = {
     technicalFocus: [TechnicalElement.SCALES, TechnicalElement.ARPEGGIOS],
     arrangedBy: 'Original',
   },
+  measures: [], // Placeholder - using multi-voice version
+  timeSignature: '4/4' as const,
+  suggestedTempo: 120,
 }
 
 const chopinPreludeOp28No4MultiVoice: SheetMusic = {
-  ...scoreToSheetMusic(chopinPreludeMultiVoiceScore),
+  // Placeholder - using multi-voice version directly
   id: 'chopin-prelude-op28-no4',
   title: 'Prelude in E minor',
   composer: 'Frédéric Chopin',
   opus: 'Op. 28 No. 4',
+  instrument: 'PIANO',
   difficulty: 'INTERMEDIATE',
   difficultyLevel: 6,
   gradeLevel: 'RCM 7',
@@ -115,6 +125,9 @@ const chopinPreludeOp28No4MultiVoice: SheetMusic = {
     technicalFocus: [TechnicalElement.CHORDS],
     arrangedBy: 'Original',
   },
+  measures: [], // Placeholder - using multi-voice version
+  timeSignature: '2/2' as const,
+  suggestedTempo: 60,
 }
 
 /**
