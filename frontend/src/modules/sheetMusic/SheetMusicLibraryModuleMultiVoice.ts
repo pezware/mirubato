@@ -18,7 +18,7 @@ import {
   isScore,
   VOICE_CONFIGURATIONS,
 } from './multiVoiceTypes'
-import { ExerciseParameters, ExerciseType, GeneratedExercise } from './types'
+import { ExerciseParameters } from './types'
 import { nanoid } from 'nanoid'
 
 /**
@@ -205,7 +205,7 @@ export class SheetMusicLibraryModuleMultiVoice
     )
 
     const score: Score = {
-      title: `Multi-Voice ${baseParams.type} Exercise`,
+      title: `Multi-Voice Exercise`,
       composer: 'Rubato Exercise Generator',
       parts,
       measures,
@@ -213,9 +213,12 @@ export class SheetMusicLibraryModuleMultiVoice
         createdAt: new Date(),
         modifiedAt: new Date(),
         source: 'Exercise generator',
-        tags: ['exercise', 'multi-voice', params.type.toLowerCase()],
+        tags: ['exercise', 'multi-voice'],
         difficulty: params.difficulty,
-        duration: this.estimateDuration(measures, params.tempo || 120),
+        duration: this.estimateMultiVoiceDuration(
+          measures,
+          params.tempo || 120
+        ),
       },
     }
 
@@ -588,7 +591,7 @@ export class SheetMusicLibraryModuleMultiVoice
       const staves: Staff[] = []
 
       // Create staves based on voice configuration
-      if (params.instrumentParams?.instrument === 'PIANO') {
+      if (params.instrumentParams?.instrument === 'piano') {
         // Grand staff for piano
         staves.push(
           {
@@ -808,7 +811,7 @@ export class SheetMusicLibraryModuleMultiVoice
     return Array.from(elements)
   }
 
-  private estimateDuration(
+  private estimateMultiVoiceDuration(
     measures: MultiVoiceMeasure[],
     tempo: number
   ): number {

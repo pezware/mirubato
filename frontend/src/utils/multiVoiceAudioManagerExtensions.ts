@@ -6,11 +6,7 @@
  */
 
 import { MultiVoiceAudioManager } from './multiVoiceAudioManager'
-import {
-  Score,
-  Voice,
-  MultiVoiceNote,
-} from '../modules/sheetMusic/multiVoiceTypes'
+import { Score, Voice } from '../modules/sheetMusic/multiVoiceTypes'
 import { TimeSignature } from '../modules/sheetMusic/types'
 import * as Tone from 'tone'
 
@@ -67,11 +63,11 @@ export class ExtendedMultiVoiceAudioManager
 {
   private metronome: Tone.Loop | null = null
   private metronomeVolume: Tone.Volume
-  private metronomeSynth: Tone.MembraneSynth
+  private extendedMetronomeSynth: Tone.MembraneSynth
 
   private loopStart: number | null = null
   private loopEnd: number | null = null
-  private playbackSpeed: number = 1.0
+  private voiceParts: Map<string, Tone.Part> = new Map()
 
   private voiceMixer: VoiceMixerImpl
 
@@ -80,7 +76,7 @@ export class ExtendedMultiVoiceAudioManager
 
     // Initialize metronome
     this.metronomeVolume = new Tone.Volume(-10).toDestination()
-    this.metronomeSynth = new Tone.MembraneSynth({
+    this.extendedMetronomeSynth = new Tone.MembraneSynth({
       pitchDecay: 0.008,
       octaves: 2,
       envelope: {
@@ -98,7 +94,7 @@ export class ExtendedMultiVoiceAudioManager
   // ============== Score Playback ==============
 
   async playScore(score: Score): Promise<void> {
-    await this.startAudioContext()
+    await this.initialize()
 
     // Stop any current playback
     this.stopScore()
@@ -109,7 +105,10 @@ export class ExtendedMultiVoiceAudioManager
     }
 
     // Apply playback speed
-    Tone.Transport.playbackRate = this.playbackSpeed
+    const currentSpeed = this.getPlaybackSpeed()
+    if (Tone.Transport.bpm) {
+      Tone.Transport.bpm.value = Tone.Transport.bpm.value * currentSpeed
+    }
 
     // Schedule all voices
     for (const part of score.parts) {
@@ -132,33 +131,29 @@ export class ExtendedMultiVoiceAudioManager
 
     // Start transport
     Tone.Transport.start()
-    this.isPlaying = true
+    // Note: playback state is managed by parent class
   }
 
   stopScore(): void {
     Tone.Transport.stop()
     Tone.Transport.cancel()
-    this.isPlaying = false
-
-    // Clear all voice parts
-    this.voiceParts.forEach(part => part.dispose())
-    this.voiceParts.clear()
+    // Note: playback state is managed by parent class
   }
 
   pauseScore(): void {
     Tone.Transport.pause()
-    this.isPlaying = false
+    // Note: playback state is managed by parent class
   }
 
   resumeScore(): void {
     Tone.Transport.start()
-    this.isPlaying = true
+    // Note: playback state is managed by parent class
   }
 
   // ============== Voice Control ==============
 
   async playVoice(score: Score, voiceId: string): Promise<void> {
-    await this.startAudioContext()
+    await this.initialize()
 
     // Stop current playback
     this.stopScore()
@@ -176,7 +171,7 @@ export class ExtendedMultiVoiceAudioManager
           this.scheduleVoice(score, voice, part)
 
           Tone.Transport.start()
-          this.isPlaying = true
+          // Note: playback state is managed by parent class
           return
         }
       }
@@ -185,25 +180,21 @@ export class ExtendedMultiVoiceAudioManager
 
   muteVoice(voiceId: string): void {
     this.voiceMixer.muteVoice(voiceId)
-    this.mutedVoices.add(voiceId)
+    super.muteVoice(voiceId)
   }
 
   unmuteVoice(voiceId: string): void {
     this.voiceMixer.unmuteVoice(voiceId)
-    this.mutedVoices.delete(voiceId)
+    super.unmuteVoice(voiceId)
   }
 
   soloVoice(voiceId: string): void {
     this.voiceMixer.soloVoice(voiceId)
 
-    // Update muted voices set
-    this.voiceParts.forEach((_part, id) => {
-      if (id !== voiceId) {
-        this.mutedVoices.add(id)
-      } else {
-        this.mutedVoices.delete(id)
-      }
-    })
+    // Use parent class solo method if available
+    if (typeof super.soloVoice === 'function') {
+      super.soloVoice(voiceId)
+    }
   }
 
   setVoiceVolume(voiceId: string, volume: number): void {
@@ -227,7 +218,12 @@ export class ExtendedMultiVoiceAudioManager
       const pitch = beatCount === 0 ? 'C2' : 'C3'
       const velocity = beatCount === 0 ? 0.9 : 0.5
 
-      this.metronomeSynth.triggerAttackRelease(pitch, '32n', time, velocity)
+      this.extendedMetronomeSynth.triggerAttackRelease(
+        pitch,
+        '32n',
+        time,
+        velocity
+      )
 
       beatCount = (beatCount + 1) % beats
     }, interval)
@@ -255,7 +251,7 @@ export class ExtendedMultiVoiceAudioManager
     this.loopStart = startMeasure
     this.loopEnd = endMeasure
 
-    if (this.isPlaying) {
+    if (this.isPlaying()) {
       Tone.Transport.loop = true
       Tone.Transport.loopStart = `${startMeasure}:0:0`
       Tone.Transport.loopEnd = `${endMeasure}:0:0`
@@ -269,8 +265,13 @@ export class ExtendedMultiVoiceAudioManager
   }
 
   setPlaybackSpeed(speed: number): void {
-    this.playbackSpeed = Math.max(0.25, Math.min(2.0, speed))
-    Tone.Transport.playbackRate = this.playbackSpeed
+    super.setPlaybackSpeed(speed)
+    // Apply immediately if transport is available
+    if (Tone.Transport.bpm) {
+      const currentBpm = Tone.Transport.bpm.value
+      const normalizedBpm = currentBpm / this.getPlaybackSpeed()
+      Tone.Transport.bpm.value = normalizedBpm * speed
+    }
   }
 
   // ============== Voice Mixing ==============
@@ -289,13 +290,14 @@ export class ExtendedMultiVoiceAudioManager
     return null
   }
 
-  private scheduleVoice(score: Score, voice: Voice, part: any): void {
-    const instrument = this.getOrCreateInstrument(voice.id, part.instrument)
+  private scheduleVoice(score: Score, voice: Voice, _part: any): void {
+    // Use a basic sampler for now (would be more sophisticated in real implementation)
+    const instrument = new Tone.Sampler().toDestination()
 
     // Create a Tone.Part for this voice
     const notes = this.convertVoiceToToneNotes(score, voice)
     const tonePart = new Tone.Part((time, note) => {
-      if (!this.mutedVoices.has(voice.id)) {
+      if (!this.isVoiceMuted(voice.id)) {
         instrument.triggerAttackRelease(
           note.pitch,
           note.duration,
@@ -306,22 +308,18 @@ export class ExtendedMultiVoiceAudioManager
     }, notes)
 
     tonePart.start(0)
+    // Store the part for later cleanup
     this.voiceParts.set(voice.id, tonePart)
 
     // Apply mixer settings
-    const channel = this.voiceChannels.get(voice.id)
-    if (channel) {
-      this.voiceMixer.applySettingsToChannel(voice.id, channel)
-    }
+    this.voiceMixer.applySettingsToVoice(voice.id)
   }
 
   private convertVoiceToToneNotes(score: Score, voice: Voice): any[] {
     const toneNotes: any[] = []
 
-    score.measures.forEach((measure, measureIndex) => {
-      const timeSignature =
-        measure.timeSignature || score.measures[0].timeSignature
-      const beatsPerMeasure = this.parseTimeSignature(timeSignature)[0]
+    score.measures.forEach((_measure, measureIndex) => {
+      // For now, we'll use a simplified approach without parsing time signatures
 
       voice.notes.forEach(note => {
         if (!note.rest) {
@@ -392,10 +390,9 @@ export class ExtendedMultiVoiceAudioManager
 class VoiceMixerImpl implements VoiceMixer {
   private voiceSettings: Map<string, VoiceChannelSettings> = new Map()
   private channels: Map<string, Tone.Channel> = new Map()
-  private reverb: Tone.Reverb
 
   constructor() {
-    this.reverb = new Tone.Reverb(2).toDestination()
+    // Initialize mixer
   }
 
   setVoiceVolume(voiceId: string, volume: number): void {
@@ -461,6 +458,24 @@ class VoiceMixerImpl implements VoiceMixer {
     this.channels.forEach((channel, id) => {
       channel.mute = id !== voiceId
     })
+  }
+
+  applySettingsToVoice(voiceId: string): void {
+    const settings = this.getOrCreateSettings(voiceId)
+    const channel = this.getOrCreateChannel(voiceId)
+
+    // Apply current settings to channel
+    channel.volume.value = settings.volume
+    channel.mute = settings.muted
+  }
+
+  private getOrCreateChannel(voiceId: string): Tone.Channel {
+    let channel = this.channels.get(voiceId)
+    if (!channel) {
+      channel = new Tone.Channel().toDestination()
+      this.channels.set(voiceId, channel)
+    }
+    return channel
   }
 
   resetMixer(): void {

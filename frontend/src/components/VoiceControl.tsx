@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useCallback } from 'react'
-import { Score, Voice } from '../modules/sheetMusic/multiVoiceTypes'
+import { Score } from '../modules/sheetMusic/multiVoiceTypes'
 
 /**
  * Props for VoiceControl component

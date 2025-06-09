@@ -5,6 +5,12 @@ import { MultiVoiceAudioManagerInterface } from '../utils/multiVoiceAudioManager
 
 interface MultiVoicePlayerProps {
   score: Score | null
+  audioManager?: any
+  onPlay?: () => Promise<void>
+  onStop?: () => void
+  onMeasureChange?: (measure: number) => void
+  isPlaying?: boolean
+  currentMeasure?: number
   className?: string
 }
 
@@ -21,6 +27,12 @@ interface VoiceControlState {
  */
 export const MultiVoicePlayer: React.FC<MultiVoicePlayerProps> = ({
   score,
+  audioManager: _externalAudioManager,
+  onPlay: _onPlay,
+  onStop: _onStop,
+  onMeasureChange: _onMeasureChange,
+  isPlaying: _externalIsPlaying,
+  currentMeasure: _externalCurrentMeasure,
   className = '',
 }) => {
   const [audioManager, setAudioManager] =

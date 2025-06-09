@@ -91,7 +91,6 @@ export const StaffDisplayOptions: React.FC<StaffDisplayOptionsProps> = ({
   onChange,
   voiceIds = [],
   voiceNames = {},
-  showAdvanced = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showOpacityControls, setShowOpacityControls] = useState(false)

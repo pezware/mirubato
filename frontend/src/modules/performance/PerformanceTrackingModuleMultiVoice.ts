@@ -175,7 +175,7 @@ export class PerformanceTrackingModuleMultiVoice extends PerformanceTrackingModu
     return {
       ...baseAnalysis,
       voiceMetrics,
-      handIndependence,
+      handIndependence: handIndependence || undefined,
       voiceProblems,
       polyphonicRecommendations,
     }
@@ -271,7 +271,7 @@ export class PerformanceTrackingModuleMultiVoice extends PerformanceTrackingModu
     return activeVoices
   }
 
-  private calculateHarmonicInterval(data: NoteEventData): number | undefined {
+  private calculateHarmonicInterval(_data: NoteEventData): number | undefined {
     // This would calculate the interval between simultaneous notes
     // Simplified for now
     return undefined
@@ -624,9 +624,4 @@ interface PolyphonicProblem {
   severity: 'high' | 'medium' | 'low'
 }
 
-// Extend the ProblemArea type
-declare module './types' {
-  interface ProblemArea {
-    type: 'pitch' | 'timing' | 'rhythm' | 'coordination'
-  }
-}
+// Note: ProblemArea type has been extended in types.ts to include 'coordination'

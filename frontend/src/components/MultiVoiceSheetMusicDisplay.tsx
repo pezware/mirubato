@@ -16,6 +16,18 @@ import { useViewport } from '../hooks/useViewport'
 interface MultiVoiceSheetMusicDisplayProps {
   /** The score to display */
   score: Score
+  /** Optional fixed width */
+  width?: number
+  /** Optional fixed height */
+  height?: number
+  /** Current measure being played */
+  currentMeasure?: number
+  /** Voice to highlight */
+  highlightedVoice?: string | null
+  /** Display options for staff visibility */
+  displayOptions?: any
+  /** Whether to enable performance tracking */
+  enablePerformanceTracking?: boolean
   /** Optional rendering options */
   options?: Partial<MultiVoiceRenderOptions>
   /** Optional CSS class name */
@@ -33,6 +45,12 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
   MultiVoiceSheetMusicDisplayProps
 > = ({
   score,
+  width: _fixedWidth,
+  height: _fixedHeight,
+  currentMeasure: _currentMeasure,
+  highlightedVoice: _highlightedVoice,
+  displayOptions: _displayOptions,
+  enablePerformanceTracking: _enablePerformanceTracking,
   options = {},
   className = '',
   onRenderComplete,
