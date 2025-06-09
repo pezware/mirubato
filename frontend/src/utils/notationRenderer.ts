@@ -20,11 +20,33 @@ export class NotationRenderer {
   constructor(private container: HTMLDivElement) {}
 
   render(sheetMusic: SheetMusic, options: RenderOptions) {
+    // Debug logging
+    console.log('NotationRenderer.render called with:', {
+      title: sheetMusic.title,
+      measures: sheetMusic.measures?.length || 0,
+      instrument: sheetMusic.instrument,
+    })
+
+    // Validate input
+    if (!sheetMusic.measures || sheetMusic.measures.length === 0) {
+      console.error('No measures to render in sheet music')
+      this.container.innerHTML =
+        '<div style="padding: 20px; text-align: center;">No music data available</div>'
+      return
+    }
+
     // Clear previous content
     this.container.innerHTML = ''
 
-    // Create renderer
-    this.renderer = new Renderer(this.container, Renderer.Backends.SVG)
+    try {
+      // Create renderer
+      this.renderer = new Renderer(this.container, Renderer.Backends.SVG)
+    } catch (error) {
+      console.error('Failed to create VexFlow renderer:', error)
+      this.container.innerHTML =
+        '<div style="padding: 20px; text-align: center; color: red;">Failed to initialize music renderer</div>'
+      return
+    }
 
     // Calculate height based on number of measures
     const measuresPerLine = options.measuresPerLine || 2
@@ -57,14 +79,22 @@ export class NotationRenderer {
         currentY += lineHeight
       }
 
-      this.renderMeasure(
-        measure,
-        x,
-        currentY,
-        staveWidth,
-        index === 0,
-        sheetMusic.timeSignature as TimeSignature
-      )
+      try {
+        // Get the time signature for this measure (from measure itself or from sheet music)
+        const measureTimeSignature =
+          measure.timeSignature || sheetMusic.timeSignature
+        this.renderMeasure(
+          measure,
+          x,
+          currentY,
+          staveWidth,
+          index === 0,
+          measureTimeSignature as TimeSignature
+        )
+      } catch (error) {
+        console.error(`Error rendering measure ${index + 1}:`, error)
+        // Continue with next measure instead of crashing
+      }
 
       // Add measure numbers
       if (index % measuresPerLine === 0 && this.context) {
@@ -91,113 +121,231 @@ export class NotationRenderer {
     isFirst: boolean,
     timeSignature?: TimeSignature // Pass time signature for all measures
   ) {
-    // Convert measure to VexFlow-compatible format
-    const vexMeasure = convertMeasureForVexFlow(measure)
+    try {
+      // Convert measure to VexFlow-compatible format
+      const vexMeasure = convertMeasureForVexFlow(measure)
 
-    // Create stave
-    const stave = new Stave(x, y, width)
+      console.log(`Rendering measure ${measure.number}:`, {
+        clef: vexMeasure.clef,
+        timeSignature: vexMeasure.timeSignature,
+        keySignature: vexMeasure.keySignature,
+        notesCount: vexMeasure.notes?.length || 0,
+        firstNote: vexMeasure.notes?.[0],
+      })
 
-    // Add clef, time signature, and key signature for first measure
-    if (isFirst) {
-      if (vexMeasure.clef) stave.addClef(vexMeasure.clef)
-      if (vexMeasure.timeSignature)
-        stave.addTimeSignature(vexMeasure.timeSignature)
-      if (vexMeasure.keySignature)
-        stave.addKeySignature(vexMeasure.keySignature)
-    }
-
-    if (this.context) {
-      stave.setContext(this.context).draw()
-    }
-
-    // Parse time signature for voice configuration
-    let numBeats = 4
-    let beatValue = 4
-    // Use the measure's time signature if available, otherwise use the passed time signature
-    const timeSig = vexMeasure.timeSignature || timeSignature
-    if (timeSig) {
-      const [beats, value] = timeSig.split('/').map(Number)
-      if (!isNaN(beats) && !isNaN(value)) {
-        numBeats = beats
-        beatValue = value
+      // Ensure we have a time signature for voice creation
+      if (!vexMeasure.timeSignature && !timeSignature) {
+        console.warn(
+          `Measure ${measure.number} missing time signature, using 4/4`
+        )
       }
-    }
 
-    // Check if measure has any notes
-    if (!vexMeasure.notes || vexMeasure.notes.length === 0) {
-      // Add a whole rest for empty measures
-      const restDuration = this.getRestDurationForTimeSignature(
-        numBeats,
-        beatValue
-      )
-      const vexNotes = [
-        new StaveNote({ keys: ['b/4'], duration: restDuration + 'r' }),
-      ]
+      // Create stave
+      const stave = new Stave(x, y, width)
 
-      // Create voice and add the rest
-      const voice = new Voice({ numBeats, beatValue })
-      voice.addTickables(vexNotes)
+      // Add clef, time signature, and key signature for first measure
+      if (isFirst) {
+        if (vexMeasure.clef) {
+          try {
+            stave.addClef(vexMeasure.clef)
+          } catch (error) {
+            console.warn(
+              `Invalid clef "${vexMeasure.clef}", using treble as fallback`,
+              error
+            )
+            stave.addClef('treble')
+          }
+        }
+        if (vexMeasure.timeSignature)
+          stave.addTimeSignature(vexMeasure.timeSignature)
+        if (vexMeasure.keySignature)
+          stave.addKeySignature(vexMeasure.keySignature)
+      }
 
-      // Format and draw
-      new Formatter().joinVoices([voice]).format([voice], width - 20)
       if (this.context) {
-        voice.draw(this.context, stave)
+        stave.setContext(this.context).draw()
       }
-      return
-    }
 
-    // Convert measure notes to VexFlow notes
-    const vexNotes = vexMeasure.notes.map(
-      note => new StaveNote({ keys: note.keys, duration: note.duration })
-    )
+      // Parse time signature for voice configuration
+      let numBeats = 4
+      let beatValue = 4
+      // Use the measure's time signature if available, otherwise use the passed time signature
+      const timeSig = vexMeasure.timeSignature || timeSignature || '4/4'
 
-    // Calculate total duration of notes in the measure
-    const totalDuration = this.calculateTotalDuration(vexNotes)
-    const expectedDuration = (numBeats / beatValue) * 4 // Convert to quarter note units
-
-    // If measure is incomplete, add rests to fill it
-    if (totalDuration < expectedDuration) {
-      const remainingDuration = expectedDuration - totalDuration
-      const rests = this.createRestsForDuration(remainingDuration)
-      vexNotes.push(...rests)
-    }
-
-    // Create beams for sixteenth notes (group by 4)
-    // Only beam actual notes, not rests
-    const beams: Beam[] = []
-    let noteGroup: StaveNote[] = []
-
-    for (const vexNote of vexNotes) {
-      const duration = vexNote.getDuration()
-      // Check if it's a sixteenth note (not a rest)
-      if (duration === '16') {
-        noteGroup.push(vexNote)
-        // Create beam when we have 4 sixteenth notes
-        if (noteGroup.length === 4) {
-          beams.push(new Beam(noteGroup))
-          noteGroup = []
+      // Handle both string format ("4/4") and enum format
+      if (typeof timeSig === 'string' && timeSig.includes('/')) {
+        const [beats, value] = timeSig.split('/').map(Number)
+        if (!isNaN(beats) && !isNaN(value)) {
+          numBeats = beats
+          beatValue = value
         }
       } else {
-        // Reset group if we encounter a non-sixteenth note or rest
-        noteGroup = []
+        console.warn(`Invalid time signature format: ${timeSig}, using 4/4`)
       }
-    }
 
-    // Create voice and add notes
-    const voice = new Voice({ numBeats, beatValue })
-    voice.addTickables(vexNotes)
+      // Check if measure has any notes
+      if (!vexMeasure.notes || vexMeasure.notes.length === 0) {
+        // Add a whole rest for empty measures
+        const restDuration = this.getRestDurationForTimeSignature(
+          numBeats,
+          beatValue
+        )
+        const vexNotes = [
+          new StaveNote({ keys: ['b/4'], duration: restDuration + 'r' }),
+        ]
 
-    // Format and draw
-    new Formatter().joinVoices([voice]).format([voice], width - 20)
-    if (this.context) {
-      voice.draw(this.context, stave)
-    }
+        // Create voice and add the rest
+        const voice = new Voice({ numBeats, beatValue })
+        voice.addTickables(vexNotes)
 
-    // Draw beams
-    if (this.context) {
-      beams.forEach(beam => {
-        beam.setContext(this.context!).draw()
+        // Format and draw
+        new Formatter().joinVoices([voice]).format([voice], width - 20)
+        if (this.context) {
+          voice.draw(this.context, stave)
+        }
+        return
+      }
+
+      // Convert measure notes to VexFlow notes
+      const vexNotes = vexMeasure.notes.map(note => {
+        // Validate note data
+        if (!note.keys || note.keys.length === 0) {
+          console.warn('Note missing keys, using default', note)
+          return new StaveNote({
+            keys: ['b/4'],
+            duration: note.duration || 'q',
+          })
+        }
+        if (!note.duration) {
+          console.warn('Note missing duration, using quarter note', note)
+          return new StaveNote({ keys: note.keys, duration: 'q' })
+        }
+
+        try {
+          // Check if this is a rest
+          if (note.rest) {
+            return new StaveNote({
+              keys: note.keys,
+              duration: note.duration + 'r', // Add 'r' suffix for rests
+            })
+          }
+          return new StaveNote({ keys: note.keys, duration: note.duration })
+        } catch (error) {
+          console.error('Error creating StaveNote:', note, error)
+          // Return a default quarter note as fallback
+          return new StaveNote({ keys: ['b/4'], duration: 'q' })
+        }
       })
+
+      // Calculate total duration of notes in the measure
+      const totalDuration = this.calculateTotalDuration(vexNotes)
+      const expectedDuration = (numBeats / beatValue) * 4 // Convert to quarter note units
+
+      console.log(`Measure ${measure.number} duration check:`, {
+        totalDuration,
+        expectedDuration,
+        numBeats,
+        beatValue,
+      })
+
+      // If measure has too many notes, warn but try to render anyway
+      if (totalDuration > expectedDuration) {
+        console.warn(
+          `Measure ${measure.number} has too many beats: ${totalDuration} > ${expectedDuration}`
+        )
+        // Don't add rests, just try to render what we have
+      } else if (totalDuration < expectedDuration) {
+        // If measure is incomplete, add rests to fill it
+        const remainingDuration = expectedDuration - totalDuration
+        const rests = this.createRestsForDuration(remainingDuration)
+        vexNotes.push(...rests)
+      }
+
+      // Create beams for sixteenth notes (group by 4)
+      // Only beam actual notes, not rests
+      const beams: Beam[] = []
+      let noteGroup: StaveNote[] = []
+
+      for (const vexNote of vexNotes) {
+        const duration = vexNote.getDuration()
+        // Check if it's a sixteenth note (not a rest)
+        if (duration === '16') {
+          noteGroup.push(vexNote)
+          // Create beam when we have 4 sixteenth notes
+          if (noteGroup.length === 4) {
+            beams.push(new Beam(noteGroup))
+            noteGroup = []
+          }
+        } else {
+          // Reset group if we encounter a non-sixteenth note or rest
+          noteGroup = []
+        }
+      }
+
+      // Create voice and add notes
+      const voice = new Voice({ numBeats, beatValue })
+
+      try {
+        voice.addTickables(vexNotes)
+
+        // Format and draw
+        new Formatter().joinVoices([voice]).format([voice], width - 20)
+        if (this.context) {
+          voice.draw(this.context, stave)
+        }
+
+        // Draw beams
+        if (this.context) {
+          beams.forEach(beam => {
+            beam.setContext(this.context!).draw()
+          })
+        }
+      } catch (error: unknown) {
+        console.error(
+          `Error formatting/drawing measure ${measure.number}:`,
+          error
+        )
+
+        // If we get a "too many ticks" error, try to render without strict formatting
+        if (
+          error instanceof Error &&
+          error.message &&
+          error.message.includes('Too many ticks')
+        ) {
+          console.warn(
+            `Attempting to render measure ${measure.number} without strict voice formatting`
+          )
+
+          // Create a voice with auto mode to be more lenient
+          const lenientVoice = new Voice({
+            numBeats,
+            beatValue,
+            resolution: 65536,
+          })
+          lenientVoice.setMode(0) // Set to SOFT mode (less strict)
+
+          try {
+            lenientVoice.addTickables(vexNotes)
+
+            // Try to format with more width
+            new Formatter()
+              .joinVoices([lenientVoice])
+              .format([lenientVoice], width)
+            if (this.context) {
+              lenientVoice.draw(this.context, stave)
+            }
+          } catch (lenientError) {
+            console.error(
+              `Failed to render measure ${measure.number} even in lenient mode:`,
+              lenientError
+            )
+            // As a last resort, just draw the stave without notes
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to render measure ${measure.number}:`, error)
+      // Don't re-throw to allow other measures to render
     }
   }
 
@@ -221,7 +369,9 @@ export class NotationRenderer {
     let total = 0
     for (const note of notes) {
       const duration = note.getDuration()
-      switch (duration) {
+      // Remove 'r' suffix for rests to get the base duration
+      const baseDuration = duration.replace('r', '')
+      switch (baseDuration) {
         case 'w':
           total += 4
           break

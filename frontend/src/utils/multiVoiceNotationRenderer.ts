@@ -436,7 +436,7 @@ export class MultiVoiceNotationRenderer {
     if (note.dots) {
       for (let i = 0; i < note.dots; i++) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(vexNote as any).addDotToAll?.()
+        (vexNote as any).addDotToAll?.()
       }
     }
 

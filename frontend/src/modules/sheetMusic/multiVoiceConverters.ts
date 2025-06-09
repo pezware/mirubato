@@ -12,6 +12,7 @@ import {
   Clef,
   TimeSignature,
   KeySignature,
+  NoteDuration,
 } from './types'
 import {
   Score,
@@ -204,87 +205,244 @@ function convertMeasureToGrandStaff(
  * Note: This is a lossy conversion as multiple voices will be flattened
  */
 export function scoreToSheetMusic(score: Score): SheetMusic {
-  // Flatten all notes from all voices into single array per measure
-  const measures: Measure[] = score.measures.map(multiVoiceMeasure => {
-    const allNotes: Note[] = []
+  // Debug logging
+  console.log(
+    'Converting Score to SheetMusic:',
+    score.title,
+    'with',
+    score.measures?.length,
+    'measures'
+  )
 
-    // Collect notes from all voices in all staves
-    for (const staff of multiVoiceMeasure.staves) {
-      for (const voice of staff.voices) {
-        for (const multiVoiceNote of voice.notes) {
-          // Convert back to simple note format
-          const note: Note = {
-            keys: multiVoiceNote.keys,
-            duration: multiVoiceNote.duration,
-            time: multiVoiceNote.time,
-            accidental: multiVoiceNote.accidental,
-            dots: multiVoiceNote.dots,
-            stem: multiVoiceNote.stem,
-            beam: multiVoiceNote.beam,
-            articulation: multiVoiceNote.articulation,
-            dynamic: multiVoiceNote.dynamic,
-            fingering: multiVoiceNote.fingering,
-            rest: multiVoiceNote.rest,
-            tie: multiVoiceNote.tie,
+  // Keep track of time signature and key signature from first measure
+  let currentTimeSignature: TimeSignature | undefined
+  let currentKeySignature: KeySignature | undefined
+
+  // Flatten all notes from all voices into single array per measure
+  const measures: Measure[] = score.measures.map(
+    (multiVoiceMeasure, measureIndex) => {
+      const allNotes: Note[] = []
+
+      // Update current time/key signatures if present
+      if (multiVoiceMeasure.timeSignature) {
+        currentTimeSignature = multiVoiceMeasure.timeSignature
+      }
+      if (multiVoiceMeasure.keySignature) {
+        currentKeySignature = multiVoiceMeasure.keySignature
+      }
+
+      // Collect notes from all voices in all staves
+      if (multiVoiceMeasure.staves && multiVoiceMeasure.staves.length > 0) {
+        for (const staff of multiVoiceMeasure.staves) {
+          if (staff.voices && staff.voices.length > 0) {
+            for (const voice of staff.voices) {
+              if (voice.notes && voice.notes.length > 0) {
+                for (const multiVoiceNote of voice.notes) {
+                  // Validate note data
+                  if (
+                    !multiVoiceNote.keys ||
+                    multiVoiceNote.keys.length === 0
+                  ) {
+                    console.warn(
+                      `Note in measure ${measureIndex + 1} missing keys, skipping`
+                    )
+                    continue
+                  }
+                  if (!multiVoiceNote.duration) {
+                    console.warn(
+                      `Note in measure ${measureIndex + 1} missing duration, skipping`
+                    )
+                    continue
+                  }
+
+                  // Convert back to simple note format
+                  const note: Note = {
+                    keys: multiVoiceNote.keys,
+                    duration: multiVoiceNote.duration,
+                    time: multiVoiceNote.time,
+                    accidental: multiVoiceNote.accidental,
+                    dots: multiVoiceNote.dots,
+                    stem: multiVoiceNote.stem,
+                    beam: multiVoiceNote.beam,
+                    articulation: multiVoiceNote.articulation,
+                    dynamic: multiVoiceNote.dynamic,
+                    fingering: multiVoiceNote.fingering,
+                    rest: multiVoiceNote.rest,
+                    tie: multiVoiceNote.tie,
+                  }
+                  allNotes.push(note)
+                }
+              }
+            }
           }
-          allNotes.push(note)
         }
       }
-    }
 
-    // Sort notes by time position
-    allNotes.sort((a, b) => a.time - b.time)
+      // Sort notes by time position
+      allNotes.sort((a, b) => a.time - b.time)
 
-    // Determine clef based on staves
-    let clef = Clef.TREBLE
-    if (
-      multiVoiceMeasure.staves.length === 2 &&
-      multiVoiceMeasure.staves[0].clef === Clef.TREBLE &&
-      multiVoiceMeasure.staves[1].clef === Clef.BASS
-    ) {
-      clef = Clef.GRAND_STAFF
-    } else if (multiVoiceMeasure.staves[0]) {
-      clef = multiVoiceMeasure.staves[0].clef
-    }
+      // Group notes that occur at the same time into chords
+      const groupedNotes: Note[] = []
+      let i = 0
+      while (i < allNotes.length) {
+        const currentTime = allNotes[i].time
+        const simultaneousNotes: Note[] = []
 
-    return {
-      number: multiVoiceMeasure.number,
-      notes: allNotes,
-      timeSignature: multiVoiceMeasure.timeSignature,
-      keySignature: multiVoiceMeasure.keySignature,
-      clef,
-      tempo: multiVoiceMeasure.tempo,
-      dynamics: multiVoiceMeasure.dynamics,
-      rehearsalMark: multiVoiceMeasure.rehearsalMark,
-      barLine: multiVoiceMeasure.barLine as
-        | 'single'
-        | 'double'
-        | 'end'
-        | 'repeat-start'
-        | 'repeat-end'
-        | undefined,
-      repeatCount: multiVoiceMeasure.repeatCount,
+        // Collect all notes at the same time
+        while (i < allNotes.length && allNotes[i].time === currentTime) {
+          simultaneousNotes.push(allNotes[i])
+          i++
+        }
+
+        // If multiple notes at same time, combine into a chord
+        if (simultaneousNotes.length > 1) {
+          // Combine all keys into a single note (chord)
+          const chordKeys: string[] = []
+          for (const note of simultaneousNotes) {
+            chordKeys.push(...note.keys)
+          }
+
+          // Use the duration of the first note (they should all be the same)
+          groupedNotes.push({
+            keys: chordKeys,
+            duration: simultaneousNotes[0].duration,
+            time: currentTime,
+            // A chord is only a rest if all notes are rests
+            rest: simultaneousNotes.every(n => n.rest),
+            // Inherit other properties from first note
+            accidental: simultaneousNotes[0].accidental,
+            dots: simultaneousNotes[0].dots,
+            stem: simultaneousNotes[0].stem,
+            beam: simultaneousNotes[0].beam,
+            articulation: simultaneousNotes[0].articulation,
+            dynamic: simultaneousNotes[0].dynamic,
+            fingering: simultaneousNotes[0].fingering,
+            tie: simultaneousNotes[0].tie,
+          })
+        } else {
+          // Single note, add as-is
+          groupedNotes.push(simultaneousNotes[0])
+        }
+      }
+
+      // Replace allNotes with grouped notes
+      allNotes.length = 0
+      allNotes.push(...groupedNotes)
+
+      // If no notes were found, add a whole rest
+      if (allNotes.length === 0) {
+        console.warn(
+          `Measure ${measureIndex + 1} has no notes, adding whole rest`
+        )
+        allNotes.push({
+          keys: ['b/4'],
+          duration: NoteDuration.WHOLE,
+          time: 0,
+          rest: true,
+        })
+      } else {
+        // Normalize time values to be measure-relative (0-based for each measure)
+        // Find the minimum time value in this measure
+        const minTime = Math.min(...allNotes.map(n => n.time))
+
+        // If the minimum time is not 0, adjust all note times
+        if (minTime > 0) {
+          console.log(
+            `Normalizing time values for measure ${measureIndex + 1}: adjusting by -${minTime}`
+          )
+          for (const note of allNotes) {
+            note.time = note.time - minTime
+          }
+        }
+
+        // Debug: Log the notes in this measure
+        console.log(
+          `Measure ${measureIndex + 1} notes after normalization:`,
+          allNotes.map(n => ({
+            keys: n.keys,
+            duration: n.duration,
+            time: n.time,
+            rest: n.rest,
+          }))
+        )
+      }
+
+      // Determine clef based on staves
+      let clef = Clef.TREBLE
+      if (
+        multiVoiceMeasure.staves &&
+        multiVoiceMeasure.staves.length === 2 &&
+        multiVoiceMeasure.staves[0]?.clef === Clef.TREBLE &&
+        multiVoiceMeasure.staves[1]?.clef === Clef.BASS
+      ) {
+        clef = Clef.GRAND_STAFF
+      } else if (multiVoiceMeasure.staves?.[0]) {
+        clef = multiVoiceMeasure.staves[0].clef || Clef.TREBLE
+      }
+
+      return {
+        number: multiVoiceMeasure.number,
+        notes: allNotes,
+        // Use current time/key signature if not explicitly set in this measure
+        timeSignature: multiVoiceMeasure.timeSignature || currentTimeSignature,
+        keySignature: multiVoiceMeasure.keySignature || currentKeySignature,
+        clef,
+        tempo: multiVoiceMeasure.tempo,
+        dynamics: multiVoiceMeasure.dynamics,
+        rehearsalMark: multiVoiceMeasure.rehearsalMark,
+        barLine: multiVoiceMeasure.barLine as
+          | 'single'
+          | 'double'
+          | 'end'
+          | 'repeat-start'
+          | 'repeat-end'
+          | undefined,
+        repeatCount: multiVoiceMeasure.repeatCount,
+      }
     }
-  })
+  )
+
+  // Validate we have at least some measures
+  if (measures.length === 0) {
+    console.error('No measures were converted from Score')
+    // Return a minimal valid SheetMusic with one empty measure
+    measures.push({
+      number: 1,
+      notes: [
+        {
+          keys: ['b/4'],
+          duration: NoteDuration.WHOLE,
+          time: 0,
+          rest: true,
+        },
+      ],
+      timeSignature: TimeSignature.FOUR_FOUR,
+      keySignature: KeySignature.C_MAJOR,
+      clef: Clef.TREBLE,
+    })
+  }
 
   // Extract basic info from first part
-  const mainPart = score.parts[0]
+  const mainPart = score.parts?.[0]
   const instrument =
     mainPart?.instrument?.toUpperCase() === 'PIANO' ? 'PIANO' : 'GUITAR'
 
+  // Log conversion result
+  console.log('Converted to SheetMusic with', measures.length, 'measures')
+
   return {
     id: `converted-${Date.now()}`,
-    title: score.title,
-    composer: score.composer,
+    title: score.title || 'Untitled',
+    composer: score.composer || 'Unknown',
     instrument: instrument as 'PIANO' | 'GUITAR',
     difficulty: 'INTERMEDIATE', // Default
-    difficultyLevel: score.metadata.difficulty || 5,
-    durationSeconds: score.metadata.duration || 60,
+    difficultyLevel: score.metadata?.difficulty || 5,
+    durationSeconds: score.metadata?.duration || 60,
     timeSignature: measures[0]?.timeSignature || '4/4',
     keySignature: measures[0]?.keySignature || 'C major',
     suggestedTempo: measures[0]?.tempo || 120,
     stylePeriod: 'CLASSICAL', // Default
-    tags: score.metadata.tags,
+    tags: score.metadata?.tags || [],
     measures,
   }
 }

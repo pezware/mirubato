@@ -27,15 +27,15 @@ export class PerformanceTrackingModule implements ModuleInterface {
   version = '1.0.0'
 
   private eventBus: EventBus
-  private storage: EventDrivenStorage
-  private config: PerformanceConfig
+  protected storage: EventDrivenStorage
+  protected config: PerformanceConfig
   private health: ModuleHealth = {
     status: 'gray',
     lastCheck: Date.now(),
   }
 
   private currentSessionData: PerformanceData[] = []
-  private currentSessionId: string | null = null
+  protected currentSessionId: string | null = null
   private realTimeAnalysisEnabled = false
   private feedbackCallbacks: Set<(feedback: RealTimeFeedback) => void> =
     new Set()
@@ -297,7 +297,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return analysis
   }
 
-  private parseNoteEvent(data: NoteEventData): NoteEvent {
+  protected parseNoteEvent(data: NoteEventData): NoteEvent {
     return {
       expected: {
         pitch: data.expectedNote || data.expected || 'C4',
@@ -322,7 +322,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private parseTimingData(data: NoteEventData): TimingData {
+  protected parseTimingData(data: NoteEventData): TimingData {
     const expectedTime = data.expectedTime || Date.now()
     const actualTime = data.actualTime || data.timestamp || Date.now()
 
@@ -335,7 +335,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private calculateAccuracy(data: NoteEventData): AccuracyData {
+  protected calculateAccuracy(data: NoteEventData): AccuracyData {
     const isCorrect = data.correct === true || data.type === 'correct'
     const pitchAccuracy = this.calculatePitchAccuracy(data)
     const timingAccuracy = this.calculateTimingAccuracy(data)
@@ -350,7 +350,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     }
   }
 
-  private assessDifficulty(data: NoteEventData): DifficultyContext {
+  protected assessDifficulty(data: NoteEventData): DifficultyContext {
     return {
       key: data.key || 'C major',
       timeSignature: data.timeSignature || '4/4',
@@ -422,7 +422,7 @@ export class PerformanceTrackingModule implements ModuleInterface {
     return Math.min(complexity, 10)
   }
 
-  private calculateOverallMetrics(
+  protected calculateOverallMetrics(
     sessionData: PerformanceData[]
   ): PerformanceMetrics {
     const totalNotes = sessionData.length

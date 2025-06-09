@@ -71,8 +71,8 @@ export class SheetMusicLibraryModule
   public readonly name = 'SheetMusicLibraryModule'
   public readonly version = '1.0.0'
 
-  private eventBus: EventBus
-  private storage: EventDrivenStorage
+  protected eventBus: EventBus
+  protected storage: EventDrivenStorage
   private config: SheetMusicModuleConfig
   private state: SheetMusicModuleState
   private initialized = false

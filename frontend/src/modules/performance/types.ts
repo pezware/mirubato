@@ -121,7 +121,7 @@ export interface ProgressPoint {
 }
 
 export interface ProblemArea {
-  type: 'pitch' | 'timing' | 'rhythm' | 'fingering'
+  type: 'pitch' | 'timing' | 'rhythm' | 'fingering' | 'coordination'
   description: string
   severity: 'low' | 'medium' | 'high'
   frequency: number

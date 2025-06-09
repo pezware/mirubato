@@ -224,11 +224,12 @@ describe('Multi-Voice Converters', () => {
       expect(sheetMusic.measures).toHaveLength(1)
 
       const measure = sheetMusic.measures[0]
-      expect(measure.notes).toHaveLength(3) // All notes flattened
+      expect(measure.notes).toHaveLength(2) // Notes at same time are grouped as chords
       expect(measure.clef).toBe(Clef.GRAND_STAFF) // Detected grand staff
+      expect(measure.notes[0].keys).toEqual(['c/5', 'c/3']) // Chord with both notes at time 0
       expect(measure.notes[0].time).toBe(0)
-      expect(measure.notes[1].time).toBe(0)
-      expect(measure.notes[2].time).toBe(1)
+      expect(measure.notes[1].keys).toEqual(['d/5'])
+      expect(measure.notes[1].time).toBe(1)
     })
 
     it('should handle single staff scores', () => {
