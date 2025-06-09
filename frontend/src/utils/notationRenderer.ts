@@ -307,7 +307,11 @@ export class NotationRenderer {
         )
 
         // If we get a "too many ticks" error, try to render without strict formatting
-        if (error.message && error.message.includes('Too many ticks')) {
+        if (
+          error instanceof Error &&
+          error.message &&
+          error.message.includes('Too many ticks')
+        ) {
           console.warn(
             `Attempting to render measure ${measure.number} without strict voice formatting`
           )

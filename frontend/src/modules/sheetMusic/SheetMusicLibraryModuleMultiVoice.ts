@@ -18,7 +18,12 @@ import {
   isScore,
   VOICE_CONFIGURATIONS,
 } from './multiVoiceTypes'
-import { ExerciseParameters, SheetMusicModuleConfig } from './types'
+import {
+  ExerciseParameters,
+  SheetMusicModuleConfig,
+  Clef,
+  NoteDuration,
+} from './types'
 import { nanoid } from 'nanoid'
 
 /**
@@ -525,30 +530,35 @@ export class SheetMusicLibraryModuleMultiVoice
             id: 'rightHand',
             name: 'Right Hand',
             range: { low: 'c/4', high: 'c/7' },
-            clef: 'treble',
+            clef: Clef.TREBLE,
           },
           {
             id: 'leftHand',
             name: 'Left Hand',
             range: { low: 'a/1', high: 'c/5' },
-            clef: 'bass',
+            clef: Clef.BASS,
           },
         ]
       case 'satb':
-        return VOICE_CONFIGURATIONS.satb.voices.slice(0, voiceCount)
+        return VOICE_CONFIGURATIONS.satb.voices.slice(0, voiceCount).map(v => ({
+          id: v.id,
+          name: v.name,
+          range: getSATBRange(v.id),
+          clef: v.defaultClef,
+        }))
       case 'duet':
         return [
           {
             id: 'voice1',
             name: 'Voice 1',
             range: { low: 'c/4', high: 'g/5' },
-            clef: 'treble',
+            clef: Clef.TREBLE,
           },
           {
             id: 'voice2',
             name: 'Voice 2',
             range: { low: 'g/3', high: 'e/5' },
-            clef: 'treble',
+            clef: Clef.TREBLE,
           },
         ]
       default: {
@@ -559,7 +569,7 @@ export class SheetMusicLibraryModuleMultiVoice
             id: `voice${i + 1}`,
             name: `Voice ${i + 1}`,
             range: { low: 'c/3', high: 'c/6' },
-            clef: 'treble',
+            clef: Clef.TREBLE,
           })
         }
         return voices
@@ -614,9 +624,11 @@ export class SheetMusicLibraryModuleMultiVoice
         staves.push(
           {
             id: 'treble-staff',
-            clef: 'treble',
+            clef: Clef.TREBLE,
             voices: this.generateVoicesForStaff(
-              voiceConfig.filter(v => v.clef === 'treble'),
+              voiceConfig.filter(
+                v => v.clef === Clef.TREBLE || v.clef === 'treble'
+              ),
               params,
               i,
               includeCounterpoint,
@@ -625,9 +637,11 @@ export class SheetMusicLibraryModuleMultiVoice
           },
           {
             id: 'bass-staff',
-            clef: 'bass',
+            clef: Clef.BASS,
             voices: this.generateVoicesForStaff(
-              voiceConfig.filter(v => v.clef === 'bass'),
+              voiceConfig.filter(
+                v => v.clef === Clef.BASS || v.clef === 'bass'
+              ),
               params,
               i,
               includeCounterpoint,
@@ -640,7 +654,7 @@ export class SheetMusicLibraryModuleMultiVoice
         voiceConfig.forEach(voice => {
           staves.push({
             id: `${voice.id}-staff`,
-            clef: voice.clef,
+            clef: voice.clef as Clef,
             voices: [
               {
                 id: voice.id,
@@ -696,25 +710,25 @@ export class SheetMusicLibraryModuleMultiVoice
     return [
       {
         keys: ['c/4'],
-        duration: 'q',
+        duration: NoteDuration.QUARTER,
         time: 0,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['e/4'],
-        duration: 'q',
+        duration: NoteDuration.QUARTER,
         time: 1,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['g/4'],
-        duration: 'q',
+        duration: NoteDuration.QUARTER,
         time: 2,
         voiceId: _voiceConfig.id,
       },
       {
         keys: ['c/5'],
-        duration: 'q',
+        duration: NoteDuration.QUARTER,
         time: 3,
         voiceId: _voiceConfig.id,
       },
@@ -840,6 +854,17 @@ export class SheetMusicLibraryModuleMultiVoice
 
     return Math.ceil(measures.length * secondsPerMeasure)
   }
+}
+
+// Helper function to get SATB voice ranges
+function getSATBRange(voiceId: string): { low: string; high: string } {
+  const ranges: Record<string, { low: string; high: string }> = {
+    soprano: { low: 'c/4', high: 'a/5' },
+    alto: { low: 'g/3', high: 'e/5' },
+    tenor: { low: 'c/3', high: 'a/4' },
+    bass: { low: 'e/2', high: 'e/4' },
+  }
+  return ranges[voiceId] || { low: 'c/3', high: 'c/6' }
 }
 
 // Add to Score metadata interface
