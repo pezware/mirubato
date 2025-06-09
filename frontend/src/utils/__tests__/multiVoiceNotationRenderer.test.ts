@@ -21,6 +21,7 @@ jest.mock('vexflow', () => {
     save: jest.fn(),
     restore: jest.fn(),
     fillText: jest.fn(),
+    fillRect: jest.fn(),
   }
 
   const mockRenderer = {
@@ -41,6 +42,7 @@ jest.mock('vexflow', () => {
   const mockVoice = {
     addTickables: jest.fn(),
     draw: jest.fn(),
+    setStrict: jest.fn().mockReturnThis(),
   }
 
   const mockFormatter = {
@@ -100,6 +102,7 @@ jest.mock('vexflow', () => {
     Annotation: Object.assign(
       jest.fn().mockImplementation(() => ({
         setVerticalJustification: jest.fn().mockReturnThis(),
+        setFont: jest.fn().mockReturnThis(),
       })),
       {
         VerticalJustify: {
@@ -118,6 +121,9 @@ describe('MultiVoiceNotationRenderer', () => {
   let renderer: MultiVoiceNotationRenderer
 
   beforeEach(() => {
+    // Clear all mock calls
+    jest.clearAllMocks()
+
     container = document.createElement('div')
     container.id = 'test-container'
     document.body.appendChild(container)
@@ -205,17 +211,17 @@ describe('MultiVoiceNotationRenderer', () => {
       expect(() => renderer.renderScore(score)).not.toThrow()
 
       // Verify context methods were called
-      const mockContext = (
-        Renderer as unknown as jest.Mock
-      ).mock.results[0].value.getContext()
-      expect(mockContext.clear).toHaveBeenCalled()
-      expect(mockContext.fillText).toHaveBeenCalledWith(
+      const mockRenderer = (Renderer as unknown as jest.Mock).mock.results[0]
+        .value
+      const context = mockRenderer.getContext()
+      expect(context.clear).toHaveBeenCalled()
+      expect(context.fillText).toHaveBeenCalledWith(
         'Test Score',
         expect.any(Number),
         expect.any(Number),
         expect.any(Object)
       )
-      expect(mockContext.fillText).toHaveBeenCalledWith(
+      expect(context.fillText).toHaveBeenCalledWith(
         'Test Composer',
         expect.any(Number),
         expect.any(Number),
@@ -486,10 +492,10 @@ describe('MultiVoiceNotationRenderer', () => {
 
       renderer.renderScore(score)
 
-      const mockContext = (
-        Renderer as unknown as jest.Mock
-      ).mock.results[0].value.getContext()
-      expect(mockContext.fillText).toHaveBeenCalledWith(
+      const mockRenderer = (Renderer as unknown as jest.Mock).mock.results[0]
+        .value
+      const context = mockRenderer.getContext()
+      expect(context.fillText).toHaveBeenCalledWith(
         'arr. Arranger Name',
         expect.any(Number),
         expect.any(Number),
@@ -526,10 +532,10 @@ describe('MultiVoiceNotationRenderer', () => {
     it('should clear the rendering context', () => {
       renderer.clear()
 
-      const mockContext = (
-        Renderer as unknown as jest.Mock
-      ).mock.results[0].value.getContext()
-      expect(mockContext.clear).toHaveBeenCalled()
+      const mockRenderer = (Renderer as unknown as jest.Mock).mock.results[0]
+        .value
+      const context = mockRenderer.getContext()
+      expect(context.clear).toHaveBeenCalled()
     })
   })
 

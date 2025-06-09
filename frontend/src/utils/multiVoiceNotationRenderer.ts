@@ -488,7 +488,6 @@ export class MultiVoiceNotationRenderer {
               formatter.joinVoices(group)
               formatter.format(group, formatWidth, {
                 autoBeam: true,
-                softmaxFactor: 10,
               })
             } else {
               formatter.joinVoices(group).format(group, formatWidth)
@@ -862,7 +861,6 @@ export class MultiVoiceNotationRenderer {
       this.options.padding.right
 
     // Calculate total note density across all measures
-    let totalComplexity = 0
     const measureComplexities: number[] = []
 
     for (const measure of measures) {
@@ -883,7 +881,6 @@ export class MultiVoiceNotationRenderer {
       }
 
       measureComplexities.push(measureComplexity)
-      totalComplexity += measureComplexity
     }
 
     // Minimum width per measure to prevent overcrowding
@@ -1059,7 +1056,12 @@ export class MultiVoiceNotationRenderer {
    */
   public clear(): void {
     if (this.context) {
-      // Get the SVG element and clear it properly
+      // Clear using context method if available
+      if (this.context.clear) {
+        this.context.clear()
+      }
+
+      // Also clear the SVG element directly
       const svg = this.container.querySelector('svg')
       if (svg) {
         // Keep the SVG element but clear its contents
