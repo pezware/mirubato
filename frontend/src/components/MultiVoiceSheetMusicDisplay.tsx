@@ -12,6 +12,7 @@ import {
 } from '../utils/multiVoiceNotationRenderer'
 import { Score } from '../modules/sheetMusic/multiVoiceTypes'
 import { useViewport } from '../hooks/useViewport'
+import { StaffDisplayOptions } from './StaffDisplayOptions'
 
 interface MultiVoiceSheetMusicDisplayProps {
   /** The score to display */
@@ -25,7 +26,7 @@ interface MultiVoiceSheetMusicDisplayProps {
   /** Voice to highlight */
   highlightedVoice?: string | null
   /** Display options for staff visibility */
-  displayOptions?: any
+  displayOptions?: StaffDisplayOptions
   /** Whether to enable performance tracking */
   enablePerformanceTracking?: boolean
   /** Optional rendering options */

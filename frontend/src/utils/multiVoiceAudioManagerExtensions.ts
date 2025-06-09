@@ -10,6 +10,14 @@ import { Score, Voice } from '../modules/sheetMusic/multiVoiceTypes'
 import { TimeSignature } from '../modules/sheetMusic/types'
 import * as Tone from 'tone'
 
+// Type for Tone.js notes
+interface ToneNote {
+  time: string
+  pitch: string
+  duration: string
+  velocity: number
+}
+
 /**
  * Extended multi-voice audio manager interface
  */
@@ -290,7 +298,7 @@ export class ExtendedMultiVoiceAudioManager
     return null
   }
 
-  private scheduleVoice(score: Score, voice: Voice, _part: any): void {
+  private scheduleVoice(score: Score, voice: Voice, _part: { instrument: string }): void {
     // Use a basic sampler for now (would be more sophisticated in real implementation)
     const instrument = new Tone.Sampler().toDestination()
 
@@ -315,8 +323,8 @@ export class ExtendedMultiVoiceAudioManager
     this.voiceMixer.applySettingsToVoice(voice.id)
   }
 
-  private convertVoiceToToneNotes(score: Score, voice: Voice): any[] {
-    const toneNotes: any[] = []
+  private convertVoiceToToneNotes(score: Score, voice: Voice): ToneNote[] {
+    const toneNotes: ToneNote[] = []
 
     score.measures.forEach((_measure, measureIndex) => {
       // For now, we'll use a simplified approach without parsing time signatures
@@ -341,7 +349,7 @@ export class ExtendedMultiVoiceAudioManager
     return toneNotes
   }
 
-  private parseTimeSignature(timeSignature: any): [number, number] {
+  private parseTimeSignature(timeSignature: TimeSignature | string): [number, number] {
     // Handle TimeSignature enum values
     const signatures: Record<string, [number, number]> = {
       FOUR_FOUR: [4, 4],
@@ -355,7 +363,7 @@ export class ExtendedMultiVoiceAudioManager
     return signatures[timeSignature] || [4, 4]
   }
 
-  private convertDuration(duration: any): string {
+  private convertDuration(duration: string): string {
     const durations: Record<string, string> = {
       WHOLE: '1n',
       HALF: '2n',

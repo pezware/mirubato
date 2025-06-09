@@ -5,7 +5,7 @@ import { MultiVoiceAudioManagerInterface } from '../utils/multiVoiceAudioManager
 
 interface MultiVoicePlayerProps {
   score: Score | null
-  audioManager?: any
+  audioManager?: MultiVoiceAudioManagerInterface
   onPlay?: () => Promise<void>
   onStop?: () => void
   onMeasureChange?: (measure: number) => void
