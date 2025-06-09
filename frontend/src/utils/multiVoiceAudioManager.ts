@@ -506,9 +506,33 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       this.toneInstance.Transport.schedule(time => {
         // Play the note
         const instrument = this.getActiveInstrument()
-        if (instrument && !note.rest) {
-          const duration = this.getNoteDuration(note.duration, beatDuration)
-          instrument.triggerAttackRelease(note.keys, duration, time, velocity)
+        if (instrument && !note.rest && note.keys && note.keys.length > 0) {
+          try {
+            const duration = this.getNoteDuration(note.duration, beatDuration)
+            // Convert keys from VexFlow format (e.g., "c/4") to Tone.js format (e.g., "C4")
+            const toneKeys = note.keys
+              .map(key => {
+                const [noteName, octave] = key.split('/')
+                if (!noteName || !octave) {
+                  console.warn(`Invalid note key format: ${key}`)
+                  return null
+                }
+                // Convert to Tone.js format: uppercase note + octave
+                return noteName.toUpperCase() + octave
+              })
+              .filter(Boolean) as string[]
+
+            if (toneKeys.length > 0) {
+              instrument.triggerAttackRelease(
+                toneKeys,
+                duration,
+                time,
+                velocity
+              )
+            }
+          } catch (error) {
+            console.error(`Error playing note: ${error}, keys: ${note.keys}`)
+          }
         }
 
         // Emit note play event

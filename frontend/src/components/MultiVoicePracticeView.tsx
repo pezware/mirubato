@@ -264,12 +264,17 @@ export const MultiVoicePracticeView: React.FC<MultiVoicePracticeViewProps> = ({
           <div className="sheet-music-container">
             <MultiVoiceSheetMusicDisplay
               score={score}
-              width={showSidebar ? 800 : 1000}
-              height={600}
+              width={showSidebar ? 750 : 1200}
+              height={650}
               currentMeasure={currentMeasure}
               highlightedVoice={highlightedVoice}
               displayOptions={displayOptions}
               enablePerformanceTracking={enablePerformanceTracking}
+              options={{
+                measuresPerSystem: 3,
+                staveSpacing: 120,
+                systemSpacing: 140,
+              }}
             />
           </div>
 
@@ -417,10 +422,11 @@ const styles = `
 
 .practice-content {
   display: flex;
-  gap: 24px;
-  padding: 24px;
-  max-width: 1600px;
+  gap: 16px;
+  padding: 16px;
+  max-width: 100vw;
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 .main-area {
@@ -429,6 +435,7 @@ const styles = `
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  width: 100%;
 }
 
 .sheet-music-container {
@@ -447,11 +454,17 @@ const styles = `
 }
 
 .sidebar {
-  width: 380px;
+  width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .control-section {
@@ -459,20 +472,23 @@ const styles = `
 }
 
 /* Responsive design */
-@media (max-width: 1280px) {
+@media (max-width: 1200px) {
   .practice-content {
     flex-direction: column;
+    gap: 16px;
   }
   
   .sidebar {
     width: 100%;
+    max-height: none;
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 16px;
   }
   
   .control-section {
     flex: 1;
-    min-width: 300px;
+    min-width: 280px;
   }
 }
 
@@ -491,9 +507,13 @@ const styles = `
 }
 `
 
-// Add styles to document
-if (typeof document !== 'undefined') {
+// Add styles to document (only once)
+if (
+  typeof document !== 'undefined' &&
+  !document.getElementById('multi-voice-practice-view-styles')
+) {
   const styleSheet = document.createElement('style')
+  styleSheet.id = 'multi-voice-practice-view-styles'
   styleSheet.textContent = styles
   document.head.appendChild(styleSheet)
 }

@@ -15,8 +15,8 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const erik_satie_gymnopedie_no_1: Score = {
-  title: 'Untitled',
-  composer: 'Unknown',
+  title: 'Gymnopédie No. 1',
+  composer: 'Erik Satie',
   parts: [
     {
       id: 'P1',
@@ -161,7 +161,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -238,7 +238,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -315,7 +315,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -417,7 +417,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -528,7 +528,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -639,7 +639,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -732,7 +732,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -826,7 +826,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -920,7 +920,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1014,7 +1014,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1108,7 +1108,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1210,7 +1210,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1321,7 +1321,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1432,7 +1432,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1525,7 +1525,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1618,7 +1618,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1711,7 +1711,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1763,7 +1763,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1848,7 +1848,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1942,7 +1942,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2061,7 +2061,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2179,7 +2179,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2297,7 +2297,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2406,7 +2406,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2525,7 +2525,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2653,7 +2653,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2773,7 +2773,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2891,7 +2891,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3000,7 +3000,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3119,7 +3119,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3264,7 +3264,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3357,7 +3357,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3468,7 +3468,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3579,7 +3579,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3699,7 +3699,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3810,7 +3810,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3923,7 +3923,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4010,7 +4010,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4121,7 +4121,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4225,7 +4225,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4340,7 +4340,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4453,7 +4453,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4576,7 +4576,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4688,7 +4688,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4801,7 +4801,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4889,7 +4889,7 @@ export const erik_satie_gymnopedie_no_1: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',

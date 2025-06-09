@@ -15,8 +15,8 @@ import {
 } from '../../../../modules/sheetMusic/types'
 
 export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
-  title: 'Prélude in E Minor',
-  composer: 'Fréderic François Chopin(1810–1849)',
+  title: 'Prélude Op. 28 No. 4 in E Minor',
+  composer: 'Frédéric Chopin',
   parts: [
     {
       id: 'P1',
@@ -126,7 +126,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -393,7 +393,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -661,7 +661,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -932,7 +932,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1203,7 +1203,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1472,7 +1472,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -1749,7 +1749,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2019,7 +2019,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2333,7 +2333,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2600,7 +2600,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -2877,7 +2877,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3211,7 +3211,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3306,7 +3306,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3573,7 +3573,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -3842,7 +3842,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4157,7 +4157,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4485,7 +4485,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -4826,7 +4826,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5084,7 +5084,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5362,7 +5362,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5630,7 +5630,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -5844,7 +5844,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -6112,7 +6112,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice5',
@@ -6200,7 +6200,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice2',
@@ -6350,7 +6350,7 @@ export const prlude_opus_28_no_4_in_e_minor_chopin: Score = {
         },
         {
           id: 'P1-staff2',
-          clef: Clef.TREBLE,
+          clef: Clef.BASS,
           voices: [
             {
               id: 'P1-voice2',
