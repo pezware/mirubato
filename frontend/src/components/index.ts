@@ -17,25 +17,18 @@ export { MultiVoicePlayer } from './MultiVoicePlayer'
 export { VoiceControl } from './VoiceControl'
 export type { VoiceControlProps } from './VoiceControl'
 
-export {
-  StaffDisplayOptions,
-  defaultDisplayOptions,
-  displayPresets,
-} from './StaffDisplayOptions'
+export { StaffDisplayOptions } from './StaffDisplayOptions'
+export { defaultDisplayOptions, displayPresets } from './staffDisplayConfig'
 export type {
   StaffDisplayOptions as StaffDisplayOptionsType,
   StaffDisplayOptionsProps,
 } from './StaffDisplayOptions'
 
-export {
-  PracticeModeSelector,
-  PracticeMode as MultiVoicePracticeMode,
-  practiceModePresets,
-} from './PracticeModeSelector'
-export type {
-  PracticeModeConfig,
-  PracticeModeSelectorProps,
-} from './PracticeModeSelector'
+export { PracticeModeSelector } from './PracticeModeSelector'
+export { practiceModePresets } from './practiceModePresets'
+export { PracticeMode as MultiVoicePracticeMode } from './practiceModeTypes'
+export type { PracticeModeConfig } from './practiceModeTypes'
+export type { PracticeModeSelectorProps } from './PracticeModeSelector'
 
 export { MultiVoicePracticeView } from './MultiVoicePracticeView'
 export type { MultiVoicePracticeViewProps } from './MultiVoicePracticeView'

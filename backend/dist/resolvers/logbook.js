@@ -32,7 +32,9 @@ const mapGoal = (goal, user) => ({
     linkedEntries: [], // Resolved separately
     createdAt: new Date(Number(goal.created_at)).toISOString(),
     updatedAt: new Date(Number(goal.updated_at)).toISOString(),
-    completedAt: goal.completed_at ? new Date(Number(goal.completed_at)).toISOString() : null,
+    completedAt: goal.completed_at
+        ? new Date(Number(goal.completed_at)).toISOString()
+        : null,
 });
 const Query = {
     logbookEntry: async (_, { id }, context) => {
@@ -41,7 +43,9 @@ const Query = {
         }
         const entry = await context.env.DB.prepare(`
       SELECT * FROM logbook_entries WHERE id = ? AND user_id = ?
-    `).bind(id, context.user.id).first();
+    `)
+            .bind(id, context.user.id)
+            .first();
         if (!entry) {
             throw new Error('Logbook entry not found');
         }
@@ -77,7 +81,9 @@ const Query = {
             }
         }
         // Count total entries
-        const countResult = await context.env.DB.prepare(`SELECT COUNT(*) as count FROM logbook_entries ${whereClause}`).bind(...params).first();
+        const countResult = await context.env.DB.prepare(`SELECT COUNT(*) as count FROM logbook_entries ${whereClause}`)
+            .bind(...params)
+            .first();
         const totalCount = Number(countResult?.count || 0);
         // Get entries
         const result = await context.env.DB.prepare(`
@@ -85,11 +91,13 @@ const Query = {
       ${whereClause}
       ORDER BY timestamp DESC, created_at DESC
       LIMIT ? OFFSET ?
-    `).bind(...params, limit, offset).all();
+    `)
+            .bind(...params, limit, offset)
+            .all();
         const entries = result.results || [];
         const edges = entries.map((entry, index) => ({
             cursor: Buffer.from(`${offset + index}`).toString('base64'),
-            node: mapLogbookEntry(entry, context.user)
+            node: mapLogbookEntry(entry, context.user),
         }));
         return {
             edges,
@@ -106,7 +114,9 @@ const Query = {
         if (!context.user) {
             throw new Error('Authentication required');
         }
-        const goal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ? AND user_id = ?').bind(id, context.user.id).first();
+        const goal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ? AND user_id = ?')
+            .bind(id, context.user.id)
+            .first();
         if (!goal) {
             throw new Error('Goal not found');
         }
@@ -123,7 +133,9 @@ const Query = {
             params.push(status);
         }
         // Count total goals
-        const countResult = await context.env.DB.prepare(`SELECT COUNT(*) as count FROM goals ${whereClause}`).bind(...params).first();
+        const countResult = await context.env.DB.prepare(`SELECT COUNT(*) as count FROM goals ${whereClause}`)
+            .bind(...params)
+            .first();
         const totalCount = Number(countResult?.count || 0);
         // Get goals
         const result = await context.env.DB.prepare(`
@@ -131,11 +143,13 @@ const Query = {
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
-    `).bind(...params, limit, offset).all();
+    `)
+            .bind(...params, limit, offset)
+            .all();
         const goals = result.results || [];
         const edges = goals.map((goal, index) => ({
             cursor: Buffer.from(`${offset + index}`).toString('base64'),
-            node: mapGoal(goal, context.user)
+            node: mapGoal(goal, context.user),
         }));
         return {
             edges,
@@ -162,7 +176,9 @@ const Mutation = {
         pieces, techniques, goal_ids, notes, mood, tags,
         session_id, metadata, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(id, context.user.id, new Date(input.timestamp).getTime(), input.duration, input.type, input.instrument, JSON.stringify(input.pieces), JSON.stringify(input.techniques), JSON.stringify(input.goalIds), input.notes, input.mood, JSON.stringify(input.tags), input.sessionId, input.metadata ? JSON.stringify(input.metadata) : null, now, now).run();
+    `)
+            .bind(id, context.user.id, new Date(input.timestamp).getTime(), input.duration, input.type, input.instrument, JSON.stringify(input.pieces), JSON.stringify(input.techniques), JSON.stringify(input.goalIds), input.notes, input.mood, JSON.stringify(input.tags), input.sessionId, input.metadata ? JSON.stringify(input.metadata) : null, now, now)
+            .run();
         return {
             id,
             user: context.user,
@@ -189,7 +205,9 @@ const Mutation = {
             throw new Error('Authentication required');
         }
         // Check if entry exists
-        const existingEntry = await context.env.DB.prepare('SELECT id FROM logbook_entries WHERE id = ? AND user_id = ?').bind(input.id, context.user.id).first();
+        const existingEntry = await context.env.DB.prepare('SELECT id FROM logbook_entries WHERE id = ? AND user_id = ?')
+            .bind(input.id, context.user.id)
+            .first();
         if (!existingEntry) {
             throw new Error('Logbook entry not found');
         }
@@ -230,16 +248,22 @@ const Mutation = {
       UPDATE logbook_entries 
       SET ${updates.join(', ')}
       WHERE id = ? AND user_id = ?
-    `).bind(...params).run();
+    `)
+            .bind(...params)
+            .run();
         // Return updated entry
-        const updatedEntry = await context.env.DB.prepare('SELECT * FROM logbook_entries WHERE id = ? AND user_id = ?').bind(input.id, context.user.id).first();
+        const updatedEntry = await context.env.DB.prepare('SELECT * FROM logbook_entries WHERE id = ? AND user_id = ?')
+            .bind(input.id, context.user.id)
+            .first();
         return mapLogbookEntry(updatedEntry, context.user);
     },
     deleteLogbookEntry: async (_, { id }, context) => {
         if (!context.user) {
             throw new Error('Authentication required');
         }
-        const result = await context.env.DB.prepare('DELETE FROM logbook_entries WHERE id = ? AND user_id = ?').bind(id, context.user.id).run();
+        const result = await context.env.DB.prepare('DELETE FROM logbook_entries WHERE id = ? AND user_id = ?')
+            .bind(id, context.user.id)
+            .run();
         return result.changes > 0;
     },
     createGoal: async (_, { input }, context) => {
@@ -258,7 +282,9 @@ const Mutation = {
         id, user_id, title, description, target_date, progress,
         milestones, status, linked_entry_ids, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(id, context.user.id, input.title, input.description, new Date(input.targetDate).getTime(), 0, JSON.stringify(milestonesWithIds), 'ACTIVE', JSON.stringify([]), now, now).run();
+    `)
+            .bind(id, context.user.id, input.title, input.description, new Date(input.targetDate).getTime(), 0, JSON.stringify(milestonesWithIds), 'ACTIVE', JSON.stringify([]), now, now)
+            .run();
         return {
             id,
             user: context.user,
@@ -280,7 +306,9 @@ const Mutation = {
             throw new Error('Authentication required');
         }
         // Check if goal exists
-        const existingGoal = await context.env.DB.prepare('SELECT id, status, progress FROM goals WHERE id = ? AND user_id = ?').bind(input.id, context.user.id).first();
+        const existingGoal = await context.env.DB.prepare('SELECT id, status, progress FROM goals WHERE id = ? AND user_id = ?')
+            .bind(input.id, context.user.id)
+            .first();
         if (!existingGoal) {
             throw new Error('Goal not found');
         }
@@ -337,16 +365,22 @@ const Mutation = {
       UPDATE goals 
       SET ${updates.join(', ')}
       WHERE id = ? AND user_id = ?
-    `).bind(...params).run();
+    `)
+            .bind(...params)
+            .run();
         // Return updated goal
-        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ? AND user_id = ?').bind(input.id, context.user.id).first();
+        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ? AND user_id = ?')
+            .bind(input.id, context.user.id)
+            .first();
         return mapGoal(updatedGoal, context.user);
     },
     deleteGoal: async (_, { id }, context) => {
         if (!context.user) {
             throw new Error('Authentication required');
         }
-        const result = await context.env.DB.prepare('DELETE FROM goals WHERE id = ? AND user_id = ?').bind(id, context.user.id).run();
+        const result = await context.env.DB.prepare('DELETE FROM goals WHERE id = ? AND user_id = ?')
+            .bind(id, context.user.id)
+            .run();
         return result.changes > 0;
     },
     linkLogbookEntryToGoal: async (_, { entryId, goalId }, context) => {
@@ -356,9 +390,11 @@ const Mutation = {
         // Verify both entry and goal belong to user
         const [entry, goal] = await Promise.all([
             context.env.DB.prepare('SELECT id FROM logbook_entries WHERE id = ? AND user_id = ?')
-                .bind(entryId, context.user.id).first(),
+                .bind(entryId, context.user.id)
+                .first(),
             context.env.DB.prepare('SELECT id, linked_entry_ids FROM goals WHERE id = ? AND user_id = ?')
-                .bind(goalId, context.user.id).first()
+                .bind(goalId, context.user.id)
+                .first(),
         ]);
         if (!entry || !goal) {
             throw new Error('Entry or goal not found');
@@ -367,10 +403,14 @@ const Mutation = {
         const linkedEntryIds = JSON.parse(goal.linked_entry_ids || '[]');
         if (!linkedEntryIds.includes(entryId)) {
             linkedEntryIds.push(entryId);
-            await context.env.DB.prepare('UPDATE goals SET linked_entry_ids = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(linkedEntryIds), Date.now(), goalId).run();
+            await context.env.DB.prepare('UPDATE goals SET linked_entry_ids = ?, updated_at = ? WHERE id = ?')
+                .bind(JSON.stringify(linkedEntryIds), Date.now(), goalId)
+                .run();
         }
         // Return updated goal
-        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(goalId).first();
+        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ?')
+            .bind(goalId)
+            .first();
         return mapGoal(updatedGoal, context.user);
     },
     unlinkLogbookEntryFromGoal: async (_, { entryId, goalId }, context) => {
@@ -378,16 +418,22 @@ const Mutation = {
             throw new Error('Authentication required');
         }
         // Verify goal belongs to user
-        const goal = await context.env.DB.prepare('SELECT id, linked_entry_ids FROM goals WHERE id = ? AND user_id = ?').bind(goalId, context.user.id).first();
+        const goal = await context.env.DB.prepare('SELECT id, linked_entry_ids FROM goals WHERE id = ? AND user_id = ?')
+            .bind(goalId, context.user.id)
+            .first();
         if (!goal) {
             throw new Error('Goal not found');
         }
         // Update goal's linked entries
         const linkedEntryIds = JSON.parse(goal.linked_entry_ids || '[]');
         const filteredIds = linkedEntryIds.filter((id) => id !== entryId);
-        await context.env.DB.prepare('UPDATE goals SET linked_entry_ids = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(filteredIds), Date.now(), goalId).run();
+        await context.env.DB.prepare('UPDATE goals SET linked_entry_ids = ?, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(filteredIds), Date.now(), goalId)
+            .run();
         // Return updated goal
-        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(goalId).first();
+        const updatedGoal = await context.env.DB.prepare('SELECT * FROM goals WHERE id = ?')
+            .bind(goalId)
+            .first();
         return mapGoal(updatedGoal, context.user);
     },
 };
@@ -400,7 +446,9 @@ const LogbookEntry = {
         const placeholders = parent.goalIds.map(() => '?').join(', ');
         const result = await context.env.DB.prepare(`
       SELECT * FROM goals WHERE id IN (${placeholders})
-    `).bind(...parent.goalIds).all();
+    `)
+            .bind(...parent.goalIds)
+            .all();
         const goals = result.results || [];
         return goals.map((goal) => mapGoal(goal, parent.user));
     },
@@ -410,7 +458,9 @@ const LogbookEntry = {
         }
         const session = await context.env.DB.prepare(`
       SELECT * FROM practice_sessions WHERE id = ?
-    `).bind(parent.sessionId).first();
+    `)
+            .bind(parent.sessionId)
+            .first();
         if (!session) {
             return null;
         }
@@ -421,7 +471,9 @@ const LogbookEntry = {
             sheetMusic: null,
             sessionType: session.session_type,
             startedAt: new Date(Number(session.started_at)).toISOString(),
-            completedAt: session.completed_at ? new Date(Number(session.completed_at)).toISOString() : null,
+            completedAt: session.completed_at
+                ? new Date(Number(session.completed_at)).toISOString()
+                : null,
             pausedDuration: Number(session.paused_duration),
             accuracy: Number(session.accuracy),
             notesAttempted: Number(session.notes_attempted),
@@ -440,7 +492,9 @@ const Goal = {
       SELECT * FROM logbook_entries 
       WHERE id IN (${placeholders})
       ORDER BY timestamp DESC
-    `).bind(...parent.linkedEntryIds).all();
+    `)
+            .bind(...parent.linkedEntryIds)
+            .all();
         const entries = result.results || [];
         return entries.map((entry) => mapLogbookEntry(entry, parent.user));
     },

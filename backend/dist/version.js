@@ -1,8 +1,8 @@
 // Auto-generated version info
 export const versionInfo = {
-    "buildTime": "2025-06-10T13:27:03.438Z",
-    "commitHash": "0886cbcc954cfdf639ddc7dc2fd77abc7ffbf679",
+    "buildTime": "2025-06-10T19:17:33.431Z",
+    "commitHash": "817d17f23ec7c7545356cfde92337667b17ca9de",
     "branch": "feat/logbook-backend-support",
-    "shortHash": "0886cbcc"
+    "shortHash": "817d17f2"
 };
 //# sourceMappingURL=version.js.map

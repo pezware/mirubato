@@ -10,6 +10,7 @@ export default function Docs() {
 
   useEffect(() => {
     loadMarkdown()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path])
 
   const loadMarkdown = async () => {

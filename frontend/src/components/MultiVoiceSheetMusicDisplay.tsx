@@ -108,6 +108,7 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
         rendererRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty dependencies - only run once
 
   // Update options when they change

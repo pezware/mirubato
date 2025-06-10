@@ -9,15 +9,10 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { MultiVoiceSheetMusicDisplay } from './MultiVoiceSheetMusicDisplay'
 import { MultiVoicePlayer } from './MultiVoicePlayer'
 import { VoiceControl } from './VoiceControl'
-import {
-  StaffDisplayOptions,
-  defaultDisplayOptions,
-} from './StaffDisplayOptions'
-import {
-  PracticeModeSelector,
-  PracticeMode,
-  PracticeModeConfig,
-} from './PracticeModeSelector'
+import { StaffDisplayOptions } from './StaffDisplayOptions'
+import { defaultDisplayOptions } from './staffDisplayConfig'
+import { PracticeModeSelector } from './PracticeModeSelector'
+import { PracticeMode, PracticeModeConfig } from './practiceModeTypes'
 import { Score } from '../modules/sheetMusic/multiVoiceTypes'
 import { ExtendedMultiVoiceAudioManager } from '../utils/multiVoiceAudioManagerExtensions'
 
@@ -83,16 +78,100 @@ export const MultiVoicePracticeView: React.FC<MultiVoicePracticeViewProps> = ({
   const voices = extractVoices(score)
   const isPiano = score.parts.some(p => p.instrument.toLowerCase() === 'piano')
 
+  // Apply practice mode settings to audio and display
+  const applyPracticeMode = useCallback(
+    (config: PracticeModeConfig) => {
+      switch (config.mode) {
+        case PracticeMode.SINGLE_VOICE:
+          if (config.selectedVoice) {
+            // Mute all other voices
+            voices.forEach(v => {
+              if (v.id === config.selectedVoice) {
+                audioManager.unmuteVoice(v.id)
+              } else {
+                audioManager.muteVoice(v.id)
+              }
+            })
+          }
+          break
+
+        case PracticeMode.HANDS_SEPARATE:
+          // Piano-specific: mute based on hand
+          if (isPiano && config.selectedHand) {
+            const handVoices = getHandVoices(score, config.selectedHand)
+            voices.forEach(v => {
+              if (handVoices.includes(v.id)) {
+                audioManager.unmuteVoice(v.id)
+              } else {
+                audioManager.muteVoice(v.id)
+              }
+            })
+          }
+          break
+
+        case PracticeMode.VOICE_HIGHLIGHT:
+          if (config.highlightedVoice) {
+            setHighlightedVoice(config.highlightedVoice)
+            // Optionally reduce volume of other voices
+            voices.forEach(v => {
+              if (v.id === config.highlightedVoice) {
+                audioManager.setVoiceVolume(v.id, 0) // Full volume
+              } else {
+                audioManager.setVoiceVolume(v.id, -12) // Reduced volume
+              }
+            })
+          }
+          break
+
+        case PracticeMode.ACCOMPANIMENT:
+          // Mute non-accompaniment voices
+          voices.forEach(v => {
+            const isAccompaniment = config.accompanimentVoices?.includes(v.id)
+            if (isAccompaniment) {
+              audioManager.unmuteVoice(v.id)
+            } else {
+              audioManager.muteVoice(v.id)
+            }
+          })
+          break
+
+        case PracticeMode.SLOW_PRACTICE:
+          // Apply tempo adjustment
+          if (config.tempoPercentage) {
+            audioManager.setPlaybackSpeed(config.tempoPercentage / 100)
+          }
+          break
+
+        case PracticeMode.LOOP_SECTION:
+          // Set loop points
+          if (
+            config.loopStart !== undefined &&
+            config.loopEnd !== undefined
+          ) {
+            audioManager.setLoopSection(config.loopStart, config.loopEnd)
+          }
+          break
+
+        default:
+          // Full score - unmute all voices
+          voices.forEach(v => audioManager.unmuteVoice(v.id))
+          audioManager.setPlaybackSpeed(1.0)
+          audioManager.clearLoop()
+      }
+    },
+    [audioManager, voices, setHighlightedVoice]
+  )
+
   // Initialize active voices
   useEffect(() => {
     const allVoiceIds = new Set(voices.map(v => v.id))
     setActiveVoices(allVoiceIds)
-  }, [score])
+  }, [score, voices])
 
   // Apply practice mode settings
   useEffect(() => {
     applyPracticeMode(practiceMode)
-  }, [practiceMode])
+  }, [practiceMode, applyPracticeMode])
 
   // Voice control handlers
   const handleVoiceToggle = useCallback(
@@ -141,79 +220,6 @@ export const MultiVoicePracticeView: React.FC<MultiVoicePracticeViewProps> = ({
     [audioManager, activeVoices, voices]
   )
 
-  // Apply practice mode settings to audio and display
-  const applyPracticeMode = useCallback(
-    (config: PracticeModeConfig) => {
-      switch (config.mode) {
-        case PracticeMode.SINGLE_VOICE:
-          if (config.selectedVoice) {
-            // Mute all other voices
-            voices.forEach(v => {
-              if (v.id === config.selectedVoice) {
-                audioManager.unmuteVoice(v.id)
-              } else {
-                audioManager.muteVoice(v.id)
-              }
-            })
-          }
-          break
-
-        case PracticeMode.HANDS_SEPARATE:
-          if (isPiano && config.selectedHand) {
-            // Mute the other hand
-            const handVoices = getHandVoices(score, config.selectedHand)
-            voices.forEach(v => {
-              if (handVoices.includes(v.id)) {
-                audioManager.unmuteVoice(v.id)
-              } else {
-                audioManager.muteVoice(v.id)
-              }
-            })
-          }
-          break
-
-        case PracticeMode.VOICE_HIGHLIGHT:
-          setHighlightedVoice(config.highlightedVoice || null)
-          break
-
-        case PracticeMode.ACCOMPANIMENT:
-          // Mute non-accompaniment voices
-          voices.forEach(v => {
-            if (config.accompanimentVoices?.includes(v.id)) {
-              audioManager.unmuteVoice(v.id)
-            } else {
-              audioManager.muteVoice(v.id)
-            }
-          })
-          break
-
-        case PracticeMode.SLOW_PRACTICE: {
-          const speedRatio = (config.tempoPercentage || 100) / 100
-          audioManager.setPlaybackSpeed(speedRatio)
-          break
-        }
-
-        case PracticeMode.LOOP_SECTION:
-          if (config.loopStart && config.loopEnd) {
-            audioManager.setLoopSection(config.loopStart, config.loopEnd)
-          }
-          break
-
-        case PracticeMode.FULL_SCORE:
-        default:
-          // Reset to all voices active
-          voices.forEach(v => {
-            if (activeVoices.has(v.id)) {
-              audioManager.unmuteVoice(v.id)
-            }
-          })
-          audioManager.clearLoop()
-          audioManager.setPlaybackSpeed(1.0)
-          break
-      }
-    },
-    [audioManager, voices, isPiano, activeVoices, score]
-  )
 
   // Playback handlers
   const handlePlay = useCallback(async () => {
