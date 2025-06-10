@@ -1,6 +1,7 @@
 import { PracticeLoggerModule } from './PracticeLoggerModule'
 import { EventBus, MockEventDrivenStorage } from '../core'
 import type { LogbookEntry, Goal, LogFilters, ExportOptions } from './types'
+import { LogbookEntryType, Mood, Instrument, GoalStatus } from './types'
 import type { EventPayload } from '../core/types'
 
 describe('PracticeLoggerModule', () => {
@@ -12,40 +13,41 @@ describe('PracticeLoggerModule', () => {
 
   // Test data
   const testUserId = 'test-user-123'
-  const testEntry: Omit<LogbookEntry, 'id'> = {
+  const testEntry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> = {
     userId: testUserId,
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     duration: 1800, // 30 minutes
-    type: 'practice',
+    type: LogbookEntryType.PRACTICE,
+    instrument: Instrument.PIANO,
     pieces: [
       {
         id: 'piece-1',
         title: 'Moonlight Sonata',
         composer: 'Beethoven',
-        measures: '1-16',
-        tempo: 120,
       },
     ],
     techniques: ['scales', 'arpeggios'],
-    goals: ['goal-1'],
+    goalIds: ['goal-1'],
     notes: 'Focused on dynamics in the first section',
-    mood: 'satisfied',
+    mood: Mood.SATISFIED,
     tags: ['classical', 'beethoven'],
     sessionId: 'session-123',
+    metadata: null,
   }
 
   const testGoal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'> = {
     userId: testUserId,
     title: 'Master Moonlight Sonata',
     description: 'Play the first movement from memory',
-    targetDate: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+    targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
     progress: 0,
     milestones: [
       { id: 'ms-1', title: 'Learn first 32 measures', completed: false },
       { id: 'ms-2', title: 'Memorize first 16 measures', completed: false },
     ],
-    status: 'active',
-    linkedEntries: [],
+    status: GoalStatus.ACTIVE,
+    linkedEntryIds: [],
+    completedAt: null,
   }
 
   beforeEach(() => {
@@ -171,11 +173,11 @@ describe('PracticeLoggerModule', () => {
       // Mock storage to return the created entry
       // Entry should already be in storage from create
 
-      const updates = { notes: 'Updated notes', mood: 'excited' as const }
+      const updates = { notes: 'Updated notes', mood: Mood.EXCITED }
       const updated = await logger.updateLogEntry(entry.id, updates)
 
       expect(updated.notes).toBe('Updated notes')
-      expect(updated.mood).toBe('excited')
+      expect(updated.mood).toBe(Mood.EXCITED)
       // Entry should have been updated in storage
       const updatedEntry = await mockStorage.read<LogbookEntry>(
         `logbook:${entry.id}`
@@ -218,7 +220,7 @@ describe('PracticeLoggerModule', () => {
 
       const filters: LogFilters = {
         userId: testUserId,
-        type: ['practice'],
+        type: [LogbookEntryType.PRACTICE],
         limit: 10,
       }
 
@@ -232,9 +234,17 @@ describe('PracticeLoggerModule', () => {
     it('should apply date range filters correctly', async () => {
       const now = Date.now()
       const mockEntries = [
-        { ...testEntry, id: '1', timestamp: now - 3 * 86400000 }, // 3 days ago
-        { ...testEntry, id: '2', timestamp: now - 86400000 }, // 1 day ago
-        { ...testEntry, id: '3', timestamp: now }, // today
+        {
+          ...testEntry,
+          id: '1',
+          timestamp: new Date(now - 3 * 86400000).toISOString(),
+        }, // 3 days ago
+        {
+          ...testEntry,
+          id: '2',
+          timestamp: new Date(now - 86400000).toISOString(),
+        }, // 1 day ago
+        { ...testEntry, id: '3', timestamp: new Date(now).toISOString() }, // today
       ]
       // Set up storage state directly
       for (const entry of mockEntries) {
@@ -242,8 +252,8 @@ describe('PracticeLoggerModule', () => {
       }
 
       const filters: LogFilters = {
-        startDate: now - 2 * 86400000, // 2 days ago
-        endDate: now,
+        startDate: new Date(now - 2 * 86400000).toISOString(), // 2 days ago
+        endDate: new Date(now).toISOString(),
       }
 
       const entries = await logger.getLogEntries(filters)
@@ -288,7 +298,9 @@ describe('PracticeLoggerModule', () => {
       const updated = await logger.updateGoalProgress(goal.id, 50)
 
       expect(updated.progress).toBe(50)
-      expect(updated.updatedAt).toBeGreaterThanOrEqual(goal.updatedAt)
+      expect(new Date(updated.updatedAt).getTime()).toBeGreaterThanOrEqual(
+        new Date(goal.updatedAt).getTime()
+      )
     })
 
     it('should mark goal as completed when progress reaches 100', async () => {
@@ -299,7 +311,7 @@ describe('PracticeLoggerModule', () => {
 
       const completed = await logger.updateGoalProgress(goal.id, 100)
 
-      expect(completed.status).toBe('completed')
+      expect(completed.status).toBe(GoalStatus.COMPLETED)
       expect(completed.completedAt).toBeDefined()
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -330,7 +342,7 @@ describe('PracticeLoggerModule', () => {
       const goal = await logger.createGoal(testGoal)
       const entry = await logger.createLogEntry({
         ...testEntry,
-        goals: [goal.id],
+        goalIds: [goal.id],
       })
 
       // Mock storage to return the goal
@@ -338,14 +350,14 @@ describe('PracticeLoggerModule', () => {
 
       const updated = await logger.linkEntryToGoal(entry.id, goal.id)
 
-      expect(updated.linkedEntries).toContain(entry.id)
+      expect(updated.linkedEntryIds).toContain(entry.id)
     })
 
     it('should get active goals for a user', async () => {
       const mockGoals = [
-        { ...testGoal, id: '1', status: 'active' as const },
-        { ...testGoal, id: '2', status: 'completed' as const },
-        { ...testGoal, id: '3', status: 'active' as const },
+        { ...testGoal, id: '1', status: GoalStatus.ACTIVE },
+        { ...testGoal, id: '2', status: GoalStatus.COMPLETED },
+        { ...testGoal, id: '3', status: GoalStatus.ACTIVE },
       ]
       // Set up storage state directly
       for (const goal of mockGoals) {
@@ -355,7 +367,7 @@ describe('PracticeLoggerModule', () => {
       const activeGoals = await logger.getActiveGoals(testUserId)
 
       expect(activeGoals).toHaveLength(2)
-      expect(activeGoals.every(g => g.status === 'active')).toBe(true)
+      expect(activeGoals.every(g => g.status === GoalStatus.ACTIVE)).toBe(true)
     })
   })
 
@@ -405,7 +417,7 @@ describe('PracticeLoggerModule', () => {
       expect(result.success).toBe(true)
       expect(result.filename).toContain('.csv')
       expect(typeof result.data).toBe('string')
-      expect(result.data).toContain('Date,Duration,Type,Pieces') // CSV headers
+      expect(result.data).toContain('Date,Duration,Type,Instrument,Pieces') // CSV headers
     })
 
     it('should generate practice report', async () => {
@@ -414,16 +426,16 @@ describe('PracticeLoggerModule', () => {
         {
           ...testEntry,
           id: '1',
-          timestamp: now - 86400000,
+          timestamp: new Date(now - 86400000).toISOString(),
           duration: 1800,
-          mood: 'satisfied' as const,
+          mood: Mood.SATISFIED,
         },
         {
           ...testEntry,
           id: '2',
-          timestamp: now,
+          timestamp: new Date(now).toISOString(),
           duration: 2700,
-          mood: 'excited' as const,
+          mood: Mood.EXCITED,
         },
       ]
       // Set up storage state directly
@@ -432,18 +444,18 @@ describe('PracticeLoggerModule', () => {
       }
 
       const report = await logger.generatePracticeReport({
-        startDate: now - 7 * 86400000,
-        endDate: now,
+        startDate: new Date(now - 7 * 86400000).toISOString(),
+        endDate: new Date(now).toISOString(),
       })
 
       // 3 entries total: 1 from beforeEach + 2 mock entries
       expect(report.totalEntries).toBe(3)
       expect(report.totalDuration).toBe(6300) // 1800 (from beforeEach) + 1800 + 2700
       expect(report.averageDuration).toBe(2100)
-      expect(report.entriesByType.practice).toBe(3)
+      expect(report.entriesByType[LogbookEntryType.PRACTICE]).toBe(3)
       // moodDistribution: 2 satisfied (1 from beforeEach + 1 mock), 1 excited
-      expect(report.moodDistribution.satisfied).toBe(2)
-      expect(report.moodDistribution.excited).toBe(1)
+      expect(report.moodDistribution[Mood.SATISFIED]).toBe(2)
+      expect(report.moodDistribution[Mood.EXCITED]).toBe(1)
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'logger:report:generated',
@@ -492,6 +504,7 @@ describe('PracticeLoggerModule', () => {
             id: 'session-123',
             userId: testUserId,
             duration: 1800,
+            instrument: 'PIANO',
             notesAttempted: 100,
             notesCorrect: 90,
             pieces: [
@@ -598,8 +611,8 @@ describe('PracticeLoggerModule', () => {
 
     it('should validate date ranges in filters', async () => {
       const filters: LogFilters = {
-        startDate: Date.now(),
-        endDate: Date.now() - 86400000, // End before start
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() - 86400000).toISOString(), // End before start
       }
 
       await expect(logger.getLogEntries(filters)).rejects.toThrow(
@@ -626,7 +639,7 @@ describe('PracticeLoggerModule', () => {
       const promises = Array.from({ length: 5 }, (_, i) =>
         logger.createLogEntry({
           ...testEntry,
-          timestamp: Date.now() + i,
+          timestamp: new Date(Date.now() + i).toISOString(),
         })
       )
 
@@ -642,7 +655,7 @@ describe('PracticeLoggerModule', () => {
       const mockEntries = Array.from({ length: 100 }, (_, i) => ({
         ...testEntry,
         id: `entry-${i}`,
-        timestamp: Date.now() - i * 1000,
+        timestamp: new Date(Date.now() - i * 1000).toISOString(),
       }))
       // Set up storage state directly
       for (const entry of mockEntries) {

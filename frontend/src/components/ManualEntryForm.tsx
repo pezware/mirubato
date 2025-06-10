@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
 import type { LogbookEntry, PieceReference } from '../modules/logger/types'
+import { LogbookEntryType, Mood, Instrument } from '../modules/logger/types'
+import { useAuth } from '../hooks/useAuth'
 
 interface ManualEntryFormProps {
-  onSave: (entry: Omit<LogbookEntry, 'id' | 'userId'>) => void
+  onSave: (
+    entry: Omit<LogbookEntry, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+  ) => void
   onCancel: () => void
   initialData?: Partial<LogbookEntry>
 }
@@ -14,9 +18,16 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
   onCancel,
   initialData,
 }) => {
+  const { user } = useAuth()
+
   // Form state
   const [entryType, setEntryType] = useState<LogbookEntry['type']>(
-    initialData?.type || 'practice'
+    initialData?.type || LogbookEntryType.PRACTICE
+  )
+  const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
+    initialData?.instrument ||
+      (user?.primaryInstrument as Instrument) ||
+      Instrument.PIANO
   )
   const [practiceType, setPracticeType] = useState<PracticeType>('repertoire')
   const [date, setDate] = useState(
@@ -40,7 +51,7 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
     initialData?.techniques || []
   )
   const [mood, setMood] = useState<LogbookEntry['mood']>(
-    initialData?.mood || 'neutral'
+    initialData?.mood || Mood.NEUTRAL
   )
   const [notes, setNotes] = useState(initialData?.notes || '')
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
@@ -99,32 +110,38 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Combine date and time to create timestamp
+    // Combine date and time to create ISO timestamp
     const dateTime = new Date(`${date}T${time}`)
-    const timestamp = dateTime.getTime()
+    const timestamp = dateTime.toISOString()
 
     // Convert duration to seconds
     const durationInSeconds = duration * 60
 
     // Add practice type to tags if it's a practice session
     const finalTags = [...tags]
-    if (entryType === 'practice') {
+    if (entryType === LogbookEntryType.PRACTICE) {
       finalTags.push(practiceType)
     }
 
-    const entry: Omit<LogbookEntry, 'id' | 'userId'> = {
+    const entry: Omit<
+      LogbookEntry,
+      'id' | 'userId' | 'createdAt' | 'updatedAt'
+    > = {
       timestamp,
       duration: durationInSeconds,
       type: entryType,
+      instrument,
       pieces,
       techniques,
-      goals: [], // TODO: Implement goal linking
+      goalIds: [], // TODO: Implement goal linking
       notes,
       mood,
       tags: finalTags,
+      sessionId: null,
       metadata: {
         source: 'manual',
-        practiceType: entryType === 'practice' ? practiceType : undefined,
+        practiceType:
+          entryType === LogbookEntryType.PRACTICE ? practiceType : undefined,
       },
     }
 
@@ -139,22 +156,51 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
           Entry Type
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {(['practice', 'performance', 'lesson', 'rehearsal'] as const).map(
-            type => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setEntryType(type)}
-                className={`px-4 py-2 rounded-lg border capitalize transition-colors ${
-                  entryType === type
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {type}
-              </button>
-            )
-          )}
+          {Object.values(LogbookEntryType).map(type => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setEntryType(type)}
+              className={`px-4 py-2 rounded-lg border capitalize transition-colors ${
+                entryType === type
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {type.toLowerCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Instrument Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Instrument
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setInstrument(Instrument.PIANO)}
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+              instrument === Instrument.PIANO
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            🎹 Piano
+          </button>
+          <button
+            type="button"
+            onClick={() => setInstrument(Instrument.GUITAR)}
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+              instrument === Instrument.GUITAR
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            🎸 Classical Guitar
+          </button>
         </div>
       </div>
 
@@ -215,7 +261,7 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
       </div>
 
       {/* Practice Type (only for practice entries) */}
-      {entryType === 'practice' && (
+      {entryType === LogbookEntryType.PRACTICE && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             What did you work on?
@@ -330,15 +376,15 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
         </label>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { value: 'frustrated', emoji: '😤', label: 'Frustrated' },
-            { value: 'neutral', emoji: '😐', label: 'Neutral' },
-            { value: 'satisfied', emoji: '😊', label: 'Satisfied' },
-            { value: 'excited', emoji: '😃', label: 'Excited' },
+            { value: Mood.FRUSTRATED, emoji: '😤', label: 'Frustrated' },
+            { value: Mood.NEUTRAL, emoji: '😐', label: 'Neutral' },
+            { value: Mood.SATISFIED, emoji: '😊', label: 'Satisfied' },
+            { value: Mood.EXCITED, emoji: '😃', label: 'Excited' },
           ].map(option => (
             <button
               key={option.value}
               type="button"
-              onClick={() => setMood(option.value as LogbookEntry['mood'])}
+              onClick={() => setMood(option.value)}
               className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-colors ${
                 mood === option.value
                   ? 'bg-blue-50 border-blue-500 text-blue-700'

@@ -63,7 +63,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
           accessToken,
           refreshToken,
           expiresIn: 900, // 15 minutes
-          user,
+          user: user as any, // Cast to GraphQL User type
         }
       } catch (error) {
         console.error('verifyMagicLink error:', error)
@@ -93,7 +93,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresIn: 900,
-        user,
+        user: user as any, // Cast to GraphQL User type
       }
     },
 

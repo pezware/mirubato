@@ -1,0 +1,41 @@
+[**Mirubato API Documentation v0.1.0**](../../../../README.md)
+
+---
+
+[Mirubato API Documentation](../../../../README.md) / [modules/core/sharedTypes](../README.md) / SessionStatus
+
+# Enumeration: SessionStatus
+
+Defined in: [frontend/src/modules/core/sharedTypes.ts:100](https://github.com/pezware/mirubato/blob/2d26938b515bb34f096125b09f4a7f56c5ea5212/frontend/src/modules/core/sharedTypes.ts#L100)
+
+## Enumeration Members
+
+### ACTIVE
+
+> **ACTIVE**: `"active"`
+
+Defined in: [frontend/src/modules/core/sharedTypes.ts:101](https://github.com/pezware/mirubato/blob/2d26938b515bb34f096125b09f4a7f56c5ea5212/frontend/src/modules/core/sharedTypes.ts#L101)
+
+---
+
+### PAUSED
+
+> **PAUSED**: `"paused"`
+
+Defined in: [frontend/src/modules/core/sharedTypes.ts:102](https://github.com/pezware/mirubato/blob/2d26938b515bb34f096125b09f4a7f56c5ea5212/frontend/src/modules/core/sharedTypes.ts#L102)
+
+---
+
+### COMPLETED
+
+> **COMPLETED**: `"completed"`
+
+Defined in: [frontend/src/modules/core/sharedTypes.ts:103](https://github.com/pezware/mirubato/blob/2d26938b515bb34f096125b09f4a7f56c5ea5212/frontend/src/modules/core/sharedTypes.ts#L103)
+
+---
+
+### ABANDONED
+
+> **ABANDONED**: `"abandoned"`
+
+Defined in: [frontend/src/modules/core/sharedTypes.ts:104](https://github.com/pezware/mirubato/blob/2d26938b515bb34f096125b09f4a7f56c5ea5212/frontend/src/modules/core/sharedTypes.ts#L104)

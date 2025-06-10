@@ -114,6 +114,59 @@ type PracticeLog {
   createdAt: DateTime!
 }
 
+# Logbook Types
+type LogbookEntry {
+  id: ID!
+  user: User!
+  timestamp: DateTime!
+  duration: Int! # in seconds
+  type: LogbookEntryType!
+  instrument: Instrument! # Track which instrument was practiced
+  pieces: [PieceReference!]!
+  techniques: [String!]!
+  goalIds: [ID!]! # Array of goal IDs
+  goals: [Goal!]! # Resolved in resolver
+  notes: String
+  mood: Mood
+  tags: [String!]!
+  sessionId: ID # links to PracticeSession if auto-generated
+  session: PracticeSession # Resolved in resolver
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PieceReference {
+  id: ID!
+  title: String!
+  composer: String
+  section: String # e.g., "Movement 1", "mm. 1-16"
+  source: String # "library" or "custom"
+}
+
+type Goal {
+  id: ID!
+  user: User!
+  title: String!
+  description: String!
+  targetDate: DateTime!
+  progress: Float! # 0-100
+  milestones: [GoalMilestone!]!
+  status: GoalStatus!
+  linkedEntryIds: [ID!]! # Array of logbook entry IDs
+  linkedEntries: [LogbookEntry!]! # Resolved in resolver
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  completedAt: DateTime
+}
+
+type GoalMilestone {
+  id: ID!
+  title: String!
+  completed: Boolean!
+  completedAt: DateTime
+}
+
 type AuthPayload {
   success: Boolean!
   message: String!
@@ -173,6 +226,27 @@ enum ActivityType {
   OTHER
 }
 
+enum LogbookEntryType {
+  PRACTICE
+  PERFORMANCE
+  LESSON
+  REHEARSAL
+}
+
+enum Mood {
+  FRUSTRATED
+  NEUTRAL
+  SATISFIED
+  EXCITED
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
 # Input Types
 input UserPreferencesInput {
   theme: Theme
@@ -223,6 +297,80 @@ input CreatePracticeLogInput {
   notes: String
 }
 
+# Logbook Input Types
+input PieceReferenceInput {
+  id: ID!
+  title: String!
+  composer: String
+  section: String
+  source: String
+}
+
+input CreateLogbookEntryInput {
+  timestamp: DateTime!
+  duration: Int!
+  type: LogbookEntryType!
+  instrument: Instrument!
+  pieces: [PieceReferenceInput!]!
+  techniques: [String!]!
+  goalIds: [ID!]!
+  notes: String
+  mood: Mood
+  tags: [String!]!
+  sessionId: ID
+  metadata: JSON
+}
+
+input UpdateLogbookEntryInput {
+  id: ID!
+  timestamp: DateTime
+  duration: Int
+  type: LogbookEntryType
+  instrument: Instrument
+  pieces: [PieceReferenceInput!]
+  techniques: [String!]
+  goalIds: [ID!]
+  notes: String
+  mood: Mood
+  tags: [String!]
+  metadata: JSON
+}
+
+input LogbookFilterInput {
+  startDate: DateTime
+  endDate: DateTime
+  types: [LogbookEntryType!]
+  instruments: [Instrument!] # Filter by instrument(s)
+  moods: [Mood!]
+  tags: [String!]
+  pieceIds: [ID!]
+  goalIds: [ID!]
+}
+
+input GoalMilestoneInput {
+  id: ID
+  title: String!
+  completed: Boolean!
+  completedAt: DateTime
+}
+
+input CreateGoalInput {
+  title: String!
+  description: String!
+  targetDate: DateTime!
+  milestones: [GoalMilestoneInput!]!
+}
+
+input UpdateGoalInput {
+  id: ID!
+  title: String
+  description: String
+  targetDate: DateTime
+  progress: Float
+  milestones: [GoalMilestoneInput!]
+  status: GoalStatus
+}
+
 # Queries
 type Query {
   # User queries
@@ -249,6 +397,22 @@ type Query {
     offset: Int
     limit: Int
   ): PracticeSessionConnection!
+
+  # Logbook queries
+  logbookEntry(id: ID!): LogbookEntry
+  myLogbookEntries(
+    filter: LogbookFilterInput
+    offset: Int
+    limit: Int
+  ): LogbookEntryConnection!
+
+  # Goal queries
+  goal(id: ID!): Goal
+  myGoals(
+    status: GoalStatus
+    offset: Int
+    limit: Int
+  ): GoalConnection!
 }
 
 # Mutations
@@ -271,6 +435,18 @@ type Mutation {
   
   # Practice log mutations
   createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
+
+  # Logbook mutations
+  createLogbookEntry(input: CreateLogbookEntryInput!): LogbookEntry!
+  updateLogbookEntry(input: UpdateLogbookEntryInput!): LogbookEntry!
+  deleteLogbookEntry(id: ID!): Boolean!
+
+  # Goal mutations
+  createGoal(input: CreateGoalInput!): Goal!
+  updateGoal(input: UpdateGoalInput!): Goal!
+  deleteGoal(id: ID!): Boolean!
+  linkLogbookEntryToGoal(entryId: ID!, goalId: ID!): Goal!
+  unlinkLogbookEntryFromGoal(entryId: ID!, goalId: ID!): Goal!
 }
 
 # Connection types for pagination
@@ -293,6 +469,28 @@ type PracticeSessionConnection {
 
 type PracticeSessionEdge {
   node: PracticeSession!
+  cursor: String!
+}
+
+type LogbookEntryConnection {
+  edges: [LogbookEntryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type LogbookEntryEdge {
+  node: LogbookEntry!
+  cursor: String!
+}
+
+type GoalConnection {
+  edges: [GoalEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type GoalEdge {
+  node: Goal!
   cursor: String!
 }
 

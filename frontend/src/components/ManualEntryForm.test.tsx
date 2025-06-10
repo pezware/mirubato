@@ -1,6 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { render } from '../tests/utils/test-utils'
 import ManualEntryForm from './ManualEntryForm'
 import type { LogbookEntry } from '../modules/logger/types'
+import { LogbookEntryType, Mood, Instrument } from '../modules/logger/types'
 
 describe('ManualEntryForm', () => {
   const mockOnSave = jest.fn()
@@ -219,7 +221,8 @@ describe('ManualEntryForm', () => {
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: 'performance',
+          type: LogbookEntryType.PERFORMANCE,
+          instrument: Instrument.PIANO,
           duration: 2700, // 45 minutes in seconds
           pieces: [
             expect.objectContaining({
@@ -227,7 +230,7 @@ describe('ManualEntryForm', () => {
             }),
           ],
           techniques: ['Dynamics', 'Phrasing'],
-          mood: 'satisfied',
+          mood: Mood.SATISFIED,
           notes: 'Great practice session!',
           tags: ['concert-prep'],
           metadata: {
@@ -251,7 +254,7 @@ describe('ManualEntryForm', () => {
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: 'practice',
+          type: LogbookEntryType.PRACTICE,
           tags: expect.arrayContaining(['technical']),
           metadata: {
             source: 'manual',
@@ -272,8 +275,8 @@ describe('ManualEntryForm', () => {
 
   it('loads initial data when provided', () => {
     const initialData: Partial<LogbookEntry> = {
-      type: 'lesson',
-      timestamp: new Date('2024-01-15T14:30:00').getTime(),
+      type: LogbookEntryType.LESSON,
+      timestamp: '2024-01-15T14:30:00.000Z',
       duration: 3600, // 60 minutes
       pieces: [
         {
@@ -283,7 +286,7 @@ describe('ManualEntryForm', () => {
         },
       ],
       techniques: ['Scales', 'Articulation'],
-      mood: 'excited',
+      mood: Mood.EXCITED,
       notes: 'Initial notes',
       tags: ['initial-tag'],
     }

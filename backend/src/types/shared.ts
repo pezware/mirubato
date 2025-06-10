@@ -1,24 +1,73 @@
-// Shared types between frontend and backend
-// These types should match the GraphQL schema
+// Re-export shared types from the shared package for consistency
+// Import first, then re-export to avoid conflicts
+import {
+  Instrument as SharedInstrument,
+  SessionType as SharedSessionType,
+  ActivityType as SharedActivityType,
+  LogbookEntryType as SharedLogbookEntryType,
+  Mood as SharedMood,
+  GoalStatus as SharedGoalStatus,
+  Theme as SharedTheme,
+  NotationSize as SharedNotationSize,
+  User as SharedUser,
+  UserPreferences as SharedUserPreferences,
+  UserStats as SharedUserStats,
+  PracticeSession as SharedPracticeSession,
+  PracticeLog as SharedPracticeLog,
+  LogbookEntry as SharedLogbookEntry,
+  PieceReference as SharedPieceReference,
+  Goal as SharedGoal,
+  GoalMilestone as SharedGoalMilestone,
+  Validators as SharedValidators,
+  DataConverters as SharedDataConverters,
+} from '@mirubato/shared'
 
-export type Instrument = 'PIANO' | 'GUITAR'
+// Re-export enums
+export const Instrument = SharedInstrument
+export const SessionType = SharedSessionType
+export const ActivityType = SharedActivityType
+export const LogbookEntryType = SharedLogbookEntryType
+export const Mood = SharedMood
+export const GoalStatus = SharedGoalStatus
+export const Theme = SharedTheme
+export const NotationSize = SharedNotationSize
+
+// Re-export types
+export type UserPreferences = SharedUserPreferences
+export type UserStats = SharedUserStats
+
+// Backend-specific User type that includes preferences and stats
+export interface User extends SharedUser {
+  preferences: UserPreferences
+  stats: UserStats
+}
+export type PracticeSession = SharedPracticeSession
+export type PracticeLog = SharedPracticeLog
+export type LogbookEntry = SharedLogbookEntry
+export type PieceReference = SharedPieceReference
+export type Goal = SharedGoal
+export type GoalMilestone = SharedGoalMilestone
+
+// Re-export utilities
+export const Validators = SharedValidators
+export const DataConverters = SharedDataConverters
+
+// Legacy types - keep for backward compatibility but mark as deprecated
+/** @deprecated Use Instrument enum from @mirubato/shared instead */
+export type LegacyInstrument = 'PIANO' | 'GUITAR'
+/** @deprecated Use Theme enum from @mirubato/shared instead */
+export type LegacyTheme = 'LIGHT' | 'DARK' | 'AUTO'
+/** @deprecated Use NotationSize enum from @mirubato/shared instead */
+export type LegacyNotationSize = 'SMALL' | 'MEDIUM' | 'LARGE'
+
+// Backend-specific types that are not shared
 export type Difficulty = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-export type Theme = 'LIGHT' | 'DARK' | 'AUTO'
-export type NotationSize = 'SMALL' | 'MEDIUM' | 'LARGE'
 export type StylePeriod =
   | 'BAROQUE'
   | 'CLASSICAL'
   | 'ROMANTIC'
   | 'MODERN'
   | 'CONTEMPORARY'
-export type SessionType = 'FREE_PRACTICE' | 'GUIDED_PRACTICE' | 'ASSESSMENT'
-export type ActivityType =
-  | 'SIGHT_READING'
-  | 'SCALES'
-  | 'REPERTOIRE'
-  | 'ETUDES'
-  | 'TECHNIQUE'
-  | 'OTHER'
 
 export interface Note {
   keys: string[]
@@ -60,7 +109,7 @@ export interface SheetMusic {
   composer: string
   opus?: string
   movement?: string
-  instrument: Instrument
+  instrument: SharedInstrument
   difficulty: Difficulty
   difficultyLevel: number
   gradeLevel?: string
@@ -74,57 +123,4 @@ export interface SheetMusic {
   measures: Measure[]
   metadata?: SheetMusicMetadata
   thumbnail?: string
-}
-
-export interface UserPreferences {
-  theme: Theme
-  notationSize: NotationSize
-  practiceReminders: boolean
-  dailyGoalMinutes: number
-  customSettings?: Record<string, unknown>
-}
-
-export interface UserStats {
-  totalPracticeTime: number
-  consecutiveDays: number
-  piecesCompleted: number
-  accuracyAverage: number
-}
-
-export interface User {
-  id: string
-  email: string
-  displayName?: string
-  primaryInstrument: Instrument
-  preferences: UserPreferences
-  stats: UserStats
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: Instrument
-  sheetMusicId?: string
-  sessionType: SessionType
-  startedAt: string
-  completedAt?: string
-  pausedDuration: number
-  accuracy?: number
-  notesAttempted: number
-  notesCorrect: number
-}
-
-export interface PracticeLog {
-  id: string
-  sessionId: string
-  activityType: ActivityType
-  durationSeconds: number
-  tempoPracticed?: number
-  targetTempo?: number
-  focusAreas: string[]
-  selfRating?: number
-  notes?: string
-  createdAt: string
 }

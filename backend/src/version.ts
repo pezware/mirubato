@@ -1,0 +1,7 @@
+// Auto-generated version info
+export const versionInfo = {
+  "buildTime": "2025-06-10T13:27:03.438Z",
+  "commitHash": "0886cbcc954cfdf639ddc7dc2fd77abc7ffbf679",
+  "branch": "feat/logbook-backend-support",
+  "shortHash": "0886cbcc"
+} as const

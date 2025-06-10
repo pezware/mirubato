@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { LogbookEntry } from '../modules/logger/types'
+import { LogbookEntryType, Mood, Instrument } from '../modules/logger/types'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -20,6 +21,8 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
   searchQuery = '',
   filters,
 }) => {
+  // State to track which date groups are collapsed
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   // Filter entries based on search and filters
   const filteredEntries = entries.filter(entry => {
     // Search filter
@@ -27,13 +30,16 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch =
         entry.notes.toLowerCase().includes(searchLower) ||
-        entry.pieces.some(piece =>
-          piece.title.toLowerCase().includes(searchLower)
-        ) ||
-        entry.techniques.some(technique =>
-          technique.toLowerCase().includes(searchLower)
-        ) ||
-        entry.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        (entry.pieces &&
+          entry.pieces.some(piece =>
+            piece.title.toLowerCase().includes(searchLower)
+          )) ||
+        (entry.techniques &&
+          entry.techniques.some(technique =>
+            technique.toLowerCase().includes(searchLower)
+          )) ||
+        (entry.tags &&
+          entry.tags.some(tag => tag.toLowerCase().includes(searchLower)))
 
       if (!matchesSearch) return false
     }
@@ -87,6 +93,17 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   )
 
+  // Toggle collapse state for a date group
+  const toggleGroup = (dateKey: string) => {
+    const newCollapsed = new Set(collapsedGroups)
+    if (newCollapsed.has(dateKey)) {
+      newCollapsed.delete(dateKey)
+    } else {
+      newCollapsed.add(dateKey)
+    }
+    setCollapsedGroups(newCollapsed)
+  }
+
   // Format duration
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
@@ -98,17 +115,24 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     return `${minutes} min`
   }
 
+  // Get instrument icon
+  const getInstrumentIcon = (
+    instrument: LogbookEntry['instrument']
+  ): string => {
+    return instrument === Instrument.GUITAR ? '🎸' : '🎹'
+  }
+
   // Get entry type icon
   const getEntryTypeIcon = (type: LogbookEntry['type']): string => {
     switch (type) {
-      case 'practice':
-        return '🎹'
-      case 'performance':
-        return '🎭'
-      case 'lesson':
-        return '📚'
-      case 'rehearsal':
+      case LogbookEntryType.PRACTICE:
         return '🎵'
+      case LogbookEntryType.PERFORMANCE:
+        return '🎭'
+      case LogbookEntryType.LESSON:
+        return '📚'
+      case LogbookEntryType.REHEARSAL:
+        return '🎤'
       default:
         return '🎼'
     }
@@ -117,13 +141,13 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
   // Get mood emoji
   const getMoodEmoji = (mood?: LogbookEntry['mood']): string => {
     switch (mood) {
-      case 'frustrated':
+      case Mood.FRUSTRATED:
         return '😤'
-      case 'neutral':
+      case Mood.NEUTRAL:
         return '😐'
-      case 'satisfied':
+      case Mood.SATISFIED:
         return '😊'
-      case 'excited':
+      case Mood.EXCITED:
         return '😃'
       default:
         return ''
@@ -142,131 +166,211 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     )
   }
 
+  // Function to expand/collapse all groups
+  const toggleAllGroups = (collapse: boolean) => {
+    if (collapse) {
+      setCollapsedGroups(new Set(sortedDates))
+    } else {
+      setCollapsedGroups(new Set())
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {sortedDates.map(dateKey => (
-        <div key={dateKey} className="bg-white rounded-lg shadow-sm">
-          <div className="bg-gray-50 px-4 py-3 border-b">
-            <h3 className="font-medium text-gray-900">{dateKey}</h3>
-          </div>
-          <div className="divide-y">
-            {groupedEntries[dateKey].map(entry => (
-              <div
-                key={entry.id}
-                className="p-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">
-                        {getEntryTypeIcon(entry.type)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium capitalize">
-                          {entry.type} Session
-                        </span>
-                        <span className="text-gray-500">•</span>
-                        <span className="text-gray-600">
-                          {formatDuration(entry.duration)}
-                        </span>
-                        {entry.mood && (
-                          <>
-                            <span className="text-gray-500">•</span>
-                            <span className="text-xl">
-                              {getMoodEmoji(entry.mood)}
-                            </span>
-                            <span className="text-gray-600 capitalize">
-                              {entry.mood}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {entry.metadata?.source === 'automatic' && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                          Auto-logged
-                        </span>
-                      )}
-                    </div>
+      {/* Expand/Collapse All Controls */}
+      {sortedDates.length > 1 && (
+        <div className="flex justify-end gap-2 text-sm">
+          <button
+            onClick={() => toggleAllGroups(false)}
+            className="text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            Expand All
+          </button>
+          <span className="text-gray-400">|</span>
+          <button
+            onClick={() => toggleAllGroups(true)}
+            className="text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            Collapse All
+          </button>
+        </div>
+      )}
+      {sortedDates.map(dateKey => {
+        const dateEntries = groupedEntries[dateKey]
+        const isCollapsed = collapsedGroups.has(dateKey)
+        const totalDuration = dateEntries.reduce(
+          (sum, entry) => sum + entry.duration,
+          0
+        )
+        const sessionCount = dateEntries.length
 
-                    {entry.pieces.length > 0 && (
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">
-                          Pieces:{' '}
-                        </span>
-                        <span className="text-gray-600">
-                          {entry.pieces.map(piece => piece.title).join(', ')}
-                        </span>
-                      </div>
-                    )}
-
-                    {entry.techniques.length > 0 && (
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">
-                          Techniques:{' '}
-                        </span>
-                        <span className="text-gray-600">
-                          {entry.techniques.join(', ')}
-                        </span>
-                      </div>
-                    )}
-
-                    {entry.notes && (
-                      <div className="mb-2">
-                        <p className="text-gray-600 italic">"{entry.notes}"</p>
-                      </div>
-                    )}
-
-                    {entry.goals.length > 0 && (
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">
-                          Goals:{' '}
-                        </span>
-                        <span className="text-green-600">
-                          {entry.goals.length} linked
-                        </span>
-                      </div>
-                    )}
-
-                    {entry.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {entry.tags.map(tag => (
-                          <span
-                            key={tag}
-                            className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-full"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 ml-4">
-                    {onEdit && (
-                      <button
-                        onClick={() => onEdit(entry)}
-                        className="text-gray-600 hover:text-blue-600 transition-colors"
-                        aria-label={`Edit ${entry.type} entry`}
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {onDelete && (
-                      <button
-                        onClick={() => onDelete(entry.id)}
-                        className="text-gray-600 hover:text-red-600 transition-colors"
-                        aria-label={`Delete ${entry.type} entry`}
-                      >
-                        Delete
-                      </button>
-                    )}
+        return (
+          <div key={dateKey} className="bg-white rounded-lg shadow-sm">
+            <div
+              className="bg-gray-50 px-4 py-3 border-b cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => toggleGroup(dateKey)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                  <span
+                    className="text-sm sm:text-lg transform transition-transform duration-200 flex-shrink-0"
+                    style={{
+                      transform: isCollapsed
+                        ? 'rotate(-90deg)'
+                        : 'rotate(0deg)',
+                    }}
+                  >
+                    ▼
+                  </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 min-w-0">
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {dateKey}
+                    </h3>
+                    <span className="text-xs sm:text-sm text-gray-500">
+                      {sessionCount}{' '}
+                      {sessionCount === 1 ? 'session' : 'sessions'} •{' '}
+                      {formatDuration(totalDuration)}
+                    </span>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+            {!isCollapsed && (
+              <div className="divide-y">
+                {groupedEntries[dateKey].map(entry => (
+                  <div
+                    key={entry.id}
+                    className="p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">
+                              {getInstrumentIcon(entry.instrument)}
+                            </span>
+                            <span className="text-2xl">
+                              {getEntryTypeIcon(entry.type)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium capitalize">
+                              {entry.type.toLowerCase()} Session
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-600">
+                              {entry.instrument === Instrument.GUITAR
+                                ? 'Classical Guitar'
+                                : 'Piano'}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-600">
+                              {formatDuration(entry.duration)}
+                            </span>
+                            {entry.mood && (
+                              <>
+                                <span className="text-gray-500">•</span>
+                                <span className="text-xl">
+                                  {getMoodEmoji(entry.mood)}
+                                </span>
+                                <span className="text-gray-600 capitalize">
+                                  {entry.mood.toLowerCase()}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          {entry.metadata?.source === 'automatic' && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                              Auto-logged
+                            </span>
+                          )}
+                        </div>
+
+                        {entry.pieces && entry.pieces.length > 0 && (
+                          <div className="mb-2">
+                            <span className="font-medium text-gray-700">
+                              Pieces:{' '}
+                            </span>
+                            <span className="text-gray-600">
+                              {entry.pieces
+                                .map(piece => piece.title)
+                                .join(', ')}
+                            </span>
+                          </div>
+                        )}
+
+                        {entry.techniques && entry.techniques.length > 0 && (
+                          <div className="mb-2">
+                            <span className="font-medium text-gray-700">
+                              Techniques:{' '}
+                            </span>
+                            <span className="text-gray-600">
+                              {entry.techniques.join(', ')}
+                            </span>
+                          </div>
+                        )}
+
+                        {entry.notes && (
+                          <div className="mb-2">
+                            <p className="text-gray-600 italic">
+                              "{entry.notes}"
+                            </p>
+                          </div>
+                        )}
+
+                        {entry.goalIds && entry.goalIds.length > 0 && (
+                          <div className="mb-2">
+                            <span className="font-medium text-gray-700">
+                              Goals:{' '}
+                            </span>
+                            <span className="text-green-600">
+                              {entry.goalIds.length} linked
+                            </span>
+                          </div>
+                        )}
+
+                        {entry.tags && entry.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {entry.tags.map(tag => (
+                              <span
+                                key={tag}
+                                className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-full"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 ml-4">
+                        {onEdit && (
+                          <button
+                            onClick={() => onEdit(entry)}
+                            className="text-gray-600 hover:text-blue-600 transition-colors"
+                            aria-label={`Edit ${entry.type} entry`}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={() => onDelete(entry.id)}
+                            className="text-gray-600 hover:text-red-600 transition-colors"
+                            aria-label={`Delete ${entry.type} entry`}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

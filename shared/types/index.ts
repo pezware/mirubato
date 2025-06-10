@@ -21,6 +21,27 @@ export enum ActivityType {
   OTHER = 'OTHER',
 }
 
+export enum LogbookEntryType {
+  PRACTICE = 'PRACTICE',
+  PERFORMANCE = 'PERFORMANCE',
+  LESSON = 'LESSON',
+  REHEARSAL = 'REHEARSAL',
+}
+
+export enum Mood {
+  FRUSTRATED = 'FRUSTRATED',
+  NEUTRAL = 'NEUTRAL',
+  SATISFIED = 'SATISFIED',
+  EXCITED = 'EXCITED',
+}
+
+export enum GoalStatus {
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  PAUSED = 'PAUSED',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum Theme {
   LIGHT = 'LIGHT',
   DARK = 'DARK',
@@ -116,6 +137,56 @@ export interface LocalUserData extends LocalUser {
   stats: UserStats
 }
 
+// Logbook types
+export interface LogbookEntry {
+  id: string
+  userId: string
+  timestamp: string // ISO date string
+  duration: number // in seconds
+  type: LogbookEntryType
+  instrument: Instrument // Required field for tracking which instrument
+  pieces: PieceReference[]
+  techniques: string[]
+  goalIds: string[] // Array of goal IDs
+  notes: string
+  mood?: Mood | null
+  tags: string[]
+  sessionId?: string | null // links to PracticeSession if auto-generated
+  metadata?: Record<string, any> | null
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+}
+
+export interface PieceReference {
+  id: string
+  title: string
+  composer?: string | null
+  section?: string | null // e.g., "Movement 1", "mm. 1-16"
+  source?: string | null // "library" or "custom"
+}
+
+export interface Goal {
+  id: string
+  userId: string
+  title: string
+  description: string
+  targetDate: string // ISO date string
+  progress: number // 0-100
+  milestones: GoalMilestone[]
+  status: GoalStatus
+  linkedEntryIds: string[] // Array of logbook entry IDs
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+  completedAt?: string | null // ISO date string
+}
+
+export interface GoalMilestone {
+  id: string
+  title: string
+  completed: boolean
+  completedAt?: string | null // ISO date string
+}
+
 // Data validation schemas using a simple validator
 export const Validators = {
   isValidInstrument: (value: any): value is Instrument => {
@@ -132,6 +203,22 @@ export const Validators = {
 
   isValidTheme: (value: any): value is Theme => {
     return Object.values(Theme).includes(value)
+  },
+
+  isValidLogbookEntryType: (value: any): value is LogbookEntryType => {
+    return Object.values(LogbookEntryType).includes(value)
+  },
+
+  isValidMood: (value: any): value is Mood => {
+    return Object.values(Mood).includes(value)
+  },
+
+  isValidGoalStatus: (value: any): value is GoalStatus => {
+    return Object.values(GoalStatus).includes(value)
+  },
+
+  isValidProgress: (value: any): boolean => {
+    return typeof value === 'number' && value >= 0 && value <= 100
   },
 
   isValidSelfRating: (value: any): boolean => {

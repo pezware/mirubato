@@ -406,11 +406,25 @@ interface Goal {
    - ✅ Implemented proper user context integration
    - ✅ Updated tests to work with module-based approach
 
-### 🚧 Next Steps
+### 🚧 Current Progress
 
 **Phase 2: Backend Support**
 
-- GraphQL schema for LogbookEntry and Goal types
-- Database migrations for logbook tables
-- CRUD operations for entries and goals
-- Query filtering and pagination
+- ✅ GraphQL schema for LogbookEntry and Goal types
+- ✅ Database migrations for logbook tables (0006_create_logbook_entries.sql, 0007_create_goals.sql, 0008_add_instrument_to_logbook.sql)
+- ✅ Multi-instrument support added (Piano and Classical Guitar)
+- ✅ CRUD operations for entries and goals (resolvers implemented)
+- ✅ Query filtering and pagination (basic implementation complete)
+- ✅ Field resolvers for nested types (LogbookEntry.goals, LogbookEntry.session, Goal.linkedEntries)
+- ✅ Authentication required for all GraphQL operations (anonymous users use localStorage)
+- 🚧 Integration tests for GraphQL resolvers
+- 🚧 Frontend GraphQL integration for authenticated users
+
+**Additional Features Completed**
+
+- ✅ Multi-instrument tracking in logbook entries
+- ✅ Instrument selection in manual entry form
+- ✅ Instrument display in entry list
+- ✅ Instrument filtering in logbook page
+- ✅ Practice statistics by instrument
+- ✅ CSV export includes instrument information

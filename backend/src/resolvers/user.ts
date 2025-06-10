@@ -12,12 +12,14 @@ const Query: Partial<QueryResolvers> = {
     }
 
     const userService = new UserService(context.env.DB)
-    return userService.getUserById(context.user.id)
+    const user = await userService.getUserById(context.user.id)
+    return user as any // Cast to GraphQL User type
   },
 
   user: async (_parent, { id }, context) => {
     const userService = new UserService(context.env.DB)
-    return userService.getUserById(id)
+    const user = await userService.getUserById(id)
+    return user as any // Cast to GraphQL User type
   },
 }
 
@@ -28,7 +30,8 @@ const Mutation: Partial<MutationResolvers> = {
     }
 
     const userService = new UserService(context.env.DB)
-    return userService.updateUser(context.user.id, input)
+    const user = await userService.updateUser(context.user.id, input)
+    return user as any // Cast to GraphQL User type
   },
 
   deleteAccount: async (_parent, _args, context) => {

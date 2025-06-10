@@ -3,6 +3,7 @@ import ManualEntryForm from '../components/ManualEntryForm'
 import LogbookEntryList from '../components/LogbookEntryList'
 import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 import { useModules } from '../contexts/ModulesContext'
 import { useAuth } from '../hooks/useAuth'
 
@@ -14,6 +15,9 @@ const Logbook: React.FC = () => {
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedInstrument, setSelectedInstrument] = useState<
+    'ALL' | Instrument
+  >('ALL')
 
   // Load entries from PracticeLoggerModule
   useEffect(() => {
@@ -24,7 +28,11 @@ const Logbook: React.FC = () => {
     const loadEntries = async () => {
       try {
         setIsLoading(true)
-        const filters = user?.id ? { userId: user.id } : {}
+        const filters: Parameters<typeof practiceLogger.getLogEntries>[0] =
+          user?.id ? { userId: user.id } : {}
+        if (selectedInstrument !== 'ALL') {
+          filters.instrument = [selectedInstrument]
+        }
         const loadedEntries = await practiceLogger.getLogEntries(filters)
         setEntries(loadedEntries)
       } catch (error) {
@@ -35,10 +43,10 @@ const Logbook: React.FC = () => {
     }
 
     loadEntries()
-  }, [isInitialized, practiceLogger, user])
+  }, [isInitialized, practiceLogger, user, selectedInstrument])
 
   const handleSaveEntry = async (
-    entry: Omit<LogbookEntry, 'id' | 'userId'>
+    entry: Omit<LogbookEntry, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
   ) => {
     if (!practiceLogger) {
       console.error('PracticeLogger not initialized')
@@ -88,9 +96,9 @@ const Logbook: React.FC = () => {
     const totalMinutes = Math.floor((totalSeconds % 3600) / 60)
 
     // Calculate sessions this week
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     const sessionsThisWeek = entries.filter(
-      entry => entry.timestamp >= oneWeekAgo
+      entry => new Date(entry.timestamp) >= oneWeekAgo
     ).length
 
     // Calculate streak (consecutive days)
@@ -173,6 +181,40 @@ const Logbook: React.FC = () => {
               ⚙️ Filters
             </button>
           </div>
+        </div>
+
+        {/* Instrument Filter */}
+        <div className="mb-6 flex gap-2">
+          <button
+            onClick={() => setSelectedInstrument('ALL')}
+            className={`px-4 py-2 rounded-lg border transition-colors ${
+              selectedInstrument === 'ALL'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            All Instruments
+          </button>
+          <button
+            onClick={() => setSelectedInstrument(Instrument.PIANO)}
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+              selectedInstrument === Instrument.PIANO
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            🎹 Piano
+          </button>
+          <button
+            onClick={() => setSelectedInstrument(Instrument.GUITAR)}
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+              selectedInstrument === Instrument.GUITAR
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            🎸 Classical Guitar
+          </button>
         </div>
 
         {/* Loading State */}

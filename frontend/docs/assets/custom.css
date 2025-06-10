@@ -1,0 +1,128 @@
+/* Custom CSS for Mirubato TypeDoc Documentation */
+
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-background: #ffffff;
+  --color-code-background: #f8fafc;
+  --color-text: #1f2937;
+  --color-text-aside: #6b7280;
+}
+
+/* Improved header styling */
+.tsd-page-title {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary-light);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Better code blocks */
+.tsd-code-line {
+  background-color: var(--color-code-background);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Improve navigation */
+.tsd-navigation a {
+  transition: color 0.2s ease;
+}
+
+.tsd-navigation a:hover {
+  color: var(--color-primary);
+}
+
+/* Better parameter documentation */
+.tsd-parameters {
+  background-color: var(--color-code-background);
+  border-left: 4px solid var(--color-primary);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+/* Improve signature styling */
+.tsd-signatures {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.tsd-signature {
+  background-color: var(--color-code-background);
+  padding: 1rem;
+}
+
+/* Better example blocks */
+.tsd-comment code {
+  background-color: var(--color-code-background);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Category badges */
+.tsd-kind-icon::before {
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Module-specific colors */
+.tsd-kind-module.tsd-parent-kind-module .tsd-kind-icon::before {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Component styling */
+.tsd-kind-variable.tsd-has-type-parameter .tsd-kind-icon::before {
+  background-color: #10b981;
+  color: white;
+}
+
+/* Class styling */
+.tsd-kind-class .tsd-kind-icon::before {
+  background-color: #f59e0b;
+  color: white;
+}
+
+/* Interface styling */
+.tsd-kind-interface .tsd-kind-icon::before {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+/* Type alias styling */
+.tsd-kind-type-alias .tsd-kind-icon::before {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .tsd-page-title {
+    font-size: 1.5rem;
+  }
+
+  .tsd-signature {
+    padding: 0.75rem;
+  }
+
+  .tsd-parameters {
+    padding: 0.75rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1f2937;
+    --color-code-background: #374151;
+    --color-text: #f9fafb;
+    --color-text-aside: #d1d5db;
+  }
+
+  .tsd-page-title {
+    color: var(--color-primary-light);
+  }
+}

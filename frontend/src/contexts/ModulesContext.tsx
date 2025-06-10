@@ -8,6 +8,7 @@ import React, {
 import { EventBus } from '../modules/core/EventBus'
 import { EventDrivenStorage } from '../modules/core/eventDrivenStorage'
 import { PracticeLoggerModule } from '../modules/logger'
+import { Mood } from '../modules/logger/types'
 import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { logger } from '../utils/logger'
 
@@ -55,7 +56,7 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
             autoSaveInterval: 30000,
             maxEntriesPerPage: 50,
             enableAutoTagging: true,
-            defaultMood: 'neutral',
+            defaultMood: Mood.NEUTRAL,
           },
           storageRef.current
         )

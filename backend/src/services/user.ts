@@ -1,7 +1,8 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import { nanoid } from 'nanoid'
 import type { User, UserPreferences, UserStats } from '../types/shared'
-import type { UpdateUserInput, Instrument } from '../types/generated/graphql'
+import { Instrument, Theme, NotationSize } from '../types/shared'
+import type { UpdateUserInput } from '../types/generated/graphql'
 
 export class UserService {
   constructor(private db: D1Database) {}
@@ -80,7 +81,7 @@ export class UserService {
       id,
       email: data.email,
       displayName: data.displayName,
-      primaryInstrument: 'PIANO',
+      primaryInstrument: Instrument.PIANO,
       preferences,
       stats: this.getDefaultStats(),
       createdAt: now,
@@ -189,7 +190,7 @@ export class UserService {
       id: dbRow.id as string,
       email: dbRow.email as string,
       displayName: dbRow.display_name as string | undefined,
-      primaryInstrument: dbRow.primary_instrument as Instrument,
+      primaryInstrument: dbRow.primary_instrument as any,
       preferences,
       stats: this.getDefaultStats(), // Stats are loaded separately
       createdAt: dbRow.created_at as string,
@@ -199,8 +200,8 @@ export class UserService {
 
   private getDefaultPreferences(): UserPreferences {
     return {
-      theme: 'LIGHT',
-      notationSize: 'MEDIUM',
+      theme: Theme.LIGHT,
+      notationSize: NotationSize.MEDIUM,
       practiceReminders: true,
       dailyGoalMinutes: 30,
     }

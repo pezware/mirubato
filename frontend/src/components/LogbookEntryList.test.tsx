@@ -1,52 +1,66 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import LogbookEntryList from './LogbookEntryList'
 import type { LogbookEntry } from '../modules/logger/types'
+import { LogbookEntryType, Mood, Instrument } from '../modules/logger/types'
 
 describe('LogbookEntryList', () => {
   const mockEntries: LogbookEntry[] = [
     {
       id: '1',
       userId: 'user1',
-      timestamp: new Date('2024-01-15T10:00:00').getTime(),
+      timestamp: '2024-01-15T10:00:00.000Z',
       duration: 2700, // 45 minutes
-      type: 'practice',
+      type: LogbookEntryType.PRACTICE,
+      instrument: Instrument.PIANO,
       pieces: [
         { id: 'p1', title: 'Moonlight Sonata', composer: 'Beethoven' },
         { id: 'p2', title: 'Clair de Lune', composer: 'Debussy' },
       ],
       techniques: ['Scales', 'Dynamics'],
-      goals: [],
+      goalIds: [],
       notes: 'Focused on dynamics in the opening passages',
-      mood: 'satisfied',
+      mood: Mood.SATISFIED,
       tags: ['beethoven', 'dynamics'],
+      sessionId: null,
       metadata: { source: 'manual' },
+      createdAt: '2024-01-15T10:00:00.000Z',
+      updatedAt: '2024-01-15T10:00:00.000Z',
     },
     {
       id: '2',
       userId: 'user1',
-      timestamp: new Date('2024-01-15T14:30:00').getTime(),
+      timestamp: '2024-01-15T14:30:00.000Z',
       duration: 3600, // 60 minutes
-      type: 'lesson',
+      type: LogbookEntryType.LESSON,
+      instrument: Instrument.PIANO,
       pieces: [{ id: 'p3', title: 'Chopin Etude Op.10 No.3' }],
       techniques: ['Phrasing', 'Pedaling'],
-      goals: ['g1'],
+      goalIds: ['g1'],
       notes: 'Teacher suggested new fingering',
-      mood: 'excited',
+      mood: Mood.EXCITED,
       tags: ['lesson', 'chopin'],
+      sessionId: null,
+      metadata: null,
+      createdAt: '2024-01-15T14:30:00.000Z',
+      updatedAt: '2024-01-15T14:30:00.000Z',
     },
     {
       id: '3',
       userId: 'user1',
-      timestamp: new Date('2024-01-14T18:00:00').getTime(),
+      timestamp: '2024-01-14T18:00:00.000Z',
       duration: 1800, // 30 minutes
-      type: 'performance',
+      type: LogbookEntryType.PERFORMANCE,
+      instrument: Instrument.GUITAR,
       pieces: [{ id: 'p4', title: 'Asturias', composer: 'Albéniz' }],
       techniques: [],
-      goals: [],
+      goalIds: [],
       notes: 'Small venue performance',
-      mood: 'neutral',
+      mood: Mood.NEUTRAL,
       tags: ['performance', 'spanish'],
+      sessionId: null,
       metadata: { source: 'automatic', accuracy: 0.92 },
+      createdAt: '2024-01-14T18:00:00.000Z',
+      updatedAt: '2024-01-14T18:00:00.000Z',
     },
   ]
 
@@ -63,6 +77,10 @@ describe('LogbookEntryList', () => {
     // Check date headers
     expect(screen.getByText(/Monday, January 15, 2024/)).toBeInTheDocument()
     expect(screen.getByText(/Sunday, January 14, 2024/)).toBeInTheDocument()
+
+    // Check session counts
+    expect(screen.getByText('2 sessions • 1h 45min')).toBeInTheDocument() // Monday
+    expect(screen.getByText('1 session • 30 min')).toBeInTheDocument() // Sunday
   })
 
   it('displays entry details correctly', () => {
@@ -89,7 +107,7 @@ describe('LogbookEntryList', () => {
   it('shows correct icons for different entry types', () => {
     render(<LogbookEntryList entries={mockEntries} />)
 
-    expect(screen.getByText('🎹')).toBeInTheDocument() // practice
+    expect(screen.getByText('🎵')).toBeInTheDocument() // practice
     expect(screen.getByText('📚')).toBeInTheDocument() // lesson
     expect(screen.getByText('🎭')).toBeInTheDocument() // performance
   })
@@ -147,7 +165,10 @@ describe('LogbookEntryList', () => {
 
   it('filters entries by type', () => {
     render(
-      <LogbookEntryList entries={mockEntries} filters={{ type: 'practice' }} />
+      <LogbookEntryList
+        entries={mockEntries}
+        filters={{ type: LogbookEntryType.PRACTICE }}
+      />
     )
 
     // Check for practice entry
@@ -159,7 +180,10 @@ describe('LogbookEntryList', () => {
 
   it('filters entries by mood', () => {
     render(
-      <LogbookEntryList entries={mockEntries} filters={{ mood: 'excited' }} />
+      <LogbookEntryList
+        entries={mockEntries}
+        filters={{ mood: Mood.EXCITED }}
+      />
     )
 
     expect(screen.getByText('Chopin Etude Op.10 No.3')).toBeInTheDocument()
@@ -235,5 +259,59 @@ describe('LogbookEntryList', () => {
     render(<LogbookEntryList entries={[longEntry]} />)
 
     expect(screen.getByText('2h 0min')).toBeInTheDocument()
+  })
+
+  it('supports collapsing and expanding date groups', () => {
+    render(<LogbookEntryList entries={mockEntries} />)
+
+    // Initially all groups should be expanded
+    expect(
+      screen.getByText('Moonlight Sonata, Clair de Lune')
+    ).toBeInTheDocument()
+
+    // Click on the Monday header to collapse it
+    const mondayHeader = screen
+      .getByText(/Monday, January 15, 2024/)
+      .closest('div')?.parentElement
+    fireEvent.click(mondayHeader!)
+
+    // Monday entries should be hidden
+    expect(
+      screen.queryByText('Moonlight Sonata, Clair de Lune')
+    ).not.toBeInTheDocument()
+
+    // But Sunday entries should still be visible
+    expect(screen.getByText('Asturias')).toBeInTheDocument()
+
+    // Click again to expand
+    fireEvent.click(mondayHeader!)
+    expect(
+      screen.getByText('Moonlight Sonata, Clair de Lune')
+    ).toBeInTheDocument()
+  })
+
+  it('shows expand/collapse all buttons when multiple dates exist', () => {
+    render(<LogbookEntryList entries={mockEntries} />)
+
+    expect(screen.getByText('Expand All')).toBeInTheDocument()
+    expect(screen.getByText('Collapse All')).toBeInTheDocument()
+
+    // Click Collapse All
+    fireEvent.click(screen.getByText('Collapse All'))
+
+    // All entries should be hidden
+    expect(
+      screen.queryByText('Moonlight Sonata, Clair de Lune')
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Asturias')).not.toBeInTheDocument()
+
+    // Click Expand All
+    fireEvent.click(screen.getByText('Expand All'))
+
+    // All entries should be visible again
+    expect(
+      screen.getByText('Moonlight Sonata, Clair de Lune')
+    ).toBeInTheDocument()
+    expect(screen.getByText('Asturias')).toBeInTheDocument()
   })
 })

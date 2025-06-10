@@ -16,6 +16,7 @@ import type {
   PieceReference,
   PracticeSessionData,
 } from './types'
+import { GoalStatus, Mood, LogbookEntryType, Instrument } from './types'
 
 export class PracticeLoggerModule implements ModuleInterface {
   public readonly name = 'PracticeLoggerModule'
@@ -31,7 +32,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     autoSaveInterval: 30000, // 30 seconds
     maxEntriesPerPage: 50,
     enableAutoTagging: true,
-    defaultMood: 'neutral',
+    defaultMood: Mood.NEUTRAL,
   }
 
   constructor(config?: LoggerConfig, storage?: EventDrivenStorage) {
@@ -97,12 +98,17 @@ export class PracticeLoggerModule implements ModuleInterface {
 
   // Logbook Entry Management
 
-  async createLogEntry(entry: Omit<LogbookEntry, 'id'>): Promise<LogbookEntry> {
+  async createLogEntry(
+    entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<LogbookEntry> {
     this.validateEntry(entry)
 
+    const now = new Date().toISOString()
     const newEntry: LogbookEntry = {
       ...entry,
       id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now,
     }
 
     await this.storage.write(`logbook:${newEntry.id}`, newEntry)
@@ -201,10 +207,16 @@ export class PracticeLoggerModule implements ModuleInterface {
         (e: LogbookEntry) => e.mood && filters.mood!.includes(e.mood)
       )
     }
+    if (filters.instrument?.length) {
+      entries = entries.filter((e: LogbookEntry) =>
+        filters.instrument!.includes(e.instrument)
+      )
+    }
 
-    // Sort by timestamp (most recent first)
+    // Sort by timestamp (most recent first) - compare ISO strings
     entries.sort(
-      (a: LogbookEntry, b: LogbookEntry) => b.timestamp - a.timestamp
+      (a: LogbookEntry, b: LogbookEntry) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )
 
     // Apply pagination
@@ -218,7 +230,7 @@ export class PracticeLoggerModule implements ModuleInterface {
   async createGoal(
     goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<Goal> {
-    const now = Date.now()
+    const now = new Date().toISOString()
     const newGoal: Goal = {
       ...goal,
       id: `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -247,13 +259,13 @@ export class PracticeLoggerModule implements ModuleInterface {
     const updatedGoal: Goal = {
       ...goal,
       progress: Math.min(100, Math.max(0, progress)),
-      updatedAt: Date.now(),
+      updatedAt: new Date().toISOString(),
     }
 
     // Mark as completed if progress reaches 100
-    if (updatedGoal.progress === 100 && goal.status === 'active') {
-      updatedGoal.status = 'completed'
-      updatedGoal.completedAt = Date.now()
+    if (updatedGoal.progress === 100 && goal.status === GoalStatus.ACTIVE) {
+      updatedGoal.status = GoalStatus.COMPLETED
+      updatedGoal.completedAt = new Date().toISOString()
     }
 
     await this.storage.write(`goal:${goalId}`, updatedGoal)
@@ -265,7 +277,10 @@ export class PracticeLoggerModule implements ModuleInterface {
       metadata: { version: this.version },
     })
 
-    if (updatedGoal.status === 'completed' && goal.status !== 'completed') {
+    if (
+      updatedGoal.status === GoalStatus.COMPLETED &&
+      goal.status !== GoalStatus.COMPLETED
+    ) {
       await this.eventBus.publish({
         source: this.name,
         type: 'logger:goal:completed',
@@ -291,10 +306,14 @@ export class PracticeLoggerModule implements ModuleInterface {
       ...goal,
       milestones: goal.milestones.map((m: GoalMilestone) =>
         m.id === milestoneId
-          ? { ...m, completed, completedAt: completed ? Date.now() : undefined }
+          ? {
+              ...m,
+              completed,
+              completedAt: completed ? new Date().toISOString() : null,
+            }
           : m
       ),
-      updatedAt: Date.now(),
+      updatedAt: new Date().toISOString(),
     }
 
     await this.storage.write(`goal:${goalId}`, updatedGoal)
@@ -310,8 +329,8 @@ export class PracticeLoggerModule implements ModuleInterface {
 
     const updatedGoal: Goal = {
       ...goal,
-      linkedEntries: [...new Set([...goal.linkedEntries, entryId])],
-      updatedAt: Date.now(),
+      linkedEntryIds: [...new Set([...goal.linkedEntryIds, entryId])],
+      updatedAt: new Date().toISOString(),
     }
 
     await this.storage.write(`goal:${goalId}`, updatedGoal)
@@ -329,9 +348,12 @@ export class PracticeLoggerModule implements ModuleInterface {
     return loadedGoals
       .filter(
         (g): g is Goal =>
-          g !== null && g.userId === userId && g.status === 'active'
+          g !== null && g.userId === userId && g.status === GoalStatus.ACTIVE
       )
-      .sort((a: Goal, b: Goal) => b.createdAt - a.createdAt)
+      .sort(
+        (a: Goal, b: Goal) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
   }
 
   // Export Functionality
@@ -376,8 +398,8 @@ export class PracticeLoggerModule implements ModuleInterface {
   }
 
   async generatePracticeReport(timeRange: {
-    startDate: number
-    endDate: number
+    startDate: string
+    endDate: string
   }): Promise<PracticeReport> {
     const entries = await this.getLogEntries({
       startDate: timeRange.startDate,
@@ -394,6 +416,8 @@ export class PracticeLoggerModule implements ModuleInterface {
         ? entries.reduce((sum, e) => sum + e.duration, 0) / entries.length
         : 0,
       entriesByType: this.countByType(entries),
+      entriesByInstrument: this.countByInstrument(entries),
+      durationByInstrument: this.countDurationByInstrument(entries),
       topPieces: this.getTopPieces(entries),
       goalProgress: [], // Would need to fetch and calculate
       moodDistribution: this.countMoods(entries),
@@ -428,14 +452,15 @@ export class PracticeLoggerModule implements ModuleInterface {
     const data = event.data as { session?: PracticeSessionData }
     if (data?.session) {
       const session = data.session
-      const entry: Omit<LogbookEntry, 'id'> = {
+      const entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> = {
         userId: session.userId,
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
         duration: session.duration,
-        type: 'practice',
+        type: LogbookEntryType.PRACTICE,
+        instrument: session.instrument || Instrument.PIANO, // Use session instrument or default to piano
         pieces: session.pieces || [],
         techniques: [],
-        goals: [],
+        goalIds: [],
         notes: '',
         mood: this.config.defaultMood,
         tags: this.config.enableAutoTagging
@@ -455,7 +480,7 @@ export class PracticeLoggerModule implements ModuleInterface {
     if (data?.linkedGoals) {
       for (const goalId of data.linkedGoals) {
         const goal = await this.storage.read<Goal>(`goal:${goalId}`)
-        if (goal && goal.status === 'active') {
+        if (goal && goal.status === GoalStatus.ACTIVE) {
           // Increment progress based on milestone importance
           const progressIncrement = 100 / (goal.milestones.length || 1)
           await this.updateGoalProgress(
@@ -467,7 +492,9 @@ export class PracticeLoggerModule implements ModuleInterface {
     }
   }
 
-  private validateEntry(entry: Omit<LogbookEntry, 'id'>): void {
+  private validateEntry(
+    entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'>
+  ): void {
     if (entry.duration < 0) {
       throw new Error('Invalid duration')
     }
@@ -476,6 +503,9 @@ export class PracticeLoggerModule implements ModuleInterface {
     }
     if (!entry.type) {
       throw new Error('Entry type is required')
+    }
+    if (!entry.instrument) {
+      throw new Error('Instrument is required')
     }
   }
 
@@ -510,6 +540,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       'Date',
       'Duration',
       'Type',
+      'Instrument',
       'Pieces',
       'Techniques',
       'Mood',
@@ -519,6 +550,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       new Date(e.timestamp).toISOString(),
       `${Math.round(e.duration / 60)}`,
       e.type,
+      e.instrument,
       e.pieces.map((p: PieceReference) => p.title).join('; '),
       e.techniques.join('; '),
       e.mood || '',
@@ -546,6 +578,30 @@ export class PracticeLoggerModule implements ModuleInterface {
         return acc
       },
       {} as Record<LogbookEntry['type'], number>
+    )
+  }
+
+  private countByInstrument(
+    entries: LogbookEntry[]
+  ): Record<LogbookEntry['instrument'], number> {
+    return entries.reduce(
+      (acc: Record<LogbookEntry['instrument'], number>, e: LogbookEntry) => {
+        acc[e.instrument] = (acc[e.instrument] || 0) + 1
+        return acc
+      },
+      {} as Record<LogbookEntry['instrument'], number>
+    )
+  }
+
+  private countDurationByInstrument(
+    entries: LogbookEntry[]
+  ): Record<LogbookEntry['instrument'], number> {
+    return entries.reduce(
+      (acc: Record<LogbookEntry['instrument'], number>, e: LogbookEntry) => {
+        acc[e.instrument] = (acc[e.instrument] || 0) + e.duration
+        return acc
+      },
+      {} as Record<LogbookEntry['instrument'], number>
     )
   }
 
@@ -601,7 +657,10 @@ export class PracticeLoggerModule implements ModuleInterface {
   private calculateStreak(entries: LogbookEntry[]): number {
     if (entries.length === 0) return 0
 
-    const sortedEntries = [...entries].sort((a, b) => b.timestamp - a.timestamp)
+    const sortedEntries = [...entries].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
     const today = new Date().setHours(0, 0, 0, 0)
     let streak = 0
     let currentDate = today
