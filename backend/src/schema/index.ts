@@ -174,6 +174,85 @@ enum ActivityType {
   OTHER
 }
 
+# Logbook Enums
+enum LogbookEntryType {
+  PRACTICE
+  PERFORMANCE
+  LESSON
+  REHEARSAL
+}
+
+enum Mood {
+  FRUSTRATED
+  NEUTRAL
+  SATISFIED
+  EXCITED
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+# Logbook Types
+type LogbookEntry {
+  id: ID!
+  user: User!
+  timestamp: DateTime!
+  duration: Int!
+  type: LogbookEntryType!
+  instrument: Instrument!
+  pieces: [PieceReference!]!
+  techniques: [String!]!
+  goalIds: [ID!]!
+  notes: String
+  mood: Mood
+  tags: [String!]!
+  sessionId: ID
+  metadata: LogbookMetadata
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type LogbookMetadata {
+  source: String!
+  accuracy: Float
+  notesPlayed: Int
+  mistakeCount: Int
+}
+
+type PieceReference {
+  id: ID!
+  title: String!
+  composer: String
+  measures: String
+  tempo: Int
+}
+
+type Goal {
+  id: ID!
+  user: User!
+  title: String!
+  description: String
+  targetDate: DateTime
+  progress: Float!
+  milestones: [GoalMilestone!]!
+  status: GoalStatus!
+  linkedEntries: [ID!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  completedAt: DateTime
+}
+
+type GoalMilestone {
+  id: ID!
+  title: String!
+  completed: Boolean!
+  completedAt: DateTime
+}
+
 # Input Types
 input UserPreferencesInput {
   theme: Theme
@@ -224,6 +303,82 @@ input CreatePracticeLogInput {
   notes: String
 }
 
+# Logbook Input Types
+input CreateLogbookEntryInput {
+  timestamp: DateTime!
+  duration: Int!
+  type: LogbookEntryType!
+  instrument: Instrument!
+  pieces: [PieceReferenceInput!]!
+  techniques: [String!]
+  goalIds: [ID!]
+  notes: String
+  mood: Mood
+  tags: [String!]
+  sessionId: ID
+  metadata: LogbookMetadataInput
+}
+
+input UpdateLogbookEntryInput {
+  timestamp: DateTime
+  duration: Int
+  type: LogbookEntryType
+  instrument: Instrument
+  pieces: [PieceReferenceInput!]
+  techniques: [String!]
+  goalIds: [ID!]
+  notes: String
+  mood: Mood
+  tags: [String!]
+}
+
+input PieceReferenceInput {
+  id: ID!
+  title: String!
+  composer: String
+  measures: String
+  tempo: Int
+}
+
+input LogbookMetadataInput {
+  source: String!
+  accuracy: Float
+  notesPlayed: Int
+  mistakeCount: Int
+}
+
+input LogbookFilterInput {
+  userId: ID
+  type: [LogbookEntryType!]
+  instrument: Instrument
+  startDate: DateTime
+  endDate: DateTime
+  mood: [Mood!]
+  tags: [String!]
+  search: String
+}
+
+input CreateGoalInput {
+  title: String!
+  description: String
+  targetDate: DateTime
+  milestones: [GoalMilestoneInput!]
+}
+
+input UpdateGoalInput {
+  title: String
+  description: String
+  targetDate: DateTime
+  progress: Float
+  status: GoalStatus
+}
+
+input GoalMilestoneInput {
+  id: ID
+  title: String!
+  completed: Boolean
+}
+
 # Queries
 type Query {
   # User queries
@@ -250,6 +405,22 @@ type Query {
     offset: Int
     limit: Int
   ): PracticeSessionConnection!
+
+  # Logbook queries
+  logbookEntry(id: ID!): LogbookEntry
+  myLogbookEntries(
+    filter: LogbookFilterInput
+    offset: Int
+    limit: Int
+  ): LogbookEntryConnection!
+  
+  # Goal queries
+  goal(id: ID!): Goal
+  myGoals(
+    status: GoalStatus
+    offset: Int
+    limit: Int
+  ): GoalConnection!
 }
 
 # Mutations
@@ -272,6 +443,18 @@ type Mutation {
   
   # Practice log mutations
   createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
+  
+  # Logbook mutations
+  createLogbookEntry(input: CreateLogbookEntryInput!): LogbookEntry!
+  updateLogbookEntry(id: ID!, input: UpdateLogbookEntryInput!): LogbookEntry!
+  deleteLogbookEntry(id: ID!): Boolean!
+  
+  # Goal mutations
+  createGoal(input: CreateGoalInput!): Goal!
+  updateGoal(id: ID!, input: UpdateGoalInput!): Goal!
+  updateGoalMilestone(goalId: ID!, milestoneId: ID!, completed: Boolean!): Goal!
+  deleteGoal(id: ID!): Boolean!
+  linkEntryToGoal(entryId: ID!, goalId: ID!): Goal!
 }
 
 # Connection types for pagination
@@ -302,5 +485,28 @@ type PageInfo {
   hasPreviousPage: Boolean!
   startCursor: String
   endCursor: String
+}
+
+# Logbook Connection Types
+type LogbookEntryConnection {
+  edges: [LogbookEntryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type LogbookEntryEdge {
+  node: LogbookEntry!
+  cursor: String!
+}
+
+type GoalConnection {
+  edges: [GoalEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type GoalEdge {
+  node: Goal!
+  cursor: String!
 }
 `
