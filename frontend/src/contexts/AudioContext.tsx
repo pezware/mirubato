@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useMemo, ReactNode } from 'react'
-import { AudioManagerInterface } from '../utils/audioManagerInterface'
-import { createAudioManager } from '../utils/audioManager'
+import { MultiVoiceAudioManagerInterface } from '../utils/multiVoiceAudioManagerInterface'
+import { createMultiVoiceAudioManager } from '../utils/multiVoiceAudioManager'
 
 interface AudioContextValue {
-  audioManager: AudioManagerInterface
+  audioManager: MultiVoiceAudioManagerInterface
 }
 
 const AudioContext = createContext<AudioContextValue | undefined>(undefined)
 
 interface AudioProviderProps {
   children: ReactNode
-  audioManager?: AudioManagerInterface
+  audioManager?: MultiVoiceAudioManagerInterface
 }
 
 /**
@@ -23,7 +23,7 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({
   audioManager: providedAudioManager,
 }) => {
   const audioManager = useMemo(
-    () => providedAudioManager || createAudioManager(),
+    () => providedAudioManager || createMultiVoiceAudioManager(),
     [providedAudioManager]
   )
 
@@ -37,7 +37,7 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({
  * @returns The audio manager instance
  * @throws Error if used outside of AudioProvider
  */
-export const useAudioManager = (): AudioManagerInterface => {
+export const useAudioManager = (): MultiVoiceAudioManagerInterface => {
   const context = useContext(AudioContext)
   if (!context) {
     throw new Error('useAudioManager must be used within an AudioProvider')

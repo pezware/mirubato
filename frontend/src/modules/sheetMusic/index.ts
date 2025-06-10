@@ -13,7 +13,7 @@
  * @module sheetMusic
  */
 
-export { SheetMusicLibraryModule } from './SheetMusicLibraryModule'
+export { SheetMusicLibraryModuleMultiVoice } from './SheetMusicLibraryModuleMultiVoice'
 
 // Export all types
 export * from './types'

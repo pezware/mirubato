@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { audioManager } from '../utils/audioManager'
+import { useAudioManager } from '../contexts/AudioContext'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('PianoKey')
@@ -13,6 +13,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
   const [isPressed, setIsPressed] = useState(false)
   const [hasPlayed, setHasPlayed] = useState(false)
   const [isInitializing, setIsInitializing] = useState(false)
+  const audioManager = useAudioManager()
 
   const handleKeyPress = useCallback(async () => {
     logger.debug('Piano key clicked', { note })
@@ -45,7 +46,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
     } finally {
       setIsInitializing(false)
     }
-  }, [note, hasPlayed])
+  }, [note, hasPlayed, audioManager])
 
   return (
     <div className="flex flex-col items-center">

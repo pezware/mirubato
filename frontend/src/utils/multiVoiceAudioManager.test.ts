@@ -393,7 +393,7 @@ describe('MultiVoiceAudioManager', () => {
 
       expect(noteCallback).toHaveBeenCalledWith({
         note: expect.objectContaining({
-          keys: ['c/4'],
+          keys: ['C4'], // Updated to match Tone.js format conversion
           voiceId: 'rightHand',
         }),
         time: expect.any(Number),
