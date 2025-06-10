@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Logbook from './Logbook'
 
@@ -7,25 +7,43 @@ jest.mock('../components/UserStatusIndicator', () => ({
   UserStatusIndicator: () => <div>User Status</div>,
 }))
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>)
+// Mock the PracticeLoggerModule
+const mockPracticeLogger = {
+  getLogEntries: jest.fn().mockResolvedValue([]),
+  createLogEntry: jest.fn(),
+  deleteLogEntry: jest.fn(),
 }
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  clear: jest.fn(),
+// Mock the modules context
+jest.mock('../contexts/ModulesContext', () => ({
+  useModules: () => ({
+    practiceLogger: mockPracticeLogger,
+    isInitialized: true,
+  }),
+}))
+
+// Mock auth context
+jest.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: null,
+    loading: false,
+  }),
+}))
+
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(<BrowserRouter>{component}</BrowserRouter>)
 }
-global.localStorage = localStorageMock as any
 
 describe('Logbook Page', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks()
+    // Reset mock return values
+    mockPracticeLogger.getLogEntries.mockResolvedValue([])
   })
-  it('renders the logbook header and description', () => {
-    renderWithRouter(<Logbook />)
+
+  it('renders the logbook header and description', async () => {
+    renderWithProviders(<Logbook />)
 
     expect(screen.getByText('📚 Practice Logbook')).toBeInTheDocument()
     expect(
@@ -35,10 +53,12 @@ describe('Logbook Page', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows empty state when no entries exist', () => {
-    renderWithRouter(<Logbook />)
+  it('shows empty state when no entries exist', async () => {
+    renderWithProviders(<Logbook />)
 
-    expect(screen.getByText('No practice entries yet')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('No practice entries yet')).toBeInTheDocument()
+    })
     expect(
       screen.getByText(
         'Start logging your practice sessions to track your progress and build a record of your musical journey.'
@@ -46,62 +66,76 @@ describe('Logbook Page', () => {
     ).toBeInTheDocument()
   })
 
-  it('displays the new entry button', () => {
-    renderWithRouter(<Logbook />)
+  it('displays the new entry button', async () => {
+    renderWithProviders(<Logbook />)
 
-    const newEntryButtons = screen.getAllByText('+ New Entry')
-    expect(newEntryButtons).toHaveLength(1)
+    await waitFor(() => {
+      const newEntryButtons = screen.getAllByText('+ New Entry')
+      expect(newEntryButtons).toHaveLength(1)
+    })
   })
 
-  it('displays the search input field', () => {
-    renderWithRouter(<Logbook />)
+  it('displays the search input field', async () => {
+    renderWithProviders(<Logbook />)
 
-    const searchInput = screen.getByPlaceholderText('Search entries...')
-    expect(searchInput).toBeInTheDocument()
+    await waitFor(() => {
+      const searchInput = screen.getByPlaceholderText('Search entries...')
+      expect(searchInput).toBeInTheDocument()
+    })
   })
 
-  it('updates search query when typing', () => {
-    renderWithRouter(<Logbook />)
+  it('updates search query when typing', async () => {
+    renderWithProviders(<Logbook />)
 
-    const searchInput = screen.getByPlaceholderText(
-      'Search entries...'
-    ) as HTMLInputElement
-    fireEvent.change(searchInput, { target: { value: 'beethoven' } })
+    await waitFor(() => {
+      const searchInput = screen.getByPlaceholderText(
+        'Search entries...'
+      ) as HTMLInputElement
+      fireEvent.change(searchInput, { target: { value: 'beethoven' } })
 
-    expect(searchInput.value).toBe('beethoven')
+      expect(searchInput.value).toBe('beethoven')
+    })
   })
 
-  it('displays filter button', () => {
-    renderWithRouter(<Logbook />)
+  it('displays filter button', async () => {
+    renderWithProviders(<Logbook />)
 
-    expect(screen.getByText('⚙️ Filters')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('⚙️ Filters')).toBeInTheDocument()
+    })
   })
 
-  it('shows stats summary cards', () => {
-    renderWithRouter(<Logbook />)
+  it('shows stats summary cards', async () => {
+    renderWithProviders(<Logbook />)
 
-    expect(screen.getByText('Total Practice Time')).toBeInTheDocument()
-    expect(screen.getByText('Sessions This Week')).toBeInTheDocument()
-    expect(screen.getByText('Current Streak')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Total Practice Time')).toBeInTheDocument()
+      expect(screen.getByText('Sessions This Week')).toBeInTheDocument()
+      expect(screen.getByText('Current Streak')).toBeInTheDocument()
+    })
   })
 
-  it('opens new entry form modal when new entry button is clicked', () => {
-    renderWithRouter(<Logbook />)
+  it('opens new entry form modal when new entry button is clicked', async () => {
+    renderWithProviders(<Logbook />)
 
-    const newEntryButton = screen.getByText('+ New Entry')
-    fireEvent.click(newEntryButton)
+    await waitFor(() => {
+      const newEntryButton = screen.getByText('+ New Entry')
+      fireEvent.click(newEntryButton)
+    })
 
     expect(screen.getByText('✏️ New Logbook Entry')).toBeInTheDocument()
     // Check that the form is rendered by looking for form elements
     expect(screen.getByText('Entry Type')).toBeInTheDocument()
   })
 
-  it('closes new entry form modal when close button is clicked', () => {
-    renderWithRouter(<Logbook />)
+  it('closes new entry form modal when close button is clicked', async () => {
+    renderWithProviders(<Logbook />)
 
-    // Open modal
-    const newEntryButton = screen.getByText('+ New Entry')
-    fireEvent.click(newEntryButton)
+    await waitFor(() => {
+      // Open modal
+      const newEntryButton = screen.getByText('+ New Entry')
+      fireEvent.click(newEntryButton)
+    })
 
     // Close modal by clicking Cancel button
     const cancelButton = screen.getByText('Cancel')
@@ -110,11 +144,15 @@ describe('Logbook Page', () => {
     expect(screen.queryByText('✏️ New Logbook Entry')).not.toBeInTheDocument()
   })
 
-  it('opens new entry form from empty state button', () => {
-    renderWithRouter(<Logbook />)
+  it('opens new entry form from empty state button', async () => {
+    renderWithProviders(<Logbook />)
 
-    const createFirstEntryButton = screen.getByText('+ Create Your First Entry')
-    fireEvent.click(createFirstEntryButton)
+    await waitFor(() => {
+      const createFirstEntryButton = screen.getByText(
+        '+ Create Your First Entry'
+      )
+      fireEvent.click(createFirstEntryButton)
+    })
 
     expect(screen.getByText('✏️ New Logbook Entry')).toBeInTheDocument()
   })
