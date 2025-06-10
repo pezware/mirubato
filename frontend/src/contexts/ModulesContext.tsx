@@ -8,10 +8,12 @@ import React, {
 import { EventBus } from '../modules/core/EventBus'
 import { EventDrivenStorage } from '../modules/core/eventDrivenStorage'
 import { PracticeLoggerModule } from '../modules/logger'
+import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { logger } from '../utils/logger'
 
 interface ModulesContextType {
   practiceLogger: PracticeLoggerModule | null
+  storageModule: StorageModule | null
   eventBus: EventBus
   storage: EventDrivenStorage
   isInitialized: boolean
@@ -28,21 +30,24 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
 }) => {
   const [practiceLogger, setPracticeLogger] =
     useState<PracticeLoggerModule | null>(null)
+  const [storageModule, setStorageModule] = useState<StorageModule | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const eventBusRef = useRef<EventBus>(EventBus.getInstance())
   const storageRef = useRef<EventDrivenStorage>(new EventDrivenStorage())
-  const initializingRef = useRef(false)
+  const storageModuleRef = useRef<StorageModule | null>(null)
+  const practiceLoggerRef = useRef<PracticeLoggerModule | null>(null)
 
   useEffect(() => {
-    // Prevent double initialization in React strict mode
-    if (initializingRef.current) {
-      return
-    }
-    initializingRef.current = true
-
     const initializeModules = async () => {
       try {
         logger.info('Initializing app modules...')
+
+        // Initialize StorageModule first (needed by other modules)
+        const storage = new StorageModule()
+        await storage.initialize()
+        storageModuleRef.current = storage
+        setStorageModule(storage)
+        logger.info('StorageModule initialized')
 
         // Initialize PracticeLoggerModule
         const loggerModule = new PracticeLoggerModule(
@@ -56,6 +61,7 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
         )
 
         await loggerModule.initialize()
+        practiceLoggerRef.current = loggerModule
         setPracticeLogger(loggerModule)
 
         // Subscribe to module events
@@ -76,11 +82,18 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
     // Cleanup function
     return () => {
       const cleanup = async () => {
-        if (practiceLogger) {
+        if (practiceLoggerRef.current) {
           try {
-            await practiceLogger.shutdown()
+            await practiceLoggerRef.current.shutdown()
           } catch (error) {
             logger.error('Error shutting down PracticeLoggerModule', { error })
+          }
+        }
+        if (storageModuleRef.current) {
+          try {
+            await storageModuleRef.current.shutdown()
+          } catch (error) {
+            logger.error('Error shutting down StorageModule', { error })
           }
         }
       }
@@ -90,6 +103,7 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
 
   const value: ModulesContextType = {
     practiceLogger,
+    storageModule,
     eventBus: eventBusRef.current,
     storage: storageRef.current,
     isInitialized,
