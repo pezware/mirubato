@@ -7,7 +7,7 @@
 
 import { EventBus } from '../core/EventBus'
 import { EventDrivenStorage } from '../core/eventDrivenStorage'
-import { SheetMusicLibraryModule } from './SheetMusicLibraryModule'
+import type { ModuleInterface, ModuleHealth } from '../core/types'
 import {
   Score,
   Part,
@@ -121,15 +121,47 @@ export interface PolyphonicPattern {
  * Extended SheetMusicLibraryModule with multi-voice support
  */
 export class SheetMusicLibraryModuleMultiVoice
-  extends SheetMusicLibraryModule
-  implements MultiVoiceSheetMusicModuleInterface
+  implements MultiVoiceSheetMusicModuleInterface, ModuleInterface
 {
+  name = 'SheetMusicLibraryMultiVoice'
+  version = '1.0.0'
+
+  private eventBus: EventBus
+  private storage: EventDrivenStorage
+  // @ts-expect-error - config will be used in future implementations
+  private _config: SheetMusicModuleConfig
+  private _health: ModuleHealth = { status: 'green', lastCheck: Date.now() }
+
   constructor(
     eventBus: EventBus,
     storage: EventDrivenStorage,
-    config?: SheetMusicModuleConfig
+    _config?: SheetMusicModuleConfig
   ) {
-    super(eventBus, storage, config)
+    this.eventBus = eventBus
+    this.storage = storage
+    this._config = _config || {
+      maxExercisesPerUser: 100,
+      exerciseExpirationDays: 30,
+      recommendationRefreshInterval: 3600000, // 1 hour
+      enableIMSLPIntegration: false,
+      cacheExpirationMinutes: 60,
+    }
+  }
+
+  async initialize(): Promise<void> {
+    this._health = { status: 'green', lastCheck: Date.now() }
+  }
+
+  async shutdown(): Promise<void> {
+    this._health = { status: 'gray', lastCheck: Date.now() }
+  }
+
+  async destroy(): Promise<void> {
+    await this.shutdown()
+  }
+
+  getHealth(): ModuleHealth {
+    return this._health
   }
 
   // ============== Multi-Voice Score Management ==============

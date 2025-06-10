@@ -1,12 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PianoKey from './PianoKey'
-import { audioManager } from '../utils/audioManager'
-
-// Mock the audioManager
-jest.mock('../utils/audioManager', () => ({
-  audioManager: {
-    playNote: jest.fn(),
-  },
+// Mock the multiVoiceAudioManager
+const mockPlayNote = jest.fn()
+const mockDispose = jest.fn()
+jest.mock('../utils/multiVoiceAudioManager', () => ({
+  createMultiVoiceAudioManager: () => ({
+    playNote: mockPlayNote,
+    initialize: jest.fn(),
+    dispose: mockDispose,
+  }),
 }))
 
 // Mock the logger
@@ -20,10 +22,6 @@ jest.mock('../utils/logger', () => ({
 }))
 
 describe('PianoKey', () => {
-  const mockPlayNote = audioManager.playNote as jest.MockedFunction<
-    typeof audioManager.playNote
-  >
-
   beforeEach(() => {
     jest.clearAllMocks()
     // Mock console methods to reduce noise in tests
