@@ -10,6 +10,7 @@ This document outlines the implementation plan for the Logbook feature in Rubato
 2. **Local-First**: Full functionality with localStorage for anonymous users
 3. **Progressive Enhancement**: Seamless upgrade to cloud sync when users authenticate
 4. **Manual-First Implementation**: Build manual entries before auto-logging to avoid disrupting practice page
+5. **all fields are optional except for timestamp**
 
 ## Entry Types
 
@@ -18,6 +19,7 @@ This document outlines the implementation plan for the Logbook feature in Rubato
 - Created directly by users through the logbook interface
 - No `sessionId` field
 - All fields manually populated
+- For instrument, we set piano as default. guiar as an alternative option.
 - Entry types: practice, performance, lesson, rehearsal
 - **No dependency on Rubato's sheet music library**
 - Users can log any practice activity:

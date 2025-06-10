@@ -4,6 +4,7 @@
 
 import { EventBus, EventDrivenStorage } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import { Instrument } from './types'
 import type {
   LogbookEntry,
   Goal,
@@ -16,7 +17,6 @@ import type {
   PieceReference,
   PracticeSessionData,
 } from './types'
-import { Instrument } from './types'
 
 export class PracticeLoggerModule implements ModuleInterface {
   public readonly name = 'PracticeLoggerModule'
@@ -171,7 +171,9 @@ export class PracticeLoggerModule implements ModuleInterface {
       this.storage.read<LogbookEntry>(key)
     )
     const loadedEntries = await Promise.all(entryPromises)
-    let entries = loadedEntries.filter((e): e is LogbookEntry => e !== null)
+    let entries = loadedEntries
+      .filter((e): e is LogbookEntry => e !== null)
+      .map(this.sanitizeEntry)
 
     // Apply filters
     if (filters.userId) {
@@ -484,6 +486,19 @@ export class PracticeLoggerModule implements ModuleInterface {
     }
     if (!entry.type) {
       throw new Error('Entry type is required')
+    }
+  }
+
+  private sanitizeEntry(entry: LogbookEntry): LogbookEntry {
+    // Ensure all required arrays are present
+    return {
+      ...entry,
+      pieces: entry.pieces || [],
+      techniques: entry.techniques || [],
+      goals: entry.goals || [],
+      tags: entry.tags || [],
+      notes: entry.notes || '',
+      instrument: entry.instrument || Instrument.PIANO,
     }
   }
 

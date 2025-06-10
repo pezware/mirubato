@@ -27,14 +27,14 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch =
-        entry.notes.toLowerCase().includes(searchLower) ||
-        entry.pieces.some(piece =>
+        (entry.notes || '').toLowerCase().includes(searchLower) ||
+        (entry.pieces || []).some(piece =>
           piece.title.toLowerCase().includes(searchLower)
         ) ||
-        entry.techniques.some(technique =>
+        (entry.techniques || []).some(technique =>
           technique.toLowerCase().includes(searchLower)
         ) ||
-        entry.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        (entry.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
 
       if (!matchesSearch) return false
     }
@@ -197,7 +197,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       )}
                     </div>
 
-                    {entry.pieces.length > 0 && (
+                    {entry.pieces && entry.pieces.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Pieces:{' '}
@@ -208,7 +208,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.techniques.length > 0 && (
+                    {entry.techniques && entry.techniques.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Techniques:{' '}
@@ -225,7 +225,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.goals.length > 0 && (
+                    {entry.goals && entry.goals.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Goals:{' '}
@@ -236,7 +236,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.tags.length > 0 && (
+                    {entry.tags && entry.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {entry.tags.map(tag => (
                           <span
