@@ -6,6 +6,7 @@ import LandingPage from './components/LandingPage'
 import Practice from './pages/Practice'
 import AuthVerify from './pages/AuthVerify'
 import Docs from './pages/Docs'
+import Logbook from './pages/Logbook'
 import { VersionInfo } from './components/VersionInfo'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
                   element={<div>Magic Link Verification (TODO)</div>}
                 />
                 <Route path="/practice" element={<Practice />} />
+                <Route path="/logbook" element={<Logbook />} />
                 <Route
                   path="/profile"
                   element={<div>Profile Page (TODO)</div>}
