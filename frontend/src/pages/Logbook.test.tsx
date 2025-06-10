@@ -69,10 +69,9 @@ describe('Logbook Page', () => {
     const newEntryButton = screen.getByText('+ New Entry')
     fireEvent.click(newEntryButton)
 
-    expect(screen.getByText('New Logbook Entry')).toBeInTheDocument()
-    expect(
-      screen.getByText('Entry form will be implemented next')
-    ).toBeInTheDocument()
+    expect(screen.getByText('✏️ New Logbook Entry')).toBeInTheDocument()
+    // Check that the form is rendered by looking for form elements
+    expect(screen.getByText('Entry Type')).toBeInTheDocument()
   })
 
   it('closes new entry form modal when close button is clicked', () => {
@@ -82,11 +81,11 @@ describe('Logbook Page', () => {
     const newEntryButton = screen.getByText('+ New Entry')
     fireEvent.click(newEntryButton)
 
-    // Close modal
-    const closeButton = screen.getByText('Close')
-    fireEvent.click(closeButton)
+    // Close modal by clicking Cancel button
+    const cancelButton = screen.getByText('Cancel')
+    fireEvent.click(cancelButton)
 
-    expect(screen.queryByText('New Logbook Entry')).not.toBeInTheDocument()
+    expect(screen.queryByText('✏️ New Logbook Entry')).not.toBeInTheDocument()
   })
 
   it('opens new entry form from empty state button', () => {
@@ -95,6 +94,6 @@ describe('Logbook Page', () => {
     const createFirstEntryButton = screen.getByText('+ Create Your First Entry')
     fireEvent.click(createFirstEntryButton)
 
-    expect(screen.getByText('New Logbook Entry')).toBeInTheDocument()
+    expect(screen.getByText('✏️ New Logbook Entry')).toBeInTheDocument()
   })
 })

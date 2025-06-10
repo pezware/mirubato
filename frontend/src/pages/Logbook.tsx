@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import ManualEntryForm from '../components/ManualEntryForm'
+import type { LogbookEntry } from '../modules/logger/types'
 
 const Logbook: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -6,6 +8,12 @@ const Logbook: React.FC = () => {
 
   // TODO: This will be populated from PracticeLoggerModule
   const entries: unknown[] = []
+
+  const handleSaveEntry = (entry: Omit<LogbookEntry, 'id' | 'userId'>) => {
+    // TODO: Save entry using PracticeLoggerModule
+    console.log('Saving entry:', entry)
+    setShowNewEntryForm(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -113,18 +121,15 @@ const Logbook: React.FC = () => {
         </div>
       </div>
 
-      {/* TODO: Modal for new entry form */}
+      {/* Modal for new entry form */}
       {showNewEntryForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">New Logbook Entry</h2>
-            <p className="text-gray-600">Entry form will be implemented next</p>
-            <button
-              onClick={() => setShowNewEntryForm(false)}
-              className="mt-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-            >
-              Close
-            </button>
+            <h2 className="text-xl font-bold mb-4">✏️ New Logbook Entry</h2>
+            <ManualEntryForm
+              onSave={handleSaveEntry}
+              onCancel={() => setShowNewEntryForm(false)}
+            />
           </div>
         </div>
       )}
