@@ -37,6 +37,24 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({ isMobile }) => {
             >
               mirubato
             </Link>
+
+            {/* Navigation Links */}
+            {!isMobile && (
+              <nav className="flex items-center gap-6 ml-8">
+                <Link
+                  to="/practice"
+                  className="text-mirubato-wood-600 hover:text-mirubato-wood-800 font-medium transition-colors"
+                >
+                  Practice
+                </Link>
+                <Link
+                  to="/logbook"
+                  className="text-mirubato-wood-600 hover:text-mirubato-wood-800 font-medium transition-colors"
+                >
+                  Logbook
+                </Link>
+              </nav>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

@@ -1,22 +1,114 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ManualEntryForm from '../components/ManualEntryForm'
+import LogbookEntryList from '../components/LogbookEntryList'
+import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
 
+const LOGBOOK_STORAGE_KEY = 'mirubato_logbook_entries'
+
 const Logbook: React.FC = () => {
+  const isMobile = window.innerWidth < 768
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
+  const [entries, setEntries] = useState<LogbookEntry[]>([])
 
-  // TODO: This will be populated from PracticeLoggerModule
-  const entries: unknown[] = []
+  // Load entries from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedEntries = localStorage.getItem(LOGBOOK_STORAGE_KEY)
+      if (storedEntries) {
+        const parsedEntries = JSON.parse(storedEntries)
+        setEntries(parsedEntries)
+      }
+    } catch (error) {
+      console.error('Failed to load logbook entries from localStorage:', error)
+    }
+  }, [])
+
+  // Save entries to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOGBOOK_STORAGE_KEY, JSON.stringify(entries))
+    } catch (error) {
+      console.error('Failed to save logbook entries to localStorage:', error)
+    }
+  }, [entries])
 
   const handleSaveEntry = (entry: Omit<LogbookEntry, 'id' | 'userId'>) => {
     // TODO: Save entry using PracticeLoggerModule
-    console.log('Saving entry:', entry)
+    // For now, create a complete entry and add to state
+    const newEntry: LogbookEntry = {
+      ...entry,
+      id: `local-${Date.now()}`,
+      userId: 'current-user', // TODO: Get from auth context
+    }
+    setEntries([newEntry, ...entries])
     setShowNewEntryForm(false)
   }
 
+  const handleEditEntry = (entry: LogbookEntry) => {
+    // TODO: Implement edit functionality
+    console.log('Edit entry:', entry)
+  }
+
+  const handleDeleteEntry = (entryId: string) => {
+    // TODO: Delete using PracticeLoggerModule
+    setEntries(entries.filter(e => e.id !== entryId))
+  }
+
+  // Calculate stats
+  const calculateStats = () => {
+    const totalSeconds = entries.reduce((sum, entry) => sum + entry.duration, 0)
+    const totalHours = Math.floor(totalSeconds / 3600)
+    const totalMinutes = Math.floor((totalSeconds % 3600) / 60)
+
+    // Calculate sessions this week
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+    const sessionsThisWeek = entries.filter(
+      entry => entry.timestamp >= oneWeekAgo
+    ).length
+
+    // Calculate streak (consecutive days)
+    const sortedDates = entries
+      .map(entry => new Date(entry.timestamp).toDateString())
+      .filter((date, index, self) => self.indexOf(date) === index)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+
+    let streak = 0
+    const today = new Date().toDateString()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
+
+    if (sortedDates.length > 0) {
+      if (sortedDates[0] === today || sortedDates[0] === yesterday) {
+        streak = 1
+        for (let i = 1; i < sortedDates.length; i++) {
+          const currentDate = new Date(sortedDates[i])
+          const previousDate = new Date(sortedDates[i - 1])
+          const diffDays = Math.floor(
+            (previousDate.getTime() - currentDate.getTime()) /
+              (24 * 60 * 60 * 1000)
+          )
+          if (diffDays === 1) {
+            streak++
+          } else {
+            break
+          }
+        }
+      }
+    }
+
+    return {
+      totalTime: `${totalHours}h ${totalMinutes}m`,
+      sessionsThisWeek,
+      streak,
+    }
+  }
+
+  const stats = calculateStats()
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <PracticeHeader isMobile={isMobile} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -59,7 +151,7 @@ const Logbook: React.FC = () => {
         </div>
 
         {/* Entry List or Empty State */}
-        {entries.length === 0 ? (
+        {entries.length === 0 && !searchQuery ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
             <div className="text-center">
               <div className="text-6xl text-gray-400 mx-auto mb-4">🎵</div>
@@ -79,21 +171,23 @@ const Logbook: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Placeholder for LogbookEntryList component */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <p className="text-gray-600">Entry list will appear here</p>
-            </div>
-          </div>
+          <LogbookEntryList
+            entries={entries}
+            onEdit={handleEditEntry}
+            onDelete={handleDeleteEntry}
+            searchQuery={searchQuery}
+          />
         )}
 
-        {/* Stats Summary (Future Enhancement) */}
+        {/* Stats Summary */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Practice Time</p>
-                <p className="text-2xl font-bold text-gray-900">0h 0m</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.totalTime}
+                </p>
               </div>
               <div className="text-3xl text-gray-400">📅</div>
             </div>
@@ -103,7 +197,9 @@ const Logbook: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Sessions This Week</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.sessionsThisWeek}
+                </p>
               </div>
               <div className="text-3xl text-gray-400">🎵</div>
             </div>
@@ -113,7 +209,9 @@ const Logbook: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Current Streak</p>
-                <p className="text-2xl font-bold text-gray-900">0 days</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.streak} {stats.streak === 1 ? 'day' : 'days'}
+                </p>
               </div>
               <div className="text-2xl">🔥</div>
             </div>

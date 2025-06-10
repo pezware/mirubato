@@ -39,3 +39,7 @@ export type {
 
 export { MultiVoicePracticeView } from './MultiVoicePracticeView'
 export type { MultiVoicePracticeViewProps } from './MultiVoicePracticeView'
+
+// Logbook Components
+export { default as ManualEntryForm } from './ManualEntryForm'
+export { default as LogbookEntryList } from './LogbookEntryList'

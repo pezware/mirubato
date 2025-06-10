@@ -1,9 +1,31 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
 import Logbook from './Logbook'
 
+// Mock the UserStatusIndicator to avoid auth context issues
+jest.mock('../components/UserStatusIndicator', () => ({
+  UserStatusIndicator: () => <div>User Status</div>,
+}))
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<BrowserRouter>{component}</BrowserRouter>)
+}
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  clear: jest.fn(),
+}
+global.localStorage = localStorageMock as any
+
 describe('Logbook Page', () => {
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks()
+  })
   it('renders the logbook header and description', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     expect(screen.getByText('📚 Practice Logbook')).toBeInTheDocument()
     expect(
@@ -14,7 +36,7 @@ describe('Logbook Page', () => {
   })
 
   it('shows empty state when no entries exist', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     expect(screen.getByText('No practice entries yet')).toBeInTheDocument()
     expect(
@@ -25,21 +47,21 @@ describe('Logbook Page', () => {
   })
 
   it('displays the new entry button', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     const newEntryButtons = screen.getAllByText('+ New Entry')
     expect(newEntryButtons).toHaveLength(1)
   })
 
   it('displays the search input field', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     const searchInput = screen.getByPlaceholderText('Search entries...')
     expect(searchInput).toBeInTheDocument()
   })
 
   it('updates search query when typing', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     const searchInput = screen.getByPlaceholderText(
       'Search entries...'
@@ -50,13 +72,13 @@ describe('Logbook Page', () => {
   })
 
   it('displays filter button', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     expect(screen.getByText('⚙️ Filters')).toBeInTheDocument()
   })
 
   it('shows stats summary cards', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     expect(screen.getByText('Total Practice Time')).toBeInTheDocument()
     expect(screen.getByText('Sessions This Week')).toBeInTheDocument()
@@ -64,7 +86,7 @@ describe('Logbook Page', () => {
   })
 
   it('opens new entry form modal when new entry button is clicked', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     const newEntryButton = screen.getByText('+ New Entry')
     fireEvent.click(newEntryButton)
@@ -75,7 +97,7 @@ describe('Logbook Page', () => {
   })
 
   it('closes new entry form modal when close button is clicked', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     // Open modal
     const newEntryButton = screen.getByText('+ New Entry')
@@ -89,7 +111,7 @@ describe('Logbook Page', () => {
   })
 
   it('opens new entry form from empty state button', () => {
-    render(<Logbook />)
+    renderWithRouter(<Logbook />)
 
     const createFirstEntryButton = screen.getByText('+ Create Your First Entry')
     fireEvent.click(createFirstEntryButton)

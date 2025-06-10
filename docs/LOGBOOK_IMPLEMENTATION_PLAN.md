@@ -361,6 +361,7 @@ interface Goal {
    - Full test coverage (10 tests)
 
 2. **ManualEntryForm Component** (Task 2)
+
    - Built comprehensive form for all entry types
    - Implemented practice type categories (repertoire, technical, sight-reading, warmup)
    - Created flexible piece/exercise input system
@@ -370,22 +371,36 @@ interface Goal {
    - Included metadata for source tracking
    - Full test coverage (13 tests)
 
+3. **LogbookEntryList Component** (Task 3)
+
+   - Created comprehensive entry list with date grouping
+   - Shows entry type icons, duration, mood, and all details
+   - Implemented edit/delete action handlers
+   - Added search and filter capabilities
+   - Displays auto-logged indicator for automatic entries
+   - Full test coverage (18 tests)
+
+4. **Routing & Navigation** (Task 4)
+
+   - Added Logbook route to App.tsx
+   - Updated PracticeHeader with navigation links
+   - Added Logbook link to landing page
+   - Integrated PracticeHeader into Logbook page
+   - Updated tests to handle Router context
+
+5. **LocalStorage Persistence** (Partial Task 5)
+   - Added localStorage persistence for logbook entries
+   - Entries auto-save on every change
+   - Entries load from localStorage on page mount
+   - Added real-time stats calculation:
+     - Total practice time across all entries
+     - Number of sessions in the last 7 days
+     - Current practice streak (consecutive days)
+   - Updated tests to mock localStorage
+
 ### 🚧 Next Steps
 
-3. **LogbookEntryList Component**
-
-   - Display entries grouped by date
-   - Show entry type, duration, mood, and key details
-   - Implement edit/delete actions
-   - Add filtering and sorting capabilities
-
-4. **Routing & Navigation**
-
-   - Add Logbook route to App.tsx
-   - Add navigation link to main menu/header
-   - Ensure proper route protection for authenticated features
-
-5. **Module Integration**
+6. **Complete Module Integration**
    - Initialize PracticeLoggerModule at app startup
-   - Connect form to module's createLogEntry method
-   - Implement data persistence with localStorage
+   - Migrate from direct localStorage to PracticeLoggerModule
+   - Implement proper user context integration
