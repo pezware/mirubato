@@ -5,7 +5,7 @@
  * for a complete multi-voice practice experience.
  */
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { MultiVoiceSheetMusicDisplay } from './MultiVoiceSheetMusicDisplay'
 import { MultiVoicePlayer } from './MultiVoicePlayer'
 import { VoiceControl } from './VoiceControl'
@@ -74,9 +74,12 @@ export const MultiVoicePracticeView: React.FC<MultiVoicePracticeViewProps> = ({
   const [currentMeasure, setCurrentMeasure] = useState(1)
   const [showSidebar, setShowSidebar] = useState(true)
 
-  // Extract voice information
-  const voices = extractVoices(score)
-  const isPiano = score.parts.some(p => p.instrument.toLowerCase() === 'piano')
+  // Extract voice information (memoized to prevent infinite loops)
+  const voices = useMemo(() => extractVoices(score), [score])
+  const isPiano = useMemo(
+    () => score.parts.some(p => p.instrument.toLowerCase() === 'piano'),
+    [score]
+  )
 
   // Apply practice mode settings to audio and display
   const applyPracticeMode = useCallback(
@@ -166,7 +169,7 @@ export const MultiVoicePracticeView: React.FC<MultiVoicePracticeViewProps> = ({
   useEffect(() => {
     const allVoiceIds = new Set(voices.map(v => v.id))
     setActiveVoices(allVoiceIds)
-  }, [score, voices])
+  }, [voices])
 
   // Apply practice mode settings
   useEffect(() => {
