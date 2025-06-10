@@ -3,57 +3,82 @@ import ManualEntryForm from '../components/ManualEntryForm'
 import LogbookEntryList from '../components/LogbookEntryList'
 import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
-
-const LOGBOOK_STORAGE_KEY = 'mirubato_logbook_entries'
+import { useModules } from '../contexts/ModulesContext'
+import { useAuth } from '../hooks/useAuth'
 
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
+  const { practiceLogger, isInitialized } = useModules()
+  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Load entries from localStorage on mount
+  // Load entries from PracticeLoggerModule
   useEffect(() => {
-    try {
-      const storedEntries = localStorage.getItem(LOGBOOK_STORAGE_KEY)
-      if (storedEntries) {
-        const parsedEntries = JSON.parse(storedEntries)
-        setEntries(parsedEntries)
+    if (!isInitialized || !practiceLogger) {
+      return
+    }
+
+    const loadEntries = async () => {
+      try {
+        setIsLoading(true)
+        const filters = user?.id ? { userId: user.id } : {}
+        const loadedEntries = await practiceLogger.getLogEntries(filters)
+        setEntries(loadedEntries)
+      } catch (error) {
+        console.error('Failed to load logbook entries:', error)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Failed to load logbook entries from localStorage:', error)
     }
-  }, [])
 
-  // Save entries to localStorage whenever they change
-  useEffect(() => {
+    loadEntries()
+  }, [isInitialized, practiceLogger, user])
+
+  const handleSaveEntry = async (
+    entry: Omit<LogbookEntry, 'id' | 'userId'>
+  ) => {
+    if (!practiceLogger) {
+      console.error('PracticeLogger not initialized')
+      return
+    }
+
     try {
-      localStorage.setItem(LOGBOOK_STORAGE_KEY, JSON.stringify(entries))
+      const newEntry = await practiceLogger.createLogEntry({
+        ...entry,
+        userId: user?.id || 'guest', // Use actual user ID or 'guest'
+      })
+      setEntries([newEntry, ...entries])
+      setShowNewEntryForm(false)
     } catch (error) {
-      console.error('Failed to save logbook entries to localStorage:', error)
+      console.error('Failed to save entry:', error)
     }
-  }, [entries])
-
-  const handleSaveEntry = (entry: Omit<LogbookEntry, 'id' | 'userId'>) => {
-    // TODO: Save entry using PracticeLoggerModule
-    // For now, create a complete entry and add to state
-    const newEntry: LogbookEntry = {
-      ...entry,
-      id: `local-${Date.now()}`,
-      userId: 'current-user', // TODO: Get from auth context
-    }
-    setEntries([newEntry, ...entries])
-    setShowNewEntryForm(false)
   }
 
-  const handleEditEntry = (entry: LogbookEntry) => {
-    // TODO: Implement edit functionality
+  const handleEditEntry = async (entry: LogbookEntry) => {
+    if (!practiceLogger) {
+      console.error('PracticeLogger not initialized')
+      return
+    }
+
+    // TODO: Implement edit UI and then call practiceLogger.updateLogEntry
     console.log('Edit entry:', entry)
   }
 
-  const handleDeleteEntry = (entryId: string) => {
-    // TODO: Delete using PracticeLoggerModule
-    setEntries(entries.filter(e => e.id !== entryId))
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!practiceLogger) {
+      console.error('PracticeLogger not initialized')
+      return
+    }
+
+    try {
+      await practiceLogger.deleteLogEntry(entryId)
+      setEntries(entries.filter(e => e.id !== entryId))
+    } catch (error) {
+      console.error('Failed to delete entry:', error)
+    }
   }
 
   // Calculate stats
@@ -150,8 +175,19 @@ const Logbook: React.FC = () => {
           </div>
         </div>
 
-        {/* Entry List or Empty State */}
-        {entries.length === 0 && !searchQuery ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
+            <div className="text-center">
+              <div className="text-6xl text-gray-400 mx-auto mb-4 animate-pulse">
+                ⏳
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Loading your practice history...
+              </h3>
+            </div>
+          </div>
+        ) : entries.length === 0 && !searchQuery ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
             <div className="text-center">
               <div className="text-6xl text-gray-400 mx-auto mb-4">🎵</div>
