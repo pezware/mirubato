@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { createMultiVoiceAudioManager } from '../utils/multiVoiceAudioManager'
+import React, { useState, useCallback } from 'react'
+import { useAudioManager } from '../contexts/AudioContext'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('PianoKey')
@@ -13,13 +13,7 @@ const PianoKey: React.FC<PianoKeyProps> = ({ note, className = '' }) => {
   const [isPressed, setIsPressed] = useState(false)
   const [hasPlayed, setHasPlayed] = useState(false)
   const [isInitializing, setIsInitializing] = useState(false)
-  const [audioManager] = useState(() => createMultiVoiceAudioManager())
-
-  useEffect(() => {
-    return () => {
-      audioManager.dispose()
-    }
-  }, [audioManager])
+  const audioManager = useAudioManager()
 
   const handleKeyPress = useCallback(async () => {
     logger.debug('Piano key clicked', { note })

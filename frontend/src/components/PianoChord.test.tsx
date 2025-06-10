@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PianoChord from './PianoChord'
-// Mock the multiVoiceAudioManager
+// Mock the AudioContext
 const mockPlayNote = jest.fn()
 const mockDispose = jest.fn()
-jest.mock('../utils/multiVoiceAudioManager', () => ({
-  createMultiVoiceAudioManager: () => ({
+jest.mock('../contexts/AudioContext', () => ({
+  useAudioManager: () => ({
     playNote: mockPlayNote,
     initialize: jest.fn(),
     dispose: mockDispose,

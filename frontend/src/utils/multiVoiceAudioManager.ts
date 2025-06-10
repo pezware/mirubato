@@ -84,6 +84,11 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     }
     this.currentInstrument = this.config.defaultInstrument || 'piano'
     this.toneInstance = toneInstance
+
+    // Pre-initialize to reduce first-play latency
+    if (typeof window !== 'undefined') {
+      this.preInitialize()
+    }
   }
 
   isInitialized(): boolean {
@@ -109,42 +114,40 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
 
       const baseUrl = this.config.samplesBaseUrl!
 
-      // Create piano sampler
+      // Create piano sampler with reduced sample set for faster loading
+      // Only load essential notes - Tone.js will interpolate the rest
       this.pianoSampler = new this.toneInstance.Sampler({
         urls: {
           A0: 'A0.mp3',
-          C1: 'C1.mp3',
-          'D#1': 'Ds1.mp3',
-          'F#1': 'Fs1.mp3',
           A1: 'A1.mp3',
-          C2: 'C2.mp3',
-          'D#2': 'Ds2.mp3',
-          'F#2': 'Fs2.mp3',
           A2: 'A2.mp3',
-          C3: 'C3.mp3',
-          'D#3': 'Ds3.mp3',
-          'F#3': 'Fs3.mp3',
           A3: 'A3.mp3',
-          C4: 'C4.mp3',
-          'D#4': 'Ds4.mp3',
-          'F#4': 'Fs4.mp3',
           A4: 'A4.mp3',
-          C5: 'C5.mp3',
-          'D#5': 'Ds5.mp3',
-          'F#5': 'Fs5.mp3',
           A5: 'A5.mp3',
-          C6: 'C6.mp3',
-          'D#6': 'Ds6.mp3',
-          'F#6': 'Fs6.mp3',
           A6: 'A6.mp3',
-          C7: 'C7.mp3',
-          'D#7': 'Ds7.mp3',
-          'F#7': 'Fs7.mp3',
           A7: 'A7.mp3',
+          C1: 'C1.mp3',
+          C2: 'C2.mp3',
+          C3: 'C3.mp3',
+          C4: 'C4.mp3',
+          C5: 'C5.mp3',
+          C6: 'C6.mp3',
+          C7: 'C7.mp3',
           C8: 'C8.mp3',
+          'F#1': 'Fs1.mp3',
+          'F#2': 'Fs2.mp3',
+          'F#3': 'Fs3.mp3',
+          'F#4': 'Fs4.mp3',
+          'F#5': 'Fs5.mp3',
+          'F#6': 'Fs6.mp3',
+          'F#7': 'Fs7.mp3',
         },
         release: 1,
         baseUrl,
+        // Add onload callback to track loading progress
+        onload: () => {
+          console.log('Piano samples loaded')
+        },
       }).toDestination()
 
       // Create guitar synth
@@ -163,13 +166,27 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
         }
       ).toDestination()
 
-      // Add reverb
+      // Add reverb with reduced processing for lower latency
       this.reverb = new this.toneInstance.Reverb({
-        decay: this.config.reverb!.decay,
-        wet: this.config.reverb!.wet,
-        preDelay: this.config.reverb!.preDelay,
+        decay: this.config.reverb!.decay || 1.5, // Reduced from 2.5
+        wet: this.config.reverb!.wet || 0.1, // Reduced from 0.15
+        preDelay: this.config.reverb!.preDelay || 0.01,
       }).toDestination()
 
+      // Connect instruments directly to destination first, reverb is optional
+      // This reduces latency in the signal chain
+      try {
+        this.pianoSampler.disconnect()
+        this.guitarSynth.disconnect()
+      } catch {
+        // Ignore disconnect errors in test environment
+      }
+
+      // Create parallel signal paths
+      this.pianoSampler.toDestination()
+      this.guitarSynth.toDestination()
+
+      // Also send to reverb (parallel processing)
       this.pianoSampler.connect(this.reverb)
       this.guitarSynth.connect(this.reverb)
 
@@ -187,10 +204,39 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       await this.toneInstance.loaded()
 
       this.initialized = true
+
+      // Set up optimized audio context settings
+      if (this.toneInstance.context) {
+        // Reduce latency by setting lower buffer size if supported
+        const ctx = this.toneInstance.context as unknown as AudioContext
+        try {
+          if (ctx && 'latencyHint' in ctx) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(ctx as any).latencyHint = 'interactive'
+          }
+        } catch {
+          // Ignore if latencyHint is not supported
+        }
+      }
     } catch (error) {
       this.loadingPromise = null
       throw error
     }
+  }
+
+  /**
+   * Pre-initialize audio context to reduce first-play latency
+   */
+  private preInitialize(): void {
+    // Schedule initialization after a short delay to not block initial render
+    setTimeout(() => {
+      if (!this.initialized && !this.loadingPromise) {
+        // Start loading in background
+        this.initialize().catch(err => {
+          console.warn('Background audio initialization failed:', err)
+        })
+      }
+    }, 100)
   }
 
   setInstrument(instrument: 'piano' | 'guitar'): void {
@@ -212,7 +258,9 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
 
     const instrument = this.getActiveInstrument()
     if (instrument) {
-      instrument.triggerAttackRelease(note, duration, undefined, velocity)
+      // Use immediate timing for lower latency
+      const time = this.toneInstance.immediate()
+      instrument.triggerAttackRelease(note, duration, time, velocity)
     }
   }
 
@@ -456,38 +504,56 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     let currentTime = 0
     const scheduleId = Date.now()
 
+    // Pre-calculate which voices should play to avoid repeated checks
+    const activeVoices = new Set<string>()
     score.measures.forEach(measure => {
-      if (measure.number < startMeasure) {
-        // Skip measures before start
-        currentTime += this.getMeasureDuration(measure)
-        return
-      }
-
-      // Emit measure change event
-      this.toneInstance.Transport.schedule(time => {
-        this.measureChangeListeners.forEach(listener => {
-          listener({ measureNumber: measure.number, time })
-        })
-      }, currentTime)
-
-      // Update tempo if changed
-      if (measure.tempo) {
-        this.toneInstance.Transport.schedule(() => {
-          this.toneInstance.Transport.bpm.value = measure.tempo!
-        }, currentTime)
-      }
-
-      // Schedule all notes in the measure
       measure.staves.forEach(staff => {
         staff.voices.forEach(voice => {
           if (this.shouldPlayVoice(voice.id)) {
-            this.scheduleVoiceNotes(voice, currentTime, measure)
+            activeVoices.add(voice.id)
           }
         })
       })
-
-      currentTime += this.getMeasureDuration(measure)
     })
+
+    // Use a single batch scheduling for better performance
+    const scheduleBatch = () => {
+      score.measures.forEach(measure => {
+        if (measure.number < startMeasure) {
+          // Skip measures before start
+          currentTime += this.getMeasureDuration(measure)
+          return
+        }
+
+        // Emit measure change event
+        this.toneInstance.Transport.schedule(time => {
+          this.measureChangeListeners.forEach(listener => {
+            listener({ measureNumber: measure.number, time })
+          })
+        }, currentTime)
+
+        // Update tempo if changed
+        if (measure.tempo) {
+          this.toneInstance.Transport.schedule(() => {
+            this.toneInstance.Transport.bpm.value = measure.tempo!
+          }, currentTime)
+        }
+
+        // Schedule all notes in the measure
+        measure.staves.forEach(staff => {
+          staff.voices.forEach(voice => {
+            if (activeVoices.has(voice.id)) {
+              this.scheduleVoiceNotes(voice, currentTime, measure)
+            }
+          })
+        })
+
+        currentTime += this.getMeasureDuration(measure)
+      })
+    }
+
+    // Execute batch scheduling
+    scheduleBatch()
 
     return scheduleId
   }
@@ -498,56 +564,77 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     measure: MultiVoiceMeasure
   ): void {
     const beatDuration = this.getBeatDuration(measure.timeSignature)
+    const instrument = this.getActiveInstrument()
+
+    if (!instrument) return
+
+    // Pre-calculate voice volume once
+    const voiceVelocity = this.getVoiceVolume(voice.id) * 0.8
+
+    // Process notes in batch
+    const notesToSchedule: Array<{
+      time: number
+      keys: string[]
+      duration: string
+      velocity: number
+    }> = []
 
     voice.notes.forEach(note => {
-      const noteTime = measureStartTime + note.time * beatDuration
-      const velocity = this.getVoiceVolume(voice.id) * 0.8
+      if (!note.rest && note.keys && note.keys.length > 0) {
+        const noteTime = measureStartTime + note.time * beatDuration
+        const duration = this.getNoteDuration(note.duration, beatDuration)
 
-      this.toneInstance.Transport.schedule(time => {
-        // Play the note
-        const instrument = this.getActiveInstrument()
-        if (instrument && !note.rest && note.keys && note.keys.length > 0) {
-          try {
-            const duration = this.getNoteDuration(note.duration, beatDuration)
-            // Convert keys from VexFlow format (e.g., "c/4") to Tone.js format (e.g., "C4")
-            const toneKeys = note.keys
-              .map(key => {
-                const [noteName, octave] = key.split('/')
-                if (!noteName || !octave) {
-                  console.warn(`Invalid note key format: ${key}`)
-                  return null
-                }
-                // Convert to Tone.js format: uppercase note + octave
-                return noteName.toUpperCase() + octave
-              })
-              .filter(Boolean) as string[]
+        // Convert keys from VexFlow format (e.g., "c/4") to Tone.js format (e.g., "C4")
+        const toneKeys = note.keys
+          .map(key => {
+            const parts = key.split('/')
+            if (parts.length !== 2) return null
+            const [noteName, octave] = parts
+            // Convert to Tone.js format: uppercase note + octave
+            return noteName.toUpperCase() + octave
+          })
+          .filter(Boolean) as string[]
 
-            if (toneKeys.length > 0) {
-              instrument.triggerAttackRelease(
-                toneKeys,
-                duration,
-                time,
-                velocity
-              )
-            }
-          } catch (error) {
-            console.error(`Error playing note: ${error}, keys: ${note.keys}`)
-          }
+        if (toneKeys.length > 0) {
+          notesToSchedule.push({
+            time: noteTime,
+            keys: toneKeys,
+            duration,
+            velocity: voiceVelocity,
+          })
+        }
+      }
+    })
+
+    // Schedule all notes at once
+    notesToSchedule.forEach(({ time, keys, duration, velocity }) => {
+      this.toneInstance.Transport.schedule(scheduleTime => {
+        try {
+          instrument.triggerAttackRelease(
+            keys,
+            duration,
+            scheduleTime,
+            velocity
+          )
+        } catch (error) {
+          console.error(`Error playing note: ${error}, keys: ${keys}`)
         }
 
-        // Emit note play event
-        this.notePlayListeners.forEach(listener => {
-          listener({
-            note: {
-              keys: note.keys,
-              voiceId: voice.id,
-              duration: note.duration,
-            },
-            time,
-            velocity,
+        // Emit note play event - only if there are listeners
+        if (this.notePlayListeners.length > 0) {
+          this.notePlayListeners.forEach(listener => {
+            listener({
+              note: {
+                keys,
+                voiceId: voice.id,
+                duration,
+              },
+              time: scheduleTime,
+              velocity,
+            })
           })
-        })
-      }, noteTime)
+        }
+      }, time)
     })
   }
 

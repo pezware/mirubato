@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { createMultiVoiceAudioManager } from '../utils/multiVoiceAudioManager'
+import { useAudioManager } from '../contexts/AudioContext'
 import { createLogger } from '../utils/logger'
 import { theme } from '../utils/theme'
 import styles from './PianoChord.module.css'
@@ -14,13 +14,7 @@ const PianoChord: React.FC<PianoChordProps> = ({ className = '' }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set())
   const [hasPlayed, setHasPlayed] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [audioManager] = useState(() => createMultiVoiceAudioManager())
-
-  useEffect(() => {
-    return () => {
-      audioManager.dispose()
-    }
-  }, [audioManager])
+  const audioManager = useAudioManager()
 
   // Draw simple treble clef and C major chord notation
   useEffect(() => {

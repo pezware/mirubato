@@ -1,10 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { AudioProvider } from '../contexts/AudioContext'
 import PianoKey from './PianoKey'
-// Mock the multiVoiceAudioManager
+// Mock the AudioContext
 const mockPlayNote = jest.fn()
 const mockDispose = jest.fn()
-jest.mock('../utils/multiVoiceAudioManager', () => ({
-  createMultiVoiceAudioManager: () => ({
+jest.mock('../contexts/AudioContext', () => ({
+  AudioProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAudioManager: () => ({
     playNote: mockPlayNote,
     initialize: jest.fn(),
     dispose: mockDispose,
@@ -34,7 +36,11 @@ describe('PianoKey', () => {
   })
 
   it('renders piano key with correct attributes', () => {
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button', { name: /Piano key for C4/i })
     expect(button).toBeInTheDocument()
@@ -43,7 +49,11 @@ describe('PianoKey', () => {
   })
 
   it('renders with custom className', () => {
-    render(<PianoKey note="C4" className="custom-class" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" className="custom-class" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     expect(button).toHaveClass('custom-class')
@@ -52,7 +62,11 @@ describe('PianoKey', () => {
   it('plays note when clicked', async () => {
     mockPlayNote.mockResolvedValueOnce(undefined)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     fireEvent.click(button)
@@ -66,7 +80,11 @@ describe('PianoKey', () => {
   it('shows pressed state when clicked', async () => {
     mockPlayNote.mockResolvedValueOnce(undefined)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     fireEvent.click(button)
@@ -90,7 +108,11 @@ describe('PianoKey', () => {
       () => new Promise(resolve => setTimeout(resolve, 100))
     )
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     fireEvent.click(button)
@@ -107,7 +129,11 @@ describe('PianoKey', () => {
   it('shows success message after first play', async () => {
     mockPlayNote.mockResolvedValueOnce(undefined)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     fireEvent.click(button)
@@ -123,7 +149,11 @@ describe('PianoKey', () => {
     const error = new Error('Audio failed')
     mockPlayNote.mockRejectedValueOnce(error)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
     fireEvent.click(button)
@@ -139,7 +169,11 @@ describe('PianoKey', () => {
   it('adds ring styling after first play', async () => {
     mockPlayNote.mockResolvedValueOnce(undefined)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
 
@@ -157,7 +191,11 @@ describe('PianoKey', () => {
   it('maintains hasPlayed state across multiple clicks', async () => {
     mockPlayNote.mockResolvedValue(undefined)
 
-    render(<PianoKey note="C4" />)
+    render(
+      <AudioProvider>
+        <PianoKey note="C4" />
+      </AudioProvider>
+    )
 
     const button = screen.getByRole('button')
 

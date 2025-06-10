@@ -84,7 +84,7 @@ const DEFAULT_OPTIONS: MultiVoiceRenderOptions = {
   showVoiceNames: false,
   staveSpacing: 120,
   systemSpacing: 140,
-  measuresPerSystem: 3, // Reduce measures per system for better spacing
+  measuresPerSystem: 4, // Increased for better performance
   autoLayout: true,
   strictTiming: false, // Default to lenient mode for compatibility
 }
@@ -142,6 +142,16 @@ export class MultiVoiceNotationRenderer {
       this.context.setDebug(false)
     }
 
+    // Add performance optimizations for SVG
+    const svg = this.container.querySelector('svg')
+    if (svg) {
+      // Enable GPU acceleration
+      svg.style.transform = 'translateZ(0)'
+      svg.style.willChange = 'transform'
+      // Disable SVG animations for better performance
+      svg.style.animationPlayState = 'paused'
+    }
+
     // Reset scale to 1 before applying new scale
     this.context.scale(1 / this.previousScale, 1 / this.previousScale)
     this.context.scale(this.options.scale, this.options.scale)
@@ -178,28 +188,38 @@ export class MultiVoiceNotationRenderer {
         return
       }
 
-      // Calculate layout
-      const systems = this.layoutSystems(score)
+      // Use requestAnimationFrame for smooth rendering
+      const renderAsync = () => {
+        // Calculate layout
+        const systems = this.layoutSystems(score)
 
-      // Render each system
-      let currentY = this.options.padding.top
-      for (const system of systems) {
-        try {
-          this.renderSystem(system, currentY)
-          currentY +=
-            this.calculateSystemHeight(system) + this.options.systemSpacing
-        } catch (systemError) {
-          console.error(
-            `Error rendering system starting at measure ${system.startMeasure + 1}:`,
-            systemError
-          )
-          // Continue with next system
-          currentY += 100 // Default spacing on error
+        // Render each system
+        let currentY = this.options.padding.top
+        for (const system of systems) {
+          try {
+            this.renderSystem(system, currentY)
+            currentY +=
+              this.calculateSystemHeight(system) + this.options.systemSpacing
+          } catch (systemError) {
+            console.error(
+              `Error rendering system starting at measure ${system.startMeasure + 1}:`,
+              systemError
+            )
+            // Continue with next system
+            currentY += 100 // Default spacing on error
+          }
         }
+
+        // Add score title and composer
+        this.renderScoreHeader(score)
       }
 
-      // Add score title and composer
-      this.renderScoreHeader(score)
+      // Execute rendering
+      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+        window.requestAnimationFrame(renderAsync)
+      } else {
+        renderAsync()
+      }
     } catch (error) {
       console.error('Error rendering score:', error)
       // Show error message on canvas
@@ -726,8 +746,8 @@ export class MultiVoiceNotationRenderer {
     // Add dots
     if (note.dots) {
       for (let i = 0; i < note.dots; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(vexNote as any).addDotToAll?.()
+        // @ts-expect-error addDotToAll exists but is not in VexFlow types
+        vexNote.addDotToAll?.()
       }
     }
 
