@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import type { LogbookEntry, PieceReference } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 
 interface ManualEntryFormProps {
   onSave: (entry: Omit<LogbookEntry, 'id' | 'userId'>) => void
@@ -41,6 +42,9 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
   )
   const [mood, setMood] = useState<LogbookEntry['mood']>(
     initialData?.mood || 'neutral'
+  )
+  const [instrument, setInstrument] = useState<Instrument>(
+    initialData?.instrument || Instrument.PIANO
   )
   const [notes, setNotes] = useState(initialData?.notes || '')
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
@@ -116,6 +120,7 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
       timestamp,
       duration: durationInSeconds,
       type: entryType,
+      instrument,
       pieces,
       techniques,
       goals: [], // TODO: Implement goal linking
@@ -124,7 +129,6 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
       tags: finalTags,
       metadata: {
         source: 'manual',
-        practiceType: entryType === 'practice' ? practiceType : undefined,
       },
     }
 
@@ -212,6 +216,37 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           required
         />
+      </div>
+
+      {/* Instrument */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Instrument
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setInstrument(Instrument.PIANO)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              instrument === Instrument.PIANO
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🎹 Piano
+          </button>
+          <button
+            type="button"
+            onClick={() => setInstrument(Instrument.GUITAR)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              instrument === Instrument.GUITAR
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🎸 Classical Guitar
+          </button>
+        </div>
       </div>
 
       {/* Practice Type (only for practice entries) */}

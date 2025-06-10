@@ -1,5 +1,6 @@
 import React from 'react'
 import type { LogbookEntry } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -26,14 +27,14 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch =
-        entry.notes.toLowerCase().includes(searchLower) ||
-        entry.pieces.some(piece =>
+        (entry.notes || '').toLowerCase().includes(searchLower) ||
+        (entry.pieces || []).some(piece =>
           piece.title.toLowerCase().includes(searchLower)
         ) ||
-        entry.techniques.some(technique =>
+        (entry.techniques || []).some(technique =>
           technique.toLowerCase().includes(searchLower)
         ) ||
-        entry.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        (entry.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
 
       if (!matchesSearch) return false
     }
@@ -98,17 +99,22 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     return `${minutes} min`
   }
 
+  // Get instrument icon
+  const getInstrumentIcon = (instrument: Instrument): string => {
+    return instrument === Instrument.GUITAR ? '🎸' : '🎹'
+  }
+
   // Get entry type icon
   const getEntryTypeIcon = (type: LogbookEntry['type']): string => {
     switch (type) {
       case 'practice':
-        return '🎹'
+        return '🎵'
       case 'performance':
         return '🎭'
       case 'lesson':
         return '📚'
       case 'rehearsal':
-        return '🎵'
+        return '🎤'
       default:
         return '🎼'
     }
@@ -162,6 +168,9 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                         {getEntryTypeIcon(entry.type)}
                       </span>
                       <div className="flex items-center gap-2">
+                        <span className="text-lg">
+                          {getInstrumentIcon(entry.instrument)}
+                        </span>
                         <span className="font-medium capitalize">
                           {entry.type} Session
                         </span>
@@ -188,7 +197,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       )}
                     </div>
 
-                    {entry.pieces.length > 0 && (
+                    {entry.pieces && entry.pieces.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Pieces:{' '}
@@ -199,7 +208,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.techniques.length > 0 && (
+                    {entry.techniques && entry.techniques.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Techniques:{' '}
@@ -216,7 +225,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.goals.length > 0 && (
+                    {entry.goals && entry.goals.length > 0 && (
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">
                           Goals:{' '}
@@ -227,7 +236,7 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                       </div>
                     )}
 
-                    {entry.tags.length > 0 && (
+                    {entry.tags && entry.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {entry.tags.map(tag => (
                           <span

@@ -4,6 +4,7 @@
 
 import { EventBus, EventDrivenStorage } from '../core'
 import type { ModuleInterface, ModuleHealth, EventPayload } from '../core/types'
+import { Instrument } from './types'
 import type {
   LogbookEntry,
   Goal,
@@ -170,7 +171,9 @@ export class PracticeLoggerModule implements ModuleInterface {
       this.storage.read<LogbookEntry>(key)
     )
     const loadedEntries = await Promise.all(entryPromises)
-    let entries = loadedEntries.filter((e): e is LogbookEntry => e !== null)
+    let entries = loadedEntries
+      .filter((e): e is LogbookEntry => e !== null)
+      .map(this.sanitizeEntry)
 
     // Apply filters
     if (filters.userId) {
@@ -199,6 +202,11 @@ export class PracticeLoggerModule implements ModuleInterface {
     if (filters.mood?.length) {
       entries = entries.filter(
         (e: LogbookEntry) => e.mood && filters.mood!.includes(e.mood)
+      )
+    }
+    if (filters.instrument?.length) {
+      entries = entries.filter((e: LogbookEntry) =>
+        filters.instrument!.includes(e.instrument)
       )
     }
 
@@ -394,6 +402,7 @@ export class PracticeLoggerModule implements ModuleInterface {
         ? entries.reduce((sum, e) => sum + e.duration, 0) / entries.length
         : 0,
       entriesByType: this.countByType(entries),
+      entriesByInstrument: this.countByInstrument(entries),
       topPieces: this.getTopPieces(entries),
       goalProgress: [], // Would need to fetch and calculate
       moodDistribution: this.countMoods(entries),
@@ -433,6 +442,7 @@ export class PracticeLoggerModule implements ModuleInterface {
         timestamp: Date.now(),
         duration: session.duration,
         type: 'practice',
+        instrument: Instrument.PIANO, // TODO: Get from user preferences or session
         pieces: session.pieces || [],
         techniques: [],
         goals: [],
@@ -479,6 +489,19 @@ export class PracticeLoggerModule implements ModuleInterface {
     }
   }
 
+  private sanitizeEntry(entry: LogbookEntry): LogbookEntry {
+    // Ensure all required arrays are present
+    return {
+      ...entry,
+      pieces: entry.pieces || [],
+      techniques: entry.techniques || [],
+      goals: entry.goals || [],
+      tags: entry.tags || [],
+      notes: entry.notes || '',
+      instrument: entry.instrument || Instrument.PIANO,
+    }
+  }
+
   private async exportAsJSON(
     entries: LogbookEntry[],
     options: ExportOptions
@@ -510,6 +533,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       'Date',
       'Duration',
       'Type',
+      'Instrument',
       'Pieces',
       'Techniques',
       'Mood',
@@ -519,6 +543,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       new Date(e.timestamp).toISOString(),
       `${Math.round(e.duration / 60)}`,
       e.type,
+      e.instrument,
       e.pieces.map((p: PieceReference) => p.title).join('; '),
       e.techniques.join('; '),
       e.mood || '',
@@ -563,6 +588,18 @@ export class PracticeLoggerModule implements ModuleInterface {
         return acc
       },
       {} as Record<NonNullable<LogbookEntry['mood']>, number>
+    )
+  }
+
+  private countByInstrument(
+    entries: LogbookEntry[]
+  ): Record<Instrument, number> {
+    return entries.reduce(
+      (acc: Record<Instrument, number>, e: LogbookEntry) => {
+        acc[e.instrument] = (acc[e.instrument] || 0) + 1
+        return acc
+      },
+      {} as Record<Instrument, number>
     )
   }
 
