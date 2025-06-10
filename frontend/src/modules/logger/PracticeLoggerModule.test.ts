@@ -1,6 +1,7 @@
 import { PracticeLoggerModule } from './PracticeLoggerModule'
 import { EventBus, MockEventDrivenStorage } from '../core'
 import type { LogbookEntry, Goal, LogFilters, ExportOptions } from './types'
+import { Instrument } from './types'
 import type { EventPayload } from '../core/types'
 
 describe('PracticeLoggerModule', () => {
@@ -17,6 +18,7 @@ describe('PracticeLoggerModule', () => {
     timestamp: Date.now(),
     duration: 1800, // 30 minutes
     type: 'practice',
+    instrument: Instrument.PIANO,
     pieces: [
       {
         id: 'piece-1',
@@ -405,7 +407,7 @@ describe('PracticeLoggerModule', () => {
       expect(result.success).toBe(true)
       expect(result.filename).toContain('.csv')
       expect(typeof result.data).toBe('string')
-      expect(result.data).toContain('Date,Duration,Type,Pieces') // CSV headers
+      expect(result.data).toContain('Date,Duration,Type,Instrument,Pieces') // CSV headers
     })
 
     it('should generate practice report', async () => {

@@ -2,12 +2,19 @@
  * Types for the Practice Logger Module
  */
 
+// Import instrument enum from shared types for multi-instrument support
+import { Instrument } from '@mirubato/shared/types'
+
+export { Instrument }
+
+// Keep existing types for now to maintain compatibility
 export interface LogbookEntry {
   id: string
   userId: string
   timestamp: number
   duration: number
   type: 'practice' | 'performance' | 'lesson' | 'rehearsal'
+  instrument: Instrument // Add multi-instrument support
   pieces: PieceReference[]
   techniques: string[]
   goals: string[]
@@ -53,6 +60,7 @@ export interface LogFilters {
   startDate?: number
   endDate?: number
   type?: LogbookEntry['type'][]
+  instrument?: Instrument[]
   tags?: string[]
   mood?: LogbookEntry['mood'][]
   pieceIds?: string[]
@@ -84,6 +92,7 @@ export interface PracticeReport {
   totalEntries: number
   averageDuration: number
   entriesByType: Record<LogbookEntry['type'], number>
+  entriesByInstrument: Record<Instrument, number>
   topPieces: Array<{ piece: PieceReference; duration: number; count: number }>
   goalProgress: Array<{ goal: Goal; progress: number }>
   moodDistribution: Record<NonNullable<LogbookEntry['mood']>, number>

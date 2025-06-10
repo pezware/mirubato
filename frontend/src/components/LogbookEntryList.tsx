@@ -1,5 +1,6 @@
 import React from 'react'
 import type { LogbookEntry } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -98,17 +99,22 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
     return `${minutes} min`
   }
 
+  // Get instrument icon
+  const getInstrumentIcon = (instrument: Instrument): string => {
+    return instrument === Instrument.GUITAR ? '🎸' : '🎹'
+  }
+
   // Get entry type icon
   const getEntryTypeIcon = (type: LogbookEntry['type']): string => {
     switch (type) {
       case 'practice':
-        return '🎹'
+        return '🎵'
       case 'performance':
         return '🎭'
       case 'lesson':
         return '📚'
       case 'rehearsal':
-        return '🎵'
+        return '🎤'
       default:
         return '🎼'
     }
@@ -162,6 +168,9 @@ const LogbookEntryList: React.FC<LogbookEntryListProps> = ({
                         {getEntryTypeIcon(entry.type)}
                       </span>
                       <div className="flex items-center gap-2">
+                        <span className="text-lg">
+                          {getInstrumentIcon(entry.instrument)}
+                        </span>
                         <span className="font-medium capitalize">
                           {entry.type} Session
                         </span>

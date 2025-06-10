@@ -206,5 +206,90 @@ export const DataConverters = {
   },
 }
 
+// Logbook types
+export enum LogbookEntryType {
+  PRACTICE = 'PRACTICE',
+  PERFORMANCE = 'PERFORMANCE',
+  LESSON = 'LESSON',
+  REHEARSAL = 'REHEARSAL',
+}
+
+export enum Mood {
+  FRUSTRATED = 'FRUSTRATED',
+  NEUTRAL = 'NEUTRAL',
+  SATISFIED = 'SATISFIED',
+  EXCITED = 'EXCITED',
+}
+
+export enum GoalStatus {
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  PAUSED = 'PAUSED',
+  CANCELLED = 'CANCELLED',
+}
+
+export interface PieceReference {
+  id?: string
+  title: string
+  composer?: string
+  section?: string
+  source?: 'library' | 'custom'
+}
+
+export interface LogbookEntry {
+  id: string
+  userId: string
+  timestamp: string // ISO date string
+  duration: number // in seconds
+  type: LogbookEntryType
+  instrument: Instrument // Multi-instrument support
+  pieces: PieceReference[]
+  techniques: string[]
+  goalIds: string[]
+  notes: string
+  mood?: Mood
+  tags: string[]
+  sessionId?: string
+  metadata?: {
+    source: 'manual' | 'automatic'
+    accuracy?: number
+    notesPlayed?: number
+    mistakeCount?: number
+  }
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+}
+
+export interface GoalMilestone {
+  id: string
+  title: string
+  completed: boolean
+  completedAt?: string | null // ISO date string
+}
+
+export interface Goal {
+  id: string
+  userId: string
+  title: string
+  description: string
+  targetDate: string // ISO date string
+  progress: number // 0-100
+  milestones: GoalMilestone[]
+  status: GoalStatus
+  linkedEntryIds: string[]
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+  completedAt?: string | null // ISO date string
+}
+
+// Local storage specific types for logbook
+export interface LocalLogbookEntry extends LogbookEntry {
+  isSynced: boolean
+}
+
+export interface LocalGoal extends Goal {
+  isSynced: boolean
+}
+
 // Re-export validation utilities
 export { DataValidator, DataMigrator } from './validation'

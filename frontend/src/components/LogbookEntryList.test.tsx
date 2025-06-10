@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import LogbookEntryList from './LogbookEntryList'
 import type { LogbookEntry } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 
 describe('LogbookEntryList', () => {
   const mockEntries: LogbookEntry[] = [
@@ -10,6 +11,7 @@ describe('LogbookEntryList', () => {
       timestamp: new Date('2024-01-15T10:00:00').getTime(),
       duration: 2700, // 45 minutes
       type: 'practice',
+      instrument: Instrument.PIANO,
       pieces: [
         { id: 'p1', title: 'Moonlight Sonata', composer: 'Beethoven' },
         { id: 'p2', title: 'Clair de Lune', composer: 'Debussy' },
@@ -27,6 +29,7 @@ describe('LogbookEntryList', () => {
       timestamp: new Date('2024-01-15T14:30:00').getTime(),
       duration: 3600, // 60 minutes
       type: 'lesson',
+      instrument: Instrument.PIANO,
       pieces: [{ id: 'p3', title: 'Chopin Etude Op.10 No.3' }],
       techniques: ['Phrasing', 'Pedaling'],
       goals: ['g1'],
@@ -40,6 +43,7 @@ describe('LogbookEntryList', () => {
       timestamp: new Date('2024-01-14T18:00:00').getTime(),
       duration: 1800, // 30 minutes
       type: 'performance',
+      instrument: Instrument.GUITAR,
       pieces: [{ id: 'p4', title: 'Asturias', composer: 'Albéniz' }],
       techniques: [],
       goals: [],
@@ -89,9 +93,19 @@ describe('LogbookEntryList', () => {
   it('shows correct icons for different entry types', () => {
     render(<LogbookEntryList entries={mockEntries} />)
 
-    expect(screen.getByText('🎹')).toBeInTheDocument() // practice
+    expect(screen.getByText('🎵')).toBeInTheDocument() // practice
     expect(screen.getByText('📚')).toBeInTheDocument() // lesson
     expect(screen.getByText('🎭')).toBeInTheDocument() // performance
+  })
+
+  it('shows correct instrument icons', () => {
+    render(<LogbookEntryList entries={mockEntries} />)
+
+    const pianoIcons = screen.getAllByText('🎹')
+    const guitarIcons = screen.getAllByText('🎸')
+
+    expect(pianoIcons).toHaveLength(2) // Two piano entries
+    expect(guitarIcons).toHaveLength(1) // One guitar entry
   })
 
   it('displays auto-logged indicator for automatic entries', () => {

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ManualEntryForm from './ManualEntryForm'
 import type { LogbookEntry } from '../modules/logger/types'
+import { Instrument } from '../modules/logger/types'
 
 describe('ManualEntryForm', () => {
   const mockOnSave = jest.fn()
@@ -255,7 +256,6 @@ describe('ManualEntryForm', () => {
           tags: expect.arrayContaining(['technical']),
           metadata: {
             source: 'manual',
-            practiceType: 'technical',
           },
         })
       )
@@ -275,6 +275,7 @@ describe('ManualEntryForm', () => {
       type: 'lesson',
       timestamp: new Date('2024-01-15T14:30:00').getTime(),
       duration: 3600, // 60 minutes
+      instrument: Instrument.PIANO,
       pieces: [
         {
           id: '1',
