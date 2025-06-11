@@ -212,7 +212,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
         try {
           if (ctx && 'latencyHint' in ctx) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(ctx as any).latencyHint = 'interactive'
+            (ctx as any).latencyHint = 'interactive'
           }
         } catch {
           // Ignore if latencyHint is not supported
