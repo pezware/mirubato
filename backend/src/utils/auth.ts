@@ -43,19 +43,23 @@ export async function createJWT(
 // Create a refresh token
 export async function createRefreshToken(
   userId: string,
-  secret: string
+  secret: string,
+  user?: User
 ): Promise<string> {
-  return jwt.sign(
-    {
-      sub: userId,
-      type: 'refresh',
-    },
-    secret,
-    {
-      expiresIn: '30d',
-      issuer: 'mirubato',
-    }
-  )
+  const payload: { sub: string; type: string; user?: User } = {
+    sub: userId,
+    type: 'refresh',
+  }
+
+  // Include full user data for temp users
+  if (userId.startsWith('temp_') && user) {
+    payload.user = user
+  }
+
+  return jwt.sign(payload, secret, {
+    expiresIn: '30d',
+    issuer: 'mirubato',
+  })
 }
 
 // Verify a JWT token
@@ -78,17 +82,17 @@ export async function verifyJWT(
 export async function verifyRefreshToken(
   token: string,
   secret: string
-): Promise<{ sub: string }> {
+): Promise<{ sub: string; user?: User }> {
   try {
     const payload = jwt.verify(token, secret, {
       issuer: 'mirubato',
-    }) as { sub: string; type: string }
+    }) as { sub: string; type: string; user?: User }
 
     if (payload.type !== 'refresh') {
       throw new Error('Invalid token type')
     }
 
-    return { sub: payload.sub }
+    return { sub: payload.sub, user: payload.user }
   } catch (error) {
     throw new Error('Invalid or expired refresh token')
   }

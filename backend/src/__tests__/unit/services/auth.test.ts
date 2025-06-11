@@ -70,6 +70,7 @@ describe('AuthService', () => {
           piecesCompleted: 0,
           accuracyAverage: 0,
         },
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
       }
@@ -101,14 +102,15 @@ describe('AuthService', () => {
           piecesCompleted: 0,
           accuracyAverage: 0,
         },
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
       }
 
       const { refreshToken } = await authService.generateTokens(user)
-      const userId = await authService.verifyRefreshToken(refreshToken)
+      const result = await authService.verifyRefreshToken(refreshToken)
 
-      expect(userId).toBe('user_123')
+      expect(result.sub).toBe('user_123')
     })
 
     it('should throw error for invalid token', async () => {

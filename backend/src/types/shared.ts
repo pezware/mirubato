@@ -98,6 +98,7 @@ export interface User {
   primaryInstrument: Instrument
   preferences: UserPreferences
   stats: UserStats
+  hasCloudStorage: boolean
   createdAt: string
   updatedAt: string
 }

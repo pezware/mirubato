@@ -77,6 +77,7 @@ class LocalStorageService {
       id: `anon_${crypto.randomUUID()}`,
       email: '', // Empty for anonymous users
       isAnonymous: true,
+      hasCloudStorage: false, // Anonymous users don't have cloud storage
       primaryInstrument: Instrument.PIANO,
       createdAt: now,
       updatedAt: now,

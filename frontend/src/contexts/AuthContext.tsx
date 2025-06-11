@@ -14,6 +14,7 @@ import {
   isAuthenticated as checkIsAuthenticated,
 } from '../lib/apollo/client'
 import { localStorageService, LocalUserData } from '../services/localStorage'
+import { useModules } from './ModulesContext'
 
 const logger = createLogger('AuthContext')
 
@@ -23,6 +24,7 @@ interface User {
   displayName: string | null
   primaryInstrument: 'PIANO' | 'GUITAR'
   isAnonymous: boolean
+  hasCloudStorage: boolean
 }
 
 interface AuthContextType {
@@ -49,6 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
+  const { eventBus, isInitialized: modulesInitialized } = useModules()
 
   const [verifyMagicLink] = useMutation(VERIFY_MAGIC_LINK)
   const [refreshTokenMutation] = useMutation(REFRESH_TOKEN)
@@ -65,13 +68,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             fetchPolicy: 'network-only',
           })
           if (data?.me) {
-            setUser({
+            const authenticatedUser = {
               ...data.me,
               isAnonymous: false,
-            })
+              hasCloudStorage: data.me.hasCloudStorage ?? true, // Default to true for existing users
+            }
+            setUser(authenticatedUser)
             // Also load local data for authenticated user
             const localData = localStorageService.getUserData()
             setLocalUserData(localData)
+
+            // Emit auth:login event for already authenticated users on mount
+            if (modulesInitialized && eventBus) {
+              eventBus.publish({
+                source: 'AuthContext',
+                type: 'auth:login',
+                data: {
+                  user: authenticatedUser,
+                  timestamp: Date.now(),
+                  isInitialLoad: true,
+                },
+                metadata: {
+                  userId: authenticatedUser.id,
+                  version: '1.0.0',
+                },
+              })
+              logger.info('Published auth:login event for existing session', {
+                userId: authenticatedUser.id,
+                hasCloudStorage: authenticatedUser.hasCloudStorage,
+              })
+            }
           }
         } catch (error) {
           console.error('Failed to fetch current user:', error)
@@ -98,6 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             displayName: localData.displayName || null,
             primaryInstrument: localData.primaryInstrument,
             isAnonymous: true,
+            hasCloudStorage: false, // Anonymous users don't have cloud storage
           })
         }
       }
@@ -106,7 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     initAuth()
-  }, [apolloClient, user])
+  }, [apolloClient, user, eventBus, modulesInitialized])
 
   const login = useCallback(
     async (token: string) => {
@@ -125,23 +152,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           setAuthTokens(accessToken, refreshToken)
 
-          // Migrate anonymous user data to authenticated user
-          if (localUserData?.isAnonymous) {
-            localStorageService.migrateToAuthenticatedUser(
-              authenticatedUser.id,
-              authenticatedUser.email
+          // Check if user has cloud storage access
+          if (authenticatedUser.hasCloudStorage) {
+            // Migrate anonymous user data to authenticated user
+            if (localUserData?.isAnonymous) {
+              localStorageService.migrateToAuthenticatedUser(
+                authenticatedUser.id,
+                authenticatedUser.email
+              )
+              // TODO: Trigger sync to cloud
+              logger.info('Migrating local data to cloud storage')
+            }
+          } else {
+            // User authenticated but no cloud storage - continue with localStorage
+            logger.warn(
+              'Authenticated user without cloud storage, using localStorage'
             )
-            // TODO: Trigger sync to cloud
           }
 
-          setUser({
+          const newUser = {
             ...authenticatedUser,
             isAnonymous: false,
-          })
+          }
+          setUser(newUser)
 
           // Update local user data
           const updatedLocalData = localStorageService.getUserData()
           setLocalUserData(updatedLocalData)
+
+          // Emit auth:login event to EventBus
+          if (modulesInitialized && eventBus) {
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'auth:login',
+              data: {
+                user: newUser,
+                timestamp: Date.now(),
+              },
+              metadata: {
+                userId: newUser.id,
+                version: '1.0.0',
+              },
+            })
+            logger.info('Published auth:login event', {
+              userId: newUser.id,
+              hasCloudStorage: newUser.hasCloudStorage,
+            })
+          }
 
           navigate('/practice')
         }
@@ -152,7 +209,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false)
       }
     },
-    [verifyMagicLink, navigate, localUserData]
+    [verifyMagicLink, navigate, localUserData, eventBus, modulesInitialized]
   )
 
   const logout = useCallback(async () => {
@@ -163,6 +220,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // Emit auth:logout event before clearing state
+      if (modulesInitialized && eventBus && user) {
+        eventBus.publish({
+          source: 'AuthContext',
+          type: 'auth:logout',
+          data: {
+            user: user,
+            timestamp: Date.now(),
+          },
+          metadata: {
+            userId: user.id,
+            version: '1.0.0',
+          },
+        })
+        logger.info('Published auth:logout event', { userId: user.id })
+      }
+
       clearAuthTokens()
 
       // Create new anonymous user after logout
@@ -173,11 +247,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         displayName: null,
         primaryInstrument: newAnonymousUser.primaryInstrument,
         isAnonymous: true,
+        hasCloudStorage: false,
       })
 
       navigate('/')
     }
-  }, [logoutMutation, navigate, user])
+  }, [logoutMutation, navigate, user, eventBus, modulesInitialized])
 
   const refreshAuth = useCallback(async () => {
     const refreshToken = localStorage.getItem('refresh-token')

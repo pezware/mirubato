@@ -69,8 +69,11 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
         practiceLoggerRef.current = loggerModule
         setPracticeLogger(loggerModule)
 
-        // Initialize LogbookReportingModule
-        const reportingMod = new LogbookReportingModule(eventBusRef.current)
+        // Initialize LogbookReportingModule with reference to PracticeLoggerModule
+        const reportingMod = new LogbookReportingModule(
+          eventBusRef.current,
+          loggerModule
+        )
         await reportingMod.initialize()
         reportingModuleRef.current = reportingMod
         setReportingModule(reportingMod)

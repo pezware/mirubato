@@ -82,6 +82,7 @@ describe('localStorageService', () => {
         isAnonymous: false,
         displayName: 'Test User',
         primaryInstrument: Instrument.GUITAR,
+        hasCloudStorage: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         lastSyncedAt: new Date().toISOString(),

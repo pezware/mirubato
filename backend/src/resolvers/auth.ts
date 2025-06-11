@@ -35,19 +35,21 @@ export const authResolvers: { Mutation: MutationResolvers } = {
     },
 
     verifyMagicLink: async (_, { token }, context) => {
+      const authService = new AuthService(
+        context.env.MIRUBATO_MAGIC_LINKS,
+        context.env.JWT_SECRET
+      )
+
+      // Verify magic link token
+      const email = await authService.verifyMagicLink(token)
+
+      if (!email) {
+        throw new Error('Invalid or expired magic link')
+      }
+
+      // Try to use D1 database for full authentication
       try {
-        const authService = new AuthService(
-          context.env.MIRUBATO_MAGIC_LINKS,
-          context.env.JWT_SECRET
-        )
         const userService = new UserService(context.env.DB)
-
-        // Verify magic link token
-        const email = await authService.verifyMagicLink(token)
-
-        if (!email) {
-          throw new Error('Invalid or expired magic link')
-        }
 
         // Get or create user
         let user = await userService.getUserByEmail(email)
@@ -55,19 +57,55 @@ export const authResolvers: { Mutation: MutationResolvers } = {
           user = await userService.createUser({ email })
         }
 
+        // Add hasCloudStorage flag
+        const userWithCloudStorage = { ...user, hasCloudStorage: true }
+
         // Generate tokens
         const { accessToken, refreshToken } =
-          await authService.generateTokens(user)
+          await authService.generateTokens(userWithCloudStorage)
 
         return {
           accessToken,
           refreshToken,
           expiresIn: 900, // 15 minutes
-          user,
+          user: userWithCloudStorage,
         }
-      } catch (error) {
-        console.error('verifyMagicLink error:', error)
-        throw error
+      } catch (d1Error) {
+        // D1 unavailable - create temporary user
+        console.warn('D1 unavailable, creating temporary user:', d1Error)
+
+        const tempUser = {
+          id: `temp_${email.replace('@', '_')}_${Date.now()}`,
+          email,
+          displayName: undefined,
+          primaryInstrument: 'PIANO' as const,
+          preferences: {
+            theme: 'LIGHT' as const,
+            notationSize: 'MEDIUM' as const,
+            practiceReminders: true,
+            dailyGoalMinutes: 30,
+          },
+          stats: {
+            totalPracticeTime: 0,
+            consecutiveDays: 0,
+            piecesCompleted: 0,
+            accuracyAverage: 0,
+          },
+          hasCloudStorage: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+
+        // Generate tokens for temp user
+        const { accessToken, refreshToken } =
+          await authService.generateTokens(tempUser)
+
+        return {
+          accessToken,
+          refreshToken,
+          expiresIn: 900, // 15 minutes
+          user: tempUser,
+        }
       }
     },
 
@@ -76,24 +114,46 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         context.env.MIRUBATO_MAGIC_LINKS,
         context.env.JWT_SECRET
       )
-      const userService = new UserService(context.env.DB)
 
-      // Verify refresh token
-      const userId = await authService.verifyRefreshToken(refreshToken)
-      const user = await userService.getUserById(userId)
+      // Verify refresh token and get payload
+      const { sub: userId, user: tempUser } =
+        await authService.verifyRefreshToken(refreshToken)
 
-      if (!user) {
-        throw new Error('User not found')
+      // Check if this is a temp user
+      if (userId.startsWith('temp_') && tempUser) {
+        // For temp users, use the embedded user data
+        // Generate new tokens
+        const tokens = await authService.generateTokens(tempUser)
+
+        return {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresIn: 900,
+          user: tempUser,
+        }
       }
 
-      // Generate new tokens
-      const tokens = await authService.generateTokens(user)
+      // For regular users, fetch from D1
+      try {
+        const userService = new UserService(context.env.DB)
+        const user = await userService.getUserById(userId)
 
-      return {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        expiresIn: 900,
-        user,
+        if (!user) {
+          throw new Error('User not found')
+        }
+
+        // Generate new tokens
+        const tokens = await authService.generateTokens(user)
+
+        return {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresIn: 900,
+          user,
+        }
+      } catch (error) {
+        console.error('refreshToken D1 error:', error)
+        throw new Error('Unable to refresh token')
       }
     },
 

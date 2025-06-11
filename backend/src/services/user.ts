@@ -83,6 +83,7 @@ export class UserService {
       primaryInstrument: 'PIANO',
       preferences,
       stats: this.getDefaultStats(),
+      hasCloudStorage: true, // Users created in D1 have cloud storage
       createdAt: now,
       updatedAt: now,
     }
@@ -192,6 +193,7 @@ export class UserService {
       primaryInstrument: dbRow.primary_instrument as Instrument,
       preferences,
       stats: this.getDefaultStats(), // Stats are loaded separately
+      hasCloudStorage: true, // Users from D1 have cloud storage
       createdAt: dbRow.created_at as string,
       updatedAt: dbRow.updated_at as string,
     }

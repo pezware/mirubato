@@ -584,6 +584,7 @@ export type User = {
   createdAt: Scalars['DateTime']['output']
   displayName?: Maybe<Scalars['String']['output']>
   email: Scalars['String']['output']
+  hasCloudStorage: Scalars['Boolean']['output']
   id: Scalars['ID']['output']
   preferences: UserPreferences
   primaryInstrument: Instrument
@@ -1475,6 +1476,7 @@ export type UserResolvers<
     ContextType
   >
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  hasCloudStorage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   preferences?: Resolver<
     ResolversTypes['UserPreferences'],

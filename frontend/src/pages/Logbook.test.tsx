@@ -14,10 +14,34 @@ const mockPracticeLogger = {
   deleteLogEntry: jest.fn(),
 }
 
+// Mock the reporting module
+const mockReportingModule = {
+  generateReport: jest.fn().mockResolvedValue({
+    overallStats: {
+      totalPracticeTime: 0,
+      totalSessions: 0,
+      averageSessionDuration: 0,
+      practiceStreak: 0,
+      goalsCompleted: 0,
+      totalGoals: 0,
+      piecesMastered: 0,
+      consistencyScore: 0,
+    },
+    timeBasedStats: {
+      daily: {},
+      weekly: {},
+      monthly: {},
+    },
+    pieceStats: [],
+    categoryStats: {},
+  }),
+}
+
 // Mock the modules context
 jest.mock('../contexts/ModulesContext', () => ({
   useModules: () => ({
     practiceLogger: mockPracticeLogger,
+    reportingModule: mockReportingModule,
     isInitialized: true,
   }),
 }))
@@ -105,13 +129,39 @@ describe('Logbook Page', () => {
     })
   })
 
-  it('shows stats summary cards', async () => {
+  it('does not show reports section when no entries exist', async () => {
     renderWithProviders(<Logbook />)
 
     await waitFor(() => {
-      expect(screen.getByText('Total Practice Time')).toBeInTheDocument()
-      expect(screen.getByText('Sessions This Week')).toBeInTheDocument()
-      expect(screen.getByText('Current Streak')).toBeInTheDocument()
+      // Reports & Analytics section should not be visible when there are no entries
+      expect(screen.queryByText('Reports & Analytics')).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows reports section when entries exist', async () => {
+    // Mock entries
+    mockPracticeLogger.getLogEntries.mockResolvedValue([
+      {
+        id: '1',
+        userId: 'user1',
+        timestamp: Date.now(),
+        duration: 1800,
+        type: 'practice',
+        instrument: 'PIANO',
+        pieces: [{ id: 'p1', title: 'Test Piece' }],
+        techniques: [],
+        goalIds: [],
+        notes: '',
+        tags: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ])
+
+    renderWithProviders(<Logbook />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Reports & Analytics')).toBeInTheDocument()
     })
   })
 

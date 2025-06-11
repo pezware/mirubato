@@ -22,8 +22,8 @@ function App() {
       }}
     >
       <Router>
-        <AuthProvider>
-          <ModulesProvider>
+        <ModulesProvider>
+          <AuthProvider>
             <AudioProvider>
               <div className="min-h-screen">
                 <Routes>
@@ -49,8 +49,8 @@ function App() {
                 <VersionInfo />
               </div>
             </AudioProvider>
-          </ModulesProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ModulesProvider>
       </Router>
     </ErrorBoundary>
   )

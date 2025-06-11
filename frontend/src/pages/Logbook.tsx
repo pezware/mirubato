@@ -82,56 +82,6 @@ const Logbook: React.FC = () => {
     }
   }
 
-  // Calculate stats
-  const calculateStats = () => {
-    const totalSeconds = entries.reduce((sum, entry) => sum + entry.duration, 0)
-    const totalHours = Math.floor(totalSeconds / 3600)
-    const totalMinutes = Math.floor((totalSeconds % 3600) / 60)
-
-    // Calculate sessions this week
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-    const sessionsThisWeek = entries.filter(
-      entry => entry.timestamp >= oneWeekAgo
-    ).length
-
-    // Calculate streak (consecutive days)
-    const sortedDates = entries
-      .map(entry => new Date(entry.timestamp).toDateString())
-      .filter((date, index, self) => self.indexOf(date) === index)
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-
-    let streak = 0
-    const today = new Date().toDateString()
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
-
-    if (sortedDates.length > 0) {
-      if (sortedDates[0] === today || sortedDates[0] === yesterday) {
-        streak = 1
-        for (let i = 1; i < sortedDates.length; i++) {
-          const currentDate = new Date(sortedDates[i])
-          const previousDate = new Date(sortedDates[i - 1])
-          const diffDays = Math.floor(
-            (previousDate.getTime() - currentDate.getTime()) /
-              (24 * 60 * 60 * 1000)
-          )
-          if (diffDays === 1) {
-            streak++
-          } else {
-            break
-          }
-        }
-      }
-    }
-
-    return {
-      totalTime: `${totalHours}h ${totalMinutes}m`,
-      sessionsThisWeek,
-      streak,
-    }
-  }
-
-  const stats = calculateStats()
-
   return (
     <div className="min-h-screen bg-gray-50">
       <PracticeHeader isMobile={isMobile} />
@@ -222,45 +172,6 @@ const Logbook: React.FC = () => {
             searchQuery={searchQuery}
           />
         )}
-
-        {/* Stats Summary */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Practice Time</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalTime}
-                </p>
-              </div>
-              <div className="text-3xl text-gray-400">📅</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Sessions This Week</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.sessionsThisWeek}
-                </p>
-              </div>
-              <div className="text-3xl text-gray-400">🎵</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Current Streak</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.streak} {stats.streak === 1 ? 'day' : 'days'}
-                </p>
-              </div>
-              <div className="text-2xl">🔥</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Modal for new entry form */}

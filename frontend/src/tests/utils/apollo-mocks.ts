@@ -15,6 +15,7 @@ export const mockAnonymousUser = {
   displayName: null,
   primaryInstrument: Instrument.PIANO,
   isAnonymous: true,
+  hasCloudStorage: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   preferences: {
@@ -37,6 +38,7 @@ export const mockAuthenticatedUser = {
   displayName: 'Test User',
   primaryInstrument: Instrument.PIANO,
   isAnonymous: false,
+  hasCloudStorage: true,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   preferences: {

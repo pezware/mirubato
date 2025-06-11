@@ -20,9 +20,11 @@ import {
   ReportExportResult,
 } from './types'
 import { LogbookEntry, Goal } from '../logger/types'
+import { PracticeLoggerModule } from '../logger'
 import { Instrument } from '@mirubato/shared/types'
 import { ModuleInterface, ModuleHealth } from '../core/types'
 import { EventBus } from '../core/EventBus'
+import { AuthLoginEventData } from '../core/eventTypes'
 
 export class LogbookReportingModule
   implements ModuleInterface, LogbookReportingInterface
@@ -33,23 +35,30 @@ export class LogbookReportingModule
   private eventBus: EventBus
   private isInitialized = false
   private isAuthenticated = false
+  private hasCloudStorage = false
   private cache: Map<string, { data: unknown; timestamp: number }> = new Map()
   private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+  private practiceLoggerModule: PracticeLoggerModule | null = null
 
-  constructor(eventBus: EventBus) {
+  constructor(eventBus: EventBus, practiceLoggerModule?: PracticeLoggerModule) {
     this.eventBus = eventBus
+    this.practiceLoggerModule = practiceLoggerModule || null
   }
 
   async initialize(): Promise<void> {
     try {
       // Listen for authentication state changes
-      this.eventBus.subscribe('auth:login', (_data: unknown) => {
+      this.eventBus.subscribe('auth:login', payload => {
+        const authData = payload.data as AuthLoginEventData
         this.isAuthenticated = true
+        // Check if user has cloud storage access
+        this.hasCloudStorage = authData.user.hasCloudStorage
         this.clearCache() // Clear cache on auth state change
       })
 
       this.eventBus.subscribe('auth:logout', () => {
         this.isAuthenticated = false
+        this.hasCloudStorage = false
         this.clearCache()
       })
 
@@ -70,7 +79,7 @@ export class LogbookReportingModule
     return {
       status: this.isInitialized ? 'green' : 'red',
       lastCheck: Date.now(),
-      message: `Initialized: ${this.isInitialized}, Auth: ${this.isAuthenticated}, Cache: ${this.cache.size}`,
+      message: `Initialized: ${this.isInitialized}, Auth: ${this.isAuthenticated}, CloudStorage: ${this.hasCloudStorage}, Cache: ${this.cache.size}`,
     }
   }
 
@@ -175,7 +184,8 @@ export class LogbookReportingModule
   private async getLogbookData(
     filters?: ReportFilters
   ): Promise<[LogbookEntry[], Goal[]]> {
-    if (this.isAuthenticated) {
+    // Only use cloud data if authenticated AND has cloud storage
+    if (this.isAuthenticated && this.hasCloudStorage) {
       return this.getAuthenticatedData(filters)
     } else {
       return this.getLocalStorageData(filters)
@@ -204,7 +214,26 @@ export class LogbookReportingModule
     filters?: ReportFilters
   ): Promise<[LogbookEntry[], Goal[]]> {
     try {
-      // Get entries from localStorage via PracticeLoggerModule
+      // If we have a reference to PracticeLoggerModule, use it
+      if (this.practiceLoggerModule) {
+        const logFilters = {
+          startDate: filters?.timeRange?.start,
+          endDate: filters?.timeRange?.end,
+          type: filters?.types,
+          mood: filters?.moods,
+          tags: filters?.tags,
+          instrument: filters?.instruments,
+          limit: 1000, // Get all entries for reporting
+        }
+
+        const entries =
+          await this.practiceLoggerModule.getLogEntries(logFilters)
+        const goals = await this.practiceLoggerModule.getGoals({})
+
+        return [entries, goals]
+      }
+
+      // Fallback: Try to read directly from localStorage
       const entriesData = localStorage.getItem('practiceLogger:entries')
       const goalsData = localStorage.getItem('practiceLogger:goals')
 
@@ -613,32 +642,41 @@ export class LogbookReportingModule
       dateSet.add(dateStr)
     })
 
-    const dates = Array.from(dateSet).sort().reverse()
+    const dates = Array.from(dateSet).sort()
+    if (dates.length === 0) return 0
 
+    // Get today's date string
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0]
+
+    // Get yesterday's date string
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+    // Get the most recent practice date
+    const mostRecentDate = dates[dates.length - 1]
+
+    // If the most recent practice is not today or yesterday, streak is 0
+    if (mostRecentDate !== todayStr && mostRecentDate !== yesterdayStr) {
+      return 0
+    }
+
+    // Count consecutive days backwards from the most recent date
     let streak = 0
-    const currentDate = new Date()
-    currentDate.setHours(0, 0, 0, 0)
+    const checkDate = new Date(mostRecentDate)
 
-    for (const dateStr of dates) {
-      const entryDate = new Date(dateStr)
-      const daysDiff = Math.floor(
-        (currentDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
-      )
+    for (let i = dates.length - 1; i >= 0; i--) {
+      const dateStr = dates[i]
+      const checkDateStr = checkDate.toISOString().split('T')[0]
 
-      if (daysDiff === streak) {
+      if (dateStr === checkDateStr) {
         streak++
-        continue
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else if (new Date(dateStr) < checkDate) {
+        // We've skipped a day, streak ends
+        break
       }
-
-      if (daysDiff === streak + 1) {
-        // Allow for yesterday if today hasn't been practiced yet
-        if (streak === 0) {
-          streak++
-          continue
-        }
-      }
-
-      break
     }
 
     return streak

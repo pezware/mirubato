@@ -3,6 +3,7 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
 import { useNavigate } from 'react-router-dom'
 import { AuthProvider, AuthContext } from './AuthContext'
+import { ModulesProvider } from './ModulesContext'
 import {
   VERIFY_MAGIC_LINK,
   REFRESH_TOKEN,
@@ -35,6 +36,12 @@ jest.mock('../utils/logger', () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }))
 
 jest.mock('../lib/apollo/client', () => ({
@@ -125,9 +132,11 @@ describe('AuthContext', () => {
   const renderWithProvider = (mocks: any[] = []) => {
     return render(
       <MockedProvider mocks={mocks} addTypename={false}>
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>
+        <ModulesProvider>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </ModulesProvider>
       </MockedProvider>
     )
   }
@@ -140,6 +149,7 @@ describe('AuthContext', () => {
         displayName: null,
         primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -178,6 +188,7 @@ describe('AuthContext', () => {
         displayName: 'Guest User',
         primaryInstrument: Instrument.GUITAR,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -213,6 +224,7 @@ describe('AuthContext', () => {
         email: 'test@example.com',
         displayName: 'Test User',
         primaryInstrument: 'PIANO',
+        hasCloudStorage: true,
       }
 
       mockCheckIsAuthenticated.mockReturnValue(true)
@@ -222,6 +234,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -296,6 +309,7 @@ describe('AuthContext', () => {
         displayName: null,
         primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -317,6 +331,7 @@ describe('AuthContext', () => {
         email: 'new@example.com',
         displayName: 'New User',
         primaryInstrument: Instrument.PIANO,
+        hasCloudStorage: true,
       }
 
       mockLocalStorage.getUserData
@@ -325,6 +340,7 @@ describe('AuthContext', () => {
         .mockReturnValueOnce({
           ...mockAuthenticatedUser,
           isAnonymous: false,
+          hasCloudStorage: true,
           createdAt: '2024-01-01T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z',
           preferences: {
@@ -430,6 +446,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -452,6 +469,7 @@ describe('AuthContext', () => {
         displayName: null,
         primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -524,6 +542,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -546,6 +565,7 @@ describe('AuthContext', () => {
         displayName: null,
         primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -734,6 +754,7 @@ describe('AuthContext', () => {
         displayName: null,
         primaryInstrument: Instrument.PIANO,
         isAnonymous: true,
+        hasCloudStorage: false,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -774,6 +795,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -878,6 +900,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
@@ -938,6 +961,7 @@ describe('AuthContext', () => {
         displayName: 'Test User',
         primaryInstrument: Instrument.PIANO,
         isAnonymous: false,
+        hasCloudStorage: true,
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         preferences: {
