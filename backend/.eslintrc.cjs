@@ -38,5 +38,11 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off', // Allow any in generated files
       },
     },
+    {
+      files: ['src/__tests__/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off', // Allow any in test files for mocking
+      },
+    },
   ],
 };
