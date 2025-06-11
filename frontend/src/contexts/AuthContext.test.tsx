@@ -10,6 +10,7 @@ import {
   LOGOUT,
 } from '../graphql/queries/auth'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
+import { SYNC_ANONYMOUS_DATA } from '../graphql/mutations/syncAnonymousData'
 import {
   setAuthTokens,
   clearAuthTokens,
@@ -57,6 +58,8 @@ jest.mock('../services/localStorage', () => ({
     migrateToAuthenticatedUser: jest.fn(),
     getPendingSyncData: jest.fn(),
     markAsSynced: jest.fn(),
+    getLogbookEntries: jest.fn(),
+    getGoals: jest.fn(),
   },
 }))
 
@@ -858,6 +861,8 @@ describe('AuthContext', () => {
       mockCheckIsAuthenticated.mockReturnValue(true)
       mockLocalStorage.getUserData.mockReturnValue(mockUser)
       mockLocalStorage.getPendingSyncData.mockReturnValue(mockPendingData)
+      mockLocalStorage.getLogbookEntries.mockReturnValue([])
+      mockLocalStorage.getGoals.mockReturnValue([])
 
       const mocks = [
         {
@@ -867,6 +872,71 @@ describe('AuthContext', () => {
           result: {
             data: {
               me: mockUser,
+            },
+          },
+        },
+        {
+          request: {
+            query: SYNC_ANONYMOUS_DATA,
+            variables: {
+              input: {
+                sessions: [
+                  {
+                    sheetMusicId: undefined,
+                    tempo: undefined,
+                    instrument: 'PIANO',
+                    durationMinutes: undefined,
+                    accuracy: undefined,
+                    notes: undefined,
+                    createdAt: undefined,
+                    completedAt: undefined,
+                  },
+                  {
+                    sheetMusicId: undefined,
+                    tempo: undefined,
+                    instrument: 'PIANO',
+                    durationMinutes: undefined,
+                    accuracy: undefined,
+                    notes: undefined,
+                    createdAt: undefined,
+                    completedAt: undefined,
+                  },
+                ],
+                logs: [
+                  {
+                    sessionId: 'session-1',
+                    measureNumber: undefined,
+                    mistakeType: undefined,
+                    mistakeDetails: undefined,
+                    tempoAchievement: undefined,
+                    notes: undefined,
+                    createdAt: undefined,
+                  },
+                  {
+                    sessionId: 'session-2',
+                    measureNumber: undefined,
+                    mistakeType: undefined,
+                    mistakeDetails: undefined,
+                    tempoAchievement: undefined,
+                    notes: undefined,
+                    createdAt: undefined,
+                  },
+                ],
+                entries: [],
+                goals: [],
+              },
+            },
+          },
+          result: {
+            data: {
+              syncAnonymousData: {
+                success: true,
+                syncedSessions: 2,
+                syncedLogs: 2,
+                syncedEntries: 0,
+                syncedGoals: 0,
+                errors: [],
+              },
             },
           },
         },
@@ -887,10 +957,15 @@ describe('AuthContext', () => {
         expect(mockLocalStorage.getPendingSyncData).toHaveBeenCalled()
       })
 
-      expect(mockLocalStorage.markAsSynced).toHaveBeenCalledWith(
-        ['session-1', 'session-2'],
-        ['log-1', 'log-2']
-      )
+      // Wait for the mutation to complete
+      await waitFor(() => {
+        expect(mockLocalStorage.markAsSynced).toHaveBeenCalledWith(
+          ['session-1', 'session-2'],
+          ['log-1', 'log-2'],
+          [],
+          []
+        )
+      })
     })
 
     it('handles sync errors', async () => {
