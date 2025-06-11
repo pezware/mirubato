@@ -43,3 +43,5 @@ export type { MultiVoicePracticeViewProps } from './MultiVoicePracticeView'
 // Logbook Components
 export { default as ManualEntryForm } from './ManualEntryForm'
 export { default as LogbookEntryList } from './LogbookEntryList'
+export { default as LogbookReports } from './LogbookReports'
+export type { LogbookReportsProps } from './LogbookReports'

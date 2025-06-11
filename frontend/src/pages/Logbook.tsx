@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ManualEntryForm from '../components/ManualEntryForm'
 import LogbookEntryList from '../components/LogbookEntryList'
+import LogbookReports from '../components/LogbookReports'
 import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
 import { useModules } from '../contexts/ModulesContext'
@@ -174,6 +175,13 @@ const Logbook: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Reports Section - Only show when we have data */}
+        {!isLoading && entries.length > 0 && (
+          <div className="mb-6">
+            <LogbookReports />
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading ? (
