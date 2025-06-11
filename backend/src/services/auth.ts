@@ -47,14 +47,16 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const [accessToken, refreshToken] = await Promise.all([
       createJWT(user, this.jwtSecret),
-      createRefreshToken(user.id, this.jwtSecret),
+      createRefreshToken(user.id, this.jwtSecret, user),
     ])
 
     return { accessToken, refreshToken }
   }
 
-  async verifyRefreshToken(token: string): Promise<string> {
+  async verifyRefreshToken(
+    token: string
+  ): Promise<{ sub: string; user?: User }> {
     const payload = await verifyToken(token, this.jwtSecret)
-    return payload.sub
+    return payload
   }
 }

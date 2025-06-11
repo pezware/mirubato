@@ -80,6 +80,7 @@ describe('DataSyncService', () => {
     email: 'test@example.com',
     isAnonymous: false,
     primaryInstrument: Instrument.PIANO,
+    hasCloudStorage: true,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
     preferences: {
@@ -116,7 +117,9 @@ describe('DataSyncService', () => {
   describe('syncAllPendingData', () => {
     it('should sync all pending sessions and logs successfully', async () => {
       // Mock pending data
-      (localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [mockSession],
         logs: [mockLog],
       })
@@ -145,9 +148,9 @@ describe('DataSyncService', () => {
             },
           },
         })
-      ;(localStorageService.getRemoteSessionId as jest.Mock).mockReturnValue(
-        'remote-session-1'
-      )
+      const getRemoteSessionIdMock =
+        localStorageService.getRemoteSessionId as jest.Mock
+      getRemoteSessionIdMock.mockReturnValue('remote-session-1')
 
       mutateSpy.mockResolvedValueOnce({
         data: {
@@ -181,7 +184,9 @@ describe('DataSyncService', () => {
     })
 
     it('should handle session sync failures gracefully', async () => {
-      (localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [mockSession, { ...mockSession, id: 'local-session-2' }],
         logs: [],
       })
@@ -229,13 +234,15 @@ describe('DataSyncService', () => {
     })
 
     it('should handle log sync failures gracefully', async () => {
-      (localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [],
         logs: [mockLog, { ...mockLog, id: 'log-2' }],
       })
-      ;(localStorageService.getRemoteSessionId as jest.Mock).mockReturnValue(
-        'remote-session-1'
-      )
+      const getRemoteSessionIdMock =
+        localStorageService.getRemoteSessionId as jest.Mock
+      getRemoteSessionIdMock.mockReturnValue('remote-session-1')
 
       // First log succeeds, second fails
       mutateSpy
@@ -269,7 +276,9 @@ describe('DataSyncService', () => {
     })
 
     it('should handle empty pending data', async () => {
-      (localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [],
         logs: [],
       })
@@ -289,7 +298,9 @@ describe('DataSyncService', () => {
     it('should handle invalid session data', async () => {
       const { DataValidator } = jest.requireMock('@mirubato/shared/types')
       DataValidator.validateLocalPracticeSession.mockReturnValueOnce(false)
-      ;(localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [mockSession],
         logs: [],
       })
@@ -305,13 +316,15 @@ describe('DataSyncService', () => {
     })
 
     it('should handle missing remote session ID for log sync', async () => {
-      (localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [],
         logs: [mockLog],
       })
-      ;(localStorageService.getRemoteSessionId as jest.Mock).mockReturnValue(
-        null
-      )
+      const getRemoteSessionIdMock =
+        localStorageService.getRemoteSessionId as jest.Mock
+      getRemoteSessionIdMock.mockReturnValue(null)
 
       const consoleError = jest.spyOn(console, 'error').mockImplementation()
       const result = await dataSyncService.syncAllPendingData()
@@ -332,7 +345,9 @@ describe('DataSyncService', () => {
         notesCorrect: undefined,
       }
 
-      ;(localStorageService.getPendingSyncData as jest.Mock).mockReturnValue({
+      const getPendingSyncDataMock =
+        localStorageService.getPendingSyncData as jest.Mock
+      getPendingSyncDataMock.mockReturnValue({
         sessions: [incompleteSession],
         logs: [],
       })

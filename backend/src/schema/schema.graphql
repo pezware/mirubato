@@ -9,6 +9,7 @@ type User {
   primaryInstrument: Instrument!
   preferences: UserPreferences!
   stats: UserStats!
+  hasCloudStorage: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

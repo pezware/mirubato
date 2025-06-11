@@ -8,11 +8,13 @@ import React, {
 import { EventBus } from '../modules/core/EventBus'
 import { EventDrivenStorage } from '../modules/core/eventDrivenStorage'
 import { PracticeLoggerModule } from '../modules/logger'
+import { LogbookReportingModule } from '../modules/analytics'
 import { StorageModule } from '../modules/infrastructure/StorageModule'
 import { logger } from '../utils/logger'
 
 interface ModulesContextType {
   practiceLogger: PracticeLoggerModule | null
+  reportingModule: LogbookReportingModule | null
   storageModule: StorageModule | null
   eventBus: EventBus
   storage: EventDrivenStorage
@@ -30,12 +32,15 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
 }) => {
   const [practiceLogger, setPracticeLogger] =
     useState<PracticeLoggerModule | null>(null)
+  const [reportingModule, setReportingModule] =
+    useState<LogbookReportingModule | null>(null)
   const [storageModule, setStorageModule] = useState<StorageModule | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const eventBusRef = useRef<EventBus>(EventBus.getInstance())
   const storageRef = useRef<EventDrivenStorage>(new EventDrivenStorage())
   const storageModuleRef = useRef<StorageModule | null>(null)
   const practiceLoggerRef = useRef<PracticeLoggerModule | null>(null)
+  const reportingModuleRef = useRef<LogbookReportingModule | null>(null)
 
   useEffect(() => {
     const initializeModules = async () => {
@@ -64,6 +69,15 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
         practiceLoggerRef.current = loggerModule
         setPracticeLogger(loggerModule)
 
+        // Initialize LogbookReportingModule with reference to PracticeLoggerModule
+        const reportingMod = new LogbookReportingModule(
+          eventBusRef.current,
+          loggerModule
+        )
+        await reportingMod.initialize()
+        reportingModuleRef.current = reportingMod
+        setReportingModule(reportingMod)
+
         // Subscribe to module events
         eventBusRef.current.subscribe('logger:init:complete', event => {
           logger.info('PracticeLoggerModule initialized', event.metadata)
@@ -89,6 +103,16 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
             logger.error('Error shutting down PracticeLoggerModule', { error })
           }
         }
+        if (reportingModuleRef.current) {
+          try {
+            // LogbookReportingModule doesn't have shutdown method currently
+            reportingModuleRef.current = null
+          } catch (error) {
+            logger.error('Error shutting down LogbookReportingModule', {
+              error,
+            })
+          }
+        }
         if (storageModuleRef.current) {
           try {
             await storageModuleRef.current.shutdown()
@@ -103,6 +127,7 @@ export const ModulesProvider: React.FC<ModulesProviderProps> = ({
 
   const value: ModulesContextType = {
     practiceLogger,
+    reportingModule,
     storageModule,
     eventBus: eventBusRef.current,
     storage: storageRef.current,

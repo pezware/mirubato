@@ -342,6 +342,28 @@ export class PracticeLoggerModule implements ModuleInterface {
       .sort((a: Goal, b: Goal) => b.createdAt - a.createdAt)
   }
 
+  async getGoals(
+    filters: Partial<{ userId?: string; status?: string[] }> = {}
+  ): Promise<Goal[]> {
+    const keys = await this.storage.getKeys()
+    const goalKeys = keys.filter((k: string) => k.startsWith('goal:'))
+    const goalPromises = goalKeys.map((key: string) =>
+      this.storage.read<Goal>(key)
+    )
+    const loadedGoals = await Promise.all(goalPromises)
+    let goals = loadedGoals.filter((g): g is Goal => g !== null)
+
+    // Apply filters
+    if (filters.userId) {
+      goals = goals.filter((g: Goal) => g.userId === filters.userId)
+    }
+    if (filters.status?.length) {
+      goals = goals.filter((g: Goal) => filters.status!.includes(g.status))
+    }
+
+    return goals.sort((a: Goal, b: Goal) => b.createdAt - a.createdAt)
+  }
+
   // Export Functionality
 
   async exportLogs(options: ExportOptions): Promise<ExportResult> {

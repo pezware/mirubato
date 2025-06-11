@@ -104,3 +104,28 @@ export interface StorageErrorEventData {
   error: string
   requestId?: string
 }
+
+// Auth event types
+export interface AuthLoginEventData {
+  user: {
+    id: string
+    email?: string
+    displayName: string | null
+    primaryInstrument: 'PIANO' | 'GUITAR'
+    isAnonymous: boolean
+    hasCloudStorage: boolean
+  }
+  timestamp: number
+}
+
+export interface AuthLogoutEventData {
+  user: {
+    id: string
+    email?: string
+    displayName: string | null
+    primaryInstrument: 'PIANO' | 'GUITAR'
+    isAnonymous: boolean
+    hasCloudStorage: boolean
+  }
+  timestamp: number
+}

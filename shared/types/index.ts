@@ -39,6 +39,7 @@ export interface User {
   email: string
   displayName?: string | null
   primaryInstrument: Instrument
+  hasCloudStorage: boolean
   createdAt: string // ISO date string
   updatedAt: string // ISO date string
 }

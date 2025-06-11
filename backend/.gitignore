@@ -107,7 +107,6 @@ temp/
 # Generated files
 *.generated.ts
 *.generated.js
-src/types/generated/
 
 # Source maps
 *.map
