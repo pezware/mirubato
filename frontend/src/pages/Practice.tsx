@@ -51,7 +51,9 @@ const Practice: React.FC = () => {
     allScores[0] || null
   )
   const [availableScores] = useState<Score[]>(allScores)
-  const [audioManager] = useState(() => new ExtendedMultiVoiceAudioManager())
+  const [audioManager] = useState(() =>
+    ExtendedMultiVoiceAudioManager.getInstance()
+  )
   const [, setSheetMusicModule] =
     useState<SheetMusicLibraryModuleMultiVoice | null>(null)
   const [isLoading] = useState(false)
