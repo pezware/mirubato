@@ -37,6 +37,7 @@ import { TimeSignature } from '../modules/sheetMusic/types'
  */
 export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
   private initialized = false
+  private audioStarted = false
   private pianoSampler: Tone.Sampler | null = null
   private guitarSynth: Tone.PolySynth | null = null
   private currentInstrument: 'piano' | 'guitar' = 'piano'
@@ -108,9 +109,28 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     return this.loadingPromise
   }
 
-  private async _initializeInternal(): Promise<void> {
+  /**
+   * Start the audio context after user interaction
+   * This must be called in response to a user gesture (click, tap, etc.)
+   */
+  private async ensureAudioStarted(): Promise<void> {
+    if (this.audioStarted) {
+      return
+    }
+
     try {
       await this.toneInstance.start()
+      this.audioStarted = true
+    } catch (error) {
+      console.warn('Failed to start audio context:', error)
+      // Don't throw - audio might work later
+    }
+  }
+
+  private async _initializeInternal(): Promise<void> {
+    try {
+      // Don't start the audio context here - wait for user interaction
+      // await this.toneInstance.start()
 
       const baseUrl = this.config.samplesBaseUrl!
 
@@ -212,7 +232,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
         try {
           if (ctx && 'latencyHint' in ctx) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (ctx as any).latencyHint = 'interactive'
+            ;(ctx as any).latencyHint = 'interactive'
           }
         } catch {
           // Ignore if latencyHint is not supported
@@ -256,6 +276,9 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       await this.initialize()
     }
 
+    // Ensure audio context is started (requires user interaction)
+    await this.ensureAudioStarted()
+
     const instrument = this.getActiveInstrument()
     if (instrument) {
       // Use immediate timing for lower latency
@@ -285,6 +308,9 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     if (!this.initialized) {
       await this.initialize()
     }
+
+    // Ensure audio context is started (requires user interaction)
+    await this.ensureAudioStarted()
 
     this.stopPlayback()
     this.isPlayingState = true

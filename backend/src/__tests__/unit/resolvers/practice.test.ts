@@ -1,6 +1,6 @@
 import { practiceResolvers } from '../../../resolvers/practice'
 import type { GraphQLContext, Env } from '../../../types/context'
-import type { User, GraphQLResolveInfo } from '../../../types/generated/graphql'
+import type { GraphQLResolveInfo } from '../../../types/generated/graphql'
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
 import { UserService } from '../../../services/user'
 
