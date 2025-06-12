@@ -39,31 +39,25 @@ mirubato/
     └── environments.json  # Domain and team configuration
 ```
 
-## 🛠 Quick Debugging Tools
+## 🛠 Quick Debugging Reference
 
-### Production Endpoints (Always Available)
+For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)**
 
-1. **Health Check**: `https://api.mirubato.com/health`
+### Quick Links
 
-   - Shows version, environment, timestamp
-   - First thing to check when debugging
+- **Production Health Check**: `https://api.mirubato.com/health`
+- **GraphQL Playground**: `https://api.mirubato.com/graphql`
+- **CORS Debug**: `https://api.mirubato.com/debug/cors`
 
-2. **GraphQL Playground**: `https://api.mirubato.com/graphql`
+### Common Issues
 
-   - Test queries, check schema, debug auth
-   - Introspection enabled for transparency
-
-3. **CORS Debug**: `https://api.mirubato.com/debug/cors`
-   - Diagnose cross-origin issues
-
-### Common Issues & Solutions
-
-| Problem          | Quick Fix                                             |
-| ---------------- | ----------------------------------------------------- |
-| CORS errors      | Check origin in `/debug/cors` endpoint                |
-| Backend down     | Check `/health` endpoint                              |
-| Config issues    | Regenerate with `scripts/generate-wrangler-config.js` |
-| Version mismatch | Compare `/health` version with git commits            |
+| Problem                  | See DEBUG.md Section         |
+| ------------------------ | ---------------------------- |
+| VexFlow "Too Many Ticks" | Known Issues #1              |
+| GraphQL 500 errors       | Known Issues #2              |
+| Mobile audio issues      | Known Issues #6              |
+| Type misalignment        | Common Development Issues #1 |
+| Memory leaks             | Common Development Issues #4 |
 
 ## 📋 Development Checklist
 
@@ -97,7 +91,34 @@ mirubato/
 4. **Mobile First**: Test on actual devices
 5. **Open Source**: Keep endpoints public for debugging
 
-## 🎯 Focus Areas
+## 🎯 Current Focus Areas
+
+### Immediate Priority: MVP Simplification (2 Weeks)
+
+1. **Week 1**: Stabilization & Bug Fixes
+
+   - Fix VexFlow rendering bugs
+   - Fix audio playback issues
+   - Ensure mobile compatibility
+   - Disable complex modules temporarily
+
+2. **Week 2**: Content & Polish
+   - Add 10 curated pieces (5 piano, 5 guitar)
+   - Implement preset practice workouts
+   - Simplify UI to single "Practice" mode
+
+### Technical Debt (Ongoing)
+
+1. **Type Alignment** (IN PROGRESS)
+
+   - Unify types across backend/frontend/shared
+   - Setup GraphQL Code Generator
+   - Remove duplicate type definitions
+
+2. **Code Quality**
+   - Remove console.log statements
+   - Split large classes (700+ lines)
+   - Replace `any` types with proper types
 
 ### Core Technologies
 

@@ -5,6 +5,7 @@
 ### Updated Files
 
 1. **DEVELOPMENT_SETUP.md**
+
    - Updated project structure to include new directories:
      - `src/data/sheetMusic/` - Sheet music data files
      - `src/pages/` - Page components
@@ -15,6 +16,7 @@
    - Updated next steps with current bugs and missing features
 
 2. **DESIGN_DETAILS.md**
+
    - Added "Current Implementation Details" section documenting:
      - Audio system using Tone.js Sampler (not @tonejs/piano)
      - Sheet music data structure and storage
@@ -32,11 +34,13 @@
 ### Key Implementation Changes Reflected
 
 1. **Audio System**
+
    - Removed @tonejs/piano due to EventEmitter browser issues
    - Implemented audioManager using Tone.js Sampler
    - Uses Salamander Grand Piano samples from Tone.js CDN
 
 2. **Data Organization**
+
    - Sheet music now in `src/data/sheetMusic/`
    - TypeScript interfaces in `src/types/sheetMusic.ts`
    - Reusable utilities in `src/utils/`

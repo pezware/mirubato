@@ -56,9 +56,11 @@ interface ModuleInterface {
 
 - Central event-driven communication system
 - Singleton pattern with pub/sub architecture
-- Priority-based event execution
+- Type-safe event system with generic constraints
 - Event history tracking (last 1000 events)
 - Wildcard pattern matching for subscriptions
+- Debug mode with comprehensive logging
+- Automatic error handling and event isolation
 
 ##### 2. **Storage Services**
 
@@ -436,6 +438,48 @@ Local Change → IndexedDB → Sync Queue → Background Sync → GraphQL API
 - **Tablet**: User choice between modes
 
 ## Technical Implementation
+
+### Shared Architecture
+
+#### Shared Modules Directory
+
+The `/shared` directory contains cross-platform code that is imported by both frontend and backend, ensuring type safety and code reuse:
+
+```
+shared/
+├── types/              # Type definitions shared across all packages
+│   ├── auth.ts        # Authentication types
+│   ├── practice.ts    # Practice session types
+│   ├── sheetMusic.ts  # Music notation types
+│   ├── user.ts        # User profile types
+│   └── index.ts       # Barrel exports
+├── utils/              # Shared utility functions
+│   ├── validation.ts  # Input validation
+│   ├── formatting.ts  # Data formatting
+│   └── constants.ts   # Shared constants
+├── interfaces/         # Module interfaces
+│   ├── module.ts      # Base module interface
+│   ├── storage.ts     # Storage service interfaces
+│   └── events.ts      # Event system types
+└── scripts/           # Build and conversion scripts
+    └── musicxml-converter/  # MusicXML processing tools
+```
+
+#### Type System Architecture
+
+All types flow from the shared directory to ensure consistency:
+
+```
+shared/types (Source of Truth)
+    ↓
+GraphQL Schema (Uses shared types)
+    ↓
+Generated GraphQL Types (Auto-generated)
+    ↓
+Frontend & Backend (Import from shared)
+```
+
+This architecture prevents type drift and ensures all parts of the system use identical type definitions.
 
 ### Frontend Architecture
 

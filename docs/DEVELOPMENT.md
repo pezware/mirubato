@@ -180,6 +180,50 @@ describe('Practice Session Flow', () => {
 })
 ```
 
+## Development Principles
+
+### Test-First Development (TDD)
+
+We follow Test-Driven Development practices for all new features:
+
+1. **Write the test first** - Tests define the expected behavior
+2. **Run the test** - It should fail (red phase)
+3. **Write minimal code** - Just enough to make the test pass (green phase)
+4. **Refactor** - Improve the code while keeping tests passing
+
+### Code Quality Standards
+
+- **No `any` types** - All TypeScript code must be properly typed
+- **No `console.log`** - Use proper logging service or remove before commit
+- **80%+ test coverage** - Required for all new modules (90% for critical paths)
+- **ESLint compliance** - All code must pass linting rules
+- **Module boundaries** - Modules communicate only via EventBus
+
+### Module Implementation Guidelines
+
+When implementing a new module:
+
+1. **Define the interface** - Start with the module interface in `/shared/interfaces`
+2. **Write comprehensive tests** - Test file must exist before implementation
+3. **Follow event patterns** - Use EventBus for all cross-module communication
+4. **Document with JSDoc** - All public methods must have documentation
+5. **Update TypeDoc** - Run `npm run docs:generate` to verify documentation
+
+### Performance Considerations
+
+- **Bundle size** - Keep dependencies minimal (Workers have 1MB limit)
+- **Lazy loading** - Load modules only when needed
+- **Memory management** - Clean up event listeners and audio resources
+- **Response time** - API responses must be <100ms (critical: <200ms)
+
+### Security Best Practices
+
+- **No secrets in code** - Use environment variables
+- **Input validation** - Validate all user inputs
+- **SQL injection prevention** - Use parameterized queries
+- **XSS prevention** - Sanitize all rendered content
+- **HTTPS only** - All endpoints must use HTTPS
+
 ## Code Standards
 
 ### TypeScript
