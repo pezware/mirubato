@@ -10,7 +10,8 @@ export default {
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/src/$1',
-        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
+        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts',
+        '^@mirubato/shared/types$': '<rootDir>/../shared/types/index.ts'
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -34,7 +35,8 @@ export default {
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/src/$1',
-        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
+        '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts',
+        '^@mirubato/shared/types$': '<rootDir>/../shared/types/index.ts'
       },
       transform: {
         '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -63,7 +65,7 @@ export default {
   // Ignore patterns
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/tmp/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@tonejs|tone|vexflow|nanoid)/)'
+    'node_modules/(?!(@tonejs|tone|vexflow|nanoid|@mirubato/shared)/)'
   ],
   
   // Verbose output

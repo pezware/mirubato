@@ -10,6 +10,7 @@ import {
   LOGOUT,
 } from '../graphql/queries/auth'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
+import { SYNC_ANONYMOUS_DATA } from '../graphql/mutations/syncAnonymousData'
 import {
   setAuthTokens,
   clearAuthTokens,
@@ -57,6 +58,8 @@ jest.mock('../services/localStorage', () => ({
     migrateToAuthenticatedUser: jest.fn(),
     getPendingSyncData: jest.fn(),
     markAsSynced: jest.fn(),
+    getLogbookEntries: jest.fn(),
+    getGoals: jest.fn(),
   },
 }))
 
@@ -820,9 +823,12 @@ describe('AuthContext', () => {
             instrument: Instrument.PIANO,
             sessionType: SessionType.FREE_PRACTICE,
             startedAt: '2024-01-01T00:00:00.000Z',
+            completedAt: undefined,
             pausedDuration: 0,
+            accuracyPercentage: undefined,
             notesAttempted: 100,
             notesCorrect: 90,
+            sheetMusicId: undefined,
             isSynced: false,
           },
           {
@@ -831,9 +837,12 @@ describe('AuthContext', () => {
             instrument: Instrument.PIANO,
             sessionType: SessionType.GUIDED_PRACTICE,
             startedAt: '2024-01-01T01:00:00.000Z',
+            completedAt: undefined,
             pausedDuration: 0,
+            accuracyPercentage: undefined,
             notesAttempted: 50,
             notesCorrect: 45,
+            sheetMusicId: undefined,
             isSynced: false,
           },
         ],
@@ -843,6 +852,11 @@ describe('AuthContext', () => {
             sessionId: 'session-1',
             activityType: ActivityType.SIGHT_READING,
             durationSeconds: 300,
+            tempoPracticed: undefined,
+            targetTempo: undefined,
+            focusAreas: [],
+            selfRating: undefined,
+            notes: undefined,
             createdAt: '2024-01-01T00:00:00.000Z',
           },
           {
@@ -850,6 +864,11 @@ describe('AuthContext', () => {
             sessionId: 'session-2',
             activityType: ActivityType.SCALES,
             durationSeconds: 600,
+            tempoPracticed: undefined,
+            targetTempo: undefined,
+            focusAreas: [],
+            selfRating: undefined,
+            notes: undefined,
             createdAt: '2024-01-01T01:00:00.000Z',
           },
         ],
@@ -858,6 +877,8 @@ describe('AuthContext', () => {
       mockCheckIsAuthenticated.mockReturnValue(true)
       mockLocalStorage.getUserData.mockReturnValue(mockUser)
       mockLocalStorage.getPendingSyncData.mockReturnValue(mockPendingData)
+      mockLocalStorage.getLogbookEntries.mockReturnValue([])
+      mockLocalStorage.getGoals.mockReturnValue([])
 
       const mocks = [
         {
@@ -867,6 +888,71 @@ describe('AuthContext', () => {
           result: {
             data: {
               me: mockUser,
+            },
+          },
+        },
+        {
+          request: {
+            query: SYNC_ANONYMOUS_DATA,
+            variables: {
+              input: {
+                sessions: [
+                  {
+                    sheetMusicId: undefined,
+                    tempo: undefined,
+                    instrument: 'PIANO',
+                    durationMinutes: 0,
+                    accuracy: undefined,
+                    notes: 'Attempted: 100, Correct: 90',
+                    createdAt: '2024-01-01T00:00:00.000Z',
+                    completedAt: undefined,
+                  },
+                  {
+                    sheetMusicId: undefined,
+                    tempo: undefined,
+                    instrument: 'PIANO',
+                    durationMinutes: 0,
+                    accuracy: undefined,
+                    notes: 'Attempted: 50, Correct: 45',
+                    createdAt: '2024-01-01T01:00:00.000Z',
+                    completedAt: undefined,
+                  },
+                ],
+                logs: [
+                  {
+                    sessionId: 'session-1',
+                    measureNumber: undefined,
+                    mistakeType: undefined,
+                    mistakeDetails: undefined,
+                    tempoAchievement: undefined,
+                    notes: undefined,
+                    createdAt: '2024-01-01T00:00:00.000Z',
+                  },
+                  {
+                    sessionId: 'session-2',
+                    measureNumber: undefined,
+                    mistakeType: undefined,
+                    mistakeDetails: undefined,
+                    tempoAchievement: undefined,
+                    notes: undefined,
+                    createdAt: '2024-01-01T01:00:00.000Z',
+                  },
+                ],
+                entries: [],
+                goals: [],
+              },
+            },
+          },
+          result: {
+            data: {
+              syncAnonymousData: {
+                success: true,
+                syncedSessions: 2,
+                syncedLogs: 2,
+                syncedEntries: 0,
+                syncedGoals: 0,
+                errors: [],
+              },
             },
           },
         },
@@ -887,10 +973,15 @@ describe('AuthContext', () => {
         expect(mockLocalStorage.getPendingSyncData).toHaveBeenCalled()
       })
 
-      expect(mockLocalStorage.markAsSynced).toHaveBeenCalledWith(
-        ['session-1', 'session-2'],
-        ['log-1', 'log-2']
-      )
+      // Wait for the mutation to complete
+      await waitFor(() => {
+        expect(mockLocalStorage.markAsSynced).toHaveBeenCalledWith(
+          ['session-1', 'session-2'],
+          ['log-1', 'log-2'],
+          [],
+          []
+        )
+      })
     })
 
     it('handles sync errors', async () => {

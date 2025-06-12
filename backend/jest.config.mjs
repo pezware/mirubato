@@ -11,16 +11,24 @@ export default {
       tsconfig: {
         target: 'ES2022',
         module: 'commonjs',
-        esModuleInterop: true
-      }
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        paths: {
+          '../../../shared/types': ['../shared/types/index.ts']
+        }
+      },
+      isolatedModules: false
     }]
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts'
+    '^nanoid$': '<rootDir>/src/__mocks__/nanoid.ts',
+    '^@mirubato/shared/types$': '<rootDir>/../shared/types/index.ts',
+    '^(\\.\\./){3}shared/types$': '<rootDir>/../shared/types/index.ts',
+    '^(\\.\\./){2}shared/types$': '<rootDir>/../shared/types/index.ts'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(nanoid|@as-integrations|@apollo)/)'
+    'node_modules/(?!(nanoid|@as-integrations|@apollo|@mirubato/shared)/)'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',

@@ -167,6 +167,7 @@ export default {
                 user,
                 requestId,
                 ip,
+                db: env.DB,
               }
             },
           }

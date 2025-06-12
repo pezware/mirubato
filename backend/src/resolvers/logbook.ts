@@ -1,5 +1,6 @@
 import type { LogbookEntry, Goal, Resolvers } from '../types/generated/graphql'
 import { nanoid } from 'nanoid'
+import { UserService } from '../services/user'
 
 export const logbookResolvers: Resolvers = {
   Query: {
@@ -854,13 +855,13 @@ export const logbookResolvers: Resolvers = {
 
       // For entries loaded from database, fetch the user
       if ('userId' in parent && parent.userId) {
-        // For now, return the current user if it matches
-        if (context.user && context.user.id === parent.userId) {
-          return context.user
+        // Fetch user from database
+        const userService = new UserService(context.db)
+        const user = await userService.getUserById(parent.userId as string)
+        if (!user) {
+          throw new Error('User not found')
         }
-
-        // TODO: Fetch user from database
-        throw new Error('User not found')
+        return user
       }
 
       throw new Error('Unable to resolve user for logbook entry')
@@ -876,13 +877,13 @@ export const logbookResolvers: Resolvers = {
 
       // For goals loaded from database, fetch the user
       if ('userId' in parent && parent.userId) {
-        // For now, return the current user if it matches
-        if (context.user && context.user.id === parent.userId) {
-          return context.user
+        // Fetch user from database
+        const userService = new UserService(context.db)
+        const user = await userService.getUserById(parent.userId as string)
+        if (!user) {
+          throw new Error('User not found')
         }
-
-        // TODO: Fetch user from database
-        throw new Error('User not found')
+        return user
       }
 
       throw new Error('Unable to resolve user for goal')

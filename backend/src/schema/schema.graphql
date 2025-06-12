@@ -455,6 +455,26 @@ type Mutation {
   updateGoalMilestone(goalId: ID!, milestoneId: ID!, completed: Boolean!): Goal!
   deleteGoal(id: ID!): Boolean!
   linkEntryToGoal(entryId: ID!, goalId: ID!): Goal!
+  
+  # Bulk sync mutations for migrating anonymous user data
+  syncAnonymousData(input: SyncAnonymousDataInput!): SyncResult!
+}
+
+# Input types for bulk sync
+input SyncAnonymousDataInput {
+  sessions: [CreatePracticeSessionInput!]!
+  logs: [CreatePracticeLogInput!]!
+  entries: [CreateLogbookEntryInput!]!
+  goals: [CreateGoalInput!]!
+}
+
+type SyncResult {
+  success: Boolean!
+  syncedSessions: Int!
+  syncedLogs: Int!
+  syncedEntries: Int!
+  syncedGoals: Int!
+  errors: [String!]
 }
 
 # Connection types for pagination

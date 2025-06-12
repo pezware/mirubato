@@ -1,12 +1,13 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import { nanoid } from 'nanoid'
-import type { User, UserPreferences, UserStats } from '../types/shared'
-import type { UpdateUserInput, Instrument } from '../types/generated/graphql'
+import type { BackendUser, UserPreferences, UserStats } from '../types/shared'
+import { Instrument, Theme, NotationSize } from '../types/shared'
+import type { UpdateUserInput } from '../types/generated/graphql'
 
 export class UserService {
   constructor(private db: D1Database) {}
 
-  async getUserById(id: string): Promise<User | null> {
+  async getUserById(id: string): Promise<BackendUser | null> {
     const result = await this.db
       .prepare('SELECT * FROM users WHERE id = ?')
       .bind(id)
@@ -29,7 +30,7 @@ export class UserService {
     return this.mapToUser(result, preferences)
   }
 
-  async getUserByEmail(email: string): Promise<User | null> {
+  async getUserByEmail(email: string): Promise<BackendUser | null> {
     const result = await this.db
       .prepare('SELECT * FROM users WHERE email = ?')
       .bind(email)
@@ -55,7 +56,7 @@ export class UserService {
   async createUser(data: {
     email: string
     displayName?: string
-  }): Promise<User> {
+  }): Promise<BackendUser> {
     const id = `user_${nanoid()}`
     const now = new Date().toISOString()
 
@@ -64,7 +65,14 @@ export class UserService {
       .prepare(
         'INSERT INTO users (id, email, display_name, primary_instrument, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
       )
-      .bind(id, data.email, data.displayName || null, 'PIANO', now, now)
+      .bind(
+        id,
+        data.email,
+        data.displayName || null,
+        Instrument.PIANO,
+        now,
+        now
+      )
       .run()
 
     // Create default preferences
@@ -80,7 +88,7 @@ export class UserService {
       id,
       email: data.email,
       displayName: data.displayName,
-      primaryInstrument: 'PIANO',
+      primaryInstrument: Instrument.PIANO,
       preferences,
       stats: this.getDefaultStats(),
       hasCloudStorage: true, // Users created in D1 have cloud storage
@@ -89,7 +97,7 @@ export class UserService {
     }
   }
 
-  async updateUser(id: string, input: UpdateUserInput): Promise<User> {
+  async updateUser(id: string, input: UpdateUserInput): Promise<BackendUser> {
     const user = await this.getUserById(id)
     if (!user) {
       throw new Error('User not found')
@@ -132,7 +140,7 @@ export class UserService {
         .run()
     }
 
-    return this.getUserById(id) as Promise<User>
+    return this.getUserById(id) as Promise<BackendUser>
   }
 
   async deleteUser(id: string): Promise<void> {
@@ -185,7 +193,7 @@ export class UserService {
   private mapToUser(
     dbRow: Record<string, unknown>,
     preferences: UserPreferences
-  ): User {
+  ): BackendUser {
     return {
       id: dbRow.id as string,
       email: dbRow.email as string,
@@ -201,8 +209,8 @@ export class UserService {
 
   private getDefaultPreferences(): UserPreferences {
     return {
-      theme: 'LIGHT',
-      notationSize: 'MEDIUM',
+      theme: Theme.LIGHT,
+      notationSize: NotationSize.MEDIUM,
       practiceReminders: true,
       dailyGoalMinutes: 30,
     }

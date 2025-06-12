@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth'
 import { UserService } from '../services/user'
 import { EmailService } from '../services/email'
 import { isValidEmail } from '../utils/auth'
+import { Instrument, Theme, NotationSize } from '../types/shared'
 
 export const authResolvers: { Mutation: MutationResolvers } = {
   Mutation: {
@@ -78,10 +79,10 @@ export const authResolvers: { Mutation: MutationResolvers } = {
           id: `temp_${email.replace('@', '_')}_${Date.now()}`,
           email,
           displayName: undefined,
-          primaryInstrument: 'PIANO' as const,
+          primaryInstrument: Instrument.PIANO,
           preferences: {
-            theme: 'LIGHT' as const,
-            notationSize: 'MEDIUM' as const,
+            theme: Theme.LIGHT,
+            notationSize: NotationSize.MEDIUM,
             practiceReminders: true,
             dailyGoalMinutes: 30,
           },

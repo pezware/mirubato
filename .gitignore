@@ -12,6 +12,12 @@ dist-ssr/
 build/
 *.local
 
+# Compiled JavaScript in shared folder (we use TypeScript sources directly)
+shared/**/*.js
+shared/**/*.js.map
+shared/**/*.d.ts
+!shared/scripts/**/*.js
+
 # Environment variables
 .env
 .env.local

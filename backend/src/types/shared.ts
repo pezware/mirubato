@@ -1,25 +1,31 @@
-// Shared types between frontend and backend
-// These types should match the GraphQL schema
+/**
+ * Backend type exports from shared types
+ * This file re-exports types from the shared package to ensure consistency
+ */
 
-export type Instrument = 'PIANO' | 'GUITAR'
+// Re-export everything from shared types
+export * from '../../../shared/types'
+
+// Import specific types we need to extend
+import type {
+  User as SharedUser,
+  UserPreferences as SharedUserPreferences,
+  UserStats as SharedUserStats,
+  PracticeSession as SharedPracticeSession,
+  Instrument,
+} from '../../../shared/types'
+
+// Backend-specific types that don't exist in shared
 export type Difficulty = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-export type Theme = 'LIGHT' | 'DARK' | 'AUTO'
-export type NotationSize = 'SMALL' | 'MEDIUM' | 'LARGE'
+
 export type StylePeriod =
   | 'BAROQUE'
   | 'CLASSICAL'
   | 'ROMANTIC'
   | 'MODERN'
   | 'CONTEMPORARY'
-export type SessionType = 'FREE_PRACTICE' | 'GUIDED_PRACTICE' | 'ASSESSMENT'
-export type ActivityType =
-  | 'SIGHT_READING'
-  | 'SCALES'
-  | 'REPERTOIRE'
-  | 'ETUDES'
-  | 'TECHNIQUE'
-  | 'OTHER'
 
+// Sheet music types (not in shared yet)
 export interface Note {
   keys: string[]
   duration: string
@@ -76,56 +82,23 @@ export interface SheetMusic {
   thumbnail?: string
 }
 
-export interface UserPreferences {
-  theme: Theme
-  notationSize: NotationSize
-  practiceReminders: boolean
-  dailyGoalMinutes: number
-  customSettings?: Record<string, unknown>
+// Type compatibility helpers for GraphQL
+// The GraphQL schema expects User to have embedded preferences and stats
+// while our shared types keep them separate. We create a compatibility type.
+
+// User type that matches GraphQL schema expectations
+export interface BackendUser extends SharedUser {
+  preferences: SharedUserPreferences
+  stats: SharedUserStats
 }
 
-export interface UserStats {
-  totalPracticeTime: number
-  consecutiveDays: number
-  piecesCompleted: number
-  accuracyAverage: number
-}
-
-export interface User {
-  id: string
-  email: string
-  displayName?: string
-  primaryInstrument: Instrument
-  preferences: UserPreferences
-  stats: UserStats
-  hasCloudStorage: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: Instrument
-  sheetMusicId?: string
-  sessionType: SessionType
-  startedAt: string
-  completedAt?: string
-  pausedDuration: number
+// Practice session compatibility
+export interface BackendPracticeSession
+  extends Omit<
+    SharedPracticeSession,
+    'accuracy' | 'sheetMusicId' | 'completedAt'
+  > {
   accuracy?: number
-  notesAttempted: number
-  notesCorrect: number
-}
-
-export interface PracticeLog {
-  id: string
-  sessionId: string
-  activityType: ActivityType
-  durationSeconds: number
-  tempoPracticed?: number
-  targetTempo?: number
-  focusAreas: string[]
-  selfRating?: number
-  notes?: string
-  createdAt: string
+  sheetMusicId?: string
+  completedAt?: string
 }

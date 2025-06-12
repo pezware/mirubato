@@ -14,12 +14,15 @@ export function createMockContext(
     ENVIRONMENT: 'development' as const,
   }
 
+  const env = {
+    ...defaultEnv,
+    ...(overrides?.env || {}),
+  }
+
   return {
-    env: {
-      ...defaultEnv,
-      ...(overrides?.env || {}),
-    },
+    env,
     requestId: nanoid(),
+    db: env.DB,
     ...overrides,
   }
 }

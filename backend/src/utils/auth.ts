@@ -1,11 +1,11 @@
 import * as jwt from 'jsonwebtoken'
 import { nanoid } from 'nanoid'
-import type { User } from '../types/shared'
+import type { BackendUser } from '../types/shared'
 
 export interface JWTPayload {
   sub: string
   email: string
-  user: User
+  user: BackendUser
   iat: number
   exp: number
 }
@@ -23,7 +23,7 @@ export function generateMagicLinkToken(): string {
 
 // Create a JWT token
 export async function createJWT(
-  user: User,
+  user: BackendUser,
   secret: string,
   expiresIn: string | number = '15m'
 ): Promise<string> {
@@ -44,9 +44,9 @@ export async function createJWT(
 export async function createRefreshToken(
   userId: string,
   secret: string,
-  user?: User
+  user?: BackendUser
 ): Promise<string> {
-  const payload: { sub: string; type: string; user?: User } = {
+  const payload: { sub: string; type: string; user?: BackendUser } = {
     sub: userId,
     type: 'refresh',
   }
@@ -82,11 +82,11 @@ export async function verifyJWT(
 export async function verifyRefreshToken(
   token: string,
   secret: string
-): Promise<{ sub: string; user?: User }> {
+): Promise<{ sub: string; user?: BackendUser }> {
   try {
     const payload = jwt.verify(token, secret, {
       issuer: 'mirubato',
-    }) as { sub: string; type: string; user?: User }
+    }) as { sub: string; type: string; user?: BackendUser }
 
     if (payload.type !== 'refresh') {
       throw new Error('Invalid token type')

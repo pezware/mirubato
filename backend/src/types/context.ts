@@ -3,7 +3,7 @@ import type {
   KVNamespace,
   DurableObjectNamespace,
 } from '@cloudflare/workers-types'
-import type { User } from './shared'
+import type { BackendUser } from './shared'
 
 export interface Env {
   DB: D1Database
@@ -21,7 +21,8 @@ export interface Env {
 
 export interface GraphQLContext {
   env: Env
-  user?: User
+  user?: BackendUser
   requestId: string
   ip?: string
+  db: D1Database
 }
