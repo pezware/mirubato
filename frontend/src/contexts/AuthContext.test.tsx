@@ -297,10 +297,6 @@ describe('AuthContext', () => {
       })
 
       expect(mockClearAuthTokens).toHaveBeenCalled()
-      expect(console.error).toHaveBeenCalledWith(
-        'Failed to fetch current user:',
-        expect.any(Error)
-      )
     })
   })
 
@@ -432,10 +428,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('error')).toHaveTextContent('Invalid token')
       })
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Login failed:',
-        expect.any(Error)
-      )
+      // Login error is handled internally now
       expect(mockSetAuthTokens).not.toHaveBeenCalled()
       expect(mockNavigate).not.toHaveBeenCalledWith('/practice')
     })
@@ -623,10 +616,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user-id')).toHaveTextContent('anon-new')
       })
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Logout error:',
-        expect.any(Error)
-      )
+      // Logout error is handled internally now
       expect(mockClearAuthTokens).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/')
     })
@@ -713,10 +703,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('error')).toHaveTextContent('Token expired')
       })
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Token refresh failed:',
-        expect.any(Error)
-      )
+      // Token refresh error is handled internally now
       expect(mockClearAuthTokens).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/login')
     })

@@ -43,7 +43,6 @@ jest.mock('../../middleware/logging', () => ({
 
 jest.mock('../../config/cors', () => ({
   isOriginAllowed: jest.fn(),
-  getCorsConfig: jest.fn(),
 }))
 
 // Now import the handler after all mocks are set up
@@ -53,7 +52,7 @@ import { startServerAndCreateCloudflareWorkersHandler } from '@as-integrations/c
 import { verifyJWT } from '../../utils/auth'
 import { createRateLimiter } from '../../utils/rateLimiter'
 import { logRequest } from '../../middleware/logging'
-import { isOriginAllowed, getCorsConfig } from '../../config/cors'
+import { isOriginAllowed } from '../../config/cors'
 
 describe('Cloudflare Workers Handler', () => {
   let mockEnv: Env
@@ -77,15 +76,7 @@ describe('Cloudflare Workers Handler', () => {
     // eslint-disable-next-line no-extra-semi
     ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
     // eslint-disable-next-line no-extra-semi
-    ;(getCorsConfig as jest.Mock).mockReturnValue({
-      production: {
-        domains: ['example.com'],
-        patterns: [],
-      },
-      development: {
-        origins: ['http://localhost:3000'],
-      },
-    })
+    // getCorsConfig mock removed - no longer used
 
     const mockRateLimiter: RateLimiter = {
       checkLimit: jest.fn().mockResolvedValue(true),
@@ -267,71 +258,7 @@ describe('Cloudflare Workers Handler', () => {
     })
   })
 
-  describe('CORS Debug Endpoint', () => {
-    it('should provide CORS debugging information', async () => {
-      const request = new Request('https://api.example.com/debug/cors', {
-        headers: { Origin: 'https://example.com' },
-      })
-
-      const response = await handler.fetch(request, mockEnv)
-
-      expect(response.status).toBe(200)
-
-      const data = (await response.json()) as {
-        origin: string
-        environment: string
-        envRaw: string
-        isAllowed: boolean
-        corsConfig: {
-          production: string[]
-          patterns: unknown[]
-          development: string[]
-        }
-        timestamp: string
-      }
-      expect(data).toEqual({
-        origin: 'https://example.com',
-        environment: 'development',
-        envRaw: 'development',
-        isAllowed: true,
-        corsConfig: {
-          production: ['example.com'],
-          patterns: [],
-          development: ['http://localhost:3000'],
-        },
-        timestamp: expect.any(String),
-      })
-
-      expect(isOriginAllowed).toHaveBeenCalledWith(
-        'https://example.com',
-        'development'
-      )
-      expect(getCorsConfig).toHaveBeenCalledWith('development')
-    })
-
-    it('should handle requests without origin header in debug', async () => {
-      const request = new Request('https://api.example.com/debug/cors')
-
-      const response = await handler.fetch(request, mockEnv)
-
-      const data = (await response.json()) as { origin: string }
-      expect(data.origin).toBe('no-origin')
-    })
-
-    it('should default to production environment', async () => {
-      const envWithoutEnvironment = { ...mockEnv, ENVIRONMENT: undefined }
-      const request = new Request('https://api.example.com/debug/cors')
-
-      const response = await handler.fetch(request, envWithoutEnvironment)
-
-      const data = (await response.json()) as {
-        environment: string
-        envRaw?: string
-      }
-      expect(data.environment).toBe('production')
-      expect(data.envRaw).toBeUndefined()
-    })
-  })
+  // CORS Debug Endpoint tests removed - endpoint was removed from code
 
   describe('GraphQL Endpoint', () => {
     it('should handle GraphQL requests successfully', async () => {
@@ -564,7 +491,7 @@ describe('Cloudflare Workers Handler', () => {
       expect(data.stack).toBeUndefined()
     })
 
-    it('should log error responses in development', async () => {
+    it('should handle error responses in development', async () => {
       mockGraphQLHandler.mockResolvedValue(
         new Response(JSON.stringify({ errors: ['Test error'] }), {
           status: 400,
@@ -572,21 +499,16 @@ describe('Cloudflare Workers Handler', () => {
         })
       )
 
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-
       const request = new Request('https://api.example.com/graphql', {
         method: 'POST',
         body: JSON.stringify({ query: '{ test }' }),
       })
 
-      await handler.fetch(request, mockEnv)
+      const response = await handler.fetch(request, mockEnv)
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'GraphQL error response:',
-        JSON.stringify({ errors: ['Test error'] })
-      )
-
-      consoleSpy.mockRestore()
+      expect(response.status).toBe(400)
+      const data = (await response.json()) as { errors: string[] }
+      expect(data.errors).toEqual(['Test error'])
     })
 
     it('should handle non-Error exceptions', async () => {
@@ -633,85 +555,27 @@ describe('Cloudflare Workers Handler', () => {
     it('should default to production when ENVIRONMENT is not set', async () => {
       const envWithoutEnvironment = { ...mockEnv, ENVIRONMENT: undefined }
 
-      const request = new Request('https://api.example.com/debug/cors')
+      const request = new Request('https://api.example.com/health')
 
       await handler.fetch(request, envWithoutEnvironment)
 
-      expect(isOriginAllowed).toHaveBeenCalledWith('no-origin', 'production')
+      expect(isOriginAllowed).toHaveBeenCalledWith('', 'production')
     })
 
     it('should handle edge cases in environment detection', async () => {
       // Test with empty string environment
       const envEmptyString = { ...mockEnv, ENVIRONMENT: '' as const }
-      const request = new Request('https://api.example.com/debug/cors')
+      const request = new Request('https://api.example.com/health')
 
       const response = await handler.fetch(request, envEmptyString)
-      const data = (await response.json()) as { environment: string }
+      const data = (await response.json()) as { env: string }
 
-      // Empty string should be treated as production
-      expect(data.environment).toBe('production')
+      // Empty string environment is returned as-is
+      expect(data.env).toBe('')
     })
   })
 
-  describe('Console Logging', () => {
-    let consoleSpy: jest.SpyInstance
-
-    beforeEach(() => {
-      consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-    })
-
-    afterEach(() => {
-      consoleSpy.mockRestore()
-    })
-
-    it('should log GraphQL context creation', async () => {
-      const request = new Request('https://api.example.com/graphql', {
-        method: 'POST',
-        body: JSON.stringify({ query: '{ test }' }),
-      })
-
-      await handler.fetch(request, mockEnv)
-
-      // Get and call the context function
-      const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
-      ).mock.calls[0]
-      const contextFn = handlerCall[1].context
-      await contextFn({ request })
-
-      expect(consoleSpy).toHaveBeenCalledWith('Creating GraphQL context')
-    })
-
-    it('should log GraphQL response status', async () => {
-      const request = new Request('https://api.example.com/graphql', {
-        method: 'POST',
-        body: JSON.stringify({ query: '{ test }' }),
-      })
-
-      await handler.fetch(request, mockEnv)
-
-      expect(consoleSpy).toHaveBeenCalledWith('GraphQL response status:', 200)
-    })
-
-    it('should log GraphQL handler errors', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      mockGraphQLHandler.mockRejectedValue(new Error('Test error'))
-
-      const request = new Request('https://api.example.com/graphql', {
-        method: 'POST',
-        body: JSON.stringify({ query: '{ test }' }),
-      })
-
-      await handler.fetch(request, mockEnv)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'GraphQL handler error:',
-        expect.any(Error)
-      )
-
-      consoleErrorSpy.mockRestore()
-    })
-  })
+  // Console Logging tests removed - console statements were removed from code
 
   describe('Request IP Handling', () => {
     it('should extract IP from CF-Connecting-IP header', async () => {

@@ -96,7 +96,9 @@ export class DataSyncService {
           sessionsSynced++
         } catch (error) {
           errors.push(error as Error)
-          console.error('Failed to sync session:', session.id, error)
+          logger.error('Failed to sync session', error, {
+            sessionId: session.id,
+          })
         }
       }
 
@@ -107,7 +109,7 @@ export class DataSyncService {
           logsSynced++
         } catch (error) {
           errors.push(error as Error)
-          console.error('Failed to sync log:', log.id, error)
+          logger.error('Failed to sync log', error, { logId: log.id })
         }
       }
 
@@ -120,7 +122,7 @@ export class DataSyncService {
       localStorageService.markAsSynced(syncedSessionIds, syncedLogIds)
     } catch (error) {
       errors.push(error as Error)
-      console.error('Sync failed:', error)
+      logger.error('Sync failed', error)
     }
 
     return { sessionsSynced, logsSynced, errors }
