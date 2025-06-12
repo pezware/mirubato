@@ -13,6 +13,9 @@ import {
 } from '../modules/sheetMusic/multiVoiceTypes'
 import { TimeSignature } from '../modules/sheetMusic/types'
 
+// Global singleton instance to prevent multiple sample loading
+let globalAudioManagerInstance: MultiVoiceAudioManager | null = null
+
 /**
  * Multi-Voice Audio Manager implementation using Tone.js
  * Provides polyphonic playback of multi-voice scores with voice isolation,
@@ -256,7 +259,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
           // Background audio initialization failed
         })
       }
-    }, 100)
+    }, 500) // Increased delay to avoid conflicts
   }
 
   setInstrument(instrument: 'piano' | 'guitar'): void {
@@ -731,5 +734,14 @@ export function createMultiVoiceAudioManager(
   config?: AudioManagerConfig,
   toneInstance?: typeof Tone
 ): MultiVoiceAudioManagerInterface {
+  // Use singleton for default configuration to prevent multiple sample loading
+  if (!config && !toneInstance && !globalAudioManagerInstance) {
+    globalAudioManagerInstance = new MultiVoiceAudioManager()
+    return globalAudioManagerInstance
+  }
+  if (!config && !toneInstance && globalAudioManagerInstance) {
+    return globalAudioManagerInstance
+  }
+  // Create new instance only if custom config is provided
   return new MultiVoiceAudioManager(config, toneInstance)
 }

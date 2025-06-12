@@ -62,6 +62,9 @@ export interface VoiceMixer {
   resetMixer(): void
 }
 
+// Singleton instance
+let extendedAudioManagerInstance: ExtendedMultiVoiceAudioManager | null = null
+
 /**
  * Extended MultiVoiceAudioManager with Phase 4 features
  */
@@ -97,6 +100,16 @@ export class ExtendedMultiVoiceAudioManager
 
     // Initialize voice mixer
     this.voiceMixer = new VoiceMixerImpl()
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): ExtendedMultiVoiceAudioManager {
+    if (!extendedAudioManagerInstance) {
+      extendedAudioManagerInstance = new ExtendedMultiVoiceAudioManager()
+    }
+    return extendedAudioManagerInstance
   }
 
   // ============== Score Playback ==============
@@ -298,7 +311,11 @@ export class ExtendedMultiVoiceAudioManager
     return null
   }
 
-  private scheduleVoice(score: Score, voice: Voice, _part: { instrument: string }): void {
+  private scheduleVoice(
+    score: Score,
+    voice: Voice,
+    _part: { instrument: string }
+  ): void {
     // Use a basic sampler for now (would be more sophisticated in real implementation)
     const instrument = new Tone.Sampler().toDestination()
 
@@ -349,7 +366,9 @@ export class ExtendedMultiVoiceAudioManager
     return toneNotes
   }
 
-  private parseTimeSignature(timeSignature: TimeSignature | string): [number, number] {
+  private parseTimeSignature(
+    timeSignature: TimeSignature | string
+  ): [number, number] {
     // Handle TimeSignature enum values
     const signatures: Record<string, [number, number]> = {
       FOUR_FOUR: [4, 4],
