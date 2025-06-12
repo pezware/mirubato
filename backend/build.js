@@ -83,15 +83,27 @@ if (!existsSync(indexPath)) {
 
   if (foundPath) {
     console.log(`Found index.js at: ${foundPath}`)
-    console.log('Moving to expected location...')
+    console.log('Moving entire backend/src directory contents to dist/...')
 
     try {
-      // Use fs operations instead of shell commands for better cross-platform support
-      const content = readFileSync(foundPath)
-      writeFileSync(indexPath, content)
-      console.log('Successfully moved index.js to dist/')
+      // Move all files from backend/src to dist/
+      const srcDir = dirname(foundPath)
+      console.log(`Moving files from: ${srcDir} to: ${distDir}`)
+
+      // Use shell command to move all files while preserving structure
+      execSync(`cp -r ${srcDir}/* ${distDir}/`, { stdio: 'inherit' })
+
+      // Clean up the nested backend directory
+      execSync(`rm -rf ${join(distDir, 'backend')}`, { stdio: 'inherit' })
+
+      // Also clean up any shared directory that might have been copied
+      if (existsSync(join(distDir, 'shared'))) {
+        execSync(`rm -rf ${join(distDir, 'shared')}`, { stdio: 'inherit' })
+      }
+
+      console.log('Successfully moved all files to dist/')
     } catch (error) {
-      console.error('Failed to move index.js:', error)
+      console.error('Failed to move files:', error)
       process.exit(1)
     }
   } else {
@@ -115,10 +127,44 @@ if (existsSync(versionSrc)) {
 console.log('\nBuild complete!')
 console.log(`Main entry point: ${indexPath}`)
 
-// Final verification
-if (!existsSync(indexPath)) {
-  console.error('\nFINAL CHECK FAILED: dist/index.js still does not exist!')
+// Final verification - check that key files exist
+const requiredFiles = [
+  'index.js',
+  'resolvers/index.js',
+  'schema/index.js',
+  'utils/auth.js',
+  'utils/rateLimiter.js',
+  'middleware/logging.js',
+  'config/cors.js',
+]
+
+console.log('\nVerifying build output...')
+let allFilesExist = true
+for (const file of requiredFiles) {
+  const filePath = join(distDir, file)
+  if (!existsSync(filePath)) {
+    console.error(`✗ Missing required file: ${file}`)
+    allFilesExist = false
+  } else {
+    console.log(`✓ ${file}`)
+  }
+}
+
+if (!allFilesExist) {
+  console.error('\nFINAL CHECK FAILED: Some required files are missing!')
   process.exit(1)
 } else {
-  console.log('✓ Build output verified')
+  console.log('\n✓ Build output verified - all required files present')
+
+  // Clean up any compiled files in shared directory to prevent Jest issues
+  console.log('\nCleaning up shared directory...')
+  try {
+    execSync(
+      'rm -f ../shared/types/*.js ../shared/types/*.js.map ../shared/types/*.d.ts ../shared/types/*.d.ts.map',
+      { stdio: 'inherit' }
+    )
+    console.log('✓ Cleaned up compiled files from shared directory')
+  } catch (error) {
+    // Files might not exist, that's ok
+  }
 }
