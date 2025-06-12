@@ -29,7 +29,7 @@ const Logbook: React.FC = () => {
         const loadedEntries = await practiceLogger.getLogEntries(filters)
         setEntries(loadedEntries)
       } catch (error) {
-        console.error('Failed to load logbook entries:', error)
+        // Failed to load logbook entries
       } finally {
         setIsLoading(false)
       }
@@ -42,7 +42,6 @@ const Logbook: React.FC = () => {
     entry: Omit<LogbookEntry, 'id' | 'userId'>
   ) => {
     if (!practiceLogger) {
-      console.error('PracticeLogger not initialized')
       return
     }
 
@@ -54,23 +53,20 @@ const Logbook: React.FC = () => {
       setEntries([newEntry, ...entries])
       setShowNewEntryForm(false)
     } catch (error) {
-      console.error('Failed to save entry:', error)
+      // Failed to save entry
     }
   }
 
-  const handleEditEntry = async (entry: LogbookEntry) => {
+  const handleEditEntry = async (_entry: LogbookEntry) => {
     if (!practiceLogger) {
-      console.error('PracticeLogger not initialized')
       return
     }
 
     // TODO: Implement edit UI and then call practiceLogger.updateLogEntry
-    console.log('Edit entry:', entry)
   }
 
   const handleDeleteEntry = async (entryId: string) => {
     if (!practiceLogger) {
-      console.error('PracticeLogger not initialized')
       return
     }
 
@@ -78,7 +74,7 @@ const Logbook: React.FC = () => {
       await practiceLogger.deleteLogEntry(entryId)
       setEntries(entries.filter(e => e.id !== entryId))
     } catch (error) {
-      console.error('Failed to delete entry:', error)
+      // Failed to delete entry
     }
   }
 

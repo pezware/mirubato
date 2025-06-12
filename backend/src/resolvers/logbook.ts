@@ -38,7 +38,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as LogbookEntry
       } catch (error) {
-        console.error('Error fetching logbook entry:', error)
         throw new Error('Failed to fetch logbook entry')
       }
     },
@@ -136,7 +135,6 @@ export const logbookResolvers: Resolvers = {
           totalCount,
         }
       } catch (error) {
-        console.error('Error listing logbook entries:', error)
         throw new Error('Failed to list logbook entries')
       }
     },
@@ -175,7 +173,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as Goal
       } catch (error) {
-        console.error('Error fetching goal:', error)
         throw new Error('Failed to fetch goal')
       }
     },
@@ -251,7 +248,6 @@ export const logbookResolvers: Resolvers = {
           totalCount,
         }
       } catch (error) {
-        console.error('Error listing goals:', error)
         throw new Error('Failed to list goals')
       }
     },
@@ -323,7 +319,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as LogbookEntry
       } catch (error) {
-        console.error('Error creating logbook entry:', error)
         throw new Error('Failed to create logbook entry')
       }
     },
@@ -424,7 +419,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as LogbookEntry
       } catch (error) {
-        console.error('Error updating logbook entry:', error)
         throw new Error('Failed to update logbook entry')
       }
     },
@@ -449,7 +443,6 @@ export const logbookResolvers: Resolvers = {
 
         return true
       } catch (error) {
-        console.error('Error deleting logbook entry:', error)
         // Re-throw specific errors (like not found)
         if (
           error instanceof Error &&
@@ -524,7 +517,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as Goal
       } catch (error) {
-        console.error('Error creating goal:', error)
         throw new Error('Failed to create goal')
       }
     },
@@ -627,7 +619,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as Goal
       } catch (error) {
-        console.error('Error updating goal:', error)
         throw new Error('Failed to update goal')
       }
     },
@@ -720,7 +711,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as Goal
       } catch (error) {
-        console.error('Error updating goal milestone:', error)
         throw new Error('Failed to update goal milestone')
       }
     },
@@ -745,7 +735,6 @@ export const logbookResolvers: Resolvers = {
 
         return true
       } catch (error) {
-        console.error('Error deleting goal:', error)
         // Re-throw specific errors (like not found)
         if (error instanceof Error && error.message === 'Goal not found') {
           throw error
@@ -840,7 +829,6 @@ export const logbookResolvers: Resolvers = {
           user: context.user, // Include the user object to satisfy TypeScript
         } as Goal
       } catch (error) {
-        console.error('Error linking entry to goal:', error)
         throw new Error('Failed to link entry to goal')
       }
     },

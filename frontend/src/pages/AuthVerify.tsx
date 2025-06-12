@@ -24,8 +24,6 @@ export default function AuthVerify() {
         await login(token)
         // Navigation is handled by the login function in AuthContext
       } catch (error) {
-        console.error('Verification error:', error)
-
         // Check for specific error messages
         let errorMessage = 'Failed to verify magic link'
 

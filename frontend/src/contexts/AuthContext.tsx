@@ -211,7 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
           }
         } catch (error) {
-          console.error('Failed to fetch current user:', error)
+          logger.error('Failed to fetch current user:', error)
           // Token might be invalid, clear it
           clearAuthTokens()
         }
@@ -330,7 +330,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigate('/practice')
         }
       } catch (error) {
-        console.error('Login failed:', error)
+        logger.error('Login failed:', error)
         throw error
       } finally {
         setLoading(false)
@@ -345,7 +345,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await logoutMutation()
       }
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     } finally {
       // Emit auth:logout event before clearing state
       if (modulesInitialized && eventBus && user) {
@@ -397,7 +397,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setAuthTokens(accessToken, newRefreshToken)
       }
     } catch (error) {
-      console.error('Token refresh failed:', error)
+      logger.error('Token refresh failed:', error)
       clearAuthTokens()
       setUser(null)
       navigate('/login')

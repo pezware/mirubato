@@ -56,7 +56,6 @@ class LocalStorageService {
 
       return userData
     } catch (error) {
-      console.error('Error parsing user data:', error)
       // Create new anonymous user if data is corrupted
       const anonymousUser = this.createAnonymousUser()
       this.setUserData(anonymousUser)
@@ -68,7 +67,6 @@ class LocalStorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData))
     } catch (error) {
-      console.error('Error saving user data:', error)
       // Silently fail for quota exceeded errors
     }
   }
@@ -141,7 +139,6 @@ class LocalStorageService {
         )
       })
     } catch (error) {
-      console.error('Error parsing practice sessions:', error)
       return []
     }
   }
@@ -165,7 +162,6 @@ class LocalStorageService {
       // Update user stats
       this.updateUserStats(session)
     } catch (error) {
-      console.error('Error saving practice session:', error)
       // Silently fail for quota exceeded errors
     }
   }
@@ -373,7 +369,7 @@ class LocalStorageService {
       idMap[localId] = remoteId
       localStorage.setItem(STORAGE_KEYS.SESSION_ID_MAP, JSON.stringify(idMap))
     } catch (error) {
-      console.error('Error updating session remote ID:', error)
+      // Error updating session remote ID
     }
   }
 
@@ -382,7 +378,6 @@ class LocalStorageService {
       const idMap = this.getSessionIdMap()
       return idMap[localId] || null
     } catch (error) {
-      console.error('Error getting remote session ID:', error)
       return null
     }
   }
@@ -392,7 +387,6 @@ class LocalStorageService {
       const data = localStorage.getItem(STORAGE_KEYS.SESSION_ID_MAP)
       return data ? JSON.parse(data) : {}
     } catch (error) {
-      console.error('Error parsing session ID map:', error)
       return {}
     }
   }
@@ -440,7 +434,6 @@ class LocalStorageService {
 
       return true
     } catch (error) {
-      console.error('Failed to import user data:', error)
       return false
     }
   }
@@ -468,7 +461,6 @@ class LocalStorageService {
 
       return entries.filter(entry => entry && entry.id && entry.userId)
     } catch (error) {
-      console.error('Error parsing logbook entries:', error)
       return []
     }
   }
@@ -495,7 +487,6 @@ class LocalStorageService {
 
       return goals.filter(goal => goal && goal.id && goal.userId)
     } catch (error) {
-      console.error('Error parsing goals:', error)
       return []
     }
   }
@@ -529,7 +520,7 @@ class LocalStorageService {
         JSON.stringify(entries)
       )
     } catch (error) {
-      console.error('Error saving logbook entry:', error)
+      // Error saving logbook entry
     }
   }
 
@@ -558,7 +549,7 @@ class LocalStorageService {
 
       localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals))
     } catch (error) {
-      console.error('Error saving goal:', error)
+      // Error saving goal
     }
   }
 }

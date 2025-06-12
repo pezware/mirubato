@@ -7,7 +7,7 @@ import { verifyJWT } from './utils/auth'
 import { createRateLimiter } from './utils/rateLimiter'
 import { typeDefs } from './schema'
 import { logRequest } from './middleware/logging'
-import { isOriginAllowed, getCorsConfig } from './config/cors'
+import { isOriginAllowed } from './config/cors'
 
 // Helper to get CORS headers based on origin
 function getCorsHeaders(request: Request, env: Env): Record<string, string> {
@@ -83,38 +83,6 @@ export default {
       )
     }
 
-    // Debug CORS endpoint
-    if (url.pathname === '/debug/cors') {
-      const origin = request.headers.get('Origin') || 'no-origin'
-      const environment = (env.ENVIRONMENT || 'production') as
-        | 'production'
-        | 'development'
-      const isAllowed = isOriginAllowed(origin, environment)
-      const corsConfig = getCorsConfig(environment)
-
-      return addCorsHeaders(
-        new Response(
-          JSON.stringify({
-            origin,
-            environment,
-            envRaw: env.ENVIRONMENT,
-            isAllowed,
-            corsConfig: {
-              production: corsConfig.production.domains,
-              patterns: corsConfig.production.patterns,
-              development: corsConfig.development.origins,
-            },
-            timestamp: new Date().toISOString(),
-          }),
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        ),
-        request,
-        env
-      )
-    }
-
     // Handle GraphQL endpoint
     if (url.pathname === '/graphql') {
       // Log request in development
@@ -135,7 +103,6 @@ export default {
           server,
           {
             context: async ({ request }): Promise<GraphQLContext> => {
-              console.log('Creating GraphQL context')
               const requestId = nanoid()
               const ip = request.headers.get('CF-Connecting-IP') || undefined
 
@@ -175,18 +142,17 @@ export default {
 
         // Call the handler - it only expects the request
         const response = await handleGraphQL(request)
-        console.log('GraphQL response status:', response.status)
 
         // Log error responses in development
         if (env.ENVIRONMENT === 'development' && response.status >= 400) {
           const clonedResponse = response.clone()
-          const responseBody = await clonedResponse.text()
-          console.log('GraphQL error response:', responseBody)
+          await clonedResponse.text()
+          // GraphQL error response logged in development
         }
 
         return addCorsHeaders(response, request, env)
       } catch (error) {
-        console.error('GraphQL handler error:', error)
+        // GraphQL handler error
         return addCorsHeaders(
           new Response(
             JSON.stringify({

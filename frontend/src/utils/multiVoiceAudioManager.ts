@@ -122,8 +122,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       await this.toneInstance.start()
       this.audioStarted = true
     } catch (error) {
-      console.warn('Failed to start audio context:', error)
-      // Don't throw - audio might work later
+      // Failed to start audio context - audio might work later
     }
   }
 
@@ -166,7 +165,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
         baseUrl,
         // Add onload callback to track loading progress
         onload: () => {
-          console.log('Piano samples loaded')
+          // Piano samples loaded
         },
       }).toDestination()
 
@@ -232,7 +231,8 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
         try {
           if (ctx && 'latencyHint' in ctx) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(ctx as any).latencyHint = 'interactive'
+            const audioCtx = ctx as any
+            audioCtx.latencyHint = 'interactive'
           }
         } catch {
           // Ignore if latencyHint is not supported
@@ -252,8 +252,8 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     setTimeout(() => {
       if (!this.initialized && !this.loadingPromise) {
         // Start loading in background
-        this.initialize().catch(err => {
-          console.warn('Background audio initialization failed:', err)
+        this.initialize().catch(() => {
+          // Background audio initialization failed
         })
       }
     }, 100)
@@ -643,7 +643,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
             velocity
           )
         } catch (error) {
-          console.error(`Error playing note: ${error}, keys: ${keys}`)
+          // Error playing note
         }
 
         // Emit note play event - only if there are listeners

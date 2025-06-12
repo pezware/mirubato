@@ -12,26 +12,21 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         throw new Error('Invalid email address')
       }
 
-      try {
-        const authService = new AuthService(
-          context.env.MIRUBATO_MAGIC_LINKS,
-          context.env.JWT_SECRET
-        )
-        const emailService = new EmailService(context.env)
+      const authService = new AuthService(
+        context.env.MIRUBATO_MAGIC_LINKS,
+        context.env.JWT_SECRET
+      )
+      const emailService = new EmailService(context.env)
 
-        // Generate and store magic link
-        const magicLink = await authService.createMagicLink(email)
+      // Generate and store magic link
+      const magicLink = await authService.createMagicLink(email)
 
-        // Send email
-        await emailService.sendMagicLinkEmail(email, magicLink)
+      // Send email
+      await emailService.sendMagicLinkEmail(email, magicLink)
 
-        return {
-          success: true,
-          message: 'Magic link sent to your email',
-        }
-      } catch (error) {
-        console.error('requestMagicLink error:', error)
-        throw error
+      return {
+        success: true,
+        message: 'Magic link sent to your email',
       }
     },
 
@@ -73,7 +68,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         }
       } catch (d1Error) {
         // D1 unavailable - create temporary user
-        console.warn('D1 unavailable, creating temporary user:', d1Error)
 
         const tempUser = {
           id: `temp_${email.replace('@', '_')}_${Date.now()}`,
@@ -153,7 +147,6 @@ export const authResolvers: { Mutation: MutationResolvers } = {
           user,
         }
       } catch (error) {
-        console.error('refreshToken D1 error:', error)
         throw new Error('Unable to refresh token')
       }
     },

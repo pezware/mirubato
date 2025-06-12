@@ -22,7 +22,6 @@ export const practiceResolvers = {
 
         return result || null
       } catch (error) {
-        console.error('Error fetching practice session:', error)
         return null
       }
     },
@@ -88,7 +87,6 @@ export const practiceResolvers = {
           totalCount,
         }
       } catch (error) {
-        console.error('Error fetching practice sessions:', error)
         return {
           edges: [],
           pageInfo: {
@@ -142,7 +140,6 @@ export const practiceResolvers = {
 
         return session
       } catch (error) {
-        console.error('Error starting practice session:', error)
         throw new Error('Failed to start practice session')
       }
     },
@@ -174,7 +171,6 @@ export const practiceResolvers = {
 
         return session
       } catch (error) {
-        console.error('Error pausing practice session:', error)
         throw new Error('Failed to pause practice session')
       }
     },
@@ -206,7 +202,6 @@ export const practiceResolvers = {
 
         return session
       } catch (error) {
-        console.error('Error resuming practice session:', error)
         throw new Error('Failed to resume practice session')
       }
     },
@@ -248,7 +243,6 @@ export const practiceResolvers = {
 
         return session
       } catch (error) {
-        console.error('Error completing practice session:', error)
         throw new Error('Failed to complete practice session')
       }
     },
@@ -295,7 +289,6 @@ export const practiceResolvers = {
 
         return log
       } catch (error) {
-        console.error('Error creating practice log:', error)
         throw new Error('Failed to create practice log')
       }
     },
@@ -459,7 +452,6 @@ export const practiceResolvers = {
           errors,
         }
       } catch (error) {
-        console.error('Error syncing anonymous data:', error)
         throw new Error('Failed to sync anonymous data')
       }
     },
@@ -493,7 +485,6 @@ export const practiceResolvers = {
 
         return result || null
       } catch (error) {
-        console.error('Error fetching sheet music:', error)
         return null
       }
     },
@@ -508,7 +499,6 @@ export const practiceResolvers = {
 
         return result.results || []
       } catch (error) {
-        console.error('Error fetching practice logs:', error)
         return []
       }
     },
