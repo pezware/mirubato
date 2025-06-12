@@ -46,6 +46,19 @@ export default defineConfig(({ mode }) => {
     build: {
       // Ensure compatibility with older browsers if needed
       target: 'es2015',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Split vendor libraries into separate chunks
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-apollo': ['@apollo/client', 'graphql'],
+            'vendor-audio': ['tone'],
+            'vendor-notation': ['vexflow'],
+          },
+        },
+      },
+      // Increase chunk size warning limit since we're intentionally creating larger vendor chunks
+      chunkSizeWarningLimit: 1000,
     },
   }
 })

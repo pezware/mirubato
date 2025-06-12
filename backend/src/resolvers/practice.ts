@@ -4,9 +4,11 @@ import type {
   PracticeSessionResolvers,
   PracticeSession,
   PracticeLog,
+  SyncAnonymousDataInput,
 } from '../types/generated/graphql'
 import { UserService } from '../services/user'
 import { D1Database } from '@cloudflare/workers-types'
+import type { GraphQLContext } from '../types/context'
 
 export const practiceResolvers = {
   Query: {
@@ -299,9 +301,9 @@ export const practiceResolvers = {
     },
 
     syncAnonymousData: async (
-      _parent: any,
-      { input }: { input: any },
-      context: any
+      _parent: unknown,
+      { input }: { input: SyncAnonymousDataInput },
+      context: GraphQLContext
     ) => {
       if (!context.user) {
         throw new Error('Authentication required')
@@ -359,19 +361,22 @@ export const practiceResolvers = {
             await db
               .prepare(
                 `INSERT INTO practice_logs (
-                id, session_id, measure_number, mistake_type,
-                mistake_details, tempo_achievement, notes, created_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                id, session_id, activity_type, duration_seconds,
+                tempo_practiced, target_tempo, focus_areas, self_rating,
+                notes, created_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
                 crypto.randomUUID(),
                 log.sessionId,
-                log.measureNumber,
-                log.mistakeType || null,
-                log.mistakeDetails || null,
-                log.tempoAchievement || null,
+                log.activityType,
+                log.durationSeconds,
+                log.tempoPracticed || null,
+                log.targetTempo || null,
+                log.focusAreas ? JSON.stringify(log.focusAreas) : null,
+                log.selfRating || null,
                 log.notes || null,
-                log.createdAt || new Date().toISOString()
+                new Date().toISOString()
               )
               .run()
 
@@ -387,22 +392,25 @@ export const practiceResolvers = {
             await db
               .prepare(
                 `INSERT INTO logbook_entries (
-                id, user_id, title, content, category,
-                mood, energy_level, focus_level, progress_rating,
-                created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                id, user_id, timestamp, duration, type,
+                instrument, pieces, techniques, goal_ids,
+                notes, mood, tags, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
                 crypto.randomUUID(),
                 context.user.id,
-                entry.title,
-                entry.content,
-                entry.category || 'practice',
+                entry.timestamp,
+                entry.duration,
+                entry.type,
+                entry.instrument,
+                entry.pieces ? JSON.stringify(entry.pieces) : null,
+                entry.techniques ? JSON.stringify(entry.techniques) : null,
+                entry.goalIds ? JSON.stringify(entry.goalIds) : null,
+                entry.notes || null,
                 entry.mood || null,
-                entry.energyLevel || null,
-                entry.focusLevel || null,
-                entry.progressRating || null,
-                entry.createdAt || new Date().toISOString(),
+                entry.tags ? JSON.stringify(entry.tags) : null,
+                new Date().toISOString(),
                 new Date().toISOString()
               )
               .run()
@@ -420,21 +428,17 @@ export const practiceResolvers = {
             await db
               .prepare(
                 `INSERT INTO goals (
-                id, user_id, title, description, target_value,
-                current_value, unit, deadline, status,
-                created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                id, user_id, title, description,
+                target_date, milestones, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
                 goalId,
                 context.user.id,
                 goal.title,
                 goal.description || null,
-                goal.targetValue,
-                goal.currentValue || 0,
-                goal.unit || null,
-                goal.deadline || null,
-                goal.status || 'active',
+                goal.targetDate || null,
+                goal.milestones ? JSON.stringify(goal.milestones) : null,
                 new Date().toISOString(),
                 new Date().toISOString()
               )
@@ -464,14 +468,20 @@ export const practiceResolvers = {
   PracticeSession: {
     user: async (parent, _args, context) => {
       const userService = new UserService(context.env.DB)
-      return userService.getUserById(
-        (parent as any).user_id || (parent as any).userId
-      )
+      const userId =
+        (parent as PracticeSession & { user_id?: string }).user_id ||
+        (parent as PracticeSession & { userId?: string }).userId ||
+        (parent as PracticeSession).user?.id
+      if (!userId) return null
+      return userService.getUserById(userId)
     },
 
     sheetMusic: async (parent, _args, context) => {
       const sheetMusicId =
-        (parent as any).sheet_music_id || (parent as any).sheetMusicId
+        (parent as PracticeSession & { sheet_music_id?: string })
+          .sheet_music_id ||
+        (parent as PracticeSession & { sheetMusicId?: string }).sheetMusicId ||
+        (parent as PracticeSession).sheetMusic?.id
       if (!sheetMusicId) return null
 
       try {

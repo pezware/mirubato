@@ -50,6 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [localUserData, setLocalUserData] = useState<LocalUserData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [shouldSyncAfterLogin, setShouldSyncAfterLogin] = useState(false)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
   const { eventBus, isInitialized: modulesInitialized } = useModules()
@@ -58,6 +59,114 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [refreshTokenMutation] = useMutation(REFRESH_TOKEN)
   const [logoutMutation] = useMutation(LOGOUT)
   const [syncAnonymousData] = useMutation(SYNC_ANONYMOUS_DATA)
+
+  const syncToCloud = useCallback(async () => {
+    if (!user || user.isAnonymous) {
+      // Redirect to login if anonymous
+      navigate('/login')
+      return
+    }
+
+    try {
+      const pendingData = localStorageService.getPendingSyncData()
+
+      // Get all unsynced data
+      const allEntries = localStorageService
+        .getLogbookEntries()
+        .filter(entry => !entry.isSynced)
+      const allGoals = localStorageService
+        .getGoals()
+        .filter(goal => !goal.isSynced)
+
+      logger.info('Syncing to cloud', {
+        sessionCount: pendingData.sessions.length,
+        logCount: pendingData.logs.length,
+        entryCount: allEntries.length,
+        goalCount: allGoals.length,
+      })
+
+      // Call the sync mutation
+      const { data } = await syncAnonymousData({
+        variables: {
+          input: {
+            sessions: pendingData.sessions.map(session => {
+              // Calculate duration in minutes from timestamps
+              const startTime = new Date(session.startedAt).getTime()
+              const endTime = session.completedAt
+                ? new Date(session.completedAt).getTime()
+                : startTime
+              const durationMs =
+                endTime - startTime - session.pausedDuration * 1000
+              const durationMinutes = Math.round(durationMs / 60000)
+
+              return {
+                sheetMusicId: session.sheetMusicId,
+                tempo: undefined, // Tempo not available in LocalPracticeSession
+                instrument: session.instrument,
+                durationMinutes,
+                accuracy: session.accuracyPercentage,
+                notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
+                createdAt: session.startedAt,
+                completedAt: session.completedAt,
+              }
+            }),
+            logs: pendingData.logs.map(log => ({
+              sessionId: log.sessionId,
+              measureNumber: undefined, // Not available in PracticeLog
+              mistakeType: undefined, // Not available in PracticeLog
+              mistakeDetails: undefined, // Not available in PracticeLog
+              tempoAchievement: log.tempoPracticed,
+              notes: log.notes,
+              createdAt: log.createdAt,
+            })),
+            entries: allEntries.map(entry => ({
+              title: entry.title,
+              content: entry.content,
+              category: entry.category,
+              mood: entry.mood,
+              energyLevel: entry.energyLevel,
+              focusLevel: entry.focusLevel,
+              progressRating: entry.progressRating,
+              createdAt: entry.timestamp,
+            })),
+            goals: allGoals.map(goal => ({
+              title: goal.title,
+              description: goal.description,
+              targetValue: goal.targetValue,
+              currentValue: goal.currentValue,
+              unit: goal.unit,
+              deadline: goal.deadline,
+              status: goal.status,
+            })),
+          },
+        },
+      })
+
+      if (data.syncAnonymousData.success) {
+        // Mark all items as synced
+        const sessionIds = pendingData.sessions.map(s => s.id)
+        const logIds = pendingData.logs.map(l => l.id)
+        const entryIds = allEntries.map(e => e.id)
+        const goalIds = allGoals.map(g => g.id)
+        localStorageService.markAsSynced(sessionIds, logIds, entryIds, goalIds)
+
+        // Update last sync time
+        localStorage.setItem('lastSyncTime', new Date().toISOString())
+
+        logger.info('Sync completed successfully', {
+          syncedSessions: data.syncAnonymousData.syncedSessions,
+          syncedLogs: data.syncAnonymousData.syncedLogs,
+          syncedEntries: data.syncAnonymousData.syncedEntries,
+          syncedGoals: data.syncAnonymousData.syncedGoals,
+        })
+      } else {
+        logger.error('Sync failed with errors', data.syncAnonymousData.errors)
+      }
+    } catch (error) {
+      logger.error('Sync failed', error)
+      throw error
+    }
+  }, [user, navigate, syncAnonymousData])
 
   // Initialize user (authenticated or anonymous) on mount
   useEffect(() => {
@@ -137,6 +246,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth()
   }, [apolloClient, user, eventBus, modulesInitialized])
 
+  // Handle sync after login
+  useEffect(() => {
+    if (
+      shouldSyncAfterLogin &&
+      user &&
+      !user.isAnonymous &&
+      user.hasCloudStorage
+    ) {
+      setShouldSyncAfterLogin(false)
+      syncToCloud().catch(error => {
+        logger.error('Failed to sync data after login', error)
+      })
+    }
+  }, [shouldSyncAfterLogin, user, syncToCloud])
+
   const login = useCallback(
     async (token: string) => {
       try {
@@ -162,12 +286,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 authenticatedUser.id,
                 authenticatedUser.email
               )
-              // Trigger sync to cloud after login completes
+              // Set flag to trigger sync after state updates
               logger.info('Migrating local data to cloud storage')
-              // Use setTimeout to avoid circular dependency
-              setTimeout(() => {
-                syncToCloud()
-              }, 1000)
+              setShouldSyncAfterLogin(true)
             }
           } else {
             // User authenticated but no cloud storage - continue with localStorage
@@ -283,114 +404,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error
     }
   }, [refreshTokenMutation, navigate])
-
-  const syncToCloud = useCallback(async () => {
-    if (!user || user.isAnonymous) {
-      // Redirect to login if anonymous
-      navigate('/login')
-      return
-    }
-
-    try {
-      const pendingData = localStorageService.getPendingSyncData()
-
-      // Get all unsynced data
-      const allEntries = localStorageService
-        .getLogbookEntries()
-        .filter(entry => !entry.isSynced)
-      const allGoals = localStorageService
-        .getGoals()
-        .filter(goal => !goal.isSynced)
-
-      logger.info('Syncing to cloud', {
-        sessionCount: pendingData.sessions.length,
-        logCount: pendingData.logs.length,
-        entryCount: allEntries.length,
-        goalCount: allGoals.length,
-      })
-
-      // Call the sync mutation
-      const { data } = await syncAnonymousData({
-        variables: {
-          input: {
-            sessions: pendingData.sessions.map(session => {
-              // Calculate duration in minutes from timestamps
-              const startTime = new Date(session.startedAt).getTime()
-              const endTime = session.completedAt
-                ? new Date(session.completedAt).getTime()
-                : startTime
-              const durationMs =
-                endTime - startTime - session.pausedDuration * 1000
-              const durationMinutes = Math.round(durationMs / 60000)
-
-              return {
-                sheetMusicId: session.sheetMusicId,
-                tempo: undefined, // Tempo not available in LocalPracticeSession
-                instrument: session.instrument,
-                durationMinutes,
-                accuracy: session.accuracyPercentage,
-                notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
-                createdAt: session.startedAt,
-                completedAt: session.completedAt,
-              }
-            }),
-            logs: pendingData.logs.map(log => ({
-              sessionId: log.sessionId,
-              measureNumber: undefined, // Not available in PracticeLog
-              mistakeType: undefined, // Not available in PracticeLog
-              mistakeDetails: undefined, // Not available in PracticeLog
-              tempoAchievement: log.tempoPracticed,
-              notes: log.notes,
-              createdAt: log.createdAt,
-            })),
-            entries: allEntries.map(entry => ({
-              title: entry.title,
-              content: entry.content,
-              category: entry.category,
-              mood: entry.mood,
-              energyLevel: entry.energyLevel,
-              focusLevel: entry.focusLevel,
-              progressRating: entry.progressRating,
-              createdAt: entry.timestamp,
-            })),
-            goals: allGoals.map(goal => ({
-              title: goal.title,
-              description: goal.description,
-              targetValue: goal.targetValue,
-              currentValue: goal.currentValue,
-              unit: goal.unit,
-              deadline: goal.deadline,
-              status: goal.status,
-            })),
-          },
-        },
-      })
-
-      if (data.syncAnonymousData.success) {
-        // Mark all items as synced
-        const sessionIds = pendingData.sessions.map(s => s.id)
-        const logIds = pendingData.logs.map(l => l.id)
-        const entryIds = allEntries.map(e => e.id)
-        const goalIds = allGoals.map(g => g.id)
-        localStorageService.markAsSynced(sessionIds, logIds, entryIds, goalIds)
-
-        // Update last sync time
-        localStorage.setItem('lastSyncTime', new Date().toISOString())
-
-        logger.info('Sync completed successfully', {
-          syncedSessions: data.syncAnonymousData.syncedSessions,
-          syncedLogs: data.syncAnonymousData.syncedLogs,
-          syncedEntries: data.syncAnonymousData.syncedEntries,
-          syncedGoals: data.syncAnonymousData.syncedGoals,
-        })
-      } else {
-        logger.error('Sync failed with errors', data.syncAnonymousData.errors)
-      }
-    } catch (error) {
-      logger.error('Sync failed', error)
-      throw error
-    }
-  }, [user, navigate, syncAnonymousData])
 
   const value = {
     user,

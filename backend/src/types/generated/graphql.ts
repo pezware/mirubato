@@ -92,6 +92,20 @@ export type CreatePracticeLogInput = {
   tempoPracticed?: InputMaybe<Scalars['Int']['input']>
 }
 
+export type CreatePracticeSessionInput = {
+  accuracy?: InputMaybe<Scalars['Float']['input']>
+  completedAt?: InputMaybe<Scalars['String']['input']>
+  createdAt: Scalars['String']['input']
+  durationMinutes: Scalars['Int']['input']
+  instrument: Instrument
+  notes?: InputMaybe<Scalars['String']['input']>
+  sessionType: SessionType
+  sheetMusicId?: InputMaybe<Scalars['ID']['input']>
+  status: SessionStatus
+  tempo?: InputMaybe<Scalars['Int']['input']>
+  updatedAt: Scalars['String']['input']
+}
+
 export type Difficulty = 'ADVANCED' | 'BEGINNER' | 'INTERMEDIATE'
 
 export type Goal = {
@@ -234,6 +248,7 @@ export type Mutation = {
   requestMagicLink: AuthPayload
   resumePracticeSession: PracticeSession
   startPracticeSession: PracticeSession
+  syncAnonymousData: SyncResult
   updateGoal: Goal
   updateGoalMilestone: Goal
   updateLogbookEntry: LogbookEntry
@@ -288,6 +303,10 @@ export type MutationResumePracticeSessionArgs = {
 
 export type MutationStartPracticeSessionArgs = {
   input: StartPracticeSessionInput
+}
+
+export type MutationSyncAnonymousDataArgs = {
+  input: SyncAnonymousDataInput
 }
 
 export type MutationUpdateGoalArgs = {
@@ -464,6 +483,8 @@ export type QueryUserArgs = {
   id: Scalars['ID']['input']
 }
 
+export type SessionStatus = 'COMPLETED' | 'IN_PROGRESS' | 'PAUSED'
+
 export type SessionType = 'ASSESSMENT' | 'FREE_PRACTICE' | 'GUIDED_PRACTICE'
 
 export type SheetMusic = {
@@ -533,6 +554,23 @@ export type StylePeriod =
   | 'CONTEMPORARY'
   | 'MODERN'
   | 'ROMANTIC'
+
+export type SyncAnonymousDataInput = {
+  entries: Array<CreateLogbookEntryInput>
+  goals: Array<CreateGoalInput>
+  logs: Array<CreatePracticeLogInput>
+  sessions: Array<CreatePracticeSessionInput>
+}
+
+export type SyncResult = {
+  __typename?: 'SyncResult'
+  errors?: Maybe<Array<Scalars['String']['output']>>
+  success: Scalars['Boolean']['output']
+  syncedEntries: Scalars['Int']['output']
+  syncedGoals: Scalars['Int']['output']
+  syncedLogs: Scalars['Int']['output']
+  syncedSessions: Scalars['Int']['output']
+}
 
 export type Tempo = {
   __typename?: 'Tempo'
@@ -734,6 +772,7 @@ export type ResolversTypes = ResolversObject<{
   CreateGoalInput: CreateGoalInput
   CreateLogbookEntryInput: CreateLogbookEntryInput
   CreatePracticeLogInput: CreatePracticeLogInput
+  CreatePracticeSessionInput: CreatePracticeSessionInput
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>
   Difficulty: Difficulty
   Float: ResolverTypeWrapper<Scalars['Float']['output']>
@@ -768,6 +807,7 @@ export type ResolversTypes = ResolversObject<{
   PracticeSessionEdge: ResolverTypeWrapper<PracticeSessionEdge>
   PracticeTempos: ResolverTypeWrapper<PracticeTempos>
   Query: ResolverTypeWrapper<{}>
+  SessionStatus: SessionStatus
   SessionType: SessionType
   SheetMusic: ResolverTypeWrapper<SheetMusic>
   SheetMusicConnection: ResolverTypeWrapper<SheetMusicConnection>
@@ -777,6 +817,8 @@ export type ResolversTypes = ResolversObject<{
   StartPracticeSessionInput: StartPracticeSessionInput
   String: ResolverTypeWrapper<Scalars['String']['output']>
   StylePeriod: StylePeriod
+  SyncAnonymousDataInput: SyncAnonymousDataInput
+  SyncResult: ResolverTypeWrapper<SyncResult>
   Tempo: ResolverTypeWrapper<Tempo>
   Theme: Theme
   TokenPayload: ResolverTypeWrapper<TokenPayload>
@@ -797,6 +839,7 @@ export type ResolversParentTypes = ResolversObject<{
   CreateGoalInput: CreateGoalInput
   CreateLogbookEntryInput: CreateLogbookEntryInput
   CreatePracticeLogInput: CreatePracticeLogInput
+  CreatePracticeSessionInput: CreatePracticeSessionInput
   DateTime: Scalars['DateTime']['output']
   Float: Scalars['Float']['output']
   Goal: Goal
@@ -832,6 +875,8 @@ export type ResolversParentTypes = ResolversObject<{
   SheetMusicMetadata: SheetMusicMetadata
   StartPracticeSessionInput: StartPracticeSessionInput
   String: Scalars['String']['output']
+  SyncAnonymousDataInput: SyncAnonymousDataInput
+  SyncResult: SyncResult
   Tempo: Tempo
   TokenPayload: TokenPayload
   UpdateGoalInput: UpdateGoalInput
@@ -1113,6 +1158,12 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<MutationStartPracticeSessionArgs, 'input'>
+  >
+  syncAnonymousData?: Resolver<
+    ResolversTypes['SyncResult'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationSyncAnonymousDataArgs, 'input'>
   >
   updateGoal?: Resolver<
     ResolversTypes['Goal'],
@@ -1432,6 +1483,24 @@ export type SheetMusicMetadataResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
+export type SyncResultResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncResult'] = ResolversParentTypes['SyncResult'],
+> = ResolversObject<{
+  errors?: Resolver<
+    Maybe<Array<ResolversTypes['String']>>,
+    ParentType,
+    ContextType
+  >
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  syncedEntries?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  syncedGoals?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  syncedLogs?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  syncedSessions?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
 export type TempoResolvers<
   ContextType = GraphQLContext,
   ParentType extends
@@ -1557,6 +1626,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   SheetMusicConnection?: SheetMusicConnectionResolvers<ContextType>
   SheetMusicEdge?: SheetMusicEdgeResolvers<ContextType>
   SheetMusicMetadata?: SheetMusicMetadataResolvers<ContextType>
+  SyncResult?: SyncResultResolvers<ContextType>
   Tempo?: TempoResolvers<ContextType>
   TokenPayload?: TokenPayloadResolvers<ContextType>
   User?: UserResolvers<ContextType>

@@ -165,6 +165,12 @@ enum SessionType {
   ASSESSMENT
 }
 
+enum SessionStatus {
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+}
+
 enum ActivityType {
   SIGHT_READING
   SCALES
@@ -290,6 +296,20 @@ input CompletePracticeSessionInput {
   accuracy: Float
   notesAttempted: Int
   notesCorrect: Int
+}
+
+input CreatePracticeSessionInput {
+  sessionType: SessionType!
+  instrument: Instrument!
+  sheetMusicId: ID
+  tempo: Int
+  durationMinutes: Int!
+  status: SessionStatus!
+  accuracy: Float
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+  completedAt: String
 }
 
 input CreatePracticeLogInput {

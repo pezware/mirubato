@@ -69,6 +69,7 @@ jest.mock('tone', () => {
     start: jest.fn().mockResolvedValue(undefined),
     loaded: jest.fn().mockResolvedValue(undefined),
     now: jest.fn().mockReturnValue(0),
+    immediate: jest.fn().mockReturnValue(0),
     Transport: mockTransport,
     Sampler: jest.fn().mockReturnValue(mockSampler),
     PolySynth: jest.fn().mockReturnValue(mockPolySynth),
@@ -189,12 +190,27 @@ describe('MultiVoiceAudioManager', () => {
       expect(audioManager.isInitialized()).toBe(false)
       await audioManager.initialize()
       expect(audioManager.isInitialized()).toBe(true)
-      expect(mockTone.start).toHaveBeenCalled()
+      // Tone.start() is now deferred until first playback
+      expect(mockTone.start).not.toHaveBeenCalled()
     })
 
     it('should handle multiple initialization calls', async () => {
       await audioManager.initialize()
       await audioManager.initialize()
+      // Should still not call Tone.start during initialization
+      expect(mockTone.start).not.toHaveBeenCalled()
+    })
+
+    it('should start audio context on first playback', async () => {
+      await audioManager.initialize()
+      expect(mockTone.start).not.toHaveBeenCalled()
+
+      // First playback should trigger Tone.start()
+      await audioManager.playNote('C4')
+      expect(mockTone.start).toHaveBeenCalledTimes(1)
+
+      // Subsequent playbacks should not call it again
+      await audioManager.playNote('D4')
       expect(mockTone.start).toHaveBeenCalledTimes(1)
     })
   })

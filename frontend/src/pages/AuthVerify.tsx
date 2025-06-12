@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { ApolloError } from '@apollo/client'
 
 export default function AuthVerify() {
   const navigate = useNavigate()
@@ -24,9 +25,28 @@ export default function AuthVerify() {
         // Navigation is handled by the login function in AuthContext
       } catch (error) {
         console.error('Verification error:', error)
-        setError(
-          error instanceof Error ? error.message : 'Failed to verify magic link'
-        )
+
+        // Check for specific error messages
+        let errorMessage = 'Failed to verify magic link'
+
+        if (error instanceof ApolloError) {
+          if (error.graphQLErrors?.length > 0) {
+            const gqlError = error.graphQLErrors[0]
+            if (gqlError.message.includes('Invalid or expired')) {
+              errorMessage =
+                'This magic link has expired or is invalid. Please request a new one.'
+            } else {
+              errorMessage = gqlError.message
+            }
+          } else if (error.networkError) {
+            errorMessage =
+              'Unable to connect to server. Please check your connection and try again.'
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+
+        setError(errorMessage)
         setIsVerifying(false)
       }
     }
@@ -69,10 +89,18 @@ export default function AuthVerify() {
               Verification Failed
             </h2>
             <p className="mt-2 text-gray-600">{error}</p>
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
+              {error?.includes('expired') && (
+                <button
+                  onClick={() => navigate('/?auth=login')}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Request New Magic Link
+                </button>
+              )}
               <button
                 onClick={() => navigate('/')}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Return to Home
               </button>
