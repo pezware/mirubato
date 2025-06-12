@@ -44,6 +44,16 @@ try {
   // Directory might be empty, that's ok
 }
 
+// Generate schema content module
+console.log('Generating schema content module...')
+const schemaPath = join(__dirname, 'src', 'schema', 'schema.graphql')
+const schemaContent = readFileSync(schemaPath, 'utf-8')
+const schemaModule = `export default ${JSON.stringify(schemaContent)}`
+writeFileSync(
+  join(__dirname, 'src', 'schema', 'schema-content.js'),
+  schemaModule
+)
+
 // Run TypeScript compiler
 console.log('Building TypeScript...')
 console.log('Current working directory:', process.cwd())
@@ -113,6 +123,22 @@ if (!existsSync(indexPath)) {
   }
 }
 
+// Copy schema files to dist
+const schemaContentSrc = join(__dirname, 'src', 'schema', 'schema-content.js')
+const schemaContentDest = join(__dirname, 'dist', 'schema', 'schema-content.js')
+if (existsSync(schemaContentSrc)) {
+  console.log('Copying schema-content.js to dist...')
+  copyFileSync(schemaContentSrc, schemaContentDest)
+}
+
+// Also copy the original schema.graphql for reference
+const schemaGraphqlSrc = join(__dirname, 'src', 'schema', 'schema.graphql')
+const schemaGraphqlDest = join(__dirname, 'dist', 'schema', 'schema.graphql')
+if (existsSync(schemaGraphqlSrc)) {
+  console.log('Copying schema.graphql to dist...')
+  copyFileSync(schemaGraphqlSrc, schemaGraphqlDest)
+}
+
 // Copy version.json to dist if it exists
 const versionSrc = join(__dirname, 'src', 'version.json')
 const versionDest = join(__dirname, 'dist', 'version.json')
@@ -166,5 +192,13 @@ if (!allFilesExist) {
     console.log('✓ Cleaned up compiled files from shared directory')
   } catch (error) {
     // Files might not exist, that's ok
+  }
+
+  // Clean up generated schema content file
+  try {
+    execSync('rm -f src/schema/schema-content.js', { stdio: 'inherit' })
+    console.log('✓ Cleaned up generated schema content file')
+  } catch (error) {
+    // File might not exist, that's ok
   }
 }
