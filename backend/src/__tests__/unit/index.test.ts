@@ -400,6 +400,7 @@ describe('Cloudflare Workers Handler', () => {
         user: { id: 'authenticated-user' },
         requestId: 'mock-id-123',
         ip: '192.168.1.1',
+        db: mockEnv.DB,
       })
 
       expect(verifyJWT).toHaveBeenCalledWith('valid-token', 'test-secret')

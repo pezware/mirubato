@@ -2,6 +2,19 @@ import { practiceResolvers } from '../../../resolvers/practice'
 import type { GraphQLContext, Env } from '../../../types/context'
 import type { User, GraphQLResolveInfo } from '../../../types/generated/graphql'
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
+import { UserService } from '../../../services/user'
+
+// Mock UserService
+jest.mock('../../../services/user', () => ({
+  UserService: jest.fn().mockImplementation(() => ({
+    getUserById: jest.fn(),
+  })),
+}))
+
+// Mock crypto
+global.crypto = {
+  randomUUID: () => 'mock-uuid-123',
+} as any
 
 describe('Practice Resolvers', () => {
   // Mock environment
@@ -12,9 +25,19 @@ describe('Practice Resolvers', () => {
     ENVIRONMENT: 'development',
   }
 
+  // Mock database
+  const mockDB = {
+    prepare: jest.fn().mockReturnThis(),
+    bind: jest.fn().mockReturnThis(),
+    first: jest.fn(),
+    all: jest.fn(),
+    run: jest.fn(),
+    batch: jest.fn(),
+  } as any
+
   // Mock context
   const mockContext: GraphQLContext = {
-    env: mockEnv,
+    env: { ...mockEnv, DB: mockDB },
     user: {
       id: 'user-123',
       email: 'test@example.com',
@@ -22,19 +45,60 @@ describe('Practice Resolvers', () => {
       primaryInstrument: 'PIANO',
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as User,
+      preferences: {
+        theme: 'LIGHT',
+        notationSize: 'MEDIUM',
+        soundEnabled: true,
+        metronomeBPM: 120,
+        practiceReminders: false,
+      },
+      stats: {
+        totalPracticeTime: 0,
+        sessionsCompleted: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastPracticeDate: null,
+      },
+    } as any,
     requestId: 'test-request-id',
+    db: mockDB,
   }
 
   const mockContextWithoutUser: GraphQLContext = {
-    env: mockEnv,
+    env: { ...mockEnv, DB: mockDB },
     user: undefined,
     requestId: 'test-request-id',
+    db: mockDB,
   }
 
   describe('Query Resolvers', () => {
     describe('practiceSession', () => {
-      it('returns null (not implemented)', async () => {
+      it('returns session when found', async () => {
+        const mockSession = {
+          id: 'session-123',
+          user_id: 'user-123',
+          instrument: 'PIANO',
+          started_at: '2024-01-01T00:00:00Z',
+        }
+        mockDB.first.mockResolvedValue(mockSession)
+
+        const result = await practiceResolvers.Query.practiceSession(
+          {},
+          { id: 'session-123' },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM practice_sessions WHERE id = ?'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('session-123')
+        expect(result).toBe(mockSession)
+      })
+
+      it('returns null when not found', async () => {
+        mockDB.first.mockResolvedValue(null)
+
         const result = await practiceResolvers.Query.practiceSession(
           {},
           { id: 'session-123' },
@@ -44,191 +108,14 @@ describe('Practice Resolvers', () => {
 
         expect(result).toBeNull()
       })
-    })
 
-    describe('myPracticeSessions', () => {
-      it('returns empty connection with default pagination', async () => {
-        const result = await practiceResolvers.Query.myPracticeSessions(
+      it('returns null when not authenticated', async () => {
+        mockDB.first.mockResolvedValue(null)
+
+        const result = await practiceResolvers.Query.practiceSession(
           {},
-          {},
-          mockContext,
-          {} as GraphQLResolveInfo
-        )
-
-        expect(result).toEqual({
-          edges: [],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
-          totalCount: 0,
-        })
-      })
-
-      it('accepts instrument filter parameter', async () => {
-        const result = await practiceResolvers.Query.myPracticeSessions(
-          {},
-          { instrument: 'GUITAR' },
-          mockContext,
-          {} as GraphQLResolveInfo
-        )
-
-        expect(result).toEqual({
-          edges: [],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
-          totalCount: 0,
-        })
-      })
-
-      it('accepts pagination parameters', async () => {
-        const result = await practiceResolvers.Query.myPracticeSessions(
-          {},
-          { offset: 10, limit: 50 },
-          mockContext,
-          {} as GraphQLResolveInfo
-        )
-
-        expect(result).toEqual({
-          edges: [],
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            startCursor: null,
-            endCursor: null,
-          },
-          totalCount: 0,
-        })
-      })
-
-      it('uses default values for pagination when not provided', async () => {
-        // This test verifies the default values are applied
-        const result = await practiceResolvers.Query.myPracticeSessions(
-          {},
-          { instrument: 'PIANO' },
-          mockContext,
-          {} as GraphQLResolveInfo
-        )
-
-        expect(result).toBeDefined()
-        expect(result.edges).toEqual([])
-      })
-    })
-  })
-
-  describe('Mutation Resolvers', () => {
-    describe('startPracticeSession', () => {
-      it('throws not implemented error', async () => {
-        const input = {
-          sheetMusicId: 'music-123',
-          instrument: 'PIANO' as const,
-        }
-
-        await expect(
-          practiceResolvers.Mutation.startPracticeSession(
-            {},
-            { input },
-            mockContext,
-            {} as GraphQLResolveInfo
-          )
-        ).rejects.toThrow('Not implemented')
-      })
-    })
-
-    describe('pausePracticeSession', () => {
-      it('throws not implemented error', async () => {
-        await expect(
-          practiceResolvers.Mutation.pausePracticeSession(
-            {},
-            { sessionId: 'session-123' },
-            mockContext,
-            {} as GraphQLResolveInfo
-          )
-        ).rejects.toThrow('Not implemented')
-      })
-    })
-
-    describe('resumePracticeSession', () => {
-      it('throws not implemented error', async () => {
-        await expect(
-          practiceResolvers.Mutation.resumePracticeSession(
-            {},
-            { sessionId: 'session-123' },
-            mockContext,
-            {} as GraphQLResolveInfo
-          )
-        ).rejects.toThrow('Not implemented')
-      })
-    })
-
-    describe('completePracticeSession', () => {
-      it('throws not implemented error', async () => {
-        const input = {
-          sessionId: 'session-123',
-          accuracyPercentage: 85.5,
-          notesAttempted: 100,
-          notesCorrect: 85,
-        }
-
-        await expect(
-          practiceResolvers.Mutation.completePracticeSession(
-            {},
-            { input },
-            mockContext,
-            {} as GraphQLResolveInfo
-          )
-        ).rejects.toThrow('Not implemented')
-      })
-    })
-
-    describe('createPracticeLog', () => {
-      it('throws not implemented error', async () => {
-        const input = {
-          sessionId: 'session-123',
-          type: 'NOTE_PLAYED' as const,
-          data: JSON.stringify({ note: 'C4', correct: true }),
-        }
-
-        await expect(
-          practiceResolvers.Mutation.createPracticeLog(
-            {},
-            { input },
-            mockContext,
-            {} as GraphQLResolveInfo
-          )
-        ).rejects.toThrow('Not implemented')
-      })
-    })
-  })
-
-  describe('PracticeSession Type Resolvers', () => {
-    const mockSession = {
-      id: 'session-123',
-      userId: 'user-123',
-      sheetMusicId: 'music-123',
-      instrument: 'PIANO' as const,
-      startedAt: new Date(),
-      completedAt: null,
-      pausedAt: null,
-      accuracyPercentage: null,
-      notesAttempted: 0,
-      notesCorrect: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    describe('user', () => {
-      it('returns null (not implemented)', async () => {
-        const result = await practiceResolvers.PracticeSession.user(
-          mockSession,
-          {},
-          mockContext,
+          { id: 'session-123' },
+          mockContextWithoutUser,
           {} as GraphQLResolveInfo
         )
 
@@ -236,10 +123,336 @@ describe('Practice Resolvers', () => {
       })
     })
 
+    describe('myPracticeSessions', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      it('returns empty connection when no sessions', async () => {
+        mockDB.all.mockResolvedValue({ results: [] })
+        mockDB.first.mockResolvedValue({ count: 0 })
+
+        const result = await practiceResolvers.Query.myPracticeSessions(
+          {},
+          {},
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(result).toEqual({
+          edges: [],
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: null,
+            endCursor: null,
+          },
+          totalCount: 0,
+        })
+      })
+
+      it('returns sessions with pagination', async () => {
+        const mockSessions = [
+          { id: 'session-1', user_id: 'user-123' },
+          { id: 'session-2', user_id: 'user-123' },
+        ]
+        mockDB.all.mockResolvedValue({ results: mockSessions })
+        mockDB.first.mockResolvedValue({ count: 2 })
+
+        const result = await practiceResolvers.Query.myPracticeSessions(
+          {},
+          { limit: 10, offset: 0 },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(result.edges).toHaveLength(2)
+        expect(result.totalCount).toBe(2)
+        expect(result.pageInfo.hasNextPage).toBe(false)
+      })
+
+      it('accepts instrument filter parameter', async () => {
+        mockDB.all.mockResolvedValue({ results: [] })
+        mockDB.first.mockResolvedValue({ count: 0 })
+
+        await practiceResolvers.Query.myPracticeSessions(
+          {},
+          { instrument: 'GUITAR' },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('AND instrument = ?')
+        )
+      })
+
+      it('accepts pagination parameters', async () => {
+        mockDB.all.mockResolvedValue({ results: [] })
+        mockDB.first.mockResolvedValue({ count: 100 })
+
+        const result = await practiceResolvers.Query.myPracticeSessions(
+          {},
+          { offset: 10, limit: 50 },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(result.pageInfo.hasPreviousPage).toBe(true)
+        expect(result.pageInfo.hasNextPage).toBe(true)
+      })
+
+      it('throws error when not authenticated', async () => {
+        await expect(
+          practiceResolvers.Query.myPracticeSessions(
+            {},
+            {},
+            mockContextWithoutUser,
+            {} as GraphQLResolveInfo
+          )
+        ).rejects.toThrow('Authentication required')
+      })
+    })
+  })
+
+  describe('Mutation Resolvers', () => {
+    describe('startPracticeSession', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      it('creates a new practice session', async () => {
+        const mockSession = {
+          id: 'new-session-id',
+          user_id: 'user-123',
+          instrument: 'PIANO',
+          status: 'IN_PROGRESS',
+        }
+        mockDB.run.mockResolvedValue({})
+        mockDB.first.mockResolvedValue(mockSession)
+
+        const input = {
+          sessionType: 'FREE_PRACTICE' as const,
+          sheetMusicId: 'music-123',
+          instrument: 'PIANO' as const,
+        }
+
+        const result = await practiceResolvers.Mutation.startPracticeSession(
+          {},
+          { input },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('INSERT INTO practice_sessions')
+        )
+        expect(result).toBe(mockSession)
+      })
+
+      it('throws error when not authenticated', async () => {
+        const input = {
+          sessionType: 'FREE_PRACTICE' as const,
+          instrument: 'PIANO' as const,
+        }
+
+        await expect(
+          practiceResolvers.Mutation.startPracticeSession(
+            {},
+            { input },
+            mockContextWithoutUser,
+            {} as GraphQLResolveInfo
+          )
+        ).rejects.toThrow('Authentication required')
+      })
+    })
+
+    describe('pausePracticeSession', () => {
+      it('pauses an active session', async () => {
+        const mockSession = {
+          id: 'session-123',
+          status: 'PAUSED',
+        }
+        mockDB.run.mockResolvedValue({})
+        mockDB.first.mockResolvedValue(mockSession)
+
+        const result = await practiceResolvers.Mutation.pausePracticeSession(
+          {},
+          { sessionId: 'session-123' },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('UPDATE practice_sessions')
+        )
+        expect(result).toBe(mockSession)
+      })
+
+      it('throws error when not authenticated', async () => {
+        await expect(
+          practiceResolvers.Mutation.pausePracticeSession(
+            {},
+            { sessionId: 'session-123' },
+            mockContextWithoutUser,
+            {} as GraphQLResolveInfo
+          )
+        ).rejects.toThrow('Authentication required')
+      })
+    })
+
+    describe('resumePracticeSession', () => {
+      it('resumes a paused session', async () => {
+        const mockSession = {
+          id: 'session-123',
+          status: 'IN_PROGRESS',
+        }
+        mockDB.run.mockResolvedValue({})
+        mockDB.first.mockResolvedValue(mockSession)
+
+        const result = await practiceResolvers.Mutation.resumePracticeSession(
+          {},
+          { sessionId: 'session-123' },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('UPDATE practice_sessions')
+        )
+        expect(result).toBe(mockSession)
+      })
+    })
+
+    describe('completePracticeSession', () => {
+      it('completes a session with stats', async () => {
+        const mockSession = {
+          id: 'session-123',
+          status: 'COMPLETED',
+          accuracy: 85.5,
+        }
+        mockDB.run.mockResolvedValue({})
+        mockDB.first.mockResolvedValue(mockSession)
+
+        const input = {
+          sessionId: 'session-123',
+          accuracy: 85.5,
+          notesAttempted: 100,
+          notesCorrect: 85,
+        }
+
+        const result = await practiceResolvers.Mutation.completePracticeSession(
+          {},
+          { input },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('UPDATE practice_sessions')
+        )
+        expect(result).toBe(mockSession)
+      })
+    })
+
+    describe('createPracticeLog', () => {
+      it('creates a practice log entry', async () => {
+        const mockLog = {
+          id: 'log-123',
+          session_id: 'session-123',
+          activity_type: 'SIGHT_READING',
+        }
+        mockDB.run.mockResolvedValue({})
+        mockDB.first.mockResolvedValue(mockLog)
+
+        const input = {
+          sessionId: 'session-123',
+          activityType: 'SIGHT_READING' as const,
+          durationSeconds: 300,
+        }
+
+        const result = await practiceResolvers.Mutation.createPracticeLog(
+          {},
+          { input },
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          expect.stringContaining('INSERT INTO practice_logs')
+        )
+        expect(result).toBe(mockLog)
+      })
+    })
+  })
+
+  describe('PracticeSession Type Resolvers', () => {
+    let mockUserService: any
+
+    beforeEach(() => {
+      mockUserService = {
+        getUserById: jest.fn(),
+      }
+      ;(UserService as jest.Mock).mockImplementation(() => mockUserService)
+    })
+
+    const mockSession = {
+      id: 'session-123',
+      user_id: 'user-123',
+      sheet_music_id: 'music-123',
+      instrument: 'PIANO' as const,
+    }
+
+    describe('user', () => {
+      it('returns user from UserService', async () => {
+        const mockUser = {
+          id: 'user-123',
+          email: 'test@example.com',
+          preferences: {},
+          stats: {},
+        }
+        mockUserService.getUserById.mockResolvedValue(mockUser)
+
+        const result = await practiceResolvers.PracticeSession.user(
+          mockSession,
+          {},
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
+        expect(result).toBe(mockUser)
+      })
+    })
+
     describe('sheetMusic', () => {
-      it('returns null (not implemented)', async () => {
+      it('returns sheet music when found', async () => {
+        const mockSheetMusic = {
+          id: 'music-123',
+          title: 'Fur Elise',
+          composer: 'Beethoven',
+        }
+        mockDB.first.mockResolvedValue(mockSheetMusic)
+
         const result = await practiceResolvers.PracticeSession.sheetMusic(
           mockSession,
+          {},
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM sheet_music WHERE id = ?'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('music-123')
+        expect(result).toBe(mockSheetMusic)
+      })
+
+      it('returns null when no sheetMusicId', async () => {
+        const sessionWithoutMusic = { ...mockSession, sheet_music_id: null }
+
+        const result = await practiceResolvers.PracticeSession.sheetMusic(
+          sessionWithoutMusic,
           {},
           mockContext,
           {} as GraphQLResolveInfo
@@ -250,7 +463,13 @@ describe('Practice Resolvers', () => {
     })
 
     describe('logs', () => {
-      it('returns empty array (not implemented)', async () => {
+      it('returns logs for the session', async () => {
+        const mockLogs = [
+          { id: 'log-1', session_id: 'session-123' },
+          { id: 'log-2', session_id: 'session-123' },
+        ]
+        mockDB.all.mockResolvedValue({ results: mockLogs })
+
         const result = await practiceResolvers.PracticeSession.logs(
           mockSession,
           {},
@@ -258,42 +477,34 @@ describe('Practice Resolvers', () => {
           {} as GraphQLResolveInfo
         )
 
-        expect(result).toEqual([])
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM practice_logs WHERE session_id = ? ORDER BY created_at ASC'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('session-123')
+        expect(result).toBe(mockLogs)
       })
     })
   })
 
   describe('Context and Authorization', () => {
-    it('should handle queries without user context', async () => {
-      const result = await practiceResolvers.Query.myPracticeSessions(
-        {},
-        {},
-        mockContextWithoutUser,
-        {} as GraphQLResolveInfo
-      )
-
-      // Currently returns empty result regardless of auth
-      // This test documents current behavior
-      expect(result).toEqual({
-        edges: [],
-        pageInfo: {
-          hasNextPage: false,
-          hasPreviousPage: false,
-          startCursor: null,
-          endCursor: null,
-        },
-        totalCount: 0,
-      })
+    it('should throw error for queries without user context', async () => {
+      await expect(
+        practiceResolvers.Query.myPracticeSessions(
+          {},
+          {},
+          mockContextWithoutUser,
+          {} as GraphQLResolveInfo
+        )
+      ).rejects.toThrow('Authentication required')
     })
 
     it('should handle mutations without user context', async () => {
       const input = {
+        sessionType: 'FREE_PRACTICE' as const,
         sheetMusicId: 'music-123',
         instrument: 'PIANO' as const,
       }
 
-      // Currently throws "Not implemented" regardless of auth
-      // This test documents current behavior
       await expect(
         practiceResolvers.Mutation.startPracticeSession(
           {},
@@ -301,11 +512,17 @@ describe('Practice Resolvers', () => {
           mockContextWithoutUser,
           {} as GraphQLResolveInfo
         )
-      ).rejects.toThrow('Not implemented')
+      ).rejects.toThrow('Authentication required')
     })
   })
 
   describe('Input Validation', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockDB.all.mockResolvedValue({ results: [] })
+      mockDB.first.mockResolvedValue({ count: 0 })
+    })
+
     it('handles various instrument types', async () => {
       const instruments = ['PIANO', 'GUITAR'] as const
 
@@ -326,10 +543,13 @@ describe('Practice Resolvers', () => {
       const testCases = [
         { offset: 0, limit: 1 },
         { offset: 1000, limit: 100 },
-        { offset: -1, limit: -1 }, // Edge case - should be handled by GraphQL validation
       ]
 
       for (const { offset, limit } of testCases) {
+        jest.clearAllMocks()
+        mockDB.all.mockResolvedValue({ results: [] })
+        mockDB.first.mockResolvedValue({ count: 0 })
+
         const result = await practiceResolvers.Query.myPracticeSessions(
           {},
           { offset, limit },

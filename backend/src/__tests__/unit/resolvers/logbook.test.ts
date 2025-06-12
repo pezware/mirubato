@@ -1,15 +1,24 @@
 import { logbookResolvers } from '../../../resolvers/logbook'
 import type { GraphQLContext } from '../../../types/context'
-import type { User } from '../../../types/shared'
+import type { BackendUser } from '../../../types/shared'
+import { UserService } from '../../../services/user'
 
 // Mock nanoid
 jest.mock('nanoid', () => ({
   nanoid: () => 'test-id-123',
 }))
 
+// Mock UserService
+jest.mock('../../../services/user', () => ({
+  UserService: jest.fn().mockImplementation(() => ({
+    getUserById: jest.fn(),
+  })),
+}))
+
 describe('Logbook Resolvers', () => {
   let mockContext: GraphQLContext
-  let mockUser: User
+  let mockUser: BackendUser
+  let mockUserService: any
 
   beforeEach(() => {
     mockUser = {
@@ -19,7 +28,27 @@ describe('Logbook Resolvers', () => {
       primaryInstrument: 'PIANO',
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
+      preferences: {
+        theme: 'LIGHT',
+        notationSize: 'MEDIUM',
+        soundEnabled: true,
+        metronomeBPM: 120,
+        practiceReminders: false,
+      },
+      stats: {
+        totalPracticeTime: 0,
+        sessionsCompleted: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastPracticeDate: null,
+      },
     }
+
+    // Set up UserService mock
+    mockUserService = {
+      getUserById: jest.fn(),
+    }
+    ;(UserService as jest.Mock).mockImplementation(() => mockUserService)
 
     const mockDB = {
       prepare: jest.fn().mockReturnThis(),
@@ -38,6 +67,7 @@ describe('Logbook Resolvers', () => {
       },
       user: mockUser,
       requestId: 'test-request-123',
+      db: mockDB as any,
     }
   })
 
@@ -286,6 +316,7 @@ describe('Logbook Resolvers', () => {
     describe('user', () => {
       it('should return user from context if userId matches', async () => {
         const parent = { userId: 'user-123' }
+        mockUserService.getUserById.mockResolvedValue(mockUser)
 
         const result = await logbookResolvers.LogbookEntry!.user!(
           parent as any,
@@ -294,11 +325,13 @@ describe('Logbook Resolvers', () => {
           {} as any
         )
 
+        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
         expect(result).toBe(mockUser)
       })
 
       it('should throw error if user not found', async () => {
         const parent = { userId: 'different-user' }
+        mockUserService.getUserById.mockResolvedValue(null)
 
         await expect(
           logbookResolvers.LogbookEntry!.user!(
@@ -316,6 +349,7 @@ describe('Logbook Resolvers', () => {
     describe('user', () => {
       it('should return user from context if userId matches', async () => {
         const parent = { userId: 'user-123' }
+        mockUserService.getUserById.mockResolvedValue(mockUser)
 
         const result = await logbookResolvers.Goal!.user!(
           parent as any,
@@ -324,11 +358,13 @@ describe('Logbook Resolvers', () => {
           {} as any
         )
 
+        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
         expect(result).toBe(mockUser)
       })
 
       it('should throw error if user not found', async () => {
         const parent = { userId: 'different-user' }
+        mockUserService.getUserById.mockResolvedValue(null)
 
         await expect(
           logbookResolvers.Goal!.user!(

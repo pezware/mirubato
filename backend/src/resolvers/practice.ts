@@ -44,7 +44,7 @@ export const practiceResolvers = {
         }
 
         query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
-        params.push(limit, offset)
+        params.push(limit ?? 10, offset ?? 0)
 
         const sessions = await context.env.DB.prepare(query)
           .bind(...params)
@@ -62,24 +62,24 @@ export const practiceResolvers = {
           .first<{ count: number }>()
 
         const totalCount = countResult?.count || 0
-        const hasNextPage = offset + limit < totalCount
+        const hasNextPage = (offset ?? 0) + (limit ?? 10) < totalCount
 
         return {
           edges: sessions.results.map((session, index) => ({
             node: session,
-            cursor: Buffer.from(`${offset + index}`).toString('base64'),
+            cursor: Buffer.from(`${(offset ?? 0) + index}`).toString('base64'),
           })),
           pageInfo: {
             hasNextPage,
-            hasPreviousPage: offset > 0,
+            hasPreviousPage: (offset ?? 0) > 0,
             startCursor:
               sessions.results.length > 0
-                ? Buffer.from(`${offset}`).toString('base64')
+                ? Buffer.from(`${offset ?? 0}`).toString('base64')
                 : null,
             endCursor:
               sessions.results.length > 0
                 ? Buffer.from(
-                    `${offset + sessions.results.length - 1}`
+                    `${(offset ?? 0) + sessions.results.length - 1}`
                   ).toString('base64')
                 : null,
           },
@@ -113,24 +113,32 @@ export const practiceResolvers = {
       try {
         await context.env.DB.prepare(
           `INSERT INTO practice_sessions (
-            id, user_id, sheet_music_id, tempo, instrument, 
-            duration_minutes, status, accuracy, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, 'IN_PROGRESS', ?, ?, ?)`
+            id, user_id, sheet_music_id, instrument, 
+            status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, 'IN_PROGRESS', ?, ?)`
         )
           .bind(
             id,
             context.user.id,
             input.sheetMusicId,
-            input.tempo,
             input.instrument,
-            0, // Initial duration
-            null, // Initial accuracy
             now,
             now
           )
           .run()
 
-        return { id }
+        // Fetch and return the created session
+        const session = await context.env.DB.prepare(
+          'SELECT * FROM practice_sessions WHERE id = ?'
+        )
+          .bind(id)
+          .first<PracticeSession>()
+
+        if (!session) {
+          throw new Error('Failed to create practice session')
+        }
+
+        return session
       } catch (error) {
         console.error('Error starting practice session:', error)
         throw new Error('Failed to start practice session')
@@ -151,7 +159,18 @@ export const practiceResolvers = {
           .bind(new Date().toISOString(), sessionId, context.user.id)
           .run()
 
-        return { id: sessionId }
+        // Fetch and return the updated session
+        const session = await context.env.DB.prepare(
+          'SELECT * FROM practice_sessions WHERE id = ? AND user_id = ?'
+        )
+          .bind(sessionId, context.user.id)
+          .first<PracticeSession>()
+
+        if (!session) {
+          throw new Error('Practice session not found')
+        }
+
+        return session
       } catch (error) {
         console.error('Error pausing practice session:', error)
         throw new Error('Failed to pause practice session')
@@ -172,7 +191,18 @@ export const practiceResolvers = {
           .bind(new Date().toISOString(), sessionId, context.user.id)
           .run()
 
-        return { id: sessionId }
+        // Fetch and return the updated session
+        const session = await context.env.DB.prepare(
+          'SELECT * FROM practice_sessions WHERE id = ? AND user_id = ?'
+        )
+          .bind(sessionId, context.user.id)
+          .first<PracticeSession>()
+
+        if (!session) {
+          throw new Error('Practice session not found')
+        }
+
+        return session
       } catch (error) {
         console.error('Error resuming practice session:', error)
         throw new Error('Failed to resume practice session')
@@ -189,14 +219,14 @@ export const practiceResolvers = {
       try {
         await context.env.DB.prepare(
           `UPDATE practice_sessions 
-           SET status = 'COMPLETED', duration_minutes = ?, accuracy = ?, 
-               notes = ?, completed_at = ?, updated_at = ?
+           SET status = 'COMPLETED', accuracy = ?, 
+               notes_attempted = ?, notes_correct = ?, completed_at = ?, updated_at = ?
            WHERE id = ? AND user_id = ?`
         )
           .bind(
-            input.durationMinutes,
             input.accuracy,
-            input.notes || null,
+            input.notesAttempted || null,
+            input.notesCorrect || null,
             now,
             now,
             input.sessionId,
@@ -232,17 +262,20 @@ export const practiceResolvers = {
       try {
         await context.env.DB.prepare(
           `INSERT INTO practice_logs (
-            id, session_id, measure_number, mistake_type, mistake_details,
-            tempo_achievement, notes, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            id, session_id, activity_type, duration_seconds,
+            tempo_practiced, target_tempo, focus_areas, self_rating,
+            notes, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             id,
             input.sessionId,
-            input.measureNumber,
-            input.mistakeType || null,
-            input.mistakeDetails || null,
-            input.tempoAchievement || null,
+            input.activityType,
+            input.durationSeconds,
+            input.tempoPracticed || null,
+            input.targetTempo || null,
+            JSON.stringify(input.focusAreas || []),
+            input.selfRating || null,
             input.notes || null,
             now
           )
@@ -265,7 +298,11 @@ export const practiceResolvers = {
       }
     },
 
-    syncAnonymousData: async (_parent, { input }, context) => {
+    syncAnonymousData: async (
+      _parent: any,
+      { input }: { input: any },
+      context: any
+    ) => {
       if (!context.user) {
         throw new Error('Authentication required')
       }
@@ -280,7 +317,7 @@ export const practiceResolvers = {
 
       try {
         // Start a transaction for atomic sync
-        const tx = await db.batch([])
+        await db.batch([])
 
         // Sync practice sessions
         for (const session of input.sessions) {
@@ -427,17 +464,21 @@ export const practiceResolvers = {
   PracticeSession: {
     user: async (parent, _args, context) => {
       const userService = new UserService(context.env.DB)
-      return userService.getUserById(parent.userId)
+      return userService.getUserById(
+        (parent as any).user_id || (parent as any).userId
+      )
     },
 
     sheetMusic: async (parent, _args, context) => {
-      if (!parent.sheetMusicId) return null
+      const sheetMusicId =
+        (parent as any).sheet_music_id || (parent as any).sheetMusicId
+      if (!sheetMusicId) return null
 
       try {
         const result = await context.env.DB.prepare(
           'SELECT * FROM sheet_music WHERE id = ?'
         )
-          .bind(parent.sheetMusicId)
+          .bind(sheetMusicId)
           .first()
 
         return result || null
