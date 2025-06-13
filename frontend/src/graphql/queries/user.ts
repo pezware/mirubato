@@ -7,6 +7,7 @@ export const GET_CURRENT_USER = gql`
       email
       displayName
       primaryInstrument
+      hasCloudStorage
       createdAt
       updatedAt
       preferences {

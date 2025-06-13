@@ -1,6 +1,6 @@
 # mirubato
 
-Open-source sight-reading platform for classical guitar and piano, featuring real-time audio playback and progressive exercises.
+Open-source practice journal for musicians - track sessions, log progress, and analyze your musical journey.
 
 ![mirubato Screenshot](https://github.com/pezware/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
 
