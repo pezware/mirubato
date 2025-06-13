@@ -141,6 +141,7 @@ storybook-static/
 # GraphQL Code Generation
 src/__generated__/
 src/types/generated/
+# Note: src/generated/ is committed to git as it's part of the source code
 
 # Source maps
 *.map

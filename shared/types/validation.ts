@@ -1,7 +1,6 @@
 // Data validation and migration utilities
 
 import {
-  PracticeSession,
   LocalPracticeSession,
   PracticeLog,
   UserPreferences,
@@ -13,8 +12,8 @@ import {
 } from './index'
 
 export class DataValidator {
-  // Validate practice session data structure
-  static validatePracticeSession(data: any): data is PracticeSession {
+  // Validate local practice session (includes synced flag)
+  static validateLocalPracticeSession(data: any): data is LocalPracticeSession {
     if (!data || typeof data !== 'object') return false
 
     // Required fields
@@ -59,14 +58,9 @@ export class DataValidator {
     if (typeof data.notesCorrect !== 'number' || data.notesCorrect < 0)
       return false
 
-    return true
-  }
+    // LocalPracticeSession specific fields
+    if (typeof data.isSynced !== 'boolean') return false
 
-  // Validate local practice session (includes synced flag)
-  static validateLocalPracticeSession(data: any): data is LocalPracticeSession {
-    if (!this.validatePracticeSession(data)) return false
-    if (typeof (data as LocalPracticeSession).isSynced !== 'boolean')
-      return false
     return true
   }
 

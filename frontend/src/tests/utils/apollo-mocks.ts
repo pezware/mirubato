@@ -6,7 +6,8 @@ import {
   LOGOUT,
   REQUEST_MAGIC_LINK,
 } from '../../graphql/queries/auth'
-import { Instrument, Theme, NotationSize, User } from '@mirubato/shared/types'
+import { Instrument, Theme, NotationSize } from '@mirubato/shared/types'
+import type { User } from '../../generated/graphql'
 
 // Common user data for tests
 export const mockAnonymousUser = {

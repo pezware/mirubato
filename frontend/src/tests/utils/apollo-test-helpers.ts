@@ -1,6 +1,6 @@
 import { MockedResponse } from '@apollo/client/testing'
 import { GET_CURRENT_USER } from '../../graphql/queries/user'
-import { User } from '@mirubato/shared/types'
+import type { User } from '../../generated/graphql'
 
 /**
  * Creates a mock that can be reused multiple times for GET_CURRENT_USER queries

@@ -1,6 +1,23 @@
-// Shared types between frontend and backend to ensure data consistency
+/**
+ * Shared types for localStorage and non-GraphQL concerns
+ *
+ * IMPORTANT: This file only contains types that are NOT in the GraphQL schema.
+ *
+ * For GraphQL types, use the generated types instead:
+ * - Frontend: import from 'frontend/src/generated/graphql'
+ * - Backend: import from 'backend/src/types/generated/graphql'
+ *
+ * This file contains:
+ * - LocalStorage-specific types (LocalUser, LocalPracticeSession, LocalUserData)
+ * - UI preferences not stored in backend (parts of UserPreferences)
+ * - Legacy compatibility types
+ *
+ * The enums below are kept for backward compatibility but should be imported
+ * from generated GraphQL types in new code.
+ */
 
-// Enums that match database constraints
+// Re-export generated enums for backward compatibility
+// These will be imported from generated GraphQL types in frontend
 export enum Instrument {
   PIANO = 'PIANO',
   GUITAR = 'GUITAR',
@@ -33,17 +50,7 @@ export enum NotationSize {
   LARGE = 'LARGE',
 }
 
-// User related types
-export interface User {
-  id: string
-  email: string
-  displayName?: string | null
-  primaryInstrument: Instrument
-  hasCloudStorage: boolean
-  createdAt: string // ISO date string
-  updatedAt: string // ISO date string
-}
-
+// LocalStorage-specific types (not in GraphQL)
 export interface UserPreferences {
   theme: Theme
   notationSize: NotationSize
@@ -72,21 +79,7 @@ export interface UserStats {
   averageAccuracy?: number // Deprecated, use accuracyAverage
 }
 
-// Practice session types
-export interface PracticeSession {
-  id: string
-  userId: string
-  instrument: Instrument
-  sheetMusicId?: string | null
-  sessionType: SessionType
-  startedAt: string // ISO date string
-  completedAt?: string | null // ISO date string
-  pausedDuration: number // in seconds
-  accuracyPercentage?: number | null
-  notesAttempted: number
-  notesCorrect: number
-}
-
+// LocalStorage-specific practice log (different from GraphQL PracticeLog)
 export interface PracticeLog {
   id: string
   sessionId: string
@@ -100,13 +93,32 @@ export interface PracticeLog {
   createdAt: string // ISO date string
 }
 
-// Local storage specific types (extends base types)
-export interface LocalUser extends User {
+// Local storage specific types
+// Note: These used to extend GraphQL types but now are standalone for localStorage
+export interface LocalUser {
+  id: string
+  email: string
+  displayName?: string | null
+  primaryInstrument: Instrument
+  hasCloudStorage: boolean
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
   isAnonymous: boolean
   lastSyncedAt?: string | null // ISO date string, only for authenticated users
 }
 
-export interface LocalPracticeSession extends PracticeSession {
+export interface LocalPracticeSession {
+  id: string
+  userId: string
+  instrument: Instrument
+  sheetMusicId?: string | null
+  sessionType: SessionType
+  startedAt: string // ISO date string
+  completedAt?: string | null // ISO date string
+  pausedDuration: number // in seconds
+  accuracyPercentage?: number | null
+  notesAttempted: number
+  notesCorrect: number
   isSynced: boolean
   sheetMusicTitle?: string // For display when offline
 }
@@ -167,19 +179,22 @@ export const SCHEMA_VERSION = 1
 // Helper functions for data conversion
 export const DataConverters = {
   // Convert local storage format to database format
-  localSessionToDbSession: (local: LocalPracticeSession): PracticeSession => {
+  // Note: Returns an object without LocalStorage-specific fields
+  localSessionToDbSession: (local: LocalPracticeSession) => {
     const { isSynced, sheetMusicTitle, ...dbSession } = local
     return dbSession
   },
 
   // Convert database format to local storage format
   dbSessionToLocalSession: (
-    db: PracticeSession,
-    isSynced = true
+    db: Omit<LocalPracticeSession, 'isSynced' | 'sheetMusicTitle'>,
+    isSynced = true,
+    sheetMusicTitle?: string
   ): LocalPracticeSession => {
     return {
       ...db,
       isSynced,
+      ...(sheetMusicTitle && { sheetMusicTitle }),
     }
   },
 

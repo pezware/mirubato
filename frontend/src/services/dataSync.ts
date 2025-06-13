@@ -283,23 +283,16 @@ export class DataSyncService {
         fetchPolicy: 'network-only',
       })
 
-      if (data?.currentUser) {
+      if (data?.me) {
         // Check if remote user was updated after last sync
-        const remoteUpdatedAt = new Date(data.currentUser.updatedAt)
+        const remoteUpdatedAt = new Date(data.me.updatedAt)
         if (remoteUpdatedAt > lastSync) {
-          // Check specific fields for conflicts
-          if (data.currentUser.preferences.updatedAt) {
-            const prefsUpdatedAt = new Date(
-              data.currentUser.preferences.updatedAt
-            )
-            if (prefsUpdatedAt > lastSync) {
-              conflicts.push({
-                type: 'preferences',
-                localId: userData.id,
-                message: 'User preferences have been updated on another device',
-              })
-            }
-          }
+          // User preferences don't have updatedAt field, so we check the user's updatedAt
+          conflicts.push({
+            type: 'preferences',
+            localId: userData.id,
+            message: 'User preferences have been updated on another device',
+          })
         }
       }
 

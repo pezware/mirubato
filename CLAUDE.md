@@ -17,6 +17,11 @@ npm install                    # Install all dependencies
 npm run dev                    # Start frontend (port 3000)
 npm run dev:backend            # Start backend (port 8787) - uses --env local
 
+# GraphQL Development (IMPORTANT!)
+npm run codegen                # Generate TypeScript types from GraphQL schema
+npm run codegen:watch          # Auto-generate on schema changes
+npm run codegen:check          # Verify frontend-backend alignment
+
 # Deployment
 cd backend && wrangler deploy              # Deploy to production (default)
 cd backend && wrangler deploy --env dev    # Deploy to development
@@ -81,6 +86,7 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 - [ ] Let pre-commit hooks run (NEVER use `--no-verify`)
 - [ ] No `console.log` statements in code
 - [ ] No `any` types in TypeScript
+- [ ] **GraphQL types are generated and up-to-date** (run `npm run codegen`)
 - [ ] Update CLAUDE.md if you discover new patterns
 
 ### Key Principles
@@ -163,6 +169,26 @@ npm run docs:generate
 # 6. Check coverage
 npm test -- src/modules/newModule --coverage
 ```
+
+### GraphQL Development Workflow
+
+**IMPORTANT**: We use GraphQL Code Generation to ensure frontend-backend alignment. Never write GraphQL queries manually without running codegen!
+
+```bash
+# When modifying GraphQL schema or queries:
+1. Make changes to backend schema or frontend queries
+2. Run: npm run codegen
+3. Commit generated files with your changes
+4. Pre-commit hook will verify alignment
+
+# During development:
+npm run codegen:watch  # Auto-generates on file changes
+```
+
+**Generated files location**: `frontend/src/generated/`
+
+- `graphql.ts` - All types and hooks
+- `introspection.json` - Schema introspection for tooling
 
 ### Musical Implementation
 

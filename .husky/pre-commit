@@ -9,3 +9,7 @@ npm run test:unit -- --passWithNoTests --watchAll=false
 
 # Check TypeScript types
 npm run type-check
+
+# Check GraphQL schema alignment
+echo "🔍 Checking GraphQL schema alignment..."
+npm run codegen:check
