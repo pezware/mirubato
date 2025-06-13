@@ -12,12 +12,16 @@ import { GET_LOGBOOK_ENTRIES } from '../graphql/queries/practice'
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
   const { practiceLogger, isInitialized, eventBus } = useModules()
-  const { user } = useAuth()
+  const { user, syncToCloud } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [syncStatus, setSyncStatus] = useState<
+    'idle' | 'syncing' | 'success' | 'error'
+  >('idle')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Use GraphQL for authenticated users with cloud storage
   const shouldUseGraphQL = user && !user.isAnonymous && user.hasCloudStorage
@@ -181,11 +185,43 @@ const Logbook: React.FC = () => {
       })
 
       if (shouldUseGraphQL) {
-        // For authenticated users, update local state and trigger refetch
+        // For authenticated users, update local state and trigger automatic sync
         setEntries([newEntry, ...entries])
         setShowNewEntryForm(false)
-        // Trigger refetch to get updated data from server after sync
-        setTimeout(() => refetch(), 1000)
+
+        // Trigger automatic sync for authenticated users
+        if (user && !user.isAnonymous && user.hasCloudStorage) {
+          console.log('Auto-syncing new entry to cloud...')
+          setSyncStatus('syncing')
+          setErrorMessage(null)
+          try {
+            await syncToCloud()
+            console.log('Entry synced successfully')
+            setSyncStatus('success')
+            // Hide success message after 3 seconds
+            setTimeout(() => setSyncStatus('idle'), 3000)
+            // Refetch to get updated data from server
+            setTimeout(() => refetch(), 500)
+          } catch (syncError) {
+            console.error('Failed to auto-sync entry:', syncError)
+            setSyncStatus('error')
+            setErrorMessage(
+              syncError instanceof Error
+                ? `Sync failed: ${syncError.message}`
+                : 'Failed to sync entry to cloud'
+            )
+            // Hide error message after 10 seconds
+            setTimeout(() => {
+              setSyncStatus('idle')
+              setErrorMessage(null)
+            }, 10000)
+            // Still refetch in case there are other changes
+            setTimeout(() => refetch(), 1000)
+          }
+        } else {
+          // Manual refetch for users without cloud storage
+          setTimeout(() => refetch(), 1000)
+        }
       } else {
         // For anonymous users, just update local state
         setEntries([newEntry, ...entries])
@@ -231,6 +267,60 @@ const Logbook: React.FC = () => {
             musical journey
           </p>
         </div>
+
+        {/* Sync Status Bar */}
+        {syncStatus !== 'idle' && (
+          <div
+            className={`mb-4 p-3 rounded-lg border ${
+              syncStatus === 'syncing'
+                ? 'bg-blue-50 border-blue-200 text-blue-800'
+                : syncStatus === 'success'
+                  ? 'bg-green-50 border-green-200 text-green-800'
+                  : 'bg-red-50 border-red-200 text-red-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {syncStatus === 'syncing' && (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span>Syncing to cloud...</span>
+                </>
+              )}
+              {syncStatus === 'success' && (
+                <>
+                  <svg
+                    className="w-4 h-4 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>Synced successfully!</span>
+                </>
+              )}
+              {syncStatus === 'error' && (
+                <>
+                  <svg
+                    className="w-4 h-4 text-red-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>{errorMessage || 'Sync failed'}</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Actions Bar */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
