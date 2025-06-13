@@ -50,32 +50,38 @@ const Logbook: React.FC = () => {
           setIsLoading(true)
         }
 
-        if (shouldUseGraphQL && graphqlData?.myLogbookEntries?.entries) {
+        if (shouldUseGraphQL && graphqlData?.myLogbookEntries?.edges) {
           // Transform GraphQL data to match our interface
           const transformedEntries: LogbookEntry[] =
-            graphqlData.myLogbookEntries.entries.map(
-              (entry: {
-                id: string
-                userId: string
-                timestamp: string
-                duration: number
-                type: string
-                instrument: string
-                pieces: Array<{ id: string; title: string; composer?: string }>
-                techniques: string[]
-                goalIds: string[]
-                notes?: string
-                mood?: string
-                tags: string[]
-                metadata?: { source: string; accuracy?: number }
-                createdAt: string
-                updatedAt: string
-              }) => ({
-                ...entry,
-                timestamp: new Date(entry.timestamp).getTime(),
-                goals: entry.goalIds, // Map goalIds to goals
-              })
-            )
+            graphqlData.myLogbookEntries.edges
+              .map((edge: { node: unknown }) => edge.node as any)
+              .map(
+                (entry: {
+                  id: string
+                  userId: string
+                  timestamp: string
+                  duration: number
+                  type: string
+                  instrument: string
+                  pieces: Array<{
+                    id: string
+                    title: string
+                    composer?: string
+                  }>
+                  techniques: string[]
+                  goalIds: string[]
+                  notes?: string
+                  mood?: string
+                  tags: string[]
+                  metadata?: { source: string; accuracy?: number }
+                  createdAt: string
+                  updatedAt: string
+                }) => ({
+                  ...entry,
+                  timestamp: new Date(entry.timestamp).getTime(),
+                  goals: entry.goalIds, // Map goalIds to goals
+                })
+              )
           setEntries(transformedEntries)
         } else if (!shouldUseGraphQL) {
           // Use localStorage for anonymous users

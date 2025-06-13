@@ -255,52 +255,56 @@ export class LogbookReportingModule
 
       // Transform the data to match our LogbookEntry interface
       const entries: LogbookEntry[] = (
-        entriesResult.data?.myLogbookEntries?.entries || []
-      ).map(
-        (entry: {
-          id: string
-          userId: string
-          timestamp: string
-          duration: number
-          type: string
-          instrument: string
-          pieces: Array<{ id: string; title: string; composer?: string }>
-          techniques: string[]
-          goalIds: string[]
-          notes?: string
-          mood?: string
-          tags: string[]
-          metadata?: { source: string; accuracy?: number }
-          createdAt: string
-          updatedAt: string
-        }) => ({
-          ...entry,
-          timestamp: new Date(entry.timestamp).getTime(),
-          goals: entry.goalIds, // Map goalIds to goals field
-        })
+        entriesResult.data?.myLogbookEntries?.edges || []
       )
+        .map((edge: { node: unknown }) => edge.node as any)
+        .map(
+          (entry: {
+            id: string
+            userId: string
+            timestamp: string
+            duration: number
+            type: string
+            instrument: string
+            pieces: Array<{ id: string; title: string; composer?: string }>
+            techniques: string[]
+            goalIds: string[]
+            notes?: string
+            mood?: string
+            tags: string[]
+            metadata?: { source: string; accuracy?: number }
+            createdAt: string
+            updatedAt: string
+          }) => ({
+            ...entry,
+            timestamp: new Date(entry.timestamp).getTime(),
+            goals: entry.goalIds, // Map goalIds to goals field
+          })
+        )
 
       // Transform goals to match our Goal interface
-      const goals: Goal[] = (goalsResult.data?.myGoals?.goals || []).map(
-        (goal: {
-          id: string
-          userId: string
-          title: string
-          description?: string
-          targetDate?: string
-          progress: number
-          status: string
-          linkedEntries: string[]
-          milestones: Array<{ id: string; title: string; completed: boolean }>
-          createdAt: string
-          updatedAt: string
-        }) => ({
-          ...goal,
-          targetDate: goal.targetDate
-            ? new Date(goal.targetDate).getTime()
-            : undefined,
-        })
-      )
+      const goals: Goal[] = (goalsResult.data?.myGoals?.edges || [])
+        .map((edge: { node: unknown }) => edge.node as any)
+        .map(
+          (goal: {
+            id: string
+            userId: string
+            title: string
+            description?: string
+            targetDate?: string
+            progress: number
+            status: string
+            linkedEntries: string[]
+            milestones: Array<{ id: string; title: string; completed: boolean }>
+            createdAt: string
+            updatedAt: string
+          }) => ({
+            ...goal,
+            targetDate: goal.targetDate
+              ? new Date(goal.targetDate).getTime()
+              : undefined,
+          })
+        )
 
       return [entries, goals]
     } catch (error) {

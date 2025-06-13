@@ -7,36 +7,43 @@ export const GET_LOGBOOK_ENTRIES = gql`
     $offset: Int
   ) {
     myLogbookEntries(filter: $filter, limit: $limit, offset: $offset) {
-      entries {
-        id
-        userId
-        timestamp
-        duration
-        type
-        instrument
-        pieces {
+      edges {
+        node {
           id
-          title
-          composer
-          measures
-          tempo
+          userId
+          timestamp
+          duration
+          type
+          instrument
+          pieces {
+            id
+            title
+            composer
+            measures
+            tempo
+          }
+          techniques
+          goalIds
+          notes
+          mood
+          tags
+          metadata {
+            source
+            accuracy
+            notesPlayed
+            mistakeCount
+          }
+          createdAt
+          updatedAt
         }
-        techniques
-        goalIds
-        notes
-        mood
-        tags
-        metadata {
-          source
-          accuracy
-          notesPlayed
-          mistakeCount
-        }
-        createdAt
-        updatedAt
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
       }
       totalCount
-      hasMore
     }
   }
 `
@@ -44,25 +51,32 @@ export const GET_LOGBOOK_ENTRIES = gql`
 export const GET_GOALS = gql`
   query GetGoals($status: GoalStatus, $limit: Int, $offset: Int) {
     myGoals(status: $status, limit: $limit, offset: $offset) {
-      goals {
-        id
-        userId
-        title
-        description
-        targetDate
-        progress
-        status
-        linkedEntries
-        milestones {
+      edges {
+        node {
           id
+          userId
           title
-          completed
+          description
+          targetDate
+          progress
+          status
+          linkedEntries
+          milestones {
+            id
+            title
+            completed
+          }
+          createdAt
+          updatedAt
         }
-        createdAt
-        updatedAt
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
       }
       totalCount
-      hasMore
     }
   }
 `
@@ -154,22 +168,14 @@ export const DELETE_GOAL = gql`
 `
 
 export const SYNC_ANONYMOUS_DATA = gql`
-  mutation SyncAnonymousData(
-    $sessions: [PracticeSessionInput!]!
-    $logs: [PracticeLogInput!]!
-    $entries: [LogbookEntryInput!]!
-    $goals: [GoalInput!]!
-  ) {
-    syncAnonymousData(
-      sessions: $sessions
-      logs: $logs
-      entries: $entries
-      goals: $goals
-    ) {
+  mutation SyncAnonymousData($input: SyncAnonymousDataInput!) {
+    syncAnonymousData(input: $input) {
+      success
       syncedSessions
       syncedLogs
       syncedEntries
       syncedGoals
+      errors
     }
   }
 `
