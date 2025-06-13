@@ -6,17 +6,38 @@ import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
 import { useModules } from '../contexts/ModulesContext'
 import { useAuth } from '../hooks/useAuth'
+import { useQuery } from '@apollo/client'
+import { GET_LOGBOOK_ENTRIES } from '../graphql/queries/practice'
 
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
-  const { practiceLogger, isInitialized } = useModules()
+  const { practiceLogger, isInitialized, eventBus } = useModules()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  // Load entries from PracticeLoggerModule
+  // Use GraphQL for authenticated users with cloud storage
+  const shouldUseGraphQL = user && !user.isAnonymous && user.hasCloudStorage
+
+  // GraphQL query for authenticated users
+  const {
+    data: graphqlData,
+    loading: graphqlLoading,
+    refetch,
+  } = useQuery(GET_LOGBOOK_ENTRIES, {
+    variables: {
+      filter: {},
+      limit: 1000,
+      offset: 0,
+    },
+    skip: !shouldUseGraphQL,
+    fetchPolicy: 'network-only', // Always fetch fresh data
+  })
+
+  // Load entries based on authentication status
   useEffect(() => {
     if (!isInitialized || !practiceLogger) {
       return
@@ -24,19 +45,79 @@ const Logbook: React.FC = () => {
 
     const loadEntries = async () => {
       try {
-        setIsLoading(true)
-        const filters = user?.id ? { userId: user.id } : {}
-        const loadedEntries = await practiceLogger.getLogEntries(filters)
-        setEntries(loadedEntries)
+        // Only show loading on initial load or when switching between storage types
+        if (isInitialLoad) {
+          setIsLoading(true)
+        }
+
+        if (shouldUseGraphQL && graphqlData?.myLogbookEntries?.entries) {
+          // Transform GraphQL data to match our interface
+          const transformedEntries: LogbookEntry[] =
+            graphqlData.myLogbookEntries.entries.map(
+              (entry: {
+                id: string
+                userId: string
+                timestamp: string
+                duration: number
+                type: string
+                instrument: string
+                pieces: Array<{ id: string; title: string; composer?: string }>
+                techniques: string[]
+                goalIds: string[]
+                notes?: string
+                mood?: string
+                tags: string[]
+                metadata?: { source: string; accuracy?: number }
+                createdAt: string
+                updatedAt: string
+              }) => ({
+                ...entry,
+                timestamp: new Date(entry.timestamp).getTime(),
+                goals: entry.goalIds, // Map goalIds to goals
+              })
+            )
+          setEntries(transformedEntries)
+        } else if (!shouldUseGraphQL) {
+          // Use localStorage for anonymous users
+          const filters = user?.id ? { userId: user.id } : {}
+          const loadedEntries = await practiceLogger.getLogEntries(filters)
+          setEntries(loadedEntries)
+        }
       } catch (error) {
-        // Failed to load logbook entries
+        console.error('Failed to load logbook entries:', error)
       } finally {
         setIsLoading(false)
+        setIsInitialLoad(false)
       }
     }
 
-    loadEntries()
-  }, [isInitialized, practiceLogger, user])
+    if (!graphqlLoading) {
+      loadEntries()
+    }
+  }, [
+    isInitialized,
+    practiceLogger,
+    user,
+    shouldUseGraphQL,
+    graphqlData,
+    graphqlLoading,
+  ])
+
+  // Listen for sync complete events to refetch data
+  useEffect(() => {
+    if (!eventBus || !shouldUseGraphQL) return
+
+    const subscriptionId = eventBus.subscribe('sync:complete', () => {
+      console.log('Sync completed, refetching logbook entries...')
+      if (refetch) {
+        refetch()
+      }
+    })
+
+    return () => {
+      eventBus.unsubscribe(subscriptionId)
+    }
+  }, [eventBus, shouldUseGraphQL, refetch])
 
   const handleSaveEntry = async (
     entry: Omit<LogbookEntry, 'id' | 'userId'>
@@ -48,12 +129,22 @@ const Logbook: React.FC = () => {
     try {
       const newEntry = await practiceLogger.createLogEntry({
         ...entry,
-        userId: user?.id || 'guest', // Use actual user ID or 'guest'
+        userId: user?.id || 'guest',
       })
-      setEntries([newEntry, ...entries])
-      setShowNewEntryForm(false)
+
+      if (shouldUseGraphQL) {
+        // For authenticated users, update local state and trigger refetch
+        setEntries([newEntry, ...entries])
+        setShowNewEntryForm(false)
+        // Trigger refetch to get updated data from server after sync
+        setTimeout(() => refetch(), 1000)
+      } else {
+        // For anonymous users, just update local state
+        setEntries([newEntry, ...entries])
+        setShowNewEntryForm(false)
+      }
     } catch (error) {
-      // Failed to save entry
+      console.error('Failed to save entry:', error)
     }
   }
 

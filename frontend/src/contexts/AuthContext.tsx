@@ -16,6 +16,7 @@ import {
 } from '../lib/apollo/client'
 import { localStorageService, LocalUserData } from '../services/localStorage'
 import { useModules } from './ModulesContext'
+import { Instrument } from '@mirubato/shared/types'
 
 const logger = createLogger('AuthContext')
 
@@ -70,19 +71,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const pendingData = localStorageService.getPendingSyncData()
 
-      // Get all unsynced data
-      const allEntries = localStorageService
+      // Get all unsynced data from localStorage
+      // Note: localStorage entries have a different structure than LogbookEntry type
+      const localEntries = localStorageService
         .getLogbookEntries()
         .filter(entry => !entry.isSynced)
-      const allGoals = localStorageService
+      const localGoals = localStorageService
         .getGoals()
         .filter(goal => !goal.isSynced)
 
       logger.info('Syncing to cloud', {
         sessionCount: pendingData.sessions.length,
         logCount: pendingData.logs.length,
-        entryCount: allEntries.length,
-        goalCount: allGoals.length,
+        entryCount: localEntries.length,
+        goalCount: localGoals.length,
       })
 
       // Call the sync mutation
@@ -119,24 +121,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               notes: log.notes,
               createdAt: log.createdAt,
             })),
-            entries: allEntries.map(entry => ({
-              title: entry.title,
-              content: entry.content,
-              category: entry.category,
-              mood: entry.mood,
-              energyLevel: entry.energyLevel,
-              focusLevel: entry.focusLevel,
-              progressRating: entry.progressRating,
-              createdAt: entry.timestamp,
+            entries: localEntries.map(entry => ({
+              // Map from localStorage format to GraphQL format
+              timestamp: entry.timestamp, // already an ISO string
+              duration: 0, // localStorage entries don't have duration
+              type: (entry.category?.toUpperCase() || 'PRACTICE') as
+                | 'PRACTICE'
+                | 'PERFORMANCE'
+                | 'LESSON'
+                | 'REHEARSAL',
+              instrument: 'PIANO' as Instrument, // default since localStorage doesn't track instrument
+              pieces: [], // localStorage entries don't have pieces
+              techniques: [],
+              goalIds: [],
+              notes: entry.content || '',
+              mood: entry.mood?.toUpperCase() as
+                | 'FRUSTRATED'
+                | 'NEUTRAL'
+                | 'SATISFIED'
+                | 'EXCITED'
+                | undefined,
+              tags: [],
             })),
-            goals: allGoals.map(goal => ({
+            goals: localGoals.map(goal => ({
               title: goal.title,
               description: goal.description,
-              targetValue: goal.targetValue,
-              currentValue: goal.currentValue,
-              unit: goal.unit,
-              deadline: goal.deadline,
-              status: goal.status,
+              targetDate: goal.deadline, // localStorage uses 'deadline' field
+              milestones: [], // localStorage goals don't have milestones
             })),
           },
         },
@@ -146,8 +157,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Mark all items as synced
         const sessionIds = pendingData.sessions.map(s => s.id)
         const logIds = pendingData.logs.map(l => l.id)
-        const entryIds = allEntries.map(e => e.id)
-        const goalIds = allGoals.map(g => g.id)
+        const entryIds = localEntries.map(e => e.id)
+        const goalIds = localGoals.map(g => g.id)
         localStorageService.markAsSynced(sessionIds, logIds, entryIds, goalIds)
 
         // Update last sync time
@@ -159,6 +170,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           syncedEntries: data.syncAnonymousData.syncedEntries,
           syncedGoals: data.syncAnonymousData.syncedGoals,
         })
+
+        // Publish sync complete event
+        if (modulesInitialized && eventBus) {
+          eventBus.publish({
+            source: 'AuthContext',
+            type: 'sync:complete',
+            data: {
+              syncedItems: {
+                sessions: data.syncAnonymousData.syncedSessions,
+                logs: data.syncAnonymousData.syncedLogs,
+                entries: data.syncAnonymousData.syncedEntries,
+                goals: data.syncAnonymousData.syncedGoals,
+              },
+              timestamp: Date.now(),
+            },
+            metadata: {
+              userId: user?.id,
+              version: '1.0.0',
+            },
+          })
+        }
       } else {
         logger.error('Sync failed with errors', data.syncAnonymousData.errors)
       }

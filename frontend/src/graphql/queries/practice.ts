@@ -2,51 +2,67 @@ import { gql } from '@apollo/client'
 
 export const GET_LOGBOOK_ENTRIES = gql`
   query GetLogbookEntries(
-    $userId: ID
-    $startDate: DateTime
-    $endDate: DateTime
-    $category: String
+    $filter: LogbookFilterInput
     $limit: Int
     $offset: Int
   ) {
-    logbookEntries(
-      userId: $userId
-      startDate: $startDate
-      endDate: $endDate
-      category: $category
-      limit: $limit
-      offset: $offset
-    ) {
-      id
-      userId
-      title
-      content
-      category
-      mood
-      energyLevel
-      focusLevel
-      progressRating
-      timestamp
-      createdAt
-      updatedAt
+    myLogbookEntries(filter: $filter, limit: $limit, offset: $offset) {
+      entries {
+        id
+        userId
+        timestamp
+        duration
+        type
+        instrument
+        pieces {
+          id
+          title
+          composer
+          measures
+          tempo
+        }
+        techniques
+        goalIds
+        notes
+        mood
+        tags
+        metadata {
+          source
+          accuracy
+          notesPlayed
+          mistakeCount
+        }
+        createdAt
+        updatedAt
+      }
+      totalCount
+      hasMore
     }
   }
 `
 
 export const GET_GOALS = gql`
-  query GetGoals($userId: ID, $status: String, $limit: Int, $offset: Int) {
-    goals(userId: $userId, status: $status, limit: $limit, offset: $offset) {
-      id
-      userId
-      title
-      description
-      targetValue
-      currentValue
-      unit
-      deadline
-      status
-      createdAt
-      updatedAt
+  query GetGoals($status: GoalStatus, $limit: Int, $offset: Int) {
+    myGoals(status: $status, limit: $limit, offset: $offset) {
+      goals {
+        id
+        userId
+        title
+        description
+        targetDate
+        progress
+        status
+        linkedEntries
+        milestones {
+          id
+          title
+          completed
+        }
+        createdAt
+        updatedAt
+      }
+      totalCount
+      hasMore
     }
   }
 `

@@ -42,6 +42,9 @@ jest.mock('../contexts/ModulesContext', () => ({
   useModules: () => ({
     practiceLogger: mockPracticeLogger,
     reportingModule: mockReportingModule,
+    eventBus: {
+      subscribe: jest.fn().mockReturnValue(() => {}),
+    },
     isInitialized: true,
   }),
 }))
@@ -54,6 +57,19 @@ jest.mock('../hooks/useAuth', () => ({
   }),
 }))
 
+// Mock Apollo Client
+const mockRefetch = jest.fn()
+jest.mock('@apollo/client', () => ({
+  ...jest.requireActual('@apollo/client'),
+  useQuery: jest.fn(() => ({
+    data: null,
+    loading: false,
+    error: null,
+    refetch: mockRefetch,
+  })),
+  gql: jest.fn(strings => strings.join('')),
+}))
+
 const renderWithProviders = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>)
 }
@@ -64,6 +80,7 @@ describe('Logbook Page', () => {
     jest.clearAllMocks()
     // Reset mock return values
     mockPracticeLogger.getLogEntries.mockResolvedValue([])
+    mockRefetch.mockClear()
   })
 
   it('renders the logbook header and description', async () => {
