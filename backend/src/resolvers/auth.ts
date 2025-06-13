@@ -63,7 +63,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         return {
           accessToken,
           refreshToken,
-          expiresIn: 900, // 15 minutes
+          expiresIn: 604800, // 7 days in seconds
           user: userWithCloudStorage,
         }
       } catch (d1Error) {
@@ -98,7 +98,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         return {
           accessToken,
           refreshToken,
-          expiresIn: 900, // 15 minutes
+          expiresIn: 604800, // 7 days in seconds
           user: tempUser,
         }
       }
@@ -123,7 +123,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         return {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
-          expiresIn: 900,
+          expiresIn: 604800, // 7 days in seconds
           user: tempUser,
         }
       }
@@ -143,7 +143,7 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         return {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
-          expiresIn: 900,
+          expiresIn: 604800, // 7 days in seconds
           user,
         }
       } catch (error) {

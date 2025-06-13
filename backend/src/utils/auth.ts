@@ -25,7 +25,7 @@ export function generateMagicLinkToken(): string {
 export async function createJWT(
   user: BackendUser,
   secret: string,
-  expiresIn: string | number = '15m'
+  expiresIn: string | number = '7d'
 ): Promise<string> {
   const payload = {
     sub: user.id,
