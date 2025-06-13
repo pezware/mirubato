@@ -52,6 +52,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [localUserData, setLocalUserData] = useState<LocalUserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [shouldSyncAfterLogin, setShouldSyncAfterLogin] = useState(false)
+  const [lastLoginEventTimestamp, setLastLoginEventTimestamp] =
+    useState<number>(0)
+  const [isInitialized, setIsInitialized] = useState(false)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
   const {
@@ -65,9 +68,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [logoutMutation] = useMutation(LOGOUT)
   const [syncAnonymousData] = useMutation(SYNC_ANONYMOUS_DATA)
 
+  // Helper function to emit auth:login events with deduplication
+  const emitLoginEvent = useCallback(
+    (user: User, isInitialLoad: boolean = false) => {
+      const now = Date.now()
+      // Prevent duplicate events within 1 second
+      if (now - lastLoginEventTimestamp < 1000) {
+        logger.info('Skipping duplicate auth:login event', {
+          userId: user.id,
+          timeSinceLastEvent: now - lastLoginEventTimestamp,
+        })
+        return
+      }
+
+      if (modulesInitialized && eventBus) {
+        eventBus.publish({
+          source: 'AuthContext',
+          type: 'auth:login',
+          data: {
+            user,
+            timestamp: now,
+            isInitialLoad,
+          },
+          metadata: {
+            userId: user.id,
+            version: '1.0.0',
+          },
+        })
+        setLastLoginEventTimestamp(now)
+        logger.info('Published auth:login event', {
+          userId: user.id,
+          hasCloudStorage: user.hasCloudStorage,
+          isInitialLoad,
+        })
+      }
+    },
+    [modulesInitialized, eventBus, lastLoginEventTimestamp]
+  )
+
   const syncToCloud = useCallback(async () => {
+    // This function is now ONLY for one-time migration from anonymous to authenticated
+    // It should NOT be used for ongoing sync of authenticated users
     if (!user || user.isAnonymous) {
-      // Redirect to login if anonymous
+      logger.warn(
+        'syncToCloud called for anonymous user - redirecting to login'
+      )
       navigate('/login')
       return
     }
@@ -288,6 +333,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Initialize user (authenticated or anonymous) on mount
   useEffect(() => {
+    if (isInitialized) return // Prevent repeated initialization
+
     const initAuth = async () => {
       // First, check for authenticated user
       if (checkIsAuthenticated()) {
@@ -308,25 +355,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setLocalUserData(localData)
 
             // Emit auth:login event for already authenticated users on mount
-            if (modulesInitialized && eventBus) {
-              eventBus.publish({
-                source: 'AuthContext',
-                type: 'auth:login',
-                data: {
-                  user: authenticatedUser,
-                  timestamp: Date.now(),
-                  isInitialLoad: true,
-                },
-                metadata: {
-                  userId: authenticatedUser.id,
-                  version: '1.0.0',
-                },
-              })
-              logger.info('Published auth:login event for existing session', {
-                userId: authenticatedUser.id,
-                hasCloudStorage: authenticatedUser.hasCloudStorage,
-              })
-            }
+            emitLoginEvent(authenticatedUser, true)
           }
         } catch (error) {
           logger.error('Failed to fetch current user:', error)
@@ -359,10 +388,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       setLoading(false)
+      setIsInitialized(true)
     }
 
     initAuth()
-  }, [apolloClient, user, eventBus, modulesInitialized])
+  }, [apolloClient, emitLoginEvent, isInitialized])
 
   // Handle sync after login
   useEffect(() => {
@@ -426,24 +456,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setLocalUserData(updatedLocalData)
 
           // Emit auth:login event to EventBus
-          if (modulesInitialized && eventBus) {
-            eventBus.publish({
-              source: 'AuthContext',
-              type: 'auth:login',
-              data: {
-                user: newUser,
-                timestamp: Date.now(),
-              },
-              metadata: {
-                userId: newUser.id,
-                version: '1.0.0',
-              },
-            })
-            logger.info('Published auth:login event', {
-              userId: newUser.id,
-              hasCloudStorage: newUser.hasCloudStorage,
-            })
-          }
+          emitLoginEvent(newUser, false)
 
           navigate('/practice')
         }
@@ -454,7 +467,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false)
       }
     },
-    [verifyMagicLink, navigate, localUserData, eventBus, modulesInitialized]
+    [verifyMagicLink, navigate, localUserData, emitLoginEvent]
   )
 
   const logout = useCallback(async () => {
