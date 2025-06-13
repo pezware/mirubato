@@ -45,7 +45,7 @@ const Logbook: React.FC = () => {
 
     const loadEntries = async () => {
       try {
-        // Only show loading on initial load or when switching between storage types
+        // Show loading when switching between storage types or initial load
         if (isInitialLoad) {
           setIsLoading(true)
         }
@@ -91,14 +91,24 @@ const Logbook: React.FC = () => {
                 })
               )
           setEntries(transformedEntries)
+          console.log(
+            `Loaded ${transformedEntries.length} entries from GraphQL`
+          )
         } else if (!shouldUseGraphQL) {
           // Use localStorage for anonymous users
           const filters = user?.id ? { userId: user.id } : {}
           const loadedEntries = await practiceLogger.getLogEntries(filters)
           setEntries(loadedEntries)
+          console.log(
+            `Loaded ${loadedEntries.length} entries from localStorage`
+          )
+        } else if (shouldUseGraphQL && !graphqlData?.myLogbookEntries) {
+          // GraphQL should be used but no data yet - clear entries to show loading state
+          setEntries([])
         }
       } catch (error) {
         console.error('Failed to load logbook entries:', error)
+        setEntries([]) // Clear entries on error
       } finally {
         setIsLoading(false)
         setIsInitialLoad(false)
@@ -117,6 +127,28 @@ const Logbook: React.FC = () => {
     graphqlLoading,
   ])
 
+  // Listen for auth status changes to reload entries
+  useEffect(() => {
+    if (!eventBus) return
+
+    const subscriptionId = eventBus.subscribe('auth:login', () => {
+      console.log('Auth login detected, reloading logbook entries...')
+      setIsLoading(true)
+      setIsInitialLoad(true) // Treat as initial load to show loading state
+
+      // Refetch GraphQL data if needed
+      if (shouldUseGraphQL && refetch) {
+        refetch()
+      }
+    })
+
+    return () => {
+      if (eventBus && typeof eventBus.unsubscribe === 'function') {
+        eventBus.unsubscribe(subscriptionId)
+      }
+    }
+  }, [eventBus, shouldUseGraphQL, refetch])
+
   // Listen for sync complete events to refetch data
   useEffect(() => {
     if (!eventBus || !shouldUseGraphQL) return
@@ -129,7 +161,9 @@ const Logbook: React.FC = () => {
     })
 
     return () => {
-      eventBus.unsubscribe(subscriptionId)
+      if (eventBus && typeof eventBus.unsubscribe === 'function') {
+        eventBus.unsubscribe(subscriptionId)
+      }
     }
   }, [eventBus, shouldUseGraphQL, refetch])
 
