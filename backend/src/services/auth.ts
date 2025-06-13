@@ -8,7 +8,7 @@ import {
 import type { BackendUser } from '../types/shared'
 
 export class AuthService {
-  private readonly MAGIC_LINK_TTL = 600 // 10 minutes
+  private readonly MAGIC_LINK_TTL = 3600 // 1 hour
   private readonly MAGIC_LINK_PREFIX = 'magic_link:'
 
   constructor(

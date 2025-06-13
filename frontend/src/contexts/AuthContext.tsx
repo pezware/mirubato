@@ -85,11 +85,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const allGoals = await practiceLogger.getGoals({})
 
         // Filter for unsynced items (those without a synced flag in metadata)
-        localEntries = allEntries.filter(
-          entry =>
-            !entry.metadata ||
-            !('isSynced' in entry.metadata && entry.metadata.isSynced)
-        )
+        // Also check for duplicates by comparing timestamps and content
+        localEntries = allEntries.filter(entry => {
+          // Skip already synced entries
+          if (
+            entry.metadata &&
+            'isSynced' in entry.metadata &&
+            entry.metadata.isSynced
+          ) {
+            return false
+          }
+
+          // Skip potential duplicates by checking if we have similar entries
+          // within a small time window (helps prevent double-sync issues)
+          const potentialDuplicate = allEntries.find(
+            otherEntry =>
+              otherEntry.id !== entry.id &&
+              Math.abs(otherEntry.timestamp - entry.timestamp) < 5000 && // 5 second window
+              otherEntry.duration === entry.duration &&
+              otherEntry.type === entry.type &&
+              otherEntry.userId === entry.userId &&
+              otherEntry.metadata &&
+              'isSynced' in otherEntry.metadata &&
+              otherEntry.metadata.isSynced
+          )
+
+          return !potentialDuplicate
+        })
+
         localGoals = allGoals.filter(
           goal => !('isSynced' in goal && goal.isSynced)
         )
