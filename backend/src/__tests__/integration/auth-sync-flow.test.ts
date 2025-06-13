@@ -244,12 +244,15 @@ describe('Auth and Sync Flow Integration', () => {
         input: {
           sessions: [
             {
-              sheetMusicId: 'sheet-1',
+              sessionType: 'PRACTICE',
               instrument: 'PIANO',
+              sheetMusicId: 'sheet-1',
               durationMinutes: 30,
+              status: 'COMPLETED',
               accuracy: 85,
               notes: 'Attempted: 100, Correct: 85',
               createdAt: '2024-01-15T10:00:00Z',
+              updatedAt: '2024-01-15T10:30:00Z',
               completedAt: '2024-01-15T10:30:00Z',
             },
           ],
@@ -344,7 +347,7 @@ describe('Auth and Sync Flow Integration', () => {
 
     it('should retrieve synced logbook entries via GraphQL', async () => {
       const query = `
-        query GetLogbookEntries($filter: LogbookFilter, $limit: Int, $offset: Int) {
+        query GetLogbookEntries($filter: LogbookFilterInput, $limit: Int, $offset: Int) {
           myLogbookEntries(filter: $filter, limit: $limit, offset: $offset) {
             edges {
               node {
@@ -444,7 +447,7 @@ describe('Auth and Sync Flow Integration', () => {
       // Verify tokens are still valid
       const decodedToken = await authService.verifyJWT(storedAccessToken!)
       expect(decodedToken).toBeTruthy()
-      expect(decodedToken.id).toBe(user.id)
+      expect(decodedToken.sub).toBe(user.id)
     })
 
     it('should handle token retrieval after browser restart', async () => {
@@ -513,12 +516,15 @@ describe('Auth and Sync Flow Integration', () => {
         sessions: Array(100)
           .fill(null)
           .map((_, i) => ({
-            sheetMusicId: `sheet-${i}`,
+            sessionType: 'PRACTICE',
             instrument: 'PIANO',
+            sheetMusicId: `sheet-${i}`,
             durationMinutes: 30,
+            status: 'COMPLETED',
             accuracy: 85,
             notes: `Session ${i}`,
             createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             completedAt: new Date().toISOString(),
           })),
         logs: [],
@@ -644,12 +650,15 @@ describe('Auth and Sync Flow Integration', () => {
         sessions: Array(10)
           .fill(null)
           .map((_, i) => ({
-            sheetMusicId: `sheet-${i}`,
+            sessionType: 'PRACTICE',
             instrument: 'PIANO',
+            sheetMusicId: `sheet-${i}`,
             durationMinutes: 30,
+            status: 'COMPLETED',
             accuracy: 85,
             notes: `Session ${i}`,
             createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             completedAt: new Date().toISOString(),
           })),
         entries: Array(10)
@@ -734,7 +743,7 @@ describe('Auth and Sync Flow Integration', () => {
       expect(verifiedEmail).toBe(email)
 
       // 4. Generate auth tokens
-      const user = await userService.findByEmail(email)
+      const user = await userService.getUserByEmail(email)
       expect(user).toBeTruthy()
 
       const tokens = await authService.generateTokens(user!)
@@ -758,13 +767,13 @@ describe('Auth and Sync Flow Integration', () => {
       // 8. Verify token is still valid
       const decodedToken = await authService.verifyJWT(storedToken!)
       expect(decodedToken).toBeTruthy()
-      expect(decodedToken.id).toBe(user!.id)
+      expect(decodedToken.sub).toBe(user!.id)
 
       // 9. User should be able to query their data
       const context = createTestContext({
         db: mockDB as any,
         user: {
-          id: decodedToken.id,
+          id: decodedToken.sub,
           email: decodedToken.email,
         },
       })

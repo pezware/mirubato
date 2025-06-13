@@ -15,7 +15,9 @@ describe('D1 UAT - Complete User Journey', () => {
 
   beforeAll(async () => {
     // Initialize services with real D1 database
-    authService = new AuthService(env.MIRUBATO_MAGIC_LINKS, env.JWT_SECRET)
+    // Use a test JWT secret if not provided
+    const jwtSecret = env.JWT_SECRET || 'test-jwt-secret-for-uat-testing'
+    authService = new AuthService(env.MIRUBATO_MAGIC_LINKS, jwtSecret)
     userService = new UserService(env.DB)
 
     // Apply migrations to create tables
@@ -156,6 +158,22 @@ describe('D1 UAT - Complete User Journey', () => {
       // 1. Create anonymous user
       const anonUserId = `anon_${nanoid()}`
 
+      // Create anonymous user in database first (to satisfy foreign key constraint)
+      await env.DB.prepare(
+        `
+        INSERT INTO users (id, email, display_name, primary_instrument, has_cloud_storage)
+        VALUES (?, ?, ?, ?, ?)
+      `
+      )
+        .bind(
+          anonUserId,
+          `${anonUserId}@anonymous.local`,
+          'Anonymous User',
+          'PIANO',
+          0 // Anonymous users don't have cloud storage
+        )
+        .run()
+
       // 2. Create practice session
       const sessionId = `session_${nanoid()}`
       await env.DB.prepare(
@@ -241,12 +259,11 @@ describe('D1 UAT - Complete User Journey', () => {
       expect(token).toBeTruthy()
 
       // 2. Create or get user
-      let user = await userService.findByEmail(email)
+      let user = await userService.getUserByEmail(email)
       if (!user) {
         user = await userService.createUser({
           email,
           displayName: 'Test User',
-          primaryInstrument: 'PIANO',
         })
       }
 
@@ -266,7 +283,23 @@ describe('D1 UAT - Complete User Journey', () => {
       const anonUserId = `anon_${nanoid()}`
       const email = 'sync-test@example.com'
 
-      // 1. Create anonymous data
+      // 1. Create anonymous user first
+      await env.DB.prepare(
+        `
+        INSERT INTO users (id, email, display_name, primary_instrument, has_cloud_storage)
+        VALUES (?, ?, ?, ?, ?)
+      `
+      )
+        .bind(
+          anonUserId,
+          `${anonUserId}@anonymous.local`,
+          'Anonymous User',
+          'PIANO',
+          0
+        )
+        .run()
+
+      // 2. Create anonymous data
       const sessionId = `session_${nanoid()}`
       await env.DB.prepare(
         `
@@ -309,14 +342,13 @@ describe('D1 UAT - Complete User Journey', () => {
         )
         .run()
 
-      // 2. Create authenticated user
+      // 3. Create authenticated user
       const user = await userService.createUser({
         email,
         displayName: 'Sync Test User',
-        primaryInstrument: 'PIANO',
       })
 
-      // 3. Update anonymous data to authenticated user
+      // 4. Update anonymous data to authenticated user
       await env.DB.prepare(
         'UPDATE practice_sessions SET user_id = ? WHERE user_id = ?'
       )
@@ -329,7 +361,7 @@ describe('D1 UAT - Complete User Journey', () => {
         .bind(user.id, anonUserId)
         .run()
 
-      // 4. Verify sync
+      // 5. Verify sync
       const userSessions = await env.DB.prepare(
         'SELECT * FROM practice_sessions WHERE user_id = ?'
       )
