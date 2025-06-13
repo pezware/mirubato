@@ -87,3 +87,6 @@ export const mockUser = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }
+
+// Alias for compatibility with integration tests
+export const createTestContext = createMockContext

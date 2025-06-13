@@ -4,8 +4,10 @@ import {
   createJWT,
   createRefreshToken,
   verifyRefreshToken as verifyToken,
+  verifyJWT as verifyJWTUtil,
 } from '../utils/auth'
 import type { BackendUser } from '../types/shared'
+import type { JWTPayload } from '../utils/auth'
 
 export class AuthService {
   private readonly MAGIC_LINK_TTL = 3600 // 1 hour
@@ -58,5 +60,9 @@ export class AuthService {
   ): Promise<{ sub: string; user?: BackendUser }> {
     const payload = await verifyToken(token, this.jwtSecret)
     return payload
+  }
+
+  async verifyJWT(token: string): Promise<JWTPayload> {
+    return verifyJWTUtil(token, this.jwtSecret)
   }
 }
