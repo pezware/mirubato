@@ -86,9 +86,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Filter for unsynced items (those without a synced flag in metadata)
         localEntries = allEntries.filter(
-          entry => !entry.metadata || !(entry.metadata as any).isSynced
+          entry =>
+            !entry.metadata ||
+            !('isSynced' in entry.metadata && entry.metadata.isSynced)
         )
-        localGoals = allGoals.filter(goal => !(goal as any).isSynced)
+        localGoals = allGoals.filter(
+          goal => !('isSynced' in goal && goal.isSynced)
+        )
       }
 
       logger.info('Syncing to cloud', {
@@ -163,10 +167,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               tags: entry.tags,
               metadata: entry.metadata
                 ? {
-                    source: (entry.metadata as any).source || 'manual',
-                    accuracy: (entry.metadata as any).accuracy,
-                    notesPlayed: (entry.metadata as any).notesPlayed,
-                    mistakeCount: (entry.metadata as any).mistakeCount,
+                    source:
+                      ((entry.metadata as Record<string, unknown>)
+                        .source as string) || 'manual',
+                    accuracy: (entry.metadata as Record<string, unknown>)
+                      .accuracy as number | undefined,
+                    notesPlayed: (entry.metadata as Record<string, unknown>)
+                      .notesPlayed as number | undefined,
+                    mistakeCount: (entry.metadata as Record<string, unknown>)
+                      .mistakeCount as number | undefined,
                   }
                 : undefined,
             })),
