@@ -697,6 +697,9 @@ export type VerifyMagicLinkMutation = {
       email: string
       displayName?: string | null
       primaryInstrument: Instrument
+      hasCloudStorage: boolean
+      createdAt: string
+      updatedAt: string
     }
   }
 }
@@ -718,6 +721,9 @@ export type RefreshTokenMutation = {
       email: string
       displayName?: string | null
       primaryInstrument: Instrument
+      hasCloudStorage: boolean
+      createdAt: string
+      updatedAt: string
     }
   }
 }
@@ -1388,6 +1394,18 @@ export const VerifyMagicLinkDocument = /*#__PURE__*/ {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'primaryInstrument' },
                       },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'hasCloudStorage' },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createdAt' },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updatedAt' },
+                      },
                     ],
                   },
                 },
@@ -1506,6 +1524,18 @@ export const RefreshTokenDocument = /*#__PURE__*/ {
                       {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'primaryInstrument' },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'hasCloudStorage' },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createdAt' },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updatedAt' },
                       },
                     ],
                   },

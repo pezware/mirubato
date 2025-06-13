@@ -20,6 +20,9 @@ export const VERIFY_MAGIC_LINK = gql`
         email
         displayName
         primaryInstrument
+        hasCloudStorage
+        createdAt
+        updatedAt
       }
     }
   }
@@ -36,6 +39,9 @@ export const REFRESH_TOKEN = gql`
         email
         displayName
         primaryInstrument
+        hasCloudStorage
+        createdAt
+        updatedAt
       }
     }
   }
