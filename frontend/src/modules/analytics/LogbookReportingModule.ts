@@ -209,14 +209,37 @@ export class LogbookReportingModule
       )
       const { apolloClient } = await import('../../lib/apollo/client')
 
+      // Build filter object for logbook entries
+      const logbookFilter: Record<string, unknown> = {}
+      if (filters?.timeRange?.start) {
+        logbookFilter.startDate = new Date(
+          filters.timeRange.start
+        ).toISOString()
+      }
+      if (filters?.timeRange?.end) {
+        logbookFilter.endDate = new Date(filters.timeRange.end).toISOString()
+      }
+      if (filters?.types?.length) {
+        logbookFilter.type = filters.types
+      }
+      if (filters?.moods?.length) {
+        logbookFilter.mood = filters.moods
+      }
+      if (filters?.tags?.length) {
+        logbookFilter.tags = filters.tags
+      }
+      if (filters?.instruments?.length && filters.instruments.length > 0) {
+        logbookFilter.instrument = filters.instruments[0]
+      }
+
       // Fetch logbook entries from backend
       const entriesResult = await apolloClient.query({
         query: GET_LOGBOOK_ENTRIES,
         variables: {
-          startDate: filters?.timeRange?.start,
-          endDate: filters?.timeRange?.end,
-          category: filters?.types?.[0], // TODO: Support multiple types
+          filter:
+            Object.keys(logbookFilter).length > 0 ? logbookFilter : undefined,
           limit: 1000,
+          offset: 0,
         },
       })
 
@@ -224,15 +247,62 @@ export class LogbookReportingModule
       const goalsResult = await apolloClient.query({
         query: GET_GOALS,
         variables: {
-          status: 'active',
+          status: 'ACTIVE',
           limit: 100,
+          offset: 0,
         },
       })
 
-      const entries = entriesResult.data?.logbookEntries || []
-      const goals = goalsResult.data?.goals || []
+      // Transform the data to match our LogbookEntry interface
+      const entries: LogbookEntry[] = (
+        entriesResult.data?.myLogbookEntries?.entries || []
+      ).map(
+        (entry: {
+          id: string
+          userId: string
+          timestamp: string
+          duration: number
+          type: string
+          instrument: string
+          pieces: Array<{ id: string; title: string; composer?: string }>
+          techniques: string[]
+          goalIds: string[]
+          notes?: string
+          mood?: string
+          tags: string[]
+          metadata?: { source: string; accuracy?: number }
+          createdAt: string
+          updatedAt: string
+        }) => ({
+          ...entry,
+          timestamp: new Date(entry.timestamp).getTime(),
+          goals: entry.goalIds, // Map goalIds to goals field
+        })
+      )
 
-      return [this.applyFilters(entries, filters), goals]
+      // Transform goals to match our Goal interface
+      const goals: Goal[] = (goalsResult.data?.myGoals?.goals || []).map(
+        (goal: {
+          id: string
+          userId: string
+          title: string
+          description?: string
+          targetDate?: string
+          progress: number
+          status: string
+          linkedEntries: string[]
+          milestones: Array<{ id: string; title: string; completed: boolean }>
+          createdAt: string
+          updatedAt: string
+        }) => ({
+          ...goal,
+          targetDate: goal.targetDate
+            ? new Date(goal.targetDate).getTime()
+            : undefined,
+        })
+      )
+
+      return [entries, goals]
     } catch (error) {
       console.error('Error fetching data from GraphQL:', error)
       // Fallback to localStorage on error
