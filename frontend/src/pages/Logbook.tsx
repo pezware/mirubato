@@ -6,13 +6,16 @@ import { PracticeHeader } from '../components/PracticeHeader'
 import type { LogbookEntry } from '../modules/logger/types'
 import { useModules } from '../contexts/ModulesContext'
 import { useAuth } from '../hooks/useAuth'
-import { useQuery } from '@apollo/client'
-import { GET_LOGBOOK_ENTRIES } from '../graphql/queries/practice'
+import { useQuery, useMutation } from '@apollo/client'
+import {
+  GET_LOGBOOK_ENTRIES,
+  CREATE_LOGBOOK_ENTRY,
+} from '../graphql/queries/practice'
 
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
   const { practiceLogger, isInitialized, eventBus } = useModules()
-  const { user, syncToCloud } = useAuth()
+  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
@@ -39,6 +42,16 @@ const Logbook: React.FC = () => {
     },
     skip: !shouldUseGraphQL,
     fetchPolicy: 'network-only', // Always fetch fresh data
+  })
+
+  // GraphQL mutation for creating entries (authenticated users only)
+  const [createLogbookEntry] = useMutation(CREATE_LOGBOOK_ENTRY, {
+    onCompleted: () => {
+      // Refetch to get updated data
+      if (refetch) {
+        refetch()
+      }
+    },
   })
 
   // Load entries based on authentication status
@@ -174,61 +187,92 @@ const Logbook: React.FC = () => {
   const handleSaveEntry = async (
     entry: Omit<LogbookEntry, 'id' | 'userId'>
   ) => {
-    if (!practiceLogger) {
-      return
-    }
-
     try {
-      const newEntry = await practiceLogger.createLogEntry({
-        ...entry,
-        userId: user?.id || 'guest',
-      })
-
       if (shouldUseGraphQL) {
-        // For authenticated users, update local state and trigger automatic sync
-        setEntries([newEntry, ...entries])
-        setShowNewEntryForm(false)
+        // For authenticated users: Use direct GraphQL mutation
+        console.log('Creating entry via GraphQL...')
+        setSyncStatus('syncing')
+        setErrorMessage(null)
 
-        // Trigger automatic sync for authenticated users
-        if (user && !user.isAnonymous && user.hasCloudStorage) {
-          console.log('Auto-syncing new entry to cloud...')
-          setSyncStatus('syncing')
-          setErrorMessage(null)
-          try {
-            await syncToCloud()
-            console.log('Entry synced successfully')
-            setSyncStatus('success')
-            // Hide success message after 3 seconds
-            setTimeout(() => setSyncStatus('idle'), 3000)
-            // Refetch to get updated data from server
-            setTimeout(() => refetch(), 500)
-          } catch (syncError) {
-            console.error('Failed to auto-sync entry:', syncError)
-            setSyncStatus('error')
-            setErrorMessage(
-              syncError instanceof Error
-                ? `Sync failed: ${syncError.message}`
-                : 'Failed to sync entry to cloud'
-            )
-            // Hide error message after 10 seconds
-            setTimeout(() => {
-              setSyncStatus('idle')
-              setErrorMessage(null)
-            }, 10000)
-            // Still refetch in case there are other changes
-            setTimeout(() => refetch(), 1000)
-          }
-        } else {
-          // Manual refetch for users without cloud storage
-          setTimeout(() => refetch(), 1000)
+        // Transform entry to GraphQL format
+        const graphqlInput = {
+          timestamp: new Date(entry.timestamp).toISOString(),
+          duration: entry.duration,
+          type: entry.type.toUpperCase() as
+            | 'PRACTICE'
+            | 'PERFORMANCE'
+            | 'LESSON'
+            | 'REHEARSAL',
+          instrument: entry.instrument,
+          pieces: entry.pieces.map(piece => ({
+            id:
+              piece.id ||
+              `piece_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            title: piece.title,
+            composer: piece.composer || undefined,
+            measures: piece.measures || undefined,
+            tempo: piece.tempo || undefined,
+          })),
+          techniques: entry.techniques || [],
+          goalIds: entry.goals || [],
+          notes: entry.notes || undefined,
+          mood: entry.mood?.toUpperCase() as
+            | 'FRUSTRATED'
+            | 'NEUTRAL'
+            | 'SATISFIED'
+            | 'EXCITED'
+            | undefined,
+          tags: entry.tags || [],
+          sessionId: entry.sessionId || undefined,
+          metadata: entry.metadata
+            ? {
+                source: entry.metadata.source || 'manual',
+                accuracy: entry.metadata.accuracy || undefined,
+                notesPlayed: entry.metadata.notesPlayed || undefined,
+                mistakeCount: entry.metadata.mistakeCount || undefined,
+              }
+            : undefined,
         }
+
+        await createLogbookEntry({
+          variables: { input: graphqlInput },
+        })
+
+        console.log('Entry created successfully via GraphQL')
+        setSyncStatus('success')
+        setTimeout(() => setSyncStatus('idle'), 3000)
+        setShowNewEntryForm(false)
       } else {
-        // For anonymous users, just update local state
+        // For anonymous users: Use localStorage via PracticeLoggerModule
+        if (!practiceLogger) {
+          throw new Error('Practice logger not available')
+        }
+
+        console.log('Creating entry via localStorage...')
+        const newEntry = await practiceLogger.createLogEntry({
+          ...entry,
+          userId: user?.id || 'guest',
+        })
+
+        // Update local state
         setEntries([newEntry, ...entries])
         setShowNewEntryForm(false)
       }
     } catch (error) {
       console.error('Failed to save entry:', error)
+
+      if (shouldUseGraphQL) {
+        setSyncStatus('error')
+        setErrorMessage(
+          error instanceof Error
+            ? `Failed to create entry: ${error.message}`
+            : 'Failed to create entry'
+        )
+        setTimeout(() => {
+          setSyncStatus('idle')
+          setErrorMessage(null)
+        }, 10000)
+      }
     }
   }
 

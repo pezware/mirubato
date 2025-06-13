@@ -59,6 +59,7 @@ jest.mock('../hooks/useAuth', () => ({
 
 // Mock Apollo Client
 const mockRefetch = jest.fn()
+const mockCreateLogbookEntry = jest.fn()
 jest.mock('@apollo/client', () => ({
   ...jest.requireActual('@apollo/client'),
   useQuery: jest.fn(() => ({
@@ -67,6 +68,7 @@ jest.mock('@apollo/client', () => ({
     error: null,
     refetch: mockRefetch,
   })),
+  useMutation: jest.fn(() => [mockCreateLogbookEntry]),
   gql: jest.fn(strings => strings.join('')),
 }))
 
