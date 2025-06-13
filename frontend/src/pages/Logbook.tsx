@@ -155,6 +155,8 @@ const Logbook: React.FC = () => {
   useEffect(() => {
     if (!eventBus) return
 
+    let syncTimeout: NodeJS.Timeout | null = null
+
     const subscriptionId = eventBus.subscribe('auth:login', (payload: any) => {
       console.log('Logbook: Auth login detected', {
         userId: payload.data?.user?.id,
@@ -167,14 +169,47 @@ const Logbook: React.FC = () => {
 
       // Don't immediately refetch - wait for sync:complete event
       console.log('Logbook: Waiting for sync to complete...')
+
+      // Set a timeout to prevent getting stuck indefinitely
+      syncTimeout = setTimeout(() => {
+        console.warn('Logbook: Sync timeout reached, proceeding without sync')
+        setIsWaitingForSync(false)
+        setSyncStatus('timeout')
+        setErrorMessage(
+          'Sync is taking longer than expected. Your data will sync in the background.'
+        )
+
+        // Clear the timeout status after 5 seconds
+        setTimeout(() => {
+          setSyncStatus('idle')
+          setErrorMessage(null)
+        }, 5000)
+      }, 30000) // 30 second timeout
     })
 
     return () => {
       if (eventBus && typeof eventBus.unsubscribe === 'function') {
         eventBus.unsubscribe(subscriptionId)
       }
+      if (syncTimeout) {
+        clearTimeout(syncTimeout)
+      }
     }
   }, [eventBus, refetch, shouldUseGraphQL])
+
+  // On initial load, check if we're already authenticated and have data
+  useEffect(() => {
+    if (
+      shouldUseGraphQL &&
+      !graphqlLoading &&
+      graphqlData &&
+      isWaitingForSync
+    ) {
+      // If we have GraphQL data, we're not actually waiting for sync
+      console.log('Logbook: Already have GraphQL data, not waiting for sync')
+      setIsWaitingForSync(false)
+    }
+  }, [shouldUseGraphQL, graphqlLoading, graphqlData, isWaitingForSync])
 
   // Listen for sync complete events to refetch data
   useEffect(() => {
