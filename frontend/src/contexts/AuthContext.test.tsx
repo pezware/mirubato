@@ -130,6 +130,15 @@ describe('AuthContext', () => {
     ;(useNavigate as jest.Mock).mockReturnValue(mockNavigate)
     mockCheckIsAuthenticated.mockReturnValue(false)
     console.error = jest.fn() // Suppress error logs in tests
+
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn(),
+    }
+    global.localStorage = localStorageMock as any
   })
 
   const renderWithProvider = (mocks: any[] = []) => {
@@ -864,8 +873,6 @@ describe('AuthContext', () => {
       mockCheckIsAuthenticated.mockReturnValue(true)
       mockLocalStorage.getUserData.mockReturnValue(mockUser)
       mockLocalStorage.getPendingSyncData.mockReturnValue(mockPendingData)
-      mockLocalStorage.getLogbookEntries.mockReturnValue([])
-      mockLocalStorage.getGoals.mockReturnValue([])
 
       const mocks = [
         {
@@ -964,9 +971,7 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(mockLocalStorage.markAsSynced).toHaveBeenCalledWith(
           ['session-1', 'session-2'],
-          ['log-1', 'log-2'],
-          [],
-          []
+          ['log-1', 'log-2']
         )
       })
     })

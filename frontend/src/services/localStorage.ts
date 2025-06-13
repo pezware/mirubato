@@ -24,8 +24,7 @@ const STORAGE_KEYS = {
   PRACTICE_LOGS: 'mirubato_practice_logs',
   PENDING_SYNC: 'mirubato_pending_sync',
   SESSION_ID_MAP: 'mirubato_session_id_map', // Maps local IDs to remote IDs
-  LOGBOOK_ENTRIES: 'mirubato_logbook_entries',
-  GOALS: 'mirubato_goals',
+  // LOGBOOK_ENTRIES and GOALS are now handled by PracticeLoggerModule
 }
 
 class LocalStorageService {
@@ -259,12 +258,7 @@ class LocalStorageService {
     return { sessions, logs }
   }
 
-  markAsSynced(
-    sessionIds: string[],
-    logIds: string[],
-    entryIds?: string[],
-    goalIds?: string[]
-  ): void {
+  markAsSynced(sessionIds: string[], logIds: string[]): void {
     // Update sessions
     const sessions = this.getPracticeSessions()
     sessions.forEach(session => {
@@ -277,30 +271,7 @@ class LocalStorageService {
       JSON.stringify(sessions)
     )
 
-    // Update logbook entries if provided
-    if (entryIds && entryIds.length > 0) {
-      const entries = this.getLogbookEntries()
-      entries.forEach(entry => {
-        if (entryIds.includes(entry.id)) {
-          entry.isSynced = true
-        }
-      })
-      localStorage.setItem(
-        STORAGE_KEYS.LOGBOOK_ENTRIES,
-        JSON.stringify(entries)
-      )
-    }
-
-    // Update goals if provided
-    if (goalIds && goalIds.length > 0) {
-      const goals = this.getGoals()
-      goals.forEach(goal => {
-        if (goalIds.includes(goal.id)) {
-          goal.isSynced = true
-        }
-      })
-      localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals))
-    }
+    // Logbook entries and goals are now handled by PracticeLoggerModule
 
     // Clear pending sync data
     const pendingData = this.getPendingSyncData()
@@ -438,120 +409,9 @@ class LocalStorageService {
     }
   }
 
-  // Logbook entries management (for sync)
-  getLogbookEntries(): Array<{
-    id: string
-    userId: string
-    title: string
-    content: string
-    category: string
-    mood?: string
-    energyLevel?: number
-    focusLevel?: number
-    progressRating?: number
-    timestamp: string
-    isSynced?: boolean
-  }> {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.LOGBOOK_ENTRIES)
-      if (!data) return []
+  // Logbook entries are now handled by PracticeLoggerModule
 
-      const entries = JSON.parse(data)
-      if (!Array.isArray(entries)) return []
-
-      return entries.filter(entry => entry && entry.id && entry.userId)
-    } catch (error) {
-      return []
-    }
-  }
-
-  // Goals management (for sync)
-  getGoals(): Array<{
-    id: string
-    userId: string
-    title: string
-    description?: string
-    targetValue: number
-    currentValue: number
-    unit: string
-    deadline?: string
-    status: string
-    isSynced?: boolean
-  }> {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.GOALS)
-      if (!data) return []
-
-      const goals = JSON.parse(data)
-      if (!Array.isArray(goals)) return []
-
-      return goals.filter(goal => goal && goal.id && goal.userId)
-    } catch (error) {
-      return []
-    }
-  }
-
-  // Save a logbook entry
-  saveLogbookEntry(entry: {
-    id: string
-    userId: string
-    title: string
-    content: string
-    category: string
-    mood?: string
-    energyLevel?: number
-    focusLevel?: number
-    progressRating?: number
-    timestamp: string
-    isSynced?: boolean
-  }): void {
-    try {
-      const entries = this.getLogbookEntries()
-      const index = entries.findIndex(e => e.id === entry.id)
-
-      if (index >= 0) {
-        entries[index] = entry
-      } else {
-        entries.push(entry)
-      }
-
-      localStorage.setItem(
-        STORAGE_KEYS.LOGBOOK_ENTRIES,
-        JSON.stringify(entries)
-      )
-    } catch (error) {
-      // Error saving logbook entry
-    }
-  }
-
-  // Save a goal
-  saveGoal(goal: {
-    id: string
-    userId: string
-    title: string
-    description?: string
-    targetValue: number
-    currentValue: number
-    unit: string
-    deadline?: string
-    status: string
-    isSynced?: boolean
-  }): void {
-    try {
-      const goals = this.getGoals()
-      const index = goals.findIndex(g => g.id === goal.id)
-
-      if (index >= 0) {
-        goals[index] = goal
-      } else {
-        goals.push(goal)
-      }
-
-      localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals))
-    } catch (error) {
-      // Error saving goal
-    }
-  }
+  // Goals are now handled by PracticeLoggerModule
 }
 
 // Export singleton instance

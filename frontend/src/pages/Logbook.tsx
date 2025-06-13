@@ -54,11 +54,11 @@ const Logbook: React.FC = () => {
           // Transform GraphQL data to match our interface
           const transformedEntries: LogbookEntry[] =
             graphqlData.myLogbookEntries.edges
-              .map((edge: { node: unknown }) => edge.node as any)
+              .map((edge: { node: unknown }) => edge.node)
               .map(
                 (entry: {
                   id: string
-                  userId: string
+                  user: { id: string }
                   timestamp: string
                   duration: number
                   type: string
@@ -67,17 +67,25 @@ const Logbook: React.FC = () => {
                     id: string
                     title: string
                     composer?: string
+                    measures?: string
+                    tempo?: number
                   }>
                   techniques: string[]
                   goalIds: string[]
                   notes?: string
                   mood?: string
                   tags: string[]
-                  metadata?: { source: string; accuracy?: number }
+                  metadata?: {
+                    source: string
+                    accuracy?: number
+                    notesPlayed?: number
+                    mistakeCount?: number
+                  }
                   createdAt: string
                   updatedAt: string
                 }) => ({
                   ...entry,
+                  userId: entry.user.id, // Extract userId from user object
                   timestamp: new Date(entry.timestamp).getTime(),
                   goals: entry.goalIds, // Map goalIds to goals
                 })
