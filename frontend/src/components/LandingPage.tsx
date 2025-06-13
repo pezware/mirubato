@@ -67,7 +67,7 @@ const LandingPage: React.FC = () => {
           className={`mt-16 text-center transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
         >
           <p className="text-mirubato-wood-200 text-lg">
-            Open-source sight-reading platform for classical guitar and piano
+            Open-source practice journal for musicians
           </p>
           <div className="flex gap-4 justify-center">
             <Link
