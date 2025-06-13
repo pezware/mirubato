@@ -142,10 +142,10 @@ describe('LogbookReportingModule', () => {
 
     // Mock localStorage data
     mockLocalStorage.getItem.mockImplementation((key: string) => {
-      if (key === 'practiceLogger:entries') {
+      if (key === 'mirubato_logbook_entries') {
         return JSON.stringify(mockEntries)
       }
-      if (key === 'practiceLogger:goals') {
+      if (key === 'mirubato_goals') {
         return JSON.stringify(mockGoals)
       }
       return null

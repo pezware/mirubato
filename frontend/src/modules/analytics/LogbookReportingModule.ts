@@ -202,12 +202,42 @@ export class LogbookReportingModule
   private async getAuthenticatedData(
     filters?: ReportFilters
   ): Promise<[LogbookEntry[], Goal[]]> {
-    // TODO: Implement GraphQL queries to backend
-    // For now, fallback to localStorage
-    console.warn(
-      'GraphQL backend queries not yet implemented, using localStorage'
-    )
-    return this.getLocalStorageData(filters)
+    try {
+      // Get Apollo client from the context or initialize it
+      const { GET_LOGBOOK_ENTRIES, GET_GOALS } = await import(
+        '../../graphql/queries/practice'
+      )
+      const { apolloClient } = await import('../../lib/apollo/client')
+
+      // Fetch logbook entries from backend
+      const entriesResult = await apolloClient.query({
+        query: GET_LOGBOOK_ENTRIES,
+        variables: {
+          startDate: filters?.timeRange?.start,
+          endDate: filters?.timeRange?.end,
+          category: filters?.types?.[0], // TODO: Support multiple types
+          limit: 1000,
+        },
+      })
+
+      // Fetch goals from backend
+      const goalsResult = await apolloClient.query({
+        query: GET_GOALS,
+        variables: {
+          status: 'active',
+          limit: 100,
+        },
+      })
+
+      const entries = entriesResult.data?.logbookEntries || []
+      const goals = goalsResult.data?.goals || []
+
+      return [this.applyFilters(entries, filters), goals]
+    } catch (error) {
+      console.error('Error fetching data from GraphQL:', error)
+      // Fallback to localStorage on error
+      return this.getLocalStorageData(filters)
+    }
   }
 
   private async getLocalStorageData(
@@ -234,8 +264,8 @@ export class LogbookReportingModule
       }
 
       // Fallback: Try to read directly from localStorage
-      const entriesData = localStorage.getItem('practiceLogger:entries')
-      const goalsData = localStorage.getItem('practiceLogger:goals')
+      const entriesData = localStorage.getItem('mirubato_logbook_entries')
+      const goalsData = localStorage.getItem('mirubato_goals')
 
       const entries: LogbookEntry[] = entriesData ? JSON.parse(entriesData) : []
       const goals: Goal[] = goalsData ? JSON.parse(goalsData) : []
