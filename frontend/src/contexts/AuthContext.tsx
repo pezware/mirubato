@@ -266,24 +266,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   const durationMinutes = Math.round(durationMs / 60000)
 
                   return {
+                    sessionType: 'PRACTICE' as const,
+                    instrument: session.instrument,
                     sheetMusicId: session.sheetMusicId,
                     tempo: undefined, // Tempo not available in LocalPracticeSession
-                    instrument: session.instrument,
                     durationMinutes,
+                    status: session.completedAt
+                      ? ('COMPLETED' as const)
+                      : ('IN_PROGRESS' as const),
                     accuracy: session.accuracyPercentage,
                     notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
                     createdAt: session.startedAt,
+                    updatedAt: session.completedAt || session.startedAt,
                     completedAt: session.completedAt,
                   }
                 }),
                 logs: pendingData.logs.map(log => ({
                   sessionId: log.sessionId,
-                  measureNumber: undefined, // Not available in PracticeLog
-                  mistakeType: undefined, // Not available in PracticeLog
-                  mistakeDetails: undefined, // Not available in PracticeLog
-                  tempoAchievement: log.tempoPracticed,
+                  activityType: 'OTHER' as const, // Default to OTHER since not available in PracticeLog
+                  durationSeconds: 0, // Not available in PracticeLog, default to 0
+                  tempoPracticed: log.tempoPracticed,
+                  targetTempo: undefined, // Not available in PracticeLog
+                  focusAreas: [], // Not available in PracticeLog
+                  selfRating: undefined, // Not available in PracticeLog
                   notes: log.notes,
-                  createdAt: log.createdAt,
                 })),
                 entries: localEntries.map(entry => ({
                   // Map from PracticeLoggerModule format to GraphQL format
