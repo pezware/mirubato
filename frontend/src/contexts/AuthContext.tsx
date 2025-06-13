@@ -123,210 +123,371 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return
     }
 
-    try {
-      const pendingData = localStorageService.getPendingSyncData()
-
-      // Get all unsynced data from PracticeLoggerModule
-      let localEntries: LogbookEntry[] = []
-      let localGoals: Goal[] = []
-
-      if (practiceLogger) {
-        // Get all entries and goals from PracticeLoggerModule
-        const allEntries = await practiceLogger.getLogEntries({})
-        const allGoals = await practiceLogger.getGoals({})
-
-        // Filter for unsynced items (those without a synced flag in metadata)
-        // Also check for duplicates by comparing timestamps and content
-        localEntries = allEntries.filter(entry => {
-          // Skip already synced entries
-          if (
-            entry.metadata &&
-            'isSynced' in entry.metadata &&
-            entry.metadata.isSynced
-          ) {
-            return false
-          }
-
-          // Skip potential duplicates by checking if we have similar entries
-          // within a small time window (helps prevent double-sync issues)
-          const potentialDuplicate = allEntries.find(
-            otherEntry =>
-              otherEntry.id !== entry.id &&
-              Math.abs(otherEntry.timestamp - entry.timestamp) < 5000 && // 5 second window
-              otherEntry.duration === entry.duration &&
-              otherEntry.type === entry.type &&
-              otherEntry.userId === entry.userId &&
-              otherEntry.metadata &&
-              'isSynced' in otherEntry.metadata &&
-              otherEntry.metadata.isSynced
+    // Create timeout promise (30 seconds)
+    const SYNC_TIMEOUT = 30000
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new Error(
+            `Sync operation timed out after ${SYNC_TIMEOUT / 1000} seconds`
           )
-
-          return !potentialDuplicate
-        })
-
-        localGoals = allGoals.filter(
-          goal => !('isSynced' in goal && goal.isSynced)
         )
-      }
+      }, SYNC_TIMEOUT)
+    })
 
-      logger.info('syncToCloud: Data to sync', {
-        sessionCount: pendingData.sessions.length,
-        logCount: pendingData.logs.length,
-        entryCount: localEntries.length,
-        goalCount: localGoals.length,
-        firstEntry: localEntries[0],
-        hasUnsynced: localEntries.length > 0 || localGoals.length > 0,
-      })
-
-      // Call the sync mutation
-      logger.info('syncToCloud: Calling syncAnonymousData mutation')
-      const { data } = await syncAnonymousData({
-        variables: {
-          input: {
-            sessions: pendingData.sessions.map(session => {
-              // Calculate duration in minutes from timestamps
-              const startTime = new Date(session.startedAt).getTime()
-              const endTime = session.completedAt
-                ? new Date(session.completedAt).getTime()
-                : startTime
-              const durationMs =
-                endTime - startTime - session.pausedDuration * 1000
-              const durationMinutes = Math.round(durationMs / 60000)
-
-              return {
-                sheetMusicId: session.sheetMusicId,
-                tempo: undefined, // Tempo not available in LocalPracticeSession
-                instrument: session.instrument,
-                durationMinutes,
-                accuracy: session.accuracyPercentage,
-                notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
-                createdAt: session.startedAt,
-                completedAt: session.completedAt,
-              }
-            }),
-            logs: pendingData.logs.map(log => ({
-              sessionId: log.sessionId,
-              measureNumber: undefined, // Not available in PracticeLog
-              mistakeType: undefined, // Not available in PracticeLog
-              mistakeDetails: undefined, // Not available in PracticeLog
-              tempoAchievement: log.tempoPracticed,
-              notes: log.notes,
-              createdAt: log.createdAt,
-            })),
-            entries: localEntries.map(entry => ({
-              // Map from PracticeLoggerModule format to GraphQL format
-              timestamp: new Date(entry.timestamp).toISOString(), // Convert number to ISO string
-              duration: entry.duration, // Already in seconds
-              type: entry.type.toUpperCase() as
-                | 'PRACTICE'
-                | 'PERFORMANCE'
-                | 'LESSON'
-                | 'REHEARSAL',
-              instrument: entry.instrument,
-              pieces: entry.pieces.map(piece => ({
-                id:
-                  piece.id ||
-                  `piece_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                title: piece.title,
-                composer: piece.composer,
-                measures: piece.measures,
-                tempo: piece.tempo,
-              })),
-              techniques: entry.techniques,
-              goalIds: entry.goals, // Map 'goals' to 'goalIds'
-              notes: entry.notes,
-              mood: entry.mood?.toUpperCase() as
-                | 'FRUSTRATED'
-                | 'NEUTRAL'
-                | 'SATISFIED'
-                | 'EXCITED'
-                | undefined,
-              tags: entry.tags,
-              metadata: entry.metadata
-                ? {
-                    source:
-                      ((entry.metadata as Record<string, unknown>)
-                        .source as string) || 'manual',
-                    accuracy: (entry.metadata as Record<string, unknown>)
-                      .accuracy as number | undefined,
-                    notesPlayed: (entry.metadata as Record<string, unknown>)
-                      .notesPlayed as number | undefined,
-                    mistakeCount: (entry.metadata as Record<string, unknown>)
-                      .mistakeCount as number | undefined,
-                  }
-                : undefined,
-            })),
-            goals: localGoals.map(goal => ({
-              title: goal.title,
-              description: goal.description,
-              targetDate: goal.targetDate
-                ? new Date(goal.targetDate).toISOString()
-                : undefined,
-              milestones: goal.milestones.map(milestone => ({
-                id: milestone.id,
-                title: milestone.title,
-                completed: milestone.completed,
-              })),
-            })),
-          },
+    // Emit sync started event
+    if (modulesInitialized && eventBus) {
+      eventBus.publish({
+        source: 'AuthContext',
+        type: 'sync:progress',
+        data: {
+          stage: 'started',
+          progress: 0,
+          message: 'Starting data synchronization...',
+        },
+        metadata: {
+          userId: user?.id,
+          version: '1.0.0',
         },
       })
+    }
 
-      logger.info('syncToCloud: Mutation response', {
-        success: data?.syncAnonymousData?.success,
-        syncedSessions: data?.syncAnonymousData?.syncedSessions,
-        syncedLogs: data?.syncAnonymousData?.syncedLogs,
-        syncedEntries: data?.syncAnonymousData?.syncedEntries,
-        syncedGoals: data?.syncAnonymousData?.syncedGoals,
-        errors: data?.syncAnonymousData?.errors,
-      })
+    try {
+      // Race between sync operation and timeout
+      await Promise.race([
+        (async () => {
+          const pendingData = localStorageService.getPendingSyncData()
 
-      if (data.syncAnonymousData.success) {
-        // Mark all items as synced
-        const sessionIds = pendingData.sessions.map(s => s.id)
-        const logIds = pendingData.logs.map(l => l.id)
-
-        // Mark sessions and logs as synced in localStorage service
-        localStorageService.markAsSynced(sessionIds, logIds)
-
-        // Mark entries and goals as synced in PracticeLoggerModule
-        if (practiceLogger) {
-          // Update entries to mark as synced
-          for (const entry of localEntries) {
-            await practiceLogger.updateLogEntry(entry.id, {
-              metadata: { ...entry.metadata, isSynced: true },
+          // Emit progress for data collection
+          if (modulesInitialized && eventBus) {
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'sync:progress',
+              data: {
+                stage: 'collecting',
+                progress: 10,
+                message: 'Collecting local data...',
+              },
+              metadata: {
+                userId: user?.id,
+                version: '1.0.0',
+              },
             })
           }
 
-          // Mark goals as synced by updating metadata
-          // Note: PracticeLoggerModule doesn't have a generic updateGoal method,
-          // so we'll need to handle this differently in the future
-        }
+          // Get all unsynced data from PracticeLoggerModule
+          let localEntries: LogbookEntry[] = []
+          let localGoals: Goal[] = []
 
-        // Update last sync time
-        localStorage.setItem('lastSyncTime', new Date().toISOString())
+          if (practiceLogger) {
+            // Get all entries and goals from PracticeLoggerModule
+            const allEntries = await practiceLogger.getLogEntries({})
+            const allGoals = await practiceLogger.getGoals({})
 
-        logger.info('syncToCloud: Sync completed successfully', {
-          syncedSessions: data.syncAnonymousData.syncedSessions,
-          syncedLogs: data.syncAnonymousData.syncedLogs,
-          syncedEntries: data.syncAnonymousData.syncedEntries,
-          syncedGoals: data.syncAnonymousData.syncedGoals,
-          lastSyncTime: new Date().toISOString(),
-        })
+            // Filter for unsynced items (those without a synced flag in metadata)
+            // Also check for duplicates by comparing timestamps and content
+            localEntries = allEntries.filter(entry => {
+              // Skip already synced entries
+              if (
+                entry.metadata &&
+                'isSynced' in entry.metadata &&
+                entry.metadata.isSynced
+              ) {
+                return false
+              }
 
-        // Publish sync complete event
+              // Skip potential duplicates by checking if we have similar entries
+              // within a small time window (helps prevent double-sync issues)
+              const potentialDuplicate = allEntries.find(
+                otherEntry =>
+                  otherEntry.id !== entry.id &&
+                  Math.abs(otherEntry.timestamp - entry.timestamp) < 5000 && // 5 second window
+                  otherEntry.duration === entry.duration &&
+                  otherEntry.type === entry.type &&
+                  otherEntry.userId === entry.userId &&
+                  otherEntry.metadata &&
+                  'isSynced' in otherEntry.metadata &&
+                  otherEntry.metadata.isSynced
+              )
+
+              return !potentialDuplicate
+            })
+
+            localGoals = allGoals.filter(
+              goal => !('isSynced' in goal && goal.isSynced)
+            )
+          }
+
+          logger.info('syncToCloud: Data to sync', {
+            sessionCount: pendingData.sessions.length,
+            logCount: pendingData.logs.length,
+            entryCount: localEntries.length,
+            goalCount: localGoals.length,
+            firstEntry: localEntries[0],
+            hasUnsynced: localEntries.length > 0 || localGoals.length > 0,
+          })
+
+          // Emit progress for data preparation
+          if (modulesInitialized && eventBus) {
+            const totalItems =
+              pendingData.sessions.length +
+              pendingData.logs.length +
+              localEntries.length +
+              localGoals.length
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'sync:progress',
+              data: {
+                stage: 'preparing',
+                progress: 30,
+                message: `Preparing ${totalItems} items for sync...`,
+                totalItems,
+              },
+              metadata: {
+                userId: user?.id,
+                version: '1.0.0',
+              },
+            })
+          }
+
+          // Call the sync mutation
+          logger.info('syncToCloud: Calling syncAnonymousData mutation')
+          const { data } = await syncAnonymousData({
+            variables: {
+              input: {
+                sessions: pendingData.sessions.map(session => {
+                  // Calculate duration in minutes from timestamps
+                  const startTime = new Date(session.startedAt).getTime()
+                  const endTime = session.completedAt
+                    ? new Date(session.completedAt).getTime()
+                    : startTime
+                  const durationMs =
+                    endTime - startTime - session.pausedDuration * 1000
+                  const durationMinutes = Math.round(durationMs / 60000)
+
+                  return {
+                    sheetMusicId: session.sheetMusicId,
+                    tempo: undefined, // Tempo not available in LocalPracticeSession
+                    instrument: session.instrument,
+                    durationMinutes,
+                    accuracy: session.accuracyPercentage,
+                    notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
+                    createdAt: session.startedAt,
+                    completedAt: session.completedAt,
+                  }
+                }),
+                logs: pendingData.logs.map(log => ({
+                  sessionId: log.sessionId,
+                  measureNumber: undefined, // Not available in PracticeLog
+                  mistakeType: undefined, // Not available in PracticeLog
+                  mistakeDetails: undefined, // Not available in PracticeLog
+                  tempoAchievement: log.tempoPracticed,
+                  notes: log.notes,
+                  createdAt: log.createdAt,
+                })),
+                entries: localEntries.map(entry => ({
+                  // Map from PracticeLoggerModule format to GraphQL format
+                  timestamp: new Date(entry.timestamp).toISOString(), // Convert number to ISO string
+                  duration: entry.duration, // Already in seconds
+                  type: entry.type.toUpperCase() as
+                    | 'PRACTICE'
+                    | 'PERFORMANCE'
+                    | 'LESSON'
+                    | 'REHEARSAL',
+                  instrument: entry.instrument,
+                  pieces: entry.pieces.map(piece => ({
+                    id:
+                      piece.id ||
+                      `piece_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    title: piece.title,
+                    composer: piece.composer,
+                    measures: piece.measures,
+                    tempo: piece.tempo,
+                  })),
+                  techniques: entry.techniques,
+                  goalIds: entry.goals, // Map 'goals' to 'goalIds'
+                  notes: entry.notes,
+                  mood: entry.mood?.toUpperCase() as
+                    | 'FRUSTRATED'
+                    | 'NEUTRAL'
+                    | 'SATISFIED'
+                    | 'EXCITED'
+                    | undefined,
+                  tags: entry.tags,
+                  metadata: entry.metadata
+                    ? {
+                        source:
+                          ((entry.metadata as Record<string, unknown>)
+                            .source as string) || 'manual',
+                        accuracy: (entry.metadata as Record<string, unknown>)
+                          .accuracy as number | undefined,
+                        notesPlayed: (entry.metadata as Record<string, unknown>)
+                          .notesPlayed as number | undefined,
+                        mistakeCount: (
+                          entry.metadata as Record<string, unknown>
+                        ).mistakeCount as number | undefined,
+                      }
+                    : undefined,
+                })),
+                goals: localGoals.map(goal => ({
+                  title: goal.title,
+                  description: goal.description,
+                  targetDate: goal.targetDate
+                    ? new Date(goal.targetDate).toISOString()
+                    : undefined,
+                  milestones: goal.milestones.map(milestone => ({
+                    id: milestone.id,
+                    title: milestone.title,
+                    completed: milestone.completed,
+                  })),
+                })),
+              },
+            },
+          })
+
+          // Emit progress for sync completion
+          if (modulesInitialized && eventBus) {
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'sync:progress',
+              data: {
+                stage: 'syncing',
+                progress: 70,
+                message: 'Uploading data to cloud...',
+              },
+              metadata: {
+                userId: user?.id,
+                version: '1.0.0',
+              },
+            })
+          }
+
+          logger.info('syncToCloud: Mutation response', {
+            success: data?.syncAnonymousData?.success,
+            syncedSessions: data?.syncAnonymousData?.syncedSessions,
+            syncedLogs: data?.syncAnonymousData?.syncedLogs,
+            syncedEntries: data?.syncAnonymousData?.syncedEntries,
+            syncedGoals: data?.syncAnonymousData?.syncedGoals,
+            errors: data?.syncAnonymousData?.errors,
+          })
+
+          if (data.syncAnonymousData.success) {
+            // Mark all items as synced
+            const sessionIds = pendingData.sessions.map(s => s.id)
+            const logIds = pendingData.logs.map(l => l.id)
+
+            // Mark sessions and logs as synced in localStorage service
+            localStorageService.markAsSynced(sessionIds, logIds)
+
+            // Mark entries and goals as synced in PracticeLoggerModule
+            if (practiceLogger) {
+              // Update entries to mark as synced
+              for (const entry of localEntries) {
+                await practiceLogger.updateLogEntry(entry.id, {
+                  metadata: { ...entry.metadata, isSynced: true },
+                })
+              }
+
+              // Mark goals as synced by updating metadata
+              // Note: PracticeLoggerModule doesn't have a generic updateGoal method,
+              // so we'll need to handle this differently in the future
+            }
+
+            // Update last sync time
+            localStorage.setItem('lastSyncTime', new Date().toISOString())
+
+            logger.info('syncToCloud: Sync completed successfully', {
+              syncedSessions: data.syncAnonymousData.syncedSessions,
+              syncedLogs: data.syncAnonymousData.syncedLogs,
+              syncedEntries: data.syncAnonymousData.syncedEntries,
+              syncedGoals: data.syncAnonymousData.syncedGoals,
+              lastSyncTime: new Date().toISOString(),
+            })
+
+            // Emit progress for completion
+            if (modulesInitialized && eventBus) {
+              eventBus.publish({
+                source: 'AuthContext',
+                type: 'sync:progress',
+                data: {
+                  stage: 'completed',
+                  progress: 100,
+                  message: 'Sync completed successfully!',
+                },
+                metadata: {
+                  userId: user?.id,
+                  version: '1.0.0',
+                },
+              })
+            }
+
+            // Publish sync complete event
+            if (modulesInitialized && eventBus) {
+              eventBus.publish({
+                source: 'AuthContext',
+                type: 'sync:complete',
+                data: {
+                  syncedItems: {
+                    sessions: data.syncAnonymousData.syncedSessions,
+                    logs: data.syncAnonymousData.syncedLogs,
+                    entries: data.syncAnonymousData.syncedEntries,
+                    goals: data.syncAnonymousData.syncedGoals,
+                  },
+                  timestamp: Date.now(),
+                },
+                metadata: {
+                  userId: user?.id,
+                  version: '1.0.0',
+                },
+              })
+            }
+          } else {
+            logger.error('syncToCloud: Sync failed with errors', {
+              errors: data.syncAnonymousData.errors,
+              rawData: data,
+            })
+
+            // Emit error progress
+            if (modulesInitialized && eventBus) {
+              eventBus.publish({
+                source: 'AuthContext',
+                type: 'sync:progress',
+                data: {
+                  stage: 'error',
+                  progress: 0,
+                  message: 'Sync failed. Please try again.',
+                  error: data.syncAnonymousData.errors,
+                },
+                metadata: {
+                  userId: user?.id,
+                  version: '1.0.0',
+                },
+              })
+            }
+          }
+        })(), // Close the async function
+        timeoutPromise,
+      ])
+    } catch (error) {
+      logger.error('syncToCloud: Exception during sync', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: user?.id,
+      })
+
+      // Check if it's a timeout error
+      if (error instanceof Error && error.message.includes('timed out')) {
+        // Emit timeout error
         if (modulesInitialized && eventBus) {
           eventBus.publish({
             source: 'AuthContext',
-            type: 'sync:complete',
+            type: 'sync:progress',
             data: {
-              syncedItems: {
-                sessions: data.syncAnonymousData.syncedSessions,
-                logs: data.syncAnonymousData.syncedLogs,
-                entries: data.syncAnonymousData.syncedEntries,
-                goals: data.syncAnonymousData.syncedGoals,
-              },
-              timestamp: Date.now(),
+              stage: 'timeout',
+              progress: 0,
+              message:
+                'Sync timed out. Please check your connection and try again.',
+              error: error.message,
             },
             metadata: {
               userId: user?.id,
@@ -335,17 +496,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           })
         }
       } else {
-        logger.error('syncToCloud: Sync failed with errors', {
-          errors: data.syncAnonymousData.errors,
-          rawData: data,
-        })
+        // Emit general error
+        if (modulesInitialized && eventBus) {
+          eventBus.publish({
+            source: 'AuthContext',
+            type: 'sync:progress',
+            data: {
+              stage: 'error',
+              progress: 0,
+              message: 'An error occurred during sync.',
+              error: error instanceof Error ? error.message : 'Unknown error',
+            },
+            metadata: {
+              userId: user?.id,
+              version: '1.0.0',
+            },
+          })
+        }
       }
-    } catch (error) {
-      logger.error('syncToCloud: Exception during sync', {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-        userId: user?.id,
-      })
+
       throw error
     }
   }, [

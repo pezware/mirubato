@@ -22,10 +22,15 @@ const Logbook: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [syncStatus, setSyncStatus] = useState<
-    'idle' | 'syncing' | 'success' | 'error'
+    'idle' | 'syncing' | 'success' | 'error' | 'timeout'
   >('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isWaitingForSync, setIsWaitingForSync] = useState(false)
+  const [syncProgress, setSyncProgress] = useState<{
+    stage: string
+    progress: number
+    message: string
+  } | null>(null)
 
   // Use GraphQL for authenticated users with cloud storage
   const shouldUseGraphQL = user && !user.isAnonymous && user.hasCloudStorage
@@ -184,6 +189,13 @@ const Logbook: React.FC = () => {
         })
 
         setIsWaitingForSync(false)
+        setSyncStatus('success')
+        setSyncProgress(null)
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSyncStatus('idle')
+        }, 3000)
 
         // Now refetch data from GraphQL if using cloud storage
         if (shouldUseGraphQL && refetch) {
@@ -201,6 +213,61 @@ const Logbook: React.FC = () => {
       }
     }
   }, [eventBus, refetch, shouldUseGraphQL])
+
+  // Listen for sync progress events
+  useEffect(() => {
+    if (!eventBus) return
+
+    const subscriptionId = eventBus.subscribe(
+      'sync:progress',
+      (payload: any) => {
+        const { stage, progress, message } = payload.data || {}
+
+        console.log('Logbook: Sync progress', { stage, progress, message })
+
+        if (
+          stage === 'started' ||
+          stage === 'collecting' ||
+          stage === 'preparing' ||
+          stage === 'syncing'
+        ) {
+          setSyncStatus('syncing')
+          setSyncProgress({ stage, progress, message })
+        } else if (stage === 'completed') {
+          setSyncProgress({ stage, progress, message })
+          // Success status will be set by sync:complete event
+        } else if (stage === 'timeout') {
+          setSyncStatus('timeout')
+          setErrorMessage(message || 'Sync timed out')
+          setSyncProgress(null)
+          setIsWaitingForSync(false)
+
+          // Clear error after 10 seconds
+          setTimeout(() => {
+            setSyncStatus('idle')
+            setErrorMessage(null)
+          }, 10000)
+        } else if (stage === 'error') {
+          setSyncStatus('error')
+          setErrorMessage(message || 'Sync failed')
+          setSyncProgress(null)
+          setIsWaitingForSync(false)
+
+          // Clear error after 10 seconds
+          setTimeout(() => {
+            setSyncStatus('idle')
+            setErrorMessage(null)
+          }, 10000)
+        }
+      }
+    )
+
+    return () => {
+      if (eventBus && typeof eventBus.unsubscribe === 'function') {
+        eventBus.unsubscribe(subscriptionId)
+      }
+    }
+  }, [eventBus])
 
   const handleSaveEntry = async (
     entry: Omit<LogbookEntry, 'id' | 'userId'>
@@ -333,19 +400,32 @@ const Logbook: React.FC = () => {
         {/* Sync Status Bar */}
         {syncStatus !== 'idle' && (
           <div
-            className={`mb-4 p-3 rounded-lg border ${
+            className={`mb-4 p-4 rounded-lg border ${
               syncStatus === 'syncing'
                 ? 'bg-blue-50 border-blue-200 text-blue-800'
                 : syncStatus === 'success'
                   ? 'bg-green-50 border-green-200 text-green-800'
-                  : 'bg-red-50 border-red-200 text-red-800'
+                  : syncStatus === 'timeout'
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             <div className="flex items-center gap-2">
-              {syncStatus === 'syncing' && (
+              {syncStatus === 'syncing' && syncProgress && (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span>Syncing to cloud...</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <span>{syncProgress.message}</span>
+                      <span className="text-sm">{syncProgress.progress}%</span>
+                    </div>
+                    <div className="w-full bg-blue-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${syncProgress.progress}%` }}
+                      />
+                    </div>
+                  </div>
                 </>
               )}
               {syncStatus === 'success' && (
@@ -362,6 +442,22 @@ const Logbook: React.FC = () => {
                     />
                   </svg>
                   <span>Synced successfully!</span>
+                </>
+              )}
+              {syncStatus === 'timeout' && (
+                <>
+                  <svg
+                    className="w-4 h-4 text-yellow-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>{errorMessage || 'Sync timed out'}</span>
                 </>
               )}
               {syncStatus === 'error' && (
