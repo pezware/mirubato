@@ -144,15 +144,15 @@ describe('tokenStorage', () => {
   })
 
   describe('access token management', () => {
-    it('stores access token in session storage', () => {
+    it('stores access token in localStorage for persistence', () => {
       const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
       tokenStorage.setAccessToken(token)
 
       expect(tokenStorage.getAccessToken()).toBe(token)
 
-      // Should be in session storage, not localStorage
-      expect(sessionStorage.getItem('secure_access_token')).toBeDefined()
-      expect(localStorage.getItem('secure_access_token')).toBeNull()
+      // Should be in localStorage for persistence, not sessionStorage
+      expect(localStorage.getItem('secure_access_token')).toBeDefined()
+      expect(sessionStorage.getItem('secure_access_token')).toBeNull()
     })
 
     it('stores access token with custom expiration', () => {
@@ -169,18 +169,18 @@ describe('tokenStorage', () => {
       expect(tokenStorage.getAccessToken()).toBeNull()
     })
 
-    it('uses default 1 hour expiration when not specified', () => {
+    it('uses default 7 days expiration when not specified', () => {
       jest.useFakeTimers()
 
       const token = 'default-expiry-token'
       tokenStorage.setAccessToken(token)
 
-      // Should exist before 1 hour
-      jest.advanceTimersByTime(59 * 60 * 1000)
+      // Should exist before 7 days
+      jest.advanceTimersByTime(6 * 24 * 60 * 60 * 1000) // 6 days
       expect(tokenStorage.getAccessToken()).toBe(token)
 
-      // Should expire after 1 hour
-      jest.advanceTimersByTime(2 * 60 * 1000)
+      // Should expire after 7 days
+      jest.advanceTimersByTime(2 * 24 * 60 * 60 * 1000) // 2 more days
       expect(tokenStorage.getAccessToken()).toBeNull()
     })
   })

@@ -25,6 +25,7 @@ const Logbook: React.FC = () => {
     'idle' | 'syncing' | 'success' | 'error'
   >('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isWaitingForSync, setIsWaitingForSync] = useState(false)
 
   // Use GraphQL for authenticated users with cloud storage
   const shouldUseGraphQL = user && !user.isAnonymous && user.hasCloudStorage
@@ -142,21 +143,25 @@ const Logbook: React.FC = () => {
     shouldUseGraphQL,
     graphqlData,
     graphqlLoading,
+    isInitialLoad,
   ])
 
   // Listen for auth status changes to reload entries
   useEffect(() => {
     if (!eventBus) return
 
-    const subscriptionId = eventBus.subscribe('auth:login', () => {
-      console.log('Auth login detected, reloading logbook entries...')
+    const subscriptionId = eventBus.subscribe('auth:login', (payload: any) => {
+      console.log('Logbook: Auth login detected', {
+        userId: payload.data?.user?.id,
+        hasCloudStorage: payload.data?.user?.hasCloudStorage,
+      })
+
       setIsLoading(true)
       setIsInitialLoad(true) // Treat as initial load to show loading state
+      setIsWaitingForSync(true) // Wait for sync to complete
 
-      // Refetch GraphQL data if needed
-      if (shouldUseGraphQL && refetch) {
-        refetch()
-      }
+      // Don't immediately refetch - wait for sync:complete event
+      console.log('Logbook: Waiting for sync to complete...')
     })
 
     return () => {
@@ -164,25 +169,38 @@ const Logbook: React.FC = () => {
         eventBus.unsubscribe(subscriptionId)
       }
     }
-  }, [eventBus, shouldUseGraphQL, refetch])
+  }, [eventBus, refetch, shouldUseGraphQL])
 
   // Listen for sync complete events to refetch data
   useEffect(() => {
     if (!eventBus || !shouldUseGraphQL) return
 
-    const subscriptionId = eventBus.subscribe('sync:complete', () => {
-      console.log('Sync completed, refetching logbook entries...')
-      if (refetch) {
-        refetch()
+    const subscriptionId = eventBus.subscribe(
+      'sync:complete',
+      (payload: any) => {
+        console.log('Logbook: Sync completed', {
+          syncedEntries: payload.data?.syncedItems?.entries,
+          syncedGoals: payload.data?.syncedItems?.goals,
+        })
+
+        setIsWaitingForSync(false)
+
+        // Now refetch data from GraphQL if using cloud storage
+        if (shouldUseGraphQL && refetch) {
+          console.log('Logbook: Refetching data from GraphQL after sync')
+          refetch().then(() => {
+            console.log('Logbook: Data refetch complete')
+          })
+        }
       }
-    })
+    )
 
     return () => {
       if (eventBus && typeof eventBus.unsubscribe === 'function') {
         eventBus.unsubscribe(subscriptionId)
       }
     }
-  }, [eventBus, shouldUseGraphQL, refetch])
+  }, [eventBus, refetch, shouldUseGraphQL])
 
   const handleSaveEntry = async (
     entry: Omit<LogbookEntry, 'id' | 'userId'>
@@ -403,14 +421,16 @@ const Logbook: React.FC = () => {
         )}
 
         {/* Loading State */}
-        {isLoading ? (
+        {isLoading || isWaitingForSync ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
             <div className="text-center">
               <div className="text-6xl text-gray-400 mx-auto mb-4 animate-pulse">
                 ⏳
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Loading your practice history...
+                {isWaitingForSync
+                  ? 'Syncing your practice data...'
+                  : 'Loading your practice history...'}
               </h3>
             </div>
           </div>
