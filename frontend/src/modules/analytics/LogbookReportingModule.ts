@@ -54,6 +54,12 @@ export class LogbookReportingModule
         // Check if user has cloud storage access
         this.hasCloudStorage = authData.user.hasCloudStorage
         this.clearCache() // Clear cache on auth state change
+
+        console.log('LogbookReportingModule: Auth state changed', {
+          isAuthenticated: this.isAuthenticated,
+          hasCloudStorage: this.hasCloudStorage,
+          userId: authData.user.id,
+        })
       })
 
       this.eventBus.subscribe('auth:logout', () => {
@@ -67,6 +73,12 @@ export class LogbookReportingModule
       this.eventBus.subscribe('logger:entry:updated', () => this.clearCache())
       this.eventBus.subscribe('logger:entry:deleted', () => this.clearCache())
       this.eventBus.subscribe('logger:goal:updated', () => this.clearCache())
+
+      // Also clear cache when sync completes
+      this.eventBus.subscribe('sync:complete', () => {
+        console.log('LogbookReportingModule: Sync completed, clearing cache')
+        this.clearCache()
+      })
 
       this.isInitialized = true
     } catch (error) {
@@ -184,6 +196,15 @@ export class LogbookReportingModule
   private async getLogbookData(
     filters?: ReportFilters
   ): Promise<[LogbookEntry[], Goal[]]> {
+    console.log('LogbookReportingModule: Getting logbook data', {
+      isAuthenticated: this.isAuthenticated,
+      hasCloudStorage: this.hasCloudStorage,
+      source:
+        this.isAuthenticated && this.hasCloudStorage
+          ? 'GraphQL'
+          : 'localStorage',
+    })
+
     // Only use cloud data if authenticated AND has cloud storage
     if (this.isAuthenticated && this.hasCloudStorage) {
       return this.getAuthenticatedData(filters)

@@ -107,6 +107,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   )
 
   const syncToCloud = useCallback(async () => {
+    logger.info('syncToCloud: Starting sync process', {
+      userId: user?.id,
+      isAnonymous: user?.isAnonymous,
+      hasCloudStorage: user?.hasCloudStorage,
+    })
+
     // This function is now ONLY for one-time migration from anonymous to authenticated
     // It should NOT be used for ongoing sync of authenticated users
     if (!user || user.isAnonymous) {
@@ -163,14 +169,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         )
       }
 
-      logger.info('Syncing to cloud', {
+      logger.info('syncToCloud: Data to sync', {
         sessionCount: pendingData.sessions.length,
         logCount: pendingData.logs.length,
         entryCount: localEntries.length,
         goalCount: localGoals.length,
+        firstEntry: localEntries[0],
+        hasUnsynced: localEntries.length > 0 || localGoals.length > 0,
       })
 
       // Call the sync mutation
+      logger.info('syncToCloud: Calling syncAnonymousData mutation')
       const { data } = await syncAnonymousData({
         variables: {
           input: {
@@ -263,6 +272,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       })
 
+      logger.info('syncToCloud: Mutation response', {
+        success: data?.syncAnonymousData?.success,
+        syncedSessions: data?.syncAnonymousData?.syncedSessions,
+        syncedLogs: data?.syncAnonymousData?.syncedLogs,
+        syncedEntries: data?.syncAnonymousData?.syncedEntries,
+        syncedGoals: data?.syncAnonymousData?.syncedGoals,
+        errors: data?.syncAnonymousData?.errors,
+      })
+
       if (data.syncAnonymousData.success) {
         // Mark all items as synced
         const sessionIds = pendingData.sessions.map(s => s.id)
@@ -288,11 +306,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Update last sync time
         localStorage.setItem('lastSyncTime', new Date().toISOString())
 
-        logger.info('Sync completed successfully', {
+        logger.info('syncToCloud: Sync completed successfully', {
           syncedSessions: data.syncAnonymousData.syncedSessions,
           syncedLogs: data.syncAnonymousData.syncedLogs,
           syncedEntries: data.syncAnonymousData.syncedEntries,
           syncedGoals: data.syncAnonymousData.syncedGoals,
+          lastSyncTime: new Date().toISOString(),
         })
 
         // Publish sync complete event
@@ -316,10 +335,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           })
         }
       } else {
-        logger.error('Sync failed with errors', data.syncAnonymousData.errors)
+        logger.error('syncToCloud: Sync failed with errors', {
+          errors: data.syncAnonymousData.errors,
+          rawData: data,
+        })
       }
     } catch (error) {
-      logger.error('Sync failed', error)
+      logger.error('syncToCloud: Exception during sync', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: user?.id,
+      })
       throw error
     }
   }, [
@@ -402,15 +428,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       !user.isAnonymous &&
       user.hasCloudStorage
     ) {
-      setShouldSyncAfterLogin(false)
-      syncToCloud().catch(error => {
-        logger.error('Failed to sync data after login', error)
+      logger.info('useEffect: Triggering post-login sync', {
+        userId: user.id,
+        shouldSyncAfterLogin,
       })
+
+      setShouldSyncAfterLogin(false)
+
+      // Add a small delay to ensure state is settled
+      setTimeout(() => {
+        syncToCloud().catch(error => {
+          logger.error('useEffect: Failed to sync data after login', {
+            error: error instanceof Error ? error.message : error,
+            userId: user.id,
+          })
+        })
+      }, 500)
     }
   }, [shouldSyncAfterLogin, user, syncToCloud])
 
   const login = useCallback(
     async (token: string) => {
+      logger.info('login: Starting login process with magic link')
       try {
         setLoading(true)
         const { data } = await verifyMagicLink({
@@ -430,18 +469,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (authenticatedUser.hasCloudStorage) {
             // Migrate anonymous user data to authenticated user
             if (localUserData?.isAnonymous) {
+              logger.info('login: Migrating anonymous user data', {
+                anonymousId: localUserData.id,
+                authenticatedId: authenticatedUser.id,
+                email: authenticatedUser.email,
+              })
+
               localStorageService.migrateToAuthenticatedUser(
                 authenticatedUser.id,
                 authenticatedUser.email
               )
+
               // Set flag to trigger sync after state updates
-              logger.info('Migrating local data to cloud storage')
+              logger.info('login: Setting shouldSyncAfterLogin flag')
               setShouldSyncAfterLogin(true)
+            } else {
+              logger.info(
+                'login: User already authenticated, no migration needed'
+              )
             }
           } else {
             // User authenticated but no cloud storage - continue with localStorage
             logger.warn(
-              'Authenticated user without cloud storage, using localStorage'
+              'login: Authenticated user without cloud storage, using localStorage'
             )
           }
 
@@ -458,10 +508,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Emit auth:login event to EventBus
           emitLoginEvent(newUser, false)
 
+          logger.info('login: Login successful', {
+            userId: newUser.id,
+            hasCloudStorage: newUser.hasCloudStorage,
+            shouldSync: shouldSyncAfterLogin,
+          })
+
           navigate('/practice')
         }
       } catch (error) {
-        logger.error('Login failed:', error)
+        logger.error('login: Login failed', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+        })
         throw error
       } finally {
         setLoading(false)
