@@ -10,7 +10,9 @@ export const GET_LOGBOOK_ENTRIES = gql`
       edges {
         node {
           id
-          userId
+          user {
+            id
+          }
           timestamp
           duration
           type
@@ -54,7 +56,9 @@ export const GET_GOALS = gql`
       edges {
         node {
           id
-          userId
+          user {
+            id
+          }
           title
           description
           targetDate
@@ -65,9 +69,11 @@ export const GET_GOALS = gql`
             id
             title
             completed
+            completedAt
           }
           createdAt
           updatedAt
+          completedAt
         }
       }
       pageInfo {
@@ -85,15 +91,32 @@ export const CREATE_LOGBOOK_ENTRY = gql`
   mutation CreateLogbookEntry($input: CreateLogbookEntryInput!) {
     createLogbookEntry(input: $input) {
       id
-      userId
-      title
-      content
-      category
-      mood
-      energyLevel
-      focusLevel
-      progressRating
+      user {
+        id
+      }
       timestamp
+      duration
+      type
+      instrument
+      pieces {
+        id
+        title
+        composer
+        measures
+        tempo
+      }
+      techniques
+      goalIds
+      notes
+      mood
+      tags
+      sessionId
+      metadata {
+        source
+        accuracy
+        notesPlayed
+        mistakeCount
+      }
       createdAt
       updatedAt
     }
@@ -104,15 +127,32 @@ export const UPDATE_LOGBOOK_ENTRY = gql`
   mutation UpdateLogbookEntry($id: ID!, $input: UpdateLogbookEntryInput!) {
     updateLogbookEntry(id: $id, input: $input) {
       id
-      userId
-      title
-      content
-      category
-      mood
-      energyLevel
-      focusLevel
-      progressRating
+      user {
+        id
+      }
       timestamp
+      duration
+      type
+      instrument
+      pieces {
+        id
+        title
+        composer
+        measures
+        tempo
+      }
+      techniques
+      goalIds
+      notes
+      mood
+      tags
+      sessionId
+      metadata {
+        source
+        accuracy
+        notesPlayed
+        mistakeCount
+      }
       createdAt
       updatedAt
     }
@@ -129,16 +169,24 @@ export const CREATE_GOAL = gql`
   mutation CreateGoal($input: CreateGoalInput!) {
     createGoal(input: $input) {
       id
-      userId
+      user {
+        id
+      }
       title
       description
-      targetValue
-      currentValue
-      unit
-      deadline
+      targetDate
+      progress
+      milestones {
+        id
+        title
+        completed
+        completedAt
+      }
       status
+      linkedEntries
       createdAt
       updatedAt
+      completedAt
     }
   }
 `
@@ -147,16 +195,24 @@ export const UPDATE_GOAL = gql`
   mutation UpdateGoal($id: ID!, $input: UpdateGoalInput!) {
     updateGoal(id: $id, input: $input) {
       id
-      userId
+      user {
+        id
+      }
       title
       description
-      targetValue
-      currentValue
-      unit
-      deadline
+      targetDate
+      progress
+      milestones {
+        id
+        title
+        completed
+        completedAt
+      }
       status
+      linkedEntries
       createdAt
       updatedAt
+      completedAt
     }
   }
 `

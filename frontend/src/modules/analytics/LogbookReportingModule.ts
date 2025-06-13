@@ -257,26 +257,38 @@ export class LogbookReportingModule
       const entries: LogbookEntry[] = (
         entriesResult.data?.myLogbookEntries?.edges || []
       )
-        .map((edge: { node: unknown }) => edge.node as any)
+        .map((edge: { node: unknown }) => edge.node)
         .map(
           (entry: {
             id: string
-            userId: string
+            user: { id: string }
             timestamp: string
             duration: number
             type: string
             instrument: string
-            pieces: Array<{ id: string; title: string; composer?: string }>
+            pieces: Array<{
+              id: string
+              title: string
+              composer?: string
+              measures?: string
+              tempo?: number
+            }>
             techniques: string[]
             goalIds: string[]
             notes?: string
             mood?: string
             tags: string[]
-            metadata?: { source: string; accuracy?: number }
+            metadata?: {
+              source: string
+              accuracy?: number
+              notesPlayed?: number
+              mistakeCount?: number
+            }
             createdAt: string
             updatedAt: string
           }) => ({
             ...entry,
+            userId: entry.user.id, // Extract userId from user object
             timestamp: new Date(entry.timestamp).getTime(),
             goals: entry.goalIds, // Map goalIds to goals field
           })
@@ -284,22 +296,29 @@ export class LogbookReportingModule
 
       // Transform goals to match our Goal interface
       const goals: Goal[] = (goalsResult.data?.myGoals?.edges || [])
-        .map((edge: { node: unknown }) => edge.node as any)
+        .map((edge: { node: unknown }) => edge.node)
         .map(
           (goal: {
             id: string
-            userId: string
+            user: { id: string }
             title: string
             description?: string
             targetDate?: string
             progress: number
             status: string
             linkedEntries: string[]
-            milestones: Array<{ id: string; title: string; completed: boolean }>
+            milestones: Array<{
+              id: string
+              title: string
+              completed: boolean
+              completedAt?: string
+            }>
             createdAt: string
             updatedAt: string
+            completedAt?: string
           }) => ({
             ...goal,
+            userId: goal.user.id, // Extract userId from user object
             targetDate: goal.targetDate
               ? new Date(goal.targetDate).getTime()
               : undefined,

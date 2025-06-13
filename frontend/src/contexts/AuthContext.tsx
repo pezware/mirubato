@@ -16,7 +16,7 @@ import {
 } from '../lib/apollo/client'
 import { localStorageService, LocalUserData } from '../services/localStorage'
 import { useModules } from './ModulesContext'
-import { Instrument } from '@mirubato/shared/types'
+import type { LogbookEntry, Goal } from '../modules/logger/types'
 
 const logger = createLogger('AuthContext')
 
@@ -54,7 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [shouldSyncAfterLogin, setShouldSyncAfterLogin] = useState(false)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
-  const { eventBus, isInitialized: modulesInitialized } = useModules()
+  const {
+    eventBus,
+    isInitialized: modulesInitialized,
+    practiceLogger,
+  } = useModules()
 
   const [verifyMagicLink] = useMutation(VERIFY_MAGIC_LINK)
   const [refreshTokenMutation] = useMutation(REFRESH_TOKEN)
@@ -71,14 +75,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const pendingData = localStorageService.getPendingSyncData()
 
-      // Get all unsynced data from localStorage
-      // Note: localStorage entries have a different structure than LogbookEntry type
-      const localEntries = localStorageService
-        .getLogbookEntries()
-        .filter(entry => !entry.isSynced)
-      const localGoals = localStorageService
-        .getGoals()
-        .filter(goal => !goal.isSynced)
+      // Get all unsynced data from PracticeLoggerModule
+      let localEntries: LogbookEntry[] = []
+      let localGoals: Goal[] = []
+
+      if (practiceLogger) {
+        // Get all entries and goals from PracticeLoggerModule
+        const allEntries = await practiceLogger.getLogEntries({})
+        const allGoals = await practiceLogger.getGoals({})
+
+        // Filter for unsynced items (those without a synced flag in metadata)
+        localEntries = allEntries.filter(
+          entry => !entry.metadata || !(entry.metadata as any).isSynced
+        )
+        localGoals = allGoals.filter(goal => !(goal as any).isSynced)
+      }
 
       logger.info('Syncing to cloud', {
         sessionCount: pendingData.sessions.length,
@@ -122,32 +133,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               createdAt: log.createdAt,
             })),
             entries: localEntries.map(entry => ({
-              // Map from localStorage format to GraphQL format
-              timestamp: entry.timestamp, // already an ISO string
-              duration: 0, // localStorage entries don't have duration
-              type: (entry.category?.toUpperCase() || 'PRACTICE') as
+              // Map from PracticeLoggerModule format to GraphQL format
+              timestamp: new Date(entry.timestamp).toISOString(), // Convert number to ISO string
+              duration: entry.duration, // Already in seconds
+              type: entry.type.toUpperCase() as
                 | 'PRACTICE'
                 | 'PERFORMANCE'
                 | 'LESSON'
                 | 'REHEARSAL',
-              instrument: 'PIANO' as Instrument, // default since localStorage doesn't track instrument
-              pieces: [], // localStorage entries don't have pieces
-              techniques: [],
-              goalIds: [],
-              notes: entry.content || '',
+              instrument: entry.instrument,
+              pieces: entry.pieces.map(piece => ({
+                id:
+                  piece.id ||
+                  `piece_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                title: piece.title,
+                composer: piece.composer,
+                measures: piece.measures,
+                tempo: piece.tempo,
+              })),
+              techniques: entry.techniques,
+              goalIds: entry.goals, // Map 'goals' to 'goalIds'
+              notes: entry.notes,
               mood: entry.mood?.toUpperCase() as
                 | 'FRUSTRATED'
                 | 'NEUTRAL'
                 | 'SATISFIED'
                 | 'EXCITED'
                 | undefined,
-              tags: [],
+              tags: entry.tags,
+              metadata: entry.metadata
+                ? {
+                    source: (entry.metadata as any).source || 'manual',
+                    accuracy: (entry.metadata as any).accuracy,
+                    notesPlayed: (entry.metadata as any).notesPlayed,
+                    mistakeCount: (entry.metadata as any).mistakeCount,
+                  }
+                : undefined,
             })),
             goals: localGoals.map(goal => ({
               title: goal.title,
               description: goal.description,
-              targetDate: goal.deadline, // localStorage uses 'deadline' field
-              milestones: [], // localStorage goals don't have milestones
+              targetDate: goal.targetDate
+                ? new Date(goal.targetDate).toISOString()
+                : undefined,
+              milestones: goal.milestones.map(milestone => ({
+                id: milestone.id,
+                title: milestone.title,
+                completed: milestone.completed,
+              })),
             })),
           },
         },
@@ -157,9 +190,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Mark all items as synced
         const sessionIds = pendingData.sessions.map(s => s.id)
         const logIds = pendingData.logs.map(l => l.id)
-        const entryIds = localEntries.map(e => e.id)
-        const goalIds = localGoals.map(g => g.id)
-        localStorageService.markAsSynced(sessionIds, logIds, entryIds, goalIds)
+
+        // Mark sessions and logs as synced in localStorage service
+        localStorageService.markAsSynced(sessionIds, logIds)
+
+        // Mark entries and goals as synced in PracticeLoggerModule
+        if (practiceLogger) {
+          // Update entries to mark as synced
+          for (const entry of localEntries) {
+            await practiceLogger.updateLogEntry(entry.id, {
+              metadata: { ...entry.metadata, isSynced: true },
+            })
+          }
+
+          // Mark goals as synced by updating metadata
+          // Note: PracticeLoggerModule doesn't have a generic updateGoal method,
+          // so we'll need to handle this differently in the future
+        }
 
         // Update last sync time
         localStorage.setItem('lastSyncTime', new Date().toISOString())
@@ -198,7 +245,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.error('Sync failed', error)
       throw error
     }
-  }, [user, navigate, syncAnonymousData])
+  }, [
+    user,
+    navigate,
+    syncAnonymousData,
+    practiceLogger,
+    eventBus,
+    modulesInitialized,
+  ])
 
   // Initialize user (authenticated or anonymous) on mount
   useEffect(() => {
