@@ -1,19 +1,40 @@
 /**
  * Backend type exports from shared types
- * This file re-exports types from the shared package to ensure consistency
+ * This file re-exports non-GraphQL types from the shared package
+ * GraphQL types should be imported from './generated/graphql'
  */
 
-// Re-export everything from shared types
-export * from '../../../shared/types'
-
-// Import specific types we need to extend
-import type {
-  User as SharedUser,
-  UserPreferences as SharedUserPreferences,
-  UserStats as SharedUserStats,
-  PracticeSession as SharedPracticeSession,
-  Instrument,
+// Re-export non-GraphQL types from shared
+export type {
+  // LocalStorage-specific types
+  LocalUser,
+  LocalPracticeSession,
+  LocalUserData,
+  UserPreferences,
+  UserStats,
+  PracticeLog,
 } from '../../../shared/types'
+
+// Re-export enums and values separately
+export {
+  // Enums (temporarily, until fully migrated to GraphQL generated types)
+  Instrument,
+  SessionType,
+  ActivityType,
+  Theme,
+  NotationSize,
+  // Validators (not a type)
+  Validators,
+} from '../../../shared/types'
+
+// Import generated GraphQL types
+import type {
+  User as GraphQLUser,
+  PracticeSession as GraphQLPracticeSession,
+} from './generated/graphql'
+
+// Import shared types for compatibility
+import type { Instrument } from '../../../shared/types'
 
 // Backend-specific types that don't exist in shared
 export type Difficulty = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
@@ -82,23 +103,21 @@ export interface SheetMusic {
   thumbnail?: string
 }
 
-// Type compatibility helpers for GraphQL
-// The GraphQL schema expects User to have embedded preferences and stats
-// while our shared types keep them separate. We create a compatibility type.
+// Type compatibility helpers
+// These map between our database/service types and GraphQL types
 
 // User type that matches GraphQL schema expectations
-export interface BackendUser extends SharedUser {
-  preferences: SharedUserPreferences
-  stats: SharedUserStats
+export interface BackendUser extends Omit<GraphQLUser, '__typename'> {
+  // GraphQL User already has all the fields we need
 }
 
 // Practice session compatibility
 export interface BackendPracticeSession
   extends Omit<
-    SharedPracticeSession,
-    'accuracy' | 'sheetMusicId' | 'completedAt'
+    GraphQLPracticeSession,
+    '__typename' | 'user' | 'sheetMusic' | 'logs'
   > {
-  accuracy?: number
-  sheetMusicId?: string
-  completedAt?: string
+  // For database queries, we use IDs instead of full objects
+  userId: string
+  sheetMusicId?: string | null
 }
