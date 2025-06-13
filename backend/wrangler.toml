@@ -39,6 +39,7 @@ routes = []  # Override routes to prevent inheriting production routes
 
 [env.local.vars]
 ENVIRONMENT = "development"
+JWT_SECRET = "test-jwt-secret-for-local-development"
 
 [[env.local.d1_databases]]
 binding = "DB"

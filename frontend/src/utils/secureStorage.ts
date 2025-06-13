@@ -11,16 +11,25 @@ import { nanoid } from 'nanoid'
 
 // In a production app, this would be generated server-side
 // and stored more securely. For now, we generate a unique key
-// per session and store it in sessionStorage.
+// per browser and store it in localStorage so it persists.
 const getOrCreateEncryptionKey = (): string => {
   const KEY_NAME = 'mirubato_enc_key'
-  let key = sessionStorage.getItem(KEY_NAME)
+  // Use localStorage so the key persists across browser sessions
+  let key = localStorage.getItem(KEY_NAME)
 
   if (!key) {
-    // Generate a random key for this session
+    // Generate a random key for this browser
     key = nanoid(32)
+    localStorage.setItem(KEY_NAME, key)
+
+    // Also set in sessionStorage for backwards compatibility
     sessionStorage.setItem(KEY_NAME, key)
     return key
+  }
+
+  // Ensure sessionStorage also has the key for the current session
+  if (!sessionStorage.getItem(KEY_NAME)) {
+    sessionStorage.setItem(KEY_NAME, key)
   }
 
   return key
@@ -69,6 +78,30 @@ export class SecureStorage {
 
   constructor() {
     this.key = getOrCreateEncryptionKey()
+
+    // Migration: Check if we have encrypted data but can't decrypt it
+    // This can happen if the encryption key was lost (e.g., was only in sessionStorage)
+    this.migrateIfNeeded()
+  }
+
+  private migrateIfNeeded(): void {
+    // Check if we have secure_access_token but can't decrypt it
+    const testKey = 'access_token'
+    const encryptedToken = localStorage.getItem(`secure_${testKey}`)
+
+    if (encryptedToken) {
+      try {
+        // Try to decrypt with current key
+        const decrypted = xorDecrypt(encryptedToken, this.key)
+        JSON.parse(decrypted) // This will throw if decryption failed
+      } catch {
+        // Decryption failed - clear all secure storage to allow fresh login
+        console.warn(
+          'Unable to decrypt existing auth tokens. Clearing secure storage.'
+        )
+        this.clear()
+      }
+    }
   }
 
   /**
