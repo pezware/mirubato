@@ -6,6 +6,8 @@ import { env } from '../config/env'
 export const UserStatusIndicator: React.FC = () => {
   const { user, isAnonymous, syncToCloud, logout } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   if (!user) return null
 
@@ -43,12 +45,32 @@ export const UserStatusIndicator: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={syncToCloud}
-              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              title="Sync to cloud"
+              onClick={async () => {
+                if (isSyncing) return
+                setIsSyncing(true)
+                setSyncError(null)
+                try {
+                  await syncToCloud()
+                } catch (error) {
+                  setSyncError(
+                    error instanceof Error ? error.message : 'Sync failed'
+                  )
+                  // Clear error after 5 seconds
+                  setTimeout(() => setSyncError(null), 5000)
+                } finally {
+                  setIsSyncing(false)
+                }
+              }}
+              className={`text-sm ${
+                isSyncing
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              } ${syncError ? 'text-red-500' : ''}`}
+              title={syncError || (isSyncing ? 'Syncing...' : 'Sync to cloud')}
+              disabled={isSyncing}
             >
               <svg
-                className="w-4 h-4"
+                className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

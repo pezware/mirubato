@@ -9,6 +9,7 @@ import {
 import { GET_CURRENT_USER } from '../graphql/queries/user'
 import { SYNC_ANONYMOUS_DATA } from '../graphql/mutations/syncAnonymousData'
 import { createLogger } from '../utils/logger'
+import { removeUndefinedValues } from '../utils/graphqlHelpers'
 import {
   setAuthTokens,
   clearAuthTokens,
@@ -255,102 +256,195 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           // Call the sync mutation
           logger.info('syncToCloud: Calling syncAnonymousData mutation')
-          const { data } = await syncAnonymousData({
-            variables: {
-              input: {
-                sessions: pendingData.sessions.map(session => {
-                  // Calculate duration in minutes from timestamps
-                  const startTime = new Date(session.startedAt).getTime()
-                  const endTime = session.completedAt
-                    ? new Date(session.completedAt).getTime()
-                    : startTime
-                  const durationMs =
-                    endTime - startTime - session.pausedDuration * 1000
-                  const durationMinutes = Math.round(durationMs / 60000)
 
-                  return {
-                    sessionType: 'PRACTICE' as const,
-                    instrument: session.instrument,
-                    sheetMusicId: session.sheetMusicId,
-                    tempo: undefined, // Tempo not available in LocalPracticeSession
-                    durationMinutes,
-                    status: session.completedAt
-                      ? ('COMPLETED' as const)
-                      : ('IN_PROGRESS' as const),
-                    accuracy: session.accuracyPercentage,
-                    notes: `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`,
-                    createdAt: session.startedAt,
-                    updatedAt: session.completedAt || session.startedAt,
-                    completedAt: session.completedAt,
-                  }
-                }),
-                logs: pendingData.logs.map(log => ({
-                  sessionId: log.sessionId,
-                  activityType: 'OTHER' as const, // Default to OTHER since not available in PracticeLog
-                  durationSeconds: 0, // Not available in PracticeLog, default to 0
-                  tempoPracticed: log.tempoPracticed,
-                  targetTempo: undefined, // Not available in PracticeLog
-                  focusAreas: [], // Not available in PracticeLog
-                  selfRating: undefined, // Not available in PracticeLog
-                  notes: log.notes,
-                })),
-                entries: localEntries.map(entry => ({
-                  // Map from PracticeLoggerModule format to GraphQL format
-                  timestamp: new Date(entry.timestamp).toISOString(), // Convert number to ISO string
-                  duration: entry.duration, // Already in seconds
-                  type: entry.type.toUpperCase() as
-                    | 'PRACTICE'
-                    | 'PERFORMANCE'
-                    | 'LESSON'
-                    | 'REHEARSAL',
-                  instrument: entry.instrument,
-                  pieces: entry.pieces.map(piece => ({
+          const syncInput = {
+            sessions: pendingData.sessions.map(session => {
+              // Calculate duration in minutes from timestamps
+              const startTime = new Date(session.startedAt).getTime()
+              const endTime = session.completedAt
+                ? new Date(session.completedAt).getTime()
+                : startTime
+              const durationMs =
+                endTime - startTime - session.pausedDuration * 1000
+              const durationMinutes = Math.round(durationMs / 60000)
+
+              const sessionInput: Record<string, unknown> = {
+                sessionType: 'PRACTICE' as const,
+                instrument: session.instrument,
+                durationMinutes,
+                status: session.completedAt
+                  ? ('COMPLETED' as const)
+                  : ('IN_PROGRESS' as const),
+                createdAt: session.startedAt,
+                updatedAt: session.completedAt || session.startedAt,
+              }
+
+              // Only add optional fields if they have values
+              if (session.sheetMusicId) {
+                sessionInput.sheetMusicId = session.sheetMusicId
+              }
+              if (
+                session.accuracyPercentage !== undefined &&
+                session.accuracyPercentage !== null
+              ) {
+                sessionInput.accuracy = session.accuracyPercentage
+              }
+              if (session.notesAttempted || session.notesCorrect) {
+                sessionInput.notes = `Attempted: ${session.notesAttempted}, Correct: ${session.notesCorrect}`
+              }
+              if (session.completedAt) {
+                sessionInput.completedAt = session.completedAt
+              }
+              // Add tempo if available (currently not in LocalPracticeSession but may be added)
+              if (
+                'tempo' in session &&
+                session.tempo !== undefined &&
+                session.tempo !== null
+              ) {
+                sessionInput.tempo = session.tempo
+              }
+
+              return sessionInput
+            }),
+            logs: pendingData.logs.map(log => {
+              const logInput: Record<string, unknown> = {
+                sessionId: log.sessionId,
+                activityType: 'OTHER' as const, // Default to OTHER since not available in PracticeLog
+                durationSeconds: 0, // Not available in PracticeLog, default to 0
+              }
+
+              // Only add optional fields if they have values
+              if (
+                log.tempoPracticed !== undefined &&
+                log.tempoPracticed !== null
+              ) {
+                logInput.tempoPracticed = log.tempoPracticed
+              }
+              if (
+                'targetTempo' in log &&
+                log.targetTempo !== undefined &&
+                log.targetTempo !== null
+              ) {
+                logInput.targetTempo = log.targetTempo
+              }
+              if (log.notes) {
+                logInput.notes = log.notes
+              }
+
+              return logInput
+            }),
+            entries: localEntries.map(entry => {
+              const entryInput: Record<string, unknown> = {
+                // Required fields
+                timestamp: new Date(entry.timestamp).toISOString(), // Convert number to ISO string
+                duration: entry.duration, // Already in seconds
+                type: entry.type.toUpperCase() as
+                  | 'PRACTICE'
+                  | 'PERFORMANCE'
+                  | 'LESSON'
+                  | 'REHEARSAL',
+                instrument: entry.instrument,
+                pieces: entry.pieces.map(piece => {
+                  const pieceInput: Record<string, unknown> = {
                     id:
                       piece.id ||
                       `piece_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     title: piece.title,
-                    composer: piece.composer,
-                    measures: piece.measures,
-                    tempo: piece.tempo,
-                  })),
-                  techniques: entry.techniques,
-                  goalIds: entry.goals, // Map 'goals' to 'goalIds'
-                  notes: entry.notes,
-                  mood: entry.mood?.toUpperCase() as
-                    | 'FRUSTRATED'
-                    | 'NEUTRAL'
-                    | 'SATISFIED'
-                    | 'EXCITED'
-                    | undefined,
-                  tags: entry.tags,
-                  metadata: entry.metadata
-                    ? {
-                        source:
-                          ((entry.metadata as Record<string, unknown>)
-                            .source as string) || 'manual',
-                        accuracy: (entry.metadata as Record<string, unknown>)
-                          .accuracy as number | undefined,
-                        notesPlayed: (entry.metadata as Record<string, unknown>)
-                          .notesPlayed as number | undefined,
-                        mistakeCount: (
-                          entry.metadata as Record<string, unknown>
-                        ).mistakeCount as number | undefined,
-                      }
-                    : undefined,
-                })),
-                goals: localGoals.map(goal => ({
-                  title: goal.title,
-                  description: goal.description,
-                  targetDate: goal.targetDate
-                    ? new Date(goal.targetDate).toISOString()
-                    : undefined,
-                  milestones: goal.milestones.map(milestone => ({
-                    id: milestone.id,
-                    title: milestone.title,
-                    completed: milestone.completed,
-                  })),
-                })),
-              },
+                  }
+                  // Only add optional piece fields if they have values
+                  if (piece.composer) pieceInput.composer = piece.composer
+                  if (piece.measures) pieceInput.measures = piece.measures
+                  if (piece.tempo !== undefined && piece.tempo !== null) {
+                    pieceInput.tempo = piece.tempo
+                  }
+                  return pieceInput
+                }),
+              }
+
+              // Only add optional fields if they have values
+              if (entry.techniques && entry.techniques.length > 0) {
+                entryInput.techniques = entry.techniques
+              }
+              if (entry.goals && entry.goals.length > 0) {
+                entryInput.goalIds = entry.goals // Map 'goals' to 'goalIds'
+              }
+              if (entry.notes) {
+                entryInput.notes = entry.notes
+              }
+              if (entry.mood) {
+                entryInput.mood = entry.mood.toUpperCase() as
+                  | 'FRUSTRATED'
+                  | 'NEUTRAL'
+                  | 'SATISFIED'
+                  | 'EXCITED'
+              }
+              if (entry.tags && entry.tags.length > 0) {
+                entryInput.tags = entry.tags
+              }
+              if (entry.metadata) {
+                const metadata: Record<string, unknown> = {}
+                const meta = entry.metadata as Record<string, unknown>
+                if (meta.source) metadata.source = meta.source as string
+                if (meta.accuracy !== undefined && meta.accuracy !== null) {
+                  metadata.accuracy = meta.accuracy as number
+                }
+                if (
+                  meta.notesPlayed !== undefined &&
+                  meta.notesPlayed !== null
+                ) {
+                  metadata.notesPlayed = meta.notesPlayed as number
+                }
+                if (
+                  meta.mistakeCount !== undefined &&
+                  meta.mistakeCount !== null
+                ) {
+                  metadata.mistakeCount = meta.mistakeCount as number
+                }
+                // Only add metadata if it has at least one field
+                if (Object.keys(metadata).length > 0) {
+                  entryInput.metadata = metadata
+                }
+              }
+
+              return entryInput
+            }),
+            goals: localGoals.map(goal => {
+              const goalInput: Record<string, unknown> = {
+                title: goal.title,
+              }
+
+              // Only add optional fields if they have values
+              if (goal.description) {
+                goalInput.description = goal.description
+              }
+              if (goal.targetDate) {
+                goalInput.targetDate = new Date(goal.targetDate).toISOString()
+              }
+              if (goal.milestones && goal.milestones.length > 0) {
+                goalInput.milestones = goal.milestones.map(milestone => ({
+                  id: milestone.id,
+                  title: milestone.title,
+                  completed: milestone.completed,
+                }))
+              }
+
+              return goalInput
+            }),
+          }
+
+          // Clean the input to remove undefined values before sending to GraphQL
+          const cleanedInput = removeUndefinedValues(syncInput)
+
+          logger.info('syncToCloud: Cleaned input', {
+            sessions: cleanedInput.sessions?.length,
+            logs: cleanedInput.logs?.length,
+            entries: cleanedInput.entries?.length,
+            goals: cleanedInput.goals?.length,
+          })
+
+          const { data } = await syncAnonymousData({
+            variables: {
+              input: cleanedInput,
             },
           })
 
