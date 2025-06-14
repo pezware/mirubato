@@ -34,10 +34,8 @@ const authLink = setContext((_, { headers, operationName }) => {
 // Error handling link
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path, extensions }) => {
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
+    graphQLErrors.forEach(({ extensions }) => {
+      // GraphQL error: Extensions logged internally
 
       // Handle specific error codes
       if (extensions?.code === 'UNAUTHENTICATED') {
@@ -49,7 +47,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 
   if (networkError) {
-    console.error(`[Network error]: ${networkError}`)
+    // Network error occurred
 
     // Handle network errors
     if ('statusCode' in networkError && networkError.statusCode === 401) {
@@ -57,7 +55,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
       const refreshToken = tokenStorage.getRefreshToken()
       if (refreshToken) {
         // TODO: Implement token refresh logic
-        console.log('Token refresh needed')
+        // Token refresh needed
       }
     }
   }

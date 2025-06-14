@@ -17,7 +17,6 @@ import {
   Articulation as VexArticulation,
   Annotation,
   StaveTie,
-  // Factory,
 } from 'vexflow'
 import {
   Score,
@@ -184,7 +183,7 @@ export class MultiVoiceNotationRenderer {
     try {
       // Validate score has measures
       if (!score.measures || score.measures.length === 0) {
-        console.warn('Score has no measures to render')
+        // Score has no measures to render
         return
       }
 
@@ -201,10 +200,7 @@ export class MultiVoiceNotationRenderer {
             currentY +=
               this.calculateSystemHeight(system) + this.options.systemSpacing
           } catch (systemError) {
-            console.error(
-              `Error rendering system starting at measure ${system.startMeasure + 1}:`,
-              systemError
-            )
+            // Error rendering system starting at measure
             // Continue with next system
             currentY += 100 // Default spacing on error
           }
@@ -221,7 +217,7 @@ export class MultiVoiceNotationRenderer {
         renderAsync()
       }
     } catch (error) {
-      console.error('Error rendering score:', error)
+      // Error rendering score
       // Show error message on canvas
       this.context.save()
       this.context.setFont('Arial', 14, 'normal')
@@ -418,10 +414,7 @@ export class MultiVoiceNotationRenderer {
           vexVoices.push(vexVoice)
           voiceNoteMap.set(voice, vexNotes)
         } catch (error) {
-          console.warn(
-            `Voice formatting error in measure ${measure.number}:`,
-            error
-          )
+          // Voice formatting error in measure
           // Try again with mode SOFT
           try {
             vexVoice.setMode(VexVoice.Mode.SOFT)
@@ -429,9 +422,7 @@ export class MultiVoiceNotationRenderer {
             vexVoices.push(vexVoice)
             voiceNoteMap.set(voice, vexNotes)
           } catch (softError) {
-            console.warn(
-              `Voice still failed in SOFT mode, skipping voice ${voice.id} in measure ${measure.number}`
-            )
+            // Voice still failed in SOFT mode, skipping voice
             continue
           }
         }
@@ -514,10 +505,7 @@ export class MultiVoiceNotationRenderer {
             }
           }
         } catch (formatError) {
-          console.warn(
-            `Error formatting voice group in measure ${measure.number}:`,
-            formatError
-          )
+          // Error formatting voice group in measure
           // Continue with next group
         }
       }
@@ -591,9 +579,7 @@ export class MultiVoiceNotationRenderer {
       const remainingDuration = totalDurationNeeded - currentTotalDuration
       // Only log significant gaps
       if (remainingDuration > 0.25) {
-        console.log(
-          `Voice ${voice.id} in measure ${measure.number}: Adding ${remainingDuration} quarter notes of rest (had ${currentTotalDuration}, needs ${totalDurationNeeded})`
-        )
+        // Voice in measure: Adding quarter notes of rest
       }
       const restDurations = this.calculateRestDurations(remainingDuration)
 
@@ -613,16 +599,12 @@ export class MultiVoiceNotationRenderer {
       // If the excess is small, it might be a rounding error or grace notes
       if (excess <= 0.5) {
         // Try to let VexFlow handle it with setStrict(false)
-        console.log(
-          `Voice ${voice.id} in measure ${measure.number}: Slight timing overflow (${excess}), letting VexFlow handle it`
-        )
+        // Voice in measure: Slight timing overflow, letting VexFlow handle it
         return notes
       }
 
       // Otherwise, we need to handle the overflow
-      console.warn(
-        `Voice ${voice.id} in measure ${measure.number}: Has too many notes (${currentTotalDuration} vs ${totalDurationNeeded} needed). Attempting to fix...`
-      )
+      // Voice in measure: Has too many notes. Attempting to fix...
 
       // Recalculate notes to fit
       const fittingNotes: StaveNote[] = []
@@ -737,9 +719,7 @@ export class MultiVoiceNotationRenderer {
           vexNote.addModifier(new Accidental(mappedAccidental), index)
         })
       } else {
-        console.warn(
-          `Unknown accidental type: "${note.accidental}" - skipping accidental display`
-        )
+        // Unknown accidental type - skipping accidental display
       }
     }
 
@@ -997,7 +977,7 @@ export class MultiVoiceNotationRenderer {
     }
     const mapped = accidentalMap[accidental.toLowerCase()]
     if (!mapped) {
-      console.warn(`Unmapped accidental type: "${accidental}"`)
+      // Unmapped accidental type
     }
     return mapped || ''
   }

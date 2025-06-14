@@ -13,7 +13,8 @@ export class EmailService {
 
     // Log in development
     if (this.env.ENVIRONMENT === 'development') {
-      console.log(`Magic link for ${email}: ${loginUrl}`)
+      // Development only: Log magic link to console
+      console.log(`[DEV] Magic link for ${email}: ${loginUrl}`)
       return
     }
 
@@ -21,7 +22,10 @@ export class EmailService {
     if (this.env.RESEND_API_KEY) {
       await this.sendViaResend(email, loginUrl)
     } else {
-      console.warn('No email service configured. Magic link:', loginUrl)
+      // Warning: No email service configured
+      throw new Error(
+        `Email service not configured. Cannot send magic link to ${email}`
+      )
     }
   }
 

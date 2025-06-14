@@ -119,7 +119,7 @@ export class VisualizationModule implements ModuleInterface {
       this.health.status = 'red'
       this.health.message =
         error instanceof Error ? error.message : 'Unknown error'
-      console.error('Failed to initialize VisualizationModule:', error)
+      // Failed to initialize VisualizationModule
     }
   }
 
@@ -147,7 +147,7 @@ export class VisualizationModule implements ModuleInterface {
         metadata: { version: this.version },
       })
     } catch (error) {
-      console.error('Error during shutdown:', error)
+      // Error during shutdown
     }
   }
 
@@ -160,30 +160,25 @@ export class VisualizationModule implements ModuleInterface {
   async createChart(
     spec: ChartSpecification & { userId?: string }
   ): Promise<ChartSpecification & { userId: string; createdAt: number }> {
-    try {
-      this.validateChartSpecification(spec)
+    this.validateChartSpecification(spec)
 
-      const chart = {
-        ...spec,
-        userId: spec.userId || 'default',
-        createdAt: Date.now(),
-      }
-
-      await this.storage.write(`chart:${spec.id}`, chart)
-      this.invalidateCache(`charts:${chart.userId}`)
-
-      await this.eventBus.publish({
-        source: this.name,
-        type: 'visualization:chart:created',
-        data: { chart },
-        metadata: { version: this.version },
-      })
-
-      return chart
-    } catch (error) {
-      console.error('Error creating chart:', error)
-      throw error
+    const chart = {
+      ...spec,
+      userId: spec.userId || 'default',
+      createdAt: Date.now(),
     }
+
+    await this.storage.write(`chart:${spec.id}`, chart)
+    this.invalidateCache(`charts:${chart.userId}`)
+
+    await this.eventBus.publish({
+      source: this.name,
+      type: 'visualization:chart:created',
+      data: { chart },
+      metadata: { version: this.version },
+    })
+
+    return chart
   }
 
   async getUserCharts(
@@ -462,7 +457,7 @@ export class VisualizationModule implements ModuleInterface {
 
       return canvas
     } catch (error) {
-      console.error('Error rendering chart:', error)
+      // Error rendering chart
       this.health.status = 'yellow'
 
       await this.eventBus.publish({
@@ -1198,8 +1193,8 @@ export class VisualizationModule implements ModuleInterface {
     this.performanceMetrics.set(metrics.chartId, metrics)
   }
 
-  private recordError(error: VisualizationError): void {
-    console.error('Visualization error:', error)
+  private recordError(_error: VisualizationError): void {
+    // Visualization error
     this.health.status = 'yellow'
   }
 

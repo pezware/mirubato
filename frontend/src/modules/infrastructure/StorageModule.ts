@@ -46,7 +46,7 @@ export class LocalStorageAdapter implements StorageAdapter {
 
       return data.value
     } catch (error) {
-      console.error(`Error getting item ${key}:`, error)
+      // Error getting item from storage
       return null
     }
   }

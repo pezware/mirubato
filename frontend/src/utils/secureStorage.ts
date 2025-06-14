@@ -96,9 +96,7 @@ export class SecureStorage {
         JSON.parse(decrypted) // This will throw if decryption failed
       } catch {
         // Decryption failed - clear all secure storage to allow fresh login
-        console.warn(
-          'Unable to decrypt existing auth tokens. Clearing secure storage.'
-        )
+        // Unable to decrypt existing auth tokens. Clearing secure storage.
         this.clear()
       }
     }

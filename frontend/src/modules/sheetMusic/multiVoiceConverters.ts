@@ -205,15 +205,6 @@ function convertMeasureToGrandStaff(
  * Note: This is a lossy conversion as multiple voices will be flattened
  */
 export function scoreToSheetMusic(score: Score): SheetMusic {
-  // Debug logging disabled to reduce console noise
-  // console.log(
-  //   'Converting Score to SheetMusic:',
-  //   score.title,
-  //   'with',
-  //   score.measures?.length,
-  //   'measures'
-  // )
-
   // Keep track of time signature and key signature from first measure
   let currentTimeSignature: TimeSignature | undefined
   let currentKeySignature: KeySignature | undefined
@@ -243,15 +234,9 @@ export function scoreToSheetMusic(score: Score): SheetMusic {
                     !multiVoiceNote.keys ||
                     multiVoiceNote.keys.length === 0
                   ) {
-                    // console.warn(
-                    //   `Note in measure ${measureIndex + 1} missing keys, skipping`
-                    // )
                     continue
                   }
                   if (!multiVoiceNote.duration) {
-                    // console.warn(
-                    //   `Note in measure ${measureIndex + 1} missing duration, skipping`
-                    // )
                     continue
                   }
 
@@ -331,9 +316,6 @@ export function scoreToSheetMusic(score: Score): SheetMusic {
 
       // If no notes were found, add a whole rest
       if (allNotes.length === 0) {
-        // console.warn(
-        //   `Measure ${measureIndex + 1} has no notes, adding whole rest`
-        // )
         allNotes.push({
           keys: ['b/4'],
           duration: NoteDuration.WHOLE,
@@ -347,24 +329,10 @@ export function scoreToSheetMusic(score: Score): SheetMusic {
 
         // If the minimum time is not 0, adjust all note times
         if (minTime > 0) {
-          // console.log(
-          //   `Normalizing time values for measure ${measureIndex + 1}: adjusting by -${minTime}`
-          // )
           for (const note of allNotes) {
             note.time = note.time - minTime
           }
         }
-
-        // Debug: Log the notes in this measure (disabled to reduce console noise)
-        // console.log(
-        //   `Measure ${measureIndex + 1} notes after normalization:`,
-        //   allNotes.map(n => ({
-        //     keys: n.keys,
-        //     duration: n.duration,
-        //     time: n.time,
-        //     rest: n.rest,
-        //   }))
-        // )
       }
 
       // Determine clef based on staves
@@ -404,7 +372,6 @@ export function scoreToSheetMusic(score: Score): SheetMusic {
 
   // Validate we have at least some measures
   if (measures.length === 0) {
-    // console.error('No measures were converted from Score')
     // Return a minimal valid SheetMusic with one empty measure
     measures.push({
       number: 1,
@@ -426,9 +393,6 @@ export function scoreToSheetMusic(score: Score): SheetMusic {
   const mainPart = score.parts?.[0]
   const instrument =
     mainPart?.instrument?.toUpperCase() === 'PIANO' ? 'PIANO' : 'GUITAR'
-
-  // Log conversion result
-  // console.log('Converted to SheetMusic with', measures.length, 'measures')
 
   return {
     id: `converted-${Date.now()}`,
