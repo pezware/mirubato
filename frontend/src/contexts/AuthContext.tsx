@@ -808,7 +808,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             shouldSync: shouldSyncAfterLogin,
           })
 
-          navigate('/practice')
+          navigate('/logbook')
         }
       } catch (error) {
         logger.error('login: Login failed', {
