@@ -111,26 +111,24 @@ const Logbook: React.FC = () => {
                   userId: entry.user.id, // Extract userId from user object
                   timestamp: new Date(entry.timestamp).getTime(),
                   goals: entry.goalIds, // Map goalIds to goals
+                  type: entry.type.toLowerCase() as LogbookEntry['type'], // Convert GraphQL uppercase to local lowercase
+                  mood: entry.mood?.toLowerCase() as
+                    | LogbookEntry['mood']
+                    | undefined, // Convert GraphQL uppercase to local lowercase
                 })
               )
           setEntries(transformedEntries)
-          console.log(
-            `Loaded ${transformedEntries.length} entries from GraphQL`
-          )
         } else if (!shouldUseGraphQL) {
           // Use localStorage for anonymous users
           const filters = user?.id ? { userId: user.id } : {}
           const loadedEntries = await practiceLogger.getLogEntries(filters)
           setEntries(loadedEntries)
-          console.log(
-            `Loaded ${loadedEntries.length} entries from localStorage`
-          )
         } else if (shouldUseGraphQL && !graphqlData?.myLogbookEntries) {
           // GraphQL should be used but no data yet - clear entries to show loading state
           setEntries([])
         }
       } catch (error) {
-        console.error('Failed to load logbook entries:', error)
+        setErrorMessage('Failed to load logbook entries')
         setEntries([]) // Clear entries on error
       } finally {
         setIsLoading(false)
@@ -157,22 +155,15 @@ const Logbook: React.FC = () => {
 
     let syncTimeout: NodeJS.Timeout | null = null
 
-    const subscriptionId = eventBus.subscribe('auth:login', (payload: any) => {
-      console.log('Logbook: Auth login detected', {
-        userId: payload.data?.user?.id,
-        hasCloudStorage: payload.data?.user?.hasCloudStorage,
-      })
-
+    const subscriptionId = eventBus.subscribe('auth:login', () => {
       setIsLoading(true)
       setIsInitialLoad(true) // Treat as initial load to show loading state
       setIsWaitingForSync(true) // Wait for sync to complete
 
       // Don't immediately refetch - wait for sync:complete event
-      console.log('Logbook: Waiting for sync to complete...')
 
       // Set a timeout to prevent getting stuck indefinitely
       syncTimeout = setTimeout(() => {
-        console.warn('Logbook: Sync timeout reached, proceeding without sync')
         setIsWaitingForSync(false)
         setSyncStatus('timeout')
         setErrorMessage(
@@ -206,7 +197,6 @@ const Logbook: React.FC = () => {
       isWaitingForSync
     ) {
       // If we have GraphQL data, we're not actually waiting for sync
-      console.log('Logbook: Already have GraphQL data, not waiting for sync')
       setIsWaitingForSync(false)
     }
   }, [shouldUseGraphQL, graphqlLoading, graphqlData, isWaitingForSync])
@@ -215,32 +205,21 @@ const Logbook: React.FC = () => {
   useEffect(() => {
     if (!eventBus || !shouldUseGraphQL) return
 
-    const subscriptionId = eventBus.subscribe(
-      'sync:complete',
-      (payload: any) => {
-        console.log('Logbook: Sync completed', {
-          syncedEntries: payload.data?.syncedItems?.entries,
-          syncedGoals: payload.data?.syncedItems?.goals,
-        })
+    const subscriptionId = eventBus.subscribe('sync:complete', () => {
+      setIsWaitingForSync(false)
+      setSyncStatus('success')
+      setSyncProgress(null)
 
-        setIsWaitingForSync(false)
-        setSyncStatus('success')
-        setSyncProgress(null)
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSyncStatus('idle')
+      }, 3000)
 
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setSyncStatus('idle')
-        }, 3000)
-
-        // Now refetch data from GraphQL if using cloud storage
-        if (shouldUseGraphQL && refetch) {
-          console.log('Logbook: Refetching data from GraphQL after sync')
-          refetch().then(() => {
-            console.log('Logbook: Data refetch complete')
-          })
-        }
+      // Now refetch data from GraphQL if using cloud storage
+      if (shouldUseGraphQL && refetch) {
+        refetch()
       }
-    )
+    })
 
     return () => {
       if (eventBus && typeof eventBus.unsubscribe === 'function') {
@@ -258,8 +237,6 @@ const Logbook: React.FC = () => {
       (payload: any) => {
         const { stage, progress, message } = payload.data || {}
 
-        console.log('Logbook: Sync progress', { stage, progress, message })
-
         if (
           stage === 'started' ||
           stage === 'collecting' ||
@@ -267,9 +244,17 @@ const Logbook: React.FC = () => {
           stage === 'syncing'
         ) {
           setSyncStatus('syncing')
-          setSyncProgress({ stage, progress, message })
+          setSyncProgress({
+            stage: stage || '',
+            progress: progress || 0,
+            message: message || '',
+          })
         } else if (stage === 'completed') {
-          setSyncProgress({ stage, progress, message })
+          setSyncProgress({
+            stage: stage || '',
+            progress: progress || 0,
+            message: message || '',
+          })
           // Success status will be set by sync:complete event
         } else if (stage === 'timeout') {
           setSyncStatus('timeout')
@@ -310,7 +295,6 @@ const Logbook: React.FC = () => {
     try {
       if (shouldUseGraphQL) {
         // For authenticated users: Use direct GraphQL mutation
-        console.log('Creating entry via GraphQL...')
         setSyncStatus('syncing')
         setErrorMessage(null)
 
@@ -358,7 +342,6 @@ const Logbook: React.FC = () => {
           variables: { input: graphqlInput },
         })
 
-        console.log('Entry created successfully via GraphQL')
         setSyncStatus('success')
         setTimeout(() => setSyncStatus('idle'), 3000)
         setShowNewEntryForm(false)
@@ -368,7 +351,6 @@ const Logbook: React.FC = () => {
           throw new Error('Practice logger not available')
         }
 
-        console.log('Creating entry via localStorage...')
         const newEntry = await practiceLogger.createLogEntry({
           ...entry,
           userId: user?.id || 'guest',
@@ -379,8 +361,6 @@ const Logbook: React.FC = () => {
         setShowNewEntryForm(false)
       }
     } catch (error) {
-      console.error('Failed to save entry:', error)
-
       if (shouldUseGraphQL) {
         setSyncStatus('error')
         setErrorMessage(

@@ -143,9 +143,7 @@ export const MultiVoiceSheetMusicDisplay: React.FC<
 
         // Double-check renderer still exists and component is mounted
         if (!rendererRef.current || !mountedRef.current) {
-          console.warn(
-            'Renderer was destroyed or component unmounted before rendering could complete'
-          )
+          // Renderer was destroyed or component unmounted before rendering could complete
           return
         }
 

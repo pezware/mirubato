@@ -210,7 +210,7 @@ export class EventBus {
       try {
         await sub.callback(payload)
       } catch (error) {
-        console.error(`Error in event subscriber ${sub.id}:`, error)
+        // Error in event subscriber
       }
     }
   }

@@ -190,7 +190,7 @@ export class ProgressAnalyticsModule
         milestones,
       }
     } catch (error) {
-      console.error('Error generating progress report:', error)
+      // Error generating progress report
       return this.createEmptyReport(userId, timeRange)
     }
   }
@@ -227,7 +227,7 @@ export class ProgressAnalyticsModule
 
       return weakAreas
     } catch (error) {
-      console.error('Error identifying weak areas:', error)
+      // Error identifying weak areas
       return []
     }
   }
@@ -302,7 +302,7 @@ export class ProgressAnalyticsModule
       )
       return Array.isArray(milestones) ? milestones : []
     } catch (error) {
-      console.error('Error getting milestone history:', error)
+      // Error getting milestone history
       return []
     }
   }
@@ -336,7 +336,7 @@ export class ProgressAnalyticsModule
 
       return { dataPoints, trend, changePercent }
     } catch (error) {
-      console.error('Error calculating accuracy trend:', error)
+      // Error calculating accuracy trend
       return {
         dataPoints: [],
         trend: 'stable',
@@ -395,7 +395,7 @@ export class ProgressAnalyticsModule
         missedDays,
       }
     } catch (error) {
-      console.error('Error calculating practice consistency:', error)
+      // Error calculating practice consistency
       return {
         daysActive: 0,
         currentStreak: 0,

@@ -69,7 +69,7 @@ export class PracticeLoggerModule implements ModuleInterface {
       this.health.status = 'red'
       this.health.message =
         error instanceof Error ? error.message : 'Unknown error'
-      console.error('Failed to initialize PracticeLoggerModule:', error)
+      // Failed to initialize PracticeLoggerModule
     }
   }
 
@@ -88,7 +88,7 @@ export class PracticeLoggerModule implements ModuleInterface {
         metadata: { version: this.version },
       })
     } catch (error) {
-      console.error('Error during shutdown:', error)
+      // Error during shutdown
     }
   }
 

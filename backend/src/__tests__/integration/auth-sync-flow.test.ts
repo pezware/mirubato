@@ -4,7 +4,6 @@
  */
 
 import { MockD1Database } from '../../test-utils/db'
-import type { ExecutionContext } from '@cloudflare/workers-types'
 import { AuthService } from '../../services/auth'
 import { UserService } from '../../services/user'
 import { createTestContext } from '../../test-utils/graphql'
@@ -49,7 +48,7 @@ describe('Auth and Sync Flow Integration', () => {
     // Mock KV namespace
     const mockKVNamespace = {
       get: (key: string) => Promise.resolve(mockKV.get(key) || null),
-      put: (key: string, value: string, options?: any) => {
+      put: (key: string, value: string, _options?: any) => {
         mockKV.set(key, value)
         return Promise.resolve()
       },
@@ -644,36 +643,6 @@ describe('Auth and Sync Flow Integration', () => {
             progressUpdates.push(data)
           }
         },
-      }
-
-      const syncInput = {
-        sessions: Array(10)
-          .fill(null)
-          .map((_, i) => ({
-            sessionType: 'PRACTICE',
-            instrument: 'PIANO',
-            sheetMusicId: `sheet-${i}`,
-            durationMinutes: 30,
-            status: 'COMPLETED',
-            accuracy: 85,
-            notes: `Session ${i}`,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            completedAt: new Date().toISOString(),
-          })),
-        entries: Array(10)
-          .fill(null)
-          .map((_, i) => ({
-            timestamp: new Date().toISOString(),
-            duration: 1800,
-            type: 'PRACTICE',
-            instrument: 'PIANO',
-            pieces: [],
-            techniques: [],
-            goalIds: [],
-          })),
-        logs: [],
-        goals: [],
       }
 
       // In real implementation, sync would emit progress events

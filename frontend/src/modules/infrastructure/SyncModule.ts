@@ -240,8 +240,8 @@ export class SyncModule implements ModuleInterface {
         const delay =
           this.config.retryDelay * Math.pow(2, operation.retryCount - 1)
         setTimeout(() => {
-          this.processSyncQueue().catch(err => {
-            console.error('Error processing sync queue during retry:', err)
+          this.processSyncQueue().catch(() => {
+            // Error processing sync queue during retry
           })
         }, delay)
       }

@@ -54,10 +54,10 @@ export const MultiVoicePlayer: React.FC<MultiVoicePlayerProps> = ({
       .then(() => {
         setIsLoading(false)
       })
-      .catch(err => {
+      .catch(() => {
         setError('Failed to initialize audio')
         setIsLoading(false)
-        console.error('Audio initialization error:', err)
+        // Audio initialization error
       })
 
     return () => {
@@ -114,7 +114,7 @@ export const MultiVoicePlayer: React.FC<MultiVoicePlayerProps> = ({
       setIsPlaying(!isPlaying)
     } catch (err) {
       setError('Failed to play score')
-      console.error('Playback error:', err)
+      // Playback error
     }
   }, [audioManager, score, isPlaying])
 

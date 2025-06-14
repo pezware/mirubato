@@ -4,20 +4,23 @@
  * IMPORTANT: This file only contains types that are NOT in the GraphQL schema.
  *
  * For GraphQL types, use the generated types instead:
- * - Frontend: import from 'frontend/src/generated/graphql'
- * - Backend: import from 'backend/src/types/generated/graphql'
+ * - Frontend: import from '@mirubato/frontend/src/generated/graphql'
+ * - Backend: import from '@mirubato/backend/src/types/generated/graphql'
  *
  * This file contains:
  * - LocalStorage-specific types (LocalUser, LocalPracticeSession, LocalUserData)
  * - UI preferences not stored in backend (parts of UserPreferences)
  * - Legacy compatibility types
  *
- * The enums below are kept for backward compatibility but should be imported
- * from generated GraphQL types in new code.
+ * DEPRECATED: The enums below are duplicated from GraphQL schema for backward compatibility.
+ * NEW CODE SHOULD IMPORT FROM GENERATED GRAPHQL TYPES, NOT FROM HERE.
+ * These will be removed in a future version.
  */
 
-// Re-export generated enums for backward compatibility
-// These will be imported from generated GraphQL types in frontend
+// DEPRECATED: These enums duplicate GraphQL schema definitions
+// Use generated types instead:
+// Frontend: import { Instrument, SessionType, etc } from '@mirubato/frontend/src/generated/graphql'
+// Backend: import { Instrument, SessionType, etc } from '@mirubato/backend/src/types/generated/graphql'
 export enum Instrument {
   PIANO = 'PIANO',
   GUITAR = 'GUITAR',

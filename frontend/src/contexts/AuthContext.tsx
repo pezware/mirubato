@@ -17,16 +17,19 @@ import {
 import { localStorageService, LocalUserData } from '../services/localStorage'
 import { useModules } from './ModulesContext'
 import type { LogbookEntry, Goal } from '../modules/logger/types'
+import type { User as GraphQLUser, Instrument } from '../generated/graphql'
 
 const logger = createLogger('AuthContext')
 
-interface User {
-  id: string
-  email?: string // Optional for anonymous users
-  displayName: string | null
-  primaryInstrument: 'PIANO' | 'GUITAR'
+// Extend GraphQL User type with local fields
+interface User
+  extends Omit<
+    GraphQLUser,
+    '__typename' | 'preferences' | 'stats' | 'createdAt' | 'updatedAt' | 'email'
+  > {
+  email?: string // Optional for anonymous users (override GraphQL required field)
   isAnonymous: boolean
-  hasCloudStorage: boolean
+  primaryInstrument: Instrument
 }
 
 interface AuthContextType {

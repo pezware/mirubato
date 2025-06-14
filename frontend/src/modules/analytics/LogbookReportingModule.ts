@@ -46,45 +46,33 @@ export class LogbookReportingModule
   }
 
   async initialize(): Promise<void> {
-    try {
-      // Listen for authentication state changes
-      this.eventBus.subscribe('auth:login', payload => {
-        const authData = payload.data as AuthLoginEventData
-        this.isAuthenticated = true
-        // Check if user has cloud storage access
-        this.hasCloudStorage = authData.user.hasCloudStorage
-        this.clearCache() // Clear cache on auth state change
+    // Listen for authentication state changes
+    this.eventBus.subscribe('auth:login', payload => {
+      const authData = payload.data as AuthLoginEventData
+      this.isAuthenticated = true
+      // Check if user has cloud storage access
+      this.hasCloudStorage = authData.user.hasCloudStorage
+      this.clearCache() // Clear cache on auth state change
+    })
 
-        console.log('LogbookReportingModule: Auth state changed', {
-          isAuthenticated: this.isAuthenticated,
-          hasCloudStorage: this.hasCloudStorage,
-          userId: authData.user.id,
-        })
-      })
+    this.eventBus.subscribe('auth:logout', () => {
+      this.isAuthenticated = false
+      this.hasCloudStorage = false
+      this.clearCache()
+    })
 
-      this.eventBus.subscribe('auth:logout', () => {
-        this.isAuthenticated = false
-        this.hasCloudStorage = false
-        this.clearCache()
-      })
+    // Listen for logbook data changes to invalidate cache
+    this.eventBus.subscribe('logger:entry:created', () => this.clearCache())
+    this.eventBus.subscribe('logger:entry:updated', () => this.clearCache())
+    this.eventBus.subscribe('logger:entry:deleted', () => this.clearCache())
+    this.eventBus.subscribe('logger:goal:updated', () => this.clearCache())
 
-      // Listen for logbook data changes to invalidate cache
-      this.eventBus.subscribe('logger:entry:created', () => this.clearCache())
-      this.eventBus.subscribe('logger:entry:updated', () => this.clearCache())
-      this.eventBus.subscribe('logger:entry:deleted', () => this.clearCache())
-      this.eventBus.subscribe('logger:goal:updated', () => this.clearCache())
+    // Also clear cache when sync completes
+    this.eventBus.subscribe('sync:complete', () => {
+      this.clearCache()
+    })
 
-      // Also clear cache when sync completes
-      this.eventBus.subscribe('sync:complete', () => {
-        console.log('LogbookReportingModule: Sync completed, clearing cache')
-        this.clearCache()
-      })
-
-      this.isInitialized = true
-    } catch (error) {
-      console.error('Failed to initialize LogbookReportingModule:', error)
-      throw error
-    }
+    this.isInitialized = true
   }
 
   getHealth(): ModuleHealth {
@@ -196,15 +184,6 @@ export class LogbookReportingModule
   private async getLogbookData(
     filters?: ReportFilters
   ): Promise<[LogbookEntry[], Goal[]]> {
-    console.log('LogbookReportingModule: Getting logbook data', {
-      isAuthenticated: this.isAuthenticated,
-      hasCloudStorage: this.hasCloudStorage,
-      source:
-        this.isAuthenticated && this.hasCloudStorage
-          ? 'GraphQL'
-          : 'localStorage',
-    })
-
     // Only use cloud data if authenticated AND has cloud storage
     if (this.isAuthenticated && this.hasCloudStorage) {
       return this.getAuthenticatedData(filters)
@@ -312,6 +291,8 @@ export class LogbookReportingModule
             userId: entry.user.id, // Extract userId from user object
             timestamp: new Date(entry.timestamp).getTime(),
             goals: entry.goalIds, // Map goalIds to goals field
+            type: entry.type.toLowerCase() as LogbookEntry['type'], // Convert GraphQL uppercase to local lowercase
+            mood: entry.mood?.toLowerCase() as LogbookEntry['mood'] | undefined, // Convert GraphQL uppercase to local lowercase
           })
         )
 
@@ -348,7 +329,6 @@ export class LogbookReportingModule
 
       return [entries, goals]
     } catch (error) {
-      console.error('Error fetching data from GraphQL:', error)
       // Fallback to localStorage on error
       return this.getLocalStorageData(filters)
     }
@@ -386,7 +366,6 @@ export class LogbookReportingModule
 
       return [this.applyFilters(entries, filters), goals]
     } catch (error) {
-      console.error('Error reading from localStorage:', error)
       return [[], []]
     }
   }

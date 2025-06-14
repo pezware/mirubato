@@ -17,7 +17,7 @@ describe('Logging Middleware', () => {
   })
 
   describe('logRequest', () => {
-    it('should log basic request information', async () => {
+    it('should not log in production mode (logging is commented out)', async () => {
       const request = new Request('https://example.com/api/test', {
         method: 'GET',
         headers: {
@@ -28,38 +28,22 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('=== Incoming Request ===')
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        'URL:',
-        'https://example.com/api/test'
-      )
-      expect(consoleLogSpy).toHaveBeenCalledWith('Method:', 'GET')
-      expect(consoleLogSpy).toHaveBeenCalledWith('Headers:', {
-        'user-agent': 'test-agent',
-        accept: 'application/json',
-      })
-      expect(consoleLogSpy).toHaveBeenCalledWith('======================')
+      // Since logging is disabled in production, no console.log calls should be made
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
-    it('should not attempt to read body for GET requests', async () => {
+    it('should handle GET requests without errors', async () => {
       const request = new Request('https://example.com/api/test', {
         method: 'GET',
       })
 
       await logRequest(request)
 
-      // Should not have any body-related logs
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Body:'),
-        expect.anything()
-      )
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Parsed GraphQL:'),
-        expect.anything()
-      )
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
-    it('should log JSON body for POST requests with application/json content-type', async () => {
+    it('should handle POST requests with JSON body without errors', async () => {
       const body = JSON.stringify({
         query: 'query GetUser { user { id name } }',
         variables: { id: '123' },
@@ -76,15 +60,11 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Body:', body)
-      expect(consoleLogSpy).toHaveBeenCalledWith('Parsed GraphQL:', {
-        query: 'query GetUser { user { id name } }',
-        variables: { id: '123' },
-        operationName: 'GetUser',
-      })
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
-    it('should handle POST requests with non-JSON content-type', async () => {
+    it('should handle POST requests with non-JSON content-type without errors', async () => {
       const request = new Request('https://example.com/api/upload', {
         method: 'POST',
         headers: {
@@ -95,11 +75,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      // Should not attempt to read body for non-JSON content
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Body:'),
-        expect.anything()
-      )
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle POST requests with invalid JSON body gracefully', async () => {
@@ -115,8 +92,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Body:', invalidJson)
-      expect(consoleLogSpy).toHaveBeenCalledWith('Body is not valid JSON')
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle body read errors gracefully', async () => {
@@ -139,10 +116,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Could not read body:',
-        expect.any(Error)
-      )
+      // No logging should occur even on error
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle mixed case content-type header', async () => {
@@ -158,7 +133,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Body:', body)
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle empty headers', async () => {
@@ -168,7 +144,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Headers:', {})
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle requests with multiple headers', async () => {
@@ -184,12 +161,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Headers:', {
-        authorization: 'Bearer token123',
-        accept: 'application/json',
-        'user-agent': 'Mozilla/5.0',
-        'x-custom-header': 'custom-value',
-      })
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
     it('should handle GraphQL introspection query', async () => {
@@ -214,14 +187,11 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('Parsed GraphQL:', {
-        query: expect.stringContaining('__schema'),
-        variables: undefined,
-        operationName: undefined,
-      })
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
 
-    it('should log all calls in correct order', async () => {
+    it('should not produce any console output', async () => {
       const request = new Request('https://example.com/api/test', {
         method: 'POST',
         headers: {
@@ -232,17 +202,9 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      const calls = consoleLogSpy.mock.calls.map(call => call[0])
-
-      expect(calls).toEqual([
-        '=== Incoming Request ===',
-        'URL:',
-        'Method:',
-        'Headers:',
-        'Body:',
-        'Parsed GraphQL:',
-        '======================',
-      ])
+      // No console output should be produced
+      expect(consoleLogSpy).not.toHaveBeenCalled()
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
     })
 
     it('should handle requests with different HTTP methods', async () => {
@@ -257,7 +219,8 @@ describe('Logging Middleware', () => {
 
         await logRequest(request)
 
-        expect(consoleLogSpy).toHaveBeenCalledWith('Method:', method)
+        // No logging should occur for any method
+        expect(consoleLogSpy).not.toHaveBeenCalled()
       }
     })
 
@@ -272,10 +235,8 @@ describe('Logging Middleware', () => {
 
       await logRequest(request)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Body:',
-        JSON.stringify({ test: 'data' })
-      )
+      // No logging should occur
+      expect(consoleLogSpy).not.toHaveBeenCalled()
     })
   })
 })

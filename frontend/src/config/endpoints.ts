@@ -41,6 +41,4 @@ export function getEndpoints(): EndpointConfig {
 export const endpoints = getEndpoints()
 
 // Log the configuration for debugging (only in development)
-if (env.DEV) {
-  console.log('API Endpoints:', endpoints)
-}
+// API Endpoints: endpoints
