@@ -31,9 +31,10 @@ jest.mock('tone', () => {
 
   const mockTransport = {
     schedule: jest.fn((callback, when) => {
-      // For testing, execute immediately
+      // For testing, execute immediately with the time string
       callback(when)
-      return 0
+      // Return unique ID for each scheduled event
+      return Date.now() + Math.random()
     }),
     clear: jest.fn(),
     start: jest.fn(),
@@ -258,15 +259,15 @@ describe('MultiVoiceAudioManager', () => {
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
         ['C4'],
+        '4n',
         expect.any(String),
-        expect.any(Number),
-        expect.any(Number)
+        0.8
       )
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
         ['E4'],
+        '4n',
         expect.any(String),
-        expect.any(Number),
-        expect.any(Number)
+        0.8
       )
       // Should not play left hand notes
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
@@ -283,18 +284,24 @@ describe('MultiVoiceAudioManager', () => {
       await audioManager.playScore(score)
 
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
-      // Should play right hand
+      // Should play right hand notes
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
         ['C4'],
+        '4n',
         expect.any(String),
-        expect.any(Number),
-        expect.any(Number)
+        0.8
+      )
+      expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
+        ['E4'],
+        '4n',
+        expect.any(String),
+        0.8
       )
       // Should not play muted left hand
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
         ['C3'],
         expect.any(String),
-        expect.any(Number),
+        expect.any(String),
         expect.any(Number)
       )
     })
@@ -314,16 +321,24 @@ describe('MultiVoiceAudioManager', () => {
 
       const mockSampler = (mockTone.Sampler as any).mock.results[0].value
       // Should only play soloed voice
+      // Check that right hand notes were played
       expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
         ['C4'],
-        expect.any(String),
-        expect.any(Number),
-        expect.any(Number)
+        '4n',
+        expect.any(String), // Tone.js time notation
+        0.8 // velocity
       )
+      expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
+        ['E4'],
+        '4n',
+        expect.any(String), // Tone.js time notation
+        0.8 // velocity
+      )
+      // Check that left hand notes were NOT played
       expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalledWith(
         ['C3'],
         expect.any(String),
-        expect.any(Number),
+        expect.any(String),
         expect.any(Number)
       )
     })
@@ -411,8 +426,9 @@ describe('MultiVoiceAudioManager', () => {
         note: expect.objectContaining({
           keys: ['C4'], // Updated to match Tone.js format conversion
           voiceId: 'rightHand',
+          duration: '4n', // Now includes duration
         }),
-        time: expect.any(Number),
+        time: expect.any(String), // Changed to string for Tone.js time notation
         velocity: expect.any(Number),
       })
     })
@@ -426,7 +442,7 @@ describe('MultiVoiceAudioManager', () => {
 
       expect(measureCallback).toHaveBeenCalledWith({
         measureNumber: 1,
-        time: expect.any(Number),
+        time: expect.any(String), // Changed to string for Tone.js time notation
       })
     })
   })

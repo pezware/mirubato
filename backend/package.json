@@ -36,6 +36,8 @@
     "@apollo/server": "^4.10.0",
     "@as-integrations/cloudflare-workers": "^0.1.1",
     "@mirubato/shared": "*",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.2.6",
     "graphql": "^16.8.1",
     "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
