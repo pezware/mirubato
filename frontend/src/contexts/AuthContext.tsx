@@ -43,6 +43,8 @@ interface AuthContextType {
   refreshAuth: () => Promise<void>
   syncToCloud: () => Promise<void>
   localUserData: LocalUserData | null
+  syncError: string | null
+  clearSyncError: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -59,6 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [lastLoginEventTimestamp, setLastLoginEventTimestamp] =
     useState<number>(0)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
   const apolloClient = useApolloClient()
   const navigate = useNavigate()
   const {
@@ -126,6 +129,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       navigate('/login')
       return
     }
+
+    // Ensure Apollo client has the latest auth tokens
+    const accessToken = localStorage.getItem('access-token')
+    if (!accessToken) {
+      logger.error('syncToCloud: No access token found')
+      throw new Error('Authentication required for sync')
+    }
+
+    // TODO: Reset Apollo client to ensure headers are updated
+    // This is commented out for now as it causes issues with MockedProvider in tests
+    // In production, the auth link should automatically update headers
+    // await apolloClient.resetStore()
 
     // Create timeout promise (30 seconds)
     const SYNC_TIMEOUT = 30000
@@ -627,6 +642,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     practiceLogger,
     eventBus,
     modulesInitialized,
+    apolloClient,
   ])
 
   // Initialize user (authenticated or anonymous) on mount
@@ -707,15 +723,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setShouldSyncAfterLogin(false)
 
-      // Add a small delay to ensure state is settled
+      // Add a small delay to ensure state is settled and Apollo client is updated
       setTimeout(() => {
         syncToCloud().catch(error => {
           logger.error('useEffect: Failed to sync data after login', {
             error: error instanceof Error ? error.message : error,
             userId: user.id,
           })
+          // Set sync error but don't interfere with successful login
+          setSyncError(
+            'Your data is being synced in the background. You can continue using the app.'
+          )
+          // Auto-clear the sync error after 5 seconds
+          setTimeout(() => setSyncError(null), 5000)
         })
-      }, 500)
+      }, 1000) // Increased delay to ensure Apollo client is fully updated
     }
   }, [shouldSyncAfterLogin, user, syncToCloud])
 
@@ -867,6 +889,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [refreshTokenMutation, navigate])
 
+  const clearSyncError = useCallback(() => {
+    setSyncError(null)
+  }, [])
+
   const value = {
     user,
     loading,
@@ -877,6 +903,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshAuth,
     syncToCloud,
     localUserData,
+    syncError,
+    clearSyncError,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

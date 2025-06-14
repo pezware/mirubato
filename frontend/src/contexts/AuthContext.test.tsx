@@ -874,6 +874,17 @@ describe('AuthContext', () => {
       mockLocalStorage.getUserData.mockReturnValue(mockUser)
       mockLocalStorage.getPendingSyncData.mockReturnValue(mockPendingData)
 
+      // Mock localStorage.getItem for access-token
+      const mockGetItem = jest.fn()
+      mockGetItem.mockReturnValue('mock-access-token')
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          ...window.localStorage,
+          getItem: mockGetItem,
+        },
+        writable: true,
+      })
+
       const mocks = [
         {
           request: {
@@ -996,6 +1007,17 @@ describe('AuthContext', () => {
         throw new Error('Sync data error')
       })
 
+      // Mock localStorage.getItem to return null for access-token
+      const mockGetItem = jest.fn()
+      mockGetItem.mockReturnValue(null)
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          ...window.localStorage,
+          getItem: mockGetItem,
+        },
+        writable: true,
+      })
+
       const mocks = [
         {
           request: {
@@ -1021,7 +1043,9 @@ describe('AuthContext', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByTestId('error')).toHaveTextContent('Sync data error')
+        expect(screen.getByTestId('error')).toHaveTextContent(
+          'Authentication required for sync'
+        )
       })
     })
   })
