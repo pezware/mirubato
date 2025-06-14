@@ -15,7 +15,7 @@ import {
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
   const { practiceLogger, isInitialized, eventBus } = useModules()
-  const { user } = useAuth()
+  const { user, syncError, clearSyncError } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
@@ -39,6 +39,7 @@ const Logbook: React.FC = () => {
   const {
     data: graphqlData,
     loading: graphqlLoading,
+    error: graphqlError,
     refetch,
   } = useQuery(GET_LOGBOOK_ENTRIES, {
     variables: {
@@ -48,6 +49,7 @@ const Logbook: React.FC = () => {
     },
     skip: !shouldUseGraphQL,
     fetchPolicy: 'network-only', // Always fetch fresh data
+    errorPolicy: 'all', // Continue even if there's an error
   })
 
   // GraphQL mutation for creating entries (authenticated users only)
@@ -118,12 +120,24 @@ const Logbook: React.FC = () => {
                 })
               )
           setEntries(transformedEntries)
-        } else if (!shouldUseGraphQL) {
-          // Use localStorage for anonymous users
+        } else if (!shouldUseGraphQL || (shouldUseGraphQL && graphqlError)) {
+          // Use localStorage for anonymous users OR as fallback when GraphQL fails
           const filters = user?.id ? { userId: user.id } : {}
           const loadedEntries = await practiceLogger.getLogEntries(filters)
           setEntries(loadedEntries)
-        } else if (shouldUseGraphQL && !graphqlData?.myLogbookEntries) {
+
+          // If GraphQL error, show a message but continue with local data
+          if (graphqlError) {
+            setErrorMessage(
+              'Using local data. Your entries will sync when connection is restored.'
+            )
+            setTimeout(() => setErrorMessage(null), 5000)
+          }
+        } else if (
+          shouldUseGraphQL &&
+          !graphqlData?.myLogbookEntries &&
+          !graphqlError
+        ) {
           // GraphQL should be used but no data yet - clear entries to show loading state
           setEntries([])
         }
@@ -146,6 +160,7 @@ const Logbook: React.FC = () => {
     shouldUseGraphQL,
     graphqlData,
     graphqlLoading,
+    graphqlError,
     isInitialLoad,
   ])
 
@@ -232,55 +247,55 @@ const Logbook: React.FC = () => {
   useEffect(() => {
     if (!eventBus) return
 
-    const subscriptionId = eventBus.subscribe(
-      'sync:progress',
-      (payload: any) => {
-        const { stage, progress, message } = payload.data || {}
+    const subscriptionId = eventBus.subscribe('sync:progress', payload => {
+      const data = payload.data as
+        | { stage?: string; progress?: number; message?: string }
+        | undefined
+      const { stage, progress, message } = data || {}
 
-        if (
-          stage === 'started' ||
-          stage === 'collecting' ||
-          stage === 'preparing' ||
-          stage === 'syncing'
-        ) {
-          setSyncStatus('syncing')
-          setSyncProgress({
-            stage: stage || '',
-            progress: progress || 0,
-            message: message || '',
-          })
-        } else if (stage === 'completed') {
-          setSyncProgress({
-            stage: stage || '',
-            progress: progress || 0,
-            message: message || '',
-          })
-          // Success status will be set by sync:complete event
-        } else if (stage === 'timeout') {
-          setSyncStatus('timeout')
-          setErrorMessage(message || 'Sync timed out')
-          setSyncProgress(null)
-          setIsWaitingForSync(false)
+      if (
+        stage === 'started' ||
+        stage === 'collecting' ||
+        stage === 'preparing' ||
+        stage === 'syncing'
+      ) {
+        setSyncStatus('syncing')
+        setSyncProgress({
+          stage: stage || '',
+          progress: progress || 0,
+          message: message || '',
+        })
+      } else if (stage === 'completed') {
+        setSyncProgress({
+          stage: stage || '',
+          progress: progress || 0,
+          message: message || '',
+        })
+        // Success status will be set by sync:complete event
+      } else if (stage === 'timeout') {
+        setSyncStatus('timeout')
+        setErrorMessage(message || 'Sync timed out')
+        setSyncProgress(null)
+        setIsWaitingForSync(false)
 
-          // Clear error after 10 seconds
-          setTimeout(() => {
-            setSyncStatus('idle')
-            setErrorMessage(null)
-          }, 10000)
-        } else if (stage === 'error') {
-          setSyncStatus('error')
-          setErrorMessage(message || 'Sync failed')
-          setSyncProgress(null)
-          setIsWaitingForSync(false)
+        // Clear error after 10 seconds
+        setTimeout(() => {
+          setSyncStatus('idle')
+          setErrorMessage(null)
+        }, 10000)
+      } else if (stage === 'error') {
+        setSyncStatus('error')
+        setErrorMessage(message || 'Sync failed')
+        setSyncProgress(null)
+        setIsWaitingForSync(false)
 
-          // Clear error after 10 seconds
-          setTimeout(() => {
-            setSyncStatus('idle')
-            setErrorMessage(null)
-          }, 10000)
-        }
+        // Clear error after 10 seconds
+        setTimeout(() => {
+          setSyncStatus('idle')
+          setErrorMessage(null)
+        }, 10000)
       }
-    )
+    })
 
     return () => {
       if (eventBus && typeof eventBus.unsubscribe === 'function') {
@@ -411,6 +426,44 @@ const Logbook: React.FC = () => {
             musical journey
           </p>
         </div>
+
+        {/* Sync Error from AuthContext */}
+        {syncError && (
+          <div className="mb-4 p-4 rounded-lg border bg-yellow-50 border-yellow-200 text-yellow-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-4 h-4 text-yellow-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.061-1.061 3 3 0 112.871 5.026v.345a.75.75 0 01-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 108.94 6.94zM10 15a1 1 0 100-2 1 1 0 000 2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>{syncError}</span>
+              </div>
+              <button
+                onClick={clearSyncError}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Sync Status Bar */}
         {syncStatus !== 'idle' && (
