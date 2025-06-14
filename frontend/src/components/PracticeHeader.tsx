@@ -41,12 +41,13 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({ isMobile }) => {
             {/* Navigation Links */}
             {!isMobile && (
               <nav className="flex items-center gap-6 ml-8">
-                <Link
+                {/* Phase 2 - Practice mode temporarily phased out */}
+                {/* <Link
                   to="/practice"
                   className="text-mirubato-wood-600 hover:text-mirubato-wood-800 font-medium transition-colors"
                 >
                   Practice
-                </Link>
+                </Link> */}
                 <Link
                   to="/logbook"
                   className="text-mirubato-wood-600 hover:text-mirubato-wood-800 font-medium transition-colors"

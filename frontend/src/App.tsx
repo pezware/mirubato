@@ -10,7 +10,8 @@ import { VersionInfo } from './components/VersionInfo'
 import LandingPage from './components/LandingPage'
 
 // Lazy load heavy pages
-const Practice = lazy(() => import('./pages/Practice'))
+// Phase 2 - Practice mode temporarily phased out
+// const Practice = lazy(() => import('./pages/Practice'))
 const AuthVerify = lazy(() => import('./pages/AuthVerify'))
 const Docs = lazy(() => import('./pages/Docs'))
 const Logbook = lazy(() => import('./pages/Logbook'))
@@ -50,7 +51,8 @@ function App() {
                       path="/magic-link"
                       element={<div>Magic Link Verification (TODO)</div>}
                     />
-                    <Route path="/practice" element={<Practice />} />
+                    {/* Phase 2 - Practice mode temporarily phased out */}
+                    {/* <Route path="/practice" element={<Practice />} /> */}
                     <Route path="/logbook" element={<Logbook />} />
                     <Route
                       path="/profile"
