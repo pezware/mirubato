@@ -406,7 +406,7 @@ describe('AuthContext', () => {
         'user-456',
         'new@example.com'
       )
-      expect(mockNavigate).toHaveBeenCalledWith('/practice')
+      expect(mockNavigate).toHaveBeenCalledWith('/logbook')
       expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true')
       expect(screen.getByTestId('is-anonymous')).toHaveTextContent('false')
     })
@@ -439,7 +439,7 @@ describe('AuthContext', () => {
 
       // Login error is handled internally now
       expect(mockSetAuthTokens).not.toHaveBeenCalled()
-      expect(mockNavigate).not.toHaveBeenCalledWith('/practice')
+      expect(mockNavigate).not.toHaveBeenCalledWith('/logbook')
     })
   })
 

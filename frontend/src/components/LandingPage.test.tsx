@@ -16,12 +16,12 @@ describe('LandingPage', () => {
     expect(tagline).toBeInTheDocument()
   })
 
-  it('renders the start practice link', () => {
+  it('renders the logbook link', () => {
     render(<LandingPage />)
 
-    const link = screen.getByRole('link', { name: /Start Practice/i })
+    const link = screen.getByRole('link', { name: /Open Logbook/i })
     expect(link).toBeInTheDocument()
-    expect(link).toHaveAttribute('href', '/practice')
+    expect(link).toHaveAttribute('href', '/logbook')
   })
 
   it('renders the piano instructions', () => {

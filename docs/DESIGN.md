@@ -2,7 +2,7 @@
 
 ## Overview
 
-Rubato is a progressive web application for musicians to practice sight-reading and improve their musical skills. Built with a module-based architecture, event-driven communication, and local-first philosophy, it provides a seamless practice experience across devices.
+Rubato is a progressive web application for musicians to track and analyze their practice sessions. Currently focused on providing a comprehensive practice logbook with analytics, the application is built with a module-based architecture, event-driven communication, and local-first philosophy. The MVP emphasizes practice logging and reporting, with the sheet music and real-time practice features temporarily phased out for future development.
 
 ## Core Design Principles
 
@@ -48,11 +48,13 @@ interface ModuleInterface {
 }
 ```
 
-### Implemented Modules
+### Module Architecture Status
 
-#### Core Infrastructure
+#### Active Modules (MVP Focus)
 
-##### 1. **EventBus**
+##### Core Infrastructure
+
+###### 1. **EventBus**
 
 - Central event-driven communication system
 - Singleton pattern with pub/sub architecture
@@ -62,7 +64,7 @@ interface ModuleInterface {
 - Debug mode with comprehensive logging
 - Automatic error handling and event isolation
 
-##### 2. **Storage Services**
+###### 2. **Storage Services**
 
 - Abstract storage layer with event-driven capabilities
 - `StorageService`: Base interface for all storage operations
@@ -70,9 +72,9 @@ interface ModuleInterface {
 - `MockStorageService`: Testing implementation
 - Request/response pattern for all operations
 
-#### Infrastructure Modules
+##### Infrastructure Modules
 
-##### 3. **StorageModule**
+###### 3. **StorageModule**
 
 - Local storage management with adapter pattern
 - LocalStorage adapter (IndexedDB adapter pending)
@@ -81,7 +83,7 @@ interface ModuleInterface {
 - Emits: `data:create:*`, `data:read:*`, `data:delete:*`, `data:sync:required`
 - Consumes: `storage:request`, `storage:read`, `storage:write`, `storage:delete`
 
-##### 4. **SyncModule**
+###### 4. **SyncModule**
 
 - Data synchronization between local and cloud storage
 - Sync queue management with retry logic
@@ -90,63 +92,11 @@ interface ModuleInterface {
 - Batch sync operations
 - Emits: `sync:operation:queued`, `sync:operation:success`, `sync:operation:failed`
 - Consumes: `data:sync:required`, `sync:request:initiated`
+- Status: Partial implementation
 
-#### Domain Modules
+##### Domain Modules
 
-##### 5. **PracticeSessionModule**
-
-- Practice session lifecycle management
-- Session start/pause/resume/end functionality
-- Auto-save with configurable intervals
-- Session statistics and performance tracking
-- Multi-instrument support
-- Emits: `practice:session:started`, `practice:session:paused`, `practice:session:ended`
-- Consumes: `performance:note:played`, `navigation:leaving:practice`
-
-##### 6. **SheetMusicLibraryModule**
-
-- Sheet music library and exercise generation
-- Algorithmic exercise generation (sight-reading, technical)
-- User repertoire tracking with status management
-- Performance history recording
-- Exercise metadata and expiration management
-- Emits: `sheet-music:exercise-generated`, `sheet-music:repertoire-status-changed`
-- Consumes: `practice:session-completed`
-- Status: Partial (search, import/export pending)
-
-##### 7. **PerformanceTrackingModule**
-
-- Real-time performance analysis
-- Note event recording with timing precision
-- Performance metrics calculation (accuracy, timing, rhythm)
-- Problem area identification
-- Real-time feedback generation
-- Emits: `performance:tracking:started`, `performance:note:recorded`
-- Consumes: `audio:note:detected`, `practice:note:played`
-
-##### 8. **ProgressAnalyticsModule**
-
-- Comprehensive analytics and progress tracking
-- Progress report generation with visualizations
-- Weak area identification algorithms
-- Milestone tracking and achievements
-- Practice consistency metrics
-- Personalized recommendation generation
-- Emits: `progress:milestone:achieved`, `progress:report:ready`
-- Consumes: `performance:note:recorded`, `practice:session:ended`
-
-##### 9. **CurriculumModule**
-
-- Learning path creation and management
-- Repertoire organization and tracking
-- Technical exercise generation (14 types)
-- Difficulty evaluation and progression
-- Performance readiness assessment
-- Maintenance scheduling for memorized pieces
-- Emits: `curriculum:path:created`, `curriculum:progress:updated`
-- Consumes: `practice:session:ended`, `progress:milestone:achieved`
-
-##### 10. **PracticeLoggerModule**
+###### 5. **PracticeLoggerModule**
 
 - Professional practice logbook management
 - Goal tracking with milestone support
@@ -157,7 +107,18 @@ interface ModuleInterface {
 - Emits: `logger:entry:created`, `logger:goal:completed`, `logger:export:ready`
 - Consumes: `practice:session:ended`, `progress:milestone:achieved`
 
-##### 11. **VisualizationModule**
+###### 6. **LogbookReportingModule**
+
+- Comprehensive analytics for practice logs
+- Multiple report views (overview, repertoire, timeline, categories)
+- Time-based statistics with minute-level accuracy
+- Piece and category analytics
+- Universal access (works for anonymous and authenticated users)
+- Export functionality (CSV, JSON)
+- Emits: `report:generated`, `report:exported`
+- Consumes: `logger:entry:*` events for cache invalidation
+
+###### 7. **VisualizationModule**
 
 - Data visualization using Chart.js
 - Multiple chart types (line, bar, radar, heatmap, tree)
@@ -166,7 +127,56 @@ interface ModuleInterface {
 - Responsive adaptations for different devices
 - Accessibility features (ARIA labels, keyboard nav)
 - Emits: `visualization:chart:created`, `visualization:exported`
-- Consumes: `progress:report:ready`, `practice:session:ended`
+- Consumes: `report:generated` from LogbookReportingModule
+
+#### Phased Out Modules (Preserved for Future)
+
+##### Practice Mode Modules
+
+###### **PracticeSessionModule** (Phase 2)
+
+- Practice session lifecycle management
+- Session start/pause/resume/end functionality
+- Auto-save with configurable intervals
+- Session statistics and performance tracking
+- Multi-instrument support
+- Status: Phased out, code preserved
+
+###### **SheetMusicLibraryModule** (Phase 2)
+
+- Sheet music library and exercise generation
+- Algorithmic exercise generation (sight-reading, technical)
+- User repertoire tracking with status management
+- Performance history recording
+- Exercise metadata and expiration management
+- Status: Phased out, generators preserved
+
+###### **PerformanceTrackingModule** (Phase 2)
+
+- Real-time performance analysis
+- Note event recording with timing precision
+- Performance metrics calculation (accuracy, timing, rhythm)
+- Problem area identification
+- Real-time feedback generation
+- Status: Phased out, not used by current MVP
+
+###### **ProgressAnalyticsModule** (Phase 2)
+
+- Comprehensive analytics and progress tracking
+- Progress report generation with visualizations
+- Weak area identification algorithms
+- Milestone tracking and achievements
+- Practice consistency metrics
+- Personalized recommendation generation
+- Status: Phased out, replaced by LogbookReportingModule for MVP
+
+#### Placeholder Modules (Future Implementation)
+
+##### Multi-Voice Support (Phase 4)
+
+- **SheetMusicLibraryModuleMultiVoice**: Multi-voice sheet music support
+- **PerformanceTrackingModuleMultiVoice**: Multi-voice performance tracking
+- Status: Placeholder implementation, not actively developed
 
 ### Context-Based Services
 
@@ -218,41 +228,31 @@ interface EventPayload<T = any> {
 }
 ```
 
-#### Module Initialization Order
+#### Module Initialization Order (Current MVP)
 
 ```mermaid
 graph TD
     EventBus --> StorageServices
     StorageServices --> StorageModule
-    StorageModule --> SyncModule
-    StorageModule --> PracticeSessionModule
-    StorageModule --> SheetMusicLibraryModule
-    PracticeSessionModule --> PerformanceTrackingModule
-    PerformanceTrackingModule --> ProgressAnalyticsModule
-    ProgressAnalyticsModule --> CurriculumModule
-    PracticeSessionModule --> PracticeLoggerModule
-    ProgressAnalyticsModule --> VisualizationModule
-    CurriculumModule --> VisualizationModule
-    PracticeLoggerModule --> VisualizationModule
+    StorageModule --> PracticeLoggerModule
+    PracticeLoggerModule --> LogbookReportingModule
+    LogbookReportingModule --> VisualizationModule
+    StorageModule --> SyncModule["SyncModule (partial)"]
 ```
 
-#### Event Flow Patterns
+#### Event Flow Patterns (Current MVP)
 
-1. **Practice Flow**:
+1. **Logbook Flow**:
 
-   - User Action → PracticeSessionModule → PerformanceTrackingModule → ProgressAnalyticsModule → VisualizationModule
+   - User Action → PracticeLoggerModule → LogbookReportingModule → VisualizationModule
 
-2. **Learning Flow**:
+2. **Storage Flow**:
 
-   - CurriculumModule → SheetMusicLibraryModule → PracticeSessionModule → PracticeLoggerModule
+   - All modules → EventDrivenStorage → StorageModule → SyncModule → Cloud (GraphQL)
 
-3. **Storage Flow**:
-
-   - All modules → EventDrivenStorage → StorageModule → SyncModule → Cloud (pending)
-
-4. **Analytics Flow**:
-   - PerformanceTrackingModule → ProgressAnalyticsModule → VisualizationModule
-   - PracticeLoggerModule → VisualizationModule
+3. **Analytics Flow**:
+   - PracticeLoggerModule → LogbookReportingModule → VisualizationModule
+   - LogbookReportingModule generates reports from logged entries
 
 ## Data Architecture
 
@@ -344,27 +344,27 @@ Local Change → IndexedDB → Sync Queue → Background Sync → GraphQL API
 
 ## User Experience Design
 
-### Use Cases
+### Use Cases (Current MVP)
 
 #### Beginner User (Sofia)
 
 - **Profile**: Piano student, practices 15 minutes daily
-- **Goals**: Build sight-reading skills, track progress
+- **Goals**: Track practice consistency, monitor progress
 - **Key Features**:
-  - Structured daily exercises
-  - Visual progress tracking
-  - Gamification elements
-  - Simple, guided interface
+  - Quick manual entry form
+  - Practice streak tracking
+  - Visual progress charts
+  - Simple reporting interface
 
 #### Professional User (Marcus)
 
 - **Profile**: Jazz guitarist, flexible practice schedule
 - **Goals**: Log practice efficiently, analyze patterns
 - **Key Features**:
-  - Detailed practice logging
-  - Custom exercise generation
-  - Export capabilities
-  - Advanced analytics
+  - Detailed practice logging with tags
+  - Repertoire tracking
+  - Export capabilities (CSV, JSON)
+  - Advanced analytics by category/time
 
 ### Practice Page Design
 
@@ -640,6 +640,42 @@ interface PluginAPI {
 }
 ```
 
+## Architecture Phases
+
+### Phase 1: MVP - Logbook Focus (Current)
+
+- **Core functionality**: Practice logging and reporting
+- **Active modules**:
+  - Core: EventBus, EventDrivenStorage
+  - Infrastructure: StorageModule, SyncModule (partial)
+  - Domain: PracticeLoggerModule, LogbookReportingModule
+  - Visualization: VisualizationModule
+- **User flow**: Sign in → Logbook → Reports & Analytics
+- **Key features**:
+  - Manual practice entry
+  - Comprehensive reporting with multiple views
+  - Data export (CSV, JSON)
+  - Works for both anonymous and authenticated users
+
+### Phase 2: Practice Mode (Phased Out - Future)
+
+- **Sheet music display and playback**
+- **Real-time performance tracking**
+- **Progress analytics**
+- **Modules preserved in codebase**:
+  - PracticeSessionModule
+  - SheetMusicLibraryModule
+  - PerformanceTrackingModule
+  - ProgressAnalyticsModule
+- **Status**: Code preserved for future reactivation
+
+### Phase 3: Advanced Features (Future)
+
+- **Multi-voice support** (Phase 4 placeholder exists)
+- **MIDI integration**
+- **AI coaching**
+- **Social features**
+
 ## Decision Log
 
 ### Key Decisions
@@ -669,9 +705,16 @@ interface PluginAPI {
    - No password management
 
 5. **Event-Driven Communication** (2024-03)
+
    - Loose coupling
    - Easy to extend
    - Better debugging
+
+6. **MVP Simplification** (2025-01)
+   - Focus on Logbook functionality
+   - Phase out Practice mode temporarily
+   - Preserve code for future reactivation
+   - Reduce complexity for faster iteration
 
 ---
 
