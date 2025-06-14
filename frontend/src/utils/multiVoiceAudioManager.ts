@@ -58,6 +58,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
   private isPlayingState = false
   private currentScheduleId: number | null = null
   private playbackSpeed = 1.0
+  private scheduledEvents: number[] = [] // Track all Transport.schedule IDs
 
   // Metronome
   private metronomeActive = false
@@ -315,7 +316,12 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     // Ensure audio context is started (requires user interaction)
     await this.ensureAudioStarted()
 
+    // Stop any existing playback and clear all scheduled events
     this.stopPlayback()
+
+    // Reset transport position to ensure clean start
+    this.toneInstance.Transport.position = 0
+
     this.isPlayingState = true
 
     // Set initial tempo
@@ -324,7 +330,7 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       this.toneInstance.Transport.bpm.value = firstMeasure.tempo
     }
 
-    // Schedule all notes
+    // Schedule all notes with improved timing
     const scheduleId = this.scheduleScore(score, startMeasure)
     this.currentScheduleId = scheduleId
 
@@ -348,9 +354,18 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
 
   stopPlayback(): void {
     this.toneInstance.Transport.stop()
+
+    // Clear all scheduled events
+    this.scheduledEvents.forEach(eventId => {
+      this.toneInstance.Transport.clear(eventId)
+    })
+    this.scheduledEvents = []
+
+    // Legacy cleanup for backwards compatibility
     if (this.currentScheduleId !== null) {
       this.toneInstance.Transport.clear(this.currentScheduleId)
     }
+
     this.isPlayingState = false
     this.currentScheduleId = null
   }
@@ -493,6 +508,10 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     this.stopPlayback()
     this.stopMetronome()
 
+    // Clear all event listeners
+    this.notePlayListeners = []
+    this.measureChangeListeners = []
+
     if (this.pianoSampler) {
       this.pianoSampler.dispose()
       this.pianoSampler = null
@@ -508,12 +527,22 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
 
     this.voiceGains.forEach(gain => gain.dispose())
     this.voiceGains.clear()
+    this.voiceVolumes.clear()
+    this.mutedVoices.clear()
 
     if (this.reverb) {
       this.reverb.dispose()
       this.reverb = null
     }
 
+    // Clear scheduled events array
+    this.scheduledEvents = []
+
+    // Reset state
+    this.soloedVoice = null
+    this.currentScheduleId = null
+    this.isPlayingState = false
+    this.audioStarted = false
     this.initialized = false
     this.loadingPromise = null
   }
@@ -545,44 +574,53 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
       })
     })
 
-    // Use a single batch scheduling for better performance
-    const scheduleBatch = () => {
-      score.measures.forEach(measure => {
-        if (measure.number < startMeasure) {
-          // Skip measures before start
-          currentTime += this.getMeasureDuration(measure)
-          return
-        }
+    // Clear any existing scheduled events before scheduling new ones
+    this.scheduledEvents.forEach(eventId => {
+      this.toneInstance.Transport.clear(eventId)
+    })
+    this.scheduledEvents = []
 
-        // Emit measure change event
-        this.toneInstance.Transport.schedule(time => {
+    // Use precise timing calculations to avoid gaps between measures
+    score.measures.forEach(measure => {
+      if (measure.number < startMeasure) {
+        // Skip measures before start with precise timing
+        currentTime += this.getMeasureDurationPrecise(measure)
+        return
+      }
+
+      // Emit measure change event and track the schedule ID
+      const measureEventId = this.toneInstance.Transport.schedule(
+        time => {
           this.measureChangeListeners.forEach(listener => {
             listener({ measureNumber: measure.number, time })
           })
-        }, currentTime)
+        },
+        `0:${Math.floor(currentTime)}:${Math.floor((currentTime % 1) * 4)}`
+      )
+      this.scheduledEvents.push(measureEventId)
 
-        // Update tempo if changed
-        if (measure.tempo) {
-          this.toneInstance.Transport.schedule(() => {
+      // Update tempo if changed and track the schedule ID
+      if (measure.tempo) {
+        const tempoEventId = this.toneInstance.Transport.schedule(
+          () => {
             this.toneInstance.Transport.bpm.value = measure.tempo!
-          }, currentTime)
-        }
+          },
+          `0:${Math.floor(currentTime)}:${Math.floor((currentTime % 1) * 4)}`
+        )
+        this.scheduledEvents.push(tempoEventId)
+      }
 
-        // Schedule all notes in the measure
-        measure.staves.forEach(staff => {
-          staff.voices.forEach(voice => {
-            if (activeVoices.has(voice.id)) {
-              this.scheduleVoiceNotes(voice, currentTime, measure)
-            }
-          })
+      // Schedule all notes in the measure
+      measure.staves.forEach(staff => {
+        staff.voices.forEach(voice => {
+          if (activeVoices.has(voice.id)) {
+            this.scheduleVoiceNotes(voice, currentTime, measure)
+          }
         })
-
-        currentTime += this.getMeasureDuration(measure)
       })
-    }
 
-    // Execute batch scheduling
-    scheduleBatch()
+      currentTime += this.getMeasureDurationPrecise(measure)
+    })
 
     return scheduleId
   }
@@ -590,9 +628,8 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
   private scheduleVoiceNotes(
     voice: Voice,
     measureStartTime: number,
-    measure: MultiVoiceMeasure
+    _measure: MultiVoiceMeasure
   ): void {
-    const beatDuration = this.getBeatDuration(measure.timeSignature)
     const instrument = this.getActiveInstrument()
 
     if (!instrument) return
@@ -600,18 +637,13 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     // Pre-calculate voice volume once
     const voiceVelocity = this.getVoiceVolume(voice.id) * 0.8
 
-    // Process notes in batch
-    const notesToSchedule: Array<{
-      time: number
-      keys: string[]
-      duration: string
-      velocity: number
-    }> = []
-
     voice.notes.forEach(note => {
       if (!note.rest && note.keys && note.keys.length > 0) {
-        const noteTime = measureStartTime + note.time * beatDuration
-        const duration = this.getNoteDuration(note.duration, beatDuration)
+        // Use precise Tone.js time notation for better timing
+        const noteTimeInBeats = measureStartTime + note.time
+        const toneTime = `0:${Math.floor(noteTimeInBeats)}:${Math.floor((noteTimeInBeats % 1) * 4)}`
+
+        const duration = this.getNoteDuration(note.duration, 0)
 
         // Convert keys from VexFlow format (e.g., "c/4") to Tone.js format (e.g., "C4")
         const toneKeys = note.keys
@@ -625,45 +657,42 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
           .filter(Boolean) as string[]
 
         if (toneKeys.length > 0) {
-          notesToSchedule.push({
-            time: noteTime,
-            keys: toneKeys,
-            duration,
-            velocity: voiceVelocity,
-          })
+          // Schedule each note and track the event ID
+          const noteEventId = this.toneInstance.Transport.schedule(
+            scheduleTime => {
+              try {
+                instrument.triggerAttackRelease(
+                  toneKeys,
+                  duration,
+                  scheduleTime,
+                  voiceVelocity
+                )
+              } catch (error) {
+                // Silently handle audio playback errors
+                console.debug('Audio playback error:', error)
+              }
+
+              // Emit note play event - only if there are listeners
+              if (this.notePlayListeners.length > 0) {
+                this.notePlayListeners.forEach(listener => {
+                  listener({
+                    note: {
+                      keys: toneKeys,
+                      voiceId: voice.id,
+                      duration,
+                    },
+                    time: scheduleTime,
+                    velocity: voiceVelocity,
+                  })
+                })
+              }
+            },
+            toneTime
+          )
+
+          this.scheduledEvents.push(noteEventId)
         }
       }
-    })
-
-    // Schedule all notes at once
-    notesToSchedule.forEach(({ time, keys, duration, velocity }) => {
-      this.toneInstance.Transport.schedule(scheduleTime => {
-        try {
-          instrument.triggerAttackRelease(
-            keys,
-            duration,
-            scheduleTime,
-            velocity
-          )
-        } catch (error) {
-          // Error playing note
-        }
-
-        // Emit note play event - only if there are listeners
-        if (this.notePlayListeners.length > 0) {
-          this.notePlayListeners.forEach(listener => {
-            listener({
-              note: {
-                keys,
-                voiceId: voice.id,
-                duration,
-              },
-              time: scheduleTime,
-              velocity,
-            })
-          })
-        }
-      }, time)
     })
   }
 
@@ -687,16 +716,13 @@ export class MultiVoiceAudioManager implements MultiVoiceAudioManagerInterface {
     }
   }
 
-  private getMeasureDuration(measure: MultiVoiceMeasure): number {
+  private getMeasureDurationPrecise(measure: MultiVoiceMeasure): number {
     const timeSignature = measure.timeSignature || TimeSignature.FOUR_FOUR
     const beatsPerMeasure = this.getBeatsPerMeasure(timeSignature)
-    const beatDuration = 60 / (measure.tempo || 120) // seconds per beat
-    return beatsPerMeasure * beatDuration
-  }
 
-  private getBeatDuration(_timeSignature?: TimeSignature): number {
-    const tempo = this.toneInstance.Transport.bpm.value
-    return 60 / tempo // seconds per beat
+    // Use more precise calculation to avoid floating point errors
+    // Return duration in beats (quarter notes) for Tone.js Transport
+    return beatsPerMeasure
   }
 
   private getBeatsPerMeasure(timeSignature: TimeSignature): number {
@@ -744,4 +770,15 @@ export function createMultiVoiceAudioManager(
   }
   // Create new instance only if custom config is provided
   return new MultiVoiceAudioManager(config, toneInstance)
+}
+
+/**
+ * Disposes the global audio manager instance to free up resources.
+ * This is useful for cleanup when the application unmounts or resets.
+ */
+export function disposeGlobalAudioManager(): void {
+  if (globalAudioManagerInstance) {
+    globalAudioManagerInstance.dispose()
+    globalAudioManagerInstance = null
+  }
 }

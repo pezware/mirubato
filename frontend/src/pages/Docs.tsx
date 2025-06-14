@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { renderMarkdownSafely } from '../utils/markdownRenderer'
 
 export default function Docs() {
   const { '*': path } = useParams()
@@ -33,54 +34,6 @@ export default function Docs() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const renderMarkdown = (md: string) => {
-    // Basic markdown to HTML conversion
-    const html = md
-      // Headers
-      .replace(
-        /^### (.*$)/gim,
-        '<h3 class="text-xl font-semibold mt-6 mb-3">$1</h3>'
-      )
-      .replace(
-        /^## (.*$)/gim,
-        '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>'
-      )
-      .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-6">$1</h1>')
-      // Bold
-      .replace(/\*\*\*(.*)\*\*\*/g, '<hr class="my-4 border-gray-600" />')
-      .replace(/\*\*(.*)\*\*/g, '<strong class="font-semibold">$1</strong>')
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, url) => {
-        if (url.endsWith('.md')) {
-          // Internal doc link
-          const docUrl = url.replace(/^\.\//, '').replace(/\.md$/, '.md')
-          return `<a href="/docs/${docUrl}" class="text-blue-400 hover:text-blue-300 underline internal-link">${text}</a>`
-        }
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">${text}</a>`
-      })
-      // Code blocks
-      .replace(
-        /```typescript([\s\S]*?)```/g,
-        '<pre class="bg-gray-800 p-4 rounded overflow-auto my-4"><code class="text-sm">$1</code></pre>'
-      )
-      .replace(
-        /```([\s\S]*?)```/g,
-        '<pre class="bg-gray-800 p-4 rounded overflow-auto my-4"><code class="text-sm">$1</code></pre>'
-      )
-      // Inline code
-      .replace(
-        /`([^`]+)`/g,
-        '<code class="bg-gray-700 px-1 py-0.5 rounded text-sm">$1</code>'
-      )
-      // Lists
-      .replace(/^\* (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
-      .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
-      // Paragraphs
-      .replace(/\n\n/g, '</p><p class="mb-4">')
-
-    return `<p class="mb-4">${html}</p>`
   }
 
   useEffect(() => {
@@ -147,7 +100,7 @@ export default function Docs() {
 
         <div
           className="prose prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          dangerouslySetInnerHTML={{ __html: renderMarkdownSafely(content) }}
         />
       </div>
     </div>

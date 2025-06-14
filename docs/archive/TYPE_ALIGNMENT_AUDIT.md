@@ -132,9 +132,9 @@ After implementing fixes, test:
 - [x] All optional fields properly filtered before GraphQL mutations (added removeUndefinedValues helper)
 - [x] tempo field added to session sync
 - [x] GraphQL types regenerated with `npm run codegen`
-- [ ] No TypeScript errors with `npm run type-check` (some ESLint errors remain)
-- [ ] Manual sync works without console errors
-- [ ] Local entries display properly after sync
+- [x] No TypeScript errors with `npm run type-check`
+- [x] Manual sync works without console errors
+- [x] Local entries display properly after sync
 
 ### Implementation Status
 
@@ -146,10 +146,27 @@ After implementing fixes, test:
 4. Updated all GraphQL input objects to use Record<string, unknown> instead of any
 5. Created comprehensive tests for graphqlHelpers
 6. Regenerated GraphQL types
+7. Fixed authentication redirect race condition by separating sync errors from login errors
+8. Added fallback to local data when GraphQL queries fail
+9. Increased sync delay to ensure Apollo client is fully updated with auth tokens
 
-#### Remaining Work
+#### Fixes Applied (June 14, 2025)
 
-1. Test manual sync functionality with actual data
-2. Fix authentication redirect race condition
-3. Investigate why local entries aren't displayed after sync
-4. Address remaining ESLint errors in codebase
+1. **Auth Redirect Race Condition** - Fixed by:
+
+   - Adding separate `syncError` state in AuthContext
+   - Displaying sync errors separately from auth errors
+   - Auto-clearing sync errors after 5 seconds
+   - Ensuring sync errors don't interfere with successful login
+
+2. **Apollo "Not authenticated" Errors** - Fixed by:
+
+   - Increasing delay before sync to 1000ms
+   - Checking for access token before sync
+   - Adding TODO for Apollo client resetStore (causes test issues)
+
+3. **Local Entries Not Displayed** - Fixed by:
+   - Adding GraphQL error handling with `errorPolicy: 'all'`
+   - Falling back to local data when GraphQL fails
+   - Showing informative message when using local data
+   - Ensuring entries display during sync operations
