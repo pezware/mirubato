@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, execFileSync } from 'child_process'
 import {
   copyFileSync,
   existsSync,
@@ -125,7 +125,7 @@ if (!existsSync(indexPath)) {
       // Also clean up any shared directory that might have been copied
       if (existsSync(join(distDir, 'shared'))) {
         try {
-          execSync(`rm -rf ${join(distDir, 'shared')}`, { stdio: 'inherit' })
+          execFileSync('rm', ['-rf', join(distDir, 'shared')], { stdio: 'inherit' })
         } catch (error) {
           console.warn('Warning: Failed to remove shared directory')
         }
