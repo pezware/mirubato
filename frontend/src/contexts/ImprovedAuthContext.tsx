@@ -154,7 +154,9 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
       logger.info('Restored anonymous user', { userId: anonymousUser.id })
     } else {
       const newAnonymousUser: User = {
-        id: `anon_${nanoid(12)}`,
+        id: `anon_${Array.from(crypto.getRandomValues(new Uint8Array(12)))
+          .map(byte => byte.toString(36))
+          .join('')}`,
         isAnonymous: true,
         primaryInstrument: Instrument.PIANO,
         hasCloudStorage: false,
