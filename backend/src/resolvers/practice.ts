@@ -8,6 +8,7 @@ import type {
 } from '../types/generated/graphql'
 import { UserService } from '../services/user'
 import { D1Database } from '@cloudflare/workers-types'
+import { nanoid } from 'nanoid'
 import type { GraphQLContext } from '../types/context'
 
 export const practiceResolvers = {
@@ -107,7 +108,7 @@ export const practiceResolvers = {
         throw new Error('Authentication required')
       }
 
-      const id = crypto.randomUUID()
+      const id = nanoid()
       const now = new Date().toISOString()
 
       try {
@@ -252,7 +253,7 @@ export const practiceResolvers = {
         throw new Error('Authentication required')
       }
 
-      const id = crypto.randomUUID()
+      const id = nanoid()
       const now = new Date().toISOString()
 
       try {
@@ -317,7 +318,7 @@ export const practiceResolvers = {
         // Sync practice sessions
         for (const session of input.sessions) {
           try {
-            const sessionId = crypto.randomUUID()
+            const sessionId = nanoid()
             await db
               .prepare(
                 `INSERT INTO practice_sessions (
@@ -360,7 +361,7 @@ export const practiceResolvers = {
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
-                crypto.randomUUID(),
+                nanoid(),
                 log.sessionId,
                 log.activityType,
                 log.durationSeconds,
@@ -391,7 +392,7 @@ export const practiceResolvers = {
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
-                crypto.randomUUID(),
+                nanoid(),
                 context.user.id,
                 entry.timestamp,
                 entry.duration,
@@ -417,7 +418,7 @@ export const practiceResolvers = {
         // Sync goals
         for (const goal of input.goals) {
           try {
-            const goalId = crypto.randomUUID()
+            const goalId = nanoid()
             await db
               .prepare(
                 `INSERT INTO goals (
@@ -452,7 +453,17 @@ export const practiceResolvers = {
           errors,
         }
       } catch (error) {
-        throw new Error('Failed to sync anonymous data')
+        // Handle database connection errors gracefully
+        return {
+          success: false,
+          syncedSessions: 0,
+          syncedLogs: 0,
+          syncedEntries: 0,
+          syncedGoals: 0,
+          errors: [
+            `Database error: ${error instanceof Error ? error.message : String(error)}`,
+          ],
+        }
       }
     },
   } as MutationResolvers,

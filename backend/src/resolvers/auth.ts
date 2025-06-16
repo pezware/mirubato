@@ -4,8 +4,14 @@ import { UserService } from '../services/user'
 import { EmailService } from '../services/email'
 import { isValidEmail } from '../utils/auth'
 import { Instrument, Theme, NotationSize } from '../types/shared'
+import {
+  serializeCookie,
+  getAuthCookieOptions,
+  getRefreshCookieOptions,
+  createClearCookie,
+} from '../utils/cookies'
 
-export const authResolvers: { Mutation: MutationResolvers } = {
+export const authResolvers: { Mutation: Partial<MutationResolvers> } = {
   Mutation: {
     requestMagicLink: async (_, { email }, context) => {
       if (!isValidEmail(email)) {
@@ -31,6 +37,16 @@ export const authResolvers: { Mutation: MutationResolvers } = {
     },
 
     verifyMagicLink: async (_, { token }, context) => {
+      // Log in development
+      if (context.env.ENVIRONMENT === 'development') {
+        console.log('\n' + '='.repeat(80))
+        console.log('🔑 MAGIC LINK VERIFICATION ATTEMPT')
+        console.log('='.repeat(80))
+        console.log(`Token: ${token}`)
+        console.log(`Time: ${new Date().toISOString()}`)
+        console.log('='.repeat(80) + '\n')
+      }
+
       const authService = new AuthService(
         context.env.MIRUBATO_MAGIC_LINKS,
         context.env.JWT_SECRET
@@ -40,7 +56,16 @@ export const authResolvers: { Mutation: MutationResolvers } = {
       const email = await authService.verifyMagicLink(token)
 
       if (!email) {
+        if (context.env.ENVIRONMENT === 'development') {
+          console.log(
+            '❌ Magic link verification failed - token not found or expired'
+          )
+        }
         throw new Error('Invalid or expired magic link')
+      }
+
+      if (context.env.ENVIRONMENT === 'development') {
+        console.log(`✅ Magic link verified for email: ${email}`)
       }
 
       // Try to use D1 database for full authentication
@@ -60,11 +85,20 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         const { accessToken, refreshToken } =
           await authService.generateTokens(userWithCloudStorage)
 
+        // Set cookies in the response context
+        const authCookieOptions = getAuthCookieOptions(context.env)
+        const refreshCookieOptions = getRefreshCookieOptions(context.env)
+
+        // Store cookies to be set in the response
+        context.cookies = [
+          serializeCookie('auth-token', accessToken, authCookieOptions),
+          serializeCookie('refresh-token', refreshToken, refreshCookieOptions),
+        ]
+
         return {
-          accessToken,
-          refreshToken,
-          expiresIn: 604800, // 7 days in seconds
+          success: true,
           user: userWithCloudStorage,
+          message: 'Authentication successful',
         }
       } catch (d1Error) {
         // D1 unavailable - create temporary user
@@ -95,16 +129,44 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         const { accessToken, refreshToken } =
           await authService.generateTokens(tempUser)
 
+        // Set cookies for temp user
+        const authCookieOptions = getAuthCookieOptions(context.env)
+        const refreshCookieOptions = getRefreshCookieOptions(context.env)
+
+        context.cookies = [
+          serializeCookie('auth-token', accessToken, authCookieOptions),
+          serializeCookie('refresh-token', refreshToken, refreshCookieOptions),
+        ]
+
         return {
-          accessToken,
-          refreshToken,
-          expiresIn: 604800, // 7 days in seconds
+          success: true,
           user: tempUser,
+          message: 'Authentication successful (temporary user)',
         }
       }
     },
 
-    refreshToken: async (_, { refreshToken }, context) => {
+    refreshToken: async (_, __, context) => {
+      // Get refresh token from cookies
+      const cookieHeader = context.request.headers.get('Cookie')
+      if (!cookieHeader) {
+        throw new Error('No refresh token provided')
+      }
+
+      // Parse cookies
+      const cookies: Record<string, string> = {}
+      cookieHeader.split(';').forEach(cookie => {
+        const [name, ...valueParts] = cookie.trim().split('=')
+        if (name && valueParts.length > 0) {
+          cookies[name] = valueParts.join('=')
+        }
+      })
+
+      const refreshToken = cookies['refresh-token']
+      if (!refreshToken) {
+        throw new Error('No refresh token provided')
+      }
+
       const authService = new AuthService(
         context.env.MIRUBATO_MAGIC_LINKS,
         context.env.JWT_SECRET
@@ -120,11 +182,23 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         // Generate new tokens
         const tokens = await authService.generateTokens(tempUser)
 
+        // Set new cookies
+        const authCookieOptions = getAuthCookieOptions(context.env)
+        const refreshCookieOptions = getRefreshCookieOptions(context.env)
+
+        context.cookies = [
+          serializeCookie('auth-token', tokens.accessToken, authCookieOptions),
+          serializeCookie(
+            'refresh-token',
+            tokens.refreshToken,
+            refreshCookieOptions
+          ),
+        ]
+
         return {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          expiresIn: 604800, // 7 days in seconds
+          success: true,
           user: tempUser,
+          message: 'Token refreshed successfully',
         }
       }
 
@@ -140,20 +214,39 @@ export const authResolvers: { Mutation: MutationResolvers } = {
         // Generate new tokens
         const tokens = await authService.generateTokens(user)
 
+        // Set new cookies
+        const authCookieOptions = getAuthCookieOptions(context.env)
+        const refreshCookieOptions = getRefreshCookieOptions(context.env)
+
+        context.cookies = [
+          serializeCookie('auth-token', tokens.accessToken, authCookieOptions),
+          serializeCookie(
+            'refresh-token',
+            tokens.refreshToken,
+            refreshCookieOptions
+          ),
+        ]
+
         return {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          expiresIn: 604800, // 7 days in seconds
+          success: true,
           user,
+          message: 'Token refreshed successfully',
         }
       } catch (error) {
         throw new Error('Unable to refresh token')
       }
     },
 
-    logout: async (_parent, _args, _context) => {
-      // In a stateless JWT system, logout is handled client-side
-      // We could implement token blacklisting here if needed
+    logout: async (_parent, _args, context) => {
+      // Clear cookies by setting them with maxAge 0
+      const authCookieOptions = getAuthCookieOptions(context.env)
+      const refreshCookieOptions = getRefreshCookieOptions(context.env)
+
+      context.cookies = [
+        createClearCookie('auth-token', authCookieOptions),
+        createClearCookie('refresh-token', refreshCookieOptions),
+      ]
+
       return {
         success: true,
         message: 'Logged out successfully',

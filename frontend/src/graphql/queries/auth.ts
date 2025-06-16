@@ -12,9 +12,8 @@ export const REQUEST_MAGIC_LINK = gql`
 export const VERIFY_MAGIC_LINK = gql`
   mutation VerifyMagicLink($token: String!) {
     verifyMagicLink(token: $token) {
-      accessToken
-      refreshToken
-      expiresIn
+      success
+      message
       user {
         id
         email
@@ -29,11 +28,10 @@ export const VERIFY_MAGIC_LINK = gql`
 `
 
 export const REFRESH_TOKEN = gql`
-  mutation RefreshToken($refreshToken: String!) {
-    refreshToken(refreshToken: $refreshToken) {
-      accessToken
-      refreshToken
-      expiresIn
+  mutation RefreshToken {
+    refreshToken {
+      success
+      message
       user {
         id
         email

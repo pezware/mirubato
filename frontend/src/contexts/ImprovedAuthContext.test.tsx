@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
 import { useNavigate } from 'react-router-dom'
-import { AuthProvider, AuthContext } from './AuthContext'
+import { AuthProvider, AuthContext } from './ImprovedAuthContext'
 import { ModulesProvider } from './ModulesContext'
 import {
   VERIFY_MAGIC_LINK,
@@ -10,12 +10,8 @@ import {
   LOGOUT,
 } from '../graphql/queries/auth'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
-import { SYNC_ANONYMOUS_DATA } from '../graphql/mutations/syncAnonymousData'
-import {
-  setAuthTokens,
-  clearAuthTokens,
-  isAuthenticated as checkIsAuthenticated,
-} from '../lib/apollo/client'
+import { SYNC_ANONYMOUS_DATA } from '../graphql/queries/practice'
+import { isAuthenticated as checkIsAuthenticated } from '../lib/apollo/client'
 import { localStorageService } from '../services/localStorage'
 import {
   Theme,
@@ -101,7 +97,11 @@ const TestComponent: React.FC = () => {
       </div>
       <div data-testid="is-anonymous">{String(context.isAnonymous)}</div>
       <div data-testid="loading">{String(context.loading)}</div>
+      <div data-testid="sync-status">{context.syncState.status}</div>
       {error && <div data-testid="error">{error.message}</div>}
+      {context.syncState.error && (
+        <div data-testid="sync-error">{context.syncState.error.message}</div>
+      )}
       <button onClick={handleLogin}>Login</button>
       <button onClick={() => context.logout()}>Logout</button>
       <button onClick={handleRefresh}>Refresh</button>
@@ -117,12 +117,6 @@ describe('AuthContext', () => {
   >
   const mockCheckIsAuthenticated = checkIsAuthenticated as jest.MockedFunction<
     typeof checkIsAuthenticated
-  >
-  const mockSetAuthTokens = setAuthTokens as jest.MockedFunction<
-    typeof setAuthTokens
-  >
-  const mockClearAuthTokens = clearAuthTokens as jest.MockedFunction<
-    typeof clearAuthTokens
   >
 
   beforeEach(() => {
@@ -305,7 +299,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('loading')).toHaveTextContent('false')
       })
 
-      expect(mockClearAuthTokens).toHaveBeenCalled()
+      // Cookie handling is now server-side, no need to check clearAuthTokens
     })
   })
 
@@ -374,8 +368,8 @@ describe('AuthContext', () => {
           result: {
             data: {
               verifyMagicLink: {
-                accessToken: 'access-123',
-                refreshToken: 'refresh-123',
+                success: true,
+                message: 'Login successful',
                 user: mockAuthenticatedUser,
               },
             },
@@ -398,10 +392,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user-id')).toHaveTextContent('user-456')
       })
 
-      expect(mockSetAuthTokens).toHaveBeenCalledWith(
-        'access-123',
-        'refresh-123'
-      )
+      // Cookies are now set server-side, no need to check setAuthTokens
       expect(mockLocalStorage.migrateToAuthenticatedUser).toHaveBeenCalledWith(
         'user-456',
         'new@example.com'
@@ -437,8 +428,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('error')).toHaveTextContent('Invalid token')
       })
 
-      // Login error is handled internally now
-      expect(mockSetAuthTokens).not.toHaveBeenCalled()
+      // Cookies are now set server-side, no need to check setAuthTokens
       expect(mockNavigate).not.toHaveBeenCalledWith('/logbook')
     })
   })
@@ -533,7 +523,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user-id')).toHaveTextContent('anon-new')
       })
 
-      expect(mockClearAuthTokens).toHaveBeenCalled()
+      // Cookie handling is now server-side, no need to check clearAuthTokens
       expect(mockLocalStorage.createAnonymousUser).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/')
       expect(screen.getByTestId('is-anonymous')).toHaveTextContent('true')
@@ -626,33 +616,67 @@ describe('AuthContext', () => {
       })
 
       // Logout error is handled internally now
-      expect(mockClearAuthTokens).toHaveBeenCalled()
+      // Cookie handling is now server-side, no need to check clearAuthTokens
       expect(mockNavigate).toHaveBeenCalledWith('/')
     })
   })
 
   describe('Token Refresh', () => {
     it('successfully refreshes tokens', async () => {
-      // Mock localStorage for refresh token
-      const localStorageMock = {
-        getItem: jest.fn().mockReturnValue('old-refresh-token'),
+      const authUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        primaryInstrument: 'PIANO',
+        hasCloudStorage: true,
       }
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock,
-        writable: true,
+
+      // Set up authenticated user first
+      mockCheckIsAuthenticated.mockReturnValue(true)
+      mockLocalStorage.getUserData.mockReturnValue({
+        id: 'user-123',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        primaryInstrument: Instrument.PIANO,
+        isAnonymous: false,
+        hasCloudStorage: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+        preferences: {
+          theme: Theme.AUTO,
+          notationSize: NotationSize.MEDIUM,
+          practiceReminders: false,
+          dailyGoalMinutes: 30,
+        },
+        stats: {
+          totalPracticeTime: 0,
+          consecutiveDays: 0,
+          piecesCompleted: 0,
+          accuracyAverage: 0,
+        },
       })
 
       const mocks = [
         {
           request: {
+            query: GET_CURRENT_USER,
+          },
+          result: {
+            data: {
+              me: authUser,
+            },
+          },
+        },
+        {
+          request: {
             query: REFRESH_TOKEN,
-            variables: { refreshToken: 'old-refresh-token' },
           },
           result: {
             data: {
               refreshToken: {
-                accessToken: 'new-access-token',
-                refreshToken: 'new-refresh-token',
+                success: true,
+                message: 'Token refreshed successfully',
+                user: authUser,
               },
             },
           },
@@ -671,27 +695,17 @@ describe('AuthContext', () => {
       })
 
       await waitFor(() => {
-        expect(mockSetAuthTokens).toHaveBeenCalledWith(
-          'new-access-token',
-          'new-refresh-token'
-        )
+        // Should update the user state with the refreshed user data
+        expect(screen.getByTestId('user-id')).toHaveTextContent('user-123')
+        expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true')
       })
     })
 
     it('handles refresh token errors', async () => {
-      const localStorageMock = {
-        getItem: jest.fn().mockReturnValue('old-refresh-token'),
-      }
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock,
-        writable: true,
-      })
-
       const mocks = [
         {
           request: {
             query: REFRESH_TOKEN,
-            variables: { refreshToken: 'old-refresh-token' },
           },
           error: new Error('Token expired'),
         },
@@ -713,20 +727,29 @@ describe('AuthContext', () => {
       })
 
       // Token refresh error is handled internally now
-      expect(mockClearAuthTokens).toHaveBeenCalled()
+      // Cookie handling is now server-side, no need to check clearAuthTokens
       expect(mockNavigate).toHaveBeenCalledWith('/login')
     })
 
-    it('throws error when no refresh token available', async () => {
-      const localStorageMock = {
-        getItem: jest.fn().mockReturnValue(null),
-      }
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock,
-        writable: true,
-      })
+    it('handles refresh when not authenticated', async () => {
+      const mocks = [
+        {
+          request: {
+            query: REFRESH_TOKEN,
+          },
+          result: {
+            data: {
+              refreshToken: {
+                success: false,
+                message: 'Not authenticated',
+                user: null,
+              },
+            },
+          },
+        },
+      ]
 
-      renderWithProvider()
+      renderWithProvider(mocks)
 
       await waitFor(() => {
         expect(screen.getByTestId('loading')).toHaveTextContent('false')
@@ -739,14 +762,14 @@ describe('AuthContext', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('error')).toHaveTextContent(
-          'No refresh token available'
+          'Not authenticated'
         )
       })
     })
   })
 
   describe('Cloud Sync', () => {
-    it('redirects anonymous users to login', async () => {
+    it('does nothing for anonymous users', async () => {
       const mockAnonymousUser = {
         id: 'anon-123',
         email: '',
@@ -783,7 +806,8 @@ describe('AuthContext', () => {
         screen.getByText('Sync').click()
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith('/login')
+      // ImprovedAuthContext doesn't navigate - just logs warning and returns
+      expect(mockNavigate).not.toHaveBeenCalled()
       expect(mockLocalStorage.getPendingSyncData).not.toHaveBeenCalled()
     })
 
@@ -1043,9 +1067,7 @@ describe('AuthContext', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByTestId('error')).toHaveTextContent(
-          'Authentication required for sync'
-        )
+        expect(screen.getByTestId('error')).toHaveTextContent('Sync data error')
       })
     })
   })

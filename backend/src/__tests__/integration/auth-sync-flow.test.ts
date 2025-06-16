@@ -243,7 +243,7 @@ describe('Auth and Sync Flow Integration', () => {
         input: {
           sessions: [
             {
-              sessionType: 'PRACTICE',
+              sessionType: 'FREE_PRACTICE',
               instrument: 'PIANO',
               sheetMusicId: 'sheet-1',
               durationMinutes: 30,
@@ -310,7 +310,7 @@ describe('Auth and Sync Flow Integration', () => {
         syncedLogs: 0,
         syncedEntries: 1,
         syncedGoals: 1,
-        errors: null,
+        errors: [],
       })
     })
   })
@@ -630,7 +630,7 @@ describe('Auth and Sync Flow Integration', () => {
       )
 
       // Should handle error without crashing
-      expect(result.errors).toBeDefined()
+      expect(result.data?.syncAnonymousData?.errors).toBeDefined()
     })
 
     it('should provide sync progress updates', async () => {
@@ -741,10 +741,7 @@ describe('Auth and Sync Flow Integration', () => {
       // 9. User should be able to query their data
       const context = createTestContext({
         db: mockDB as any,
-        user: {
-          id: decodedToken.sub,
-          email: decodedToken.email,
-        },
+        user: user!, // Use the actual user object retrieved earlier
       })
 
       const query = `
@@ -759,7 +756,20 @@ describe('Auth and Sync Flow Integration', () => {
 
       const result = await executeQuery(query, {}, context)
 
+      // Debug: log the result to understand what's happening
+      if (result.errors) {
+        console.error('GraphQL errors:', result.errors)
+      }
+      if (!result.data?.me) {
+        console.log(
+          'No user data returned. Result:',
+          JSON.stringify(result, null, 2)
+        )
+        console.log('User object passed to context:', user)
+      }
+
       expect(result.errors).toBeUndefined()
+      expect(result.data?.me).toBeDefined()
       expect(result.data?.me?.email).toBe(email)
       expect(result.data?.me?.hasCloudStorage).toBe(true)
     })

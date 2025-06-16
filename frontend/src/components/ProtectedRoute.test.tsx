@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
-import { AuthContext } from '../contexts/AuthContext'
+import { AuthContext } from '../contexts/ImprovedAuthContext'
 
 interface MockUser {
   id: string
@@ -23,6 +23,14 @@ interface MockAuthContext {
   isAnonymous?: boolean
   syncToCloud?: jest.Mock
   localUserData?: any
+  syncState: {
+    status: 'idle' | 'syncing' | 'error' | 'offline'
+    lastSync: number | null
+    pendingOperations: number
+    error: { code: string; message: string } | null
+  }
+  clearSyncError: jest.Mock
+  updateSyncState: jest.Mock
 }
 
 // Mock the AuthContext value
@@ -37,6 +45,14 @@ const createMockAuthContext = (
   logout: jest.fn(),
   clearError: jest.fn(),
   refreshAuth: jest.fn(),
+  syncState: {
+    status: 'idle',
+    lastSync: null,
+    pendingOperations: 0,
+    error: null,
+  },
+  clearSyncError: jest.fn(),
+  updateSyncState: jest.fn(),
   ...overrides,
 })
 

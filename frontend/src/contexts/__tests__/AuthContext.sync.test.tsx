@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '../AuthContext'
-import { useAuth } from '../../hooks/useAuth'
-import { SYNC_ANONYMOUS_DATA } from '../../graphql/mutations/syncAnonymousData'
+import { AuthProvider, AuthContext } from '../ImprovedAuthContext'
+import { SYNC_ANONYMOUS_DATA } from '../../graphql/queries/practice'
 import { localStorageService } from '../../services/localStorage'
 import { ModulesProvider } from '../ModulesContext'
 
@@ -131,7 +130,9 @@ describe('AuthContext - syncToCloud type safety', () => {
       </BrowserRouter>
     )
 
-    const { result } = renderHook(() => useAuth(), { wrapper: customWrapper })
+    const { result } = renderHook(() => useContext(AuthContext), {
+      wrapper: customWrapper,
+    })
 
     // Set authenticated user
     await act(async () => {
@@ -140,7 +141,7 @@ describe('AuthContext - syncToCloud type safety', () => {
 
     // Call syncToCloud
     await act(async () => {
-      await result.current.syncToCloud()
+      await result.current?.syncToCloud()
     })
 
     // Wait for the mutation to complete

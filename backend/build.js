@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, execFileSync } from 'child_process'
 import {
   copyFileSync,
   existsSync,
@@ -45,14 +45,19 @@ try {
 }
 
 // Generate schema content module
-console.log('Generating schema content module...')
-const schemaPath = join(__dirname, 'src', 'schema', 'schema.graphql')
-const schemaContent = readFileSync(schemaPath, 'utf-8')
-const schemaModule = `export default ${JSON.stringify(schemaContent)}`
-writeFileSync(
-  join(__dirname, 'src', 'schema', 'schema-content.js'),
-  schemaModule
-)
+const isDev = process.argv.includes('--dev')
+const schemaContentPath = join(__dirname, 'src', 'schema', 'schema-content.js')
+
+// In dev mode, only generate if it doesn't exist
+if (!isDev || !existsSync(schemaContentPath)) {
+  console.log('Generating schema content module...')
+  const schemaPath = join(__dirname, 'src', 'schema', 'schema.graphql')
+  const schemaContent = readFileSync(schemaPath, 'utf-8')
+  const schemaModule = `export default ${JSON.stringify(schemaContent)}`
+  writeFileSync(schemaContentPath, schemaModule)
+} else {
+  console.log('Schema content module already exists (dev mode)')
+}
 
 // Run TypeScript compiler
 console.log('Building TypeScript...')
@@ -104,11 +109,26 @@ if (!existsSync(indexPath)) {
       execSync(`cp -r ${srcDir}/* ${distDir}/`, { stdio: 'inherit' })
 
       // Clean up the nested backend directory
-      execSync(`rm -rf ${join(distDir, 'backend')}`, { stdio: 'inherit' })
+      try {
+        execSync(`rm -rf ${join(distDir, 'backend')}`, { stdio: 'inherit' })
+      } catch (error) {
+        console.warn(
+          'Warning: Failed to remove backend directory, trying alternative method'
+        )
+        // Try a more forceful removal
+        execSync(`rm -rf "${join(distDir, 'backend')}"`, {
+          stdio: 'inherit',
+          shell: '/bin/bash',
+        })
+      }
 
       // Also clean up any shared directory that might have been copied
       if (existsSync(join(distDir, 'shared'))) {
-        execSync(`rm -rf ${join(distDir, 'shared')}`, { stdio: 'inherit' })
+        try {
+          execFileSync('rm', ['-rf', join(distDir, 'shared')], { stdio: 'inherit' })
+        } catch (error) {
+          console.warn('Warning: Failed to remove shared directory')
+        }
       }
 
       console.log('Successfully moved all files to dist/')
@@ -194,11 +214,17 @@ if (!allFilesExist) {
     // Files might not exist, that's ok
   }
 
-  // Clean up generated schema content file
-  try {
-    execSync('rm -f src/schema/schema-content.js', { stdio: 'inherit' })
-    console.log('✓ Cleaned up generated schema content file')
-  } catch (error) {
-    // File might not exist, that's ok
+  // Clean up generated schema content file (skip in dev to avoid file watch loops)
+  const skipCleanup =
+    process.argv.includes('--skip-cleanup') || process.argv.includes('--dev')
+  if (!skipCleanup) {
+    try {
+      execSync('rm -f src/schema/schema-content.js', { stdio: 'inherit' })
+      console.log('✓ Cleaned up generated schema content file')
+    } catch (error) {
+      // File might not exist, that's ok
+    }
+  } else {
+    console.log('⚠️  Skipping schema content cleanup (dev mode)')
   }
 }

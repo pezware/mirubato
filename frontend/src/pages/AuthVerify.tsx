@@ -11,6 +11,8 @@ export default function AuthVerify() {
   const [isVerifying, setIsVerifying] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+
     const verifyToken = async () => {
       const token = searchParams.get('token')
 
@@ -21,8 +23,10 @@ export default function AuthVerify() {
       }
 
       try {
-        await login(token)
-        // Navigation is handled by the login function in AuthContext
+        if (isMounted) {
+          await login(token)
+          // Navigation is handled by the login function in AuthContext
+        }
       } catch (error) {
         // Check for specific error messages
         let errorMessage = 'Failed to verify magic link'
@@ -50,6 +54,11 @@ export default function AuthVerify() {
     }
 
     verifyToken()
+
+    // Cleanup function to prevent double execution
+    return () => {
+      isMounted = false
+    }
   }, [searchParams, login])
 
   if (isVerifying) {

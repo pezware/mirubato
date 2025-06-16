@@ -188,4 +188,4 @@ analytics.json
 email-templates-cache/
 
 # Generated schema content
-src/schema/schema-content.js
+src/schema/schema-content.jssrc/schema/schema-content.js

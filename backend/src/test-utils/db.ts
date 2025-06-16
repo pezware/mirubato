@@ -67,10 +67,25 @@ export class MockD1Database implements Partial<D1Database> {
 
         // Handle WHERE clause filtering
         if (query.toUpperCase().includes('WHERE') && boundValues.length > 0) {
+          // Handle equality comparison
           const whereMatch = query.match(/WHERE\s+(\w+)\s*=\s*\?/i)
           if (whereMatch) {
             const field = whereMatch[1]
             rows = rows.filter((r: any) => r[field] === boundValues[0])
+          }
+
+          // Handle multiple conditions with AND
+          const multiMatch = query.match(
+            /WHERE\s+(\w+)\s*=\s*\?\s+AND\s+(\w+)\s*>\s*\?/i
+          )
+          if (multiMatch) {
+            const field1 = multiMatch[1]
+            const field2 = multiMatch[2]
+            rows = rows.filter((r: any) => {
+              const matches = r[field1] === boundValues[0]
+              const afterDate = new Date(r[field2]) > new Date(boundValues[1])
+              return matches && afterDate
+            })
           }
         }
 
@@ -147,24 +162,47 @@ export class MockD1Database implements Partial<D1Database> {
             )
 
             if (recordIndex >= 0) {
-              // Update fields based on the query
-              if (query.includes('display_name')) {
-                data[recordIndex].display_name = boundValues[0]
-              }
-              if (query.includes('primary_instrument')) {
-                const instrumentIndex = query.includes('display_name') ? 1 : 0
-                data[recordIndex].primary_instrument =
-                  boundValues[instrumentIndex]
-              }
-              if (
-                query.includes('preferences') &&
-                tableName === 'user_preferences'
-              ) {
-                data[recordIndex].preferences = boundValues[0]
-              }
-              if (query.includes('updated_at')) {
-                const updateIndex = boundValues.length - 2
-                data[recordIndex].updated_at = boundValues[updateIndex]
+              // For goals table, handle the specific update pattern
+              if (tableName === 'practice_goals') {
+                // The sync resolver binds values in this order for goals:
+                // title, description, target_value, current_value, unit, deadline,
+                // completed, completed_at, sync_version, checksum, id
+                data[recordIndex].title = boundValues[0]
+                data[recordIndex].description = boundValues[1]
+                data[recordIndex].targetValue = data[recordIndex].target_value =
+                  boundValues[2]
+                data[recordIndex].currentValue = data[
+                  recordIndex
+                ].current_value = boundValues[3]
+                data[recordIndex].unit = boundValues[4]
+                data[recordIndex].deadline = boundValues[5]
+                data[recordIndex].completed = boundValues[6]
+                data[recordIndex].completedAt = boundValues[7]
+                data[recordIndex].sync_version = boundValues[8]
+                data[recordIndex].checksum = boundValues[9]
+                data[recordIndex].updated_at = new Date().toISOString()
+              } else {
+                // Generic update handling for other tables
+                const setMatch = query.match(/SET\s+(.+?)\s+WHERE/i)
+                if (setMatch) {
+                  const setPart = setMatch[1]
+                  const fields = setPart.split(',').map(f => f.trim())
+
+                  fields.forEach((field, index) => {
+                    const fieldName = field.split('=')[0].trim()
+
+                    // Skip fields that use SQL functions like CURRENT_TIMESTAMP
+                    if (
+                      !field.includes('CURRENT_TIMESTAMP') &&
+                      field.includes('?')
+                    ) {
+                      data[recordIndex][fieldName] = boundValues[index]
+                    }
+                  })
+
+                  // Always update the updated_at field
+                  data[recordIndex].updated_at = new Date().toISOString()
+                }
               }
             }
           }
@@ -246,6 +284,10 @@ export class MockD1Database implements Partial<D1Database> {
 
   setMockData(tableName: string, data: any[]) {
     this.data.set(tableName, data)
+  }
+
+  getMockData(tableName: string): any[] | undefined {
+    return this.data.get(tableName)
   }
 
   clearMockData() {

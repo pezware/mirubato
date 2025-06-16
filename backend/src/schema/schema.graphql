@@ -120,6 +120,12 @@ type AuthPayload {
   message: String!
 }
 
+type AuthResponse {
+  success: Boolean!
+  message: String!
+  user: User!
+}
+
 type TokenPayload {
   accessToken: String!
   refreshToken: String!
@@ -441,14 +447,30 @@ type Query {
     offset: Int
     limit: Int
   ): GoalConnection!
+  
+  # Sync queries
+  """
+  Get sync metadata for a user
+  """
+  syncMetadata(userId: ID!): SyncMetadata
+  
+  """
+  Get changes since a sync token
+  """
+  syncChangesSince(syncToken: String!): SyncDelta!
+  
+  """
+  Get all user data for full sync
+  """
+  allUserData(userId: ID!): UserData!
 }
 
 # Mutations
 type Mutation {
   # Authentication mutations
   requestMagicLink(email: String!): AuthPayload!
-  verifyMagicLink(token: String!): TokenPayload!
-  refreshToken(refreshToken: String!): TokenPayload!
+  verifyMagicLink(token: String!): AuthResponse!
+  refreshToken: AuthResponse!
   logout: AuthPayload!
 
   # User mutations
@@ -478,6 +500,22 @@ type Mutation {
   
   # Bulk sync mutations for migrating anonymous user data
   syncAnonymousData(input: SyncAnonymousDataInput!): SyncResult!
+  
+  # New sync mutations
+  """
+  Sync a batch of entities
+  """
+  syncBatch(batch: SyncBatchInput!): SyncBatchResult!
+  
+  """
+  Update sync metadata after successful sync
+  """
+  updateSyncMetadata(
+    userId: ID!
+    lastSyncTimestamp: Float!
+    syncToken: String!
+    status: String!
+  ): SyncMetadata!
 }
 
 # Input types for bulk sync
@@ -548,4 +586,85 @@ type GoalConnection {
 type GoalEdge {
   node: Goal!
   cursor: String!
+}
+
+# ===================================
+# Sync System Types
+# ===================================
+
+type SyncMetadata {
+  lastSyncTimestamp: Float!
+  syncToken: String
+  pendingSyncCount: Int!
+  lastSyncStatus: String!
+  lastSyncError: String
+}
+
+type SyncEntity {
+  id: ID!
+  entityType: String!
+  createdAt: Float!
+  updatedAt: Float!
+  deletedAt: Float
+  syncVersion: Int!
+  checksum: String!
+  data: JSON!
+}
+
+type SyncDelta {
+  entities: [SyncEntity!]!
+  deletedIds: [String!]!
+  newSyncToken: String!
+}
+
+type SyncBatchResult {
+  uploaded: Int!
+  failed: Int!
+  newSyncToken: String!
+  errors: [SyncError!]!
+}
+
+type SyncError {
+  entityId: String!
+  error: String!
+}
+
+type UserData {
+  practiceSessions: [PracticeSession!]!
+  practiceGoals: [PracticeGoal!]!
+  logbookEntries: [LogbookEntry!]!
+}
+
+type PracticeGoal {
+  id: ID!
+  title: String!
+  description: String
+  targetValue: Float!
+  currentValue: Float!
+  unit: String!
+  deadline: DateTime
+  completed: Boolean!
+  completedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Sync Input Types
+input SyncEntityInput {
+  id: String!
+  localId: String!
+  remoteId: String
+  entityType: String!
+  createdAt: Float!
+  updatedAt: Float!
+  deletedAt: Float
+  syncVersion: Int!
+  checksum: String!
+  data: JSON!
+}
+
+input SyncBatchInput {
+  entities: [SyncEntityInput!]!
+  userId: ID!
+  syncToken: String
 }

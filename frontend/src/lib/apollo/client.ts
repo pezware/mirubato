@@ -7,24 +7,19 @@ import {
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
 import { endpoints } from '@/config/endpoints'
-import { tokenStorage } from '@/utils/secureStorage'
 
 // Create HTTP link
 const httpLink = createHttpLink({
   uri: endpoints.graphql,
-  // Don't include credentials since we're using JWT in headers
+  credentials: 'include', // Include cookies in requests
 })
 
-// Create auth link to add JWT token to requests
+// Create auth link to add operation name for CSRF protection
 const authLink = setContext((_, { headers, operationName }) => {
-  // Get the authentication token from secure storage
-  const token = tokenStorage.getAccessToken()
-
   // Return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
       // Add Apollo operation name to prevent CSRF issues
       'x-apollo-operation-name': operationName || '',
     },
@@ -39,8 +34,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
       // Handle specific error codes
       if (extensions?.code === 'UNAUTHENTICATED') {
-        // Clear tokens and redirect to login
-        tokenStorage.clearTokens()
+        // Redirect to login (cookies will be cleared server-side)
         window.location.href = '/login'
       }
     })
@@ -51,12 +45,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
     // Handle network errors
     if ('statusCode' in networkError && networkError.statusCode === 401) {
-      // Token might be expired, try to refresh
-      const refreshToken = tokenStorage.getRefreshToken()
-      if (refreshToken) {
-        // TODO: Implement token refresh logic
-        // Token refresh needed
-      }
+      // Authentication failed, redirect to login
+      window.location.href = '/login'
     }
   }
 })
@@ -84,24 +74,29 @@ export const apolloClient = new ApolloClient({
   },
 })
 
-// Helper function to set auth tokens
+// Helper function to set auth tokens (deprecated - using cookies now)
 export const setAuthTokens = (
-  authToken: string,
-  refreshToken: string,
-  expiresIn?: number
+  _authToken: string,
+  _refreshToken: string,
+  _expiresIn?: number
 ) => {
-  tokenStorage.setAccessToken(authToken, expiresIn)
-  tokenStorage.setRefreshToken(refreshToken)
+  // No-op - tokens are now managed via HTTP-only cookies
+  console.warn(
+    'setAuthTokens is deprecated - authentication is now handled via HTTP-only cookies'
+  )
 }
 
-// Helper function to clear auth tokens
+// Helper function to clear auth tokens (deprecated - using cookies now)
 export const clearAuthTokens = () => {
-  tokenStorage.clearTokens()
   // Reset Apollo Client store
   apolloClient.resetStore()
 }
 
 // Helper function to check if user is authenticated
+// Note: This can't reliably check HTTP-only cookies, so it should be
+// replaced with a server query or removed in favor of auth context
 export const isAuthenticated = (): boolean => {
-  return !!tokenStorage.getAccessToken()
+  // This is now unreliable since we use HTTP-only cookies
+  // The auth context should be used instead
+  return false
 }

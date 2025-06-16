@@ -14,7 +14,13 @@ export class EmailService {
     // Log in development
     if (this.env.ENVIRONMENT === 'development') {
       // Development only: Log magic link to console
-      console.log(`[DEV] Magic link for ${email}: ${loginUrl}`)
+      console.log('\n' + '='.repeat(80))
+      console.log('🔐 MAGIC LINK GENERATED FOR E2E TESTING')
+      console.log('='.repeat(80))
+      console.log(`Email: ${email}`)
+      console.log(`Token: ${token}`)
+      console.log(`Full URL: ${loginUrl}`)
+      console.log('='.repeat(80) + '\n')
       return
     }
 

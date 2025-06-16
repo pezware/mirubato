@@ -25,4 +25,6 @@ export interface GraphQLContext {
   requestId: string
   ip?: string
   db: D1Database
+  request: Request
+  cookies?: string[]
 }

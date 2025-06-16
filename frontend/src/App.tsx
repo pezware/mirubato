@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider } from './contexts/ImprovedAuthContext'
 import { AudioProvider } from './contexts/AudioContext'
 import { ModulesProvider } from './contexts/ModulesContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -15,6 +15,9 @@ import LandingPage from './components/LandingPage'
 const AuthVerify = lazy(() => import('./pages/AuthVerify'))
 const Docs = lazy(() => import('./pages/Docs'))
 const Logbook = lazy(() => import('./pages/Logbook'))
+
+// Sync components
+import { SyncInitializer } from './components/SyncInitializer'
 
 // Loading component
 const PageLoader = () => (
@@ -37,6 +40,7 @@ function App() {
       <Router>
         <ModulesProvider>
           <AuthProvider>
+            <SyncInitializer />
             <AudioProvider>
               <div className="min-h-screen">
                 <Suspense fallback={<PageLoader />}>

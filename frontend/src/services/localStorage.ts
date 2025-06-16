@@ -73,7 +73,9 @@ class LocalStorageService {
   createAnonymousUser(): LocalUserData {
     const now = new Date().toISOString()
     const anonymousUser: LocalUserData = {
-      id: `anon_${crypto.randomUUID()}`,
+      id: `anon_${Array.from(crypto.getRandomValues(new Uint8Array(9)))
+        .map(byte => byte.toString(36))
+        .join('')}`,
       email: '', // Empty for anonymous users
       isAnonymous: true,
       hasCloudStorage: false, // Anonymous users don't have cloud storage
