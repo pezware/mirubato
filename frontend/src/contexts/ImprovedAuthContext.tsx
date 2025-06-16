@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useRef,
 } from 'react'
-import { nanoid } from 'nanoid'
 import { useApolloClient, useMutation } from '@apollo/client'
 import { useNavigate } from 'react-router-dom'
 import {
