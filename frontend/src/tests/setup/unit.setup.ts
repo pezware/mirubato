@@ -13,6 +13,22 @@ import { TextEncoder, TextDecoder } from 'util'
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder
 
+// Mock import.meta for Vite environment variables
+Object.defineProperty(global, 'import', {
+  value: {
+    meta: {
+      env: {
+        VITE_GRAPHQL_ENDPOINT: 'http://localhost:8787/graphql',
+        MODE: 'test',
+        DEV: false,
+        PROD: false,
+        SSR: false,
+        BASE_URL: '/',
+      },
+    },
+  },
+})
+
 // Mock the config modules to avoid import.meta issues
 jest.mock('@/config/env', () => ({
   env: {

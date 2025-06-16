@@ -4,6 +4,7 @@ import { sheetMusicResolvers } from './sheetMusic'
 import { practiceResolvers } from './practice'
 import { logbookResolvers } from './logbook'
 import { scalarResolvers } from './scalars'
+import { syncResolvers } from './sync'
 import type { Resolvers } from '../types/generated/graphql'
 
 export const resolvers: Resolvers = {
@@ -13,12 +14,14 @@ export const resolvers: Resolvers = {
     ...sheetMusicResolvers.Query,
     ...practiceResolvers.Query,
     ...logbookResolvers.Query,
+    ...syncResolvers.Query,
   },
   Mutation: {
     ...authResolvers.Mutation,
     ...userResolvers.Mutation,
     ...practiceResolvers.Mutation,
     ...logbookResolvers.Mutation,
+    ...syncResolvers.Mutation,
   },
   User: userResolvers.User,
   SheetMusic: sheetMusicResolvers.SheetMusic,

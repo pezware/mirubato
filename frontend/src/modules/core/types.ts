@@ -10,6 +10,7 @@ export interface EventPayload<T = unknown> {
     userId?: string
     sessionId?: string
     version: string
+    fromSync?: boolean
   }
 }
 

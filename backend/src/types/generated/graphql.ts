@@ -52,6 +52,13 @@ export type AuthPayload = {
   success: Scalars['Boolean']['output']
 }
 
+export type AuthResponse = {
+  __typename?: 'AuthResponse'
+  message: Scalars['String']['output']
+  success: Scalars['Boolean']['output']
+  user: User
+}
+
 export type CompletePracticeSessionInput = {
   accuracy?: InputMaybe<Scalars['Float']['input']>
   notesAttempted?: InputMaybe<Scalars['Int']['input']>
@@ -244,16 +251,20 @@ export type Mutation = {
   linkEntryToGoal: Goal
   logout: AuthPayload
   pausePracticeSession: PracticeSession
-  refreshToken: TokenPayload
+  refreshToken: AuthResponse
   requestMagicLink: AuthPayload
   resumePracticeSession: PracticeSession
   startPracticeSession: PracticeSession
   syncAnonymousData: SyncResult
+  /** Sync a batch of entities */
+  syncBatch: SyncBatchResult
   updateGoal: Goal
   updateGoalMilestone: Goal
   updateLogbookEntry: LogbookEntry
+  /** Update sync metadata after successful sync */
+  updateSyncMetadata: SyncMetadata
   updateUser: User
-  verifyMagicLink: TokenPayload
+  verifyMagicLink: AuthResponse
 }
 
 export type MutationCompletePracticeSessionArgs = {
@@ -289,10 +300,6 @@ export type MutationPausePracticeSessionArgs = {
   sessionId: Scalars['ID']['input']
 }
 
-export type MutationRefreshTokenArgs = {
-  refreshToken: Scalars['String']['input']
-}
-
 export type MutationRequestMagicLinkArgs = {
   email: Scalars['String']['input']
 }
@@ -309,6 +316,10 @@ export type MutationSyncAnonymousDataArgs = {
   input: SyncAnonymousDataInput
 }
 
+export type MutationSyncBatchArgs = {
+  batch: SyncBatchInput
+}
+
 export type MutationUpdateGoalArgs = {
   id: Scalars['ID']['input']
   input: UpdateGoalInput
@@ -323,6 +334,13 @@ export type MutationUpdateGoalMilestoneArgs = {
 export type MutationUpdateLogbookEntryArgs = {
   id: Scalars['ID']['input']
   input: UpdateLogbookEntryInput
+}
+
+export type MutationUpdateSyncMetadataArgs = {
+  lastSyncTimestamp: Scalars['Float']['input']
+  status: Scalars['String']['input']
+  syncToken: Scalars['String']['input']
+  userId: Scalars['ID']['input']
 }
 
 export type MutationUpdateUserArgs = {
@@ -365,6 +383,21 @@ export type PieceReferenceInput = {
   measures?: InputMaybe<Scalars['String']['input']>
   tempo?: InputMaybe<Scalars['Int']['input']>
   title: Scalars['String']['input']
+}
+
+export type PracticeGoal = {
+  __typename?: 'PracticeGoal'
+  completed: Scalars['Boolean']['output']
+  completedAt?: Maybe<Scalars['DateTime']['output']>
+  createdAt: Scalars['DateTime']['output']
+  currentValue: Scalars['Float']['output']
+  deadline?: Maybe<Scalars['DateTime']['output']>
+  description?: Maybe<Scalars['String']['output']>
+  id: Scalars['ID']['output']
+  targetValue: Scalars['Float']['output']
+  title: Scalars['String']['output']
+  unit: Scalars['String']['output']
+  updatedAt: Scalars['DateTime']['output']
 }
 
 export type PracticeLog = {
@@ -420,6 +453,8 @@ export type PracticeTempos = {
 
 export type Query = {
   __typename?: 'Query'
+  /** Get all user data for full sync */
+  allUserData: UserData
   goal?: Maybe<Goal>
   listSheetMusic: SheetMusicConnection
   logbookEntry?: Maybe<LogbookEntry>
@@ -430,7 +465,15 @@ export type Query = {
   practiceSession?: Maybe<PracticeSession>
   randomSheetMusic?: Maybe<SheetMusic>
   sheetMusic?: Maybe<SheetMusic>
+  /** Get changes since a sync token */
+  syncChangesSince: SyncDelta
+  /** Get sync metadata for a user */
+  syncMetadata?: Maybe<SyncMetadata>
   user?: Maybe<User>
+}
+
+export type QueryAllUserDataArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QueryGoalArgs = {
@@ -477,6 +520,14 @@ export type QueryRandomSheetMusicArgs = {
 
 export type QuerySheetMusicArgs = {
   id: Scalars['ID']['input']
+}
+
+export type QuerySyncChangesSinceArgs = {
+  syncToken: Scalars['String']['input']
+}
+
+export type QuerySyncMetadataArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QueryUserArgs = {
@@ -562,6 +613,67 @@ export type SyncAnonymousDataInput = {
   sessions: Array<CreatePracticeSessionInput>
 }
 
+export type SyncBatchInput = {
+  entities: Array<SyncEntityInput>
+  syncToken?: InputMaybe<Scalars['String']['input']>
+  userId: Scalars['ID']['input']
+}
+
+export type SyncBatchResult = {
+  __typename?: 'SyncBatchResult'
+  errors: Array<SyncError>
+  failed: Scalars['Int']['output']
+  newSyncToken: Scalars['String']['output']
+  uploaded: Scalars['Int']['output']
+}
+
+export type SyncDelta = {
+  __typename?: 'SyncDelta'
+  deletedIds: Array<Scalars['String']['output']>
+  entities: Array<SyncEntity>
+  newSyncToken: Scalars['String']['output']
+}
+
+export type SyncEntity = {
+  __typename?: 'SyncEntity'
+  checksum: Scalars['String']['output']
+  createdAt: Scalars['Float']['output']
+  data: Scalars['JSON']['output']
+  deletedAt?: Maybe<Scalars['Float']['output']>
+  entityType: Scalars['String']['output']
+  id: Scalars['ID']['output']
+  syncVersion: Scalars['Int']['output']
+  updatedAt: Scalars['Float']['output']
+}
+
+export type SyncEntityInput = {
+  checksum: Scalars['String']['input']
+  createdAt: Scalars['Float']['input']
+  data: Scalars['JSON']['input']
+  deletedAt?: InputMaybe<Scalars['Float']['input']>
+  entityType: Scalars['String']['input']
+  id: Scalars['String']['input']
+  localId: Scalars['String']['input']
+  remoteId?: InputMaybe<Scalars['String']['input']>
+  syncVersion: Scalars['Int']['input']
+  updatedAt: Scalars['Float']['input']
+}
+
+export type SyncError = {
+  __typename?: 'SyncError'
+  entityId: Scalars['String']['output']
+  error: Scalars['String']['output']
+}
+
+export type SyncMetadata = {
+  __typename?: 'SyncMetadata'
+  lastSyncError?: Maybe<Scalars['String']['output']>
+  lastSyncStatus: Scalars['String']['output']
+  lastSyncTimestamp: Scalars['Float']['output']
+  pendingSyncCount: Scalars['Int']['output']
+  syncToken?: Maybe<Scalars['String']['output']>
+}
+
 export type SyncResult = {
   __typename?: 'SyncResult'
   errors?: Maybe<Array<Scalars['String']['output']>>
@@ -628,6 +740,13 @@ export type User = {
   primaryInstrument: Instrument
   stats: UserStats
   updatedAt: Scalars['DateTime']['output']
+}
+
+export type UserData = {
+  __typename?: 'UserData'
+  logbookEntries: Array<LogbookEntry>
+  practiceGoals: Array<PracticeGoal>
+  practiceSessions: Array<PracticeSession>
 }
 
 export type UserPreferences = {
@@ -767,6 +886,7 @@ export type DirectiveResolverFn<
 export type ResolversTypes = ResolversObject<{
   ActivityType: ActivityType
   AuthPayload: ResolverTypeWrapper<AuthPayload>
+  AuthResponse: ResolverTypeWrapper<AuthResponse>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>
   CompletePracticeSessionInput: CompletePracticeSessionInput
   CreateGoalInput: CreateGoalInput
@@ -801,6 +921,7 @@ export type ResolversTypes = ResolversObject<{
   PageInfo: ResolverTypeWrapper<PageInfo>
   PieceReference: ResolverTypeWrapper<PieceReference>
   PieceReferenceInput: PieceReferenceInput
+  PracticeGoal: ResolverTypeWrapper<PracticeGoal>
   PracticeLog: ResolverTypeWrapper<PracticeLog>
   PracticeSession: ResolverTypeWrapper<PracticeSession>
   PracticeSessionConnection: ResolverTypeWrapper<PracticeSessionConnection>
@@ -818,6 +939,13 @@ export type ResolversTypes = ResolversObject<{
   String: ResolverTypeWrapper<Scalars['String']['output']>
   StylePeriod: StylePeriod
   SyncAnonymousDataInput: SyncAnonymousDataInput
+  SyncBatchInput: SyncBatchInput
+  SyncBatchResult: ResolverTypeWrapper<SyncBatchResult>
+  SyncDelta: ResolverTypeWrapper<SyncDelta>
+  SyncEntity: ResolverTypeWrapper<SyncEntity>
+  SyncEntityInput: SyncEntityInput
+  SyncError: ResolverTypeWrapper<SyncError>
+  SyncMetadata: ResolverTypeWrapper<SyncMetadata>
   SyncResult: ResolverTypeWrapper<SyncResult>
   Tempo: ResolverTypeWrapper<Tempo>
   Theme: Theme
@@ -826,6 +954,7 @@ export type ResolversTypes = ResolversObject<{
   UpdateLogbookEntryInput: UpdateLogbookEntryInput
   UpdateUserInput: UpdateUserInput
   User: ResolverTypeWrapper<User>
+  UserData: ResolverTypeWrapper<UserData>
   UserPreferences: ResolverTypeWrapper<UserPreferences>
   UserPreferencesInput: UserPreferencesInput
   UserStats: ResolverTypeWrapper<UserStats>
@@ -834,6 +963,7 @@ export type ResolversTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   AuthPayload: AuthPayload
+  AuthResponse: AuthResponse
   Boolean: Scalars['Boolean']['output']
   CompletePracticeSessionInput: CompletePracticeSessionInput
   CreateGoalInput: CreateGoalInput
@@ -862,6 +992,7 @@ export type ResolversParentTypes = ResolversObject<{
   PageInfo: PageInfo
   PieceReference: PieceReference
   PieceReferenceInput: PieceReferenceInput
+  PracticeGoal: PracticeGoal
   PracticeLog: PracticeLog
   PracticeSession: PracticeSession
   PracticeSessionConnection: PracticeSessionConnection
@@ -876,6 +1007,13 @@ export type ResolversParentTypes = ResolversObject<{
   StartPracticeSessionInput: StartPracticeSessionInput
   String: Scalars['String']['output']
   SyncAnonymousDataInput: SyncAnonymousDataInput
+  SyncBatchInput: SyncBatchInput
+  SyncBatchResult: SyncBatchResult
+  SyncDelta: SyncDelta
+  SyncEntity: SyncEntity
+  SyncEntityInput: SyncEntityInput
+  SyncError: SyncError
+  SyncMetadata: SyncMetadata
   SyncResult: SyncResult
   Tempo: Tempo
   TokenPayload: TokenPayload
@@ -883,6 +1021,7 @@ export type ResolversParentTypes = ResolversObject<{
   UpdateLogbookEntryInput: UpdateLogbookEntryInput
   UpdateUserInput: UpdateUserInput
   User: User
+  UserData: UserData
   UserPreferences: UserPreferences
   UserPreferencesInput: UserPreferencesInput
   UserStats: UserStats
@@ -895,6 +1034,17 @@ export type AuthPayloadResolvers<
 > = ResolversObject<{
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type AuthResponseResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse'],
+> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
@@ -1136,10 +1286,9 @@ export type MutationResolvers<
     RequireFields<MutationPausePracticeSessionArgs, 'sessionId'>
   >
   refreshToken?: Resolver<
-    ResolversTypes['TokenPayload'],
+    ResolversTypes['AuthResponse'],
     ParentType,
-    ContextType,
-    RequireFields<MutationRefreshTokenArgs, 'refreshToken'>
+    ContextType
   >
   requestMagicLink?: Resolver<
     ResolversTypes['AuthPayload'],
@@ -1165,6 +1314,12 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationSyncAnonymousDataArgs, 'input'>
   >
+  syncBatch?: Resolver<
+    ResolversTypes['SyncBatchResult'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationSyncBatchArgs, 'batch'>
+  >
   updateGoal?: Resolver<
     ResolversTypes['Goal'],
     ParentType,
@@ -1186,6 +1341,15 @@ export type MutationResolvers<
     ContextType,
     RequireFields<MutationUpdateLogbookEntryArgs, 'id' | 'input'>
   >
+  updateSyncMetadata?: Resolver<
+    ResolversTypes['SyncMetadata'],
+    ParentType,
+    ContextType,
+    RequireFields<
+      MutationUpdateSyncMetadataArgs,
+      'lastSyncTimestamp' | 'status' | 'syncToken' | 'userId'
+    >
+  >
   updateUser?: Resolver<
     ResolversTypes['User'],
     ParentType,
@@ -1193,7 +1357,7 @@ export type MutationResolvers<
     RequireFields<MutationUpdateUserArgs, 'input'>
   >
   verifyMagicLink?: Resolver<
-    ResolversTypes['TokenPayload'],
+    ResolversTypes['AuthResponse'],
     ParentType,
     ContextType,
     RequireFields<MutationVerifyMagicLinkArgs, 'token'>
@@ -1237,6 +1401,37 @@ export type PieceReferenceResolvers<
   measures?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   tempo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type PracticeGoalResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['PracticeGoal'] = ResolversParentTypes['PracticeGoal'],
+> = ResolversObject<{
+  completed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  completedAt?: Resolver<
+    Maybe<ResolversTypes['DateTime']>,
+    ParentType,
+    ContextType
+  >
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  currentValue?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  deadline?: Resolver<
+    Maybe<ResolversTypes['DateTime']>,
+    ParentType,
+    ContextType
+  >
+  description?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  targetValue?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  unit?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
@@ -1340,6 +1535,12 @@ export type QueryResolvers<
   ParentType extends
     ResolversParentTypes['Query'] = ResolversParentTypes['Query'],
 > = ResolversObject<{
+  allUserData?: Resolver<
+    ResolversTypes['UserData'],
+    ParentType,
+    ContextType,
+    RequireFields<QueryAllUserDataArgs, 'userId'>
+  >
   goal?: Resolver<
     Maybe<ResolversTypes['Goal']>,
     ParentType,
@@ -1394,6 +1595,18 @@ export type QueryResolvers<
     ParentType,
     ContextType,
     RequireFields<QuerySheetMusicArgs, 'id'>
+  >
+  syncChangesSince?: Resolver<
+    ResolversTypes['SyncDelta'],
+    ParentType,
+    ContextType,
+    RequireFields<QuerySyncChangesSinceArgs, 'syncToken'>
+  >
+  syncMetadata?: Resolver<
+    Maybe<ResolversTypes['SyncMetadata']>,
+    ParentType,
+    ContextType,
+    RequireFields<QuerySyncMetadataArgs, 'userId'>
   >
   user?: Resolver<
     Maybe<ResolversTypes['User']>,
@@ -1483,6 +1696,80 @@ export type SheetMusicMetadataResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
+export type SyncBatchResultResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncBatchResult'] = ResolversParentTypes['SyncBatchResult'],
+> = ResolversObject<{
+  errors?: Resolver<Array<ResolversTypes['SyncError']>, ParentType, ContextType>
+  failed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  newSyncToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  uploaded?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type SyncDeltaResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncDelta'] = ResolversParentTypes['SyncDelta'],
+> = ResolversObject<{
+  deletedIds?: Resolver<
+    Array<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >
+  entities?: Resolver<
+    Array<ResolversTypes['SyncEntity']>,
+    ParentType,
+    ContextType
+  >
+  newSyncToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type SyncEntityResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncEntity'] = ResolversParentTypes['SyncEntity'],
+> = ResolversObject<{
+  checksum?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  createdAt?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  data?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>
+  deletedAt?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
+  syncVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  updatedAt?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type SyncErrorResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncError'] = ResolversParentTypes['SyncError'],
+> = ResolversObject<{
+  entityId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  error?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type SyncMetadataResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncMetadata'] = ResolversParentTypes['SyncMetadata'],
+> = ResolversObject<{
+  lastSyncError?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >
+  lastSyncStatus?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  lastSyncTimestamp?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  pendingSyncCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  syncToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
 export type SyncResultResolvers<
   ContextType = GraphQLContext,
   ParentType extends
@@ -1562,6 +1849,29 @@ export type UserResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
+export type UserDataResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['UserData'] = ResolversParentTypes['UserData'],
+> = ResolversObject<{
+  logbookEntries?: Resolver<
+    Array<ResolversTypes['LogbookEntry']>,
+    ParentType,
+    ContextType
+  >
+  practiceGoals?: Resolver<
+    Array<ResolversTypes['PracticeGoal']>,
+    ParentType,
+    ContextType
+  >
+  practiceSessions?: Resolver<
+    Array<ResolversTypes['PracticeSession']>,
+    ParentType,
+    ContextType
+  >
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
 export type UserPreferencesResolvers<
   ContextType = GraphQLContext,
   ParentType extends
@@ -1601,6 +1911,7 @@ export type UserStatsResolvers<
 
 export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   AuthPayload?: AuthPayloadResolvers<ContextType>
+  AuthResponse?: AuthResponseResolvers<ContextType>
   DateTime?: GraphQLScalarType
   Goal?: GoalResolvers<ContextType>
   GoalConnection?: GoalConnectionResolvers<ContextType>
@@ -1616,6 +1927,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   Note?: NoteResolvers<ContextType>
   PageInfo?: PageInfoResolvers<ContextType>
   PieceReference?: PieceReferenceResolvers<ContextType>
+  PracticeGoal?: PracticeGoalResolvers<ContextType>
   PracticeLog?: PracticeLogResolvers<ContextType>
   PracticeSession?: PracticeSessionResolvers<ContextType>
   PracticeSessionConnection?: PracticeSessionConnectionResolvers<ContextType>
@@ -1626,10 +1938,16 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   SheetMusicConnection?: SheetMusicConnectionResolvers<ContextType>
   SheetMusicEdge?: SheetMusicEdgeResolvers<ContextType>
   SheetMusicMetadata?: SheetMusicMetadataResolvers<ContextType>
+  SyncBatchResult?: SyncBatchResultResolvers<ContextType>
+  SyncDelta?: SyncDeltaResolvers<ContextType>
+  SyncEntity?: SyncEntityResolvers<ContextType>
+  SyncError?: SyncErrorResolvers<ContextType>
+  SyncMetadata?: SyncMetadataResolvers<ContextType>
   SyncResult?: SyncResultResolvers<ContextType>
   Tempo?: TempoResolvers<ContextType>
   TokenPayload?: TokenPayloadResolvers<ContextType>
   User?: UserResolvers<ContextType>
+  UserData?: UserDataResolvers<ContextType>
   UserPreferences?: UserPreferencesResolvers<ContextType>
   UserStats?: UserStatsResolvers<ContextType>
 }>

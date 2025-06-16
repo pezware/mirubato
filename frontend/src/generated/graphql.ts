@@ -47,6 +47,13 @@ export type AuthPayload = {
   success: Scalars['Boolean']['output']
 }
 
+export type AuthResponse = {
+  __typename?: 'AuthResponse'
+  message: Scalars['String']['output']
+  success: Scalars['Boolean']['output']
+  user: User
+}
+
 export type CompletePracticeSessionInput = {
   accuracy?: InputMaybe<Scalars['Float']['input']>
   notesAttempted?: InputMaybe<Scalars['Int']['input']>
@@ -239,16 +246,20 @@ export type Mutation = {
   linkEntryToGoal: Goal
   logout: AuthPayload
   pausePracticeSession: PracticeSession
-  refreshToken: TokenPayload
+  refreshToken: AuthResponse
   requestMagicLink: AuthPayload
   resumePracticeSession: PracticeSession
   startPracticeSession: PracticeSession
   syncAnonymousData: SyncResult
+  /** Sync a batch of entities */
+  syncBatch: SyncBatchResult
   updateGoal: Goal
   updateGoalMilestone: Goal
   updateLogbookEntry: LogbookEntry
+  /** Update sync metadata after successful sync */
+  updateSyncMetadata: SyncMetadata
   updateUser: User
-  verifyMagicLink: TokenPayload
+  verifyMagicLink: AuthResponse
 }
 
 export type MutationCompletePracticeSessionArgs = {
@@ -284,10 +295,6 @@ export type MutationPausePracticeSessionArgs = {
   sessionId: Scalars['ID']['input']
 }
 
-export type MutationRefreshTokenArgs = {
-  refreshToken: Scalars['String']['input']
-}
-
 export type MutationRequestMagicLinkArgs = {
   email: Scalars['String']['input']
 }
@@ -304,6 +311,10 @@ export type MutationSyncAnonymousDataArgs = {
   input: SyncAnonymousDataInput
 }
 
+export type MutationSyncBatchArgs = {
+  batch: SyncBatchInput
+}
+
 export type MutationUpdateGoalArgs = {
   id: Scalars['ID']['input']
   input: UpdateGoalInput
@@ -318,6 +329,13 @@ export type MutationUpdateGoalMilestoneArgs = {
 export type MutationUpdateLogbookEntryArgs = {
   id: Scalars['ID']['input']
   input: UpdateLogbookEntryInput
+}
+
+export type MutationUpdateSyncMetadataArgs = {
+  lastSyncTimestamp: Scalars['Float']['input']
+  status: Scalars['String']['input']
+  syncToken: Scalars['String']['input']
+  userId: Scalars['ID']['input']
 }
 
 export type MutationUpdateUserArgs = {
@@ -360,6 +378,21 @@ export type PieceReferenceInput = {
   measures?: InputMaybe<Scalars['String']['input']>
   tempo?: InputMaybe<Scalars['Int']['input']>
   title: Scalars['String']['input']
+}
+
+export type PracticeGoal = {
+  __typename?: 'PracticeGoal'
+  completed: Scalars['Boolean']['output']
+  completedAt?: Maybe<Scalars['DateTime']['output']>
+  createdAt: Scalars['DateTime']['output']
+  currentValue: Scalars['Float']['output']
+  deadline?: Maybe<Scalars['DateTime']['output']>
+  description?: Maybe<Scalars['String']['output']>
+  id: Scalars['ID']['output']
+  targetValue: Scalars['Float']['output']
+  title: Scalars['String']['output']
+  unit: Scalars['String']['output']
+  updatedAt: Scalars['DateTime']['output']
 }
 
 export type PracticeLog = {
@@ -415,6 +448,8 @@ export type PracticeTempos = {
 
 export type Query = {
   __typename?: 'Query'
+  /** Get all user data for full sync */
+  allUserData: UserData
   goal?: Maybe<Goal>
   listSheetMusic: SheetMusicConnection
   logbookEntry?: Maybe<LogbookEntry>
@@ -425,7 +460,15 @@ export type Query = {
   practiceSession?: Maybe<PracticeSession>
   randomSheetMusic?: Maybe<SheetMusic>
   sheetMusic?: Maybe<SheetMusic>
+  /** Get changes since a sync token */
+  syncChangesSince: SyncDelta
+  /** Get sync metadata for a user */
+  syncMetadata?: Maybe<SyncMetadata>
   user?: Maybe<User>
+}
+
+export type QueryAllUserDataArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QueryGoalArgs = {
@@ -472,6 +515,14 @@ export type QueryRandomSheetMusicArgs = {
 
 export type QuerySheetMusicArgs = {
   id: Scalars['ID']['input']
+}
+
+export type QuerySyncChangesSinceArgs = {
+  syncToken: Scalars['String']['input']
+}
+
+export type QuerySyncMetadataArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QueryUserArgs = {
@@ -557,6 +608,67 @@ export type SyncAnonymousDataInput = {
   sessions: Array<CreatePracticeSessionInput>
 }
 
+export type SyncBatchInput = {
+  entities: Array<SyncEntityInput>
+  syncToken?: InputMaybe<Scalars['String']['input']>
+  userId: Scalars['ID']['input']
+}
+
+export type SyncBatchResult = {
+  __typename?: 'SyncBatchResult'
+  errors: Array<SyncError>
+  failed: Scalars['Int']['output']
+  newSyncToken: Scalars['String']['output']
+  uploaded: Scalars['Int']['output']
+}
+
+export type SyncDelta = {
+  __typename?: 'SyncDelta'
+  deletedIds: Array<Scalars['String']['output']>
+  entities: Array<SyncEntity>
+  newSyncToken: Scalars['String']['output']
+}
+
+export type SyncEntity = {
+  __typename?: 'SyncEntity'
+  checksum: Scalars['String']['output']
+  createdAt: Scalars['Float']['output']
+  data: Scalars['JSON']['output']
+  deletedAt?: Maybe<Scalars['Float']['output']>
+  entityType: Scalars['String']['output']
+  id: Scalars['ID']['output']
+  syncVersion: Scalars['Int']['output']
+  updatedAt: Scalars['Float']['output']
+}
+
+export type SyncEntityInput = {
+  checksum: Scalars['String']['input']
+  createdAt: Scalars['Float']['input']
+  data: Scalars['JSON']['input']
+  deletedAt?: InputMaybe<Scalars['Float']['input']>
+  entityType: Scalars['String']['input']
+  id: Scalars['String']['input']
+  localId: Scalars['String']['input']
+  remoteId?: InputMaybe<Scalars['String']['input']>
+  syncVersion: Scalars['Int']['input']
+  updatedAt: Scalars['Float']['input']
+}
+
+export type SyncError = {
+  __typename?: 'SyncError'
+  entityId: Scalars['String']['output']
+  error: Scalars['String']['output']
+}
+
+export type SyncMetadata = {
+  __typename?: 'SyncMetadata'
+  lastSyncError?: Maybe<Scalars['String']['output']>
+  lastSyncStatus: Scalars['String']['output']
+  lastSyncTimestamp: Scalars['Float']['output']
+  pendingSyncCount: Scalars['Int']['output']
+  syncToken?: Maybe<Scalars['String']['output']>
+}
+
 export type SyncResult = {
   __typename?: 'SyncResult'
   errors?: Maybe<Array<Scalars['String']['output']>>
@@ -625,6 +737,13 @@ export type User = {
   updatedAt: Scalars['DateTime']['output']
 }
 
+export type UserData = {
+  __typename?: 'UserData'
+  logbookEntries: Array<LogbookEntry>
+  practiceGoals: Array<PracticeGoal>
+  practiceSessions: Array<PracticeSession>
+}
+
 export type UserPreferences = {
   __typename?: 'UserPreferences'
   customSettings?: Maybe<Scalars['JSON']['output']>
@@ -650,23 +769,6 @@ export type UserStats = {
   totalPracticeTime: Scalars['Int']['output']
 }
 
-export type SyncAnonymousDataMutationVariables = Exact<{
-  input: SyncAnonymousDataInput
-}>
-
-export type SyncAnonymousDataMutation = {
-  __typename?: 'Mutation'
-  syncAnonymousData: {
-    __typename?: 'SyncResult'
-    success: boolean
-    syncedSessions: number
-    syncedLogs: number
-    syncedEntries: number
-    syncedGoals: number
-    errors?: Array<string> | null
-  }
-}
-
 export type RequestMagicLinkMutationVariables = Exact<{
   email: Scalars['String']['input']
 }>
@@ -687,10 +789,9 @@ export type VerifyMagicLinkMutationVariables = Exact<{
 export type VerifyMagicLinkMutation = {
   __typename?: 'Mutation'
   verifyMagicLink: {
-    __typename?: 'TokenPayload'
-    accessToken: string
-    refreshToken: string
-    expiresIn: number
+    __typename?: 'AuthResponse'
+    success: boolean
+    message: string
     user: {
       __typename?: 'User'
       id: string
@@ -704,17 +805,14 @@ export type VerifyMagicLinkMutation = {
   }
 }
 
-export type RefreshTokenMutationVariables = Exact<{
-  refreshToken: Scalars['String']['input']
-}>
+export type RefreshTokenMutationVariables = Exact<{ [key: string]: never }>
 
 export type RefreshTokenMutation = {
   __typename?: 'Mutation'
   refreshToken: {
-    __typename?: 'TokenPayload'
-    accessToken: string
-    refreshToken: string
-    expiresIn: number
+    __typename?: 'AuthResponse'
+    success: boolean
+    message: string
     user: {
       __typename?: 'User'
       id: string
@@ -993,6 +1091,23 @@ export type DeleteGoalMutation = {
   deleteGoal: boolean
 }
 
+export type SyncAnonymousDataMutationVariables = Exact<{
+  input: SyncAnonymousDataInput
+}>
+
+export type SyncAnonymousDataMutation = {
+  __typename?: 'Mutation'
+  syncAnonymousData: {
+    __typename?: 'SyncResult'
+    success: boolean
+    syncedSessions: number
+    syncedLogs: number
+    syncedEntries: number
+    syncedGoals: number
+    errors?: Array<string> | null
+  }
+}
+
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetCurrentUserQuery = {
@@ -1060,180 +1175,6 @@ export type UpdateUserPreferencesMutation = {
   }
 }
 
-export type StartPracticeSessionMutationVariables = Exact<{
-  input: StartPracticeSessionInput
-}>
-
-export type StartPracticeSessionMutation = {
-  __typename?: 'Mutation'
-  startPracticeSession: {
-    __typename?: 'PracticeSession'
-    id: string
-    instrument: Instrument
-    sessionType: SessionType
-    startedAt: string
-    user: { __typename?: 'User'; id: string }
-  }
-}
-
-export type CompletePracticeSessionMutationVariables = Exact<{
-  input: CompletePracticeSessionInput
-}>
-
-export type CompletePracticeSessionMutation = {
-  __typename?: 'Mutation'
-  completePracticeSession: {
-    __typename?: 'PracticeSession'
-    id: string
-    completedAt?: string | null
-    accuracy?: number | null
-    notesAttempted: number
-    notesCorrect: number
-  }
-}
-
-export type CreatePracticeLogMutationVariables = Exact<{
-  input: CreatePracticeLogInput
-}>
-
-export type CreatePracticeLogMutation = {
-  __typename?: 'Mutation'
-  createPracticeLog: {
-    __typename?: 'PracticeLog'
-    id: string
-    activityType: ActivityType
-    durationSeconds: number
-    createdAt: string
-    session: { __typename?: 'PracticeSession'; id: string }
-  }
-}
-
-export type UpdateUserMutationVariables = Exact<{
-  input: UpdateUserInput
-}>
-
-export type UpdateUserMutation = {
-  __typename?: 'Mutation'
-  updateUser: {
-    __typename?: 'User'
-    id: string
-    preferences: {
-      __typename?: 'UserPreferences'
-      theme: Theme
-      notationSize: NotationSize
-      practiceReminders: boolean
-      dailyGoalMinutes: number
-      customSettings?: Record<string, unknown> | null
-    }
-  }
-}
-
-export const SyncAnonymousDataDocument = /*#__PURE__*/ {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'SyncAnonymousData' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'input' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'SyncAnonymousDataInput' },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'syncAnonymousData' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'input' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'input' },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'syncedSessions' },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'syncedLogs' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'syncedEntries' },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'syncedGoals' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'errors' } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode
-export type SyncAnonymousDataMutationFn = ApolloReactCommon.MutationFunction<
-  SyncAnonymousDataMutation,
-  SyncAnonymousDataMutationVariables
->
-
-/**
- * __useSyncAnonymousDataMutation__
- *
- * To run a mutation, you first call `useSyncAnonymousDataMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSyncAnonymousDataMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [syncAnonymousDataMutation, { data, loading, error }] = useSyncAnonymousDataMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useSyncAnonymousDataMutation(
-  baseOptions?: ApolloReactHooks.MutationHookOptions<
-    SyncAnonymousDataMutation,
-    SyncAnonymousDataMutationVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return ApolloReactHooks.useMutation<
-    SyncAnonymousDataMutation,
-    SyncAnonymousDataMutationVariables
-  >(SyncAnonymousDataDocument, options)
-}
-export type SyncAnonymousDataMutationHookResult = ReturnType<
-  typeof useSyncAnonymousDataMutation
->
-export type SyncAnonymousDataMutationResult =
-  ApolloReactCommon.MutationResult<SyncAnonymousDataMutation>
-export type SyncAnonymousDataMutationOptions =
-  ApolloReactCommon.BaseMutationOptions<
-    SyncAnonymousDataMutation,
-    SyncAnonymousDataMutationVariables
-  >
 export const RequestMagicLinkDocument = /*#__PURE__*/ {
   kind: 'Document',
   definitions: [
@@ -1372,12 +1313,8 @@ export const VerifyMagicLinkDocument = /*#__PURE__*/ {
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'accessToken' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'refreshToken' },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'expiresIn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'message' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'user' },
@@ -1468,47 +1405,17 @@ export const RefreshTokenDocument = /*#__PURE__*/ {
       kind: 'OperationDefinition',
       operation: 'mutation',
       name: { kind: 'Name', value: 'RefreshToken' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'refreshToken' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'String' },
-            },
-          },
-        },
-      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'refreshToken' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'refreshToken' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'refreshToken' },
-                },
-              },
-            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'accessToken' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'refreshToken' },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'expiresIn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'message' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'user' },
@@ -1566,7 +1473,6 @@ export type RefreshTokenMutationFn = ApolloReactCommon.MutationFunction<
  * @example
  * const [refreshTokenMutation, { data, loading, error }] = useRefreshTokenMutation({
  *   variables: {
- *      refreshToken: // value for 'refreshToken'
  *   },
  * });
  */
@@ -3042,6 +2948,112 @@ export type DeleteGoalMutationOptions = ApolloReactCommon.BaseMutationOptions<
   DeleteGoalMutation,
   DeleteGoalMutationVariables
 >
+export const SyncAnonymousDataDocument = /*#__PURE__*/ {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SyncAnonymousData' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'SyncAnonymousDataInput' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'syncAnonymousData' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'syncedSessions' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'syncedLogs' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'syncedEntries' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'syncedGoals' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'errors' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode
+export type SyncAnonymousDataMutationFn = ApolloReactCommon.MutationFunction<
+  SyncAnonymousDataMutation,
+  SyncAnonymousDataMutationVariables
+>
+
+/**
+ * __useSyncAnonymousDataMutation__
+ *
+ * To run a mutation, you first call `useSyncAnonymousDataMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSyncAnonymousDataMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [syncAnonymousDataMutation, { data, loading, error }] = useSyncAnonymousDataMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSyncAnonymousDataMutation(
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
+    SyncAnonymousDataMutation,
+    SyncAnonymousDataMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return ApolloReactHooks.useMutation<
+    SyncAnonymousDataMutation,
+    SyncAnonymousDataMutationVariables
+  >(SyncAnonymousDataDocument, options)
+}
+export type SyncAnonymousDataMutationHookResult = ReturnType<
+  typeof useSyncAnonymousDataMutation
+>
+export type SyncAnonymousDataMutationResult =
+  ApolloReactCommon.MutationResult<SyncAnonymousDataMutation>
+export type SyncAnonymousDataMutationOptions =
+  ApolloReactCommon.BaseMutationOptions<
+    SyncAnonymousDataMutation,
+    SyncAnonymousDataMutationVariables
+  >
 export const GetCurrentUserDocument = /*#__PURE__*/ {
   kind: 'Document',
   definitions: [
@@ -3433,451 +3445,3 @@ export type UpdateUserPreferencesMutationOptions =
     UpdateUserPreferencesMutation,
     UpdateUserPreferencesMutationVariables
   >
-export const StartPracticeSessionDocument = /*#__PURE__*/ {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'StartPracticeSession' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'input' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'StartPracticeSessionInput' },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'startPracticeSession' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'input' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'input' },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'user' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                    ],
-                  },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'instrument' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'sessionType' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'startedAt' } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode
-export type StartPracticeSessionMutationFn = ApolloReactCommon.MutationFunction<
-  StartPracticeSessionMutation,
-  StartPracticeSessionMutationVariables
->
-
-/**
- * __useStartPracticeSessionMutation__
- *
- * To run a mutation, you first call `useStartPracticeSessionMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useStartPracticeSessionMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [startPracticeSessionMutation, { data, loading, error }] = useStartPracticeSessionMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useStartPracticeSessionMutation(
-  baseOptions?: ApolloReactHooks.MutationHookOptions<
-    StartPracticeSessionMutation,
-    StartPracticeSessionMutationVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return ApolloReactHooks.useMutation<
-    StartPracticeSessionMutation,
-    StartPracticeSessionMutationVariables
-  >(StartPracticeSessionDocument, options)
-}
-export type StartPracticeSessionMutationHookResult = ReturnType<
-  typeof useStartPracticeSessionMutation
->
-export type StartPracticeSessionMutationResult =
-  ApolloReactCommon.MutationResult<StartPracticeSessionMutation>
-export type StartPracticeSessionMutationOptions =
-  ApolloReactCommon.BaseMutationOptions<
-    StartPracticeSessionMutation,
-    StartPracticeSessionMutationVariables
-  >
-export const CompletePracticeSessionDocument = /*#__PURE__*/ {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'CompletePracticeSession' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'input' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'CompletePracticeSessionInput' },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'completePracticeSession' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'input' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'input' },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'completedAt' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'accuracy' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'notesAttempted' },
-                },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'notesCorrect' },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode
-export type CompletePracticeSessionMutationFn =
-  ApolloReactCommon.MutationFunction<
-    CompletePracticeSessionMutation,
-    CompletePracticeSessionMutationVariables
-  >
-
-/**
- * __useCompletePracticeSessionMutation__
- *
- * To run a mutation, you first call `useCompletePracticeSessionMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCompletePracticeSessionMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [completePracticeSessionMutation, { data, loading, error }] = useCompletePracticeSessionMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useCompletePracticeSessionMutation(
-  baseOptions?: ApolloReactHooks.MutationHookOptions<
-    CompletePracticeSessionMutation,
-    CompletePracticeSessionMutationVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return ApolloReactHooks.useMutation<
-    CompletePracticeSessionMutation,
-    CompletePracticeSessionMutationVariables
-  >(CompletePracticeSessionDocument, options)
-}
-export type CompletePracticeSessionMutationHookResult = ReturnType<
-  typeof useCompletePracticeSessionMutation
->
-export type CompletePracticeSessionMutationResult =
-  ApolloReactCommon.MutationResult<CompletePracticeSessionMutation>
-export type CompletePracticeSessionMutationOptions =
-  ApolloReactCommon.BaseMutationOptions<
-    CompletePracticeSessionMutation,
-    CompletePracticeSessionMutationVariables
-  >
-export const CreatePracticeLogDocument = /*#__PURE__*/ {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'CreatePracticeLog' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'input' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'CreatePracticeLogInput' },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'createPracticeLog' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'input' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'input' },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'session' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                    ],
-                  },
-                },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'activityType' },
-                },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'durationSeconds' },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode
-export type CreatePracticeLogMutationFn = ApolloReactCommon.MutationFunction<
-  CreatePracticeLogMutation,
-  CreatePracticeLogMutationVariables
->
-
-/**
- * __useCreatePracticeLogMutation__
- *
- * To run a mutation, you first call `useCreatePracticeLogMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreatePracticeLogMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [createPracticeLogMutation, { data, loading, error }] = useCreatePracticeLogMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useCreatePracticeLogMutation(
-  baseOptions?: ApolloReactHooks.MutationHookOptions<
-    CreatePracticeLogMutation,
-    CreatePracticeLogMutationVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return ApolloReactHooks.useMutation<
-    CreatePracticeLogMutation,
-    CreatePracticeLogMutationVariables
-  >(CreatePracticeLogDocument, options)
-}
-export type CreatePracticeLogMutationHookResult = ReturnType<
-  typeof useCreatePracticeLogMutation
->
-export type CreatePracticeLogMutationResult =
-  ApolloReactCommon.MutationResult<CreatePracticeLogMutation>
-export type CreatePracticeLogMutationOptions =
-  ApolloReactCommon.BaseMutationOptions<
-    CreatePracticeLogMutation,
-    CreatePracticeLogMutationVariables
-  >
-export const UpdateUserDocument = /*#__PURE__*/ {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'UpdateUser' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: { kind: 'Name', value: 'input' },
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: { kind: 'Name', value: 'UpdateUserInput' },
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'updateUser' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'input' },
-                value: {
-                  kind: 'Variable',
-                  name: { kind: 'Name', value: 'input' },
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'preferences' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'theme' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'notationSize' },
-                      },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'practiceReminders' },
-                      },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'dailyGoalMinutes' },
-                      },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'customSettings' },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode
-export type UpdateUserMutationFn = ApolloReactCommon.MutationFunction<
-  UpdateUserMutation,
-  UpdateUserMutationVariables
->
-
-/**
- * __useUpdateUserMutation__
- *
- * To run a mutation, you first call `useUpdateUserMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateUserMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateUserMutation, { data, loading, error }] = useUpdateUserMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useUpdateUserMutation(
-  baseOptions?: ApolloReactHooks.MutationHookOptions<
-    UpdateUserMutation,
-    UpdateUserMutationVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return ApolloReactHooks.useMutation<
-    UpdateUserMutation,
-    UpdateUserMutationVariables
-  >(UpdateUserDocument, options)
-}
-export type UpdateUserMutationHookResult = ReturnType<
-  typeof useUpdateUserMutation
->
-export type UpdateUserMutationResult =
-  ApolloReactCommon.MutationResult<UpdateUserMutation>
-export type UpdateUserMutationOptions = ApolloReactCommon.BaseMutationOptions<
-  UpdateUserMutation,
-  UpdateUserMutationVariables
->

@@ -8,6 +8,9 @@ import { createRateLimiter } from './utils/rateLimiter'
 import { typeDefs } from './schema'
 import { logRequest } from './middleware/logging'
 import { isOriginAllowed } from './config/cors'
+import { Instrument, Theme, NotationSize } from './types/shared'
+import { getCookie } from './utils/cookies'
+import { cookiePlugin } from './middleware/cookiePlugin'
 
 // Helper to get CORS headers based on origin
 function getCorsHeaders(request: Request, env: Env): Record<string, string> {
@@ -18,6 +21,7 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
     'Access-Control-Allow-Headers':
       'Content-Type, Authorization, x-apollo-operation-name, apollo-require-preflight',
     'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Credentials': 'true',
   }
 
   // Check if origin is allowed based on configuration
@@ -87,6 +91,11 @@ export default {
     if (url.pathname === '/graphql') {
       // Log request in development
       if (env.ENVIRONMENT === 'development') {
+        console.log('[GraphQL] Request received:', {
+          method: request.method,
+          url: request.url,
+          headers: Object.fromEntries(request.headers.entries()),
+        })
         await logRequest(request)
       }
 
@@ -96,6 +105,18 @@ export default {
           typeDefs,
           resolvers,
           introspection: true, // Enable in development
+          plugins: [cookiePlugin],
+          formatError: err => {
+            // Log errors in development
+            if (env.ENVIRONMENT === 'development') {
+              console.error('[GraphQL Error]', {
+                message: err.message,
+                path: err.path,
+                extensions: err.extensions,
+              })
+            }
+            return err
+          },
         })
 
         // Create the handler with context function
@@ -115,18 +136,72 @@ export default {
                 }
               }
 
-              // Extract and verify JWT token if present
+              // Extract and verify JWT token from cookies
               let user
-              const authorization = request.headers.get('Authorization')
-              if (authorization?.startsWith('Bearer ')) {
-                const token = authorization.slice(7)
+              const authToken = getCookie(request, 'auth-token')
+
+              if (env.ENVIRONMENT === 'development') {
+                console.log(
+                  '[Auth Debug] Auth token from cookie:',
+                  authToken ? `${authToken.slice(0, 20)}...` : 'none'
+                )
+              }
+
+              if (authToken) {
                 try {
-                  const payload = await verifyJWT(token, env.JWT_SECRET)
-                  // TODO: Load full user data from database
-                  user = payload.user
+                  const payload = await verifyJWT(authToken, env.JWT_SECRET)
+                  if (env.ENVIRONMENT === 'development') {
+                    console.log(
+                      '[Auth Debug] JWT payload:',
+                      JSON.stringify(payload)
+                    )
+                  }
+
+                  // Handle different JWT payload formats
+                  if (payload.user) {
+                    // Standard format with full user object
+                    user = payload.user
+                  } else if ('userId' in payload || payload.sub) {
+                    // Legacy format with userId only - create minimal user object
+                    const userId =
+                      ('userId' in payload
+                        ? (payload as { userId: string }).userId
+                        : payload.sub) || ''
+                    user = {
+                      id: userId,
+                      email: payload.email || '',
+                      hasCloudStorage: true,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                      primaryInstrument: Instrument.PIANO,
+                      preferences: {
+                        theme: Theme.LIGHT,
+                        notationSize: NotationSize.MEDIUM,
+                        practiceReminders: true,
+                        dailyGoalMinutes: 30,
+                      },
+                      stats: {
+                        totalPracticeTime: 0,
+                        consecutiveDays: 0,
+                        piecesCompleted: 0,
+                        accuracyAverage: 0,
+                      },
+                    }
+                    if (env.ENVIRONMENT === 'development') {
+                      console.log(
+                        '[Auth Debug] Created user object:',
+                        JSON.stringify(user)
+                      )
+                    }
+                  }
                 } catch (error) {
+                  if (env.ENVIRONMENT === 'development') {
+                    console.log('[Auth Debug] JWT verification error:', error)
+                  }
                   // Invalid token, continue without user context
                 }
+              } else if (env.ENVIRONMENT === 'development') {
+                console.log('[Auth Debug] No auth token found in cookies')
               }
 
               return {
@@ -135,6 +210,7 @@ export default {
                 requestId,
                 ip,
                 db: env.DB,
+                request,
               }
             },
           }
@@ -146,8 +222,11 @@ export default {
         // Log error responses in development
         if (env.ENVIRONMENT === 'development' && response.status >= 400) {
           const clonedResponse = response.clone()
-          await clonedResponse.text()
-          // GraphQL error response logged in development
+          const responseText = await clonedResponse.text()
+          console.error('[GraphQL] Error response:', {
+            status: response.status,
+            body: responseText,
+          })
         }
 
         return addCorsHeaders(response, request, env)
@@ -192,6 +271,38 @@ export default {
         }
       )
       return addCorsHeaders(response, request, env)
+    }
+
+    // Debug endpoint to test auth
+    if (url.pathname === '/debug/auth' && env.ENVIRONMENT === 'development') {
+      const authorization = request.headers.get('Authorization')
+      let payload = null
+      let error = null
+
+      if (authorization?.startsWith('Bearer ')) {
+        const token = authorization.slice(7)
+        try {
+          payload = await verifyJWT(token, env.JWT_SECRET)
+        } catch (e) {
+          error = e instanceof Error ? e.message : String(e)
+        }
+      }
+
+      return addCorsHeaders(
+        new Response(
+          JSON.stringify({
+            hasAuth: !!authorization,
+            tokenPrefix: authorization?.substring(0, 20),
+            payload,
+            error,
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        ),
+        request,
+        env
+      )
     }
 
     // 404 for other routes

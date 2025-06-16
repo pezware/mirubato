@@ -23,6 +23,7 @@ export function createMockContext(
     env,
     requestId: nanoid(),
     db: env.DB,
+    request: new Request('http://localhost:8787/graphql'),
     ...overrides,
   }
 }

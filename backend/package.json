@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --env local",
-    "build:dev": "tsc",
+    "build:dev": "node build-with-lock.js --dev",
     "prebuild": "node scripts/update-version.js",
     "build": "node build.js",
     "build:templates": "node scripts/build-email-templates.js",

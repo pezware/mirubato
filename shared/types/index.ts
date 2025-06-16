@@ -312,3 +312,6 @@ export interface LocalGoal extends Goal {
 
 // Re-export validation utilities
 export { DataValidator, DataMigrator } from './validation'
+
+// Re-export sync types
+export * from './sync'

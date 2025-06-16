@@ -280,11 +280,13 @@ describe('Cloudflare Workers Handler', () => {
       expect(data).toEqual({ data: { test: 'success' } })
 
       // Verify Apollo Server was created
-      expect(ApolloServer).toHaveBeenCalledWith({
-        typeDefs: expect.any(String),
-        resolvers: expect.any(Object) as Record<string, unknown>,
-        introspection: true,
-      })
+      expect(ApolloServer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          typeDefs: expect.any(String),
+          resolvers: expect.any(Object) as Record<string, unknown>,
+          introspection: true,
+        })
+      )
 
       // Verify handler was created with proper context
       expect(startServerAndCreateCloudflareWorkersHandler).toHaveBeenCalledWith(
@@ -305,8 +307,8 @@ describe('Cloudflare Workers Handler', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer valid-token',
           'CF-Connecting-IP': '192.168.1.1',
+          Cookie: 'auth-token=valid-token',
         },
         body: JSON.stringify({ query: '{ test }' }),
       })
@@ -322,7 +324,7 @@ describe('Cloudflare Workers Handler', () => {
       // Call the context function
       const context = await contextFn({ request })
 
-      expect(context).toEqual({
+      expect(context).toMatchObject({
         env: mockEnv,
         user: { id: 'authenticated-user' },
         requestId: 'mock-id-123',

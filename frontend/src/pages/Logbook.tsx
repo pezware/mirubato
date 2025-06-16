@@ -15,7 +15,7 @@ import {
 const Logbook: React.FC = () => {
   const isMobile = window.innerWidth < 768
   const { practiceLogger, isInitialized, eventBus } = useModules()
-  const { user, syncError, clearSyncError } = useAuth()
+  const { user, syncState, clearSyncError } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [entries, setEntries] = useState<LogbookEntry[]>([])
@@ -201,7 +201,7 @@ const Logbook: React.FC = () => {
         clearTimeout(syncTimeout)
       }
     }
-  }, [eventBus, refetch, shouldUseGraphQL])
+  }, [eventBus])
 
   // On initial load, check if we're already authenticated and have data
   useEffect(() => {
@@ -428,7 +428,7 @@ const Logbook: React.FC = () => {
         </div>
 
         {/* Sync Error from AuthContext */}
-        {syncError && (
+        {syncState.error && (
           <div className="mb-4 p-4 rounded-lg border bg-yellow-50 border-yellow-200 text-yellow-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -443,7 +443,11 @@ const Logbook: React.FC = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span>{syncError}</span>
+                <span>
+                  {typeof syncState.error === 'string'
+                    ? syncState.error
+                    : syncState.error.message}
+                </span>
               </div>
               <button
                 onClick={clearSyncError}

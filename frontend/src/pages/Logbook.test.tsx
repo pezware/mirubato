@@ -1,6 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Logbook from './Logbook'
+import { AuthContext } from '../contexts/ImprovedAuthContext'
+import type { AuthContextType } from '../contexts/ImprovedAuthContext'
 
 // Mock the UserStatusIndicator to avoid auth context issues
 jest.mock('../components/UserStatusIndicator', () => ({
@@ -49,14 +51,6 @@ jest.mock('../contexts/ModulesContext', () => ({
   }),
 }))
 
-// Mock auth context
-jest.mock('../hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: null,
-    loading: false,
-  }),
-}))
-
 // Mock Apollo Client
 const mockRefetch = jest.fn()
 const mockCreateLogbookEntry = jest.fn()
@@ -72,8 +66,34 @@ jest.mock('@apollo/client', () => ({
   gql: jest.fn(strings => strings.join('')),
 }))
 
+// Create mock auth context value
+const createMockAuthContext = (): AuthContextType => ({
+  user: null,
+  isAuthenticated: false,
+  isAnonymous: false,
+  loading: false,
+  login: jest.fn(),
+  logout: jest.fn(),
+  refreshAuth: jest.fn(),
+  syncToCloud: jest.fn(),
+  localUserData: null,
+  syncState: {
+    status: 'idle',
+    lastSync: null,
+    pendingOperations: 0,
+    error: null,
+  },
+  clearSyncError: jest.fn(),
+  updateSyncState: jest.fn(),
+})
+
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>)
+  const mockAuthContext = createMockAuthContext()
+  return render(
+    <AuthContext.Provider value={mockAuthContext}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </AuthContext.Provider>
+  )
 }
 
 describe('Logbook Page', () => {
