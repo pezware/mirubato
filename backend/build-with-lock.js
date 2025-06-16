@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, execFileSync } from 'child_process'
 import {
   copyFileSync,
   existsSync,
@@ -74,7 +74,7 @@ try {
   // Clean dist directory first
   console.log('Cleaning dist directory...')
   try {
-    execSync(`rm -rf ${distDir}/*`, { stdio: 'inherit' })
+    execFileSync('rm', ['-rf', `${distDir}/*`], { stdio: 'inherit' })
   } catch (error) {
     // Directory might be empty, that's ok
   }
@@ -146,26 +146,23 @@ try {
         console.log(`Moving files from: ${srcDir} to: ${distDir}`)
 
         // Use shell command to move all files while preserving structure
-        execSync(`cp -r ${srcDir}/* ${distDir}/`, { stdio: 'inherit' })
+        execFileSync('cp', ['-r', `${srcDir}/*`, `${distDir}/`], { stdio: 'inherit' })
 
         // Clean up the nested backend directory
         try {
-          execSync(`rm -rf ${join(distDir, 'backend')}`, { stdio: 'inherit' })
+          execFileSync('rm', ['-rf', join(distDir, 'backend')], { stdio: 'inherit' })
         } catch (error) {
           console.warn(
             'Warning: Failed to remove backend directory, trying alternative method'
           )
           // Try a more forceful removal
-          execSync(`rm -rf "${join(distDir, 'backend')}"`, {
-            stdio: 'inherit',
-            shell: '/bin/bash',
-          })
+          execFileSync('rm', ['-rf', join(distDir, 'backend')], { stdio: 'inherit' })
         }
 
         // Also clean up any shared directory that might have been copied
         if (existsSync(join(distDir, 'shared'))) {
           try {
-            execSync(`rm -rf ${join(distDir, 'shared')}`, { stdio: 'inherit' })
+            execFileSync('rm', ['-rf', join(distDir, 'shared')], { stdio: 'inherit' })
           } catch (error) {
             console.warn('Warning: Failed to remove shared directory')
           }
