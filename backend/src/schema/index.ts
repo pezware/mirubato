@@ -1,6 +1,4 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
+// Import the generated schema content
+import { schemaContent } from './schema-content.js'
 
-// Simple path resolution that works in both Jest and runtime
-const schemaPath = join(__dirname, 'schema.graphql')
-export const typeDefs = readFileSync(schemaPath, 'utf-8')
+export const typeDefs = schemaContent

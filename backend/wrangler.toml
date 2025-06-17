@@ -1,7 +1,7 @@
 # Mirubato Backend Worker Configuration
 # This file defines all environments - no manual config generation needed
 name = "mirubato-backend"
-main = "dist/index.js"
+main = "dist/backend/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 

@@ -10,7 +10,7 @@
     "dev:watch": "tsc --watch",
     "dev:server": "wrangler dev --env local",
     "dev:full": "node scripts/dev-server.js",
-    "build": "tsc",
+    "build": "node scripts/build-schema.js && tsc && node scripts/build-schema.js",
     "build:templates": "node scripts/build-email-templates.js",
     "build:with-templates": "npm run build:templates && tsc",
     "deploy": "wrangler deploy",
