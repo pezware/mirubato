@@ -147,6 +147,43 @@ The build system integrates with GitHub Actions for:
 
 See `.github/workflows/backend-build-validation.yml` for details.
 
+### Cloudflare Dashboard Settings
+
+For proper deployment, configure your Cloudflare Worker with these settings:
+
+**Build Configuration:**
+
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy` (for production/default environment)
+- Root directory: `/backend/`
+- Version command: **Leave empty** (unless using gradual deployments)
+
+**Understanding Wrangler Environments:**
+
+- Top-level config in `wrangler.toml` is the default (production)
+- Named environments use `[env.<name>]` sections
+- Deploy to specific env: `npx wrangler deploy --env staging`
+- Environment creates worker named: `<base-name>-<env-name>`
+
+**Why Version Command Should Be Empty:**
+
+1. `wrangler versions upload` is for gradual rollouts, not direct deployment
+2. Requires initial deployment with `wrangler deploy` first
+3. Standard deployments should use `wrangler deploy` only
+
+**For Environment-Specific Deployment:**
+If you need to deploy to a specific environment from Cloudflare dashboard:
+
+- Production branch deploy command: `npx wrangler deploy`
+- Non-production branch deploy command: `npx wrangler deploy --env staging`
+
+**Branch Deployment Settings:**
+
+- Production branches use top-level config (default)
+- Non-production branches deploy to `staging` environment
+- This prevents accidental deployment to production from feature branches
+- Development environment (`--env dev`) is reserved for local development
+
 ## Best Practices
 
 ### Development Workflow
@@ -194,6 +231,13 @@ npm run dev:server
 2. Verify build artifacts are generated correctly
 3. Check bundle size for optimization opportunities
 4. Use environment-specific deployment commands
+
+**Important:** When deploying via Cloudflare dashboard:
+
+- The build runs from repository root
+- TypeScript compiles to `backend/dist/`
+- Wrangler uses `backend/wrangler.toml` configuration
+- Entry point is `backend/dist/index.js`
 
 ## Future Enhancements
 
