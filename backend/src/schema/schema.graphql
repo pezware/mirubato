@@ -124,6 +124,9 @@ type AuthResponse {
   success: Boolean!
   message: String!
   user: User!
+  accessToken: String!
+  refreshToken: String!
+  expiresIn: Int!
 }
 
 type TokenPayload {

@@ -1,4 +1,6 @@
-// @ts-expect-error - This file is generated at build time
-import schemaContent from './schema-content.js'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
-export const typeDefs = schemaContent
+// Simple path resolution that works in both Jest and runtime
+const schemaPath = join(__dirname, 'schema.graphql')
+export const typeDefs = readFileSync(schemaPath, 'utf-8')

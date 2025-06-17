@@ -145,6 +145,32 @@ fi
 - Configure ESLint to error on console statements
 - Add pre-commit hooks
 
+### 8. Backend Build System Infinite Loop (RESOLVED)
+
+**Problem**: Backend `npm run dev` was stuck in infinite loop, constantly rebuilding
+
+**Root Cause Analysis** (2025-06-16):
+
+- `wrangler.toml` had `build.command = "npm run build"`
+- `package.json` had prebuild/postbuild hooks calling `build-modern.js`
+- `build-modern.js` performed complex build orchestration
+- This created circular dependency: wrangler → npm build → build-modern.js → prebuild hooks → wrangler
+
+**Solution Applied**:
+
+1. **Simplified build system**: Removed complex `build-modern.js` entirely
+2. **Let Wrangler handle builds**: Removed `build.command` from `wrangler.toml`
+3. **Streamlined package.json**: `npm run dev` now just runs `wrangler dev --env local`
+4. **Updated documentation**: BUILD.md aligned with new simplified process
+5. **Fixed dev-server.js**: Removed lodash dependency, simplified build process
+
+**Prevention**: Follow Cloudflare best practices - let Wrangler handle TypeScript compilation directly
+
+**Frontend vs Backend comparison**:
+
+- Frontend: `npm run dev` → `vite` (simple, direct)
+- Backend (fixed): `npm run dev` → `wrangler dev --env local` (simple, direct)
+
 ## Common Development Issues
 
 ### 1. Type Misalignment

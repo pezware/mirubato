@@ -316,7 +316,7 @@ describe('Auth and Sync Flow Integration', () => {
   })
 
   describe('Post-Sync Data Access', () => {
-    beforeEach(() => {
+    it('should retrieve synced logbook entries via GraphQL', async () => {
       // Setup data as if it was synced
       mockDB.setMockData('logbook_entries', [
         {
@@ -342,9 +342,6 @@ describe('Auth and Sync Flow Integration', () => {
           updated_at: new Date().toISOString(),
         },
       ])
-    })
-
-    it('should retrieve synced logbook entries via GraphQL', async () => {
       const query = `
         query GetLogbookEntries($filter: LogbookFilterInput, $limit: Int, $offset: Int) {
           myLogbookEntries(filter: $filter, limit: $limit, offset: $offset) {

@@ -17,6 +17,12 @@ npm install                    # Install all dependencies
 npm run dev                    # Start frontend (port 3000)
 npm run dev:backend            # Start backend (port 8787) - uses --env local
 
+# Backend Development (NEW SYSTEM)
+cd backend && npm run dev      # Full dev workflow (build + server)
+cd backend && npm run dev:build # Development build only
+cd backend && npm run dev:watch # TypeScript watch mode
+cd backend && npm run build    # Production build
+
 # GraphQL Development (IMPORTANT!)
 npm run codegen                # Generate TypeScript types from GraphQL schema
 npm run codegen:watch          # Auto-generate on schema changes

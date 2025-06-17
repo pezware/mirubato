@@ -71,6 +71,7 @@ export class MockD1Database implements Partial<D1Database> {
           const whereMatch = query.match(/WHERE\s+(\w+)\s*=\s*\?/i)
           if (whereMatch) {
             const field = whereMatch[1]
+            // For queries with ORDER BY LIMIT OFFSET, the first param is still the WHERE value
             rows = rows.filter((r: any) => r[field] === boundValues[0])
           }
 
@@ -130,6 +131,22 @@ export class MockD1Database implements Partial<D1Database> {
               }
               return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
             })
+          }
+        }
+
+        // Handle LIMIT and OFFSET
+        if (query.toUpperCase().includes('LIMIT')) {
+          const limitMatch = query.match(/LIMIT\s+\?\s*(?:OFFSET\s+\?)?/i)
+          if (limitMatch) {
+            // Get limit and offset from the last bound values
+            const limit = boundValues[boundValues.length - 2]
+            const offset = boundValues[boundValues.length - 1]
+
+            if (offset !== undefined) {
+              rows = rows.slice(offset, offset + limit)
+            } else {
+              rows = rows.slice(0, limit)
+            }
           }
         }
 

@@ -1,0 +1,84 @@
+name: Backend Build Validation
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['backend/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['backend/**']
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Validate backend build (development)
+      working-directory: ./backend
+      run: |
+        npm run build:dev
+        echo "✅ Development build successful"
+    
+    - name: Validate backend build (production)
+      working-directory: ./backend
+      run: |
+        npm run build
+        echo "✅ Production build successful"
+    
+    - name: Run type checking
+      working-directory: ./backend
+      run: |
+        npm run type-check
+        echo "✅ Type checking passed"
+    
+    - name: Validate build artifacts
+      working-directory: ./backend
+      run: |
+        # Check that required files exist
+        if [ ! -f "dist/index.js" ]; then
+          echo "❌ Missing dist/index.js"
+          exit 1
+        fi
+        
+        if [ ! -f "dist/version.json" ]; then
+          echo "❌ Missing dist/version.json"
+          exit 1
+        fi
+        
+        # Check bundle size (should be reasonable for a Worker)
+        size=$(stat -c%s "dist/index.js" 2>/dev/null || stat -f%z "dist/index.js")
+        echo "📦 Bundle size: $((size / 1024)) KB"
+        
+        # Warn if bundle is too large (>500KB)
+        if [ $size -gt 512000 ]; then
+          echo "⚠️ Bundle size is quite large (>500KB), consider optimization"
+        fi
+        
+        echo "✅ Build artifacts validation passed"
+    
+    - name: Test build deployment (dry run)
+      working-directory: ./backend
+      run: |
+        # Install wrangler if not already available
+        if ! command -v wrangler &> /dev/null; then
+          npm install -g wrangler
+        fi
+        
+        # Test deployment without actually deploying
+        echo "🧪 Testing deployment configuration..."
+        npx wrangler deploy --dry-run --env dev
+        echo "✅ Deployment configuration valid"

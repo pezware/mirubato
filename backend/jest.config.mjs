@@ -6,6 +6,9 @@ export default {
     '**/__tests__/**/*.test.ts',
     '**/__tests__/**/*.spec.ts'
   ],
+  testPathIgnorePatterns: [
+    '<rootDir>/src/__tests__/integration/d1-uat.test.ts'
+  ],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {

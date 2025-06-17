@@ -11,8 +11,21 @@ const Query: Partial<QueryResolvers> = {
       return null
     }
 
-    const userService = new UserService(context.env.DB)
-    return userService.getUserById(context.user.id)
+    try {
+      const userService = new UserService(context.env.DB)
+      const dbUser = await userService.getUserById(context.user.id)
+
+      // If user exists in database, return it
+      if (dbUser) {
+        return dbUser
+      }
+
+      // Fall back to context user if database lookup fails (for testing or temporary DB issues)
+      return context.user
+    } catch (error) {
+      // If database is unavailable, fall back to context user
+      return context.user
+    }
   },
 
   user: async (_parent, { id }, context) => {

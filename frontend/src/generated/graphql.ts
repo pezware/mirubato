@@ -49,7 +49,10 @@ export type AuthPayload = {
 
 export type AuthResponse = {
   __typename?: 'AuthResponse'
+  accessToken: Scalars['String']['output']
+  expiresIn: Scalars['Int']['output']
   message: Scalars['String']['output']
+  refreshToken: Scalars['String']['output']
   success: Scalars['Boolean']['output']
   user: User
 }
