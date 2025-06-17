@@ -112,9 +112,18 @@ export const logbookResolvers: Resolvers = {
           goalIds: JSON.parse(row.goal_ids as string),
           tags: JSON.parse(row.tags as string),
           metadata: row.metadata ? JSON.parse(row.metadata as string) : null,
-          timestamp: new Date(row.timestamp as number).toISOString(),
-          createdAt: new Date(row.created_at as number).toISOString(),
-          updatedAt: new Date(row.updated_at as number).toISOString(),
+          timestamp:
+            typeof row.timestamp === 'string'
+              ? row.timestamp
+              : new Date(row.timestamp as number).toISOString(),
+          createdAt:
+            typeof row.created_at === 'string'
+              ? row.created_at
+              : new Date(row.created_at as number).toISOString(),
+          updatedAt:
+            typeof row.updated_at === 'string'
+              ? row.updated_at
+              : new Date(row.updated_at as number).toISOString(),
           user: context.user, // Include the user object to satisfy TypeScript
         })) as LogbookEntry[]
 

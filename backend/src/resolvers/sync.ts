@@ -69,11 +69,20 @@ export const syncResolvers = {
       // Parse sync token to get timestamp and user ID
       const [userId, timestamp] = syncToken.split(':')
 
+      if (!userId || !timestamp) {
+        throw new Error('Invalid sync token format')
+      }
+
       if (userId !== ctx.user.id) {
         throw new AuthenticationError('Invalid sync token')
       }
 
-      const since = new Date(parseInt(timestamp, 10)).toISOString()
+      const timestampNumber = parseInt(timestamp, 10)
+      if (isNaN(timestampNumber)) {
+        throw new Error('Invalid timestamp in sync token')
+      }
+
+      const since = new Date(timestampNumber).toISOString()
 
       // Query for changes since timestamp
       const [sessions, goals, entries, deleted] = await Promise.all([
@@ -83,7 +92,7 @@ export const syncResolvers = {
           .bind(userId, since)
           .all(),
         ctx.env.DB.prepare(
-          'SELECT * FROM goals WHERE user_id = ? AND updated_at > ? AND deleted_at IS NULL'
+          'SELECT * FROM practice_goals WHERE user_id = ? AND updated_at > ? AND deleted_at IS NULL'
         )
           .bind(userId, since)
           .all(),
@@ -105,7 +114,8 @@ export const syncResolvers = {
       // Add practice sessions
       interface DbPracticeSession {
         id: string
-        started_at: string
+        started_at?: string
+        created_at?: string
         updated_at: string
         sync_version?: number
         checksum?: string
@@ -117,7 +127,9 @@ export const syncResolvers = {
           entities.push({
             id: typedSession.id,
             entityType: 'practiceSession',
-            createdAt: new Date(typedSession.started_at).getTime(),
+            createdAt: new Date(
+              typedSession.started_at || typedSession.created_at || 0
+            ).getTime(),
             updatedAt: new Date(typedSession.updated_at).getTime(),
             syncVersion: typedSession.sync_version || 1,
             checksum: typedSession.checksum || '',
@@ -141,8 +153,8 @@ export const syncResolvers = {
           entities.push({
             id: typedGoal.id,
             entityType: 'goal',
-            createdAt: typedGoal.created_at,
-            updatedAt: typedGoal.updated_at,
+            createdAt: new Date(typedGoal.created_at).getTime(),
+            updatedAt: new Date(typedGoal.updated_at).getTime(),
             syncVersion: typedGoal.sync_version || 1,
             checksum: typedGoal.checksum || '',
             data: typedGoal,
@@ -165,8 +177,8 @@ export const syncResolvers = {
           entities.push({
             id: typedEntry.id,
             entityType: 'logbookEntry',
-            createdAt: typedEntry.created_at,
-            updatedAt: typedEntry.updated_at,
+            createdAt: new Date(typedEntry.created_at).getTime(),
+            updatedAt: new Date(typedEntry.updated_at).getTime(),
             syncVersion: typedEntry.sync_version || 1,
             checksum: typedEntry.checksum || '',
             data: typedEntry,
@@ -203,7 +215,7 @@ export const syncResolvers = {
           .bind(userId)
           .all(),
         ctx.env.DB.prepare(
-          'SELECT * FROM goals WHERE user_id = ? AND deleted_at IS NULL'
+          'SELECT * FROM practice_goals WHERE user_id = ? AND deleted_at IS NULL'
         )
           .bind(userId)
           .all(),
@@ -342,13 +354,21 @@ export const syncResolvers = {
         )
         .run()
 
-      return {
+      // Also store in KV for quick access
+      const metadata = {
         lastSyncTimestamp: args.lastSyncTimestamp,
         syncToken: args.syncToken,
         pendingSyncCount: 0,
         lastSyncStatus: args.status,
         lastSyncError: null,
       }
+
+      await ctx.env.MIRUBATO_MAGIC_LINKS.put(
+        `sync:metadata:${args.userId}`,
+        JSON.stringify(metadata)
+      )
+
+      return metadata
     },
   },
 }
@@ -444,7 +464,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
   const id = entity.remoteId || nanoid()
 
   const existing = await ctx.env.DB.prepare(
-    'SELECT id, sync_version, checksum FROM goals WHERE id = ?'
+    'SELECT id, sync_version, checksum FROM practice_goals WHERE id = ?'
   )
     .bind(id)
     .first()
@@ -468,7 +488,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
     }
 
     await ctx.env.DB.prepare(
-      `UPDATE goals 
+      `UPDATE practice_goals 
        SET title = ?, description = ?, target_date = ?, 
            progress = ?, status = ?, milestones = ?,
            completed_at = ?, sync_version = ?, checksum = ?, 
@@ -490,7 +510,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
       .run()
   } else {
     await ctx.env.DB.prepare(
-      `INSERT INTO goals 
+      `INSERT INTO practice_goals 
        (id, user_id, title, description, target_date, progress,
         status, milestones, linked_entries, created_at, updated_at,
         completed_at, sync_version, checksum)

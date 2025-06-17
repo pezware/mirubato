@@ -17,6 +17,12 @@ npm install                    # Install all dependencies
 npm run dev                    # Start frontend (port 3000)
 npm run dev:backend            # Start backend (port 8787) - uses --env local
 
+# Backend Development (NEW SYSTEM)
+cd backend && npm run dev      # Full dev workflow (build + server)
+cd backend && npm run dev:build # Development build only
+cd backend && npm run dev:watch # TypeScript watch mode
+cd backend && npm run build    # Production build
+
 # GraphQL Development (IMPORTANT!)
 npm run codegen                # Generate TypeScript types from GraphQL schema
 npm run codegen:watch          # Auto-generate on schema changes
@@ -96,6 +102,8 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 3. **Instrument Specific**: Guitar ≠ Piano (positions, fingerings, notation)
 4. **Mobile First**: Test on actual devices
 5. **Open Source**: Keep endpoints public for debugging
+6. **PATH** always use pwd to check what is current path
+7. **BRANCH** always check what is current branch, if at main branch, must create a new branch before editing.
 
 ## 🎯 Current Focus Areas
 

@@ -99,6 +99,9 @@ export const authResolvers: { Mutation: Partial<MutationResolvers> } = {
           success: true,
           user: userWithCloudStorage,
           message: 'Authentication successful',
+          accessToken,
+          refreshToken,
+          expiresIn: 900, // 15 minutes in seconds
         }
       } catch (d1Error) {
         // D1 unavailable - create temporary user
@@ -142,6 +145,9 @@ export const authResolvers: { Mutation: Partial<MutationResolvers> } = {
           success: true,
           user: tempUser,
           message: 'Authentication successful (temporary user)',
+          accessToken,
+          refreshToken,
+          expiresIn: 900, // 15 minutes in seconds
         }
       }
     },

@@ -30,7 +30,7 @@ export interface EnvironmentConfig {
       namespace?: string
     }
   }
-  environment: 'development' | 'staging' | 'production'
+  environment: 'development' | 'production'
 }
 
 export interface UnifiedConfig {
@@ -95,7 +95,6 @@ export function detectEnvironment(): keyof typeof environmentsConfig.environment
   if (typeof process !== 'undefined' && process.env) {
     const env = process.env.ENVIRONMENT || process.env.NODE_ENV
     if (env === 'production') return 'production'
-    if (env === 'staging') return 'staging'
     if (env === 'development') return 'local'
   }
 
@@ -118,16 +117,6 @@ export function detectEnvironment(): keyof typeof environmentsConfig.environment
 
     // Workers.dev deployments
     if (hostname.endsWith('.workers.dev')) {
-      const team = environmentsConfig.MYTEAM
-
-      // Staging (direct workers.dev)
-      if (
-        hostname === `mirubato.${team}.workers.dev` ||
-        hostname === `mirubato-backend.${team}.workers.dev`
-      ) {
-        return 'staging'
-      }
-
       // Preview deployments (with hash prefix)
       if (hostname.includes('-mirubato')) {
         return 'preview'

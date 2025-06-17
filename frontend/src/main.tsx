@@ -5,6 +5,9 @@ import App from './App.tsx'
 import { apolloClient } from './lib/apollo/client'
 import './styles/index.css'
 
+// Debug endpoints in staging
+import './utils/debug-endpoints'
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ApolloProvider client={apolloClient}>

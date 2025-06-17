@@ -30,7 +30,3 @@ workers_dev = true
 name = "mirubato-dev"
 workers_dev = true
 
-# Staging environment
-[env.staging]
-name = "mirubato-staging"
-workers_dev = true

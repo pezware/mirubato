@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "npm run dev -w @mirubato/frontend",
     "dev:backend": "npm run dev -w @mirubato/backend",
-    "build": "npm run build -w @mirubato/frontend",
+    "build": "cd backend && npm run build",
+    "build:frontend": "npm run build -w @mirubato/frontend",
     "build:backend": "npm run build -w @mirubato/backend",
     "lint": "npm run lint --workspaces",
     "type-check": "npm run type-check --workspaces",
