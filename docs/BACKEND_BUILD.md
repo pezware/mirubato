@@ -153,7 +153,7 @@ For proper deployment, configure your Cloudflare Worker with these settings:
 
 **Build Configuration:**
 
-- Build command: `npm run build`
+- Build command: `cd backend && npm run build`
 - Deploy command: `cd backend && npx wrangler deploy` (for production/default environment)
 - Root directory: `/` (repository root)
 - Version command: **Leave empty** (unless using gradual deployments)
