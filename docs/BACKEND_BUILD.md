@@ -153,9 +153,9 @@ For proper deployment, configure your Cloudflare Worker with these settings:
 
 **Build Configuration:**
 
-- Build command: `cd backend && npm run build`
-- Deploy command: `cd backend && npx wrangler deploy` (for production/default environment)
-- Root directory: `/` (repository root)
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy` (for production/default environment)
+- Root directory: `/backend/`
 - Version command: **Leave empty** (unless using gradual deployments)
 
 **Understanding Wrangler Environments:**
@@ -174,8 +174,8 @@ For proper deployment, configure your Cloudflare Worker with these settings:
 **For Environment-Specific Deployment:**
 If you need to deploy to a specific environment from Cloudflare dashboard:
 
-- Production branch deploy command: `cd backend && npx wrangler deploy`
-- Non-production branch deploy command: `cd backend && npx wrangler deploy --env staging`
+- Production branch deploy command: `npx wrangler deploy`
+- Non-production branch deploy command: `npx wrangler deploy --env staging`
 
 **Branch Deployment Settings:**
 
