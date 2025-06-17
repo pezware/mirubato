@@ -122,7 +122,9 @@ const Logbook: React.FC = () => {
           setEntries(transformedEntries)
         } else if (!shouldUseGraphQL || (shouldUseGraphQL && graphqlError)) {
           // Use localStorage for anonymous users OR as fallback when GraphQL fails
-          const filters = user?.id ? { userId: user.id } : {}
+          // For anonymous users, show ALL entries since they're all local
+          // For authenticated users, filter by userId
+          const filters = user && !user.isAnonymous ? { userId: user.id } : {}
           const loadedEntries = await practiceLogger.getLogEntries(filters)
           setEntries(loadedEntries)
 

@@ -10,6 +10,11 @@ import {
   LOGOUT,
 } from '../graphql/queries/auth'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
+import {
+  SYNC_ANONYMOUS_DATA,
+  GET_LOGBOOK_ENTRIES,
+  GET_GOALS,
+} from '../graphql/queries/practice'
 import { isAuthenticated as checkIsAuthenticated } from '../lib/apollo/client'
 import { localStorageService } from '../services/localStorage'
 import { Theme, NotationSize, Instrument } from '@mirubato/shared/types'
@@ -366,8 +371,8 @@ describe('AuthContext', () => {
       })
 
       // Cookies are now set server-side, no need to check setAuthTokens
-      // Login clears all local data (no migration happens)
-      expect(mockLocalStorage.clearAllData).toHaveBeenCalled()
+      // Login preserves local data for sync (no clearAllData call)
+      expect(mockLocalStorage.clearAllData).not.toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/logbook')
       expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true')
       expect(screen.getByTestId('is-anonymous')).toHaveTextContent('false')
@@ -461,8 +466,19 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user-id')).toHaveTextContent('user-123')
       })
 
-      // Mock getUserData to return null after logout to simulate cleared data
-      mockLocalStorage.getUserData.mockReturnValue(null)
+      // Reset mocks for logout flow
+      mockLocalStorage.getUserData.mockReset()
+      mockLocalStorage.setUserData.mockReset()
+
+      // First call to getUserData (in initializeAnonymousUser) returns null
+      mockLocalStorage.getUserData.mockReturnValueOnce(null)
+
+      // Mock setUserData to capture the new anonymous user
+      mockLocalStorage.setUserData.mockImplementation(userData => {
+        // After setUserData is called with new anonymous user,
+        // subsequent getUserData calls should return that user
+        mockLocalStorage.getUserData.mockReturnValue(userData)
+      })
 
       // Click logout button
       await act(async () => {
@@ -474,19 +490,20 @@ describe('AuthContext', () => {
         expect(mockNavigate).toHaveBeenCalledWith('/')
       })
 
-      // Due to the guard in initializeAnonymousUser, the user remains the same
-      // The anonymous user initialization is blocked because user state is still set
-      expect(screen.getByTestId('user-id')).toHaveTextContent('user-123')
+      // After logout, initializeAnonymousUser is called
+      // Since getUserData returns null, a new anonymous user is created
+      await waitFor(() => {
+        expect(screen.getByTestId('user-id')).toHaveTextContent(/^anon_/)
+      })
 
       // Cookie handling is now server-side, no need to check clearAuthTokens
-      // The initializeAnonymousUser is blocked by the guard, so no localStorage calls happen
-      expect(mockLocalStorage.getUserData).not.toHaveBeenCalled()
-      expect(mockLocalStorage.setUserData).not.toHaveBeenCalled()
+      // initializeAnonymousUser is called and creates a new anonymous user
+      expect(mockLocalStorage.getUserData).toHaveBeenCalled()
+      expect(mockLocalStorage.setUserData).toHaveBeenCalled()
 
-      // The user state doesn't change due to the guard
-      // So authentication status also remains the same (user is still non-anonymous)
-      expect(screen.getByTestId('is-anonymous')).toHaveTextContent('false')
-      expect(screen.getByTestId('is-authenticated')).toHaveTextContent('true')
+      // The user state changes to anonymous after logout
+      expect(screen.getByTestId('is-anonymous')).toHaveTextContent('true')
+      expect(screen.getByTestId('is-authenticated')).toHaveTextContent('false')
     })
 
     it('handles logout errors but still clears auth', async () => {
@@ -833,6 +850,71 @@ describe('AuthContext', () => {
           result: {
             data: {
               me: mockUser,
+            },
+          },
+        },
+        {
+          request: {
+            query: SYNC_ANONYMOUS_DATA,
+            variables: {
+              input: {
+                sessions: [],
+                logs: [],
+                entries: [],
+                goals: [],
+              },
+            },
+          },
+          result: {
+            data: {
+              syncAnonymousData: {
+                success: true,
+                errors: [],
+                syncedSessions: 0,
+                syncedLogs: 0,
+                syncedEntries: 0,
+                syncedGoals: 0,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_LOGBOOK_ENTRIES,
+            variables: { limit: 1000, offset: 0 },
+          },
+          result: {
+            data: {
+              myLogbookEntries: {
+                edges: [],
+                pageInfo: {
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                  startCursor: null,
+                  endCursor: null,
+                },
+                totalCount: 0,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_GOALS,
+            variables: { limit: 1000, offset: 0 },
+          },
+          result: {
+            data: {
+              myGoals: {
+                edges: [],
+                pageInfo: {
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                  startCursor: null,
+                  endCursor: null,
+                },
+                totalCount: 0,
+              },
             },
           },
         },

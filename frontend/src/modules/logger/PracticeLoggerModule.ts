@@ -167,6 +167,7 @@ export class PracticeLoggerModule implements ModuleInterface {
 
     const keys = await this.storage.getKeys()
     const logbookKeys = keys.filter((k: string) => k.startsWith('logbook:'))
+
     const entryPromises = logbookKeys.map((key: string) =>
       this.storage.read<LogbookEntry>(key)
     )

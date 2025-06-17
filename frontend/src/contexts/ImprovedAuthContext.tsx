@@ -12,6 +12,11 @@ import {
   REFRESH_TOKEN,
   LOGOUT,
 } from '../graphql/queries/auth'
+import {
+  SYNC_ANONYMOUS_DATA,
+  GET_LOGBOOK_ENTRIES,
+  GET_GOALS,
+} from '../graphql/queries/practice'
 import { GET_CURRENT_USER } from '../graphql/queries/user'
 import { createLogger } from '../utils/logger'
 // import { removeUndefinedValues } from '../utils/graphqlHelpers'
@@ -21,7 +26,12 @@ import { useModules } from './ModulesContext'
 // import { getGraphQLEndpoint } from '../utils/env'
 // REMOVED: Sync imports - sync is now managed separately
 import type { SyncState } from '../services/sync/types'
-// import type { LogbookEntry, Goal } from '../modules/logger/types'
+import type {
+  LogbookEntry,
+  Goal,
+  PieceReference,
+  GoalMilestone,
+} from '../modules/logger/types'
 import type { User as GraphQLUser } from '../generated/graphql'
 import { Instrument, Theme, NotationSize } from '@mirubato/shared/types'
 
@@ -85,7 +95,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
   const {
     eventBus,
     isInitialized: modulesInitialized,
-    // practiceLogger,
+    practiceLogger,
   } = useModules()
 
   const lastLoginEventTimestamp = useRef<number>(0)
@@ -94,6 +104,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
   const [verifyMagicLink] = useMutation(VERIFY_MAGIC_LINK)
   const [refreshTokenMutation] = useMutation(REFRESH_TOKEN)
   const [logoutMutation] = useMutation(LOGOUT)
+  const [syncAnonymousDataMutation] = useMutation(SYNC_ANONYMOUS_DATA)
 
   // Check if we should use GraphQL based on environment
   // const shouldUseGraphQL =
@@ -131,10 +142,8 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
 
   // Initialize anonymous user
   const initializeAnonymousUser = useCallback(() => {
-    // Prevent re-initialization if user already exists
-    if (user) {
-      return
-    }
+    // Don't check for existing user - this function should always create a new anonymous user
+    // This fixes the race condition during logout where user might not be fully cleared
 
     const existingLocalData = localStorageService.getUserData()
 
@@ -287,8 +296,12 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
           // initializeSyncOrchestrator() - removed: sync managed separately
 
           setUser(authenticatedUser)
-          localStorageService.clearAllData()
+          // Don't clear localStorage - preserve local-first data
+          // Instead, trigger sync to merge local data with cloud
           emitLoginEvent(authenticatedUser)
+
+          // Note: Sync will be triggered automatically by auth:login event
+          // The sync logic is handled separately to avoid circular dependencies
 
           logger.info('User logged in successfully', {
             userId: authenticatedUser.id,
@@ -303,16 +316,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
         loginInProgressRef.current = null
       }
     },
-    [
-      verifyMagicLink,
-      apolloClient,
-      navigate,
-      verifyMagicLink,
-      apolloClient,
-      navigate,
-      emitLoginEvent,
-      // initializeSyncOrchestrator, - removed: sync managed separately
-    ]
+    [verifyMagicLink, apolloClient, navigate, emitLoginEvent]
   )
 
   // Logout function
@@ -335,8 +339,18 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
       //   syncOrchestratorRef.current = null
       // }
 
-      // Create new anonymous user
+      // Clear authenticated user state first
+      setUser(null)
+      setLocalUserData(null)
+
+      // Small delay to ensure React processes the state update
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      // Create new anonymous user after state is cleared
       initializeAnonymousUser()
+
+      // Wait for the anonymous user to be created
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       eventBus.publish({
         source: 'AuthContext',
@@ -410,28 +424,256 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
     return () => clearInterval(refreshInterval)
   }, [user, refreshAuth])
 
-  // Manual sync function - simplified without sync orchestrator
+  // Manual sync function - bidirectional sync between localStorage and D1
   const syncToCloud = useCallback(async () => {
     if (!user || user.isAnonymous) {
       logger.warn('Cannot sync: anonymous user')
       return
     }
 
+    if (!practiceLogger) {
+      logger.warn('Cannot sync: PracticeLoggerModule not initialized')
+      return
+    }
+
     try {
       setSyncState(prev => ({ ...prev, status: 'syncing', error: null }))
-      // TODO: Implement direct sync without orchestrator
-      // For now, just simulate success
-      setTimeout(() => {
-        setSyncState(prev => ({
-          ...prev,
-          status: 'idle',
-          lastSync: Date.now(),
-          pendingOperations: 0,
-          error: null,
-        }))
-      }, 1000)
+      logger.info('Starting bidirectional sync', { userId: user.id })
+
+      // Step 1: Get ALL local entries that need syncing (not filtered by userId)
+      // This ensures all anonymous entries are synced to the cloud
+      const localEntries = await practiceLogger.getLogEntries({})
+      const localGoals = await practiceLogger.getGoals({})
+
+      // Step 2: Update anonymous entries with authenticated userId before syncing
+      const updatedEntries = localEntries.map(entry => ({
+        ...entry,
+        userId: user.id, // Assign authenticated user's ID
+      }))
+
+      // Step 3: Sync local data to cloud (UP: local→cloud)
+      if (updatedEntries.length > 0 || localGoals.length > 0) {
+        logger.info('Syncing local data to cloud', {
+          entries: updatedEntries.length,
+          goals: localGoals.length,
+        })
+
+        const { data } = await syncAnonymousDataMutation({
+          variables: {
+            input: {
+              sessions: [], // We don't have practice sessions in current MVP
+              logs: [], // We don't have practice logs in current MVP
+              entries: updatedEntries.map(entry => ({
+                id: entry.id, // Include the original ID to prevent duplicates
+                timestamp: new Date(entry.timestamp).toISOString(),
+                duration: entry.duration,
+                type: entry.type.toUpperCase(),
+                instrument: entry.instrument,
+                pieces: entry.pieces,
+                techniques: entry.techniques,
+                goalIds: entry.goals || [],
+                notes: entry.notes || '',
+                mood: entry.mood?.toUpperCase(),
+                tags: entry.tags,
+                metadata: entry.metadata
+                  ? {
+                      source: entry.metadata.source,
+                      accuracy: entry.metadata.accuracy,
+                      notesPlayed: entry.metadata.notesPlayed,
+                      mistakeCount: entry.metadata.mistakeCount,
+                    }
+                  : {
+                      source: 'manual',
+                    },
+              })),
+              goals: localGoals.map(goal => ({
+                title: goal.title,
+                description: goal.description || '',
+                targetDate: goal.targetDate
+                  ? new Date(goal.targetDate).toISOString()
+                  : undefined,
+                milestones: goal.milestones,
+              })),
+            },
+          },
+        })
+
+        if (data?.syncAnonymousData?.success) {
+          logger.info(
+            'Successfully synced local data to cloud',
+            data.syncAnonymousData
+          )
+
+          // Update local entries with authenticated userId after successful sync
+          for (const entry of updatedEntries) {
+            await practiceLogger.updateLogEntry(entry.id, { userId: user.id })
+          }
+        } else {
+          logger.error('Failed to sync local data to cloud', {
+            data: data?.syncAnonymousData,
+            errors: data?.syncAnonymousData?.errors,
+            sampleEntry: updatedEntries[0], // Log a sample entry to see the data format
+          })
+          throw new Error(data?.syncAnonymousData?.errors?.[0] || 'Sync failed')
+        }
+      }
+
+      // Step 4: Fetch latest cloud data (DOWN: cloud→local)
+      logger.info('Fetching cloud data for bidirectional sync')
+
+      // Query cloud data
+      const { data: cloudEntriesData } = await apolloClient.query({
+        query: GET_LOGBOOK_ENTRIES,
+        variables: { limit: 1000, offset: 0 },
+        fetchPolicy: 'network-only',
+      })
+
+      const { data: cloudGoalsData } = await apolloClient.query({
+        query: GET_GOALS,
+        variables: { limit: 1000, offset: 0 },
+        fetchPolicy: 'network-only',
+      })
+
+      // Merge cloud data into local storage
+      if (cloudEntriesData?.myLogbookEntries?.edges) {
+        interface LogbookEntryEdge {
+          node: {
+            id: string
+            timestamp: string
+            duration: number
+            type: string
+            instrument: string
+            pieces: PieceReference[]
+            techniques: string[]
+            goalIds: string[]
+            notes: string
+            mood?: string
+            tags: string[]
+            metadata?: Record<string, unknown>
+          }
+        }
+        const cloudEntries = cloudEntriesData.myLogbookEntries.edges.map(
+          (edge: LogbookEntryEdge) => edge.node
+        )
+        logger.info('Merging cloud entries to local', {
+          count: cloudEntries.length,
+        })
+
+        for (const cloudEntry of cloudEntries) {
+          // Check if entry already exists locally
+          const localEntry = localEntries.find(e => e.id === cloudEntry.id)
+          if (!localEntry) {
+            // Add cloud entry to local storage with the same ID to prevent duplicates
+            const entryForLocal: LogbookEntry = {
+              id: cloudEntry.id,
+              userId: user.id,
+              timestamp: new Date(cloudEntry.timestamp).getTime(),
+              duration: cloudEntry.duration,
+              type: cloudEntry.type.toLowerCase() as LogbookEntry['type'],
+              instrument: cloudEntry.instrument,
+              pieces: cloudEntry.pieces,
+              techniques: cloudEntry.techniques,
+              goals: cloudEntry.goalIds,
+              notes: cloudEntry.notes || '',
+              mood: cloudEntry.mood?.toLowerCase() as LogbookEntry['mood'],
+              tags: cloudEntry.tags,
+              metadata: cloudEntry.metadata,
+            }
+
+            // Write directly to localStorage to preserve the cloud ID
+            // Using window.localStorage directly since localStorageService doesn't expose setItem
+            window.localStorage.setItem(
+              `mirubato:storage:logbook:${cloudEntry.id}`,
+              JSON.stringify(entryForLocal)
+            )
+
+            // Emit event for UI updates
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'logger:entry:created',
+              data: { entry: entryForLocal },
+              metadata: { userId: user.id, version: '1.0.0' },
+            })
+          }
+        }
+      }
+
+      if (cloudGoalsData?.myGoals?.edges) {
+        interface GoalEdge {
+          node: {
+            id: string
+            title: string
+            description: string
+            targetDate?: string
+            milestones: GoalMilestone[]
+          }
+        }
+        const cloudGoals = cloudGoalsData.myGoals.edges.map(
+          (edge: GoalEdge) => edge.node
+        )
+        logger.info('Merging cloud goals to local', {
+          count: cloudGoals.length,
+        })
+
+        for (const cloudGoal of cloudGoals) {
+          // Check if goal already exists locally
+          const localGoal = localGoals.find(g => g.id === cloudGoal.id)
+          if (!localGoal) {
+            // Add cloud goal to local storage with the same ID to prevent duplicates
+            const now = Date.now()
+            const goalForLocal: Goal = {
+              id: cloudGoal.id,
+              userId: user.id,
+              title: cloudGoal.title,
+              description: cloudGoal.description,
+              targetDate: cloudGoal.targetDate
+                ? new Date(cloudGoal.targetDate).getTime()
+                : now + 30 * 24 * 60 * 60 * 1000, // Default to 30 days from now
+              progress: 0,
+              milestones: cloudGoal.milestones,
+              status: 'active',
+              linkedEntries: [],
+              createdAt: now,
+              updatedAt: now,
+            }
+
+            // Write directly to localStorage to preserve the cloud ID
+            // Using window.localStorage directly since localStorageService doesn't expose setItem
+            window.localStorage.setItem(
+              `mirubato:storage:goal:${cloudGoal.id}`,
+              JSON.stringify(goalForLocal)
+            )
+
+            // Emit event for UI updates
+            eventBus.publish({
+              source: 'AuthContext',
+              type: 'logger:goal:created',
+              data: { goal: goalForLocal },
+              metadata: { userId: user.id, version: '1.0.0' },
+            })
+          }
+        }
+      }
+
+      setSyncState(prev => ({
+        ...prev,
+        status: 'idle',
+        lastSync: Date.now(),
+        pendingOperations: 0,
+        error: null,
+      }))
+
+      logger.info('Bidirectional sync completed successfully')
+
+      // Emit sync complete event for UI updates
+      eventBus.publish({
+        source: 'AuthContext',
+        type: 'sync:complete',
+        data: { timestamp: Date.now() },
+        metadata: { userId: user.id, version: '1.0.0' },
+      })
     } catch (error) {
-      logger.error('Manual sync failed', error)
+      logger.error('Bidirectional sync failed', error)
       setSyncState(prev => ({
         ...prev,
         status: 'error',
@@ -442,7 +684,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
         },
       }))
     }
-  }, [user])
+  }, [user, practiceLogger, syncAnonymousDataMutation, apolloClient, eventBus])
 
   const clearSyncError = useCallback(() => {
     setSyncState(prev => ({ ...prev, error: null }))
@@ -451,6 +693,30 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
   const updateSyncState = useCallback((updates: Partial<SyncState>) => {
     setSyncState(prev => ({ ...prev, ...updates }))
   }, [])
+
+  // Auto-sync on login
+  useEffect(() => {
+    if (!eventBus || !modulesInitialized) return
+
+    const subscriptionId = eventBus.subscribe('auth:login', event => {
+      // Only auto-sync for non-anonymous users
+      const userData = (event.data as { user?: User })?.user
+      if (userData && !userData.isAnonymous) {
+        logger.info('Auto-triggering sync after login')
+        setTimeout(() => {
+          syncToCloud().catch(error => {
+            logger.error('Auto-sync after login failed', error)
+          })
+        }, 2000) // Give UI time to update
+      }
+    })
+
+    return () => {
+      if (eventBus && typeof eventBus.unsubscribe === 'function') {
+        eventBus.unsubscribe(subscriptionId)
+      }
+    }
+  }, [eventBus, modulesInitialized, syncToCloud])
 
   // Clean up on unmount - sync orchestrator removed
   // useEffect(() => {

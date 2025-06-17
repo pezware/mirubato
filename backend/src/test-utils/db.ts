@@ -180,7 +180,7 @@ export class MockD1Database implements Partial<D1Database> {
 
             if (recordIndex >= 0) {
               // For goals table, handle the specific update pattern
-              if (tableName === 'practice_goals') {
+              if (tableName === 'goals') {
                 // The sync resolver binds values in this order for goals:
                 // title, description, target_value, current_value, unit, deadline,
                 // completed, completed_at, sync_version, checksum, id

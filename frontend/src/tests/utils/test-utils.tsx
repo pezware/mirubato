@@ -5,6 +5,8 @@ import { MockedProvider, MockedResponse } from '@apollo/client/testing'
 import { InMemoryCache, FetchResult } from '@apollo/client'
 import { GET_CURRENT_USER } from '../../graphql/queries/user'
 import { AudioProvider } from '../../contexts/AudioContext'
+import { AuthProvider } from '../../contexts/ImprovedAuthContext'
+import { ModulesProvider } from '../../contexts/ModulesContext'
 
 // Create a new cache instance for each test to avoid cross-test pollution
 const createCache = () =>
@@ -81,7 +83,11 @@ const AllTheProviders: React.FC<AllTheProvidersProps> = ({
           },
         }}
       >
-        <AudioProvider>{children}</AudioProvider>
+        <ModulesProvider>
+          <AuthProvider>
+            <AudioProvider>{children}</AudioProvider>
+          </AuthProvider>
+        </ModulesProvider>
       </MockedProvider>
     </BrowserRouter>
   )

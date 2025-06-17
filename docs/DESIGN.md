@@ -85,6 +85,12 @@ interface ModuleInterface {
 
 ###### 4. **SyncModule**
 
+- **_Sync requirement_**
+  - entries in local storage always persists regardless signed in or not.
+  - if sign in, bi-direction sync should be triggered and sync local entry to d1 also sync d1 entries to local. Both local and d1 sync should dedup based on entry id.
+  - if sign off. the entries should still persist.
+  - if user sign in to a new email, all local entries should still be synced to the d1 associated with the new email.
+  - later we will implement delete all local storage botton for user to clear up. But uers could also clear up local storage using browser's clear data function
 - Data synchronization between local and cloud storage
 - Sync queue management with retry logic
 - Exponential backoff for failed operations

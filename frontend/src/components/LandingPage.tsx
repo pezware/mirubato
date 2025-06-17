@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PianoChord from './PianoChord'
 import { AuthModal } from './AuthModal'
+import { useAuth } from '../hooks/useAuth'
 
 const LandingPage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, isAnonymous } = useAuth()
 
   useEffect(() => {
     // Trigger fade-in animation after component mounts
@@ -23,14 +25,28 @@ const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-mirubato-wood-900/20 via-transparent to-mirubato-wood-900/40" />
       </div>
 
-      {/* Sign In Button - Top Right */}
+      {/* Auth Status - Top Right */}
       <div className="absolute top-6 right-6 z-20">
-        <button
-          onClick={() => setShowAuthModal(true)}
-          className="px-4 py-2 text-sm font-medium text-white/90 hover:text-white border border-white/30 hover:border-white/50 rounded-lg backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all"
-        >
-          Sign In
-        </button>
+        {isAnonymous ? (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-4 py-2 text-sm font-medium text-white/90 hover:text-white border border-white/30 hover:border-white/50 rounded-lg backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all"
+          >
+            Sign In
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-white/90 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/30">
+              {user?.email}
+            </div>
+            <Link
+              to="/logbook"
+              className="px-4 py-2 text-sm font-medium text-white/90 hover:text-white border border-white/30 hover:border-white/50 rounded-lg backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all"
+            >
+              Logbook
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Content */}
