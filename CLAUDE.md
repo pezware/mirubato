@@ -102,6 +102,8 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 3. **Instrument Specific**: Guitar ≠ Piano (positions, fingerings, notation)
 4. **Mobile First**: Test on actual devices
 5. **Open Source**: Keep endpoints public for debugging
+6. **PATH** always use pwd to check what is current path
+7. **BRANCH** always check what is current branch, if at main branch, must create a new branch before editing.
 
 ## 🎯 Current Focus Areas
 

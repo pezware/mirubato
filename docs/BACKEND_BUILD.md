@@ -86,7 +86,7 @@ wrangler deploy --env dev
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues and Fallacies
 
 1. **Build Fails with TypeScript Errors**
 
@@ -107,10 +107,94 @@ wrangler deploy --env dev
    ```
 
 3. **Wrangler Configuration Issues**
+
    ```bash
    # Validate wrangler config
    npx wrangler deploy --dry-run
    ```
+
+4. **Entry Point Not Found: "The entry-point file at 'dist/index.js' was not found"**
+
+   **Root Cause**: TypeScript preserves full directory structure when importing from outside project root
+
+   **Symptoms**:
+
+   - Build succeeds locally but fails on Cloudflare
+   - Entry point file exists but at different path than expected
+   - TypeScript outputs to `dist/backend/src/index.js` instead of `dist/index.js`
+
+   **Solution**:
+
+   - Update `wrangler.toml` main entry: `main = "dist/backend/src/index.js"`
+   - This happens when importing from `../shared` outside the backend directory
+
+   **Prevention**:
+
+   - Always check TypeScript output structure after adding shared imports
+   - Run `npm run build` and verify the actual output path
+
+5. **Infinite Build Loop in Development**
+
+   **Root Cause**: Circular dependency between wrangler.toml build command and npm scripts
+
+   **Symptoms**:
+
+   - `npm run dev` constantly rebuilds
+   - Build completes but immediately restarts
+   - High CPU usage during development
+
+   **Solution**:
+
+   - Remove `[build]` section from wrangler.toml
+   - Use simple npm scripts without circular references
+   - Let Wrangler handle TypeScript compilation directly
+
+   **Prevention**:
+
+   - Never reference npm scripts in wrangler.toml that call wrangler
+   - Keep build commands simple and linear
+
+6. **\_\_dirname is Not Defined in Workers**
+
+   **Root Cause**: Cloudflare Workers don't have Node.js globals
+
+   **Symptoms**:
+
+   - Runtime error: "\_\_dirname is not defined"
+   - Schema files can't be read at runtime
+   - Works locally but fails in Workers environment
+
+   **Solution**:
+
+   - Pre-generate static content during build
+   - Use build scripts to create importable modules
+   - Example: `build-schema.js` generates `schema-content.js`
+
+   **Prevention**:
+
+   - Never use Node.js-specific globals in Workers code
+   - Always bundle or pre-generate file content
+
+7. **JavaScript Files in Shared Folder Break Tests**
+
+   **Root Cause**: TypeScript compilation outputs JS files that Jest tries to process
+
+   **Symptoms**:
+
+   - Jest fails with "Unexpected token" errors
+   - Tests pass individually but fail in CI
+   - JavaScript files appear in shared/types directory
+
+   **Solution**:
+
+   - Add `shared/**/*.js` to .gitignore
+   - Clean up generated JS files regularly
+   - Configure Jest to ignore these files
+
+   **Prevention**:
+
+   - Never commit generated JavaScript files from TypeScript
+   - Use source TypeScript files directly in monorepo
 
 ### Debug Mode
 
@@ -119,6 +203,37 @@ Enable verbose logging for detailed build information:
 ```bash
 npm run build -- --verbose
 ```
+
+### Build System Fallacies to Avoid
+
+1. **"Setting Root Directory in Cloudflare Changes npm install Location"**
+
+   - FALSE: Cloudflare always runs npm install from repository root
+   - Even with `/backend/` as root directory, dependencies install from root
+   - Solution: Use repository root and `cd backend` in commands
+
+2. **"Frontend and Backend Should Have Same Build Process"**
+
+   - FALSE: Frontend benefits from Vite's optimizations, backend from Wrangler's
+   - Frontend doesn't import from outside its directory (no path issues)
+   - Backend imports shared types, causing different TypeScript behavior
+
+3. **"Version Command is Required for Deployment"**
+
+   - FALSE: Version command is for gradual rollouts only
+   - Standard deployments should leave it empty
+   - Using it without proper setup causes deployment failures
+
+4. **"Build Commands in wrangler.toml Improve Build Process"**
+
+   - FALSE: They often create circular dependencies
+   - Wrangler's built-in TypeScript support is sufficient
+   - External build commands should be in npm scripts only
+
+5. **"TypeScript Always Outputs to dist/ Directly"**
+   - FALSE: TypeScript preserves relative import structure
+   - Imports from `../shared` create `dist/backend/src/` structure
+   - Always verify actual output structure after changes
 
 ## Migration from Legacy Build
 
@@ -187,6 +302,54 @@ If you need to deploy to a specific environment from Cloudflare dashboard:
 - Non-production branches deploy to `staging` environment
 - This prevents accidental deployment to production from feature branches
 - Development environment (`--env dev`) is reserved for local development
+
+## Working Build Configuration
+
+### Critical Configuration That Works
+
+**wrangler.toml**:
+
+```toml
+name = "mirubato-backend"
+main = "dist/backend/src/index.js"  # NOT "dist/index.js"
+# NO [build] section - causes infinite loops
+```
+
+**package.json scripts**:
+
+```json
+{
+  "scripts": {
+    "dev": "wrangler dev --env local",
+    "build": "node scripts/build-schema.js && tsc && node scripts/build-schema.js",
+    "deploy": "wrangler deploy"
+  }
+}
+```
+
+**Root package.json** (for Cloudflare deployment):
+
+```json
+{
+  "scripts": {
+    "build": "cd backend && npm run build"
+  }
+}
+```
+
+**Cloudflare Dashboard Settings**:
+
+- Build command: `npm run build`
+- Deploy command: `cd backend && npx wrangler deploy`
+- Root directory: `/`
+- Version command: **LEAVE EMPTY**
+
+### Why This Configuration Works
+
+1. **TypeScript Output Path**: When importing from `../shared`, TypeScript mirrors the directory structure, outputting to `dist/backend/src/` instead of `dist/`
+2. **Schema Pre-generation**: The `build-schema.js` script generates static content to avoid runtime file reading
+3. **No Circular Dependencies**: Build commands don't reference each other
+4. **Cloudflare Compatibility**: Commands work from repository root as Cloudflare expects
 
 ## Best Practices
 
