@@ -92,7 +92,7 @@ export const syncResolvers = {
           .bind(userId, since)
           .all(),
         ctx.env.DB.prepare(
-          'SELECT * FROM practice_goals WHERE user_id = ? AND updated_at > ? AND deleted_at IS NULL'
+          'SELECT * FROM goals WHERE user_id = ? AND updated_at > ? AND deleted_at IS NULL'
         )
           .bind(userId, since)
           .all(),
@@ -215,7 +215,7 @@ export const syncResolvers = {
           .bind(userId)
           .all(),
         ctx.env.DB.prepare(
-          'SELECT * FROM practice_goals WHERE user_id = ? AND deleted_at IS NULL'
+          'SELECT * FROM goals WHERE user_id = ? AND deleted_at IS NULL'
         )
           .bind(userId)
           .all(),
@@ -464,7 +464,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
   const id = entity.remoteId || nanoid()
 
   const existing = await ctx.env.DB.prepare(
-    'SELECT id, sync_version, checksum FROM practice_goals WHERE id = ?'
+    'SELECT id, sync_version, checksum FROM goals WHERE id = ?'
   )
     .bind(id)
     .first()
@@ -488,7 +488,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
     }
 
     await ctx.env.DB.prepare(
-      `UPDATE practice_goals 
+      `UPDATE goals 
        SET title = ?, description = ?, target_date = ?, 
            progress = ?, status = ?, milestones = ?,
            completed_at = ?, sync_version = ?, checksum = ?, 
@@ -510,7 +510,7 @@ async function syncGoal(entity: SyncEntityInput, ctx: Context) {
       .run()
   } else {
     await ctx.env.DB.prepare(
-      `INSERT INTO practice_goals 
+      `INSERT INTO goals 
        (id, user_id, title, description, target_date, progress,
         status, milestones, linked_entries, created_at, updated_at,
         completed_at, sync_version, checksum)
