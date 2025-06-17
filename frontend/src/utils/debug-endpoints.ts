@@ -26,14 +26,14 @@ export function debugEndpoints() {
 
   console.log('🔍 Endpoint Configuration Debug:', info)
 
-  // Visual indicator for staging
-  if (environment === 'staging' && typeof window !== 'undefined') {
-    console.log('✅ Running in STAGING environment')
+  // Visual indicator for preview environments
+  if (environment === 'preview' && typeof window !== 'undefined') {
+    console.log('✅ Running in PREVIEW environment')
     console.log(`📡 GraphQL API: ${graphqlEndpoint}`)
 
-    // Add a visual badge to the page if in staging
+    // Add a visual badge to the page if in preview
     const badge = document.createElement('div')
-    badge.innerHTML = `STAGING: ${graphqlEndpoint}`
+    badge.innerHTML = `PREVIEW: ${graphqlEndpoint}`
     badge.style.cssText = `
       position: fixed;
       bottom: 10px;
@@ -52,8 +52,8 @@ export function debugEndpoints() {
   return info
 }
 
-// Auto-run in development/staging
-if (import.meta.env.DEV || detectEnvironment() === 'staging') {
+// Auto-run in development/preview
+if (import.meta.env.DEV || detectEnvironment() === 'preview') {
   if (typeof window !== 'undefined') {
     window.addEventListener('load', () => {
       debugEndpoints()

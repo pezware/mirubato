@@ -4,7 +4,7 @@
 declare namespace Cloudflare {
   interface Env {
     MIRUBATO_MAGIC_LINKS: KVNamespace
-    ENVIRONMENT: 'production' | 'development' | 'staging'
+    ENVIRONMENT: 'production' | 'development'
     JWT_SECRET: 'test-jwt-secret-for-local-development'
     DB: D1Database
   }

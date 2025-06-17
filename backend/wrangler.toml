@@ -78,25 +78,6 @@ id = "2632e7dcffe745f1a34ba6a3b029bd4c"
 
 # Development environment uses default wrangler build
 
-# Staging environment
-[env.staging]
-name = "mirubato-backend-staging"
-workers_dev = true
-
-[env.staging.vars]
-ENVIRONMENT = "staging"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "mirubato-staging"
-database_id = "01fd5633-05a7-4297-9d31-ee5a7c4b1221"
-
-[[env.staging.kv_namespaces]]
-binding = "MIRUBATO_MAGIC_LINKS"
-id = "1389dbc875e8413fb5e01c4f9f95da28"
-
-# Staging environment uses default wrangler build
-
 # Production environment
 [env.production]
 name = "mirubato-backend"

@@ -64,28 +64,6 @@
       "environment": "development"
     },
 
-    "staging": {
-      "name": "Staging (Workers Direct)",
-      "frontend": {
-        "url": "https://mirubato.{MYTEAM}.workers.dev"
-      },
-      "backend": {
-        "url": "https://mirubato-backend.{MYTEAM}.workers.dev"
-      },
-      "database": {
-        "name": "mirubato-staging",
-        "binding": "DB",
-        "id": "01fd5633-05a7-4297-9d31-ee5a7c4b1221"
-      },
-      "kv": {
-        "magicLinks": {
-          "binding": "MIRUBATO_MAGIC_LINKS",
-          "id": "1389dbc875e8413fb5e01c4f9f95da28"
-        }
-      },
-      "environment": "staging"
-    },
-
     "production": {
       "name": "Production",
       "frontend": {
