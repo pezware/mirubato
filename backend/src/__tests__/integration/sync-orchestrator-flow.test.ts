@@ -113,7 +113,7 @@ describe('Sync Orchestrator Flow Integration', () => {
 
     // Initialize empty sync tables
     mockDB.setMockData('practice_sessions', [])
-    mockDB.setMockData('practice_goals', [])
+    mockDB.setMockData('goals', [])
     mockDB.setMockData('logbook_entries', [])
     mockDB.setMockData('deleted_entities', [])
   })
@@ -365,7 +365,7 @@ describe('Sync Orchestrator Flow Integration', () => {
       const sessions = mockDB.getMockData('practice_sessions')
       expect(sessions).toHaveLength(1)
 
-      const goals = mockDB.getMockData('practice_goals')
+      const goals = mockDB.getMockData('goals')
       expect(goals).toHaveLength(1)
     })
 
@@ -383,7 +383,7 @@ describe('Sync Orchestrator Flow Integration', () => {
         sync_version: 1,
         checksum: 'old-checksum',
       }
-      mockDB.setMockData('practice_goals', [existingGoal])
+      mockDB.setMockData('goals', [existingGoal])
 
       // Sync newer version from another device
       const conflictingEntity = createSyncEntity(
@@ -438,7 +438,7 @@ describe('Sync Orchestrator Flow Integration', () => {
       expect(result.data?.syncBatch.uploaded).toBe(1)
 
       // Verify newer version won
-      const goals = mockDB.getMockData('practice_goals')
+      const goals = mockDB.getMockData('goals')
       expect(goals).toHaveLength(1)
       expect(goals[0].title).toBe('New Title')
       expect(goals[0].currentValue || goals[0].current_value).toBe(75)
@@ -531,7 +531,7 @@ describe('Sync Orchestrator Flow Integration', () => {
         },
       ])
 
-      mockDB.setMockData('practice_goals', [
+      mockDB.setMockData('goals', [
         {
           id: 'goal-1',
           user_id: 'user-1',
@@ -684,7 +684,7 @@ describe('Sync Orchestrator Flow Integration', () => {
       // Verify all operations were processed
       expect(mockDB.getMockData('practice_sessions')).toHaveLength(1)
       expect(mockDB.getMockData('logbook_entries')).toHaveLength(1)
-      expect(mockDB.getMockData('practice_goals')).toHaveLength(1)
+      expect(mockDB.getMockData('goals')).toHaveLength(1)
     })
   })
 

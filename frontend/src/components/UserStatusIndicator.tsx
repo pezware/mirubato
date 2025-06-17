@@ -9,12 +9,34 @@ export const UserStatusIndicator: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
 
-  if (!user) return null
-
   // Check if we're running on Cloudflare (production environment)
   const isCloudflareEnvironment =
     env.PROD && window.location.hostname !== 'localhost'
   const showCloudSaveOption = isAnonymous && isCloudflareEnvironment
+
+  // Always render the component, even during user state transitions
+  // Show loading state or sign-in button when user is null (during logout transition)
+  if (!user) {
+    return (
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowAuthModal(true)}
+          className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+          title="Sign in to sync your progress to the cloud"
+        >
+          Sign In
+        </button>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            // Modal will stay open to show success message
+            // User can close it manually after checking email
+          }}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center gap-3">
@@ -26,14 +48,13 @@ export const UserStatusIndicator: React.FC = () => {
               Guest Mode
             </span>
           </div>
-          {showCloudSaveOption && (
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
-            >
-              Save Progress to Cloud
-            </button>
-          )}
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+            title="Sign in to sync your progress to the cloud"
+          >
+            {showCloudSaveOption ? 'Save Progress to Cloud' : 'Sign In'}
+          </button>
         </>
       ) : (
         <>
@@ -108,16 +129,14 @@ export const UserStatusIndicator: React.FC = () => {
         </>
       )}
 
-      {isCloudflareEnvironment && (
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          onSuccess={() => {
-            // Modal will stay open to show success message
-            // User can close it manually after checking email
-          }}
-        />
-      )}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          // Modal will stay open to show success message
+          // User can close it manually after checking email
+        }}
+      />
     </div>
   )
 }

@@ -334,6 +334,7 @@ input CreatePracticeLogInput {
 
 # Logbook Input Types
 input CreateLogbookEntryInput {
+  id: ID # Optional ID to preserve existing entries during sync
   timestamp: DateTime!
   duration: Int!
   type: LogbookEntryType!

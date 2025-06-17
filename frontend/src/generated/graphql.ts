@@ -74,6 +74,7 @@ export type CreateGoalInput = {
 export type CreateLogbookEntryInput = {
   duration: Scalars['Int']['input']
   goalIds?: InputMaybe<Array<Scalars['ID']['input']>>
+  id?: InputMaybe<Scalars['ID']['input']>
   instrument: Instrument
   metadata?: InputMaybe<LogbookMetadataInput>
   mood?: InputMaybe<Mood>

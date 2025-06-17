@@ -37,7 +37,7 @@ describe('UserStatusIndicator', () => {
     jest.clearAllMocks()
   })
 
-  it('returns null when no user', () => {
+  it('shows sign in button when no user', () => {
     mockUseAuth.mockReturnValue(
       createMockAuth({
         user: null,
@@ -45,8 +45,8 @@ describe('UserStatusIndicator', () => {
       })
     )
 
-    const { container } = render(<UserStatusIndicator />)
-    expect(container.firstChild).toBeNull()
+    render(<UserStatusIndicator />)
+    expect(screen.getByText('Sign In')).toBeInTheDocument()
   })
 
   it('displays guest mode for anonymous users', () => {

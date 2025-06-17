@@ -312,9 +312,6 @@ export const practiceResolvers = {
       const db = context.env.DB as D1Database
 
       try {
-        // Start a transaction for atomic sync
-        await db.batch([])
-
         // Sync practice sessions
         for (const session of input.sessions) {
           try {
@@ -337,9 +334,24 @@ export const practiceResolvers = {
                 'COMPLETED', // Anonymous sessions are already completed
                 session.accuracy || null,
                 session.notes || null,
-                session.createdAt || new Date().toISOString(),
-                new Date().toISOString(),
-                session.completedAt || new Date().toISOString()
+                // Handle Unix timestamps, ISO strings, and Date objects
+                session.createdAt
+                  ? typeof session.createdAt === 'object' &&
+                    session.createdAt !== null
+                    ? new Date(session.createdAt as string | Date).getTime()
+                    : typeof session.createdAt === 'string'
+                      ? new Date(session.createdAt).getTime()
+                      : session.createdAt
+                  : Date.now(),
+                Date.now(), // updated_at
+                session.completedAt
+                  ? typeof session.completedAt === 'object' &&
+                    session.completedAt !== null
+                    ? new Date(session.completedAt as string | Date).getTime()
+                    : typeof session.completedAt === 'string'
+                      ? new Date(session.completedAt).getTime()
+                      : session.completedAt
+                  : Date.now()
               )
               .run()
 
@@ -383,18 +395,26 @@ export const practiceResolvers = {
         // Sync logbook entries
         for (const entry of input.entries) {
           try {
+            // Check if entry already exists (to prevent duplicates)
+            const entryId = (entry as { id?: string }).id || nanoid()
+
             await db
               .prepare(
-                `INSERT INTO logbook_entries (
+                `INSERT OR REPLACE INTO logbook_entries (
                 id, user_id, timestamp, duration, type,
                 instrument, pieces, techniques, goal_ids,
                 notes, mood, tags, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
               )
               .bind(
-                nanoid(),
+                entryId,
                 context.user.id,
-                entry.timestamp,
+                // Handle Unix timestamps, ISO strings, and Date objects
+                typeof entry.timestamp === 'object' && entry.timestamp !== null
+                  ? new Date(entry.timestamp as string | Date).getTime()
+                  : typeof entry.timestamp === 'string'
+                    ? new Date(entry.timestamp).getTime()
+                    : entry.timestamp,
                 entry.duration,
                 entry.type,
                 entry.instrument,
@@ -404,8 +424,8 @@ export const practiceResolvers = {
                 entry.notes || null,
                 entry.mood || null,
                 entry.tags ? JSON.stringify(entry.tags) : null,
-                new Date().toISOString(),
-                new Date().toISOString()
+                Date.now(), // Unix timestamp for created_at
+                Date.now() // Unix timestamp for updated_at
               )
               .run()
 
@@ -431,10 +451,18 @@ export const practiceResolvers = {
                 context.user.id,
                 goal.title,
                 goal.description || null,
-                goal.targetDate || null,
+                // Handle Unix timestamps, ISO strings, and Date objects for targetDate
+                goal.targetDate
+                  ? typeof goal.targetDate === 'object' &&
+                    goal.targetDate !== null
+                    ? new Date(goal.targetDate as string | Date).getTime()
+                    : typeof goal.targetDate === 'string'
+                      ? new Date(goal.targetDate).getTime()
+                      : goal.targetDate
+                  : null,
                 goal.milestones ? JSON.stringify(goal.milestones) : null,
-                new Date().toISOString(),
-                new Date().toISOString()
+                Date.now(), // Unix timestamp for created_at
+                Date.now() // Unix timestamp for updated_at
               )
               .run()
 
