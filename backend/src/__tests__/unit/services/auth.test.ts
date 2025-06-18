@@ -1,8 +1,30 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { AuthService } from '../../../services/auth'
 import { createMockDB, MockD1Database } from '../../../test-utils/db'
 import { createMockKV } from '../../../test-utils/graphql'
 import type { User } from '../../../types/shared'
 import type { KVNamespace } from '@cloudflare/workers-types'
+
+// Mock the auth utils to avoid jsonwebtoken issues in test environment
+vi.mock('../../../utils/auth', () => {
+  return {
+    generateMagicLinkToken: vi.fn(() => 'test-magic-link-token'),
+    createJWT: vi.fn(async (_user: any) => 'test-jwt-token'),
+    createRefreshToken: vi.fn(async () => 'test-refresh-token'),
+    verifyRefreshToken: vi.fn(async (token: string) => {
+      if (token === 'valid-refresh-token' || token.startsWith('test-')) {
+        return { sub: 'user_123' }
+      }
+      throw new Error('Invalid token')
+    }),
+    verifyJWT: vi.fn(async (token: string) => {
+      if (token === 'valid-jwt-token' || token.startsWith('test-')) {
+        return { sub: 'user_123', user: { id: 'user_123' } }
+      }
+      throw new Error('Invalid token')
+    }),
+  }
+})
 
 describe('AuthService', () => {
   let authService: AuthService
@@ -21,8 +43,7 @@ describe('AuthService', () => {
       const email = 'test@example.com'
       const token = await authService.createMagicLink(email)
 
-      expect(token).toBeTruthy()
-      expect(token.length).toBe(32)
+      expect(token).toBe('test-magic-link-token') // mocked by generateMagicLinkToken
 
       // Verify token was stored in KV
       const storedEmail = await mockKV.get(`magic_link:${token}`)

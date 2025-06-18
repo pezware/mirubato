@@ -12,19 +12,11 @@ const schemaPath = join(__dirname, '../src/schema/schema.graphql')
 const schemaContent = readFileSync(schemaPath, 'utf-8')
 
 // Generate the JavaScript module
-// Use ES modules for production (Cloudflare), CommonJS for tests
-const isProduction =
-  process.env.NODE_ENV === 'production' || process.env.CF_PAGES === '1'
-const jsContent = isProduction
-  ? `// Auto-generated file. Do not edit directly.
+// Always use ES modules now that we're using Vitest
+const jsContent = `// Auto-generated file. Do not edit directly.
 // Generated from schema.graphql
 
 export const schemaContent = ${JSON.stringify(schemaContent)};
-`
-  : `// Auto-generated file. Do not edit directly.
-// Generated from schema.graphql
-
-module.exports.schemaContent = ${JSON.stringify(schemaContent)};
 `
 
 // Write to schema-content.js in src

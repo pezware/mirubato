@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { logRequest } from '../../../middleware/logging'
 
 describe('Logging Middleware', () => {
@@ -6,8 +7,8 @@ describe('Logging Middleware', () => {
 
   beforeEach(() => {
     // Mock console methods
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation()
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
   })
 
   afterEach(() => {
@@ -110,7 +111,7 @@ describe('Logging Middleware', () => {
       await request.text()
 
       // Mock the clone method to throw an error
-      jest.spyOn(request, 'clone').mockImplementation(() => {
+      vi.spyOn(request, 'clone').mockImplementation(() => {
         throw new Error('Cannot clone request')
       })
 

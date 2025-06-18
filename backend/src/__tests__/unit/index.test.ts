@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { Env } from '../../types/context'
 import type {
   D1Database,
@@ -7,42 +8,42 @@ import type {
 import type { RateLimiter } from '../../utils/rateLimiter'
 
 // Mock all dependencies before they are imported
-jest.mock('@apollo/server', () => ({
-  ApolloServer: jest.fn().mockImplementation(() => ({
-    start: jest.fn(),
+vi.mock('@apollo/server', () => ({
+  ApolloServer: vi.fn().mockImplementation(() => ({
+    start: vi.fn(),
   })),
 }))
 
-jest.mock('@as-integrations/cloudflare-workers', () => ({
-  startServerAndCreateCloudflareWorkersHandler: jest.fn(),
+vi.mock('@as-integrations/cloudflare-workers', () => ({
+  startServerAndCreateCloudflareWorkersHandler: vi.fn(),
 }))
 
-jest.mock('../../resolvers', () => ({
+vi.mock('../../resolvers', () => ({
   resolvers: {},
 }))
 
-jest.mock('../../schema', () => ({
+vi.mock('../../schema', () => ({
   typeDefs: 'type Query { test: String }',
 }))
 
-jest.mock('nanoid', () => ({
-  nanoid: jest.fn(() => 'mock-id-123'),
+vi.mock('nanoid', () => ({
+  nanoid: vi.fn(() => 'mock-id-123'),
 }))
 
-jest.mock('../../utils/auth', () => ({
-  verifyJWT: jest.fn(),
+vi.mock('../../utils/auth', () => ({
+  verifyJWT: vi.fn(),
 }))
 
-jest.mock('../../utils/rateLimiter', () => ({
-  createRateLimiter: jest.fn(),
+vi.mock('../../utils/rateLimiter', () => ({
+  createRateLimiter: vi.fn(),
 }))
 
-jest.mock('../../middleware/logging', () => ({
-  logRequest: jest.fn(),
+vi.mock('../../middleware/logging', () => ({
+  logRequest: vi.fn(),
 }))
 
-jest.mock('../../config/cors', () => ({
-  isOriginAllowed: jest.fn(),
+vi.mock('../../config/cors', () => ({
+  isOriginAllowed: vi.fn(),
 }))
 
 // Now import the handler after all mocks are set up
@@ -56,11 +57,11 @@ import { isOriginAllowed } from '../../config/cors'
 
 describe('Cloudflare Workers Handler', () => {
   let mockEnv: Env
-  let mockGraphQLHandler: jest.Mock
+  let mockGraphQLHandler: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Setup default environment
     mockEnv = {
@@ -74,26 +75,30 @@ describe('Cloudflare Workers Handler', () => {
 
     // Setup default mock implementations
     // eslint-disable-next-line no-extra-semi
-    ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
+    ;(isOriginAllowed as ReturnType<typeof vi.fn>).mockReturnValue(true)
     // eslint-disable-next-line no-extra-semi
     // getCorsConfig mock removed - no longer used
 
     const mockRateLimiter: RateLimiter = {
-      checkLimit: jest.fn().mockResolvedValue(true),
+      checkLimit: vi.fn().mockResolvedValue(true),
     }
-    ;(createRateLimiter as jest.Mock).mockReturnValue(mockRateLimiter)
-    ;(logRequest as jest.Mock).mockResolvedValue(undefined)
-    ;(verifyJWT as jest.Mock).mockResolvedValue({ user: { id: 'test-user' } })
+    ;(createRateLimiter as ReturnType<typeof vi.fn>).mockReturnValue(
+      mockRateLimiter
+    )
+    ;(logRequest as ReturnType<typeof vi.fn>).mockResolvedValue(undefined)
+    ;(verifyJWT as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: { id: 'test-user' },
+    })
 
     // Setup Apollo Server mock
-    mockGraphQLHandler = jest.fn().mockResolvedValue(
+    mockGraphQLHandler = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ data: { test: 'success' } }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       })
     )
     ;(
-      startServerAndCreateCloudflareWorkersHandler as jest.Mock
+      startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
     ).mockReturnValue(mockGraphQLHandler)
   })
 
@@ -122,7 +127,7 @@ describe('Cloudflare Workers Handler', () => {
 
     it('should add CORS headers to allowed origins', async () => {
       // eslint-disable-next-line no-extra-semi
-      ;(isOriginAllowed as jest.Mock).mockReturnValue(true)
+      ;(isOriginAllowed as ReturnType<typeof vi.fn>).mockReturnValue(true)
 
       const request = new Request('https://api.example.com/health', {
         headers: { Origin: 'https://example.com' },
@@ -137,7 +142,7 @@ describe('Cloudflare Workers Handler', () => {
 
     it('should not add origin header for disallowed origins', async () => {
       // eslint-disable-next-line no-extra-semi
-      ;(isOriginAllowed as jest.Mock).mockReturnValue(false)
+      ;(isOriginAllowed as ReturnType<typeof vi.fn>).mockReturnValue(false)
 
       const request = new Request('https://api.example.com/health', {
         headers: { Origin: 'https://malicious.com' },
@@ -299,7 +304,7 @@ describe('Cloudflare Workers Handler', () => {
 
     it('should create GraphQL context with user when authenticated', async () => {
       // eslint-disable-next-line no-extra-semi
-      ;(verifyJWT as jest.Mock).mockResolvedValue({
+      ;(verifyJWT as ReturnType<typeof vi.fn>).mockResolvedValue({
         user: { id: 'authenticated-user' },
       })
 
@@ -317,7 +322,7 @@ describe('Cloudflare Workers Handler', () => {
 
       // Get the context function that was passed to the handler
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
 
@@ -337,7 +342,9 @@ describe('Cloudflare Workers Handler', () => {
 
     it('should handle invalid JWT gracefully', async () => {
       // eslint-disable-next-line no-extra-semi
-      ;(verifyJWT as jest.Mock).mockRejectedValue(new Error('Invalid token'))
+      ;(verifyJWT as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('Invalid token')
+      )
 
       const request = new Request('https://api.example.com/graphql', {
         method: 'POST',
@@ -352,7 +359,7 @@ describe('Cloudflare Workers Handler', () => {
 
       // Get the context function
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
 
@@ -363,8 +370,8 @@ describe('Cloudflare Workers Handler', () => {
     })
 
     it('should apply rate limiting when RATE_LIMITER is available', async () => {
-      const mockCheckLimit = jest.fn().mockResolvedValue(false)
-      ;(createRateLimiter as jest.Mock).mockReturnValue({
+      const mockCheckLimit = vi.fn().mockResolvedValue(false)
+      ;(createRateLimiter as ReturnType<typeof vi.fn>).mockReturnValue({
         checkLimit: mockCheckLimit,
       })
 
@@ -381,7 +388,7 @@ describe('Cloudflare Workers Handler', () => {
 
       // Get the context function
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
 
@@ -412,7 +419,7 @@ describe('Cloudflare Workers Handler', () => {
 
       // Get the context function
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
 
@@ -592,7 +599,7 @@ describe('Cloudflare Workers Handler', () => {
       await handler.fetch(request, mockEnv)
 
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
       const context = await contextFn({ request })
@@ -609,7 +616,7 @@ describe('Cloudflare Workers Handler', () => {
       await handler.fetch(request, mockEnv)
 
       const handlerCall = (
-        startServerAndCreateCloudflareWorkersHandler as jest.Mock
+        startServerAndCreateCloudflareWorkersHandler as ReturnType<typeof vi.fn>
       ).mock.calls[0]
       const contextFn = handlerCall[1].context
       const context = await contextFn({ request })

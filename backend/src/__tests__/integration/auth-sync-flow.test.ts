@@ -10,14 +10,7 @@ import { createTestContext } from '../../test-utils/graphql'
 import { GraphQLSchema, execute, parse } from 'graphql'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { resolvers } from '../../resolvers'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-
-// Load GraphQL schema
-const typeDefs = readFileSync(
-  join(__dirname, '../../schema/schema.graphql'),
-  'utf-8'
-)
+import { typeDefs } from '../../schema'
 
 describe('Auth and Sync Flow Integration', () => {
   let mockDB: MockD1Database
