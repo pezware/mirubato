@@ -1,4 +1,4 @@
-import { SyncOperation, SyncResult } from './types'
+import { SyncOperation, SyncResult } from '../types'
 
 export interface SyncQueueConfig {
   maxRetries?: number

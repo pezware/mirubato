@@ -1,4 +1,4 @@
-import { SyncableEntity, Conflict, ResolvedEntity } from './types'
+import { SyncableEntity, Conflict, ResolvedEntity } from '../types'
 
 export type ConflictStrategy =
   | 'lastWriteWins'

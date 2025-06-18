@@ -467,6 +467,11 @@ type Query {
   Get all user data for full sync
   """
   allUserData(userId: ID!): UserData!
+  
+  """
+  Get sync debug information for troubleshooting
+  """
+  syncDebugInfo(userId: ID!): SyncDebugInfo!
 }
 
 # Mutations
@@ -612,6 +617,7 @@ type SyncEntity {
   deletedAt: Float
   syncVersion: Int!
   checksum: String!
+  deviceId: String
   data: JSON!
 }
 
@@ -639,6 +645,38 @@ type UserData {
   logbookEntries: [LogbookEntry!]!
 }
 
+# Debug types
+type SyncDebugInfo {
+  devices: [DeviceInfo!]!
+  localEntryCount: Int!
+  cloudEntryCount: Int!
+  conflicts: [ConflictInfo!]!
+  lastSyncLogs: [SyncLog!]!
+}
+
+type DeviceInfo {
+  deviceId: String!
+  deviceName: String!
+  lastSeen: Float!
+  entryCount: Int!
+}
+
+type ConflictInfo {
+  entityId: String!
+  entityType: String!
+  localVersion: Int!
+  remoteVersion: Int!
+  conflictType: String!
+}
+
+type SyncLog {
+  timestamp: Float!
+  deviceId: String!
+  operation: String!
+  status: String!
+  message: String
+}
+
 type PracticeGoal {
   id: ID!
   title: String!
@@ -664,6 +702,7 @@ input SyncEntityInput {
   deletedAt: Float
   syncVersion: Int!
   checksum: String!
+  deviceId: String
   data: JSON!
 }
 

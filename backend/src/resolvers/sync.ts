@@ -234,6 +234,104 @@ export const syncResolvers = {
         logbookEntries: entries.results || [],
       } as unknown as UserData
     },
+
+    syncDebugInfo: async (
+      _: unknown,
+      { userId }: { userId: string },
+      ctx: Context
+    ) => {
+      if (!ctx.user || ctx.user.id !== userId) {
+        throw new AuthenticationError('Not authorized')
+      }
+
+      // Get device information - for now, we'll collect from the entries
+      const deviceQuery = `
+        SELECT DISTINCT 
+          device_id as deviceId,
+          COUNT(*) as entryCount,
+          MAX(updated_at) as lastSeen
+        FROM (
+          SELECT device_id, updated_at FROM logbook_entries WHERE user_id = ? AND device_id IS NOT NULL
+          UNION ALL
+          SELECT device_id, updated_at FROM goals WHERE user_id = ? AND device_id IS NOT NULL
+          UNION ALL
+          SELECT device_id, updated_at FROM practice_sessions WHERE user_id = ? AND device_id IS NOT NULL
+        )
+        GROUP BY device_id
+      `
+
+      const devices = await ctx.env.DB.prepare(deviceQuery)
+        .bind(userId, userId, userId)
+        .all()
+
+      // Get entry counts
+      const [localCount, cloudCount] = await Promise.all([
+        // This is a placeholder - in real implementation, this would come from client
+        Promise.resolve(0),
+        ctx.env.DB.prepare(
+          'SELECT COUNT(*) as count FROM logbook_entries WHERE user_id = ?'
+        )
+          .bind(userId)
+          .first()
+          .then(r => (r as { count: number })?.count || 0),
+      ])
+
+      // Get conflicts - check for entries with high sync versions
+      const conflicts = await ctx.env.DB.prepare(
+        `
+        SELECT 
+          id as entityId,
+          'logbookEntry' as entityType,
+          sync_version as localVersion,
+          sync_version as remoteVersion,
+          'version-mismatch' as conflictType
+        FROM logbook_entries 
+        WHERE user_id = ? AND sync_version > 5
+        LIMIT 10
+      `
+      )
+        .bind(userId)
+        .all()
+
+      // Get recent sync logs (from sync_metadata table)
+      const syncLogs = await ctx.env.DB.prepare(
+        `
+        SELECT 
+          last_sync_timestamp as timestamp,
+          'unknown' as deviceId,
+          'sync' as operation,
+          last_sync_status as status,
+          last_sync_error as message
+        FROM sync_metadata 
+        WHERE user_id = ?
+        ORDER BY last_sync_timestamp DESC
+        LIMIT 10
+      `
+      )
+        .bind(userId)
+        .all()
+
+      return {
+        devices:
+          devices.results?.map(d => ({
+            deviceId: d.deviceId,
+            deviceName: `Device ${d.deviceId}`, // Would be better to store actual names
+            lastSeen: d.lastSeen,
+            entryCount: d.entryCount,
+          })) || [],
+        localEntryCount: localCount,
+        cloudEntryCount: cloudCount,
+        conflicts: conflicts.results || [],
+        lastSyncLogs:
+          syncLogs.results?.map(log => ({
+            timestamp: log.timestamp,
+            deviceId: log.deviceId,
+            operation: log.operation,
+            status: log.status,
+            message: log.message,
+          })) || [],
+      }
+    },
   },
 
   Mutation: {

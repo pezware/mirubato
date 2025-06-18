@@ -486,8 +486,8 @@ describe('AuthContext', () => {
       })
 
       await waitFor(() => {
-        // After logout mutation completes, navigation happens
-        expect(mockNavigate).toHaveBeenCalledWith('/')
+        // After logout mutation completes, no navigation happens
+        expect(mockNavigate).not.toHaveBeenCalled()
       })
 
       // After logout, initializeAnonymousUser is called
@@ -881,7 +881,7 @@ describe('AuthContext', () => {
         {
           request: {
             query: GET_LOGBOOK_ENTRIES,
-            variables: { limit: 1000, offset: 0 },
+            variables: { limit: 100, offset: 0 },
           },
           result: {
             data: {
@@ -901,7 +901,7 @@ describe('AuthContext', () => {
         {
           request: {
             query: GET_GOALS,
-            variables: { limit: 1000, offset: 0 },
+            variables: { limit: 100, offset: 0 },
           },
           result: {
             data: {

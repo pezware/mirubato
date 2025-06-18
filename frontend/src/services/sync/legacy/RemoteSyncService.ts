@@ -5,7 +5,7 @@ import {
   SyncBatch,
   SyncDelta,
   SyncablePracticeSession,
-} from './types'
+} from '../types'
 
 // Type guards for GraphQL responses
 

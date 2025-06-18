@@ -64,6 +64,15 @@ export type CompletePracticeSessionInput = {
   sessionId: Scalars['ID']['input']
 }
 
+export type ConflictInfo = {
+  __typename?: 'ConflictInfo'
+  conflictType: Scalars['String']['output']
+  entityId: Scalars['String']['output']
+  entityType: Scalars['String']['output']
+  localVersion: Scalars['Int']['output']
+  remoteVersion: Scalars['Int']['output']
+}
+
 export type CreateGoalInput = {
   description?: InputMaybe<Scalars['String']['input']>
   milestones?: InputMaybe<Array<GoalMilestoneInput>>
@@ -110,6 +119,14 @@ export type CreatePracticeSessionInput = {
   status: SessionStatus
   tempo?: InputMaybe<Scalars['Int']['input']>
   updatedAt: Scalars['String']['input']
+}
+
+export type DeviceInfo = {
+  __typename?: 'DeviceInfo'
+  deviceId: Scalars['String']['output']
+  deviceName: Scalars['String']['output']
+  entryCount: Scalars['Int']['output']
+  lastSeen: Scalars['Float']['output']
 }
 
 export type Difficulty = 'ADVANCED' | 'BEGINNER' | 'INTERMEDIATE'
@@ -466,6 +483,8 @@ export type Query = {
   sheetMusic?: Maybe<SheetMusic>
   /** Get changes since a sync token */
   syncChangesSince: SyncDelta
+  /** Get sync debug information for troubleshooting */
+  syncDebugInfo: SyncDebugInfo
   /** Get sync metadata for a user */
   syncMetadata?: Maybe<SyncMetadata>
   user?: Maybe<User>
@@ -523,6 +542,10 @@ export type QuerySheetMusicArgs = {
 
 export type QuerySyncChangesSinceArgs = {
   syncToken: Scalars['String']['input']
+}
+
+export type QuerySyncDebugInfoArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QuerySyncMetadataArgs = {
@@ -626,6 +649,15 @@ export type SyncBatchResult = {
   uploaded: Scalars['Int']['output']
 }
 
+export type SyncDebugInfo = {
+  __typename?: 'SyncDebugInfo'
+  cloudEntryCount: Scalars['Int']['output']
+  conflicts: Array<ConflictInfo>
+  devices: Array<DeviceInfo>
+  lastSyncLogs: Array<SyncLog>
+  localEntryCount: Scalars['Int']['output']
+}
+
 export type SyncDelta = {
   __typename?: 'SyncDelta'
   deletedIds: Array<Scalars['String']['output']>
@@ -639,6 +671,7 @@ export type SyncEntity = {
   createdAt: Scalars['Float']['output']
   data: Scalars['JSON']['output']
   deletedAt?: Maybe<Scalars['Float']['output']>
+  deviceId?: Maybe<Scalars['String']['output']>
   entityType: Scalars['String']['output']
   id: Scalars['ID']['output']
   syncVersion: Scalars['Int']['output']
@@ -650,6 +683,7 @@ export type SyncEntityInput = {
   createdAt: Scalars['Float']['input']
   data: Scalars['JSON']['input']
   deletedAt?: InputMaybe<Scalars['Float']['input']>
+  deviceId?: InputMaybe<Scalars['String']['input']>
   entityType: Scalars['String']['input']
   id: Scalars['String']['input']
   localId: Scalars['String']['input']
@@ -662,6 +696,15 @@ export type SyncError = {
   __typename?: 'SyncError'
   entityId: Scalars['String']['output']
   error: Scalars['String']['output']
+}
+
+export type SyncLog = {
+  __typename?: 'SyncLog'
+  deviceId: Scalars['String']['output']
+  message?: Maybe<Scalars['String']['output']>
+  operation: Scalars['String']['output']
+  status: Scalars['String']['output']
+  timestamp: Scalars['Float']['output']
 }
 
 export type SyncMetadata = {

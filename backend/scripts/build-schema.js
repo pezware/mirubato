@@ -15,7 +15,7 @@ const schemaContent = readFileSync(schemaPath, 'utf-8')
 const jsContent = `// Auto-generated file. Do not edit directly.
 // Generated from schema.graphql
 
-export const schemaContent = ${JSON.stringify(schemaContent)};
+module.exports.schemaContent = ${JSON.stringify(schemaContent)};
 `
 
 // Write to schema-content.js in src

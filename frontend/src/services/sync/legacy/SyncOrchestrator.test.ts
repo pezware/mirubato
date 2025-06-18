@@ -1,17 +1,17 @@
-import { SyncOrchestrator } from '../SyncOrchestrator'
-import { LocalSyncService } from '../LocalSyncService'
-import { RemoteSyncService } from '../RemoteSyncService'
-import { ConflictResolver } from '../ConflictResolver'
-import { SyncQueue } from '../SyncQueue'
+import { SyncOrchestrator } from './SyncOrchestrator'
+import { LocalSyncService } from './LocalSyncService'
+import { RemoteSyncService } from './RemoteSyncService'
+import { ConflictResolver } from './ConflictResolver'
+import { SyncQueue } from './SyncQueue'
 import { DuplicateDetector } from '../DuplicateDetector'
 import { EventBus } from '../../../modules/core/EventBus'
 import { SyncableEntity, SyncOperation } from '../types'
 
 // Mock all dependencies
-jest.mock('../LocalSyncService')
-jest.mock('../RemoteSyncService')
-jest.mock('../ConflictResolver')
-jest.mock('../SyncQueue')
+jest.mock('./LocalSyncService')
+jest.mock('./RemoteSyncService')
+jest.mock('./ConflictResolver')
+jest.mock('./SyncQueue')
 jest.mock('../DuplicateDetector')
 jest.mock('../../../modules/core/EventBus')
 

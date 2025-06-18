@@ -10,6 +10,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import {
   GET_LOGBOOK_ENTRIES,
   CREATE_LOGBOOK_ENTRY,
+  DELETE_LOGBOOK_ENTRY,
 } from '../graphql/queries/practice'
 
 const Logbook: React.FC = () => {
@@ -54,6 +55,16 @@ const Logbook: React.FC = () => {
 
   // GraphQL mutation for creating entries (authenticated users only)
   const [createLogbookEntry] = useMutation(CREATE_LOGBOOK_ENTRY, {
+    onCompleted: () => {
+      // Refetch to get updated data
+      if (refetch) {
+        refetch()
+      }
+    },
+  })
+
+  // GraphQL mutation for deleting entries (authenticated users only)
+  const [deleteLogbookEntry] = useMutation(DELETE_LOGBOOK_ENTRY, {
     onCompleted: () => {
       // Refetch to get updated data
       if (refetch) {
@@ -402,15 +413,40 @@ const Logbook: React.FC = () => {
   }
 
   const handleDeleteEntry = async (entryId: string) => {
-    if (!practiceLogger) {
-      return
-    }
-
     try {
-      await practiceLogger.deleteLogEntry(entryId)
-      setEntries(entries.filter(e => e.id !== entryId))
+      if (shouldUseGraphQL) {
+        // For authenticated users with cloud storage: Use GraphQL
+        setSyncStatus('syncing')
+        await deleteLogbookEntry({
+          variables: { id: entryId },
+        })
+        setSyncStatus('success')
+        setTimeout(() => setSyncStatus('idle'), 3000)
+      } else {
+        // For anonymous users: Use localStorage via PracticeLoggerModule
+        if (!practiceLogger) {
+          throw new Error('Practice logger not available')
+        }
+        await practiceLogger.deleteLogEntry(entryId)
+        // Update local state
+        setEntries(entries.filter(e => e.id !== entryId))
+      }
     } catch (error) {
-      // Failed to delete entry
+      if (shouldUseGraphQL) {
+        setSyncStatus('error')
+        setErrorMessage(
+          error instanceof Error
+            ? `Failed to delete entry: ${error.message}`
+            : 'Failed to delete entry'
+        )
+        setTimeout(() => {
+          setSyncStatus('idle')
+          setErrorMessage(null)
+        }, 10000)
+      } else {
+        // For local errors, silently fail or show a toast
+        console.error('Failed to delete entry:', error)
+      }
     }
   }
 

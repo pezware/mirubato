@@ -1,12 +1,12 @@
-import { EventBus } from '../../modules/core/EventBus'
+import { EventBus } from '../../../modules/core/EventBus'
 import { LocalSyncService } from './LocalSyncService'
 import { RemoteSyncService } from './RemoteSyncService'
 import { ConflictResolver } from './ConflictResolver'
 import { SyncQueue } from './SyncQueue'
-import { DuplicateDetector } from './DuplicateDetector'
+import { DuplicateDetector } from '../DuplicateDetector'
 import { SyncOrchestrator } from './SyncOrchestrator'
-import { SyncResult, SyncState, SyncOperation, SyncableEntity } from './types'
-import type { User } from '../../contexts/ImprovedAuthContext'
+import { SyncResult, SyncState, SyncOperation, SyncableEntity } from '../types'
+import type { User } from '../../../contexts/ImprovedAuthContext'
 
 export interface SyncManagerConfig {
   syncIntervalMs?: number
@@ -161,7 +161,7 @@ export class SyncManager {
   private async initializeOrchestrator(user: User): Promise<void> {
     const localSync = new LocalSyncService()
     // Import endpoints config to get the correct GraphQL endpoint
-    const { endpoints } = await import('../../config/endpoints')
+    const { endpoints } = await import('../../../config/endpoints')
     const remoteSync = new RemoteSyncService({
       graphqlEndpoint: endpoints.graphql,
     })

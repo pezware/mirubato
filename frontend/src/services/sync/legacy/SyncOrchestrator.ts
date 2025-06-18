@@ -1,16 +1,16 @@
-import { EventBus } from '../../modules/core/EventBus'
+import { EventBus } from '../../../modules/core/EventBus'
 import { LocalSyncService } from './LocalSyncService'
 import { RemoteSyncService } from './RemoteSyncService'
 import { ConflictResolver, ConflictStrategy } from './ConflictResolver'
 import { SyncQueue } from './SyncQueue'
-import { DuplicateDetector } from './DuplicateDetector'
+import { DuplicateDetector } from '../DuplicateDetector'
 import {
   SyncResult,
   SyncMetadata,
   SyncOperation,
   SyncError,
   SyncState,
-} from './types'
+} from '../types'
 
 export interface SyncOrchestratorConfig {
   syncIntervalMs?: number

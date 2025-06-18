@@ -5,8 +5,9 @@ import {
   SyncablePracticeLog,
   SyncableGoal,
   SyncableLogbookEntry,
-} from './types'
-import { createHash } from './utils'
+} from '../types'
+import { createHash } from '../utils'
+import { getDeviceId } from '../../../utils/deviceId'
 
 const SYNC_METADATA_KEY = 'sync:metadata'
 const SYNC_ENTITIES_KEY = 'sync:entities'
@@ -255,6 +256,7 @@ export class LocalSyncService {
         syncVersion: 1,
         checksum: createHash(session),
         entityType: 'practiceSession' as const,
+        deviceId: getDeviceId(),
         data: {
           userId: String(session.userId),
           instrument: String(session.instrument),
@@ -300,6 +302,7 @@ export class LocalSyncService {
         syncVersion: 1,
         checksum: createHash(log),
         entityType: 'practiceLog' as const,
+        deviceId: getDeviceId(),
         data: {
           sessionId,
           message: String(log.message),
@@ -323,6 +326,7 @@ export class LocalSyncService {
         syncVersion: 1,
         checksum: createHash(goal),
         entityType: 'goal' as const,
+        deviceId: getDeviceId(),
         data: {
           title: String(goal.title),
           description: goal.description ? String(goal.description) : undefined,
@@ -351,6 +355,7 @@ export class LocalSyncService {
         syncVersion: 1,
         checksum: createHash(entry),
         entityType: 'logbookEntry' as const,
+        deviceId: getDeviceId(),
         data: {
           date: String(entry.date),
           practiceMinutes: Number(entry.practiceMinutes || 0),
