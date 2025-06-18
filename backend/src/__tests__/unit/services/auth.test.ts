@@ -8,7 +8,7 @@ import type { KVNamespace } from '@cloudflare/workers-types'
 // Mock the auth utils to avoid jsonwebtoken issues in test environment
 vi.mock('../../../utils/auth', () => {
   return {
-    generateMagicLinkToken: vi.fn(() => 'test-magic-link-token'),
+    generateMagicLinkToken: vi.fn(() => 'test-id-123456789012345678901234'),
     createJWT: vi.fn(async (_user: any) => 'test-jwt-token'),
     createRefreshToken: vi.fn(async () => 'test-refresh-token'),
     verifyRefreshToken: vi.fn(async (token: string) => {
@@ -43,7 +43,7 @@ describe('AuthService', () => {
       const email = 'test@example.com'
       const token = await authService.createMagicLink(email)
 
-      expect(token).toBe('test-magic-link-token') // mocked by generateMagicLinkToken
+      expect(token).toBe('test-id-123456789012345678901234') // nanoid(32) is mocked globally
 
       // Verify token was stored in KV
       const storedEmail = await mockKV.get(`magic_link:${token}`)
