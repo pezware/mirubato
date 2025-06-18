@@ -12,6 +12,7 @@ const schemaPath = join(__dirname, '../src/schema/schema.graphql')
 const schemaContent = readFileSync(schemaPath, 'utf-8')
 
 // Generate the JavaScript module
+// Always use ES modules now that we're using Vitest
 const jsContent = `// Auto-generated file. Do not edit directly.
 // Generated from schema.graphql
 

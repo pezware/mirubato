@@ -10,15 +10,8 @@ import { createTestContext } from '../../test-utils/graphql'
 import { GraphQLSchema, execute, parse } from 'graphql'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { resolvers } from '../../resolvers'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { typeDefs } from '../../schema'
 import { nanoid } from 'nanoid'
-
-// Load GraphQL schema
-const typeDefs = readFileSync(
-  join(__dirname, '../../schema/schema.graphql'),
-  'utf-8'
-)
 
 describe('Sync Orchestrator Flow Integration', () => {
   let mockDB: MockD1Database

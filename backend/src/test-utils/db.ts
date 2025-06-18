@@ -4,6 +4,11 @@ import type { D1Database } from '@cloudflare/workers-types'
 export class MockD1Database implements Partial<D1Database> {
   private data: Map<string, any[]> = new Map()
 
+  // Helper method for debugging
+  getAllData(tableName: string) {
+    return this.data.get(tableName) || []
+  }
+
   prepare(query: string) {
     const self = this
     let boundValues: any[] = []
@@ -238,7 +243,32 @@ export class MockD1Database implements Partial<D1Database> {
             columns.forEach((col, index) => {
               newRecord[col] = boundValues[index]
             })
-            self.data.set(tableName, [...existingData, newRecord])
+
+            // Handle INSERT OR REPLACE
+            if (query.toUpperCase().includes('INSERT OR REPLACE')) {
+              // Find existing record by id
+              const idIndex = columns.indexOf('id')
+              if (idIndex >= 0) {
+                const id = boundValues[idIndex]
+                const existingIndex = existingData.findIndex(
+                  (r: any) => r.id === id
+                )
+                if (existingIndex >= 0) {
+                  // Replace existing record
+                  existingData[existingIndex] = newRecord
+                  self.data.set(tableName, existingData)
+                } else {
+                  // Add new record
+                  self.data.set(tableName, [...existingData, newRecord])
+                }
+              } else {
+                // No id column, just add
+                self.data.set(tableName, [...existingData, newRecord])
+              }
+            } else {
+              // Regular INSERT
+              self.data.set(tableName, [...existingData, newRecord])
+            }
           }
         }
 

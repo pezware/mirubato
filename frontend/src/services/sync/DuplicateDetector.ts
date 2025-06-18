@@ -14,19 +14,19 @@ export class DuplicateDetector {
    * Detect and merge duplicates in a set of entities
    */
   async detectAndMerge(entities: SyncableEntity[]): Promise<SyncableEntity[]> {
-    // Group entities by content hash
-    const groups = this.groupByContent(entities)
+    // Group entities by ID (not content hash)
+    const groups = this.groupById(entities)
 
     // Merge each group of duplicates
     const merged: SyncableEntity[] = []
 
     for (const group of groups.values()) {
-      if (group.entities.length === 1) {
+      if (group.length === 1) {
         // No duplicates
-        merged.push(group.entities[0])
+        merged.push(group[0])
       } else {
-        // Merge duplicates
-        const mergedEntity = this.mergeDuplicates(group.entities)
+        // Merge duplicates with same ID
+        const mergedEntity = this.mergeDuplicates(group)
         merged.push(mergedEntity)
       }
     }
@@ -35,14 +35,24 @@ export class DuplicateDetector {
   }
 
   /**
-   * Find duplicate entities by comparing content
+   * Find duplicate entities by comparing IDs
    */
   findDuplicates(entities: SyncableEntity[]): DuplicateGroup[] {
-    const groups = this.groupByContent(entities)
+    const idGroups = this.groupById(entities)
 
-    return Array.from(groups.values()).filter(
-      group => group.entities.length > 1
-    )
+    // Convert to DuplicateGroup format for backward compatibility
+    const duplicateGroups: DuplicateGroup[] = []
+
+    for (const [id, group] of idGroups.entries()) {
+      if (group.length > 1) {
+        duplicateGroups.push({
+          contentHash: id, // Use ID as the hash
+          entities: group,
+        })
+      }
+    }
+
+    return duplicateGroups
   }
 
   /**
@@ -102,84 +112,103 @@ export class DuplicateDetector {
 
   // Private methods
 
-  private groupByContent(
-    entities: SyncableEntity[]
-  ): Map<string, DuplicateGroup> {
-    const groups = new Map<string, DuplicateGroup>()
+  private groupById(entities: SyncableEntity[]): Map<string, SyncableEntity[]> {
+    const groups = new Map<string, SyncableEntity[]>()
 
     for (const entity of entities) {
-      const contentHash = this.getContentHash(entity)
+      // Use entity ID as the primary key for deduplication
+      const key = entity.id
 
-      if (!groups.has(contentHash)) {
-        groups.set(contentHash, {
-          contentHash,
-          entities: [],
-        })
+      if (!groups.has(key)) {
+        groups.set(key, [])
       }
 
-      groups.get(contentHash)!.entities.push(entity)
+      groups.get(key)!.push(entity)
     }
 
     return groups
   }
 
-  private getContentHash(entity: SyncableEntity): string {
-    // Create a content hash based on entity type and key fields
-    let keyData: Record<string, unknown>
+  // Not currently used but kept for future content-based deduplication
+  // private groupByContent(
+  //   entities: SyncableEntity[]
+  // ): Map<string, DuplicateGroup> {
+  //   const groups = new Map<string, DuplicateGroup>()
+  //
+  //   for (const entity of entities) {
+  //     const contentHash = this.getContentHash(entity)
+  //
+  //     if (!groups.has(contentHash)) {
+  //       groups.set(contentHash, {
+  //         contentHash,
+  //         entities: [],
+  //       })
+  //     }
+  //
+  //     groups.get(contentHash)!.entities.push(entity)
+  //   }
+  //
+  //   return groups
+  // }
 
-    switch (entity.entityType) {
-      case 'practiceSession': {
-        const sessionData = entity.data as Record<string, unknown>
-        keyData = {
-          type: 'practiceSession',
-          userId: sessionData.userId,
-          instrument: sessionData.instrument,
-          startedAt: sessionData.startedAt,
-          sheetMusicId: sessionData.sheetMusicId,
-        }
-        break
-      }
-
-      case 'practiceLog': {
-        const logData = entity.data as Record<string, unknown>
-        keyData = {
-          type: 'practiceLog',
-          sessionId: logData.sessionId,
-          timestamp: logData.timestamp,
-          message: logData.message,
-        }
-        break
-      }
-
-      case 'goal': {
-        const goalData = entity.data as Record<string, unknown>
-        keyData = {
-          type: 'goal',
-          title: goalData.title,
-          targetValue: goalData.targetValue,
-          unit: goalData.unit,
-        }
-        break
-      }
-
-      case 'logbookEntry': {
-        const entryData = entity.data as Record<string, unknown>
-        keyData = {
-          type: 'logbookEntry',
-          date: entryData.date,
-        }
-        break
-      }
-
-      default:
-        keyData = {
-          type: entity.entityType,
-          id: entity.id,
-        }
-    }
-
-    return createHash(keyData)
-  }
+  // Not currently used but kept for future content-based deduplication
+  // private getContentHash(entity: SyncableEntity): string {
+  //   // Create a content hash based on entity type and key fields
+  //   let keyData: Record<string, unknown>
+  //
+  //   switch (entity.entityType) {
+  //     case 'practiceSession': {
+  //       const sessionData = entity.data as Record<string, unknown>
+  //       keyData = {
+  //         type: 'practiceSession',
+  //         userId: sessionData.userId,
+  //         instrument: sessionData.instrument,
+  //         startedAt: sessionData.startedAt,
+  //         sheetMusicId: sessionData.sheetMusicId,
+  //       }
+  //       break
+  //     }
+  //
+  //     case 'practiceLog': {
+  //       const logData = entity.data as Record<string, unknown>
+  //       keyData = {
+  //         type: 'practiceLog',
+  //         sessionId: logData.sessionId,
+  //         timestamp: logData.timestamp,
+  //         message: logData.message,
+  //       }
+  //       break
+  //     }
+  //
+  //     case 'goal': {
+  //       const goalData = entity.data as Record<string, unknown>
+  //       keyData = {
+  //         type: 'goal',
+  //         title: goalData.title,
+  //         targetValue: goalData.targetValue,
+  //         unit: goalData.unit,
+  //       }
+  //       break
+  //     }
+  //
+  //     case 'logbookEntry': {
+  //       const entryData = entity.data as Record<string, unknown>
+  //       keyData = {
+  //         type: 'logbookEntry',
+  //         date: entryData.date,
+  //       }
+  //       break
+  //     }
+  //
+  //     default:
+  //       keyData = {
+  //         type: entity.entityType,
+  //         id: entity.id,
+  //       }
+  //   }
+  //
+  //   return createHash(keyData)
+  // }
 
   private mergePracticeSessionData(
     dataArray: unknown[]

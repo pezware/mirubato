@@ -1,26 +1,21 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { logbookResolvers } from '../../../resolvers/logbook'
 import type { GraphQLContext } from '../../../types/context'
 import type { BackendUser } from '../../../types/shared'
-import { UserService } from '../../../services/user'
 
 // Mock nanoid
-jest.mock('nanoid', () => ({
+vi.mock('nanoid', () => ({
   nanoid: () => 'test-id-123',
-}))
-
-// Mock UserService
-jest.mock('../../../services/user', () => ({
-  UserService: jest.fn().mockImplementation(() => ({
-    getUserById: jest.fn(),
-  })),
 }))
 
 describe('Logbook Resolvers', () => {
   let mockContext: GraphQLContext
   let mockUser: BackendUser
-  let mockUserService: any
+  let mockDB: any
 
   beforeEach(() => {
+    vi.clearAllMocks()
+
     mockUser = {
       id: 'user-123',
       email: 'test@example.com',
@@ -44,18 +39,12 @@ describe('Logbook Resolvers', () => {
       },
     }
 
-    // Set up UserService mock
-    mockUserService = {
-      getUserById: jest.fn(),
-    }
-    ;(UserService as jest.Mock).mockImplementation(() => mockUserService)
-
-    const mockDB = {
-      prepare: jest.fn().mockReturnThis(),
-      bind: jest.fn().mockReturnThis(),
-      first: jest.fn(),
-      all: jest.fn(),
-      run: jest.fn(),
+    mockDB = {
+      prepare: vi.fn().mockReturnThis(),
+      bind: vi.fn().mockReturnThis(),
+      first: vi.fn(),
+      all: vi.fn(),
+      run: vi.fn(),
     }
 
     mockContext = {
@@ -314,9 +303,8 @@ describe('Logbook Resolvers', () => {
 
   describe('LogbookEntry', () => {
     describe('user', () => {
-      it('should return user from context if userId matches', async () => {
-        const parent = { userId: 'user-123' }
-        mockUserService.getUserById.mockResolvedValue(mockUser)
+      it('should return user from context if user already resolved', async () => {
+        const parent = { userId: 'user-123', user: mockUser }
 
         const result = await logbookResolvers.LogbookEntry!.user!(
           parent as any,
@@ -325,13 +313,55 @@ describe('Logbook Resolvers', () => {
           {} as any
         )
 
-        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
         expect(result).toBe(mockUser)
+      })
+
+      it('should fetch user from database if userId provided', async () => {
+        const parent = { userId: 'user-123' }
+
+        const mockUserData = {
+          id: 'user-123',
+          email: 'test@example.com',
+          display_name: 'Test User',
+          primary_instrument: 'PIANO',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        }
+
+        const mockPreferences = {
+          preferences: JSON.stringify({
+            theme: 'LIGHT',
+            notationSize: 'MEDIUM',
+            soundEnabled: true,
+            metronomeBPM: 120,
+            practiceReminders: false,
+          }),
+        }
+
+        mockDB.first
+          .mockResolvedValueOnce(mockUserData)
+          .mockResolvedValueOnce(mockPreferences)
+
+        const result = await logbookResolvers.LogbookEntry!.user!(
+          parent as any,
+          {},
+          mockContext,
+          {} as any
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM users WHERE id = ?'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('user-123')
+        expect(result).toBeDefined()
+        expect(result?.id).toBe('user-123')
+        expect(result?.email).toBe('test@example.com')
       })
 
       it('should throw error if user not found', async () => {
         const parent = { userId: 'different-user' }
-        mockUserService.getUserById.mockResolvedValue(null)
+
+        mockDB.first.mockResolvedValueOnce(null)
 
         await expect(
           logbookResolvers.LogbookEntry!.user!(
@@ -342,14 +372,26 @@ describe('Logbook Resolvers', () => {
           )
         ).rejects.toThrow('User not found')
       })
+
+      it('should throw error if no userId available', async () => {
+        const parent = {}
+
+        await expect(
+          logbookResolvers.LogbookEntry!.user!(
+            parent as any,
+            {},
+            mockContext,
+            {} as any
+          )
+        ).rejects.toThrow('Unable to resolve user for logbook entry')
+      })
     })
   })
 
   describe('Goal', () => {
     describe('user', () => {
-      it('should return user from context if userId matches', async () => {
-        const parent = { userId: 'user-123' }
-        mockUserService.getUserById.mockResolvedValue(mockUser)
+      it('should return user from context if user already resolved', async () => {
+        const parent = { userId: 'user-123', user: mockUser }
 
         const result = await logbookResolvers.Goal!.user!(
           parent as any,
@@ -358,13 +400,55 @@ describe('Logbook Resolvers', () => {
           {} as any
         )
 
-        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
         expect(result).toBe(mockUser)
+      })
+
+      it('should fetch user from database if userId provided', async () => {
+        const parent = { userId: 'user-123' }
+
+        const mockUserData = {
+          id: 'user-123',
+          email: 'test@example.com',
+          display_name: 'Test User',
+          primary_instrument: 'PIANO',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        }
+
+        const mockPreferences = {
+          preferences: JSON.stringify({
+            theme: 'LIGHT',
+            notationSize: 'MEDIUM',
+            soundEnabled: true,
+            metronomeBPM: 120,
+            practiceReminders: false,
+          }),
+        }
+
+        mockDB.first
+          .mockResolvedValueOnce(mockUserData)
+          .mockResolvedValueOnce(mockPreferences)
+
+        const result = await logbookResolvers.Goal!.user!(
+          parent as any,
+          {},
+          mockContext,
+          {} as any
+        )
+
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM users WHERE id = ?'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('user-123')
+        expect(result).toBeDefined()
+        expect(result?.id).toBe('user-123')
+        expect(result?.email).toBe('test@example.com')
       })
 
       it('should throw error if user not found', async () => {
         const parent = { userId: 'different-user' }
-        mockUserService.getUserById.mockResolvedValue(null)
+
+        mockDB.first.mockResolvedValueOnce(null)
 
         await expect(
           logbookResolvers.Goal!.user!(
@@ -374,6 +458,19 @@ describe('Logbook Resolvers', () => {
             {} as any
           )
         ).rejects.toThrow('User not found')
+      })
+
+      it('should throw error if no userId available', async () => {
+        const parent = {}
+
+        await expect(
+          logbookResolvers.Goal!.user!(
+            parent as any,
+            {},
+            mockContext,
+            {} as any
+          )
+        ).rejects.toThrow('Unable to resolve user for goal')
       })
     })
   })

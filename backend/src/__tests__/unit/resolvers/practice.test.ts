@@ -1,15 +1,8 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { practiceResolvers } from '../../../resolvers/practice'
 import type { GraphQLContext, Env } from '../../../types/context'
 import type { GraphQLResolveInfo } from '../../../types/generated/graphql'
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
-import { UserService } from '../../../services/user'
-
-// Mock UserService
-jest.mock('../../../services/user', () => ({
-  UserService: jest.fn().mockImplementation(() => ({
-    getUserById: jest.fn(),
-  })),
-}))
 
 // Mock crypto
 global.crypto = {
@@ -27,12 +20,12 @@ describe('Practice Resolvers', () => {
 
   // Mock database
   const mockDB = {
-    prepare: jest.fn().mockReturnThis(),
-    bind: jest.fn().mockReturnThis(),
-    first: jest.fn(),
-    all: jest.fn(),
-    run: jest.fn(),
-    batch: jest.fn(),
+    prepare: vi.fn().mockReturnThis(),
+    bind: vi.fn().mockReturnThis(),
+    first: vi.fn(),
+    all: vi.fn(),
+    run: vi.fn(),
+    batch: vi.fn(),
   } as any
 
   // Mock context
@@ -125,7 +118,7 @@ describe('Practice Resolvers', () => {
 
     describe('myPracticeSessions', () => {
       beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
       })
 
       it('returns empty connection when no sessions', async () => {
@@ -218,7 +211,7 @@ describe('Practice Resolvers', () => {
   describe('Mutation Resolvers', () => {
     describe('startPracticeSession', () => {
       beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
       })
 
       it('creates a new practice session', async () => {
@@ -387,13 +380,8 @@ describe('Practice Resolvers', () => {
   })
 
   describe('PracticeSession Type Resolvers', () => {
-    let mockUserService: any
-
     beforeEach(() => {
-      mockUserService = {
-        getUserById: jest.fn(),
-      }
-      ;(UserService as jest.Mock).mockImplementation(() => mockUserService)
+      vi.clearAllMocks()
     })
 
     const mockSession = {
@@ -404,14 +392,30 @@ describe('Practice Resolvers', () => {
     }
 
     describe('user', () => {
-      it('returns user from UserService', async () => {
-        const mockUser = {
+      it('returns user from database', async () => {
+        const mockUserData = {
           id: 'user-123',
           email: 'test@example.com',
-          preferences: {},
-          stats: {},
+          display_name: 'Test User',
+          primary_instrument: 'PIANO',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
         }
-        mockUserService.getUserById.mockResolvedValue(mockUser)
+
+        const mockPreferences = {
+          preferences: JSON.stringify({
+            theme: 'LIGHT',
+            notationSize: 'MEDIUM',
+            soundEnabled: true,
+            metronomeBPM: 120,
+            practiceReminders: false,
+          }),
+        }
+
+        // Mock the database to return user data
+        mockDB.first
+          .mockResolvedValueOnce(mockUserData)
+          .mockResolvedValueOnce(mockPreferences)
 
         const result = await practiceResolvers.PracticeSession.user(
           mockSession,
@@ -420,8 +424,42 @@ describe('Practice Resolvers', () => {
           {} as GraphQLResolveInfo
         )
 
-        expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123')
-        expect(result).toBe(mockUser)
+        expect(mockDB.prepare).toHaveBeenCalledWith(
+          'SELECT * FROM users WHERE id = ?'
+        )
+        expect(mockDB.bind).toHaveBeenCalledWith('user-123')
+        expect(result).toBeDefined()
+        expect(result?.id).toBe('user-123')
+        expect(result?.email).toBe('test@example.com')
+      })
+
+      it('returns null when user not found', async () => {
+        mockDB.first.mockResolvedValueOnce(null)
+
+        const result = await practiceResolvers.PracticeSession.user(
+          mockSession,
+          {},
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(result).toBeNull()
+      })
+
+      it('returns null when no user id available', async () => {
+        const sessionWithoutUserId = {
+          id: 'session-123',
+          instrument: 'PIANO' as const,
+        }
+
+        const result = await practiceResolvers.PracticeSession.user(
+          sessionWithoutUserId,
+          {},
+          mockContext,
+          {} as GraphQLResolveInfo
+        )
+
+        expect(result).toBeNull()
       })
     })
 
@@ -432,7 +470,7 @@ describe('Practice Resolvers', () => {
           title: 'Fur Elise',
           composer: 'Beethoven',
         }
-        mockDB.first.mockResolvedValue(mockSheetMusic)
+        mockContext.env.DB.first.mockResolvedValue(mockSheetMusic)
 
         const result = await practiceResolvers.PracticeSession.sheetMusic(
           mockSession,
@@ -441,10 +479,10 @@ describe('Practice Resolvers', () => {
           {} as GraphQLResolveInfo
         )
 
-        expect(mockDB.prepare).toHaveBeenCalledWith(
+        expect(mockContext.env.DB.prepare).toHaveBeenCalledWith(
           'SELECT * FROM sheet_music WHERE id = ?'
         )
-        expect(mockDB.bind).toHaveBeenCalledWith('music-123')
+        expect(mockContext.env.DB.bind).toHaveBeenCalledWith('music-123')
         expect(result).toBe(mockSheetMusic)
       })
 
@@ -518,7 +556,7 @@ describe('Practice Resolvers', () => {
 
   describe('Input Validation', () => {
     beforeEach(() => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
       mockDB.all.mockResolvedValue({ results: [] })
       mockDB.first.mockResolvedValue({ count: 0 })
     })
@@ -546,7 +584,7 @@ describe('Practice Resolvers', () => {
       ]
 
       for (const { offset, limit } of testCases) {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockDB.all.mockResolvedValue({ results: [] })
         mockDB.first.mockResolvedValue({ count: 0 })
 

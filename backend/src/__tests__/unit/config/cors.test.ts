@@ -1,10 +1,11 @@
+import { vi } from 'vitest'
 // Mock the shared configuration module before importing
-jest.mock('@mirubato/shared/config/environment', () => ({
-  getConfig: jest
+vi.mock('@mirubato/shared/config/environment', () => ({
+  getConfig: vi
     .fn()
     .mockReturnValue({ frontend: { url: 'https://example.com' } }),
-  getCorsOrigins: jest.fn().mockReturnValue(['https://example.com']),
-  isOriginAllowed: jest.fn().mockReturnValue(true),
+  getCorsOrigins: vi.fn().mockReturnValue(['https://example.com']),
+  isOriginAllowed: vi.fn().mockReturnValue(true),
 }))
 
 import {
@@ -13,18 +14,16 @@ import {
   isOriginAllowed as checkOrigin,
 } from '@mirubato/shared/config/environment'
 
-const mockGetConfig = getConfig as jest.MockedFunction<typeof getConfig>
-const mockGetCorsOrigins = getCorsOrigins as jest.MockedFunction<
-  typeof getCorsOrigins
->
-const mockCheckOrigin = checkOrigin as jest.MockedFunction<typeof checkOrigin>
+const mockGetConfig = getConfig as ReturnType<typeof vi.fn>
+const mockGetCorsOrigins = getCorsOrigins as ReturnType<typeof vi.fn>
+const mockCheckOrigin = checkOrigin as ReturnType<typeof vi.fn>
 
 describe('CORS Configuration', () => {
   let getCorsConfig: typeof import('../../../config/cors').getCorsConfig
   let isOriginAllowed: typeof import('../../../config/cors').isOriginAllowed
 
   beforeEach(async () => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Reset default mocks
     mockGetConfig.mockReturnValue({ frontend: { url: 'https://example.com' } })

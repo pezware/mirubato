@@ -4,7 +4,7 @@
     "module": "ESNext",
     "lib": ["ES2022"],
     "moduleResolution": "node",
-    "types": ["@cloudflare/workers-types", "@types/jest", "@types/node"],
+    "types": ["@cloudflare/workers-types", "@types/node", "vitest/globals"],
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,

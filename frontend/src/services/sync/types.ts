@@ -21,6 +21,7 @@ export interface SyncableEntity {
   syncVersion: number
   checksum: string
   entityType: 'practiceSession' | 'practiceLog' | 'goal' | 'logbookEntry'
+  deviceId?: string // Track which device created/modified this
   data: unknown
 }
 

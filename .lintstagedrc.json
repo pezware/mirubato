@@ -1,7 +1,7 @@
 {
   "backend/**/*.{ts,tsx}": [
     "cd backend && eslint --fix",
-    "cd backend && jest --bail --findRelatedTests --passWithNoTests"
+    "cd backend && vitest run --no-coverage"
   ],
   "frontend/**/*.{ts,tsx}": [
     "cd frontend && eslint --fix",

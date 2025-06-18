@@ -96,6 +96,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
     eventBus,
     isInitialized: modulesInitialized,
     practiceLogger,
+    storageModule,
   } = useModules()
 
   const lastLoginEventTimestamp = useRef<number>(0)
@@ -359,7 +360,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
         metadata: { version: '1.0.0' },
       })
 
-      navigate('/')
+      // Don't navigate - let user stay on current page
     } catch (error) {
       logger.error('Logout failed', error)
     } finally {
@@ -426,6 +427,34 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
 
   // Manual sync function - bidirectional sync between localStorage and D1
   const syncToCloud = useCallback(async () => {
+    // Define types for cloud data
+    interface LogbookEntryEdge {
+      node: {
+        id: string
+        timestamp: string
+        duration: number
+        type: string
+        instrument: string
+        pieces: PieceReference[]
+        techniques: string[]
+        goalIds: string[]
+        notes: string
+        mood?: string
+        tags: string[]
+        metadata?: Record<string, unknown>
+      }
+    }
+
+    interface GoalEdge {
+      node: {
+        id: string
+        title: string
+        description: string
+        targetDate?: string
+        milestones: GoalMilestone[]
+      }
+    }
+
     if (!user || user.isAnonymous) {
       logger.warn('Cannot sync: anonymous user')
       return
@@ -521,37 +550,66 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
       // Step 4: Fetch latest cloud data (DOWN: cloud→local)
       logger.info('Fetching cloud data for bidirectional sync')
 
-      // Query cloud data
-      const { data: cloudEntriesData } = await apolloClient.query({
-        query: GET_LOGBOOK_ENTRIES,
-        variables: { limit: 1000, offset: 0 },
-        fetchPolicy: 'network-only',
-      })
+      // Query cloud data with pagination
+      const BATCH_SIZE = 100
+      let allCloudEntries: LogbookEntryEdge[] = []
+      let allCloudGoals: GoalEdge[] = []
 
-      const { data: cloudGoalsData } = await apolloClient.query({
-        query: GET_GOALS,
-        variables: { limit: 1000, offset: 0 },
-        fetchPolicy: 'network-only',
-      })
+      // Fetch entries in batches
+      let hasMoreEntries = true
+      let entriesOffset = 0
+
+      while (hasMoreEntries) {
+        const { data: batchData } = await apolloClient.query({
+          query: GET_LOGBOOK_ENTRIES,
+          variables: { limit: BATCH_SIZE, offset: entriesOffset },
+          fetchPolicy: 'network-only',
+        })
+
+        if (batchData?.myLogbookEntries?.edges?.length > 0) {
+          allCloudEntries = [
+            ...allCloudEntries,
+            ...batchData.myLogbookEntries.edges,
+          ]
+          entriesOffset += BATCH_SIZE
+          hasMoreEntries = batchData.myLogbookEntries.pageInfo.hasNextPage
+
+          // Update sync progress
+          const totalCount = batchData.myLogbookEntries.totalCount || 0
+          setSyncState(prev => ({
+            ...prev,
+            pendingOperations: totalCount - entriesOffset,
+          }))
+        } else {
+          hasMoreEntries = false
+        }
+      }
+
+      // Fetch goals in batches
+      let hasMoreGoals = true
+      let goalsOffset = 0
+
+      while (hasMoreGoals) {
+        const { data: batchData } = await apolloClient.query({
+          query: GET_GOALS,
+          variables: { limit: BATCH_SIZE, offset: goalsOffset },
+          fetchPolicy: 'network-only',
+        })
+
+        if (batchData?.myGoals?.edges?.length > 0) {
+          allCloudGoals = [...allCloudGoals, ...batchData.myGoals.edges]
+          goalsOffset += BATCH_SIZE
+          hasMoreGoals = batchData.myGoals.pageInfo.hasNextPage
+        } else {
+          hasMoreGoals = false
+        }
+      }
+
+      const cloudEntriesData = { myLogbookEntries: { edges: allCloudEntries } }
+      const cloudGoalsData = { myGoals: { edges: allCloudGoals } }
 
       // Merge cloud data into local storage
       if (cloudEntriesData?.myLogbookEntries?.edges) {
-        interface LogbookEntryEdge {
-          node: {
-            id: string
-            timestamp: string
-            duration: number
-            type: string
-            instrument: string
-            pieces: PieceReference[]
-            techniques: string[]
-            goalIds: string[]
-            notes: string
-            mood?: string
-            tags: string[]
-            metadata?: Record<string, unknown>
-          }
-        }
         const cloudEntries = cloudEntriesData.myLogbookEntries.edges.map(
           (edge: LogbookEntryEdge) => edge.node
         )
@@ -570,7 +628,7 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
               timestamp: new Date(cloudEntry.timestamp).getTime(),
               duration: cloudEntry.duration,
               type: cloudEntry.type.toLowerCase() as LogbookEntry['type'],
-              instrument: cloudEntry.instrument,
+              instrument: cloudEntry.instrument as Instrument,
               pieces: cloudEntry.pieces,
               techniques: cloudEntry.techniques,
               goals: cloudEntry.goalIds,
@@ -580,12 +638,14 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
               metadata: cloudEntry.metadata,
             }
 
-            // Write directly to localStorage to preserve the cloud ID
-            // Using window.localStorage directly since localStorageService doesn't expose setItem
-            window.localStorage.setItem(
-              `mirubato:storage:logbook:${cloudEntry.id}`,
-              JSON.stringify(entryForLocal)
-            )
+            // Use the storage module directly to preserve the cloud ID
+            // This ensures we don't create duplicates
+            if (storageModule) {
+              await storageModule.saveLocal(
+                `logbook:${cloudEntry.id}`,
+                entryForLocal
+              )
+            }
 
             // Emit event for UI updates
             eventBus.publish({
@@ -599,15 +659,6 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
       }
 
       if (cloudGoalsData?.myGoals?.edges) {
-        interface GoalEdge {
-          node: {
-            id: string
-            title: string
-            description: string
-            targetDate?: string
-            milestones: GoalMilestone[]
-          }
-        }
         const cloudGoals = cloudGoalsData.myGoals.edges.map(
           (edge: GoalEdge) => edge.node
         )
@@ -637,12 +688,14 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
               updatedAt: now,
             }
 
-            // Write directly to localStorage to preserve the cloud ID
-            // Using window.localStorage directly since localStorageService doesn't expose setItem
-            window.localStorage.setItem(
-              `mirubato:storage:goal:${cloudGoal.id}`,
-              JSON.stringify(goalForLocal)
-            )
+            // Use the storage module directly to preserve the cloud ID
+            // This ensures we don't create duplicates
+            if (storageModule) {
+              await storageModule.saveLocal(
+                `goal:${cloudGoal.id}`,
+                goalForLocal
+              )
+            }
 
             // Emit event for UI updates
             eventBus.publish({
@@ -684,7 +737,14 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
         },
       }))
     }
-  }, [user, practiceLogger, syncAnonymousDataMutation, apolloClient, eventBus])
+  }, [
+    user,
+    practiceLogger,
+    syncAnonymousDataMutation,
+    apolloClient,
+    eventBus,
+    storageModule,
+  ])
 
   const clearSyncError = useCallback(() => {
     setSyncState(prev => ({ ...prev, error: null }))

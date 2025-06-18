@@ -1,5 +1,6 @@
 // Jest setup file for backend tests
 import { TextEncoder, TextDecoder } from 'util'
+import { vi } from 'vitest'
 
 // Polyfill for Cloudflare Workers environment
 ;(global as any).TextEncoder = TextEncoder
@@ -8,11 +9,11 @@ import { TextEncoder, TextDecoder } from 'util'
 // Mock crypto for JWT operations
 ;(global as any).crypto = {
   subtle: {
-    digest: jest.fn(),
-    sign: jest.fn(),
-    verify: jest.fn(),
+    digest: vi.fn(),
+    sign: vi.fn(),
+    verify: vi.fn(),
   },
-  getRandomValues: jest.fn(arr => {
+  getRandomValues: vi.fn(arr => {
     return arr.map(() => Math.floor(Math.random() * 256))
   }),
 } as any
@@ -20,7 +21,7 @@ import { TextEncoder, TextDecoder } from 'util'
 // Suppress console errors during tests unless explicitly needed
 const originalError = console.error
 beforeAll(() => {
-  console.error = jest.fn()
+  console.error = vi.fn()
 })
 
 afterAll(() => {

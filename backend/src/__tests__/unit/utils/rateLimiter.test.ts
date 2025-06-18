@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import {
   createRateLimiter,
   RateLimiterDurableObject,
@@ -10,15 +11,15 @@ import type {
 
 describe('Rate Limiter', () => {
   describe('createRateLimiter', () => {
-    let mockNamespace: jest.Mocked<DurableObjectNamespace>
+    let mockNamespace: DurableObjectNamespace
 
     beforeEach(() => {
       mockNamespace = {
-        get: jest.fn().mockReturnValue({} as DurableObjectStub),
-        idFromName: jest.fn().mockReturnValue({} as DurableObjectId),
-        idFromString: jest.fn().mockReturnValue({} as DurableObjectId),
-        newUniqueId: jest.fn().mockReturnValue({} as DurableObjectId),
-      } as unknown as jest.Mocked<DurableObjectNamespace>
+        get: vi.fn().mockReturnValue({} as DurableObjectStub),
+        idFromName: vi.fn().mockReturnValue({} as DurableObjectId),
+        idFromString: vi.fn().mockReturnValue({} as DurableObjectId),
+        newUniqueId: vi.fn().mockReturnValue({} as DurableObjectId),
+      } as unknown as DurableObjectNamespace
     })
 
     it('should create a rate limiter instance', () => {
@@ -72,11 +73,11 @@ describe('Rate Limiter', () => {
     beforeEach(() => {
       durableObject = new RateLimiterDurableObject()
       // Mock Date.now for consistent testing
-      jest.spyOn(Date, 'now').mockReturnValue(1000000)
+      vi.spyOn(Date, 'now').mockReturnValue(1000000)
     })
 
     afterEach(() => {
-      jest.restoreAllMocks()
+      vi.restoreAllMocks()
     })
 
     it('should allow first request', async () => {
@@ -156,7 +157,7 @@ describe('Rate Limiter', () => {
       let currentTime = 1000000
 
       // Mock Date.now to control time
-      const mockNow = jest
+      const mockNow = vi
         .spyOn(Date, 'now')
         .mockImplementation(() => currentTime)
 
@@ -244,7 +245,7 @@ describe('Rate Limiter', () => {
 
     it('should handle time window edge cases', async () => {
       let currentTime = 1000000
-      const mockNow = jest
+      const mockNow = vi
         .spyOn(Date, 'now')
         .mockImplementation(() => currentTime)
 
