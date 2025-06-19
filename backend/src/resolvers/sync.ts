@@ -314,21 +314,28 @@ export const syncResolvers = {
       return {
         devices:
           devices.results?.map(d => ({
-            deviceId: d.deviceId,
+            deviceId: d.deviceId as string,
             deviceName: `Device ${d.deviceId}`, // Would be better to store actual names
-            lastSeen: d.lastSeen,
-            entryCount: d.entryCount,
+            lastSeen: d.lastSeen as number,
+            entryCount: d.entryCount as number,
           })) || [],
         localEntryCount: localCount,
         cloudEntryCount: cloudCount,
-        conflicts: conflicts.results || [],
+        conflicts:
+          conflicts.results?.map(c => ({
+            entityId: c.entityId as string,
+            entityType: c.entityType as string,
+            localVersion: c.localVersion as number,
+            remoteVersion: c.remoteVersion as number,
+            conflictType: c.conflictType as string,
+          })) || [],
         lastSyncLogs:
           syncLogs.results?.map(log => ({
-            timestamp: log.timestamp,
-            deviceId: log.deviceId,
-            operation: log.operation,
-            status: log.status,
-            message: log.message,
+            timestamp: log.timestamp as number,
+            deviceId: log.deviceId as string,
+            operation: log.operation as string,
+            status: log.status as string,
+            message: log.message as string,
           })) || [],
       }
     },

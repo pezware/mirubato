@@ -205,6 +205,9 @@ export const authResolvers: { Mutation: Partial<MutationResolvers> } = {
           success: true,
           user: tempUser,
           message: 'Token refreshed successfully',
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresIn: 604800, // 7 days in seconds
         }
       }
 
@@ -237,6 +240,9 @@ export const authResolvers: { Mutation: Partial<MutationResolvers> } = {
           success: true,
           user,
           message: 'Token refreshed successfully',
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresIn: 604800, // 7 days in seconds
         }
       } catch (error) {
         throw new Error('Unable to refresh token')

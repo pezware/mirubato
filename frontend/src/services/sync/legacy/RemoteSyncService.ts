@@ -420,6 +420,9 @@ export class RemoteSyncService {
   }
 
   private serializeEntity(entity: SyncableEntity): Record<string, unknown> {
+    // Deep clean the data to remove __typename fields before stringifying
+    const cleanData = this.removeTypenameFields(entity.data)
+
     return {
       id: entity.id,
       localId: entity.localId,
@@ -430,8 +433,30 @@ export class RemoteSyncService {
       deletedAt: entity.deletedAt,
       syncVersion: entity.syncVersion,
       checksum: entity.checksum,
-      data: JSON.stringify(entity.data),
+      data: JSON.stringify(cleanData),
     }
+  }
+
+  private removeTypenameFields(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeTypenameFields(item))
+    }
+
+    if (typeof obj === 'object' && obj.constructor === Object) {
+      const cleaned: any = {}
+      for (const key in obj) {
+        if (key !== '__typename' && obj.hasOwnProperty(key)) {
+          cleaned[key] = this.removeTypenameFields(obj[key])
+        }
+      }
+      return cleaned
+    }
+
+    return obj
   }
 
   private deserializeEntity(entity: unknown): SyncableEntity {
