@@ -54,7 +54,10 @@ export type AuthPayload = {
 
 export type AuthResponse = {
   __typename?: 'AuthResponse'
+  accessToken: Scalars['String']['output']
+  expiresIn: Scalars['Int']['output']
   message: Scalars['String']['output']
+  refreshToken: Scalars['String']['output']
   success: Scalars['Boolean']['output']
   user: User
 }
@@ -64,6 +67,15 @@ export type CompletePracticeSessionInput = {
   notesAttempted?: InputMaybe<Scalars['Int']['input']>
   notesCorrect?: InputMaybe<Scalars['Int']['input']>
   sessionId: Scalars['ID']['input']
+}
+
+export type ConflictInfo = {
+  __typename?: 'ConflictInfo'
+  conflictType: Scalars['String']['output']
+  entityId: Scalars['String']['output']
+  entityType: Scalars['String']['output']
+  localVersion: Scalars['Int']['output']
+  remoteVersion: Scalars['Int']['output']
 }
 
 export type CreateGoalInput = {
@@ -76,6 +88,7 @@ export type CreateGoalInput = {
 export type CreateLogbookEntryInput = {
   duration: Scalars['Int']['input']
   goalIds?: InputMaybe<Array<Scalars['ID']['input']>>
+  id?: InputMaybe<Scalars['ID']['input']>
   instrument: Instrument
   metadata?: InputMaybe<LogbookMetadataInput>
   mood?: InputMaybe<Mood>
@@ -111,6 +124,14 @@ export type CreatePracticeSessionInput = {
   status: SessionStatus
   tempo?: InputMaybe<Scalars['Int']['input']>
   updatedAt: Scalars['String']['input']
+}
+
+export type DeviceInfo = {
+  __typename?: 'DeviceInfo'
+  deviceId: Scalars['String']['output']
+  deviceName: Scalars['String']['output']
+  entryCount: Scalars['Int']['output']
+  lastSeen: Scalars['Float']['output']
 }
 
 export type Difficulty = 'ADVANCED' | 'BEGINNER' | 'INTERMEDIATE'
@@ -467,6 +488,8 @@ export type Query = {
   sheetMusic?: Maybe<SheetMusic>
   /** Get changes since a sync token */
   syncChangesSince: SyncDelta
+  /** Get sync debug information for troubleshooting */
+  syncDebugInfo: SyncDebugInfo
   /** Get sync metadata for a user */
   syncMetadata?: Maybe<SyncMetadata>
   user?: Maybe<User>
@@ -524,6 +547,10 @@ export type QuerySheetMusicArgs = {
 
 export type QuerySyncChangesSinceArgs = {
   syncToken: Scalars['String']['input']
+}
+
+export type QuerySyncDebugInfoArgs = {
+  userId: Scalars['ID']['input']
 }
 
 export type QuerySyncMetadataArgs = {
@@ -627,6 +654,15 @@ export type SyncBatchResult = {
   uploaded: Scalars['Int']['output']
 }
 
+export type SyncDebugInfo = {
+  __typename?: 'SyncDebugInfo'
+  cloudEntryCount: Scalars['Int']['output']
+  conflicts: Array<ConflictInfo>
+  devices: Array<DeviceInfo>
+  lastSyncLogs: Array<SyncLog>
+  localEntryCount: Scalars['Int']['output']
+}
+
 export type SyncDelta = {
   __typename?: 'SyncDelta'
   deletedIds: Array<Scalars['String']['output']>
@@ -640,6 +676,7 @@ export type SyncEntity = {
   createdAt: Scalars['Float']['output']
   data: Scalars['JSON']['output']
   deletedAt?: Maybe<Scalars['Float']['output']>
+  deviceId?: Maybe<Scalars['String']['output']>
   entityType: Scalars['String']['output']
   id: Scalars['ID']['output']
   syncVersion: Scalars['Int']['output']
@@ -651,6 +688,7 @@ export type SyncEntityInput = {
   createdAt: Scalars['Float']['input']
   data: Scalars['JSON']['input']
   deletedAt?: InputMaybe<Scalars['Float']['input']>
+  deviceId?: InputMaybe<Scalars['String']['input']>
   entityType: Scalars['String']['input']
   id: Scalars['String']['input']
   localId: Scalars['String']['input']
@@ -663,6 +701,15 @@ export type SyncError = {
   __typename?: 'SyncError'
   entityId: Scalars['String']['output']
   error: Scalars['String']['output']
+}
+
+export type SyncLog = {
+  __typename?: 'SyncLog'
+  deviceId: Scalars['String']['output']
+  message?: Maybe<Scalars['String']['output']>
+  operation: Scalars['String']['output']
+  status: Scalars['String']['output']
+  timestamp: Scalars['Float']['output']
 }
 
 export type SyncMetadata = {
@@ -889,11 +936,13 @@ export type ResolversTypes = ResolversObject<{
   AuthResponse: ResolverTypeWrapper<AuthResponse>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>
   CompletePracticeSessionInput: CompletePracticeSessionInput
+  ConflictInfo: ResolverTypeWrapper<ConflictInfo>
   CreateGoalInput: CreateGoalInput
   CreateLogbookEntryInput: CreateLogbookEntryInput
   CreatePracticeLogInput: CreatePracticeLogInput
   CreatePracticeSessionInput: CreatePracticeSessionInput
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>
+  DeviceInfo: ResolverTypeWrapper<DeviceInfo>
   Difficulty: Difficulty
   Float: ResolverTypeWrapper<Scalars['Float']['output']>
   Goal: ResolverTypeWrapper<Goal>
@@ -941,10 +990,12 @@ export type ResolversTypes = ResolversObject<{
   SyncAnonymousDataInput: SyncAnonymousDataInput
   SyncBatchInput: SyncBatchInput
   SyncBatchResult: ResolverTypeWrapper<SyncBatchResult>
+  SyncDebugInfo: ResolverTypeWrapper<SyncDebugInfo>
   SyncDelta: ResolverTypeWrapper<SyncDelta>
   SyncEntity: ResolverTypeWrapper<SyncEntity>
   SyncEntityInput: SyncEntityInput
   SyncError: ResolverTypeWrapper<SyncError>
+  SyncLog: ResolverTypeWrapper<SyncLog>
   SyncMetadata: ResolverTypeWrapper<SyncMetadata>
   SyncResult: ResolverTypeWrapper<SyncResult>
   Tempo: ResolverTypeWrapper<Tempo>
@@ -966,11 +1017,13 @@ export type ResolversParentTypes = ResolversObject<{
   AuthResponse: AuthResponse
   Boolean: Scalars['Boolean']['output']
   CompletePracticeSessionInput: CompletePracticeSessionInput
+  ConflictInfo: ConflictInfo
   CreateGoalInput: CreateGoalInput
   CreateLogbookEntryInput: CreateLogbookEntryInput
   CreatePracticeLogInput: CreatePracticeLogInput
   CreatePracticeSessionInput: CreatePracticeSessionInput
   DateTime: Scalars['DateTime']['output']
+  DeviceInfo: DeviceInfo
   Float: Scalars['Float']['output']
   Goal: Goal
   GoalConnection: GoalConnection
@@ -1009,10 +1062,12 @@ export type ResolversParentTypes = ResolversObject<{
   SyncAnonymousDataInput: SyncAnonymousDataInput
   SyncBatchInput: SyncBatchInput
   SyncBatchResult: SyncBatchResult
+  SyncDebugInfo: SyncDebugInfo
   SyncDelta: SyncDelta
   SyncEntity: SyncEntity
   SyncEntityInput: SyncEntityInput
   SyncError: SyncError
+  SyncLog: SyncLog
   SyncMetadata: SyncMetadata
   SyncResult: SyncResult
   Tempo: Tempo
@@ -1042,9 +1097,25 @@ export type AuthResponseResolvers<
   ParentType extends
     ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse'],
 > = ResolversObject<{
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  expiresIn?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type ConflictInfoResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['ConflictInfo'] = ResolversParentTypes['ConflictInfo'],
+> = ResolversObject<{
+  conflictType?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  entityId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  localVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  remoteVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
@@ -1052,6 +1123,18 @@ export interface DateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime'
 }
+
+export type DeviceInfoResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['DeviceInfo'] = ResolversParentTypes['DeviceInfo'],
+> = ResolversObject<{
+  deviceId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  deviceName?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  entryCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  lastSeen?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
 
 export type GoalResolvers<
   ContextType = GraphQLContext,
@@ -1602,6 +1685,12 @@ export type QueryResolvers<
     ContextType,
     RequireFields<QuerySyncChangesSinceArgs, 'syncToken'>
   >
+  syncDebugInfo?: Resolver<
+    ResolversTypes['SyncDebugInfo'],
+    ParentType,
+    ContextType,
+    RequireFields<QuerySyncDebugInfoArgs, 'userId'>
+  >
   syncMetadata?: Resolver<
     Maybe<ResolversTypes['SyncMetadata']>,
     ParentType,
@@ -1708,6 +1797,31 @@ export type SyncBatchResultResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
+export type SyncDebugInfoResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncDebugInfo'] = ResolversParentTypes['SyncDebugInfo'],
+> = ResolversObject<{
+  cloudEntryCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  conflicts?: Resolver<
+    Array<ResolversTypes['ConflictInfo']>,
+    ParentType,
+    ContextType
+  >
+  devices?: Resolver<
+    Array<ResolversTypes['DeviceInfo']>,
+    ParentType,
+    ContextType
+  >
+  lastSyncLogs?: Resolver<
+    Array<ResolversTypes['SyncLog']>,
+    ParentType,
+    ContextType
+  >
+  localEntryCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
 export type SyncDeltaResolvers<
   ContextType = GraphQLContext,
   ParentType extends
@@ -1736,6 +1850,7 @@ export type SyncEntityResolvers<
   createdAt?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
   data?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>
   deletedAt?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>
+  deviceId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
   entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>
   syncVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
@@ -1750,6 +1865,19 @@ export type SyncErrorResolvers<
 > = ResolversObject<{
   entityId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
   error?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type SyncLogResolvers<
+  ContextType = GraphQLContext,
+  ParentType extends
+    ResolversParentTypes['SyncLog'] = ResolversParentTypes['SyncLog'],
+> = ResolversObject<{
+  deviceId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>
+  operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  timestamp?: Resolver<ResolversTypes['Float'], ParentType, ContextType>
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
@@ -1912,7 +2040,9 @@ export type UserStatsResolvers<
 export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   AuthPayload?: AuthPayloadResolvers<ContextType>
   AuthResponse?: AuthResponseResolvers<ContextType>
+  ConflictInfo?: ConflictInfoResolvers<ContextType>
   DateTime?: GraphQLScalarType
+  DeviceInfo?: DeviceInfoResolvers<ContextType>
   Goal?: GoalResolvers<ContextType>
   GoalConnection?: GoalConnectionResolvers<ContextType>
   GoalEdge?: GoalEdgeResolvers<ContextType>
@@ -1939,9 +2069,11 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   SheetMusicEdge?: SheetMusicEdgeResolvers<ContextType>
   SheetMusicMetadata?: SheetMusicMetadataResolvers<ContextType>
   SyncBatchResult?: SyncBatchResultResolvers<ContextType>
+  SyncDebugInfo?: SyncDebugInfoResolvers<ContextType>
   SyncDelta?: SyncDeltaResolvers<ContextType>
   SyncEntity?: SyncEntityResolvers<ContextType>
   SyncError?: SyncErrorResolvers<ContextType>
+  SyncLog?: SyncLogResolvers<ContextType>
   SyncMetadata?: SyncMetadataResolvers<ContextType>
   SyncResult?: SyncResultResolvers<ContextType>
   Tempo?: TempoResolvers<ContextType>

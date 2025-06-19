@@ -11,7 +11,13 @@ export interface CloudEntry {
   duration: number
   type: string
   instrument: string
-  pieces: Array<{ id?: string; title: string; composer?: string }>
+  pieces: Array<{
+    id?: string
+    title: string
+    composer?: string
+    measures?: string
+    tempo?: number
+  }>
   techniques: string[]
   goalIds: string[]
   notes: string
@@ -245,7 +251,13 @@ export class BidirectionalSync {
         duration: entry.duration,
         type: entry.type,
         instrument: entry.instrument,
-        pieces: entry.pieces,
+        pieces: entry.pieces.map(piece => ({
+          id: piece.id,
+          title: piece.title,
+          composer: piece.composer,
+          measures: piece.measures,
+          tempo: piece.tempo,
+        })),
         techniques: entry.techniques,
         goalIds: entry.goals || [],
         notes: entry.notes,
@@ -275,7 +287,13 @@ export class BidirectionalSync {
         duration: entry.duration,
         type: entry.type.toLowerCase(),
         instrument: entry.instrument,
-        pieces: entry.pieces,
+        pieces: entry.pieces.map(piece => ({
+          id: piece.id,
+          title: piece.title,
+          composer: piece.composer || null,
+          measures: piece.measures || null,
+          tempo: piece.tempo || null,
+        })),
         techniques: entry.techniques,
         goalIds: entry.goalIds,
         notes: entry.notes,
