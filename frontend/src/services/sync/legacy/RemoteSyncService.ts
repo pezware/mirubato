@@ -437,7 +437,7 @@ export class RemoteSyncService {
     }
   }
 
-  private removeTypenameFields(obj: any): any {
+  private removeTypenameFields(obj: unknown): unknown {
     if (obj === null || obj === undefined) {
       return obj
     }
@@ -447,10 +447,15 @@ export class RemoteSyncService {
     }
 
     if (typeof obj === 'object' && obj.constructor === Object) {
-      const cleaned: any = {}
+      const cleaned: Record<string, unknown> = {}
       for (const key in obj) {
-        if (key !== '__typename' && obj.hasOwnProperty(key)) {
-          cleaned[key] = this.removeTypenameFields(obj[key])
+        if (
+          key !== '__typename' &&
+          Object.prototype.hasOwnProperty.call(obj, key)
+        ) {
+          cleaned[key] = this.removeTypenameFields(
+            (obj as Record<string, unknown>)[key]
+          )
         }
       }
       return cleaned

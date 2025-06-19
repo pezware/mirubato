@@ -498,7 +498,13 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
                 duration: entry.duration,
                 type: entry.type.toUpperCase(),
                 instrument: entry.instrument,
-                pieces: entry.pieces,
+                pieces: entry.pieces.map(piece => ({
+                  id: piece.id,
+                  title: piece.title,
+                  composer: piece.composer || null,
+                  measures: piece.measures || null,
+                  tempo: piece.tempo || null,
+                })),
                 techniques: entry.techniques,
                 goalIds: entry.goals || [],
                 notes: entry.notes || '',
@@ -521,7 +527,11 @@ export const ImprovedAuthProvider: React.FC<AuthProviderProps> = ({
                 targetDate: goal.targetDate
                   ? new Date(goal.targetDate).toISOString()
                   : undefined,
-                milestones: goal.milestones,
+                milestones: goal.milestones.map(milestone => ({
+                  id: milestone.id,
+                  title: milestone.title,
+                  completed: milestone.completed || false,
+                })),
               })),
             },
           },
