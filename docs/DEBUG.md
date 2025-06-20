@@ -207,6 +207,19 @@ fi
 
 **Problem**: Memory usage increases over time
 
+**Known Issues**:
+
+1. **EventBus Memory Leaks** (Fix exists in ImprovedEventBus.ts)
+
+   - Unbounded event history growth
+   - No cleanup of stale subscriptions
+   - Solution: Use circular buffer, event type limits, WeakMap for callbacks
+
+2. **Audio Event Memory Leaks** (Fix exists in improvedMultiVoiceAudioManager.ts)
+   - scheduledEvents array growing without cleanup
+   - Transport events not properly cleared
+   - Solution: Track all events, implement clearAllScheduledEvents()
+
 **Prevention**:
 
 - Always cleanup Tone.js resources
@@ -225,6 +238,40 @@ useEffect(() => {
   }
 }, [])
 ```
+
+**Note**: Improved implementations exist but are not yet deployed to production.
+
+## Known Test Issues
+
+### Flaky Tests
+
+A flaky test is one that passes and fails intermittently without code changes, often due to timing, randomness, or system state dependencies.
+
+#### Current Flaky Tests
+
+1. **SightReadingGenerator - Stepwise Motion Test**
+   - **File**: `src/modules/sheetMusic/generators/__tests__/SightReadingGenerator.test.ts:169`
+   - **Status**: Skipped with `it.skip`
+   - **Issue**: Uses random generation without fixed seed; expects exactly 60% stepwise motion but randomness causes variation
+   - **Fix Options**:
+     - Use a fixed seed for the random generator
+     - Lower threshold to 0.55 to account for randomness
+     - Run multiple iterations and average the results
+
+#### Handling Flaky Tests
+
+1. **Immediate**: Skip the test with `it.skip` and add TODO comment
+2. **Document**: Add to this section with details
+3. **Track**: Create GitHub issue with "flaky-test" label
+4. **Fix**: Address root cause when possible
+
+#### Preventing Flaky Tests
+
+- **Avoid randomness**: Use fixed seeds or mock random functions
+- **Avoid timing dependencies**: Use fake timers or proper async handling
+- **Isolate tests**: Each test should be independent
+- **Mock external dependencies**: Don't rely on network, filesystem, etc.
+- **Use explicit waits**: Replace arbitrary timeouts with proper conditions
 
 ## Performance Debugging
 

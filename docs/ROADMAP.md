@@ -79,6 +79,55 @@ All Phase 3 MVP modules have been successfully implemented with comprehensive te
 - ✅ **Security Fixes**: Added error boundaries and secure token storage
 - ✅ **Component Styling**: Migrated to CSS modules and theme system
 
+## Technical Debt & Critical Issues 🔴
+
+### Security Vulnerabilities (IMMEDIATE)
+
+1. **XSS in Docs Page** - ✅ FIXED (DOMPurify implemented)
+2. **GraphQL Introspection in Production** - ⚠️ PENDING
+   - Fix: `introspection: env.ENVIRONMENT === 'development'`
+3. **Rate Limiting Not Implemented** - ⚠️ PENDING
+   - Current implementation always returns `true`
+4. **No GraphQL Query Depth Limits** - ⚠️ PENDING
+   - Add `graphql-depth-limit` validation
+
+### Performance Issues (HIGH PRIORITY)
+
+1. **Memory Leaks**
+   - ⚠️ ImprovedMultiVoiceAudioManager created but not deployed
+   - VexFlow renderers not properly disposed
+   - Module event subscriptions not cleaned up
+2. **N+1 Query Problems**
+
+   - Backend resolvers making excessive database queries
+   - Implement DataLoader for batch loading
+
+3. **Missing Optimizations**
+   - No lazy loading for Tone.js
+   - Full score re-rendering on every update
+   - No virtualization for long scores
+
+### Storage & Sync Issues
+
+1. **Logbook Storage Bug** - ⚠️ CRITICAL
+   - Missing `hasCloudStorage` field in GET_CURRENT_USER query
+   - Incorrect localStorage keys in LogbookReportingModule
+   - Data not syncing from localStorage to D1 after login
+
+### Code Quality Issues
+
+1. **Test Coverage** - Current: Frontend ~29%, Backend ~43% (Target: 80%)
+2. **Large Modules** - Several modules >700 lines need refactoring
+3. **Console Logs in Production** - Need proper logging service
+4. **TypeScript `any` Types** - Still present in some modules
+5. **Unused Code** - CurriculumModule and related modules not used
+
+### Success Metrics & Targets
+
+**Performance**: Initial load <2s, API response <100ms, 60fps animations
+**Security**: Zero critical vulnerabilities, proper rate limiting
+**Code Quality**: 80% test coverage, no modules >500 lines, zero console.logs
+
 ## Phase 4: Enhanced Musical Features 🚀 CURRENT PHASE
 
 ### Timeline: Q1-Q2 2025

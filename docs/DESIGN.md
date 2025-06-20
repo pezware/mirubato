@@ -443,6 +443,59 @@ Local Change → IndexedDB → Sync Queue → Background Sync → GraphQL API
 - **Landscape**: Traditional page view with flip
 - **Tablet**: User choice between modes
 
+## Sync Architecture
+
+### Core Principles
+
+1. **Local-first**: All operations work offline, sync happens opportunistically
+2. **Conflict Resolution**: Last-write-wins with optional manual resolution
+3. **Idempotent Operations**: Same sync can be run multiple times safely
+4. **Incremental Sync**: Only sync changes since last successful sync
+5. **Bidirectional**: Local changes sync to remote, remote changes sync to local
+
+### Sync Data Model
+
+```typescript
+interface SyncMetadata {
+  lastSyncTimestamp: number
+  syncToken: string | null
+  pendingSyncCount: number
+  lastSyncStatus: 'success' | 'partial' | 'failed'
+  lastSyncError?: string
+}
+
+interface SyncableEntity {
+  id: string
+  localId: string
+  remoteId?: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+  syncStatus: 'pending' | 'syncing' | 'synced' | 'conflict'
+  syncVersion: number
+  checksum: string
+  entityType: 'practiceSession' | 'practiceLog' | 'goal' | 'logbookEntry'
+  data: unknown
+}
+```
+
+### Sync Flow
+
+1. **Queue Operations**: All local changes are queued for sync
+2. **Batch Processing**: Changes are batched to reduce API calls
+3. **Conflict Detection**: Compare checksums to detect conflicts
+4. **Resolution**: Apply last-write-wins or prompt user
+5. **Confirmation**: Update sync status only after success
+
+### Authentication States
+
+The sync system handles all authentication transitions seamlessly:
+
+- **Anonymous → Authenticated**: Merge local data to cloud
+- **Authenticated → Anonymous**: Keep local data, pause sync
+- **Offline → Online**: Resume pending sync operations
+- **Token Expiry**: Auto-refresh or graceful degradation
+
 ## Technical Implementation
 
 ### Shared Architecture
