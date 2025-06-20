@@ -84,10 +84,17 @@ npm run docs:generate            # Generate TypeDoc documentation
 ### Backend Development
 
 ```bash
-npm run dev:backend              # Start local server
+npm run dev:backend              # Start local server (wrangler dev --env local)
 npm run build:backend            # Build for deployment
 npm run db:migrate               # Run local migrations
 npm run codegen                  # Generate GraphQL types
+
+# Alternative backend workflows
+cd backend
+npm run dev                      # Recommended: Wrangler dev with hot reload
+npm run dev:full                 # File watcher with auto-restart
+npm run dev:watch                # TypeScript watch mode only
+npm run dev:server               # Wrangler dev server only
 ```
 
 ### Testing
@@ -180,6 +187,76 @@ describe('Practice Session Flow', () => {
 })
 ```
 
+### Frontend Testing
+
+#### Apollo Client Testing
+
+To prevent "No more mocked responses" warnings:
+
+```typescript
+import { render, screen } from '../tests/utils/test-utils'
+import { createInfiniteGetCurrentUserMock } from '../tests/utils/apollo-test-helpers'
+
+test('renders with user context', () => {
+  const mocks = [
+    createInfiniteGetCurrentUserMock({ id: '123', email: 'test@example.com' })
+  ]
+
+  render(<MyComponent />, { mocks })
+  expect(screen.getByText('Welcome')).toBeInTheDocument()
+})
+```
+
+#### Common Testing Patterns
+
+**Testing Loading States**:
+
+```typescript
+const mocks = [
+  {
+    request: { query: MY_QUERY },
+    result: {
+      data: {
+        /* ... */
+      },
+    },
+    delay: 100, // Test loading state
+  },
+]
+```
+
+**Testing Errors**:
+
+```typescript
+const mocks = [
+  {
+    request: { query: MY_QUERY },
+    error: new Error('Network error'),
+  },
+]
+```
+
+#### Test Organization
+
+- `setup/`: Test configuration and setup files
+- `utils/`: Shared test utilities and helpers
+- Component tests: Co-located with components (e.g., `Component.test.tsx`)
+- Integration tests: In `tests/integration/`
+
+#### Testing Best Practices
+
+1. **Use MSW for API Mocking**: For complex API interactions
+2. **Test User Interactions**: Focus on what users see and do
+3. **Avoid Implementation Details**: Test behavior, not implementation
+4. **Keep Tests Simple**: Each test should verify one behavior
+5. **Use Descriptive Names**: Test names should explain what they test
+
+#### Troubleshooting Tests
+
+- **Apollo warnings**: Ensure test setup files are imported correctly
+- **Router errors**: Use custom render from test-utils (includes BrowserRouter)
+- **Async warnings**: Always use `waitFor` or `findBy` queries
+
 ## Development Principles
 
 ### Test-First Development (TDD)
@@ -190,6 +267,42 @@ We follow Test-Driven Development practices for all new features:
 2. **Run the test** - It should fail (red phase)
 3. **Write minimal code** - Just enough to make the test pass (green phase)
 4. **Refactor** - Improve the code while keeping tests passing
+
+### GraphQL Development
+
+We use GraphQL Code Generation for type-safe API interactions:
+
+#### Setup
+
+```bash
+# Generate types from schema
+npm run codegen
+
+# Watch mode during development
+npm run codegen:watch
+```
+
+#### Using Generated Hooks
+
+Instead of manual queries:
+
+```typescript
+// ❌ Manual query
+import { useQuery } from '@apollo/client'
+import { GET_LOGBOOK_ENTRIES } from '../graphql/queries/practice'
+const { data } = useQuery(GET_LOGBOOK_ENTRIES)
+
+// ✅ Generated hook
+import { useGetLogbookEntriesQuery } from '../generated/graphql'
+const { data } = useGetLogbookEntriesQuery()
+```
+
+#### GraphQL Best Practices
+
+1. **Name all operations** - Enables better debugging and hook generation
+2. **Use fragments** - Reuse common field selections across queries
+3. **Commit generated files** - They're part of your source code
+4. **Run codegen before commits** - Ensures frontend-backend alignment
 
 ### Code Quality Standards
 
@@ -208,6 +321,48 @@ When implementing a new module:
 3. **Follow event patterns** - Use EventBus for all cross-module communication
 4. **Document with JSDoc** - All public methods must have documentation
 5. **Update TypeDoc** - Run `npm run docs:generate` to verify documentation
+
+### Code Documentation Standards
+
+Use JSDoc comments for all public APIs:
+
+````typescript
+/**
+ * Brief description of the class/function
+ *
+ * @category CategoryName
+ * @example
+ * ```typescript
+ * const example = new ExampleClass();
+ * example.doSomething();
+ * ```
+ */
+export class ExampleClass {
+  /**
+   * Method description
+   * @param param - Parameter description
+   * @returns Return value description
+   */
+  doSomething(param: string): void {
+    // Implementation
+  }
+}
+````
+
+#### Standard Categories
+
+Use these categories in `@category` tags:
+
+- **Core**: Core functionality and infrastructure
+- **UI Components**: React components
+- **Services**: Service layer classes
+- **Utilities**: Helper functions and utilities
+- **Analytics**: Analytics and reporting modules
+- **Practice**: Practice session related modules
+- **Performance**: Performance tracking modules
+- **Audio**: Audio-related functionality
+- **Contexts**: React contexts
+- **Types**: TypeScript type definitions
 
 ### Performance Considerations
 
@@ -311,6 +466,80 @@ useEffect(() => {
   }
 }, [measures])
 ```
+
+## Backend Build System
+
+### Overview
+
+The backend uses a Cloudflare-native build system that lets Wrangler handle TypeScript compilation and bundling directly.
+
+### Build Pipeline
+
+```
+TypeScript Source → Wrangler Build → Deployment
+        ↓                 ↓              ↓
+   Standard TS        ESBuild +      Workers
+   + GraphQL          Bundling       Runtime
+```
+
+### Key Configuration
+
+**wrangler.toml**:
+
+```toml
+name = "mirubato-backend"
+main = "dist/backend/src/index.js"  # NOT "dist/index.js" due to shared imports
+# NO [build] section - causes infinite loops
+```
+
+### Common Build Issues
+
+#### 1. Entry Point Not Found
+
+**Error**: `The entry-point file at 'dist/index.js' was not found`
+
+**Cause**: TypeScript preserves directory structure when importing from `../shared`
+
+**Solution**: Update `wrangler.toml` main entry to `dist/backend/src/index.js`
+
+#### 2. Infinite Build Loop
+
+**Symptoms**: `npm run dev` constantly rebuilds with high CPU usage
+
+**Cause**: Circular dependency between wrangler.toml build command and npm scripts
+
+**Solution**: Remove `[build]` section from wrangler.toml
+
+#### 3. \_\_dirname Not Defined
+
+**Error**: `__dirname is not defined` in Workers runtime
+
+**Solution**: Pre-generate static content during build (e.g., schema files)
+
+#### 4. JavaScript Files Break Tests
+
+**Symptoms**: Jest fails with "Unexpected token" errors on generated JS files
+
+**Solution**:
+
+- Add `shared/**/*.js` to .gitignore
+- Never commit generated JavaScript from TypeScript
+
+### Cloudflare Dashboard Settings
+
+For proper deployment configuration:
+
+- **Build command**: `npm run build`
+- **Deploy command**: `cd backend && npx wrangler deploy`
+- **Root directory**: `/` (NOT `/backend/` due to npm install limitation)
+- **Version command**: Leave empty (unless using gradual deployments)
+
+### Build System Best Practices
+
+1. **Let Wrangler handle TypeScript** - Don't add custom build steps
+2. **Verify output paths** - Check actual TypeScript output structure
+3. **Keep commands simple** - Avoid circular references
+4. **Use environment flags** - `--env local` for development
 
 ## Performance Considerations
 
