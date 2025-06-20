@@ -1,12 +1,12 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 
 // Mock dependencies before imports
-jest.mock('../contexts/AuthContext')
+jest.mock('../contexts/ImprovedAuthContext')
 jest.mock('../modules/core/EventBus')
 jest.mock('../services/sync')
 
 import { useSync } from './useSync'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/ImprovedAuthContext'
 import { eventBus } from '../modules/core/EventBus'
 import * as syncService from '../services/sync'
 

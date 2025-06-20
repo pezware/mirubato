@@ -1,3 +1,11 @@
+import { vi } from 'vitest'
+
+// Mock nanoid before importing services
+vi.mock('nanoid', () => ({
+  nanoid: () =>
+    `test-id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+}))
+
 import { UserService } from '../../../services/user'
 import { createMockDB, MockD1Database } from '../../../test-utils/db'
 import type { D1Database } from '@cloudflare/workers-types'

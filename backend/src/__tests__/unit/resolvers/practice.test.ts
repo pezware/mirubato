@@ -1,4 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+
+// Mock nanoid before importing code that uses it
+vi.mock('nanoid', () => ({
+  nanoid: () => 'mock-nano-id',
+}))
+
 import { practiceResolvers } from '../../../resolvers/practice'
 import type { GraphQLContext, Env } from '../../../types/context'
 import type { GraphQLResolveInfo } from '../../../types/generated/graphql'

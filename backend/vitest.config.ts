@@ -11,7 +11,10 @@ export default defineWorkersConfig({
       '**/dist/**',
       '**/__tests__/integration/d1-uat.test.ts', // Has its own config
     ],
-    setupFiles: ['./test-utils/vitest-setup.ts'],
+    setupFiles: [
+      './test-utils/setup-crypto.ts',
+      './test-utils/vitest-setup.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

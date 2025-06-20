@@ -1,6 +1,6 @@
 import { EventDrivenStorage } from './eventDrivenStorage'
 import { EventBus } from './EventBus'
-import { LocalStorageAdapter } from '../infrastructure/adapters/LocalStorageAdapter'
+import { LocalStorageAdapter } from '../infrastructure/localStorage/LocalStorageAdapter'
 
 // Mock the EventBus
 jest.mock('./EventBus', () => ({
@@ -16,7 +16,7 @@ jest.mock('./EventBus', () => ({
 }))
 
 // Mock LocalStorageAdapter
-jest.mock('../infrastructure/adapters/LocalStorageAdapter')
+jest.mock('../infrastructure/localStorage/LocalStorageAdapter')
 
 describe('EventDrivenStorage', () => {
   let storage: EventDrivenStorage

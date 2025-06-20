@@ -1,11 +1,11 @@
 import { render, waitFor } from '@testing-library/react'
 import { SyncInitializer } from './SyncInitializer'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/ImprovedAuthContext'
 import { useSyncAnonymousData } from '../hooks/useSyncAnonymousData'
 import { eventBus } from '../modules/core/EventBus'
 
 // Mock dependencies
-jest.mock('../contexts/AuthContext')
+jest.mock('../contexts/ImprovedAuthContext')
 jest.mock('../hooks/useSyncAnonymousData')
 jest.mock('../modules/core/EventBus', () => ({
   eventBus: {
