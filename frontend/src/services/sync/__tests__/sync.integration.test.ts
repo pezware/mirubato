@@ -9,7 +9,7 @@ jest.mock('../../../modules/core/EventBus', () => ({
   },
 }))
 
-import { eventBus } from '../../../modules/core/EventBus'
+// import { eventBus } from '../../../modules/core/EventBus' // Imported but not used
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -173,22 +173,22 @@ describe('Sync Integration Tests', () => {
       localStorageMock.setItem('sync:lastToken', lastSyncToken)
 
       // Mock data
-      const remoteChanges = {
-        sessions: [
-          {
-            id: 'remote-session-1',
-            startTime: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
-        entries: [
-          {
-            id: 'remote-entry-1',
-            timestamp: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
-      }
+      // const _remoteChanges = {
+      //   sessions: [
+      //     {
+      //       id: 'remote-session-1',
+      //       startTime: new Date().toISOString(),
+      //       updatedAt: new Date().toISOString(),
+      //     },
+      //   ],
+      //   entries: [
+      //     {
+      //       id: 'remote-entry-1',
+      //       timestamp: new Date().toISOString(),
+      //       updatedAt: new Date().toISOString(),
+      //     },
+      //   ],
+      // }
 
       const localChanges = [
         {
@@ -217,7 +217,10 @@ describe('Sync Integration Tests', () => {
       await mockPerformIncrementalSync(apolloClient, 'user-123')
 
       // Verify function was called
-      expect(mockPerformIncrementalSync).toHaveBeenCalledWith(apolloClient, 'user-123')
+      expect(mockPerformIncrementalSync).toHaveBeenCalledWith(
+        apolloClient,
+        'user-123'
+      )
     })
 
     it('should handle sync conflicts with last-write-wins', async () => {
@@ -426,10 +429,7 @@ describe('Sync Integration Tests', () => {
           )
         })
         cloudData.goals.forEach(goal => {
-          localStorageMock.setItem(
-            `goal:${goal.id}`,
-            JSON.stringify(goal)
-          )
+          localStorageMock.setItem(`goal:${goal.id}`, JSON.stringify(goal))
         })
         localStorageMock.setItem('sync:lastToken', 'initial-sync-token')
         return { totalSynced: 4 }
@@ -439,10 +439,14 @@ describe('Sync Integration Tests', () => {
 
       // Verify all cloud data saved locally
       cloudData.sessions.forEach(session => {
-        expect(localStorageMock.getItem(`practiceSession:${session.id}`)).toBeTruthy()
+        expect(
+          localStorageMock.getItem(`practiceSession:${session.id}`)
+        ).toBeTruthy()
       })
       cloudData.entries.forEach(entry => {
-        expect(localStorageMock.getItem(`logbook:entry:${entry.id}`)).toBeTruthy()
+        expect(
+          localStorageMock.getItem(`logbook:entry:${entry.id}`)
+        ).toBeTruthy()
       })
       cloudData.goals.forEach(goal => {
         expect(localStorageMock.getItem(`goal:${goal.id}`)).toBeTruthy()
@@ -466,7 +470,11 @@ describe('Sync Integration Tests', () => {
         })
 
       // Mock a retry wrapper
-      const syncWithRetry = async (client: any, userId: string, maxRetries = 3) => {
+      const syncWithRetry = async (
+        client: any,
+        userId: string,
+        maxRetries = 3
+      ) => {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
           try {
             return await mockPerformIncrementalSync(client, userId)
@@ -474,7 +482,9 @@ describe('Sync Integration Tests', () => {
             attemptCount++
             if (attempt === maxRetries) throw error
             // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000))
+            await new Promise(resolve =>
+              setTimeout(resolve, Math.pow(2, attempt - 1) * 1000)
+            )
           }
         }
       }

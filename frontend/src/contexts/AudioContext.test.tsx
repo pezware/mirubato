@@ -68,15 +68,24 @@ describe('AudioContext', () => {
 
   describe('useAudioManager', () => {
     it('should throw error when used outside provider', () => {
-      // The hook will throw an error when used outside the provider
-      expect(() => {
-        const TestComponent = () => {
-          useAudioManager()
-          return null
-        }
+      // Suppress expected console errors
+      const originalError = console.error
+      console.error = jest.fn()
 
-        render(<TestComponent />)
-      }).toThrow('useAudioManager must be used within an AudioProvider')
+      try {
+        // The hook will throw an error when used outside the provider
+        expect(() => {
+          const TestComponent = () => {
+            useAudioManager()
+            return null
+          }
+
+          render(<TestComponent />)
+        }).toThrow('useAudioManager must be used within an AudioProvider')
+      } finally {
+        // Restore console.error
+        console.error = originalError
+      }
     })
 
     it('should return audio manager when used inside provider', () => {

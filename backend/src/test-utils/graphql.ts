@@ -1,7 +1,10 @@
 import { ApolloServer } from '@apollo/server'
 import type { GraphQLContext } from '../types/context'
 import { createMockDB } from './db'
-import { nanoid } from 'nanoid'
+
+// Mock nanoid for test environment
+let mockIdCounter = 0
+const nanoid = () => `test-id-${Date.now()}-${++mockIdCounter}`
 
 export function createMockContext(
   overrides?: Partial<GraphQLContext>

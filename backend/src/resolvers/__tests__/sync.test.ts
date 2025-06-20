@@ -46,8 +46,11 @@ describe('Sync Resolvers', () => {
     it('should return sync metadata for authenticated user', async () => {
       const mockMetadata = {
         user_id: 'user-123',
-        last_sync_at: '2024-01-01T10:00:00Z',
-        sync_version: 1,
+        last_sync_timestamp: 1704103200000,
+        sync_token: 'sync-token-123',
+        pending_sync_count: 0,
+        last_sync_status: 'success',
+        last_sync_error: null,
         device_count: 2,
       }
 
@@ -58,12 +61,18 @@ describe('Sync Resolvers', () => {
       }
       mockDb.prepare.mockReturnValue(mockStmts)
 
-      const result = await syncResolvers.Query.syncMetadata(null, {}, ctx)
+      const result = await syncResolvers.Query.syncMetadata(
+        null,
+        { userId: 'user-123' },
+        ctx
+      )
 
       expect(result).toEqual({
-        lastSyncAt: '2024-01-01T10:00:00Z',
-        syncVersion: 1,
-        deviceCount: 2,
+        lastSyncTimestamp: 1704103200000,
+        syncToken: 'sync-token-123',
+        pendingSyncCount: 0,
+        lastSyncStatus: 'success',
+        lastSyncError: null,
       })
       expect(mockDb.prepare).toHaveBeenCalledWith(
         expect.stringContaining('SELECT')
@@ -79,15 +88,21 @@ describe('Sync Resolvers', () => {
       }
       mockDb.prepare.mockReturnValue(mockStmts)
 
-      const result = await syncResolvers.Query.syncMetadata(null, {}, ctx)
+      const result = await syncResolvers.Query.syncMetadata(
+        null,
+        { userId: 'user-123' },
+        ctx
+      )
 
       expect(result).toEqual({
-        lastSyncAt: expect.any(String),
-        syncVersion: 1,
-        deviceCount: 1,
+        lastSyncTimestamp: 0,
+        syncToken: null,
+        pendingSyncCount: 0,
+        lastSyncStatus: 'never_synced',
+        lastSyncError: null,
       })
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT')
+        expect.stringContaining('SELECT')
       )
     })
 
@@ -95,75 +110,104 @@ describe('Sync Resolvers', () => {
       ctx.user = null
 
       await expect(
-        syncResolvers.Query.syncMetadata(null, {}, ctx)
-      ).rejects.toThrow('Unauthorized')
+        syncResolvers.Query.syncMetadata(null, { userId: 'user-123' }, ctx)
+      ).rejects.toThrow('Not authenticated')
     })
   })
 
-  describe('Query: syncBatch', () => {
-    it('should fetch sync batch data', async () => {
-      const mockBatch = {
+  describe('Query: allUserData', () => {
+    it('should fetch all user data', async () => {
+      const mockData = {
         sessions: [{ id: 'session-1', user_id: 'user-123' }],
-        logs: [{ id: 'log-1', session_id: 'session-1' }],
-        entries: [{ id: 'entry-1', user_id: 'user-123' }],
         goals: [{ id: 'goal-1', user_id: 'user-123' }],
+        entries: [{ id: 'entry-1', user_id: 'user-123' }],
       }
 
-      const mockStmts = {
-        bind: vi.fn(() => ({
-          all: vi
-            .fn()
-            .mockResolvedValueOnce({ results: mockBatch.sessions })
-            .mockResolvedValueOnce({ results: mockBatch.logs })
-            .mockResolvedValueOnce({ results: mockBatch.entries })
-            .mockResolvedValueOnce({ results: mockBatch.goals }),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
+      mockDb.prepare
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockData.sessions }),
+          })),
+        })
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockData.goals }),
+          })),
+        })
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockData.entries }),
+          })),
+        })
 
-      const result = await syncResolvers.Query.syncBatch(
+      const result = await syncResolvers.Query.allUserData(
         null,
-        { lastSyncAt: '2024-01-01T00:00:00Z', limit: 100 },
+        { userId: 'user-123' },
         ctx
       )
 
       expect(result).toEqual({
-        sessions: mockBatch.sessions,
-        logs: mockBatch.logs,
-        entries: mockBatch.entries,
-        goals: mockBatch.goals,
-        hasMore: false,
+        practiceSessions: mockData.sessions,
+        practiceGoals: mockData.goals,
+        logbookEntries: mockData.entries,
       })
     })
 
-    it('should handle pagination correctly', async () => {
-      const largeResults = Array(101)
-        .fill(null)
-        .map((_, i) => ({
-          id: `session-${i}`,
-          user_id: 'user-123',
-        }))
+    it('should throw error for unauthorized user', async () => {
+      const differentUserId = 'different-user-456'
 
-      const mockStmts = {
-        bind: vi.fn(() => ({
-          all: vi
-            .fn()
-            .mockResolvedValueOnce({ results: largeResults })
-            .mockResolvedValueOnce({ results: [] })
-            .mockResolvedValueOnce({ results: [] })
-            .mockResolvedValueOnce({ results: [] }),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
+      await expect(
+        syncResolvers.Query.allUserData(null, { userId: differentUserId }, ctx)
+      ).rejects.toThrow('Not authorized')
+    })
+  })
 
-      const result = await syncResolvers.Query.syncBatch(
+  describe('Query: syncDebugInfo', () => {
+    it('should return sync debug information', async () => {
+      const mockDevices = [
+        {
+          deviceId: 'device-1',
+          entryCount: 10,
+          lastSeen: Date.now(),
+        },
+      ]
+
+      const mockConflicts = []
+      const mockSyncLogs = []
+
+      mockDb.prepare
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockDevices }),
+          })),
+        })
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            first: vi.fn().mockResolvedValue({ count: 5 }),
+          })),
+        })
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockConflicts }),
+          })),
+        })
+        .mockReturnValueOnce({
+          bind: vi.fn(() => ({
+            all: vi.fn().mockResolvedValue({ results: mockSyncLogs }),
+          })),
+        })
+
+      const result = await syncResolvers.Query.syncDebugInfo(
         null,
-        { lastSyncAt: '2024-01-01T00:00:00Z', limit: 100 },
+        { userId: 'user-123' },
         ctx
       )
 
-      expect(result.sessions).toHaveLength(100) // Limited to 100
-      expect(result.hasMore).toBe(true)
+      expect(result).toHaveProperty('devices')
+      expect(result).toHaveProperty('localEntryCount')
+      expect(result).toHaveProperty('cloudEntryCount')
+      expect(result).toHaveProperty('conflicts')
+      expect(result).toHaveProperty('lastSyncLogs')
     })
   })
 
@@ -190,16 +234,13 @@ describe('Sync Resolvers', () => {
 
       const result = await syncResolvers.Query.syncChangesSince(
         null,
-        { since: '2024-01-01T00:00:00Z', limit: 50 },
+        { syncToken: 'user-123:1704067200000' },
         ctx
       )
 
       expect(result).toEqual({
-        sessions: mockChanges.sessions,
-        goals: mockChanges.goals,
-        entries: mockChanges.entries,
-        deleted: mockChanges.deleted,
-        hasMore: false,
+        entities: expect.any(Array),
+        deletedIds: expect.any(Array),
         newSyncToken: expect.any(String),
       })
     })
@@ -210,32 +251,43 @@ describe('Sync Resolvers', () => {
       await expect(
         syncResolvers.Query.syncChangesSince(
           null,
-          { since: '2024-01-01T00:00:00Z' },
+          { syncToken: 'user-123:1704067200000' },
           ctx
         )
-      ).rejects.toThrow('Unauthorized')
+      ).rejects.toThrow('Not authenticated')
     })
   })
 
-  describe('Mutation: syncPull', () => {
+  describe('Mutation: syncBatch', () => {
     it('should process client sync batch successfully', async () => {
-      const input = {
-        clientBatch: {
-          sessions: [
-            {
-              id: 'client-session-1',
-              startTime: '2024-01-01T10:00:00Z',
-              duration: 1800,
-              sheetMusicId: 'sheet-1',
+      const batch = {
+        userId: 'user-123',
+        syncToken: 'old-token',
+        entities: [
+          {
+            id: 'entity-1',
+            localId: 'local-1',
+            remoteId: null,
+            entityType: 'practiceSession',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            deletedAt: null,
+            syncVersion: 1,
+            checksum: 'checksum-1',
+            deviceId: 'device-1',
+            data: {
               instrument: 'PIANO',
-              updatedAt: '2024-01-01T11:00:00Z',
+              sheetMusicId: 'sheet-1',
+              sessionType: 'FREE_PRACTICE',
+              startedAt: '2024-01-01T10:00:00Z',
+              completedAt: '2024-01-01T10:30:00Z',
+              pausedDuration: 0,
+              accuracyPercentage: 85,
+              notesAttempted: 100,
+              notesCorrect: 85,
             },
-          ],
-          logs: [],
-          entries: [],
-          goals: [],
-        },
-        lastSyncVersion: 1,
+          },
+        ],
       }
 
       // Mock successful database operations
@@ -249,261 +301,132 @@ describe('Sync Resolvers', () => {
       mockDb.prepare.mockReturnValue(mockStmts)
       mockDb.batch.mockResolvedValue([{ success: true }])
 
-      const result = await syncResolvers.Mutation.syncPull(null, { input }, ctx)
+      const result = await syncResolvers.Mutation.syncBatch(
+        null,
+        { batch },
+        ctx
+      )
 
       expect(result).toEqual({
-        serverBatch: {
-          sessions: [],
-          logs: [],
-          entries: [],
-          goals: [],
-          hasMore: false,
-        },
-        syncVersion: 2,
-        conflicts: [],
+        uploaded: 1,
+        failed: 0,
+        errors: [],
+        newSyncToken: expect.any(String),
       })
 
-      // Verify upsert was called
-      expect(mockDb.batch).toHaveBeenCalled()
+      // Verify database operations were called
+      expect(mockDb.prepare).toHaveBeenCalled()
     })
 
     it('should handle conflicts correctly', async () => {
-      const input = {
-        clientBatch: {
-          sessions: [
-            {
-              id: 'conflict-session-1',
-              startTime: '2024-01-01T10:00:00Z',
+      const batch = {
+        userId: 'user-123',
+        syncToken: 'old-token',
+        entities: [
+          {
+            id: 'conflict-entity-1',
+            localId: 'local-1',
+            remoteId: 'remote-1',
+            entityType: 'practiceSession',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            deletedAt: null,
+            syncVersion: 2,
+            checksum: 'checksum-old',
+            deviceId: 'device-1',
+            data: {
+              instrument: 'PIANO',
               duration: 1800,
-              updatedAt: '2024-01-01T10:00:00Z',
             },
-          ],
-          logs: [],
-          entries: [],
-          goals: [],
-        },
-        lastSyncVersion: 1,
-      }
-
-      // Mock existing session with newer timestamp
-      const existingSession = {
-        id: 'conflict-session-1',
-        updated_at: '2024-01-01T11:00:00Z', // Newer than client
-        duration: 2400,
-      }
-
-      const mockStmts = {
-        bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue(existingSession),
-          all: vi.fn().mockResolvedValue({ results: [] }),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
-
-      const result = await syncResolvers.Mutation.syncPull(null, { input }, ctx)
-
-      expect(result.conflicts).toHaveLength(1)
-      expect(result.conflicts[0]).toEqual({
-        id: 'conflict-session-1',
-        type: 'SESSION',
-        clientVersion: input.clientBatch.sessions[0],
-        serverVersion: expect.any(Object),
-      })
-    })
-  })
-
-  describe('Mutation: syncAnonymousData', () => {
-    it('should sync anonymous data successfully', async () => {
-      const input = {
-        sessions: [
-          {
-            id: 'anon-session-1',
-            startTime: '2024-01-01T09:00:00Z',
-            duration: 1800,
-            sheetMusicId: 'sheet-1',
-            instrument: 'GUITAR',
           },
         ],
-        logs: [],
-        entries: [
-          {
-            id: 'anon-entry-1',
-            timestamp: '2024-01-01T10:00:00Z',
-            duration: 1800,
-            type: 'PRACTICE',
-            instrument: 'GUITAR',
-            pieces: [],
-            techniques: ['scales'],
-            goalIds: [],
-            notes: 'Anonymous practice',
-            mood: 'FOCUSED',
-            tags: ['morning'],
-          },
-        ],
-        goals: [],
       }
 
-      // Mock successful inserts
+      // Mock existing entity with higher sync version (conflict)
       const mockStmts = {
         bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue(null), // No duplicates
+          first: vi.fn().mockResolvedValue({
+            id: 'remote-1',
+            sync_version: 3, // Higher version = conflict
+            checksum: 'checksum-different',
+          }),
           run: vi.fn().mockResolvedValue({ success: true }),
         })),
       }
       mockDb.prepare.mockReturnValue(mockStmts)
-      mockDb.batch.mockResolvedValue(
-        Array(input.sessions.length + input.entries.length).fill({
-          success: true,
-        })
+
+      // Should still process but log the conflict
+      const result = await syncResolvers.Mutation.syncBatch(
+        null,
+        { batch },
+        ctx
       )
 
-      const result = await syncResolvers.Mutation.syncAnonymousData(
+      expect(result.uploaded).toBe(1) // Still uploads (last-write-wins)
+      expect(result.failed).toBe(0)
+    })
+  })
+
+  describe('Mutation: updateSyncMetadata', () => {
+    it('should update sync metadata successfully', async () => {
+      const args = {
+        userId: 'user-123',
+        lastSyncTimestamp: Date.now(),
+        syncToken: 'new-token-123',
+        status: 'success',
+      }
+
+      const mockStmts = {
+        bind: vi.fn(() => ({
+          run: vi.fn().mockResolvedValue({ success: true }),
+        })),
+      }
+      mockDb.prepare.mockReturnValue(mockStmts)
+
+      // Mock KV store
+      ctx.env.MIRUBATO_MAGIC_LINKS = {
+        put: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn(),
+        delete: vi.fn(),
+        list: vi.fn(),
+      } as any
+
+      const result = await syncResolvers.Mutation.updateSyncMetadata(
         null,
-        { input },
+        args,
         ctx
       )
 
       expect(result).toEqual({
-        success: true,
-        syncedSessions: 1,
-        syncedLogs: 0,
-        syncedEntries: 1,
-        syncedGoals: 0,
-        errors: null,
+        lastSyncTimestamp: args.lastSyncTimestamp,
+        syncToken: args.syncToken,
+        pendingSyncCount: 0,
+        lastSyncStatus: args.status,
+        lastSyncError: null,
       })
 
-      expect(mockDb.batch).toHaveBeenCalled()
-    })
-
-    it('should handle duplicate entries gracefully', async () => {
-      const input = {
-        sessions: [
-          {
-            id: 'duplicate-session-1',
-            startTime: '2024-01-01T09:00:00Z',
-            duration: 1800,
-          },
-        ],
-        logs: [],
-        entries: [],
-        goals: [],
-      }
-
-      // Mock duplicate detection
-      const mockStmts = {
-        bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue({ id: 'duplicate-session-1' }), // Duplicate exists
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
-
-      const result = await syncResolvers.Mutation.syncAnonymousData(
-        null,
-        { input },
-        ctx
+      expect(mockDb.prepare).toHaveBeenCalled()
+      expect(ctx.env.MIRUBATO_MAGIC_LINKS.put).toHaveBeenCalledWith(
+        `sync:metadata:${args.userId}`,
+        expect.any(String)
       )
-
-      expect(result.success).toBe(true)
-      expect(result.syncedSessions).toBe(0) // Skipped duplicate
-      expect(result.errors).toBeNull()
-    })
-
-    it('should handle partial failures', async () => {
-      const input = {
-        sessions: [
-          { id: 'session-1', startTime: '2024-01-01T09:00:00Z' },
-          { id: 'session-2', startTime: '2024-01-01T10:00:00Z' },
-        ],
-        logs: [],
-        entries: [],
-        goals: [],
-      }
-
-      // Mock one success, one failure
-      const mockStmts = {
-        bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue(null),
-          run: vi
-            .fn()
-            .mockResolvedValueOnce({ success: true })
-            .mockRejectedValueOnce(new Error('DB Error')),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
-
-      const result = await syncResolvers.Mutation.syncAnonymousData(
-        null,
-        { input },
-        ctx
-      )
-
-      expect(result.success).toBe(false)
-      expect(result.syncedSessions).toBe(1)
-      expect(result.errors).toContain('Failed to sync session-2')
     })
 
     it('should require authentication', async () => {
       ctx.user = null
 
       await expect(
-        syncResolvers.Mutation.syncAnonymousData(
+        syncResolvers.Mutation.updateSyncMetadata(
           null,
-          { input: { sessions: [], logs: [], entries: [], goals: [] } },
+          {
+            userId: 'user-123',
+            lastSyncTimestamp: Date.now(),
+            syncToken: 'token',
+            status: 'success',
+          },
           ctx
         )
-      ).rejects.toThrow('Unauthorized')
-    })
-  })
-
-  describe('Helper Functions', () => {
-    it('should correctly detect conflicts based on timestamps', async () => {
-      const input = {
-        clientBatch: {
-          sessions: [
-            {
-              id: 'test-session',
-              updatedAt: '2024-01-01T10:00:00Z',
-              duration: 1800,
-            },
-          ],
-          logs: [],
-          entries: [],
-          goals: [],
-        },
-        lastSyncVersion: 1,
-      }
-
-      // Test case 1: Server version is newer (conflict)
-      let mockStmts = {
-        bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue({
-            id: 'test-session',
-            updated_at: '2024-01-01T11:00:00Z', // Newer
-          }),
-          all: vi.fn().mockResolvedValue({ results: [] }),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
-
-      let result = await syncResolvers.Mutation.syncPull(null, { input }, ctx)
-      expect(result.conflicts).toHaveLength(1)
-
-      // Test case 2: Client version is newer (no conflict)
-      mockStmts = {
-        bind: vi.fn(() => ({
-          first: vi.fn().mockResolvedValue({
-            id: 'test-session',
-            updated_at: '2024-01-01T09:00:00Z', // Older
-          }),
-          run: vi.fn().mockResolvedValue({ success: true }),
-          all: vi.fn().mockResolvedValue({ results: [] }),
-        })),
-      }
-      mockDb.prepare.mockReturnValue(mockStmts)
-      mockDb.batch.mockResolvedValue([{ success: true }])
-
-      result = await syncResolvers.Mutation.syncPull(null, { input }, ctx)
-      expect(result.conflicts).toHaveLength(0)
+      ).rejects.toThrow('Not authorized')
     })
   })
 
@@ -514,30 +437,23 @@ describe('Sync Resolvers', () => {
       })
 
       await expect(
-        syncResolvers.Query.syncMetadata(null, {}, ctx)
+        syncResolvers.Query.syncMetadata(null, { userId: 'user-123' }, ctx)
       ).rejects.toThrow('Database connection failed')
     })
 
-    it('should validate input data', async () => {
-      const invalidInput = {
-        sessions: [
-          {
-            // Missing required fields
-            id: 'invalid-session',
-          },
-        ],
-        logs: [],
-        entries: [],
-        goals: [],
-      }
+    it('should validate sync token format', async () => {
+      const invalidTokens = [
+        'invalid-token', // No colon
+        ':12345', // No user ID
+        'user-123:', // No timestamp
+        'user-123:abc', // Invalid timestamp
+      ]
 
-      await expect(
-        syncResolvers.Mutation.syncAnonymousData(
-          null,
-          { input: invalidInput },
-          ctx
-        )
-      ).rejects.toThrow()
+      for (const token of invalidTokens) {
+        await expect(
+          syncResolvers.Query.syncChangesSince(null, { syncToken: token }, ctx)
+        ).rejects.toThrow()
+      }
     })
   })
 })

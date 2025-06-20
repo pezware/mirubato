@@ -15,27 +15,30 @@ export default defineWorkersConfig({
       './test-utils/setup-crypto.ts',
       './test-utils/vitest-setup.ts',
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['**/*.ts'],
-      exclude: [
-        '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/test-utils/**',
-        '**/__tests__/**',
-        '**/__mocks__/**',
-        '**/node_modules/**',
-        '**/dist/**',
-      ],
-      thresholds: {
-        branches: 80,
-        functions: 80,
-        lines: 80,
-        statements: 80,
-      },
-    },
+    // Disable coverage for now due to Cloudflare Workers environment limitations
+    // The v8 provider requires node:inspector which is not available in Workers
+    // coverage: {
+    //   provider: 'v8',
+    //   reporter: ['text', 'json', 'html'],
+    //   include: ['src/**/*.ts'],
+    //   exclude: [
+    //     '**/*.d.ts',
+    //     '**/*.test.ts',
+    //     '**/*.spec.ts',
+    //     '**/test-utils/**',
+    //     '**/__tests__/**',
+    //     '**/__mocks__/**',
+    //     '**/node_modules/**',
+    //     '**/dist/**',
+    //     '**/src/types/**',
+    //   ],
+    //   thresholds: {
+    //     branches: 80,
+    //     functions: 80,
+    //     lines: 80,
+    //     statements: 80,
+    //   },
+    // },
     testTimeout: 10000,
     poolOptions: {
       workers: {

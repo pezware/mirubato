@@ -1,8 +1,16 @@
 import { beforeAll, afterEach, vi } from 'vitest'
 
+// Mock nanoid globally
+vi.mock('nanoid', () => ({
+  nanoid: (size?: number) => {
+    const id = `mock_id_${Math.random().toString(36).substring(7)}`
+    return size ? id.padEnd(size, '0') : id
+  },
+}))
+
 // Mock console methods to reduce noise in tests
 beforeAll(() => {
-  global.console = {
+  ;(global as any).console = {
     ...console,
     log: vi.fn(),
     debug: vi.fn(),
