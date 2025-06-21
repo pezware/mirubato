@@ -27,7 +27,7 @@ routes = [
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-production"
-database_id = "PLACEHOLDER_PRODUCTION_DB_ID"
+database_id = "aac4662e-d14a-4397-971c-c544d8c79104"
 
 [[env.production.r2_buckets]]
 binding = "SCORES_BUCKET"
@@ -48,7 +48,7 @@ routes = [
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-staging"
-database_id = "PLACEHOLDER_STAGING_DB_ID"
+database_id = "eb2baa9e-c67f-45e1-bf79-cd2cf781e92e"
 
 [[env.staging.r2_buckets]]
 binding = "SCORES_BUCKET"
