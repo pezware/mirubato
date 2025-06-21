@@ -27,7 +27,7 @@ routes = [
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-production"
-database_id = "PLACEHOLDER_PRODUCTION_DB_ID"
+database_id = "aac4662e-d14a-4397-971c-c544d8c79104"
 
 [[env.production.r2_buckets]]
 binding = "SCORES_BUCKET"
@@ -35,7 +35,7 @@ bucket_name = "mirubato-scores-production"
 
 [[env.production.kv_namespaces]]
 binding = "CACHE"
-id = "PLACEHOLDER_PRODUCTION_KV_ID"
+id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
 
 # Staging configuration
 [env.staging]
@@ -48,7 +48,7 @@ routes = [
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-staging"
-database_id = "PLACEHOLDER_STAGING_DB_ID"
+database_id = "eb2baa9e-c67f-45e1-bf79-cd2cf781e92e"
 
 [[env.staging.r2_buckets]]
 binding = "SCORES_BUCKET"
@@ -56,7 +56,7 @@ bucket_name = "mirubato-scores-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "CACHE"
-id = "PLACEHOLDER_STAGING_KV_ID"
+id = "ecf57add945f48e2ad0ecaf2ca91ec95"
 
 # Development configuration
 [env.dev]
@@ -69,7 +69,7 @@ routes = [
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-dev"
-database_id = "PLACEHOLDER_DEV_DB_ID"
+database_id = "bcb9546e-c5ef-43f7-a462-3472fa3fae89"
 
 [[env.dev.r2_buckets]]
 binding = "SCORES_BUCKET"
@@ -77,7 +77,7 @@ bucket_name = "mirubato-scores-dev"
 
 [[env.dev.kv_namespaces]]
 binding = "CACHE"
-id = "PLACEHOLDER_DEV_KV_ID"
+id = "395e4bee05ed4e68b15f35ba7b3ba832"
 
 # Local development configuration
 [env.local]
