@@ -23,6 +23,7 @@
     "codegen": "npm run codegen -w @mirubato/frontend",
     "codegen:watch": "npm run codegen:watch -w @mirubato/frontend",
     "codegen:check": "./scripts/check-graphql-drift.sh",
+    "docs:generate": "echo 'Documentation generation not implemented yet'",
     "prepare": "node -e \"try { require.resolve('husky'); require('child_process').execSync('husky install', {stdio: 'inherit'}); } catch (e) { console.log('Skipping husky install'); }\""
   },
   "devDependencies": {
