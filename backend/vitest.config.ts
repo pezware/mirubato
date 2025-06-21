@@ -15,30 +15,11 @@ export default defineWorkersConfig({
       './test-utils/setup-crypto.ts',
       './test-utils/vitest-setup.ts',
     ],
-    // Disable coverage for now due to Cloudflare Workers environment limitations
-    // The v8 provider requires node:inspector which is not available in Workers
-    // coverage: {
-    //   provider: 'v8',
-    //   reporter: ['text', 'json', 'html'],
-    //   include: ['src/**/*.ts'],
-    //   exclude: [
-    //     '**/*.d.ts',
-    //     '**/*.test.ts',
-    //     '**/*.spec.ts',
-    //     '**/test-utils/**',
-    //     '**/__tests__/**',
-    //     '**/__mocks__/**',
-    //     '**/node_modules/**',
-    //     '**/dist/**',
-    //     '**/src/types/**',
-    //   ],
-    //   thresholds: {
-    //     branches: 80,
-    //     functions: 80,
-    //     lines: 80,
-    //     statements: 80,
-    //   },
-    // },
+    // Coverage is currently disabled due to Cloudflare Workers environment limitations
+    // Neither v8 nor c8 providers work properly with @cloudflare/vitest-pool-workers
+    // The Workers runtime doesn't support node:inspector (required by v8) or the
+    // necessary Node.js modules for coverage collection
+    // TODO: Investigate alternative coverage strategies or integration test approach
     testTimeout: 10000,
     poolOptions: {
       workers: {

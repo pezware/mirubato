@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockContext, createMockUser } from '../../testUtils/mockContext'
 import { userResolvers } from '../user'
 import type { GraphQLContext } from '../../types/context'
-// UserService is mocked below
+import { UserService } from '../../services/user'
 
-// Create a mock UserService instance
+// Mock UserService
 const mockUserService = {
   getUserById: vi.fn(),
   getUserByEmail: vi.fn(),
@@ -13,7 +13,6 @@ const mockUserService = {
   getUserStats: vi.fn(),
 }
 
-// Mock UserService
 vi.mock('../../services/user', () => ({
   UserService: vi.fn().mockImplementation(() => mockUserService),
 }))
@@ -22,7 +21,8 @@ describe('User Resolvers', () => {
   let ctx: GraphQLContext
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    // Reset all mock functions
+    Object.values(mockUserService).forEach(mockFn => mockFn.mockReset())
 
     ctx = createMockContext({
       user: createMockUser(),
