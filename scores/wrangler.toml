@@ -1,0 +1,97 @@
+name = "mirubato-scores"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Local development databases
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-local"
+database_id = "local"
+
+[[r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-local"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+# Production configuration (default)
+[env.production]
+vars = { ENVIRONMENT = "production" }
+routes = [
+  { pattern = "scores.mirubato.com", custom_domain = true }
+]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-production"
+database_id = "PLACEHOLDER_PRODUCTION_DB_ID"
+
+[[env.production.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-production"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_PRODUCTION_KV_ID"
+
+# Staging configuration
+[env.staging]
+name = "mirubato-scores-staging"
+vars = { ENVIRONMENT = "staging" }
+routes = [
+  { pattern = "scores-staging.mirubato.com", custom_domain = true }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-staging"
+database_id = "PLACEHOLDER_STAGING_DB_ID"
+
+[[env.staging.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_STAGING_KV_ID"
+
+# Development configuration
+[env.dev]
+name = "mirubato-scores-dev"
+vars = { ENVIRONMENT = "development" }
+routes = [
+  { pattern = "scores-dev.pezware.workers.dev", zone_name = "pezware.workers.dev" }
+]
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-dev"
+database_id = "PLACEHOLDER_DEV_DB_ID"
+
+[[env.dev.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-dev"
+
+[[env.dev.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_DEV_KV_ID"
+
+# Local development configuration
+[env.local]
+vars = { ENVIRONMENT = "local" }
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-local"
+database_id = "local"
+
+[[env.local.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-local"
+
+[[env.local.kv_namespaces]]
+binding = "CACHE"
+id = "local"

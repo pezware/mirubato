@@ -1,0 +1,163 @@
+name = "mirubato-scores"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Browser Rendering API binding
+[browser]
+binding = "BROWSER"
+
+# Queue configuration
+[[queues.producers]]
+queue = "score-processing"
+binding = "SCORE_QUEUE"
+
+[[queues.consumers]]
+queue = "score-processing"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "score-processing-dlq"
+
+# Durable Objects (for stateful processing)
+[[durable_objects.bindings]]
+name = "SCORE_PROCESSOR"
+class_name = "ScoreProcessor"
+script_name = "mirubato-scores"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ScoreProcessor"]
+
+# Workers AI binding
+[ai]
+binding = "AI"
+
+# Production configuration (default)
+[env.production]
+vars = { 
+  ENVIRONMENT = "production",
+  CF_ACCOUNT_ID = "YOUR_ACCOUNT_ID",
+  CF_API_TOKEN = "YOUR_API_TOKEN"
+}
+routes = [
+  { pattern = "scores.mirubato.com", custom_domain = true }
+]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-production"
+database_id = "PLACEHOLDER_PRODUCTION_DB_ID"
+
+[[env.production.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-production"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_PRODUCTION_KV_ID"
+
+# Analytics Engine binding
+[[env.production.analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+# Staging configuration
+[env.staging]
+name = "mirubato-scores-staging"
+vars = { 
+  ENVIRONMENT = "staging",
+  CF_ACCOUNT_ID = "YOUR_ACCOUNT_ID",
+  CF_API_TOKEN = "YOUR_API_TOKEN"
+}
+routes = [
+  { pattern = "scores-staging.mirubato.com", custom_domain = true }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-staging"
+database_id = "PLACEHOLDER_STAGING_DB_ID"
+
+[[env.staging.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_STAGING_KV_ID"
+
+[[env.staging.analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+# Development configuration
+[env.dev]
+name = "mirubato-scores-dev"
+vars = { 
+  ENVIRONMENT = "development",
+  CF_ACCOUNT_ID = "YOUR_ACCOUNT_ID",
+  CF_API_TOKEN = "YOUR_API_TOKEN"
+}
+routes = [
+  { pattern = "scores-dev.pezware.workers.dev", zone_name = "pezware.workers.dev" }
+]
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-dev"
+database_id = "PLACEHOLDER_DEV_DB_ID"
+
+[[env.dev.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-dev"
+
+[[env.dev.kv_namespaces]]
+binding = "CACHE"
+id = "PLACEHOLDER_DEV_KV_ID"
+
+[[env.dev.analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+# Local development configuration
+[env.local]
+vars = { 
+  ENVIRONMENT = "local",
+  CF_ACCOUNT_ID = "local",
+  CF_API_TOKEN = "local"
+}
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-local"
+database_id = "local"
+
+[[env.local.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-local"
+
+[[env.local.kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+# Service bindings (if you want to call other workers)
+# [[services]]
+# binding = "AUTH_SERVICE"
+# service = "mirubato-auth"
+
+# Cron triggers for maintenance tasks
+[triggers]
+crons = ["0 2 * * *"] # Daily at 2 AM UTC
+
+# Tail consumers for logging
+[[tail_consumers]]
+service = "mirubato-logger"
+
+# Observability
+[observability]
+enabled = true
+
+# Build configuration
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "service-worker"

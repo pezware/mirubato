@@ -1,0 +1,39 @@
+{
+  "name": "@mirubato/scores",
+  "version": "1.0.0",
+  "description": "Scores service for Mirubato - handles sheet music storage, processing, and delivery",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wrangler dev --env local",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:staging": "wrangler deploy --env staging",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:dev": "wrangler d1 migrations apply DB --env dev",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
+    "db:migrate:production": "wrangler d1 migrations apply DB --env production",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "scores",
+    "sheet-music"
+  ],
+  "author": "Mirubato Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^20.11.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1",
+    "wrangler": "^3.101.0"
+  },
+  "dependencies": {
+    "hono": "^4.6.13",
+    "nanoid": "^5.0.4",
+    "zod": "^3.22.4"
+  }
+}
