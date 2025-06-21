@@ -35,7 +35,7 @@ bucket_name = "mirubato-scores-production"
 
 [[env.production.kv_namespaces]]
 binding = "CACHE"
-id = "PLACEHOLDER_PRODUCTION_KV_ID"
+id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
 
 # Staging configuration
 [env.staging]
@@ -56,7 +56,7 @@ bucket_name = "mirubato-scores-staging"
 
 [[env.staging.kv_namespaces]]
 binding = "CACHE"
-id = "PLACEHOLDER_STAGING_KV_ID"
+id = "ecf57add945f48e2ad0ecaf2ca91ec95"
 
 # Development configuration
 [env.dev]
