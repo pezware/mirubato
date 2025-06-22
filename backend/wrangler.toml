@@ -59,6 +59,30 @@ local_protocol = "http"
 # command = "tsc && node scripts/build-modern.js --post"
 # watch_paths = ["src/**/*.ts", "src/**/*.graphql"]
 
+# Staging environment configuration
+[env.staging]
+name = "mirubato-backend-staging"
+workers_dev = false
+
+[[env.staging.routes]]
+pattern = "api-staging.mirubato.com"
+custom_domain = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+
+[[env.staging.kv_namespaces]]
+binding = "MIRUBATO_MAGIC_LINKS"
+id = "2632e7dcffe745f1a34ba6a3b029bd4c"
+
+[env.staging.observability]
+enabled = true
+
 # Preview/Dev environment (for wrangler deploy --env dev)
 [env.dev]
 name = "mirubato-backend-dev"
@@ -78,7 +102,7 @@ id = "2632e7dcffe745f1a34ba6a3b029bd4c"
 
 # Development environment uses default wrangler build
 
-# Production environment
+# Explicit production environment (for consistency)
 [env.production]
 name = "mirubato-backend"
 workers_dev = false
@@ -95,7 +119,8 @@ database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
 binding = "MIRUBATO_MAGIC_LINKS"
 id = "d323a9723d424eed9a8aab2b1b9e15b0"
 
-# Production environment uses default wrangler build
+[env.production.observability]
+enabled = true
 
 [[env.production.routes]]
 pattern = "api.mirubato.com"

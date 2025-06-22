@@ -26,9 +26,10 @@ id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
 [env.staging]
 name = "mirubato-scores-staging"
 vars = { ENVIRONMENT = "staging" }
-routes = [
-  { pattern = "scores-staging.mirubato.com", custom_domain = true }
-]
+
+[[env.staging.routes]]
+pattern = "scores-staging.mirubato.com"
+custom_domain = true
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -80,3 +81,25 @@ bucket_name = "mirubato-scores-local"
 [[env.local.kv_namespaces]]
 binding = "CACHE"
 id = "local"
+
+# Explicit production environment (for consistency)
+[env.production]
+name = "mirubato-scores"
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.routes]]
+pattern = "scores.mirubato.com"
+custom_domain = true
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-scores-production"
+database_id = "aac4662e-d14a-4397-971c-c544d8c79104"
+
+[[env.production.r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-production"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "1f30ff61b4a04dc4a9a269ad6f828fe4"

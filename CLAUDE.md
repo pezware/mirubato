@@ -28,13 +28,24 @@ npm run codegen                # Generate TypeScript types from GraphQL schema
 npm run codegen:watch          # Auto-generate on schema changes
 npm run codegen:check          # Verify frontend-backend alignment
 
-# Deployment
+# Deployment (from respective directories)
+# Backend
 cd backend && wrangler deploy              # Deploy to production (default)
-cd backend && wrangler deploy --env dev    # Deploy to development
 cd backend && wrangler deploy --env staging # Deploy to staging
+cd backend && wrangler deploy --env dev    # Deploy to development
 
+# Frontend
 cd frontend && wrangler deploy             # Deploy to production (default)
+cd frontend && wrangler deploy --env staging # Deploy to staging
 cd frontend && wrangler deploy --env dev   # Deploy to development
+
+# API
+cd api && wrangler deploy                  # Deploy to production (default)
+cd api && wrangler deploy --env staging    # Deploy to staging
+
+# Scores
+cd scores && wrangler deploy               # Deploy to production (default)
+cd scores && wrangler deploy --env staging # Deploy to staging
 ```
 
 ### Project Structure

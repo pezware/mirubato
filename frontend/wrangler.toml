@@ -20,6 +20,40 @@ custom_domain = true
 pattern = "www.mirubato.com"
 custom_domain = true
 
+# Explicit production environment (for consistency)
+[env.production]
+name = "mirubato"
+workers_dev = false
+
+[[env.production.routes]]
+pattern = "mirubato.com"
+custom_domain = true
+
+[[env.production.routes]]
+pattern = "www.mirubato.com"
+custom_domain = true
+
+[env.production.assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Staging environment configuration
+[env.staging]
+name = "mirubato-staging"
+workers_dev = false
+
+[[env.staging.routes]]
+pattern = "staging.mirubato.com"
+custom_domain = true
+
+[[env.staging.routes]]
+pattern = "www-staging.mirubato.com"
+custom_domain = true
+
+[env.staging.assets]
+directory = "./dist"
+binding = "ASSETS"
+
 # Local development configuration (for local dev server)
 [env.local]
 name = "mirubato-local"
