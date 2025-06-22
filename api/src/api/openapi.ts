@@ -12,11 +12,11 @@ export const openAPISpec = {
   },
   servers: [
     {
-      url: 'https://api.mirubato.com',
+      url: 'https://apiv2.mirubato.com',
       description: 'Production',
     },
     {
-      url: 'https://api-staging.mirubato.com',
+      url: 'https://apiv2-staging.mirubato.com',
       description: 'Staging',
     },
     {

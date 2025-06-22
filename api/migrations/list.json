@@ -1,0 +1,8 @@
+{
+  "migrations": [
+    {
+      "name": "0001_initial_schema.sql",
+      "version": 1
+    }
+  ]
+}
