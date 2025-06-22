@@ -18,11 +18,12 @@ database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
 # Staging environment
 [env.staging]
 name = "mirubato-api-staging"
-workers_dev = true
+workers_dev = false
 vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
-routes = [
-  { pattern = "apiv2-staging.mirubato.com", custom_domain = true }
-]
+
+[[env.staging.routes]]
+pattern = "apiv2-staging.mirubato.com"
+custom_domain = true
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -59,7 +60,7 @@ type = "ratelimit"
 namespace_id = "1234"
 simple = { limit = 10, period = 60 }
 
-# Explicit production environment config for Cloudflare dashboard
+# Explicit production environment config (for consistency)
 [env.production]
 name = "mirubato-api"
 workers_dev = false
