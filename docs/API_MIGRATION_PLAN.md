@@ -676,11 +676,11 @@ export const openAPISpec = {
   },
   servers: [
     {
-      url: 'https://api.mirubato.com',
+      url: 'https://apiv2.mirubato.com',
       description: 'Production',
     },
     {
-      url: 'https://api-staging.mirubato.com',
+      url: 'https://apiv2-staging.mirubato.com',
       description: 'Staging',
     },
     {
@@ -833,7 +833,7 @@ database_id = "local-db-id"
 [env.staging]
 vars = { ENVIRONMENT = "staging" }
 routes = [
-  { pattern = "api-staging.mirubato.com/*", custom_domain = true }
+  { pattern = "apiv2-staging.mirubato.com/*", custom_domain = true }
 ]
 
 [[env.staging.d1_databases]]
@@ -859,7 +859,7 @@ ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
 
 [routes]
-pattern = "api.mirubato.com/*"
+pattern = "apiv2.mirubato.com/*"
 custom_domain = true
 
 [[d1_databases]]

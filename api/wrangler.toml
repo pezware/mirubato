@@ -19,7 +19,7 @@ database_id = "00000000-0000-0000-0000-000000000000"
 [env.staging]
 vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com" }
 routes = [
-  { pattern = "api-staging.mirubato.com/*", custom_domain = true }
+  { pattern = "apiv2-staging.mirubato.com/*", custom_domain = true }
 ]
 
 [[env.staging.d1_databases]]
@@ -40,7 +40,7 @@ ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
 
 [[routes]]
-pattern = "api.mirubato.com/*"
+pattern = "apiv2.mirubato.com/*"
 custom_domain = true
 
 [[d1_databases]]

@@ -167,6 +167,6 @@ npm run test:ui
 Interactive API documentation is available at:
 
 - Local: http://localhost:8787/docs
-- Production: https://api.mirubato.com/docs
+- Production: https://apiv2.mirubato.com/docs
 
 The documentation is powered by Stoplight Elements and uses the OpenAPI specification.
