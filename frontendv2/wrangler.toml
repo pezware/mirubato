@@ -1,0 +1,36 @@
+name = "mirubato-frontendv2"
+main = "dist/_worker.js"
+compatibility_date = "2024-01-01"
+
+[site]
+bucket = "./dist"
+
+# Production environment (default)
+[vars]
+API_URL = "https://api.mirubato.com"
+
+[[routes]]
+pattern = "frontendv2.mirubato.com"
+zone_name = "mirubato.com"
+
+# Staging environment
+[env.staging]
+name = "mirubato-frontendv2-staging"
+
+[env.staging.vars]
+API_URL = "https://api-staging.mirubato.com"
+
+[[env.staging.routes]]
+pattern = "frontendv2-staging.mirubato.com"
+zone_name = "mirubato.com"
+
+# Development environment
+[env.dev]
+name = "mirubato-frontendv2-dev"
+
+[env.dev.vars]
+API_URL = "http://localhost:8787"
+
+[[env.dev.routes]]
+pattern = "frontendv2-dev.mirubato.com"
+zone_name = "mirubato.com"
