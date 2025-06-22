@@ -32,7 +32,7 @@ database_id = "staging-db-id"
 ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
 
-[routes]
+[[routes]]
 pattern = "api.mirubato.com/*"
 custom_domain = true
 
