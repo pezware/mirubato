@@ -94,7 +94,7 @@ docsHandler.get('/', c => {
         <a href="/">Home</a>
         <a href="/health">Health Check</a>
         <a href="/api/openapi.json" target="_blank">OpenAPI Spec</a>
-        <a href="https://github.com/mirubato/scores" target="_blank">GitHub</a>
+        <a href="https://github.com/pezware/mirubato" target="_blank">GitHub</a>
       </div>
     </div>
     

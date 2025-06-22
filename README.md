@@ -21,8 +21,8 @@ npm run dev:backend         # Backend: localhost:8787
 | Type            | Link                                               | Description                           |
 | --------------- | -------------------------------------------------- | ------------------------------------- |
 | **🔗 API Docs** | **[docs.mirubato.com](https://docs.mirubato.com)** | **Complete TypeScript API reference** |
-| 📖 Development  | [Setup Guide](docs/DEVELOPMENT.md)                 | Installation and development          |
-| 📋 Progress     | [Roadmap](docs/ROADMAP.md)                         | Development phases and milestones     |
+| 📖 Development  | [Setup Guide](docs/DESIGN.md)                      | Architecture and development guide    |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                       | Debugging and troubleshooting         |
 
 ## Technology Stack
 
