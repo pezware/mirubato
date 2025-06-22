@@ -3,37 +3,22 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Local development databases
-[[d1_databases]]
-binding = "DB"
-database_name = "mirubato-scores-local"
-database_id = "local"
-
-[[r2_buckets]]
-binding = "SCORES_BUCKET"
-bucket_name = "mirubato-scores-local"
-
-[[kv_namespaces]]
-binding = "CACHE"
-id = "local"
-
-# Production configuration (default)
-[env.production]
+# Production configuration (default - no env flag needed)
 vars = { ENVIRONMENT = "production" }
 routes = [
   { pattern = "scores.mirubato.com", custom_domain = true }
 ]
 
-[[env.production.d1_databases]]
+[[d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-production"
 database_id = "aac4662e-d14a-4397-971c-c544d8c79104"
 
-[[env.production.r2_buckets]]
+[[r2_buckets]]
 binding = "SCORES_BUCKET"
 bucket_name = "mirubato-scores-production"
 
-[[env.production.kv_namespaces]]
+[[kv_namespaces]]
 binding = "CACHE"
 id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
 

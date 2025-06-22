@@ -12,7 +12,7 @@
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:dev": "wrangler d1 migrations apply DB --env dev",
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
-    "db:migrate:production": "wrangler d1 migrations apply DB --env production",
+    "db:migrate:production": "wrangler d1 migrations apply DB",
     "test": "vitest",
     "test:coverage": "vitest --coverage"
   },
