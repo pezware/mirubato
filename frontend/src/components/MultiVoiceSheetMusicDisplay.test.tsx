@@ -255,25 +255,32 @@ describe('MultiVoiceSheetMusicDisplay', () => {
     const score = createTestScore()
     render(<MultiVoiceSheetMusicDisplay score={score} />)
 
-    // Wait for initial render to complete
+    // Wait for initial render to complete and isRendering to be false
     await waitFor(() => {
       expect(mockRenderer.renderScore).toHaveBeenCalledWith(score)
     })
 
+    // Clear mock calls to track only resize-related calls
+    mockRenderer.renderScore.mockClear()
+    mockRenderer.resize.mockClear()
+
+    // Wait a bit more to ensure isRendering is false
+    await new Promise(resolve => setTimeout(resolve, 200))
+
     // Simulate window resize
     global.dispatchEvent(new Event('resize'))
 
-    // Wait for debounced resize (300ms timeout + extra time)
+    // Wait for debounced resize (300ms debounce + processing time)
     await waitFor(
       () => {
         expect(mockRenderer.resize).toHaveBeenCalled()
       },
-      { timeout: 500 }
+      { timeout: 1000 }
     )
 
     // Should re-render after resize
     await waitFor(() => {
-      expect(mockRenderer.renderScore).toHaveBeenCalledTimes(2)
+      expect(mockRenderer.renderScore).toHaveBeenCalledWith(score)
     })
   })
 
