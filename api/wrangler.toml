@@ -1,0 +1,49 @@
+name = "mirubato-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+node_compat = true
+
+[build]
+command = "npm run build"
+
+# Local development
+[env.local]
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com" }
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com" }
+routes = [
+  { pattern = "api-staging.mirubato.com/*", custom_domain = true }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-staging"
+database_id = "staging-db-id"
+
+# Production environment (default)
+[vars]
+ENVIRONMENT = "production"
+GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
+
+[routes]
+pattern = "api.mirubato.com/*"
+custom_domain = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-production"
+database_id = "prod-db-id"
+
+# Rate limiting configuration
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 10, period = 60 }
