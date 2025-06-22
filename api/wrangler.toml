@@ -8,7 +8,7 @@ command = "npm run build"
 
 # Local development
 [env.local]
-vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
 
 [[env.local.d1_databases]]
 binding = "DB"
@@ -17,7 +17,9 @@ database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
 
 # Staging environment
 [env.staging]
-vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com" }
+name = "mirubato-api-staging"
+workers_dev = true
+vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
 routes = [
   { pattern = "apiv2-staging.mirubato.com", custom_domain = true }
 ]
@@ -35,9 +37,11 @@ namespace_id = "1234"
 simple = { limit = 10, period = 60 }
 
 # Production environment (default)
+workers_dev = false
+
 [vars]
 ENVIRONMENT = "production"
-GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
 
 [[routes]]
 pattern = "apiv2.mirubato.com"
@@ -50,6 +54,30 @@ database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
 
 # Rate limiting configuration
 [[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 10, period = 60 }
+
+# Explicit production environment config for Cloudflare dashboard
+[env.production]
+name = "mirubato-api"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
+
+[[env.production.routes]]
+pattern = "apiv2.mirubato.com"
+custom_domain = true
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+[[env.production.unsafe.bindings]]
 name = "RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1234"
