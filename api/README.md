@@ -20,15 +20,35 @@ This API follows a local-first architecture where:
    npm install
    ```
 
-2. Create D1 databases:
+2. Check current database configuration:
+
+   ```bash
+   ./scripts/setup-db.sh check
+   ```
+
+   This will show if you're using placeholder database IDs (which need to be replaced).
+
+3. Create D1 databases:
 
    ```bash
    ./scripts/setup-db.sh create
    ```
 
-   This will create the staging and production databases. Copy the database IDs from the output and update them in `wrangler.toml`.
+   This will create the staging and production databases. The script will output the database IDs.
 
-3. Run migrations:
+4. Update `wrangler.toml` with the database IDs from step 3:
+
+   ```toml
+   # For staging
+   [[env.staging.d1_databases]]
+   database_id = "YOUR-STAGING-DATABASE-ID"
+
+   # For production
+   [[d1_databases]]
+   database_id = "YOUR-PRODUCTION-DATABASE-ID"
+   ```
+
+5. Run migrations:
 
    ```bash
    # Local development

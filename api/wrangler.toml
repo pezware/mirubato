@@ -24,8 +24,15 @@ routes = [
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "mirubato-staging"
-database_id = "staging-db-id"
+database_name = "mirubato-api-staging"
+database_id = "00000000-0000-0000-0000-000000000001"
+
+# Rate limiting for staging
+[[env.staging.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 10, period = 60 }
 
 # Production environment (default)
 [vars]
@@ -38,8 +45,8 @@ custom_domain = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "mirubato-production"
-database_id = "prod-db-id"
+database_name = "mirubato-api-production"
+database_id = "00000000-0000-0000-0000-000000000002"
 
 # Rate limiting configuration
 [[unsafe.bindings]]
