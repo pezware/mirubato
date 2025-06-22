@@ -1,0 +1,213 @@
+import { nanoid } from 'nanoid'
+import type { DbUser, DbSyncData, DbSyncMetadata } from '../types/models'
+
+/**
+ * Generate a unique ID for database records
+ */
+export function generateId(prefix?: string): string {
+  const id = nanoid()
+  return prefix ? `${prefix}_${id}` : id
+}
+
+/**
+ * Database query helpers
+ */
+export class DatabaseHelpers {
+  constructor(private db: D1Database) {}
+
+  /**
+   * Find user by email
+   */
+  async findUserByEmail(email: string): Promise<DbUser | null> {
+    return await this.db
+      .prepare('SELECT * FROM users WHERE email = ?')
+      .bind(email)
+      .first<DbUser>()
+  }
+
+  /**
+   * Find user by ID
+   */
+  async findUserById(id: string): Promise<DbUser | null> {
+    return await this.db
+      .prepare('SELECT * FROM users WHERE id = ?')
+      .bind(id)
+      .first<DbUser>()
+  }
+
+  /**
+   * Create or update user
+   */
+  async upsertUser(data: {
+    email: string
+    displayName?: string
+    authProvider: string
+    googleId?: string
+  }) {
+    const existingUser = await this.findUserByEmail(data.email)
+
+    if (existingUser) {
+      // Update existing user
+      await this.db
+        .prepare(
+          `
+          UPDATE users 
+          SET display_name = ?, auth_provider = ?, google_id = ?, updated_at = datetime('now')
+          WHERE id = ?
+        `
+        )
+        .bind(
+          data.displayName || existingUser.display_name,
+          data.authProvider,
+          data.googleId || existingUser.google_id,
+          existingUser.id
+        )
+        .run()
+
+      return existingUser.id
+    } else {
+      // Create new user
+      const userId = generateId('user')
+
+      await this.db
+        .prepare(
+          `
+          INSERT INTO users (id, email, display_name, auth_provider, google_id)
+          VALUES (?, ?, ?, ?, ?)
+        `
+        )
+        .bind(
+          userId,
+          data.email,
+          data.displayName || null,
+          data.authProvider,
+          data.googleId || null
+        )
+        .run()
+
+      return userId
+    }
+  }
+
+  /**
+   * Get sync data for user
+   */
+  async getSyncData(userId: string, entityType?: string) {
+    let query =
+      'SELECT * FROM sync_data WHERE user_id = ? AND deleted_at IS NULL'
+    const params = [userId]
+
+    if (entityType) {
+      query += ' AND entity_type = ?'
+      params.push(entityType)
+    }
+
+    query += ' ORDER BY updated_at DESC'
+
+    const stmt = this.db.prepare(query)
+    params.forEach(param => stmt.bind(param))
+
+    return await stmt.all()
+  }
+
+  /**
+   * Upsert sync data
+   */
+  async upsertSyncData(data: {
+    userId: string
+    entityType: string
+    entityId: string
+    data: any
+    checksum: string
+    version?: number
+  }) {
+    const id = generateId('sync')
+    const jsonData = JSON.stringify(data.data)
+
+    await this.db
+      .prepare(
+        `
+        INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, entity_type, entity_id)
+        DO UPDATE SET 
+          data = excluded.data,
+          checksum = excluded.checksum,
+          version = excluded.version + 1,
+          updated_at = datetime('now')
+      `
+      )
+      .bind(
+        id,
+        data.userId,
+        data.entityType,
+        data.entityId,
+        jsonData,
+        data.checksum,
+        data.version || 1
+      )
+      .run()
+  }
+
+  /**
+   * Get sync metadata
+   */
+  async getSyncMetadata(userId: string): Promise<DbSyncMetadata | null> {
+    return await this.db
+      .prepare('SELECT * FROM sync_metadata WHERE user_id = ?')
+      .bind(userId)
+      .first<DbSyncMetadata>()
+  }
+
+  /**
+   * Update sync metadata
+   */
+  async updateSyncMetadata(
+    userId: string,
+    syncToken: string,
+    deviceCount?: number
+  ) {
+    await this.db
+      .prepare(
+        `
+        INSERT INTO sync_metadata (user_id, last_sync_token, last_sync_time, device_count)
+        VALUES (?, ?, datetime('now'), ?)
+        ON CONFLICT(user_id)
+        DO UPDATE SET 
+          last_sync_token = excluded.last_sync_token,
+          last_sync_time = excluded.last_sync_time,
+          device_count = COALESCE(?, device_count)
+      `
+      )
+      .bind(userId, syncToken, deviceCount || 1, deviceCount)
+      .run()
+  }
+
+  /**
+   * Delete user and all associated data
+   */
+  async deleteUser(userId: string) {
+    // Start transaction
+    const batch = [
+      this.db.prepare('DELETE FROM sync_data WHERE user_id = ?').bind(userId),
+      this.db
+        .prepare('DELETE FROM sync_metadata WHERE user_id = ?')
+        .bind(userId),
+      this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId),
+    ]
+
+    await this.db.batch(batch)
+  }
+}
+
+/**
+ * Calculate checksum for data
+ */
+export async function calculateChecksum(data: any): Promise<string> {
+  const jsonString = JSON.stringify(data)
+  const encoder = new TextEncoder()
+  const dataBuffer = encoder.encode(jsonString)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
