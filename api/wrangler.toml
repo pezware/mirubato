@@ -1,7 +1,7 @@
 name = "mirubato-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
-node_compat = true
+compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "npm run build"
@@ -12,8 +12,8 @@ vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-o
 
 [[env.local.d1_databases]]
 binding = "DB"
-database_name = "mirubato-local"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "mirubato-dev"
+database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
 
 # Staging environment
 [env.staging]
@@ -24,8 +24,8 @@ routes = [
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "mirubato-api-staging"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_name = "mirubato-dev"
+database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
 
 # Rate limiting for staging
 [[env.staging.unsafe.bindings]]
@@ -45,8 +45,8 @@ custom_domain = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "mirubato-api-production"
-database_id = "00000000-0000-0000-0000-000000000002"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
 
 # Rate limiting configuration
 [[unsafe.bindings]]
