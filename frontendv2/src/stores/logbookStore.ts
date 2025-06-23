@@ -56,17 +56,22 @@ function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
+  let timeout: number | null = null
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
+    timeout = window.setTimeout(() => func(...args), wait)
   }
 }
 
-// Debounced localStorage write
+// Debounced localStorage write (for non-critical updates)
 const debouncedLocalStorageWrite = debounce((key: string, value: string) => {
   localStorage.setItem(key, value)
 }, 500)
+
+// Immediate localStorage write (for critical operations)
+const immediateLocalStorageWrite = (key: string, value: string) => {
+  localStorage.setItem(key, value)
+}
 
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
@@ -153,8 +158,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       newEntriesMap.set(entry.id, entry)
       set({ entriesMap: newEntriesMap })
 
-      // Debounced write to localStorage
-      debouncedLocalStorageWrite(
+      // Immediate write to localStorage for new entries
+      immediateLocalStorageWrite(
         ENTRIES_KEY,
         JSON.stringify(Array.from(newEntriesMap.values()))
       )
@@ -243,7 +248,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.delete(id)
         set({ entriesMap: newEntriesMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
@@ -255,7 +260,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.delete(id)
         set({ entriesMap: newEntriesMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
@@ -282,7 +287,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         const goalsMap = new Map(goals.map(goal => [goal.id, goal]))
         set({ goalsMap })
 
-        debouncedLocalStorageWrite(GOALS_KEY, JSON.stringify(goals))
+        immediateLocalStorageWrite(GOALS_KEY, JSON.stringify(goals))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to load goals' })
@@ -308,7 +313,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.set(goal.id, goal)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
@@ -320,7 +325,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.set(goal.id, goal)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
@@ -352,7 +357,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.set(id, updatedGoal)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
@@ -364,7 +369,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.set(id, updated)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
@@ -385,7 +390,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.delete(id)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
@@ -397,7 +402,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newGoalsMap.delete(id)
         set({ goalsMap: newGoalsMap })
 
-        debouncedLocalStorageWrite(
+        immediateLocalStorageWrite(
           GOALS_KEY,
           JSON.stringify(Array.from(newGoalsMap.values()))
         )

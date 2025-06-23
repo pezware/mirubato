@@ -32,7 +32,6 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@browserbasehq/stagehand": "^2.3.1",
     "@eslint/js": "^9.25.0",
     "@playwright/test": "^1.40.0",
     "@testing-library/jest-dom": "^6.6.3",
