@@ -16,7 +16,7 @@ export default function HomePage() {
       await login(email)
       setLoginSuccess(true)
       setShowLoginForm(false)
-    } catch (err) {
+    } catch {
       // Error is handled in the store
     }
   }
