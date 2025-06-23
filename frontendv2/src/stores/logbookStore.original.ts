@@ -3,9 +3,9 @@ import { logbookApi, type LogbookEntry, type Goal } from '../api/logbook'
 import { nanoid } from 'nanoid'
 
 interface LogbookState {
-  // Data - Using Maps for O(1) access
-  entriesMap: Map<string, LogbookEntry>
-  goalsMap: Map<string, Goal>
+  // Data
+  entries: LogbookEntry[]
+  goals: Goal[]
 
   // UI State
   isLoading: boolean
@@ -14,10 +14,6 @@ interface LogbookState {
 
   // Local Storage Management (for anonymous users)
   isLocalMode: boolean
-
-  // Computed getters
-  entries: LogbookEntry[]
-  goals: Goal[]
 
   // Actions - Entries
   loadEntries: () => Promise<void>
@@ -51,45 +47,13 @@ interface LogbookState {
 const ENTRIES_KEY = 'mirubato:logbook:entries'
 const GOALS_KEY = 'mirubato:logbook:goals'
 
-// Debounce helper
-function debounce<T extends (...args: any[]) => void>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null
-  return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }
-}
-
-// Debounced localStorage write
-const debouncedLocalStorageWrite = debounce((key: string, value: string) => {
-  localStorage.setItem(key, value)
-}, 500)
-
 export const useLogbookStore = create<LogbookState>((set, get) => ({
-  entriesMap: new Map(),
-  goalsMap: new Map(),
+  entries: [],
+  goals: [],
   isLoading: false,
   error: null,
   searchQuery: '',
   isLocalMode: true, // Always start in local mode
-
-  // Computed getters - convert Maps to arrays only when needed
-  get entries() {
-    return Array.from(get().entriesMap.values()).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-  },
-
-  get goals() {
-    return Array.from(get().goalsMap.values()).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-  },
 
   loadEntries: async () => {
     set({ isLoading: true, error: null })
@@ -97,11 +61,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     try {
       // Always load from localStorage first
       const stored = localStorage.getItem(ENTRIES_KEY)
-      const entries: LogbookEntry[] = stored ? JSON.parse(stored) : []
-
-      // Convert array to Map for O(1) access
-      const entriesMap = new Map(entries.map(entry => [entry.id, entry]))
-      set({ entriesMap, isLoading: false })
+      const entries = stored ? JSON.parse(stored) : []
+      set({ entries, isLoading: false })
 
       // If user is authenticated and online, sync in background
       const token = localStorage.getItem('auth-token')
@@ -110,16 +71,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         logbookApi
           .getEntries()
           .then(serverEntries => {
-            const newEntriesMap = new Map(
-              serverEntries.map(entry => [entry.id, entry])
-            )
-            set({ entriesMap: newEntriesMap })
-
-            // Debounced write to localStorage
-            debouncedLocalStorageWrite(
-              ENTRIES_KEY,
-              JSON.stringify(serverEntries)
-            )
+            // TODO: Merge server entries with local entries
+            // For now, just use server entries
+            set({ entries: serverEntries })
+            localStorage.setItem(ENTRIES_KEY, JSON.stringify(serverEntries))
           })
           .catch(error => {
             console.warn('Background sync failed:', error)
@@ -129,7 +84,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     } catch (error: any) {
       console.error('Failed to load entries:', error)
       set({
-        entriesMap: new Map(),
+        entries: [],
         error: 'Failed to load entries',
         isLoading: false,
       })
@@ -148,16 +103,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       }
 
-      // O(1) insertion
-      const newEntriesMap = new Map(get().entriesMap)
-      newEntriesMap.set(entry.id, entry)
-      set({ entriesMap: newEntriesMap })
-
-      // Debounced write to localStorage
-      debouncedLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(newEntriesMap.values()))
-      )
+      const entries = [...get().entries, entry]
+      set({ entries })
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
 
       // If authenticated and online, sync to server in background
       const token = localStorage.getItem('auth-token')
@@ -167,15 +115,11 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           .then(serverEntry => {
             // Update the entry with server ID if different
             if (serverEntry.id !== entry.id) {
-              const updatedEntriesMap = new Map(get().entriesMap)
-              updatedEntriesMap.delete(entry.id)
-              updatedEntriesMap.set(serverEntry.id, serverEntry)
-              set({ entriesMap: updatedEntriesMap })
-
-              debouncedLocalStorageWrite(
-                ENTRIES_KEY,
-                JSON.stringify(Array.from(updatedEntriesMap.values()))
+              const updatedEntries = entries.map(e =>
+                e.id === entry.id ? { ...e, id: serverEntry.id } : e
               )
+              set({ entries: updatedEntries })
+              localStorage.setItem(ENTRIES_KEY, JSON.stringify(updatedEntries))
             }
           })
           .catch(error => {
@@ -193,39 +137,23 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     set({ error: null })
 
     try {
-      const currentEntry = get().entriesMap.get(id)
-      if (!currentEntry) {
-        throw new Error('Entry not found')
-      }
-
       if (get().isLocalMode) {
-        // O(1) update locally
-        const updatedEntry = {
-          ...currentEntry,
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        }
-
-        const newEntriesMap = new Map(get().entriesMap)
-        newEntriesMap.set(id, updatedEntry)
-        set({ entriesMap: newEntriesMap })
-
-        debouncedLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
+        // Update locally
+        const entries = get().entries.map(entry =>
+          entry.id === id
+            ? { ...entry, ...updates, updatedAt: new Date().toISOString() }
+            : entry
         )
+        set({ entries })
+        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
       } else {
         // Update via API
         const updated = await logbookApi.updateEntry(id, updates)
-
-        const newEntriesMap = new Map(get().entriesMap)
-        newEntriesMap.set(id, updated)
-        set({ entriesMap: newEntriesMap })
-
-        debouncedLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
+        const entries = get().entries.map(entry =>
+          entry.id === id ? updated : entry
         )
+        set({ entries })
+        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to update entry' })
@@ -238,27 +166,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
     try {
       if (get().isLocalMode) {
-        // O(1) delete locally
-        const newEntriesMap = new Map(get().entriesMap)
-        newEntriesMap.delete(id)
-        set({ entriesMap: newEntriesMap })
-
-        debouncedLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
-        )
+        // Delete locally
+        const entries = get().entries.filter(entry => entry.id !== id)
+        set({ entries })
+        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
       } else {
         // Delete via API
         await logbookApi.deleteEntry(id)
-
-        const newEntriesMap = new Map(get().entriesMap)
-        newEntriesMap.delete(id)
-        set({ entriesMap: newEntriesMap })
-
-        debouncedLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
-        )
+        const entries = get().entries.filter(entry => entry.id !== id)
+        set({ entries })
+        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to delete entry' })
@@ -273,16 +190,13 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       if (get().isLocalMode) {
         // Load from localStorage
         const stored = localStorage.getItem(GOALS_KEY)
-        const goals: Goal[] = stored ? JSON.parse(stored) : []
-        const goalsMap = new Map(goals.map(goal => [goal.id, goal]))
-        set({ goalsMap })
+        const goals = stored ? JSON.parse(stored) : []
+        set({ goals })
       } else {
         // Load from API
         const goals = await logbookApi.getGoals()
-        const goalsMap = new Map(goals.map(goal => [goal.id, goal]))
-        set({ goalsMap })
-
-        debouncedLocalStorageWrite(GOALS_KEY, JSON.stringify(goals))
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to load goals' })
@@ -304,26 +218,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           updatedAt: new Date().toISOString(),
         }
 
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.set(goal.id, goal)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
-        )
+        const goals = [...get().goals, goal]
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       } else {
         // Create via API
         const goal = await logbookApi.createGoal(goalData)
+        set({ goals: [...get().goals, goal] })
 
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.set(goal.id, goal)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
-        )
+        // Update localStorage
+        const goals = get().goals
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to create goal' })
@@ -335,39 +240,21 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     set({ error: null })
 
     try {
-      const currentGoal = get().goalsMap.get(id)
-      if (!currentGoal) {
-        throw new Error('Goal not found')
-      }
-
       if (get().isLocalMode) {
         // Update locally
-        const updatedGoal = {
-          ...currentGoal,
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        }
-
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.set(id, updatedGoal)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
+        const goals = get().goals.map(goal =>
+          goal.id === id
+            ? { ...goal, ...updates, updatedAt: new Date().toISOString() }
+            : goal
         )
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       } else {
         // Update via API
         const updated = await logbookApi.updateGoal(id, updates)
-
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.set(id, updated)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
-        )
+        const goals = get().goals.map(goal => (goal.id === id ? updated : goal))
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to update goal' })
@@ -381,26 +268,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     try {
       if (get().isLocalMode) {
         // Delete locally
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.delete(id)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
-        )
+        const goals = get().goals.filter(goal => goal.id !== id)
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       } else {
         // Delete via API
         await logbookApi.deleteGoal(id)
-
-        const newGoalsMap = new Map(get().goalsMap)
-        newGoalsMap.delete(id)
-        set({ goalsMap: newGoalsMap })
-
-        debouncedLocalStorageWrite(
-          GOALS_KEY,
-          JSON.stringify(Array.from(newGoalsMap.values()))
-        )
+        const goals = get().goals.filter(goal => goal.id !== id)
+        set({ goals })
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
       }
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to delete goal' })
@@ -423,29 +299,26 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
     try {
       // Get local entries
-      const localEntries = Array.from(get().entriesMap.values())
+      const localEntries = get().entries
 
       // Pull from server
       const serverEntries = await logbookApi.getEntries()
 
-      // Convert to Map for O(1) operations
-      const serverEntriesMap = new Map(
-        serverEntries.map(entry => [entry.id, entry])
-      )
-
+      // TODO: Implement proper bidirectional sync
+      // For now, server wins
       set({
-        entriesMap: serverEntriesMap,
+        entries: serverEntries,
         isLoading: false,
         isLocalMode: false,
       })
 
       // Update local storage
-      debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(serverEntries))
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(serverEntries))
 
       // If we had local entries not on server, push them
       // This is a simple implementation - a real sync would handle conflicts
       const localOnlyEntries = localEntries.filter(
-        local => !serverEntriesMap.has(local.id)
+        local => !serverEntries.find(server => server.id === local.id)
       )
 
       if (localOnlyEntries.length > 0) {

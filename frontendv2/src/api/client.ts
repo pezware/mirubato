@@ -7,9 +7,9 @@ const getApiUrl = () => {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return import.meta.env.VITE_API_URL || 'http://localhost:8787'
   } else if (hostname.includes('staging')) {
-    return 'https://api-staging.mirubato.com'
+    return 'https://apiv2-staging.mirubato.com'
   } else {
-    return 'https://api.mirubato.com'
+    return 'https://apiv2.mirubato.com'
   }
 }
 
