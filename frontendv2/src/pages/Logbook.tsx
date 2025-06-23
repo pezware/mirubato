@@ -66,7 +66,7 @@ export default function LogbookPage() {
                   <>💾 Local storage</>
                 )}
               </div>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <button
                   onClick={() => {
                     const { syncWithServer } = useLogbookStore.getState()
@@ -76,6 +76,13 @@ export default function LogbookPage() {
                 >
                   Sync now
                 </button>
+              ) : (
+                <Link
+                  to="/"
+                  className="px-4 py-2 bg-morandi-sage-500 text-white text-sm font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
+                >
+                  Sign in
+                </Link>
               )}
             </div>
           </div>
@@ -174,33 +181,6 @@ export default function LogbookPage() {
             />
           </div>
         )}
-
-        {/* Footer Info */}
-        <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 inline-block">
-            <p className="text-morandi-stone-600 text-sm">
-              {isAuthenticated ? (
-                <>
-                  <span className="text-2xl mr-2">☁️</span>
-                  Your practice data is automatically synced across all your
-                  devices
-                </>
-              ) : (
-                <>
-                  <span className="text-2xl mr-2">💾</span>
-                  Your data is stored locally on this device.{' '}
-                  <Link
-                    to="/"
-                    className="text-morandi-sage-500 hover:text-morandi-sage-600"
-                  >
-                    Sign in
-                  </Link>{' '}
-                  to enable cloud sync.
-                </>
-              )}
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   )
