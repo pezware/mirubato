@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function HomePage() {
   const { user, isAuthenticated, login, logout, isLoading, error } =
@@ -170,6 +171,34 @@ export default function HomePage() {
             <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
               Sign In
             </h2>
+
+            {/* Google Sign In */}
+            <div className="mb-6">
+              <GoogleSignInButton
+                onSuccess={() => {
+                  setShowLoginForm(false)
+                  setLoginSuccess(false)
+                }}
+                onError={error => {
+                  // Error is already handled in the store, but we can add extra handling here if needed
+                  console.error('Google Sign-In error:', error)
+                }}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-morandi-stone-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white/90 text-morandi-stone-500">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+
+            {/* Email Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <input
