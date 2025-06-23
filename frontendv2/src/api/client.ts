@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError } from 'axios'
+import axios, { type AxiosInstance, type AxiosError } from 'axios'
 
 // Determine API URL based on environment
 const getApiUrl = () => {

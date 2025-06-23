@@ -31,10 +31,8 @@ export default function ManualEntryForm({
   const [pieces, setPieces] = useState(
     entry?.pieces || [{ title: '', composer: '' }]
   )
-  const [techniques, setTechniques] = useState<string[]>(
-    entry?.techniques || []
-  )
-  const [tags, setTags] = useState<string[]>(entry?.tags || [])
+  const [techniques] = useState<string[]>(entry?.techniques || [])
+  const [tags] = useState<string[]>(entry?.tags || [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,16 +88,16 @@ export default function ManualEntryForm({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-        {entry ? 'Edit Entry' : 'New Practice Entry'}
+    <div>
+      <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
+        {entry ? '📝 Edit Entry' : '✨ New Practice Entry'}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
               Duration (minutes)
             </label>
             <input
@@ -107,19 +105,19 @@ export default function ManualEntryForm({
               min="1"
               value={duration}
               onChange={e => setDuration(parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
               Type
             </label>
             <select
               value={type}
               onChange={e => setType(e.target.value as LogbookEntry['type'])}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
             >
               <option value="PRACTICE">Practice</option>
               <option value="PERFORMANCE">Performance</option>
@@ -129,7 +127,7 @@ export default function ManualEntryForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
               Instrument
             </label>
             <select
@@ -137,7 +135,7 @@ export default function ManualEntryForm({
               onChange={e =>
                 setInstrument(e.target.value as LogbookEntry['instrument'])
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
             >
               <option value="PIANO">Piano</option>
               <option value="GUITAR">Guitar</option>
@@ -169,7 +167,7 @@ export default function ManualEntryForm({
               <button
                 type="button"
                 onClick={() => removePiece(index)}
-                className="px-3 py-2 text-red-600 hover:text-red-800 dark:text-red-400"
+                className="px-3 py-2 text-red-600 hover:text-red-800"
               >
                 Remove
               </button>
@@ -178,7 +176,7 @@ export default function ManualEntryForm({
           <button
             type="button"
             onClick={addPiece}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm"
+            className="text-morandi-sage-500 hover:text-morandi-sage-600 text-sm font-medium"
           >
             + Add Piece
           </button>
@@ -209,10 +207,10 @@ export default function ManualEntryForm({
                 key={m}
                 type="button"
                 onClick={() => setMood(m as LogbookEntry['mood'])}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                   mood === m
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                    ? 'bg-morandi-sage-400 text-white shadow-md'
+                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                 }`}
               >
                 {m.charAt(0) + m.slice(1).toLowerCase()}
@@ -222,12 +220,16 @@ export default function ManualEntryForm({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancel
           </button>
           <button type="submit" disabled={isSubmitting} className="btn-primary">
-            {isSubmitting ? 'Saving...' : 'Save Entry'}
+            {isSubmitting
+              ? '📦 Saving...'
+              : entry
+                ? '💾 Update Entry'
+                : '💾 Save Entry'}
           </button>
         </div>
       </form>

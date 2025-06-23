@@ -26,6 +26,7 @@ export interface LogbookEntry {
   }
   createdAt: string
   updatedAt: string
+  deletedAt?: string
 }
 
 export interface Goal {
@@ -48,37 +49,77 @@ export interface Goal {
 }
 
 export const logbookApi = {
-  // Logbook entries
-  getEntries: async (limit = 1000, offset = 0) => {
-    const response = await apiClient.get<{ entries: LogbookEntry[] }>(
-      '/api/logbook/entries',
-      {
-        params: { limit, offset },
-      }
-    )
-    return response.data.entries
+  // Logbook entries via sync API
+  getEntries: async () => {
+    const response = await apiClient.post<{
+      entries: LogbookEntry[]
+      goals: Goal[]
+      lastSync: string
+    }>('/api/sync/pull', {
+      types: ['logbook_entry'],
+      since: null, // Get all entries
+    })
+    return response.data.entries || []
   },
 
   createEntry: async (
     entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
-    const response = await apiClient.post<LogbookEntry>(
-      '/api/logbook/entries',
-      entry
+    const newEntry: LogbookEntry = {
+      ...entry,
+      id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          entries: [newEntry],
+        },
+      }
     )
-    return response.data
+
+    if (response.data.success) {
+      return newEntry
+    }
+    throw new Error('Failed to create entry')
   },
 
   updateEntry: async (id: string, updates: Partial<LogbookEntry>) => {
-    const response = await apiClient.put<LogbookEntry>(
-      `/api/logbook/entries/${id}`,
-      updates
+    // For now, we'll need to get the full entry and update it
+    const entries = await logbookApi.getEntries()
+    const entry = entries.find(e => e.id === id)
+    if (!entry) throw new Error('Entry not found')
+
+    const updatedEntry = {
+      ...entry,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          entries: [updatedEntry],
+        },
+      }
     )
-    return response.data
+
+    if (response.data.success) {
+      return updatedEntry
+    }
+    throw new Error('Failed to update entry')
   },
 
   deleteEntry: async (id: string) => {
-    await apiClient.delete(`/api/logbook/entries/${id}`)
+    // The sync API doesn't have delete, so we'll mark it as deleted
+    const updates = {
+      deletedAt: new Date().toISOString(),
+    }
+    await logbookApi.updateEntry(id, updates)
   },
 
   // Goals

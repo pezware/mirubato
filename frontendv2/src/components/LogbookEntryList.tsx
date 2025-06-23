@@ -83,21 +83,22 @@ export default function LogbookEntryList({
       {entries.map(entry => (
         <div
           key={entry.id}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+          className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 hover:shadow-md transition-all duration-200"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatDate(entry.timestamp)}
+                <span className="text-sm text-morandi-stone-600">
+                  📅 {formatDate(entry.timestamp)}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatTime(entry.timestamp)}
+                <span className="text-sm text-morandi-stone-600">
+                  🕐 {formatTime(entry.timestamp)}
                 </span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs rounded-full">
+                <span className="px-3 py-1 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full font-medium">
                   {entry.type}
                 </span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-xs rounded-full">
+                <span className="px-3 py-1 bg-morandi-sand-200 text-morandi-stone-700 text-xs rounded-full">
+                  {entry.instrument === 'PIANO' ? '🎹' : '🎸'}{' '}
                   {entry.instrument}
                 </span>
                 {entry.mood && (
@@ -105,15 +106,15 @@ export default function LogbookEntryList({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
-                {entry.duration} minutes
+              <div className="flex items-center gap-2 text-lg font-light text-morandi-stone-700">
+                ⏱️ {entry.duration} minutes
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setEditingEntry(entry)}
-                className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
                 aria-label="Edit entry"
               >
                 <svg
@@ -133,7 +134,7 @@ export default function LogbookEntryList({
               <button
                 onClick={() => handleDelete(entry.id)}
                 disabled={deletingId === entry.id}
-                className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                className="p-2 text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors"
                 aria-label="Delete entry"
               >
                 {deletingId === entry.id ? (
@@ -160,18 +161,18 @@ export default function LogbookEntryList({
           {/* Pieces */}
           {entry.pieces.length > 0 && (
             <div className="mb-3">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Pieces:
+              <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                🎵 Pieces:
               </h4>
               <div className="flex flex-wrap gap-2">
                 {entry.pieces.map((piece, index) => (
                   <div
                     key={index}
-                    className="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 rounded-full text-sm"
+                    className="px-3 py-1 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-sm border border-morandi-sky-300"
                   >
                     {piece.title}
                     {piece.composer && (
-                      <span className="text-purple-600 dark:text-purple-400">
+                      <span className="text-morandi-stone-600">
                         {' '}
                         - {piece.composer}
                       </span>
@@ -185,14 +186,14 @@ export default function LogbookEntryList({
           {/* Techniques */}
           {entry.techniques.length > 0 && (
             <div className="mb-3">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Techniques:
+              <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                🎯 Techniques:
               </h4>
               <div className="flex flex-wrap gap-2">
                 {entry.techniques.map((technique, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full text-sm"
+                    className="px-3 py-1 bg-morandi-blush-100 text-morandi-stone-700 rounded-full text-sm"
                   >
                     {technique}
                   </span>
@@ -204,7 +205,7 @@ export default function LogbookEntryList({
           {/* Notes */}
           {entry.notes && (
             <div className="mt-3">
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              <p className="text-morandi-stone-700 whitespace-pre-wrap leading-relaxed">
                 {entry.notes}
               </p>
             </div>
@@ -216,7 +217,7 @@ export default function LogbookEntryList({
               {entry.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded text-xs"
+                  className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
                 >
                   #{tag}
                 </span>

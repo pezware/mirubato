@@ -6,8 +6,9 @@ import {
   Navigate,
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
+import { migrateLegacyData } from './utils/migrateLegacyData'
 
-// Pages (to be implemented)
+// Pages
 import HomePage from './pages/Home'
 import LogbookPage from './pages/Logbook'
 import AuthVerifyPage from './pages/AuthVerify'
@@ -19,13 +20,16 @@ function App() {
   const { refreshAuth } = useAuthStore()
 
   useEffect(() => {
+    // Migrate any legacy data on first load
+    migrateLegacyData()
+
     // Check if user is authenticated on app load
     refreshAuth()
   }, [refreshAuth])
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-morandi-stone-100">
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<HomePage />} />

@@ -38,6 +38,9 @@ interface LogbookState {
   setSearchQuery: (query: string) => void
   setLocalMode: (isLocal: boolean) => void
   clearError: () => void
+
+  // Actions - Sync
+  syncWithServer: () => Promise<void>
 }
 
 // Local storage keys
@@ -50,28 +53,39 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   isLoading: false,
   error: null,
   searchQuery: '',
-  isLocalMode: false,
+  isLocalMode: true, // Always start in local mode
 
   loadEntries: async () => {
     set({ isLoading: true, error: null })
 
     try {
-      if (get().isLocalMode) {
-        // Load from localStorage
-        const stored = localStorage.getItem(ENTRIES_KEY)
-        const entries = stored ? JSON.parse(stored) : []
-        set({ entries, isLoading: false })
-      } else {
-        // Load from API
-        const entries = await logbookApi.getEntries()
-        set({ entries, isLoading: false })
+      // Always load from localStorage first
+      const stored = localStorage.getItem(ENTRIES_KEY)
+      const entries = stored ? JSON.parse(stored) : []
+      set({ entries, isLoading: false })
 
-        // Also save to localStorage for offline access
-        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+      // If user is authenticated and online, sync in background
+      const token = localStorage.getItem('auth-token')
+      if (token && !get().isLocalMode) {
+        // Try to sync with server in background
+        logbookApi
+          .getEntries()
+          .then(serverEntries => {
+            // TODO: Merge server entries with local entries
+            // For now, just use server entries
+            set({ entries: serverEntries })
+            localStorage.setItem(ENTRIES_KEY, JSON.stringify(serverEntries))
+          })
+          .catch(error => {
+            console.warn('Background sync failed:', error)
+            // Keep using local data
+          })
       }
     } catch (error: any) {
+      console.error('Failed to load entries:', error)
       set({
-        error: error.response?.data?.error || 'Failed to load entries',
+        entries: [],
+        error: 'Failed to load entries',
         isLoading: false,
       })
     }
@@ -81,29 +95,40 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     set({ error: null })
 
     try {
-      if (get().isLocalMode) {
-        // Create locally
-        const entry: LogbookEntry = {
-          ...entryData,
-          id: nanoid(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+      // Always create locally first
+      const entry: LogbookEntry = {
+        ...entryData,
+        id: nanoid(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
 
-        const entries = [...get().entries, entry]
-        set({ entries })
-        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
-      } else {
-        // Create via API
-        const entry = await logbookApi.createEntry(entryData)
-        set({ entries: [...get().entries, entry] })
+      const entries = [...get().entries, entry]
+      set({ entries })
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
 
-        // Update localStorage
-        const entries = get().entries
-        localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+      // If authenticated and online, sync to server in background
+      const token = localStorage.getItem('auth-token')
+      if (token && !get().isLocalMode) {
+        logbookApi
+          .createEntry(entryData)
+          .then(serverEntry => {
+            // Update the entry with server ID if different
+            if (serverEntry.id !== entry.id) {
+              const updatedEntries = entries.map(e =>
+                e.id === entry.id ? { ...e, id: serverEntry.id } : e
+              )
+              set({ entries: updatedEntries })
+              localStorage.setItem(ENTRIES_KEY, JSON.stringify(updatedEntries))
+            }
+          })
+          .catch(error => {
+            console.warn('Background sync failed for new entry:', error)
+            // Entry remains in local storage
+          })
       }
     } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to create entry' })
+      set({ error: 'Failed to create entry' })
       throw error
     }
   },
@@ -262,4 +287,52 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   setSearchQuery: query => set({ searchQuery: query }),
   setLocalMode: isLocal => set({ isLocalMode: isLocal }),
   clearError: () => set({ error: null }),
+
+  syncWithServer: async () => {
+    const token = localStorage.getItem('auth-token')
+    if (!token) {
+      set({ error: 'Please sign in to sync with server' })
+      return
+    }
+
+    set({ isLoading: true, error: null })
+
+    try {
+      // Get local entries
+      const localEntries = get().entries
+
+      // Pull from server
+      const serverEntries = await logbookApi.getEntries()
+
+      // TODO: Implement proper bidirectional sync
+      // For now, server wins
+      set({
+        entries: serverEntries,
+        isLoading: false,
+        isLocalMode: false,
+      })
+
+      // Update local storage
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(serverEntries))
+
+      // If we had local entries not on server, push them
+      // This is a simple implementation - a real sync would handle conflicts
+      const localOnlyEntries = localEntries.filter(
+        local => !serverEntries.find(server => server.id === local.id)
+      )
+
+      if (localOnlyEntries.length > 0) {
+        console.log(
+          `Pushing ${localOnlyEntries.length} local entries to server`
+        )
+        // TODO: Implement batch push
+      }
+    } catch (error: any) {
+      set({
+        error: 'Failed to sync with server. Continuing with local data.',
+        isLoading: false,
+      })
+      console.error('Sync failed:', error)
+    }
+  },
 }))

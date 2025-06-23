@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import { LogbookEntry, Goal } from './logbook'
+import { type LogbookEntry, type Goal } from './logbook'
 
 export interface SyncData {
   entries: LogbookEntry[]

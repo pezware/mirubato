@@ -25,153 +25,207 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-16">
-        <header className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
-            Mirubato
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
-            Your Personal Music Practice Companion
-          </p>
-        </header>
+    <div
+      className="min-h-screen bg-cover bg-center relative"
+      style={{
+        backgroundImage: 'url(https://www.mirubato.com/mirubato-cover.jpeg)',
+      }}
+    >
+      {/* Subtle overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
 
-        <div className="max-w-4xl mx-auto">
-          {/* User Status */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="p-6 flex justify-between items-center">
+          <div className="text-white/90">{/* Logo placeholder */}</div>
+          <div>
             {isAuthenticated && user ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Logged in as
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {user.email}
-                  </p>
-                </div>
+              <div className="flex items-center gap-4">
+                <span className="text-white/90 text-sm">{user.email}</span>
+                <Link
+                  to="/logbook"
+                  className="text-white/90 hover:text-white text-sm transition-colors"
+                >
+                  Logbook
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="btn-secondary"
+                  className="text-white/90 hover:text-white text-sm transition-colors"
                   disabled={isLoading}
                 >
-                  Logout
+                  Sign out
                 </button>
               </div>
             ) : (
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  You're using Mirubato anonymously. Your data is stored
-                  locally.
-                </p>
+              <>
                 {!showLoginForm && !loginSuccess && (
                   <button
                     onClick={() => setShowLoginForm(true)}
-                    className="btn-primary"
+                    className="text-white/90 hover:text-white text-sm transition-colors"
                   >
-                    Sign in for Cloud Sync
+                    Sign in
                   </button>
                 )}
-              </div>
+              </>
             )}
           </div>
+        </header>
 
-          {/* Login Form */}
-          {showLoginForm && !isAuthenticated && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-                Sign In
-              </h2>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="your@email.com"
-                  />
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="text-center">
+            {/* Title */}
+            <h1 className="text-7xl font-thin text-white mb-4 tracking-wide animate-fade-in">
+              mirubato
+            </h1>
+            <p className="text-xl text-white/80 mb-12 font-light">
+              play with me
+            </p>
+
+            {/* Interactive Piano Panel */}
+            <div className="glass-panel p-8 max-w-md mx-auto mb-8 animate-slide-up">
+              <div className="text-center">
+                <h3 className="text-lg font-light text-morandi-stone-700 mb-4">
+                  Play the notes shown below
+                </h3>
+                <p className="text-sm text-morandi-stone-600 mb-6">
+                  First click enables audio
+                </p>
+
+                {/* Music Notation Placeholder */}
+                <div className="bg-morandi-sage-100/30 rounded-lg p-6 mb-6">
+                  <div className="text-morandi-stone-600">
+                    {/* Staff lines */}
+                    <svg className="w-full h-20 mb-4" viewBox="0 0 300 80">
+                      <g stroke="currentColor" strokeWidth="1" opacity="0.5">
+                        <line x1="0" y1="20" x2="300" y2="20" />
+                        <line x1="0" y1="30" x2="300" y2="30" />
+                        <line x1="0" y1="40" x2="300" y2="40" />
+                        <line x1="0" y1="50" x2="300" y2="50" />
+                        <line x1="0" y1="60" x2="300" y2="60" />
+                      </g>
+                      {/* Note placeholder */}
+                      <circle cx="150" cy="50" r="6" fill="currentColor" />
+                    </svg>
+                  </div>
                 </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn-primary flex-1"
-                  >
-                    {isLoading ? 'Sending...' : 'Send Magic Link'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowLoginForm(false)}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
+
+                {/* Piano Keys */}
+                <div className="relative flex justify-center mb-4">
+                  {/* White keys */}
+                  <div className="flex gap-[2px]">
+                    {['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(note => (
+                      <div
+                        key={note}
+                        className="w-10 h-32 bg-white border border-morandi-stone-300 rounded-b-md hover:bg-morandi-stone-100 transition-colors cursor-pointer"
+                      />
+                    ))}
+                  </div>
+                  {/* Black keys positioned absolutely */}
+                  <div className="absolute flex top-0">
+                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-7" />
+                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
+                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-14" />
+                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
+                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
+                  </div>
                 </div>
-              </form>
-            </div>
-          )}
 
-          {/* Login Success Message */}
-          {loginSuccess && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-2">
-                Check Your Email!
-              </h3>
-              <p className="text-green-700 dark:text-green-400">
-                We've sent a magic link to {email}. Click the link in your email
-                to sign in.
-              </p>
+                <p className="text-sm text-morandi-stone-600">C major</p>
+              </div>
             </div>
-          )}
 
-          {/* Features */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-                📚 Practice Logbook
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Track your practice sessions, set goals, and monitor your
-                progress over time.
-              </p>
+            {/* CTA or User Status */}
+            {!isAuthenticated ? (
               <Link
                 to="/logbook"
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                className="inline-block bg-white/90 hover:bg-white text-morandi-stone-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Open Logbook →
               </Link>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-                🎼 Sheet Music Library
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Access a curated collection of sheet music for piano and guitar.
-              </p>
-              <span className="text-gray-500 italic">Coming Soon</span>
-            </div>
+            ) : (
+              <Link
+                to="/logbook"
+                className="inline-block bg-morandi-sage-400 hover:bg-morandi-sage-500 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Continue to Logbook →
+              </Link>
+            )}
           </div>
+        </main>
 
-          {/* Info Box */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 text-center">
-            <p className="text-blue-800 dark:text-blue-300">
-              {isAuthenticated
-                ? 'Your data is automatically synced to the cloud.'
-                : 'Your data is stored locally. Sign in to enable cloud sync across devices.'}
-            </p>
+        {/* Footer */}
+        <footer className="p-6 text-center">
+          <p className="text-white/70 text-sm">
+            Open-source practice journal for musicians
+          </p>
+        </footer>
+      </div>
+
+      {/* Login Modal */}
+      {showLoginForm && !isAuthenticated && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+            <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
+              Sign In
+            </h2>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-white/50 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                  placeholder="your@email.com"
+                />
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary flex-1"
+                >
+                  {isLoading ? 'Sending...' : 'Send Magic Link'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowLoginForm(false)}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Login Success Message */}
+      {loginSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+            <div className="text-center">
+              <div className="text-4xl mb-4">📧</div>
+              <h3 className="text-xl font-light text-morandi-stone-700 mb-2">
+                Check Your Email!
+              </h3>
+              <p className="text-morandi-stone-600 mb-6">
+                We've sent a magic link to {email}
+              </p>
+              <button
+                onClick={() => setLoginSuccess(false)}
+                className="btn-secondary"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
