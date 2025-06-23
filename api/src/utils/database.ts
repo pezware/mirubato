@@ -95,7 +95,7 @@ export class DatabaseHelpers {
   async getSyncData(userId: string, entityType?: string) {
     let query =
       'SELECT * FROM sync_data WHERE user_id = ? AND deleted_at IS NULL'
-    const params = [userId]
+    const params: any[] = [userId]
 
     if (entityType) {
       query += ' AND entity_type = ?'
@@ -104,10 +104,18 @@ export class DatabaseHelpers {
 
     query += ' ORDER BY updated_at DESC'
 
-    const stmt = this.db.prepare(query)
-    params.forEach(param => stmt.bind(param))
+    try {
+      const result = await this.db
+        .prepare(query)
+        .bind(...params)
+        .all()
 
-    return await stmt.all()
+      return result
+    } catch (error) {
+      console.error('Error fetching sync data:', error)
+      // Return empty result set instead of throwing
+      return { results: [], success: true, meta: {} }
+    }
   }
 
   /**
