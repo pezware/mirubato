@@ -57,9 +57,11 @@ export class DatabaseHelpers {
         `
         )
         .bind(
-          data.displayName || existingUser.display_name,
+          data.displayName !== undefined
+            ? data.displayName
+            : existingUser.display_name,
           data.authProvider,
-          data.googleId || existingUser.google_id,
+          data.googleId !== undefined ? data.googleId : existingUser.google_id,
           existingUser.id
         )
         .run()
@@ -79,9 +81,9 @@ export class DatabaseHelpers {
         .bind(
           userId,
           data.email,
-          data.displayName || null,
+          data.displayName !== undefined ? data.displayName : null,
           data.authProvider,
-          data.googleId || null
+          data.googleId !== undefined ? data.googleId : null
         )
         .run()
 
