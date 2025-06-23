@@ -72,8 +72,8 @@ export const useAuthStore = create<AuthState>(set => ({
       })
 
       // Sync logbook after successful Google login
-      const { syncLogbook } = useLogbookStore.getState()
-      await syncLogbook()
+      const { syncWithServer } = useLogbookStore.getState()
+      await syncWithServer()
     } catch (error: any) {
       let errorMessage = 'Google login failed'
 
