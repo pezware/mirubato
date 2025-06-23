@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev --env local",
+    "dev": "wrangler dev --env local --local",
     "build": "tsc --noEmit",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",

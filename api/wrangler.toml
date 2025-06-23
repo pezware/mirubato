@@ -13,7 +13,7 @@ vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-o
 [[env.local.d1_databases]]
 binding = "DB"
 database_name = "mirubato-dev"
-database_id = "placeholder-for-local-dev"  # Local dev uses placeholder, shares with backend
+database_id = "local-db"  # Placeholder for local dev - wrangler will manage the actual file
 
 # Staging environment
 [env.staging]

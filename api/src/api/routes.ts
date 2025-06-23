@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { authHandler } from './handlers/auth'
 import { syncHandler } from './handlers/sync'
 import { userHandler } from './handlers/user'
+import { debugHandler } from './handlers/debug'
 import type { Env } from '../index'
 
 export const api = new Hono<{ Bindings: Env }>()
@@ -40,3 +41,4 @@ api.get('/', c => {
 api.route('/auth', authHandler)
 api.route('/sync', syncHandler)
 api.route('/user', userHandler)
+api.route('/debug', debugHandler)
