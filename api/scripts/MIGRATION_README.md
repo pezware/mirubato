@@ -2,6 +2,15 @@
 
 This directory contains scripts to migrate data from the backend tables (`logbook_entries`, `goals`, `practice_sessions`) to the API's `sync_data` table.
 
+## Important: Database Configuration
+
+**Backend and API use separate D1 databases locally:**
+
+- Backend: `database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"`
+- API: `database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"`
+
+**In production, they share the same database** (`mirubato-prod`), which is why migration is needed.
+
 ## Overview
 
 The migration script is **idempotent** and can be run multiple times safely. It uses checksums to detect changes and only updates records that have been modified since the last run.
@@ -54,8 +63,22 @@ npm run migrate:sync:dry
 
 ### Local Development
 
+Since backend and API use separate databases locally, you have two options:
+
+1. **Test with sample data**: Add test data to the backend database first
+2. **Skip local testing**: Test directly on staging where databases are shared
+
 ```bash
+# Option 1: Add test data to backend DB first
+cd backend
+wrangler d1 execute DB --local --file=../test-data.sql
+
+# Then run migration
+cd ../api
 npm run migrate:sync
+
+# Option 2: Test on staging directly
+npm run migrate:sync:staging
 ```
 
 ### Staging
@@ -91,11 +114,14 @@ tsx scripts/migrate-backend-to-sync-data.ts --dry-run --user=user_123 --entity=g
 After migration, verify the results:
 
 ```bash
-# Check counts and integrity
-wrangler d1 execute mirubato-prod --file=./scripts/verify-migration.sql
+# For local development (from api directory)
+wrangler d1 execute DB --local --env local --file=./scripts/verify-migration.sql
 
-# Or for local
-wrangler d1 execute mirubato-dev --local --file=./scripts/verify-migration.sql
+# For staging
+wrangler d1 execute DB --env staging --file=./scripts/verify-migration.sql
+
+# For production
+wrangler d1 execute DB --file=./scripts/verify-migration.sql
 ```
 
 ## Weekly Migration Schedule
