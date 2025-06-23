@@ -14,7 +14,7 @@ export interface Env {
   MAGIC_LINK_SECRET: string
   GOOGLE_CLIENT_ID: string
   GOOGLE_CLIENT_SECRET?: string
-  SENDGRID_API_KEY?: string
+  RESEND_API_KEY?: string
   RATE_LIMITER?: any
 }
 

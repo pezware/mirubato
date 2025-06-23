@@ -70,9 +70,29 @@ export const useAuthStore = create<AuthState>(set => ({
         isAuthenticated: true,
         isLoading: false,
       })
+
+      // Sync logbook after successful Google login
+      const { syncWithServer } = useLogbookStore.getState()
+      await syncWithServer()
     } catch (error: any) {
+      let errorMessage = 'Google login failed'
+
+      // Handle specific error cases
+      if (error.response?.status === 401) {
+        errorMessage = 'Invalid Google credentials. Please try again.'
+      } else if (error.response?.status === 403) {
+        errorMessage =
+          'Access denied. Please check your Google account permissions.'
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.'
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
       set({
-        error: error.response?.data?.error || 'Google login failed',
+        error: errorMessage,
         isLoading: false,
       })
       throw error

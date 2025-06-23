@@ -75,6 +75,9 @@ wrangler deploy --var GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.co
 
 # Set the client secret (encrypted)
 echo "your-client-secret" | wrangler secret put GOOGLE_CLIENT_SECRET
+
+# Set the Resend API key for email sending (encrypted)
+echo "your-resend-api-key" | wrangler secret put RESEND_API_KEY
 ```
 
 ## Step 5: Update wrangler.toml

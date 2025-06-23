@@ -5,9 +5,16 @@ import { useAuthStore } from '../stores/authStore'
 import ManualEntryForm from '../components/ManualEntryForm'
 import LogbookEntryList from '../components/LogbookEntryList'
 import LogbookReports from '../components/LogbookReports'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function LogbookPage() {
-  const { user, isAuthenticated } = useAuthStore()
+  const {
+    user,
+    isAuthenticated,
+    login,
+    isLoading: authLoading,
+    error: authError,
+  } = useAuthStore()
   const {
     entries,
     isLoading,
@@ -19,10 +26,24 @@ export default function LogbookPage() {
   } = useLogbookStore()
 
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
+  const [showLoginForm, setShowLoginForm] = useState(false)
+  const [email, setEmail] = useState('')
+  const [loginSuccess, setLoginSuccess] = useState(false)
 
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await login(email)
+      setLoginSuccess(true)
+      setShowLoginForm(false)
+    } catch {
+      // Error is handled in the store
+    }
+  }
 
   // Filter entries based on search query
   const filteredEntries = entries.filter(entry => {
@@ -66,7 +87,7 @@ export default function LogbookPage() {
                   <>💾 Local storage</>
                 )}
               </div>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <button
                   onClick={() => {
                     const { syncWithServer } = useLogbookStore.getState()
@@ -75,6 +96,13 @@ export default function LogbookPage() {
                   className="text-sm text-morandi-sage-600 hover:text-morandi-sage-700"
                 >
                   Sync now
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowLoginForm(true)}
+                  className="px-4 py-2 bg-morandi-sage-500 text-white text-sm font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
+                >
+                  Sign in
                 </button>
               )}
             </div>
@@ -175,32 +203,98 @@ export default function LogbookPage() {
           </div>
         )}
 
-        {/* Footer Info */}
-        <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 inline-block">
-            <p className="text-morandi-stone-600 text-sm">
-              {isAuthenticated ? (
-                <>
-                  <span className="text-2xl mr-2">☁️</span>
-                  Your practice data is automatically synced across all your
-                  devices
-                </>
-              ) : (
-                <>
-                  <span className="text-2xl mr-2">💾</span>
-                  Your data is stored locally on this device.{' '}
-                  <Link
-                    to="/"
-                    className="text-morandi-sage-500 hover:text-morandi-sage-600"
+        {/* Login Modal */}
+        {showLoginForm && !isAuthenticated && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+            <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+              <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
+                Sign In
+              </h2>
+
+              {/* Google Sign In */}
+              <div className="mb-6">
+                <GoogleSignInButton
+                  onSuccess={() => {
+                    setShowLoginForm(false)
+                    setLoginSuccess(false)
+                  }}
+                  onError={error => {
+                    console.error('Google Sign-In error:', error)
+                  }}
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-morandi-stone-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white/90 text-morandi-stone-500">
+                    Or continue with email
+                  </span>
+                </div>
+              </div>
+
+              {/* Email Login Form */}
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 bg-white/50 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                {authError && (
+                  <p className="text-red-600 text-sm">{authError}</p>
+                )}
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="btn-primary flex-1"
                   >
-                    Sign in
-                  </Link>{' '}
-                  to enable cloud sync.
-                </>
-              )}
-            </p>
+                    {authLoading ? 'Sending...' : 'Send Magic Link'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginForm(false)}
+                    className="btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Login Success Message */}
+        {loginSuccess && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+            <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+              <div className="text-center">
+                <div className="text-4xl mb-4">📧</div>
+                <h3 className="text-xl font-light text-morandi-stone-700 mb-2">
+                  Check Your Email!
+                </h3>
+                <p className="text-morandi-stone-600 mb-6">
+                  We've sent a magic link to {email}
+                </p>
+                <button
+                  onClick={() => setLoginSuccess(false)}
+                  className="btn-secondary"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
