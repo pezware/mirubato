@@ -40,9 +40,9 @@ export class DatabaseHelpers {
    */
   async upsertUser(data: {
     email: string
-    displayName?: string
+    displayName?: string | null
     authProvider: string
-    googleId?: string
+    googleId?: string | null
   }) {
     const existingUser = await this.findUserByEmail(data.email)
 
@@ -57,11 +57,9 @@ export class DatabaseHelpers {
         `
         )
         .bind(
-          data.displayName !== undefined
-            ? data.displayName
-            : existingUser.display_name,
+          data.displayName ?? existingUser.display_name,
           data.authProvider,
-          data.googleId !== undefined ? data.googleId : existingUser.google_id,
+          data.googleId ?? existingUser.google_id,
           existingUser.id
         )
         .run()
@@ -81,9 +79,9 @@ export class DatabaseHelpers {
         .bind(
           userId,
           data.email,
-          data.displayName !== undefined ? data.displayName : null,
+          data.displayName ?? null,
           data.authProvider,
-          data.googleId !== undefined ? data.googleId : null
+          data.googleId ?? null
         )
         .run()
 
