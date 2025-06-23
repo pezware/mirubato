@@ -242,6 +242,15 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 - Staging: `mirubato.pezware.workers.dev`
 - Production: `mirubato.com`, `api.mirubato.com`
 
+### Database Configuration
+
+**Local Development**: Backend and API share the same D1 database locally
+
+- Run `api/scripts/setup-shared-database.sh` after initial setup
+- This creates a symlink so API uses backend's database
+- Ensures data consistency during development
+- See `api/scripts/MIGRATION_README.md` for details
+
 ### Database Migrations
 
 ```bash
