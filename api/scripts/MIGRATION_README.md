@@ -4,11 +4,12 @@ This directory contains scripts to migrate data from the backend tables (`logboo
 
 ## Important: Database Configuration
 
-**Backend and API now share the same D1 database locally:**
+**Backend and API share data locally through database copying:**
 
 - Both use: `database_id = "placeholder-for-local-dev"`
-- The API's `.wrangler/state/v3/d1/miniflare-D1DatabaseObject` is symlinked to backend's database
-- This ensures data consistency during local development
+- Run `api/scripts/setup-shared-database.sh` to copy backend database to API
+- This copies the backend database and applies API-specific migrations
+- Ensures both services can access the same user data during development
 
 **In production, they share the same database** (`mirubato-prod`), which is why migration is needed.
 

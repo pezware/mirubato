@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Setup script to share D1 database between backend and API locally
-# This ensures both services use the same database during development
+# This copies the backend database to API to ensure consistency
 
 set -e
 
@@ -26,20 +26,30 @@ fi
 # Create .wrangler directory structure if it doesn't exist
 mkdir -p "$API_DIR/.wrangler/state/v3/d1"
 
-# Remove existing API database if it exists
-if [ -e "$API_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" ]; then
-    echo "Removing existing API database directory..."
-    rm -rf "$API_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject"
+# Check if backend database exists
+if [ ! -d "$BACKEND_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" ]; then
+    echo "Error: Backend database not found. Please run the backend at least once to create the database."
+    exit 1
 fi
 
-# Create symlink to backend database
-echo "Creating symlink to backend database..."
-cd "$API_DIR/.wrangler/state/v3/d1"
-ln -s "../../../../../backend/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" miniflare-D1DatabaseObject
+# Remove existing API database if it exists
+if [ -e "$API_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" ]; then
+    echo "Backing up existing API database..."
+    mv "$API_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" "$API_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject.bak.$(date +%Y%m%d_%H%M%S)"
+fi
 
-echo "✅ Database sharing setup complete!"
+# Copy backend database to API
+echo "Copying backend database to API..."
+cp -r "$BACKEND_DIR/.wrangler/state/v3/d1/miniflare-D1DatabaseObject" "$API_DIR/.wrangler/state/v3/d1/"
+
+# Run API migrations
+echo "Running API migrations..."
+cd "$API_DIR"
+npm run db:migrate
+
+echo "✅ Database setup complete!"
 echo ""
-echo "The API will now use the same local D1 database as the backend."
-echo "This ensures data consistency during local development."
+echo "The API now has a copy of the backend database with API-specific tables added."
+echo "This ensures both services can work with the same data during local development."
 echo ""
 echo "Note: You may need to restart your dev servers for changes to take effect."
