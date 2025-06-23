@@ -73,6 +73,15 @@ const immediateLocalStorageWrite = (key: string, value: string) => {
   localStorage.setItem(key, value)
 }
 
+// Helper to convert Map to sorted array
+const mapToSortedArray = <T extends { createdAt: string }>(
+  map: Map<string, T>
+): T[] => {
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+}
+
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
   goalsMap: new Map(),
@@ -81,20 +90,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   searchQuery: '',
   isLocalMode: true, // Always start in local mode
 
-  // Computed getters - convert Maps to arrays only when needed
-  get entries() {
-    return Array.from(get().entriesMap.values()).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-  },
-
-  get goals() {
-    return Array.from(get().goalsMap.values()).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-  },
+  // Computed properties - these need to be regular properties that get updated
+  entries: [],
+  goals: [],
 
   loadEntries: async () => {
     set({ isLoading: true, error: null })
@@ -106,7 +104,11 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
       // Convert array to Map for O(1) access
       const entriesMap = new Map(entries.map(entry => [entry.id, entry]))
-      set({ entriesMap, isLoading: false })
+      set({
+        entriesMap,
+        entries: mapToSortedArray(entriesMap),
+        isLoading: false,
+      })
 
       // If user is authenticated and online, sync in background
       const token = localStorage.getItem('auth-token')
@@ -118,7 +120,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
             const newEntriesMap = new Map(
               serverEntries.map(entry => [entry.id, entry])
             )
-            set({ entriesMap: newEntriesMap })
+            set({
+              entriesMap: newEntriesMap,
+              entries: mapToSortedArray(newEntriesMap),
+            })
 
             // Debounced write to localStorage
             debouncedLocalStorageWrite(
@@ -156,7 +161,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // O(1) insertion
       const newEntriesMap = new Map(get().entriesMap)
       newEntriesMap.set(entry.id, entry)
-      set({ entriesMap: newEntriesMap })
+      set({
+        entriesMap: newEntriesMap,
+        entries: mapToSortedArray(newEntriesMap),
+      })
 
       // Immediate write to localStorage for new entries
       immediateLocalStorageWrite(
@@ -175,7 +183,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               const updatedEntriesMap = new Map(get().entriesMap)
               updatedEntriesMap.delete(entry.id)
               updatedEntriesMap.set(serverEntry.id, serverEntry)
-              set({ entriesMap: updatedEntriesMap })
+              set({
+                entriesMap: updatedEntriesMap,
+                entries: mapToSortedArray(updatedEntriesMap),
+              })
 
               debouncedLocalStorageWrite(
                 ENTRIES_KEY,
@@ -213,7 +224,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.set(id, updatedEntry)
-        set({ entriesMap: newEntriesMap })
+        set({
+          entriesMap: newEntriesMap,
+          entries: mapToSortedArray(newEntriesMap),
+        })
 
         debouncedLocalStorageWrite(
           ENTRIES_KEY,
@@ -225,7 +239,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.set(id, updated)
-        set({ entriesMap: newEntriesMap })
+        set({
+          entriesMap: newEntriesMap,
+          entries: mapToSortedArray(newEntriesMap),
+        })
 
         debouncedLocalStorageWrite(
           ENTRIES_KEY,
@@ -246,7 +263,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         // O(1) delete locally
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.delete(id)
-        set({ entriesMap: newEntriesMap })
+        set({
+          entriesMap: newEntriesMap,
+          entries: mapToSortedArray(newEntriesMap),
+        })
 
         immediateLocalStorageWrite(
           ENTRIES_KEY,
@@ -258,7 +278,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.delete(id)
-        set({ entriesMap: newEntriesMap })
+        set({
+          entriesMap: newEntriesMap,
+          entries: mapToSortedArray(newEntriesMap),
+        })
 
         immediateLocalStorageWrite(
           ENTRIES_KEY,
@@ -280,12 +303,18 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         const stored = localStorage.getItem(GOALS_KEY)
         const goals: Goal[] = stored ? JSON.parse(stored) : []
         const goalsMap = new Map(goals.map(goal => [goal.id, goal]))
-        set({ goalsMap })
+        set({
+          goalsMap,
+          goals: mapToSortedArray(goalsMap),
+        })
       } else {
         // Load from API
         const goals = await logbookApi.getGoals()
         const goalsMap = new Map(goals.map(goal => [goal.id, goal]))
-        set({ goalsMap })
+        set({
+          goalsMap,
+          goals: mapToSortedArray(goalsMap),
+        })
 
         immediateLocalStorageWrite(GOALS_KEY, JSON.stringify(goals))
       }
@@ -311,7 +340,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.set(goal.id, goal)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -323,7 +355,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.set(goal.id, goal)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -355,7 +390,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.set(id, updatedGoal)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -367,7 +405,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.set(id, updated)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -388,7 +429,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         // Delete locally
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.delete(id)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -400,7 +444,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         const newGoalsMap = new Map(get().goalsMap)
         newGoalsMap.delete(id)
-        set({ goalsMap: newGoalsMap })
+        set({
+          goalsMap: newGoalsMap,
+          goals: mapToSortedArray(newGoalsMap),
+        })
 
         immediateLocalStorageWrite(
           GOALS_KEY,
@@ -440,6 +487,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
       set({
         entriesMap: serverEntriesMap,
+        entries: mapToSortedArray(serverEntriesMap),
         isLoading: false,
         isLocalMode: false,
       })
