@@ -147,3 +147,8 @@ echo -e "${GREEN}Setup complete!${NC}"
 # Reminder about the backup
 echo
 echo -e "${YELLOW}Note: A backup of your wrangler.toml was created at wrangler.toml.backup${NC}"
+
+# Additional reminder about email setup
+echo
+echo -e "${YELLOW}Don't forget to set up Resend for email sending:${NC}"
+echo "   wrangler secret put RESEND_API_KEY"

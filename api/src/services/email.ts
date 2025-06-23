@@ -52,9 +52,9 @@ export class EmailService {
       return
     }
 
-    // In production, use SendGrid or another email service
-    if (this.env.SENDGRID_API_KEY) {
-      await this.sendWithSendGrid(email, 'Sign in to Mirubato', html)
+    // In production, use Resend or another email service
+    if (this.env.RESEND_API_KEY) {
+      await this.sendWithResend(email, 'Sign in to Mirubato', html)
     } else {
       // Fallback to console log
       console.log('📧 Magic link email:', { email, magicLink })
@@ -62,24 +62,24 @@ export class EmailService {
   }
 
   /**
-   * Send email with SendGrid
+   * Send email with Resend
    */
-  private async sendWithSendGrid(
+  private async sendWithResend(
     to: string,
     subject: string,
     html: string
   ): Promise<void> {
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.env.SENDGRID_API_KEY}`,
+        Authorization: `Bearer ${this.env.RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: 'noreply@mirubato.com', name: 'Mirubato' },
+        from: 'Mirubato <noreply@mirubato.com>',
+        to: [to],
         subject,
-        content: [{ type: 'text/html', value: html }],
+        html,
       }),
     })
 
