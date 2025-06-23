@@ -1,0 +1,65 @@
+name = "mirubato-frontendv2"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Production environment (default)
+workers_dev = false
+
+[vars]
+API_URL = "https://apiv2.mirubato.com"
+
+[[routes]]
+pattern = "frontendv2.mirubato.com"
+custom_domain = true
+
+# Explicit production environment (for consistency)
+[env.production]
+name = "mirubato-frontendv2"
+workers_dev = false
+
+[env.production.vars]
+API_URL = "https://apiv2.mirubato.com"
+
+[[env.production.routes]]
+pattern = "frontendv2.mirubato.com"
+custom_domain = true
+
+[env.production.assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Staging environment
+[env.staging]
+name = "mirubato-frontendv2-staging"
+workers_dev = false
+
+[env.staging.vars]
+API_URL = "https://apiv2-staging.mirubato.com"
+
+[[env.staging.routes]]
+pattern = "frontendv2-staging.mirubato.com"
+custom_domain = true
+
+[env.staging.assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Development environment
+[env.dev]
+name = "mirubato-frontendv2-dev"
+workers_dev = true
+
+[env.dev.vars]
+API_URL = "http://localhost:8787"
+
+# Local development configuration
+[env.local]
+name = "mirubato-frontendv2-local"
+workers_dev = true
+
+[env.local.vars]
+API_URL = "http://localhost:8787"

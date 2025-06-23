@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-morandi-stone-700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-morandi-sage-500 text-white font-medium rounded-lg hover:bg-morandi-sage-400 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg;
+  }
+
+  .btn-accent {
+    @apply px-6 py-3 bg-gradient-to-r from-morandi-sage-400 to-morandi-sage-500 text-white font-medium rounded-lg hover:from-morandi-sage-500 hover:to-morandi-sage-400 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border border-morandi-stone-300 text-morandi-stone-600 rounded-lg hover:bg-morandi-stone-100 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-morandi-stone-600 hover:text-morandi-stone-700 hover:bg-morandi-stone-100 rounded-lg transition-all duration-200;
+  }
+
+  .card {
+    @apply p-6 bg-white rounded-lg shadow-sm border border-morandi-stone-200;
+  }
+
+  .glass-panel {
+    @apply bg-white/90 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl;
+  }
+
+  .hero-gradient {
+    @apply bg-gradient-to-br from-morandi-sage-100 via-white to-morandi-sand-100;
+  }
+}
