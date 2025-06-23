@@ -20,7 +20,8 @@
     "migrate:sync": "tsx scripts/migrate-backend-to-sync-data.ts",
     "migrate:sync:dry": "tsx scripts/migrate-backend-to-sync-data.ts --dry-run",
     "migrate:sync:staging": "tsx scripts/migrate-backend-to-sync-data.ts --env staging",
-    "migrate:sync:production": "tsx scripts/migrate-backend-to-sync-data.ts --env production"
+    "migrate:sync:production": "tsx scripts/migrate-backend-to-sync-data.ts --env production",
+    "migrate:test": "tsx scripts/test-migration.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.0",

@@ -764,7 +764,15 @@ async function main() {
 }
 
 // Only run if called directly
-if (require.main === module) {
+// Check if this file is being run directly
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Run main if this is the entry point
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error)
 }
 
