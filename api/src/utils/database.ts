@@ -40,9 +40,9 @@ export class DatabaseHelpers {
    */
   async upsertUser(data: {
     email: string
-    displayName?: string
+    displayName?: string | null
     authProvider: string
-    googleId?: string
+    googleId?: string | null
   }) {
     const existingUser = await this.findUserByEmail(data.email)
 
@@ -57,9 +57,9 @@ export class DatabaseHelpers {
         `
         )
         .bind(
-          data.displayName || existingUser.display_name,
+          data.displayName ?? existingUser.display_name,
           data.authProvider,
-          data.googleId || existingUser.google_id,
+          data.googleId ?? existingUser.google_id,
           existingUser.id
         )
         .run()
@@ -79,9 +79,9 @@ export class DatabaseHelpers {
         .bind(
           userId,
           data.email,
-          data.displayName || null,
+          data.displayName ?? null,
           data.authProvider,
-          data.googleId || null
+          data.googleId ?? null
         )
         .run()
 
@@ -95,7 +95,7 @@ export class DatabaseHelpers {
   async getSyncData(userId: string, entityType?: string) {
     let query =
       'SELECT * FROM sync_data WHERE user_id = ? AND deleted_at IS NULL'
-    const params = [userId]
+    const params: any[] = [userId]
 
     if (entityType) {
       query += ' AND entity_type = ?'
@@ -104,10 +104,18 @@ export class DatabaseHelpers {
 
     query += ' ORDER BY updated_at DESC'
 
-    const stmt = this.db.prepare(query)
-    params.forEach(param => stmt.bind(param))
+    try {
+      const result = await this.db
+        .prepare(query)
+        .bind(...params)
+        .all()
 
-    return await stmt.all()
+      return result
+    } catch (error) {
+      console.error('Error fetching sync data:', error)
+      // Return empty result set instead of throwing
+      return { results: [], success: true, meta: {} }
+    }
   }
 
   /**

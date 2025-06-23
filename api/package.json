@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev --env local",
+    "dev": "wrangler dev --env local --local",
     "build": "tsc --noEmit",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
@@ -16,7 +16,12 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
-    "db:migrate:production": "wrangler d1 migrations apply DB"
+    "db:migrate:production": "wrangler d1 migrations apply DB",
+    "migrate:sync": "tsx scripts/migrate-backend-to-sync-data.ts",
+    "migrate:sync:dry": "tsx scripts/migrate-backend-to-sync-data.ts --dry-run",
+    "migrate:sync:staging": "tsx scripts/migrate-backend-to-sync-data.ts --env staging",
+    "migrate:sync:production": "tsx scripts/migrate-backend-to-sync-data.ts --env production",
+    "migrate:test": "tsx scripts/test-migration.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.0",
@@ -34,8 +39,9 @@
     "eslint": "^8.56.0",
     "miniflare": "^3.0.0",
     "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.0",
     "vitest": "^1.2.0",
-    "wrangler": "^3.114.0"
+    "wrangler": "^4.20.5"
   }
 }

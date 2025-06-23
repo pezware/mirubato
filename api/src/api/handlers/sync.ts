@@ -33,13 +33,26 @@ syncHandler.post('/pull', async c => {
     const entries = []
     const goals = []
 
-    for (const item of (syncData as any).results) {
-      const data = JSON.parse(item.data as string)
+    // Handle the results properly
+    const results = (syncData as any).results || []
 
-      if (item.entity_type === 'logbook_entry') {
-        entries.push(data)
-      } else if (item.entity_type === 'goal') {
-        goals.push(data)
+    for (const item of results) {
+      try {
+        // Parse the JSON data safely
+        const data =
+          typeof item.data === 'string' ? JSON.parse(item.data) : item.data
+
+        if (item.entity_type === 'logbook_entry') {
+          entries.push(data)
+        } else if (item.entity_type === 'goal') {
+          goals.push(data)
+        }
+      } catch (parseError) {
+        console.error(
+          `Error parsing sync data for ${item.entity_type} ${item.entity_id}:`,
+          parseError
+        )
+        // Continue processing other items
       }
     }
 

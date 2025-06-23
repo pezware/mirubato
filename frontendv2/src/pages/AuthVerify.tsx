@@ -5,13 +5,17 @@ import { useAuthStore } from '../stores/authStore'
 export default function AuthVerifyPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { verifyMagicLink, error } = useAuthStore()
+  const { verifyMagicLink } = useAuthStore()
   const [isVerifying, setIsVerifying] = useState(true)
   const [verificationError, setVerificationError] = useState<string | null>(
     null
   )
+  const [hasVerified, setHasVerified] = useState(false)
 
   useEffect(() => {
+    // Only run once per token
+    if (hasVerified) return
+
     const token = searchParams.get('token')
 
     if (!token) {
@@ -21,21 +25,24 @@ export default function AuthVerifyPage() {
     }
 
     const verify = async () => {
+      setHasVerified(true) // Mark as attempted
       try {
         await verifyMagicLink(token)
         // Success - redirect to logbook after a short delay
         setTimeout(() => {
           navigate('/logbook')
         }, 2000)
-      } catch (err) {
-        setVerificationError(error || 'Failed to verify magic link')
+      } catch (err: any) {
+        setVerificationError(
+          err.response?.data?.error || 'Failed to verify magic link'
+        )
       } finally {
         setIsVerifying(false)
       }
     }
 
     verify()
-  }, [searchParams, verifyMagicLink, navigate, error])
+  }, [searchParams, verifyMagicLink, navigate, hasVerified])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">

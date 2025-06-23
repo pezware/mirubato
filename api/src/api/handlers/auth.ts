@@ -76,6 +76,8 @@ authHandler.post(
       const userId = await db.upsertUser({
         email,
         authProvider: 'magic_link',
+        displayName: null,
+        googleId: null,
       })
 
       // Get user details
@@ -122,8 +124,20 @@ authHandler.post(
         refreshToken,
         expiresIn: 3600,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verifying magic link:', error)
+
+      // Handle specific error cases
+      if (error.message?.includes('JWT expired')) {
+        throw Errors.TokenExpired()
+      } else if (error.message?.includes('invalid signature')) {
+        throw Errors.InvalidToken()
+      } else if (error.message?.includes('D1_TYPE_ERROR')) {
+        // This shouldn't happen anymore, but log it clearly
+        console.error('Database type error:', error)
+        throw Errors.DatabaseError()
+      }
+
       throw Errors.InvalidToken()
     }
   }

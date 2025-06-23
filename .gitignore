@@ -342,3 +342,4 @@ newrelic.js
 # Temporary audio processing
 audio-processing/
 temp-audio/
+api-final.log
