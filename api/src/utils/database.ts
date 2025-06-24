@@ -132,29 +132,43 @@ export class DatabaseHelpers {
     const id = generateId('sync')
     const jsonData = JSON.stringify(data.data)
 
-    await this.db
-      .prepare(
+    try {
+      await this.db
+        .prepare(
+          `
+          INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(user_id, entity_type, entity_id)
+          DO UPDATE SET 
+            data = excluded.data,
+            checksum = excluded.checksum,
+            version = sync_data.version + 1,
+            updated_at = datetime('now')
         `
-        INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(user_id, entity_type, entity_id)
-        DO UPDATE SET 
-          data = excluded.data,
-          checksum = excluded.checksum,
-          version = excluded.version + 1,
-          updated_at = datetime('now')
-      `
-      )
-      .bind(
+        )
+        .bind(
+          id,
+          data.userId,
+          data.entityType,
+          data.entityId,
+          jsonData,
+          data.checksum,
+          data.version || 1
+        )
+        .run()
+    } catch (error) {
+      console.error('[Database] upsertSyncData error:', error)
+      console.error('[Database] Query params:', {
         id,
-        data.userId,
-        data.entityType,
-        data.entityId,
-        jsonData,
-        data.checksum,
-        data.version || 1
-      )
-      .run()
+        userId: data.userId,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        dataLength: jsonData.length,
+        checksum: data.checksum,
+        version: data.version || 1,
+      })
+      throw error
+    }
   }
 
   /**
@@ -175,20 +189,26 @@ export class DatabaseHelpers {
     syncToken: string,
     deviceCount?: number
   ) {
-    await this.db
-      .prepare(
+    try {
+      await this.db
+        .prepare(
+          `
+          INSERT INTO sync_metadata (user_id, last_sync_token, last_sync_time, device_count)
+          VALUES (?, ?, datetime('now'), ?)
+          ON CONFLICT(user_id)
+          DO UPDATE SET 
+            last_sync_token = excluded.last_sync_token,
+            last_sync_time = excluded.last_sync_time,
+            device_count = COALESCE(?, device_count)
         `
-        INSERT INTO sync_metadata (user_id, last_sync_token, last_sync_time, device_count)
-        VALUES (?, ?, datetime('now'), ?)
-        ON CONFLICT(user_id)
-        DO UPDATE SET 
-          last_sync_token = excluded.last_sync_token,
-          last_sync_time = excluded.last_sync_time,
-          device_count = COALESCE(?, device_count)
-      `
-      )
-      .bind(userId, syncToken, deviceCount || 1, deviceCount)
-      .run()
+        )
+        .bind(userId, syncToken, deviceCount || 1, deviceCount)
+        .run()
+    } catch (error) {
+      console.error('[Database] updateSyncMetadata error:', error)
+      console.error('[Database] Params:', { userId, syncToken, deviceCount })
+      throw error
+    }
   }
 
   /**

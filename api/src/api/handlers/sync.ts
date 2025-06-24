@@ -79,43 +79,100 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   const { changes } = c.get('validatedBody') as any
   const db = new DatabaseHelpers(c.env.DB)
 
+  // Add detailed logging for debugging
+  console.log('[Sync Push] Starting sync for user:', userId)
+  console.log('[Sync Push] Received changes:', JSON.stringify(changes, null, 2))
+
   try {
     // Process changes
     const conflicts: any[] = []
 
     // Process entries
     if (changes.entries && changes.entries.length > 0) {
-      for (const entry of changes.entries) {
-        const checksum = await calculateChecksum(entry)
+      console.log(`[Sync Push] Processing ${changes.entries.length} entries`)
 
-        await db.upsertSyncData({
-          userId,
-          entityType: 'logbook_entry',
-          entityId: entry.id,
-          data: entry,
-          checksum,
-        })
+      for (const entry of changes.entries) {
+        try {
+          console.log(`[Sync Push] Processing entry ${entry.id}`)
+          console.log('[Sync Push] Entry data:', JSON.stringify(entry, null, 2))
+
+          const checksum = await calculateChecksum(entry)
+          console.log(`[Sync Push] Calculated checksum: ${checksum}`)
+
+          await db.upsertSyncData({
+            userId,
+            entityType: 'logbook_entry',
+            entityId: entry.id,
+            data: entry,
+            checksum,
+          })
+
+          console.log(`[Sync Push] Successfully stored entry ${entry.id}`)
+        } catch (entryError) {
+          console.error(
+            `[Sync Push] Error processing entry ${entry.id}:`,
+            entryError
+          )
+          // Continue processing other entries but track the error
+          conflicts.push({
+            entityId: entry.id,
+            entityType: 'logbook_entry',
+            error:
+              entryError instanceof Error
+                ? entryError.message
+                : 'Unknown error',
+          })
+        }
       }
     }
 
     // Process goals
     if (changes.goals && changes.goals.length > 0) {
-      for (const goal of changes.goals) {
-        const checksum = await calculateChecksum(goal)
+      console.log(`[Sync Push] Processing ${changes.goals.length} goals`)
 
-        await db.upsertSyncData({
-          userId,
-          entityType: 'goal',
-          entityId: goal.id,
-          data: goal,
-          checksum,
-        })
+      for (const goal of changes.goals) {
+        try {
+          console.log(`[Sync Push] Processing goal ${goal.id}`)
+          console.log('[Sync Push] Goal data:', JSON.stringify(goal, null, 2))
+
+          const checksum = await calculateChecksum(goal)
+          console.log(`[Sync Push] Calculated checksum: ${checksum}`)
+
+          await db.upsertSyncData({
+            userId,
+            entityType: 'goal',
+            entityId: goal.id,
+            data: goal,
+            checksum,
+          })
+
+          console.log(`[Sync Push] Successfully stored goal ${goal.id}`)
+        } catch (goalError) {
+          console.error(
+            `[Sync Push] Error processing goal ${goal.id}:`,
+            goalError
+          )
+          // Continue processing other goals but track the error
+          conflicts.push({
+            entityId: goal.id,
+            entityType: 'goal',
+            error:
+              goalError instanceof Error ? goalError.message : 'Unknown error',
+          })
+        }
       }
     }
 
     // Update sync metadata
     const newSyncToken = generateId('sync')
+    console.log(
+      `[Sync Push] Updating sync metadata with token: ${newSyncToken}`
+    )
+
     await db.updateSyncMetadata(userId, newSyncToken)
+
+    console.log('[Sync Push] Sync completed successfully')
+    console.log(`[Sync Push] Conflicts: ${conflicts.length}`)
 
     return c.json({
       success: true,
@@ -123,7 +180,24 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       conflicts,
     })
   } catch (error) {
-    console.error('Error pushing sync data:', error)
+    console.error('[Sync Push] Fatal error:', error)
+    console.error(
+      '[Sync Push] Error stack:',
+      error instanceof Error ? error.stack : 'No stack trace'
+    )
+
+    // Return more detailed error for debugging
+    if (c.env.ENVIRONMENT !== 'production') {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+        500
+      )
+    }
+
     throw Errors.InternalError('Failed to push sync data')
   }
 })
