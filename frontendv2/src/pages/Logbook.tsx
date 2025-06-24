@@ -65,42 +65,50 @@ export default function LogbookPage() {
   return (
     <div className="min-h-screen bg-morandi-sand-100">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <Link
                 to="/"
-                className="text-morandi-stone-600 hover:text-morandi-stone-700"
+                className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
               >
-                ← Back
+                mirubato
               </Link>
-              <h1 className="text-2xl font-light text-morandi-stone-700">
-                Practice Logbook
+              <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
+                Logbook
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-morandi-stone-600">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">
                 {isAuthenticated ? (
-                  <>☁️ Synced • {user?.email}</>
+                  <span className="flex items-center gap-1">
+                    <span className="hidden sm:inline">☁️ Synced •</span>
+                    <span className="text-xs sm:text-sm">{user?.email}</span>
+                  </span>
                 ) : (
-                  <>💾 Local storage</>
+                  <span className="flex items-center gap-1">
+                    <span className="hidden sm:inline">💾</span>
+                    <span>Local storage</span>
+                  </span>
                 )}
               </div>
               {isAuthenticated ? (
                 <button
-                  onClick={() => {
-                    const { syncWithServer } = useLogbookStore.getState()
-                    syncWithServer()
+                  onClick={async () => {
+                    const { logout } = useAuthStore.getState()
+                    await logout()
+                    // Clear any error that might be displayed
+                    clearError()
                   }}
-                  className="text-sm text-morandi-sage-600 hover:text-morandi-sage-700"
+                  className="text-xs sm:text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 sm:px-3 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
                 >
-                  Sync now
+                  Logout
                 </button>
               ) : (
                 <button
                   onClick={() => setShowLoginForm(true)}
-                  className="px-4 py-2 bg-morandi-sage-500 text-white text-sm font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
                 >
                   Sign in
                 </button>

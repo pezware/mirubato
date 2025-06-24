@@ -25,7 +25,7 @@ SELECT
   json_object(
     'id', id,
     'timestamp', datetime(timestamp/1000, 'unixepoch'),
-    'duration', duration,
+    'duration', CAST(duration / 60.0 AS INTEGER),
     'type', type,
     'instrument', instrument,
     'pieces', json(COALESCE(pieces, '[]')),

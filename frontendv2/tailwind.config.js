@@ -3,6 +3,10 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        inter: ['Inter', 'system-ui', 'sans-serif'],
+        lexend: ['Lexend', 'system-ui', 'sans-serif'],
+      },
       colors: {
         morandi: {
           sage: {

@@ -131,19 +131,22 @@ export class DatabaseHelpers {
   }) {
     const id = generateId('sync')
     const jsonData = JSON.stringify(data.data)
+    // Check if this is a soft delete
+    const deletedAt = data.data.deletedAt || null
 
     try {
       await this.db
         .prepare(
           `
-          INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(user_id, entity_type, entity_id)
           DO UPDATE SET 
             data = excluded.data,
             checksum = excluded.checksum,
             version = sync_data.version + 1,
-            updated_at = datetime('now')
+            updated_at = datetime('now'),
+            deleted_at = excluded.deleted_at
         `
         )
         .bind(
@@ -153,7 +156,8 @@ export class DatabaseHelpers {
           data.entityId,
           jsonData,
           data.checksum,
-          data.version || 1
+          data.version || 1,
+          deletedAt
         )
         .run()
     } catch (error) {
