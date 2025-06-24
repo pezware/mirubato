@@ -166,7 +166,8 @@ describe('DatabaseHelpers', () => {
         'entry-456',
         JSON.stringify(testData.data),
         'checksum-789',
-        1
+        1,
+        null // deletedAt
       )
       expect(mockRun).toHaveBeenCalled()
     })

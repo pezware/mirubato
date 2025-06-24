@@ -11,8 +11,22 @@ Object.defineProperty(globalThis, 'crypto', {
   value: {
     subtle: {
       digest: vi.fn(async (algorithm: string, data: ArrayBuffer) => {
-        // Simple mock implementation
-        return new ArrayBuffer(32)
+        // Create a hash-like value based on the input
+        const view = new Uint8Array(data)
+        const hashBuffer = new ArrayBuffer(32)
+        const hashView = new Uint8Array(hashBuffer)
+
+        // Simple hash simulation - just sum bytes and spread across output
+        let sum = 0
+        for (let i = 0; i < view.length; i++) {
+          sum += view[i]
+        }
+
+        for (let i = 0; i < 32; i++) {
+          hashView[i] = (sum + i * 7) % 256
+        }
+
+        return hashBuffer
       }),
     } as unknown as SubtleCrypto,
     getRandomValues: vi.fn((arr: any) => {

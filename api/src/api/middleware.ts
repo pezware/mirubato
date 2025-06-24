@@ -22,6 +22,20 @@ export const authMiddleware: MiddlewareHandler<{
   Bindings: Env
   Variables: Variables
 }> = async (c, next) => {
+  // Skip auth in test mode for integration tests
+  if (
+    c.env.ENVIRONMENT === 'test' &&
+    c.req.header('Authorization') === 'Bearer test-integration-token'
+  ) {
+    c.set('userId', 'test-user-123')
+    c.set('user', {
+      id: 'test-user-123',
+      email: 'test@example.com',
+    })
+    await next()
+    return
+  }
+
   const authHeader = c.req.header('Authorization')
   const cookieToken = getCookie(c, 'auth-token')
 
