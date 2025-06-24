@@ -88,8 +88,11 @@ export const logbookApi = {
   },
 
   updateEntry: async (id: string, updates: Partial<LogbookEntry>) => {
-    // For now, we'll need to get the full entry and update it
-    const entries = await logbookApi.getEntries()
+    // Get the entry from localStorage first for efficiency
+    const localEntries = localStorage.getItem('mirubato:logbook:entries')
+    if (!localEntries) throw new Error('No entries found')
+
+    const entries: LogbookEntry[] = JSON.parse(localEntries)
     const entry = entries.find(e => e.id === id)
     if (!entry) throw new Error('Entry not found')
 
