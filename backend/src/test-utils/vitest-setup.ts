@@ -2,8 +2,8 @@ import { beforeAll, afterEach, vi } from 'vitest'
 import { webcrypto } from 'crypto'
 
 // Polyfill crypto for test environment
-if (!globalThis.crypto) {
-  globalThis.crypto = webcrypto as any
+if (!(globalThis as any).crypto) {
+  ;(globalThis as any).crypto = webcrypto
 }
 
 // Mock console methods to reduce noise in tests

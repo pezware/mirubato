@@ -216,7 +216,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should log and rethrow database errors', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Database connection failed')
 
       mockDb.prepare = vi.fn(
@@ -265,7 +267,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should handle errors with logging', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Constraint violation')
 
       mockDb.prepare = vi.fn(

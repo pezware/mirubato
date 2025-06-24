@@ -41,7 +41,7 @@ describe.skip('Sync API Integration Tests (using unstable_dev)', () => {
       )
 
       expect(pullResponse1.status).toBe(200)
-      const pullData1 = await pullResponse1.json()
+      const pullData1 = (await pullResponse1.json()) as any
       expect(pullData1.entries).toEqual([])
       expect(pullData1.goals).toEqual([])
 
@@ -79,7 +79,7 @@ describe.skip('Sync API Integration Tests (using unstable_dev)', () => {
       )
 
       expect(pushResponse.status).toBe(200)
-      const pushData = await pushResponse.json()
+      const pushData = (await pushResponse.json()) as any
       expect(pushData.success).toBe(true)
       expect(pushData.syncToken).toBeTruthy()
       expect(pushData.conflicts).toEqual([])
@@ -97,7 +97,7 @@ describe.skip('Sync API Integration Tests (using unstable_dev)', () => {
       )
 
       expect(pullResponse2.status).toBe(200)
-      const pullData2 = await pullResponse2.json()
+      const pullData2 = (await pullResponse2.json()) as any
       expect(pullData2.entries).toHaveLength(1)
       expect(pullData2.entries[0].id).toBe(testEntry.id)
       expect(pullData2.entries[0].notes).toBe('Great practice session!')
@@ -114,7 +114,7 @@ describe.skip('Sync API Integration Tests (using unstable_dev)', () => {
       )
 
       expect(statusResponse.status).toBe(200)
-      const statusData = await statusResponse.json()
+      const statusData = (await statusResponse.json()) as any
       expect(statusData.entityCount).toBe(1)
       expect(statusData.lastSyncTime).toBeTruthy()
     })
@@ -166,7 +166,7 @@ describe.skip('Sync API Integration Tests (using unstable_dev)', () => {
       )
 
       expect(batchResponse.status).toBe(200)
-      const batchData = await batchResponse.json()
+      const batchData = (await batchResponse.json()) as any
       expect(batchData.conflicts).toHaveLength(1)
       expect(batchData.conflicts[0].entityId).toBe(entity1.id)
     })

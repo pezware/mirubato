@@ -34,6 +34,8 @@ describe('Sync API Integration Tests with Miniflare', () => {
       JWT_SECRET: 'test-jwt-secret',
       SENDGRID_API_KEY: 'test-sendgrid-key',
       FRONTEND_URL: 'http://localhost:3000',
+      MAGIC_LINK_SECRET: 'test-magic-link-secret',
+      GOOGLE_CLIENT_ID: 'test-google-client-id',
     } as Env
 
     ctx = {
