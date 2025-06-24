@@ -128,7 +128,7 @@ export const useAuthStore = create<AuthState>(set => ({
         isAuthenticated: true,
         isLoading: false,
       })
-    } catch (error) {
+    } catch {
       // Token is invalid, clear auth state
       localStorage.removeItem('auth-token')
       localStorage.removeItem('refresh-token')

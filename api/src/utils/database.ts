@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import type { DbUser, DbSyncData, DbSyncMetadata } from '../types/models'
+import type { DbUser, DbSyncMetadata } from '../types/models'
 
 /**
  * Generate a unique ID for database records
@@ -206,7 +206,7 @@ export class DatabaseHelpers {
             device_count = COALESCE(?, device_count)
         `
         )
-        .bind(userId, syncToken, deviceCount || 1, deviceCount)
+        .bind(userId, syncToken, deviceCount || 1, deviceCount || null)
         .run()
     } catch (error) {
       console.error('[Database] updateSyncMetadata error:', error)

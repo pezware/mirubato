@@ -11,7 +11,7 @@ export type Variables = {
     id: string
     email: string
   }
-  validatedBody?: any
+  validatedBody?: unknown
 }
 
 /**

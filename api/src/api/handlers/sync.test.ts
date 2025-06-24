@@ -24,7 +24,7 @@ vi.mock('../middleware', () => ({
     c.set('userId', 'test-user-123')
     return next()
   },
-  validateBody: (schema: any) => async (c: any, next: any) => {
+  validateBody: (_schema: any) => async (c: any, next: any) => {
     try {
       const body = await c.req.json()
       c.set('validatedBody', body)

@@ -14,7 +14,7 @@ export function migrateLegacyData() {
         console.log(`Already have ${parsed.length} entries in new format`)
         return // Already migrated or has new data
       }
-    } catch (e) {
+    } catch {
       // Continue with migration
     }
   }
@@ -177,7 +177,7 @@ export function debugLocalStorage() {
           `${key}: ${Array.isArray(parsed) ? parsed.length + ' items' : 'object'}`,
           parsed
         )
-      } catch (e) {
+      } catch {
         console.log(`${key}: [invalid JSON]`, value)
       }
     }

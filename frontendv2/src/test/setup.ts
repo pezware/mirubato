@@ -52,7 +52,7 @@ window.google = {
       revoke: vi.fn(),
     },
   },
-} as any
+} as typeof window.google
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({

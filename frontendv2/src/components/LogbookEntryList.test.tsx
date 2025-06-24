@@ -14,7 +14,7 @@ vi.mock('../stores/logbookStore', () => ({
 
 // Mock ManualEntryForm component
 vi.mock('./ManualEntryForm', () => ({
-  default: ({ entry, onClose }: any) => (
+  default: ({ onClose }: { entry?: any; onClose: () => void }) => (
     <div>
       <h2>Edit Practice Session</h2>
       <button onClick={onClose}>Close</button>
@@ -29,7 +29,7 @@ const mockEntries: LogbookEntry[] = [
     duration: 30,
     type: 'PRACTICE',
     instrument: 'PIANO',
-    pieces: ['Piece 1', 'Piece 2'],
+    pieces: [{ title: 'Piece 1' }, { title: 'Piece 2' }],
     techniques: ['Scales', 'Arpeggios'],
     goalIds: [],
     notes: 'Great practice session',
@@ -44,7 +44,7 @@ const mockEntries: LogbookEntry[] = [
     duration: 45,
     type: 'SIGHT_READING',
     instrument: 'GUITAR',
-    pieces: ['Bach Prelude'],
+    pieces: [{ title: 'Bach Prelude', composer: 'Bach' }],
     techniques: ['Sight reading'],
     goalIds: ['goal-1'],
     notes: 'Challenging session',
@@ -111,7 +111,7 @@ describe('LogbookEntryList', () => {
   it('handles delete button click with confirmation', async () => {
     const { useLogbookStore } = await import('../stores/logbookStore')
     const mockDeleteEntry = vi.fn()
-    ;(useLogbookStore as any).mockReturnValue({
+    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
       deleteEntry: mockDeleteEntry,
       updateEntry: vi.fn(),
     })
@@ -137,7 +137,7 @@ describe('LogbookEntryList', () => {
   it('cancels delete when user declines confirmation', async () => {
     const { useLogbookStore } = await import('../stores/logbookStore')
     const mockDeleteEntry = vi.fn()
-    ;(useLogbookStore as any).mockReturnValue({
+    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
       deleteEntry: mockDeleteEntry,
       updateEntry: vi.fn(),
     })

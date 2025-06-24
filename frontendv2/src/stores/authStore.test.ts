@@ -47,7 +47,9 @@ describe('authStore', () => {
   describe('login', () => {
     it('should request magic link successfully', async () => {
       const { authApi } = await import('../api/auth')
-      ;(authApi.requestMagicLink as any).mockResolvedValueOnce(undefined)
+      ;(
+        authApi.requestMagicLink as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce(undefined)
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -63,8 +65,11 @@ describe('authStore', () => {
     it('should handle login errors', async () => {
       const { authApi } = await import('../api/auth')
       const error = new Error('Network error')
-      ;(error as any).response = { data: { error: 'Failed to send email' } }
-      ;(authApi.requestMagicLink as any).mockRejectedValueOnce(error)
+      ;(error as Error & { response?: { data: { error: string } } }).response =
+        { data: { error: 'Failed to send email' } }
+      ;(
+        authApi.requestMagicLink as ReturnType<typeof vi.fn>
+      ).mockRejectedValueOnce(error)
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -81,7 +86,9 @@ describe('authStore', () => {
     it('should verify magic link and authenticate user', async () => {
       const { authApi } = await import('../api/auth')
       const mockUser = { id: 'user-123', email: 'test@example.com' }
-      ;(authApi.verifyMagicLink as any).mockResolvedValueOnce({
+      ;(
+        authApi.verifyMagicLink as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce({
         user: mockUser,
       })
 
@@ -102,10 +109,14 @@ describe('authStore', () => {
       const { useLogbookStore } = await import('./logbookStore')
       const mockSyncWithServer = vi.fn().mockResolvedValueOnce(undefined)
 
-      ;(useLogbookStore.getState as any).mockReturnValueOnce({
+      ;(
+        useLogbookStore.getState as ReturnType<typeof vi.fn>
+      ).mockReturnValueOnce({
         syncWithServer: mockSyncWithServer,
       })
-      ;(authApi.verifyMagicLink as any).mockResolvedValueOnce({
+      ;(
+        authApi.verifyMagicLink as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce({
         user: { id: 'user-123', email: 'test@example.com' },
       })
 
@@ -121,8 +132,11 @@ describe('authStore', () => {
     it('should handle invalid token errors', async () => {
       const { authApi } = await import('../api/auth')
       const error = new Error('Invalid token')
-      ;(error as any).response = { data: { error: 'Token expired' } }
-      ;(authApi.verifyMagicLink as any).mockRejectedValueOnce(error)
+      ;(error as Error & { response?: { data: { error: string } } }).response =
+        { data: { error: 'Token expired' } }
+      ;(
+        authApi.verifyMagicLink as ReturnType<typeof vi.fn>
+      ).mockRejectedValueOnce(error)
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -141,7 +155,9 @@ describe('authStore', () => {
     it('should handle Google login successfully', async () => {
       const { authApi } = await import('../api/auth')
       const mockUser = { id: 'user-123', email: 'google@example.com' }
-      ;(authApi.googleLogin as any).mockResolvedValueOnce({ user: mockUser })
+      ;(authApi.googleLogin as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        user: mockUser,
+      })
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -157,8 +173,12 @@ describe('authStore', () => {
     it('should handle specific Google login errors', async () => {
       const { authApi } = await import('../api/auth')
       const error = new Error('Google auth failed')
-      ;(error as any).response = { status: 401 }
-      ;(authApi.googleLogin as any).mockRejectedValueOnce(error)
+      ;(error as Error & { response?: { status: number } }).response = {
+        status: 401,
+      }
+      ;(authApi.googleLogin as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        error
+      )
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -177,7 +197,9 @@ describe('authStore', () => {
   describe('logout', () => {
     it('should clear user state on logout', async () => {
       const { authApi } = await import('../api/auth')
-      ;(authApi.logout as any).mockResolvedValueOnce(undefined)
+      ;(authApi.logout as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        undefined
+      )
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -199,7 +221,9 @@ describe('authStore', () => {
 
     it('should clear state even if logout API fails', async () => {
       const { authApi } = await import('../api/auth')
-      ;(authApi.logout as any).mockRejectedValueOnce(new Error('Network error'))
+      ;(authApi.logout as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -224,7 +248,9 @@ describe('authStore', () => {
       const mockUser = { id: 'user-123', email: 'test@example.com' }
 
       localStorage.setItem('auth-token', 'valid-token')
-      ;(authApi.getCurrentUser as any).mockResolvedValueOnce(mockUser)
+      ;(
+        authApi.getCurrentUser as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce(mockUser)
 
       const { result } = renderHook(() => useAuthStore())
 
@@ -253,9 +279,9 @@ describe('authStore', () => {
 
       localStorage.setItem('auth-token', 'invalid-token')
       localStorage.setItem('refresh-token', 'invalid-refresh')
-      ;(authApi.getCurrentUser as any).mockRejectedValueOnce(
-        new Error('Unauthorized')
-      )
+      ;(
+        authApi.getCurrentUser as ReturnType<typeof vi.fn>
+      ).mockRejectedValueOnce(new Error('Unauthorized'))
 
       const { result } = renderHook(() => useAuthStore())
 

@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -11,6 +11,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:integration": "VITEST_INTEGRATION_TEST=true vitest run src/**/*.miniflare.test.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src/**/*.ts",
     "typecheck": "tsc --noEmit",
@@ -42,6 +43,7 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.0",
     "vitest": "^1.2.0",
+    "vitest-environment-miniflare": "^2.14.4",
     "wrangler": "^4.20.5"
   }
 }

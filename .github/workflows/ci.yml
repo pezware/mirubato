@@ -1,0 +1,234 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lint-api:
+    name: Lint API
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run API linting
+        working-directory: ./api
+        run: |
+          npm run lint
+          npm run typecheck
+
+  lint-frontendv2:
+    name: Lint Frontend V2
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Frontend V2 linting
+        working-directory: ./frontendv2
+        run: |
+          npm run lint
+          npm run typecheck
+
+  test-api:
+    name: Test API
+    runs-on: ubuntu-latest
+    needs: lint-api
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run API unit tests
+        working-directory: ./api
+        run: |
+          npm test -- --run
+          
+      - name: Run API integration tests
+        working-directory: ./api
+        run: |
+          VITEST_INTEGRATION_TEST=true npm test -- src/**/*.miniflare.test.ts --run
+          
+      - name: Generate coverage report
+        working-directory: ./api
+        run: npm run test:coverage
+          
+      - name: Upload API coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: api/coverage/
+          
+  test-frontendv2:
+    name: Test Frontend V2
+    runs-on: ubuntu-latest
+    needs: lint-frontendv2
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Frontend V2 unit tests
+        working-directory: ./frontendv2
+        run: |
+          npm test -- --run
+          
+      - name: Generate coverage report
+        working-directory: ./frontendv2
+        run: npm run test:coverage -- --run
+          
+      - name: Upload Frontend V2 coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontendv2-coverage
+          path: frontendv2/coverage/
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Backend tests
+        working-directory: ./backend
+        run: npm test
+          
+  test-frontend:
+    name: Test Frontend V1
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Frontend tests
+        working-directory: ./frontend
+        run: npm test
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [test-frontendv2]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        working-directory: ./frontendv2
+        run: npx playwright install --with-deps chromium
+        
+      - name: Run E2E tests
+        working-directory: ./frontendv2
+        run: npm run test:e2e
+        
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: frontendv2/test-results/
+
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint-api, lint-frontendv2, test-api, test-frontendv2, test-backend, test-frontend, e2e-tests]
+    if: always()
+    
+    steps:
+      - name: Check CI results
+        run: |
+          echo "## CI Results Summary"
+          echo ""
+          echo "### Linting"
+          echo "- API Lint: ${{ needs.lint-api.result }}"
+          echo "- Frontend V2 Lint: ${{ needs.lint-frontendv2.result }}"
+          echo ""
+          echo "### Unit Tests"
+          echo "- API Tests: ${{ needs.test-api.result }}"
+          echo "- Frontend V2 Tests: ${{ needs.test-frontendv2.result }}"
+          echo "- Backend Tests: ${{ needs.test-backend.result }}"
+          echo "- Frontend V1 Tests: ${{ needs.test-frontend.result }}"
+          echo ""
+          echo "### E2E Tests"
+          echo "- E2E Tests: ${{ needs.e2e-tests.result }}"
+          echo ""
+          
+          if [[ "${{ needs.lint-api.result }}" == "failure" ]] || \
+             [[ "${{ needs.lint-frontendv2.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-api.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-frontendv2.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-backend.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-frontend.result }}" == "failure" ]] || \
+             [[ "${{ needs.e2e-tests.result }}" == "failure" ]]; then
+            echo "❌ CI failed"
+            exit 1
+          else
+            echo "✅ All CI checks passed"
+          fi

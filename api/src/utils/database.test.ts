@@ -28,13 +28,19 @@ describe('DatabaseHelpers', () => {
   describe('upsertUser', () => {
     it('should insert a new user', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
-      mockDb.prepare = vi.fn(
-        () =>
-          ({
+      const mockFirst = vi.fn().mockResolvedValue(null) // No existing user
+      mockDb.prepare = vi.fn((query: string) => {
+        if (query.includes('SELECT * FROM users WHERE email')) {
+          return {
             bind: vi.fn().mockReturnThis(),
-            run: mockRun,
-          }) as any
-      )
+            first: mockFirst,
+          } as any
+        }
+        return {
+          bind: vi.fn().mockReturnThis(),
+          run: mockRun,
+        } as any
+      })
 
       await dbHelpers.upsertUser({
         email: 'test@example.com',
@@ -51,13 +57,27 @@ describe('DatabaseHelpers', () => {
     it('should update existing user on conflict', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
-      mockDb.prepare = vi.fn(
-        () =>
-          ({
-            bind: mockBind,
-            run: mockRun,
-          }) as any
-      )
+      const existingUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        display_name: 'Old Name',
+        auth_provider: 'magic_link',
+        google_id: null,
+      }
+      const mockFirst = vi.fn().mockResolvedValue(existingUser)
+
+      mockDb.prepare = vi.fn((query: string) => {
+        if (query.includes('SELECT * FROM users WHERE email')) {
+          return {
+            bind: vi.fn().mockReturnThis(),
+            first: mockFirst,
+          } as any
+        }
+        return {
+          bind: mockBind,
+          run: mockRun,
+        } as any
+      })
 
       await dbHelpers.upsertUser({
         email: 'test@example.com',
@@ -70,7 +90,7 @@ describe('DatabaseHelpers', () => {
       // the exact bind parameters without mocking findUserByEmail
       expect(mockBind).toHaveBeenCalled()
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('ON CONFLICT')
+        expect.stringContaining('UPDATE users')
       )
     })
   })
