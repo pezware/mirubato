@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { unstable_dev } from 'wrangler'
-import type { UnstableDevWorker } from 'wrangler'
+import type { Unstable_DevWorker } from 'wrangler'
 
 describe('Sync API Integration Tests', () => {
-  let worker: UnstableDevWorker
+  let worker: Unstable_DevWorker
   let authToken: string
 
   beforeAll(async () => {

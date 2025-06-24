@@ -87,7 +87,7 @@ describe('Sync Handlers', () => {
 
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data).toHaveProperty('entries')
       expect(data).toHaveProperty('goals')
       expect(data).toHaveProperty('syncToken')
@@ -114,7 +114,7 @@ describe('Sync Handlers', () => {
 
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data.entries).toHaveLength(0)
       expect(data.goals).toHaveLength(0)
       expect(data.syncToken).toBeTruthy()
@@ -161,7 +161,7 @@ describe('Sync Handlers', () => {
 
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data.success).toBe(true)
       expect(data.syncToken).toBeTruthy()
       expect(data.conflicts).toEqual([])
@@ -235,7 +235,7 @@ describe('Sync Handlers', () => {
       // The endpoint should return 200 but with conflicts listed
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data.success).toBe(true)
       expect(data.conflicts).toHaveLength(1)
       expect(data.conflicts[0]).toMatchObject({
@@ -287,7 +287,7 @@ describe('Sync Handlers', () => {
 
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data.uploaded).toBe(1)
       expect(data.downloaded).toBe(1)
       expect(data.conflicts).toEqual([])
@@ -319,7 +319,7 @@ describe('Sync Handlers', () => {
 
       expect(res.status).toBe(200)
 
-      const data = await res.json()
+      const data = (await res.json()) as any
       expect(data.lastSyncTime).toBe('2025-06-23T22:32:52.797Z')
       expect(data.syncToken).toBe('token-123')
       expect(data.deviceCount).toBe(2)
