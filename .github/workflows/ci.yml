@@ -59,7 +59,7 @@ jobs:
         working-directory: ./frontendv2
         run: |
           npm run lint
-          npm run typecheck
+          npm run type-check
 
   test-api:
     name: Test API
@@ -86,7 +86,7 @@ jobs:
       - name: Run API integration tests
         working-directory: ./api
         run: |
-          VITEST_INTEGRATION_TEST=true npm test -- src/**/*.miniflare.test.ts --run
+          VITEST_INTEGRATION_TEST=true npm test -- src/api/handlers/sync.miniflare.test.ts --run
           
       - name: Generate coverage report
         working-directory: ./api

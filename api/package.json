@@ -9,6 +9,7 @@
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
     "test": "vitest",
+    "test:unit": "vitest run --exclude src/**/*.miniflare.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:integration": "VITEST_INTEGRATION_TEST=true vitest run src/**/*.miniflare.test.ts",

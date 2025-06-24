@@ -32,6 +32,7 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
+    "src/test-utils/**/*",
     "../shared/scripts/**/*"
   ]
 }
