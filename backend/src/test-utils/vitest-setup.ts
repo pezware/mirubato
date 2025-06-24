@@ -1,12 +1,10 @@
 import { beforeAll, afterEach, vi } from 'vitest'
+import { webcrypto } from 'crypto'
 
-// Mock nanoid globally
-vi.mock('nanoid', () => ({
-  nanoid: (size?: number) => {
-    const id = `mock_id_${Math.random().toString(36).substring(7)}`
-    return size ? id.padEnd(size, '0') : id
-  },
-}))
+// Polyfill crypto for test environment
+if (!globalThis.crypto) {
+  globalThis.crypto = webcrypto as any
+}
 
 // Mock console methods to reduce noise in tests
 beforeAll(() => {

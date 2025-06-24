@@ -4,7 +4,7 @@ import { userResolvers } from '../user'
 import type { GraphQLContext } from '../../types/context'
 import { UserService } from '../../services/user'
 
-// Mock UserService
+// Mock UserService instance
 const mockUserService = {
   getUserById: vi.fn(),
   getUserByEmail: vi.fn(),
@@ -13,6 +13,7 @@ const mockUserService = {
   getUserStats: vi.fn(),
 }
 
+// Mock the UserService class
 vi.mock('../../services/user', () => ({
   UserService: vi.fn().mockImplementation(() => mockUserService),
 }))

@@ -5,6 +5,11 @@ import { createMockKV } from '../../../test-utils/graphql'
 import type { User } from '../../../types/shared'
 import type { KVNamespace } from '@cloudflare/workers-types'
 
+// Mock nanoid to return predictable IDs
+vi.mock('nanoid', () => ({
+  nanoid: vi.fn(() => 'test-id-123456789012345678901234'),
+}))
+
 // Mock the auth utils to avoid jsonwebtoken issues in test environment
 vi.mock('../../../utils/auth', () => {
   return {
