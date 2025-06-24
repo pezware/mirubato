@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main, develop]
 
+# Restrict GITHUB_TOKEN permissions
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
 env:
   NODE_VERSION: '20'
 
