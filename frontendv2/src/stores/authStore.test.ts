@@ -208,7 +208,12 @@ describe('authStore', () => {
       // Set initial authenticated state
       act(() => {
         useAuthStore.setState({
-          user: { id: 'user-123', email: 'test@example.com' },
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            authProvider: 'magic_link',
+            createdAt: new Date().toISOString(),
+          },
           isAuthenticated: true,
         })
       })
@@ -225,7 +230,9 @@ describe('authStore', () => {
 
     it('should clear state even if logout API fails', async () => {
       // Mock console.warn to avoid console output
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
 
       // Get the mocked authApi from the top-level mock
       const authApi = (await import('../api/auth')).authApi
@@ -240,7 +247,12 @@ describe('authStore', () => {
       // Set initial authenticated state
       act(() => {
         useAuthStore.setState({
-          user: { id: 'user-123', email: 'test@example.com' },
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            authProvider: 'magic_link',
+            createdAt: new Date().toISOString(),
+          },
           isAuthenticated: true,
         })
       })

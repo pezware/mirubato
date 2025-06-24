@@ -42,7 +42,7 @@ const mockEntries: LogbookEntry[] = [
     id: 'entry-2',
     timestamp: '2025-01-16T14:00:00Z',
     duration: 45,
-    type: 'SIGHT_READING',
+    type: 'PRACTICE',
     instrument: 'GUITAR',
     pieces: [{ title: 'Bach Prelude', composer: 'Bach' }],
     techniques: ['Sight reading'],
@@ -75,14 +75,16 @@ describe('LogbookEntryList', () => {
   it('renders entries correctly', () => {
     render(<LogbookEntryList entries={mockEntries} onUpdate={mockOnUpdate} />)
 
+    // Check both entries have PRACTICE type (there are 2 entries)
+    const practiceTypes = screen.getAllByText('PRACTICE')
+    expect(practiceTypes).toHaveLength(2)
+
     // Check first entry
-    expect(screen.getByText('PRACTICE')).toBeInTheDocument()
     expect(screen.getByText('⏱️ 30 minutes')).toBeInTheDocument()
     expect(screen.getByText(/PIANO/)).toBeInTheDocument()
     expect(screen.getByText('Great practice session')).toBeInTheDocument()
 
     // Check second entry
-    expect(screen.getByText('SIGHT_READING')).toBeInTheDocument()
     expect(screen.getByText('⏱️ 45 minutes')).toBeInTheDocument()
     expect(screen.getByText(/GUITAR/)).toBeInTheDocument()
     expect(screen.getByText('Challenging session')).toBeInTheDocument()
@@ -111,7 +113,7 @@ describe('LogbookEntryList', () => {
   it('handles delete button click with confirmation', async () => {
     const { useLogbookStore } = await import('../stores/logbookStore')
     const mockDeleteEntry = vi.fn()
-    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useLogbookStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       deleteEntry: mockDeleteEntry,
       updateEntry: vi.fn(),
     })
@@ -137,7 +139,7 @@ describe('LogbookEntryList', () => {
   it('cancels delete when user declines confirmation', async () => {
     const { useLogbookStore } = await import('../stores/logbookStore')
     const mockDeleteEntry = vi.fn()
-    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
+    ;(useLogbookStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       deleteEntry: mockDeleteEntry,
       updateEntry: vi.fn(),
     })
