@@ -74,6 +74,17 @@ export function fixLocalStorageData() {
         changed = true
       }
 
+      // Fix metadata if it's a string
+      if (typeof fixed.metadata === 'string') {
+        try {
+          fixed.metadata = JSON.parse(fixed.metadata)
+          changed = true
+        } catch {
+          fixed.metadata = {}
+          changed = true
+        }
+      }
+
       if (changed) {
         hasChanges = true
         console.log(

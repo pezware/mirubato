@@ -56,6 +56,7 @@ export const useAuthStore = create<AuthState>(set => ({
       set({
         error: error.response?.data?.error || 'Invalid or expired token',
         isLoading: false,
+        isAuthenticated: false,
       })
       throw error
     }
@@ -103,6 +104,9 @@ export const useAuthStore = create<AuthState>(set => ({
     set({ isLoading: true })
     try {
       await authApi.logout()
+    } catch (error) {
+      // Silently ignore logout errors - we still want to clear local state
+      console.warn('Logout API error (ignored):', error)
     } finally {
       set({
         user: null,

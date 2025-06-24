@@ -26,10 +26,12 @@ describe('authStore', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
-    // Reset the store state
-    const { result } = renderHook(() => useAuthStore())
-    act(() => {
-      result.current.clearError()
+    // Reset the store state - Zustand stores need to be reset properly
+    useAuthStore.setState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
     })
   })
 
@@ -205,8 +207,10 @@ describe('authStore', () => {
 
       // Set initial authenticated state
       act(() => {
-        result.current.user = { id: 'user-123', email: 'test@example.com' }
-        result.current.isAuthenticated = true
+        useAuthStore.setState({
+          user: { id: 'user-123', email: 'test@example.com' },
+          isAuthenticated: true,
+        })
       })
 
       await act(async () => {
@@ -220,8 +224,14 @@ describe('authStore', () => {
     })
 
     it('should clear state even if logout API fails', async () => {
-      const { authApi } = await import('../api/auth')
-      ;(authApi.logout as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      // Mock console.warn to avoid console output
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+
+      // Get the mocked authApi from the top-level mock
+      const authApi = (await import('../api/auth')).authApi
+
+      // Make logout reject with an error
+      vi.mocked(authApi.logout).mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -229,16 +239,25 @@ describe('authStore', () => {
 
       // Set initial authenticated state
       act(() => {
-        result.current.user = { id: 'user-123', email: 'test@example.com' }
-        result.current.isAuthenticated = true
+        useAuthStore.setState({
+          user: { id: 'user-123', email: 'test@example.com' },
+          isAuthenticated: true,
+        })
       })
 
+      // Logout should not throw even if API fails
       await act(async () => {
         await result.current.logout()
       })
 
       expect(result.current.user).toBeNull()
       expect(result.current.isAuthenticated).toBe(false)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Logout API error (ignored):',
+        expect.any(Error)
+      )
+
+      consoleWarnSpy.mockRestore()
     })
   })
 

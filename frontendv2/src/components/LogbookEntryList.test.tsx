@@ -192,12 +192,17 @@ describe('LogbookEntryList', () => {
   it('shows pieces and techniques when available', () => {
     render(<LogbookEntryList entries={mockEntries} onUpdate={mockOnUpdate} />)
 
-    // Should show pieces section for first entry
-    expect(screen.getByText('🎵 Pieces:')).toBeInTheDocument()
+    // Should show pieces section for both entries (use getAllByText)
+    const pieceHeaders = screen.getAllByText('🎵 Pieces:')
+    expect(pieceHeaders).toHaveLength(2)
 
     // Should show techniques section
-    expect(screen.getByText('🎯 Techniques:')).toBeInTheDocument()
-    expect(screen.getByText('Scales, Arpeggios')).toBeInTheDocument()
+    const techniqueHeaders = screen.getAllByText('🎯 Techniques:')
+    expect(techniqueHeaders).toHaveLength(2)
+
+    // Check individual techniques (they are rendered as separate spans)
+    expect(screen.getByText('Scales')).toBeInTheDocument()
+    expect(screen.getByText('Arpeggios')).toBeInTheDocument()
     expect(screen.getByText('Sight reading')).toBeInTheDocument()
   })
 
