@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import { migrateLegacyData } from './utils/migrateLegacyData'
+import { fixLocalStorageData } from './utils/fixLocalStorageData'
 
 // Pages
 import HomePage from './pages/Home'
@@ -20,6 +21,9 @@ function App() {
   const { refreshAuth } = useAuthStore()
 
   useEffect(() => {
+    // Fix any corrupted localStorage data first
+    fixLocalStorageData()
+
     // Migrate any legacy data on first load
     migrateLegacyData()
 
