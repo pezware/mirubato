@@ -173,24 +173,43 @@ docsHandler.get('/swagger', c => {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mirubato Scores API - Swagger UI</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+    <style>
+      html {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+      *, *:before, *:after {
+        box-sizing: inherit;
+      }
+      body {
+        margin: 0;
+        background: #fafafa;
+      }
+    </style>
   </head>
   <body>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js" crossorigin></script>
     <script>
-      window.onload = () => {
-        window.ui = SwaggerUIBundle({
-          url: '/api/openapi.json',
+      window.onload = function() {
+        // Build a system
+        const ui = SwaggerUIBundle({
+          url: "/api/openapi.json",
           dom_id: '#swagger-ui',
           deepLinking: true,
           presets: [
             SwaggerUIBundle.presets.apis,
-            SwaggerUIBundle.SwaggerUIStandalonePreset
+            SwaggerUIStandalonePreset
           ],
-          layout: "StandaloneLayout",
-          theme: "dark"
-        });
-      };
+          plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl
+          ],
+          layout: "StandaloneLayout"
+        })
+        window.ui = ui
+      }
     </script>
   </body>
 </html>
