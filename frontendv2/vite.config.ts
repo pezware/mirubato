@@ -8,4 +8,8 @@ export default defineConfig({
     port: 3000,
     strictPort: false, // Use next available port if 3000 is taken
   },
+  publicDir: 'public',
+  build: {
+    copyPublicDir: true,
+  },
 })

@@ -98,6 +98,11 @@ pids/
 # Exception: Keep essential SVG icons
 !/src/assets/icons/*.svg
 !/public/favicon.svg
+# Exception: Keep frontend public images
+!/frontendv2/public/*.jpg
+!/frontendv2/public/*.jpeg
+!/frontendv2/public/*.png
+!/frontendv2/public/*.svg
 
 # Documentation generated files
 docs/api/
