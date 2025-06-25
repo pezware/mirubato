@@ -22,14 +22,16 @@ vi.mock('../../utils/database', () => ({
 
 vi.mock('../middleware', () => ({
   authMiddleware: (c: unknown, next: () => Promise<void>) => {
-    ;(c as any).set('userId', 'test-user-123')
+    const context = c as any
+    context.set('userId', 'test-user-123')
     return next()
   },
   validateBody:
     (_schema: unknown) => async (c: unknown, next: () => Promise<void>) => {
       try {
         const body = await (c as any).req.json()
-        ;(c as any).set('validatedBody', body)
+        const context = c as any
+        context.set('validatedBody', body)
         return next()
       } catch (e) {
         return (c as any).json({ error: 'Invalid body' }, 400)
