@@ -40,7 +40,7 @@ export class EmailService {
   </div>
   
   <p style="text-align: center; color: #a0aec0; margin-top: 40px; font-size: 12px;">
-    © 2024 Mirubato. All rights reserved.
+    © 2025 Mirubato. MIT License.
   </p>
 </body>
 </html>
