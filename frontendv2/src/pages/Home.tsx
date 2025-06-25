@@ -29,7 +29,7 @@ export default function HomePage() {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: 'url(https://www.mirubato.com/mirubato-cover.jpeg)',
+        backgroundImage: 'url(/mirubato-cover.jpeg)',
       }}
     >
       {/* Subtle overlay for better text readability */}
