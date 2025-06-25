@@ -1,13 +1,15 @@
 # Mirubato Development Roadmap
 
-## Current Status (December 2024)
+## Current Status (January 2025)
 
-✅ **Migration Complete**: Successfully transitioned from GraphQL to REST API architecture
+✅ **REST API Migration Complete**: Full transition from GraphQL to REST API architecture completed
 
-- Legacy frontend/backend removed
-- All data migrated (80 logbook entries, 3 users)
+- GraphQL backend service completely removed
+- Frontend fully migrated to REST API endpoints
+- All data successfully migrated (80 logbook entries, 3 users)
 - Production deployment active at mirubato.com
 - 135 tests passing across all services (API: 32, Scores: 3, Frontend: 100)
+- No GraphQL dependencies remain in the codebase
 
 ## Priority 1: Frontend Polish & UX (2-3 weeks)
 
@@ -147,23 +149,12 @@
 
 ## Long-term Vision (6+ months)
 
-### MusicXML Integration with Scores Service
+### Basic Features
 
-**Goal**: Move MusicXML converter functionality to scores service
-
-**Current State**: MusicXML converter exists in legacy codebase
-
-- ✅ Converts MXL files to TypeScript Score format
-- ✅ Supports multi-voice notation and complex musical notation
-- ✅ Successfully converted Bach, Mozart, and Chopin pieces
-
-**Migration Plan**:
-
-- [ ] Extract converter logic to scores service
-- [ ] Add MusicXML processing endpoints
-- [ ] Integrate with scorebook for automatic score generation
-- [ ] Add real-time notation rendering
-- [ ] Support collaborative music editing
+- [ ] Logbook - comprehensive logbook to track everyday practices
+- [ ] Scorebook - curated score for each grade and level
+- [ ] Gradebook - for teachers to grade the practices, or self evaluation
+- [ ] Goalbook - specified goal with comprehensive steps of practices.
 
 ### Advanced Features
 
@@ -223,5 +214,5 @@
 
 ---
 
-**Next Review**: End of January 2025
-**Last Updated**: December 2024
+**Next Review**: End of June 2025
+**Last Updated**: June 2025

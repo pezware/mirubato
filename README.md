@@ -11,9 +11,9 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 ## Quick Start
 
 ```bash
-git clone https://github.com/pezware/mirubato.git && cd mirubato
+git clone https://github.com/pezware/mirubato.git && cd frontendv2
 npm install && npm run dev     # Frontend: localhost:3000
-npm run dev:backend           # API: localhost:8787
+npm run dev:api                # API: localhost:8787
 ```
 
 ## Documentation

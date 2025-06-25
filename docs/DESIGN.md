@@ -13,8 +13,7 @@ All services run as Cloudflare Workers with the following domains:
 | Service        | Production                     | Staging                                        |
 | -------------- | ------------------------------ | ---------------------------------------------- |
 | Frontend       | mirubato.com, www.mirubato.com | staging.mirubato.com, www-staging.mirubato.com |
-| Backend API    | api.mirubato.com               | api-staging.mirubato.com                       |
-| API v2         | apiv2.mirubato.com             | apiv2-staging.mirubato.com                     |
+| API            | api.mirubato.com               | api-staging.mirubato.com                       |
 | Scores Service | scores.mirubato.com            | scores-staging.mirubato.com                    |
 
 ### Services Architecture
@@ -26,20 +25,19 @@ All services run as Cloudflare Workers with the following domains:
 │                  mirubato / mirubato-staging                 │
 └─────────────────────┬───────────────────────────────────────┘
                       │
-                      ├─────────────────┬─────────────────────┐
-                      │                 │                     │
-              ┌───────▼────────┐ ┌─────▼──────┐     ┌────────▼────────┐
-              │   Backend API  │ │   API v2   │     │ Scores Service  │
-              │   (GraphQL)    │ │  (REST)    │     │     (REST)      │
-              │ mirubato-backend│ │mirubato-api│     │ mirubato-scores │
-              └───────┬────────┘ └─────┬──────┘     └────────┬────────┘
-                      │                 │                      │
-                      └─────────┬───────┘                      │
-                                │                              │
-                        ┌───────▼────────┐             ┌───────▼────────┐
-                        │   D1 Database  │             │   D1 Database  │
-                        │ (mirubato-prod)│             │(scores-prod)   │
-                        └────────────────┘             └────────────────┘
+                      ├─────────────────────────┬──────────────┐
+                      │                         │              │
+              ┌───────▼────────┐        ┌───────▼────────┐     │
+              │     API        │        │ Scores Service │     │
+              │    (REST)      │        │     (REST)     │     │
+              │ mirubato-api   │        │mirubato-scores │     │
+              └───────┬────────┘        └───────┬────────┘     │
+                      │                         │              │
+                      │                         │              │
+              ┌───────▼────────┐        ┌───────▼────────┐     │
+              │  D1 Database   │        │  D1 Database   │     │
+              │(mirubato-prod) │        │ (scores-prod)  │     │
+              └────────────────┘        └────────────────┘     │
 ```
 
 ### Service Details
@@ -55,26 +53,20 @@ All services run as Cloudflare Workers with the following domains:
   - Offline-first with service workers
   - Module-based architecture with EventBus
 
-#### 2. Backend API (GraphQL)
-
-- **Technology**: Apollo Server, GraphQL, TypeScript
-- **Database**: Cloudflare D1 (SQLite)
-- **Purpose**: Core application logic, user management, practice sessions
-- **Authentication**: Magic links + JWT tokens
-- **Note**: Will be replaced by API v2 in future phases
-
-#### 3. API v2 (REST) - Migration in Progress
+#### 2. API (REST)
 
 - **Technology**: Hono framework, TypeScript
-- **Purpose**: Will replace Backend API with improved architecture
+- **Database**: Cloudflare D1 (SQLite)
+- **Purpose**: Core application logic, user management, practice sessions
+- **Authentication**: Magic links + JWT tokens + Google OAuth
 - **Features**:
-  - Google OAuth integration
-  - Improved sync capabilities
-  - Better rate limiting
   - RESTful design
+  - Sync capabilities for offline-first architecture
+  - Rate limiting
+  - Google OAuth integration
   - Simpler deployment model
 
-#### 4. Scores Service
+#### 3. Scores Service
 
 - **Technology**: Hono framework, TypeScript
 - **Database**: Separate D1 instance
@@ -88,17 +80,17 @@ All services run as Cloudflare Workers with the following domains:
 
 ### Database Architecture
 
-#### Shared Database (Backend + API v2)
+#### Main Database (API)
 
-Currently sharing `mirubato-prod` / `mirubato-dev` databases with compatibility migrations:
+The API uses `mirubato-prod` / `mirubato-dev` databases with the following schema:
 
 ```sql
--- Users table (unified schema)
+-- Users table
 users (
   id, email, display_name,
-  primary_instrument,      -- Backend field
-  auth_provider,          -- API v2 field
-  google_id,              -- API v2 field
+  primary_instrument,
+  auth_provider,
+  google_id,
   created_at, updated_at
 )
 
@@ -106,7 +98,7 @@ users (
 practice_sessions, practice_logs, sheet_music,
 logbook_entries, goals, user_preferences
 
--- Sync tables (API v2)
+-- Sync tables
 sync_data, sync_metadata
 ```
 
@@ -128,7 +120,7 @@ score_metadata, user_scores
    - Link contains short-lived token
    - Token exchanged for JWT
 
-2. **Google OAuth (API v2)**:
+2. **Google OAuth**:
    - OAuth2 flow with Google
    - Profile data stored in users table
    - Same JWT token system
@@ -138,17 +130,18 @@ score_metadata, user_scores
 - **CI/CD**: GitHub Actions for validation, Cloudflare dashboard for deployment
 - **Environments**: Production (default), Staging, Development
 - **Worker Names**:
-  - Production: `mirubato`, `mirubato-backend`, `mirubato-api`, `mirubato-scores`
+  - Production: `mirubato`, `mirubato-api`, `mirubato-scores`
   - Staging: `*-staging` suffix for each worker
 - **Build Process**: Each service built independently from its own directory
 
-### Migration Strategy
+### Architecture Status
 
-The system is transitioning from Backend (GraphQL) to API v2 (REST):
+✅ **Migration Complete**: The system has successfully transitioned to a REST-only architecture:
 
-1. **Phase 1** (Current): Both services run in parallel, sharing database
-2. **Phase 2**: Gradual migration of frontend to use API v2 endpoints
-3. **Phase 3**: Deprecate and remove Backend service
+- GraphQL backend service has been completely removed
+- Frontend exclusively uses REST API endpoints
+- Database schema unified for REST architecture
+- All legacy GraphQL code and dependencies removed
 
 ## Core Design Principles
 
@@ -219,10 +212,10 @@ graph TD
 
 ## Key Technologies
 
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS, Apollo Client
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, Axios
 - **Music**: VexFlow.js (notation), Tone.js (audio), MusicXML support
 - **Backend**: Cloudflare Workers, D1 (SQLite), R2 (object storage)
-- **Frameworks**: Hono (API v2, Scores), Apollo Server (Backend)
+- **Frameworks**: Hono (API, Scores)
 - **Auth**: JWT tokens, magic links, Google OAuth
 
 ## Performance Considerations
@@ -244,15 +237,15 @@ graph TD
 ```bash
 # Local development
 npm run dev              # Frontend (port 3000)
-npm run dev:backend      # Backend (port 8787)
+npm run dev:api          # API (port 8787)
 
 # Deployment (from respective directories)
 cd [service] && wrangler deploy               # Production
 cd [service] && wrangler deploy --env staging # Staging
 
-# Database migrations
-cd backend && npm run db:migrate:production   # Production
-cd backend && npm run db:migrate:staging      # Staging
+# Database migrations (from api directory)
+cd api && npm run db:migrate:production   # Production
+cd api && npm run db:migrate:staging      # Staging
 ```
 
 ## Testing Strategy
@@ -300,10 +293,10 @@ cd backend && npm run db:migrate:staging      # Staging
 
 ## Future Considerations
 
-1. **API Consolidation**: Complete migration to API v2
-2. **Mobile Apps**: React Native using same API
-3. **Advanced Features**: AI-powered difficulty adjustment
-4. **Scaling**: Multi-region database replication
+1. **Mobile Apps**: React Native using same REST API
+2. **Advanced Features**: AI-powered difficulty adjustment
+3. **Scaling**: Multi-region database replication
+4. **Performance**: Edge caching optimization
 
 ---
 
