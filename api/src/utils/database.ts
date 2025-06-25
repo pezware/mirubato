@@ -236,7 +236,22 @@ export class DatabaseHelpers {
  * Calculate checksum for data
  */
 export async function calculateChecksum(data: any): Promise<string> {
-  const jsonString = JSON.stringify(data)
+  // Sort object keys to ensure consistent checksums regardless of key order
+  const sortObject = (obj: any): any => {
+    if (obj === null || typeof obj !== 'object') return obj
+    if (Array.isArray(obj)) return obj.map(sortObject)
+
+    const sorted: any = {}
+    Object.keys(obj)
+      .sort()
+      .forEach(key => {
+        sorted[key] = sortObject(obj[key])
+      })
+    return sorted
+  }
+
+  const sortedData = sortObject(data)
+  const jsonString = JSON.stringify(sortedData)
   const encoder = new TextEncoder()
   const dataBuffer = encoder.encode(jsonString)
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)

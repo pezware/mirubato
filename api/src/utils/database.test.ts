@@ -28,11 +28,13 @@ describe('DatabaseHelpers', () => {
   describe('upsertUser', () => {
     it('should insert a new user', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
+      const mockFirst = vi.fn().mockResolvedValue(null) // No existing user
       mockDb.prepare = vi.fn(
         () =>
           ({
             bind: vi.fn().mockReturnThis(),
             run: mockRun,
+            first: mockFirst,
           }) as any
       )
 
@@ -51,11 +53,18 @@ describe('DatabaseHelpers', () => {
     it('should update existing user on conflict', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const existingUser = {
+        id: 'existing-user-id',
+        email: 'test@example.com',
+        displayName: 'Old Name',
+      }
+      const mockFirst = vi.fn().mockResolvedValue(existingUser)
       mockDb.prepare = vi.fn(
         () =>
           ({
             bind: mockBind,
             run: mockRun,
+            first: mockFirst,
           }) as any
       )
 
@@ -70,7 +79,7 @@ describe('DatabaseHelpers', () => {
       // the exact bind parameters without mocking findUserByEmail
       expect(mockBind).toHaveBeenCalled()
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('ON CONFLICT')
+        expect.stringContaining('UPDATE users')
       )
     })
   })
@@ -166,7 +175,8 @@ describe('DatabaseHelpers', () => {
         'entry-456',
         JSON.stringify(testData.data),
         'checksum-789',
-        1
+        1,
+        null // deleted_at
       )
       expect(mockRun).toHaveBeenCalled()
     })
@@ -195,7 +205,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should log and rethrow database errors', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Database connection failed')
 
       mockDb.prepare = vi.fn(
@@ -244,7 +256,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should handle errors with logging', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Constraint violation')
 
       mockDb.prepare = vi.fn(

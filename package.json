@@ -6,7 +6,9 @@
   "workspaces": [
     "shared",
     "frontend",
-    "backend"
+    "frontendv2",
+    "backend",
+    "api"
   ],
   "scripts": {
     "dev": "npm run dev -w @mirubato/frontend",
