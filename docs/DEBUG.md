@@ -1,8 +1,8 @@
-# Rubato Debug Guide
+# Mirubato Debug Guide
 
 ## Overview
 
-This document contains known issues, their solutions, and debugging tools for the Rubato platform. Use this guide when encountering problems during development or in production.
+This document contains known issues, their solutions, and debugging tools for the Mirubato platform. Use this guide when encountering problems during development or in production.
 
 ## Quick Debugging Tools
 
@@ -12,12 +12,14 @@ This document contains known issues, their solutions, and debugging tools for th
    - Shows version, environment, timestamp
    - First thing to check when debugging
 
-2. **GraphQL Playground**: `https://api.mirubato.com/graphql`
-   - Test queries, check schema, debug auth
-   - Introspection enabled for transparency
+2. **API Documentation**: `https://api.mirubato.com/docs`
+   - Interactive REST API documentation
+   - Test endpoints directly from browser
+   - View request/response schemas
 
-3. **CORS Debug**: `https://api.mirubato.com/debug/cors`
-   - Diagnose cross-origin issues
+3. **Scores API Health**: `https://scores.mirubato.com/health`
+   - Check scores service status
+   - View scores API documentation at `https://scores.mirubato.com/docs`
 
 ## Known Issues & Solutions
 
@@ -41,16 +43,135 @@ This document contains known issues, their solutions, and debugging tools for th
 - Timeline: ~2 weeks for full implementation
 - See Phase 4.3 in ROADMAP for details
 
-### 2. GraphQL Schema Loading Error (Production 500)
+### 2. Authentication Issues
 
-**Problem**: Schema loading failures causing 500 errors in production
+**Problem**: Users getting 401 errors or login failures
 
-**Solution Applied** (commits 5ef022d3, 37a87c13):
+**Debugging Steps**:
 
-- Fixed GraphQL schema loading mechanism
-- Ensured proper schema file bundling in build process
+1. Check if user is properly authenticated:
 
-**Prevention**:
+   ```javascript
+   // In browser console
+   localStorage.getItem('auth-token')
+   ```
+
+2. Test authentication endpoint:
+
+   ```bash
+   curl -X POST https://api.mirubato.com/api/auth/google \
+     -H "Content-Type: application/json" \
+     -d '{"credential": "your-google-jwt"}'
+   ```
+
+3. Verify token is being sent in requests:
+   - Open Network tab in DevTools
+   - Check if Authorization header is present
+
+**Common Solutions**:
+
+- Clear localStorage and re-login
+- Check if Google OAuth is properly configured
+- Verify API_URL environment variable
+
+### 3. Sync Issues
+
+**Problem**: Data not syncing between local storage and cloud
+
+**Debugging Steps**:
+
+1. Check sync status:
+
+   ```bash
+   curl -H "Authorization: Bearer YOUR_TOKEN" \
+     https://api.mirubato.com/api/sync/status
+   ```
+
+2. Check local storage data:
+
+   ```javascript
+   // In browser console
+   Object.keys(localStorage).filter(k => k.startsWith('mirubato:'))
+   ```
+
+3. Force sync:
+   ```javascript
+   // In browser console - if using logbook store
+   const { syncWithServer } = useLogbookStore.getState()
+   await syncWithServer()
+   ```
+
+**Common Solutions**:
+
+- Check network connectivity
+- Verify user is logged in
+- Clear local cache and re-sync
+- Check API health endpoint
+
+### 4. LocalStorage Migration Issues
+
+**Problem**: Old data not appearing after migration to current frontend
+
+**Solution**: See [FRONTEND_DEBUG.md](./FRONTEND_DEBUG.md) for comprehensive migration debugging guide.
+
+## Development Debugging
+
+### Local Development Issues
+
+1. **API not connecting**:
+   - Check if API is running on port 8787
+   - Verify VITE_API_URL in `.env` file
+   - Check CORS settings
+
+2. **Build failures**:
+   - Clear node_modules and reinstall
+   - Check TypeScript errors: `npm run type-check`
+   - Verify all imports are correct
+
+3. **Test failures**:
+   - Run tests individually: `npm test -- --run --reporter=verbose`
+   - Check test database setup
+   - Verify mock configurations
+
+### Performance Debugging
+
+1. **Slow API responses**:
+   - Check Cloudflare Worker metrics
+   - Monitor D1 database query performance
+   - Review API endpoint response times
+
+2. **Frontend performance**:
+   - Use React DevTools Profiler
+   - Check bundle size: `npm run build -- --analyze`
+   - Monitor Core Web Vitals
+
+## Emergency Procedures
+
+### Production Issues
+
+1. **Complete service outage**:
+   - Check Cloudflare Worker status
+   - Verify domain DNS settings
+   - Check D1 database connectivity
+
+2. **Data corruption**:
+   - Check recent backup files
+   - Verify sync data integrity
+   - Review recent deployment logs
+
+### Recovery Steps
+
+1. **Rollback deployment**:
+
+   ```bash
+   # Rollback to previous version
+   wrangler rollback --name mirubato-api
+   ```
+
+2. **Database recovery**:
+   - Restore from latest backup
+   - Run data integrity checks
+   - Verify user data consistency
 
 - Always test production build locally before deployment
 - Check that schema.graphql is included in dist folder

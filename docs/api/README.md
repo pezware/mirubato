@@ -167,6 +167,15 @@ npm run test:ui
 Interactive API documentation is available at:
 
 - Local: http://localhost:8787/docs
-- Production: https://apiv2.mirubato.com/docs
+- Production: https://api.mirubato.com/docs
 
 The documentation is powered by Stoplight Elements and uses the OpenAPI specification.
+
+## Current Status
+
+✅ **Production Ready**: Successfully deployed and serving production traffic
+- **Health Check**: https://api.mirubato.com/health
+- **Test Coverage**: 32/32 tests passing (100%)
+- **Migration**: Completed from GraphQL backend
+- **Users**: 3 active users migrated
+- **Data**: 80+ logbook entries migrated
