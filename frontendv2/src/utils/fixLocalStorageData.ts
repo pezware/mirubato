@@ -23,7 +23,7 @@ export function fixLocalStorageData() {
         try {
           fixed.pieces = JSON.parse(fixed.pieces)
           changed = true
-        } catch (e) {
+        } catch (_e) {
           fixed.pieces = []
           changed = true
         }
@@ -37,7 +37,7 @@ export function fixLocalStorageData() {
         try {
           fixed.techniques = JSON.parse(fixed.techniques)
           changed = true
-        } catch (e) {
+        } catch (_e) {
           fixed.techniques = []
           changed = true
         }
@@ -51,7 +51,7 @@ export function fixLocalStorageData() {
         try {
           fixed.tags = JSON.parse(fixed.tags)
           changed = true
-        } catch (e) {
+        } catch (_e) {
           fixed.tags = []
           changed = true
         }
@@ -65,7 +65,7 @@ export function fixLocalStorageData() {
         try {
           fixed.goalIds = JSON.parse(fixed.goalIds)
           changed = true
-        } catch (e) {
+        } catch (_e) {
           fixed.goalIds = []
           changed = true
         }

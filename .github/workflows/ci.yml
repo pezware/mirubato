@@ -68,8 +68,7 @@ jobs:
         run: npm ci
 
       - name: Run tests for ${{ matrix.workspace }}
-        run: npm run test:unit -w @mirubato/${{ matrix.workspace }} -- --passWithNoTests
-        continue-on-error: ${{ matrix.workspace == 'api' || matrix.workspace == 'frontendv2' }}
+        run: npm run test:unit -w @mirubato/${{ matrix.workspace }}
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -118,7 +117,6 @@ jobs:
 
       - name: Build ${{ matrix.workspace }}
         run: npm run build -w @mirubato/${{ matrix.workspace }}
-        continue-on-error: ${{ matrix.workspace == 'api' }}
 
   e2e-tests:
     name: E2E Tests

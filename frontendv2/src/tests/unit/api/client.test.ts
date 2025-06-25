@@ -4,7 +4,6 @@ import type { AxiosRequestConfig } from 'axios'
 describe('API Client', () => {
   // Store original modules
   const originalLocation = window.location
-  const originalEnv = import.meta.env
 
   beforeEach(() => {
     // Clear all mocks
@@ -20,7 +19,7 @@ describe('API Client', () => {
     vi.resetModules()
 
     // Mock window.location
-    delete (window as any).location
+    delete (window as { location?: Location }).location
     window.location = {
       ...originalLocation,
       hostname: 'localhost',
@@ -261,7 +260,7 @@ describe('API Client', () => {
 
     describe('Response Interceptor Logic', () => {
       it('should clear tokens on 401 response', async () => {
-        let capturedErrorHandler: (error: any) => Promise<any>
+        let capturedErrorHandler: (error: unknown) => Promise<unknown>
 
         vi.doMock('axios', () => ({
           default: {
@@ -293,7 +292,7 @@ describe('API Client', () => {
       })
 
       it('should redirect on 401 for protected routes', async () => {
-        let capturedErrorHandler: (error: any) => Promise<any>
+        let capturedErrorHandler: (error: unknown) => Promise<unknown>
 
         vi.doMock('axios', () => ({
           default: {
@@ -326,7 +325,7 @@ describe('API Client', () => {
       })
 
       it('should not redirect on 401 for public routes', async () => {
-        let capturedErrorHandler: (error: any) => Promise<any>
+        let capturedErrorHandler: (error: unknown) => Promise<unknown>
 
         vi.doMock('axios', () => ({
           default: {
@@ -360,7 +359,7 @@ describe('API Client', () => {
       })
 
       it('should pass through non-401 errors', async () => {
-        let capturedErrorHandler: (error: any) => Promise<any>
+        let capturedErrorHandler: (error: unknown) => Promise<unknown>
 
         vi.doMock('axios', () => ({
           default: {
@@ -389,7 +388,7 @@ describe('API Client', () => {
       })
 
       it('should handle network errors without response', async () => {
-        let capturedErrorHandler: (error: any) => Promise<any>
+        let capturedErrorHandler: (error: unknown) => Promise<unknown>
 
         vi.doMock('axios', () => ({
           default: {

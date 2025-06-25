@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -24,7 +25,7 @@ const localStorageMock = {
   length: 0,
   key: vi.fn(),
 }
-global.localStorage = localStorageMock as any
+global.localStorage = localStorageMock as Storage
 
 // Mock Tone.js
 vi.mock('tone', () => ({

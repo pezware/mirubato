@@ -111,7 +111,9 @@ test.describe('Logbook Features', () => {
 
 // Stagehand-specific test example (to be implemented when package is available)
 test.describe('AI-Driven Tests with Stagehand', () => {
-  test.skip('AI can navigate and create a practice entry', async ({ page }) => {
+  test.skip('AI can navigate and create a practice entry', async ({
+    page: _page,
+  }) => {
     // This would use Stagehand's AI capabilities
     // Example:
     // const stagehand = new Stagehand(page)

@@ -249,7 +249,7 @@ describe('Auth API', () => {
       // but let's first check if localStorage is still called
       try {
         await authApi.logout()
-      } catch (e) {
+      } catch {
         // Ignore for now
       }
 
