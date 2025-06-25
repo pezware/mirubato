@@ -2,12 +2,12 @@ name = "mirubato-frontendv2"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
+# Production environment (default)
+workers_dev = false
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
-
-# Production environment (default)
-workers_dev = false
 
 [vars]
 API_URL = "https://api.mirubato.com"
