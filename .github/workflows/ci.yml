@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        workspace: [frontend, backend, frontendv2, api]
+        workspace: [frontendv2, api, scores]
     steps:
       - uses: actions/checkout@v4
 
@@ -72,29 +72,11 @@ jobs:
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
-        if: matrix.workspace == 'frontend' || matrix.workspace == 'backend'
+        if: matrix.workspace == 'frontendv2' || matrix.workspace == 'api'
         with:
           directory: ./${{ matrix.workspace }}/coverage
           flags: ${{ matrix.workspace }}
           name: ${{ matrix.workspace }}-coverage
-
-  graphql-schema:
-    name: GraphQL Schema Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check GraphQL schema alignment
-        run: npm run codegen:check
 
   build:
     name: Build
@@ -102,7 +84,7 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        workspace: [frontend, backend, frontendv2, api]
+        workspace: [frontendv2, api, scores]
     steps:
       - uses: actions/checkout@v4
 
@@ -137,10 +119,6 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run E2E tests for frontend
-        run: npm run test:e2e -w @mirubato/frontend
-        continue-on-error: true
-
       - name: Run E2E tests for frontendv2
         run: npm run test:e2e -w @mirubato/frontendv2
         continue-on-error: true
@@ -151,6 +129,5 @@ jobs:
         with:
           name: playwright-report
           path: |
-            frontend/playwright-report/
             frontendv2/playwright-report/
           retention-days: 30

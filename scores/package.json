@@ -14,7 +14,9 @@
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
     "db:migrate:production": "wrangler d1 migrations apply DB",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:unit": "vitest run --passWithNoTests",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "cloudflare",

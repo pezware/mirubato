@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     // Force headless mode
@@ -59,7 +59,10 @@ export default defineConfig({
 
   webServer: {
     command: 'npm run dev',
-    port: 5173,
+    port: 3000,
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 2 minutes
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 })

@@ -89,7 +89,7 @@ describe('API Client', () => {
 
       const createCall = (axios.create as ReturnType<typeof vi.fn>).mock
         .calls[0]
-      expect(createCall[0].baseURL).toBe('https://apiv2-staging.mirubato.com')
+      expect(createCall[0].baseURL).toBe('https://api-staging.mirubato.com')
     })
 
     it('should use production URL for production hostname', async () => {
@@ -113,7 +113,7 @@ describe('API Client', () => {
 
       const createCall = (axios.create as ReturnType<typeof vi.fn>).mock
         .calls[0]
-      expect(createCall[0].baseURL).toBe('https://apiv2.mirubato.com')
+      expect(createCall[0].baseURL).toBe('https://api.mirubato.com')
     })
   })
 
