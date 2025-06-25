@@ -205,27 +205,47 @@ export default function ManualEntryForm({
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             How did it go?
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="flex gap-px flex-wrap sm:flex-nowrap">
             {[
-              { value: 'FRUSTRATED', label: 'Frustrated', emoji: '😤' },
-              { value: 'NEUTRAL', label: 'Neutral', emoji: '😐' },
-              { value: 'SATISFIED', label: 'Satisfied', emoji: '😊' },
-              { value: 'EXCITED', label: 'Excited', emoji: '🎉' },
-            ].map(option => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setMood(option.value as LogbookEntry['mood'])}
-                className={`px-4 py-3 rounded-lg transition-all duration-200 text-center ${
-                  mood === option.value
-                    ? 'bg-morandi-sage-500 text-white shadow-md border-2 border-morandi-sage-500'
-                    : 'bg-white border-2 border-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-100'
-                }`}
-              >
-                <div className="text-xl mb-1">{option.emoji}</div>
-                <div className="text-sm">{option.label}</div>
-              </button>
-            ))}
+              { value: 'FRUSTRATED', label: '😤', fullLabel: 'Frustrated' },
+              { value: 'NEUTRAL', label: '😐', fullLabel: 'Neutral' },
+              { value: 'SATISFIED', label: '😊', fullLabel: 'Satisfied' },
+              { value: 'EXCITED', label: '🎉', fullLabel: 'Excited' },
+            ].map((option, index) => {
+              const isFirst = index === 0
+              const isLast = index === 3
+              const isActive = mood === option.value
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    setMood(
+                      isActive
+                        ? undefined
+                        : (option.value as LogbookEntry['mood'])
+                    )
+                  }
+                  className={`
+                    flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer
+                    border border-morandi-stone-300 flex-1 sm:flex-initial
+                    ${
+                      isActive
+                        ? 'bg-morandi-sage-500 text-white border-morandi-sage-500 shadow-sm'
+                        : 'bg-white text-morandi-stone-600 hover:bg-morandi-stone-100'
+                    }
+                    ${isFirst ? 'rounded-l-lg' : ''}
+                    ${isLast ? 'rounded-r-lg' : ''}
+                    ${!isFirst && !isLast ? '-ml-px' : ''}
+                    ${!isFirst ? 'sm:border-l-0' : ''}
+                  `}
+                >
+                  <span>{option.label}</span>
+                  <span className="hidden sm:inline">{option.fullLabel}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 

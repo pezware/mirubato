@@ -8,11 +8,12 @@ export interface Option<T extends string = string> {
 
 interface SplitButtonProps<T extends string = string> {
   options: Option<T>[]
-  value: T
+  value: T | undefined
   onChange: (value: T) => void
   orientation?: 'horizontal' | 'vertical'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  allowDeselect?: boolean
 }
 
 export default function SplitButton<T extends string = string>({
@@ -22,6 +23,7 @@ export default function SplitButton<T extends string = string>({
   orientation = 'horizontal',
   size = 'md',
   className,
+  allowDeselect = false,
 }: SplitButtonProps<T>) {
   const baseStyles =
     'border border-morandi-stone-300 bg-white text-morandi-stone-600 font-medium transition-all duration-200 cursor-pointer'
@@ -75,7 +77,13 @@ export default function SplitButton<T extends string = string>({
         <button
           key={option.value}
           type="button"
-          onClick={() => onChange(option.value)}
+          onClick={() => {
+            if (allowDeselect && value === option.value) {
+              onChange(undefined as any)
+            } else {
+              onChange(option.value)
+            }
+          }}
           className={getButtonStyles(index, value === option.value)}
         >
           <span className="flex items-center justify-center gap-2">
