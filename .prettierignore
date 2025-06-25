@@ -1,0 +1,26 @@
+# Local Claude settings
+.claude/
+
+# Build outputs
+dist/
+build/
+coverage/
+*.log
+
+# Dependencies
+node_modules/
+
+# Generated files
+frontend/src/generated/
+backend/src/types/generated/
+api/src/types/generated/
+shared/src/types/generated/
+
+# Cloudflare
+.wrangler/
+.mf/
+
+# Documentation builds
+frontend/docs/
+backend/docs/
+api/docs/

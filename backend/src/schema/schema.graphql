@@ -443,31 +443,27 @@ type Query {
     offset: Int
     limit: Int
   ): LogbookEntryConnection!
-  
+
   # Goal queries
   goal(id: ID!): Goal
-  myGoals(
-    status: GoalStatus
-    offset: Int
-    limit: Int
-  ): GoalConnection!
-  
+  myGoals(status: GoalStatus, offset: Int, limit: Int): GoalConnection!
+
   # Sync queries
   """
   Get sync metadata for a user
   """
   syncMetadata(userId: ID!): SyncMetadata
-  
+
   """
   Get changes since a sync token
   """
   syncChangesSince(syncToken: String!): SyncDelta!
-  
+
   """
   Get all user data for full sync
   """
   allUserData(userId: ID!): UserData!
-  
+
   """
   Get sync debug information for troubleshooting
   """
@@ -490,32 +486,34 @@ type Mutation {
   startPracticeSession(input: StartPracticeSessionInput!): PracticeSession!
   pausePracticeSession(sessionId: ID!): PracticeSession!
   resumePracticeSession(sessionId: ID!): PracticeSession!
-  completePracticeSession(input: CompletePracticeSessionInput!): PracticeSession!
-  
+  completePracticeSession(
+    input: CompletePracticeSessionInput!
+  ): PracticeSession!
+
   # Practice log mutations
   createPracticeLog(input: CreatePracticeLogInput!): PracticeLog!
-  
+
   # Logbook mutations
   createLogbookEntry(input: CreateLogbookEntryInput!): LogbookEntry!
   updateLogbookEntry(id: ID!, input: UpdateLogbookEntryInput!): LogbookEntry!
   deleteLogbookEntry(id: ID!): Boolean!
-  
+
   # Goal mutations
   createGoal(input: CreateGoalInput!): Goal!
   updateGoal(id: ID!, input: UpdateGoalInput!): Goal!
   updateGoalMilestone(goalId: ID!, milestoneId: ID!, completed: Boolean!): Goal!
   deleteGoal(id: ID!): Boolean!
   linkEntryToGoal(entryId: ID!, goalId: ID!): Goal!
-  
+
   # Bulk sync mutations for migrating anonymous user data
   syncAnonymousData(input: SyncAnonymousDataInput!): SyncResult!
-  
+
   # New sync mutations
   """
   Sync a batch of entities
   """
   syncBatch(batch: SyncBatchInput!): SyncBatchResult!
-  
+
   """
   Update sync metadata after successful sync
   """

@@ -14,67 +14,67 @@ permissions:
 jobs:
   validate-build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Validate backend build
-      run: |
-        npm run build
-        echo "✅ Build successful"
-    
-    - name: Run type checking
-      working-directory: ./backend
-      run: |
-        npm run type-check
-        echo "✅ Type checking passed"
-    
-    - name: Validate build artifacts
-      working-directory: ./backend
-      run: |
-        # Check that required files exist
-        # Note: TypeScript preserves directory structure when importing from ../shared
-        # so the output is in dist/backend/src/index.js not dist/index.js
-        if [ ! -f "dist/backend/src/index.js" ]; then
-          echo "❌ Missing dist/backend/src/index.js"
-          exit 1
-        fi
-        
-        # Check for schema content that should be generated
-        if [ ! -f "src/schema/schema-content.js" ]; then
-          echo "❌ Missing src/schema/schema-content.js"
-          exit 1
-        fi
-        
-        # Check bundle size (should be reasonable for a Worker)
-        size=$(stat -c%s "dist/backend/src/index.js" 2>/dev/null || stat -f%z "dist/backend/src/index.js")
-        echo "📦 Bundle size: $((size / 1024)) KB"
-        
-        # Warn if bundle is too large (>500KB)
-        if [ $size -gt 512000 ]; then
-          echo "⚠️ Bundle size is quite large (>500KB), consider optimization"
-        fi
-        
-        echo "✅ Build artifacts validation passed"
-    
-    - name: Test build deployment (dry run)
-      working-directory: ./backend
-      run: |
-        # Install wrangler if not already available
-        if ! command -v wrangler &> /dev/null; then
-          npm install -g wrangler
-        fi
-        
-        # Test deployment without actually deploying
-        echo "🧪 Testing deployment configuration..."
-        npx wrangler deploy --dry-run --env dev
-        echo "✅ Deployment configuration valid"
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate backend build
+        run: |
+          npm run build
+          echo "✅ Build successful"
+
+      - name: Run type checking
+        working-directory: ./backend
+        run: |
+          npm run type-check
+          echo "✅ Type checking passed"
+
+      - name: Validate build artifacts
+        working-directory: ./backend
+        run: |
+          # Check that required files exist
+          # Note: TypeScript preserves directory structure when importing from ../shared
+          # so the output is in dist/backend/src/index.js not dist/index.js
+          if [ ! -f "dist/backend/src/index.js" ]; then
+            echo "❌ Missing dist/backend/src/index.js"
+            exit 1
+          fi
+
+          # Check for schema content that should be generated
+          if [ ! -f "src/schema/schema-content.js" ]; then
+            echo "❌ Missing src/schema/schema-content.js"
+            exit 1
+          fi
+
+          # Check bundle size (should be reasonable for a Worker)
+          size=$(stat -c%s "dist/backend/src/index.js" 2>/dev/null || stat -f%z "dist/backend/src/index.js")
+          echo "📦 Bundle size: $((size / 1024)) KB"
+
+          # Warn if bundle is too large (>500KB)
+          if [ $size -gt 512000 ]; then
+            echo "⚠️ Bundle size is quite large (>500KB), consider optimization"
+          fi
+
+          echo "✅ Build artifacts validation passed"
+
+      - name: Test build deployment (dry run)
+        working-directory: ./backend
+        run: |
+          # Install wrangler if not already available
+          if ! command -v wrangler &> /dev/null; then
+            npm install -g wrangler
+          fi
+
+          # Test deployment without actually deploying
+          echo "🧪 Testing deployment configuration..."
+          npx wrangler deploy --dry-run --env dev
+          echo "✅ Deployment configuration valid"

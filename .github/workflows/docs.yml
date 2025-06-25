@@ -16,7 +16,7 @@ permissions:
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
         run: |
           npm run docs:generate
           echo "docs.mirubato.com" > docs/CNAME
-          
+
       - name: Upload documentation artifacts (PR preview)
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4

@@ -6,5 +6,5 @@ export default {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/tests/setup/integration.setup.ts'],
   // Integration tests don't need coverage thresholds
-  coverageThreshold: undefined
+  coverageThreshold: undefined,
 }

@@ -19,5 +19,7 @@
     "cd apiv2 && eslint --fix",
     "cd apiv2 && vitest related --run --no-coverage --passWithNoTests"
   ],
-  "*.{js,jsx,ts,tsx,json,css,md}": ["prettier --write"]
+  "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,cjs,mjs,graphql}": [
+    "prettier --write"
+  ]
 }

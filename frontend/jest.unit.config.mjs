@@ -9,29 +9,30 @@ export default {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^tone$': '<rootDir>/src/__mocks__/tone.ts',
-    '^vexflow$': '<rootDir>/src/__mocks__/vexflow.ts'
+    '^vexflow$': '<rootDir>/src/__mocks__/vexflow.ts',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.test.json'
-    }]
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.test.json',
+      },
+    ],
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@tonejs|tone|vexflow)/)'
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@tonejs|tone|vexflow)/)'],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
-      statements: 80
-    }
+      statements: 80,
+    },
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/vite-env.d.ts',
     '!src/main.tsx',
-    '!src/index.js'
+    '!src/index.js',
   ],
 }
