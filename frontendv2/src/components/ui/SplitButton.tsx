@@ -9,7 +9,7 @@ export interface Option<T extends string = string> {
 interface SplitButtonProps<T extends string = string> {
   options: Option<T>[]
   value: T | undefined
-  onChange: (value: T) => void
+  onChange: (value: T | undefined) => void
   orientation?: 'horizontal' | 'vertical'
   size?: 'sm' | 'md' | 'lg'
   className?: string
@@ -79,7 +79,7 @@ export default function SplitButton<T extends string = string>({
           type="button"
           onClick={() => {
             if (allowDeselect && value === option.value) {
-              onChange(undefined as any)
+              onChange(undefined)
             } else {
               onChange(option.value)
             }
