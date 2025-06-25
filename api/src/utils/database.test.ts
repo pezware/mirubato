@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DatabaseHelpers, calculateChecksum, generateId } from './database'
-import type { D1Database } from '@cloudflare/workers-types'
+import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types'
 
 describe('DatabaseHelpers', () => {
   let mockDb: D1Database
@@ -35,7 +35,7 @@ describe('DatabaseHelpers', () => {
             bind: vi.fn().mockReturnThis(),
             run: mockRun,
             first: mockFirst,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertUser({
@@ -65,7 +65,7 @@ describe('DatabaseHelpers', () => {
             bind: mockBind,
             run: mockRun,
             first: mockFirst,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertUser({
@@ -101,7 +101,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             all: mockAll,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const result = await dbHelpers.getSyncData('user-123')
@@ -119,7 +119,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             all: vi.fn().mockResolvedValue({ results: [], success: true }),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.getSyncData('user-123', 'logbook_entry')
@@ -136,7 +136,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             all: vi.fn().mockRejectedValue(new Error('Database error')),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const result = await dbHelpers.getSyncData('user-123')
@@ -154,7 +154,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const testData = {
@@ -188,7 +188,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertSyncData({
@@ -215,7 +215,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: vi.fn().mockRejectedValue(dbError),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await expect(
@@ -246,7 +246,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.updateSyncMetadata('user-123', 'sync-token-abc', 3)
@@ -266,7 +266,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: vi.fn().mockRejectedValue(dbError),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await expect(

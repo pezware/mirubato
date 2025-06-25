@@ -5,6 +5,7 @@ import { HTTPException } from 'hono/http-exception'
 import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
+import type { RateLimit } from '@cloudflare/workers-types'
 
 // Define environment bindings
 export interface Env {
@@ -15,7 +16,7 @@ export interface Env {
   GOOGLE_CLIENT_ID: string
   GOOGLE_CLIENT_SECRET?: string
   RESEND_API_KEY?: string
-  RATE_LIMITER?: any
+  RATE_LIMITER?: RateLimit
 }
 
 const app = new Hono<{ Bindings: Env }>()

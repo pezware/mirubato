@@ -48,7 +48,7 @@ export class EmailService {
 
     // For development, just log the email
     if (this.env.ENVIRONMENT === 'local') {
-      console.log('📧 Magic link email:', { email, magicLink })
+      // Development: Magic link would be sent to email
       return
     }
 
@@ -56,8 +56,7 @@ export class EmailService {
     if (this.env.RESEND_API_KEY) {
       await this.sendWithResend(email, 'Sign in to Mirubato', html)
     } else {
-      // Fallback to console log
-      console.log('📧 Magic link email:', { email, magicLink })
+      // Fallback: Magic link would be sent to email
     }
   }
 

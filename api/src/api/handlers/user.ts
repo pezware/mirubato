@@ -47,7 +47,7 @@ userHandler.put(
   validateBody(schemas.userPreferences),
   async c => {
     const userId = c.get('userId') as string
-    const preferences = c.get('validatedBody') as any
+    const preferences = c.get('validatedBody') as Record<string, unknown>
     const db = new DatabaseHelpers(c.env.DB)
 
     try {

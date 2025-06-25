@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import type { DbUser, DbSyncData, DbSyncMetadata } from '../types/models'
+import type { DbUser, DbSyncMetadata } from '../types/models'
 
 /**
  * Generate a unique ID for database records
@@ -95,7 +95,7 @@ export class DatabaseHelpers {
   async getSyncData(userId: string, entityType?: string) {
     let query =
       'SELECT * FROM sync_data WHERE user_id = ? AND deleted_at IS NULL'
-    const params: any[] = [userId]
+    const params: unknown[] = [userId]
 
     if (entityType) {
       query += ' AND entity_type = ?'
@@ -125,14 +125,14 @@ export class DatabaseHelpers {
     userId: string
     entityType: string
     entityId: string
-    data: any
+    data: unknown
     checksum: string
     version?: number
   }) {
     const id = generateId('sync')
     const jsonData = JSON.stringify(data.data)
     // Check if this is a soft delete
-    const deletedAt = data.data.deletedAt || null
+    const deletedAt = (data.data as Record<string, unknown>).deletedAt || null
 
     try {
       await this.db
@@ -235,17 +235,17 @@ export class DatabaseHelpers {
 /**
  * Calculate checksum for data
  */
-export async function calculateChecksum(data: any): Promise<string> {
+export async function calculateChecksum(data: unknown): Promise<string> {
   // Sort object keys to ensure consistent checksums regardless of key order
-  const sortObject = (obj: any): any => {
+  const sortObject = (obj: unknown): unknown => {
     if (obj === null || typeof obj !== 'object') return obj
     if (Array.isArray(obj)) return obj.map(sortObject)
 
-    const sorted: any = {}
+    const sorted: Record<string, unknown> = {}
     Object.keys(obj)
       .sort()
       .forEach(key => {
-        sorted[key] = sortObject(obj[key])
+        sorted[key] = sortObject((obj as Record<string, unknown>)[key])
       })
     return sorted
   }

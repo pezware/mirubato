@@ -34,9 +34,13 @@ syncHandler.post('/pull', async c => {
     const goals = []
 
     // Handle the results properly
-    const results = (syncData as any).results || []
+    const results = (syncData as { results?: unknown[] }).results || []
 
-    for (const item of results) {
+    for (const item of results as Array<{
+      entity_type: string
+      entity_id: string
+      data: string | unknown
+    }>) {
       try {
         // Parse the JSON data safely
         const data =
@@ -48,10 +52,7 @@ syncHandler.post('/pull', async c => {
           goals.push(data)
         }
       } catch (parseError) {
-        console.error(
-          `Error parsing sync data for ${item.entity_type} ${item.entity_id}:`,
-          parseError
-        )
+        // Error: Failed to parse sync data
         // Continue processing other items
       }
     }
@@ -65,7 +66,6 @@ syncHandler.post('/pull', async c => {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Error pulling sync data:', error)
     throw Errors.InternalError('Failed to pull sync data')
   }
 })
@@ -76,28 +76,29 @@ syncHandler.post('/pull', async c => {
  */
 syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   const userId = c.get('userId') as string
-  const { changes } = c.get('validatedBody') as any
+  const { changes } = c.get('validatedBody') as {
+    changes: { entries?: unknown[]; goals?: unknown[] }
+  }
   const db = new DatabaseHelpers(c.env.DB)
 
-  // Add detailed logging for debugging
-  console.log('[Sync Push] Starting sync for user:', userId)
-  console.log('[Sync Push] Received changes:', JSON.stringify(changes, null, 2))
+  // Debug: Starting sync for user
 
   try {
     // Process changes
-    const conflicts: any[] = []
+    const conflicts: Array<{
+      entityId: string
+      entityType: string
+      reason: string
+    }> = []
 
     // Process entries
     if (changes.entries && changes.entries.length > 0) {
-      console.log(`[Sync Push] Processing ${changes.entries.length} entries`)
-
-      for (const entry of changes.entries) {
+      for (const entry of changes.entries as Array<{
+        id: string
+        [key: string]: unknown
+      }>) {
         try {
-          console.log(`[Sync Push] Processing entry ${entry.id}`)
-          console.log('[Sync Push] Entry data:', JSON.stringify(entry, null, 2))
-
           const checksum = await calculateChecksum(entry)
-          console.log(`[Sync Push] Calculated checksum: ${checksum}`)
 
           await db.upsertSyncData({
             userId,
@@ -106,18 +107,13 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             data: entry,
             checksum,
           })
-
-          console.log(`[Sync Push] Successfully stored entry ${entry.id}`)
         } catch (entryError) {
-          console.error(
-            `[Sync Push] Error processing entry ${entry.id}:`,
-            entryError
-          )
+          // Error: Failed to process entry
           // Continue processing other entries but track the error
           conflicts.push({
             entityId: entry.id,
             entityType: 'logbook_entry',
-            error:
+            reason:
               entryError instanceof Error
                 ? entryError.message
                 : 'Unknown error',
@@ -128,15 +124,12 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
     // Process goals
     if (changes.goals && changes.goals.length > 0) {
-      console.log(`[Sync Push] Processing ${changes.goals.length} goals`)
-
-      for (const goal of changes.goals) {
+      for (const goal of changes.goals as Array<{
+        id: string
+        [key: string]: unknown
+      }>) {
         try {
-          console.log(`[Sync Push] Processing goal ${goal.id}`)
-          console.log('[Sync Push] Goal data:', JSON.stringify(goal, null, 2))
-
           const checksum = await calculateChecksum(goal)
-          console.log(`[Sync Push] Calculated checksum: ${checksum}`)
 
           await db.upsertSyncData({
             userId,
@@ -145,18 +138,13 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             data: goal,
             checksum,
           })
-
-          console.log(`[Sync Push] Successfully stored goal ${goal.id}`)
         } catch (goalError) {
-          console.error(
-            `[Sync Push] Error processing goal ${goal.id}:`,
-            goalError
-          )
+          // Error: Failed to process goal
           // Continue processing other goals but track the error
           conflicts.push({
             entityId: goal.id,
             entityType: 'goal',
-            error:
+            reason:
               goalError instanceof Error ? goalError.message : 'Unknown error',
           })
         }
@@ -165,14 +153,9 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
 
     // Update sync metadata
     const newSyncToken = generateId('sync')
-    console.log(
-      `[Sync Push] Updating sync metadata with token: ${newSyncToken}`
-    )
+    // Debug: Updating sync metadata
 
     await db.updateSyncMetadata(userId, newSyncToken)
-
-    console.log('[Sync Push] Sync completed successfully')
-    console.log(`[Sync Push] Conflicts: ${conflicts.length}`)
 
     return c.json({
       success: true,
@@ -180,11 +163,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       conflicts,
     })
   } catch (error) {
-    console.error('[Sync Push] Fatal error:', error)
-    console.error(
-      '[Sync Push] Error stack:',
-      error instanceof Error ? error.stack : 'No stack trace'
-    )
+    // Error: Sync push failed
 
     // Return more detailed error for debugging
     if (c.env.ENVIRONMENT !== 'production') {
@@ -208,7 +187,15 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
  */
 syncHandler.post('/batch', validateBody(schemas.syncBatch), async c => {
   const userId = c.get('userId') as string
-  const { entities } = c.get('validatedBody') as any
+  const { entities } = c.get('validatedBody') as {
+    entities: Array<{
+      type: string
+      id: string
+      data: unknown
+      checksum: string
+      version: number
+    }>
+  }
   const db = new DatabaseHelpers(c.env.DB)
 
   try {
@@ -220,7 +207,17 @@ syncHandler.post('/batch', validateBody(schemas.syncBatch), async c => {
     const cloudData = await db.getSyncData(userId)
     const cloudMap = new Map()
 
-    for (const item of (cloudData as any).results) {
+    for (const item of (
+      cloudData as {
+        results: Array<{
+          entity_type: string
+          entity_id: string
+          checksum: string
+          version: number
+          data: string | unknown
+        }>
+      }
+    ).results) {
       const key = `${item.entity_type}:${item.entity_id}`
       cloudMap.set(key, {
         checksum: item.checksum,
@@ -284,7 +281,6 @@ syncHandler.post('/batch', validateBody(schemas.syncBatch), async c => {
       newSyncToken,
     })
   } catch (error) {
-    console.error('Error in batch sync:', error)
     throw Errors.InternalError('Failed to perform batch sync')
   }
 })
@@ -308,10 +304,9 @@ syncHandler.get('/status', async c => {
       syncToken: metadata?.last_sync_token || null,
       pendingChanges: 0, // Would need to track this separately
       deviceCount: metadata?.device_count || 1,
-      entityCount: (syncData as any).results.length,
+      entityCount: (syncData as { results: unknown[] }).results.length,
     })
   } catch (error) {
-    console.error('Error getting sync status:', error)
     throw Errors.InternalError('Failed to get sync status')
   }
 })
