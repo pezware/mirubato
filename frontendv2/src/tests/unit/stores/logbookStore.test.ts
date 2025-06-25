@@ -502,7 +502,7 @@ describe('logbookStore', () => {
       })
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Pushing 2 local entries to server'
+        'Found 0 unique local entries, 2 duplicates'
       )
 
       consoleLogSpy.mockRestore()

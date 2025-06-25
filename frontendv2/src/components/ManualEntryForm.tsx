@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
+import Button from './ui/Button'
+import SplitButton from './ui/SplitButton'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -95,57 +97,56 @@ export default function ManualEntryForm({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Basic Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-              Duration (minutes)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={duration}
-              onChange={e => setDuration(parseInt(e.target.value))}
-              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-              required
-            />
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                Duration (minutes)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={duration}
+                onChange={e => setDuration(parseInt(e.target.value))}
+                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <SplitButton<LogbookEntry['instrument']>
+                options={[
+                  { value: 'PIANO', label: '🎹 Piano' },
+                  { value: 'GUITAR', label: '🎸 Guitar' },
+                ]}
+                value={instrument}
+                onChange={value => value && setInstrument(value)}
+                orientation="horizontal"
+              />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
               Type
             </label>
-            <select
+            <SplitButton<LogbookEntry['type']>
+              options={[
+                { value: 'PRACTICE', label: 'Practice' },
+                { value: 'LESSON', label: 'Lesson' },
+                { value: 'PERFORMANCE', label: 'Performance' },
+                { value: 'REHEARSAL', label: 'Rehearsal' },
+              ]}
               value={type}
-              onChange={e => setType(e.target.value as LogbookEntry['type'])}
-              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-            >
-              <option value="PRACTICE">Practice</option>
-              <option value="PERFORMANCE">Performance</option>
-              <option value="LESSON">Lesson</option>
-              <option value="REHEARSAL">Rehearsal</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-              Instrument
-            </label>
-            <select
-              value={instrument}
-              onChange={e =>
-                setInstrument(e.target.value as LogbookEntry['instrument'])
-              }
-              className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-            >
-              <option value="PIANO">Piano</option>
-              <option value="GUITAR">Guitar</option>
-            </select>
+              onChange={value => value && setType(value)}
+              orientation="horizontal"
+            />
           </div>
         </div>
 
         {/* Pieces */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             Pieces
           </label>
           {pieces.map((piece, index) => (
@@ -155,82 +156,112 @@ export default function ManualEntryForm({
                 placeholder="Piece title"
                 value={piece.title}
                 onChange={e => updatePiece(index, 'title', e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Composer"
                 value={piece.composer || ''}
                 onChange={e => updatePiece(index, 'composer', e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => removePiece(index)}
-                className="px-3 py-2 text-red-600 hover:text-red-800"
+                variant="secondary"
+                size="sm"
               >
                 Remove
-              </button>
+              </Button>
             </div>
           ))}
-          <button
+          <Button
             type="button"
             onClick={addPiece}
-            className="text-morandi-sage-500 hover:text-morandi-sage-600 text-sm font-medium"
+            variant="ghost"
+            size="sm"
+            leftIcon={<span>+</span>}
           >
-            + Add Piece
-          </button>
+            Add Piece
+          </Button>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             Notes
           </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none"
             placeholder="What did you work on? Any observations?"
           />
         </div>
 
         {/* Mood */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             How did it go?
           </label>
-          <div className="flex gap-2">
-            {['FRUSTRATED', 'NEUTRAL', 'SATISFIED', 'EXCITED'].map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMood(m as LogbookEntry['mood'])}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                  mood === m
-                    ? 'bg-morandi-sage-400 text-white shadow-md'
-                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                }`}
-              >
-                {m.charAt(0) + m.slice(1).toLowerCase()}
-              </button>
-            ))}
+          <div className="flex gap-px flex-wrap sm:flex-nowrap">
+            {[
+              { value: 'FRUSTRATED', label: '😤', fullLabel: 'Frustrated' },
+              { value: 'NEUTRAL', label: '😐', fullLabel: 'Neutral' },
+              { value: 'SATISFIED', label: '😊', fullLabel: 'Satisfied' },
+              { value: 'EXCITED', label: '🎉', fullLabel: 'Excited' },
+            ].map((option, index) => {
+              const isFirst = index === 0
+              const isLast = index === 3
+              const isActive = mood === option.value
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    setMood(
+                      isActive
+                        ? undefined
+                        : (option.value as LogbookEntry['mood'])
+                    )
+                  }
+                  className={`
+                    flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer
+                    border border-morandi-stone-300 flex-1 sm:flex-initial
+                    ${
+                      isActive
+                        ? 'bg-morandi-sage-500 text-white border-morandi-sage-500 shadow-sm'
+                        : 'bg-white text-morandi-stone-600 hover:bg-morandi-stone-100'
+                    }
+                    ${isFirst ? 'rounded-l-lg' : ''}
+                    ${isLast ? 'rounded-r-lg' : ''}
+                    ${!isFirst && !isLast ? '-ml-px' : ''}
+                    ${!isFirst ? 'sm:border-l-0' : ''}
+                  `}
+                >
+                  <span>{option.label}</span>
+                  <span className="hidden sm:inline">{option.fullLabel}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">
-          <button type="button" onClick={onClose} className="btn-secondary">
+          <Button type="button" onClick={onClose} variant="secondary">
             Cancel
-          </button>
-          <button type="submit" disabled={isSubmitting} className="btn-primary">
-            {isSubmitting
-              ? '📦 Saving...'
-              : entry
-                ? '💾 Update Entry'
-                : '💾 Save Entry'}
-          </button>
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
+          >
+            {entry ? 'Update Entry' : 'Save Entry'}
+          </Button>
         </div>
       </form>
     </div>

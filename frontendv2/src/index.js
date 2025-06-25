@@ -26,6 +26,28 @@ export default {
         response = new Response(response.body, response)
       }
 
+      // Ensure proper Content-Type headers for CSS and JS files
+      if (response.status === 200) {
+        const headers = new Headers(response.headers)
+        const ext = url.pathname.split('.').pop()?.toLowerCase()
+
+        // Set Content-Type based on file extension
+        if (ext === 'css' && !headers.get('content-type')) {
+          headers.set('content-type', 'text/css; charset=utf-8')
+        } else if (ext === 'js' && !headers.get('content-type')) {
+          headers.set('content-type', 'application/javascript; charset=utf-8')
+        } else if (ext === 'json' && !headers.get('content-type')) {
+          headers.set('content-type', 'application/json; charset=utf-8')
+        }
+
+        // Create new response with updated headers
+        response = new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        })
+      }
+
       return response
     } catch (e) {
       return new Response('Error serving request', { status: 500 })

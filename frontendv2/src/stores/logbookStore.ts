@@ -487,33 +487,103 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // Pull from server
       const serverEntries = await logbookApi.getEntries()
 
-      // Convert to Map for O(1) operations
+      // Create maps for deduplication
       const serverEntriesMap = new Map(
         serverEntries.map(entry => [entry.id, entry])
       )
 
+      // Create a map to track entries by content signature for deduplication
+      const contentSignatureMap = new Map<string, LogbookEntry>()
+
+      // Helper to create a content signature for deduplication
+      const createContentSignature = (entry: LogbookEntry): string => {
+        // Create a signature based on key content fields (excluding timestamp to allow deduplication)
+        const pieces = entry.pieces
+          .map(p => `${p.title}-${p.composer}`)
+          .sort()
+          .join('|')
+        // Use a time window approach - entries within 5 minutes are considered potentially duplicate
+        const timeWindow = Math.floor(
+          new Date(entry.timestamp).getTime() / (5 * 60 * 1000)
+        )
+        return `${timeWindow}-${entry.duration}-${entry.type}-${entry.instrument}-${pieces}`
+      }
+
+      // Add server entries to content map
+      serverEntries.forEach(entry => {
+        const signature = createContentSignature(entry)
+        contentSignatureMap.set(signature, entry)
+      })
+
+      // Find truly unique local entries (not duplicates by content)
+      const uniqueLocalEntries: LogbookEntry[] = []
+      const duplicateLocalEntries: LogbookEntry[] = []
+
+      localEntries.forEach(localEntry => {
+        // Skip if already on server by ID
+        if (serverEntriesMap.has(localEntry.id)) {
+          return
+        }
+
+        // Check if this is a duplicate by content
+        const signature = createContentSignature(localEntry)
+        if (contentSignatureMap.has(signature)) {
+          duplicateLocalEntries.push(localEntry)
+        } else {
+          uniqueLocalEntries.push(localEntry)
+          // Add to content map to catch duplicates within local entries
+          contentSignatureMap.set(signature, localEntry)
+        }
+      })
+
+      console.log(
+        `Found ${uniqueLocalEntries.length} unique local entries, ${duplicateLocalEntries.length} duplicates`
+      )
+
+      // Start with server entries
+      const mergedEntriesMap = new Map(serverEntriesMap)
+
+      if (uniqueLocalEntries.length > 0) {
+        console.log(
+          `Pushing ${uniqueLocalEntries.length} unique local entries to server`
+        )
+
+        try {
+          // Push only unique local entries to server
+          const { syncApi } = await import('../api/sync')
+          await syncApi.push({
+            changes: {
+              entries: uniqueLocalEntries,
+              goals: [], // TODO: Sync goals too
+            },
+          })
+
+          // After successful push, add unique entries to merged map
+          uniqueLocalEntries.forEach(entry => {
+            mergedEntriesMap.set(entry.id, entry)
+          })
+        } catch (pushError) {
+          console.error('Failed to push local entries:', pushError)
+          // Still merge unique local entries even if push fails
+          uniqueLocalEntries.forEach(entry => {
+            mergedEntriesMap.set(entry.id, entry)
+          })
+        }
+      }
+
+      // Update state with merged entries
       set({
-        entriesMap: serverEntriesMap,
-        entries: mapToSortedArray(serverEntriesMap),
+        entriesMap: mergedEntriesMap,
+        entries: mapToSortedArray(mergedEntriesMap),
         isLoading: false,
         isLocalMode: false,
       })
 
-      // Update local storage
-      debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(serverEntries))
-
-      // If we had local entries not on server, push them
-      // This is a simple implementation - a real sync would handle conflicts
-      const localOnlyEntries = localEntries.filter(
-        local => !serverEntriesMap.has(local.id)
+      // Update local storage with merged data
+      debouncedLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(mergedEntriesMap.values()))
       )
-
-      if (localOnlyEntries.length > 0) {
-        console.log(
-          `Pushing ${localOnlyEntries.length} local entries to server`
-        )
-        // TODO: Implement batch push
-      }
     } catch (error: unknown) {
       set({
         error: 'Failed to sync with server. Continuing with local data.',

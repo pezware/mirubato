@@ -9,6 +9,7 @@
 }
 
 @layer components {
+  /* Legacy button styles for backward compatibility */
   .btn-primary {
     @apply px-6 py-3 bg-morandi-sage-500 text-white font-medium rounded-lg hover:bg-morandi-sage-400 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg;
   }
@@ -25,15 +26,75 @@
     @apply px-4 py-2 text-morandi-stone-600 hover:text-morandi-stone-700 hover:bg-morandi-stone-100 rounded-lg transition-all duration-200;
   }
 
+  /* Form inputs */
+  .input {
+    @apply w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent transition-all duration-200;
+  }
+
+  .textarea {
+    @apply w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none transition-all duration-200;
+  }
+
+  /* Cards and panels */
   .card {
     @apply p-6 bg-white rounded-lg shadow-sm border border-morandi-stone-200;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md transition-all duration-200;
   }
 
   .glass-panel {
     @apply bg-white/90 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl;
   }
 
+  /* Backgrounds */
   .hero-gradient {
     @apply bg-gradient-to-br from-morandi-sage-100 via-white to-morandi-sand-100;
+  }
+
+  /* Badges and tags */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-sage {
+    @apply badge bg-morandi-sage-100 text-morandi-stone-700;
+  }
+
+  .badge-sand {
+    @apply badge bg-morandi-sand-100 text-morandi-stone-700;
+  }
+
+  .badge-sky {
+    @apply badge bg-morandi-sky-100 text-morandi-stone-700;
+  }
+
+  .badge-blush {
+    @apply badge bg-morandi-blush-100 text-morandi-stone-700;
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

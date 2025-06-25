@@ -145,7 +145,7 @@ export class DatabaseHelpers {
             data = excluded.data,
             checksum = excluded.checksum,
             version = sync_data.version + 1,
-            updated_at = datetime('now'),
+            updated_at = CURRENT_TIMESTAMP,
             deleted_at = excluded.deleted_at
         `
         )
