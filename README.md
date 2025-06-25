@@ -13,16 +13,17 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 ```bash
 git clone https://github.com/pezware/mirubato.git && cd mirubato
 npm install && npm run dev     # Frontend: localhost:3000
-npm run dev:api               # API: localhost:8787
+npm run dev:backend           # API: localhost:8787
 ```
 
 ## Documentation
 
-| Type            | Link                                               | Description                           |
-| --------------- | -------------------------------------------------- | ------------------------------------- |
-| **🔗 API Docs** | **[docs.mirubato.com](https://docs.mirubato.com)** | **Complete TypeScript API reference** |
-| 📖 Development  | [Setup Guide](docs/DESIGN.md)                      | Architecture and development guide    |
-| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                       | Debugging and troubleshooting         |
+| Type            | Link                                                         | Description                        |
+| --------------- | ------------------------------------------------------------ | ---------------------------------- |
+| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**    |
+| 📖 Development  | [Setup Guide](docs/DESIGN.md)                                | Architecture and development guide |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting      |
+| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API        |
 
 ## Technology Stack
 
@@ -38,15 +39,15 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 
 ## Project Info
 
-|                   |                                                                        |
-| ----------------- | ---------------------------------------------------------------------- |
-| **🌐 Website**    | [mirubato.com](https://mirubato.com)                                   |
-| **📚 API Docs**   | [docs.mirubato.com](https://docs.mirubato.com)                         |
-| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato)     |
-| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)            |
-| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                                |
-| **📄 License**    | MIT ([details](docs/LICENSE.md))                                       |
-| **🚧 Status**     | Phase 3: Advanced Features (Test coverage: 74% backend, 65%+ frontend) |
+|                   |                                                                    |
+| ----------------- | ------------------------------------------------------------------ |
+| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
+| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
+| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
+| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
+| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
+| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
+| **🚧 Status**     | Production: Migration Complete (Test coverage: 135 tests passing)  |
 
 ---
 

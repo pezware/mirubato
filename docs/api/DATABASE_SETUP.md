@@ -2,7 +2,7 @@
 
 ## Overview
 
-The API service uses Cloudflare D1 databases that are shared with the existing backend service. This ensures data consistency during the migration period.
+The API service uses Cloudflare D1 (SQLite) databases for data persistence. The service supports local development, staging, and production environments with proper migration support.
 
 ## Database Configuration
 
@@ -18,13 +18,77 @@ The API service uses Cloudflare D1 databases that are shared with the existing b
 - **ID**: 4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e
 - **Binding**: DB
 
+### Local Development Database
+
+- **Name**: mirubato-dev
+- **ID**: `local-db` (placeholder - wrangler manages the actual file)
+- **Binding**: DB
+
+## Local Development Setup
+
+### Configuration (wrangler.toml)
+
+For local development, use a placeholder database_id:
+
+```toml
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "local-db"  # Placeholder - wrangler manages the actual file
+```
+
+### Database Reset Procedure
+
+When you encounter "no such table" errors, follow these steps:
+
+```bash
+# 1. Stop any running wrangler processes
+pkill -f "wrangler dev" || true
+
+# 2. Remove existing D1 state
+cd /Users/arbeitandy/src/public/mirubato/api
+rm -rf .wrangler/state/v3/d1/
+
+# 3. Start wrangler briefly to create the database
+npm run dev
+# Press Ctrl+C after it says "Ready on http://localhost:8787"
+
+# 4. Run migrations
+npm run db:migrate
+
+# 5. Start the dev server
+npm run dev
+```
+
+### Automated Reset Script
+
+Use the provided script for a clean reset:
+
+```bash
+cd /Users/arbeitandy/src/public/mirubato/api
+./scripts/reset-local-db.sh
+```
+
+## Database Schema
+
+The API uses the following migrations:
+
+1. `0001_initial_schema.sql` - Creates users, sync_data, and sync_metadata tables
+2. `0002_add_backend_compatibility.sql` - Adds backend compatibility tables  
+3. `0003_add_user_tracking_fields.sql` - Adds user tracking fields
+
+### Key Tables
+
+- **users**: User accounts and authentication data
+- **sync_data**: Generic storage for synced entities (JSON blobs)
+- **sync_metadata**: Sync tracking information per user
+
 ## Important Notes
 
-1. **Shared Databases**: The API service uses the same D1 databases as the backend service. This is intentional to ensure both services can operate on the same data during the transition period.
-
-2. **No KV Storage Needed**: Unlike the backend service, the API service uses stateless JWT tokens for magic links, so it doesn't require KV storage.
-
-3. **Database Migrations**: Since we're using existing databases, no new migrations are needed. The API service is designed to work with the existing schema.
+1. **Local data is persistent** - Data persists between `wrangler dev` sessions unless you explicitly clear it
+2. **Separate environments** - Local development database is completely separate from staging/production
+3. **Migrations are idempotent** - It's safe to run migrations multiple times
+4. **No KV Storage Needed** - API service uses stateless JWT tokens, no KV required
 
 ## Deployment
 

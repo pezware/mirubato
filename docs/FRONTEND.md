@@ -81,6 +81,14 @@ Uses Zustand for global state management:
 npm test
 ```
 
+Current coverage: 100 tests passing across 5 test files
+
+- API client tests: 14 tests
+- Auth store tests: 20 tests
+- Logbook store tests: 21 tests
+- Utility tests: 31 tests
+- Additional API tests: 14 tests
+
 ### E2E Tests (Playwright)
 
 ```bash
@@ -101,14 +109,15 @@ npm run deploy:staging
 npm run deploy:production
 ```
 
-## Migration Status
+## Current Status
 
 - [x] Project setup
 - [x] Core architecture
 - [x] API client
 - [x] Auth flow
 - [x] Logbook functionality
-- [ ] Complete component migration
-- [ ] Full test coverage
+- [x] Migration from legacy frontend completed
+- [x] Production deployment active
+- [ ] Complete E2E test coverage
 - [ ] Performance optimization
-- [ ] Production deployment
+- [ ] UI/UX polish (roadmap priority 1)
