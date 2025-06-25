@@ -195,7 +195,7 @@ app.get('/', c => {
     
     <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; text-align: center; color: #718096; font-size: 0.9rem;">
       <p>Environment: ${c.env.ENVIRONMENT}</p>
-      <p>© 2024 Mirubato. All rights reserved.</p>
+      <p>© 2025 Mirubato. MIT License.</p>
     </div>
   </div>
 </body>
