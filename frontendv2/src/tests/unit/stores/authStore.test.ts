@@ -18,7 +18,7 @@ import { authApi } from '../../../api/auth'
 import { useLogbookStore } from '../../../stores/logbookStore'
 
 // Mock implementations
-const mockAuthApi = authApi as {
+const mockAuthApi = authApi as unknown as {
   requestMagicLink: ReturnType<typeof vi.fn>
   verifyMagicLink: ReturnType<typeof vi.fn>
   googleLogin: ReturnType<typeof vi.fn>
@@ -50,7 +50,7 @@ describe('authStore', () => {
     mockSyncWithServer.mockResolvedValue(undefined)
     mockLogbookStore.getState = vi.fn(() => ({
       syncWithServer: mockSyncWithServer,
-    }))
+    })) as unknown as ReturnType<typeof vi.fn>
 
     // Reset localStorage mock
     const localStorageMock = global.localStorage as unknown as {
@@ -298,7 +298,12 @@ describe('authStore', () => {
     it('should logout successfully and clear state', async () => {
       // Set initial authenticated state
       useAuthStore.setState({
-        user: { id: '1', email: 'test@example.com' },
+        user: {
+          id: '1',
+          email: 'test@example.com',
+          authProvider: 'magic_link' as const,
+          createdAt: '2024-01-01T00:00:00Z',
+        },
         isAuthenticated: true,
       })
 
@@ -316,7 +321,12 @@ describe('authStore', () => {
     it('should clear state even if logout API call fails', async () => {
       // Set initial authenticated state
       useAuthStore.setState({
-        user: { id: '1', email: 'test@example.com' },
+        user: {
+          id: '1',
+          email: 'test@example.com',
+          authProvider: 'magic_link' as const,
+          createdAt: '2024-01-01T00:00:00Z',
+        },
         isAuthenticated: true,
         error: 'Some error',
       })

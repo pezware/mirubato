@@ -52,15 +52,15 @@ const ENTRIES_KEY = 'mirubato:logbook:entries'
 const GOALS_KEY = 'mirubato:logbook:goals'
 
 // Debounce helper
-function debounce<T extends (...args: unknown[]) => void>(
+function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): T {
   let timeout: number | null = null
-  return (...args: Parameters<T>) => {
+  return ((...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout)
     timeout = window.setTimeout(() => func(...args), wait)
-  }
+  }) as T
 }
 
 // Debounced localStorage write (for non-critical updates)
@@ -131,8 +131,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               JSON.stringify(serverEntries)
             )
           })
-          .catch(() => {
-            console.warn('Background sync failed:', error)
+          .catch(err => {
+            console.warn('Background sync failed:', err)
             // Keep using local data
           })
       }
@@ -194,8 +194,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               )
             }
           })
-          .catch(() => {
-            console.warn('Background sync failed for new entry:', error)
+          .catch(err => {
+            console.warn('Background sync failed for new entry:', err)
             // Entry remains in local storage
           })
       }

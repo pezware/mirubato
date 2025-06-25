@@ -49,7 +49,7 @@ describe('transformLegacyEntry', () => {
 
       const legacy = {
         id: 'test-3',
-        timestamp: null as unknown,
+        timestamp: null as unknown as string,
         duration: 60,
         type: 'performance' as const,
         instrument: 'piano' as const,
@@ -208,7 +208,7 @@ describe('transformLegacyEntry', () => {
         instrument: 'piano' as const,
         pieces: [
           {
-            title: undefined as unknown,
+            title: undefined as unknown as string,
           },
         ],
         techniques: [],
@@ -230,7 +230,7 @@ describe('transformLegacyEntry', () => {
         instrument: 'piano' as const,
         techniques: [],
         tags: [],
-      } as unknown
+      } as any
 
       const result = transformLegacyEntry(legacy)
       expect(result.pieces).toEqual([])

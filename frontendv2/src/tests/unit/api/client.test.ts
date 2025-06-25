@@ -20,18 +20,26 @@ describe('API Client', () => {
 
     // Mock window.location
     delete (window as { location?: Location }).location
-    window.location = {
-      ...originalLocation,
-      hostname: 'localhost',
-      pathname: '/',
-      href: '/',
-    } as Location
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...originalLocation,
+        hostname: 'localhost',
+        pathname: '/',
+        href: '/',
+      } as Location,
+      writable: true,
+      configurable: true,
+    })
   })
 
   afterEach(() => {
     vi.clearAllMocks()
     vi.resetModules()
-    window.location = originalLocation
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    })
   })
 
   describe('API URL Configuration', () => {
@@ -268,7 +276,7 @@ describe('API Client', () => {
               interceptors: {
                 request: { use: vi.fn() },
                 response: {
-                  use: vi.fn((success, error) => {
+                  use: vi.fn((_success, error) => {
                     capturedErrorHandler = error
                   }),
                 },
@@ -300,7 +308,7 @@ describe('API Client', () => {
               interceptors: {
                 request: { use: vi.fn() },
                 response: {
-                  use: vi.fn((success, error) => {
+                  use: vi.fn((_success, error) => {
                     capturedErrorHandler = error
                   }),
                 },
@@ -333,7 +341,7 @@ describe('API Client', () => {
               interceptors: {
                 request: { use: vi.fn() },
                 response: {
-                  use: vi.fn((success, error) => {
+                  use: vi.fn((_success, error) => {
                     capturedErrorHandler = error
                   }),
                 },
@@ -367,7 +375,7 @@ describe('API Client', () => {
               interceptors: {
                 request: { use: vi.fn() },
                 response: {
-                  use: vi.fn((success, error) => {
+                  use: vi.fn((_success, error) => {
                     capturedErrorHandler = error
                   }),
                 },
@@ -396,7 +404,7 @@ describe('API Client', () => {
               interceptors: {
                 request: { use: vi.fn() },
                 response: {
-                  use: vi.fn((success, error) => {
+                  use: vi.fn((_success, error) => {
                     capturedErrorHandler = error
                   }),
                 },
