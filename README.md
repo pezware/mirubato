@@ -2,7 +2,7 @@
 
 Open-source practice journal for musicians - track sessions, log progress, and analyze your musical journey.
 
-![mirubato Screenshot](https://github.com/pezware/mirubato/blob/main/frontendv2/public/mirubato-screenshot.jpg)
+![mirubato Screenshot](https://raw.githubusercontent.com/pezware/mirubato/main/frontendv2/public/mirubato-screenshot.jpg)
 
 ## Features
 
