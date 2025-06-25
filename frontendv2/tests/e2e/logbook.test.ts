@@ -51,10 +51,20 @@ test.describe('Logbook Features', () => {
     // Wait for the modal to close and entry to appear
     await page.waitForTimeout(1000)
 
-    // Verify entry appears in the list
-    await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
+    // Verify entry appears in the list - the duration is always visible
     await expect(page.locator('text=30 minutes')).toBeVisible()
+
+    // Click on the entry to expand it (click on the entry card)
+    await page.locator('text=30 minutes').click()
+
+    // Now verify the pieces are visible in the expanded view
+    await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
     await expect(page.locator('text=Beethoven')).toBeVisible()
+
+    // Also verify the notes are visible
+    await expect(
+      page.locator('text=Worked on first movement, focusing on dynamics')
+    ).toBeVisible()
   })
 
   test('User can search logbook entries', async ({ page }) => {
@@ -97,9 +107,15 @@ test.describe('Logbook Features', () => {
     // Wait a bit for search to filter
     await page.waitForTimeout(500)
 
-    // Verify filtered results
+    // Verify filtered results - we should see 1 entry with 30 minutes
+    await expect(page.locator('text=30 minutes')).toBeVisible()
+    // And we should NOT see the Mozart entry (25 minutes)
+    await expect(page.locator('text=25 minutes')).not.toBeVisible()
+
+    // Click to expand the Beethoven entry and verify content
+    await page.locator('text=30 minutes').click()
     await expect(page.locator('text=Beethoven')).toBeVisible()
-    await expect(page.locator('text=Mozart')).not.toBeVisible()
+    await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
   })
 
   test('User can view reports', async ({ page }) => {
@@ -126,8 +142,8 @@ test.describe('Logbook Features', () => {
     await page.click('button:has-text("Save Entry")')
     await page.waitForTimeout(1000)
 
-    // Navigate to reports
-    await page.click('text=View Reports')
+    // Navigate to reports - updated button text
+    await page.click('text=View Reports →')
 
     // Wait for reports page to load
     await page.waitForSelector('text=Practice Reports', { timeout: 5000 })
