@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createMockContext } from '../../testUtils/mockContext'
 import { syncResolvers } from '../sync'
 import type { GraphQLContext } from '../../types/context'
+import type { KVNamespace } from '@cloudflare/workers-types'
 
 // Mock nanoid
 vi.mock('nanoid', () => ({
@@ -10,7 +11,7 @@ vi.mock('nanoid', () => ({
 
 describe('Sync Resolvers', () => {
   let ctx: GraphQLContext
-  let mockDb: any
+  let mockDb: unknown
 
   beforeEach(() => {
     // Create mock database
@@ -389,7 +390,7 @@ describe('Sync Resolvers', () => {
         get: vi.fn(),
         delete: vi.fn(),
         list: vi.fn(),
-      } as any
+      } as unknown as KVNamespace
 
       const result = await syncResolvers.Mutation.updateSyncMetadata(
         null,

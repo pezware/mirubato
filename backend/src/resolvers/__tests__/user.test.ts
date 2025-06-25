@@ -243,7 +243,7 @@ describe('User Resolvers', () => {
         const user = { ...createMockUser(), preferences: undefined }
 
         const result = await userResolvers.User.preferences(
-          user as any,
+          user as unknown as BackendUser,
           {},
           ctx
         )
