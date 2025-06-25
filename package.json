@@ -6,7 +6,9 @@
   "workspaces": [
     "shared",
     "frontend",
-    "backend"
+    "frontendv2",
+    "backend",
+    "api"
   ],
   "scripts": {
     "dev": "npm run dev -w @mirubato/frontend",
@@ -24,6 +26,9 @@
     "codegen:watch": "npm run codegen:watch -w @mirubato/frontend",
     "codegen:check": "./scripts/check-graphql-drift.sh",
     "docs:generate": "echo 'Documentation generation not implemented yet'",
+    "validate": "./scripts/validate-all.sh",
+    "validate:fix": "npm run lint -- --fix && npm run format",
+    "format": "prettier --write .",
     "prepare": "node -e \"try { require.resolve('husky'); require('child_process').execSync('husky install', {stdio: 'inherit'}); } catch (e) { console.log('Skipping husky install'); }\""
   },
   "devDependencies": {

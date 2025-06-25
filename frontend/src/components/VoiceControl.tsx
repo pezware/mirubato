@@ -353,7 +353,9 @@ function extractVoiceInfo(score: Score): VoiceInfo[] {
 /**
  * Get staff type from clef
  */
-function getStaffType(clef: string | undefined): 'treble' | 'bass' | 'alto' | 'tenor' {
+function getStaffType(
+  clef: string | undefined
+): 'treble' | 'bass' | 'alto' | 'tenor' {
   const clefMap: Record<string, 'treble' | 'bass' | 'alto' | 'tenor'> = {
     TREBLE: 'treble',
     BASS: 'bass',

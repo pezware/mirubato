@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -15,7 +12,7 @@ export default {
             100: '#ecfccb',
             200: '#d9f99d',
             300: '#bef264',
-            400: '#a3e635',  // Main leaf color
+            400: '#a3e635', // Main leaf color
             500: '#84cc16',
             600: '#65a30d',
             700: '#4d7c0f',
@@ -27,27 +24,27 @@ export default {
             50: '#fafafa',
             100: '#f4f4f5',
             200: '#e4e4e7',
-            300: '#d4d4d8',  // Light weathered wood
+            300: '#d4d4d8', // Light weathered wood
             400: '#a1a1aa',
-            500: '#71717a',  // Medium weathered wood
+            500: '#71717a', // Medium weathered wood
             600: '#52525b',
             700: '#3f3f46',
-            800: '#27272a',  // Dark shadows
+            800: '#27272a', // Dark shadows
             900: '#18181b',
           },
           // Accent colors
           accent: {
-            warm: '#fbbf24',  // Warm sunlight
-            cool: '#60a5fa',  // Sky blue
+            warm: '#fbbf24', // Warm sunlight
+            cool: '#60a5fa', // Sky blue
             earth: '#92400e', // Brown earth tones
-          }
-        }
+          },
+        },
       },
       fontFamily: {
-        'lexend': ['Lexend', 'system-ui', 'sans-serif'],
-        'display': ['Inter', 'system-ui', 'sans-serif'],
-        'body': ['Inter', 'system-ui', 'sans-serif'],
-        'mono': ['JetBrains Mono', 'monospace'],
+        lexend: ['Lexend', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       backgroundImage: {
         'mirubato-cover': "url('/mirubato-cover.jpeg')",

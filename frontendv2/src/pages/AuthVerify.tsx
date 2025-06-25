@@ -32,9 +32,12 @@ export default function AuthVerifyPage() {
         setTimeout(() => {
           navigate('/logbook')
         }, 2000)
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as Error & {
+          response?: { data?: { error?: string } }
+        }
         setVerificationError(
-          err.response?.data?.error || 'Failed to verify magic link'
+          error.response?.data?.error || 'Failed to verify magic link'
         )
       } finally {
         setIsVerifying(false)

@@ -15,8 +15,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "references": [
-    { "path": "./frontend" },
-    { "path": "./backend" }
-  ]
+  "references": [{ "path": "./frontend" }, { "path": "./backend" }]
 }

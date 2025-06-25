@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createMockContext, createMockUser } from '../../testUtils/mockContext'
 import { userResolvers } from '../user'
 import type { GraphQLContext } from '../../types/context'
-import { UserService } from '../../services/user'
 
 // Mock UserService
 const mockUserService = {
@@ -244,7 +243,7 @@ describe('User Resolvers', () => {
         const user = { ...createMockUser(), preferences: undefined }
 
         const result = await userResolvers.User.preferences(
-          user as any,
+          user as unknown as BackendUser,
           {},
           ctx
         )

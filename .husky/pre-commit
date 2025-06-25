@@ -1,15 +1,38 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "🚀 Running pre-commit checks..."
+
 # Run lint-staged for formatting and linting
+echo "📝 Running lint-staged..."
 npx lint-staged
+if [ $? -ne 0 ]; then
+  echo "❌ Lint-staged failed. Please fix the issues and try again."
+  exit 1
+fi
 
 # Run unit tests before commit
+echo "🧪 Running unit tests..."
 npm run test:unit -- --passWithNoTests --watchAll=false
+if [ $? -ne 0 ]; then
+  echo "❌ Unit tests failed. Please fix the failing tests and try again."
+  exit 1
+fi
 
 # Check TypeScript types
+echo "🔍 Checking TypeScript types..."
 npm run type-check
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript type check failed. Please fix the type errors and try again."
+  exit 1
+fi
 
 # Check GraphQL schema alignment
 echo "🔍 Checking GraphQL schema alignment..."
 npm run codegen:check
+if [ $? -ne 0 ]; then
+  echo "❌ GraphQL schema is out of sync. Please run 'npm run codegen' and commit the changes."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"

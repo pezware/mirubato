@@ -96,7 +96,10 @@ export const StaffDisplayOptions: React.FC<StaffDisplayOptionsProps> = ({
   const [showOpacityControls, setShowOpacityControls] = useState(false)
 
   const handleOptionChange = useCallback(
-    (key: keyof StaffDisplayOptions, value: boolean | number | Record<string, number>) => {
+    (
+      key: keyof StaffDisplayOptions,
+      value: boolean | number | Record<string, number>
+    ) => {
       onChange({
         ...options,
         [key]: value,

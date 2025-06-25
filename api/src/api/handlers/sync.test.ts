@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { syncHandler } from './sync'
 import type { Env } from '../../index'
 import type { Variables } from '../middleware'
+import type { D1Database } from '@cloudflare/workers-types'
 
 // Mock database instance
 const mockDbInstance = {
@@ -20,19 +21,22 @@ vi.mock('../../utils/database', () => ({
 }))
 
 vi.mock('../middleware', () => ({
-  authMiddleware: (c: any, next: any) => {
-    c.set('userId', 'test-user-123')
+  authMiddleware: (c: unknown, next: () => Promise<void>) => {
+    const context = c as any
+    context.set('userId', 'test-user-123')
     return next()
   },
-  validateBody: (schema: any) => async (c: any, next: any) => {
-    try {
-      const body = await c.req.json()
-      c.set('validatedBody', body)
-      return next()
-    } catch (e) {
-      return c.json({ error: 'Invalid body' }, 400)
-    }
-  },
+  validateBody:
+    (_schema: unknown) => async (c: unknown, next: () => Promise<void>) => {
+      try {
+        const body = await (c as any).req.json()
+        const context = c as any
+        context.set('validatedBody', body)
+        return next()
+      } catch (e) {
+        return (c as any).json({ error: 'Invalid body' }, 400)
+      }
+    },
 }))
 
 describe('Sync Handlers', () => {
@@ -82,12 +86,12 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data).toHaveProperty('entries')
       expect(data).toHaveProperty('goals')
       expect(data).toHaveProperty('syncToken')
@@ -109,12 +113,12 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data.entries).toHaveLength(0)
       expect(data.goals).toHaveLength(0)
       expect(data.syncToken).toBeTruthy()
@@ -156,12 +160,12 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data.success).toBe(true)
       expect(data.syncToken).toBeTruthy()
       expect(data.conflicts).toEqual([])
@@ -201,7 +205,7 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
@@ -228,20 +232,20 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
         ENVIRONMENT: 'development',
       } as Env)
 
       // The endpoint should return 200 but with conflicts listed
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data.success).toBe(true)
-      expect(data.conflicts).toHaveLength(1)
-      expect(data.conflicts[0]).toMatchObject({
+      expect(data.conflicts as unknown[]).toHaveLength(1)
+      expect((data.conflicts as unknown[])[0]).toMatchObject({
         entityId: 'entry-1',
         entityType: 'logbook_entry',
-        error: 'Database error',
+        reason: 'Database error',
       })
     })
   })
@@ -282,12 +286,12 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data.uploaded).toBe(1)
       expect(data.downloaded).toBe(1)
       expect(data.conflicts).toEqual([])
@@ -314,12 +318,12 @@ describe('Sync Handlers', () => {
       })
 
       const res = await app.fetch(req, {
-        DB: { prepare: vi.fn() } as any,
+        DB: { prepare: vi.fn() } as unknown as D1Database,
       } as Env)
 
       expect(res.status).toBe(200)
 
-      const data = (await res.json()) as any
+      const data = (await res.json()) as Record<string, unknown>
       expect(data.lastSyncTime).toBe('2025-06-23T22:32:52.797Z')
       expect(data.syncToken).toBe('token-123')
       expect(data.deviceCount).toBe(2)

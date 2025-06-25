@@ -5,8 +5,8 @@
  * Converts NoteDuration.8 -> NoteDuration.EIGHTH, etc.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
 const durationMap = {
   'NoteDuration.w': 'NoteDuration.WHOLE',
@@ -15,7 +15,7 @@ const durationMap = {
   'NoteDuration.8': 'NoteDuration.EIGHTH',
   'NoteDuration.16': 'NoteDuration.SIXTEENTH',
   'NoteDuration.32': 'NoteDuration.THIRTY_SECOND',
-};
+}
 
 const timeSignatureMap = {
   'TimeSignature."4/4"': 'TimeSignature.FOUR_FOUR',
@@ -25,7 +25,7 @@ const timeSignatureMap = {
   'TimeSignature."12/8"': 'TimeSignature.TWELVE_EIGHT',
   'TimeSignature."C"': 'TimeSignature.COMMON_TIME',
   'TimeSignature."2/2"': 'TimeSignature.CUT_TIME',
-};
+}
 
 const keySignatureMap = {
   'KeySignature."C major"': 'KeySignature.C_MAJOR',
@@ -54,52 +54,61 @@ const keySignatureMap = {
   'KeySignature."C minor"': 'KeySignature.C_MINOR',
   'KeySignature."F minor"': 'KeySignature.F_MINOR',
   'KeySignature."Bb minor"': 'KeySignature.B_FLAT_MINOR',
-};
+}
 
 const clefMap = {
   'Clef."treble"': 'Clef.TREBLE',
   'Clef."bass"': 'Clef.BASS',
   'Clef."alto"': 'Clef.ALTO',
   'Clef."tenor"': 'Clef.TENOR',
-};
+}
 
 function fixFile(filePath) {
-  let content = fs.readFileSync(filePath, 'utf8');
-  
+  let content = fs.readFileSync(filePath, 'utf8')
+
   // Replace durations
   Object.entries(durationMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace('.', '\\.'), 'g'), to);
-  });
-  
+    content = content.replace(new RegExp(from.replace('.', '\\.'), 'g'), to)
+  })
+
   // Replace time signatures
   Object.entries(timeSignatureMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
-  });
-  
+    content = content.replace(
+      new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'),
+      to
+    )
+  })
+
   // Replace key signatures
   Object.entries(keySignatureMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
-  });
-  
+    content = content.replace(
+      new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'),
+      to
+    )
+  })
+
   // Replace clefs
   Object.entries(clefMap).forEach(([from, to]) => {
-    content = content.replace(new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'), to);
-  });
-  
+    content = content.replace(
+      new RegExp(from.replace(/[."/\\]/g, '\\$&'), 'g'),
+      to
+    )
+  })
+
   // Remove unused import
-  content = content.replace(/,\s*DynamicMarking\s*(?=\s*\})/g, '');
-  
-  fs.writeFileSync(filePath, content);
-  console.log(`✅ Fixed ${path.basename(filePath)}`);
+  content = content.replace(/,\s*DynamicMarking\s*(?=\s*\})/g, '')
+
+  fs.writeFileSync(filePath, content)
+  console.log(`✅ Fixed ${path.basename(filePath)}`)
 }
 
 // Process all TypeScript files in the output directory
-const outputDir = path.join(__dirname, 'output');
-const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.ts'));
+const outputDir = path.join(__dirname, 'output')
+const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.ts'))
 
 files.forEach(file => {
-  const filePath = path.join(outputDir, file);
-  fixFile(filePath);
-});
+  const filePath = path.join(outputDir, file)
+  fixFile(filePath)
+})
 
-console.log(`\n✨ Fixed ${files.length} files`);
+console.log(`\n✨ Fixed ${files.length} files`)

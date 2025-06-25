@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { DatabaseHelpers, calculateChecksum, generateId } from './database'
-import type { D1Database } from '@cloudflare/workers-types'
+import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types'
 
 describe('DatabaseHelpers', () => {
   let mockDb: D1Database
@@ -28,12 +28,14 @@ describe('DatabaseHelpers', () => {
   describe('upsertUser', () => {
     it('should insert a new user', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
+      const mockFirst = vi.fn().mockResolvedValue(null) // No existing user
       mockDb.prepare = vi.fn(
         () =>
           ({
             bind: vi.fn().mockReturnThis(),
             run: mockRun,
-          }) as any
+            first: mockFirst,
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertUser({
@@ -51,12 +53,19 @@ describe('DatabaseHelpers', () => {
     it('should update existing user on conflict', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
+      const existingUser = {
+        id: 'existing-user-id',
+        email: 'test@example.com',
+        displayName: 'Old Name',
+      }
+      const mockFirst = vi.fn().mockResolvedValue(existingUser)
       mockDb.prepare = vi.fn(
         () =>
           ({
             bind: mockBind,
             run: mockRun,
-          }) as any
+            first: mockFirst,
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertUser({
@@ -70,7 +79,7 @@ describe('DatabaseHelpers', () => {
       // the exact bind parameters without mocking findUserByEmail
       expect(mockBind).toHaveBeenCalled()
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('ON CONFLICT')
+        expect.stringContaining('UPDATE users')
       )
     })
   })
@@ -92,7 +101,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             all: mockAll,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const result = await dbHelpers.getSyncData('user-123')
@@ -110,7 +119,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             all: vi.fn().mockResolvedValue({ results: [], success: true }),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.getSyncData('user-123', 'logbook_entry')
@@ -127,7 +136,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             all: vi.fn().mockRejectedValue(new Error('Database error')),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const result = await dbHelpers.getSyncData('user-123')
@@ -145,7 +154,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       const testData = {
@@ -166,7 +175,8 @@ describe('DatabaseHelpers', () => {
         'entry-456',
         JSON.stringify(testData.data),
         'checksum-789',
-        1
+        1,
+        null // deleted_at
       )
       expect(mockRun).toHaveBeenCalled()
     })
@@ -178,7 +188,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.upsertSyncData({
@@ -195,7 +205,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should log and rethrow database errors', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Database connection failed')
 
       mockDb.prepare = vi.fn(
@@ -203,7 +215,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: vi.fn().mockRejectedValue(dbError),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await expect(
@@ -234,7 +246,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: mockBind,
             run: mockRun,
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await dbHelpers.updateSyncMetadata('user-123', 'sync-token-abc', 3)
@@ -244,7 +256,9 @@ describe('DatabaseHelpers', () => {
     })
 
     it('should handle errors with logging', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const dbError = new Error('Constraint violation')
 
       mockDb.prepare = vi.fn(
@@ -252,7 +266,7 @@ describe('DatabaseHelpers', () => {
           ({
             bind: vi.fn().mockReturnThis(),
             run: vi.fn().mockRejectedValue(dbError),
-          }) as any
+          }) as unknown as D1PreparedStatement
       )
 
       await expect(

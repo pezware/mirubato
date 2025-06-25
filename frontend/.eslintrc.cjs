@@ -25,6 +25,8 @@ module.exports = {
         caughtErrorsIgnorePattern: '^_',
       },
     ],
+    // Disable no-extra-semi to avoid conflicts with prettier
+    'no-extra-semi': 'off',
   },
   overrides: [
     {

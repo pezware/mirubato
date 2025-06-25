@@ -18,21 +18,24 @@ export default function LogbookReports() {
     )
 
     switch (timeFilter) {
-      case '7days':
+      case '7days': {
         const sevenDaysAgo = new Date(startOfToday)
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
         return entries.filter(e => new Date(e.timestamp) >= sevenDaysAgo)
+      }
 
-      case '30days':
+      case '30days': {
         const thirtyDaysAgo = new Date(startOfToday)
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
         return entries.filter(e => new Date(e.timestamp) >= thirtyDaysAgo)
+      }
 
-      case 'thisMonth':
+      case 'thisMonth': {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
         return entries.filter(e => new Date(e.timestamp) >= startOfMonth)
+      }
 
-      case 'lastMonth':
+      case 'lastMonth': {
         const startOfLastMonth = new Date(
           now.getFullYear(),
           now.getMonth() - 1,
@@ -43,6 +46,7 @@ export default function LogbookReports() {
           const date = new Date(e.timestamp)
           return date >= startOfLastMonth && date < startOfThisMonth
         })
+      }
 
       case 'allTime':
       default:

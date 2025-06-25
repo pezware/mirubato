@@ -41,7 +41,10 @@ describe('Sync API Integration Tests', () => {
       )
 
       expect(pullResponse1.status).toBe(200)
-      const pullData1 = await pullResponse1.json()
+      const pullData1 = (await pullResponse1.json()) as {
+        entries: any[]
+        goals: any[]
+      }
       expect(pullData1.entries).toEqual([])
       expect(pullData1.goals).toEqual([])
 
@@ -79,7 +82,11 @@ describe('Sync API Integration Tests', () => {
       )
 
       expect(pushResponse.status).toBe(200)
-      const pushData = await pushResponse.json()
+      const pushData = (await pushResponse.json()) as {
+        success: boolean
+        syncToken: string
+        conflicts: any[]
+      }
       expect(pushData.success).toBe(true)
       expect(pushData.syncToken).toBeTruthy()
       expect(pushData.conflicts).toEqual([])
@@ -97,7 +104,7 @@ describe('Sync API Integration Tests', () => {
       )
 
       expect(pullResponse2.status).toBe(200)
-      const pullData2 = await pullResponse2.json()
+      const pullData2 = (await pullResponse2.json()) as { entries: any[] }
       expect(pullData2.entries).toHaveLength(1)
       expect(pullData2.entries[0].id).toBe(testEntry.id)
       expect(pullData2.entries[0].notes).toBe('Great practice session!')
@@ -114,7 +121,10 @@ describe('Sync API Integration Tests', () => {
       )
 
       expect(statusResponse.status).toBe(200)
-      const statusData = await statusResponse.json()
+      const statusData = (await statusResponse.json()) as {
+        entityCount: number
+        lastSyncTime: string
+      }
       expect(statusData.entityCount).toBe(1)
       expect(statusData.lastSyncTime).toBeTruthy()
     })
@@ -166,7 +176,9 @@ describe('Sync API Integration Tests', () => {
       )
 
       expect(batchResponse.status).toBe(200)
-      const batchData = await batchResponse.json()
+      const batchData = (await batchResponse.json()) as {
+        conflicts: Array<{ entityId: string }>
+      }
       expect(batchData.conflicts).toHaveLength(1)
       expect(batchData.conflicts[0].entityId).toBe(entity1.id)
     })

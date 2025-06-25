@@ -28,9 +28,10 @@ export const useAuthStore = create<AuthState>(set => ({
     try {
       await authApi.requestMagicLink(email)
       set({ isLoading: false })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
       set({
-        error: error.response?.data?.error || 'Failed to send magic link',
+        error: err.response?.data?.error || 'Failed to send magic link',
         isLoading: false,
       })
       throw error
@@ -49,12 +50,13 @@ export const useAuthStore = create<AuthState>(set => ({
 
       // Trigger sync after successful authentication
       const { syncWithServer } = useLogbookStore.getState()
-      syncWithServer().catch(error => {
+      syncWithServer().catch((error: unknown) => {
         console.warn('Initial sync failed:', error)
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
       set({
-        error: error.response?.data?.error || 'Invalid or expired token',
+        error: err.response?.data?.error || 'Invalid or expired token',
         isLoading: false,
       })
       throw error
@@ -74,21 +76,25 @@ export const useAuthStore = create<AuthState>(set => ({
       // Sync logbook after successful Google login
       const { syncWithServer } = useLogbookStore.getState()
       await syncWithServer()
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = 'Google login failed'
+      const err = error as Error & {
+        response?: { status?: number; data?: { error?: string } }
+        message?: string
+      }
 
       // Handle specific error cases
-      if (error.response?.status === 401) {
+      if (err.response?.status === 401) {
         errorMessage = 'Invalid Google credentials. Please try again.'
-      } else if (error.response?.status === 403) {
+      } else if (err.response?.status === 403) {
         errorMessage =
           'Access denied. Please check your Google account permissions.'
-      } else if (error.response?.status === 500) {
+      } else if (err.response?.status === 500) {
         errorMessage = 'Server error. Please try again later.'
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error
-      } else if (error.message) {
-        errorMessage = error.message
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error
+      } else if (err.message) {
+        errorMessage = err.message
       }
 
       set({
@@ -128,7 +134,7 @@ export const useAuthStore = create<AuthState>(set => ({
         isAuthenticated: true,
         isLoading: false,
       })
-    } catch (error) {
+    } catch {
       // Token is invalid, clear auth state
       localStorage.removeItem('auth-token')
       localStorage.removeItem('refresh-token')

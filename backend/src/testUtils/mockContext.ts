@@ -34,11 +34,11 @@ export function createMockContext(
 }
 
 export function createMockDatabase(): D1Database {
-  const mockResults = new Map<string, any>()
+  const mockResults = new Map<string, unknown>()
 
   const createPreparedStatement = (query: string) => {
     const statement = {
-      bind: (..._params: any[]) => statement,
+      bind: (..._params: unknown[]) => statement,
       first: async () => mockResults.get(`${query}:first`) || null,
       all: async () => ({
         success: true,
@@ -66,14 +66,14 @@ export function createMockDatabase(): D1Database {
           changes: 0,
         },
       }),
-      raw: async () => [[], []] as [string[], ...any[]],
+      raw: async () => [[], []] as [string[], ...unknown[]],
     }
     return statement
   }
 
   return {
     prepare: createPreparedStatement,
-    batch: async (statements: any[]) =>
+    batch: async (statements: unknown[]) =>
       statements.map(() => ({
         success: true,
         results: [],
@@ -115,7 +115,7 @@ export function createMockKVNamespace(): KVNamespace {
   } as unknown as KVNamespace
 }
 
-export function createMockUser(overrides: any = {}) {
+export function createMockUser(overrides: Record<string, unknown> = {}) {
   return {
     id: 'test-user-123',
     email: 'test@example.com',

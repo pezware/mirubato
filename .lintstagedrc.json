@@ -1,11 +1,21 @@
 {
   "backend/**/*.{ts,tsx}": [
     "cd backend && eslint --fix",
-    "cd backend && vitest run --no-coverage"
+    "cd backend && vitest related --run --no-coverage --passWithNoTests"
   ],
   "frontend/**/*.{ts,tsx}": [
     "cd frontend && eslint --fix",
     "cd frontend && jest --bail --findRelatedTests --passWithNoTests"
   ],
-  "*.{js,jsx,ts,tsx,json,css,md}": ["prettier --write"]
+  "frontendv2/**/*.{ts,tsx}": [
+    "cd frontendv2 && eslint --fix",
+    "cd frontendv2 && vitest related --run --no-coverage --passWithNoTests"
+  ],
+  "api/**/*.{ts,tsx}": [
+    "cd api && eslint --fix",
+    "cd api && vitest related --run --no-coverage --passWithNoTests"
+  ],
+  "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,cjs,mjs,graphql}": [
+    "prettier --write"
+  ]
 }

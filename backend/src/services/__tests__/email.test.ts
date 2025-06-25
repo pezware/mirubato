@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { EmailService } from '../email'
 import type { Env } from '../../types/context'
+import type { D1Database } from '@cloudflare/workers-types'
 
 // Mock global fetch
 global.fetch = vi.fn()
@@ -14,8 +15,8 @@ describe('EmailService', () => {
 
     mockEnv = {
       RESEND_API_KEY: 'test-resend-api-key',
-      ENVIRONMENT: 'test',
-      DB: {} as any,
+      ENVIRONMENT: 'development',
+      DB: {} as unknown as D1Database,
       JWT_SECRET: 'test-secret',
       RATE_LIMITER: undefined,
       CF_VERSION_METADATA: { id: 'test-version' },
@@ -37,7 +38,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail(validEmail, validToken)
 
@@ -62,7 +65,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail(validEmail, validToken)
 
@@ -97,7 +102,9 @@ describe('EmailService', () => {
         status: 400,
         text: vi.fn().mockResolvedValue('Invalid API key'),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await expect(
         emailService.sendMagicLinkEmail(validEmail, validToken)
@@ -118,7 +125,9 @@ describe('EmailService', () => {
         status: 429,
         text: vi.fn().mockResolvedValue('Rate limit exceeded'),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await expect(
         emailService.sendMagicLinkEmail(validEmail, validToken)
@@ -130,7 +139,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       const emailWithSpecialChars = 'user+test@example.com'
       await emailService.sendMagicLinkEmail(emailWithSpecialChars, validToken)
@@ -148,7 +159,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail(validEmail, validToken)
 
@@ -169,7 +182,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail(validEmail, validToken)
 
@@ -202,7 +217,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockRejectedValue(new Error('Invalid JSON')),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       // Should not throw if response was ok
       await emailService.sendMagicLinkEmail('test@example.com', 'token')
@@ -231,7 +248,9 @@ describe('EmailService', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail('test@example.com', 'token')
 
@@ -245,14 +264,16 @@ describe('EmailService', () => {
     })
 
     it('should handle undefined environment', async () => {
-      mockEnv.ENVIRONMENT = undefined as any
+      mockEnv.ENVIRONMENT = undefined as unknown as 'development' | 'production'
       emailService = new EmailService(mockEnv)
 
       const mockResponse = {
         ok: true,
         json: vi.fn().mockResolvedValue({ id: 'email-123' }),
       }
-      vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+      vi.mocked(global.fetch).mockResolvedValue(
+        mockResponse as unknown as Response
+      )
 
       await emailService.sendMagicLinkEmail('test@example.com', 'token')
 

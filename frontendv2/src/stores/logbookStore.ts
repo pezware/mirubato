@@ -52,15 +52,16 @@ const ENTRIES_KEY = 'mirubato:logbook:entries'
 const GOALS_KEY = 'mirubato:logbook:goals'
 
 // Debounce helper
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): T {
   let timeout: number | null = null
-  return (...args: Parameters<T>) => {
+  return ((...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout)
     timeout = window.setTimeout(() => func(...args), wait)
-  }
+  }) as T
 }
 
 // Debounced localStorage write (for non-critical updates)
@@ -131,13 +132,13 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               JSON.stringify(serverEntries)
             )
           })
-          .catch(error => {
-            console.warn('Background sync failed:', error)
+          .catch(err => {
+            console.warn('Background sync failed:', err)
             // Keep using local data
           })
       }
-    } catch (error: any) {
-      console.error('Failed to load entries:', error)
+    } catch (error: unknown) {
+      console.error('Failed to load entries:', error as Error)
       set({
         entriesMap: new Map(),
         error: 'Failed to load entries',
@@ -194,12 +195,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               )
             }
           })
-          .catch(error => {
-            console.warn('Background sync failed for new entry:', error)
+          .catch(err => {
+            console.warn('Background sync failed for new entry:', err)
             // Entry remains in local storage
           })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
       throw error
     }
@@ -249,8 +250,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to update entry' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to update entry' })
       throw error
     }
   },
@@ -288,8 +290,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to delete entry' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to delete entry' })
       throw error
     }
   },
@@ -318,8 +321,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
         immediateLocalStorageWrite(GOALS_KEY, JSON.stringify(goals))
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to load goals' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to load goals' })
     }
   },
 
@@ -365,8 +369,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to create goal' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to create goal' })
       throw error
     }
   },
@@ -415,8 +420,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to update goal' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to update goal' })
       throw error
     }
   },
@@ -454,8 +460,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newGoalsMap.values()))
         )
       }
-    } catch (error: any) {
-      set({ error: error.response?.data?.error || 'Failed to delete goal' })
+    } catch (error: unknown) {
+      const err = error as Error & { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to delete goal' })
       throw error
     }
   },
@@ -507,7 +514,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         )
         // TODO: Implement batch push
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         error: 'Failed to sync with server. Continuing with local data.',
         isLoading: false,
