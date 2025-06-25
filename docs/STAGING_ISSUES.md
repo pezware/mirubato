@@ -100,3 +100,41 @@ After deployment, verify:
 2. Authentication works (test login)
 3. Sync endpoints return 200 status
 4. No COOP warnings in console
+
+## Update: Additional Issues Found (2025-06-25)
+
+### 5. Data Not Persisting to D1 Database
+
+**Problem**: Sync push operations were failing silently, causing logbook entries not to persist.
+
+**Fixes Applied**:
+
+1. Added debug logging to sync/push endpoint for staging environment
+2. Fixed SQL datetime function from `datetime('now')` to `CURRENT_TIMESTAMP` for D1 compatibility
+3. Added proper error logging in database upsert operations
+
+**Note**: The COOP warnings are coming from Google OAuth implementation and are not breaking functionality. They can be safely ignored.
+
+### 6. TypeScript Build Errors
+
+**Problem**: ManualEntryForm had TypeScript errors due to SplitButton onChange type changes.
+
+**Fix**: Wrapped onChange handlers to ensure they only receive defined values:
+
+```typescript
+onChange={(value) => value && setInstrument(value)}
+```
+
+## Next Steps for Debugging Staging
+
+After deploying these fixes, monitor the Cloudflare Workers logs to see:
+
+1. Debug output from sync operations
+2. Any database errors that were previously silent
+3. Verify data is persisting correctly after sync
+
+To view logs:
+
+```bash
+wrangler tail --env staging
+```
