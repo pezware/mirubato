@@ -230,6 +230,7 @@ describe('transformLegacyEntry', () => {
         instrument: 'piano' as const,
         techniques: [],
         tags: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
 
       const result = transformLegacyEntry(legacy)
