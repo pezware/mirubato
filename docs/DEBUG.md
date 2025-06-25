@@ -9,12 +9,10 @@ This document contains known issues, their solutions, and debugging tools for th
 ### Production Endpoints (Always Available)
 
 1. **Health Check**: `https://api.mirubato.com/health`
-
    - Shows version, environment, timestamp
    - First thing to check when debugging
 
 2. **GraphQL Playground**: `https://api.mirubato.com/graphql`
-
    - Test queries, check schema, debug auth
    - Introspection enabled for transparency
 
@@ -210,7 +208,6 @@ fi
 **Known Issues**:
 
 1. **EventBus Memory Leaks** (Fix exists in ImprovedEventBus.ts)
-
    - Unbounded event history growth
    - No cleanup of stale subscriptions
    - Solution: Use circular buffer, event type limits, WeakMap for callbacks
@@ -313,12 +310,10 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 ### Cloudflare Workers Specific
 
 1. **Bundle Size Limits**: Workers have 1MB limit
-
    - Solution: Code splitting, lazy loading
    - Remove unused dependencies
 
 2. **Environment Variables**: Must be configured in wrangler.toml
-
    - Solution: Check all environments have required vars
    - Use --env flag for non-production deployments
 

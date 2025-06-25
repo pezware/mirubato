@@ -72,7 +72,7 @@ export async function requestLogger(c: Context, next: Next) {
   await next()
 
   const duration = Date.now() - start
-  console.log(`${method} ${path} - ${c.res.status} (${duration}ms)`)
+  console.warn(`${method} ${path} - ${c.res.status} (${duration}ms)`)
 }
 
 // CORS headers for specific routes

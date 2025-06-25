@@ -14,7 +14,11 @@
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
     "db:migrate:production": "wrangler d1 migrations apply DB",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:unit": "vitest run --passWithNoTests",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
   },
   "keywords": [
     "cloudflare",
@@ -27,8 +31,12 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",
     "@types/node": "^20.11.1",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.1",
+    "vitest": "^3.2.4",
     "wrangler": "^4.20.5"
   },
   "dependencies": {

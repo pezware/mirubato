@@ -30,7 +30,7 @@ export default {
       const { scoreId, action, data } = message.body
 
       try {
-        console.log(`Processing job: ${action} for score ${scoreId}`)
+        console.warn(`Processing job: ${action} for score ${scoreId}`)
 
         switch (action) {
           case 'generate-previews':
@@ -77,7 +77,7 @@ async function generatePreviews(
   env: Env,
   browserService: BrowserRenderingService
 ): Promise<void> {
-  console.log(`Generating previews for score ${scoreId}`)
+  console.warn(`Generating previews for score ${scoreId}`)
 
   try {
     // Generate previews for first 5 pages
@@ -128,7 +128,7 @@ async function generatePreviews(
       .bind(scoreId)
       .run()
 
-    console.log(`Generated ${successCount} previews for score ${scoreId}`)
+    console.warn(`Generated ${successCount} previews for score ${scoreId}`)
   } catch (error) {
     console.error(`Preview generation failed for score ${scoreId}:`, error)
 
@@ -159,7 +159,7 @@ async function importFromIMSLP(
   env: Env,
   browserService: BrowserRenderingService
 ): Promise<void> {
-  console.log(`Importing from IMSLP for score ${scoreId}`)
+  console.warn(`Importing from IMSLP for score ${scoreId}`)
 
   try {
     // Scrape IMSLP page
@@ -210,7 +210,7 @@ async function importFromIMSLP(
       })
     }
 
-    console.log(`IMSLP import completed for score ${scoreId}`)
+    console.warn(`IMSLP import completed for score ${scoreId}`)
   } catch (error) {
     console.error(`IMSLP import failed for score ${scoreId}:`, error)
     throw error
@@ -225,7 +225,7 @@ async function downloadIMSLPPDF(
   data: { imslpUrl: string; pdfLinks: any[] },
   env: Env
 ): Promise<void> {
-  console.log(`Downloading PDF for score ${scoreId}`)
+  console.warn(`Downloading PDF for score ${scoreId}`)
 
   try {
     // Find the first valid PDF link
@@ -292,7 +292,7 @@ async function downloadIMSLPPDF(
       })
     }
 
-    console.log(`PDF downloaded successfully for score ${scoreId}`)
+    console.warn(`PDF downloaded successfully for score ${scoreId}`)
   } catch (error) {
     console.error(`PDF download failed for score ${scoreId}:`, error)
     throw error
@@ -307,7 +307,7 @@ async function extractMetadata(
   data: { r2Key: string },
   env: Env
 ): Promise<void> {
-  console.log(`Extracting metadata for score ${scoreId}`)
+  console.warn(`Extracting metadata for score ${scoreId}`)
 
   try {
     // Get PDF from R2
@@ -323,14 +323,14 @@ async function extractMetadata(
       // Get first page as image
       const browserService = new BrowserRenderingService(env as any)
       const pdfUrl = `https://scores.mirubato.com/files/${data.r2Key}`
-      const firstPage = await browserService.pdfToImage(pdfUrl, 1)
+      await browserService.pdfToImage(pdfUrl, 1)
 
       // Use AI to analyze the image
       // Note: This would require a vision model, which may not be available yet
-      console.log('AI metadata extraction not yet implemented')
+      console.warn('AI metadata extraction not yet implemented')
     }
 
-    console.log(`Metadata extraction completed for score ${scoreId}`)
+    console.warn(`Metadata extraction completed for score ${scoreId}`)
   } catch (error) {
     console.error(`Metadata extraction failed for score ${scoreId}:`, error)
     throw error

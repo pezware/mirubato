@@ -118,18 +118,15 @@ wrangler deploy --env dev
    **Root Cause**: TypeScript preserves full directory structure when importing from outside project root
 
    **Symptoms**:
-
    - Build succeeds locally but fails on Cloudflare
    - Entry point file exists but at different path than expected
    - TypeScript outputs to `dist/backend/src/index.js` instead of `dist/index.js`
 
    **Solution**:
-
    - Update `wrangler.toml` main entry: `main = "dist/backend/src/index.js"`
    - This happens when importing from `../shared` outside the backend directory
 
    **Prevention**:
-
    - Always check TypeScript output structure after adding shared imports
    - Run `npm run build` and verify the actual output path
 
@@ -138,19 +135,16 @@ wrangler deploy --env dev
    **Root Cause**: Circular dependency between wrangler.toml build command and npm scripts
 
    **Symptoms**:
-
    - `npm run dev` constantly rebuilds
    - Build completes but immediately restarts
    - High CPU usage during development
 
    **Solution**:
-
    - Remove `[build]` section from wrangler.toml
    - Use simple npm scripts without circular references
    - Let Wrangler handle TypeScript compilation directly
 
    **Prevention**:
-
    - Never reference npm scripts in wrangler.toml that call wrangler
    - Keep build commands simple and linear
 
@@ -159,19 +153,16 @@ wrangler deploy --env dev
    **Root Cause**: Cloudflare Workers don't have Node.js globals
 
    **Symptoms**:
-
    - Runtime error: "\_\_dirname is not defined"
    - Schema files can't be read at runtime
    - Works locally but fails in Workers environment
 
    **Solution**:
-
    - Pre-generate static content during build
    - Use build scripts to create importable modules
    - Example: `build-schema.js` generates `schema-content.js`
 
    **Prevention**:
-
    - Never use Node.js-specific globals in Workers code
    - Always bundle or pre-generate file content
 
@@ -180,19 +171,16 @@ wrangler deploy --env dev
    **Root Cause**: TypeScript compilation outputs JS files that Jest tries to process
 
    **Symptoms**:
-
    - Jest fails with "Unexpected token" errors
    - Tests pass individually but fail in CI
    - JavaScript files appear in shared/types directory
 
    **Solution**:
-
    - Add `shared/**/*.js` to .gitignore
    - Clean up generated JS files regularly
    - Configure Jest to ignore these files
 
    **Prevention**:
-
    - Never commit generated JavaScript files from TypeScript
    - Use source TypeScript files directly in monorepo
 
@@ -207,25 +195,21 @@ npm run build -- --verbose
 ### Build System Fallacies to Avoid
 
 1. **"Setting Root Directory in Cloudflare Changes npm install Location"**
-
    - FALSE: Cloudflare always runs npm install from repository root
    - Even with `/backend/` as root directory, dependencies install from root
    - Solution: Use repository root and `cd backend` in commands
 
 2. **"Frontend and Backend Should Have Same Build Process"**
-
    - FALSE: Frontend benefits from Vite's optimizations, backend from Wrangler's
    - Frontend doesn't import from outside its directory (no path issues)
    - Backend imports shared types, causing different TypeScript behavior
 
 3. **"Version Command is Required for Deployment"**
-
    - FALSE: Version command is for gradual rollouts only
    - Standard deployments should leave it empty
    - Using it without proper setup causes deployment failures
 
 4. **"Build Commands in wrangler.toml Improve Build Process"**
-
    - FALSE: They often create circular dependencies
    - Wrangler's built-in TypeScript support is sufficient
    - External build commands should be in npm scripts only

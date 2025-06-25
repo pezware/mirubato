@@ -27,12 +27,5 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Check GraphQL schema alignment
-echo "🔍 Checking GraphQL schema alignment..."
-npm run codegen:check
-if [ $? -ne 0 ]; then
-  echo "❌ GraphQL schema is out of sync. Please run 'npm run codegen' and commit the changes."
-  exit 1
-fi
 
 echo "✅ All pre-commit checks passed!"

@@ -183,7 +183,7 @@ export class BrowserRenderingService {
     }
 
     // Extract opus number
-    const opusMatch = markdown.match(/Opus[\/\s]+(.+?)[\n\r]/i)
+    const opusMatch = markdown.match(/Opus[/\s]+(.+?)[\n\r]/i)
     if (opusMatch) {
       metadata.opus = opusMatch[1].trim()
     }

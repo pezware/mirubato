@@ -123,7 +123,6 @@ score_metadata, user_scores
 ### Authentication Flow
 
 1. **Magic Link (Primary)**:
-
    - User enters email
    - System sends magic link via email
    - Link contains short-lived token

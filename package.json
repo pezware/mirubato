@@ -4,27 +4,22 @@
   "version": "0.1.0",
   "type": "module",
   "workspaces": [
-    "shared",
-    "frontend",
     "frontendv2",
-    "backend",
-    "api"
+    "api",
+    "scores"
   ],
   "scripts": {
-    "dev": "npm run dev -w @mirubato/frontend",
-    "dev:backend": "npm run dev -w @mirubato/backend",
-    "build": "cd backend && npm run build",
-    "build:frontend": "npm run build -w @mirubato/frontend",
-    "build:backend": "npm run build -w @mirubato/backend",
+    "dev": "npm run dev -w @mirubato/frontendv2",
+    "dev:api": "npm run dev -w @mirubato/api",
+    "build": "npm run build --workspaces",
+    "build:frontend": "npm run build -w @mirubato/frontendv2",
+    "build:api": "npm run build -w @mirubato/api",
     "lint": "npm run lint --workspaces",
     "type-check": "npm run type-check --workspaces",
     "test": "npm run test --workspaces",
     "test:unit": "npm run test:unit --workspaces",
     "test:integration": "npm run test:integration --workspaces",
     "test:coverage": "npm run test:coverage --workspaces",
-    "codegen": "npm run codegen -w @mirubato/frontend",
-    "codegen:watch": "npm run codegen:watch -w @mirubato/frontend",
-    "codegen:check": "./scripts/check-graphql-drift.sh",
     "docs:generate": "echo 'Documentation generation not implemented yet'",
     "validate": "./scripts/validate-all.sh",
     "validate:fix": "npm run lint -- --fix && npm run format",
@@ -37,7 +32,9 @@
     "@playwright/test": "^1.53.1",
     "husky": "^8.0.0",
     "lint-staged": "^16.1.0",
+    "merge-stream": "^2.0.0",
     "prettier": "^3.5.3",
+    "rollup": "^4.44.0",
     "wrangler": "^4.20.5"
   }
 }

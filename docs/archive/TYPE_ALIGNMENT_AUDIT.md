@@ -95,13 +95,11 @@ const sessionInput: any = {
 ### Recommendations
 
 1. **Immediate Actions**:
-
    - Fix the tempo field mapping in session sync
    - Add comprehensive undefined/null filtering before GraphQL mutations
    - Run `npm run codegen` after any GraphQL schema changes
 
 2. **Short-term Fixes**:
-
    - Create strict type guards for GraphQL inputs
    - Add validation layer before mutations
    - Improve error messages to show exactly which fields failed
@@ -153,14 +151,12 @@ After implementing fixes, test:
 #### Fixes Applied (June 14, 2025)
 
 1. **Auth Redirect Race Condition** - Fixed by:
-
    - Adding separate `syncError` state in AuthContext
    - Displaying sync errors separately from auth errors
    - Auto-clearing sync errors after 5 seconds
    - Ensuring sync errors don't interfere with successful login
 
 2. **Apollo "Not authenticated" Errors** - Fixed by:
-
    - Increasing delay before sync to 1000ms
    - Checking for access token before sync
    - Adding TODO for Apollo client resetStore (causes test issues)

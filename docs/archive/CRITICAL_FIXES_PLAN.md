@@ -54,13 +54,11 @@ Users report that audio playback "breaks for a second or so after each measure",
 ### Proposed Fixes
 
 1. **Improve Transport schedule management**
-
    - Use a more reliable schedule clearing mechanism
    - Implement proper schedule ID tracking
    - Add debug logging for timing issues
 
 2. **Fix measure timing precision**
-
    - Use high-precision timing calculations
    - Ensure smooth transitions between measures
    - Handle tempo changes more gracefully
@@ -111,7 +109,6 @@ Audio system accumulates memory usage and doesn't properly clean up resources.
 ### Proposed Fixes
 
 1. **Implement proper disposal pattern**
-
    - Add cleanup method for global singleton
    - Clear all event listeners on disposal
    - Dispose Tone.js resources properly
@@ -161,7 +158,6 @@ Verify that fixes documented in `TYPE_ALIGNMENT_AUDIT.md` are actually implement
 ### Audio Playback Testing
 
 1. **Manual Testing**
-
    - Play various scores with different tempos
    - Test measure transitions for gaps/breaks
    - Verify smooth playback across multiple measures
@@ -216,7 +212,6 @@ If any fixes cause regressions:
 ## Post-Implementation Tasks
 
 1. **Documentation Updates**
-
    - Update CLAUDE.md with new patterns
    - Document audio system architecture changes
    - Add security guidelines for content rendering

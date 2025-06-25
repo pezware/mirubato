@@ -22,7 +22,7 @@ workers_dev = false
 vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
 
 [[env.staging.routes]]
-pattern = "apiv2-staging.mirubato.com"
+pattern = "api-staging.mirubato.com"
 custom_domain = true
 
 [[env.staging.d1_databases]]
@@ -45,7 +45,7 @@ ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
 
 [[routes]]
-pattern = "apiv2.mirubato.com"
+pattern = "api.mirubato.com"
 custom_domain = true
 
 [[d1_databases]]
@@ -70,7 +70,7 @@ ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
 
 [[env.production.routes]]
-pattern = "apiv2.mirubato.com"
+pattern = "api.mirubato.com"
 custom_domain = true
 
 [[env.production.d1_databases]]

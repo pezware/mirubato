@@ -10,10 +10,10 @@ binding = "ASSETS"
 workers_dev = false
 
 [vars]
-API_URL = "https://apiv2.mirubato.com"
+API_URL = "https://api.mirubato.com"
 
 [[routes]]
-pattern = "frontendv2.mirubato.com"
+pattern = "mirubato.com"
 custom_domain = true
 
 # Explicit production environment (for consistency)
@@ -22,10 +22,10 @@ name = "mirubato-frontendv2"
 workers_dev = false
 
 [env.production.vars]
-API_URL = "https://apiv2.mirubato.com"
+API_URL = "https://api.mirubato.com"
 
 [[env.production.routes]]
-pattern = "frontendv2.mirubato.com"
+pattern = "mirubato.com"
 custom_domain = true
 
 [env.production.assets]
@@ -38,10 +38,10 @@ name = "mirubato-frontendv2-staging"
 workers_dev = false
 
 [env.staging.vars]
-API_URL = "https://apiv2-staging.mirubato.com"
+API_URL = "https://api-staging.mirubato.com"
 
 [[env.staging.routes]]
-pattern = "frontendv2-staging.mirubato.com"
+pattern = "staging.mirubato.com"
 custom_domain = true
 
 [env.staging.assets]

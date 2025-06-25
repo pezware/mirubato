@@ -52,25 +52,21 @@ npx vitest run --config vitest.config.ts src/__tests__/integration/d1-uat.test.t
 The UAT tests cover:
 
 1. **Anonymous User Journey**
-
    - Creating practice sessions
    - Creating logbook entries
    - Storing data locally
 
 2. **Authentication Flow**
-
    - Magic link creation
    - User creation/retrieval
    - Token generation
 
 3. **Data Sync Flow**
-
    - Anonymous data creation
    - User authentication
    - Data migration from anonymous to authenticated
 
 4. **Complex Queries**
-
    - Aggregate statistics
    - Practice streaks
    - Reporting queries

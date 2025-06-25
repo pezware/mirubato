@@ -1,14 +1,14 @@
 import { z } from 'zod'
-import {
-  Instrument,
-  Difficulty,
-  StylePeriod,
-  ScoreFormat,
-  ScoreSource,
-  Score,
-  ScoreVersion,
-  Collection,
-} from './score'
+// import {
+//   Instrument,
+//   Difficulty,
+//   StylePeriod,
+//   ScoreFormat,
+//   ScoreSource,
+//   Score,
+//   ScoreVersion,
+//   Collection,
+// } from './score'
 
 // Validation schemas
 export const InstrumentSchema = z.enum(['PIANO', 'GUITAR', 'BOTH'])

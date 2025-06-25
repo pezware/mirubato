@@ -38,8 +38,9 @@ describe('Database Utility Functions', () => {
       const checksum1 = await calculateChecksum(data1)
       const checksum2 = await calculateChecksum(data2)
 
-      console.log('Checksum 1:', checksum1)
-      console.log('Checksum 2:', checksum2)
+      // Debug checksums in test
+      // console.warn('Checksum 1:', checksum1)
+      // console.warn('Checksum 2:', checksum2)
 
       expect(checksum1).toMatch(/^[a-f0-9]{64}$/)
       expect(checksum2).toMatch(/^[a-f0-9]{64}$/)

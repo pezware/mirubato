@@ -2,18 +2,18 @@
 
 Open-source practice journal for musicians - track sessions, log progress, and analyze your musical journey.
 
-![mirubato Screenshot](https://github.com/pezware/mirubato/blob/main/frontend/public/mirubato-screenshot.jpg)
+![mirubato Screenshot](https://github.com/pezware/mirubato/blob/main/frontendv2/public/mirubato-screenshot.jpg)
 
 ## Features
 
-🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Adaptive difficulty • 🌐 Open source (MIT)
+🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 🌐 Open source (MIT)
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/pezware/mirubato.git && cd mirubato
-npm install && npm run dev  # Frontend: localhost:3000
-npm run dev:backend         # Backend: localhost:8787
+npm install && npm run dev     # Frontend: localhost:3000
+npm run dev:api               # API: localhost:8787
 ```
 
 ## Documentation
@@ -26,8 +26,8 @@ npm run dev:backend         # Backend: localhost:8787
 
 ## Technology Stack
 
-**Frontend**: React 18, TypeScript, Vite, Tailwind CSS
-**Backend**: GraphQL, Cloudflare Workers, D1 (SQLite)
+**Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
+**API**: REST, Hono, Cloudflare Workers, D1 (SQLite)
 **Audio**: Tone.js, Web Audio API, VexFlow.js notation
 
 ## Educational Foundation

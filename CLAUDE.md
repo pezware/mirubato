@@ -4,40 +4,27 @@
 
 ### Deployment Architecture (2025)
 
-- **Frontend & Backend**: Both are Cloudflare Workers (NOT Pages)
+- **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
 - **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
 - **Deployment**: Auto-triggered by GitHub push (uses top-level production config)
-- **Key Files**: `frontend/wrangler.toml`, `backend/wrangler.toml`
+- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`
 
 ### Essential Commands
 
 ```bash
 # Local Development
 npm install                    # Install all dependencies
-npm run dev                    # Start frontend (port 3000)
-npm run dev:backend            # Start backend (port 8787) - uses --env local
+npm run dev                    # Start frontendv2 (port 3000)
+npm run dev:api                # Start api (port 8787) - uses --env local
 
-# Backend Development (NEW SYSTEM)
-cd backend && npm run dev      # Full dev workflow (build + server)
-cd backend && npm run dev:build # Development build only
-cd backend && npm run dev:watch # TypeScript watch mode
-cd backend && npm run build    # Production build
-
-# GraphQL Development (IMPORTANT!)
-npm run codegen                # Generate TypeScript types from GraphQL schema
-npm run codegen:watch          # Auto-generate on schema changes
-npm run codegen:check          # Verify frontend-backend alignment
+# API Development
+cd api && npm run dev          # Full dev workflow (build + server)
+cd api && npm run build        # Production build
 
 # Deployment (from respective directories)
-# Backend
-cd backend && wrangler deploy              # Deploy to production (default)
-cd backend && wrangler deploy --env staging # Deploy to staging
-cd backend && wrangler deploy --env dev    # Deploy to development
-
-# Frontend
-cd frontend && wrangler deploy             # Deploy to production (default)
-cd frontend && wrangler deploy --env staging # Deploy to staging
-cd frontend && wrangler deploy --env dev   # Deploy to development
+# Frontend (now frontendv2)
+cd frontendv2 && wrangler deploy             # Deploy to production (default)
+cd frontendv2 && wrangler deploy --env staging # Deploy to staging
 
 # API
 cd api && wrangler deploy                  # Deploy to production (default)
@@ -52,11 +39,12 @@ cd scores && wrangler deploy --env staging # Deploy to staging
 
 ```
 mirubato/
-├── frontend/          # React app → Cloudflare Worker
+├── frontendv2/        # React app → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
-├── backend/           # GraphQL API → Cloudflare Worker
+├── api/               # REST API → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
-├── shared/            # Shared types & configs
+├── scores/            # Scores service → Cloudflare Worker
+│   └── wrangler.toml  # All environments defined here
 └── config/
     └── environments.json  # Domain and team configuration
 ```
@@ -67,9 +55,9 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 
 ### Quick Links
 
-- **Production Health Check**: `https://api.mirubato.com/health`
-- **GraphQL Playground**: `https://api.mirubato.com/graphql`
-- **CORS Debug**: `https://api.mirubato.com/debug/cors`
+- **Production Frontend**: `https://mirubato.com`
+- **Production API Health Check**: `https://api.mirubato.com/health`
+- **API Documentation**: `https://api.mirubato.com/docs`
 
 ### Common Issues
 
@@ -121,7 +109,6 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 ### Immediate Priority: MVP Simplification (2 Weeks)
 
 1. **Week 1**: Stabilization & Bug Fixes
-
    - Fix VexFlow rendering bugs
    - Fix audio playback issues
    - Ensure mobile compatibility
@@ -135,7 +122,6 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 ### Technical Debt (Ongoing)
 
 1. **Type Alignment** (IN PROGRESS)
-
    - Unify types across backend/frontend/shared
    - Setup GraphQL Code Generator
    - Remove duplicate type definitions
@@ -147,9 +133,9 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 
 ### Core Technologies
 
-- **Frontend**: React + TypeScript + Vite + Tailwind
-- **Backend**: Cloudflare Workers + GraphQL + D1 (SQLite)
-- **Auth**: Magic links + JWT
+- **Frontend**: React + TypeScript + Vite + Tailwind + Zustand
+- **API**: Cloudflare Workers + Hono + D1 (SQLite) + REST
+- **Auth**: Magic links + Google OAuth + JWT
 - **Music**: VexFlow.js (notation) + Tone.js (audio)
 
 ### Module Implementation Guidelines
@@ -157,13 +143,11 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 When implementing any new module, **ALWAYS** follow these steps:
 
 1. **Write Tests First (TDD)**
-
    - Create comprehensive test suite BEFORE implementation
    - Aim for >80% coverage (90% for critical modules)
    - Tests define the specification
 
 2. **Add TypeDoc Documentation**
-
    - Document all public interfaces with JSDoc comments
    - Include examples in documentation
    - Run `npm run docs:generate` to verify
@@ -189,25 +173,22 @@ npm run docs:generate
 npm test -- src/modules/newModule --coverage
 ```
 
-### GraphQL Development Workflow
+### API Development Workflow
 
-**IMPORTANT**: We use GraphQL Code Generation to ensure frontend-backend alignment. Never write GraphQL queries manually without running codegen!
+**IMPORTANT**: The API uses REST endpoints with TypeScript interfaces for type safety.
 
 ```bash
-# When modifying GraphQL schema or queries:
-1. Make changes to backend schema or frontend queries
-2. Run: npm run codegen
-3. Commit generated files with your changes
-4. Pre-commit hook will verify alignment
+# API Development:
+cd api && npm run dev          # Start local API server
+cd api && npm run test         # Run API tests
+cd api && npm run type-check   # Verify TypeScript types
 
-# During development:
-npm run codegen:watch  # Auto-generates on file changes
+# Frontend API Integration:
+# Types are defined directly in frontendv2/src/api/ files
+# No code generation needed - just TypeScript interfaces
 ```
 
-**Generated files location**: `frontend/src/generated/`
-
-- `graphql.ts` - All types and hooks
-- `introspection.json` - Schema introspection for tooling
+**API Structure**: `api/src/api/routes.ts` defines all endpoints
 
 ### Musical Implementation
 

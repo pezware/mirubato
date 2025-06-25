@@ -79,13 +79,11 @@ Implemented all basic CRUD operations:
 ### High Priority
 
 1. **Actual Rendering Engine**
-
    - Integrate VexFlow for score rendering
    - Convert MusicXML to VexFlow format
    - Generate SVG/PNG output
 
 2. **PDF Processing**
-
    - Extract metadata from PDFs
    - Generate thumbnails
    - Handle multi-page PDFs
@@ -98,13 +96,11 @@ Implemented all basic CRUD operations:
 ### Medium Priority
 
 4. **Search Enhancements**
-
    - Full-text search with FTS5
    - Fuzzy matching for composer names
    - Filter by technical elements
 
 5. **Batch Operations**
-
    - Bulk import tools
    - Collection management UI
    - Metadata editing tools

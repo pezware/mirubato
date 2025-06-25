@@ -11,12 +11,10 @@ This directory contains test utilities and setup files for the Mirubato frontend
 To prevent Apollo Client "No more mocked responses" warnings in tests, we've implemented the following solutions:
 
 1. **Global Warning Suppression** (`setup/apollo-setup.ts`):
-
    - Automatically filters out common Apollo testing warnings
    - Included in the unit test setup to apply to all tests
 
 2. **Test Utilities** (`utils/apollo-test-helpers.ts`):
-
    - `createInfiniteGetCurrentUserMock()`: Creates reusable mocks for user queries
    - `withDefaultUserMock()`: Adds default user mocks to prevent warnings
 

@@ -151,7 +151,6 @@ Low/No Impact:
    ```
 
 2. **Advantages**:
-
    - No breaking changes
    - Can test incrementally
    - Rollback capability
@@ -175,7 +174,6 @@ Low/No Impact:
    ```
 
 2. **Advantages**:
-
    - Clean architecture
    - No legacy constraints
    - Faster development

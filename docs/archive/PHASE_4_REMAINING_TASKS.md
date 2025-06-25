@@ -19,7 +19,6 @@ Focus on delivering a simple, bug-free practice experience with 10 curated piece
 **Tasks:**
 
 1. Keep only essential modules active:
-
    - EventBus (core infrastructure)
    - StorageModule (local storage only, no sync)
    - SheetMusicLibraryModule (display & generate only)
@@ -27,7 +26,6 @@ Focus on delivering a simple, bug-free practice experience with 10 curated piece
    - AudioContext (playback only)
 
 2. Temporarily disable:
-
    - PerformanceTrackingModule
    - ProgressAnalyticsModule
    - CurriculumModule
