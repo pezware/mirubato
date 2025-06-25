@@ -9,13 +9,11 @@ Critical refactoring to align type definitions between backend, frontend, and sh
 ### Type Duplication Issues
 
 1. **Backend** (`backend/src/types/shared.ts`):
-
    - Defines its own types instead of importing from shared
    - Uses string literals instead of enums (e.g., `type Instrument = 'PIANO' | 'GUITAR'`)
    - Missing logbook types entirely
 
 2. **Frontend** (`frontend/src`):
-
    - 16 files import from `shared/types` ✅
    - But also has duplicate definitions in `modules/core/sharedTypes.ts`
    - Mixed usage of shared and local types
@@ -46,7 +44,6 @@ Critical refactoring to align type definitions between backend, frontend, and sh
    ```
 
 2. **Missing Types**:
-
    - Backend missing: LogbookEntry, Goal, LocalStorage types
    - Frontend duplicating: EntityBase, AccuracyMetrics, SkillLevel
 

@@ -40,6 +40,8 @@
     "@typescript-eslint/parser": "^6.19.0",
     "@vitest/coverage-v8": "^1.2.0",
     "eslint": "^8.56.0",
+    "get-func-name": "^2.0.2",
+    "local-pkg": "^0.5.1",
     "merge-stream": "^2.0.0",
     "miniflare": "^3.0.0",
     "prettier": "^3.2.0",

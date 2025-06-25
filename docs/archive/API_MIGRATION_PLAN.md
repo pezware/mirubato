@@ -21,13 +21,11 @@ This document outlines the plan to replace the current GraphQL backend with a mi
 ### Core Principles
 
 1. **Local-First, API-Optional**
-
    - Unlogged users: 100% local, no API calls
    - Logged users: Local operations + background sync to API
    - API role: Cloud storage and sync only (not business logic)
 
 2. **Frontend Owns Business Logic**
-
    - All data validation in frontend modules
    - All calculations/reports generated locally
    - API is a "dumb" storage layer with sync capabilities

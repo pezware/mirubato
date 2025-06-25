@@ -123,13 +123,11 @@ The codebase has a solid foundation with good architecture patterns, but several
 ### Phase 1: Critical Security & Bug Fixes (Week 1)
 
 1. **Day 1-2**: Security Fixes
-
    - [ ] Fix XSS vulnerability in Docs page
    - [ ] Disable GraphQL introspection in production
    - [ ] Implement query depth limits
 
 2. **Day 3-4**: Logbook Storage Bug
-
    - [ ] Add `hasCloudStorage` to GET_CURRENT_USER query
    - [ ] Fix localStorage key mismatch
    - [ ] Test sync flow from localStorage to D1
@@ -142,13 +140,11 @@ The codebase has a solid foundation with good architecture patterns, but several
 ### Phase 2: Performance Optimizations (Week 2)
 
 1. **Day 1-2**: Memory Leak Fixes
-
    - [ ] Add proper cleanup for VexFlow renderers
    - [ ] Fix event listener cleanup
    - [ ] Implement proper module disposal
 
 2. **Day 3-4**: Query Optimizations
-
    - [ ] Implement DataLoader for N+1 queries
    - [ ] Add missing database indexes
    - [ ] Enable GraphQL request batching
@@ -161,13 +157,11 @@ The codebase has a solid foundation with good architecture patterns, but several
 ### Phase 3: Code Quality Improvements (Week 3-4)
 
 1. **Refactor Large Modules**
-
    - [ ] Split VisualizationModule into smaller services
    - [ ] Refactor LogbookReportingModule
    - [ ] Extract shared logic into utilities
 
 2. **Improve Test Coverage**
-
    - [ ] Add tests for uncovered critical paths
    - [ ] Reach 80% coverage target
    - [ ] Add integration tests for sync flow

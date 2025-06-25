@@ -9,7 +9,7 @@ export const debugHandler = new Hono<{ Bindings: Env }>()
  */
 debugHandler.get('/migrate', async c => {
   try {
-    console.log('🔧 Running manual migrations...')
+    console.warn('🔧 Running manual migrations...')
 
     // Read migration files
     const migrations = [

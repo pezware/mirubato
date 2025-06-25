@@ -182,7 +182,6 @@ You can use this spec to:
 ### Making API Calls
 
 1. **From Documentation UI**:
-
    - Navigate to an endpoint
    - Click "Try it out"
    - Fill in parameters

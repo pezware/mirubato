@@ -188,7 +188,6 @@ But for a professional music platform, multi-voice support is essential.
 ## Testing Strategy
 
 1. Create test cases with:
-
    - Single voice (current)
    - Two voices (soprano/bass)
    - Grand staff (piano)

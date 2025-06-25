@@ -109,7 +109,6 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 ### Immediate Priority: MVP Simplification (2 Weeks)
 
 1. **Week 1**: Stabilization & Bug Fixes
-
    - Fix VexFlow rendering bugs
    - Fix audio playback issues
    - Ensure mobile compatibility
@@ -123,7 +122,6 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 ### Technical Debt (Ongoing)
 
 1. **Type Alignment** (IN PROGRESS)
-
    - Unify types across backend/frontend/shared
    - Setup GraphQL Code Generator
    - Remove duplicate type definitions
@@ -145,13 +143,11 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 When implementing any new module, **ALWAYS** follow these steps:
 
 1. **Write Tests First (TDD)**
-
    - Create comprehensive test suite BEFORE implementation
    - Aim for >80% coverage (90% for critical modules)
    - Tests define the specification
 
 2. **Add TypeDoc Documentation**
-
    - Document all public interfaces with JSDoc comments
    - Include examples in documentation
    - Run `npm run docs:generate` to verify

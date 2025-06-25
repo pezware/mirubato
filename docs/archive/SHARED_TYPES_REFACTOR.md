@@ -3,19 +3,16 @@
 ## Current Problems
 
 1. **Nested Directory Build Issues**
-
    - TypeScript creates `dist/backend/src/` structure when including files outside project root
    - Complex build script workarounds to move files to correct locations
    - Manual cleanup of compiled files in shared directory
 
 2. **Type Duplication**
-
    - Frontend and backend define overlapping types
    - No single source of truth
    - GraphQL schema types don't align with shared types
 
 3. **Import Path Fragility**
-
    - Relative imports (`../../../shared/types`) are hard to maintain
    - Different nesting levels require different paths
    - No IDE support for refactoring
@@ -192,11 +189,9 @@ import { User, Instrument } from '@mirubato/shared'
 ## Risks and Mitigations
 
 1. **Risk**: Breaking existing code during migration
-
    - **Mitigation**: Gradual migration with backwards compatibility
 
 2. **Risk**: Cloudflare Workers compatibility
-
    - **Mitigation**: Test deployment at each step
 
 3. **Risk**: Development workflow disruption
