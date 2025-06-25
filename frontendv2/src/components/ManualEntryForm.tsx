@@ -120,7 +120,7 @@ export default function ManualEntryForm({
                   { value: 'GUITAR', label: '🎸 Guitar' },
                 ]}
                 value={instrument}
-                onChange={setInstrument}
+                onChange={value => value && setInstrument(value)}
                 orientation="horizontal"
               />
             </div>
@@ -138,7 +138,7 @@ export default function ManualEntryForm({
                 { value: 'REHEARSAL', label: 'Rehearsal' },
               ]}
               value={type}
-              onChange={setType}
+              onChange={value => value && setType(value)}
               orientation="horizontal"
             />
           </div>

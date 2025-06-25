@@ -81,7 +81,14 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   }
   const db = new DatabaseHelpers(c.env.DB)
 
-  // Debug: Starting sync for user
+  // Debug logging for staging
+  if (c.env.ENVIRONMENT === 'staging') {
+    console.log('[Sync Push] Starting sync for user:', userId)
+    console.log('[Sync Push] Received changes:', {
+      entriesCount: changes.entries?.length || 0,
+      goalsCount: changes.goals?.length || 0,
+    })
+  }
 
   try {
     // Process changes
@@ -107,6 +114,10 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             data: entry,
             checksum,
           })
+
+          if (c.env.ENVIRONMENT === 'staging') {
+            console.log('[Sync Push] Successfully upserted entry:', entry.id)
+          }
         } catch (entryError) {
           // Error: Failed to process entry
           // Continue processing other entries but track the error
