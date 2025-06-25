@@ -90,7 +90,7 @@ healthHandler.get('/health', async c => {
   // Storage health check
   try {
     const start = Date.now()
-    const list = await c.env.SCORES_BUCKET.list({ limit: 1 })
+    await c.env.SCORES_BUCKET.list({ limit: 1 })
     checks.storage.latency = Date.now() - start
     checks.storage.status = 'ok'
     checks.storage.message = `R2 bucket accessible`

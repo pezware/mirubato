@@ -323,7 +323,7 @@ async function extractMetadata(
       // Get first page as image
       const browserService = new BrowserRenderingService(env as any)
       const pdfUrl = `https://scores.mirubato.com/files/${data.r2Key}`
-      const firstPage = await browserService.pdfToImage(pdfUrl, 1)
+      await browserService.pdfToImage(pdfUrl, 1)
 
       // Use AI to analyze the image
       // Note: This would require a vision model, which may not be available yet
