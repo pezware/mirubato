@@ -190,11 +190,21 @@ app.get('/', c => {
         <h3>📊 Metrics</h3>
         <p>Prometheus-compatible metrics</p>
       </a>
+      
+      <a href="/docs/rapidoc" class="link">
+        <h3>⚡ RapiDoc</h3>
+        <p>Modern API documentation</p>
+      </a>
+      
+      <a href="/docs/swagger" class="link">
+        <h3>🔧 Swagger UI</h3>
+        <p>Alternative API documentation</p>
+      </a>
     </div>
     
     <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; text-align: center; color: #718096; font-size: 0.9rem;">
       <p>Environment: ${c.env.ENVIRONMENT}</p>
-      <p>© 2024 Mirubato. All rights reserved.</p>
+      <p>© 2025 Mirubato. MIT License.</p>
     </div>
   </div>
 </body>
