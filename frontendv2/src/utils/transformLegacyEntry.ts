@@ -100,7 +100,7 @@ export function transformLegacyEntry(legacy: LegacyLogbookEntry): LogbookEntry {
       // Generic metadata - wrap it
       metadata = {
         source: 'legacy',
-        ...(legacy.metadata as any),
+        ...(legacy.metadata as Record<string, unknown>),
       }
     }
   }
@@ -158,16 +158,23 @@ export function transformLegacyEntries(entries: unknown[]): LogbookEntry[] {
 /**
  * Validate if an entry is already in the new format
  */
-export function isNewFormatEntry(entry: any): entry is LogbookEntry {
+export function isNewFormatEntry(entry: unknown): entry is LogbookEntry {
+  if (typeof entry !== 'object' || entry === null) {
+    return false
+  }
+
+  const obj = entry as Record<string, unknown>
+
   return (
-    typeof entry === 'object' &&
-    typeof entry.id === 'string' &&
-    typeof entry.timestamp === 'string' &&
-    typeof entry.duration === 'number' &&
-    ['PRACTICE', 'PERFORMANCE', 'LESSON', 'REHEARSAL'].includes(entry.type) &&
-    ['PIANO', 'GUITAR'].includes(entry.instrument) &&
-    Array.isArray(entry.pieces) &&
-    typeof entry.createdAt === 'string' &&
-    typeof entry.updatedAt === 'string'
+    typeof obj.id === 'string' &&
+    typeof obj.timestamp === 'string' &&
+    typeof obj.duration === 'number' &&
+    ['PRACTICE', 'PERFORMANCE', 'LESSON', 'REHEARSAL'].includes(
+      obj.type as string
+    ) &&
+    ['PIANO', 'GUITAR'].includes(obj.instrument as string) &&
+    Array.isArray(obj.pieces) &&
+    typeof obj.createdAt === 'string' &&
+    typeof obj.updatedAt === 'string'
   )
 }
