@@ -50,6 +50,25 @@ openssl rand -base64 32
 
 **Fix**: Added `Cross-Origin-Opener-Policy: same-origin-allow-popups` header in `/api/src/index.ts`
 
+## CRITICAL: Missing Secrets in Production Too!
+
+**Production is also missing JWT_SECRET and MAGIC_LINK_SECRET!** You need to add these to production ASAP:
+
+```bash
+cd api
+
+# Generate secure secrets (use different ones for production!)
+openssl rand -base64 32  # For JWT_SECRET
+openssl rand -base64 32  # For MAGIC_LINK_SECRET
+
+# Add to PRODUCTION
+wrangler secret put JWT_SECRET
+wrangler secret put MAGIC_LINK_SECRET
+
+# Then deploy to production
+wrangler deploy
+```
+
 ## Deployment Steps
 
 1. **Add Secrets to Staging** (CRITICAL):
