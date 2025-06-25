@@ -35,6 +35,7 @@ app.use(
         'http://localhost:5173',
         'https://mirubato.com',
         'https://www.mirubato.com',
+        'https://staging.mirubato.com',
         'https://mirubato.pezware.workers.dev',
       ]
 
@@ -52,6 +53,12 @@ app.use(
     credentials: true,
   })
 )
+
+// Add Cross-Origin-Opener-Policy header for OAuth popups
+app.use('*', async (c, next) => {
+  await next()
+  c.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+})
 
 // Health check endpoints
 app.route('/', healthHandler)
