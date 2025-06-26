@@ -1,0 +1,20 @@
+{
+  "title": "Practice Reports",
+  "viewReports": "View Reports",
+  "totalPractice": "Total Practice",
+  "sessions": "Sessions",
+  "avgDuration": "Avg Duration",
+  "dayStreak": "Day Streak",
+  "mostPracticedPieces": "Most Practiced Pieces",
+  "timeByInstrument": "Time by Instrument",
+  "export": {
+    "exportJSON": "Export JSON",
+    "exportCSV": "Export CSV"
+  },
+  "stats": {
+    "session_one": "{{count}} session",
+    "session_other": "{{count}} sessions",
+    "hours": "{{hours}}h",
+    "minutes": "{{minutes}}m"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "appName": "mirubato",
+  "tagline": "toca conmigo",
+  "loading": "Cargando...",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "add": "Añadir",
+  "remove": "Quitar",
+  "search": "Buscar",
+  "filter": "Filtrar",
+  "previous": "Anterior",
+  "next": "Siguiente",
+  "close": "Cerrar",
+  "confirm": "Confirmar",
+  "yes": "Sí",
+  "no": "No",
+  "error": "Error",
+  "success": "Éxito",
+  "warning": "Advertencia",
+  "info": "Información",
+  "instruments": {
+    "piano": "Piano",
+    "guitar": "Guitarra"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "logbook": "Diario",
+    "reports": "Informes",
+    "settings": "Configuración"
+  },
+  "time": {
+    "minute": "minuto",
+    "minute_plural": "minutos",
+    "hour": "hora",
+    "hour_plural": "horas",
+    "day": "día",
+    "day_plural": "días",
+    "week": "semana",
+    "week_plural": "semanas",
+    "month": "mes",
+    "month_plural": "meses",
+    "year": "año",
+    "year_plural": "años",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "thisWeek": "Esta semana",
+    "lastWeek": "Semana pasada",
+    "thisMonth": "Este mes",
+    "lastMonth": "Mes pasado",
+    "allTime": "Todo el tiempo"
+  },
+  "music": {
+    "notes": {
+      "C": "C",
+      "D": "D",
+      "E": "E",
+      "F": "F",
+      "G": "G",
+      "A": "A",
+      "B": "B"
+    },
+    "practice": "Práctica",
+    "lesson": "Lección",
+    "performance": "Actuación",
+    "rehearsal": "Ensayo"
+  }
+}

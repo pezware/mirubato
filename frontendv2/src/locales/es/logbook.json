@@ -1,0 +1,52 @@
+{
+  "title": "Diario",
+  "openLogbook": "Abrir diario",
+  "continueToLogbook": "Continuar al diario",
+  "loading": "Cargando tus sesiones de práctica...",
+  "empty": "Aún no hay entradas de práctica. ¡Comienza a registrar tu viaje musical!",
+  "noResults": "No hay entradas que coincidan con tu búsqueda.",
+  "searchPlaceholder": "Buscar entradas...",
+  "syncStatus": {
+    "synced": "Sincronizado",
+    "localOnly": "Almacenamiento local"
+  },
+  "entry": {
+    "addEntry": "Añadir entrada",
+    "addFirstEntry": "Añadir tu primera entrada",
+    "saveEntry": "Guardar entrada",
+    "updateEntry": "Actualizar entrada",
+    "deleteEntry": "Eliminar entrada",
+    "editEntry": "Editar entrada",
+    "duration": "Duración (minutos)",
+    "durationPlaceholder": "30",
+    "type": "Tipo",
+    "pieces": "Piezas",
+    "notes": "Notas",
+    "notesPlaceholder": "¿En qué trabajaste? ¿Alguna observación?",
+    "addPiece": "Añadir pieza",
+    "pieceTitle": "Título de la pieza",
+    "composer": "Compositor",
+    "entry_one": "{{count}} entrada",
+    "entry_other": "{{count}} entradas"
+  },
+  "filters": {
+    "byMonth": "Por mes",
+    "byWeek": "Por semana",
+    "last7Days": "Últimos 7 días",
+    "last30Days": "Últimos 30 días",
+    "thisMonth": "Este mes",
+    "lastMonth": "Mes pasado",
+    "allTime": "Todo el tiempo"
+  },
+  "timeline": {
+    "week": "Semana {{number}}",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "Frustrado",
+    "neutral": "Neutral",
+    "satisfied": "Satisfecho",
+    "excited": "Emocionado"
+  }
+}

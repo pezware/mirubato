@@ -1,0 +1,12 @@
+{
+  "generic": "Algo salió mal.",
+  "tryAgain": "Por favor, inténtalo de nuevo.",
+  "offline": "Parece que estás sin conexión. Los cambios se sincronizarán cuando vuelvas a estar en línea.",
+  "loadFailed": "Error al cargar los datos. Por favor, actualiza la página.",
+  "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo.",
+  "deleteFailed": "Error al eliminar. Por favor, inténtalo de nuevo.",
+  "syncFailed": "Error de sincronización. Tus cambios se han guardado localmente.",
+  "notAuthenticated": "Por favor, inicia sesión para continuar.",
+  "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo.",
+  "networkError": "Error de red. Por favor, verifica tu conexión."
+}
