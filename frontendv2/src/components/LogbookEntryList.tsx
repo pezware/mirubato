@@ -95,12 +95,43 @@ export default function LogbookEntryList({
     }
   }, [entries])
 
-  // Timeline levels
-  const timelineLevels: TimelineLevel[] = [
-    { label: '2025', value: 'year', level: 'year' },
-    { label: 'June', value: 'month', level: 'month' },
-    { label: 'Week 4', value: 'week', level: 'week' },
-  ]
+  // Get current date for timeline navigation
+  const currentDate = new Date()
+
+  // Calculate the current week number of the month
+  const getWeekOfMonth = (date: Date) => {
+    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
+    const dayOfMonth = date.getDate()
+    const dayOfWeek = firstDayOfMonth.getDay()
+    return Math.ceil((dayOfMonth + dayOfWeek) / 7)
+  }
+
+  // Generate timeline levels based on entries
+  const timelineLevels: TimelineLevel[] = useMemo(() => {
+    if (entries.length === 0) {
+      const year = currentDate.getFullYear()
+      const month = currentDate.toLocaleDateString('en-US', { month: 'long' })
+      const week = getWeekOfMonth(currentDate)
+      return [
+        { label: year.toString(), value: 'year', level: 'year' },
+        { label: month, value: 'month', level: 'month' },
+        { label: `Week ${week}`, value: 'week', level: 'week' },
+      ]
+    }
+
+    // Get the most recent entry date
+    const mostRecentEntry = entries[0] // Already sorted by timestamp
+    const entryDate = new Date(mostRecentEntry.timestamp)
+    const year = entryDate.getFullYear()
+    const month = entryDate.toLocaleDateString('en-US', { month: 'long' })
+    const week = getWeekOfMonth(entryDate)
+
+    return [
+      { label: year.toString(), value: 'year', level: 'year' },
+      { label: month, value: 'month', level: 'month' },
+      { label: `Week ${week}`, value: 'week', level: 'week' },
+    ]
+  }, [entries, currentDate])
 
   if (editingEntry) {
     return (
