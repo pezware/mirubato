@@ -72,7 +72,26 @@ describe('LogbookEntryList Timeline Filtering', () => {
     vi.clearAllMocks()
     vi.mocked(useLogbookStore).mockReturnValue({
       deleteEntry: mockDeleteEntry,
-    } as any)
+      entriesMap: new Map(),
+      goalsMap: new Map(),
+      isLoading: false,
+      error: null,
+      searchQuery: '',
+      isLocalMode: true,
+      entries: [],
+      goals: [],
+      loadEntries: vi.fn(),
+      createEntry: vi.fn(),
+      updateEntry: vi.fn(),
+      loadGoals: vi.fn(),
+      createGoal: vi.fn(),
+      updateGoal: vi.fn(),
+      deleteGoal: vi.fn(),
+      setSearchQuery: vi.fn(),
+      setLocalMode: vi.fn(),
+      clearError: vi.fn(),
+      syncWithServer: vi.fn(),
+    })
   })
 
   it('should show only Week 4 entries when Week 4 is selected', async () => {

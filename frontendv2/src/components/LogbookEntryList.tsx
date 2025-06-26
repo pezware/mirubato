@@ -88,21 +88,6 @@ export default function LogbookEntryList({
     setExpandedEntries(newExpanded)
   }
 
-  // Helper to check if a date is in the same week
-  const isSameWeek = (date1: Date, date2: Date) => {
-    const startOfWeek = (date: Date) => {
-      const d = new Date(date)
-      const day = d.getDay()
-      const diff = d.getDate() - day
-      return new Date(d.setDate(diff))
-    }
-
-    const week1Start = startOfWeek(date1)
-    const week2Start = startOfWeek(date2)
-
-    return week1Start.getTime() === week2Start.getTime()
-  }
-
   // Calculate the current week number of the month
   const getWeekOfMonth = (date: Date) => {
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -158,11 +143,9 @@ export default function LogbookEntryList({
     }
   }, [filteredEntries])
 
-  // Get current date for timeline navigation
-  const currentDate = new Date()
-
   // Initialize selectedDate based on entries
   useEffect(() => {
+    const currentDate = new Date()
     if (!selectedDate && entries.length > 0) {
       const mostRecentEntry = entries[0]
       const entryDate = new Date(mostRecentEntry.timestamp)
@@ -178,7 +161,7 @@ export default function LogbookEntryList({
         week: getWeekOfMonth(currentDate),
       })
     }
-  }, [entries, currentDate, selectedDate])
+  }, [entries, selectedDate])
 
   // Generate timeline levels based on entries
   const timelineLevels: TimelineLevel[] = useMemo(() => {
