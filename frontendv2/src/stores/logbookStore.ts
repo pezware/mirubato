@@ -83,6 +83,13 @@ const mapToSortedArray = <T extends { createdAt: string }>(
   )
 }
 
+// Helper specifically for sorting logbook entries by practice time
+const sortEntriesByTimestamp = (entries: LogbookEntry[]): LogbookEntry[] => {
+  return entries.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  )
+}
+
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
   goalsMap: new Map(),
@@ -107,7 +114,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const entriesMap = new Map(entries.map(entry => [entry.id, entry]))
       set({
         entriesMap,
-        entries: mapToSortedArray(entriesMap),
+        entries: sortEntriesByTimestamp(Array.from(entriesMap.values())),
         isLoading: false,
       })
 
@@ -123,7 +130,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
             )
             set({
               entriesMap: newEntriesMap,
-              entries: mapToSortedArray(newEntriesMap),
+              entries: sortEntriesByTimestamp(
+                Array.from(newEntriesMap.values())
+              ),
             })
 
             // Debounced write to localStorage
@@ -164,7 +173,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       newEntriesMap.set(entry.id, entry)
       set({
         entriesMap: newEntriesMap,
-        entries: mapToSortedArray(newEntriesMap),
+        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
       })
 
       // Immediate write to localStorage for new entries
@@ -186,7 +195,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               updatedEntriesMap.set(serverEntry.id, serverEntry)
               set({
                 entriesMap: updatedEntriesMap,
-                entries: mapToSortedArray(updatedEntriesMap),
+                entries: sortEntriesByTimestamp(
+                  Array.from(updatedEntriesMap.values())
+                ),
               })
 
               debouncedLocalStorageWrite(
@@ -227,7 +238,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.set(id, updatedEntry)
         set({
           entriesMap: newEntriesMap,
-          entries: mapToSortedArray(newEntriesMap),
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
         debouncedLocalStorageWrite(
@@ -242,7 +253,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.set(id, updated)
         set({
           entriesMap: newEntriesMap,
-          entries: mapToSortedArray(newEntriesMap),
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
         debouncedLocalStorageWrite(
@@ -267,7 +278,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.delete(id)
         set({
           entriesMap: newEntriesMap,
-          entries: mapToSortedArray(newEntriesMap),
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
         immediateLocalStorageWrite(
@@ -282,7 +293,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         newEntriesMap.delete(id)
         set({
           entriesMap: newEntriesMap,
-          entries: mapToSortedArray(newEntriesMap),
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
         immediateLocalStorageWrite(
@@ -574,7 +585,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // Update state with merged entries
       set({
         entriesMap: mergedEntriesMap,
-        entries: mapToSortedArray(mergedEntriesMap),
+        entries: sortEntriesByTimestamp(Array.from(mergedEntriesMap.values())),
         isLoading: false,
         isLocalMode: false,
       })
