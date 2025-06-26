@@ -19,7 +19,8 @@ export default function InteractivePiano() {
         'F#5': 'Fs5.mp3',
         A5: 'A5.mp3',
       },
-      release: 2,
+      release: 4,
+      volume: -6,
       baseUrl: 'https://tonejs.github.io/audio/salamander/',
     }).toDestination()
 
