@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import Button from './ui/Button'
@@ -15,6 +16,7 @@ export default function ManualEntryForm({
   onSave,
   entry,
 }: ManualEntryFormProps) {
+  const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -92,7 +94,9 @@ export default function ManualEntryForm({
   return (
     <div>
       <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
-        {entry ? '📝 Edit Entry' : '✨ New Practice Entry'}
+        {entry
+          ? `📝 ${t('logbook:entry.editEntry')}`
+          : `✨ ${t('logbook:entry.addEntry')}`}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -101,7 +105,7 @@ export default function ManualEntryForm({
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-                Duration (minutes)
+                {t('logbook:entry.duration')}
               </label>
               <input
                 type="number"
@@ -116,8 +120,14 @@ export default function ManualEntryForm({
             <div className="flex gap-4">
               <SplitButton<LogbookEntry['instrument']>
                 options={[
-                  { value: 'PIANO', label: '🎹 Piano' },
-                  { value: 'GUITAR', label: '🎸 Guitar' },
+                  {
+                    value: 'PIANO',
+                    label: `🎹 ${t('common:instruments.piano')}`,
+                  },
+                  {
+                    value: 'GUITAR',
+                    label: `🎸 ${t('common:instruments.guitar')}`,
+                  },
                 ]}
                 value={instrument}
                 onChange={value => value && setInstrument(value)}
@@ -128,14 +138,14 @@ export default function ManualEntryForm({
 
           <div>
             <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-              Type
+              {t('logbook:entry.type')}
             </label>
             <SplitButton<LogbookEntry['type']>
               options={[
-                { value: 'PRACTICE', label: 'Practice' },
-                { value: 'LESSON', label: 'Lesson' },
-                { value: 'PERFORMANCE', label: 'Performance' },
-                { value: 'REHEARSAL', label: 'Rehearsal' },
+                { value: 'PRACTICE', label: t('common:music.practice') },
+                { value: 'LESSON', label: t('common:music.lesson') },
+                { value: 'PERFORMANCE', label: t('common:music.performance') },
+                { value: 'REHEARSAL', label: t('common:music.rehearsal') },
               ]}
               value={type}
               onChange={value => value && setType(value)}
@@ -147,20 +157,20 @@ export default function ManualEntryForm({
         {/* Pieces */}
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-            Pieces
+            {t('logbook:entry.pieces')}
           </label>
           {pieces.map((piece, index) => (
             <div key={index} className="flex gap-2 mb-2">
               <input
                 type="text"
-                placeholder="Piece title"
+                placeholder={t('logbook:entry.pieceTitle')}
                 value={piece.title}
                 onChange={e => updatePiece(index, 'title', e.target.value)}
                 className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
               />
               <input
                 type="text"
-                placeholder="Composer"
+                placeholder={t('logbook:entry.composer')}
                 value={piece.composer || ''}
                 onChange={e => updatePiece(index, 'composer', e.target.value)}
                 className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
@@ -171,7 +181,7 @@ export default function ManualEntryForm({
                 variant="secondary"
                 size="sm"
               >
-                Remove
+                {t('common:remove')}
               </Button>
             </div>
           ))}
@@ -182,35 +192,51 @@ export default function ManualEntryForm({
             size="sm"
             leftIcon={<span>+</span>}
           >
-            Add Piece
+            {t('logbook:entry.addPiece')}
           </Button>
         </div>
 
         {/* Notes */}
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-            Notes
+            {t('logbook:entry.notes')}
           </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={3}
             className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none"
-            placeholder="What did you work on? Any observations?"
+            placeholder={t('logbook:entry.notesPlaceholder')}
           />
         </div>
 
         {/* Mood */}
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-            How did it go?
+            {t('logbook:entry.mood')}
           </label>
           <div className="flex gap-px flex-wrap sm:flex-nowrap">
             {[
-              { value: 'FRUSTRATED', label: '😤', fullLabel: 'Frustrated' },
-              { value: 'NEUTRAL', label: '😐', fullLabel: 'Neutral' },
-              { value: 'SATISFIED', label: '😊', fullLabel: 'Satisfied' },
-              { value: 'EXCITED', label: '🎉', fullLabel: 'Excited' },
+              {
+                value: 'FRUSTRATED',
+                label: '😤',
+                fullLabel: t('logbook:mood.frustrated'),
+              },
+              {
+                value: 'NEUTRAL',
+                label: '😐',
+                fullLabel: t('logbook:mood.neutral'),
+              },
+              {
+                value: 'SATISFIED',
+                label: '😊',
+                fullLabel: t('logbook:mood.satisfied'),
+              },
+              {
+                value: 'EXCITED',
+                label: '🎉',
+                fullLabel: t('logbook:mood.excited'),
+              },
             ].map((option, index) => {
               const isFirst = index === 0
               const isLast = index === 3
@@ -252,7 +278,7 @@ export default function ManualEntryForm({
         {/* Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">
           <Button type="button" onClick={onClose} variant="secondary">
-            Cancel
+            {t('common:cancel')}
           </Button>
           <Button
             type="submit"
@@ -260,7 +286,9 @@ export default function ManualEntryForm({
             loading={isSubmitting}
             leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
           >
-            {entry ? 'Update Entry' : 'Save Entry'}
+            {entry
+              ? t('logbook:entry.updateEntry')
+              : t('logbook:entry.saveEntry')}
           </Button>
         </div>
       </form>

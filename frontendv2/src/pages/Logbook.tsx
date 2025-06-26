@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
 import ManualEntryForm from '../components/ManualEntryForm'
@@ -8,6 +9,7 @@ import LogbookReports from '../components/LogbookReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function LogbookPage() {
+  const { t } = useTranslation(['logbook', 'common', 'auth', 'errors'])
   const {
     user,
     isAuthenticated,
@@ -73,23 +75,25 @@ export default function LogbookPage() {
                 to="/"
                 className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
               >
-                mirubato
+                {t('common:appName')}
               </Link>
               <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
-                Logbook
+                {t('logbook:title')}
               </h1>
             </div>
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">
                 {isAuthenticated ? (
                   <span className="flex items-center gap-1">
-                    <span className="hidden sm:inline">☁️ Synced •</span>
+                    <span className="hidden sm:inline">
+                      ☁️ {t('logbook:syncStatus.synced')} •
+                    </span>
                     <span className="text-xs sm:text-sm">{user?.email}</span>
                   </span>
                 ) : (
                   <span className="flex items-center gap-1">
                     <span className="hidden sm:inline">💾</span>
-                    <span>Local storage</span>
+                    <span>{t('logbook:syncStatus.localOnly')}</span>
                   </span>
                 )}
               </div>
@@ -103,14 +107,14 @@ export default function LogbookPage() {
                   }}
                   className="text-xs sm:text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 sm:px-3 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
                 >
-                  Logout
+                  {t('auth:signOut')}
                 </button>
               ) : (
                 <button
                   onClick={() => setShowLoginForm(true)}
                   className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
                 >
-                  Sign in
+                  {t('auth:signIn')}
                 </button>
               )}
             </div>
@@ -147,11 +151,11 @@ export default function LogbookPage() {
             className="btn-accent flex items-center gap-2"
           >
             <span className="text-lg">+</span>
-            Add Entry
+            {t('logbook:entry.addEntry')}
           </button>
           <input
             type="text"
-            placeholder="Search entries..."
+            placeholder={t('logbook:searchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="flex-1 px-4 py-3 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
@@ -177,32 +181,27 @@ export default function LogbookPage() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morandi-sage-400 mx-auto mb-4"></div>
-            <p className="text-morandi-stone-600">
-              ⏳ Loading your practice sessions...
-            </p>
+            <p className="text-morandi-stone-600">⏳ {t('logbook:loading')}</p>
           </div>
         ) : filteredEntries.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-12 text-center">
             <div className="text-6xl mb-4">🎵</div>
             <p className="text-morandi-stone-600 text-lg mb-6">
-              {searchQuery
-                ? 'No entries match your search.'
-                : 'No practice entries yet. Start tracking your musical journey!'}
+              {searchQuery ? t('logbook:noResults') : t('logbook:empty')}
             </p>
             {!searchQuery && (
               <button
                 onClick={() => setShowNewEntryForm(true)}
                 className="btn-primary"
               >
-                Add Your First Entry
+                {t('logbook:entry.addFirstEntry')}
               </button>
             )}
           </div>
         ) : (
           <div className="space-y-4">
             <div className="text-sm text-morandi-stone-600 mb-4">
-              Found {filteredEntries.length}{' '}
-              {filteredEntries.length === 1 ? 'entry' : 'entries'}
+              {t('logbook:entry.entry', { count: filteredEntries.length })}
             </div>
             <LogbookEntryList
               entries={filteredEntries}
@@ -216,7 +215,7 @@ export default function LogbookPage() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
             <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
               <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
-                Sign In
+                {t('auth:signIn')}
               </h2>
 
               {/* Google Sign In */}
@@ -239,7 +238,7 @@ export default function LogbookPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-4 bg-white/90 text-morandi-stone-500">
-                    Or continue with email
+                    {t('auth:orContinueWithEmail')}
                   </span>
                 </div>
               </div>
@@ -254,7 +253,7 @@ export default function LogbookPage() {
                     onChange={e => setEmail(e.target.value)}
                     required
                     className="w-full px-4 py-3 bg-white/50 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-                    placeholder="your@email.com"
+                    placeholder={t('auth:emailPlaceholder')}
                   />
                 </div>
                 {authError && (
@@ -266,14 +265,16 @@ export default function LogbookPage() {
                     disabled={authLoading}
                     className="btn-primary flex-1"
                   >
-                    {authLoading ? 'Sending...' : 'Send Magic Link'}
+                    {authLoading
+                      ? t('common:loading')
+                      : t('auth:sendMagicLink')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowLoginForm(false)}
                     className="btn-secondary flex-1"
                   >
-                    Cancel
+                    {t('common:cancel')}
                   </button>
                 </div>
               </form>
@@ -288,16 +289,16 @@ export default function LogbookPage() {
               <div className="text-center">
                 <div className="text-4xl mb-4">📧</div>
                 <h3 className="text-xl font-light text-morandi-stone-700 mb-2">
-                  Check Your Email!
+                  {t('auth:checkYourEmail')}
                 </h3>
                 <p className="text-morandi-stone-600 mb-6">
-                  We've sent a magic link to {email}
+                  {t('auth:magicLinkSent', { email })}
                 </p>
                 <button
                   onClick={() => setLoginSuccess(false)}
                   className="btn-secondary"
                 >
-                  Got it
+                  {t('auth:gotIt')}
                 </button>
               </div>
             </div>

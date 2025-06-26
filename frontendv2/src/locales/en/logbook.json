@@ -27,7 +27,8 @@
     "pieceTitle": "Piece title",
     "composer": "Composer",
     "entry_one": "{{count}} entry",
-    "entry_other": "{{count}} entries"
+    "entry_other": "{{count}} entries",
+    "mood": "How did it go?"
   },
   "filters": {
     "byMonth": "By Month",

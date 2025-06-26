@@ -1,1 +1,69 @@
-{}
+{
+  "appName": "mirubato",
+  "tagline": "joue avec moi",
+  "loading": "Chargement...",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "add": "Ajouter",
+  "remove": "Retirer",
+  "search": "Rechercher",
+  "filter": "Filtrer",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "close": "Fermer",
+  "confirm": "Confirmer",
+  "yes": "Oui",
+  "no": "Non",
+  "error": "Erreur",
+  "success": "Succès",
+  "warning": "Avertissement",
+  "info": "Information",
+  "instruments": {
+    "piano": "Piano",
+    "guitar": "Guitare"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "logbook": "Journal",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  },
+  "time": {
+    "minute": "minute",
+    "minute_plural": "minutes",
+    "hour": "heure",
+    "hour_plural": "heures",
+    "day": "jour",
+    "day_plural": "jours",
+    "week": "semaine",
+    "week_plural": "semaines",
+    "month": "mois",
+    "month_plural": "mois",
+    "year": "an",
+    "year_plural": "ans",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "Semaine dernière",
+    "thisMonth": "Ce mois-ci",
+    "lastMonth": "Mois dernier",
+    "allTime": "Tout le temps"
+  },
+  "music": {
+    "notes": {
+      "C": "C",
+      "D": "D",
+      "E": "E",
+      "F": "F",
+      "G": "G",
+      "A": "A",
+      "B": "B"
+    },
+    "practice": "Pratique",
+    "lesson": "Leçon",
+    "performance": "Performance",
+    "rehearsal": "Répétition"
+  }
+}

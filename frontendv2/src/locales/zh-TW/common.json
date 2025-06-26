@@ -1,1 +1,69 @@
-{}
+{
+  "appName": "mirubato",
+  "tagline": "與我同奏",
+  "loading": "載入中...",
+  "save": "儲存",
+  "cancel": "取消",
+  "delete": "刪除",
+  "edit": "編輯",
+  "add": "新增",
+  "remove": "移除",
+  "search": "搜尋",
+  "filter": "篩選",
+  "previous": "上一頁",
+  "next": "下一頁",
+  "close": "關閉",
+  "confirm": "確認",
+  "yes": "是",
+  "no": "否",
+  "error": "錯誤",
+  "success": "成功",
+  "warning": "警告",
+  "info": "資訊",
+  "instruments": {
+    "piano": "鋼琴",
+    "guitar": "吉他"
+  },
+  "navigation": {
+    "home": "首頁",
+    "logbook": "練習日誌",
+    "reports": "報表",
+    "settings": "設定"
+  },
+  "time": {
+    "minute": "分鐘",
+    "minute_plural": "分鐘",
+    "hour": "小時",
+    "hour_plural": "小時",
+    "day": "天",
+    "day_plural": "天",
+    "week": "週",
+    "week_plural": "週",
+    "month": "月",
+    "month_plural": "月",
+    "year": "年",
+    "year_plural": "年",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本週",
+    "lastWeek": "上週",
+    "thisMonth": "本月",
+    "lastMonth": "上個月",
+    "allTime": "全部時間"
+  },
+  "music": {
+    "notes": {
+      "C": "C",
+      "D": "D",
+      "E": "E",
+      "F": "F",
+      "G": "G",
+      "A": "A",
+      "B": "B"
+    },
+    "practice": "練習",
+    "lesson": "課程",
+    "performance": "演出",
+    "rehearsal": "排練"
+  }
+}

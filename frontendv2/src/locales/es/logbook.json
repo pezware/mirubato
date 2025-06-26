@@ -27,7 +27,8 @@
     "pieceTitle": "Título de la pieza",
     "composer": "Compositor",
     "entry_one": "{{count}} entrada",
-    "entry_other": "{{count}} entradas"
+    "entry_other": "{{count}} entradas",
+    "mood": "¿Cómo te fue?"
   },
   "filters": {
     "byMonth": "Por mes",

@@ -1,1 +1,53 @@
-{}
+{
+  "title": "練習日誌",
+  "openLogbook": "開啟練習日誌",
+  "continueToLogbook": "繼續至練習日誌",
+  "loading": "正在載入您的練習記錄...",
+  "empty": "尚無練習記錄。開始記錄您的音樂旅程吧！",
+  "noResults": "沒有符合搜尋條件的記錄。",
+  "searchPlaceholder": "搜尋記錄...",
+  "syncStatus": {
+    "synced": "已同步",
+    "localOnly": "本地儲存"
+  },
+  "entry": {
+    "addEntry": "新增記錄",
+    "addFirstEntry": "新增您的第一筆記錄",
+    "saveEntry": "儲存記錄",
+    "updateEntry": "更新記錄",
+    "deleteEntry": "刪除記錄",
+    "editEntry": "編輯記錄",
+    "duration": "時長（分鐘）",
+    "durationPlaceholder": "30",
+    "type": "類型",
+    "pieces": "曲目",
+    "notes": "筆記",
+    "notesPlaceholder": "您練習了什麼？有什麼觀察？",
+    "addPiece": "新增曲目",
+    "pieceTitle": "曲目名稱",
+    "composer": "作曲家",
+    "entry_one": "{{count}} 筆記錄",
+    "entry_other": "{{count}} 筆記錄",
+    "mood": "練習感受如何？"
+  },
+  "filters": {
+    "byMonth": "按月",
+    "byWeek": "按週",
+    "last7Days": "最近 7 天",
+    "last30Days": "最近 30 天",
+    "thisMonth": "本月",
+    "lastMonth": "上個月",
+    "allTime": "全部時間"
+  },
+  "timeline": {
+    "week": "第 {{number}} 週",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "沮喪",
+    "neutral": "一般",
+    "satisfied": "滿意",
+    "excited": "興奮"
+  }
+}
