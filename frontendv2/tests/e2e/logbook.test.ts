@@ -44,21 +44,33 @@ test.describe('Logbook Features', () => {
     const notesTextarea = page.locator('textarea').first()
     await notesTextarea.fill('Worked on first movement, focusing on dynamics')
 
-    // Select mood
-    await page.click('button:has-text("Satisfied")')
+    // Select mood - use emoji
+    await page.click('button:has-text("😊")')
 
-    // Save the entry
-    await page.click('button:has-text("Save Entry")')
+    // Save the entry - look for submit button
+    const saveButton = page.locator('button[type="submit"]').last()
+    await saveButton.click()
 
-    // Wait for the modal to close and entry to appear
-    await page.waitForTimeout(1000)
+    // Wait for the modal to close
+    await page.waitForTimeout(2000)
 
-    // Verify entry appears in the list - look for any entry with minutes
-    const entryCards = page.locator('.p-4.hover\\:bg-morandi-stone-50')
-    await expect(entryCards.first()).toBeVisible()
+    // Check if we're back on the logbook page without the modal
+    await expect(page.locator('.fixed.inset-0.bg-black\\/50')).not.toBeVisible()
 
-    // Click on the first entry to expand it
-    await entryCards.first().click()
+    // Clear any search that might be there
+    const searchInput = page.locator('input[type="text"]').first()
+    await searchInput.clear()
+    await page.waitForTimeout(500)
+
+    // Verify entry appears in the list - look for the duration we just created
+    await expect(page.locator('text=/30\\s+minute/i')).toBeVisible()
+
+    // Click on the entry to expand it - find the entry container
+    const entryContainer = page
+      .locator('div')
+      .filter({ hasText: /30\\s+minute/i })
+      .first()
+    await entryContainer.click()
 
     // Now verify the pieces are visible in the expanded view
     await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
