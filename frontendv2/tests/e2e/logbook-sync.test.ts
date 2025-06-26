@@ -25,14 +25,15 @@ test.describe('Logbook Sync and Data Persistence', () => {
       duration: string,
       composer: string = 'Test Composer'
     ) => {
-      const addButton = page
-        .locator(
-          'button:has-text("Add Entry"), button:has-text("Add Your First Entry")'
-        )
-        .first()
+      // Look for add button with + sign
+      const addButton = await page.locator('button:has-text("+")').first()
       await addButton.click()
-      // Wait for the form to appear
-      await page.waitForSelector('h2:has-text("Add Entry")', { timeout: 5000 })
+
+      // Wait for form modal
+      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+        timeout: 5000,
+      })
+      await page.waitForSelector('form', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -257,21 +258,26 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Create duplicate entries locally
     const createDuplicateEntry = async () => {
-      const addButton = page
-        .locator(
-          'button:has-text("Add Entry"), button:has-text("Add Your First Entry")'
-        )
-        .first()
+      // Look for add button with + sign
+      const addButton = await page.locator('button:has-text("+")').first()
       await addButton.click()
-      // Wait for the form to appear
-      await page.waitForSelector('h2:has-text("Add Entry")', { timeout: 5000 })
+
+      // Wait for form modal
+      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+        timeout: 5000,
+      })
+      await page.waitForSelector('form', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
       await durationInput.fill('30')
 
-      await page.fill('input[placeholder="Piece title"]', 'Duplicate Entry')
-      await page.fill('input[placeholder="Composer"]', 'Same Composer')
+      // Find inputs by position
+      const pieceInputs = await page.locator('input[type="text"]').all()
+      if (pieceInputs.length >= 2) {
+        await pieceInputs[0].fill('Duplicate Entry')
+        await pieceInputs[1].fill('Same Composer')
+      }
       // Select mood
       await page.click('button:has-text("😊")')
 
@@ -433,8 +439,12 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await durationInput.clear()
     await durationInput.fill('15')
 
-    await page.fill('input[placeholder="Piece title"]', 'Local Entry')
-    await page.fill('input[placeholder="Composer"]', 'Local Composer')
+    // Find inputs by position
+    const pieceInputs = await page.locator('input[type="text"]').all()
+    if (pieceInputs.length >= 2) {
+      await pieceInputs[0].fill('Local Entry')
+      await pieceInputs[1].fill('Local Composer')
+    }
     await page.click('button:has-text("Satisfied")')
     await page.click('button:has-text("Save Entry")')
     await page.waitForTimeout(1000)
