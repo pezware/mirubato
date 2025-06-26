@@ -100,8 +100,14 @@ test.describe('Logbook Features', () => {
         await pieceInputs[0].fill(title)
         await pieceInputs[1].fill(composer)
       }
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
       await page.waitForTimeout(1000)
     }
 
@@ -154,8 +160,14 @@ test.describe('Logbook Features', () => {
 
       await page.fill('input[placeholder="Piece title"]', title)
       await page.fill('input[placeholder="Composer"]', 'Test Composer')
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
       await page.waitForTimeout(1000)
     }
 

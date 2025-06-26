@@ -44,8 +44,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
         await pieceInputs[0].fill(title)
         await pieceInputs[1].fill(composer)
       }
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
 
       // Wait for modal to close
       await page.waitForTimeout(1000)
@@ -266,8 +272,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
       await page.fill('input[placeholder="Piece title"]', 'Duplicate Entry')
       await page.fill('input[placeholder="Composer"]', 'Same Composer')
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
       await page.waitForTimeout(1000)
     }
 
