@@ -147,6 +147,155 @@
 
 **Expected Outcome**: Comprehensive music education platform with integrated practice, progress, and content management.
 
+## Microservices Architecture (Foundation for Future Features)
+
+### Goal: Build a scalable, decoupled architecture to support the platform's evolution
+
+**Architecture Overview**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              Frontend (React)                             │
+├─────────────────┬─────────────────┬─────────────────┬──────────────────┤
+│   Scorebook UI  │   Goalbook UI   │  Gradebook UI  │ Presentation UI   │
+└────────┬────────┴────────┬────────┴────────┬────────┴────────┬─────────┘
+         │                 │                 │                 │
+         ▼                 ▼                 ▼                 ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌────────────┐
+│  Scores Worker  │ │  Goals Worker   │ │  Grades Worker  │ │Performance │
+│  (Existing)     │ │  (New)          │ │  (New)          │ │  Worker    │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘ └─────┬──────┘
+         │                   │                   │                   │
+         └───────────────────┴───────────────────┴───────────────────┘
+                                    │
+                          ┌─────────┴─────────┐
+                          │ Shared Services   │
+                          ├─────────────────┬─┴────────────────┐
+                          │ Practice Worker │ Analytics Worker  │
+                          └─────────────────┴──────────────────┘
+```
+
+**Phase 1: Enhance Scores Worker (Existing)**
+
+- [ ] Add curated collections by instrument/level
+- [ ] Implement teacher-approved content flagging
+- [ ] Add difficulty analysis & auto-tagging
+- [ ] Support reading position tracking (measures/sections)
+- [ ] Enable PDF annotation support for teacher notes
+
+**Phase 2: Goals Worker (New - Core Value)**
+
+- [ ] Design personalized learning path system
+- [ ] Support both human teacher and LLM-created goals
+- [ ] Implement adaptive difficulty progression
+- [ ] Create practice material sequencing
+- [ ] Add milestone tracking and adjustments
+
+Key Features:
+
+- Goal creation by teachers or AI
+- Automatic material selection from scores
+- Progress-based difficulty adjustment
+- Integration with practice sessions
+
+**Phase 3: Practice Worker (New - Shared Service)**
+
+- [ ] Build real-time practice session tracking
+- [ ] Implement performance metrics collection
+- [ ] Add audio recording capabilities
+- [ ] Create auto-detection for trouble spots
+- [ ] Support practice loops and metronome
+
+Key Features:
+
+- Session recording and playback
+- Real-time performance analysis
+- Integration with goals for progress tracking
+- Detailed practice analytics
+
+**Phase 4: Grades Worker (New)**
+
+- [ ] Design assessment & feedback system
+- [ ] Support human teacher grading
+- [ ] Implement LLM-based auto-grading
+- [ ] Create feedback generation system
+- [ ] Add goal adjustment triggers
+
+Key Features:
+
+- Multi-criteria assessment (rhythm, pitch, dynamics)
+- Automated performance analysis
+- Constructive feedback generation
+- Integration with goals for adaptive learning
+
+**Phase 5: Analytics Worker (New - Shared Service)**
+
+- [ ] Build cross-service analytics engine
+- [ ] Track practice patterns and trends
+- [ ] Measure skill improvement over time
+- [ ] Optimize difficulty curves
+- [ ] Generate insights for teachers and students
+
+Key Features:
+
+- Student progress dashboards
+- Teacher effectiveness metrics
+- LLM teaching performance analysis
+- Predictive analytics for goal setting
+
+**Phase 6: Performance Worker (Future)**
+
+- [ ] Create performance recording system
+- [ ] Build public/private sharing features
+- [ ] Implement performance portfolios
+- [ ] Add peer feedback mechanisms
+- [ ] Design virtual recital rooms
+
+**Key Design Principles**
+
+1. **Loose Coupling**: Each worker operates independently with clear APIs
+2. **Event-Driven**: Workers communicate through events (e.g., practice completed → trigger grading)
+3. **LLM-Ready**: Clear interfaces supporting both human and AI teachers/graders
+4. **Progressive Enhancement**: Start with Scorebook, incrementally add features
+5. **Student-Centric**: All data models focus on student progress and learning
+6. **Performance First**: Analytics and optimization built in from the start
+
+**Data Flow Examples**
+
+Teacher Creates Goal:
+
+```
+Teacher → Goals Worker → Creates goal with specific scores/sections
+        → Analytics Worker → Suggests difficulty based on student history
+        → Scores Worker → Links curated materials
+```
+
+Student Practice Session:
+
+```
+Student → Practice Worker → Records session data
+        → Analytics Worker → Real-time performance analysis
+        → Goals Worker → Checks progress against milestones
+```
+
+Automated Grading:
+
+```
+Practice Complete → Grades Worker → LLM analyzes performance
+                  → Goals Worker → Adjusts difficulty/materials
+                  → Student → Receives new practice plan
+```
+
+**Implementation Timeline**
+
+- **Q1 2025**: Enhance Scores Worker for curated Scorebook
+- **Q2 2025**: Build Goals & Practice Workers (core value proposition)
+- **Q3 2025**: Add Grades Worker with LLM integration
+- **Q4 2025**: Analytics Worker for comprehensive insights
+- **2026**: Performance Worker for presentations and recitals
+
+**Expected Outcome**: A modular, scalable platform that can evolve from simple score storage to a comprehensive AI-enhanced music education system.
+
 ## Long-term Vision (6+ months)
 
 ### Basic Features
