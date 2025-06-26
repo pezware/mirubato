@@ -296,6 +296,140 @@ Practice Complete → Grades Worker → LLM analyzes performance
 
 **Expected Outcome**: A modular, scalable platform that can evolve from simple score storage to a comprehensive AI-enhanced music education system.
 
+## Internationalization (i18n) & Localization (l10n) Plan
+
+### Goal: Make Mirubato accessible globally with support for multiple languages and cultures
+
+**Target Languages**
+
+- 🇺🇸 English (en) - Base language
+- 🇪🇸 Spanish (es) - Large music education market
+- 🇫🇷 French (fr) - Strong classical music tradition
+- 🇹🇼 Traditional Chinese (zh-TW) - Growing music education market
+
+**Implementation Phases**
+
+### Phase 1: Infrastructure Setup (1 week)
+
+- [ ] Install and configure react-i18next for frontend
+- [ ] Set up translation file structure and namespaces
+- [ ] Create language detection and switching mechanism
+- [ ] Add TypeScript types for translation keys
+- [ ] Configure build process for translation files
+- [ ] Set up development workflow for translations
+
+### Phase 2: String Extraction & Organization (1 week)
+
+- [ ] Extract ~300 hardcoded strings from frontend components
+- [ ] Organize translations into logical namespaces:
+  - `common` - Shared UI elements
+  - `auth` - Authentication flows
+  - `logbook` - Practice logging features
+  - `reports` - Analytics and statistics
+  - `errors` - Error messages
+  - `email` - Email templates
+- [ ] Create translation key naming conventions
+- [ ] Document context for translators
+
+### Phase 3: Frontend Implementation (2 weeks)
+
+- [ ] Replace all hardcoded strings with translation functions
+- [ ] Implement date/time localization with locale-aware formatting
+- [ ] Add number formatting for durations and statistics
+- [ ] Handle pluralization rules for each language
+- [ ] Create language switcher component
+- [ ] Test UI layouts for text expansion (French ~30% longer)
+- [ ] Ensure Chinese character rendering
+
+### Phase 4: Backend Localization (1 week)
+
+- [ ] Add Accept-Language header detection
+- [ ] Localize API error messages
+- [ ] Create multi-language email templates
+- [ ] Implement language preference storage
+- [ ] Add localized validation messages
+
+### Phase 5: Music-Specific Localization (1 week)
+
+- [ ] Handle musical terminology variations:
+  - Note naming (C-D-E vs Do-Re-Mi vs 音名)
+  - Time signatures and tempo markings
+  - Instrument names
+- [ ] Create music education glossary for each language
+- [ ] Add cultural considerations (e.g., practice customs)
+
+### Phase 6: Testing & Polish (1 week)
+
+- [ ] Comprehensive testing in all languages
+- [ ] UI/UX review for each locale
+- [ ] Performance testing with translation loading
+- [ ] SEO optimization with hreflang tags
+- [ ] Accessibility testing with screen readers
+
+**Technical Implementation Details**
+
+```typescript
+// Folder structure
+src/
+  locales/
+    en/
+      common.json
+      auth.json
+      logbook.json
+      reports.json
+      errors.json
+    es/
+      common.json
+      ...
+    fr/
+      common.json
+      ...
+    zh-TW/
+      common.json
+      ...
+```
+
+```typescript
+// Example usage
+import { useTranslation } from 'react-i18next';
+
+function LogbookEntry() {
+  const { t, i18n } = useTranslation('logbook');
+
+  return (
+    <button>{t('addEntry')}</button>
+  );
+}
+```
+
+**Key Considerations**
+
+1. **Text Expansion**: French text typically 30% longer than English
+2. **Character Sets**: Ensure proper Unicode support for Chinese
+3. **Date/Time**: Use locale-specific formats
+4. **Currency**: Consider future payment features
+5. **Cultural Adaptation**: Musical terminology varies by region
+
+**Translation Management**
+
+- [ ] Set up translation key extraction scripts
+- [ ] Create translator guidelines document
+- [ ] Establish review process for translations
+- [ ] Plan for continuous translation updates
+- [ ] Consider translation management service (future)
+
+**Success Metrics**
+
+- [ ] 100% string coverage in all languages
+- [ ] <200ms translation loading time
+- [ ] Zero layout breaks from text expansion
+- [ ] Positive feedback from native speakers
+- [ ] Increased global user adoption
+
+**Timeline**: Q3 2025 (7 weeks total)
+
+**Expected Outcome**: A truly global platform that respects linguistic and cultural differences while maintaining a consistent user experience across all supported languages.
+
 ## Long-term Vision (6+ months)
 
 ### Basic Features
