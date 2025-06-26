@@ -193,7 +193,7 @@ export default function LogbookEntryList({
         level: 'week',
       },
     ]
-  }, [selectedDate])
+  }, [selectedDate, t])
 
   if (editingEntry) {
     return (
@@ -424,10 +424,7 @@ export default function LogbookEntryList({
 
                     <div className="flex items-center gap-4">
                       <span className="text-morandi-stone-700">
-                        {t('common:time.minute_plural', {
-                          count: entry.duration,
-                          defaultValue: '{{count}} minutes',
-                        })}
+                        {t('common:time.minute', { count: entry.duration })}
                       </span>
                       {entry.mood && (
                         <span className="text-lg">

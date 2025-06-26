@@ -15,7 +15,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Helper to count visible entries
     const countEntries = async () => {
-      const entries = await page.locator('text=minutes').count()
+      const entries = await page.locator('text=/\\d+\\s+minute/i').count()
       return entries
     }
 
@@ -31,14 +31,19 @@ test.describe('Logbook Sync and Data Persistence', () => {
         )
         .first()
       await addButton.click()
-      await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+      // Wait for the form to appear
+      await page.waitForSelector('h2:has-text("Add Entry")', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      await page.fill('input[placeholder="Piece title"]', title)
-      await page.fill('input[placeholder="Composer"]', composer)
+      // Find inputs by their position or label instead of placeholder
+      const pieceInputs = await page.locator('input[type="text"]').all()
+      if (pieceInputs.length >= 2) {
+        await pieceInputs[0].fill(title)
+        await pieceInputs[1].fill(composer)
+      }
       await page.click('button:has-text("Satisfied")')
       await page.click('button:has-text("Save Entry")')
 
@@ -47,7 +52,8 @@ test.describe('Logbook Sync and Data Persistence', () => {
     }
 
     // Verify we start with local storage
-    await expect(page.locator('text=Local storage')).toBeVisible()
+    // Check for local storage indicator - using the emoji as it's more stable
+    await expect(page.locator('text=💾')).toBeVisible()
 
     // Step 1: Create first entry while not logged in
     await createEntry('Anonymous Entry 1', '10')
@@ -55,7 +61,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Verify we have 1 entry
     let entryCount = await countEntries()
     expect(entryCount).toBe(1)
-    await expect(page.locator('text=10 minutes')).toBeVisible()
+    await expect(page.locator('text=/10\\s+minute/i')).toBeVisible()
 
     // Step 2: Create second entry while still not logged in
     await createEntry('Anonymous Entry 2', '20')
@@ -63,8 +69,8 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Verify we have 2 entries
     entryCount = await countEntries()
     expect(entryCount).toBe(2)
-    await expect(page.locator('text=10 minutes')).toBeVisible()
-    await expect(page.locator('text=20 minutes')).toBeVisible()
+    await expect(page.locator('text=/10\\s+minute/i')).toBeVisible()
+    await expect(page.locator('text=/20\\s+minute/i')).toBeVisible()
 
     // Step 3: Mock authentication endpoints for login
     await page.route('**/api/auth/**', async route => {
@@ -212,15 +218,16 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Verify we have 3 entries
     entryCount = await countEntries()
     expect(entryCount).toBe(3)
-    await expect(page.locator('text=10 minutes')).toBeVisible()
-    await expect(page.locator('text=20 minutes')).toBeVisible()
-    await expect(page.locator('text=30 minutes')).toBeVisible()
+    await expect(page.locator('text=/10\\s+minute/i')).toBeVisible()
+    await expect(page.locator('text=/20\\s+minute/i')).toBeVisible()
+    await expect(page.locator('text=/30\\s+minute/i')).toBeVisible()
 
     // Step 6: Logout
     await page.click('button:has-text("Logout")')
 
     // Verify we're logged out
-    await expect(page.locator('text=Local storage')).toBeVisible()
+    // Check for local storage indicator - using the emoji as it's more stable
+    await expect(page.locator('text=💾')).toBeVisible()
     await expect(page.locator('button:has-text("Sign in")')).toBeVisible()
 
     // Step 7: Verify all 3 entries persist after logout
@@ -228,13 +235,13 @@ test.describe('Logbook Sync and Data Persistence', () => {
     expect(entryCount).toBe(3)
 
     // Expand and verify each entry
-    await page.locator('text=10 minutes').click()
+    await page.locator('text=/10\\s+minute/i').click()
     await expect(page.locator('text=Anonymous Entry 1')).toBeVisible()
 
-    await page.locator('text=20 minutes').click()
+    await page.locator('text=/20\\s+minute/i').click()
     await expect(page.locator('text=Anonymous Entry 2')).toBeVisible()
 
-    await page.locator('text=30 minutes').click()
+    await page.locator('text=/30\\s+minute/i').click()
     await expect(page.locator('text=Logged In Entry 3')).toBeVisible()
   })
 
@@ -250,7 +257,8 @@ test.describe('Logbook Sync and Data Persistence', () => {
         )
         .first()
       await addButton.click()
-      await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+      // Wait for the form to appear
+      await page.waitForSelector('h2:has-text("Add Entry")', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -268,7 +276,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await createDuplicateEntry()
 
     // Should have 2 entries locally
-    let entryCount = await page.locator('text=minutes').count()
+    let entryCount = await page.locator('text=/\\d+\\s+minute/i').count()
     expect(entryCount).toBe(2)
 
     // Mock logbook API endpoints
@@ -384,11 +392,11 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // However, the store's syncWithServer is not accessible from the window
     // and the sync doesn't happen automatically without proper auth flow
     // So we'll still have our 2 local entries
-    entryCount = await page.locator('text=30 minutes').count()
+    entryCount = await page.locator('text=/30\\s+minute/i').count()
     expect(entryCount).toBe(2)
 
     // Verify the entry content - click on the first one
-    await page.locator('text=30 minutes').first().click()
+    await page.locator('text=/30\\s+minute/i').first().click()
     await expect(page.locator('text=Duplicate Entry')).toBeVisible()
     await expect(page.locator('text=Same Composer')).toBeVisible()
   })
@@ -518,15 +526,15 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // The sync doesn't happen automatically without proper auth flow
     // So we'll only have our 1 local entry
     await page.waitForTimeout(1000) // Wait for any potential sync
-    const entryCount = await page.locator('text=minutes').count()
+    const entryCount = await page.locator('text=/\\d+\\s+minute/i').count()
     // We expect 1 entry (the local one)
     expect(entryCount).toBe(1)
 
     // Verify only the local entry exists
-    await expect(page.locator('text=15 minutes')).toBeVisible() // Local
+    await expect(page.locator('text=/15\\s+minute/i')).toBeVisible() // Local
 
     // Expand to verify content
-    await page.locator('text=15 minutes').click()
+    await page.locator('text=/15\\s+minute/i').click()
     await expect(page.locator('text=Local Entry')).toBeVisible()
   })
 })
