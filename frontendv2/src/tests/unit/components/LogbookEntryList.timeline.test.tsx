@@ -7,6 +7,49 @@ import type { LogbookEntry } from '../../../api/logbook'
 
 vi.mock('../../../stores/logbookStore')
 
+// Mock specific translations for this test
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      // Handle specific translations needed for this test
+      if (
+        key === 'logbook:entry.foundEntries' &&
+        options?.count !== undefined
+      ) {
+        return `Found ${options.count} entries`
+      }
+      if (key === 'logbook:filters.byWeek') return 'By Week'
+      if (key === 'logbook:filters.byMonth') return 'By Month'
+      if (key === 'logbook:timeline.week' && options?.number !== undefined) {
+        return `Week ${options.number}`
+      }
+      if (key === 'common:time.minute_plural' && options?.count !== undefined) {
+        return `${options.count} minutes`
+      }
+      if (key === 'common:months.june') return 'June'
+      if (key === 'common:months.may') return 'May'
+      if (key === 'common:previous') return 'Previous'
+      if (key === 'common:next') return 'Next'
+      if (key === 'logbook:entry.editEntry') return 'Edit entry'
+      if (key === 'logbook:entry.deleteEntry') return 'Delete entry'
+      if (key === 'logbook:entry.confirmDelete')
+        return 'Are you sure you want to delete this entry?'
+      if (key === 'logbook:entry.pieces') return 'Pieces'
+      if (key === 'logbook:entry.techniques') return 'Techniques'
+      return key
+    },
+    i18n: {
+      changeLanguage: () => new Promise(() => {}),
+      language: 'en',
+    },
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {},
+  },
+}))
+
 describe('LogbookEntryList Timeline Filtering', () => {
   const mockDeleteEntry = vi.fn()
 

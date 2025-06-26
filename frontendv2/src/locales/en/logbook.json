@@ -28,7 +28,10 @@
     "composer": "Composer",
     "entry_one": "{{count}} entry",
     "entry_other": "{{count}} entries",
-    "mood": "How did it go?"
+    "mood": "How did it go?",
+    "confirmDelete": "Are you sure you want to delete this entry?",
+    "foundEntries": "Found {{count}} entries",
+    "techniques": "Techniques"
   },
   "filters": {
     "byMonth": "By Month",

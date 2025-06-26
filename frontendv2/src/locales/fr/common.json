@@ -51,6 +51,20 @@
     "lastMonth": "Mois dernier",
     "allTime": "Tout le temps"
   },
+  "months": {
+    "january": "Janvier",
+    "february": "Février",
+    "march": "Mars",
+    "april": "Avril",
+    "may": "Mai",
+    "june": "Juin",
+    "july": "Juillet",
+    "august": "Août",
+    "september": "Septembre",
+    "october": "Octobre",
+    "november": "Novembre",
+    "december": "Décembre"
+  },
   "music": {
     "notes": {
       "C": "C",

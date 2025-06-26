@@ -28,7 +28,10 @@
     "composer": "Compositor",
     "entry_one": "{{count}} entrada",
     "entry_other": "{{count}} entradas",
-    "mood": "¿Cómo te fue?"
+    "mood": "¿Cómo te fue?",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
+    "foundEntries": "Se encontraron {{count}} entradas",
+    "techniques": "Técnicas"
   },
   "filters": {
     "byMonth": "Por mes",

@@ -28,7 +28,10 @@
     "composer": "作曲家",
     "entry_one": "{{count}} 筆記錄",
     "entry_other": "{{count}} 筆記錄",
-    "mood": "練習感受如何？"
+    "mood": "練習感受如何？",
+    "confirmDelete": "您確定要刪除這筆記錄嗎？",
+    "foundEntries": "找到 {{count}} 筆記錄",
+    "techniques": "技巧"
   },
   "filters": {
     "byMonth": "按月",
