@@ -19,7 +19,7 @@ export default function InteractivePiano() {
         'F#5': 'Fs5.mp3',
         A5: 'A5.mp3',
       },
-      release: 1,
+      release: 2,
       baseUrl: 'https://tonejs.github.io/audio/salamander/',
     }).toDestination()
 
@@ -43,7 +43,7 @@ export default function InteractivePiano() {
   const playNote = async (note: string) => {
     await startAudio()
     if (isLoaded && samplerRef.current) {
-      samplerRef.current.triggerAttackRelease(note, '8n')
+      samplerRef.current.triggerAttackRelease(note, '2n')
     }
   }
 
