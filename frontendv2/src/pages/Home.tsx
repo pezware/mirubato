@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import InteractivePiano from '../components/InteractivePiano'
 
 export default function HomePage() {
   const { user, isAuthenticated, login, logout, isLoading, error } =
@@ -85,57 +86,7 @@ export default function HomePage() {
             </p>
 
             {/* Interactive Piano Panel */}
-            <div className="glass-panel p-8 max-w-md mx-auto mb-8 animate-slide-up">
-              <div className="text-center">
-                <h3 className="text-lg font-light text-morandi-stone-700 mb-4">
-                  Play the notes shown below
-                </h3>
-                <p className="text-sm text-morandi-stone-600 mb-6">
-                  First click enables audio
-                </p>
-
-                {/* Music Notation Placeholder */}
-                <div className="bg-morandi-sage-100/30 rounded-lg p-6 mb-6">
-                  <div className="text-morandi-stone-600">
-                    {/* Staff lines */}
-                    <svg className="w-full h-20 mb-4" viewBox="0 0 300 80">
-                      <g stroke="currentColor" strokeWidth="1" opacity="0.5">
-                        <line x1="0" y1="20" x2="300" y2="20" />
-                        <line x1="0" y1="30" x2="300" y2="30" />
-                        <line x1="0" y1="40" x2="300" y2="40" />
-                        <line x1="0" y1="50" x2="300" y2="50" />
-                        <line x1="0" y1="60" x2="300" y2="60" />
-                      </g>
-                      {/* Note placeholder */}
-                      <circle cx="150" cy="50" r="6" fill="currentColor" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Piano Keys */}
-                <div className="relative flex justify-center mb-4">
-                  {/* White keys */}
-                  <div className="flex gap-[2px]">
-                    {['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(note => (
-                      <div
-                        key={note}
-                        className="w-10 h-32 bg-white border border-morandi-stone-300 rounded-b-md hover:bg-morandi-stone-100 transition-colors cursor-pointer"
-                      />
-                    ))}
-                  </div>
-                  {/* Black keys positioned absolutely */}
-                  <div className="absolute flex top-0">
-                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-7" />
-                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
-                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-14" />
-                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
-                    <div className="w-6 h-20 bg-morandi-stone-700 rounded-b-sm hover:bg-morandi-stone-600 transition-colors cursor-pointer ml-4" />
-                  </div>
-                </div>
-
-                <p className="text-sm text-morandi-stone-600">C major</p>
-              </div>
-            </div>
+            <InteractivePiano />
 
             {/* CTA or User Status */}
             {!isAuthenticated ? (
