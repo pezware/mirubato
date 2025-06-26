@@ -1,0 +1,20 @@
+{
+  "title": "練習報表",
+  "viewReports": "查看報表",
+  "totalPractice": "總練習時間",
+  "sessions": "練習次數",
+  "avgDuration": "平均時長",
+  "dayStreak": "連續天數",
+  "mostPracticedPieces": "最常練習的曲目",
+  "timeByInstrument": "各樂器練習時間",
+  "export": {
+    "exportJSON": "匯出 JSON",
+    "exportCSV": "匯出 CSV"
+  },
+  "stats": {
+    "session_one": "{{count}} 次練習",
+    "session_other": "{{count}} 次練習",
+    "hours": "{{hours}} 小時",
+    "minutes": "{{minutes}} 分鐘"
+  }
+}

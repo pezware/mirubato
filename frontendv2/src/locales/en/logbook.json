@@ -1,0 +1,56 @@
+{
+  "title": "Logbook",
+  "openLogbook": "Open Logbook",
+  "continueToLogbook": "Continue to Logbook",
+  "loading": "Loading your practice sessions...",
+  "empty": "No practice entries yet. Start tracking your musical journey!",
+  "noResults": "No entries match your search.",
+  "searchPlaceholder": "Search entries...",
+  "syncStatus": {
+    "synced": "Synced",
+    "localOnly": "Local storage"
+  },
+  "entry": {
+    "addEntry": "Add Entry",
+    "addFirstEntry": "Add Your First Entry",
+    "saveEntry": "Save Entry",
+    "updateEntry": "Update Entry",
+    "deleteEntry": "Delete Entry",
+    "editEntry": "Edit Entry",
+    "duration": "Duration (minutes)",
+    "durationPlaceholder": "30",
+    "type": "Type",
+    "pieces": "Pieces",
+    "notes": "Notes",
+    "notesPlaceholder": "What did you work on? Any observations?",
+    "addPiece": "Add Piece",
+    "pieceTitle": "Piece title",
+    "composer": "Composer",
+    "entry_one": "{{count}} entry",
+    "entry_other": "{{count}} entries",
+    "mood": "How did it go?",
+    "confirmDelete": "Are you sure you want to delete this entry?",
+    "foundEntries": "Found {{count}} entries",
+    "techniques": "Techniques"
+  },
+  "filters": {
+    "byMonth": "By Month",
+    "byWeek": "By Week",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "allTime": "All time"
+  },
+  "timeline": {
+    "week": "Week {{number}}",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "Frustrated",
+    "neutral": "Neutral",
+    "satisfied": "Satisfied",
+    "excited": "Excited"
+  }
+}

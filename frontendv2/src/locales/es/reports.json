@@ -1,0 +1,20 @@
+{
+  "title": "Informes de práctica",
+  "viewReports": "Ver informes",
+  "totalPractice": "Práctica total",
+  "sessions": "Sesiones",
+  "avgDuration": "Duración promedio",
+  "dayStreak": "Racha de días",
+  "mostPracticedPieces": "Piezas más practicadas",
+  "timeByInstrument": "Tiempo por instrumento",
+  "export": {
+    "exportJSON": "Exportar JSON",
+    "exportCSV": "Exportar CSV"
+  },
+  "stats": {
+    "session_one": "{{count}} sesión",
+    "session_other": "{{count}} sesiones",
+    "hours": "{{hours}}h",
+    "minutes": "{{minutes}}m"
+  }
+}

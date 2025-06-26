@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../stores/authStore'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 import InteractivePiano from '../components/InteractivePiano'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function HomePage() {
+  const { t } = useTranslation(['common', 'auth', 'logbook'])
   const { user, isAuthenticated, login, logout, isLoading, error } =
     useAuthStore()
   const [email, setEmail] = useState('')
@@ -41,7 +44,8 @@ export default function HomePage() {
         {/* Header */}
         <header className="p-6 flex justify-between items-center">
           <div className="text-white/90">{/* Logo placeholder */}</div>
-          <div>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             {isAuthenticated && user ? (
               <div className="flex items-center gap-4">
                 <span className="text-white/90 text-sm">{user.email}</span>
@@ -49,14 +53,14 @@ export default function HomePage() {
                   to="/logbook"
                   className="text-white/90 hover:text-white text-sm transition-colors"
                 >
-                  Logbook
+                  {t('common:navigation.logbook')}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="text-white/90 hover:text-white text-sm transition-colors"
                   disabled={isLoading}
                 >
-                  Sign out
+                  {t('auth:signOut')}
                 </button>
               </div>
             ) : (
@@ -66,7 +70,7 @@ export default function HomePage() {
                     onClick={() => setShowLoginForm(true)}
                     className="text-white/90 hover:text-white text-sm transition-colors"
                   >
-                    Sign in
+                    {t('auth:signIn')}
                   </button>
                 )}
               </>
@@ -79,10 +83,10 @@ export default function HomePage() {
           <div className="text-center">
             {/* Title */}
             <h1 className="text-7xl font-thin text-white mb-4 tracking-wide animate-fade-in">
-              mirubato
+              {t('common:appName')}
             </h1>
             <p className="text-xl text-white/80 mb-12 font-light">
-              play with me
+              {t('common:tagline')}
             </p>
 
             {/* Interactive Piano Panel */}
@@ -94,14 +98,14 @@ export default function HomePage() {
                 to="/logbook"
                 className="inline-block bg-white/90 hover:bg-white text-morandi-stone-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Open Logbook →
+                {t('logbook:openLogbook')} →
               </Link>
             ) : (
               <Link
                 to="/logbook"
                 className="inline-block bg-morandi-sage-400 hover:bg-morandi-sage-500 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Continue to Logbook →
+                {t('logbook:continueToLogbook')} →
               </Link>
             )}
           </div>
@@ -120,7 +124,7 @@ export default function HomePage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
           <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
             <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
-              Sign In
+              {t('auth:signIn')}
             </h2>
 
             {/* Google Sign In */}
@@ -144,7 +148,7 @@ export default function HomePage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white/90 text-morandi-stone-500">
-                  Or continue with email
+                  {t('auth:orContinueWithEmail')}
                 </span>
               </div>
             </div>
@@ -159,7 +163,7 @@ export default function HomePage() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   className="w-full px-4 py-3 bg-white/50 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-                  placeholder="your@email.com"
+                  placeholder={t('auth:emailPlaceholder')}
                 />
               </div>
               {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -169,14 +173,14 @@ export default function HomePage() {
                   disabled={isLoading}
                   className="btn-primary flex-1"
                 >
-                  {isLoading ? 'Sending...' : 'Send Magic Link'}
+                  {isLoading ? t('common:loading') : t('auth:sendMagicLink')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowLoginForm(false)}
                   className="btn-secondary flex-1"
                 >
-                  Cancel
+                  {t('common:cancel')}
                 </button>
               </div>
             </form>
@@ -191,16 +195,16 @@ export default function HomePage() {
             <div className="text-center">
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-xl font-light text-morandi-stone-700 mb-2">
-                Check Your Email!
+                {t('auth:checkYourEmail')}
               </h3>
               <p className="text-morandi-stone-600 mb-6">
-                We've sent a magic link to {email}
+                {t('auth:magicLinkSent', { email })}
               </p>
               <button
                 onClick={() => setLoginSuccess(false)}
                 className="btn-secondary"
               >
-                Got it
+                {t('auth:gotIt')}
               </button>
             </div>
           </div>

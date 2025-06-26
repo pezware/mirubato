@@ -1,0 +1,12 @@
+{
+  "generic": "Une erreur s'est produite.",
+  "tryAgain": "Veuillez réessayer.",
+  "offline": "Vous semblez être hors ligne. Les modifications seront synchronisées lorsque vous serez de nouveau en ligne.",
+  "loadFailed": "Impossible de charger les données. Veuillez actualiser la page.",
+  "saveFailed": "Impossible d'enregistrer. Veuillez réessayer.",
+  "deleteFailed": "Impossible de supprimer. Veuillez réessayer.",
+  "syncFailed": "Échec de la synchronisation. Vos modifications sont enregistrées localement.",
+  "notAuthenticated": "Veuillez vous connecter pour continuer.",
+  "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+  "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+}

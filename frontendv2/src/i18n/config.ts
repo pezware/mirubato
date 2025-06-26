@@ -1,0 +1,81 @@
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import LanguageDetector from 'i18next-browser-languagedetector'
+
+// Import translations
+import enCommon from '../locales/en/common.json'
+import enAuth from '../locales/en/auth.json'
+import enLogbook from '../locales/en/logbook.json'
+import enReports from '../locales/en/reports.json'
+import enErrors from '../locales/en/errors.json'
+
+import esCommon from '../locales/es/common.json'
+import esAuth from '../locales/es/auth.json'
+import esLogbook from '../locales/es/logbook.json'
+import esReports from '../locales/es/reports.json'
+import esErrors from '../locales/es/errors.json'
+
+import frCommon from '../locales/fr/common.json'
+import frAuth from '../locales/fr/auth.json'
+import frLogbook from '../locales/fr/logbook.json'
+import frReports from '../locales/fr/reports.json'
+import frErrors from '../locales/fr/errors.json'
+
+import zhTWCommon from '../locales/zh-TW/common.json'
+import zhTWAuth from '../locales/zh-TW/auth.json'
+import zhTWLogbook from '../locales/zh-TW/logbook.json'
+import zhTWReports from '../locales/zh-TW/reports.json'
+import zhTWErrors from '../locales/zh-TW/errors.json'
+
+export const defaultNS = 'common'
+export const resources = {
+  en: {
+    common: enCommon,
+    auth: enAuth,
+    logbook: enLogbook,
+    reports: enReports,
+    errors: enErrors,
+  },
+  es: {
+    common: esCommon,
+    auth: esAuth,
+    logbook: esLogbook,
+    reports: esReports,
+    errors: esErrors,
+  },
+  fr: {
+    common: frCommon,
+    auth: frAuth,
+    logbook: frLogbook,
+    reports: frReports,
+    errors: frErrors,
+  },
+  'zh-TW': {
+    common: zhTWCommon,
+    auth: zhTWAuth,
+    logbook: zhTWLogbook,
+    reports: zhTWReports,
+    errors: zhTWErrors,
+  },
+} as const
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    defaultNS,
+    fallbackLng: 'en',
+    debug: import.meta.env.DEV,
+
+    interpolation: {
+      escapeValue: false, // React already escapes values
+    },
+
+    detection: {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+    },
+  })
+
+export default i18n

@@ -1,0 +1,56 @@
+{
+  "title": "Journal",
+  "openLogbook": "Ouvrir le journal",
+  "continueToLogbook": "Continuer vers le journal",
+  "loading": "Chargement de vos sessions de pratique...",
+  "empty": "Aucune entrée de pratique. Commencez à suivre votre parcours musical !",
+  "noResults": "Aucune entrée ne correspond à votre recherche.",
+  "searchPlaceholder": "Rechercher des entrées...",
+  "syncStatus": {
+    "synced": "Synchronisé",
+    "localOnly": "Stockage local"
+  },
+  "entry": {
+    "addEntry": "Ajouter une entrée",
+    "addFirstEntry": "Ajouter votre première entrée",
+    "saveEntry": "Enregistrer l'entrée",
+    "updateEntry": "Mettre à jour l'entrée",
+    "deleteEntry": "Supprimer l'entrée",
+    "editEntry": "Modifier l'entrée",
+    "duration": "Durée (minutes)",
+    "durationPlaceholder": "30",
+    "type": "Type",
+    "pieces": "Pièces",
+    "notes": "Notes",
+    "notesPlaceholder": "Sur quoi avez-vous travaillé ? Des observations ?",
+    "addPiece": "Ajouter une pièce",
+    "pieceTitle": "Titre de la pièce",
+    "composer": "Compositeur",
+    "entry_one": "{{count}} entrée",
+    "entry_other": "{{count}} entrées",
+    "mood": "Comment ça s'est passé ?",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
+    "foundEntries": "{{count}} entrées trouvées",
+    "techniques": "Techniques"
+  },
+  "filters": {
+    "byMonth": "Par mois",
+    "byWeek": "Par semaine",
+    "last7Days": "7 derniers jours",
+    "last30Days": "30 derniers jours",
+    "thisMonth": "Ce mois-ci",
+    "lastMonth": "Mois dernier",
+    "allTime": "Tout le temps"
+  },
+  "timeline": {
+    "week": "Semaine {{number}}",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "Frustré",
+    "neutral": "Neutre",
+    "satisfied": "Satisfait",
+    "excited": "Enthousiaste"
+  }
+}

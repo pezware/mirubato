@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
@@ -17,6 +18,7 @@ export default function LogbookEntryList({
   entries,
   onUpdate,
 }: LogbookEntryListProps) {
+  const { t, i18n } = useTranslation(['logbook', 'common'])
   const { deleteEntry } = useLogbookStore()
   const [editingEntry, setEditingEntry] = useState<LogbookEntry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -30,7 +32,7 @@ export default function LogbookEntryList({
   } | null>(null)
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this entry?')) {
+    if (!confirm(t('logbook:entry.confirmDelete'))) {
       return
     }
 
@@ -47,7 +49,7 @@ export default function LogbookEntryList({
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(i18n.language, {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -57,7 +59,7 @@ export default function LogbookEntryList({
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString(i18n.language, {
       hour: 'numeric',
       minute: '2-digit',
     })
@@ -168,26 +170,30 @@ export default function LogbookEntryList({
     if (!selectedDate) return []
 
     const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+      t('common:months.january'),
+      t('common:months.february'),
+      t('common:months.march'),
+      t('common:months.april'),
+      t('common:months.may'),
+      t('common:months.june'),
+      t('common:months.july'),
+      t('common:months.august'),
+      t('common:months.september'),
+      t('common:months.october'),
+      t('common:months.november'),
+      t('common:months.december'),
     ]
 
     return [
       { label: selectedDate.year.toString(), value: 'year', level: 'year' },
       { label: monthNames[selectedDate.month], value: 'month', level: 'month' },
-      { label: `Week ${selectedDate.week}`, value: 'week', level: 'week' },
+      {
+        label: t('logbook:timeline.week', { number: selectedDate.week }),
+        value: 'week',
+        level: 'week',
+      },
     ]
-  }, [selectedDate])
+  }, [selectedDate, t])
 
   if (editingEntry) {
     return (
@@ -208,7 +214,7 @@ export default function LogbookEntryList({
       <div className="bg-white rounded-lg p-4 shadow-sm border border-morandi-stone-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-medium text-morandi-stone-600 uppercase tracking-wide">
-            Found {stats.entries} entries
+            {t('logbook:entry.foundEntries', { count: stats.entries })}
           </h2>
           <div className="flex gap-2">
             <Button
@@ -219,7 +225,7 @@ export default function LogbookEntryList({
                 setSelectedLevel('month')
               }}
             >
-              By Month
+              {t('logbook:filters.byMonth')}
             </Button>
             <Button
               variant={viewMode === 'week' ? 'primary' : 'ghost'}
@@ -229,7 +235,7 @@ export default function LogbookEntryList({
                 setSelectedLevel('week')
               }}
             >
-              By Week
+              {t('logbook:filters.byWeek')}
             </Button>
           </div>
         </div>
@@ -286,7 +292,7 @@ export default function LogbookEntryList({
               }
             }}
             className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-            aria-label="Previous"
+            aria-label={t('common:previous')}
           >
             <svg
               className="w-5 h-5"
@@ -361,7 +367,7 @@ export default function LogbookEntryList({
               }
             }}
             className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-            aria-label="Next"
+            aria-label={t('common:next')}
           >
             <svg
               className="w-5 h-5"
@@ -418,7 +424,7 @@ export default function LogbookEntryList({
 
                     <div className="flex items-center gap-4">
                       <span className="text-morandi-stone-700">
-                        {entry.duration} minutes
+                        {t('common:time.minute', { count: entry.duration })}
                       </span>
                       {entry.mood && (
                         <span className="text-lg">
@@ -447,7 +453,7 @@ export default function LogbookEntryList({
                         setEditingEntry(entry)
                       }}
                       className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-                      aria-label="Edit entry"
+                      aria-label={t('logbook:entry.editEntry')}
                     >
                       <svg
                         className="w-4 h-4"
@@ -470,7 +476,7 @@ export default function LogbookEntryList({
                       }}
                       disabled={deletingId === entry.id}
                       className="p-2 text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors"
-                      aria-label="Delete entry"
+                      aria-label={t('logbook:entry.deleteEntry')}
                     >
                       {deletingId === entry.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
@@ -501,7 +507,7 @@ export default function LogbookEntryList({
                   {entry.pieces.length > 0 && (
                     <div className="mb-3">
                       <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                        🎵 Pieces:
+                        🎵 {t('logbook:entry.pieces')}:
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {entry.pieces.map((piece, index) => (
@@ -526,7 +532,7 @@ export default function LogbookEntryList({
                   {entry.techniques.length > 0 && (
                     <div className="mb-3">
                       <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                        🎯 Techniques:
+                        🎯 {t('logbook:entry.techniques')}:
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {entry.techniques.map((technique, index) => (

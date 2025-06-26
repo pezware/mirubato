@@ -1,0 +1,12 @@
+{
+  "generic": "發生錯誤。",
+  "tryAgain": "請再試一次。",
+  "offline": "您似乎處於離線狀態。當您重新連線時，變更將會同步。",
+  "loadFailed": "無法載入資料。請重新整理頁面。",
+  "saveFailed": "無法儲存。請再試一次。",
+  "deleteFailed": "無法刪除。請再試一次。",
+  "syncFailed": "同步失敗。您的變更已儲存在本地。",
+  "notAuthenticated": "請登入以繼續。",
+  "sessionExpired": "您的登入已過期。請重新登入。",
+  "networkError": "網路錯誤。請檢查您的連線。"
+}

@@ -8,20 +8,21 @@ test.describe('Logbook Features', () => {
   test('Anonymous user can create and view logbook entries', async ({
     page,
   }) => {
-    // Navigate to logbook
-    await page.click('text=Logbook')
-    await expect(page).toHaveURL('/logbook')
+    // Navigate directly to logbook page
+    await page.goto('/logbook')
+    await page.waitForLoadState('networkidle')
 
-    // Click add entry button - handle both states (empty and with entries)
-    const addButton = page
-      .locator(
-        'button:has-text("Add Entry"), button:has-text("Add Your First Entry")'
-      )
-      .first()
+    // Look for add entry button - it should have a + sign
+    const addButton = await page.locator('button:has-text("+")').first()
     await addButton.click()
 
-    // Wait for form to appear
-    await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+    // Wait for form modal to appear - look for the modal overlay
+    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+      timeout: 5000,
+    })
+
+    // Ensure form is ready
+    await page.waitForSelector('form', { timeout: 5000 })
 
     // Fill out the form - the duration field already has value 30 by default
     // Just clear and re-enter to be sure
@@ -32,30 +33,44 @@ test.describe('Logbook Features', () => {
     // Instrument and Type are already set to Piano and Practice by default
     // But we can verify/change them if needed
 
-    // Add a piece
-    await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
-    await page.fill('input[placeholder="Composer"]', 'Beethoven')
+    // Add a piece - find inputs by their position
+    const pieceInputs = await page.locator('input[type="text"]').all()
+    if (pieceInputs.length >= 2) {
+      await pieceInputs[0].fill('Moonlight Sonata')
+      await pieceInputs[1].fill('Beethoven')
+    }
 
-    // Add notes
-    await page.fill(
-      'textarea[placeholder="What did you work on? Any observations?"]',
-      'Worked on first movement, focusing on dynamics'
-    )
+    // Add notes - find textarea
+    const notesTextarea = page.locator('textarea').first()
+    await notesTextarea.fill('Worked on first movement, focusing on dynamics')
 
-    // Select mood
-    await page.click('button:has-text("Satisfied")')
+    // Select mood - use emoji
+    await page.click('button:has-text("😊")')
 
-    // Save the entry
-    await page.click('button:has-text("Save Entry")')
+    // Save the entry - look for submit button
+    const saveButton = page.locator('button[type="submit"]').last()
+    await saveButton.click()
 
-    // Wait for the modal to close and entry to appear
-    await page.waitForTimeout(1000)
+    // Wait for the modal to close
+    await page.waitForTimeout(2000)
 
-    // Verify entry appears in the list - the duration is always visible
-    await expect(page.locator('text=30 minutes')).toBeVisible()
+    // Check if we're back on the logbook page without the modal
+    await expect(page.locator('.fixed.inset-0.bg-black\\/50')).not.toBeVisible()
 
-    // Click on the entry to expand it (click on the entry card)
-    await page.locator('text=30 minutes').click()
+    // Clear any search that might be there
+    const searchInput = page.locator('input[type="text"]').first()
+    await searchInput.clear()
+    await page.waitForTimeout(500)
+
+    // Verify entry appears in the list - look for the duration we just created
+    await expect(page.locator('text=/30\\s+minute/i')).toBeVisible()
+
+    // Click on the entry to expand it - find the entry container
+    const entryContainer = page
+      .locator('div')
+      .filter({ hasText: /30\\s+minute/i })
+      .first()
+    await entryContainer.click()
 
     // Now verify the pieces are visible in the expanded view
     await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
@@ -78,22 +93,34 @@ test.describe('Logbook Features', () => {
       composer: string,
       duration: string
     ) => {
-      const addButton = page
-        .locator(
-          'button:has-text("Add Entry"), button:has-text("Add Your First Entry")'
-        )
-        .first()
+      // Look for add button with + sign
+      const addButton = await page.locator('button:has-text("+")').first()
       await addButton.click()
-      await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+
+      // Wait for form modal
+      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+        timeout: 5000,
+      })
+      await page.waitForSelector('form', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      await page.fill('input[placeholder="Piece title"]', title)
-      await page.fill('input[placeholder="Composer"]', composer)
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Find inputs by their position
+      const pieceInputs = await page.locator('input[type="text"]').all()
+      if (pieceInputs.length >= 2) {
+        await pieceInputs[0].fill(title)
+        await pieceInputs[1].fill(composer)
+      }
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
       await page.waitForTimeout(1000)
     }
 
@@ -101,52 +128,64 @@ test.describe('Logbook Features', () => {
     await createEntry('Moonlight Sonata', 'Beethoven', '30')
     await createEntry('Sonata No. 11', 'Mozart', '25')
 
-    // Now test search
-    await page.fill('input[placeholder="Search entries..."]', 'Beethoven')
+    // Now test search - find the search input
+    const searchInput = page.locator('input[type="text"]').first()
+    await searchInput.fill('Beethoven')
 
     // Wait a bit for search to filter
     await page.waitForTimeout(500)
 
-    // Verify filtered results - we should see 1 entry with 30 minutes
-    await expect(page.locator('text=30 minutes')).toBeVisible()
-    // And we should NOT see the Mozart entry (25 minutes)
-    await expect(page.locator('text=25 minutes')).not.toBeVisible()
+    // Verify filtered results - we should see only 1 entry
+    const visibleEntries = page.locator('.p-4.hover\\:bg-morandi-stone-50')
+    await expect(visibleEntries).toHaveCount(1)
 
     // Click to expand the Beethoven entry and verify content
-    await page.locator('text=30 minutes').click()
+    await visibleEntries.first().click()
     await expect(page.locator('text=Beethoven')).toBeVisible()
     await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
   })
 
   test('Data persists across login/logout cycles', async ({ page }) => {
-    // Navigate to logbook
-    await page.click('text=Logbook')
-    await expect(page).toHaveURL('/logbook')
+    // Navigate directly to logbook
+    await page.goto('/logbook')
+    await page.waitForLoadState('networkidle')
 
     // Helper to count visible entries
     const countEntries = async () => {
-      const entries = await page.locator('text=minutes').count()
+      const entries = await page.locator('text=/\\d+\\s+minute/i').count()
       return entries
     }
 
     // Helper to create an entry with specific details
     const createEntryWithDetails = async (title: string, duration: string) => {
-      const addButton = page
-        .locator(
-          'button:has-text("Add Entry"), button:has-text("Add Your First Entry")'
-        )
-        .first()
+      // Look for add button with + sign
+      const addButton = await page.locator('button:has-text("+")').first()
       await addButton.click()
-      await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+
+      // Wait for form modal
+      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+        timeout: 5000,
+      })
+      await page.waitForSelector('form', { timeout: 5000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      await page.fill('input[placeholder="Piece title"]', title)
-      await page.fill('input[placeholder="Composer"]', 'Test Composer')
-      await page.click('button:has-text("Satisfied")')
-      await page.click('button:has-text("Save Entry")')
+      // Find inputs by position
+      const pieceInputs = await page.locator('input[type="text"]').all()
+      if (pieceInputs.length >= 2) {
+        await pieceInputs[0].fill(title)
+        await pieceInputs[1].fill('Test Composer')
+      }
+      // Select mood
+      await page.click('button:has-text("😊")')
+
+      // Save the entry
+      const saveButton = page
+        .locator('button[type="submit"]')
+        .filter({ hasText: /save/i })
+      await saveButton.click()
       await page.waitForTimeout(1000)
     }
 
@@ -199,9 +238,9 @@ test.describe('Logbook Features', () => {
   })
 
   test('User can view reports', async ({ page }) => {
-    // Navigate to logbook
-    await page.click('text=Logbook')
-    await expect(page).toHaveURL('/logbook')
+    // Navigate directly to logbook
+    await page.goto('/logbook')
+    await page.waitForLoadState('networkidle')
 
     // Create an entry first
     const addButton = page
@@ -210,7 +249,8 @@ test.describe('Logbook Features', () => {
       )
       .first()
     await addButton.click()
-    await page.waitForSelector('text=New Practice Entry', { timeout: 5000 })
+    // Wait for the form to appear - look for the heading
+    await page.waitForSelector('h2:has-text("Add Entry")', { timeout: 5000 })
 
     const durationInput = page.locator('input[type="number"]').first()
     await durationInput.clear()

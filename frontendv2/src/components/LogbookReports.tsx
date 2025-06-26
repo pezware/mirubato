@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 
 type TimeFilter = '7days' | '30days' | 'thisMonth' | 'lastMonth' | 'allTime'
 
 export default function LogbookReports() {
+  const { t } = useTranslation(['reports', 'common', 'logbook'])
   const { entries } = useLogbookStore()
   const [isOpen, setIsOpen] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('30days')
@@ -135,7 +137,7 @@ export default function LogbookReports() {
           onClick={() => setIsOpen(true)}
           className="text-morandi-sage-600 hover:text-morandi-sage-700 text-sm font-medium"
         >
-          View Reports →
+          {t('reports:viewReports')} →
         </button>
       </div>
     )
@@ -145,7 +147,7 @@ export default function LogbookReports() {
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 mb-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-light text-morandi-stone-700">
-          Practice Reports
+          {t('reports:title')}
         </h3>
         <button
           onClick={() => setIsOpen(false)}
@@ -158,11 +160,11 @@ export default function LogbookReports() {
       {/* Time Filter */}
       <div className="flex gap-2 mb-6">
         {[
-          { value: '7days', label: 'Last 7 days' },
-          { value: '30days', label: 'Last 30 days' },
-          { value: 'thisMonth', label: 'This month' },
-          { value: 'lastMonth', label: 'Last month' },
-          { value: 'allTime', label: 'All time' },
+          { value: '7days', label: t('logbook:filters.last7Days') },
+          { value: '30days', label: t('logbook:filters.last30Days') },
+          { value: 'thisMonth', label: t('logbook:filters.thisMonth') },
+          { value: 'lastMonth', label: t('logbook:filters.lastMonth') },
+          { value: 'allTime', label: t('logbook:filters.allTime') },
         ].map(({ value, label }) => (
           <button
             key={value}
@@ -184,25 +186,33 @@ export default function LogbookReports() {
           <div className="text-2xl font-light text-morandi-stone-700">
             {stats.totalHours}h
           </div>
-          <div className="text-sm text-morandi-stone-600">Total Practice</div>
+          <div className="text-sm text-morandi-stone-600">
+            {t('reports:totalPractice')}
+          </div>
         </div>
         <div className="bg-morandi-sky-100 rounded-lg p-4">
           <div className="text-2xl font-light text-morandi-stone-700">
             {stats.totalSessions}
           </div>
-          <div className="text-sm text-morandi-stone-600">Sessions</div>
+          <div className="text-sm text-morandi-stone-600">
+            {t('reports:sessions')}
+          </div>
         </div>
         <div className="bg-morandi-sand-100 rounded-lg p-4">
           <div className="text-2xl font-light text-morandi-stone-700">
             {stats.avgDuration}m
           </div>
-          <div className="text-sm text-morandi-stone-600">Avg Duration</div>
+          <div className="text-sm text-morandi-stone-600">
+            {t('reports:avgDuration')}
+          </div>
         </div>
         <div className="bg-morandi-blush-100 rounded-lg p-4">
           <div className="text-2xl font-light text-morandi-stone-700">
             {stats.currentStreak}
           </div>
-          <div className="text-sm text-morandi-stone-600">Day Streak</div>
+          <div className="text-sm text-morandi-stone-600">
+            {t('reports:dayStreak')}
+          </div>
         </div>
       </div>
 
@@ -210,14 +220,14 @@ export default function LogbookReports() {
       {stats.topPieces.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
-            Most Practiced Pieces
+            {t('reports:mostPracticedPieces')}
           </h4>
           <div className="space-y-2">
             {stats.topPieces.map(([title, count]) => (
               <div key={title} className="flex justify-between items-center">
                 <span className="text-sm text-morandi-stone-600">{title}</span>
                 <span className="text-sm text-morandi-stone-500">
-                  {count} sessions
+                  {t('reports:stats.session', { count })}
                 </span>
               </div>
             ))}
@@ -228,7 +238,7 @@ export default function LogbookReports() {
       {/* Instrument Breakdown */}
       <div>
         <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
-          Time by Instrument
+          {t('reports:timeByInstrument')}
         </h4>
         <div className="space-y-2">
           {Object.entries(stats.instrumentBreakdown).map(
@@ -238,7 +248,9 @@ export default function LogbookReports() {
                 className="flex justify-between items-center"
               >
                 <span className="text-sm text-morandi-stone-600">
-                  {instrument === 'PIANO' ? '🎹 Piano' : '🎸 Guitar'}
+                  {instrument === 'PIANO'
+                    ? `🎹 ${t('common:instruments.piano')}`
+                    : `🎸 ${t('common:instruments.guitar')}`}
                 </span>
                 <span className="text-sm text-morandi-stone-500">
                   {(minutes / 60).toFixed(1)}h
@@ -265,7 +277,7 @@ export default function LogbookReports() {
             }}
             className="btn-secondary text-sm"
           >
-            Export JSON
+            {t('reports:export.exportJSON')}
           </button>
           <button
             onClick={() => {
@@ -301,7 +313,7 @@ export default function LogbookReports() {
             }}
             className="btn-secondary text-sm"
           >
-            Export CSV
+            {t('reports:export.exportCSV')}
           </button>
         </div>
       </div>
