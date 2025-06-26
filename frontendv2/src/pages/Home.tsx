@@ -86,7 +86,7 @@ export default function HomePage() {
             </p>
 
             {/* Interactive Piano Panel */}
-            <InteractivePiano showCMinorChord={true} />
+            <InteractivePiano />
 
             {/* CTA or User Status */}
             {!isAuthenticated ? (

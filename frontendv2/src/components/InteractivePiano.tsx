@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Tone from 'tone'
 
-interface InteractivePianoProps {
-  showCMinorChord?: boolean
-}
-
-export default function InteractivePiano({
-  showCMinorChord = true,
-}: InteractivePianoProps) {
+export default function InteractivePiano() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isAudioStarted, setIsAudioStarted] = useState(false)
   const samplerRef = useRef<Tone.Sampler | null>(null)
@@ -53,8 +47,8 @@ export default function InteractivePiano({
     }
   }
 
-  // C minor chord notes
-  const cMinorNotes = ['C4', 'Eb4', 'G4']
+  // Two notes for the challenge
+  const twoNoteChallenge = ['C4', 'G4']
 
   // Piano key definitions with note mappings
   const whiteKeys = [
@@ -78,18 +72,9 @@ export default function InteractivePiano({
   return (
     <div className="glass-panel p-8 max-w-md mx-auto mb-8 animate-slide-up">
       <div className="text-center">
-        <h3 className="text-lg font-light text-morandi-stone-700 mb-4">
-          Play the notes shown below
-        </h3>
-        <p className="text-sm text-morandi-stone-600 mb-6">
-          {!isAudioStarted
-            ? 'First click enables audio'
-            : 'Click the keys to play'}
-        </p>
-
         {/* Music Notation */}
         <div className="bg-morandi-sage-100/30 rounded-lg p-6 mb-6">
-          <svg className="w-full h-24" viewBox="0 0 320 96">
+          <svg className="w-full h-32" viewBox="0 0 640 128">
             {/* Staff lines */}
             <g
               stroke="currentColor"
@@ -97,122 +82,257 @@ export default function InteractivePiano({
               opacity="0.5"
               className="text-morandi-stone-600"
             >
-              <line x1="10" y1="24" x2="310" y2="24" />
-              <line x1="10" y1="36" x2="310" y2="36" />
-              <line x1="10" y1="48" x2="310" y2="48" />
-              <line x1="10" y1="60" x2="310" y2="60" />
-              <line x1="10" y1="72" x2="310" y2="72" />
+              <line x1="10" y1="32" x2="630" y2="32" />
+              <line x1="10" y1="48" x2="630" y2="48" />
+              <line x1="10" y1="64" x2="630" y2="64" />
+              <line x1="10" y1="80" x2="630" y2="80" />
+              <line x1="10" y1="96" x2="630" y2="96" />
             </g>
 
-            {/* Treble Clef (simplified) */}
+            {/* Treble Clef */}
             <text
               x="20"
-              y="55"
-              fontSize="36"
+              y="73"
+              fontSize="48"
               fill="currentColor"
               className="text-morandi-stone-600"
             >
               𝄞
             </text>
 
-            {showCMinorChord ? (
-              <>
-                {/* C minor chord notation */}
-                {/* C4 - on the third line */}
-                <circle
-                  cx="100"
-                  cy="60"
-                  r="5"
-                  fill="currentColor"
-                  className="text-morandi-stone-700"
-                />
-                <line
-                  x1="105"
-                  y1="60"
-                  x2="105"
-                  y2="35"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-morandi-stone-700"
-                />
+            {/* Key signature - Eb, Bb, Ab for C minor */}
+            <text
+              x="70"
+              y="53"
+              fontSize="20"
+              fill="currentColor"
+              className="text-morandi-stone-600"
+            >
+              ♭
+            </text>
+            <text
+              x="80"
+              y="77"
+              fontSize="20"
+              fill="currentColor"
+              className="text-morandi-stone-600"
+            >
+              ♭
+            </text>
+            <text
+              x="90"
+              y="45"
+              fontSize="20"
+              fill="currentColor"
+              className="text-morandi-stone-600"
+            >
+              ♭
+            </text>
 
-                {/* Eb4 - between third and fourth line */}
-                <circle
-                  cx="130"
-                  cy="54"
-                  r="5"
-                  fill="currentColor"
-                  className="text-morandi-stone-700"
-                />
-                <line
-                  x1="135"
-                  y1="54"
-                  x2="135"
-                  y2="29"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-morandi-stone-700"
-                />
-                <text
-                  x="142"
-                  y="58"
-                  fontSize="14"
-                  fill="currentColor"
-                  className="text-morandi-stone-700"
-                >
-                  ♭
-                </text>
+            {/* 2 Note Challenge - C and G pattern from measures 3-10 */}
+            {/* Measure 3-4: Half note C, Quarter C, Quarter G */}
+            <circle
+              cx="120"
+              cy="80"
+              r="4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="124.5"
+              y1="80"
+              x2="124.5"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
 
-                {/* G4 - on the second line */}
-                <circle
-                  cx="160"
-                  cy="36"
-                  r="5"
-                  fill="currentColor"
-                  className="text-morandi-stone-700"
-                />
-                <line
-                  x1="165"
-                  y1="36"
-                  x2="165"
-                  y2="11"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-morandi-stone-700"
-                />
+            <circle
+              cx="190"
+              cy="80"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="195"
+              y1="80"
+              x2="195"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
 
-                {/* Chord label */}
-                <text
-                  x="115"
-                  y="90"
-                  fontSize="12"
-                  fill="currentColor"
-                  className="text-morandi-stone-600"
-                >
-                  C minor
-                </text>
-              </>
-            ) : (
-              <>
-                {/* Single C note */}
-                <circle
-                  cx="160"
-                  cy="60"
-                  r="5"
-                  fill="currentColor"
-                  className="text-morandi-stone-700"
-                />
-                <line
-                  x1="165"
-                  y1="60"
-                  x2="165"
-                  y2="35"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-morandi-stone-700"
-                />
-              </>
-            )}
+            <circle
+              cx="220"
+              cy="48"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="225"
+              y1="48"
+              x2="225"
+              y2="23"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            {/* Bar line */}
+            <line
+              x1="250"
+              y1="32"
+              x2="250"
+              y2="96"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-morandi-stone-600"
+            />
+
+            {/* Measure 5-6: Half note C, G-C pattern */}
+            <circle
+              cx="280"
+              cy="80"
+              r="4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="284.5"
+              y1="80"
+              x2="284.5"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            <circle
+              cx="350"
+              cy="48"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="355"
+              y1="48"
+              x2="355"
+              y2="23"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            <circle
+              cx="380"
+              cy="80"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="385"
+              y1="80"
+              x2="385"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            {/* Bar line */}
+            <line
+              x1="410"
+              y1="32"
+              x2="410"
+              y2="96"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-morandi-stone-600"
+            />
+
+            {/* Measure 7-8: Half note C, Quarter G, Quarter C */}
+            <circle
+              cx="440"
+              cy="80"
+              r="4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="444.5"
+              y1="80"
+              x2="444.5"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            <circle
+              cx="510"
+              cy="48"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="515"
+              y1="48"
+              x2="515"
+              y2="23"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            <circle
+              cx="540"
+              cy="80"
+              r="5"
+              fill="currentColor"
+              className="text-morandi-stone-700"
+            />
+            <line
+              x1="545"
+              y1="80"
+              x2="545"
+              y2="55"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-morandi-stone-700"
+            />
+
+            {/* Double bar line */}
+            <line
+              x1="570"
+              y1="32"
+              x2="570"
+              y2="96"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-morandi-stone-600"
+            />
+            <line
+              x1="574"
+              y1="32"
+              x2="574"
+              y2="96"
+              stroke="currentColor"
+              strokeWidth="3"
+              className="text-morandi-stone-600"
+            />
           </svg>
         </div>
 
@@ -221,8 +341,7 @@ export default function InteractivePiano({
           {/* White keys */}
           <div className="flex gap-[2px]">
             {whiteKeys.map(({ note, label }) => {
-              const isChordNote =
-                showCMinorChord && (note === 'C4' || note === 'G4')
+              const isHighlighted = twoNoteChallenge.includes(note)
               return (
                 <button
                   key={note}
@@ -231,7 +350,7 @@ export default function InteractivePiano({
                   className={`
                     relative w-10 h-32 border rounded-b-md transition-all cursor-pointer
                     ${
-                      isChordNote
+                      isHighlighted
                         ? 'bg-morandi-sage-200 border-morandi-sage-400 hover:bg-morandi-sage-300'
                         : 'bg-white border-morandi-stone-300 hover:bg-morandi-stone-100'
                     }
@@ -251,7 +370,7 @@ export default function InteractivePiano({
           {/* Black keys positioned absolutely */}
           <div className="absolute flex top-0">
             {blackKeys.map(({ note, position }) => {
-              const isChordNote = showCMinorChord && note === 'D#4' // Eb4
+              const isHighlighted = false // No black keys in 2-note challenge
               return (
                 <button
                   key={note}
@@ -260,7 +379,7 @@ export default function InteractivePiano({
                   className={`
                     w-6 h-20 rounded-b-sm transition-all cursor-pointer
                     ${
-                      isChordNote
+                      isHighlighted
                         ? 'bg-morandi-sage-600 hover:bg-morandi-sage-500'
                         : 'bg-morandi-stone-700 hover:bg-morandi-stone-600'
                     }
@@ -275,16 +394,11 @@ export default function InteractivePiano({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm text-morandi-stone-600">
-            {showCMinorChord ? 'C minor chord' : 'C major scale'}
+        {!isLoaded && (
+          <p className="text-xs text-morandi-stone-500 mt-2">
+            Loading piano sounds...
           </p>
-          {!isLoaded && (
-            <p className="text-xs text-morandi-stone-500">
-              Loading piano sounds...
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
