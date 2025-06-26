@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
@@ -20,9 +20,14 @@ export default function LogbookEntryList({
   const { deleteEntry } = useLogbookStore()
   const [editingEntry, setEditingEntry] = useState<LogbookEntry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('month')
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [selectedLevel, setSelectedLevel] = useState('week')
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set())
+  const [selectedDate, setSelectedDate] = useState<{
+    year: number
+    month: number
+    week: number
+  } | null>(null)
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this entry?')) {
@@ -83,21 +88,6 @@ export default function LogbookEntryList({
     setExpandedEntries(newExpanded)
   }
 
-  // Calculate statistics for current view
-  const stats = useMemo(() => {
-    const totalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0)
-    const hours = Math.floor(totalMinutes / 60)
-    const minutes = totalMinutes % 60
-    return {
-      entries: entries.length,
-      totalTime:
-        minutes > 0 ? `${hours}.${Math.round(minutes / 6)}h` : `${hours}h`,
-    }
-  }, [entries])
-
-  // Get current date for timeline navigation
-  const currentDate = new Date()
-
   // Calculate the current week number of the month
   const getWeekOfMonth = (date: Date) => {
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -106,32 +96,98 @@ export default function LogbookEntryList({
     return Math.ceil((dayOfMonth + dayOfWeek) / 7)
   }
 
+  // Filter entries based on selected timeline level
+  const filteredEntries = useMemo(() => {
+    if (!selectedDate) return entries
+
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.timestamp)
+      const entryYear = entryDate.getFullYear()
+      const entryMonth = entryDate.getMonth()
+
+      // Filter by year
+      if (selectedDate.year !== entryYear) return false
+
+      // If viewing by year, show all entries from that year
+      if (selectedLevel === 'year') return true
+
+      // Filter by month
+      if (selectedDate.month !== entryMonth) return false
+
+      // If viewing by month, show all entries from that month
+      if (selectedLevel === 'month') return true
+
+      // Filter by week (when week view is active)
+      if (selectedLevel === 'week' && viewMode === 'week') {
+        // Calculate which week of the month the entry falls in
+        const entryWeek = getWeekOfMonth(entryDate)
+        return entryWeek === selectedDate.week
+      }
+
+      return false
+    })
+  }, [entries, selectedDate, selectedLevel, viewMode])
+
+  // Calculate statistics for current view
+  const stats = useMemo(() => {
+    const totalMinutes = filteredEntries.reduce(
+      (sum, entry) => sum + entry.duration,
+      0
+    )
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    return {
+      entries: filteredEntries.length,
+      totalTime:
+        minutes > 0 ? `${hours}.${Math.round(minutes / 6)}h` : `${hours}h`,
+    }
+  }, [filteredEntries])
+
+  // Initialize selectedDate based on entries
+  useEffect(() => {
+    const currentDate = new Date()
+    if (!selectedDate && entries.length > 0) {
+      const mostRecentEntry = entries[0]
+      const entryDate = new Date(mostRecentEntry.timestamp)
+      setSelectedDate({
+        year: entryDate.getFullYear(),
+        month: entryDate.getMonth(),
+        week: getWeekOfMonth(entryDate),
+      })
+    } else if (!selectedDate) {
+      setSelectedDate({
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth(),
+        week: getWeekOfMonth(currentDate),
+      })
+    }
+  }, [entries, selectedDate])
+
   // Generate timeline levels based on entries
   const timelineLevels: TimelineLevel[] = useMemo(() => {
-    if (entries.length === 0) {
-      const year = currentDate.getFullYear()
-      const month = currentDate.toLocaleDateString('en-US', { month: 'long' })
-      const week = getWeekOfMonth(currentDate)
-      return [
-        { label: year.toString(), value: 'year', level: 'year' },
-        { label: month, value: 'month', level: 'month' },
-        { label: `Week ${week}`, value: 'week', level: 'week' },
-      ]
-    }
+    if (!selectedDate) return []
 
-    // Get the most recent entry date
-    const mostRecentEntry = entries[0] // Already sorted by timestamp
-    const entryDate = new Date(mostRecentEntry.timestamp)
-    const year = entryDate.getFullYear()
-    const month = entryDate.toLocaleDateString('en-US', { month: 'long' })
-    const week = getWeekOfMonth(entryDate)
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ]
 
     return [
-      { label: year.toString(), value: 'year', level: 'year' },
-      { label: month, value: 'month', level: 'month' },
-      { label: `Week ${week}`, value: 'week', level: 'week' },
+      { label: selectedDate.year.toString(), value: 'year', level: 'year' },
+      { label: monthNames[selectedDate.month], value: 'month', level: 'month' },
+      { label: `Week ${selectedDate.week}`, value: 'week', level: 'week' },
     ]
-  }, [entries, currentDate])
+  }, [selectedDate])
 
   if (editingEntry) {
     return (
@@ -158,31 +214,175 @@ export default function LogbookEntryList({
             <Button
               variant={viewMode === 'month' ? 'primary' : 'ghost'}
               size="sm"
-              onClick={() => setViewMode('month')}
+              onClick={() => {
+                setViewMode('month')
+                setSelectedLevel('month')
+              }}
             >
               By Month
             </Button>
             <Button
               variant={viewMode === 'week' ? 'primary' : 'ghost'}
               size="sm"
-              onClick={() => setViewMode('week')}
+              onClick={() => {
+                setViewMode('week')
+                setSelectedLevel('week')
+              }}
             >
               By Week
             </Button>
           </div>
         </div>
 
-        <TimelineNav
-          levels={timelineLevels}
-          selectedLevel={selectedLevel}
-          onLevelChange={level => setSelectedLevel(level.value)}
-          summary={`${stats.entries} entries · ${stats.totalTime}`}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (!selectedDate) return
+              const newDate = new Date(selectedDate.year, selectedDate.month, 1)
+
+              if (selectedLevel === 'week') {
+                // Go to previous week
+                let targetWeek = selectedDate.week - 1
+                let targetMonth = selectedDate.month
+                let targetYear = selectedDate.year
+
+                if (targetWeek < 1) {
+                  // Go to previous month
+                  targetMonth--
+                  if (targetMonth < 0) {
+                    targetMonth = 11
+                    targetYear--
+                  }
+                  // Get last week of previous month
+                  const lastDayOfPrevMonth = new Date(
+                    targetYear,
+                    targetMonth + 1,
+                    0
+                  )
+                  targetWeek = getWeekOfMonth(lastDayOfPrevMonth)
+                }
+
+                setSelectedDate({
+                  year: targetYear,
+                  month: targetMonth,
+                  week: targetWeek,
+                })
+              } else if (selectedLevel === 'month') {
+                // Go to previous month
+                newDate.setMonth(newDate.getMonth() - 1)
+                setSelectedDate({
+                  year: newDate.getFullYear(),
+                  month: newDate.getMonth(),
+                  week: getWeekOfMonth(newDate),
+                })
+              } else {
+                // Go to previous year
+                newDate.setFullYear(newDate.getFullYear() - 1)
+                setSelectedDate({
+                  year: newDate.getFullYear(),
+                  month: newDate.getMonth(),
+                  week: getWeekOfMonth(newDate),
+                })
+              }
+            }}
+            className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
+            aria-label="Previous"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <TimelineNav
+            levels={timelineLevels}
+            selectedLevel={selectedLevel}
+            onLevelChange={level => {
+              setSelectedLevel(level.value)
+            }}
+            summary={`${stats.entries} entries · ${stats.totalTime}`}
+          />
+
+          <button
+            onClick={() => {
+              if (!selectedDate) return
+              const newDate = new Date(selectedDate.year, selectedDate.month, 1)
+
+              if (selectedLevel === 'week') {
+                // Go to next week
+                let targetWeek = selectedDate.week + 1
+                let targetMonth = selectedDate.month
+                let targetYear = selectedDate.year
+
+                // Check if we exceed the number of weeks in current month
+                const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0)
+                const maxWeeks = getWeekOfMonth(lastDayOfMonth)
+
+                if (targetWeek > maxWeeks) {
+                  // Go to next month
+                  targetMonth++
+                  if (targetMonth > 11) {
+                    targetMonth = 0
+                    targetYear++
+                  }
+                  targetWeek = 1
+                }
+
+                setSelectedDate({
+                  year: targetYear,
+                  month: targetMonth,
+                  week: targetWeek,
+                })
+              } else if (selectedLevel === 'month') {
+                // Go to next month
+                newDate.setMonth(newDate.getMonth() + 1)
+                setSelectedDate({
+                  year: newDate.getFullYear(),
+                  month: newDate.getMonth(),
+                  week: 1, // Reset to first week of new month
+                })
+              } else {
+                // Go to next year
+                newDate.setFullYear(newDate.getFullYear() + 1)
+                setSelectedDate({
+                  year: newDate.getFullYear(),
+                  month: newDate.getMonth(),
+                  week: getWeekOfMonth(newDate),
+                })
+              }
+            }}
+            className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
+            aria-label="Next"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Entry List */}
       <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
-        {entries.map((entry, index) => {
+        {filteredEntries.map((entry, index) => {
           const isExpanded = expandedEntries.has(entry.id)
           const isFirst = index === 0
 
