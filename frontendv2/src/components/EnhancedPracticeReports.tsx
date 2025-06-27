@@ -344,7 +344,14 @@ export default function EnhancedPracticeReports() {
         {/* Navigation Tabs */}
         <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg">
           <button
-            onClick={() => setReportView('overview')}
+            onClick={() => {
+              setReportView('overview')
+              // Clear piece/composer filters when switching to overview
+              setSelectedPiece(null)
+              setSelectedComposer(null)
+              pieceAutocomplete.setQuery('')
+              composerAutocomplete.setQuery('')
+            }}
             className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors ${
               reportView === 'overview'
                 ? 'bg-white text-morandi-stone-900 shadow-sm'
