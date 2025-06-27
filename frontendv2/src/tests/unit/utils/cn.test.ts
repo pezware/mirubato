@@ -7,7 +7,9 @@ describe('cn utility', () => {
   })
 
   it('should handle conditional classes', () => {
-    expect(cn('base', true && 'active', false && 'inactive')).toBe(
+    const isTrue = true
+    const isFalse = false
+    expect(cn('base', isTrue && 'active', isFalse && 'inactive')).toBe(
       'base active'
     )
   })
@@ -94,13 +96,8 @@ describe('cn utility', () => {
   })
 
   it('should work with Tailwind classes', () => {
-    expect(
-      cn(
-        'px-4 py-2',
-        'bg-blue-500',
-        true && 'hover:bg-blue-600',
-        false && 'opacity-50'
-      )
-    ).toBe('px-4 py-2 bg-blue-500 hover:bg-blue-600')
+    expect(cn('px-4 py-2', 'bg-blue-500', 'hover:bg-blue-600', undefined)).toBe(
+      'px-4 py-2 bg-blue-500 hover:bg-blue-600'
+    )
   })
 })
