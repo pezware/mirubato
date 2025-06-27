@@ -89,8 +89,8 @@ export default function ManualEntryForm({
         pieces: pieces.filter(p => p.title),
         techniques,
         goalIds: [],
-        notes,
-        mood,
+        notes: notes || undefined, // Convert empty string to undefined
+        mood: mood || undefined, // Convert null/empty to undefined
         tags,
         metadata: {
           source: 'manual',
@@ -98,6 +98,8 @@ export default function ManualEntryForm({
       }
 
       if (entry) {
+        // When updating, only send the fields that should be updated
+        // Don't send createdAt or other fields that shouldn't change
         await updateEntry(entry.id, entryData)
       } else {
         await createEntry(entryData)

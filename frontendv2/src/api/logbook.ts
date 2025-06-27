@@ -96,9 +96,14 @@ export const logbookApi = {
     const entry = entries.find(e => e.id === id)
     if (!entry) throw new Error('Entry not found')
 
+    // Filter out undefined values to prevent D1 database errors
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    )
+
     const updatedEntry = {
       ...entry,
-      ...updates,
+      ...cleanUpdates,
       updatedAt: new Date().toISOString(),
     }
 

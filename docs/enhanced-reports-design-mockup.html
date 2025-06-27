@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced Reports Design Mockup - mirubato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom colors to match morandi palette */
+      .bg-morandi-sage-100 {
+        background-color: #e8ebe8;
+      }
+      .bg-morandi-sage-200 {
+        background-color: #d1d7d1;
+      }
+      .bg-morandi-sage-300 {
+        background-color: #bac3ba;
+      }
+      .bg-morandi-sage-400 {
+        background-color: #a3afa3;
+      }
+      .bg-morandi-sage-500 {
+        background-color: #8c9b8c;
+      }
+      .bg-morandi-sage-600 {
+        background-color: #758775;
+      }
+      .bg-morandi-stone-50 {
+        background-color: #fafaf9;
+      }
+      .bg-morandi-stone-100 {
+        background-color: #f5f5f4;
+      }
+      .bg-morandi-stone-200 {
+        background-color: #e7e5e4;
+      }
+      .text-morandi-stone-600 {
+        color: #57534e;
+      }
+      .text-morandi-stone-700 {
+        color: #44403c;
+      }
+      .text-morandi-stone-900 {
+        color: #1c1917;
+      }
+      .border-morandi-stone-200 {
+        border-color: #e7e5e4;
+      }
+      .ring-morandi-sage-700 {
+        --tw-ring-color: #5e6e5e;
+      }
+    </style>
+  </head>
+  <body class="bg-morandi-stone-50 p-4 md:p-8">
+    <!-- 
+    DESIGN CONSIDERATIONS AND IMPLEMENTATION NOTES
+    =============================================
+    
+    1. LOCALIZATION (L10N/I18N):
+       - All UI text should use translation keys (e.g., t('reports:title'))
+       - Tab labels: t('reports:tabs.overview'), t('reports:tabs.pieces'), t('reports:tabs.newEntry')
+       - Sort options: t('reports:sort.byTime'), t('reports:sort.byFrequency'), etc.
+       - Time periods: t('common:time.today'), t('common:time.thisWeek'), etc.
+       - IMPORTANT: Never translate user data (composer names, piece titles, notes)
+       - Day names use t('common:days.short.0') through t('common:days.short.6')
+       - Session types: t('logbook:type.PRACTICE'), t('logbook:type.LESSON'), etc.
+    
+    2. CACHING STRATEGY (per docs/CACHING_IMPLEMENTATION.md):
+       - Use ReportsCacheManager for computed analytics
+       - Cache key generation based on: timeFilter + selectedDate + selectedComposer + entriesHash
+       - TTL: analytics (5min), pieceStats (10min), composerFilter (15min)
+       - Cleanup expired entries every 60 seconds
+       - Cache invalidation on entry changes via entriesHash
+    
+    3. DYNAMIC SEARCH (existing implementation from main branch):
+       - REPLACE static dropdowns with autocomplete components
+       - Use existing AutocompleteInput from components/AutocompleteInput.tsx
+       - Search both local entries (localStorage/Zustand) and KV store (if online)
+       - Debounce search with 300ms delay
+       - Show both user's existing pieces AND pre-filled suggestions from KV
+       - Format: "Composer - Piece Title" for display
+    
+    4. EXPORT FUNCTIONALITY:
+       - Export buttons appear ONLY in Overview tab
+       - Export ALL user data (not filtered)
+       - JSON format: Direct serialization of entries array
+       - CSV format: Headers + rows with proper escaping
+       - Filename pattern: practice-report-YYYY-MM-DD.{json|csv}
+    
+    5. SCALABILITY FOR LARGE DATASETS:
+       - Replace static dropdowns with searchable autocomplete (handles 100s of entries)
+       - Implement virtual scrolling for entry list (not shown in mockup)
+       - Pagination: Show 20 entries initially, load more on scroll
+       - Use intersection observer for infinite scroll
+       - Display total count: "Showing 1-20 of 156 entries"
+    
+    6. DEFAULT SORTING:
+       - When no filter selected: Sort by timestamp DESC (most recent first)
+       - Maintain sort preference in component state
+       - Sort options affect both filtered and unfiltered views
+  -->
+
+    <div class="max-w-6xl mx-auto space-y-6">
+      <!-- ===== OVERVIEW DASHBOARD VIEW ===== -->
+      <div
+        class="bg-white rounded-lg shadow-sm border border-morandi-stone-200"
+      >
+        <!-- Title - Localizable -->
+        <h2
+          class="text-lg md:text-xl font-medium text-morandi-stone-900 p-4 md:p-6 pb-0"
+        >
+          <!-- Implementation: {t('reports:title')} -->
+          Practice Reports
+        </h2>
+
+        <!-- Navigation Tabs -->
+        <div
+          class="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg"
+        >
+          <button
+            class="flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md bg-white text-morandi-stone-900 shadow-sm"
+          >
+            <!-- Icon hidden on mobile for space -->
+            <span class="hidden md:inline">📈 </span>
+            <!-- {t('reports:tabs.overview')} -->
+            Overview
+          </button>
+          <button
+            class="flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md text-morandi-stone-600 hover:text-morandi-stone-900"
+          >
+            <span class="hidden md:inline">🎵 </span>
+            <!-- {t('reports:tabs.pieces')} -->
+            Pieces
+          </button>
+          <button
+            class="flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md text-morandi-stone-600 hover:text-morandi-stone-900"
+          >
+            <span class="hidden md:inline">➕ </span>
+            <!-- {t('reports:tabs.newEntry')} -->
+            Add Entry
+          </button>
+        </div>
+
+        <!-- Top Section: Selection Criteria & Summary -->
+        <div class="p-4 md:p-6 border-b border-morandi-stone-200">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <!-- Left: Calendar Heat Map -->
+            <div>
+              <!-- 
+              CALENDAR IMPLEMENTATION:
+              - Generate 42 days (6 weeks) grid
+              - Color intensity based on practice duration (0-90min scale)
+              - Click to filter entries by specific date
+              - Today highlighted with bold + ring
+              - Use analytics.practiceByDay Map for heat data
+            -->
+              <div class="grid grid-cols-7 gap-1 mb-3 max-w-sm">
+                <!-- Day headers - Localized -->
+                <div
+                  class="text-center text-xs text-morandi-stone-500 font-medium py-1"
+                >
+                  <!-- {t('common:days.short.0')} -->
+                  S
+                </div>
+                <!-- ... repeat for all 7 days ... -->
+
+                <!-- Calendar days with heat map colors -->
+                <!-- 
+                Color scale (based on practice time):
+                - No practice: bg-morandi-stone-100
+                - 0-25%: bg-morandi-sage-300
+                - 25-50%: bg-morandi-sage-400
+                - 50-75%: bg-morandi-sage-500
+                - 75-100%: bg-morandi-sage-600
+              -->
+                <button
+                  class="aspect-square rounded-sm bg-morandi-sage-600 text-white text-xs ring-2 ring-morandi-sage-700 ring-offset-1 font-bold"
+                >
+                  27
+                </button>
+              </div>
+
+              <!-- Sort Options - No label needed -->
+              <div class="flex flex-wrap gap-2 mt-4">
+                <button
+                  class="px-3 py-1 text-xs md:text-sm rounded-md bg-morandi-sage-500 text-white"
+                >
+                  <!-- {t('reports:sort.mostRecent')} -->
+                  Most Recent
+                </button>
+                <button
+                  class="px-3 py-1 text-xs md:text-sm rounded-md bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200"
+                >
+                  <!-- {t('reports:sort.mostPracticed')} -->
+                  Most Practiced
+                </button>
+                <button
+                  class="px-3 py-1 text-xs md:text-sm rounded-md bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200"
+                >
+                  <!-- {t('reports:sort.longestSessions')} -->
+                  Longest Sessions
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Summary Stats -->
+            <div class="space-y-3">
+              <!-- Primary Stats Row -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-morandi-stone-50 rounded-lg p-3 md:p-4">
+                  <p class="text-morandi-stone-600 text-xs md:text-sm">
+                    <!-- {t('reports:stats.todaysPractice')} -->
+                    Today's Practice
+                  </p>
+                  <p
+                    class="text-lg md:text-xl font-medium text-morandi-stone-900"
+                  >
+                    <!-- {formatDuration(todayTotal)} -->
+                    1h 30m
+                  </p>
+                  <p class="text-xs text-morandi-stone-500">
+                    <!-- {t('reports:stats.sessions', { count: todayCount })} -->
+                    2 sessions
+                  </p>
+                </div>
+                <!-- ... more stat cards ... -->
+              </div>
+
+              <!-- Secondary Stats Row - Visual indicators -->
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-morandi-stone-50 rounded-lg p-3 text-center">
+                  <p class="text-3xl">🎹</p>
+                  <p class="text-xs text-morandi-stone-600 mt-1">
+                    <!-- {uniqueComposers.size} {t('reports:composers')} -->
+                    <!-- NOTE: Composer names are NEVER translated -->
+                    12 composers
+                  </p>
+                </div>
+                <!-- ... more visual stats ... -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section: Full Entry List -->
+        <div class="p-4 md:p-6 space-y-3">
+          <!-- 
+          ENTRY LIST IMPLEMENTATION:
+          - Default sort: timestamp DESC (most recent first)
+          - If >20 entries, show "Showing 1-20 of X" message
+          - Implement virtual scrolling or pagination
+          - Each entry shows ALL details for transparency
+        -->
+
+          <!-- Pagination indicator (when needed) -->
+          <!-- <div class="text-sm text-morandi-stone-600 mb-3">
+          Showing 1-20 of 156 entries
+        </div> -->
+
+          <!-- Entry with full details -->
+          <div
+            class="group flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 rounded-lg bg-morandi-stone-50 hover:bg-morandi-stone-100 transition-colors"
+          >
+            <div class="flex-1 mb-2 md:mb-0">
+              <div
+                class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3"
+              >
+                <p
+                  class="font-medium text-morandi-stone-900 text-sm md:text-base"
+                >
+                  <!-- Date formatted according to user locale -->
+                  6/27/2025 • 45m
+                </p>
+                <span
+                  class="text-xs px-2 py-0.5 bg-morandi-sage-100 text-morandi-sage-700 rounded-full w-fit"
+                >
+                  <!-- {t(`logbook:type.${entry.type}`)} -->
+                  PRACTICE
+                </span>
+              </div>
+              <p class="text-sm text-morandi-stone-700 mt-1">
+                <!-- NEVER translate piece titles or composer names -->
+                Moonlight Sonata No. 14 - Ludwig van Beethoven
+              </p>
+              <div
+                class="flex flex-wrap gap-2 mt-1 text-xs text-morandi-stone-600"
+              >
+                <span>
+                  <!-- {entry.instrument === 'piano' ? '🎹' : '🎸'} {t(`logbook:instrument.${entry.instrument}`)} -->
+                  🎹 Piano
+                </span>
+                <span>• Dynamics, Expression</span>
+                <span>• 😊 Happy</span>
+              </div>
+              <p class="text-xs text-morandi-stone-500 mt-1 italic">
+                <!-- User notes - NEVER translated -->
+                Working on the second movement, focusing on tempo consistency
+              </p>
+            </div>
+            <div class="flex gap-1 self-end md:self-center">
+              <button
+                class="p-1.5 hover:bg-morandi-stone-200 rounded transition-colors"
+                title="Edit"
+              >
+                <!-- {t('common:edit')} -->
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </button>
+              <button
+                class="p-1.5 hover:bg-morandi-stone-200 rounded transition-colors text-red-600"
+                title="Delete"
+              >
+                <!-- {t('common:delete')} -->
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- More entries... -->
+          <!-- Implement infinite scroll or "Load More" button here -->
+        </div>
+
+        <!-- Export Buttons - ONLY in Overview tab -->
+        <div
+          class="p-3 md:p-4 border-t border-morandi-stone-200 bg-morandi-stone-50"
+        >
+          <div class="flex justify-end gap-2">
+            <button
+              class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-morandi-stone-200 text-morandi-stone-700 rounded-md hover:bg-morandi-stone-300 transition-colors"
+            >
+              <!-- {t('reports:export.exportJSON')} -->
+              Export JSON
+            </button>
+            <button
+              class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-morandi-stone-200 text-morandi-stone-700 rounded-md hover:bg-morandi-stone-300 transition-colors"
+            >
+              <!-- {t('reports:export.exportCSV')} -->
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PIECES FILTER VIEW ===== -->
+      <div
+        class="bg-white rounded-lg shadow-sm border border-morandi-stone-200"
+      >
+        <h2
+          class="text-lg md:text-xl font-medium text-morandi-stone-900 p-4 md:p-6 pb-0"
+        >
+          Practice Reports
+        </h2>
+
+        <!-- Tabs (same as overview) -->
+        <div
+          class="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg"
+        >
+          <!-- ... tabs ... -->
+        </div>
+
+        <!-- Top Section: Piece/Composer Filter & Summary -->
+        <div class="p-4 md:p-6 border-b border-morandi-stone-200">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <!-- Left: Filter Controls & Mini Calendar -->
+            <div class="space-y-4">
+              <!-- 
+              DYNAMIC SEARCH IMPLEMENTATION:
+              - REPLACE these static <select> elements with AutocompleteInput components
+              - Use existing implementation from main branch
+              - Search both localStorage (via Zustand) and KV store
+              - Debounce search queries (300ms)
+              - Show user's pieces + KV suggestions
+            -->
+              <div class="space-y-2">
+                <!-- Piece Autocomplete -->
+                <div class="relative">
+                  <!-- 
+                  <AutocompleteInput
+                    placeholder={t('reports:searchPieces')}
+                    value={selectedPiece}
+                    onChange={setSelectedPiece}
+                    suggestions={pieceSuggestions}
+                    onSearch={handlePieceSearch}
+                    formatDisplay={(item) => `${item.composer} - ${item.title}`}
+                  />
+                -->
+                  <input
+                    type="text"
+                    placeholder="Search pieces..."
+                    class="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                  />
+                </div>
+
+                <!-- Composer Autocomplete -->
+                <div class="relative">
+                  <!-- 
+                  <AutocompleteInput
+                    placeholder={t('reports:searchComposers')}
+                    value={selectedComposer}
+                    onChange={setSelectedComposer}
+                    suggestions={composerSuggestions}
+                    onSearch={handleComposerSearch}
+                  />
+                -->
+                  <input
+                    type="text"
+                    placeholder="Search composers..."
+                    class="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <!-- Mini Calendar for Date Range -->
+              <!-- 
+              When piece/composer selected:
+              - Show practice intensity ONLY for that selection
+              - Update colors based on filtered data
+            -->
+              <div class="grid grid-cols-7 gap-1 text-xs">
+                <!-- ... mini calendar ... -->
+              </div>
+            </div>
+
+            <!-- Right: Piece/Composer Summary Stats -->
+            <div class="space-y-3">
+              <!-- Selected Piece Stats -->
+              <!-- Only shown when a piece/composer is selected -->
+              <div class="bg-morandi-sage-50 rounded-lg p-4">
+                <h3 class="font-medium text-morandi-stone-900 mb-2">
+                  <!-- Piece title - NEVER translated -->
+                  Moonlight Sonata No. 14
+                </h3>
+                <p class="text-sm text-morandi-stone-600 mb-3">
+                  <!-- Composer name - NEVER translated -->
+                  Ludwig van Beethoven
+                </p>
+                <div class="grid grid-cols-2 gap-3">
+                  <!-- Computed stats for selected piece -->
+                  <div>
+                    <p class="text-xs text-morandi-stone-600">
+                      <!-- {t('reports:stats.totalPractice')} -->
+                      Total Practice
+                    </p>
+                    <p class="text-lg font-medium text-morandi-stone-900">
+                      <!-- Use cached pieceStats -->
+                      4h 30m
+                    </p>
+                  </div>
+                  <!-- ... more stats ... -->
+                </div>
+              </div>
+
+              <!-- Technique Progress -->
+              <div class="space-y-2">
+                <p class="text-xs text-morandi-stone-600">
+                  <!-- {t('reports:techniquesPracticed')} -->
+                  Techniques Practiced
+                </p>
+                <div class="flex flex-wrap gap-1">
+                  <!-- Aggregate techniques from filtered entries -->
+                  <span
+                    class="text-xs px-2 py-1 bg-morandi-sage-100 text-morandi-sage-700 rounded-full"
+                  >
+                    Dynamics (5)
+                  </span>
+                  <!-- ... more techniques ... -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section: Filtered Entry List -->
+        <div class="p-4 md:p-6 space-y-3">
+          <!-- 
+          FILTERED ENTRIES:
+          - Show only entries matching selected piece/composer
+          - If no selection, show all entries sorted by date DESC
+          - Same pagination/virtual scroll as overview
+          - Maintain full entry details
+        -->
+
+          <!-- Same entry structure as overview -->
+          <div
+            class="group flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 rounded-lg bg-morandi-stone-50 hover:bg-morandi-stone-100 transition-colors"
+          >
+            <!-- ... entry details ... -->
+          </div>
+        </div>
+
+        <!-- NO Export buttons in Pieces view - only in Overview -->
+      </div>
+    </div>
+  </body>
+</html>

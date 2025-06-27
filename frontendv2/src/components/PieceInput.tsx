@@ -25,11 +25,13 @@ export default function PieceInput({
   const pieceAutocomplete = useAutocomplete({
     type: 'piece',
     composer: piece.composer, // Filter by composer if already selected
+    minLength: 0, // Show suggestions immediately
   })
 
   // Autocomplete for composer
   const composerAutocomplete = useAutocomplete({
     type: 'composer',
+    minLength: 0, // Show suggestions immediately
   })
 
   return (
