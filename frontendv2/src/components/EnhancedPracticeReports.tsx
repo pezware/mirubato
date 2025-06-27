@@ -43,15 +43,21 @@ export default function EnhancedPracticeReports() {
     // Filter by time period
     if (timePeriod !== 'all') {
       const now = new Date()
-      const cutoffDate = new Date()
 
       if (timePeriod === 'week') {
+        const cutoffDate = new Date()
         cutoffDate.setDate(now.getDate() - 7)
+        filtered = filtered.filter(e => new Date(e.timestamp) >= cutoffDate)
       } else if (timePeriod === 'month') {
-        cutoffDate.setMonth(now.getMonth() - 1)
+        // Filter for current month only
+        filtered = filtered.filter(e => {
+          const entryDate = new Date(e.timestamp)
+          return (
+            entryDate.getMonth() === now.getMonth() &&
+            entryDate.getFullYear() === now.getFullYear()
+          )
+        })
       }
-
-      filtered = filtered.filter(e => new Date(e.timestamp) >= cutoffDate)
     }
 
     // Filter by selected date
@@ -63,8 +69,8 @@ export default function EnhancedPracticeReports() {
       })
     }
 
-    // Filter by piece (in pieces view)
-    if (selectedPiece && reportView === 'pieces') {
+    // Filter by piece
+    if (selectedPiece) {
       filtered = filtered.filter(e =>
         e.pieces.some(
           p => `${p.composer || 'Unknown'} - ${p.title}` === selectedPiece
@@ -72,8 +78,8 @@ export default function EnhancedPracticeReports() {
       )
     }
 
-    // Filter by composer (in pieces view)
-    if (selectedComposer && reportView === 'pieces') {
+    // Filter by composer
+    if (selectedComposer) {
       filtered = filtered.filter(e =>
         e.pieces.some(p => (p.composer || 'Unknown') === selectedComposer)
       )
