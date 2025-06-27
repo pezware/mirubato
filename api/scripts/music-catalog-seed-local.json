@@ -1,0 +1,7602 @@
+{
+  "composers:all": [
+    "Johann Sebastian Bach",
+    "Ludwig van Beethoven",
+    "Wolfgang Amadeus Mozart",
+    "Frédéric Chopin",
+    "Franz Schubert",
+    "Johannes Brahms",
+    "Claude Debussy",
+    "Robert Schumann",
+    "Franz Liszt",
+    "Sergei Rachmaninoff",
+    "Pyotr Ilyich Tchaikovsky",
+    "Joseph Haydn",
+    "Domenico Scarlatti",
+    "Maurice Ravel",
+    "Alexander Scriabin",
+    "Béla Bartók",
+    "Sergei Prokofiev",
+    "Erik Satie",
+    "Dmitri Shostakovich",
+    "George Gershwin",
+    "Francisco Tárrega",
+    "Fernando Sor",
+    "Mauro Giuliani",
+    "Agustín Barrios Mangoré",
+    "Heitor Villa-Lobos",
+    "Isaac Albéniz",
+    "Enrique Granados",
+    "Manuel de Falla",
+    "Joaquín Rodrigo",
+    "Leo Brouwer",
+    "Manuel Ponce",
+    "Miguel Llobet",
+    "Dionisio Aguado",
+    "Matteo Carcassi",
+    "Ferdinando Carulli",
+    "Carl Philipp Emanuel Bach",
+    "Muzio Clementi",
+    "Carl Czerny",
+    "Johann Nepomuk Hummel",
+    "Felix Mendelssohn",
+    "Edvard Grieg",
+    "Gabriel Fauré",
+    "Francis Poulenc",
+    "Olivier Messiaen",
+    "Camille Saint-Saëns",
+    "César Franck",
+    "Nikolai Medtner",
+    "Karol Szymanowski",
+    "Isaac Albéniz",
+    "Manuel de Falla",
+    "Alexander Borodin",
+    "Modest Mussorgsky",
+    "Nikolai Rimsky-Korsakov",
+    "Anton Rubinstein",
+    "Clara Schumann",
+    "Fanny Mendelssohn",
+    "Amy Beach",
+    "Johann Baptist Cramer",
+    "Friedrich Kuhlau",
+    "Heinrich Lichner",
+    "Napoleon Coste",
+    "Johann Kaspar Mertz",
+    "Giulio Regondi",
+    "Julián Arcas",
+    "Emilio Pujol",
+    "Andrés Segovia",
+    "Alexandre Tansman",
+    "Federico Moreno Torroba",
+    "Mario Castelnuovo-Tedesco",
+    "Roland Dyens",
+    "Carlo Domeniconi",
+    "Nikita Koshkin",
+    "Andrew York",
+    "John Dowland",
+    "Sylvius Leopold Weiss",
+    "Domenico Zipoli",
+    "Antonio Soler",
+    "Luigi Boccherini",
+    "Mikhail Glinka",
+    "Emmanuel Chabrier",
+    "Ernő Dohnányi",
+    "Zoltán Kodály",
+    "Paul Hindemith",
+    "Kurt Weill",
+    "Samuel Barber",
+    "John Cage",
+    "Arvo Pärt",
+    "Philip Glass",
+    "Steve Reich",
+    "Astor Piazzolla",
+    "Alberto Ginastera",
+    "Darius Milhaud",
+    "Arthur Honegger",
+    "Bohuslav Martinů",
+    "Carl Nielsen",
+    "Jean Sibelius",
+    "Leoš Janáček",
+    "Antonín Dvořák",
+    "Bedřich Smetana",
+    "Niccolò Paganini"
+  ],
+  "pieces:all": [
+    {
+      "title": "Ode to Joy",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Lavender's Blue",
+      "composer": "Traditional English",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Russian Folk Song",
+      "composer": "Beethoven Op. 107",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Entertainer",
+      "composer": "Joplin",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (1st movement)",
+      "composer": "Clementi",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in G Major",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Allegro in C Major",
+      "composer": "Diabelli",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "German Dance",
+      "composer": "Haydn",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Czerny Op. 599 No. 1",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in C Major BWV 939",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Melody Op. 68 No. 1",
+      "composer": "Schumann",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 8",
+      "composer": "Brahms",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Morning Mood",
+      "composer": "Grieg",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Canon in D",
+      "composer": "Pachelbel",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante in C Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz in G Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Minor",
+      "composer": "Aguado",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in C Major",
+      "composer": "Giuliani",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Spanish Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 1",
+      "composer": "Brouwer",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Country Dance",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Sor",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 1",
+      "composer": "Carcassi",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lágrima",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Sor Op. 60 No. 1",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Packington's Pound",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Greensleeves",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Simple Gifts",
+      "composer": "Traditional",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Estudio in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (complete)",
+      "composer": "Clementi",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major BWV Anh. 114",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Für Elise",
+      "composer": "Beethoven",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque",
+      "composer": "Burgmüller Op. 100 No. 2",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Wild Horseman",
+      "composer": "Schumann Op. 68 No. 8",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina in G Major",
+      "composer": "Beethoven Anh. 5 No. 1",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude in C Major",
+      "composer": "Bach BWV 846",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz in A Minor",
+      "composer": "Chopin",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in E-flat Major",
+      "composer": "Beethoven WoO 86",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 599 No. 19",
+      "composer": "Czerny",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (1st movement)",
+      "composer": "Kuhlau",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Musette in D Major",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade",
+      "composer": "Burgmüller Op. 100 No. 15",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Happy Farmer",
+      "composer": "Schumann Op. 68 No. 10",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Petit Négre",
+      "composer": "Debussy",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in B Minor",
+      "composer": "Sor Op. 35 No. 22",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 3",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 121 No. 1",
+      "composer": "Carulli",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 2",
+      "composer": "Brouwer",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Carcassi Op. 60 No. 3",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in E Minor",
+      "composer": "Giuliani",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in C Major",
+      "composer": "Sor Op. 11 No. 1",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in D Major",
+      "composer": "Aguado",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Adelita",
+      "composer": "Tárrega",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Bourrée in E Minor",
+      "composer": "Bach BWV 996",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Classical Gas",
+      "composer": "Mason Williams",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Malagueña",
+      "composer": "Traditional Spanish",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 7",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Pavana",
+      "composer": "Gaspar Sanz",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invention No. 1 in C Major",
+      "composer": "Bach BWV 772",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 55 No. 1",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 69 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Moonlight Sonata (1st movement)",
+      "composer": "Beethoven Op. 27 No. 2",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Maple Leaf Rag",
+      "composer": "Joplin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Solfeggietto",
+      "composer": "C.P.E. Bach",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Venetian Boat Song Op. 30 No. 6",
+      "composer": "Mendelssohn",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 7",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (complete)",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 1",
+      "composer": "Czerny",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Bagatelle Op. 5 No. 10",
+      "composer": "Tcherepnin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "To a Wild Rose",
+      "composer": "MacDowell Op. 51 No. 1",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gymnopedie No. 1",
+      "composer": "Satie",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in D Minor",
+      "composer": "Bach BWV 935",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 3",
+      "composer": "Brouwer",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte I & II",
+      "composer": "Bach BWV 995",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 8",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 8 No. 4",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Árabe",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 14",
+      "composer": "Carcassi",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Julia Florida",
+      "composer": "Barrios",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme from Jeux Interdits",
+      "composer": "Anonymous",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Giuliani Op. 48 No. 5",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Noi de la Mare",
+      "composer": "Llobet",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach BWV Anh. 114",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 17",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invention No. 8 in F Major",
+      "composer": "Bach BWV 779",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 545 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (2nd movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque No. 1",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Songs Without Words Op. 19 No. 1",
+      "composer": "Mendelssohn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 5",
+      "composer": "Czerny",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 15",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Doctor Gradus ad Parnassum",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Humoresque",
+      "composer": "Dvořák Op. 101 No. 7",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Girl with the Flaxen Hair",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 15",
+      "composer": "Brahms",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "May Night",
+      "composer": "Palmgren Op. 27 No. 4",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Hob. XVI:35 (1st movement)",
+      "composer": "Haydn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Recuerdos de la Alhambra",
+      "composer": "Tárrega",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 5",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 3",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 11",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte en Rondeau",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Un Dia de Noviembre",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 19",
+      "composer": "Carcassi",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Scherzino Mexicano",
+      "composer": "Ponce",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Cathedral (Andante Religioso)",
+      "composer": "Barrios",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sevilla",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 7",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 32 No. 2",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Testament d'Amelia",
+      "composer": "Llobet",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invention No. 13 in A Minor",
+      "composer": "Bach BWV 784",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 331 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 90 No. 4",
+      "composer": "Schubert",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Clair de Lune",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 3",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody Op. 79 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (1st movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in C Minor",
+      "composer": "Bach WTC I",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 27 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "La Cathédrale Engloutie",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 2",
+      "composer": "Czerny Op. 740",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Liebestraum No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 14 No. 2 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polichinelle",
+      "composer": "Rachmaninoff Op. 3 No. 4",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gran Vals",
+      "composer": "Tárrega",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 7",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 3",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sarabande",
+      "composer": "Bach BWV 997",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Torre Bermeja",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 8",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Meridional (Fiesta)",
+      "composer": "Ponce",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Una Limosna por el Amor de Dios",
+      "composer": "Barrios",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 7",
+      "composer": "Dowland",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Granada",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 16",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Koyunbaba (1st movement)",
+      "composer": "Domeniconi",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Danza Característica",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sinfonia No. 15 in B Minor",
+      "composer": "Bach BWV 801",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 310 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade Op. 10 No. 1",
+      "composer": "Brahms",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 48 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Reflets dans l'eau",
+      "composer": "Debussy",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 5",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 2 No. 1 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 142 No. 2",
+      "composer": "Schubert",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in D Major",
+      "composer": "Bach WTC II",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody in G Minor",
+      "composer": "Brahms Op. 79 No. 2",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ondine",
+      "composer": "Ravel",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 740 No. 17",
+      "composer": "Czerny",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Consolation No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations Sérieuses",
+      "composer": "Mendelssohn",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 23 No. 5",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations on a Theme by Handel",
+      "composer": "Giuliani Op. 107",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 10",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 11",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Solo",
+      "composer": "Sor Op. 14",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fugue BWV 1000",
+      "composer": "Bach",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Córdoba",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina (complete)",
+      "composer": "Torroba",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata (Allegro moderato)",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Catedral (complete)",
+      "composer": "Barrios",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 10",
+      "composer": "Alonso Mudarra",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Mallorca",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme Varié et Finale",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 5",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Decameron Negro (1st movement)",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Italian Concerto (1st movement)",
+      "composer": "Bach BWV 971",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 457 (complete)",
+      "composer": "Mozart",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Scherzo Op. 20",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waldstein Sonata (1st movement)",
+      "composer": "Beethoven Op. 53",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "L'isle joyeuse",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 12",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 894 (1st movement)",
+      "composer": "Schubert",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Intermezzo Op. 117 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Mephisto Waltz No. 1",
+      "composer": "Liszt",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Images Book 1",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 8 No. 12",
+      "composer": "Scriabin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Carnaval",
+      "composer": "Schumann",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 26 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Barcarolle",
+      "composer": "Chopin Op. 60",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Khachaturian",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 15",
+      "composer": "Giuliani",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 2",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invocación y Danza",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Introduction and Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Chaconne",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Suite Española",
+      "composer": "Albéniz",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata III",
+      "composer": "Ponce",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 12",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Usher Waltz",
+      "composer": "Koshkin",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sueño",
+      "composer": "Barrios",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 1",
+      "composer": "Giuliani Op. 119",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Homenaje a Tárrega",
+      "composer": "Turina",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Tiento Antiguo",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "José",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Goldberg Variations",
+      "composer": "Bach",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 533/494",
+      "composer": "Mozart",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 1",
+      "composer": "Chopin Op. 23",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Appassionata Sonata",
+      "composer": "Beethoven Op. 57",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gaspard de la nuit",
+      "composer": "Ravel",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 11",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Wanderer Fantasy",
+      "composer": "Schubert",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 4",
+      "composer": "Liszt",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Preludes Book II",
+      "composer": "Debussy",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 5",
+      "composer": "Scriabin Op. 53",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Kreisleriana",
+      "composer": "Schumann Op. 16",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Hammerklavier Sonata",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polonaise Op. 44",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Islamey",
+      "composer": "Balakirev",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Grand Sonata Op. 25",
+      "composer": "Sor",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto de Aranjuez",
+      "composer": "Rodrigo",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 2",
+      "composer": "Giuliani Op. 120",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "English Suite No. 3",
+      "composer": "Bach BWV 808",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations and Fugue on La Folia",
+      "composer": "Ponce",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Diabolico",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude, Fugue and Allegro",
+      "composer": "Bach BWV 998",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Op. 51 No. 1",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Five Bagatelles",
+      "composer": "Walton",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata Op. 47",
+      "composer": "Ginastera",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Royal Winter Music I",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sequenza XI",
+      "composer": "Berio",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "All in Twilight",
+      "composer": "Takemitsu",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Art of Fugue",
+      "composer": "Bach",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 960",
+      "composer": "Schubert",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 4",
+      "composer": "Chopin Op. 52",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Diabelli Variations",
+      "composer": "Beethoven Op. 120",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Miroirs",
+      "composer": "Ravel",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 6",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 2",
+      "composer": "Rachmaninoff Op. 36",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata in B Minor",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 8",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études-Tableaux",
+      "composer": "Rachmaninoff Op. 39",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 7",
+      "composer": "Prokofiev Op. 83",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasie",
+      "composer": "Schumann Op. 17",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 29",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante Spianato and Grand Polonaise",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pictures at an Exhibition",
+      "composer": "Mussorgsky",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasia Op. 30",
+      "composer": "Sor",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 10",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Overture",
+      "composer": "Giuliani Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lute Suite No. 4",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Puerto",
+      "composer": "Albéniz",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ginastera Op. 47",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme of Django",
+      "composer": "Dyens",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Nocturnal",
+      "composer": "Britten Op. 70",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Turina Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto No. 1",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Changes",
+      "composer": "Elliott Carter",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Kurze Schatten II",
+      "composer": "Brian Ferneyhough",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Si le jour paraît",
+      "composer": "Murail",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Well-Tempered Clavier",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 32",
+      "composer": "Beethoven Op. 111",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "24 Études",
+      "composer": "Chopin Op. 10 & 25",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Années de pèlerinage",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Tombeau de Couperin",
+      "composer": "Ravel",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 3",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "12 Transcendental Études",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Vingt regards sur l'enfant-Jésus",
+      "composer": "Messiaen",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 8",
+      "composer": "Prokofiev Op. 84",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études",
+      "composer": "Ligeti",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Goyescas",
+      "composer": "Granados",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Opus Clavicembalisticum",
+      "composer": "Sorabji",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Concord Sonata",
+      "composer": "Ives",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 2",
+      "composer": "Boulez",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasia Op. 7",
+      "composer": "Sor",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "12 Studies",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Ginastera",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Duo Concertant",
+      "composer": "Giuliani Op. 85",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Complete Lute Works",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto del Sur",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Hika",
+      "composer": "Brouwer",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita No. 2",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Malcolm Arnold",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto Madrigal",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Berkeley Op. 77",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Ko-Tha",
+      "composer": "Kampela",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Takemitsu",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:beethoven": [
+    {
+      "title": "Ode to Joy",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in G Major",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Für Elise",
+      "composer": "Beethoven",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 14 No. 2 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 2 No. 1 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 26 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach": [
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in C Major BWV 939",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major BWV Anh. 114",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Musette in D Major",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fugue BWV 1000",
+      "composer": "Bach",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Goldberg Variations",
+      "composer": "Bach",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Art of Fugue",
+      "composer": "Bach",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Well-Tempered Clavier",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Complete Lute Works",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:traditional english": [
+    {
+      "title": "Lavender's Blue",
+      "composer": "Traditional English",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 107": [
+    {
+      "title": "Russian Folk Song",
+      "composer": "Beethoven Op. 107",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:joplin": [
+    {
+      "title": "The Entertainer",
+      "composer": "Joplin",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Maple Leaf Rag",
+      "composer": "Joplin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:clementi": [
+    {
+      "title": "Sonatina Op. 36 No. 1 (1st movement)",
+      "composer": "Clementi",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (complete)",
+      "composer": "Clementi",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:diabelli": [
+    {
+      "title": "Allegro in C Major",
+      "composer": "Diabelli",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:haydn": [
+    {
+      "title": "German Dance",
+      "composer": "Haydn",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Hob. XVI:35 (1st movement)",
+      "composer": "Haydn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:czerny op. 599 no. 1": [
+    {
+      "title": "Study in C Major",
+      "composer": "Czerny Op. 599 No. 1",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schumann": [
+    {
+      "title": "Melody Op. 68 No. 1",
+      "composer": "Schumann",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Carnaval",
+      "composer": "Schumann",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:brahms": [
+    {
+      "title": "Waltz Op. 39 No. 8",
+      "composer": "Brahms",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 15",
+      "composer": "Brahms",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody Op. 79 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade Op. 10 No. 1",
+      "composer": "Brahms",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Intermezzo Op. 117 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:grieg": [
+    {
+      "title": "Morning Mood",
+      "composer": "Grieg",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:pachelbel": [
+    {
+      "title": "Canon in D",
+      "composer": "Pachelbel",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:carulli": [
+    {
+      "title": "Andante in C Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz in G Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Country Dance",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 121 No. 1",
+      "composer": "Carulli",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:aguado": [
+    {
+      "title": "Study in A Minor",
+      "composer": "Aguado",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in D Major",
+      "composer": "Aguado",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:giuliani": [
+    {
+      "title": "Allegretto in C Major",
+      "composer": "Giuliani",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in E Minor",
+      "composer": "Giuliani",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata Op. 15",
+      "composer": "Giuliani",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:anonymous": [
+    {
+      "title": "Spanish Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Packington's Pound",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Greensleeves",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme from Jeux Interdits",
+      "composer": "Anonymous",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:brouwer": [
+    {
+      "title": "Etude No. 1",
+      "composer": "Brouwer",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 2",
+      "composer": "Brouwer",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 3",
+      "composer": "Brouwer",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 5",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Un Dia de Noviembre",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 7",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Danza Característica",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 10",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Decameron Negro (1st movement)",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Hika",
+      "composer": "Brouwer",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:sor": [
+    {
+      "title": "Minuet in G Major",
+      "composer": "Sor",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 8",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 8 No. 4",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 17",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 11",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 32 No. 2",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 3",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 16",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Sonata Op. 25",
+      "composer": "Sor",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia Op. 30",
+      "composer": "Sor",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia Op. 7",
+      "composer": "Sor",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:carcassi": [
+    {
+      "title": "Andantino Op. 44 No. 1",
+      "composer": "Carcassi",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 3",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 7",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 14",
+      "composer": "Carcassi",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 19",
+      "composer": "Carcassi",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:tárrega": [
+    {
+      "title": "Lágrima",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Estudio in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Adelita",
+      "composer": "Tárrega",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Árabe",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Recuerdos de la Alhambra",
+      "composer": "Tárrega",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gran Vals",
+      "composer": "Tárrega",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:sor op. 60 no. 1": [
+    {
+      "title": "Study in C Major",
+      "composer": "Sor Op. 60 No. 1",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:traditional": [
+    {
+      "title": "Simple Gifts",
+      "composer": "Traditional",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:burgmüller op. 100 no. 2": [
+    {
+      "title": "Arabesque",
+      "composer": "Burgmüller Op. 100 No. 2",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schumann op. 68 no. 8": [
+    {
+      "title": "The Wild Horseman",
+      "composer": "Schumann Op. 68 No. 8",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven anh. 5 no. 1": [
+    {
+      "title": "Sonatina in G Major",
+      "composer": "Beethoven Anh. 5 No. 1",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach bwv 846": [
+    {
+      "title": "Prelude in C Major",
+      "composer": "Bach BWV 846",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:chopin": [
+    {
+      "title": "Waltz in A Minor",
+      "composer": "Chopin",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 69 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 7",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 15",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 3",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 27 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 48 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 5",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Scherzo Op. 20",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 12",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 11",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polonaise Op. 44",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 6",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante Spianato and Grand Polonaise",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven woo 86": [
+    {
+      "title": "Ecossaise in E-flat Major",
+      "composer": "Beethoven WoO 86",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:czerny": [
+    {
+      "title": "Study Op. 599 No. 19",
+      "composer": "Czerny",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 1",
+      "composer": "Czerny",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 5",
+      "composer": "Czerny",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 740 No. 17",
+      "composer": "Czerny",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:kuhlau": [
+    {
+      "title": "Sonatina Op. 20 No. 1 (1st movement)",
+      "composer": "Kuhlau",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 55 No. 1",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (complete)",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:burgmüller op. 100 no. 15": [
+    {
+      "title": "Ballade",
+      "composer": "Burgmüller Op. 100 No. 15",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schumann op. 68 no. 10": [
+    {
+      "title": "Happy Farmer",
+      "composer": "Schumann Op. 68 No. 10",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:debussy": [
+    {
+      "title": "Le Petit Négre",
+      "composer": "Debussy",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque No. 1",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Doctor Gradus ad Parnassum",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Girl with the Flaxen Hair",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Clair de Lune",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "La Cathédrale Engloutie",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Reflets dans l'eau",
+      "composer": "Debussy",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "L'isle joyeuse",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Images Book 1",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Preludes Book II",
+      "composer": "Debussy",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:sor op. 35 no. 22": [
+    {
+      "title": "Study in B Minor",
+      "composer": "Sor Op. 35 No. 22",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:carcassi op. 60 no. 3": [
+    {
+      "title": "Study in A Major",
+      "composer": "Carcassi Op. 60 No. 3",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:sor op. 11 no. 1": [
+    {
+      "title": "Minuet in C Major",
+      "composer": "Sor Op. 11 No. 1",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 996": [
+    {
+      "title": "Bourrée in E Minor",
+      "composer": "Bach BWV 996",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:mason williams": [
+    {
+      "title": "Classical Gas",
+      "composer": "Mason Williams",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:traditional spanish": [
+    {
+      "title": "Malagueña",
+      "composer": "Traditional Spanish",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:gaspar sanz": [
+    {
+      "title": "Pavana",
+      "composer": "Gaspar Sanz",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 772": [
+    {
+      "title": "Invention No. 1 in C Major",
+      "composer": "Bach BWV 772",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 27 no. 2": [
+    {
+      "title": "Moonlight Sonata (1st movement)",
+      "composer": "Beethoven Op. 27 No. 2",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:c.p.e. bach": [
+    {
+      "title": "Solfeggietto",
+      "composer": "C.P.E. Bach",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:mendelssohn": [
+    {
+      "title": "Venetian Boat Song Op. 30 No. 6",
+      "composer": "Mendelssohn",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Songs Without Words Op. 19 No. 1",
+      "composer": "Mendelssohn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations Sérieuses",
+      "composer": "Mendelssohn",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:tcherepnin": [
+    {
+      "title": "Bagatelle Op. 5 No. 10",
+      "composer": "Tcherepnin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:macdowell op. 51 no. 1": [
+    {
+      "title": "To a Wild Rose",
+      "composer": "MacDowell Op. 51 No. 1",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:satie": [
+    {
+      "title": "Gymnopedie No. 1",
+      "composer": "Satie",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach bwv 935": [
+    {
+      "title": "Little Prelude in D Minor",
+      "composer": "Bach BWV 935",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach bwv 995": [
+    {
+      "title": "Gavotte I & II",
+      "composer": "Bach BWV 995",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:albéniz": [
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sevilla",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Torre Bermeja",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Granada",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Córdoba",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Mallorca",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Suite Española",
+      "composer": "Albéniz",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Puerto",
+      "composer": "Albéniz",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:barrios": [
+    {
+      "title": "Julia Florida",
+      "composer": "Barrios",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Cathedral (Andante Religioso)",
+      "composer": "Barrios",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Una Limosna por el Amor de Dios",
+      "composer": "Barrios",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Catedral (complete)",
+      "composer": "Barrios",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sueño",
+      "composer": "Barrios",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 48 no. 5": [
+    {
+      "title": "Study in A Major",
+      "composer": "Giuliani Op. 48 No. 5",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:llobet": [
+    {
+      "title": "El Noi de la Mare",
+      "composer": "Llobet",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Testament d'Amelia",
+      "composer": "Llobet",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv anh. 114": [
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach BWV Anh. 114",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:villa-lobos": [
+    {
+      "title": "Prelude No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 3",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 7",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 8",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 11",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 5",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 2",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 12",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 10",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "12 Studies",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 779": [
+    {
+      "title": "Invention No. 8 in F Major",
+      "composer": "Bach BWV 779",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:mozart": [
+    {
+      "title": "Sonata K. 545 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 331 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 310 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 457 (complete)",
+      "composer": "Mozart",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 533/494",
+      "composer": "Mozart",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 13": [
+    {
+      "title": "Pathétique Sonata (2nd movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (1st movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:dvořák op. 101 no. 7": [
+    {
+      "title": "Humoresque",
+      "composer": "Dvořák Op. 101 No. 7",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:palmgren op. 27 no. 4": [
+    {
+      "title": "May Night",
+      "composer": "Palmgren Op. 27 No. 4",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach bwv 1006a": [
+    {
+      "title": "Gavotte en Rondeau",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lute Suite No. 4",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:ponce": [
+    {
+      "title": "Scherzino Mexicano",
+      "composer": "Ponce",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Meridional (Fiesta)",
+      "composer": "Ponce",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata (Allegro moderato)",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme Varié et Finale",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata III",
+      "composer": "Ponce",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations and Fugue on La Folia",
+      "composer": "Ponce",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto del Sur",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:sor op. 9": [
+    {
+      "title": "Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Introduction and Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 784": [
+    {
+      "title": "Invention No. 13 in A Minor",
+      "composer": "Bach BWV 784",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schubert": [
+    {
+      "title": "Impromptu Op. 90 No. 4",
+      "composer": "Schubert",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 142 No. 2",
+      "composer": "Schubert",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 894 (1st movement)",
+      "composer": "Schubert",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Wanderer Fantasy",
+      "composer": "Schubert",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 960",
+      "composer": "Schubert",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach wtc i": [
+    {
+      "title": "Prelude and Fugue in C Minor",
+      "composer": "Bach WTC I",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:czerny op. 740": [
+    {
+      "title": "Study Op. 25 No. 2",
+      "composer": "Czerny Op. 740",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:liszt": [
+    {
+      "title": "Liebestraum No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Consolation No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Mephisto Waltz No. 1",
+      "composer": "Liszt",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 4",
+      "composer": "Liszt",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata in B Minor",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 8",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Années de pèlerinage",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "12 Transcendental Études",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:rachmaninoff op. 3 no. 4": [
+    {
+      "title": "Polichinelle",
+      "composer": "Rachmaninoff Op. 3 No. 4",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach bwv 997": [
+    {
+      "title": "Sarabande",
+      "composer": "Bach BWV 997",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:granados": [
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Goyescas",
+      "composer": "Granados",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:dowland": [
+    {
+      "title": "Fantasia No. 7",
+      "composer": "Dowland",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:domeniconi": [
+    {
+      "title": "Koyunbaba (1st movement)",
+      "composer": "Domeniconi",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 801": [
+    {
+      "title": "Sinfonia No. 15 in B Minor",
+      "composer": "Bach BWV 801",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:bach wtc ii": [
+    {
+      "title": "Prelude and Fugue in D Major",
+      "composer": "Bach WTC II",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:brahms op. 79 no. 2": [
+    {
+      "title": "Rhapsody in G Minor",
+      "composer": "Brahms Op. 79 No. 2",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:ravel": [
+    {
+      "title": "Ondine",
+      "composer": "Ravel",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gaspard de la nuit",
+      "composer": "Ravel",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Miroirs",
+      "composer": "Ravel",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Tombeau de Couperin",
+      "composer": "Ravel",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:rachmaninoff": [
+    {
+      "title": "Prelude Op. 23 No. 5",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 3",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 107": [
+    {
+      "title": "Variations on a Theme by Handel",
+      "composer": "Giuliani Op. 107",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:sor op. 14": [
+    {
+      "title": "Grand Solo",
+      "composer": "Sor Op. 14",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:torroba": [
+    {
+      "title": "Sonatina (complete)",
+      "composer": "Torroba",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:alonso mudarra": [
+    {
+      "title": "Fantasia No. 10",
+      "composer": "Alonso Mudarra",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 971": [
+    {
+      "title": "Italian Concerto (1st movement)",
+      "composer": "Bach BWV 971",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 53": [
+    {
+      "title": "Waldstein Sonata (1st movement)",
+      "composer": "Beethoven Op. 53",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:scriabin": [
+    {
+      "title": "Study Op. 8 No. 12",
+      "composer": "Scriabin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:chopin op. 60": [
+    {
+      "title": "Barcarolle",
+      "composer": "Chopin Op. 60",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:khachaturian": [
+    {
+      "title": "Toccata",
+      "composer": "Khachaturian",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:rodrigo": [
+    {
+      "title": "Invocación y Danza",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Tiento Antiguo",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto de Aranjuez",
+      "composer": "Rodrigo",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto Madrigal",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 1004": [
+    {
+      "title": "Chaconne",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita No. 2",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:koshkin": [
+    {
+      "title": "Usher Waltz",
+      "composer": "Koshkin",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 119": [
+    {
+      "title": "Rossiniana No. 1",
+      "composer": "Giuliani Op. 119",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:turina": [
+    {
+      "title": "Homenaje a Tárrega",
+      "composer": "Turina",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:josé": [
+    {
+      "title": "Sonata",
+      "composer": "José",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:chopin op. 23": [
+    {
+      "title": "Ballade No. 1",
+      "composer": "Chopin Op. 23",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 57": [
+    {
+      "title": "Appassionata Sonata",
+      "composer": "Beethoven Op. 57",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:scriabin op. 53": [
+    {
+      "title": "Sonata No. 5",
+      "composer": "Scriabin Op. 53",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schumann op. 16": [
+    {
+      "title": "Kreisleriana",
+      "composer": "Schumann Op. 16",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 106": [
+    {
+      "title": "Hammerklavier Sonata",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 29",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:balakirev": [
+    {
+      "title": "Islamey",
+      "composer": "Balakirev",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 120": [
+    {
+      "title": "Rossiniana No. 2",
+      "composer": "Giuliani Op. 120",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 808": [
+    {
+      "title": "English Suite No. 3",
+      "composer": "Bach BWV 808",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:castelnuovo-tedesco": [
+    {
+      "title": "Capricho Diabolico",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto No. 1",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:bach bwv 998": [
+    {
+      "title": "Prelude, Fugue and Allegro",
+      "composer": "Bach BWV 998",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:henze": [
+    {
+      "title": "Sonatina Op. 51 No. 1",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Royal Winter Music I",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:walton": [
+    {
+      "title": "Five Bagatelles",
+      "composer": "Walton",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:ginastera": [
+    {
+      "title": "Sonata Op. 47",
+      "composer": "Ginastera",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Ginastera",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:berio": [
+    {
+      "title": "Sequenza XI",
+      "composer": "Berio",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:takemitsu": [
+    {
+      "title": "All in Twilight",
+      "composer": "Takemitsu",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Takemitsu",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:chopin op. 52": [
+    {
+      "title": "Ballade No. 4",
+      "composer": "Chopin Op. 52",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 120": [
+    {
+      "title": "Diabelli Variations",
+      "composer": "Beethoven Op. 120",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:rachmaninoff op. 36": [
+    {
+      "title": "Sonata No. 2",
+      "composer": "Rachmaninoff Op. 36",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:rachmaninoff op. 39": [
+    {
+      "title": "Études-Tableaux",
+      "composer": "Rachmaninoff Op. 39",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:prokofiev op. 83": [
+    {
+      "title": "Sonata No. 7",
+      "composer": "Prokofiev Op. 83",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:schumann op. 17": [
+    {
+      "title": "Fantasie",
+      "composer": "Schumann Op. 17",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:mussorgsky": [
+    {
+      "title": "Pictures at an Exhibition",
+      "composer": "Mussorgsky",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 61": [
+    {
+      "title": "Grand Overture",
+      "composer": "Giuliani Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:ginastera op. 47": [
+    {
+      "title": "Sonata",
+      "composer": "Ginastera Op. 47",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:dyens": [
+    {
+      "title": "Variations on a Theme of Django",
+      "composer": "Dyens",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:britten op. 70": [
+    {
+      "title": "Nocturnal",
+      "composer": "Britten Op. 70",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:turina op. 61": [
+    {
+      "title": "Sonata",
+      "composer": "Turina Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:elliott carter": [
+    {
+      "title": "Changes",
+      "composer": "Elliott Carter",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:brian ferneyhough": [
+    {
+      "title": "Kurze Schatten II",
+      "composer": "Brian Ferneyhough",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:murail": [
+    {
+      "title": "Si le jour paraît",
+      "composer": "Murail",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:beethoven op. 111": [
+    {
+      "title": "Piano Sonata No. 32",
+      "composer": "Beethoven Op. 111",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:chopin op. 10 & 25": [
+    {
+      "title": "24 Études",
+      "composer": "Chopin Op. 10 & 25",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:messiaen": [
+    {
+      "title": "Vingt regards sur l'enfant-Jésus",
+      "composer": "Messiaen",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:prokofiev op. 84": [
+    {
+      "title": "Sonata No. 8",
+      "composer": "Prokofiev Op. 84",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:ligeti": [
+    {
+      "title": "Études",
+      "composer": "Ligeti",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:sorabji": [
+    {
+      "title": "Opus Clavicembalisticum",
+      "composer": "Sorabji",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:ives": [
+    {
+      "title": "Concord Sonata",
+      "composer": "Ives",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:boulez": [
+    {
+      "title": "Piano Sonata No. 2",
+      "composer": "Boulez",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:by-composer:giuliani op. 85": [
+    {
+      "title": "Grand Duo Concertant",
+      "composer": "Giuliani Op. 85",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:malcolm arnold": [
+    {
+      "title": "Guitar Concerto",
+      "composer": "Malcolm Arnold",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:berkeley op. 77": [
+    {
+      "title": "Sonata",
+      "composer": "Berkeley Op. 77",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:by-composer:kampela": [
+    {
+      "title": "Ko-Tha",
+      "composer": "Kampela",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:1": [
+    {
+      "title": "Ode to Joy",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Lavender's Blue",
+      "composer": "Traditional English",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Russian Folk Song",
+      "composer": "Beethoven Op. 107",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Entertainer",
+      "composer": "Joplin",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (1st movement)",
+      "composer": "Clementi",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in G Major",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Allegro in C Major",
+      "composer": "Diabelli",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "German Dance",
+      "composer": "Haydn",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Czerny Op. 599 No. 1",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in C Major BWV 939",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Melody Op. 68 No. 1",
+      "composer": "Schumann",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 8",
+      "composer": "Brahms",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Morning Mood",
+      "composer": "Grieg",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Canon in D",
+      "composer": "Pachelbel",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante in C Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz in G Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Minor",
+      "composer": "Aguado",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in C Major",
+      "composer": "Giuliani",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Spanish Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 1",
+      "composer": "Brouwer",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Country Dance",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Sor",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 1",
+      "composer": "Carcassi",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lágrima",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Sor Op. 60 No. 1",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Packington's Pound",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Greensleeves",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Simple Gifts",
+      "composer": "Traditional",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Estudio in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:2": [
+    {
+      "title": "Sonatina Op. 36 No. 1 (complete)",
+      "composer": "Clementi",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major BWV Anh. 114",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Für Elise",
+      "composer": "Beethoven",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque",
+      "composer": "Burgmüller Op. 100 No. 2",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Wild Horseman",
+      "composer": "Schumann Op. 68 No. 8",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina in G Major",
+      "composer": "Beethoven Anh. 5 No. 1",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude in C Major",
+      "composer": "Bach BWV 846",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz in A Minor",
+      "composer": "Chopin",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in E-flat Major",
+      "composer": "Beethoven WoO 86",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 599 No. 19",
+      "composer": "Czerny",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (1st movement)",
+      "composer": "Kuhlau",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Musette in D Major",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade",
+      "composer": "Burgmüller Op. 100 No. 15",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Happy Farmer",
+      "composer": "Schumann Op. 68 No. 10",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Petit Négre",
+      "composer": "Debussy",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in B Minor",
+      "composer": "Sor Op. 35 No. 22",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 3",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 121 No. 1",
+      "composer": "Carulli",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 2",
+      "composer": "Brouwer",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Carcassi Op. 60 No. 3",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in E Minor",
+      "composer": "Giuliani",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in C Major",
+      "composer": "Sor Op. 11 No. 1",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in D Major",
+      "composer": "Aguado",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Adelita",
+      "composer": "Tárrega",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Bourrée in E Minor",
+      "composer": "Bach BWV 996",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Classical Gas",
+      "composer": "Mason Williams",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Malagueña",
+      "composer": "Traditional Spanish",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 7",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Pavana",
+      "composer": "Gaspar Sanz",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:3": [
+    {
+      "title": "Invention No. 1 in C Major",
+      "composer": "Bach BWV 772",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 55 No. 1",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 69 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Moonlight Sonata (1st movement)",
+      "composer": "Beethoven Op. 27 No. 2",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Maple Leaf Rag",
+      "composer": "Joplin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Solfeggietto",
+      "composer": "C.P.E. Bach",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Venetian Boat Song Op. 30 No. 6",
+      "composer": "Mendelssohn",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 7",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (complete)",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 1",
+      "composer": "Czerny",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Bagatelle Op. 5 No. 10",
+      "composer": "Tcherepnin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "To a Wild Rose",
+      "composer": "MacDowell Op. 51 No. 1",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gymnopedie No. 1",
+      "composer": "Satie",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in D Minor",
+      "composer": "Bach BWV 935",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 3",
+      "composer": "Brouwer",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte I & II",
+      "composer": "Bach BWV 995",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 8",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 8 No. 4",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Árabe",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 14",
+      "composer": "Carcassi",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Julia Florida",
+      "composer": "Barrios",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme from Jeux Interdits",
+      "composer": "Anonymous",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Giuliani Op. 48 No. 5",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Noi de la Mare",
+      "composer": "Llobet",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach BWV Anh. 114",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 17",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:4": [
+    {
+      "title": "Invention No. 8 in F Major",
+      "composer": "Bach BWV 779",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 545 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (2nd movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque No. 1",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Songs Without Words Op. 19 No. 1",
+      "composer": "Mendelssohn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 5",
+      "composer": "Czerny",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 15",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Doctor Gradus ad Parnassum",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Humoresque",
+      "composer": "Dvořák Op. 101 No. 7",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Girl with the Flaxen Hair",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 15",
+      "composer": "Brahms",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "May Night",
+      "composer": "Palmgren Op. 27 No. 4",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Hob. XVI:35 (1st movement)",
+      "composer": "Haydn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Recuerdos de la Alhambra",
+      "composer": "Tárrega",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 5",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 3",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 11",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte en Rondeau",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Un Dia de Noviembre",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 19",
+      "composer": "Carcassi",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Scherzino Mexicano",
+      "composer": "Ponce",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Cathedral (Andante Religioso)",
+      "composer": "Barrios",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sevilla",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 7",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 32 No. 2",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Testament d'Amelia",
+      "composer": "Llobet",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:5": [
+    {
+      "title": "Invention No. 13 in A Minor",
+      "composer": "Bach BWV 784",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 331 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 90 No. 4",
+      "composer": "Schubert",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Clair de Lune",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 3",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody Op. 79 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (1st movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in C Minor",
+      "composer": "Bach WTC I",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 27 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "La Cathédrale Engloutie",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 2",
+      "composer": "Czerny Op. 740",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Liebestraum No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 14 No. 2 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polichinelle",
+      "composer": "Rachmaninoff Op. 3 No. 4",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gran Vals",
+      "composer": "Tárrega",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 7",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 3",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sarabande",
+      "composer": "Bach BWV 997",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Torre Bermeja",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 8",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Meridional (Fiesta)",
+      "composer": "Ponce",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Una Limosna por el Amor de Dios",
+      "composer": "Barrios",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 7",
+      "composer": "Dowland",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Granada",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 16",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Koyunbaba (1st movement)",
+      "composer": "Domeniconi",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Danza Característica",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:6": [
+    {
+      "title": "Sinfonia No. 15 in B Minor",
+      "composer": "Bach BWV 801",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 310 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade Op. 10 No. 1",
+      "composer": "Brahms",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 48 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Reflets dans l'eau",
+      "composer": "Debussy",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 5",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 2 No. 1 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 142 No. 2",
+      "composer": "Schubert",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in D Major",
+      "composer": "Bach WTC II",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody in G Minor",
+      "composer": "Brahms Op. 79 No. 2",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ondine",
+      "composer": "Ravel",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 740 No. 17",
+      "composer": "Czerny",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Consolation No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations Sérieuses",
+      "composer": "Mendelssohn",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 23 No. 5",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations on a Theme by Handel",
+      "composer": "Giuliani Op. 107",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 10",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 11",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Solo",
+      "composer": "Sor Op. 14",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fugue BWV 1000",
+      "composer": "Bach",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Córdoba",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina (complete)",
+      "composer": "Torroba",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata (Allegro moderato)",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Catedral (complete)",
+      "composer": "Barrios",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 10",
+      "composer": "Alonso Mudarra",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Mallorca",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme Varié et Finale",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 5",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Decameron Negro (1st movement)",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:7": [
+    {
+      "title": "Italian Concerto (1st movement)",
+      "composer": "Bach BWV 971",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 457 (complete)",
+      "composer": "Mozart",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Scherzo Op. 20",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waldstein Sonata (1st movement)",
+      "composer": "Beethoven Op. 53",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "L'isle joyeuse",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 12",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 894 (1st movement)",
+      "composer": "Schubert",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Intermezzo Op. 117 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Mephisto Waltz No. 1",
+      "composer": "Liszt",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Images Book 1",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 8 No. 12",
+      "composer": "Scriabin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Carnaval",
+      "composer": "Schumann",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 26 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Barcarolle",
+      "composer": "Chopin Op. 60",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Khachaturian",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 15",
+      "composer": "Giuliani",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 2",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invocación y Danza",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Introduction and Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Chaconne",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Suite Española",
+      "composer": "Albéniz",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata III",
+      "composer": "Ponce",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 12",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Usher Waltz",
+      "composer": "Koshkin",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sueño",
+      "composer": "Barrios",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 1",
+      "composer": "Giuliani Op. 119",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Homenaje a Tárrega",
+      "composer": "Turina",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Tiento Antiguo",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "José",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:8": [
+    {
+      "title": "Goldberg Variations",
+      "composer": "Bach",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 533/494",
+      "composer": "Mozart",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 1",
+      "composer": "Chopin Op. 23",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Appassionata Sonata",
+      "composer": "Beethoven Op. 57",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gaspard de la nuit",
+      "composer": "Ravel",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 11",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Wanderer Fantasy",
+      "composer": "Schubert",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 4",
+      "composer": "Liszt",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Preludes Book II",
+      "composer": "Debussy",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 5",
+      "composer": "Scriabin Op. 53",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Kreisleriana",
+      "composer": "Schumann Op. 16",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Hammerklavier Sonata",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polonaise Op. 44",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Islamey",
+      "composer": "Balakirev",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Grand Sonata Op. 25",
+      "composer": "Sor",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto de Aranjuez",
+      "composer": "Rodrigo",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 2",
+      "composer": "Giuliani Op. 120",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "English Suite No. 3",
+      "composer": "Bach BWV 808",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations and Fugue on La Folia",
+      "composer": "Ponce",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Diabolico",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude, Fugue and Allegro",
+      "composer": "Bach BWV 998",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Op. 51 No. 1",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Five Bagatelles",
+      "composer": "Walton",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata Op. 47",
+      "composer": "Ginastera",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Royal Winter Music I",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sequenza XI",
+      "composer": "Berio",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "All in Twilight",
+      "composer": "Takemitsu",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:9": [
+    {
+      "title": "Art of Fugue",
+      "composer": "Bach",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 960",
+      "composer": "Schubert",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 4",
+      "composer": "Chopin Op. 52",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Diabelli Variations",
+      "composer": "Beethoven Op. 120",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Miroirs",
+      "composer": "Ravel",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 6",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 2",
+      "composer": "Rachmaninoff Op. 36",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata in B Minor",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 8",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études-Tableaux",
+      "composer": "Rachmaninoff Op. 39",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 7",
+      "composer": "Prokofiev Op. 83",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasie",
+      "composer": "Schumann Op. 17",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 29",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante Spianato and Grand Polonaise",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pictures at an Exhibition",
+      "composer": "Mussorgsky",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasia Op. 30",
+      "composer": "Sor",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 10",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Overture",
+      "composer": "Giuliani Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lute Suite No. 4",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Puerto",
+      "composer": "Albéniz",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ginastera Op. 47",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme of Django",
+      "composer": "Dyens",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Nocturnal",
+      "composer": "Britten Op. 70",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Turina Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto No. 1",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Changes",
+      "composer": "Elliott Carter",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Kurze Schatten II",
+      "composer": "Brian Ferneyhough",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Si le jour paraît",
+      "composer": "Murail",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:grade:10": [
+    {
+      "title": "Well-Tempered Clavier",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 32",
+      "composer": "Beethoven Op. 111",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "24 Études",
+      "composer": "Chopin Op. 10 & 25",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Années de pèlerinage",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Tombeau de Couperin",
+      "composer": "Ravel",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 3",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "12 Transcendental Études",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Vingt regards sur l'enfant-Jésus",
+      "composer": "Messiaen",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 8",
+      "composer": "Prokofiev Op. 84",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études",
+      "composer": "Ligeti",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Goyescas",
+      "composer": "Granados",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Opus Clavicembalisticum",
+      "composer": "Sorabji",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Concord Sonata",
+      "composer": "Ives",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 2",
+      "composer": "Boulez",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasia Op. 7",
+      "composer": "Sor",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "12 Studies",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Ginastera",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Duo Concertant",
+      "composer": "Giuliani Op. 85",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Complete Lute Works",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto del Sur",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Hika",
+      "composer": "Brouwer",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita No. 2",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Malcolm Arnold",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto Madrigal",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Berkeley Op. 77",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Ko-Tha",
+      "composer": "Kampela",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Takemitsu",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ],
+  "pieces:instrument:piano": [
+    {
+      "title": "Ode to Joy",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Lavender's Blue",
+      "composer": "Traditional English",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Russian Folk Song",
+      "composer": "Beethoven Op. 107",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Entertainer",
+      "composer": "Joplin",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (1st movement)",
+      "composer": "Clementi",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in G Major",
+      "composer": "Beethoven",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Allegro in C Major",
+      "composer": "Diabelli",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "German Dance",
+      "composer": "Haydn",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Czerny Op. 599 No. 1",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in C Major BWV 939",
+      "composer": "Bach",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Melody Op. 68 No. 1",
+      "composer": "Schumann",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 8",
+      "composer": "Brahms",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Morning Mood",
+      "composer": "Grieg",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Canon in D",
+      "composer": "Pachelbel",
+      "gradeLevel": 1,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 36 No. 1 (complete)",
+      "composer": "Clementi",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Minuet in G Major BWV Anh. 114",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Für Elise",
+      "composer": "Beethoven",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque",
+      "composer": "Burgmüller Op. 100 No. 2",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Wild Horseman",
+      "composer": "Schumann Op. 68 No. 8",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina in G Major",
+      "composer": "Beethoven Anh. 5 No. 1",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude in C Major",
+      "composer": "Bach BWV 846",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz in A Minor",
+      "composer": "Chopin",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ecossaise in E-flat Major",
+      "composer": "Beethoven WoO 86",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 599 No. 19",
+      "composer": "Czerny",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (1st movement)",
+      "composer": "Kuhlau",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Musette in D Major",
+      "composer": "Bach",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade",
+      "composer": "Burgmüller Op. 100 No. 15",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Happy Farmer",
+      "composer": "Schumann Op. 68 No. 10",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Petit Négre",
+      "composer": "Debussy",
+      "gradeLevel": 2,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Invention No. 1 in C Major",
+      "composer": "Bach BWV 772",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 55 No. 1",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 69 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Moonlight Sonata (1st movement)",
+      "composer": "Beethoven Op. 27 No. 2",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Maple Leaf Rag",
+      "composer": "Joplin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Solfeggietto",
+      "composer": "C.P.E. Bach",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Venetian Boat Song Op. 30 No. 6",
+      "composer": "Mendelssohn",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 7",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonatina Op. 20 No. 1 (complete)",
+      "composer": "Kuhlau",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 1",
+      "composer": "Czerny",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Bagatelle Op. 5 No. 10",
+      "composer": "Tcherepnin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "To a Wild Rose",
+      "composer": "MacDowell Op. 51 No. 1",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gymnopedie No. 1",
+      "composer": "Satie",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Little Prelude in D Minor",
+      "composer": "Bach BWV 935",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 3,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Invention No. 8 in F Major",
+      "composer": "Bach BWV 779",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 545 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (2nd movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Arabesque No. 1",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Songs Without Words Op. 19 No. 1",
+      "composer": "Mendelssohn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 9 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 299 No. 5",
+      "composer": "Czerny",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 28 No. 15",
+      "composer": "Chopin",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Doctor Gradus ad Parnassum",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Humoresque",
+      "composer": "Dvořák Op. 101 No. 7",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "The Girl with the Flaxen Hair",
+      "composer": "Debussy",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 39 No. 15",
+      "composer": "Brahms",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "May Night",
+      "composer": "Palmgren Op. 27 No. 4",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Hob. XVI:35 (1st movement)",
+      "composer": "Haydn",
+      "gradeLevel": 4,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Invention No. 13 in A Minor",
+      "composer": "Bach BWV 784",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 331 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 90 No. 4",
+      "composer": "Schubert",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waltz Op. 64 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Clair de Lune",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 3",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody Op. 79 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pathétique Sonata (1st movement)",
+      "composer": "Beethoven Op. 13",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in C Minor",
+      "composer": "Bach WTC I",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 27 No. 2",
+      "composer": "Chopin",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "La Cathédrale Engloutie",
+      "composer": "Debussy",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 2",
+      "composer": "Czerny Op. 740",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Liebestraum No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 14 No. 2 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polichinelle",
+      "composer": "Rachmaninoff Op. 3 No. 4",
+      "gradeLevel": 5,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sinfonia No. 15 in B Minor",
+      "composer": "Bach BWV 801",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 310 (1st movement)",
+      "composer": "Mozart",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade Op. 10 No. 1",
+      "composer": "Brahms",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Nocturne Op. 48 No. 1",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Reflets dans l'eau",
+      "composer": "Debussy",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 5",
+      "composer": "Chopin",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 2 No. 1 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Impromptu Op. 142 No. 2",
+      "composer": "Schubert",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude and Fugue in D Major",
+      "composer": "Bach WTC II",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Rhapsody in G Minor",
+      "composer": "Brahms Op. 79 No. 2",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ondine",
+      "composer": "Ravel",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 740 No. 17",
+      "composer": "Czerny",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Consolation No. 3",
+      "composer": "Liszt",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Variations Sérieuses",
+      "composer": "Mendelssohn",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Prelude Op. 23 No. 5",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 6,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Italian Concerto (1st movement)",
+      "composer": "Bach BWV 971",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 457 (complete)",
+      "composer": "Mozart",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Scherzo Op. 20",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Waldstein Sonata (1st movement)",
+      "composer": "Beethoven Op. 53",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "L'isle joyeuse",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 10 No. 12",
+      "composer": "Chopin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 894 (1st movement)",
+      "composer": "Schubert",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Intermezzo Op. 117 No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Mephisto Waltz No. 1",
+      "composer": "Liszt",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Images Book 1",
+      "composer": "Debussy",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 8 No. 12",
+      "composer": "Scriabin",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Carnaval",
+      "composer": "Schumann",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata Op. 26 (1st movement)",
+      "composer": "Beethoven",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Barcarolle",
+      "composer": "Chopin Op. 60",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Khachaturian",
+      "gradeLevel": 7,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Goldberg Variations",
+      "composer": "Bach",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata K. 533/494",
+      "composer": "Mozart",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 1",
+      "composer": "Chopin Op. 23",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Appassionata Sonata",
+      "composer": "Beethoven Op. 57",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Gaspard de la nuit",
+      "composer": "Ravel",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 11",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Wanderer Fantasy",
+      "composer": "Schubert",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 2",
+      "composer": "Brahms",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 4",
+      "composer": "Liszt",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Preludes Book II",
+      "composer": "Debussy",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 5",
+      "composer": "Scriabin Op. 53",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Kreisleriana",
+      "composer": "Schumann Op. 16",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Hammerklavier Sonata",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Polonaise Op. 44",
+      "composer": "Chopin",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Islamey",
+      "composer": "Balakirev",
+      "gradeLevel": 8,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Art of Fugue",
+      "composer": "Bach",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata D. 960",
+      "composer": "Schubert",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Ballade No. 4",
+      "composer": "Chopin Op. 52",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Diabelli Variations",
+      "composer": "Beethoven Op. 120",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Miroirs",
+      "composer": "Ravel",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Study Op. 25 No. 6",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 2",
+      "composer": "Rachmaninoff Op. 36",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata in B Minor",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Transcendental Etude No. 8",
+      "composer": "Liszt",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études-Tableaux",
+      "composer": "Rachmaninoff Op. 39",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 7",
+      "composer": "Prokofiev Op. 83",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Fantasie",
+      "composer": "Schumann Op. 17",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 29",
+      "composer": "Beethoven Op. 106",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Andante Spianato and Grand Polonaise",
+      "composer": "Chopin",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Pictures at an Exhibition",
+      "composer": "Mussorgsky",
+      "gradeLevel": 9,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Well-Tempered Clavier",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 32",
+      "composer": "Beethoven Op. 111",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "24 Études",
+      "composer": "Chopin Op. 10 & 25",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Années de pèlerinage",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Le Tombeau de Couperin",
+      "composer": "Ravel",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Concerto No. 3",
+      "composer": "Rachmaninoff",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "12 Transcendental Études",
+      "composer": "Liszt",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Vingt regards sur l'enfant-Jésus",
+      "composer": "Messiaen",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Sonata No. 8",
+      "composer": "Prokofiev Op. 84",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Études",
+      "composer": "Ligeti",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Goyescas",
+      "composer": "Granados",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Opus Clavicembalisticum",
+      "composer": "Sorabji",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Concord Sonata",
+      "composer": "Ives",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    },
+    {
+      "title": "Piano Sonata No. 2",
+      "composer": "Boulez",
+      "gradeLevel": 10,
+      "instrument": "PIANO"
+    }
+  ],
+  "pieces:instrument:guitar": [
+    {
+      "title": "Andante in C Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz in G Major",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Minor",
+      "composer": "Aguado",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in C Major",
+      "composer": "Giuliani",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Spanish Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 1",
+      "composer": "Brouwer",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Country Dance",
+      "composer": "Carulli",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Sor",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 1",
+      "composer": "Carcassi",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lágrima",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in C Major",
+      "composer": "Sor Op. 60 No. 1",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Packington's Pound",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Greensleeves",
+      "composer": "Anonymous",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Simple Gifts",
+      "composer": "Traditional",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Estudio in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 1,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in B Minor",
+      "composer": "Sor Op. 35 No. 22",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Andantino Op. 44 No. 3",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 121 No. 1",
+      "composer": "Carulli",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 2",
+      "composer": "Brouwer",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Romance",
+      "composer": "Anonymous",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Carcassi Op. 60 No. 3",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Allegretto in E Minor",
+      "composer": "Giuliani",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in C Major",
+      "composer": "Sor Op. 11 No. 1",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in D Major",
+      "composer": "Aguado",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Adelita",
+      "composer": "Tárrega",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Bourrée in E Minor",
+      "composer": "Bach BWV 996",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Classical Gas",
+      "composer": "Mason Williams",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Malagueña",
+      "composer": "Traditional Spanish",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 7",
+      "composer": "Carcassi",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Pavana",
+      "composer": "Gaspar Sanz",
+      "gradeLevel": 2,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in E Minor",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 3",
+      "composer": "Brouwer",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte I & II",
+      "composer": "Bach BWV 995",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 8",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 8 No. 4",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Árabe",
+      "composer": "Tárrega",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 14",
+      "composer": "Carcassi",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Julia Florida",
+      "composer": "Barrios",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme from Jeux Interdits",
+      "composer": "Anonymous",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study in A Major",
+      "composer": "Giuliani Op. 48 No. 5",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Noi de la Mare",
+      "composer": "Llobet",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Minuet in G Major",
+      "composer": "Bach BWV Anh. 114",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 17",
+      "composer": "Sor",
+      "gradeLevel": 3,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Recuerdos de la Alhambra",
+      "composer": "Tárrega",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 5",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 3",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 11",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gavotte en Rondeau",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Asturias",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Un Dia de Noviembre",
+      "composer": "Brouwer",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 60 No. 19",
+      "composer": "Carcassi",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Scherzino Mexicano",
+      "composer": "Ponce",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Cathedral (Andante Religioso)",
+      "composer": "Barrios",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sevilla",
+      "composer": "Albéniz",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 7",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Waltz Op. 32 No. 2",
+      "composer": "Sor",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Testament d'Amelia",
+      "composer": "Llobet",
+      "gradeLevel": 4,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Gran Vals",
+      "composer": "Tárrega",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 7",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 6 No. 3",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sarabande",
+      "composer": "Bach BWV 997",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Torre Bermeja",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 8",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Meridional (Fiesta)",
+      "composer": "Ponce",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Una Limosna por el Amor de Dios",
+      "composer": "Barrios",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 7",
+      "composer": "Dowland",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Granada",
+      "composer": "Albéniz",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study Op. 35 No. 16",
+      "composer": "Sor",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Koyunbaba (1st movement)",
+      "composer": "Domeniconi",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Danza Característica",
+      "composer": "Brouwer",
+      "gradeLevel": 5,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme by Handel",
+      "composer": "Giuliani Op. 107",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Etude No. 10",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 11",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Solo",
+      "composer": "Sor Op. 14",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fugue BWV 1000",
+      "composer": "Bach",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Córdoba",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina (complete)",
+      "composer": "Torroba",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 1",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata (Allegro moderato)",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Catedral (complete)",
+      "composer": "Barrios",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia No. 10",
+      "composer": "Alonso Mudarra",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Mallorca",
+      "composer": "Albéniz",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Theme Varié et Finale",
+      "composer": "Ponce",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude No. 5",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Decameron Negro (1st movement)",
+      "composer": "Brouwer",
+      "gradeLevel": 6,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata Op. 15",
+      "composer": "Giuliani",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 2",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Invocación y Danza",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Introduction and Variations on a Theme by Mozart",
+      "composer": "Sor Op. 9",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Chaconne",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Suite Española",
+      "composer": "Albéniz",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata III",
+      "composer": "Ponce",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 12",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Usher Waltz",
+      "composer": "Koshkin",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sueño",
+      "composer": "Barrios",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 1",
+      "composer": "Giuliani Op. 119",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "La Maja de Goya",
+      "composer": "Granados",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Homenaje a Tárrega",
+      "composer": "Turina",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Tiento Antiguo",
+      "composer": "Rodrigo",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "José",
+      "gradeLevel": 7,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Sonata Op. 25",
+      "composer": "Sor",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 4",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto de Aranjuez",
+      "composer": "Rodrigo",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Rossiniana No. 2",
+      "composer": "Giuliani Op. 120",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "English Suite No. 3",
+      "composer": "Bach BWV 808",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Iberia",
+      "composer": "Albéniz",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations and Fugue on La Folia",
+      "composer": "Ponce",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Capricho Diabolico",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Prelude, Fugue and Allegro",
+      "composer": "Bach BWV 998",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonatina Op. 51 No. 1",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Five Bagatelles",
+      "composer": "Walton",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata Op. 47",
+      "composer": "Ginastera",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Royal Winter Music I",
+      "composer": "Henze",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sequenza XI",
+      "composer": "Berio",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "All in Twilight",
+      "composer": "Takemitsu",
+      "gradeLevel": 8,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia Op. 30",
+      "composer": "Sor",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Study No. 10",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Overture",
+      "composer": "Giuliani Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Lute Suite No. 4",
+      "composer": "Bach BWV 1006a",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "El Puerto",
+      "composer": "Albéniz",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ginastera Op. 47",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Variations on a Theme of Django",
+      "composer": "Dyens",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Nocturnal",
+      "composer": "Britten Op. 70",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Turina Op. 61",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto No. 1",
+      "composer": "Castelnuovo-Tedesco",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Changes",
+      "composer": "Elliott Carter",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Kurze Schatten II",
+      "composer": "Brian Ferneyhough",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Si le jour paraît",
+      "composer": "Murail",
+      "gradeLevel": 9,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Fantasia Op. 7",
+      "composer": "Sor",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "12 Studies",
+      "composer": "Villa-Lobos",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Ginastera",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Grand Duo Concertant",
+      "composer": "Giuliani Op. 85",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Complete Lute Works",
+      "composer": "Bach",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto del Sur",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Hika",
+      "composer": "Brouwer",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Ponce",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Partita No. 2",
+      "composer": "Bach BWV 1004",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Malcolm Arnold",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Concierto Madrigal",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Toccata",
+      "composer": "Rodrigo",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Sonata",
+      "composer": "Berkeley Op. 77",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Ko-Tha",
+      "composer": "Kampela",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    },
+    {
+      "title": "Guitar Concerto",
+      "composer": "Takemitsu",
+      "gradeLevel": 10,
+      "instrument": "GUITAR"
+    }
+  ]
+}

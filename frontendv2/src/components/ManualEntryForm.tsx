@@ -4,6 +4,7 @@ import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
+import PieceInput from './PieceInput'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -160,30 +161,13 @@ export default function ManualEntryForm({
             {t('logbook:entry.pieces')}
           </label>
           {pieces.map((piece, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                placeholder={t('logbook:entry.pieceTitle')}
-                value={piece.title}
-                onChange={e => updatePiece(index, 'title', e.target.value)}
-                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-              />
-              <input
-                type="text"
-                placeholder={t('logbook:entry.composer')}
-                value={piece.composer || ''}
-                onChange={e => updatePiece(index, 'composer', e.target.value)}
-                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-              />
-              <Button
-                type="button"
-                onClick={() => removePiece(index)}
-                variant="secondary"
-                size="sm"
-              >
-                {t('common:remove')}
-              </Button>
-            </div>
+            <PieceInput
+              key={index}
+              piece={piece}
+              index={index}
+              onUpdate={updatePiece}
+              onRemove={removePiece}
+            />
           ))}
           <Button
             type="button"

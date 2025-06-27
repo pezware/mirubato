@@ -34,8 +34,6 @@
     "techniques": "Techniques"
   },
   "filters": {
-    "byMonth": "By Month",
-    "byWeek": "By Week",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
     "thisMonth": "This month",
@@ -52,5 +50,8 @@
     "neutral": "Neutral",
     "satisfied": "Satisfied",
     "excited": "Excited"
+  },
+  "autocomplete": {
+    "offline": "Offline - showing your history"
   }
 }

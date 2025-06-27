@@ -1,0 +1,57 @@
+{
+  "title": "Übungstagebuch",
+  "openLogbook": "Übungstagebuch öffnen",
+  "continueToLogbook": "Zum Übungstagebuch",
+  "loading": "Lade deine Übungssitzungen...",
+  "empty": "Noch keine Übungseinträge. Beginne deine musikalische Reise zu dokumentieren!",
+  "noResults": "Keine Einträge entsprechen deiner Suche.",
+  "searchPlaceholder": "Einträge durchsuchen...",
+  "syncStatus": {
+    "synced": "Synchronisiert",
+    "localOnly": "Lokaler Speicher"
+  },
+  "entry": {
+    "addEntry": "Eintrag hinzufügen",
+    "addFirstEntry": "Deinen ersten Eintrag hinzufügen",
+    "saveEntry": "Eintrag speichern",
+    "updateEntry": "Eintrag aktualisieren",
+    "deleteEntry": "Eintrag löschen",
+    "editEntry": "Eintrag bearbeiten",
+    "duration": "Dauer (Minuten)",
+    "durationPlaceholder": "30",
+    "type": "Art",
+    "pieces": "Stücke",
+    "notes": "Notizen",
+    "notesPlaceholder": "Woran hast du gearbeitet? Irgendwelche Beobachtungen?",
+    "addPiece": "Stück hinzufügen",
+    "pieceTitle": "Titel des Stücks",
+    "composer": "Komponist",
+    "entry_one": "{{count}} Eintrag",
+    "entry_other": "{{count}} Einträge",
+    "mood": "Wie lief es?",
+    "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
+    "foundEntries": "{{count}} Einträge gefunden",
+    "techniques": "Techniken"
+  },
+  "filters": {
+    "last7Days": "Letzte 7 Tage",
+    "last30Days": "Letzte 30 Tage",
+    "thisMonth": "Dieser Monat",
+    "lastMonth": "Letzter Monat",
+    "allTime": "Gesamte Zeit"
+  },
+  "timeline": {
+    "week": "Woche {{number}}",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "Frustriert",
+    "neutral": "Neutral",
+    "satisfied": "Zufrieden",
+    "excited": "Begeistert"
+  },
+  "autocomplete": {
+    "offline": "Offline - zeigt Ihre Historie"
+  }
+}

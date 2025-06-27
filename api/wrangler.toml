@@ -15,6 +15,17 @@ binding = "DB"
 database_name = "mirubato-dev"
 database_id = "local-db"  # Placeholder for local dev - wrangler will manage the actual file
 
+[[env.local.kv_namespaces]]
+binding = "MUSIC_CATALOG"
+id = "music-catalog-local"
+
+# Rate limiting for local development
+[[env.local.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 10, period = 60 }
+
 # Staging environment
 [env.staging]
 name = "mirubato-api-staging"
@@ -29,6 +40,10 @@ custom_domain = true
 binding = "DB"
 database_name = "mirubato-dev"
 database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+
+[[env.staging.kv_namespaces]]
+binding = "MUSIC_CATALOG"
+id = "b5c8ff95b5ab4ac7a1a632e6b1465f7d"
 
 # Rate limiting for staging
 [[env.staging.unsafe.bindings]]
@@ -52,6 +67,10 @@ custom_domain = true
 binding = "DB"
 database_name = "mirubato-prod"
 database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+[[kv_namespaces]]
+binding = "MUSIC_CATALOG"
+id = "b04ae504f7884fc180d27c9320b378f6"
 
 # Rate limiting configuration
 [[unsafe.bindings]]
@@ -77,6 +96,10 @@ custom_domain = true
 binding = "DB"
 database_name = "mirubato-prod"
 database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+[[env.production.kv_namespaces]]
+binding = "MUSIC_CATALOG"
+id = "b04ae504f7884fc180d27c9320b378f6"
 
 [[env.production.unsafe.bindings]]
 name = "RATE_LIMITER"

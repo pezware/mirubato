@@ -1,0 +1,22 @@
+{
+  "generic": "Es ist ein Fehler aufgetreten",
+  "network": "Netzwerkfehler. Bitte überprüfe deine Internetverbindung.",
+  "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+  "unauthorized": "Du bist nicht berechtigt, diese Aktion durchzuführen.",
+  "forbidden": "Du hast keine Berechtigung, auf diese Ressource zuzugreifen.",
+  "serverError": "Serverfehler. Bitte versuche es später erneut.",
+  "badRequest": "Ungültige Anfrage. Bitte überprüfe deine Eingabe.",
+  "timeout": "Zeitüberschreitung der Anfrage. Bitte versuche es erneut.",
+  "offline": "Du scheinst offline zu sein. Bitte überprüfe deine Internetverbindung.",
+  "validationError": "Bitte überprüfe deine Eingabe und versuche es erneut.",
+  "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+  "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten.",
+  "tryAgain": "Erneut versuchen",
+  "goBack": "Zurück",
+  "contactSupport": "Support kontaktieren",
+  "errorDetails": "Fehlerdetails",
+  "reportIssue": "Problem melden",
+  "pageNotFound": "Seite nicht gefunden",
+  "pageNotFoundDescription": "Die Seite, die du suchst, existiert nicht.",
+  "goHome": "Zur Startseite"
+}

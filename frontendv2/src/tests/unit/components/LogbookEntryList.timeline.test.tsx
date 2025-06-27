@@ -161,16 +161,21 @@ describe('LogbookEntryList Timeline Filtering', () => {
     expect(screen.queryByText('60 minutes')).not.toBeInTheDocument() // week3-entry-1
   })
 
-  it('should show all month entries when Month view is selected', async () => {
+  it('should show entries for selected month when month is clicked', async () => {
     const onUpdate = vi.fn()
 
     await act(async () => {
       render(<LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />)
     })
 
-    // Click on Month button
-    const monthButton = screen.getByRole('button', { name: 'By Month' })
-    fireEvent.click(monthButton)
+    // Wait for initial render (Week 4)
+    await waitFor(() => {
+      expect(screen.getByText('Found 2 entries')).toBeInTheDocument()
+    })
+
+    // Click on June button to show all June entries
+    const juneButton = screen.getByRole('button', { name: 'June' })
+    fireEvent.click(juneButton)
 
     await waitFor(() => {
       expect(screen.getByText('Found 3 entries')).toBeInTheDocument()

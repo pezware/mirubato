@@ -34,8 +34,6 @@
     "techniques": "技巧"
   },
   "filters": {
-    "byMonth": "按月",
-    "byWeek": "按週",
     "last7Days": "最近 7 天",
     "last30Days": "最近 30 天",
     "thisMonth": "本月",
@@ -52,5 +50,8 @@
     "neutral": "一般",
     "satisfied": "滿意",
     "excited": "興奮"
+  },
+  "autocomplete": {
+    "offline": "離線模式 - 顯示您的歷史記錄"
   }
 }
