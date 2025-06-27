@@ -11,23 +11,6 @@ healthHandler.get('/livez', c => {
 })
 
 /**
- * Debug endpoint to check environment variables
- */
-healthHandler.get('/debug/env', c => {
-  return c.json({
-    environment: c.env.ENVIRONMENT,
-    hasDB: !!c.env.DB,
-    hasJwtSecret: !!c.env.JWT_SECRET,
-    hasMagicLinkSecret: !!c.env.MAGIC_LINK_SECRET,
-    hasGoogleClientId: !!c.env.GOOGLE_CLIENT_ID,
-    hasGoogleClientSecret: !!c.env.GOOGLE_CLIENT_SECRET,
-    hasResendApiKey: !!c.env.RESEND_API_KEY,
-    hasMusicCatalog: !!c.env.MUSIC_CATALOG,
-    hasRateLimiter: !!c.env.RATE_LIMITER,
-  })
-})
-
-/**
  * Readiness probe - check if service is ready to handle requests
  */
 healthHandler.get('/readyz', async c => {
@@ -215,10 +198,30 @@ async function checkAuthService(env: Env) {
     }
   }
 
-  // Skip JWT test for now - just check if secrets are present
-  return {
-    status: 'healthy' as const,
-    message: 'All auth secrets configured',
+  // Test JWT functionality
+  try {
+    const { SignJWT, jwtVerify } = await import('jose')
+
+    // Create and sign a test token
+    const jwt = await new SignJWT({ test: true })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('10s')
+      .sign(new TextEncoder().encode(env.JWT_SECRET))
+
+    // Verify it works
+    await jwtVerify(jwt, new TextEncoder().encode(env.JWT_SECRET))
+
+    return {
+      status: 'healthy' as const,
+      message: 'All auth secrets configured and JWT functional',
+    }
+  } catch (error) {
+    return {
+      status: 'unhealthy' as const,
+      message: 'Auth secrets present but JWT not functional',
+      error: error instanceof Error ? error.message : String(error),
+    }
   }
 }
 
@@ -307,8 +310,38 @@ async function runSmokeTests(env: Env) {
       tests.kvOperation = true
     }
 
-    // Test 3: Skip JWT test for now
-    tests.authTokenGeneration = !!env.JWT_SECRET
+    // Test 3: JWT token generation and verification
+    if (env.JWT_SECRET) {
+      try {
+        const { SignJWT, jwtVerify } = await import('jose')
+
+        // Create a test token
+        const testPayload = {
+          sub: 'health-check-test',
+          email: 'health@test.com',
+          type: 'smoke-test',
+        }
+
+        // Sign the token
+        const jwt = await new SignJWT(testPayload)
+          .setProtectedHeader({ alg: 'HS256' })
+          .setSubject(testPayload.sub)
+          .setIssuedAt()
+          .setExpirationTime('1m')
+          .sign(new TextEncoder().encode(env.JWT_SECRET))
+
+        // Verify the token
+        const { payload } = await jwtVerify(
+          jwt,
+          new TextEncoder().encode(env.JWT_SECRET)
+        )
+
+        // Check if payload matches what we signed
+        tests.authTokenGeneration = payload.sub === 'health-check-test'
+      } catch (error) {
+        tests.authTokenGeneration = false
+      }
+    }
 
     const allPassed = Object.values(tests).every(test => test === true)
 
