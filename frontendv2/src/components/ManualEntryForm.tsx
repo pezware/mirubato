@@ -39,13 +39,33 @@ export default function ManualEntryForm({
   const [techniques] = useState<string[]>(entry?.techniques || [])
   const [tags] = useState<string[]>(entry?.tags || [])
 
+  // Date state - default to today or existing entry date
+  const [practiceDate, setPracticeDate] = useState(() => {
+    if (entry?.timestamp) {
+      // Convert existing timestamp to YYYY-MM-DD format
+      return new Date(entry.timestamp).toISOString().split('T')[0]
+    }
+    // Default to today
+    return new Date().toISOString().split('T')[0]
+  })
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
+      // Create a date object from the selected date and current time
+      const selectedDate = new Date(practiceDate)
+      const now = new Date()
+      selectedDate.setHours(
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+        now.getMilliseconds()
+      )
+
       const entryData = {
-        timestamp: new Date().toISOString(),
+        timestamp: selectedDate.toISOString(),
         duration,
         type,
         instrument,
@@ -104,6 +124,20 @@ export default function ManualEntryForm({
         {/* Basic Info */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                {t('logbook:entry.practiceDate', 'Practice Date')}
+              </label>
+              <input
+                type="date"
+                value={practiceDate}
+                onChange={e => setPracticeDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]} // Don't allow future dates
+                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                required
+              />
+            </div>
+
             <div className="flex-1">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.duration')}

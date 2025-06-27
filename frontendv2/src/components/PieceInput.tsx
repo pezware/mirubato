@@ -68,6 +68,7 @@ export default function PieceInput({
           }}
           onSelect={option => {
             onUpdate(index, 'title', option.value)
+            pieceAutocomplete.setQuery(option.value) // Reset the query to the selected value
             // If piece has composer metadata, also update composer field
             if (option.metadata?.composer) {
               onUpdate(index, 'composer', option.metadata.composer)
@@ -87,6 +88,7 @@ export default function PieceInput({
           }}
           onSelect={option => {
             onUpdate(index, 'composer', option.value)
+            composerAutocomplete.setQuery(option.value) // Reset the query to the selected value
           }}
           options={composerAutocomplete.suggestions}
           placeholder={t('logbook:entry.composer')}

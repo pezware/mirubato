@@ -218,10 +218,14 @@ autocompleteHandler.get('/pieces', async c => {
 
       const filteredPieces = []
       for (const piece of allPieces) {
-        if (
-          piece.title &&
-          piece.title.toLowerCase().includes(query.toLowerCase())
-        ) {
+        // Search in both title and composer
+        const titleMatches =
+          piece.title && piece.title.toLowerCase().includes(query.toLowerCase())
+        const composerMatches =
+          piece.composer &&
+          piece.composer.toLowerCase().includes(query.toLowerCase())
+
+        if (titleMatches || composerMatches) {
           if (!results.some(r => r.value === piece.title)) {
             filteredPieces.push(piece)
             results.push({

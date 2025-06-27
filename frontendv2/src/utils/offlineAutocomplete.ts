@@ -114,11 +114,19 @@ export function searchLocalPieces(
 
   const matchingPieces = Array.from(piecesMap.entries())
     .filter(([title, metadata]) => {
+      // Search in both title and composer
       const titleMatches = title.toLowerCase().includes(queryLower)
-      const composerMatches =
+      const composerInPieceMatches = metadata.composer
+        ?.toLowerCase()
+        .includes(queryLower)
+      const searchMatches = titleMatches || composerInPieceMatches
+
+      // Apply composer filter if provided
+      const composerFilterMatches =
         !composerFilter ||
         metadata.composer?.toLowerCase().includes(composerLower || '')
-      return titleMatches && composerMatches
+
+      return searchMatches && composerFilterMatches
     })
     .sort(([aTitle], [bTitle]) => {
       // Prioritize matches at the beginning

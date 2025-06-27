@@ -108,10 +108,84 @@ async function parseComposersAndPieces(): Promise<{
     if (currentSection === 'pieces' && line.match(/^\d+\.\s+\*\*/)) {
       const match = line.match(/^(\d+)\.\s+\*\*([^*]+)\*\*\s*-\s*(.+)/)
       if (match) {
-        const [, , title, composer] = match
+        const [, , title, composerInfo] = match
 
-        // Clean up composer name (remove additional info after parentheses)
-        const composerName = composer.split('(')[0].trim()
+        // Extract composer name from the info
+        let composerName = composerInfo.trim()
+
+        // Map common composer abbreviations to full names
+        const composerMap: Record<string, string> = {
+          Bach: 'Johann Sebastian Bach',
+          'J.S. Bach': 'Johann Sebastian Bach',
+          Beethoven: 'Ludwig van Beethoven',
+          Mozart: 'Wolfgang Amadeus Mozart',
+          Chopin: 'Frédéric Chopin',
+          Schubert: 'Franz Schubert',
+          Brahms: 'Johannes Brahms',
+          Debussy: 'Claude Debussy',
+          Schumann: 'Robert Schumann',
+          Liszt: 'Franz Liszt',
+          Rachmaninoff: 'Sergei Rachmaninoff',
+          Tchaikovsky: 'Pyotr Ilyich Tchaikovsky',
+          Haydn: 'Joseph Haydn',
+          Scarlatti: 'Domenico Scarlatti',
+          Ravel: 'Maurice Ravel',
+          Grieg: 'Edvard Grieg',
+          Mendelssohn: 'Felix Mendelssohn',
+          Prokofiev: 'Sergei Prokofiev',
+          Shostakovich: 'Dmitri Shostakovich',
+          Satie: 'Erik Satie',
+          Bartók: 'Béla Bartók',
+          Scriabin: 'Alexander Scriabin',
+          Dvořák: 'Antonín Dvořák',
+          'C.P.E. Bach': 'Carl Philipp Emanuel Bach',
+          Clementi: 'Muzio Clementi',
+          Czerny: 'Carl Czerny',
+          Albéniz: 'Isaac Albéniz',
+          Granados: 'Enrique Granados',
+          Falla: 'Manuel de Falla',
+          'Villa-Lobos': 'Heitor Villa-Lobos',
+          Tárrega: 'Francisco Tárrega',
+          Sor: 'Fernando Sor',
+          Giuliani: 'Mauro Giuliani',
+          Barrios: 'Agustín Barrios Mangoré',
+          Rodrigo: 'Joaquín Rodrigo',
+          Brouwer: 'Leo Brouwer',
+          Ponce: 'Manuel Ponce',
+          Carulli: 'Ferdinando Carulli',
+          Carcassi: 'Matteo Carcassi',
+          Aguado: 'Dionisio Aguado',
+          Llobet: 'Miguel Llobet',
+          Joplin: 'Scott Joplin',
+          Gershwin: 'George Gershwin',
+          Diabelli: 'Anton Diabelli',
+          Burgmüller: 'Johann Friedrich Burgmüller',
+          Kuhlau: 'Friedrich Kuhlau',
+          MacDowell: 'Edward MacDowell',
+          Tcherepnin: 'Alexander Tcherepnin',
+          Palmgren: 'Selim Palmgren',
+          Messiaen: 'Olivier Messiaen',
+          Fauré: 'Gabriel Fauré',
+          'Saint-Saëns': 'Camille Saint-Saëns',
+          Franck: 'César Franck',
+          Hummel: 'Johann Nepomuk Hummel',
+          Balakirev: 'Mily Balakirev',
+          Khachaturian: 'Aram Khachaturian',
+          Sorabji: 'Kaikhosru Shapurji Sorabji',
+          Ives: 'Charles Ives',
+          Ligeti: 'György Ligeti',
+          Boulez: 'Pierre Boulez',
+        }
+
+        // First try to match the composer name before any Op. or other info
+        const composerMatch = composerInfo.match(
+          /^([^(,]+?)(?:\s+(?:Op\.|BWV|K\.|D\.|WoO|Anh\.|No\.).*)?$/
+        )
+        if (composerMatch) {
+          const shortName = composerMatch[1].trim()
+          // Look up in the map, fallback to the short name if not found
+          composerName = composerMap[shortName] || shortName
+        }
 
         pieces.push({
           title: title.trim(),

@@ -31,7 +31,8 @@
     "mood": "¿Cómo te fue?",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
     "foundEntries": "Se encontraron {{count}} entradas",
-    "techniques": "Técnicas"
+    "techniques": "Técnicas",
+    "practiceDate": "Fecha de práctica"
   },
   "filters": {
     "last7Days": "Últimos 7 días",

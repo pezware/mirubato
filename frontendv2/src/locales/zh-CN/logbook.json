@@ -31,7 +31,8 @@
     "mood": "练习感受如何？",
     "confirmDelete": "您确定要删除这条记录吗？",
     "foundEntries": "找到 {{count}} 条记录",
-    "techniques": "技巧"
+    "techniques": "技巧",
+    "practiceDate": "练习日期"
   },
   "filters": {
     "last7Days": "最近 7 天",
