@@ -31,11 +31,10 @@
     "mood": "¿Cómo te fue?",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
     "foundEntries": "Se encontraron {{count}} entradas",
-    "techniques": "Técnicas"
+    "techniques": "Técnicas",
+    "practiceDate": "Fecha de práctica"
   },
   "filters": {
-    "byMonth": "Por mes",
-    "byWeek": "Por semana",
     "last7Days": "Últimos 7 días",
     "last30Days": "Últimos 30 días",
     "thisMonth": "Este mes",
@@ -52,5 +51,8 @@
     "neutral": "Neutral",
     "satisfied": "Satisfecho",
     "excited": "Emocionado"
+  },
+  "autocomplete": {
+    "offline": "Sin conexión - mostrando tu historial"
   }
 }

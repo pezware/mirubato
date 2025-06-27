@@ -1,0 +1,58 @@
+{
+  "title": "练习日志",
+  "openLogbook": "打开练习日志",
+  "continueToLogbook": "继续至练习日志",
+  "loading": "正在加载您的练习记录...",
+  "empty": "尚无练习记录。开始记录您的音乐之旅吧！",
+  "noResults": "没有符合搜索条件的记录。",
+  "searchPlaceholder": "搜索记录...",
+  "syncStatus": {
+    "synced": "已同步",
+    "localOnly": "本地存储"
+  },
+  "entry": {
+    "addEntry": "添加记录",
+    "addFirstEntry": "添加您的第一条记录",
+    "saveEntry": "保存记录",
+    "updateEntry": "更新记录",
+    "deleteEntry": "删除记录",
+    "editEntry": "编辑记录",
+    "duration": "时长（分钟）",
+    "durationPlaceholder": "30",
+    "type": "类型",
+    "pieces": "曲目",
+    "notes": "笔记",
+    "notesPlaceholder": "您练习了什么？有什么观察？",
+    "addPiece": "添加曲目",
+    "pieceTitle": "曲目名称",
+    "composer": "作曲家",
+    "entry_one": "{{count}} 条记录",
+    "entry_other": "{{count}} 条记录",
+    "mood": "练习感受如何？",
+    "confirmDelete": "您确定要删除这条记录吗？",
+    "foundEntries": "找到 {{count}} 条记录",
+    "techniques": "技巧",
+    "practiceDate": "练习日期"
+  },
+  "filters": {
+    "last7Days": "最近 7 天",
+    "last30Days": "最近 30 天",
+    "thisMonth": "本月",
+    "lastMonth": "上个月",
+    "allTime": "全部时间"
+  },
+  "timeline": {
+    "week": "第 {{number}} 周",
+    "month": "{{month}}",
+    "year": "{{year}}"
+  },
+  "mood": {
+    "frustrated": "沮丧",
+    "neutral": "一般",
+    "satisfied": "满意",
+    "excited": "兴奋"
+  },
+  "autocomplete": {
+    "offline": "离线模式 - 显示您的历史记录"
+  }
+}

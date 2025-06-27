@@ -27,6 +27,18 @@ import zhTWLogbook from '../locales/zh-TW/logbook.json'
 import zhTWReports from '../locales/zh-TW/reports.json'
 import zhTWErrors from '../locales/zh-TW/errors.json'
 
+import deCommon from '../locales/de/common.json'
+import deAuth from '../locales/de/auth.json'
+import deLogbook from '../locales/de/logbook.json'
+import deReports from '../locales/de/reports.json'
+import deErrors from '../locales/de/errors.json'
+
+import zhCNCommon from '../locales/zh-CN/common.json'
+import zhCNAuth from '../locales/zh-CN/auth.json'
+import zhCNLogbook from '../locales/zh-CN/logbook.json'
+import zhCNReports from '../locales/zh-CN/reports.json'
+import zhCNErrors from '../locales/zh-CN/errors.json'
+
 export const defaultNS = 'common'
 export const resources = {
   en: {
@@ -56,6 +68,20 @@ export const resources = {
     logbook: zhTWLogbook,
     reports: zhTWReports,
     errors: zhTWErrors,
+  },
+  de: {
+    common: deCommon,
+    auth: deAuth,
+    logbook: deLogbook,
+    reports: deReports,
+    errors: deErrors,
+  },
+  'zh-CN': {
+    common: zhCNCommon,
+    auth: zhCNAuth,
+    logbook: zhCNLogbook,
+    reports: zhCNReports,
+    errors: zhCNErrors,
   },
 } as const
 

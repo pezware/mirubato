@@ -3,6 +3,7 @@ import { authHandler } from './handlers/auth'
 import { syncHandler } from './handlers/sync'
 import { userHandler } from './handlers/user'
 import { debugHandler } from './handlers/debug'
+import { autocompleteHandler } from './handlers/autocomplete'
 import type { Env } from '../index'
 
 export const api = new Hono<{ Bindings: Env }>()
@@ -33,6 +34,10 @@ api.get('/', c => {
         'PUT /api/user/preferences': 'Update user preferences',
         'DELETE /api/user/me': 'Delete user account',
       },
+      autocomplete: {
+        'GET /api/autocomplete/composers': 'Get composer name suggestions',
+        'GET /api/autocomplete/pieces': 'Get piece title suggestions',
+      },
     },
   })
 })
@@ -42,3 +47,4 @@ api.route('/auth', authHandler)
 api.route('/sync', syncHandler)
 api.route('/user', userHandler)
 api.route('/debug', debugHandler)
+api.route('/autocomplete', autocompleteHandler)

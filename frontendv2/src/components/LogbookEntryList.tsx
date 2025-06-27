@@ -4,15 +4,12 @@ import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
 import TimelineNav, { type TimelineLevel } from './ui/TimelineNav'
-import Button from './ui/Button'
 import { cn } from '../utils/cn'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
   onUpdate: () => void
 }
-
-type ViewMode = 'month' | 'week'
 
 export default function LogbookEntryList({
   entries,
@@ -22,7 +19,6 @@ export default function LogbookEntryList({
   const { deleteEntry } = useLogbookStore()
   const [editingEntry, setEditingEntry] = useState<LogbookEntry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [selectedLevel, setSelectedLevel] = useState('week')
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set())
   const [selectedDate, setSelectedDate] = useState<{
@@ -119,8 +115,8 @@ export default function LogbookEntryList({
       // If viewing by month, show all entries from that month
       if (selectedLevel === 'month') return true
 
-      // Filter by week (when week view is active)
-      if (selectedLevel === 'week' && viewMode === 'week') {
+      // Filter by week
+      if (selectedLevel === 'week') {
         // Calculate which week of the month the entry falls in
         const entryWeek = getWeekOfMonth(entryDate)
         return entryWeek === selectedDate.week
@@ -128,7 +124,7 @@ export default function LogbookEntryList({
 
       return false
     })
-  }, [entries, selectedDate, selectedLevel, viewMode])
+  }, [entries, selectedDate, selectedLevel])
 
   // Calculate statistics for current view
   const stats = useMemo(() => {
@@ -212,32 +208,10 @@ export default function LogbookEntryList({
     <div className="space-y-6">
       {/* Timeline Navigation */}
       <div className="bg-white rounded-lg p-4 shadow-sm border border-morandi-stone-200">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h2 className="text-sm font-medium text-morandi-stone-600 uppercase tracking-wide">
             {t('logbook:entry.foundEntries', { count: stats.entries })}
           </h2>
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'month' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setViewMode('month')
-                setSelectedLevel('month')
-              }}
-            >
-              {t('logbook:filters.byMonth')}
-            </Button>
-            <Button
-              variant={viewMode === 'week' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setViewMode('week')
-                setSelectedLevel('week')
-              }}
-            >
-              {t('logbook:filters.byWeek')}
-            </Button>
-          </div>
         </div>
 
         <div className="flex items-center gap-2">

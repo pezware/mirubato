@@ -31,11 +31,10 @@
     "mood": "Comment ça s'est passé ?",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
     "foundEntries": "{{count}} entrées trouvées",
-    "techniques": "Techniques"
+    "techniques": "Techniques",
+    "practiceDate": "Date de pratique"
   },
   "filters": {
-    "byMonth": "Par mois",
-    "byWeek": "Par semaine",
     "last7Days": "7 derniers jours",
     "last30Days": "30 derniers jours",
     "thisMonth": "Ce mois-ci",
@@ -52,5 +51,8 @@
     "neutral": "Neutre",
     "satisfied": "Satisfait",
     "excited": "Enthousiaste"
+  },
+  "autocomplete": {
+    "offline": "Hors ligne - affichage de votre historique"
   }
 }
