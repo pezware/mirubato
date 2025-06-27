@@ -16,6 +16,10 @@ API_URL = "https://api.mirubato.com"
 pattern = "mirubato.com"
 custom_domain = true
 
+[[routes]]
+pattern = "www.mirubato.com"
+custom_domain = true
+
 # Explicit production environment (for consistency)
 [env.production]
 name = "mirubato-frontendv2"
@@ -26,6 +30,10 @@ API_URL = "https://api.mirubato.com"
 
 [[env.production.routes]]
 pattern = "mirubato.com"
+custom_domain = true
+
+[[env.production.routes]]
+pattern = "www.mirubato.com"
 custom_domain = true
 
 [env.production.assets]
