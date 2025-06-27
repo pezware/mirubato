@@ -764,7 +764,11 @@ export default function EnhancedPracticeReports() {
                         timePeriod === 'week'
                           ? analytics.weekTotal
                           : timePeriod === 'month'
-                            ? Array.from(analytics.practiceByDay.entries())
+                            ? (
+                                Array.from(
+                                  analytics.practiceByDay.entries()
+                                ) as [string, number][]
+                              )
                                 .filter(([date]) => {
                                   const d = new Date(date)
                                   const now = new Date()
@@ -774,8 +778,10 @@ export default function EnhancedPracticeReports() {
                                   )
                                 })
                                 .reduce((sum, [, mins]) => sum + mins, 0)
-                            : Array.from(
-                                analytics.practiceByDay.values()
+                            : (
+                                Array.from(
+                                  analytics.practiceByDay.values()
+                                ) as number[]
                               ).reduce((sum, mins) => sum + mins, 0)
                       )}
                     </p>
@@ -852,20 +858,34 @@ export default function EnhancedPracticeReports() {
                           const techniques = new Set<string>()
                           let lastPracticed = ''
 
-                          analytics.pieceStats.forEach((stats, pieceKey) => {
-                            if (pieceKey.startsWith(selectedComposer + ' - ')) {
-                              totalTime += stats.totalDuration
-                              totalSessions += stats.count
-                              stats.techniques.forEach(t => techniques.add(t))
+                          analytics.pieceStats.forEach(
+                            (
+                              stats: {
+                                count: number
+                                totalDuration: number
+                                lastPracticed: string
+                                techniques: Set<string>
+                              },
+                              pieceKey: string
+                            ) => {
                               if (
-                                !lastPracticed ||
-                                new Date(stats.lastPracticed) >
-                                  new Date(lastPracticed)
+                                pieceKey.startsWith(selectedComposer + ' - ')
                               ) {
-                                lastPracticed = stats.lastPracticed
+                                totalTime += stats.totalDuration
+                                totalSessions += stats.count
+                                stats.techniques.forEach((t: string) =>
+                                  techniques.add(t)
+                                )
+                                if (
+                                  !lastPracticed ||
+                                  new Date(stats.lastPracticed) >
+                                    new Date(lastPracticed)
+                                ) {
+                                  lastPracticed = stats.lastPracticed
+                                }
                               }
                             }
-                          })
+                          )
 
                           return (
                             <div className="grid grid-cols-2 gap-3">
@@ -972,7 +992,7 @@ export default function EnhancedPracticeReports() {
                               const stats =
                                 analytics.pieceStats.get(selectedPiece)
                               if (stats) {
-                                stats.techniques.forEach(t => {
+                                stats.techniques.forEach((t: string) => {
                                   techniques.set(
                                     t,
                                     (techniques.get(t) || 0) + 1
@@ -981,13 +1001,21 @@ export default function EnhancedPracticeReports() {
                               }
                             } else if (selectedComposer) {
                               analytics.pieceStats.forEach(
-                                (stats, pieceKey) => {
+                                (
+                                  stats: {
+                                    count: number
+                                    totalDuration: number
+                                    lastPracticed: string
+                                    techniques: Set<string>
+                                  },
+                                  pieceKey: string
+                                ) => {
                                   if (
                                     pieceKey.startsWith(
                                       selectedComposer + ' - '
                                     )
                                   ) {
-                                    stats.techniques.forEach(t => {
+                                    stats.techniques.forEach((t: string) => {
                                       techniques.set(
                                         t,
                                         (techniques.get(t) || 0) + 1
@@ -1124,7 +1152,17 @@ export default function EnhancedPracticeReports() {
               {/* Piece groups when no filter selected */}
               {!selectedPiece && !selectedComposer && (
                 <div className="space-y-4">
-                  {Array.from(analytics.pieceStats.entries())
+                  {(
+                    Array.from(analytics.pieceStats.entries()) as [
+                      string,
+                      {
+                        count: number
+                        totalDuration: number
+                        lastPracticed: string
+                        techniques: Set<string>
+                      },
+                    ][]
+                  )
                     .sort((a, b) => {
                       const [, statsA] = a
                       const [, statsB] = b
@@ -1177,14 +1215,16 @@ export default function EnhancedPracticeReports() {
                             </div>
                             {stats.techniques.size > 0 && (
                               <div className="flex flex-wrap gap-1 mt-2">
-                                {Array.from(stats.techniques).map(technique => (
-                                  <span
-                                    key={technique}
-                                    className="text-xs px-2 py-1 bg-morandi-sage-100 text-morandi-sage-700 rounded-full"
-                                  >
-                                    {technique}
-                                  </span>
-                                ))}
+                                {Array.from(stats.techniques).map(
+                                  (technique: string) => (
+                                    <span
+                                      key={technique}
+                                      className="text-xs px-2 py-1 bg-morandi-sage-100 text-morandi-sage-700 rounded-full"
+                                    >
+                                      {technique}
+                                    </span>
+                                  )
+                                )}
                               </div>
                             )}
                           </div>
