@@ -197,24 +197,38 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       goalsCount: changes.goals?.length || 0,
     })
 
-    // Return more detailed error for debugging
-    if (c.env.ENVIRONMENT !== 'production') {
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          details: {
-            userId,
-            entriesCount: changes.entries?.length || 0,
-            goalsCount: changes.goals?.length || 0,
-          },
-        },
-        500
-      )
+    // Enhanced error details for all environments temporarily
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+    const errorDetails = {
+      userId,
+      entriesCount: changes.entries?.length || 0,
+      goalsCount: changes.goals?.length || 0,
+      // Add first entry details for debugging
+      firstEntry: changes.entries?.[0]
+        ? {
+            id: (changes.entries[0] as any).id,
+            hasDeletedAt: 'deletedAt' in (changes.entries[0] as any),
+            keys: Object.keys(changes.entries[0] as any),
+          }
+        : null,
     }
 
-    throw Errors.InternalError('Failed to push sync data')
+    // Return detailed error response
+    return c.json(
+      {
+        success: false,
+        error: errorMessage,
+        stack:
+          c.env.ENVIRONMENT !== 'production'
+            ? error instanceof Error
+              ? error.stack
+              : undefined
+            : undefined,
+        details: errorDetails,
+      },
+      500
+    )
   }
 })
 
