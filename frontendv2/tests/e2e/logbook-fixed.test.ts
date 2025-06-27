@@ -24,8 +24,10 @@ test.describe('Logbook Features - Fixed', () => {
     await page.waitForLoadState('networkidle')
 
     // Look for add entry button - wait for it to be visible
-    await page.waitForSelector('button:has-text("+")', { timeout: 10000 })
-    const addButton = page.locator('button:has-text("+")').first()
+    await page.waitForSelector('button:has-text("Add New Entry")', {
+      timeout: 10000,
+    })
+    const addButton = page.locator('button:has-text("Add New Entry")').first()
     await addButton.click()
 
     // Wait for form modal to appear
@@ -154,8 +156,10 @@ test.describe('Logbook Features - Fixed', () => {
     await page.waitForLoadState('networkidle')
 
     // First create an entry (simplified version)
-    await page.waitForSelector('button:has-text("+")', { timeout: 10000 })
-    await page.click('button:has-text("+")')
+    await page.waitForSelector('button:has-text("Add New Entry")', {
+      timeout: 10000,
+    })
+    await page.click('button:has-text("Add New Entry")')
 
     await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
       timeout: 10000,

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
-import ManualEntryForm from '../components/ManualEntryForm'
 import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 
@@ -18,7 +17,6 @@ export default function LogbookPage() {
   } = useAuthStore()
   const { error, loadEntries, clearError } = useLogbookStore()
 
-  const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [email, setEmail] = useState('')
   const [loginSuccess, setLoginSuccess] = useState(false)
@@ -118,21 +116,6 @@ export default function LogbookPage() {
         {/* Reports Section */}
         <EnhancedPracticeReports />
 
-        {/* New Entry Form Modal */}
-        {showNewEntryForm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-            <div className="glass-panel p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
-              <ManualEntryForm
-                onClose={() => setShowNewEntryForm(false)}
-                onSave={() => {
-                  setShowNewEntryForm(false)
-                  loadEntries()
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Login Modal */}
         {showLoginForm && !isAuthenticated && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
@@ -226,22 +209,6 @@ export default function LogbookPage() {
               </div>
             </div>
           </div>
-        )}
-
-        {/* Main Content - Enhanced Practice Reports */}
-        <div className="mt-8">
-          <EnhancedPracticeReports />
-        </div>
-
-        {/* New Entry Form Modal */}
-        {showNewEntryForm && (
-          <ManualEntryForm
-            onClose={() => setShowNewEntryForm(false)}
-            onSave={() => {
-              setShowNewEntryForm(false)
-              loadEntries()
-            }}
-          />
         )}
       </div>
     </div>

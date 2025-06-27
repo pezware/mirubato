@@ -335,6 +335,6 @@ describe('LogbookPage', () => {
     )
 
     // Check for the presence of the mocked component
-    expect(screen.getAllByTestId('enhanced-practice-reports')).toHaveLength(2) // Component appears twice in the page
+    expect(screen.getByTestId('enhanced-practice-reports')).toBeInTheDocument() // Component appears once in the page
   })
 })
