@@ -42,11 +42,25 @@ export default function ManualEntryForm({
   // Date state - default to today or existing entry date
   const [practiceDate, setPracticeDate] = useState(() => {
     if (entry?.timestamp) {
-      // Convert existing timestamp to YYYY-MM-DD format
-      return new Date(entry.timestamp).toISOString().split('T')[0]
+      // Convert existing timestamp to YYYY-MM-DD format in local timezone
+      const date = new Date(entry.timestamp)
+      return (
+        date.getFullYear() +
+        '-' +
+        String(date.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(date.getDate()).padStart(2, '0')
+      )
     }
-    // Default to today
-    return new Date().toISOString().split('T')[0]
+    // Default to today in local timezone
+    const today = new Date()
+    return (
+      today.getFullYear() +
+      '-' +
+      String(today.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(today.getDate()).padStart(2, '0')
+    )
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,10 +68,13 @@ export default function ManualEntryForm({
     setIsSubmitting(true)
 
     try {
-      // Create a date object from the selected date and current time
-      const selectedDate = new Date(practiceDate)
+      // Create a date object from the selected date and current time in local timezone
+      const [year, month, day] = practiceDate.split('-').map(Number)
       const now = new Date()
-      selectedDate.setHours(
+      const selectedDate = new Date(
+        year,
+        month - 1,
+        day,
         now.getHours(),
         now.getMinutes(),
         now.getSeconds(),
@@ -134,7 +151,16 @@ export default function ManualEntryForm({
                 type="date"
                 value={practiceDate}
                 onChange={e => setPracticeDate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]} // Don't allow future dates
+                max={(() => {
+                  const today = new Date()
+                  return (
+                    today.getFullYear() +
+                    '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') +
+                    '-' +
+                    String(today.getDate()).padStart(2, '0')
+                  )
+                })()} // Don't allow future dates
                 className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
                 required
               />
