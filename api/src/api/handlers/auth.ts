@@ -41,7 +41,20 @@ authHandler.post(
       const magicLink = `${c.req.header('origin') || 'https://mirubato.com'}/auth/verify?token=${token}`
 
       // Send email
-      await emailService.sendMagicLink(email, magicLink)
+      try {
+        await emailService.sendMagicLink(email, magicLink)
+      } catch (emailError) {
+        // In staging, if email fails, still return success but log the link
+        if (c.env.ENVIRONMENT === 'staging') {
+          console.log('Email send failed in staging, magic link:', magicLink)
+          return c.json({
+            success: true,
+            message: 'Magic link sent to your email (check logs in staging)',
+            debugLink: magicLink, // Only for staging
+          })
+        }
+        throw emailError
+      }
 
       return c.json({
         success: true,

@@ -7,6 +7,7 @@ export class EmailService {
    * Send magic link email
    */
   async sendMagicLink(email: string, magicLink: string): Promise<void> {
+    console.log(`Attempting to send magic link to ${email}`)
     const html = `
 <!DOCTYPE html>
 <html>
@@ -54,8 +55,16 @@ export class EmailService {
 
     // In production, use Resend or another email service
     if (this.env.RESEND_API_KEY) {
-      await this.sendWithResend(email, 'Sign in to Mirubato', html)
+      console.log('Using Resend to send email')
+      try {
+        await this.sendWithResend(email, 'Sign in to Mirubato', html)
+        console.log('Email sent successfully')
+      } catch (error) {
+        console.error('Failed to send email via Resend:', error)
+        throw error
+      }
     } else {
+      console.log('No RESEND_API_KEY configured, skipping email send')
       // Fallback: Magic link would be sent to email
     }
   }
@@ -83,8 +92,9 @@ export class EmailService {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`Failed to send email: ${error}`)
+      const errorText = await response.text()
+      console.error(`Resend API error: ${response.status} - ${errorText}`)
+      throw new Error(`Failed to send email: ${response.status} - ${errorText}`)
     }
   }
 }
