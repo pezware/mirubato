@@ -32,7 +32,9 @@
     "confirmDelete": "Are you sure you want to delete this entry?",
     "foundEntries": "Found {{count}} entries",
     "techniques": "Techniques",
-    "practiceDate": "Practice Date"
+    "practiceDate": "Practice Date",
+    "successAdded": "Practice entry successfully added!",
+    "successUpdated": "Practice entry successfully updated!"
   },
   "filters": {
     "last7Days": "Last 7 days",

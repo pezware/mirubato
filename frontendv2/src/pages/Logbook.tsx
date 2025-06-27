@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
 import ManualEntryForm from '../components/ManualEntryForm'
-import LogbookEntryList from '../components/LogbookEntryList'
-import LogbookReports from '../components/LogbookReports'
+import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function LogbookPage() {
@@ -17,15 +16,7 @@ export default function LogbookPage() {
     isLoading: authLoading,
     error: authError,
   } = useAuthStore()
-  const {
-    entries,
-    isLoading,
-    error,
-    searchQuery,
-    loadEntries,
-    setSearchQuery,
-    clearError,
-  } = useLogbookStore()
+  const { error, loadEntries, clearError } = useLogbookStore()
 
   const [showNewEntryForm, setShowNewEntryForm] = useState(false)
   const [showLoginForm, setShowLoginForm] = useState(false)
@@ -46,23 +37,6 @@ export default function LogbookPage() {
       // Error is handled in the store
     }
   }
-
-  // Filter entries based on search query
-  const filteredEntries = entries.filter(entry => {
-    if (!searchQuery) return true
-
-    const searchLower = searchQuery.toLowerCase()
-    return (
-      entry.notes?.toLowerCase().includes(searchLower) ||
-      entry.pieces.some(
-        p =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.composer?.toLowerCase().includes(searchLower)
-      ) ||
-      entry.techniques.some(t => t.toLowerCase().includes(searchLower)) ||
-      entry.tags.some(t => t.toLowerCase().includes(searchLower))
-    )
-  })
 
   return (
     <div className="min-h-screen bg-morandi-sand-100">
@@ -142,25 +116,7 @@ export default function LogbookPage() {
         )}
 
         {/* Reports Section */}
-        <LogbookReports />
-
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <button
-            onClick={() => setShowNewEntryForm(true)}
-            className="btn-accent flex items-center gap-2"
-          >
-            <span className="text-lg">+</span>
-            {t('logbook:entry.addEntry')}
-          </button>
-          <input
-            type="text"
-            placeholder={t('logbook:searchPlaceholder')}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-3 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-          />
-        </div>
+        <EnhancedPracticeReports />
 
         {/* New Entry Form Modal */}
         {showNewEntryForm && (
@@ -174,39 +130,6 @@ export default function LogbookPage() {
                 }}
               />
             </div>
-          </div>
-        )}
-
-        {/* Entry List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morandi-sage-400 mx-auto mb-4"></div>
-            <p className="text-morandi-stone-600">⏳ {t('logbook:loading')}</p>
-          </div>
-        ) : filteredEntries.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-12 text-center">
-            <div className="text-6xl mb-4">🎵</div>
-            <p className="text-morandi-stone-600 text-lg mb-6">
-              {searchQuery ? t('logbook:noResults') : t('logbook:empty')}
-            </p>
-            {!searchQuery && (
-              <button
-                onClick={() => setShowNewEntryForm(true)}
-                className="btn-primary"
-              >
-                {t('logbook:entry.addFirstEntry')}
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-sm text-morandi-stone-600 mb-4">
-              {t('logbook:entry.entry', { count: filteredEntries.length })}
-            </div>
-            <LogbookEntryList
-              entries={filteredEntries}
-              onUpdate={() => loadEntries()}
-            />
           </div>
         )}
 

@@ -655,7 +655,8 @@ describe('LogbookPage', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByTestId('logbook-reports')).toBeInTheDocument()
+    // The enhanced reports should be visible (collapsed by default)
+    expect(screen.getByText('reports:enhancedTitle')).toBeInTheDocument()
   })
 
   it('should handle login success message dismissal', async () => {
