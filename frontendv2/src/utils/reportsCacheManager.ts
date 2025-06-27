@@ -34,7 +34,7 @@ const DEFAULT_CONFIG: ReportsCacheConfig = {
 }
 
 export class ReportsCacheManager {
-  private cache: Map<string, CacheEntry<any>> = new Map()
+  private cache: Map<string, CacheEntry<unknown>> = new Map()
   private config: ReportsCacheConfig
 
   constructor(config: Partial<ReportsCacheConfig> = {}) {
@@ -44,7 +44,10 @@ export class ReportsCacheManager {
   /**
    * Generate cache key based on parameters
    */
-  private getCacheKey(namespace: string, params: Record<string, any>): string {
+  private getCacheKey(
+    namespace: string,
+    params: Record<string, unknown>
+  ): string {
     const sortedParams = Object.keys(params)
       .sort()
       .map(key => `${key}:${params[key]}`)
@@ -55,7 +58,7 @@ export class ReportsCacheManager {
   /**
    * Check if a cache entry is still valid
    */
-  private isValid(entry: CacheEntry<any>): boolean {
+  private isValid(entry: CacheEntry<unknown>): boolean {
     return Date.now() - entry.timestamp < entry.ttl
   }
 
@@ -67,7 +70,7 @@ export class ReportsCacheManager {
     selectedDate: string | null,
     selectedComposer: string | null,
     entriesHash: string
-  ): any | null {
+  ): unknown | null {
     const key = this.getCacheKey('analytics', {
       timeFilter,
       selectedDate,
@@ -96,7 +99,7 @@ export class ReportsCacheManager {
     selectedDate: string | null,
     selectedComposer: string | null,
     entriesHash: string,
-    data: any
+    data: unknown
   ): void {
     const key = this.getCacheKey('analytics', {
       timeFilter,
@@ -119,7 +122,7 @@ export class ReportsCacheManager {
     sortBy: string,
     composerFilter: string | null,
     entriesHash: string
-  ): any | null {
+  ): unknown | null {
     const key = this.getCacheKey('pieceStats', {
       sortBy,
       composerFilter,
@@ -145,7 +148,7 @@ export class ReportsCacheManager {
     sortBy: string,
     composerFilter: string | null,
     entriesHash: string,
-    data: any
+    data: unknown
   ): void {
     const key = this.getCacheKey('pieceStats', {
       sortBy,
@@ -233,7 +236,9 @@ export class ReportsCacheManager {
   /**
    * Generate hash for entries array to detect changes
    */
-  static generateEntriesHash(entries: any[]): string {
+  static generateEntriesHash(
+    entries: Array<{ duration?: number; timestamp: string }>
+  ): string {
     // Simple hash based on entry count and total duration
     // This is sufficient for cache invalidation
     const count = entries.length

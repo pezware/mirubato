@@ -171,11 +171,15 @@ describe('Sync Handlers', () => {
       expect(data.conflicts).toEqual([])
 
       // Verify upsertSyncData was called correctly
+      // Note: instrument field is normalized to lowercase
       expect(mockDbInstance.upsertSyncData).toHaveBeenCalledWith({
         userId: 'test-user-123',
         entityType: 'logbook_entry',
         entityId: testEntry.id,
-        data: testEntry,
+        data: {
+          ...testEntry,
+          instrument: 'piano', // normalized to lowercase
+        },
         checksum: 'test-checksum-abc',
       })
     })

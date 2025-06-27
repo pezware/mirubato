@@ -81,13 +81,20 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   }
   const db = new DatabaseHelpers(c.env.DB)
 
-  // Debug logging for staging
-  if (c.env.ENVIRONMENT === 'staging') {
+  // Enhanced debug logging for staging
+  if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'local') {
     console.log('[Sync Push] Starting sync for user:', userId)
+    console.log('[Sync Push] Environment:', c.env.ENVIRONMENT)
     console.log('[Sync Push] Received changes:', {
       entriesCount: changes.entries?.length || 0,
       goalsCount: changes.goals?.length || 0,
     })
+    if (changes.entries && changes.entries.length > 0) {
+      console.log(
+        '[Sync Push] First entry sample:',
+        JSON.stringify(changes.entries[0], null, 2)
+      )
+    }
   }
 
   try {
@@ -102,9 +109,15 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     if (changes.entries && changes.entries.length > 0) {
       for (const entry of changes.entries as Array<{
         id: string
+        instrument?: string
         [key: string]: unknown
       }>) {
         try {
+          // Normalize instrument field to lowercase for database compatibility
+          if (entry.instrument && typeof entry.instrument === 'string') {
+            entry.instrument = entry.instrument.toLowerCase()
+          }
+
           const checksum = await calculateChecksum(entry)
 
           await db.upsertSyncData({
@@ -175,6 +188,14 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     })
   } catch (error) {
     // Error: Sync push failed
+    console.error('[Sync Push] Error occurred:', error)
+    console.error('[Sync Push] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      entriesCount: changes.entries?.length || 0,
+      goalsCount: changes.goals?.length || 0,
+    })
 
     // Return more detailed error for debugging
     if (c.env.ENVIRONMENT !== 'production') {
@@ -183,6 +204,11 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined,
+          details: {
+            userId,
+            entriesCount: changes.entries?.length || 0,
+            goalsCount: changes.goals?.length || 0,
+          },
         },
         500
       )

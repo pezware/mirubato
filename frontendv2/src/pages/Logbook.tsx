@@ -227,6 +227,22 @@ export default function LogbookPage() {
             </div>
           </div>
         )}
+
+        {/* Main Content - Enhanced Practice Reports */}
+        <div className="mt-8">
+          <EnhancedPracticeReports />
+        </div>
+
+        {/* New Entry Form Modal */}
+        {showNewEntryForm && (
+          <ManualEntryForm
+            onClose={() => setShowNewEntryForm(false)}
+            onSave={() => {
+              setShowNewEntryForm(false)
+              loadEntries()
+            }}
+          />
+        )}
       </div>
     </div>
   )
