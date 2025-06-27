@@ -48,10 +48,12 @@ All services run as Cloudflare Workers with the following domains:
 - **Worker**: Serves static assets via Cloudflare Workers
 - **Key Features**:
   - Music notation rendering (VexFlow.js)
-  - Audio playback (Tone.js)
+  - Audio playback (Tone.js) with lazy loading
   - Real-time practice feedback
   - Offline-first with service workers
   - Module-based architecture with EventBus
+  - Optimized bundle with code splitting
+  - Comprehensive caching headers for static assets
 
 #### 2. API (REST)
 
@@ -64,7 +66,10 @@ All services run as Cloudflare Workers with the following domains:
   - Sync capabilities for offline-first architecture
   - Rate limiting
   - Google OAuth integration
-  - Simpler deployment model
+  - Comprehensive health monitoring (/health, /livez, /readyz)
+  - JWT validation in health checks
+  - Prometheus-compatible metrics endpoint
+  - Cloudflare KV caching for improved performance
 
 #### 3. Scores Service
 
@@ -77,6 +82,10 @@ All services run as Cloudflare Workers with the following domains:
   - Difficulty level tracking
   - Content categorization
   - CDN integration for fast delivery
+  - JWT authentication for protected endpoints
+  - Edge caching with conditional requests (ETags)
+  - Health monitoring with smoke tests
+  - Metrics endpoint for observability
 
 ### Database Architecture
 
@@ -124,6 +133,44 @@ score_metadata, user_scores
    - OAuth2 flow with Google
    - Profile data stored in users table
    - Same JWT token system
+
+### JWT Token Architecture
+
+JWT tokens are used for authentication across services with a shared secret approach:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│    Frontend     │    │   API Service   │    │ Scores Service  │
+│   (React SPA)   │    │                 │    │                 │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ • Receives JWT  │◄──►│ • Creates JWT   │    │ • Verifies JWT  │
+│ • Stores JWT    │    │ • Verifies JWT  │    │ • Uses same     │
+│ • Sends JWT     │    │ • Uses SECRET   │    │   SECRET as API │
+│ • NO SECRET     │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+#### JWT Secret Management
+
+- **API Service**: Creates and signs JWT tokens during authentication
+- **Scores Service**: Validates JWT tokens from authenticated requests
+- **Frontend**: Receives, stores, and sends tokens (no secret access)
+
+**Critical**: The `JWT_SECRET` must be identical between API and Scores services for token validation to work. Secrets are managed via Cloudflare Workers secrets (not environment variables).
+
+```bash
+# Set the same JWT_SECRET in both services
+cd api && wrangler secret put JWT_SECRET --env staging
+cd scores && wrangler secret put JWT_SECRET --env staging
+# Use identical values for both
+```
+
+#### Security Principles
+
+1. **Client-Side Isolation**: JWT_SECRET never exposed to frontend code
+2. **Shared Validation**: All backend services use the same secret for consistency
+3. **Secret Rotation**: Secrets can be rotated by updating all services simultaneously
+4. **Environment Separation**: Different secrets per environment (staging, production)
 
 ### Deployment Architecture
 
@@ -222,8 +269,15 @@ graph TD
 
 1. **Edge Computing**: All logic runs at Cloudflare edge locations
 2. **Database**: D1 provides low-latency SQLite at the edge
-3. **Assets**: Static files served via Workers with caching
+3. **Assets**: Static files served via Workers with comprehensive caching:
+   - Immutable assets cached for 1 year
+   - Images cached for 1 day in browser, 1 year at edge
+   - API responses cached for 1 minute at edge
 4. **API Response**: Sub-100ms response times globally
+5. **Bundle Optimization**:
+   - Code splitting reduces initial load by 43%
+   - Lazy loading for heavy libraries (Tone.js)
+   - Vendor chunks for better caching
 
 ## Security
 
@@ -231,6 +285,60 @@ graph TD
 2. **CORS**: Configured per environment
 3. **Rate Limiting**: Built into Workers platform
 4. **Data Isolation**: User data segregated by user_id foreign keys
+5. **Health Check Security**: JWT validation in health endpoints
+6. **Auth Middleware**: Consistent authentication across all services
+
+### Secret Management
+
+Sensitive configuration is handled via Cloudflare Workers secrets:
+
+**Required Secrets by Service:**
+
+| Service | Secrets                | Purpose                         |
+| ------- | ---------------------- | ------------------------------- |
+| API     | `JWT_SECRET`           | Sign/verify JWT tokens          |
+|         | `MAGIC_LINK_SECRET`    | Sign magic link tokens          |
+|         | `RESEND_API_KEY`       | Email service integration       |
+|         | `GOOGLE_CLIENT_SECRET` | OAuth integration               |
+| Scores  | `JWT_SECRET`           | Verify JWT tokens (same as API) |
+
+**Secret Rotation Process:**
+
+1. Generate new secret: `openssl rand -base64 32`
+2. Update all services simultaneously
+3. Monitor health endpoints for validation
+4. Test cross-service authentication
+
+**Debug Tools:**
+
+- `/debug/jwt-test` endpoints in staging for secret verification
+- Health checks validate secret functionality
+- Metrics track authentication success rates
+
+## Health Monitoring
+
+### Endpoints
+
+All services expose comprehensive health monitoring:
+
+- `/health` - Comprehensive health check with all service dependencies
+- `/livez` - Liveness probe (simple check that service is running)
+- `/readyz` - Readiness probe (check if service can handle requests)
+- `/metrics` - Prometheus-compatible metrics endpoint
+
+### Health Check Features
+
+1. **Database connectivity** - Verifies D1 database is accessible
+2. **JWT validation** - Tests token creation and verification
+3. **Storage access** - Checks R2 bucket connectivity (Scores service)
+4. **Cache operations** - Validates KV namespace read/write
+5. **Smoke tests** - Runs critical operations to ensure functionality
+
+### Monitoring URLs
+
+- API Health: https://api.mirubato.com/health
+- Scores Health: https://scores.mirubato.com/health
+- Frontend: Served via static assets, monitored through edge analytics
 
 ## Development Workflow
 
@@ -247,6 +355,45 @@ cd [service] && wrangler deploy --env staging # Staging
 cd api && npm run db:migrate:production   # Production
 cd api && npm run db:migrate:staging      # Staging
 ```
+
+## Caching Architecture
+
+### Edge Caching Strategy
+
+Mirubato implements a multi-layer caching strategy leveraging Cloudflare's edge infrastructure:
+
+#### 1. Frontend Asset Caching
+
+```
+Static Assets (JS, CSS with hashing): 1 year (immutable)
+Images (JPG, PNG, SVG): 1 day browser, 1 year edge
+Fonts (WOFF2, TTF): 1 month browser, 1 year edge
+HTML: No cache (always fresh)
+```
+
+#### 2. API Response Caching
+
+- **Public endpoints**: Cached at edge for 1 minute
+- **Authenticated requests**: Never cached
+- **Conditional requests**: Support for ETags and 304 responses
+
+#### 3. Scores Service Caching
+
+- **PDFs**: Immutable caching (1 year)
+- **Metadata**: 5 minutes at edge
+- **KV fallback**: When edge cache misses
+
+### Bundle Optimization
+
+The frontend implements aggressive code splitting:
+
+- **Initial bundle**: Reduced from 631KB to smaller chunks
+- **Lazy loading**: Heavy libraries loaded on demand
+- **Vendor chunks**: Separate chunks for better caching
+  - react-vendor: React ecosystem
+  - music-vendor: VexFlow + Tone.js
+  - utils-vendor: Utilities and helpers
+  - i18n-vendor: Internationalization
 
 ## Testing Strategy
 

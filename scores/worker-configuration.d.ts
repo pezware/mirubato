@@ -1,6 +1,8 @@
 interface Env {
   // Environment variables
   ENVIRONMENT: 'local' | 'development' | 'staging' | 'production'
+  API_SERVICE_URL: string
+  JWT_SECRET?: string // Will be set as secret for staging/production
 
   // D1 Database
   DB: D1Database

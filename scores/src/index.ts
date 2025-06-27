@@ -5,6 +5,12 @@ import { HTTPException } from 'hono/http-exception'
 import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
+import {
+  addCacheHeaders,
+  getCachedResponse,
+  cacheResponse,
+  handleConditionalRequest,
+} from './utils/cache'
 
 const app = new Hono<{ Bindings: Env }>()
 
@@ -219,18 +225,77 @@ app.get('/render/:key', async c => {
 
 // Serve files from R2 (for PDF viewing)
 app.get('/files/*', async c => {
-  const path = c.req.path.replace('/files/', '')
-  const object = await c.env.SCORES_BUCKET.get(path)
+  try {
+    // Check edge cache first
+    const cachedResponse = await getCachedResponse(c.req.raw, c)
+    if (cachedResponse) {
+      return cachedResponse
+    }
 
-  if (!object) {
-    return c.text('Not found', 404)
+    const path = c.req.path.replace('/files/', '')
+    const object = await c.env.SCORES_BUCKET.get(path)
+
+    if (!object) {
+      return c.text('Not found', 404)
+    }
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+
+    // Determine content type from file extension
+    const ext = path.split('.').pop()?.toLowerCase() || ''
+    const contentType = getFileContentType(ext)
+    if (contentType) {
+      headers.set('Content-Type', contentType)
+    }
+
+    // Create response
+    let response = new Response(object.body, { headers })
+
+    // Add cache headers based on content type
+    const isVersioned = path.includes('/versions/') || path.includes('/v')
+    response = addCacheHeaders(
+      response,
+      contentType || 'application/octet-stream',
+      {
+        isVersioned,
+        isPublic: true,
+      }
+    )
+
+    // Handle conditional requests
+    const conditionalResponse = handleConditionalRequest(c.req.raw, response)
+    if (conditionalResponse) {
+      return conditionalResponse
+    }
+
+    // Cache response at edge
+    await cacheResponse(c.req.raw, response.clone(), c)
+
+    return response
+  } catch (error) {
+    console.error('Error serving file:', error)
+    return c.text('Internal server error', 500)
   }
-
-  const headers = new Headers()
-  object.writeHttpMetadata(headers)
-
-  return new Response(object.body, { headers })
 })
+
+// Helper function to determine content type
+function getFileContentType(ext: string): string | null {
+  const contentTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    xml: 'application/vnd.recordare.musicxml+xml',
+    musicxml: 'application/vnd.recordare.musicxml+xml',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    svg: 'image/svg+xml',
+    json: 'application/json',
+    txt: 'text/plain',
+    abc: 'text/vnd.abc',
+    ly: 'text/x-lilypond',
+  }
+  return contentTypes[ext] || null
+}
 
 // Error handling
 app.onError((err, c) => {

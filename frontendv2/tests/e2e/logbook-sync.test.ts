@@ -5,6 +5,15 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Clear localStorage to start fresh
     await page.goto('/')
     await page.evaluate(() => localStorage.clear())
+
+    // Mock autocomplete API to prevent timeouts
+    await page.route('**/api/autocomplete/**', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ results: [] }),
+      })
+    })
   })
 
   test('Data persists correctly across login/logout cycles', async ({
@@ -34,9 +43,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      // Fill piece information using placeholders
+      // Fill piece information using placeholders - handle autocomplete
       await page.fill('input[placeholder="Piece title"]', title)
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Piece title"]', 'Escape')
+
       await page.fill('input[placeholder="Composer"]', composer)
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Composer"]', 'Escape')
 
       // Select mood
       await page.click('button:has-text("😊")')
@@ -285,9 +299,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
       await durationInput.clear()
       await durationInput.fill('30')
 
-      // Fill piece information
+      // Fill piece information - handle autocomplete
       await page.fill('input[placeholder="Piece title"]', 'Duplicate Entry')
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Piece title"]', 'Escape')
+
       await page.fill('input[placeholder="Composer"]', 'Same Composer')
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Composer"]', 'Escape')
 
       // Select mood
       await page.click('button:has-text("😊")')
@@ -412,8 +431,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await durationInput.clear()
     await durationInput.fill('15')
 
+    // Handle autocomplete properly
     await page.fill('input[placeholder="Piece title"]', 'Local Entry')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Piece title"]', 'Escape')
+
     await page.fill('input[placeholder="Composer"]', 'Local Composer')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Composer"]', 'Escape')
     await page.click('button:has-text("😊")')
 
     const saveButton = page.locator('button[type="submit"]').last()

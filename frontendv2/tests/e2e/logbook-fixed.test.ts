@@ -5,6 +5,15 @@ test.describe('Logbook Features - Fixed', () => {
     // Clear localStorage to start fresh
     await page.goto('/')
     await page.evaluate(() => localStorage.clear())
+
+    // Mock autocomplete API to prevent timeouts
+    await page.route('**/api/autocomplete/**', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ results: [] }),
+      })
+    })
   })
 
   test('Anonymous user can create and view logbook entries', async ({
@@ -45,8 +54,14 @@ test.describe('Logbook Features - Fixed', () => {
       await page.waitForTimeout(500)
     }
 
+    // Handle autocomplete properly
     await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Piece title"]', 'Escape')
+
     await page.fill('input[placeholder="Composer"]', 'Beethoven')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Composer"]', 'Escape')
 
     // Add notes
     const notesTextarea = page.locator('textarea').first()
@@ -147,10 +162,16 @@ test.describe('Logbook Features - Fixed', () => {
     })
     await page.waitForSelector('form', { timeout: 5000 })
 
-    // Quick fill
+    // Quick fill - handle autocomplete
     await page.fill('input[type="number"]', '30')
+
     await page.fill('input[placeholder="Piece title"]', 'Test Piece')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Piece title"]', 'Escape')
+
     await page.fill('input[placeholder="Composer"]', 'Test Composer')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Composer"]', 'Escape')
     await page.click('button:has-text("😊")')
     await page.click('button[type="submit"]')
 

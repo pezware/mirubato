@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,13 +9,22 @@ import { useAuthStore } from './stores/authStore'
 import { migrateLegacyData } from './utils/migrateLegacyData'
 import { fixLocalStorageData } from './utils/fixLocalStorageData'
 
-// Pages
+// Eagerly load the home page (most visited)
 import HomePage from './pages/Home'
-import LogbookPage from './pages/Logbook'
-import AuthVerifyPage from './pages/AuthVerify'
+
+// Lazy load other pages
+const LogbookPage = lazy(() => import('./pages/Logbook'))
+const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
+
+// Loading component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morandi-purple-600"></div>
+  </div>
+)
 
 function App() {
   const { refreshAuth } = useAuthStore()
@@ -34,24 +43,26 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-morandi-stone-100">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/auth/verify" element={<AuthVerifyPage />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auth/verify" element={<AuthVerifyPage />} />
 
-          {/* Protected routes (but work for anonymous users too) */}
-          <Route
-            path="/logbook"
-            element={
-              <ProtectedRoute>
-                <LogbookPage />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes (but work for anonymous users too) */}
+            <Route
+              path="/logbook"
+              element={
+                <ProtectedRoute>
+                  <LogbookPage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Redirect unknown routes to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Redirect unknown routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </div>
     </Router>
   )
