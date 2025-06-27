@@ -523,14 +523,16 @@ export default function EnhancedPracticeReports() {
                   ) : (
                     // Show full month calendar
                     <div className="grid grid-cols-7 gap-1 max-w-sm">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((_, i) => (
-                        <div
-                          key={i}
-                          className="text-center text-xs text-morandi-stone-500 font-medium py-1"
-                        >
-                          {t(`common:days.short.${i}`)}
-                        </div>
-                      ))}
+                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(
+                        (dayLetter, i) => (
+                          <div
+                            key={i}
+                            className="text-center text-xs text-morandi-stone-500 font-medium py-1"
+                          >
+                            {dayLetter}
+                          </div>
+                        )
+                      )}
                       {(() => {
                         const today = new Date()
                         const firstDay = new Date(
