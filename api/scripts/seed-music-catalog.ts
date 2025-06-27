@@ -177,15 +177,9 @@ async function parseComposersAndPieces(): Promise<{
           Boulez: 'Pierre Boulez',
         }
 
-        // First try to match the composer name before any Op. or other info
-        const composerMatch = composerInfo.match(
-          /^([^(,]+?)(?:\s+(?:Op\.|BWV|K\.|D\.|WoO|Anh\.|No\.).*)?$/
-        )
-        if (composerMatch) {
-          const shortName = composerMatch[1].trim()
-          // Look up in the map, fallback to the short name if not found
-          composerName = composerMap[shortName] || shortName
-        }
+        // Since the markdown now has properly formatted full composer names,
+        // we can use them directly without mapping
+        composerName = composerInfo.trim()
 
         pieces.push({
           title: title.trim(),
