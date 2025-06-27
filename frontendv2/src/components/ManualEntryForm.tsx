@@ -103,9 +103,11 @@ export default function ManualEntryForm({
     field: 'title' | 'composer',
     value: string
   ) => {
-    const updated = [...pieces]
-    updated[index] = { ...updated[index], [field]: value }
-    setPieces(updated)
+    setPieces(prevPieces => {
+      const updated = [...prevPieces]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
   }
 
   const removePiece = (index: number) => {

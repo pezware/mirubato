@@ -67,9 +67,8 @@ export default function PieceInput({
             pieceAutocomplete.setQuery(value)
           }}
           onSelect={option => {
-            onUpdate(index, 'title', option.value)
-            pieceAutocomplete.setQuery(option.value) // Reset the query to the selected value
-            // If piece has composer metadata, also update composer field
+            // The Autocomplete component already calls onChange with the value
+            // so the title is already updated. We just need to handle the composer
             if (option.metadata?.composer) {
               onUpdate(index, 'composer', option.metadata.composer)
             }
@@ -86,9 +85,8 @@ export default function PieceInput({
             onUpdate(index, 'composer', value)
             composerAutocomplete.setQuery(value)
           }}
-          onSelect={option => {
-            onUpdate(index, 'composer', option.value)
-            composerAutocomplete.setQuery(option.value) // Reset the query to the selected value
+          onSelect={() => {
+            // Selection is already handled by onChange in Autocomplete component
           }}
           options={composerAutocomplete.suggestions}
           placeholder={t('logbook:entry.composer')}
