@@ -134,6 +134,44 @@ score_metadata, user_scores
    - Profile data stored in users table
    - Same JWT token system
 
+### JWT Token Architecture
+
+JWT tokens are used for authentication across services with a shared secret approach:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│    Frontend     │    │   API Service   │    │ Scores Service  │
+│   (React SPA)   │    │                 │    │                 │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ • Receives JWT  │◄──►│ • Creates JWT   │    │ • Verifies JWT  │
+│ • Stores JWT    │    │ • Verifies JWT  │    │ • Uses same     │
+│ • Sends JWT     │    │ • Uses SECRET   │    │   SECRET as API │
+│ • NO SECRET     │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+#### JWT Secret Management
+
+- **API Service**: Creates and signs JWT tokens during authentication
+- **Scores Service**: Validates JWT tokens from authenticated requests
+- **Frontend**: Receives, stores, and sends tokens (no secret access)
+
+**Critical**: The `JWT_SECRET` must be identical between API and Scores services for token validation to work. Secrets are managed via Cloudflare Workers secrets (not environment variables).
+
+```bash
+# Set the same JWT_SECRET in both services
+cd api && wrangler secret put JWT_SECRET --env staging
+cd scores && wrangler secret put JWT_SECRET --env staging
+# Use identical values for both
+```
+
+#### Security Principles
+
+1. **Client-Side Isolation**: JWT_SECRET never exposed to frontend code
+2. **Shared Validation**: All backend services use the same secret for consistency
+3. **Secret Rotation**: Secrets can be rotated by updating all services simultaneously
+4. **Environment Separation**: Different secrets per environment (staging, production)
+
 ### Deployment Architecture
 
 - **CI/CD**: GitHub Actions for validation, Cloudflare dashboard for deployment
@@ -249,6 +287,33 @@ graph TD
 4. **Data Isolation**: User data segregated by user_id foreign keys
 5. **Health Check Security**: JWT validation in health endpoints
 6. **Auth Middleware**: Consistent authentication across all services
+
+### Secret Management
+
+Sensitive configuration is handled via Cloudflare Workers secrets:
+
+**Required Secrets by Service:**
+
+| Service | Secrets                | Purpose                         |
+| ------- | ---------------------- | ------------------------------- |
+| API     | `JWT_SECRET`           | Sign/verify JWT tokens          |
+|         | `MAGIC_LINK_SECRET`    | Sign magic link tokens          |
+|         | `RESEND_API_KEY`       | Email service integration       |
+|         | `GOOGLE_CLIENT_SECRET` | OAuth integration               |
+| Scores  | `JWT_SECRET`           | Verify JWT tokens (same as API) |
+
+**Secret Rotation Process:**
+
+1. Generate new secret: `openssl rand -base64 32`
+2. Update all services simultaneously
+3. Monitor health endpoints for validation
+4. Test cross-service authentication
+
+**Debug Tools:**
+
+- `/debug/jwt-test` endpoints in staging for secret verification
+- Health checks validate secret functionality
+- Metrics track authentication success rates
 
 ## Health Monitoring
 
