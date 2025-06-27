@@ -128,7 +128,7 @@ export function useAutocomplete({
     })
 
     // Add API suggestions
-    data.results.forEach((result: any) => {
+    data.results.forEach((result: AutocompleteOption) => {
       const key = result.value.toLowerCase()
       if (!combined.has(key)) {
         combined.set(key, {

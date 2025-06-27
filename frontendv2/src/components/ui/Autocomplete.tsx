@@ -4,7 +4,12 @@ import { cn } from '../../utils/cn'
 export interface AutocompleteOption {
   value: string
   label: string
-  metadata?: Record<string, any>
+  metadata?: {
+    composer?: string
+    gradeLevel?: number
+    instrument?: string
+    [key: string]: unknown
+  }
 }
 
 interface AutocompleteProps {
@@ -81,10 +86,14 @@ export default function Autocomplete({
 
   // Handle option click
   const handleOptionClick = (option: AutocompleteOption) => {
+    // Update the input value
     onChange(option.value)
+    // Call the onSelect callback with the full option
     onSelect?.(option)
+    // Close the dropdown
     setIsOpen(false)
     setSelectedIndex(-1)
+    // Keep focus on the input
     inputRef.current?.focus()
   }
 
