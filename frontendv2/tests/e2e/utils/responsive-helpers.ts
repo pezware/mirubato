@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test'
+import { Page, expect, Locator } from '@playwright/test'
 
 /**
  * Helper utilities for handling responsive design in E2E tests
@@ -37,7 +37,7 @@ export const getResponsiveLocator = (
   page: Page,
   desktopSelector: string,
   mobileSelector: string
-): any => {
+): Locator => {
   const isMobile = isMobileViewport(page)
   return page.locator(isMobile ? mobileSelector : desktopSelector)
 }
