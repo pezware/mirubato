@@ -203,7 +203,7 @@ async function checkStorage(bucket: R2Bucket) {
   try {
     const start = Date.now()
     // List with limit 1 to check R2 connectivity
-    const result = await bucket.list({ limit: 1 })
+    await bucket.list({ limit: 1 })
     const latency = Date.now() - start
 
     return {

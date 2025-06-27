@@ -104,11 +104,7 @@ export default function InteractivePiano() {
                 ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
               `}
               aria-label={`Play ${key.label} note`}
-            >
-              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-gray-600">
-                {key.label}
-              </span>
-            </button>
+            ></button>
           ))}
         </div>
 
@@ -138,11 +134,7 @@ export default function InteractivePiano() {
                 `}
                 style={{ left: `${position}px` }}
                 aria-label={`Play ${key.label} note`}
-              >
-                <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-white">
-                  {key.label}
-                </span>
-              </button>
+              ></button>
             )
           })}
         </div>
