@@ -137,15 +137,36 @@ export default function EnhancedPracticeReports() {
     [filteredAndSortedEntries]
   )
 
+  // Define analytics type
+  interface AnalyticsData {
+    todayTotal: number
+    todayCount: number
+    weekTotal: number
+    weekCount: number
+    currentStreak: number
+    practiceByDay: Map<string, number>
+    uniqueComposers: number
+    uniquePieces: number
+    pieceStats: Map<
+      string,
+      {
+        count: number
+        totalDuration: number
+        lastPracticed: string
+        techniques: Set<string>
+      }
+    >
+  }
+
   // Calculate analytics with caching
-  const analytics = useMemo(() => {
+  const analytics = useMemo<AnalyticsData>(() => {
     // Check cache first
     const cached = reportsCache.getAnalytics(
       sortBy,
       selectedDate,
       selectedPiece || selectedComposer,
       entriesHash
-    )
+    ) as AnalyticsData | null
     if (cached) return cached
 
     // Calculate analytics
@@ -245,7 +266,7 @@ export default function EnhancedPracticeReports() {
       }
     }
 
-    const result = {
+    const result: AnalyticsData = {
       todayTotal,
       todayCount,
       weekTotal,

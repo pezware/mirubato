@@ -171,7 +171,7 @@ export class ReportsCacheManager {
 
     const entry = this.cache.get(key)
     if (entry && this.isValid(entry)) {
-      return entry.data
+      return entry.data as string[]
     }
 
     if (entry) {
