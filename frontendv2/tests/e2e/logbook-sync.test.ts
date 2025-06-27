@@ -55,8 +55,10 @@ test.describe('Logbook Sync and Data Persistence', () => {
     }
 
     // Verify we start with local storage
-    // Check for local storage indicator - using the emoji as it's more stable
-    await expect(page.locator('text=💾').first()).toBeVisible()
+    // Check for local storage indicator - look for the text that's always visible
+    await expect(page.locator('text=Local storage')).toBeVisible({
+      timeout: 10000,
+    })
 
     // Step 1: Create first entry while not logged in
     await createEntry('Anonymous Entry 1', '10')
@@ -244,8 +246,8 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await page.click('button:has-text("Sign out")')
 
     // Verify we're logged out
-    // Check for local storage indicator - using the emoji as it's more stable
-    await expect(page.locator('text=💾').first()).toBeVisible({
+    // Check for local storage indicator - look for the text that's always visible
+    await expect(page.locator('text=Local storage')).toBeVisible({
       timeout: 10000,
     })
     await expect(page.locator('button:has-text("Sign in")')).toBeVisible()
