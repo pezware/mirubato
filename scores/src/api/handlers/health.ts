@@ -28,6 +28,51 @@ healthHandler.get('/readyz', async c => {
 /**
  * Comprehensive health check with smoke tests
  */
+// Debug endpoint to test JWT functionality (remove in production)
+healthHandler.get('/debug/jwt-test', async c => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'Not available in production' }, 404)
+  }
+
+  try {
+    const { SignJWT, jwtVerify } = await import('jose')
+    const secret = c.env.JWT_SECRET || ''
+
+    // Create a test token
+    const testToken = await new SignJWT({
+      test: true,
+      service: 'scores',
+      timestamp: Date.now(),
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1m')
+      .sign(new TextEncoder().encode(secret))
+
+    // Verify it
+    const { payload } = await jwtVerify(
+      testToken,
+      new TextEncoder().encode(secret)
+    )
+
+    return c.json({
+      success: true,
+      service: 'scores',
+      secretLength: secret.length,
+      secretPrefix: secret.substring(0, 4) + '...',
+      testToken: testToken.substring(0, 50) + '...',
+      verified: true,
+      payload,
+    })
+  } catch (error) {
+    return c.json({
+      success: false,
+      service: 'scores',
+      error: error?.toString(),
+    })
+  }
+})
+
 healthHandler.get('/health', async c => {
   const startTime = Date.now()
 
