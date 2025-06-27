@@ -2,6 +2,12 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { RenderOptionsSchema, ApiResponse } from '../../types/api'
 import { RenderedScore } from '../../types/score'
+import {
+  addCacheHeaders,
+  getCachedResponse,
+  cacheResponse,
+  handleConditionalRequest,
+} from '../../utils/cache'
 
 export const renderHandler = new Hono<{ Bindings: Env }>()
 
@@ -80,6 +86,12 @@ renderHandler.get('/scores/:id/render', async c => {
 // Download score in specific format
 renderHandler.get('/scores/:id/download/:format', async c => {
   try {
+    // Check edge cache first
+    const cachedResponse = await getCachedResponse(c.req.raw, c)
+    if (cachedResponse) {
+      return cachedResponse
+    }
+
     const scoreId = c.req.param('id')
     const format = c.req.param('format')
 
@@ -142,7 +154,33 @@ renderHandler.get('/scores/:id/download/:format', async c => {
       headers.set('Content-Length', version.file_size_bytes.toString())
     }
 
-    return new Response(object.body, { headers })
+    // Add R2 metadata if available
+    if (object.httpEtag) {
+      headers.set('ETag', object.httpEtag)
+    }
+    if (object.uploaded) {
+      headers.set('Last-Modified', object.uploaded.toUTCString())
+    }
+
+    // Create response
+    let response = new Response(object.body, { headers })
+
+    // Add cache headers - score versions are immutable
+    response = addCacheHeaders(response, getContentType(format), {
+      isVersioned: true,
+      isPublic: true,
+    })
+
+    // Handle conditional requests
+    const conditionalResponse = handleConditionalRequest(c.req.raw, response)
+    if (conditionalResponse) {
+      return conditionalResponse
+    }
+
+    // Cache response at edge
+    await cacheResponse(c.req.raw, response.clone(), c)
+
+    return response
   } catch (error) {
     if (error instanceof HTTPException) throw error
     console.error('Error downloading score:', error)

@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../stores/authStore'
 import GoogleSignInButton from '../components/GoogleSignInButton'
-import InteractivePiano from '../components/InteractivePiano'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+
+// Lazy load the piano component (contains Tone.js)
+const InteractivePiano = lazy(() => import('../components/InteractivePiano'))
+
+// Loading placeholder for piano
+const PianoLoader = () => (
+  <div className="flex justify-center items-center h-32">
+    <div className="text-white/60 animate-pulse">Loading piano...</div>
+  </div>
+)
 
 export default function HomePage() {
   const { t } = useTranslation(['common', 'auth', 'logbook'])
@@ -90,7 +99,9 @@ export default function HomePage() {
             </p>
 
             {/* Interactive Piano Panel */}
-            <InteractivePiano />
+            <Suspense fallback={<PianoLoader />}>
+              <InteractivePiano />
+            </Suspense>
 
             {/* CTA or User Status */}
             {!isAuthenticated ? (

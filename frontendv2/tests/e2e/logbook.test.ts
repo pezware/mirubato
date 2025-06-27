@@ -5,6 +5,15 @@ test.describe('Logbook Features', () => {
     // Clear localStorage to start fresh
     await page.goto('/')
     await page.evaluate(() => localStorage.clear())
+
+    // Mock autocomplete API to prevent timeouts
+    await page.route('**/api/autocomplete/**', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ results: [] }),
+      })
+    })
   })
 
   test('Anonymous user can create and view logbook entries', async ({
@@ -37,8 +46,20 @@ test.describe('Logbook Features', () => {
     await page.waitForSelector('input[placeholder="Piece title"]', {
       timeout: 5000,
     })
+
+    // Fill piece title and wait for autocomplete to settle
     await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+
+    // Close autocomplete dropdown if open by pressing Escape
+    await page.press('input[placeholder="Piece title"]', 'Escape')
+
+    // Fill composer and wait for autocomplete to settle
     await page.fill('input[placeholder="Composer"]', 'Beethoven')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+
+    // Close autocomplete dropdown if open by pressing Escape
+    await page.press('input[placeholder="Composer"]', 'Escape')
 
     // Add notes
     const notesTextarea = page.locator('textarea').first()
@@ -116,9 +137,14 @@ test.describe('Logbook Features', () => {
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      // Fill piece information using placeholders
+      // Fill piece information using placeholders - handle autocomplete
       await page.fill('input[placeholder="Piece title"]', title)
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Piece title"]', 'Escape')
+
       await page.fill('input[placeholder="Composer"]', composer)
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Composer"]', 'Escape')
 
       // Select mood
       await page.click('button:has-text("😊")')
@@ -192,9 +218,14 @@ test.describe('Logbook Features', () => {
       await durationInput.clear()
       await durationInput.fill(duration)
 
-      // Fill piece info
+      // Fill piece info - handle autocomplete
       await page.fill('input[placeholder="Piece title"]', title)
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Piece title"]', 'Escape')
+
       await page.fill('input[placeholder="Composer"]', 'Test Composer')
+      await page.waitForTimeout(400) // Wait for debounce + buffer
+      await page.press('input[placeholder="Composer"]', 'Escape')
 
       // Select mood
       await page.click('button:has-text("😊")')
@@ -279,8 +310,14 @@ test.describe('Logbook Features', () => {
     await durationInput.clear()
     await durationInput.fill('30')
 
+    // Handle autocomplete properly
     await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Piece title"]', 'Escape')
+
     await page.fill('input[placeholder="Composer"]', 'Beethoven')
+    await page.waitForTimeout(400) // Wait for debounce + buffer
+    await page.press('input[placeholder="Composer"]', 'Escape')
 
     await page.click('button:has-text("😊")')
 

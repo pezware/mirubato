@@ -9,8 +9,9 @@ import {
   PaginatedResponse,
 } from '../../types/api'
 import { Score } from '../../types/score'
+import { authMiddleware, type Variables } from '../middleware'
 
-export const scoresHandler = new Hono<{ Bindings: Env }>()
+export const scoresHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // List all scores with pagination
 scoresHandler.get('/', async c => {
@@ -122,7 +123,7 @@ scoresHandler.get('/:id', async c => {
 })
 
 // Create new score
-scoresHandler.post('/', async c => {
+scoresHandler.post('/', authMiddleware, async c => {
   try {
     const body = await c.req.json()
 
@@ -199,7 +200,7 @@ scoresHandler.post('/', async c => {
 })
 
 // Update score
-scoresHandler.put('/:id', async c => {
+scoresHandler.put('/:id', authMiddleware, async c => {
   try {
     const id = c.req.param('id')
     const body = await c.req.json()
@@ -278,7 +279,7 @@ scoresHandler.put('/:id', async c => {
 })
 
 // Delete score
-scoresHandler.delete('/:id', async c => {
+scoresHandler.delete('/:id', authMiddleware, async c => {
   try {
     const id = c.req.param('id')
 

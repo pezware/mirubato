@@ -101,7 +101,7 @@ describe('HomePage', () => {
     vi.clearAllMocks()
   })
 
-  it('should render the home page with key elements', () => {
+  it('should render the home page with key elements', async () => {
     render(
       <MemoryRouter>
         <HomePage />
@@ -114,7 +114,11 @@ describe('HomePage', () => {
     expect(
       screen.getByText('Improve your sight-reading skills')
     ).toBeInTheDocument()
-    expect(screen.getByTestId('interactive-piano')).toBeInTheDocument()
+
+    // Wait for lazy-loaded piano component
+    await waitFor(() => {
+      expect(screen.getByTestId('interactive-piano')).toBeInTheDocument()
+    })
   })
 
   describe('Unauthenticated state', () => {

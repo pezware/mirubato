@@ -1,33 +1,45 @@
 import { useEffect, useRef, useState } from 'react'
-import * as Tone from 'tone'
+
+// Dynamically import Tone.js types
+type ToneType = typeof import('tone')
+type SamplerType = import('tone').Sampler
 
 export default function InteractivePiano() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isAudioStarted, setIsAudioStarted] = useState(false)
-  const samplerRef = useRef<Tone.Sampler | null>(null)
+  const [Tone, setTone] = useState<ToneType | null>(null)
+  const samplerRef = useRef<SamplerType | null>(null)
 
   useEffect(() => {
-    // Create sampler with Salamander Grand Piano samples
-    samplerRef.current = new Tone.Sampler({
-      urls: {
-        C4: 'C4.mp3',
-        'D#4': 'Ds4.mp3',
-        'F#4': 'Fs4.mp3',
-        A4: 'A4.mp3',
-        C5: 'C5.mp3',
-        'D#5': 'Ds5.mp3',
-        'F#5': 'Fs5.mp3',
-        A5: 'A5.mp3',
-      },
-      release: 4,
-      volume: -6,
-      baseUrl: 'https://tonejs.github.io/audio/salamander/',
-    }).toDestination()
+    // Dynamically import Tone.js when component mounts
+    const loadTone = async () => {
+      const ToneModule = await import('tone')
+      setTone(ToneModule)
 
-    // Load samples
-    Tone.loaded().then(() => {
-      setIsLoaded(true)
-    })
+      // Create sampler with Salamander Grand Piano samples
+      samplerRef.current = new ToneModule.Sampler({
+        urls: {
+          C4: 'C4.mp3',
+          'D#4': 'Ds4.mp3',
+          'F#4': 'Fs4.mp3',
+          A4: 'A4.mp3',
+          C5: 'C5.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#5': 'Fs5.mp3',
+          A5: 'A5.mp3',
+        },
+        release: 4,
+        volume: -6,
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+      }).toDestination()
+
+      // Load samples
+      ToneModule.loaded().then(() => {
+        setIsLoaded(true)
+      })
+    }
+
+    loadTone()
 
     return () => {
       samplerRef.current?.dispose()
@@ -35,7 +47,7 @@ export default function InteractivePiano() {
   }, [])
 
   const startAudio = async () => {
-    if (!isAudioStarted) {
+    if (!isAudioStarted && Tone) {
       await Tone.start()
       setIsAudioStarted(true)
     }
@@ -48,357 +60,100 @@ export default function InteractivePiano() {
     }
   }
 
-  // Two notes for the challenge
-  const twoNoteChallenge = ['C4', 'G4']
-
-  // Piano key definitions with note mappings
-  const whiteKeys = [
-    { note: 'C4', label: 'C' },
-    { note: 'D4', label: 'D' },
-    { note: 'E4', label: 'E' },
-    { note: 'F4', label: 'F' },
-    { note: 'G4', label: 'G' },
-    { note: 'A4', label: 'A' },
-    { note: 'B4', label: 'B' },
+  const pianoKeys = [
+    { note: 'C4', label: 'C', white: true },
+    { note: 'C#4', label: 'C#', white: false },
+    { note: 'D4', label: 'D', white: true },
+    { note: 'D#4', label: 'D#', white: false },
+    { note: 'E4', label: 'E', white: true },
+    { note: 'F4', label: 'F', white: true },
+    { note: 'F#4', label: 'F#', white: false },
+    { note: 'G4', label: 'G', white: true },
+    { note: 'G#4', label: 'G#', white: false },
+    { note: 'A4', label: 'A', white: true },
+    { note: 'A#4', label: 'A#', white: false },
+    { note: 'B4', label: 'B', white: true },
+    { note: 'C5', label: 'C', white: true },
   ]
 
-  const blackKeys = [
-    { note: 'C#4', position: 'ml-7' },
-    { note: 'D#4', position: 'ml-4' },
-    { note: 'F#4', position: 'ml-14' },
-    { note: 'G#4', position: 'ml-4' },
-    { note: 'A#4', position: 'ml-4' },
-  ]
+  const whiteKeys = pianoKeys.filter(key => key.white)
+  const blackKeys = pianoKeys.filter(key => !key.white)
+
+  if (!Tone) {
+    return (
+      <div className="mb-12 flex justify-center">
+        <div className="animate-pulse text-white/60">Loading piano...</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="glass-panel p-8 max-w-md mx-auto mb-8 animate-slide-up">
-      <div className="text-center">
-        {/* Music Notation */}
-        <div className="bg-morandi-sage-100/30 rounded-lg p-6 mb-6">
-          <svg className="w-full h-32" viewBox="0 0 640 128">
-            {/* Staff lines */}
-            <g
-              stroke="currentColor"
-              strokeWidth="1"
-              opacity="0.5"
-              className="text-morandi-stone-600"
+    <div className="mb-12 flex justify-center">
+      <div className="relative inline-flex bg-white/10 backdrop-blur-sm rounded-lg p-4">
+        {/* White keys */}
+        <div className="flex gap-1">
+          {whiteKeys.map(key => (
+            <button
+              key={key.note}
+              disabled={!isLoaded}
+              onClick={() => playNote(key.note)}
+              className={`
+                relative w-10 h-32 bg-white hover:bg-gray-100 
+                active:bg-gray-200 rounded-b-md shadow-md 
+                transition-colors cursor-pointer
+                ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+              aria-label={`Play ${key.label} note`}
             >
-              <line x1="10" y1="32" x2="630" y2="32" />
-              <line x1="10" y1="48" x2="630" y2="48" />
-              <line x1="10" y1="64" x2="630" y2="64" />
-              <line x1="10" y1="80" x2="630" y2="80" />
-              <line x1="10" y1="96" x2="630" y2="96" />
-            </g>
-
-            {/* Treble Clef */}
-            <text
-              x="20"
-              y="73"
-              fontSize="48"
-              fill="currentColor"
-              className="text-morandi-stone-600"
-            >
-              𝄞
-            </text>
-
-            {/* Key signature - Eb, Bb, Ab for C minor */}
-            <text
-              x="70"
-              y="53"
-              fontSize="20"
-              fill="currentColor"
-              className="text-morandi-stone-600"
-            >
-              ♭
-            </text>
-            <text
-              x="80"
-              y="77"
-              fontSize="20"
-              fill="currentColor"
-              className="text-morandi-stone-600"
-            >
-              ♭
-            </text>
-            <text
-              x="90"
-              y="45"
-              fontSize="20"
-              fill="currentColor"
-              className="text-morandi-stone-600"
-            >
-              ♭
-            </text>
-
-            {/* 2 Note Challenge - C and G pattern from measures 3-10 */}
-            {/* Measure 3-4: Half note C, Quarter C, Quarter G */}
-            <circle
-              cx="120"
-              cy="80"
-              r="4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="124.5"
-              y1="80"
-              x2="124.5"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="190"
-              cy="80"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="195"
-              y1="80"
-              x2="195"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="220"
-              cy="48"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="225"
-              y1="48"
-              x2="225"
-              y2="23"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            {/* Bar line */}
-            <line
-              x1="250"
-              y1="32"
-              x2="250"
-              y2="96"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-morandi-stone-600"
-            />
-
-            {/* Measure 5-6: Half note C, G-C pattern */}
-            <circle
-              cx="280"
-              cy="80"
-              r="4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="284.5"
-              y1="80"
-              x2="284.5"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="350"
-              cy="48"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="355"
-              y1="48"
-              x2="355"
-              y2="23"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="380"
-              cy="80"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="385"
-              y1="80"
-              x2="385"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            {/* Bar line */}
-            <line
-              x1="410"
-              y1="32"
-              x2="410"
-              y2="96"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-morandi-stone-600"
-            />
-
-            {/* Measure 7-8: Half note C, Quarter G, Quarter C */}
-            <circle
-              cx="440"
-              cy="80"
-              r="4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="444.5"
-              y1="80"
-              x2="444.5"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="510"
-              cy="48"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="515"
-              y1="48"
-              x2="515"
-              y2="23"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            <circle
-              cx="540"
-              cy="80"
-              r="5"
-              fill="currentColor"
-              className="text-morandi-stone-700"
-            />
-            <line
-              x1="545"
-              y1="80"
-              x2="545"
-              y2="55"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-morandi-stone-700"
-            />
-
-            {/* Double bar line */}
-            <line
-              x1="570"
-              y1="32"
-              x2="570"
-              y2="96"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-morandi-stone-600"
-            />
-            <line
-              x1="574"
-              y1="32"
-              x2="574"
-              y2="96"
-              stroke="currentColor"
-              strokeWidth="3"
-              className="text-morandi-stone-600"
-            />
-          </svg>
+              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-gray-600">
+                {key.label}
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* Piano Keys */}
-        <div className="relative flex justify-center mb-4">
-          {/* White keys */}
-          <div className="flex gap-[2px]">
-            {whiteKeys.map(({ note, label }) => {
-              const isHighlighted = twoNoteChallenge.includes(note)
-              return (
-                <button
-                  key={note}
-                  onClick={() => playNote(note)}
-                  disabled={!isLoaded}
-                  className={`
-                    relative w-10 h-32 border rounded-b-md transition-all cursor-pointer
-                    ${
-                      isHighlighted
-                        ? 'bg-morandi-sage-200 border-morandi-sage-400 hover:bg-morandi-sage-300'
-                        : 'bg-white border-morandi-stone-300 hover:bg-morandi-stone-100'
-                    }
-                    ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
-                    active:scale-95 active:shadow-inner
-                  `}
-                  aria-label={`Play ${label}`}
-                >
-                  <span className="text-xs text-morandi-stone-600 absolute bottom-2 left-1/2 -translate-x-1/2">
-                    {label}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+        {/* Black keys */}
+        <div className="absolute top-4 left-0 flex pointer-events-none">
+          {blackKeys.map(key => {
+            // Calculate position based on note
+            const position =
+              {
+                'C#4': 30,
+                'D#4': 80,
+                'F#4': 180,
+                'G#4': 230,
+                'A#4': 280,
+              }[key.note] || 0
 
-          {/* Black keys positioned absolutely */}
-          <div className="absolute flex top-0">
-            {blackKeys.map(({ note, position }) => {
-              const isHighlighted = false // No black keys in 2-note challenge
-              return (
-                <button
-                  key={note}
-                  onClick={() => playNote(note)}
-                  disabled={!isLoaded}
-                  className={`
-                    w-6 h-20 rounded-b-sm transition-all cursor-pointer
-                    ${
-                      isHighlighted
-                        ? 'bg-morandi-sage-600 hover:bg-morandi-sage-500'
-                        : 'bg-morandi-stone-700 hover:bg-morandi-stone-600'
-                    }
-                    ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
-                    active:scale-95 active:shadow-inner
-                    ${position}
-                  `}
-                  aria-label={`Play ${note}`}
-                />
-              )
-            })}
-          </div>
+            return (
+              <button
+                key={key.note}
+                disabled={!isLoaded}
+                onClick={() => playNote(key.note)}
+                className={`
+                  absolute w-7 h-20 bg-gray-900 hover:bg-gray-800 
+                  active:bg-gray-700 rounded-b-md shadow-lg 
+                  transition-colors cursor-pointer pointer-events-auto
+                  ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                style={{ left: `${position}px` }}
+                aria-label={`Play ${key.label} note`}
+              >
+                <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-white">
+                  {key.label}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
+        {/* Loading overlay */}
         {!isLoaded && (
-          <p className="text-xs text-morandi-stone-500 mt-2">
-            Loading piano sounds...
-          </p>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+            <div className="text-white font-medium animate-pulse">
+              Loading samples...
+            </div>
+          </div>
         )}
       </div>
     </div>

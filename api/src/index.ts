@@ -5,6 +5,7 @@ import { HTTPException } from 'hono/http-exception'
 import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
+import { apiCacheMiddleware } from './utils/cache'
 import type { RateLimit } from '@cloudflare/workers-types'
 
 // Define environment bindings
@@ -60,6 +61,9 @@ app.use('*', async (c, next) => {
   await next()
   c.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
 })
+
+// Apply caching middleware for GET requests
+app.use('*', apiCacheMiddleware)
 
 // Health check endpoints
 app.route('/', healthHandler)
