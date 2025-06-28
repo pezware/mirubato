@@ -24,16 +24,14 @@ test.describe('Logbook Features - Fixed', () => {
     await page.waitForLoadState('networkidle')
 
     // Look for add entry button - wait for it to be visible
-    await page.waitForSelector('button:has-text("Add New Entry")', {
+    // The UI now uses tabs instead of a modal dialog
+    await page.waitForSelector('button:has-text("New Entry")', {
       timeout: 10000,
     })
-    const addButton = page.locator('button:has-text("Add New Entry")').first()
-    await addButton.click()
+    const newEntryTab = page.locator('button:has-text("New Entry")').first()
+    await newEntryTab.click()
 
-    // Wait for form modal to appear
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      timeout: 10000,
-    })
+    // Form is embedded in the page, not in a modal
 
     // Wait for form to be ready
     await page.waitForSelector('form', { timeout: 5000 })
@@ -102,9 +100,9 @@ test.describe('Logbook Features - Fixed', () => {
     }
 
     // Wait for the entry to appear in the UI
-    // Look for text that indicates our entry (30 minutes)
-    const minuteText = page.locator('span').filter({ hasText: /30 minute/i })
-    await expect(minuteText).toBeVisible({ timeout: 10000 })
+    // Look for text that indicates our entry (30m)
+    const durationText = page.locator('text=30m').first()
+    await expect(durationText).toBeVisible({ timeout: 10000 })
 
     // Verify the notes are visible (they show in the collapsed view)
     await expect(
@@ -161,9 +159,7 @@ test.describe('Logbook Features - Fixed', () => {
     })
     await page.click('button:has-text("Add New Entry")')
 
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      timeout: 10000,
-    })
+    // Form is embedded in the page
     await page.waitForSelector('form', { timeout: 5000 })
 
     // Quick fill - handle autocomplete
@@ -179,23 +175,22 @@ test.describe('Logbook Features - Fixed', () => {
     await page.click('button:has-text("😊")')
     await page.click('button[type="submit"]')
 
-    // Wait for modal to close
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
+    // Wait for success message to appear and disappear
+    await page.waitForSelector('text=Entry saved successfully', {
+      timeout: 5000,
+    })
+    await page.waitForSelector('text=Entry saved successfully', {
       state: 'hidden',
-      timeout: 10000,
+      timeout: 5000,
     })
 
     await page.waitForTimeout(2000)
 
-    // Navigate to reports
-    const reportsButton = page
-      .locator('button')
-      .filter({ hasText: /View Reports|Reports/i })
-    await expect(reportsButton).toBeVisible({ timeout: 10000 })
-    await reportsButton.click()
-
-    // Wait for reports page to load
-    await page.waitForSelector('text=Practice Reports', { timeout: 10000 })
+    // The app automatically switches to the Overview tab after saving
+    // which shows the reports
+    await page.waitForSelector('button:has-text("Overview").bg-white', {
+      timeout: 10000,
+    })
 
     // Verify report content
     await expect(page.locator('text=Total Practice')).toBeVisible()

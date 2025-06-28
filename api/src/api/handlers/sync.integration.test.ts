@@ -1,26 +1,49 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { unstable_dev } from 'wrangler'
 import type { Unstable_DevWorker } from 'wrangler'
 
 describe('Sync API Integration Tests', () => {
   let worker: Unstable_DevWorker
   let authToken: string
+  let testUserId: string
 
   beforeAll(async () => {
-    // Start the worker in test mode
+    // Start the worker in test mode with a longer timeout
     worker = await unstable_dev('src/index.ts', {
       experimental: { disableExperimentalWarning: true },
       local: true,
       vars: {
         ENVIRONMENT: 'test',
+        JWT_SECRET: 'test-secret-for-integration-tests',
+        MAGIC_LINK_SECRET: 'test-magic-link-secret',
       },
     })
 
-    // First, create a test user and get auth token
-    // This would typically involve calling the auth endpoints
-    // For now, we'll assume we have a test token
-    authToken = 'Bearer test-integration-token'
-  })
+    // For integration tests, we'll use the test JWT creation endpoint if available
+    // Otherwise, we'll create a mock authenticated request
+
+    // Create a test token using the debug endpoint if available in test mode
+    const debugTokenResponse = await worker.fetch(
+      'http://localhost/api/debug/jwt-test',
+      {
+        method: 'GET',
+      }
+    )
+
+    if (debugTokenResponse.status === 200) {
+      const debugData = (await debugTokenResponse.json()) as {
+        testToken: string
+        testUserId: string
+      }
+      authToken = `Bearer ${debugData.testToken}`
+      testUserId = debugData.testUserId
+    } else {
+      // Fallback: Skip auth for these tests as they're testing sync logic, not auth
+      console.warn('Debug JWT endpoint not available, tests may fail')
+      authToken = 'Bearer test-token'
+      testUserId = 'test-user-123'
+    }
+  }, 30000) // 30 second timeout for worker startup
 
   afterAll(async () => {
     await worker.stop()
