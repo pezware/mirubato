@@ -52,16 +52,19 @@ All services run as Cloudflare Workers with the following domains:
 
 #### 1. Frontend Service
 
-- **Technology**: React 18, TypeScript, Vite, Tailwind CSS
+- **Technology**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
 - **Worker**: Serves static assets via Cloudflare Workers
+- **State Management**: Zustand stores for auth and logbook data
 - **Key Features**:
-  - Music notation rendering (VexFlow.js)
-  - Audio playback (Tone.js) with lazy loading
-  - Real-time practice feedback
-  - Offline-first with service workers
-  - Module-based architecture with EventBus
+  - Practice logging with manual entry and timer
+  - Enhanced reporting with calendar visualization
+  - Goal setting and tracking
+  - Offline-first with local storage sync
   - Optimized bundle with code splitting
   - Comprehensive caching headers for static assets
+  - Internationalization (i18n) with 6 languages
+
+**Note**: The documented module-based architecture with EventBus is not currently implemented. The actual implementation uses a simpler, more pragmatic approach with React components and Zustand stores.
 
 #### 2. API (REST)
 
@@ -221,57 +224,50 @@ cd scores && wrangler secret put JWT_SECRET --env staging
 - **Focus on content**: Sheet music is the primary visual element
 - **Responsive design**: Adapts to device and orientation
 
-## Frontend Module Architecture
+## Frontend Architecture
 
-### Module Overview
+### Current Implementation (Pragmatic MVP)
 
-```typescript
-interface ModuleInterface {
-  name: string
-  version: string
-  dependencies: string[]
+The frontend uses a straightforward React architecture without the complex module system described in the original design:
 
-  initialize(): Promise<void>
-  shutdown(): Promise<void>
-  getHealth(): Promise<ModuleHealth>
+#### State Management
 
-  // Event handling
-  on(event: string, handler: EventHandler): void
-  off(event: string, handler: EventHandler): void
-  emit(event: string, data: any): void
-}
+- **Zustand Stores**: Simple, lightweight state management
+  - `authStore`: User authentication and session
+  - `logbookStore`: Practice entries and local data
+  - Direct API calls via Axios clients
+
+#### Key Components
+
+- **Pages**: Home, Logbook, Auth (simple routing)
+- **LogbookEntryList**: Main entry management component
+- **EnhancedPracticeReports**: Advanced reporting with charts
+- **ManualEntryForm**: Practice entry creation
+- **InteractivePiano**: Simple piano widget (lazy loaded)
+
+#### Data Flow
+
+```
+React Components → Zustand Stores → API Clients → REST API
+                 ↓
+            Local Storage (offline sync)
 ```
 
-### Active Modules (MVP Focus)
+### Planned Module Architecture (Not Implemented)
 
-#### Core Infrastructure
+The original design envisioned a complex module system with EventBus for loose coupling. This architecture remains in the documentation for potential future implementation but was deferred in favor of shipping a working MVP.
 
-1. **EventBus**: Central event-driven communication system
-2. **StorageModule**: Local storage management with adapter pattern
-3. **SyncModule**: Data synchronization between local and cloud storage
-4. **PracticeLoggerModule**: Professional practice logbook management
-5. **LogbookReportingModule**: Comprehensive analytics for practice logs
-6. **VisualizationModule**: Data visualization using Chart.js
-
-### Module Communication Flow
-
-```mermaid
-graph TD
-    EventBus --> StorageServices
-    StorageServices --> StorageModule
-    StorageModule --> PracticeLoggerModule
-    PracticeLoggerModule --> LogbookReportingModule
-    LogbookReportingModule --> VisualizationModule
-    StorageModule --> SyncModule
-```
+**Recommendation**: The current simpler architecture is more appropriate for the MVP stage. The module system could be reconsidered when the application grows significantly in complexity.
 
 ## Key Technologies
 
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS, Axios
-- **Music**: VexFlow.js (notation), Tone.js (audio), MusicXML support
-- **Backend**: Cloudflare Workers, D1 (SQLite), R2 (object storage)
-- **Frameworks**: Hono (API, Scores)
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios, Chart.js
+- **Music Libraries**: VexFlow.js and Tone.js (present but minimally used)
+- **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
+- **API Framework**: Hono with Zod validation
 - **Auth**: JWT tokens, magic links, Google OAuth
+- **i18n**: react-i18next (6 languages: en, es, fr, de, ja, zh)
+- **Testing**: Vitest, Playwright
 
 ## Performance Considerations
 
@@ -424,20 +420,28 @@ The frontend implements aggressive code splitting:
 
 ## Architecture Phases
 
-### Phase 1: MVP - Logbook Focus (Current)
+### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.1.0)
 
-- Core functionality: Practice logging and reporting
-- Manual practice entry
-- Comprehensive reporting with multiple views
-- Data export (CSV, JSON)
-- Works for both anonymous and authenticated users
+- ✅ Core functionality: Practice logging and reporting
+- ✅ Manual practice entry with timer
+- ✅ Enhanced reporting with calendar visualization
+- ✅ Data export (CSV, JSON)
+- ✅ Works for both anonymous and authenticated users
+- ✅ Goal setting and tracking
+- ✅ Multi-instrument support (Piano & Guitar)
+- ✅ Internationalization (6 languages)
+- ✅ Autocomplete for composers and pieces
+- ✅ Production deployment at mirubato.com
 
 ### Phase 2: Practice Mode (Future)
 
-- Sheet music display and playback
+- Sheet music display and playback (VexFlow.js ready)
 - Real-time performance tracking
+- Audio recording and playback (Tone.js ready)
 - Progress analytics
-- Modules preserved in codebase for future activation
+- Integration with scores service
+
+**Note**: While the module system is not implemented, the music libraries (VexFlow.js, Tone.js) are included and ready for future use.
 
 ### Phase 3: Advanced Features (Future)
 
@@ -446,12 +450,36 @@ The frontend implements aggressive code splitting:
 - AI coaching
 - Social features
 
+## Architecture Decision Analysis
+
+### Planned vs Implemented
+
+| Aspect             | Planned Architecture                | Current Implementation        | Recommendation                                                      |
+| ------------------ | ----------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| **Frontend State** | Complex module system with EventBus | Simple Zustand stores         | ✅ Current approach is better for MVP - simpler, easier to maintain |
+| **Music Features** | Full VexFlow/Tone.js integration    | Libraries included but unused | ⏳ Good to have libraries ready for Phase 2                         |
+| **API Design**     | Started with GraphQL                | Migrated to REST              | ✅ REST is simpler and sufficient for current needs                 |
+| **Authentication** | JWT + Magic Links                   | Fully implemented as planned  | ✅ Working well                                                     |
+| **Database**       | D1 with sync capabilities           | Fully implemented with fixes  | ✅ Good choice for edge deployment                                  |
+| **i18n**           | Not in original design              | Added with 6 languages        | ✅ Great addition for global reach                                  |
+
+### Key Insights
+
+1. **Pragmatism Wins**: The team chose to ship a working MVP rather than build the complex module system. This was the right decision.
+
+2. **Technical Debt**: The module system documentation should be moved to a "future architecture" section to avoid confusion.
+
+3. **Music Features**: Having VexFlow.js and Tone.js ready positions the app well for Phase 2, but they add bundle size without current value.
+
+4. **REST over GraphQL**: The migration from GraphQL to REST simplified the architecture significantly without losing functionality.
+
 ## Future Considerations
 
 1. **Mobile Apps**: React Native using same REST API
 2. **Advanced Features**: AI-powered difficulty adjustment
 3. **Scaling**: Multi-region database replication
 4. **Performance**: Edge caching optimization
+5. **Module System**: Reconsider when app complexity justifies it
 
 ---
 
