@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { logbookApi, type LogbookEntry, type Goal } from '../api/logbook'
 import { nanoid } from 'nanoid'
-import { sanitizeForD1 } from '../utils/sanitizeForD1'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -109,12 +108,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     try {
       // Always load from localStorage first
       const stored = localStorage.getItem(ENTRIES_KEY)
-      const rawEntries: LogbookEntry[] = stored ? JSON.parse(stored) : []
-
-      // Sanitize entries to ensure no undefined values
-      const entries = rawEntries.map(
-        entry => sanitizeForD1(entry) as LogbookEntry
-      )
+      const entries: LogbookEntry[] = stored ? JSON.parse(stored) : []
 
       // Convert array to Map for O(1) access
       const entriesMap = new Map(entries.map(entry => [entry.id, entry]))
@@ -141,13 +135,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               ),
             })
 
-            // Debounced write to localStorage (sanitize before saving)
-            const sanitizedEntries = serverEntries.map(entry =>
-              sanitizeForD1(entry)
-            )
+            // Debounced write to localStorage
             debouncedLocalStorageWrite(
               ENTRIES_KEY,
-              JSON.stringify(sanitizedEntries)
+              JSON.stringify(serverEntries)
             )
           })
           .catch(err => {
