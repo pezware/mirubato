@@ -1,11 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { unstable_dev } from 'wrangler'
 import type { Unstable_DevWorker } from 'wrangler'
 
 describe('Sync API Integration Tests', () => {
   let worker: Unstable_DevWorker
   let authToken: string
-  let testUserId: string
 
   beforeAll(async () => {
     // Start the worker in test mode with a longer timeout
@@ -36,12 +35,10 @@ describe('Sync API Integration Tests', () => {
         testUserId: string
       }
       authToken = `Bearer ${debugData.testToken}`
-      testUserId = debugData.testUserId
     } else {
       // Fallback: Skip auth for these tests as they're testing sync logic, not auth
       console.warn('Debug JWT endpoint not available, tests may fail')
       authToken = 'Bearer test-token'
-      testUserId = 'test-user-123'
     }
   }, 30000) // 30 second timeout for worker startup
 
