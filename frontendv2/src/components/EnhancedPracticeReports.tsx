@@ -401,7 +401,7 @@ export default function EnhancedPracticeReports() {
                 className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                   timePeriod === 'all'
                     ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                 }`}
               >
                 {t('reports:filters.allTime')}
@@ -411,7 +411,7 @@ export default function EnhancedPracticeReports() {
                 className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                   timePeriod === 'month'
                     ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                 }`}
               >
                 {t('reports:filters.thisMonth')}
@@ -421,7 +421,7 @@ export default function EnhancedPracticeReports() {
                 className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                   timePeriod === 'week'
                     ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                 }`}
               >
                 {t('reports:filters.last7Days')}
@@ -504,7 +504,7 @@ export default function EnhancedPracticeReports() {
                                               : intensity > 0.2
                                                 ? 'bg-morandi-sage-300 text-morandi-stone-900 hover:bg-morandi-sage-400'
                                                 : 'bg-morandi-sage-200 text-morandi-stone-900 hover:bg-morandi-sage-300'
-                                        : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                                     } ${
                                       isSelected
                                         ? 'ring-2 ring-morandi-sage-700 ring-offset-1'
@@ -613,7 +613,7 @@ export default function EnhancedPracticeReports() {
                                           : intensity > 0.2
                                             ? 'bg-morandi-sage-300 text-morandi-stone-900 hover:bg-morandi-sage-400'
                                             : 'bg-morandi-sage-200 text-morandi-stone-900 hover:bg-morandi-sage-300'
-                                    : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                               } ${
                                 isSelected
                                   ? 'ring-2 ring-morandi-sage-700 ring-offset-1'
@@ -762,7 +762,7 @@ export default function EnhancedPracticeReports() {
                       className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                         sortBy === 'mostRecent'
                           ? 'bg-morandi-sage-500 text-white'
-                          : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                       }`}
                     >
                       {t('reports:sort.mostRecent')}
@@ -772,7 +772,7 @@ export default function EnhancedPracticeReports() {
                       className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                         sortBy === 'mostPracticed'
                           ? 'bg-morandi-sage-500 text-white'
-                          : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                       }`}
                     >
                       {t('reports:sort.mostPracticed')}
@@ -782,7 +782,7 @@ export default function EnhancedPracticeReports() {
                       className={`px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${
                         sortBy === 'longestSessions'
                           ? 'bg-morandi-sage-500 text-white'
-                          : 'bg-morandi-stone-300 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                       }`}
                     >
                       {t('reports:sort.longestSessions')}
