@@ -132,7 +132,6 @@ export default function EnhancedPracticeReports() {
     selectedDate,
     selectedPiece,
     selectedComposer,
-    reportView,
     sortBy,
     timePeriod,
   ])
