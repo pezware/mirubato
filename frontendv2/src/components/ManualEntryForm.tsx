@@ -86,7 +86,12 @@ export default function ManualEntryForm({
         duration,
         type,
         instrument,
-        pieces: pieces.filter(p => p.title),
+        pieces: pieces
+          .filter(p => p.title)
+          .map(p => ({
+            title: p.title,
+            composer: p.composer || null,
+          })),
         techniques,
         goalIds: [],
         notes: notes || null, // Convert empty string to null for D1 compatibility
