@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import { type LogbookEntry, type Goal } from './logbook'
+import { sanitizeForD1 } from '../utils/sanitizeForD1'
 
 export interface SyncData {
   entries: LogbookEntry[]
@@ -54,7 +55,21 @@ export const syncApi = {
 
   // Push local changes to cloud
   push: async (changes: SyncChanges): Promise<SyncResult> => {
-    const response = await apiClient.post<SyncResult>('/api/sync/push', changes)
+    // Sanitize all entries and goals before sending to prevent D1 errors
+    const sanitizedChanges = {
+      changes: {
+        entries: changes.changes.entries.map(
+          entry => sanitizeForD1(entry) as LogbookEntry
+        ),
+        goals: changes.changes.goals.map(goal => sanitizeForD1(goal) as Goal),
+      },
+      lastSyncToken: changes.lastSyncToken,
+    }
+
+    const response = await apiClient.post<SyncResult>(
+      '/api/sync/push',
+      sanitizedChanges
+    )
     return response.data
   },
 
@@ -69,8 +84,14 @@ export const syncApi = {
     }>,
     syncToken?: string
   ): Promise<BatchSyncResult> => {
+    // Sanitize entity data before sending
+    const sanitizedEntities = entities.map(entity => ({
+      ...entity,
+      data: sanitizeForD1(entity.data) as LogbookEntry | Goal,
+    }))
+
     const response = await apiClient.post<BatchSyncResult>('/api/sync/batch', {
-      entities,
+      entities: sanitizedEntities,
       syncToken,
     })
     return response.data
