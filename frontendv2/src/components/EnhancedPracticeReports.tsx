@@ -497,15 +497,15 @@ export default function EnhancedPracticeReports() {
                                     className={`aspect-square rounded transition-all text-sm relative flex flex-col items-center justify-center ${
                                       practiceMinutes > 0
                                         ? intensity > 0.8
-                                          ? 'bg-morandi-sage-600 text-white'
+                                          ? 'bg-morandi-sage-600 text-white hover:bg-morandi-sage-700'
                                           : intensity > 0.6
-                                            ? 'bg-morandi-sage-500 text-white'
+                                            ? 'bg-morandi-sage-500 text-white hover:bg-morandi-sage-600'
                                             : intensity > 0.4
-                                              ? 'bg-morandi-sage-400 text-morandi-stone-900'
+                                              ? 'bg-morandi-sage-400 text-morandi-stone-900 hover:bg-morandi-sage-500'
                                               : intensity > 0.2
-                                                ? 'bg-morandi-sage-300 text-morandi-stone-900'
-                                                : 'bg-morandi-sage-200 text-morandi-stone-900'
-                                        : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                                ? 'bg-morandi-sage-300 text-morandi-stone-900 hover:bg-morandi-sage-400'
+                                                : 'bg-morandi-sage-200 text-morandi-stone-900 hover:bg-morandi-sage-300'
+                                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                                     } ${
                                       isSelected
                                         ? 'ring-2 ring-morandi-sage-700 ring-offset-1'
@@ -517,12 +517,12 @@ export default function EnhancedPracticeReports() {
                                     }`}
                                     title={`${date.toLocaleDateString()}: ${practiceMinutes > 0 ? formatDuration(practiceMinutes) : t('reports:noPractice')}`}
                                   >
-                                    <span className="text-lg">
+                                    <span className="text-base font-semibold leading-tight">
                                       {date.getDate()}
                                     </span>
                                     {practiceMinutes > 0 && (
-                                      <span className="text-xs opacity-75">
-                                        {practiceMinutes}
+                                      <span className="text-[10px] opacity-90 font-medium">
+                                        {practiceMinutes}m
                                       </span>
                                     )}
                                   </button>
@@ -539,7 +539,7 @@ export default function EnhancedPracticeReports() {
                       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(
                         (dayLetter, i) => (
                           <div
-                            key={i}
+                            key={`day-header-${i}`}
                             className="text-center text-xs text-morandi-stone-500 font-medium py-1"
                           >
                             {dayLetter}
@@ -592,7 +592,7 @@ export default function EnhancedPracticeReports() {
 
                           return (
                             <button
-                              key={i}
+                              key={`calendar-day-${i}-${dayNumber}`}
                               onClick={() => {
                                 if (!isFuture && isSelected) {
                                   setSelectedDate(null)
@@ -606,15 +606,15 @@ export default function EnhancedPracticeReports() {
                                   ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
                                   : practiceMinutes > 0
                                     ? intensity > 0.8
-                                      ? 'bg-morandi-sage-600 text-white'
+                                      ? 'bg-morandi-sage-600 text-white hover:bg-morandi-sage-700'
                                       : intensity > 0.6
-                                        ? 'bg-morandi-sage-500 text-white'
+                                        ? 'bg-morandi-sage-500 text-white hover:bg-morandi-sage-600'
                                         : intensity > 0.4
-                                          ? 'bg-morandi-sage-400 text-morandi-stone-900'
+                                          ? 'bg-morandi-sage-400 text-morandi-stone-900 hover:bg-morandi-sage-500'
                                           : intensity > 0.2
-                                            ? 'bg-morandi-sage-300 text-morandi-stone-900'
-                                            : 'bg-morandi-sage-200 text-morandi-stone-900'
-                                    : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                            ? 'bg-morandi-sage-300 text-morandi-stone-900 hover:bg-morandi-sage-400'
+                                            : 'bg-morandi-sage-200 text-morandi-stone-900 hover:bg-morandi-sage-300'
+                                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                               } ${
                                 isSelected
                                   ? 'ring-2 ring-morandi-sage-700 ring-offset-1'
@@ -630,10 +630,12 @@ export default function EnhancedPracticeReports() {
                                   : ''
                               }
                             >
-                              <span>{dayNumber}</span>
+                              <span className="text-base font-semibold leading-tight">
+                                {dayNumber}
+                              </span>
                               {practiceMinutes > 0 && !isFuture && (
-                                <span className="text-[10px] opacity-75">
-                                  {practiceMinutes}
+                                <span className="text-[10px] opacity-90 font-medium">
+                                  {practiceMinutes}m
                                 </span>
                               )}
                             </button>

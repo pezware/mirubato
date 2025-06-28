@@ -129,47 +129,75 @@ export class DatabaseHelpers {
     checksum: string
     version?: number
   }) {
-    const id = generateId('sync')
     const jsonData = JSON.stringify(data.data)
     // Check if this is a soft delete
     const deletedAt = (data.data as Record<string, unknown>).deletedAt || null
 
     try {
-      await this.db
+      // First check if record exists
+      const existing = await this.db
         .prepare(
+          'SELECT id, version FROM sync_data WHERE user_id = ? AND entity_type = ? AND entity_id = ?'
+        )
+        .bind(data.userId, data.entityType, data.entityId)
+        .first<{ id: string; version: number }>()
+
+      if (existing) {
+        // Update existing record
+        await this.db
+          .prepare(
+            `
+            UPDATE sync_data 
+            SET data = ?, 
+                checksum = ?, 
+                version = version + 1,
+                updated_at = CURRENT_TIMESTAMP,
+                deleted_at = ?
+            WHERE user_id = ? AND entity_type = ? AND entity_id = ?
           `
-          INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(user_id, entity_type, entity_id)
-          DO UPDATE SET 
-            data = excluded.data,
-            checksum = excluded.checksum,
-            version = sync_data.version + 1,
-            updated_at = CURRENT_TIMESTAMP,
-            deleted_at = excluded.deleted_at
-        `
-        )
-        .bind(
-          id,
-          data.userId,
-          data.entityType,
-          data.entityId,
-          jsonData,
-          data.checksum,
-          data.version || 1,
-          deletedAt
-        )
-        .run()
+          )
+          .bind(
+            jsonData,
+            data.checksum,
+            deletedAt,
+            data.userId,
+            data.entityType,
+            data.entityId
+          )
+          .run()
+      } else {
+        // Insert new record
+        const id = generateId('sync')
+        await this.db
+          .prepare(
+            `
+            INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `
+          )
+          .bind(
+            id,
+            data.userId,
+            data.entityType,
+            data.entityId,
+            jsonData,
+            data.checksum,
+            data.version || 1,
+            deletedAt
+          )
+          .run()
+      }
     } catch (error) {
       console.error('[Database] upsertSyncData error:', error)
       console.error('[Database] Query params:', {
-        id,
         userId: data.userId,
         entityType: data.entityType,
         entityId: data.entityId,
         dataLength: jsonData.length,
         checksum: data.checksum,
         version: data.version || 1,
+        deletedAt,
+        dataKeys: Object.keys(data.data as any),
       })
       throw error
     }

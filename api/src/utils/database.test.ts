@@ -149,13 +149,20 @@ describe('DatabaseHelpers', () => {
     it('should insert new sync data', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
-      mockDb.prepare = vi.fn(
-        () =>
-          ({
+      const mockFirst = vi.fn().mockResolvedValue(null) // No existing record
+
+      mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('SELECT')) {
+          return {
             bind: mockBind,
-            run: mockRun,
-          }) as unknown as D1PreparedStatement
-      )
+            first: mockFirst,
+          } as unknown as D1PreparedStatement
+        }
+        return {
+          bind: mockBind,
+          run: mockRun,
+        } as unknown as D1PreparedStatement
+      })
 
       const testData = {
         userId: 'user-123',
@@ -168,6 +175,10 @@ describe('DatabaseHelpers', () => {
 
       await dbHelpers.upsertSyncData(testData)
 
+      // Check SELECT was called first
+      expect(mockFirst).toHaveBeenCalled()
+
+      // Check INSERT was called with proper params
       expect(mockBind).toHaveBeenCalledWith(
         expect.stringMatching(/^sync_/), // Generated ID
         'user-123',
@@ -183,13 +194,23 @@ describe('DatabaseHelpers', () => {
 
     it('should handle upsert conflicts', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
-      mockDb.prepare = vi.fn(
-        () =>
-          ({
-            bind: vi.fn().mockReturnThis(),
-            run: mockRun,
-          }) as unknown as D1PreparedStatement
-      )
+      const mockBind = vi.fn().mockReturnThis()
+      const mockFirst = vi
+        .fn()
+        .mockResolvedValue({ id: 'existing-id', version: 1 }) // Existing record
+
+      mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('SELECT')) {
+          return {
+            bind: mockBind,
+            first: mockFirst,
+          } as unknown as D1PreparedStatement
+        }
+        return {
+          bind: mockBind,
+          run: mockRun,
+        } as unknown as D1PreparedStatement
+      })
 
       await dbHelpers.upsertSyncData({
         userId: 'user-123',
@@ -199,8 +220,10 @@ describe('DatabaseHelpers', () => {
         checksum: 'new-checksum',
       })
 
+      // Should call SELECT first, then UPDATE
+      expect(mockFirst).toHaveBeenCalled()
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('ON CONFLICT(user_id, entity_type, entity_id)')
+        expect.stringContaining('UPDATE sync_data')
       )
     })
 
@@ -210,13 +233,18 @@ describe('DatabaseHelpers', () => {
         .mockImplementation(() => {})
       const dbError = new Error('Database connection failed')
 
-      mockDb.prepare = vi.fn(
-        () =>
-          ({
+      mockDb.prepare = vi.fn((sql: string) => {
+        if (sql.includes('SELECT')) {
+          return {
             bind: vi.fn().mockReturnThis(),
-            run: vi.fn().mockRejectedValue(dbError),
-          }) as unknown as D1PreparedStatement
-      )
+            first: vi.fn().mockRejectedValue(dbError),
+          } as unknown as D1PreparedStatement
+        }
+        return {
+          bind: vi.fn().mockReturnThis(),
+          run: vi.fn().mockRejectedValue(dbError),
+        } as unknown as D1PreparedStatement
+      })
 
       await expect(
         dbHelpers.upsertSyncData({
