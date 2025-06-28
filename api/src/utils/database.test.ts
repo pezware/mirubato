@@ -283,6 +283,25 @@ describe('DatabaseHelpers', () => {
       expect(mockRun).toHaveBeenCalled()
     })
 
+    it('should default deviceCount to 1 when undefined', async () => {
+      const mockRun = vi.fn().mockResolvedValue({ success: true })
+      const mockBind = vi.fn().mockReturnThis()
+      mockDb.prepare = vi.fn(
+        () =>
+          ({
+            bind: mockBind,
+            run: mockRun,
+          }) as unknown as D1PreparedStatement
+      )
+
+      // Call without deviceCount parameter
+      await dbHelpers.updateSyncMetadata('user-123', 'sync-token-abc')
+
+      // Should use 1 as default value
+      expect(mockBind).toHaveBeenCalledWith('user-123', 'sync-token-abc', 1, 1)
+      expect(mockRun).toHaveBeenCalled()
+    })
+
     it('should handle errors with logging', async () => {
       const consoleErrorSpy = vi
         .spyOn(console, 'error')

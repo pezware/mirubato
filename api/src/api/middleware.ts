@@ -2,6 +2,7 @@ import { MiddlewareHandler } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { getCookie } from 'hono/cookie'
 import { verifyToken } from '../utils/auth'
+import { sanitizeForD1 } from '../utils/database'
 import type { Env } from '../index'
 
 // Define the variables that will be set by middleware
@@ -72,6 +73,7 @@ export const rateLimitMiddleware: MiddlewareHandler<{
 /**
  * Validation middleware factory
  * Creates middleware that validates request body against a schema
+ * Also sanitizes the data to ensure D1 compatibility
  */
 export function validateBody<T>(schema: {
   parse: (data: unknown) => T
@@ -83,7 +85,9 @@ export function validateBody<T>(schema: {
     try {
       const body = await c.req.json()
       const validated = schema.parse(body)
-      c.set('validatedBody', validated)
+      // Sanitize the validated data to ensure D1 compatibility
+      const sanitized = sanitizeForD1(validated)
+      c.set('validatedBody', sanitized)
       await next()
     } catch (error) {
       throw new HTTPException(400, {
