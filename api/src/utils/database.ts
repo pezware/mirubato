@@ -225,6 +225,9 @@ export class DatabaseHelpers {
     deviceCount?: number
   ) {
     try {
+      // Ensure deviceCount is never undefined for D1 compatibility
+      const count = deviceCount ?? 1
+
       await this.db
         .prepare(
           `
@@ -237,7 +240,7 @@ export class DatabaseHelpers {
             device_count = COALESCE(?, device_count)
         `
         )
-        .bind(userId, syncToken, deviceCount || 1, deviceCount)
+        .bind(userId, syncToken, count, count)
         .run()
     } catch (error) {
       console.error('[Database] updateSyncMetadata error:', error)
