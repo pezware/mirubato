@@ -568,7 +568,12 @@ export default function EnhancedPracticeReports() {
                             dayNumber > 0 && dayNumber <= daysInMonth
 
                           if (!isValidDay) {
-                            return <div key={i} className="aspect-square" />
+                            return (
+                              <div
+                                key={i}
+                                className="aspect-square bg-morandi-stone-100"
+                              />
+                            )
                           }
 
                           const date = new Date(
@@ -602,7 +607,7 @@ export default function EnhancedPracticeReports() {
                               disabled={isFuture}
                               className={`aspect-square rounded transition-all text-xs relative flex flex-col items-center justify-center ${
                                 isFuture
-                                  ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                  ? 'bg-morandi-stone-100 text-morandi-stone-400 cursor-not-allowed'
                                   : practiceMinutes > 0
                                     ? intensity > 0.8
                                       ? 'bg-morandi-sage-600 text-white hover:bg-morandi-sage-700'
