@@ -87,16 +87,16 @@ export default function ManualEntryForm({
         type,
         instrument,
         pieces: pieces
-          .filter(p => p.title)
+          .filter(p => p.title) // Only include pieces with titles
           .map(p => ({
             title: p.title,
-            composer: p.composer || null,
+            composer: p.composer ? p.composer : null, // Convert empty string to null
           })),
-        techniques,
+        techniques: techniques.length > 0 ? techniques : [],
         goalIds: [],
-        notes: notes || null, // Convert empty string to null for D1 compatibility
-        mood: mood || null, // Convert null/empty to null for D1 compatibility
-        tags,
+        notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
+        mood: mood || null, // Convert undefined to null for D1 compatibility
+        tags: tags.length > 0 ? tags : [],
         metadata: {
           source: 'manual',
         },
