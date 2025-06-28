@@ -79,6 +79,9 @@ export const logbookApi = {
       id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // Ensure fields are properly typed for D1
+      notes: entry.notes || null,
+      mood: entry.mood || null,
     }
 
     const response = await apiClient.post<{ success: boolean }>(
@@ -116,17 +119,35 @@ export const logbookApi = {
       updatedAt: new Date().toISOString(),
     }
 
+    // Ensure all fields are properly sanitized for D1
+    const sanitizedEntry = {
+      ...updatedEntry,
+      notes: updatedEntry.notes || null,
+      mood: updatedEntry.mood || null,
+      pieces:
+        updatedEntry.pieces?.map(p => ({
+          ...p,
+          composer: p.composer || null,
+          measures: p.measures || null,
+          tempo: p.tempo || null,
+        })) || [],
+      techniques: updatedEntry.techniques || [],
+      goalIds: updatedEntry.goalIds || [],
+      tags: updatedEntry.tags || [],
+      metadata: updatedEntry.metadata || { source: 'manual' },
+    }
+
     const response = await apiClient.post<{ success: boolean }>(
       '/api/sync/push',
       {
         changes: {
-          entries: [updatedEntry],
+          entries: [sanitizedEntry],
         },
       }
     )
 
     if (response.data.success) {
-      return updatedEntry
+      return sanitizedEntry
     }
     throw new Error('Failed to update entry')
   },
