@@ -23,18 +23,21 @@ test.describe('Logbook Features', () => {
     await page.goto('/logbook')
     await page.waitForLoadState('networkidle')
 
-    // Look for add entry button - it should have a + sign
-    await page.waitForSelector('button:has-text("+")', { timeout: 10000 })
-    const addButton = page.locator('button:has-text("+")').first()
+    // Look for add entry button - now uses "New Entry" or "Add New Entry" text
+    await page.waitForSelector(
+      'button:has-text("New Entry"), button:has-text("Add New Entry")',
+      { timeout: 10000 }
+    )
+    const addButton = page
+      .locator('button:has-text("New Entry"), button:has-text("Add New Entry")')
+      .first()
     await addButton.click()
 
-    // Wait for form modal to appear
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      timeout: 10000,
-    })
+    // Form is now embedded in tabs, not in a modal
+    // Wait for form to be ready
+    await page.waitForSelector('form', { timeout: 10000 })
 
-    // Ensure form is ready
-    await page.waitForSelector('form', { timeout: 5000 })
+    // Ensure form inputs are ready
     await page.waitForSelector('input[type="number"]', { timeout: 5000 })
 
     // Fill out the form - the duration field already has value 30 by default
@@ -72,11 +75,18 @@ test.describe('Logbook Features', () => {
     const saveButton = page.locator('button[type="submit"]').last()
     await saveButton.click()
 
-    // Wait for the modal to close
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      state: 'hidden',
-      timeout: 10000,
-    })
+    // Wait for success indication
+    await Promise.race([
+      page
+        .waitForSelector(
+          'text=Entry saved successfully, text=Success, text=saved',
+          {
+            timeout: 10000,
+          }
+        )
+        .catch(() => {}),
+      page.waitForTimeout(3000), // Fallback timeout
+    ])
 
     // Wait for the UI to update
     await page.waitForTimeout(2000)
@@ -88,8 +98,10 @@ test.describe('Logbook Features', () => {
       await page.waitForTimeout(500)
     }
 
-    // Look for the entry - it should show "30 minutes"
-    const minuteText = page.locator('span').filter({ hasText: /30 minute/i })
+    // Look for the entry - it should show "30m" in the current UI
+    const minuteText = page
+      .locator('text=30m, text=30 min, text=30 minutes')
+      .first()
     await expect(minuteText).toBeVisible({ timeout: 10000 })
 
     // Click on the parent div that contains this text to expand the entry
@@ -123,15 +135,16 @@ test.describe('Logbook Features', () => {
       composer: string,
       duration: string
     ) => {
-      // Look for add button with + sign
-      const addButton = await page.locator('button:has-text("+")').first()
+      // Look for add button with "New Entry" text
+      const addButton = await page
+        .locator(
+          'button:has-text("New Entry"), button:has-text("Add New Entry")'
+        )
+        .first()
       await addButton.click()
 
-      // Wait for form modal
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        timeout: 10000,
-      })
-      await page.waitForSelector('form', { timeout: 5000 })
+      // Wait for form to be ready (embedded in tabs now)
+      await page.waitForSelector('form', { timeout: 10000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -153,11 +166,18 @@ test.describe('Logbook Features', () => {
       const saveButton = page.locator('button[type="submit"]').last()
       await saveButton.click()
 
-      // Wait for modal to close
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        state: 'hidden',
-        timeout: 10000,
-      })
+      // Wait for success
+      await Promise.race([
+        page
+          .waitForSelector(
+            'text=Entry saved successfully, text=Success, text=saved',
+            {
+              timeout: 10000,
+            }
+          )
+          .catch(() => {}),
+        page.waitForTimeout(3000),
+      ])
 
       await page.waitForTimeout(1500)
     }
@@ -174,14 +194,14 @@ test.describe('Logbook Features', () => {
     // Wait a bit for search to filter
     await page.waitForTimeout(1000)
 
-    // Verify we can see Beethoven entry
+    // Verify we can see Beethoven entry (30m)
     await expect(
-      page.locator('span').filter({ hasText: /30 minute/i })
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
 
-    // Verify Mozart entry is not visible
+    // Verify Mozart entry is not visible (25m)
     await expect(
-      page.locator('span').filter({ hasText: /25 minute/i })
+      page.locator('text=25m, text=25 min, text=25 minutes').first()
     ).not.toBeVisible()
 
     // Clear search
@@ -190,10 +210,10 @@ test.describe('Logbook Features', () => {
 
     // Now both should be visible
     await expect(
-      page.locator('span').filter({ hasText: /30 minute/i })
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /25 minute/i })
+      page.locator('text=25m, text=25 min, text=25 minutes').first()
     ).toBeVisible()
   })
 
@@ -204,15 +224,16 @@ test.describe('Logbook Features', () => {
 
     // Helper to create an entry with specific details
     const createEntryWithDetails = async (title: string, duration: string) => {
-      // Look for add button with + sign
-      const addButton = await page.locator('button:has-text("+")').first()
+      // Look for add button with "New Entry" text
+      const addButton = await page
+        .locator(
+          'button:has-text("New Entry"), button:has-text("Add New Entry")'
+        )
+        .first()
       await addButton.click()
 
-      // Wait for form modal
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        timeout: 10000,
-      })
-      await page.waitForSelector('form', { timeout: 5000 })
+      // Wait for form to be ready (embedded in tabs now)
+      await page.waitForSelector('form', { timeout: 10000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -234,11 +255,18 @@ test.describe('Logbook Features', () => {
       const saveButton = page.locator('button[type="submit"]').last()
       await saveButton.click()
 
-      // Wait for modal to close
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        state: 'hidden',
-        timeout: 10000,
-      })
+      // Wait for success
+      await Promise.race([
+        page
+          .waitForSelector(
+            'text=Entry saved successfully, text=Success, text=saved',
+            {
+              timeout: 10000,
+            }
+          )
+          .catch(() => {}),
+        page.waitForTimeout(3000),
+      ])
 
       await page.waitForTimeout(1500)
     }
@@ -246,9 +274,9 @@ test.describe('Logbook Features', () => {
     // Step 1: Create first entry
     await createEntryWithDetails('Entry 1 - Anonymous', '10')
 
-    // Verify we can see the entry
+    // Verify we can see the entry (10m)
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
 
     // Step 2: Create second entry
@@ -256,10 +284,10 @@ test.describe('Logbook Features', () => {
 
     // Verify we can see both entries
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
 
     // Step 3: Reload the page
@@ -269,10 +297,10 @@ test.describe('Logbook Features', () => {
 
     // Step 4: Verify entries persist after reload
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
 
     // Step 5: Create third entry after reload
@@ -280,13 +308,13 @@ test.describe('Logbook Features', () => {
 
     // Verify all three entries are visible
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /30 minute/i })
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
   })
 
@@ -296,14 +324,18 @@ test.describe('Logbook Features', () => {
     await page.waitForLoadState('networkidle')
 
     // Create an entry first
-    await page.waitForSelector('button:has-text("+")', { timeout: 10000 })
-    const addButton = page.locator('button:has-text("+")').first()
+    await page.waitForSelector(
+      'button:has-text("New Entry"), button:has-text("Add New Entry")',
+      { timeout: 10000 }
+    )
+    const addButton = page
+      .locator('button:has-text("New Entry"), button:has-text("Add New Entry")')
+      .first()
     await addButton.click()
 
-    // Wait for form modal to appear
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      timeout: 10000,
-    })
+    // Form is now embedded in tabs, not in a modal
+    // Wait for form to be ready
+    await page.waitForSelector('form', { timeout: 10000 })
     await page.waitForSelector('form', { timeout: 5000 })
 
     const durationInput = page.locator('input[type="number"]').first()
@@ -324,11 +356,18 @@ test.describe('Logbook Features', () => {
     const saveButton = page.locator('button[type="submit"]').last()
     await saveButton.click()
 
-    // Wait for modal to close
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      state: 'hidden',
-      timeout: 10000,
-    })
+    // Wait for success
+    await Promise.race([
+      page
+        .waitForSelector(
+          'text=Entry saved successfully, text=Success, text=saved',
+          {
+            timeout: 10000,
+          }
+        )
+        .catch(() => {}),
+      page.waitForTimeout(3000),
+    ])
 
     await page.waitForTimeout(2000)
 

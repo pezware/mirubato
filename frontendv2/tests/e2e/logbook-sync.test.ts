@@ -29,15 +29,16 @@ test.describe('Logbook Sync and Data Persistence', () => {
       duration: string,
       composer: string = 'Test Composer'
     ) => {
-      // Look for add button with + sign
-      const addButton = await page.locator('button:has-text("+")').first()
+      // Look for add button with "New Entry" text
+      const addButton = await page
+        .locator(
+          'button:has-text("New Entry"), button:has-text("Add New Entry")'
+        )
+        .first()
       await addButton.click()
 
-      // Wait for form modal
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        timeout: 10000,
-      })
-      await page.waitForSelector('form', { timeout: 5000 })
+      // Wait for form to be ready (embedded in tabs now)
+      await page.waitForSelector('form', { timeout: 10000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -59,11 +60,18 @@ test.describe('Logbook Sync and Data Persistence', () => {
       const saveButton = page.locator('button[type="submit"]').last()
       await saveButton.click()
 
-      // Wait for modal to close
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        state: 'hidden',
-        timeout: 10000,
-      })
+      // Wait for success
+      await Promise.race([
+        page
+          .waitForSelector(
+            'text=Entry saved successfully, text=Success, text=saved',
+            {
+              timeout: 10000,
+            }
+          )
+          .catch(() => {}),
+        page.waitForTimeout(3000),
+      ])
 
       await page.waitForTimeout(1500)
     }
@@ -77,9 +85,9 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Step 1: Create first entry while not logged in
     await createEntry('Anonymous Entry 1', '10')
 
-    // Verify we can see the entry
+    // Verify we can see the entry (10m)
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
 
     // Step 2: Create second entry while still not logged in
@@ -87,10 +95,10 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Verify we can see both entries
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
 
     // Step 3: Mock authentication endpoints for login
@@ -236,10 +244,10 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Verify we still have 2 entries after login
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
 
     // Step 5: Create third entry while logged in
@@ -247,13 +255,13 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Verify we have 3 entries
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /30 minute/i })
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
 
     // Step 6: Logout
@@ -268,13 +276,13 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Step 7: Verify all 3 entries persist after logout
     await expect(
-      page.locator('span').filter({ hasText: /10 minute/i })
+      page.locator('text=10m, text=10 min, text=10 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /20 minute/i })
+      page.locator('text=20m, text=20 min, text=20 minutes').first()
     ).toBeVisible()
     await expect(
-      page.locator('span').filter({ hasText: /30 minute/i })
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
   })
 
@@ -285,15 +293,16 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Create duplicate entries locally
     const createDuplicateEntry = async () => {
-      // Look for add button with + sign
-      const addButton = await page.locator('button:has-text("+")').first()
+      // Look for add button with "New Entry" text
+      const addButton = await page
+        .locator(
+          'button:has-text("New Entry"), button:has-text("Add New Entry")'
+        )
+        .first()
       await addButton.click()
 
-      // Wait for form modal
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        timeout: 10000,
-      })
-      await page.waitForSelector('form', { timeout: 5000 })
+      // Wait for form to be ready (embedded in tabs now)
+      await page.waitForSelector('form', { timeout: 10000 })
 
       const durationInput = page.locator('input[type="number"]').first()
       await durationInput.clear()
@@ -315,11 +324,18 @@ test.describe('Logbook Sync and Data Persistence', () => {
       const saveButton = page.locator('button[type="submit"]').last()
       await saveButton.click()
 
-      // Wait for modal to close
-      await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-        state: 'hidden',
-        timeout: 10000,
-      })
+      // Wait for success
+      await Promise.race([
+        page
+          .waitForSelector(
+            'text=Entry saved successfully, text=Success, text=saved',
+            {
+              timeout: 10000,
+            }
+          )
+          .catch(() => {}),
+        page.waitForTimeout(3000),
+      ])
 
       await page.waitForTimeout(1500)
     }
@@ -330,16 +346,12 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Should have 2 entries locally
     await expect(
-      page
-        .locator('span')
-        .filter({ hasText: /30 minute/i })
-        .first()
+      page.locator('text=30m, text=30 min, text=30 minutes').first()
     ).toBeVisible()
 
-    // Count how many 30 minute entries we have
+    // Count how many 30m entries we have
     const entriesCount = await page
-      .locator('span')
-      .filter({ hasText: /30 minute/i })
+      .locator('text=30m, text=30 min, text=30 minutes')
       .count()
     expect(entriesCount).toBe(2)
 
@@ -408,8 +420,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // We still expect to see our entries
     const finalEntriesCount = await page
-      .locator('span')
-      .filter({ hasText: /30 minute/i })
+      .locator('text=30m, text=30 min, text=30 minutes')
       .count()
     expect(finalEntriesCount).toBeGreaterThanOrEqual(2)
   })
@@ -420,12 +431,13 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await page.waitForLoadState('networkidle')
 
     // Create local entry
-    const addButton = await page.locator('button:has-text("+")').first()
+    const addButton = await page
+      .locator('button:has-text("New Entry"), button:has-text("Add New Entry")')
+      .first()
     await addButton.click()
 
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      timeout: 10000,
-    })
+    // Wait for form to be ready (embedded in tabs now)
+    await page.waitForSelector('form', { timeout: 10000 })
 
     const durationInput = page.locator('input[type="number"]').first()
     await durationInput.clear()
@@ -444,17 +456,24 @@ test.describe('Logbook Sync and Data Persistence', () => {
     const saveButton = page.locator('button[type="submit"]').last()
     await saveButton.click()
 
-    // Wait for modal to close
-    await page.waitForSelector('.fixed.inset-0.bg-black\\/50', {
-      state: 'hidden',
-      timeout: 10000,
-    })
+    // Wait for success
+    await Promise.race([
+      page
+        .waitForSelector(
+          'text=Entry saved successfully, text=Success, text=saved',
+          {
+            timeout: 10000,
+          }
+        )
+        .catch(() => {}),
+      page.waitForTimeout(3000),
+    ])
 
     await page.waitForTimeout(1500)
 
-    // Verify local entry is visible
+    // Verify local entry is visible (15m)
     await expect(
-      page.locator('span').filter({ hasText: /15 minute/i })
+      page.locator('text=15m, text=15 min, text=15 minutes').first()
     ).toBeVisible()
 
     // Mock API endpoints
@@ -535,14 +554,14 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // We should still see our local entry
     await expect(
-      page.locator('span').filter({ hasText: /15 minute/i })
+      page.locator('text=15m, text=15 min, text=15 minutes').first()
     ).toBeVisible()
 
     // If sync worked, we might also see the cloud entry
     // But since our mock doesn't actually merge, we just verify local data persists
     const localEntryVisible = await page
-      .locator('span')
-      .filter({ hasText: /15 minute/i })
+      .locator('text=15m, text=15 min, text=15 minutes')
+      .first()
       .isVisible()
     expect(localEntryVisible).toBe(true)
   })

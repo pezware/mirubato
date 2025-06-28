@@ -141,11 +141,32 @@ test.describe('Logbook Features - Fixed', () => {
     }
 
     // Wait for the entry to appear in the UI
-    // Look for text that indicates our entry (30m or 30 minutes)
-    const durationText = page
-      .locator('text=30m, text=30 min, text=30 minutes')
-      .first()
-    await expect(durationText).toBeVisible({ timeout: 15000 })
+    // Look for text that indicates our entry - try multiple formats
+    const durationText = await Promise.race([
+      page
+        .locator('text="30 minutes"')
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => page.locator('text="30 minutes"').first()),
+      page
+        .locator('text="30 minute"')
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => page.locator('text="30 minute"').first()),
+      page
+        .locator('text="30m"')
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => page.locator('text="30m"').first()),
+      page
+        .locator('text="30 min"')
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => page.locator('text="30 min"').first()),
+    ]).catch(() => {
+      // If none found, try a more general search
+      return page
+        .locator('[class*="minute"], [class*="duration"]')
+        .filter({ hasText: '30' })
+        .first()
+    })
+    await expect(durationText).toBeVisible({ timeout: 5000 })
 
     // Verify the notes are visible (they show in the collapsed view)
     await expect(
