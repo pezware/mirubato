@@ -9,14 +9,14 @@ export interface LogbookEntry {
   pieces: Array<{
     id?: string
     title: string
-    composer?: string
-    measures?: string
-    tempo?: number
+    composer?: string | null
+    measures?: string | null
+    tempo?: number | null
   }>
   techniques: string[]
   goalIds: string[]
-  notes?: string
-  mood?: 'FRUSTRATED' | 'NEUTRAL' | 'SATISFIED' | 'EXCITED'
+  notes?: string | null
+  mood?: 'FRUSTRATED' | 'NEUTRAL' | 'SATISFIED' | 'EXCITED' | null
   tags: string[]
   metadata?: {
     source: string
@@ -48,6 +48,17 @@ export interface Goal {
   completedAt?: string
 }
 
+// Helper types for function parameters that accept null values
+type CreateEntryData = Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> & {
+  notes?: string | null
+  mood?: LogbookEntry['mood'] | null
+}
+
+type UpdateEntryData = Partial<LogbookEntry> & {
+  notes?: string | null | undefined
+  mood?: LogbookEntry['mood'] | null | undefined
+}
+
 export const logbookApi = {
   // Logbook entries via sync API
   getEntries: async () => {
@@ -62,9 +73,7 @@ export const logbookApi = {
     return response.data.entries || []
   },
 
-  createEntry: async (
-    entry: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'>
-  ) => {
+  createEntry: async (entry: CreateEntryData) => {
     const newEntry: LogbookEntry = {
       ...entry,
       id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -87,7 +96,7 @@ export const logbookApi = {
     throw new Error('Failed to create entry')
   },
 
-  updateEntry: async (id: string, updates: Partial<LogbookEntry>) => {
+  updateEntry: async (id: string, updates: UpdateEntryData) => {
     // Get the entry from localStorage first for efficiency
     const localEntries = localStorage.getItem('mirubato:logbook:entries')
     if (!localEntries) throw new Error('No entries found')
