@@ -89,8 +89,8 @@ export default function ManualEntryForm({
         pieces: pieces.filter(p => p.title),
         techniques,
         goalIds: [],
-        notes: notes || undefined, // Convert empty string to undefined
-        mood: mood || undefined, // Convert null/empty to undefined
+        notes: notes || null, // Convert empty string to null for D1 compatibility
+        mood: mood || null, // Convert null/empty to null for D1 compatibility
         tags,
         metadata: {
           source: 'manual',
@@ -176,7 +176,10 @@ export default function ManualEntryForm({
                 type="number"
                 min="1"
                 value={duration}
-                onChange={e => setDuration(parseInt(e.target.value))}
+                onChange={e => {
+                  const value = parseInt(e.target.value)
+                  setDuration(isNaN(value) ? 1 : Math.max(1, value))
+                }}
                 className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
                 required
               />
