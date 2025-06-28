@@ -2,9 +2,17 @@
 
 ## Overview
 
-Mirubato (formerly Rubato) is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
+Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture (2025)
+## Current Architecture - Version 1.1.0 (June 2025)
+
+### Version 1.1.0 Highlights
+
+- **D1 Database Stability**: Complete null value handling for all database operations
+- **Enhanced UI**: Full Tailwind color palette support for calendar visualization
+- **Improved Sync**: Robust error handling for online/offline transitions
+- **Test Coverage**: 290+ tests ensuring reliability across all services
+- **Production Ready**: All MVP features implemented and tested
 
 ### Infrastructure
 

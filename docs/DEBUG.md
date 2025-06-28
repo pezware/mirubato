@@ -1,8 +1,22 @@
-# Mirubato Debug Guide
+# Mirubato Debug Guide - Version 1.1.0
 
 ## Overview
 
 This document contains known issues, their solutions, and debugging tools for the Mirubato platform. Use this guide when encountering problems during development or in production.
+
+## Recent Fixes in v1.1.0
+
+### ✅ D1 Database Sync Errors (RESOLVED)
+
+- **Issue**: "D1_TYPE_ERROR: Type 'undefined' not supported" when creating/updating entries
+- **Fix**: Comprehensive null value sanitization in all database operations
+- **Files Updated**: `logbook.ts`, `ManualEntryForm.tsx`
+
+### ✅ Calendar Rendering Issues (RESOLVED)
+
+- **Issue**: Practice days showing as blank blocks due to missing Tailwind colors
+- **Fix**: Complete color palette configuration including sage-600/700, stone-50/900, rose, and peach
+- **File Updated**: `tailwind.config.js`
 
 ## Quick Debugging Tools
 

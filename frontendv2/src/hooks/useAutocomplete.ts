@@ -9,7 +9,7 @@ interface UseAutocompleteOptions {
   type: 'composer' | 'piece'
   minLength?: number
   debounceMs?: number
-  composer?: string // For piece searches, optionally filter by composer
+  composer?: string | null // For piece searches, optionally filter by composer
 }
 
 export function useAutocomplete({
@@ -67,7 +67,10 @@ export function useAutocomplete({
       if (type === 'composer') {
         return autocompleteApi.getComposerSuggestions(debouncedQuery)
       } else {
-        return autocompleteApi.getPieceSuggestions(debouncedQuery, composer)
+        return autocompleteApi.getPieceSuggestions(
+          debouncedQuery,
+          composer || undefined
+        )
       }
     },
     {
@@ -99,7 +102,7 @@ export function useAutocomplete({
               suggestions.set(piece.title, {
                 value: piece.title,
                 label: piece.title,
-                metadata: { composer: piece.composer },
+                metadata: { composer: piece.composer || undefined },
               })
             }
           }

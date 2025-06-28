@@ -1,7 +1,7 @@
 {
   "name": "@mirubato/scores",
-  "version": "1.0.0",
-  "description": "Scores service for Mirubato - handles sheet music storage, processing, and delivery",
+  "version": "1.1.0",
+  "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev --env local",

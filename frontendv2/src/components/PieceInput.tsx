@@ -6,7 +6,7 @@ import { useAutocomplete } from '../hooks/useAutocomplete'
 interface PieceInputProps {
   piece: {
     title: string
-    composer?: string
+    composer?: string | null
   }
   index: number
   onUpdate: (index: number, field: 'title' | 'composer', value: string) => void
@@ -24,7 +24,7 @@ export default function PieceInput({
   // Autocomplete for piece title
   const pieceAutocomplete = useAutocomplete({
     type: 'piece',
-    composer: piece.composer, // Filter by composer if already selected
+    composer: piece.composer || undefined, // Filter by composer if already selected, convert null to undefined
     minLength: 0, // Show suggestions immediately
   })
 

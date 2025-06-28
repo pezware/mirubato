@@ -10,11 +10,14 @@ export default {
       colors: {
         morandi: {
           sage: {
+            50: '#f4f5f2',
             100: '#e8ebe4',
             200: '#d4d9cc',
             300: '#b8c2a9',
             400: '#9ca888',
             500: '#818f6d',
+            600: '#6b7857',
+            700: '#555e45',
           },
           sand: {
             100: '#f5f2ed',
@@ -24,6 +27,7 @@ export default {
             500: '#ad8866',
           },
           stone: {
+            50: '#f8f7f6',
             100: '#f0efec',
             200: '#e2dfd9',
             300: '#ccc7bd',
@@ -31,6 +35,7 @@ export default {
             500: '#9e9789',
             600: '#7a756b',
             700: '#5c5850',
+            900: '#3a3632',
           },
           blush: {
             100: '#f9f0ed',
@@ -45,6 +50,22 @@ export default {
             300: '#c2d1db',
             400: '#a7bdcb',
             500: '#8ca9bb',
+          },
+          rose: {
+            50: '#fdf2f2',
+            100: '#fce7e7',
+            200: '#fbbcbc',
+            300: '#f98a8a',
+            400: '#f45252',
+            500: '#ec2727',
+          },
+          peach: {
+            50: '#fef5f0',
+            100: '#fde8dd',
+            200: '#fbccb8',
+            300: '#f8a888',
+            400: '#f47c52',
+            500: '#ec5a2b',
           },
         },
         mirubato: {

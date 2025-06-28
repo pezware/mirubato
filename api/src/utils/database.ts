@@ -129,9 +129,12 @@ export class DatabaseHelpers {
     checksum: string
     version?: number
   }) {
-    const jsonData = JSON.stringify(data.data)
+    // Sanitize data to ensure D1 compatibility (no undefined values)
+    const sanitizedData = sanitizeForD1(data.data)
+    const jsonData = JSON.stringify(sanitizedData)
     // Check if this is a soft delete
-    const deletedAt = (data.data as Record<string, unknown>).deletedAt || null
+    const deletedAt =
+      (sanitizedData as Record<string, unknown>).deletedAt || null
 
     try {
       // First check if record exists
@@ -258,6 +261,31 @@ export class DatabaseHelpers {
 
     await this.db.batch(batch)
   }
+}
+
+/**
+ * Sanitize data to ensure D1 compatibility by converting undefined to null
+ */
+export function sanitizeForD1(data: unknown, visited = new WeakSet()): unknown {
+  if (data === undefined) return null
+  if (data === null) return null
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeForD1(item, visited))
+  }
+  if (typeof data === 'object' && data !== null) {
+    // Prevent infinite recursion on circular references
+    if (visited.has(data)) {
+      return {}
+    }
+    visited.add(data)
+
+    const sanitized: Record<string, unknown> = {}
+    Object.entries(data).forEach(([key, value]) => {
+      sanitized[key] = sanitizeForD1(value, visited)
+    })
+    return sanitized
+  }
+  return data
 }
 
 /**
