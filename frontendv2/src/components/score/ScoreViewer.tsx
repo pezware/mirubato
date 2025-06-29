@@ -10,7 +10,6 @@ interface ScoreViewerProps {
 export default function ScoreViewer({ score }: ScoreViewerProps) {
   const {
     currentPage,
-    totalPages,
     autoScrollEnabled,
     scrollSpeed,
     setCurrentPage,
