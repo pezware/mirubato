@@ -63,10 +63,19 @@ export class UploadService {
       }
     }
 
-    // Basic PDF validation (check magic bytes)
-    // This would need to be done after reading the file content
-
     return { valid: true }
+  }
+
+  /**
+   * Validates PDF magic bytes
+   */
+  private validatePdfMagicBytes(buffer: ArrayBuffer): boolean {
+    if (buffer.byteLength < 5) return false
+
+    const view = new Uint8Array(buffer)
+    const magicBytes = new TextDecoder().decode(view.slice(0, 5))
+
+    return magicBytes === '%PDF-'
   }
 
   /**
@@ -110,6 +119,14 @@ export class UploadService {
 
       // Read file content
       const arrayBuffer = await file.arrayBuffer()
+
+      // Validate PDF magic bytes
+      if (!this.validatePdfMagicBytes(arrayBuffer)) {
+        return {
+          success: false,
+          error: 'Invalid PDF file format (missing or incorrect PDF header)',
+        }
+      }
 
       // Create metadata
       const metadata: FileMetadata = {

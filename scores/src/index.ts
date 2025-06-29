@@ -285,6 +285,22 @@ app.get('/files/*', async c => {
       headers.set('Content-Type', contentType)
     }
 
+    // Add security headers and enhanced caching for PDFs
+    if (contentType === 'application/pdf') {
+      headers.set('X-Content-Type-Options', 'nosniff')
+      headers.set('X-Frame-Options', 'SAMEORIGIN')
+      headers.set(
+        'Content-Security-Policy',
+        "frame-ancestors 'self' *.mirubato.com http://localhost:* http://*.localhost:*"
+      )
+
+      // Enhanced cache headers for PDFs
+      const fileName = path.split('/').pop() || 'document.pdf'
+      headers.set('ETag', `"${fileName}-v1"`)
+      headers.set('Last-Modified', new Date().toUTCString())
+      headers.set('Vary', 'Accept-Encoding')
+    }
+
     // Create response
     let response = new Response(object.body, { headers })
 

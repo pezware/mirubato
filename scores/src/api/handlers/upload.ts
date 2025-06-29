@@ -2,7 +2,7 @@ import { Context } from 'hono'
 import { UploadService } from '../../services/uploadService'
 
 const uploadService = new UploadService({
-  maxFileSize: 20 * 1024 * 1024, // 20MB for sheet music PDFs
+  maxFileSize: 50 * 1024 * 1024, // 50MB for sheet music PDFs
   allowedMimeTypes: ['application/pdf'],
   allowedExtensions: ['.pdf'],
 })

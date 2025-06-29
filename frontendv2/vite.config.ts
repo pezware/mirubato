@@ -59,6 +59,10 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'vexflow', 'tone'],
+    include: ['react', 'react-dom', 'vexflow', 'tone', 'pdfjs-dist'],
+  },
+  // Ensure PDF.js worker is properly handled
+  worker: {
+    format: 'es',
   },
 })
