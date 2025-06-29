@@ -14,6 +14,10 @@ import {
   deleteFile,
 } from './api/handlers/upload'
 import {
+  scorebookHandler,
+  scorebookLandingHandler,
+} from './api/handlers/scorebook'
+import {
   addCacheHeaders,
   getCachedResponse,
   cacheResponse,
@@ -59,6 +63,11 @@ app.use(
 
 // Health check endpoints (mount the routes properly)
 app.route('/', healthHandler)
+
+// Scorebook routes
+app.get('/scorebook', scorebookLandingHandler)
+app.get('/scorebook/', scorebookLandingHandler)
+app.get('/scorebook/:slug', scorebookHandler)
 
 // Documentation routes
 app.route('/docs', docsHandler)
