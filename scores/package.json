@@ -4,7 +4,7 @@
   "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "wrangler dev --env local",
+    "dev": "wrangler dev --port 9788 --env local --local-protocol http",
     "build": "tsc",
     "deploy": "wrangler deploy",
     "deploy:dev": "wrangler deploy --env dev",
@@ -20,7 +20,7 @@
     "test": "vitest",
     "test:unit": "vitest run --passWithNoTests",
     "test:coverage": "vitest --coverage",
-    "test:api": "curl http://localhost:8787/api/scores | jq",
+    "test:api": "curl http://scores-mirubato.localhost:9788/api/scores | jq",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev --env local --local",
+    "dev": "wrangler dev --port 9797 --env local --local --local-protocol http",
     "build": "tsc --noEmit -p tsconfig.build.json",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
