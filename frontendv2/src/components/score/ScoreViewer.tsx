@@ -12,6 +12,7 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [pdfUrl, setPdfUrl] = useState<string>('')
   const [isLoadingPdf, setIsLoadingPdf] = useState(true)
+  const [pdfError, setPdfError] = useState<string | null>(null)
 
   // Get PDF URL for the score
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
           {/* PDF Display */}
           {pdfUrl && (
             <div className="relative bg-morandi-stone-50 rounded-lg shadow-lg">
-              {isLoadingPdf && (
+              {isLoadingPdf && !pdfError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
@@ -52,16 +53,53 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
                 </div>
               )}
 
+              {/* Error display */}
+              {pdfError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-morandi-stone-50 rounded-lg">
+                  <div className="text-center p-8">
+                    <div className="text-5xl mb-4">📄</div>
+                    <h3 className="text-xl font-medium text-morandi-stone-800 mb-2">
+                      {score.title}
+                    </h3>
+                    <p className="text-morandi-stone-600 mb-4">
+                      {score.composer}
+                    </p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-md mx-auto">
+                      <p className="text-sm text-amber-800 mb-2">
+                        PDF preview not available in development
+                      </p>
+                      <p className="text-xs text-amber-700">
+                        To view PDFs, run:{' '}
+                        <code className="bg-amber-100 px-1 py-0.5 rounded">
+                          cd scores && npm run upload:test-pdfs
+                        </code>
+                      </p>
+                    </div>
+                    <div className="mt-4 text-sm text-morandi-stone-500">
+                      {score.instrument} • {score.difficulty} •{' '}
+                      {score.metadata?.pages || totalPages} page
+                      {(score.metadata?.pages || totalPages) !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Iframe for PDF display */}
               <iframe
                 src={`${pdfUrl}#page=${currentPage}`}
-                className="w-full h-[800px] rounded-lg"
+                className={`w-full h-[800px] rounded-lg ${pdfError ? 'hidden' : ''}`}
                 onLoad={() => setIsLoadingPdf(false)}
+                onError={() => {
+                  setIsLoadingPdf(false)
+                  setPdfError(
+                    'Unable to load PDF. Please check if the PDF is uploaded.'
+                  )
+                }}
                 title={score.title}
               />
 
               {/* Page indicator overlay */}
-              {totalPages > 1 && (
+              {totalPages > 1 && !pdfError && (
                 <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
                   Page {currentPage} of {totalPages}
                 </div>
