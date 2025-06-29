@@ -74,6 +74,3 @@ api.route('/collections', collectionsHandler)
 
 // Render routes need special handling due to nested paths
 api.route('/', renderHandler)
-
-// Test PDF serving for development
-api.get('/test-data/:filename', pdfCors, serveTestPdf)

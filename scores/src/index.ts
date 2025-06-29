@@ -25,6 +25,7 @@ app.use(
       // Allow requests from mirubato domains and localhost
       const allowedOrigins = [
         'http://localhost:3000',
+        'http://localhost:5173', // Vite default port
         'http://localhost:8787',
         'https://mirubato.com',
         'https://www.mirubato.com',
@@ -64,6 +65,47 @@ app.get('/api/docs', c => c.redirect('/docs'))
 
 // Mount API routes
 app.route('/api', api)
+
+// Add specific route for test PDFs (before the catch-all /files/* route)
+app.get('/api/test-data/:filename', async c => {
+  const filename = c.req.param('filename')
+
+  // Only allow specific test PDFs
+  const allowedFiles = ['score_01.pdf', 'score_02.pdf']
+  if (!allowedFiles.includes(filename)) {
+    return c.json({ success: false, error: 'File not found' }, 404)
+  }
+
+  try {
+    // Try to get from R2 bucket
+    const object = await c.env.SCORES_BUCKET.get(`test-data/${filename}`)
+    if (object) {
+      const headers = new Headers()
+      headers.set('Content-Type', 'application/pdf')
+      headers.set('Content-Disposition', `inline; filename="${filename}"`)
+      headers.set('Cache-Control', 'public, max-age=3600')
+      headers.set('Access-Control-Allow-Origin', '*')
+      headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+      headers.set('Access-Control-Allow-Headers', 'Content-Type')
+
+      return new Response(object.body, { headers })
+    }
+
+    // For local development without R2, return a helpful error
+    return c.json(
+      {
+        success: false,
+        error: 'Test PDFs not found in R2',
+        message: 'Please run: cd scores && npm run upload:test-pdfs',
+        filename,
+      },
+      404
+    )
+  } catch (error) {
+    console.error('Error serving test PDF:', error)
+    return c.json({ success: false, error: 'Failed to serve PDF' }, 500)
+  }
+})
 
 // Default route
 app.get('/', c => {

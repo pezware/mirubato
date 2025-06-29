@@ -16,18 +16,44 @@ export async function serveTestPdf(c: Context) {
     // In production, these would be served from R2
     const env = c.env as any
 
-    // For local development, we'll return a placeholder response
-    // In a real implementation, you'd read the file from R2 or local storage
+    // For Cloudflare Workers in local development, we need to use a different approach
+    // since fs module is not available. We'll use the R2 binding if available
+    if (env.SCORES_BUCKET) {
+      // Try to get from R2 bucket
+      const object = await env.SCORES_BUCKET.get(`test-data/${filename}`)
+      if (object) {
+        const headers = new Headers()
+        headers.set('Content-Type', 'application/pdf')
+        headers.set('Content-Disposition', `inline; filename="${filename}"`)
+        headers.set('Cache-Control', 'public, max-age=3600')
+        headers.set('Access-Control-Allow-Origin', '*')
+        headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+        headers.set('Access-Control-Allow-Headers', 'Content-Type')
 
-    // Create a proper PDF response
-    return new Response('PDF content would be here', {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filename}"`,
-        'Cache-Control': 'public, max-age=3600',
-        'Access-Control-Allow-Origin': '*', // For development only
-      },
-    })
+        return new Response(object.body, { headers })
+      }
+    }
+
+    // For local development without R2, we need to return a proper error
+    // The frontend should handle this by showing a message to upload the PDFs
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error:
+          'Test PDFs not found. Please upload them to R2 or use production URLs.',
+        message:
+          'In local development, PDFs must be uploaded to R2 bucket first.',
+      }),
+      {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
+    )
   } catch (error) {
     console.error('Error serving PDF:', error)
     return c.json({ success: false, error: 'Failed to serve PDF' }, 500)

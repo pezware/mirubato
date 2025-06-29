@@ -16,6 +16,7 @@
     "seed:local": "./scripts/seed-test-scores.sh",
     "seed:staging": "./scripts/seed-test-scores.sh staging",
     "upload:test": "tsx scripts/upload-test-scores.ts",
+    "upload:test-pdfs": "./scripts/upload-test-pdfs.sh",
     "test": "vitest",
     "test:unit": "vitest run --passWithNoTests",
     "test:coverage": "vitest --coverage",
