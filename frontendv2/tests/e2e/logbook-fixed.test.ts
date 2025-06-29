@@ -147,11 +147,9 @@ test.describe('Logbook Features - Fixed', () => {
     const pageContent = await page.locator('body').innerText()
     console.log('Page content includes:', pageContent.substring(0, 500))
 
-    // Wait for any entry to appear - more flexible approach
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Look for the duration in various possible formats
     const possibleSelectors = [

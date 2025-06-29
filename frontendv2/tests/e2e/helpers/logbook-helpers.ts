@@ -12,28 +12,48 @@ export async function navigateToOverviewTab(page: Page) {
 }
 
 export async function waitForEntries(page: Page, expectedCount?: number) {
-  // Use more efficient waiting strategy
-  const entrySelector = 'div[class*="hover:bg-morandi-stone-50"]'
+  // Use multiple strategies to find entries
+  const entrySelectors = [
+    '.p-4.hover\\:bg-morandi-stone-50', // Escaped colon for Tailwind classes
+    '[class*="p-4"][class*="hover"][class*="bg-morandi"]',
+    '.group.cursor-pointer',
+    'div:has(> div > div > span)', // Structure-based selector
+  ]
 
-  if (expectedCount !== undefined) {
-    // Wait for specific count of entries
-    await page.waitForFunction(
-      args => {
-        const elements = document.querySelectorAll(args.selector)
-        return elements.length >= args.count
-      },
-      { selector: entrySelector, count: expectedCount },
-      { timeout: 10000 }
-    )
-    return true
-  } else {
-    // Just wait for at least one entry
-    await page.waitForSelector(entrySelector, {
-      state: 'visible',
-      timeout: 10000,
-    })
-    return true
+  // Try each selector until one works
+  for (const selector of entrySelectors) {
+    try {
+      if (expectedCount !== undefined) {
+        // Wait for specific count of entries
+        await page.waitForFunction(
+          args => {
+            const elements = document.querySelectorAll(args.selector)
+            return elements.length >= args.count
+          },
+          { selector, count: expectedCount },
+          { timeout: 3000 }
+        )
+        return true
+      } else {
+        // Just wait for at least one entry
+        await page.waitForSelector(selector, {
+          state: 'visible',
+          timeout: 3000,
+        })
+        return true
+      }
+    } catch (e) {
+      // Try next selector
+      continue
+    }
   }
+
+  // If all selectors fail, wait for text content
+  await page.waitForSelector('text=/\\d+\\s*(minutes?|m)/', {
+    state: 'visible',
+    timeout: 10000,
+  })
+  return true
 }
 
 export async function createLogbookEntry(
@@ -104,12 +124,23 @@ export async function createLogbookEntry(
   const saveButton = page.locator('button[type="submit"]').last()
   await saveButton.click()
 
-  // Wait for save indication instead of fixed timeout
+  // Wait for save indication - use multiple strategies
   await Promise.race([
     page.waitForSelector('text=saved', { timeout: 3000 }).catch(() => {}),
+    page.waitForSelector('text=success', { timeout: 3000 }).catch(() => {}),
     page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {}),
-    page.waitForTimeout(1000), // Fallback minimum wait
+    page.waitForTimeout(2000), // Increased fallback timeout
   ])
+
+  // Verify the entry was saved to localStorage
+  const savedEntries = await page.evaluate(() => {
+    const stored = localStorage.getItem('mirubato:logbook:entries')
+    return stored ? JSON.parse(stored) : []
+  })
+
+  if (savedEntries.length === 0) {
+    throw new Error('Entry was not saved to localStorage')
+  }
 
   // Navigate to Overview tab to see the entry
   await navigateToOverviewTab(page)

@@ -26,14 +26,14 @@ export async function setupTest(page: Page) {
     }),
   ])
 
-  // Navigate to home and clear storage in parallel
-  await Promise.all([
-    page.goto('/', { waitUntil: 'domcontentloaded' }), // Don't wait for all network requests
-    page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear()
-    }),
-  ])
+  // Navigate to home first, then clear storage
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+
+  // Clear storage after navigation completes
+  await page.evaluate(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
 }
 
 /**

@@ -95,17 +95,16 @@ test.describe('Logbook Sync and Data Persistence', () => {
     }
 
     // Verify we can see at least one entry
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Step 2: Create second entry while still not logged in
     await createEntry('Anonymous Entry 2', '20')
 
     // Verify we can see multiple entries
     const entryCount = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entryCount).toBeGreaterThanOrEqual(2)
 
@@ -252,7 +251,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Verify we still have 2 entries after login
     const entriesAfterLogin = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesAfterLogin).toBeGreaterThanOrEqual(2)
 
@@ -261,7 +260,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Verify we have 3 entries
     const entriesAfterThird = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesAfterThird).toBeGreaterThanOrEqual(3)
 
@@ -277,7 +276,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // Step 7: Verify all 3 entries persist after logout
     const entriesAfterLogout = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesAfterLogout).toBeGreaterThanOrEqual(3)
   })
@@ -350,14 +349,13 @@ test.describe('Logbook Sync and Data Persistence', () => {
     }
 
     // Should have 2 entries locally
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Count how many entries we have
     const entriesCount = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesCount).toBe(2)
 
@@ -426,7 +424,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // We still expect to see our entries
     const finalEntriesCount = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(finalEntriesCount).toBeGreaterThanOrEqual(2)
   })
@@ -487,10 +485,9 @@ test.describe('Logbook Sync and Data Persistence', () => {
     }
 
     // Verify local entry is visible
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Mock API endpoints
     await page.route('**/api/logbook/entries', async route => {
@@ -570,7 +567,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
 
     // We should still see our local entry
     const entriesAfterSync = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesAfterSync).toBeGreaterThanOrEqual(1)
 

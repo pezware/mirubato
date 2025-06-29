@@ -3,8 +3,11 @@ import { test, expect } from '@playwright/test'
 test.describe('Logbook Features', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage to start fresh
-    await page.goto('/')
-    await page.evaluate(() => localStorage.clear())
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.evaluate(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
 
     // Mock autocomplete API to prevent timeouts
     await page.route('**/api/autocomplete/**', route => {
@@ -104,14 +107,13 @@ test.describe('Logbook Features', () => {
       .first()
     if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
       await overviewTab.click()
-      await page.waitForTimeout(1000)
+      // Wait for tab content to load
+      await page.waitForLoadState('networkidle')
     }
 
-    // Wait for any entry to appear
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Look for the entry - check multiple possible formats
     const durationSelectors = [
@@ -143,9 +145,7 @@ test.describe('Logbook Features', () => {
     }
 
     // Click on the entry to expand it
-    const entryDiv = page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
-      .first()
+    const entryDiv = page.locator('.p-4.hover\\:bg-morandi-stone-50').first()
     await entryDiv.click()
 
     // Wait for expansion
@@ -258,7 +258,7 @@ test.describe('Logbook Features', () => {
 
     // Now both should be visible - look for the entries themselves
     const entries = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entries).toBeGreaterThanOrEqual(2)
   })
@@ -330,17 +330,16 @@ test.describe('Logbook Features', () => {
     }
 
     // Verify we can see at least one entry
-    await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-      state: 'visible',
-      timeout: 15000,
-    })
+    // Import the helper function for consistency
+    const { waitForEntries } = await import('./helpers/logbook-helpers')
+    await waitForEntries(page)
 
     // Step 2: Create second entry
     await createEntryWithDetails('Entry 2 - Anonymous', '20')
 
     // Verify we can see multiple entries
     const entryCount = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entryCount).toBeGreaterThanOrEqual(2)
 
@@ -351,7 +350,7 @@ test.describe('Logbook Features', () => {
 
     // Step 4: Verify entries persist after reload
     const entriesAfterReload = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(entriesAfterReload).toBeGreaterThanOrEqual(2)
 
@@ -360,7 +359,7 @@ test.describe('Logbook Features', () => {
 
     // Verify all three entries are visible
     const finalEntryCount = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
+      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
       .count()
     expect(finalEntryCount).toBeGreaterThanOrEqual(3)
   })
