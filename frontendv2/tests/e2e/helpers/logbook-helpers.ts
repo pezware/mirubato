@@ -4,26 +4,36 @@ export async function navigateToOverviewTab(page: Page) {
   const overviewTab = page
     .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
     .first()
-  if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await overviewTab.isVisible({ timeout: 1000 }).catch(() => false)) {
     await overviewTab.click()
-    await page.waitForTimeout(1000)
+    // Wait for content to load instead of fixed timeout
+    await page.waitForLoadState('domcontentloaded')
   }
 }
 
 export async function waitForEntries(page: Page, expectedCount?: number) {
-  await page.waitForSelector('div[class*="hover:bg-morandi-stone-50"]', {
-    state: 'visible',
-    timeout: 15000,
-  })
+  // Use more efficient waiting strategy
+  const entrySelector = 'div[class*="hover:bg-morandi-stone-50"]'
 
   if (expectedCount !== undefined) {
-    const count = await page
-      .locator('div[class*="hover:bg-morandi-stone-50"]')
-      .count()
-    return count >= expectedCount
+    // Wait for specific count of entries
+    await page.waitForFunction(
+      args => {
+        const elements = document.querySelectorAll(args.selector)
+        return elements.length >= args.count
+      },
+      { selector: entrySelector, count: expectedCount },
+      { timeout: 10000 }
+    )
+    return true
+  } else {
+    // Just wait for at least one entry
+    await page.waitForSelector(entrySelector, {
+      state: 'visible',
+      timeout: 10000,
+    })
+    return true
   }
-
-  return true
 }
 
 export async function createLogbookEntry(
@@ -33,48 +43,60 @@ export async function createLogbookEntry(
   composer: string = 'Test Composer',
   notes: string = 'Test notes'
 ) {
-  // Look for add button
+  // Look for add button with shorter timeout
   const addButton = page
     .locator(
       'button:has-text("New Entry"), button:has-text("Add New Entry"), button:has-text("Add Entry")'
     )
     .first()
-  await addButton.waitFor({ state: 'visible', timeout: 10000 })
+  await addButton.waitFor({ state: 'visible', timeout: 5000 })
   await addButton.click()
 
-  // Wait for form to be ready
-  await page.waitForSelector('form', { timeout: 10000 })
-  await page.waitForSelector('input[type="number"]', { timeout: 5000 })
+  // Wait for form to be ready - use Promise.all for parallel waiting
+  await Promise.all([
+    page.waitForSelector('form', { timeout: 5000 }),
+    page.waitForSelector('input[type="number"]', { timeout: 5000 }),
+  ])
 
-  // Fill duration
+  // Fill all form fields in parallel where possible
+  const fillPromises = []
+
+  // Duration
   const durationInput = page.locator('input[type="number"]').first()
-  await durationInput.clear()
-  await durationInput.fill(duration)
-
-  // Fill piece information - handle autocomplete
-  await page.fill(
-    'input[placeholder="Piece title"], input[placeholder*="piece"], input[placeholder*="title"]',
-    title
+  fillPromises.push(
+    durationInput.clear().then(() => durationInput.fill(duration))
   )
-  await page.waitForTimeout(400) // Wait for debounce
-  await page.keyboard.press('Escape') // Close autocomplete
 
-  await page.fill(
-    'input[placeholder="Composer"], input[placeholder*="composer"]',
-    composer
+  // Piece title
+  const titleInput = page
+    .locator(
+      'input[placeholder="Piece title"], input[placeholder*="piece"], input[placeholder*="title"]'
+    )
+    .first()
+  fillPromises.push(
+    titleInput.fill(title).then(() => page.keyboard.press('Escape'))
   )
-  await page.waitForTimeout(400) // Wait for debounce
-  await page.keyboard.press('Escape') // Close autocomplete
 
-  // Add notes if provided
+  // Composer
+  const composerInput = page
+    .locator('input[placeholder="Composer"], input[placeholder*="composer"]')
+    .first()
+  fillPromises.push(
+    composerInput.fill(composer).then(() => page.keyboard.press('Escape'))
+  )
+
+  // Notes
   if (notes) {
     const notesTextarea = page.locator('textarea').first()
-    await notesTextarea.fill(notes)
+    fillPromises.push(notesTextarea.fill(notes))
   }
 
-  // Select mood
+  // Execute all fills in parallel
+  await Promise.all(fillPromises)
+
+  // Select mood if visible
   const moodButton = page.locator('button:has-text("😊")').first()
-  if (await moodButton.isVisible({ timeout: 2000 })) {
+  if (await moodButton.isVisible({ timeout: 1000 })) {
     await moodButton.click()
   }
 
@@ -82,8 +104,12 @@ export async function createLogbookEntry(
   const saveButton = page.locator('button[type="submit"]').last()
   await saveButton.click()
 
-  // Wait for save to complete
-  await page.waitForTimeout(2000)
+  // Wait for save indication instead of fixed timeout
+  await Promise.race([
+    page.waitForSelector('text=saved', { timeout: 3000 }).catch(() => {}),
+    page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {}),
+    page.waitForTimeout(1000), // Fallback minimum wait
+  ])
 
   // Navigate to Overview tab to see the entry
   await navigateToOverviewTab(page)

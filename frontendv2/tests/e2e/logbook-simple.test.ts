@@ -4,26 +4,18 @@ import {
   waitForEntries,
   createLogbookEntry,
 } from './helpers/logbook-helpers'
+import { setupTest, navigateToPage } from './helpers/test-setup'
 
 test.describe('Logbook Basic Functionality', () => {
   test.beforeEach(async ({ page }) => {
     // Set viewport to ensure consistent UI
     await page.setViewportSize({ width: 1280, height: 720 })
 
-    // Mock autocomplete API to prevent timeouts
-    await page.route('**/api/autocomplete/**', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ results: [] }),
-      })
-    })
+    // Common test setup with mocked APIs
+    await setupTest(page)
 
-    // Clear localStorage and navigate to logbook
-    await page.goto('/', { waitUntil: 'networkidle' })
-    await page.evaluate(() => localStorage.clear())
-    await page.goto('/logbook', { waitUntil: 'networkidle' })
-    await page.waitForTimeout(1000)
+    // Navigate to logbook page
+    await navigateToPage(page, '/logbook')
   })
 
   test('Can create and view a simple logbook entry', async ({ page }) => {

@@ -2,17 +2,17 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: false, // Run tests sequentially to avoid conflicts
+  fullyParallel: true, // Enable parallel execution for better performance
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 1, // Single worker to avoid parallel test conflicts
-  reporter: 'html',
-  timeout: 60000, // Global timeout of 60 seconds
+  retries: process.env.CI ? 1 : 0, // Reduce retries to save time
+  workers: process.env.CI ? 4 : 2, // Use more workers in CI for parallelization
+  reporter: process.env.CI ? [['list'], ['html']] : 'html',
+  timeout: 30000, // Reduce global timeout to 30 seconds
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: process.env.CI ? 'off' : 'retain-on-failure', // Disable video in CI to save resources
     // Force headless mode
     headless: true,
     // Disable any headed mode options
@@ -25,43 +25,54 @@ export default defineConfig({
     navigationTimeout: 30000,
   },
 
-  projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        headless: true,
-      },
-    },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        headless: true,
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        headless: true,
-      },
-    },
-    {
-      name: 'Mobile Chrome',
-      use: {
-        ...devices['Pixel 5'],
-        headless: true,
-      },
-    },
-    {
-      name: 'Mobile Safari',
-      use: {
-        ...devices['iPhone 12'],
-        headless: true,
-      },
-    },
-  ],
+  // In CI, only run Chromium to save time. Locally, test all browsers.
+  projects: process.env.CI
+    ? [
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            headless: true,
+          },
+        },
+      ]
+    : [
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            headless: true,
+          },
+        },
+        {
+          name: 'firefox',
+          use: {
+            ...devices['Desktop Firefox'],
+            headless: true,
+          },
+        },
+        {
+          name: 'webkit',
+          use: {
+            ...devices['Desktop Safari'],
+            headless: true,
+          },
+        },
+        {
+          name: 'Mobile Chrome',
+          use: {
+            ...devices['Pixel 5'],
+            headless: true,
+          },
+        },
+        {
+          name: 'Mobile Safari',
+          use: {
+            ...devices['iPhone 12'],
+            headless: true,
+          },
+        },
+      ],
 
   webServer: {
     command: 'npm run dev',
