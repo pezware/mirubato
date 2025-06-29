@@ -71,7 +71,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await logbookPage.verifyEntryCount(3)
   })
 
-  test('Entries are stored with correct structure', async ({ page }) => {
+  test('Entries are stored with correct structure', async () => {
     // Navigate to logbook
     await logbookPage.navigate()
 
@@ -126,7 +126,6 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await logbookPage.navigate()
 
     // Create entries with specific timestamps
-    const baseTime = Date.now()
 
     // Create first entry
     await logbookPage.createEntry({
