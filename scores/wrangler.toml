@@ -4,7 +4,7 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Production configuration (default - no env flag needed)
-vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com" }
+vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
 routes = [
   { pattern = "scores.mirubato.com", custom_domain = true }
 ]
@@ -25,7 +25,7 @@ id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
 # Staging configuration
 [env.staging]
 name = "mirubato-scores-staging"
-vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com" }
+vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
 
 [[env.staging.routes]]
 pattern = "scores-staging.mirubato.com"
@@ -67,7 +67,7 @@ id = "395e4bee05ed4e68b15f35ba7b3ba832"
 
 # Local development configuration
 [env.local]
-vars = { ENVIRONMENT = "local", API_SERVICE_URL = "http://localhost:8787", JWT_SECRET = "local-jwt-secret-for-development-only" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
 [[env.local.d1_databases]]
 binding = "DB"
@@ -85,7 +85,7 @@ id = "local"
 # Explicit production environment (for consistency)
 [env.production]
 name = "mirubato-scores"
-vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com" }
+vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
 
 [[env.production.routes]]
 pattern = "scores.mirubato.com"

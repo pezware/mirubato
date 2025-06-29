@@ -16,12 +16,17 @@ cleanup() {
 # Set trap to cleanup on script exit
 trap cleanup EXIT INT TERM
 
+# Start API service
+echo "🔧 Starting API Service at http://api-mirubato.localhost:9797..."
+cd api && wrangler dev --port 9797 --env local --local-protocol http &
+API_PID=$!
+
 # Start scores service
-echo "📚 Starting Scores Service (port 8787)..."
-cd scores && npm run dev &
+echo "📚 Starting Scores Service at http://scores-mirubato.localhost:9788..."
+cd scores && wrangler dev --port 9788 --env local --local-protocol http &
 SCORES_PID=$!
 
-# Wait a moment for scores service to start
+# Wait a moment for services to start
 sleep 5
 
 # Seed test PDFs into Miniflare R2
@@ -30,7 +35,7 @@ cd scores && npm run upload:real-pdfs
 cd ..
 
 # Start frontend
-echo "🎨 Starting Frontend (port 3000)..."
+echo "🎨 Starting Frontend at http://www-mirubato.localhost:4000..."
 cd frontendv2 && npm run dev &
 FRONTEND_PID=$!
 
@@ -38,14 +43,21 @@ FRONTEND_PID=$!
 sleep 5
 
 echo ""
-echo "✅ Services are starting..."
+echo "✅ Services are running!"
 echo ""
-echo "📍 URLs:"
-echo "   - Scorebook: http://localhost:3000/scorebook"
-echo "   - Score 1:   http://localhost:3000/scorebook/test_aire_sureno"
-echo "   - Score 2:   http://localhost:3000/scorebook/test_romance_anonimo"
-echo "   - API:       http://localhost:8787/api/scores"
-echo "   - PDFs:      Served from R2 via API"
+echo "📍 Service URLs:"
+echo "   - Frontend:   http://www-mirubato.localhost:4000"
+echo "   - API:        http://api-mirubato.localhost:9797"
+echo "   - Scores:     http://scores-mirubato.localhost:9788"
+echo ""
+echo "📚 Scorebook URLs:"
+echo "   - Landing:    http://www-mirubato.localhost:4000/scorebook"
+echo "   - Score 1:    http://www-mirubato.localhost:4000/scorebook/test_aire_sureno"
+echo "   - Score 2:    http://www-mirubato.localhost:4000/scorebook/test_romance_anonimo"
+echo ""
+echo "🎵 Scores API endpoints:"
+echo "   - Landing:    http://scores-mirubato.localhost:9788/scorebook/"
+echo "   - PDFs:       http://scores-mirubato.localhost:9788/files/test-data/*"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""

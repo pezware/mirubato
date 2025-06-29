@@ -14,6 +14,10 @@ import {
   deleteFile,
 } from './api/handlers/upload'
 import {
+  scorebookHandler,
+  scorebookLandingHandler,
+} from './api/handlers/scorebook'
+import {
   addCacheHeaders,
   getCachedResponse,
   cacheResponse,
@@ -35,9 +39,15 @@ app.use(
         'http://localhost:3000',
         'http://localhost:5173', // Vite default port
         'http://localhost:8787',
+        'http://localhost:8788',
+        'http://www-mirubato.localhost:4000',
+        'http://api-mirubato.localhost:9797',
+        'http://scores-mirubato.localhost:9788',
         'https://mirubato.com',
         'https://www.mirubato.com',
         'https://api.mirubato.com',
+        'https://staging.mirubato.com',
+        'https://api-staging.mirubato.com',
         'https://mirubato.pezware.workers.dev',
         'https://api.mirubato.pezware.workers.dev',
       ]
@@ -59,6 +69,11 @@ app.use(
 
 // Health check endpoints (mount the routes properly)
 app.route('/', healthHandler)
+
+// Scorebook routes
+app.get('/scorebook', scorebookLandingHandler)
+app.get('/scorebook/', scorebookLandingHandler)
+app.get('/scorebook/:slug', scorebookHandler)
 
 // Documentation routes
 app.route('/docs', docsHandler)
@@ -268,6 +283,22 @@ app.get('/files/*', async c => {
     const contentType = getFileContentType(ext)
     if (contentType) {
       headers.set('Content-Type', contentType)
+    }
+
+    // Add security headers and enhanced caching for PDFs
+    if (contentType === 'application/pdf') {
+      headers.set('X-Content-Type-Options', 'nosniff')
+      headers.set('X-Frame-Options', 'SAMEORIGIN')
+      headers.set(
+        'Content-Security-Policy',
+        "frame-ancestors 'self' *.mirubato.com http://localhost:* http://*.localhost:*"
+      )
+
+      // Enhanced cache headers for PDFs
+      const fileName = path.split('/').pop() || 'document.pdf'
+      headers.set('ETag', `"${fileName}-v1"`)
+      headers.set('Last-Modified', new Date().toUTCString())
+      headers.set('Vary', 'Accept-Encoding')
     }
 
     // Create response

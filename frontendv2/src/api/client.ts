@@ -4,8 +4,12 @@ import axios, { type AxiosInstance, type AxiosError } from 'axios'
 const getApiUrl = () => {
   const hostname = window.location.hostname
 
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return import.meta.env.VITE_API_URL || 'http://localhost:8787'
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.localhost')
+  ) {
+    return import.meta.env.VITE_API_URL || 'http://api-mirubato.localhost:9797'
   } else if (hostname.includes('staging')) {
     return 'https://api-staging.mirubato.com'
   } else {

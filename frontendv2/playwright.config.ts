@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html']] : 'html',
   timeout: 30000, // Reduce global timeout to 30 seconds
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:4000',
     trace: process.env.CI ? 'retain-on-failure' : 'on',
     screenshot: process.env.CI ? 'only-on-failure' : 'on',
     video: process.env.CI ? 'retain-on-failure' : 'on',
@@ -76,7 +76,7 @@ export default defineConfig({
 
   webServer: {
     command: 'npm run dev',
-    port: 3000,
+    port: 4000,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes
     stdout: 'pipe',

@@ -8,7 +8,7 @@ command = "npm run build"
 
 # Local development
 [env.local]
-vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com", API_URL = "http://api-mirubato.localhost:9797", FRONTEND_URL = "http://www-mirubato.localhost:4000", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
 [[env.local.d1_databases]]
 binding = "DB"

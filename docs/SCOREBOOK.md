@@ -34,13 +34,13 @@ npm run dev
 
 ### Test URLs
 
-- **Score Browser**: http://localhost:3000/scorebook
-- **Test Score 1**: http://localhost:3000/scorebook/test_aire_sureno
-- **Test Score 2**: http://localhost:3000/scorebook/test_romance_anonimo
-- **API Health**: http://localhost:8787/health
+- **Score Browser**: http://www-mirubato.localhost:4000/scorebook
+- **Test Score 1**: http://www-mirubato.localhost:4000/scorebook/test_aire_sureno
+- **Test Score 2**: http://www-mirubato.localhost:4000/scorebook/test_romance_anonimo
+- **API Health**: http://mirubato-api.localhost:9787/health
 - **Test PDFs**:
-  - http://localhost:8787/api/test-data/score_01.pdf
-  - http://localhost:8787/api/test-data/score_02.pdf
+  - http://mirubato-scores.localhost:9788/api/test-data/score_01.pdf
+  - http://mirubato-scores.localhost:9788/api/test-data/score_02.pdf
 
 ## Architecture
 

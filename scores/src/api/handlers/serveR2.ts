@@ -36,7 +36,22 @@ export async function serveR2File(c: Context) {
     const headers = new Headers()
     headers.set('Content-Type', 'application/pdf')
     headers.set('Content-Disposition', `inline; filename="${filename}"`)
-    headers.set('Cache-Control', 'public, max-age=3600')
+
+    // Enhanced cache headers for better performance
+    headers.set('Cache-Control', 'public, max-age=604800, immutable') // 7 days, immutable
+    headers.set('ETag', `"${filename}-v1"`) // Simple ETag for caching
+    headers.set('Last-Modified', new Date().toUTCString()) // Could be actual file modification date
+    headers.set('Vary', 'Accept-Encoding') // Vary on encoding
+
+    // Security headers
+    headers.set('X-Content-Type-Options', 'nosniff')
+    headers.set('X-Frame-Options', 'SAMEORIGIN')
+    headers.set(
+      'Content-Security-Policy',
+      "frame-ancestors 'self' *.mirubato.com http://localhost:* http://*.localhost:*"
+    )
+
+    // CORS headers - already handled by middleware but kept for clarity
     headers.set('Access-Control-Allow-Origin', '*')
     headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
     headers.set('Access-Control-Allow-Headers', 'Content-Type')

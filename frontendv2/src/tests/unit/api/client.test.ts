@@ -65,7 +65,7 @@ describe('API Client', () => {
 
       const createCall = (axios.create as ReturnType<typeof vi.fn>).mock
         .calls[0]
-      expect(createCall[0].baseURL).toBe('http://localhost:8787')
+      expect(createCall[0].baseURL).toBe('http://api-mirubato.localhost:9797')
     })
 
     it('should use staging URL for staging hostname', async () => {

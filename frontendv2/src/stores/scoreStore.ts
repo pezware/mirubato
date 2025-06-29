@@ -50,6 +50,8 @@ interface ScoreStore {
   // Actions
   loadScore: (id: string) => Promise<void>
   setPage: (page: number) => void
+  setCurrentPage: (page: number) => void
+  setTotalPages: (pages: number) => void
   nextPage: () => void
   previousPage: () => void
 
@@ -132,6 +134,24 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     const { totalPages } = get()
     if (page >= 1 && page <= totalPages) {
       set({ currentPage: page })
+    }
+  },
+
+  setCurrentPage: (page: number) => {
+    const { totalPages } = get()
+    if (page >= 1 && page <= totalPages) {
+      set({ currentPage: page })
+    }
+  },
+
+  setTotalPages: (pages: number) => {
+    if (pages >= 1) {
+      set({ totalPages: pages })
+      // Ensure current page is valid
+      const { currentPage } = get()
+      if (currentPage > pages) {
+        set({ currentPage: 1 })
+      }
     }
   },
 

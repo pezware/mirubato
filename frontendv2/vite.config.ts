@@ -5,8 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
-    strictPort: false, // Use next available port if 3000 is taken
+    port: 4000,
+    strictPort: false,
+    host: process.env.CI ? 'localhost' : 'www-mirubato.localhost',
   },
   publicDir: 'public',
   build: {
@@ -58,6 +59,10 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'vexflow', 'tone'],
+    include: ['react', 'react-dom', 'vexflow', 'tone', 'pdfjs-dist'],
+  },
+  // Ensure PDF.js worker is properly handled
+  worker: {
+    format: 'es',
   },
 })

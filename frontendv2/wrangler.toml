@@ -11,6 +11,7 @@ binding = "ASSETS"
 
 [vars]
 API_URL = "https://api.mirubato.com"
+SCORES_URL = "https://scores.mirubato.com"
 
 [[routes]]
 pattern = "mirubato.com"
@@ -27,6 +28,7 @@ workers_dev = false
 
 [env.production.vars]
 API_URL = "https://api.mirubato.com"
+SCORES_URL = "https://scores.mirubato.com"
 
 [[env.production.routes]]
 pattern = "mirubato.com"
@@ -47,6 +49,7 @@ workers_dev = false
 
 [env.staging.vars]
 API_URL = "https://api-staging.mirubato.com"
+SCORES_URL = "https://scores-staging.mirubato.com"
 
 [[env.staging.routes]]
 pattern = "staging.mirubato.com"
@@ -70,4 +73,5 @@ name = "mirubato-frontendv2-local"
 workers_dev = true
 
 [env.local.vars]
-API_URL = "http://localhost:8787"
+API_URL = "http://api-mirubato.localhost:9797"
+SCORES_URL = "http://scores-mirubato.localhost:9788"

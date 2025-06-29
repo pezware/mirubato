@@ -6,16 +6,23 @@
 
 - **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
 - **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
-- **Deployment**: Auto-triggered by GitHub push (uses top-level production config)
-- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`
+- **Deployment**:
+  - **PR/Branch pushes**: Automatically deploy to staging environment
+  - **Main branch**: Automatically deploy to production
+  - Cloudflare handles deployments via GitHub integration
+- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`, `scores/wrangler.toml`
 
 ### Essential Commands
 
 ```bash
 # Local Development
 npm install                    # Install all dependencies
-npm run dev                    # Start frontendv2 (port 3000)
-npm run dev:api                # Start api (port 8787) - uses --env local
+./start-scorebook.sh           # Start all services with proper domains
+
+# Individual services (for debugging)
+cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
+cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
+cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
 
 # API Development
 cd api && npm run dev          # Full dev workflow (build + server)
@@ -31,6 +38,7 @@ cd api && wrangler deploy                  # Deploy to production (default)
 cd api && wrangler deploy --env staging    # Deploy to staging
 
 # Scores
+./start-scorebook.sh
 cd scores && wrangler deploy               # Deploy to production (default)
 cd scores && wrangler deploy --env staging # Deploy to staging
 ```
@@ -48,6 +56,24 @@ mirubato/
 └── config/
     └── environments.json  # Domain and team configuration
 ```
+
+### Local Development Architecture
+
+We use explicit localhost domains with ports to properly simulate production environment and catch CORS issues:
+
+- **Frontend**: `http://www-mirubato.localhost:4000` (Vite dev server)
+- **API**: `http://api-mirubato.localhost:9797` (Wrangler dev)
+- **Scores**: `http://scores-mirubato.localhost:9788` (Wrangler dev)
+
+This approach:
+
+- ✅ Catches CORS issues during development
+- ✅ Maintains service isolation
+- ✅ Uses consistent URLs across environments
+- ✅ Avoids mixing temporary Cloudflare URLs
+- ✅ Works without root privileges (no port 80)
+
+**Note**: The `.localhost` domains automatically resolve to 127.0.0.1 on most systems.
 
 ## 🛠 Quick Debugging Reference
 
@@ -215,7 +241,10 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 1. **Environment-based**: All environments defined in `wrangler.toml`
 2. **Production default**: Top-level config is production (no --env flag needed)
 3. **Local development**: Uses `--env local` for placeholder values
-4. **No manual generation**: Direct deployment with wrangler
+4. **Automatic deployments**:
+   - Push to PR → Cloudflare deploys to staging automatically
+   - Merge to main → Cloudflare deploys to production automatically
+   - No manual `wrangler deploy` needed for staging/production
 
 ### Environment Detection
 
