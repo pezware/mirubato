@@ -1,3 +1,5 @@
+/* eslint-disable no-empty-pattern */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { test as base } from '@playwright/test'
 
 // Extend basic test with automatic isolation
