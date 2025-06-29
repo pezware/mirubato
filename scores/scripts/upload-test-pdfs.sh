@@ -4,22 +4,27 @@
 
 echo "Uploading test PDFs to R2..."
 
+# Check if test-data directory exists
+if [ ! -d "test-data" ]; then
+  echo "Error: test-data directory not found!"
+  echo "Make sure you're running this script from the scores directory."
+  exit 1
+fi
+
 # Upload score_01.pdf
 echo "Uploading score_01.pdf..."
 npx wrangler r2 object put mirubato-scores-local/test-data/score_01.pdf \
   --file=test-data/score_01.pdf \
-  --content-type="application/pdf" \
-  --env local
+  --local
 
 # Upload score_02.pdf  
 echo "Uploading score_02.pdf..."
 npx wrangler r2 object put mirubato-scores-local/test-data/score_02.pdf \
   --file=test-data/score_02.pdf \
-  --content-type="application/pdf" \
-  --env local
+  --local
 
 echo "Test PDFs uploaded successfully!"
 
-# List uploaded files
+# List uploaded files (note: 'objects' with an 's')
 echo "Verifying uploaded files..."
-npx wrangler r2 object list mirubato-scores-local --env local --prefix="test-data/"
+npx wrangler r2 bucket list mirubato-scores-local --local

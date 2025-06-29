@@ -21,7 +21,12 @@ echo "📚 Starting Scores Service (port 8787)..."
 cd scores && npm run dev &
 SCORES_PID=$!
 
-# Wait a moment for scores service to start
+# Start PDF server
+echo "📄 Starting PDF Server (port 8788)..."
+cd scores && node serve-test-pdfs.js &
+PDF_PID=$!
+
+# Wait a moment for services to start
 sleep 3
 
 # Start frontend
@@ -40,6 +45,7 @@ echo "   - Scorebook: http://localhost:3000/scorebook"
 echo "   - Score 1:   http://localhost:3000/scorebook/test_aire_sureno"
 echo "   - Score 2:   http://localhost:3000/scorebook/test_romance_anonimo"
 echo "   - API:       http://localhost:8787/api/scores"
+echo "   - PDFs:      http://localhost:8788/score_01.pdf"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""

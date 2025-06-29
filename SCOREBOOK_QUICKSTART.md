@@ -20,14 +20,13 @@ cd frontendv2
 npm run dev
 ```
 
-### 2. Upload Test PDFs (First time only)
+### 2. Alternative: Use the All-in-One Script
 
 ```bash
-cd scores
-npm run upload:test-pdfs
+./start-scorebook.sh
 ```
 
-Note: If you see an R2 error, that's OK - the PDFs will be served from a fallback location.
+This script starts all services including a PDF server for local development.
 
 ### 3. Test the Scorebook
 
