@@ -119,7 +119,18 @@ export function addCacheHeaders(
   // Security headers for public content
   if (options?.isPublic) {
     headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('X-Frame-Options', 'SAMEORIGIN')
+    // Allow PDFs to be embedded in iframes from mirubato domains
+    if (contentType.includes('pdf')) {
+      // Remove X-Frame-Options to allow embedding
+      headers.delete('X-Frame-Options')
+      // Use CSP frame-ancestors instead for better control
+      headers.set(
+        'Content-Security-Policy',
+        'frame-ancestors https://mirubato.com https://staging.mirubato.com http://www-mirubato.localhost:4000'
+      )
+    } else {
+      headers.set('X-Frame-Options', 'SAMEORIGIN')
+    }
   }
 
   return new Response(response.body, {
