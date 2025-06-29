@@ -171,7 +171,7 @@ test.describe('Logbook Features - Fixed', () => {
           console.log(`Found duration with selector: ${selector}`)
           break
         }
-      } catch (e) {
+      } catch (_e) {
         // Continue to next selector
       }
     }

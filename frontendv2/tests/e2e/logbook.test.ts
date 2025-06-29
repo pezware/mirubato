@@ -129,7 +129,7 @@ test.describe('Logbook Features', () => {
           entryFound = true
           break
         }
-      } catch (e) {
+      } catch (_e) {
         // Continue to next selector
       }
     }

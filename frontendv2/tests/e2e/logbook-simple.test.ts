@@ -113,7 +113,7 @@ test.describe('Logbook Basic Functionality', () => {
     await page.waitForTimeout(2000)
 
     // Check if we're already on the reports view (some implementations auto-switch)
-    let onReports = await page
+    const onReports = await page
       .locator('text="Total Practice"')
       .isVisible({ timeout: 2000 })
       .catch(() => false)
