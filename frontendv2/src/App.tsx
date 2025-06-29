@@ -15,6 +15,8 @@ import HomePage from './pages/Home'
 // Lazy load other pages
 const LogbookPage = lazy(() => import('./pages/Logbook'))
 const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
+const ScorebookPage = lazy(() => import('./pages/Scorebook'))
+const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -58,6 +60,42 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Scorebook routes (public access) */}
+            <Route path="/scorebook">
+              <Route
+                index
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ScoreBrowser />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="browse"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ScoreBrowser />
+                  </Suspense>
+                }
+              />
+              <Route
+                path=":scoreId"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ScorebookPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="collection/:slug"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ScoreBrowser />
+                  </Suspense>
+                }
+              />
+            </Route>
 
             {/* Redirect unknown routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -5,6 +5,14 @@ import { HTTPException } from 'hono/http-exception'
 import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
+import { serveR2File } from './api/handlers/serveR2'
+import { seedTestData } from './api/handlers/devSeed'
+import {
+  uploadScore,
+  uploadBase64,
+  checkFile,
+  deleteFile,
+} from './api/handlers/upload'
 import {
   addCacheHeaders,
   getCachedResponse,
@@ -25,6 +33,7 @@ app.use(
       // Allow requests from mirubato domains and localhost
       const allowedOrigins = [
         'http://localhost:3000',
+        'http://localhost:5173', // Vite default port
         'http://localhost:8787',
         'https://mirubato.com',
         'https://www.mirubato.com',
@@ -64,6 +73,18 @@ app.get('/api/docs', c => c.redirect('/docs'))
 
 // Mount API routes
 app.route('/api', api)
+
+// Add route for serving test PDFs from R2
+app.get('/api/test-data/:filename', serveR2File)
+
+// Development-only routes - these check the environment in the handler
+app.post('/api/dev/seed', seedTestData)
+app.post('/api/dev/upload', uploadBase64)
+
+// Upload routes
+app.post('/api/upload', uploadScore)
+app.get('/api/check/:key', checkFile)
+app.delete('/api/file/:key', deleteFile)
 
 // Default route
 app.get('/', c => {
