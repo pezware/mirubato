@@ -431,6 +431,10 @@ describe('EnhancedPracticeReports', () => {
   it('should format duration correctly', () => {
     render(<EnhancedPracticeReports />)
 
+    // Click on "All Time" filter to ensure all entries are included
+    const allTimeButton = screen.getByText('reports:filters.allTime')
+    fireEvent.click(allTimeButton)
+
     // Should format total duration (30 + 45 + 60 = 135 minutes = 2h 15m)
     expect(screen.getByText('2h 15m')).toBeInTheDocument()
   })
