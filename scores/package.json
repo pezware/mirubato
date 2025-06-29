@@ -46,9 +46,11 @@
   },
   "dependencies": {
     "@cloudflare/puppeteer": "^1.0.3",
+    "aws4fetch": "^1.0.20",
     "hono": "^4.6.13",
     "jose": "^5.2.0",
     "nanoid": "^5.0.4",
+    "pdfjs-dist": "^5.3.31",
     "zod": "^3.22.4"
   }
 }
