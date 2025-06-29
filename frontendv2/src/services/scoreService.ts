@@ -1,4 +1,4 @@
-import { apiClient } from '../api/client'
+import axios from 'axios'
 
 // Types for the scores service
 export interface Score {
@@ -63,118 +63,164 @@ export interface ScoreListResponse {
 }
 
 // Get the scores API URL from environment or use local development
-const SCORES_API_URL =
-  import.meta.env.VITE_SCORES_API_URL || 'http://localhost:8787'
+const getScoresApiUrl = () => {
+  const hostname = window.location.hostname
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return import.meta.env.VITE_SCORES_API_URL || 'http://localhost:8787'
+  } else if (hostname.includes('staging')) {
+    return 'https://scores-staging.mirubato.com'
+  } else {
+    return 'https://scores.mirubato.com'
+  }
+}
+
+// Create axios instance for scores API
+const scoresApiClient = axios.create({
+  baseURL: getScoresApiUrl(),
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Request interceptor to add auth token
+scoresApiClient.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('auth-token')
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor for error handling
+scoresApiClient.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('auth-token')
+      localStorage.removeItem('refresh-token')
+
+      // Redirect to login if not on public pages
+      const publicPaths = ['/', '/auth/verify', '/scorebook']
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/'
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
 
 class ScoreService {
   private scoresApiUrl: string
 
   constructor() {
-    this.scoresApiUrl = SCORES_API_URL
+    this.scoresApiUrl = getScoresApiUrl()
   }
 
   // Get all scores with optional filtering
   async getScores(params?: ScoreSearchParams): Promise<ScoreListResponse> {
-    const queryParams = new URLSearchParams()
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            value.forEach(v => queryParams.append(key, v))
-          } else {
-            queryParams.append(key, String(value))
-          }
-        }
-      })
+    try {
+      const response = await scoresApiClient.get('/api/scores', { params })
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch scores: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
     }
-
-    const response = await fetch(
-      `${this.scoresApiUrl}/api/scores?${queryParams}`
-    )
-    if (!response.ok) {
-      throw new Error(`Failed to fetch scores: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Get a single score by ID
   async getScore(id: string): Promise<Score> {
-    const response = await fetch(`${this.scoresApiUrl}/api/scores/${id}`)
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Score not found')
+    try {
+      const response = await scoresApiClient.get(`/api/scores/${id}`)
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Score not found')
+        }
+        throw new Error(
+          `Failed to fetch score: ${error.response?.statusText || error.message}`
+        )
       }
-      throw new Error(`Failed to fetch score: ${response.statusText}`)
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Search scores
   async searchScores(params: ScoreSearchParams): Promise<ScoreListResponse> {
-    const queryParams = new URLSearchParams()
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(v => queryParams.append(key, v))
-        } else {
-          queryParams.append(key, String(value))
-        }
+    try {
+      const response = await scoresApiClient.get('/api/search', { params })
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Search failed: ${error.response?.statusText || error.message}`
+        )
       }
-    })
-
-    const response = await fetch(
-      `${this.scoresApiUrl}/api/search?${queryParams}`
-    )
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.statusText}`)
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Get all collections
   async getCollections(): Promise<Collection[]> {
-    const response = await fetch(`${this.scoresApiUrl}/api/collections`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch collections: ${response.statusText}`)
+    try {
+      const response = await scoresApiClient.get('/api/collections')
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Get featured collections
   async getFeaturedCollections(): Promise<Collection[]> {
-    const response = await fetch(
-      `${this.scoresApiUrl}/api/collections?featured=true`
-    )
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch featured collections: ${response.statusText}`
-      )
+    try {
+      const response = await scoresApiClient.get('/api/collections', {
+        params: { featured: true },
+      })
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch featured collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Get a collection by slug
   async getCollection(slug: string): Promise<Collection> {
-    const response = await fetch(`${this.scoresApiUrl}/api/collections/${slug}`)
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Collection not found')
+    try {
+      const response = await scoresApiClient.get(`/api/collections/${slug}`)
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found')
+        }
+        throw new Error(
+          `Failed to fetch collection: ${error.response?.statusText || error.message}`
+        )
       }
-      throw new Error(`Failed to fetch collection: ${response.statusText}`)
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Get the PDF URL for a score
@@ -202,48 +248,45 @@ class ScoreService {
     id: string,
     options: { format?: 'svg' | 'png'; page?: number; zoom?: number } = {}
   ): Promise<string> {
-    const queryParams = new URLSearchParams()
-    if (options.format) queryParams.append('format', options.format)
-    if (options.page !== undefined)
-      queryParams.append('page', String(options.page))
-    if (options.zoom !== undefined)
-      queryParams.append('zoom', String(options.zoom))
-
-    const response = await fetch(
-      `${this.scoresApiUrl}/api/scores/${id}/render?${queryParams}`
-    )
-    if (!response.ok) {
-      throw new Error(`Failed to render score: ${response.statusText}`)
+    try {
+      const response = await scoresApiClient.get(`/api/scores/${id}/render`, {
+        params: options,
+      })
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to render score: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 
   // Upload a PDF score (authenticated users only)
   async uploadScore(file: File, metadata: Partial<Score>): Promise<Score> {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('metadata', JSON.stringify(metadata))
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('metadata', JSON.stringify(metadata))
 
-    const response = await fetch(`${this.scoresApiUrl}/api/import/pdf`, {
-      method: 'POST',
-      headers: {
-        // Auth header will be added by interceptor if using apiClient
-        Authorization: `Bearer ${localStorage.getItem('authToken') || ''}`,
-      },
-      body: formData,
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Authentication required')
+      const response = await scoresApiClient.post('/api/import/pdf', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Upload failed: ${error.response?.statusText || error.message}`
+        )
       }
-      throw new Error(`Upload failed: ${response.statusText}`)
+      throw error
     }
-
-    const data = await response.json()
-    return data.data
   }
 }
 

@@ -7,8 +7,14 @@ interface ScoreViewerProps {
 }
 
 export default function ScoreViewer({ score }: ScoreViewerProps) {
-  const { currentPage, totalPages, autoScrollEnabled, scrollSpeed } =
-    useScoreStore()
+  const {
+    currentPage,
+    totalPages,
+    autoScrollEnabled,
+    scrollSpeed,
+    previousPage,
+    nextPage,
+  } = useScoreStore()
   const containerRef = useRef<HTMLDivElement>(null)
   const [pdfUrl, setPdfUrl] = useState<string>('')
   const [isLoadingPdf, setIsLoadingPdf] = useState(true)
@@ -134,7 +140,7 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
       {totalPages > 1 && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-full shadow-lg px-4 py-2">
           <button
-            onClick={() => useScoreStore.getState().previousPage()}
+            onClick={previousPage}
             disabled={currentPage === 1}
             className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
@@ -158,7 +164,7 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
           </span>
 
           <button
-            onClick={() => useScoreStore.getState().nextPage()}
+            onClick={nextPage}
             disabled={currentPage === totalPages}
             className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >

@@ -25,6 +25,6 @@ npx wrangler r2 object put mirubato-scores-local/test-data/score_02.pdf \
 
 echo "Test PDFs uploaded successfully!"
 
-# List uploaded files (note: 'objects' with an 's')
+# List uploaded files
 echo "Verifying uploaded files..."
-npx wrangler r2 bucket list mirubato-scores-local --local
+npx wrangler r2 object list mirubato-scores-local --local
