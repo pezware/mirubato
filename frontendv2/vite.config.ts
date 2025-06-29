@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 4000,
     strictPort: false,
-    host: 'www-mirubato.localhost',
+    host: process.env.CI ? 'localhost' : 'www-mirubato.localhost',
   },
   publicDir: 'public',
   build: {
