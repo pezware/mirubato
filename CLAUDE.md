@@ -6,8 +6,11 @@
 
 - **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
 - **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
-- **Deployment**: Auto-triggered by GitHub push (uses top-level production config)
-- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`
+- **Deployment**:
+  - **PR/Branch pushes**: Automatically deploy to staging environment
+  - **Main branch**: Automatically deploy to production
+  - Cloudflare handles deployments via GitHub integration
+- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`, `scores/wrangler.toml`
 
 ### Essential Commands
 
@@ -238,7 +241,10 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 1. **Environment-based**: All environments defined in `wrangler.toml`
 2. **Production default**: Top-level config is production (no --env flag needed)
 3. **Local development**: Uses `--env local` for placeholder values
-4. **No manual generation**: Direct deployment with wrangler
+4. **Automatic deployments**:
+   - Push to PR → Cloudflare deploys to staging automatically
+   - Merge to main → Cloudflare deploys to production automatically
+   - No manual `wrangler deploy` needed for staging/production
 
 ### Environment Detection
 
