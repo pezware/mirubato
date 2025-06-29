@@ -20,17 +20,19 @@ export interface PdfInfo {
   modificationDate?: Date
 }
 
-enum PdfErrorCode {
-  NETWORK_TIMEOUT = 'E001',
-  CORRUPTED_FILE = 'E002',
-  PASSWORD_PROTECTED = 'E003',
-  UNSUPPORTED_VERSION = 'E004',
-  MEMORY_EXCEEDED = 'E005',
-  UNKNOWN_ERROR = 'E999',
-}
+const PdfErrorCode = {
+  NETWORK_TIMEOUT: 'E001',
+  CORRUPTED_FILE: 'E002',
+  PASSWORD_PROTECTED: 'E003',
+  UNSUPPORTED_VERSION: 'E004',
+  MEMORY_EXCEEDED: 'E005',
+  UNKNOWN_ERROR: 'E999',
+} as const
+
+type PdfErrorCodeType = (typeof PdfErrorCode)[keyof typeof PdfErrorCode]
 
 export interface PdfError {
-  code: PdfErrorCode
+  code: PdfErrorCodeType
   message: string
   details?: unknown
   recoverable: boolean
@@ -127,19 +129,20 @@ export default function PdfJsViewer({
 
         // Extract metadata
         pdf.getMetadata().then(metadata => {
+          const metaInfo = metadata.info as Record<string, unknown> | null
           const info: PdfInfo = {
             numPages: pdf.numPages,
-            title: metadata.info?.Title as string | undefined,
-            author: metadata.info?.Author as string | undefined,
-            subject: metadata.info?.Subject as string | undefined,
-            keywords: metadata.info?.Keywords as string | undefined,
-            creator: metadata.info?.Creator as string | undefined,
-            producer: metadata.info?.Producer as string | undefined,
-            creationDate: metadata.info?.CreationDate
-              ? new Date(metadata.info.CreationDate as string)
+            title: metaInfo?.['Title'] as string | undefined,
+            author: metaInfo?.['Author'] as string | undefined,
+            subject: metaInfo?.['Subject'] as string | undefined,
+            keywords: metaInfo?.['Keywords'] as string | undefined,
+            creator: metaInfo?.['Creator'] as string | undefined,
+            producer: metaInfo?.['Producer'] as string | undefined,
+            creationDate: metaInfo?.['CreationDate']
+              ? new Date(metaInfo['CreationDate'] as string)
               : undefined,
-            modificationDate: metadata.info?.ModDate
-              ? new Date(metadata.info.ModDate as string)
+            modificationDate: metaInfo?.['ModDate']
+              ? new Date(metaInfo['ModDate'] as string)
               : undefined,
           }
           onLoad?.(info)

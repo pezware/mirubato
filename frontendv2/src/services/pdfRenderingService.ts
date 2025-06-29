@@ -178,7 +178,7 @@ export class PdfRenderingService {
     }
 
     const renderContext = {
-      canvasContext: context,
+      canvasContext: context as unknown as CanvasRenderingContext2D,
       viewport: viewport,
     }
 
@@ -250,7 +250,7 @@ export class PdfRenderingService {
   }
 
   // Queue management for preventing simultaneous renders
-  private async processRenderQueue(): Promise<void> {
+  async processRenderQueue(): Promise<void> {
     if (this.isRendering || this.renderQueue.length === 0) return
 
     this.isRendering = true
