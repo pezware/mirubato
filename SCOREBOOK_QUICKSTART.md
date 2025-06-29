@@ -37,6 +37,8 @@ Open your browser and visit:
 - **Test Score 1**: http://localhost:3000/scorebook/test_aire_sureno
 - **Test Score 2**: http://localhost:3000/scorebook/test_romance_anonimo
 
+**Note**: The frontend runs on port 3000 by default. If you see port 5173, that's Vite's default - check your terminal output for the actual URL.
+
 ### 4. What to Expect
 
 **Without PDFs uploaded:**

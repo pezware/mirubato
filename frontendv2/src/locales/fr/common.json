@@ -20,6 +20,8 @@
   "success": "Succès",
   "warning": "Avertissement",
   "info": "Information",
+  "signIn": "Se connecter",
+  "retry": "Réessayer",
   "instruments": {
     "piano": "Piano",
     "guitar": "Guitare"
