@@ -71,7 +71,10 @@ const getScoresApiUrl = () => {
     hostname === '127.0.0.1' ||
     hostname.endsWith('.localhost')
   ) {
-    return import.meta.env.VITE_SCORES_API_URL || 'http://localhost:8787'
+    return (
+      import.meta.env.VITE_SCORES_API_URL ||
+      'http://scores-mirubato.localhost:9788'
+    )
   } else if (hostname.includes('staging')) {
     return 'https://scores-staging.mirubato.com'
   } else {
