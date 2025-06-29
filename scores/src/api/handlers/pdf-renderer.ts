@@ -90,6 +90,7 @@ pdfRendererHandler.get('/render-google/:scoreId/page/:pageNumber', async c => {
   }
 
   const scoreId = c.req.param('scoreId')
+  void scoreId // Will be used when connecting to actual PDFs
   const pageNumber = parseInt(c.req.param('pageNumber'))
   const width = parseInt(c.req.query('width') || '1200')
 
@@ -240,7 +241,7 @@ pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
         <div class="staff-lines">
           ${[0, 1, 2, 3]
             .map(
-              staffNum => `
+              _staffNum => `
             <div class="staff">
               ${[0, 1, 2, 3, 4]
                 .map(
