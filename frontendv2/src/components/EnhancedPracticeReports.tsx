@@ -351,6 +351,7 @@ export default function EnhancedPracticeReports() {
               pieceAutocomplete.setQuery('')
               composerAutocomplete.setQuery('')
             }}
+            data-testid="overview-tab"
             className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors ${
               reportView === 'overview'
                 ? 'bg-white text-morandi-stone-900 shadow-sm'
@@ -362,6 +363,7 @@ export default function EnhancedPracticeReports() {
           </button>
           <button
             onClick={() => setReportView('pieces')}
+            data-testid="pieces-tab"
             className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors ${
               reportView === 'pieces'
                 ? 'bg-white text-morandi-stone-900 shadow-sm'
@@ -380,6 +382,7 @@ export default function EnhancedPracticeReports() {
                 setShowSuccessMessage(false)
               }
             }}
+            data-testid="new-entry-tab"
             className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors ${
               reportView === 'newEntry'
                 ? 'bg-white text-morandi-stone-900 shadow-sm'
@@ -1095,6 +1098,7 @@ export default function EnhancedPracticeReports() {
               {filteredAndSortedEntries.map(entry => (
                 <div
                   key={entry.id}
+                  data-testid="logbook-entry"
                   className="group flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 rounded-lg bg-morandi-stone-50 hover:bg-morandi-stone-100 transition-colors"
                 >
                   <div className="flex-1 mb-2 md:mb-0">
@@ -1295,6 +1299,7 @@ export default function EnhancedPracticeReports() {
                   {filteredAndSortedEntries.map(entry => (
                     <div
                       key={entry.id}
+                      data-testid="logbook-entry"
                       className="group flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 rounded-lg bg-morandi-stone-50 hover:bg-morandi-stone-100 transition-colors"
                     >
                       <div className="flex-1 mb-2 md:mb-0">

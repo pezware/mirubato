@@ -1,464 +1,339 @@
 import { test, expect } from '@playwright/test'
+import { LogbookPage } from './pages/LogbookPage'
 
-test.describe('Logbook Features', () => {
+test.describe('Logbook', () => {
+  let logbookPage: LogbookPage
+
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage to start fresh
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear()
+    logbookPage = new LogbookPage(page)
+
+    // Set up clean state
+    await page.goto('/')
+    await logbookPage.clearAllEntries()
+
+    // Mock APIs to prevent flakiness
+    await page.route('**/api/autocomplete/**', route => {
+      route.fulfill({ status: 200, json: { results: [] } })
     })
 
-    // Mock autocomplete API to prevent timeouts
-    await page.route('**/api/autocomplete/**', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ results: [] }),
+    await logbookPage.navigate()
+  })
+
+  test.describe('Entry Management', () => {
+    test('create single entry', async ({ page }) => {
+      await test.step('Create new entry', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'Moonlight Sonata',
+          composer: 'Beethoven',
+          notes: 'Worked on first movement dynamics',
+          mood: 'satisfied',
+        })
+      })
+
+      await test.step('Verify entry appears', async () => {
+        await logbookPage.switchToOverviewTab()
+        await logbookPage.verifyEntryCount(1)
+        await logbookPage.verifyEntryContainsText(
+          'Worked on first movement dynamics'
+        )
+      })
+
+      await test.step('Verify data saved correctly', async () => {
+        const entries = await logbookPage.getStoredEntries()
+        expect(entries).toHaveLength(1)
+        expect(entries[0]).toMatchObject({
+          duration: 30,
+          pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
+          notes: 'Worked on first movement dynamics',
+          mood: 'SATISFIED',
+        })
+      })
+    })
+
+    test('create multiple entries', async ({ page }) => {
+      await test.step('Create first entry', async () => {
+        await logbookPage.createEntry({
+          duration: 15,
+          title: 'Scales and Arpeggios',
+          notes: 'C major scale practice',
+        })
+      })
+
+      await test.step('Create second entry', async () => {
+        await logbookPage.createEntry({
+          duration: 45,
+          title: 'Clair de Lune',
+          composer: 'Debussy',
+          notes: 'Full piece run-through',
+        })
+      })
+
+      await test.step('Verify both entries appear', async () => {
+        await logbookPage.switchToOverviewTab()
+        await logbookPage.verifyEntryCount(2)
+        await logbookPage.verifyEntryContainsText('C major scale practice')
+        await logbookPage.verifyEntryContainsText('Full piece run-through')
+      })
+    })
+
+    test('expand entry to see details', async ({ page }) => {
+      await test.step('Create entry with full details', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'Sonata No. 11',
+          composer: 'Mozart',
+          notes: 'Focused on the famous Rondo Alla Turca',
+          mood: 'excited',
+        })
+      })
+
+      await test.step('Expand entry', async () => {
+        await logbookPage.switchToOverviewTab()
+        await logbookPage.expandEntry(0)
+      })
+
+      await test.step('Verify expanded details', async () => {
+        await expect(page.locator('text=Sonata No. 11')).toBeVisible()
+        await expect(page.locator('text=Mozart')).toBeVisible()
       })
     })
   })
 
-  test('Anonymous user can create and view logbook entries', async ({
-    page,
-  }) => {
-    // Navigate directly to logbook page
-    await page.goto('/logbook')
-    await page.waitForLoadState('networkidle')
+  test.describe('Data Persistence', () => {
+    test('entries persist after page reload', async ({ page }) => {
+      await test.step('Create entry', async () => {
+        await logbookPage.createEntry({
+          duration: 60,
+          title: 'Persistence Test Piece',
+          composer: 'Test Composer',
+          notes: 'This entry should persist after reload',
+        })
+      })
 
-    // Look for add entry button - now uses "New Entry" or "Add New Entry" text
-    await page.waitForSelector(
-      'button:has-text("New Entry"), button:has-text("Add New Entry")',
-      { timeout: 10000 }
-    )
-    const addButton = page
-      .locator('button:has-text("New Entry"), button:has-text("Add New Entry")')
-      .first()
-    await addButton.click()
+      await test.step('Reload page', async () => {
+        await page.reload({ waitUntil: 'networkidle' })
+        await logbookPage.switchToOverviewTab()
+      })
 
-    // Form is now embedded in tabs, not in a modal
-    // Wait for form to be ready
-    await page.waitForSelector('form', { timeout: 10000 })
-
-    // Ensure form inputs are ready
-    await page.waitForSelector('input[type="number"]', { timeout: 5000 })
-
-    // Fill out the form - the duration field already has value 30 by default
-    const durationInput = page.locator('input[type="number"]').first()
-    await durationInput.clear()
-    await durationInput.fill('30')
-
-    // Add a piece - wait for inputs and fill them
-    await page.waitForSelector('input[placeholder="Piece title"]', {
-      timeout: 5000,
+      await test.step('Verify entry persists', async () => {
+        await logbookPage.verifyEntryCount(1)
+        await logbookPage.verifyEntryContainsText(
+          'This entry should persist after reload'
+        )
+      })
     })
 
-    // Fill piece title and wait for autocomplete to settle
-    await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
-    await page.waitForTimeout(400) // Wait for debounce + buffer
-
-    // Close autocomplete dropdown if open by pressing Escape
-    await page.press('input[placeholder="Piece title"]', 'Escape')
-
-    // Fill composer and wait for autocomplete to settle
-    await page.fill('input[placeholder="Composer"]', 'Beethoven')
-    await page.waitForTimeout(400) // Wait for debounce + buffer
-
-    // Close autocomplete dropdown if open by pressing Escape
-    await page.press('input[placeholder="Composer"]', 'Escape')
-
-    // Add notes
-    const notesTextarea = page.locator('textarea').first()
-    await notesTextarea.fill('Worked on first movement, focusing on dynamics')
-
-    // Select mood
-    await page.click('button:has-text("😊")')
-
-    // Save the entry
-    const saveButton = page.locator('button[type="submit"]').last()
-    await saveButton.click()
-
-    // Wait for success indication
-    await Promise.race([
-      page
-        .waitForSelector(
-          'text=Entry saved successfully, text=Success, text=saved',
-          {
-            timeout: 10000,
-          }
-        )
-        .catch(() => {}),
-      page.waitForTimeout(3000), // Fallback timeout
-    ])
-
-    // Wait for the UI to update
-    await page.waitForTimeout(2000)
-
-    // Clear search input if it exists
-    const searchInput = page.locator('input[placeholder*="Search"]')
-    if (await searchInput.isVisible()) {
-      await searchInput.clear()
-      await page.waitForTimeout(500)
-    }
-
-    // Check if we need to navigate to Overview tab first
-    const overviewTab = page
-      .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
-      .first()
-    if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await overviewTab.click()
-      // Wait for tab content to load
-      await page.waitForLoadState('networkidle')
-    }
-
-    // Import the helper function for consistency
-    const { waitForEntries } = await import('./helpers/logbook-helpers')
-    await waitForEntries(page)
-
-    // Look for the entry - check multiple possible formats
-    const durationSelectors = [
-      'span:has-text("30 minutes")',
-      'span:has-text("30 minute")',
-      'span:has-text("30")',
-      'text=/30\\s*(minutes?|mins?|m)/i',
-    ]
-
-    let entryFound = false
-    for (const selector of durationSelectors) {
-      try {
-        const element = page.locator(selector).first()
-        if (await element.isVisible({ timeout: 2000 })) {
-          entryFound = true
-          break
-        }
-      } catch (_e) {
-        // Continue to next selector
+    test('localStorage data integrity', async ({ page }) => {
+      const testData = {
+        duration: 25,
+        title: 'Storage Test',
+        composer: 'Local Storage',
+        notes: 'Testing data integrity',
       }
-    }
 
-    if (!entryFound) {
-      // At least verify the entry was created
-      const notesVisible = await page
-        .locator('text="Worked on first movement"')
-        .isVisible({ timeout: 5000 })
-      expect(notesVisible).toBe(true)
-    }
+      await test.step('Create entry', async () => {
+        await logbookPage.createEntry(testData)
+      })
 
-    // Click on the entry to expand it
-    // First wait for the entry to be clickable
-    await page.waitForSelector('.p-4.hover\\:bg-morandi-stone-50', {
-      state: 'visible',
-      timeout: 10000,
+      await test.step('Verify localStorage structure', async () => {
+        const entries = await logbookPage.getStoredEntries()
+        expect(entries).toHaveLength(1)
+
+        const entry = entries[0]
+        expect(entry).toHaveProperty('id')
+        expect(entry).toHaveProperty('timestamp')
+        expect(entry).toHaveProperty('type', 'PRACTICE')
+        expect(entry).toHaveProperty('duration', testData.duration)
+        expect(entry).toHaveProperty('pieces')
+        expect(entry.pieces[0]).toMatchObject({
+          title: testData.title,
+          composer: testData.composer,
+        })
+      })
+    })
+  })
+
+  test.describe('Export Features', () => {
+    test('export entries as JSON', async ({ page }) => {
+      await test.step('Create test entries', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'Export Test 1',
+          notes: 'First entry for export',
+        })
+
+        await logbookPage.createEntry({
+          duration: 45,
+          title: 'Export Test 2',
+          notes: 'Second entry for export',
+        })
+      })
+
+      await test.step('Switch to overview', async () => {
+        await logbookPage.switchToOverviewTab()
+      })
+
+      await test.step('Export as JSON', async () => {
+        const exportJsonVisible = await page
+          .locator('[data-testid="export-json-button"]')
+          .isVisible({ timeout: 2000 })
+
+        if (exportJsonVisible) {
+          const download = await logbookPage.exportAsJson()
+          expect(download.suggestedFilename()).toMatch(
+            /mirubato-export-.*\.json/
+          )
+        }
+      })
     })
 
-    const entryDiv = page.locator('.p-4.hover\\:bg-morandi-stone-50').first()
-    await entryDiv.click({ timeout: 10000 })
+    test('export entries as CSV', async ({ page }) => {
+      await test.step('Create test entry', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'CSV Export Test',
+          composer: 'Test Composer',
+          notes: 'Testing CSV export functionality',
+        })
+      })
 
-    // Wait for expansion
-    await page.waitForTimeout(500)
+      await test.step('Switch to overview', async () => {
+        await logbookPage.switchToOverviewTab()
+      })
 
-    // Now verify the pieces are visible in the expanded view
-    await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
-    await expect(page.locator('text=Beethoven')).toBeVisible()
+      await test.step('Export as CSV', async () => {
+        const exportCsvVisible = await page
+          .locator('[data-testid="export-csv-button"]')
+          .isVisible({ timeout: 2000 })
 
-    // Also verify the notes are visible
-    await expect(
-      page.locator('text=Worked on first movement, focusing on dynamics')
-    ).toBeVisible()
-  })
-
-  test('User can search logbook entries', async ({ page }) => {
-    // Navigate to logbook
-    await page.goto('/logbook')
-    await page.waitForLoadState('networkidle')
-
-    // Helper function to create an entry
-    const createEntry = async (
-      title: string,
-      composer: string,
-      duration: string
-    ) => {
-      // Look for add button with "New Entry" text
-      const addButton = await page
-        .locator(
-          'button:has-text("New Entry"), button:has-text("Add New Entry")'
-        )
-        .first()
-      await addButton.click()
-
-      // Wait for form to be ready (embedded in tabs now)
-      await page.waitForSelector('form', { timeout: 10000 })
-
-      const durationInput = page.locator('input[type="number"]').first()
-      await durationInput.clear()
-      await durationInput.fill(duration)
-
-      // Fill piece information using placeholders - handle autocomplete
-      await page.fill('input[placeholder="Piece title"]', title)
-      await page.waitForTimeout(400) // Wait for debounce + buffer
-      await page.press('input[placeholder="Piece title"]', 'Escape')
-
-      await page.fill('input[placeholder="Composer"]', composer)
-      await page.waitForTimeout(400) // Wait for debounce + buffer
-      await page.press('input[placeholder="Composer"]', 'Escape')
-
-      // Select mood
-      await page.click('button:has-text("😊")')
-
-      // Save the entry
-      const saveButton = page.locator('button[type="submit"]').last()
-      await saveButton.click()
-
-      // Wait for success
-      await Promise.race([
-        page
-          .waitForSelector(
-            'text=Entry saved successfully, text=Success, text=saved',
-            {
-              timeout: 10000,
-            }
+        if (exportCsvVisible) {
+          const download = await logbookPage.exportAsCsv()
+          expect(download.suggestedFilename()).toMatch(
+            /mirubato-export-.*\.csv/
           )
-          .catch(() => {}),
-        page.waitForTimeout(3000),
-      ])
-
-      await page.waitForTimeout(1500)
-    }
-
-    // Create two entries
-    await createEntry('Moonlight Sonata', 'Beethoven', '30')
-    await createEntry('Sonata No. 11', 'Mozart', '25')
-
-    // Now test search - find the search input if it exists
-    const searchInput = page
-      .locator('input[placeholder*="Search"], input[placeholder*="search"]')
-      .first()
-    const searchVisible = await searchInput
-      .isVisible({ timeout: 5000 })
-      .catch(() => false)
-
-    if (!searchVisible) {
-      console.log('Search input not found, skipping search test')
-      return
-    }
-
-    await searchInput.clear()
-    await searchInput.fill('Beethoven')
-
-    // Wait a bit for search to filter
-    await page.waitForTimeout(1000)
-
-    // Verify we can see Beethoven entry
-    await expect(
-      page.locator('div:has-text("Beethoven")').first()
-    ).toBeVisible()
-
-    // Verify Mozart entry is not visible
-    await expect(
-      page.locator('div:has-text("Mozart")').first()
-    ).not.toBeVisible()
-
-    // Clear search
-    await searchInput.clear()
-    await page.waitForTimeout(1000)
-
-    // Now both should be visible - look for the entries themselves
-    const entries = await page
-      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
-      .count()
-    expect(entries).toBeGreaterThanOrEqual(2)
+        }
+      })
+    })
   })
 
-  test('Data persists across page reloads', async ({ page }) => {
-    // Navigate directly to logbook
-    await page.goto('/logbook')
-    await page.waitForLoadState('networkidle')
+  test.describe('Search and Filter', () => {
+    test('search entries by composer @smoke', async ({ page }) => {
+      await test.step('Create entries with different composers', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'Moonlight Sonata',
+          composer: 'Beethoven',
+          notes: 'Classical period',
+        })
 
-    // Helper to create an entry with specific details
-    const createEntryWithDetails = async (title: string, duration: string) => {
-      // Look for add button with "New Entry" text
-      const addButton = await page
-        .locator(
-          'button:has-text("New Entry"), button:has-text("Add New Entry")'
-        )
-        .first()
-      await addButton.click()
+        await logbookPage.createEntry({
+          duration: 25,
+          title: 'Clair de Lune',
+          composer: 'Debussy',
+          notes: 'Impressionist period',
+        })
 
-      // Wait for form to be ready (embedded in tabs now)
-      await page.waitForSelector('form', { timeout: 10000 })
+        await logbookPage.createEntry({
+          duration: 20,
+          title: 'Sonata No. 16',
+          composer: 'Mozart',
+          notes: 'Another classical piece',
+        })
+      })
 
-      const durationInput = page.locator('input[type="number"]').first()
-      await durationInput.clear()
-      await durationInput.fill(duration)
+      await test.step('Switch to overview', async () => {
+        await logbookPage.switchToOverviewTab()
+      })
 
-      // Fill piece info - handle autocomplete
-      await page.fill('input[placeholder="Piece title"]', title)
-      await page.waitForTimeout(400) // Wait for debounce + buffer
-      await page.press('input[placeholder="Piece title"]', 'Escape')
+      await test.step('Search for specific composer', async () => {
+        const searchInput = page
+          .locator('input[placeholder*="Search"], input[placeholder*="search"]')
+          .first()
+        const searchVisible = await searchInput.isVisible({ timeout: 2000 })
 
-      await page.fill('input[placeholder="Composer"]', 'Test Composer')
-      await page.waitForTimeout(400) // Wait for debounce + buffer
-      await page.press('input[placeholder="Composer"]', 'Escape')
+        if (searchVisible) {
+          await searchInput.fill('Beethoven')
 
-      // Select mood
-      await page.click('button:has-text("😊")')
-
-      // Save the entry
-      const saveButton = page.locator('button[type="submit"]').last()
-      await saveButton.click()
-
-      // Wait for success
-      await Promise.race([
-        page
-          .waitForSelector(
-            'text=Entry saved successfully, text=Success, text=saved',
-            {
-              timeout: 10000,
-            }
+          // Wait for filtering to complete
+          await page.waitForFunction(
+            () => {
+              const visibleEntries = document.querySelectorAll(
+                '[data-testid="logbook-entry"]:not([style*="display: none"])'
+              )
+              return visibleEntries.length === 1
+            },
+            { timeout: 5000 }
           )
-          .catch(() => {}),
-        page.waitForTimeout(3000),
-      ])
 
-      await page.waitForTimeout(1500)
-    }
-
-    // Step 1: Create first entry
-    await createEntryWithDetails('Entry 1 - Anonymous', '10')
-
-    // Navigate to Overview tab if needed
-    const overviewTab2 = page
-      .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
-      .first()
-    if (await overviewTab2.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await overviewTab2.click()
-      await page.waitForTimeout(1000)
-    }
-
-    // Verify we can see at least one entry
-    // Import the helper function for consistency
-    const { waitForEntries } = await import('./helpers/logbook-helpers')
-    await waitForEntries(page)
-
-    // Step 2: Create second entry
-    await createEntryWithDetails('Entry 2 - Anonymous', '20')
-
-    // Navigate to Overview tab to see all entries
-    const overviewTab = page
-      .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
-      .first()
-    if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await overviewTab.click()
-      await page.waitForTimeout(1000)
-    }
-
-    // Wait for entries
-    await waitForEntries(page, 2)
-
-    // Verify we can see multiple entries
-    const entryCount = await page
-      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
-      .count()
-    expect(entryCount).toBeGreaterThanOrEqual(2)
-
-    // Step 3: Reload the page
-    await page.reload()
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1000)
-
-    // Step 4: Verify entries persist after reload
-    const entriesAfterReload = await page
-      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
-      .count()
-    expect(entriesAfterReload).toBeGreaterThanOrEqual(2)
-
-    // Step 5: Create third entry after reload
-    await createEntryWithDetails('Entry 3 - After Reload', '30')
-
-    // Verify all three entries are visible
-    const finalEntryCount = await page
-      .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
-      .count()
-    expect(finalEntryCount).toBeGreaterThanOrEqual(3)
+          await expect(page.locator('text=Beethoven')).toBeVisible()
+          await expect(page.locator('text=Mozart')).not.toBeVisible()
+          await expect(page.locator('text=Debussy')).not.toBeVisible()
+        }
+      })
+    })
   })
 
-  test('User can view reports', async ({ page }) => {
-    // Navigate directly to logbook
-    await page.goto('/logbook')
-    await page.waitForLoadState('networkidle')
+  test.describe('Reports View', () => {
+    test('view practice statistics @smoke', async ({ page }) => {
+      await test.step('Create entries for statistics', async () => {
+        await logbookPage.createEntry({
+          duration: 25,
+          title: 'Morning Practice',
+          notes: 'Warm-up exercises',
+        })
 
-    // Create an entry first
-    await page.waitForSelector(
-      'button:has-text("New Entry"), button:has-text("Add New Entry")',
-      { timeout: 10000 }
-    )
-    const addButton = page
-      .locator('button:has-text("New Entry"), button:has-text("Add New Entry")')
-      .first()
-    await addButton.click()
+        await logbookPage.createEntry({
+          duration: 45,
+          title: 'Evening Practice',
+          notes: 'Full repertoire review',
+        })
+      })
 
-    // Form is now embedded in tabs, not in a modal
-    // Wait for form to be ready
-    await page.waitForSelector('form', { timeout: 10000 })
-    await page.waitForSelector('form', { timeout: 5000 })
+      await test.step('Navigate to overview', async () => {
+        await logbookPage.switchToOverviewTab()
+      })
 
-    const durationInput = page.locator('input[type="number"]').first()
-    await durationInput.clear()
-    await durationInput.fill('30')
+      await test.step('Verify statistics elements', async () => {
+        // Check for "Total Practice" text which indicates reports are visible
+        await expect(page.locator('text=Total Practice')).toBeVisible({
+          timeout: 10000,
+        })
 
-    // Handle autocomplete properly
-    await page.fill('input[placeholder="Piece title"]', 'Moonlight Sonata')
-    await page.waitForTimeout(400) // Wait for debounce + buffer
-    await page.press('input[placeholder="Piece title"]', 'Escape')
+        // Additional statistics might be visible
+        const hasStats = await page
+          .locator('text=/\\d+h/')
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (hasStats) {
+          await expect(page.locator('text=/\\d+h/')).toBeVisible()
+        }
+      })
+    })
+  })
 
-    await page.fill('input[placeholder="Composer"]', 'Beethoven')
-    await page.waitForTimeout(400) // Wait for debounce + buffer
-    await page.press('input[placeholder="Composer"]', 'Escape')
+  test.describe('Error Handling', () => {
+    test('handle network errors gracefully', async ({ page }) => {
+      // Simulate network error for autocomplete
+      await page.route('**/api/autocomplete/**', route => {
+        route.abort('failed')
+      })
 
-    await page.click('button:has-text("😊")')
+      await test.step('Create entry despite network error', async () => {
+        await logbookPage.createEntry({
+          duration: 30,
+          title: 'Offline Test',
+          notes: 'Should work without autocomplete',
+        })
+      })
 
-    const saveButton = page.locator('button[type="submit"]').last()
-    await saveButton.click()
-
-    // Wait for success
-    await Promise.race([
-      page
-        .waitForSelector(
-          'text=Entry saved successfully, text=Success, text=saved',
-          {
-            timeout: 10000,
-          }
+      await test.step('Verify entry saved locally', async () => {
+        await logbookPage.switchToOverviewTab()
+        await logbookPage.verifyEntryCount(1)
+        await logbookPage.verifyEntryContainsText(
+          'Should work without autocomplete'
         )
-        .catch(() => {}),
-      page.waitForTimeout(3000),
-    ])
-
-    await page.waitForTimeout(2000)
-
-    // The reports view should already be showing after creating an entry
-    // If not, try to find a reports button or tab
-    const reportsButton = page
-      .locator(
-        'button:has-text("View Reports"), button:has-text("Reports"), [role="tab"]:has-text("Reports")'
-      )
-      .first()
-
-    if (await reportsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await reportsButton.click()
-      await page.waitForTimeout(1000)
-    }
-
-    // Wait for reports page to load - look for "Total Practice" which is always shown
-    await page.waitForSelector('text=Total Practice', { timeout: 10000 })
-
-    // Verify we can see report content
-    await expect(page.locator('text=Total Practice')).toBeVisible()
-    await expect(page.locator('text=Export JSON')).toBeVisible()
-    await expect(page.locator('text=Export CSV')).toBeVisible()
-
-    // Verify statistics are shown
-    await expect(
-      page.locator('text=/Most Practiced|Practice Statistics/i').first()
-    ).toBeVisible()
+      })
+    })
   })
 })

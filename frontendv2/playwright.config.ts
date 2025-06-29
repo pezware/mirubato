@@ -5,14 +5,14 @@ export default defineConfig({
   fullyParallel: true, // Enable parallel execution for better performance
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0, // Reduce retries to save time
-  workers: process.env.CI ? 4 : 2, // Use more workers in CI for parallelization
+  workers: process.env.CI ? 2 : undefined, // Optimized for 2 shards in CI
   reporter: process.env.CI ? [['list'], ['html']] : 'html',
   timeout: 30000, // Reduce global timeout to 30 seconds
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: process.env.CI ? 'off' : 'retain-on-failure', // Disable video in CI to save resources
+    trace: process.env.CI ? 'retain-on-failure' : 'on',
+    screenshot: process.env.CI ? 'only-on-failure' : 'on',
+    video: process.env.CI ? 'retain-on-failure' : 'on',
     // Force headless mode
     headless: true,
     // Disable any headed mode options

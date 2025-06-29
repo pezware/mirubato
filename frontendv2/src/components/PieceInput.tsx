@@ -79,6 +79,7 @@ export default function PieceInput({
           placeholder={t('logbook:entry.pieceTitle')}
           isLoading={pieceAutocomplete.isLoading}
           className="flex-1"
+          data-testid="piece-title-input"
         />
 
         <Autocomplete
@@ -94,6 +95,7 @@ export default function PieceInput({
           placeholder={t('logbook:entry.composer')}
           isLoading={composerAutocomplete.isLoading}
           className="flex-1"
+          data-testid="composer-input"
         />
 
         <Button
