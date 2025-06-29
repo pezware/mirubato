@@ -20,7 +20,7 @@ test.describe('Logbook', () => {
   })
 
   test.describe('Entry Management', () => {
-    test('create single entry', async ({ page }) => {
+    test('create single entry', async () => {
       await test.step('Create new entry', async () => {
         await logbookPage.createEntry({
           duration: 30,
@@ -51,7 +51,7 @@ test.describe('Logbook', () => {
       })
     })
 
-    test('create multiple entries', async ({ page }) => {
+    test('create multiple entries', async () => {
       await test.step('Create first entry', async () => {
         await logbookPage.createEntry({
           duration: 15,
@@ -124,7 +124,7 @@ test.describe('Logbook', () => {
       })
     })
 
-    test('localStorage data integrity', async ({ page }) => {
+    test('localStorage data integrity', async () => {
       const testData = {
         duration: 25,
         title: 'Storage Test',
