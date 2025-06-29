@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test'
+import { Page } from '@playwright/test'
 
 /**
  * Wait for entries to appear in the UI with multiple fallback strategies
@@ -39,7 +39,7 @@ export async function waitForEntriesToAppear(
       timeout: timeout / 3,
     })
     return true
-  } catch (e) {
+  } catch (_e) {
     console.log('Standard selector failed, trying alternatives...')
   }
 
@@ -63,7 +63,7 @@ export async function waitForEntriesToAppear(
         console.log(`Found entry using selector: ${selector}`)
         return true
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue to next selector
     }
   }
@@ -86,7 +86,7 @@ export async function waitForEntriesToAppear(
       })
       console.log(`Found entry by text: ${text}`)
       return true
-    } catch (e) {
+    } catch (_e) {
       // Continue to next text
     }
   }
@@ -186,7 +186,9 @@ export async function verifyEntryCreated(
 
     if (
       expectedData.title &&
-      !latestEntry.pieces.some((p: any) => p.title === expectedData.title)
+      !latestEntry.pieces.some(
+        (p: { title: string }) => p.title === expectedData.title
+      )
     ) {
       throw new Error(
         `Expected title "${expectedData.title}" not found in entry`

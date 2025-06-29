@@ -42,7 +42,7 @@ export async function waitForEntries(page: Page, expectedCount?: number) {
         })
         return true
       }
-    } catch (e) {
+    } catch (_e) {
       // Try next selector
       continue
     }
