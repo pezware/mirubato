@@ -1,5 +1,3 @@
-import { Context } from 'hono'
-
 export interface UploadConfig {
   maxFileSize: number // in bytes
   allowedMimeTypes: string[]
@@ -203,9 +201,9 @@ export class UploadService {
    * Copies a file from local filesystem (development only)
    */
   async uploadFromLocal(
-    localPath: string,
-    env: any,
-    options: {
+    _localPath: string,
+    _env: any,
+    _options: {
       prefix?: string
       metadata?: Record<string, string>
       customKey?: string
@@ -257,15 +255,11 @@ export class UploadService {
   /**
    * Simple logging function (can be extended with proper logging service)
    */
-  private log(level: 'info' | 'error' | 'warn', message: string, data?: any) {
-    const timestamp = new Date().toISOString()
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      data,
-    }
-
+  private log(
+    _level: 'info' | 'error' | 'warn',
+    _message: string,
+    _data?: any
+  ) {
     // In production, this could send to a logging service
     // Logging disabled for now to avoid console pollution
   }
