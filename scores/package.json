@@ -13,9 +13,13 @@
     "db:migrate:dev": "wrangler d1 migrations apply DB --env dev",
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
     "db:migrate:production": "wrangler d1 migrations apply DB",
+    "seed:local": "./scripts/seed-test-scores.sh",
+    "seed:staging": "./scripts/seed-test-scores.sh staging",
+    "upload:test": "tsx scripts/upload-test-scores.ts",
     "test": "vitest",
     "test:unit": "vitest run --passWithNoTests",
     "test:coverage": "vitest --coverage",
+    "test:api": "curl http://localhost:8787/api/scores | jq",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"
