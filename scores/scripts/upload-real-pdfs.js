@@ -128,8 +128,12 @@ async function main() {
   if (successCount === TEST_FILES.length) {
     console.log('\n🎉 All test PDFs uploaded successfully!')
     console.log('\n📍 You can now view the scores at:')
-    console.log('   - http://localhost:3000/scorebook/test_aire_sureno')
-    console.log('   - http://localhost:3000/scorebook/test_romance_anonimo')
+    console.log(
+      '   - http://www-mirubato.localhost:4000/scorebook/test_aire_sureno'
+    )
+    console.log(
+      '   - http://www-mirubato.localhost:4000/scorebook/test_romance_anonimo'
+    )
   } else {
     console.log('\n⚠️  Some uploads failed. Please check the errors above.')
   }
