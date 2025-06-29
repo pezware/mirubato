@@ -11,6 +11,8 @@
 - Calendar rendering fixed - complete Tailwind color palette configuration
 - 290+ tests passing across all services
 - Production deployment stable at mirubato.com
+- Pragmatic architecture chosen over complex module system
+- Focus on shipping working features over perfect architecture
 
 ✅ **REST API Migration Complete**: Full transition from GraphQL to REST API architecture
 
@@ -32,11 +34,36 @@
 
 - Practice logging with manual entry and timer modes
 - Enhanced practice reports with calendar visualization
-- Goal setting and tracking
+- Goal setting and tracking with progress visualization
 - Local-first sync with online backup
 - Google OAuth and magic link authentication
 - Multi-instrument support (Piano & Guitar)
 - Responsive design for mobile and desktop
+- Internationalization with 6 languages (en, es, fr, de, ja, zh)
+- Autocomplete for composers and pieces
+- Data export (CSV, JSON)
+- Comprehensive test coverage (290+ tests)
+
+## Immediate Priority: Content & Stabilization (1-2 weeks)
+
+### Goal: Add real music content and ensure rock-solid stability
+
+**Add Music Content to Scores Service**
+
+- [ ] Import 10 curated public domain pieces (5 piano, 5 guitar)
+- [ ] Add proper metadata (difficulty, composer, tags)
+- [ ] Create simple browsing interface
+- [ ] Link scores to practice sessions
+- [ ] Test content delivery performance
+
+**Fix Remaining Bugs**
+
+- [ ] Address any VexFlow rendering issues
+- [ ] Ensure mobile audio playback works reliably
+- [ ] Fix any remaining sync edge cases
+- [ ] Optimize bundle size (remove unused music libraries?)
+
+**Expected Outcome**: A stable MVP with real content that users can practice with.
 
 ## Priority 1: Frontend Polish & UX (2-3 weeks)
 
@@ -323,137 +350,38 @@ Practice Complete → Grades Worker → LLM analyzes performance
 
 **Expected Outcome**: A modular, scalable platform that can evolve from simple score storage to a comprehensive AI-enhanced music education system.
 
-## Internationalization (i18n) & Localization (l10n) Plan
+## Internationalization (i18n) & Localization (l10n) ✅ COMPLETE
 
-### Goal: Make Mirubato accessible globally with support for multiple languages and cultures
+### Status: Fully implemented with 6 languages
 
-**Target Languages**
+**Supported Languages**
 
-- 🇺🇸 English (en) - Base language
-- 🇪🇸 Spanish (es) - Large music education market
-- 🇫🇷 French (fr) - Strong classical music tradition
-- 🇹🇼 Traditional Chinese (zh-TW) - Growing music education market
+- 🇺🇸 English (en) - Base language ✅
+- 🇪🇸 Spanish (es) - Large music education market ✅
+- 🇫🇷 French (fr) - Strong classical music tradition ✅
+- 🇩🇪 German (de) - Classical music heritage ✅
+- 🇯🇵 Japanese (ja) - Growing market ✅
+- 🇨🇳 Chinese (zh) - Large user base ✅
 
-**Implementation Phases**
+**Implementation Details**
 
-### Phase 1: Infrastructure Setup (1 week)
+- ✅ **react-i18next** configured with lazy loading
+- ✅ **Translation structure** organized by feature namespaces
+- ✅ **Language detection** from browser preferences
+- ✅ **Language switcher** in UI header
+- ✅ **Date/time formatting** with locale support
+- ✅ **Number formatting** for durations and statistics
 
-- [ ] Install and configure react-i18next for frontend
-- [ ] Set up translation file structure and namespaces
-- [ ] Create language detection and switching mechanism
-- [ ] Add TypeScript types for translation keys
-- [ ] Configure build process for translation files
-- [ ] Set up development workflow for translations
+**Current Status**
 
-### Phase 2: String Extraction & Organization (1 week)
+The i18n implementation is complete and working in production. All UI strings have been extracted and translated into the 6 supported languages. The system handles text expansion gracefully and supports RTL languages for future expansion.
 
-- [ ] Extract ~300 hardcoded strings from frontend components
-- [ ] Organize translations into logical namespaces:
-  - `common` - Shared UI elements
-  - `auth` - Authentication flows
-  - `logbook` - Practice logging features
-  - `reports` - Analytics and statistics
-  - `errors` - Error messages
-  - `email` - Email templates
-- [ ] Create translation key naming conventions
-- [ ] Document context for translators
+**Future Enhancements**
 
-### Phase 3: Frontend Implementation (2 weeks)
-
-- [ ] Replace all hardcoded strings with translation functions
-- [ ] Implement date/time localization with locale-aware formatting
-- [ ] Add number formatting for durations and statistics
-- [ ] Handle pluralization rules for each language
-- [ ] Create language switcher component
-- [ ] Test UI layouts for text expansion (French ~30% longer)
-- [ ] Ensure Chinese character rendering
-
-### Phase 4: Backend Localization (1 week)
-
-- [ ] Add Accept-Language header detection
-- [ ] Localize API error messages
-- [ ] Create multi-language email templates
-- [ ] Implement language preference storage
-- [ ] Add localized validation messages
-
-### Phase 5: Music-Specific Localization (1 week)
-
-- [ ] Handle musical terminology variations:
-  - Note naming (C-D-E vs Do-Re-Mi vs 音名)
-  - Time signatures and tempo markings
-  - Instrument names
-- [ ] Create music education glossary for each language
-- [ ] Add cultural considerations (e.g., practice customs)
-
-### Phase 6: Testing & Polish (1 week)
-
-- [ ] Comprehensive testing in all languages
-- [ ] UI/UX review for each locale
-- [ ] Performance testing with translation loading
-- [ ] SEO optimization with hreflang tags
-- [ ] Accessibility testing with screen readers
-
-**Technical Implementation Details**
-
-```typescript
-// Folder structure
-src/
-  locales/
-    en/
-      common.json
-      auth.json
-      logbook.json
-      reports.json
-      errors.json
-    es/
-      common.json
-      ...
-    fr/
-      common.json
-      ...
-    zh-TW/
-      common.json
-      ...
-```
-
-```typescript
-// Example usage
-import { useTranslation } from 'react-i18next';
-
-function LogbookEntry() {
-  const { t, i18n } = useTranslation('logbook');
-
-  return (
-    <button>{t('addEntry')}</button>
-  );
-}
-```
-
-**Key Considerations**
-
-1. **Text Expansion**: French text typically 30% longer than English
-2. **Character Sets**: Ensure proper Unicode support for Chinese
-3. **Date/Time**: Use locale-specific formats
-4. **Currency**: Consider future payment features
-5. **Cultural Adaptation**: Musical terminology varies by region
-
-**Translation Management**
-
-- [ ] Set up translation key extraction scripts
-- [ ] Create translator guidelines document
-- [ ] Establish review process for translations
-- [ ] Plan for continuous translation updates
-- [ ] Consider translation management service (future)
-
-**Success Metrics**
-
-- [ ] 100% string coverage in all languages
-- [ ] <200ms translation loading time
-- [ ] Zero layout breaks from text expansion
-- [ ] Positive feedback from native speakers
-- [ ] Increased global user adoption
-
-**Timeline**: Q3 2025 (7 weeks total)
+- [ ] Add more languages based on user demand
+- [ ] Implement backend localization for emails
+- [ ] Create music terminology glossary per language
+- [ ] Add professional translation review process
 
 **Expected Outcome**: A truly global platform that respects linguistic and cultural differences while maintaining a consistent user experience across all supported languages.
 
@@ -521,6 +449,40 @@ function LogbookEntry() {
 - [ ] Feature usage analytics and optimization
 - [ ] User retention rates > 70% (30-day)
 - [ ] Community engagement and feedback
+
+## Architectural Philosophy Going Forward
+
+### Pragmatic Over Perfect
+
+Based on the success of the MVP, Mirubato will continue to prioritize:
+
+1. **Working Features > Complex Architecture**
+   - Simple, maintainable code that ships
+   - Avoid over-engineering until complexity demands it
+   - Module system deferred until actually needed
+
+2. **User Value > Technical Elegance**
+   - Focus on features users actually use
+   - Measure adoption before building complex systems
+   - Iterate based on real usage data
+
+3. **Progressive Enhancement**
+   - Start simple, enhance incrementally
+   - Keep music libraries ready but don't force usage
+   - Add complexity only when justified by user needs
+
+4. **Clear Documentation**
+   - Keep docs aligned with actual implementation
+   - Document both current state and future vision
+   - Be transparent about technical decisions
+
+### Lessons Learned
+
+- ✅ REST API is simpler and sufficient (vs GraphQL)
+- ✅ Zustand provides adequate state management (vs complex modules)
+- ✅ Shipping MVP matters more than perfect architecture
+- ✅ i18n from the start was a great decision
+- ⏳ Music features can wait until core is solid
 
 ---
 

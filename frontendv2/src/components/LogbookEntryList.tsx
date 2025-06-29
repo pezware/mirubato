@@ -377,6 +377,8 @@ export default function LogbookEntryList({
               <div
                 className="p-4 hover:bg-morandi-stone-50 cursor-pointer group"
                 onClick={() => toggleEntryExpansion(entry.id)}
+                data-testid="logbook-entry"
+                data-entry-id={entry.id}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

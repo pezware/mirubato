@@ -146,7 +146,11 @@ export default function ManualEntryForm({
           : `✨ ${t('logbook:entry.addEntry')}`}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        data-testid="logbook-entry-form"
+      >
         {/* Basic Info */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -187,6 +191,7 @@ export default function ManualEntryForm({
                 }}
                 className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
                 required
+                data-testid="duration-input"
               />
             </div>
 
@@ -263,6 +268,7 @@ export default function ManualEntryForm({
             rows={3}
             className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none"
             placeholder={t('logbook:entry.notesPlaceholder')}
+            data-testid="notes-textarea"
           />
         </div>
 
@@ -309,6 +315,7 @@ export default function ManualEntryForm({
                         : (option.value as LogbookEntry['mood'])
                     )
                   }
+                  data-testid={`mood-button-${option.value.toLowerCase()}`}
                   className={`
                     flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer
                     border border-morandi-stone-300 flex-1 sm:flex-initial
@@ -341,6 +348,7 @@ export default function ManualEntryForm({
             disabled={isSubmitting}
             loading={isSubmitting}
             leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
+            data-testid="save-entry-button"
           >
             {entry
               ? t('logbook:entry.updateEntry')

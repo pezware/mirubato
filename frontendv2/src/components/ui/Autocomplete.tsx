@@ -24,6 +24,7 @@ interface AutocompleteProps {
   dropdownClassName?: string
   emptyMessage?: string
   disabled?: boolean
+  'data-testid'?: string
 }
 
 export default function Autocomplete({
@@ -38,6 +39,7 @@ export default function Autocomplete({
   dropdownClassName,
   emptyMessage = 'No results found',
   disabled = false,
+  'data-testid': dataTestId,
 }: AutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -147,6 +149,7 @@ export default function Autocomplete({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
+        data-testid={dataTestId}
         className={cn(
           'w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg',
           'focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent',

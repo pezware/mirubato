@@ -276,6 +276,7 @@ export default function LogbookReports() {
               URL.revokeObjectURL(url)
             }}
             className="btn-secondary text-sm"
+            data-testid="export-json-button"
           >
             {t('reports:export.exportJSON')}
           </button>
@@ -312,6 +313,7 @@ export default function LogbookReports() {
               URL.revokeObjectURL(url)
             }}
             className="btn-secondary text-sm"
+            data-testid="export-csv-button"
           >
             {t('reports:export.exportCSV')}
           </button>

@@ -101,7 +101,66 @@ jobs:
         run: npm run build -w @mirubato/${{ matrix.workspace }}
 
   e2e-tests:
-    name: E2E Tests
+    name: E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          cd frontendv2
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")
+          echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          restore-keys: |
+            playwright-browsers-${{ runner.os }}-
+
+      - name: Install dependencies for frontendv2 only
+        run: npm ci --workspace @mirubato/frontendv2
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run E2E tests for frontendv2 (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+        run: npm run test:e2e -w @mirubato/frontendv2 -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env:
+          CI: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-shard-${{ matrix.shardIndex }}
+          path: |
+            frontendv2/playwright-report/
+          retention-days: 30
+
+  smoke-tests:
+    name: Quick Smoke Tests
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -116,18 +175,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+        working-directory: frontendv2
 
-      - name: Run E2E tests for frontendv2
-        run: npm run test:e2e -w @mirubato/frontendv2
-        continue-on-error: true
+      - name: Run smoke tests
+        run: npm run test:e2e -w @mirubato/frontendv2 -- --grep "@smoke" --project=chromium
 
-      - name: Upload Playwright Report
+      - name: Upload smoke test report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-smoke-report
+          path: frontendv2/playwright-report/
+          retention-days: 7
+
+  merge-e2e-reports:
+    name: Merge E2E Test Reports
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always()
+    steps:
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-report-shard-*
+          merge-multiple: true
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-merged
           path: |
-            frontendv2/playwright-report/
+            ./
           retention-days: 30
