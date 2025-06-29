@@ -7,15 +7,8 @@ export async function scorebookHandler(c: Context) {
   const env = c.env as any
   const path = c.req.path
 
-  // Determine the frontend URL based on environment
-  let frontendUrl = 'https://mirubato.com'
-
-  if (env.ENVIRONMENT === 'staging') {
-    // For staging, use the staging frontend
-    frontendUrl = 'https://staging.mirubato.com'
-  } else if (env.ENVIRONMENT === 'local') {
-    frontendUrl = 'http://localhost:3000'
-  }
+  // Use the frontend URL from environment configuration
+  const frontendUrl = env.FRONTEND_URL || 'https://mirubato.com'
 
   // Preserve the full path
   const redirectUrl = `${frontendUrl}${path}`
@@ -111,19 +104,31 @@ export async function scorebookLandingHandler(c: Context) {
     <p class="subtitle">Practice sight-reading with our curated collection</p>
     
     <div class="info">
-      📱 For the best experience, please access the scorebook through the main Mirubato app
+      🚧 The Scorebook feature is currently under development. 
+      <br><br>
+      📄 PDFs are available and can be accessed directly:
     </div>
     
     <div class="scores-list">
       <h3>Featured Scores:</h3>
-      <a href="/scorebook/test_aire_sureno" class="score-link">
+      <div class="score-link">
         <div class="score-title">Aire Sureño</div>
         <div class="score-composer">Agustín Barrios Mangoré • Guitar • Advanced</div>
-      </a>
-      <a href="/scorebook/test_romance_anonimo" class="score-link">
+        <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <a href="/files/test-data/score_01.pdf" target="_blank" style="color: #667eea;">📄 View PDF</a>
+          <span style="color: #999; margin: 0 0.5rem;">|</span>
+          <a href="/scorebook/test_aire_sureno" style="color: #667eea;">🎵 Open in App (Coming Soon)</a>
+        </div>
+      </div>
+      <div class="score-link">
         <div class="score-title">Romance (Spanish Romance)</div>
         <div class="score-composer">Anonymous (arr. Eythor Thorlaksson) • Guitar • Intermediate</div>
-      </a>
+        <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+          <a href="/files/test-data/score_02.pdf" target="_blank" style="color: #667eea;">📄 View PDF</a>
+          <span style="color: #999; margin: 0 0.5rem;">|</span>
+          <a href="/scorebook/test_romance_anonimo" style="color: #667eea;">🎵 Open in App (Coming Soon)</a>
+        </div>
+      </div>
     </div>
     
     <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; text-align: center; color: #718096; font-size: 0.9rem;">
