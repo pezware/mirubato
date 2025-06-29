@@ -145,8 +145,14 @@ test.describe('Logbook Features', () => {
     }
 
     // Click on the entry to expand it
+    // First wait for the entry to be clickable
+    await page.waitForSelector('.p-4.hover\\:bg-morandi-stone-50', {
+      state: 'visible',
+      timeout: 10000,
+    })
+
     const entryDiv = page.locator('.p-4.hover\\:bg-morandi-stone-50').first()
-    await entryDiv.click()
+    await entryDiv.click({ timeout: 10000 })
 
     // Wait for expansion
     await page.waitForTimeout(500)
@@ -337,6 +343,18 @@ test.describe('Logbook Features', () => {
     // Step 2: Create second entry
     await createEntryWithDetails('Entry 2 - Anonymous', '20')
 
+    // Navigate to Overview tab to see all entries
+    const overviewTab = page
+      .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
+      .first()
+    if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await overviewTab.click()
+      await page.waitForTimeout(1000)
+    }
+
+    // Wait for entries
+    await waitForEntries(page, 2)
+
     // Verify we can see multiple entries
     const entryCount = await page
       .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
@@ -430,8 +448,8 @@ test.describe('Logbook Features', () => {
       await page.waitForTimeout(1000)
     }
 
-    // Wait for reports page to load
-    await page.waitForSelector('text=Practice Reports', { timeout: 10000 })
+    // Wait for reports page to load - look for "Total Practice" which is always shown
+    await page.waitForSelector('text=Total Practice', { timeout: 10000 })
 
     // Verify we can see report content
     await expect(page.locator('text=Total Practice')).toBeVisible()

@@ -33,6 +33,13 @@ test.describe('Logbook Basic Functionality', () => {
     expect(entryExists).toBe(true)
 
     // Verify we can see the notes (which are visible in collapsed view)
+    // First wait for the entry container to be rendered
+    await page.waitForSelector('.p-4.hover\\:bg-morandi-stone-50', {
+      state: 'visible',
+      timeout: 10000,
+    })
+
+    // Then verify notes are visible
     await expect(page.locator('text="Test notes for the entry"')).toBeVisible({
       timeout: 10000,
     })
@@ -86,6 +93,12 @@ test.describe('Logbook Basic Functionality', () => {
     expect(hasEntry).toBe(true)
 
     // Verify notes are still visible
+    // Wait for entry container first after reload
+    await page.waitForSelector('.p-4.hover\\:bg-morandi-stone-50', {
+      state: 'visible',
+      timeout: 10000,
+    })
+
     await expect(page.locator('text="This should persist"')).toBeVisible({
       timeout: 10000,
     })
@@ -127,6 +140,12 @@ test.describe('Logbook Basic Functionality', () => {
     await expect(page.locator('text="Total Practice"')).toBeVisible({
       timeout: 10000,
     })
-    await expect(page.locator('text=/Export (JSON|CSV)/')).toBeVisible()
+
+    // Check for export buttons - look for both individually since there are 2
+    const exportJsonButton = page.locator('button:has-text("Export JSON")')
+    const exportCsvButton = page.locator('button:has-text("Export CSV")')
+
+    await expect(exportJsonButton).toBeVisible({ timeout: 5000 })
+    await expect(exportCsvButton).toBeVisible({ timeout: 5000 })
   })
 })

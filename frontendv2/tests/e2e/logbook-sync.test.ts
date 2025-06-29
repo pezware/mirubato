@@ -102,6 +102,18 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Step 2: Create second entry while still not logged in
     await createEntry('Anonymous Entry 2', '20')
 
+    // Navigate to Overview tab to see all entries
+    const overviewTab2 = page
+      .locator('button:has-text("Overview"), [role="tab"]:has-text("Overview")')
+      .first()
+    if (await overviewTab2.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await overviewTab2.click()
+      await page.waitForTimeout(1000)
+    }
+
+    // Wait for entries to be visible
+    await waitForEntries(page, 2)
+
     // Verify we can see multiple entries
     const entryCount = await page
       .locator('.p-4.hover\\:bg-morandi-stone-50, .group.cursor-pointer')
