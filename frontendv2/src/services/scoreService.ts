@@ -26,7 +26,7 @@ export interface Score {
   source?: string | null
   imslp_url?: string | null
   tags: string[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   created_at: string
   updated_at: string
 }

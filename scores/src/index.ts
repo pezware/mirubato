@@ -6,7 +6,13 @@ import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
 import { serveR2File } from './api/handlers/serveR2'
-import { seedTestData, uploadToR2 } from './api/handlers/devSeed'
+import { seedTestData } from './api/handlers/devSeed'
+import {
+  uploadScore,
+  uploadBase64,
+  checkFile,
+  deleteFile,
+} from './api/handlers/upload'
 import {
   addCacheHeaders,
   getCachedResponse,
@@ -73,7 +79,12 @@ app.get('/api/test-data/:filename', serveR2File)
 
 // Development-only routes - these check the environment in the handler
 app.post('/api/dev/seed', seedTestData)
-app.post('/api/dev/upload', uploadToR2)
+app.post('/api/dev/upload', uploadBase64)
+
+// Upload routes
+app.post('/api/upload', uploadScore)
+app.get('/api/check/:key', checkFile)
+app.delete('/api/file/:key', deleteFile)
 
 // Default route
 app.get('/', c => {

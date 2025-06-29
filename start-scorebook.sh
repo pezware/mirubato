@@ -25,8 +25,9 @@ SCORES_PID=$!
 sleep 5
 
 # Seed test PDFs into Miniflare R2
-echo "📄 Seeding test PDFs..."
-cd scores && ./scripts/seed-r2-miniflare.sh
+echo "📄 Uploading real test PDFs..."
+cd scores && npm run upload:real-pdfs
+cd ..
 
 # Start frontend
 echo "🎨 Starting Frontend (port 3000)..."

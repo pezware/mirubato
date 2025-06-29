@@ -21,6 +21,7 @@ export default function ScoreBrowserPage() {
 
   useEffect(() => {
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, selectedInstrument, selectedDifficulty])
 
   const loadData = async () => {
@@ -42,7 +43,7 @@ export default function ScoreBrowserPage() {
         setScores(collectionScores)
       } else {
         // Load all scores with filters
-        const params: any = {}
+        const params: Record<string, string> = {}
         if (selectedInstrument) params.instrument = selectedInstrument
         if (selectedDifficulty) params.difficulty = selectedDifficulty
 

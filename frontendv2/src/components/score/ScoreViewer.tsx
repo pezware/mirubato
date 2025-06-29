@@ -22,8 +22,17 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
 
   // Get PDF URL for the score
   useEffect(() => {
+    setIsLoadingPdf(true)
+    setPdfError(null)
     const url = scoreService.getScorePdfUrl(score.id)
     setPdfUrl(url)
+
+    // Set a timeout to handle loading state
+    const timeout = setTimeout(() => {
+      setIsLoadingPdf(false)
+    }, 3000)
+
+    return () => clearTimeout(timeout)
   }, [score.id])
 
   // Auto-scroll functionality
@@ -71,37 +80,46 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
                       {score.composer}
                     </p>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-md mx-auto">
-                      <p className="text-sm text-amber-800 mb-2">
-                        PDF preview not available in development
-                      </p>
-                      <p className="text-xs text-amber-700">
-                        To view PDFs, run:{' '}
-                        <code className="bg-amber-100 px-1 py-0.5 rounded">
-                          cd scores && npm run upload:test-pdfs
-                        </code>
-                      </p>
+                      <p className="text-sm text-amber-800 mb-2">{pdfError}</p>
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-600 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                        Open PDF in new tab
+                      </a>
                     </div>
                     <div className="mt-4 text-sm text-morandi-stone-500">
-                      {score.instrument} • {score.difficulty} •{' '}
-                      {score.metadata?.pages || totalPages} page
-                      {(score.metadata?.pages || totalPages) !== 1 ? 's' : ''}
+                      {score.instrument} • {score.difficulty} • {totalPages}{' '}
+                      page{totalPages !== 1 ? 's' : ''}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Iframe for PDF display */}
-              <iframe
-                src={`${pdfUrl}#page=${currentPage}`}
+              {/* PDF display using embed element */}
+              <embed
+                src={pdfUrl}
+                type="application/pdf"
                 className={`w-full h-[800px] rounded-lg ${pdfError ? 'hidden' : ''}`}
-                onLoad={() => setIsLoadingPdf(false)}
-                onError={() => {
+                onLoad={() => {
                   setIsLoadingPdf(false)
-                  setPdfError(
-                    'Unable to load PDF. Please check if the PDF is uploaded.'
-                  )
+                  setPdfError(null)
                 }}
-                title={score.title}
               />
 
               {/* Page indicator overlay */}
@@ -125,11 +143,6 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
                 <p className="text-sm text-morandi-stone-500">
                   {score.instrument} • {score.difficulty}
                 </p>
-                {score.metadata?.pdf_file && (
-                  <p className="text-xs text-morandi-stone-400 mt-4">
-                    PDF: {score.metadata.pdf_file}
-                  </p>
-                )}
               </div>
             </div>
           )}

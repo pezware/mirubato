@@ -9,7 +9,7 @@ export default function ScorebookPage() {
   const [tempo, setTempo] = useState(120)
   const [showManagement, setShowManagement] = useState(false)
   const [isTracking, setIsTracking] = useState(false)
-  const [currentMeasure, setCurrentMeasure] = useState(8)
+  const [currentMeasure] = useState(8)
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true)
 
   // Mock score data
@@ -395,8 +395,7 @@ export default function ScorebookPage() {
       )}
 
       {/* Practice Complete Modal (shown when tracking stops) */}
-      {false && ( // This would show when practice tracking is stopped
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+      {/* <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full animate-slide-up">
             <h3 className="text-xl font-medium text-morandi-stone-800 mb-4">
               Practice Session Complete!
@@ -420,8 +419,7 @@ export default function ScorebookPage() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div> */}
     </div>
   )
 }

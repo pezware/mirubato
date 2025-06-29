@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { useAuthStore } from '../../stores/authStore'
 import { scoreService } from '../../services/scoreService'
-import type { Score, Collection } from '../../services/scoreService'
+import type { Score } from '../../services/scoreService'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])

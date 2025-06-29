@@ -1,4 +1,31 @@
 import { Context } from 'hono'
+import { UploadService } from '../../services/uploadService'
+
+// Base64 encoded test PDFs (first 10KB of each file for demo)
+// In a real implementation, you would:
+// 1. Store these in a separate config file
+// 2. Use a build script to generate them from actual PDFs
+// 3. Or fetch them from a CDN/external source
+const TEST_PDFS = {
+  'score_01.pdf': {
+    title: 'Aire Sureño',
+    composer: 'Agustín Barrios Mangoré',
+    instrument: 'GUITAR',
+    difficulty: 'ADVANCED',
+    // This is a minimal valid PDF that displays "Test Score 1"
+    content: `JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlczw8L0ZvbnQ8PC9GMSA0IDAgUj4+Pj4vTWVkaWFCb3hbMCAwIDYxMiA3OTJdL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZS9Gb250L1N1YnR5cGUvVHlwZTEvQmFzZUZvbnQvSGVsdmV0aWNhPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDg4Pj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgoxMDAgNzAwIFRkCihUZXN0IFNjb3JlIDEgLSBBaXJlIFN1cmVubyBQbGFjZWhvbGRlcikgVGoKMTAwIDY1MCBUZAooVGhpcyBpcyBhIHBsYWNlaG9sZGVyIFBERiBmb3IgdGVzdGluZykgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqCjw8L1R5cGUvWFJlZi9TaXplIDcvV1sxIDIgMl0vUm9vdCAxIDAgUi9JbmZvIDcgMCBSL0lEWzwxMjM0NTY3ODkwQUJDREVGMTIzNDU2Nzg5MEFCQ0RFRj48MTIzNDU2Nzg5MEFCQ0RFRjEyMzQ1Njc4OTBBQkNERUY+XT4+CnN0cmVhbQp4nGNgYGBgZGBgYAZiRgYQYAJiIMnAwAIkWaA0AxMDEwMbEDMzMDMwMjAxAAAAPAAECgplbmRzdHJlYW0KZW5kb2JqCnN0YXJ0eHJlZgo2NDYKJSVFT0Y=`,
+  },
+  'score_02.pdf': {
+    title: 'Romance (Spanish Romance)',
+    composer: 'Anonymous (arr. Eythor Thorlaksson)',
+    instrument: 'GUITAR',
+    difficulty: 'INTERMEDIATE',
+    // This is a minimal valid PDF that displays "Test Score 2"
+    content: `JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlczw8L0ZvbnQ8PC9GMSA0IDAgUj4+Pj4vTWVkaWFCb3hbMCAwIDYxMiA3OTJdL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZS9Gb250L1N1YnR5cGUvVHlwZTEvQmFzZUZvbnQvSGVsdmV0aWNhPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDk1Pj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgoxMDAgNzAwIFRkCihUZXN0IFNjb3JlIDIgLSBTcGFuaXNoIFJvbWFuY2UgUGxhY2Vob2xkZXIpIFRqCjEwMCA2NTAgVGQKKFRoaXMgaXMgYSBwbGFjZWhvbGRlciBQREYgZm9yIHRlc3RpbmcpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PC9UeXBlL1hSZWYvU2l6ZSA3L1dbMSAyIDJdL1Jvb3QgMSAwIFIvSW5mbyA3IDAgUi9JRFs8MTIzNDU2Nzg5MEFCQ0RFRjEyMzQ1Njc4OTBBQkNERUY+PDEyMzQ1Njc4OTBBQkNERUYxMjM0NTY3ODkwQUJDREVGPl0+PgpzdHJlYW0KeJxjYGBgYGRgYGAGYkYGEGACYiDJwMAMJFmgNAMTAxMDGxAzMzAzMDIwMQAAADwABAoKZW5kc3RyZWFtCmVuZG9iagpzdGFydHhyZWYKNjUzCiUlRU9G`,
+  },
+}
+
+const uploadService = new UploadService()
 
 /**
  * Development-only endpoint to seed test data into local R2
@@ -19,57 +46,41 @@ export async function seedTestData(c: Context) {
   }
 
   try {
-    const testFiles = [
-      { key: 'test-data/score_01.pdf', filename: 'score_01.pdf' },
-      { key: 'test-data/score_02.pdf', filename: 'score_02.pdf' },
-    ]
-
     const results = []
 
-    for (const { key, filename } of testFiles) {
-      try {
-        // In Miniflare, we can't read from the filesystem directly
-        // Instead, we'll create placeholder content for testing
-        // In a real scenario, you'd upload actual files through the API
+    for (const [filename, data] of Object.entries(TEST_PDFS)) {
+      const key = `test-data/${filename}`
 
-        // For now, let's check if the file already exists
-        const existing = await env.SCORES_BUCKET.get(key)
-        if (existing) {
+      try {
+        // Check if file already exists
+        const exists = await uploadService.fileExists(key, env)
+        if (exists) {
           results.push({ key, status: 'already exists' })
           continue
         }
 
-        // Create a simple placeholder PDF
-        const pdfContent = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>
-endobj
-xref
-0 4
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-trailer
-<< /Size 4 /Root 1 0 R >>
-startxref
-164
-%%EOF`
+        // Upload the test PDF
+        const uploadResult = await uploadService.uploadFromBase64(
+          data.content,
+          filename,
+          env,
+          {
+            customKey: key,
+            metadata: {
+              title: data.title,
+              composer: data.composer,
+              instrument: data.instrument,
+              difficulty: data.difficulty,
+              isTestData: 'true',
+            },
+          }
+        )
 
-        // Upload to R2
-        await env.SCORES_BUCKET.put(key, pdfContent, {
-          httpMetadata: {
-            contentType: 'application/pdf',
-          },
-        })
-
-        results.push({ key, status: 'uploaded' })
+        if (uploadResult.success) {
+          results.push({ key, status: 'uploaded', url: uploadResult.url })
+        } else {
+          results.push({ key, status: 'failed', error: uploadResult.error })
+        }
       } catch (error) {
         results.push({
           key,
@@ -83,6 +94,7 @@ startxref
       success: true,
       message: 'Test data seeding complete',
       results,
+      note: 'These are placeholder PDFs with text. To use real sheet music PDFs, upload them via the /api/dev/upload endpoint.',
     })
   } catch (error) {
     return c.json(
