@@ -5,6 +5,8 @@ import { HTTPException } from 'hono/http-exception'
 import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
+import { serveR2File } from './api/handlers/serveR2'
+import { seedTestData, uploadToR2 } from './api/handlers/devSeed'
 import {
   addCacheHeaders,
   getCachedResponse,
@@ -65,6 +67,13 @@ app.get('/api/docs', c => c.redirect('/docs'))
 
 // Mount API routes
 app.route('/api', api)
+
+// Add route for serving test PDFs from R2
+app.get('/api/test-data/:filename', serveR2File)
+
+// Development-only routes - these check the environment in the handler
+app.post('/api/dev/seed', seedTestData)
+app.post('/api/dev/upload', uploadToR2)
 
 // Default route
 app.get('/', c => {

@@ -15,6 +15,7 @@
     "db:migrate:production": "wrangler d1 migrations apply DB",
     "seed:local": "./scripts/seed-test-scores.sh",
     "seed:staging": "./scripts/seed-test-scores.sh staging",
+    "seed:r2": "./scripts/seed-r2-miniflare.sh",
     "upload:test": "tsx scripts/upload-test-scores.ts",
     "upload:test-pdfs": "./scripts/upload-test-pdfs.sh",
     "test": "vitest",

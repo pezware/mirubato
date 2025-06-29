@@ -225,16 +225,8 @@ class ScoreService {
 
   // Get the PDF URL for a score
   getScorePdfUrl(scoreId: string): string {
-    // For test scores in local development, use the separate PDF server
-    const isLocalDev =
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1'
-
-    if (isLocalDev && scoreId === 'test_aire_sureno') {
-      return `http://localhost:8788/score_01.pdf`
-    } else if (isLocalDev && scoreId === 'test_romance_anonimo') {
-      return `http://localhost:8788/score_02.pdf`
-    } else if (scoreId === 'test_aire_sureno') {
+    // For test scores, use the test data endpoint
+    if (scoreId === 'test_aire_sureno') {
       return `${this.scoresApiUrl}/api/test-data/score_01.pdf`
     } else if (scoreId === 'test_romance_anonimo') {
       return `${this.scoresApiUrl}/api/test-data/score_02.pdf`

@@ -21,13 +21,12 @@ echo "📚 Starting Scores Service (port 8787)..."
 cd scores && npm run dev &
 SCORES_PID=$!
 
-# Start PDF server
-echo "📄 Starting PDF Server (port 8788)..."
-cd scores && node serve-test-pdfs.js &
-PDF_PID=$!
+# Wait a moment for scores service to start
+sleep 5
 
-# Wait a moment for services to start
-sleep 3
+# Seed test PDFs into Miniflare R2
+echo "📄 Seeding test PDFs..."
+cd scores && ./scripts/seed-r2-miniflare.sh
 
 # Start frontend
 echo "🎨 Starting Frontend (port 3000)..."
@@ -45,7 +44,7 @@ echo "   - Scorebook: http://localhost:3000/scorebook"
 echo "   - Score 1:   http://localhost:3000/scorebook/test_aire_sureno"
 echo "   - Score 2:   http://localhost:3000/scorebook/test_romance_anonimo"
 echo "   - API:       http://localhost:8787/api/scores"
-echo "   - PDFs:      http://localhost:8788/score_01.pdf"
+echo "   - PDFs:      Served from R2 via API"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""
