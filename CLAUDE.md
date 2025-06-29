@@ -31,6 +31,7 @@ cd api && wrangler deploy                  # Deploy to production (default)
 cd api && wrangler deploy --env staging    # Deploy to staging
 
 # Scores
+./start-scorebook.sh
 cd scores && wrangler deploy               # Deploy to production (default)
 cd scores && wrangler deploy --env staging # Deploy to staging
 ```
