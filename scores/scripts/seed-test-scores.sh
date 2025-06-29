@@ -26,8 +26,8 @@ DELETE FROM scores WHERE id LIKE 'test_%';
 -- Insert test scores
 INSERT INTO scores (
     id, title, composer, opus, instrument, difficulty, 
-    difficulty_level, style_period, genre, tags, 
-    pdf_url, created_at, updated_at
+    difficulty_level, style_period, tags, 
+    source, metadata, created_at, updated_at
 ) VALUES 
 (
     'test_aire_sureno',
@@ -38,9 +38,9 @@ INSERT INTO scores (
     'ADVANCED',
     8,
     'ROMANTIC',
-    'Classical',
     '["latin-american", "classical-guitar", "barrios", "test"]',
-    'score_01.pdf',
+    'manual',
+    '{"pdf_file": "score_01.pdf", "genre": "Classical"}',
     datetime('now'),
     datetime('now')
 ),
@@ -53,9 +53,9 @@ INSERT INTO scores (
     'INTERMEDIATE',
     5,
     'ROMANTIC',
-    'Classical',
     '["spanish", "classical-guitar", "popular", "test", "multi-page"]',
-    'score_02.pdf',
+    'manual',
+    '{"pdf_file": "score_02.pdf", "genre": "Classical", "arranger": "Eythor Thorlaksson"}',
     datetime('now'),
     datetime('now')
 );
@@ -63,7 +63,7 @@ INSERT INTO scores (
 -- Add to a test collection
 INSERT OR IGNORE INTO collections (
     id, name, slug, description, instrument, 
-    difficulty, is_featured, created_at, updated_at
+    difficulty, score_ids, is_featured, created_at, updated_at
 ) VALUES (
     'col_test_guitar',
     'Test Guitar Pieces',
@@ -71,16 +71,11 @@ INSERT OR IGNORE INTO collections (
     'Sample classical guitar pieces for testing the scorebook feature',
     'GUITAR',
     'INTERMEDIATE',
+    '["test_aire_sureno", "test_romance_anonimo"]',
     1,
     datetime('now'),
     datetime('now')
 );
-
--- Link scores to collection
-INSERT OR IGNORE INTO collection_scores (collection_id, score_id, sort_order)
-VALUES 
-    ('col_test_guitar', 'test_aire_sureno', 1),
-    ('col_test_guitar', 'test_romance_anonimo', 2);
 
 EOF
 
@@ -89,13 +84,13 @@ echo "📝 Created seed SQL file"
 # Run the migration based on environment
 if [ "$1" = "production" ]; then
     echo "🚀 Seeding production database..."
-    npx wrangler d1 execute scores-prod --file=scripts/seed-test-scores.sql
+    npx wrangler d1 execute DB --file=scripts/seed-test-scores.sql --env production
 elif [ "$1" = "staging" ]; then
     echo "🔧 Seeding staging database..."
-    npx wrangler d1 execute scores-staging --file=scripts/seed-test-scores.sql --env staging
+    npx wrangler d1 execute DB --file=scripts/seed-test-scores.sql --env staging
 else
     echo "💻 Seeding local database..."
-    npx wrangler d1 execute scores-local --local --file=scripts/seed-test-scores.sql
+    npx wrangler d1 execute DB --local --file=scripts/seed-test-scores.sql --env local
 fi
 
 echo "✅ Test scores seeded successfully!"
