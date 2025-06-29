@@ -66,7 +66,11 @@ export interface ScoreListResponse {
 const getScoresApiUrl = () => {
   const hostname = window.location.hostname
 
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.localhost')
+  ) {
     return import.meta.env.VITE_SCORES_API_URL || 'http://localhost:8787'
   } else if (hostname.includes('staging')) {
     return 'https://scores-staging.mirubato.com'
