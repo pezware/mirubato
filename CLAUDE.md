@@ -14,8 +14,12 @@
 ```bash
 # Local Development
 npm install                    # Install all dependencies
-npm run dev                    # Start frontendv2 (port 3000)
-npm run dev:api                # Start api (port 8787) - uses --env local
+./start-scorebook.sh           # Start all services with proper domains
+
+# Individual services (for debugging)
+cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
+cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
+cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
 
 # API Development
 cd api && npm run dev          # Full dev workflow (build + server)
@@ -49,6 +53,24 @@ mirubato/
 └── config/
     └── environments.json  # Domain and team configuration
 ```
+
+### Local Development Architecture
+
+We use explicit localhost domains with ports to properly simulate production environment and catch CORS issues:
+
+- **Frontend**: `http://www-mirubato.localhost:4000` (Vite dev server)
+- **API**: `http://api-mirubato.localhost:9797` (Wrangler dev)
+- **Scores**: `http://scores-mirubato.localhost:9788` (Wrangler dev)
+
+This approach:
+
+- ✅ Catches CORS issues during development
+- ✅ Maintains service isolation
+- ✅ Uses consistent URLs across environments
+- ✅ Avoids mixing temporary Cloudflare URLs
+- ✅ Works without root privileges (no port 80)
+
+**Note**: The `.localhost` domains automatically resolve to 127.0.0.1 on most systems.
 
 ## 🛠 Quick Debugging Reference
 

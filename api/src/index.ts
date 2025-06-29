@@ -35,6 +35,9 @@ app.use(
       const allowedOrigins = [
         'http://localhost:3000',
         'http://localhost:5173',
+        'http://www-mirubato.localhost:4000',
+        'http://api-mirubato.localhost:9797',
+        'http://scores-mirubato.localhost:9788',
         'https://mirubato.com',
         'https://www.mirubato.com',
         'https://staging.mirubato.com',

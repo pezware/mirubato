@@ -70,4 +70,5 @@ name = "mirubato-frontendv2-local"
 workers_dev = true
 
 [env.local.vars]
-API_URL = "http://localhost:8787"
+API_URL = "http://api-mirubato.localhost:9797"
+SCORES_URL = "http://scores-mirubato.localhost:9788"

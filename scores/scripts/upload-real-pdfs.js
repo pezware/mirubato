@@ -9,7 +9,7 @@ const fs = require('fs')
 const path = require('path')
 
 // Configuration
-const API_URL = 'http://localhost:8787'
+const API_URL = 'http://scores-mirubato.localhost:9788'
 const TEST_DATA_DIR = path.join(__dirname, '..', 'test-data')
 
 // Test files configuration

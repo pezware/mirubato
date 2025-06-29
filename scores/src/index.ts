@@ -39,6 +39,10 @@ app.use(
         'http://localhost:3000',
         'http://localhost:5173', // Vite default port
         'http://localhost:8787',
+        'http://localhost:8788',
+        'http://www-mirubato.localhost:4000',
+        'http://api-mirubato.localhost:9797',
+        'http://scores-mirubato.localhost:9788',
         'https://mirubato.com',
         'https://www.mirubato.com',
         'https://api.mirubato.com',

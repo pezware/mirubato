@@ -5,8 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
-    strictPort: false, // Use next available port if 3000 is taken
+    port: 4000,
+    strictPort: false,
+    host: 'www-mirubato.localhost',
   },
   publicDir: 'public',
   build: {

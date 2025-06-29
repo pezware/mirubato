@@ -67,7 +67,7 @@ id = "395e4bee05ed4e68b15f35ba7b3ba832"
 
 # Local development configuration
 [env.local]
-vars = { ENVIRONMENT = "local", API_SERVICE_URL = "http://localhost:8787", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://localhost:3000" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
 [[env.local.d1_databases]]
 binding = "DB"
