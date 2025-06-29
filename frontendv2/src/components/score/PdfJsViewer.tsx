@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import * as pdfjs from 'pdfjs-dist'
-import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 
 // Configure pdf.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -20,7 +20,7 @@ export interface PdfInfo {
   modificationDate?: Date
 }
 
-export enum PdfErrorCode {
+enum PdfErrorCode {
   NETWORK_TIMEOUT = 'E001',
   CORRUPTED_FILE = 'E002',
   PASSWORD_PROTECTED = 'E003',
@@ -63,8 +63,54 @@ export default function PdfJsViewer({
   const [pageNum, setPageNum] = useState(currentPage)
   const [numPages, setNumPages] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [rendering, setRendering] = useState(false)
-  const renderTaskRef = useRef<any>(null)
+  const [_rendering, setRendering] = useState(false)
+  const renderTaskRef = useRef<pdfjs.RenderTask | null>(null)
+
+  // Handle errors - defined before useEffect that uses it
+  const handleError = useCallback(
+    (error: unknown) => {
+      let pdfError: PdfError
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+
+      if (
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('NetworkError')
+      ) {
+        pdfError = {
+          code: PdfErrorCode.NETWORK_TIMEOUT,
+          message: 'Failed to load PDF. Please check your internet connection.',
+          details: error,
+          recoverable: true,
+        }
+      } else if (errorMessage.includes('Invalid PDF')) {
+        pdfError = {
+          code: PdfErrorCode.CORRUPTED_FILE,
+          message: 'The PDF file appears to be corrupted.',
+          details: error,
+          recoverable: false,
+        }
+      } else if (errorMessage.includes('password')) {
+        pdfError = {
+          code: PdfErrorCode.PASSWORD_PROTECTED,
+          message: 'This PDF is password protected.',
+          details: error,
+          recoverable: false,
+        }
+      } else {
+        pdfError = {
+          code: PdfErrorCode.UNKNOWN_ERROR,
+          message: 'An unexpected error occurred while loading the PDF.',
+          details: error,
+          recoverable: false,
+        }
+      }
+
+      onError?.(pdfError)
+    },
+    [onError]
+  )
 
   // Load PDF document
   useEffect(() => {
@@ -110,53 +156,7 @@ export default function PdfJsViewer({
       cancelled = true
       loadingTask.destroy()
     }
-  }, [url, onLoad])
-
-  // Handle errors
-  const handleError = useCallback(
-    (error: unknown) => {
-      let pdfError: PdfError
-
-      const errorMessage =
-        error instanceof Error ? error.message : String(error)
-
-      if (
-        errorMessage.includes('Failed to fetch') ||
-        errorMessage.includes('NetworkError')
-      ) {
-        pdfError = {
-          code: PdfErrorCode.NETWORK_TIMEOUT,
-          message: 'Failed to load PDF. Please check your internet connection.',
-          details: error,
-          recoverable: true,
-        }
-      } else if (errorMessage.includes('Invalid PDF')) {
-        pdfError = {
-          code: PdfErrorCode.CORRUPTED_FILE,
-          message: 'The PDF file appears to be corrupted.',
-          details: error,
-          recoverable: false,
-        }
-      } else if (errorMessage.includes('password')) {
-        pdfError = {
-          code: PdfErrorCode.PASSWORD_PROTECTED,
-          message: 'This PDF is password protected.',
-          details: error,
-          recoverable: false,
-        }
-      } else {
-        pdfError = {
-          code: PdfErrorCode.UNKNOWN_ERROR,
-          message: 'An unexpected error occurred while loading the PDF.',
-          details: error,
-          recoverable: false,
-        }
-      }
-
-      onError?.(pdfError)
-    },
-    [onError]
-  )
+  }, [url, onLoad, handleError])
 
   // Render page
   const renderPage = useCallback(
