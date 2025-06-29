@@ -135,9 +135,7 @@ jobs:
             playwright-browsers-${{ runner.os }}-
 
       - name: Install dependencies for frontendv2 only
-        run: |
-          npm ci --workspace @mirubato/frontendv2
-          npm ci --workspace @mirubato/shared
+        run: npm ci --workspace @mirubato/frontendv2
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
