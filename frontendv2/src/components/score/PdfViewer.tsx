@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
-import 'react-pdf/dist/esm/Page/TextLayer.css'
 
 // Configure pdf.js worker - must be set before any PDF operations
 // Using the exact version that react-pdf bundles
