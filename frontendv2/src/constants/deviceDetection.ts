@@ -2,6 +2,20 @@
  * Device detection configuration for adaptive PDF viewer
  */
 
+// Extended Navigator type for Network Information API
+interface NavigatorConnection {
+  effectiveType?: '4g' | '3g' | '2g' | 'slow-2g'
+  downlink?: number
+  rtt?: number
+  saveData?: boolean
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: NavigatorConnection
+  mozConnection?: NavigatorConnection
+  webkitConnection?: NavigatorConnection
+}
+
 export const DEVICE_DETECTION_CONFIG = {
   // Memory thresholds (in GB)
   LOW_MEMORY_THRESHOLD_GB: 4,
@@ -32,8 +46,8 @@ export const DEVICE_DETECTION_CONFIG = {
   },
 
   // Local development detection
-  LOCAL_HOSTNAMES: ['localhost', '127.0.0.1'],
-  LOCAL_DOMAINS: ['.localhost'],
+  LOCAL_HOSTNAMES: ['localhost', '127.0.0.1'] as readonly string[],
+  LOCAL_DOMAINS: ['.localhost'] as readonly string[],
 } as const
 
 /**
@@ -64,11 +78,9 @@ export const DeviceDetection = {
    * Check if the connection is slow
    */
   hasSlowConnection(): boolean {
-    // @ts-expect-error - navigator.connection is not in all browsers
+    const nav = navigator as NavigatorWithConnection
     const connection =
-      navigator.connection ||
-      navigator.mozConnection ||
-      navigator.webkitConnection
+      nav.connection || nav.mozConnection || nav.webkitConnection
     if (!connection || !connection.effectiveType) return false
 
     // Map connection types to approximate speeds
@@ -90,7 +102,7 @@ export const DeviceDetection = {
     const hostname = window.location.hostname
 
     return (
-      DEVICE_DETECTION_CONFIG.LOCAL_HOSTNAMES.includes(hostname as any) ||
+      DEVICE_DETECTION_CONFIG.LOCAL_HOSTNAMES.includes(hostname) ||
       DEVICE_DETECTION_CONFIG.LOCAL_DOMAINS.some(domain =>
         hostname.endsWith(domain)
       )

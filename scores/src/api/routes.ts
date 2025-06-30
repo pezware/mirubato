@@ -7,7 +7,6 @@ import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
 import { pdfRendererV2Handler } from './handlers/pdf-renderer-v2'
-import { rateLimiters } from '../middleware/rateLimiter'
 
 export const api = new Hono<{ Bindings: Env }>()
 
