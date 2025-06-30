@@ -201,7 +201,7 @@ app.get('/', c => {
 <body>
   <div class="container">
     <h1>🎼 Mirubato Scores Service</h1>
-    <div class="version">Version 1.0.0</div>
+    <div class="version">Version 1.1.0</div>
     <div class="status">Service Operational</div>
     
     <p>Welcome to the Mirubato Scores API. This service handles sheet music storage, processing, and delivery.</p>

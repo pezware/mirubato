@@ -115,7 +115,6 @@ Ensure your frontend is configured to use the same Google Client ID:
    ```
 
 2. **Verify Redirect**:
-
    - Should redirect to Google's OAuth consent screen
    - After approval, should redirect back to your app
    - Check browser developer tools for cookies
@@ -140,12 +139,10 @@ Ensure your frontend is configured to use the same Google Client ID:
 ### Common Issues
 
 1. **"redirect_uri_mismatch" error**:
-
    - Ensure the redirect URI matches exactly (including trailing slashes)
    - Check both frontend and API configurations
 
 2. **"invalid_client" error**:
-
    - Verify client ID and secret are correct
    - Ensure secret is properly set in Cloudflare
 

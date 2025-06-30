@@ -80,29 +80,68 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 
 #### Phase 4 Completion (4 weeks)
 
-1. **Week 1: Integration Sprint**
-   - Wire PdfJsViewer to use PdfRenderingService
-   - Implement priority queue
-   - Add preloading triggers
-   - Create integration tests
+**Architecture Goal**: Decouple PDF rendering from UI components by integrating PdfJsViewer with PdfRenderingService.
 
-2. **Week 2: Two-Page View**
-   - Implement book/spread view
+##### Week 1: Core Integration
+
+1. **Extend PdfRenderingService**
+   - Add document management with caching
+   - Implement priority-based render queue
+   - Add concurrent render limits (max 2)
+   - Smart preloading strategies (adjacent pages)
+
+2. **Create Service Provider**
+   - PdfRenderingContext for dependency injection
+   - Configure memory limits (100MB desktop, 50MB mobile)
+   - Initialize with device-specific optimizations
+
+3. **Refactor PdfJsViewer**
+   - Remove direct PDF.js calls
+   - Use PdfRenderingService for all rendering
+   - Implement priority system (current page: 10, adjacent: 5)
+   - Add performance monitoring hooks
+
+##### Week 2: Two-Page View
+
+1. **Book/Spread Layout**
+   - Side-by-side page rendering
    - Handle odd/even page alignment
-   - Update navigation logic
-   - Responsive layout adjustments
+   - Synchronize page turns
+   - Update preloading for spread view
 
-3. **Week 3: Zoom & Pan**
-   - Implement pinch-to-zoom
-   - Add pan gestures
-   - Boundary checking
-   - Zoom presets (fit width/height)
+2. **Responsive Adjustments**
+   - Switch to single page on mobile
+   - Adjust scaling for two-page display
+   - Update navigation controls
+   - Handle orientation changes
 
-4. **Week 4: Polish & Testing**
-   - Mobile optimizations
-   - Performance monitoring
-   - Error recovery
-   - Documentation
+##### Week 3: Zoom & Pan
+
+1. **Touch Gestures**
+   - Pinch-to-zoom implementation
+   - Pan with boundary checking
+   - Momentum scrolling
+   - Double-tap zoom
+
+2. **Zoom Controls**
+   - Preset levels (fit width/height/page)
+   - Smooth zoom transitions
+   - Maintain zoom across pages
+   - Update render queue priorities
+
+##### Week 4: Polish & Testing
+
+1. **Performance Optimization**
+   - Implement metrics collection
+   - Target: <100ms render time (p95)
+   - Cache hit rate >80%
+   - Memory usage monitoring
+
+2. **Testing & Migration**
+   - Unit tests for queue/cache logic
+   - Integration tests for navigation
+   - Performance benchmarks
+   - Feature flag for gradual rollout
 
 #### Phase 5: Search & Print (6 weeks)
 
