@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import PdfJsViewer from '../components/score/PdfJsViewer'
+import type { PdfInfo, PdfError } from '../components/score/PdfJsViewer'
 import { PdfRenderingProvider } from '../contexts/PdfRenderingContext'
 
 export default function TestPdfRendering() {
   const [currentPage, setCurrentPage] = useState(1)
   const [scale, setScale] = useState(1.0)
   const [viewMode, setViewMode] = useState<'single' | 'double'>('single')
-  const [pdfInfo, setPdfInfo] = useState<any>(null)
-  const [error, setError] = useState<any>(null)
+  const [pdfInfo, setPdfInfo] = useState<PdfInfo | null>(null)
+  const [error, setError] = useState<PdfError | null>(null)
 
   // Test with the 6-page Recuerdos de la Alhambra PDF
   // Using the scores service URL pattern

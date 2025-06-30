@@ -1,21 +1,13 @@
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useMemo } from 'react'
 import {
   PdfRenderingService,
   getRenderingService,
 } from '../services/PdfRenderingService'
 import type { RenderingConfig } from '../services/PdfRenderingService'
 
-const PdfRenderingContext = createContext<PdfRenderingService | null>(null)
-
-export const usePdfRenderingService = () => {
-  const service = useContext(PdfRenderingContext)
-  if (!service) {
-    throw new Error(
-      'usePdfRenderingService must be used within PdfRenderingProvider'
-    )
-  }
-  return service
-}
+export const PdfRenderingContext = createContext<PdfRenderingService | null>(
+  null
+)
 
 interface PdfRenderingProviderProps {
   children: React.ReactNode

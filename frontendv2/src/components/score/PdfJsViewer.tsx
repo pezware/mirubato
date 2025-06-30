@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import * as pdfjs from 'pdfjs-dist'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-import { usePdfRenderingService } from '../../contexts/PdfRenderingContext'
+import { usePdfRenderingService } from '../../hooks/usePdfRenderingService'
 
 export interface PdfInfo {
   numPages: number
@@ -61,7 +60,6 @@ export default function PdfJsViewer({
   const [pageNum, setPageNum] = useState(currentPage)
   const [numPages, setNumPages] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [rendering, setRendering] = useState(false)
 
   // Handle errors - defined before useEffect that uses it
   const handleError = useCallback(
@@ -160,8 +158,6 @@ export default function PdfJsViewer({
     async (pageNumber: number) => {
       if (!pdfDoc || !canvasRef.current) return
 
-      setRendering(true)
-
       try {
         // Use rendering service to get the rendered page
         const startTime = performance.now()
@@ -226,8 +222,6 @@ export default function PdfJsViewer({
         ) {
           handleError(error)
         }
-      } finally {
-        setRendering(false)
       }
     },
     [pdfDoc, scale, viewMode, numPages, handleError, url, renderingService]
