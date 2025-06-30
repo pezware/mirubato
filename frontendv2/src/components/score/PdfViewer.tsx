@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-// Note: PDF caching is handled at the browser level via Cache API
 
-// Configure pdf.js worker with correct path for v5.x
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).toString()
+// Configure pdf.js worker - must be set before any PDF operations
+// Using the exact version that react-pdf bundles
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 // Note: Custom fetch with caching is implemented in pdfCache utility
 
