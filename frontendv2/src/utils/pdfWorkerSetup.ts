@@ -1,13 +1,12 @@
-import { pdfjs } from 'react-pdf'
+import * as pdfjs from 'pdfjs-dist'
 
 // Set up PDF.js worker globally
 // This ensures the worker is configured before any component tries to use it
 export function setupPdfWorker(): void {
   if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
     const pdfjsVersion = pdfjs.version
-    console.log('Setting up PDF.js worker for version:', pdfjsVersion)
-
     // Use CDN for the worker to reduce bundle size
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`
+    // PDF.js v5.x uses ES modules, so we use .mjs extension
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.mjs`
   }
 }

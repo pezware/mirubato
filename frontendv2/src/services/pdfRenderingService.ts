@@ -5,7 +5,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist'
 // This significantly reduces bundle size
 if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
   // Use the version that matches our pdfjs-dist
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+  // PDF.js v5.x uses ES modules, so we use .mjs extension
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.mjs`
 }
 
 interface CacheNode {

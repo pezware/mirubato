@@ -34,6 +34,16 @@ const TEST_FILES = [
       difficulty: 'INTERMEDIATE',
     },
   },
+  {
+    filename: 'IMSLP528958-PMLP33377-Recuerdos_de_la_Alhambra.pdf',
+    key: 'test-data/IMSLP528958-PMLP33377-Recuerdos_de_la_Alhambra.pdf',
+    metadata: {
+      title: 'Recuerdos de la Alhambra',
+      composer: 'Francisco Tárrega',
+      instrument: 'GUITAR',
+      difficulty: 'ADVANCED',
+    },
+  },
 ]
 
 async function uploadFile(fileConfig) {
