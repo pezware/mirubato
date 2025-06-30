@@ -55,7 +55,7 @@ npm run dev
 
 - **Frontend**: React + TypeScript + Vite + Tailwind + Zustand
 - **API**: Cloudflare Workers + Hono + D1 (SQLite) + R2 (Object Storage)
-- **PDF Viewing**: Currently iframe (consider pdf.js for better control)
+- **PDF Viewing**: Client-side PDF.js rendering (image-based rendering abandoned)
 - **Audio**: Tone.js for metronome (not yet implemented)
 
 ### Component Structure
@@ -67,15 +67,29 @@ frontendv2/src/
 │   └── ScoreBrowser.tsx           # Browse/search page
 ├── components/score/
 │   ├── ScoreViewer.tsx            # PDF display component
+│   ├── PdfViewer.tsx              # React-pdf based viewer
+│   ├── PdfJsViewer.tsx            # Custom PDF.js viewer (WIP)
+│   ├── ImageBasedPdfViewer.tsx   # Image viewer (abandoned)
+│   ├── AdaptivePdfViewer.tsx     # Viewer selector (simplified)
 │   ├── ScoreControls.tsx          # Floating control bar
 │   └── ScoreManagement.tsx        # Library management
 ├── services/
-│   └── scoreService.ts            # API client
+│   ├── scoreService.ts            # API client
+│   └── PdfRenderingService.ts     # PDF rendering engine (WIP)
 ├── stores/
 │   └── scoreStore.ts              # Zustand store
 └── routes/
     └── scorebook.tsx              # Route definitions
 ```
+
+### PDF Rendering Architecture Decision
+
+After extensive testing, we've made the following architectural decisions:
+
+1. **Client-Side Only**: All PDF rendering happens in the browser using PDF.js
+2. **No Server Rendering**: Cloudflare Browser Rendering API proved too unstable
+3. **Progressive Enhancement**: Start with basic react-pdf, migrate to custom PDF.js
+4. **Future Consideration**: Pre-render PDFs during upload process if needed
 
 ## Local Development with R2/Miniflare
 
@@ -289,9 +303,10 @@ npm run seed:local  # Seeds test scores in D1 database
 
 ### Current Limitations
 
-1. **PDF Display**: Using iframe which has limitations
-   - Consider implementing pdf.js for better control
-   - CORS must be properly configured
+1. **PDF Display**:
+   - Currently using react-pdf for basic rendering
+   - Custom PDF.js implementation in progress (40% complete)
+   - Image-based rendering abandoned due to Cloudflare Browser API instability
 
 2. **Metronome**: Audio not yet implemented
    - Tone.js integration needed

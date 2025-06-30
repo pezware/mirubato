@@ -67,6 +67,15 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 - ❌ Priority queue for render requests
 - ❌ Viewer refactoring to use service
 
+#### Image-Based Rendering (ABANDONED)
+
+- ✅ Implemented Cloudflare Browser Rendering integration
+- ✅ Created image-based PDF viewer component
+- ✅ Added adaptive viewer selection logic
+- ❌ **ABANDONED**: Browser Rendering API too unstable
+- ❌ **DECISION**: Focus on client-side PDF.js rendering only
+- ❌ **FUTURE**: Consider pre-rendering during upload instead
+
 ### 📋 Planned Features
 
 #### Phase 4 Completion (4 weeks)
@@ -195,9 +204,14 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 
 ## Immediate Action Items (Next 2 Weeks)
 
-### Week 1: Complete Phase 4 Integration
+### Week 1: Complete Phase 4 Integration (Client-Side Focus)
 
-1. **Day 1-2**: Refactor PdfJsViewer to use PdfRenderingService
+1. **Day 1**: Remove image-based rendering code
+   - Clean up ImageBasedPdfViewer component (keep for future reference)
+   - Remove AdaptivePdfViewer image selection logic
+   - Simplify to always use PDF.js viewer
+
+2. **Day 2-3**: Refactor PdfJsViewer to use PdfRenderingService
 
    ```typescript
    // Replace direct rendering with:
@@ -209,12 +223,12 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    context.putImageData(imageData, 0, 0)
    ```
 
-2. **Day 3-4**: Implement priority queue
+3. **Day 4**: Implement priority queue
    - High priority: Current page
    - Low priority: Preload pages
    - Cancel outdated requests
 
-3. **Day 5**: Integration testing
+4. **Day 5**: Integration testing
    - Memory usage monitoring
    - Cache hit rate verification
    - Performance benchmarks
