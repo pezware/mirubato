@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { useAuthStore } from '../../stores/authStore'
 import { cn } from '../../utils/cn'
-import { getMetronome } from '../../services/metronomeService'
+import {
+  getMetronome,
+  type VisualCallback,
+} from '../../services/metronomeService'
 
 export default function ScoreControls() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -27,22 +30,53 @@ export default function ScoreControls() {
 
   const [elapsedTime, setElapsedTime] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [visualPulse, setVisualPulse] = useState(false)
   const metronome = getMetronome()
+  const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Visual callback for metronome beats
+  const visualCallback: VisualCallback = {
+    onBeat: (_beatNumber, _isAccent) => {
+      // Clear any existing timeout
+      if (pulseTimeoutRef.current) {
+        clearTimeout(pulseTimeoutRef.current)
+      }
+
+      // Start the pulse
+      setVisualPulse(true)
+
+      // End the pulse after 100ms for a subtle flash
+      pulseTimeoutRef.current = setTimeout(() => {
+        setVisualPulse(false)
+      }, 100)
+    },
+  }
 
   // Handle metronome state changes
   useEffect(() => {
     if (metronomeSettings.isActive) {
-      metronome.start({
-        tempo: metronomeSettings.tempo,
-        volume: metronomeSettings.volume,
-        accentBeats: metronomeSettings.accentBeats,
-      })
+      metronome.start(
+        {
+          tempo: metronomeSettings.tempo,
+          volume: metronomeSettings.volume,
+          accentBeats: metronomeSettings.accentBeats,
+        },
+        visualCallback
+      )
     } else {
       metronome.stop()
+      setVisualPulse(false)
+      if (pulseTimeoutRef.current) {
+        clearTimeout(pulseTimeoutRef.current)
+      }
     }
 
     return () => {
       metronome.stop()
+      setVisualPulse(false)
+      if (pulseTimeoutRef.current) {
+        clearTimeout(pulseTimeoutRef.current)
+      }
     }
   }, [metronomeSettings.isActive])
 
@@ -149,15 +183,25 @@ export default function ScoreControls() {
           <button
             onClick={toggleMetronome}
             className={cn(
-              'p-2 rounded-full transition-all',
+              'relative p-2 rounded-full transition-all',
               metronomeSettings.isActive
                 ? 'bg-morandi-sage-500 text-white'
                 : 'bg-morandi-stone-200 text-morandi-stone-600 hover:bg-morandi-stone-300'
             )}
             title={t('scorebook:metronome', 'Metronome')}
           >
+            {/* Subtle visual pulse overlay */}
+            {metronomeSettings.isActive && (
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-full bg-white pointer-events-none',
+                  'transition-opacity duration-100',
+                  visualPulse ? 'opacity-20' : 'opacity-0'
+                )}
+              />
+            )}
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 relative z-10"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -496,15 +540,25 @@ export default function ScoreControls() {
           <button
             onClick={toggleMetronome}
             className={cn(
-              'p-3 rounded-full transition-all',
+              'relative p-3 rounded-full transition-all',
               metronomeSettings.isActive
                 ? 'bg-morandi-sage-500 text-white'
                 : 'bg-morandi-stone-200 text-morandi-stone-600 hover:bg-morandi-stone-300'
             )}
             title={t('scorebook:metronome', 'Metronome')}
           >
+            {/* Subtle visual pulse overlay */}
+            {metronomeSettings.isActive && (
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-full bg-white pointer-events-none',
+                  'transition-opacity duration-100',
+                  visualPulse ? 'opacity-20' : 'opacity-0'
+                )}
+              />
+            )}
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 relative z-10"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
