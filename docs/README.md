@@ -1,54 +1,46 @@
-# mirubato
+# Mirubato Documentation
 
-Open-source practice journal for musicians - track sessions, log progress, and analyze your musical journey.
+_Last Updated: December 2024_
 
-![mirubato Screenshot](https://raw.githubusercontent.com/pezware/mirubato/main/frontendv2/public/mirubato-screenshot.jpg)
+## Core Documentation
 
-## Features
+- **[DESIGN.md](./DESIGN.md)** - System architecture and technical design
+- **[ROADMAP.md](./ROADMAP.md)** - Development roadmap and milestones
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Deployment procedures
+- **[DEBUG.md](./DEBUG.md)** - Debugging guide and common issues
+- **[LICENSE.md](./LICENSE.md)** - MIT License
 
-🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 🌐 Open source (MIT)
+## Current Development
 
-## Quick Start
+- **[SCOREBOOK.md](./SCOREBOOK.md)** - Scorebook feature overview
+- **[SCOREBOOK_UNIFIED_PLAN.md](./SCOREBOOK_UNIFIED_PLAN.md)** - Active Phase 4 development plan
 
-```bash
-git clone https://github.com/pezware/mirubato.git && cd frontendv2
-npm install && npm run dev     # Frontend: localhost:3000
-npm run dev:api                # API: localhost:8787
-```
+## Documentation Organization
 
-## Documentation
+### Archived Documentation
 
-| Type            | Link                                                         | Description                        |
-| --------------- | ------------------------------------------------------------ | ---------------------------------- |
-| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**    |
-| 📖 Development  | [Setup Guide](docs/DESIGN.md)                                | Architecture and development guide |
-| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting      |
-| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API        |
+All legacy and service-specific documentation has been moved to `/docs/archive/`:
 
-## Technology Stack
+- `/docs/archive/api/` - API-specific documentation
+- `/docs/archive/scores/` - Scores service documentation
+- `/docs/archive/` - Legacy plans and outdated guides
 
-**Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
-**API**: REST, Hono, Cloudflare Workers, D1 (SQLite)
-**Audio**: Tone.js, Web Audio API, VexFlow.js notation
+### Service Documentation
 
-## Educational Foundation
+Service-specific documentation remains with the services:
 
-Based on proven pedagogical methods including the **"Keep Going Method"** from [_Sight-Reading for Guitar_](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0).
+- `/api/scripts/README.md` - API scripts documentation
+- `/scores/scripts/README.md` - Scores scripts documentation
+- `/scores/test-data/README.md` - Test data documentation
 
-**Special thanks** to Chelsea Green and Rebus Community for open-sourcing educational resources.
+### Principles
 
-## Project Info
-
-|                   |                                                                    |
-| ----------------- | ------------------------------------------------------------------ |
-| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
-| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
-| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
-| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
-| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
-| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
-| **🚧 Status**     | v1.1.0 Released - MVP Complete (290+ tests passing)                |
+1. **Single Source of Truth**: `wrangler.toml` files contain all configuration
+2. **Core Docs in `/docs`**: Only maintain essential, up-to-date documentation
+3. **Archive Legacy**: Move outdated docs to archive instead of deleting
+4. **Service Proximity**: Keep service-specific docs near the code
 
 ---
 
-Built with ❤️ for the open-source music education community
+For project overview, see the main [README.md](../README.md) in the repository root.  
+For AI development guide, see [CLAUDE.md](../CLAUDE.md) in the repository root.
