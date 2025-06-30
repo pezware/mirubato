@@ -1,86 +1,264 @@
-# Deployment Guide
+# Mirubato Deployment Guide
 
-This guide covers the deployment process for the Mirubato project across different environments.
+_Last Updated: December 2024_
+
+## Overview
+
+Mirubato consists of three Cloudflare Workers:
+
+- **Frontend** (`frontendv2/`) - React SPA served as a Worker
+- **API** (`api/`) - REST API Worker with D1 database
+- **Scores** (`scores/`) - PDF rendering service with R2 storage
+
+All services use `wrangler.toml` files as the single source of truth for configuration.
 
 ## Prerequisites
 
-Before deploying, ensure you have:
+1. **Cloudflare Account** with Workers, D1, R2, and Queues access
+2. **Wrangler CLI** installed: `npm install -g wrangler`
+3. **Authentication**: `wrangler login`
+4. **Node.js** 18+ and npm
 
-1. Cloudflare account with appropriate permissions
-2. Wrangler CLI installed and authenticated
-3. All environment secrets configured in Cloudflare dashboard
+## Local Development
 
-## Scores Service Deployment
+### Quick Start
 
-### First-Time Setup
+```bash
+# Clone and install
+git clone https://github.com/pezware/mirubato.git
+cd mirubato
+npm install
 
-1. **Create Cloudflare Queues**
+# Start all services
+./start-scorebook.sh
 
-   The scores service requires queues for PDF processing. Run this script before first deployment:
+# Access:
+# Frontend: http://www-mirubato.localhost:4000
+# API: http://api-mirubato.localhost:9797
+# Scores: http://scores-mirubato.localhost:9788
+```
 
-   ```bash
-   cd scores
-   ./scripts/setup-queues.sh
-   ```
+### Individual Services
 
-   This creates the following queues:
-   - Production: `pdf-processing`, `pdf-processing-dlq`
-   - Staging: `pdf-processing-staging`, `pdf-processing-staging-dlq`
-   - Development: `pdf-processing-dev`, `pdf-processing-dev-dlq`
+```bash
+# Frontend
+cd frontendv2
+npm run dev
 
-2. **Run Database Migrations**
+# API
+cd api
+npm run dev  # Runs build + wrangler dev
 
-   ```bash
-   cd scores
-   # For staging
-   wrangler d1 migrations apply DB --env staging --remote
+# Scores
+cd scores
+wrangler dev --port 9788 --env local --local-protocol http
+```
 
-   # For production
-   wrangler d1 migrations apply DB --remote
-   ```
+## Environment Configuration
 
-### Deployment Commands
+Each service has environment-specific configurations in `wrangler.toml`:
+
+### Environments
+
+- **Production** (default): No `--env` flag needed
+- **Staging**: Use `--env staging`
+- **Local**: Use `--env local` (for development)
+
+### Key Bindings
+
+**API Service**:
+
+- `DB` - D1 database
+- `MUSIC_CATALOG` - KV namespace
+- `RATE_LIMITER` - Rate limiting
+
+**Scores Service**:
+
+- `DB` - D1 database
+- `SCORES_BUCKET` - R2 bucket
+- `CACHE` - KV namespace
+- `PDF_QUEUE` - Queue for processing
+- `BROWSER` - Browser rendering
+
+**Frontend**:
+
+- `ASSETS` - Static assets binding
+
+## Database Setup
+
+### Initial Setup
+
+```bash
+# API database
+cd api
+wrangler d1 create mirubato-dev        # Development
+wrangler d1 create mirubato-prod       # Production
+
+# Scores database
+cd scores
+wrangler d1 create mirubato-scores-dev  # Development
+wrangler d1 create mirubato-scores-prod # Production
+```
+
+### Running Migrations
+
+```bash
+# API migrations
+cd api
+wrangler d1 migrations apply DB --env staging --remote
+wrangler d1 migrations apply DB --remote  # Production
+
+# Scores migrations
+cd scores
+wrangler d1 migrations apply DB --env staging --remote
+wrangler d1 migrations apply DB --remote  # Production
+```
+
+## Deployment Process
+
+### Manual Deployment
 
 ```bash
 # Deploy to staging
-cd scores
+cd [service-directory]
 wrangler deploy --env staging
 
 # Deploy to production
-cd scores
-wrangler deploy
+cd [service-directory]
+wrangler deploy  # No --env flag for production
 ```
 
-## Troubleshooting
+### Automated Deployment (GitHub Actions)
 
-### Queue Does Not Exist Error
+The project uses Cloudflare's GitHub integration:
 
-If you see an error like:
+1. **PR/Branch Push** → Automatically deploys to staging
+2. **Merge to main** → Automatically deploys to production
 
-```
-Queue "pdf-processing-staging" does not exist. To create it, run: wrangler queues create pdf-processing-staging
-```
+No manual `wrangler deploy` needed for staging/production.
 
-Run the setup script:
+## Service-Specific Setup
+
+### API Service
+
+1. **Environment Secrets**:
+
+   ```bash
+   # Set secrets for each environment
+   wrangler secret put JWT_SECRET --env staging
+   wrangler secret put MAGIC_LINK_SECRET --env staging
+   wrangler secret put GOOGLE_CLIENT_SECRET --env staging
+   ```
+
+2. **Music Catalog Setup**:
+   ```bash
+   cd api/scripts
+   ./setup-music-catalog.sh
+   ```
+
+### Scores Service
+
+1. **Queue Setup** (first time only):
+
+   ```bash
+   cd scores/scripts
+   ./setup-queues.sh
+   ```
+
+2. **R2 Bucket Creation**:
+
+   ```bash
+   wrangler r2 bucket create mirubato-scores-staging
+   wrangler r2 bucket create mirubato-scores-production
+   ```
+
+3. **Seed Test Data**:
+   ```bash
+   cd scores/scripts
+   ./seed-staging.sh  # For staging
+   ```
+
+### Frontend Service
+
+The frontend is built and deployed as a Cloudflare Worker:
 
 ```bash
-cd scores
-./scripts/setup-queues.sh
+cd frontendv2
+npm run build         # Creates dist/
+wrangler deploy       # Deploys with assets
 ```
 
-### Migration Errors
+## Monitoring & Debugging
 
-If migrations fail with "duplicate column" errors, it means the column already exists. You can safely ignore these errors or check the migration status:
+### Health Checks
+
+- API: `https://api.mirubato.com/health`
+- Scores: `https://scores.mirubato.com/health`
+
+### Logs
 
 ```bash
-wrangler d1 migrations list DB --env staging --remote
+# Tail logs for a service
+wrangler tail --env staging  # Staging logs
+wrangler tail                # Production logs
 ```
 
-## Automated Deployments
+### Common Issues
 
-The project uses GitHub Actions for automated deployments:
+1. **CORS Errors**: Check `wrangler.toml` for proper domain configuration
+2. **Database Errors**: Verify migrations are up to date
+3. **Queue Errors**: Ensure queues exist (run setup script)
+4. **Build Errors**: Clear `node_modules` and reinstall
 
-- **Pull Requests**: Automatically deploy to staging
-- **Main Branch**: Automatically deploy to production
+## Production Checklist
 
-The queues must be created manually before the first automated deployment.
+Before deploying to production:
+
+- [ ] All tests passing: `npm test`
+- [ ] Migrations reviewed and tested in staging
+- [ ] Environment variables configured
+- [ ] Health endpoints responding
+- [ ] No console.log statements in code
+- [ ] Bundle size optimized
+- [ ] CORS/CSP headers configured correctly
+
+## Rollback Procedure
+
+1. **Via Cloudflare Dashboard**:
+   - Go to Workers & Pages
+   - Select the service
+   - Go to "Deployments" tab
+   - Click "Rollback" on previous version
+
+2. **Via Wrangler**:
+   ```bash
+   wrangler rollback [deployment-id]
+   ```
+
+## Cost Optimization
+
+- **Workers**: Free tier includes 100k requests/day
+- **D1**: Free tier includes 5GB storage
+- **R2**: Pay per GB stored and bandwidth
+- **Browser Rendering**: $0.02 per 1000 renders
+
+Monitor usage in Cloudflare dashboard → Analytics.
+
+## Security Considerations
+
+1. **Never commit secrets** to `wrangler.toml`
+2. **Use wrangler secret** for sensitive values
+3. **Rotate JWT secrets** periodically
+4. **Enable rate limiting** in production
+5. **Review CORS settings** for each environment
+
+## Support
+
+- **Documentation**: `/docs` directory
+- **Issues**: [GitHub Issues](https://github.com/pezware/mirubato/issues)
+- **Cloudflare Status**: [status.cloudflare.com](https://status.cloudflare.com)
+
+---
+
+_For architecture details, see [DESIGN.md](./DESIGN.md)_
+_For development setup, see [CLAUDE.md](./CLAUDE.md)_

@@ -74,7 +74,7 @@ cd /Users/arbeitandy/src/public/mirubato/api
 The API uses the following migrations:
 
 1. `0001_initial_schema.sql` - Creates users, sync_data, and sync_metadata tables
-2. `0002_add_backend_compatibility.sql` - Adds backend compatibility tables  
+2. `0002_add_backend_compatibility.sql` - Adds backend compatibility tables
 3. `0003_add_user_tracking_fields.sql` - Adds user tracking fields
 
 ### Key Tables

@@ -1,74 +1,54 @@
-# Mirubato Documentation
+# mirubato
 
-Welcome to the Mirubato documentation. This directory contains all technical and architectural documentation for the project.
+Open-source practice journal for musicians - track sessions, log progress, and analyze your musical journey.
 
-## Documentation Structure
+![mirubato Screenshot](https://raw.githubusercontent.com/pezware/mirubato/main/frontendv2/public/mirubato-screenshot.jpg)
 
-### Core Documentation
+## Features
 
-- **[DESIGN.md](./DESIGN.md)** - Current system architecture and design principles
-- **[DEBUG.md](./DEBUG.md)** - Debugging guide and common issues
-- **[ROADMAP.md](./ROADMAP.md)** - Development roadmap and priorities
+🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 🌐 Open source (MIT)
 
-### Frontend Documentation
+## Quick Start
 
-- **[FRONTEND.md](./FRONTEND.md)** - Frontend architecture and development guide
-- **[FRONTEND_DEBUG.md](./FRONTEND_DEBUG.md)** - LocalStorage debugging guide
-- **[SYNC_TYPES.md](./SYNC_TYPES.md)** - Data type differences between legacy and current
+```bash
+git clone https://github.com/pezware/mirubato.git && cd frontendv2
+npm install && npm run dev     # Frontend: localhost:3000
+npm run dev:api                # API: localhost:8787
+```
 
-### API Service Documentation
+## Documentation
 
-- **[API README](./api/README.md)** - REST API service overview
-- **[Google Auth Setup](./api/GOOGLE_AUTH_SETUP.md)** - Google OAuth configuration
-- **[Domain Migration](./api/DOMAIN_MIGRATION.md)** - Domain migration guide
-- **[Database Setup](./api/DATABASE_SETUP.md)** - Database configuration
-- **[Email Setup](./api/EMAIL_SETUP.md)** - SendGrid email configuration
-- **[API TODO](./api/TODO.md)** - Current development priorities
+| Type            | Link                                                         | Description                        |
+| --------------- | ------------------------------------------------------------ | ---------------------------------- |
+| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**    |
+| 📖 Development  | [Setup Guide](docs/DESIGN.md)                                | Architecture and development guide |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting      |
+| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API        |
 
-### Scores Service Documentation
+## Technology Stack
 
-- **[Scores README](./scores/README.md)** - Scores service overview
-- **[Quick Start](./scores/QUICK_START.md)** - Getting started with scores service
-- **[Implementation Status](./scores/IMPLEMENTATION_STATUS.md)** - Current implementation status
-- **[API Documentation](./scores/api-documentation.md)** - Scores API reference
-- **[Frontend Integration](./scores/frontend-integration.md)** - Integration guide
-- **[Endpoints Summary](./scores/ENDPOINTS_SUMMARY.md)** - API endpoints reference
-- **[Cloudflare Features](./scores/cloudflare-native-features.md)** - CF-specific features
+**Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
+**API**: REST, Hono, Cloudflare Workers, D1 (SQLite)
+**Audio**: Tone.js, Web Audio API, VexFlow.js notation
 
-### Content and Repertoire
+## Educational Foundation
 
-- **[GUITAR_REPERTOIRE.md](./GUITAR_REPERTOIRE.md)** - Graded classical guitar repertoire (Grades 1-10)
-- **[PIANO_REPERTOIRE.md](./PIANO_REPERTOIRE.md)** - Graded classical piano repertoire (Grades 1-10)
+Based on proven pedagogical methods including the **"Keep Going Method"** from [_Sight-Reading for Guitar_](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0).
 
-## Quick Links
+**Special thanks** to Chelsea Green and Rebus Community for open-sourcing educational resources.
 
-### Development
+## Project Info
 
-- Main README: [../README.md](../README.md)
-- Claude Instructions: [../CLAUDE.md](../CLAUDE.md)
+|                   |                                                                    |
+| ----------------- | ------------------------------------------------------------------ |
+| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
+| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
+| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
+| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
+| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
+| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
+| **🚧 Status**     | v1.1.0 Released - MVP Complete (290+ tests passing)                |
 
-### Live Services
+---
 
-- **Frontend**: `mirubato.com`
-- **API**: `api.mirubato.com` ([docs](https://api.mirubato.com/docs))
-- **Scores**: `scores.mirubato.com` ([docs](https://scores.mirubato.com/docs))
-
-## Current Architecture
-
-Mirubato uses a modern serverless architecture with:
-
-- **Frontend**: React SPA with REST API, deployed via Cloudflare Workers
-- **API**: RESTful API using Hono framework, deployed on Cloudflare Workers
-- **Scores**: Content management service for sheet music and repertoire
-- **Database**: Cloudflare D1 (SQLite) for all data persistence
-
-### Migration Status
-
-✅ **Migration Complete**: Successfully transitioned from GraphQL to REST API architecture
-
-- Legacy frontend/backend removed
-- All data migrated (80 logbook entries, 3 users)
-- Production deployment active
-- 135 tests passing across all services
-
-See [DESIGN.md](./DESIGN.md) for detailed architecture information.
+Built with ❤️ for the open-source music education community

@@ -174,6 +174,7 @@ The documentation is powered by Stoplight Elements and uses the OpenAPI specific
 ## Current Status
 
 ✅ **Production Ready**: Successfully deployed and serving production traffic
+
 - **Health Check**: https://api.mirubato.com/health
 - **Test Coverage**: 32/32 tests passing (100%)
 - **Migration**: Completed from GraphQL backend
