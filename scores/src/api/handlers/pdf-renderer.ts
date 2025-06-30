@@ -483,10 +483,34 @@ pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
         waitUntil: 'networkidle0',
       })
 
-      // Wait for PDF to be rendered
-      await page.waitForFunction('window.renderingComplete === true', {
-        timeout: 20000,
-      })
+      // Wait for PDF to be rendered with better error handling
+      try {
+        await page.waitForFunction('window.renderingComplete === true', {
+          timeout: 15000, // Reduced timeout to fail faster
+        })
+      } catch (timeoutError) {
+        // Try to get any error information from the page
+        const pageError = await page.evaluate(() => {
+          const doc = globalThis as any
+          const errorEl = doc.document.getElementById('error')
+          return errorEl ? errorEl.textContent : null
+        })
+
+        if (pageError) {
+          throw new Error(`PDF rendering failed: ${pageError}`)
+        }
+
+        // Check if PDF.js loaded at all
+        const pdfJsLoaded = await page.evaluate(() => {
+          const global = globalThis as any
+          return typeof global.pdfjsLib !== 'undefined'
+        })
+        if (!pdfJsLoaded) {
+          throw new Error('PDF.js library failed to load')
+        }
+
+        throw new Error('PDF rendering timeout - page took too long to render')
+      }
 
       // Additional wait to ensure full render
       await new Promise(resolve => setTimeout(resolve, 500))

@@ -244,7 +244,8 @@ class ScoreService {
 
   // Get the URL for a pre-rendered page image
   getScorePageUrl(scoreId: string, page: number): string {
-    return `${this.scoresApiUrl}/api/pdf/render/${scoreId}/page/${page}`
+    // Use v2 renderer for better performance and reliability
+    return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
   }
 
   // Get score metadata including number of pages

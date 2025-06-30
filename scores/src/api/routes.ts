@@ -6,6 +6,7 @@ import { importHandler } from './handlers/import'
 import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
+import { pdfRendererV2Handler } from './handlers/pdf-renderer-v2'
 
 export const api = new Hono<{ Bindings: Env }>()
 
@@ -75,5 +76,7 @@ api.route('/collections', collectionsHandler)
 // Render routes need special handling due to nested paths
 api.route('/', renderHandler)
 
-// PDF rendering routes
+// PDF rendering routes - v2 is the optimized version
+api.route('/pdf/v2', pdfRendererV2Handler)
+// Keep original for backwards compatibility
 api.route('/pdf', pdfRendererHandler)
