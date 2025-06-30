@@ -3,6 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Production configuration (default - no env flag needed)
+vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+routes = [
+  { pattern = "scores.mirubato.com", custom_domain = true }
+]
+
 # Browser Rendering binding
 [browser]
 binding = "BROWSER"
@@ -14,12 +20,6 @@ max_batch_size = 10
 max_batch_timeout = 30
 max_retries = 3
 dead_letter_queue = "pdf-processing-dlq"
-
-# Production configuration (default - no env flag needed)
-vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
-routes = [
-  { pattern = "scores.mirubato.com", custom_domain = true }
-]
 
 [[d1_databases]]
 binding = "DB"
