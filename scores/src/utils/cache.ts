@@ -153,7 +153,7 @@ export async function cacheResponse(
     if (!shouldCache(request, response)) return
 
     // Get cache instance
-    const cache = caches.default
+    const cache = await caches.open('v1')
     const cacheKey = getCacheKey(request)
 
     // Clone response for caching (can only read body once)
@@ -179,7 +179,7 @@ export async function getCachedResponse(
     if (request.method !== 'GET') return null
 
     // Get cache instance
-    const cache = caches.default
+    const cache = await caches.open('v1')
     const cacheKey = getCacheKey(request)
 
     // Check cache
@@ -211,7 +211,7 @@ export async function getCachedResponse(
  */
 export async function purgeCache(pattern: string, c?: any): Promise<void> {
   try {
-    const cache = caches.default
+    const cache = await caches.open('v1')
 
     // For Cloudflare Workers, we need to construct the full URL
     const url = new URL(pattern, c.req.url)

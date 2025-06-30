@@ -199,8 +199,8 @@ async function importFromIMSLP(
     }
 
     // If PDF links found, queue for download
-    if (metadata.pdfLinks && metadata.pdfLinks.length > 0 && env.SCORE_QUEUE) {
-      await env.SCORE_QUEUE.send({
+    if (metadata.pdfLinks && metadata.pdfLinks.length > 0 && env.PDF_QUEUE) {
+      await env.PDF_QUEUE.send({
         scoreId,
         action: 'download-imslp-pdf',
         data: {
@@ -281,8 +281,8 @@ async function downloadIMSLPPDF(
       .run()
 
     // Queue for preview generation
-    if (env.SCORE_QUEUE) {
-      await env.SCORE_QUEUE.send({
+    if (env.PDF_QUEUE) {
+      await env.PDF_QUEUE.send({
         scoreId,
         action: 'generate-previews',
         data: {

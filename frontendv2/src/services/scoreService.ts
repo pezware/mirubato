@@ -242,6 +242,29 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/scores/${scoreId}/download/pdf`
   }
 
+  // Get the URL for a pre-rendered page image
+  getScorePageUrl(scoreId: string, page: number): string {
+    // Use v2 renderer for better performance and reliability
+    return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
+  }
+
+  // Get score metadata including number of pages
+  async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
+    try {
+      const response = await scoresApiClient.get(
+        `/api/scores/${scoreId}/metadata`
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch score metadata: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Render a score (returns URL or base64 data)
   async renderScore(
     id: string,

@@ -3,6 +3,11 @@ import { HTTPException } from 'hono/http-exception'
 import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../../utils/r2-presigner'
 import { z } from 'zod'
+import { rateLimiters } from '../../middleware/rateLimiter'
+import {
+  getErrorElementText,
+  isPdfJsLoaded,
+} from '../../browser/pdf-page-evaluations'
 
 export const pdfRendererHandler = new Hono<{ Bindings: Env }>()
 
@@ -184,7 +189,7 @@ pdfRendererHandler.get('/test-webpage', async c => {
     throw new HTTPException(500, { message: 'Browser Rendering not available' })
   }
 
-  const browser = await launch(c.env.BROWSER)
+  const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
 
   try {
     const page = await browser.newPage()
@@ -258,234 +263,332 @@ pdfRendererHandler.get('/test-webpage', async c => {
 })
 
 // Render PDF using Google Docs viewer (more reliable)
-pdfRendererHandler.get('/render-google/:scoreId/page/:pageNumber', async c => {
-  if (!c.env.BROWSER) {
-    throw new HTTPException(500, { message: 'Browser Rendering not available' })
-  }
-
-  const scoreId = c.req.param('scoreId')
-  void scoreId // Will be used when connecting to actual PDFs
-  const pageNumber = parseInt(c.req.param('pageNumber'))
-  const width = parseInt(c.req.query('width') || '1200')
-
-  const browser = await launch(c.env.BROWSER)
-
-  try {
-    // For testing, use a public PDF
-    const testPdfUrl = 'https://www.africau.edu/images/default/sample.pdf'
-
-    // Use Google Docs viewer
-    const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(testPdfUrl)}&embedded=true&hl=en#:0.page.${pageNumber}`
-
-    const page = await browser.newPage()
-
-    // Set viewport
-    await page.setViewport({
-      width: width,
-      height: Math.floor(width * 1.414), // A4 ratio
-      deviceScaleFactor: 2,
-    })
-
-    // Navigate to Google Docs viewer
-    await page.goto(googleViewerUrl, {
-      waitUntil: 'networkidle2',
-      timeout: 30000,
-    })
-
-    // Wait for the viewer to load
-    await page.waitForSelector('img[role="img"]', {
-      visible: true,
-      timeout: 20000,
-    })
-
-    // Wait a bit more for full render
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Take screenshot
-    const screenshot = await page.screenshot({
-      type: 'webp',
-      quality: 85,
-      fullPage: false,
-    })
-
-    await browser.close()
-
-    return new Response(screenshot, {
-      headers: {
-        'Content-Type': 'image/webp',
-        'Cache-Control': 'public, max-age=86400',
-      },
-    })
-  } catch (error) {
-    await browser.close()
-    console.error('Google Docs rendering error:', error)
-    throw new HTTPException(500, {
-      message: `Failed to render with Google Docs: ${error instanceof Error ? error.message : String(error)}`,
-    })
-  }
-})
-
-// Production-ready: Render score from R2 storage
-pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
-  if (!c.env.BROWSER) {
-    throw new HTTPException(500, { message: 'Browser Rendering not available' })
-  }
-
-  try {
-    // Validate inputs
-    const scoreId = scoreIdSchema.parse(c.req.param('scoreId'))
-    const pageNumber = pageNumberSchema.parse(
-      parseInt(c.req.param('pageNumber'))
-    )
-
-    // Parse query parameters with defaults
-    const params = renderParamsSchema.parse({
-      width: parseInt(c.req.query('width') || '1200'),
-      format: c.req.query('format'),
-      quality: parseInt(c.req.query('quality') || '85'),
-      scale: parseFloat(c.req.query('scale') || '2'),
-    })
-
-    // Check cache first
-    const cacheKey = `pdf-render:${scoreId}:${pageNumber}:${params.width}:${params.format}:${params.scale}`
-    const cached = await c.env.CACHE.get(cacheKey, { type: 'stream' })
-
-    if (cached) {
-      return new Response(cached, {
-        headers: {
-          'Content-Type': `image/${params.format}`,
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          'X-Cache': 'HIT',
-          'X-Score-Id': scoreId,
-          'X-Page-Number': pageNumber.toString(),
-        },
+pdfRendererHandler.get(
+  '/render-google/:scoreId/page/:pageNumber',
+  rateLimiters.perScore,
+  async c => {
+    if (!c.env.BROWSER) {
+      throw new HTTPException(500, {
+        message: 'Browser Rendering not available',
       })
     }
 
-    // Get score version from database
-    const scoreVersion = await c.env.DB.prepare(
-      'SELECT r2_key, page_count FROM score_versions WHERE score_id = ? AND format = ? AND processing_status = ?'
-    )
-      .bind(scoreId, 'pdf', 'completed')
-      .first<{ r2_key: string; page_count: number }>()
+    const scoreId = c.req.param('scoreId')
+    void scoreId // Will be used when connecting to actual PDFs
+    const pageNumber = parseInt(c.req.param('pageNumber'))
+    const width = parseInt(c.req.query('width') || '1200')
 
-    if (!scoreVersion) {
-      throw new HTTPException(404, {
-        message: 'Score not found or not yet processed',
-      })
-    }
-
-    // Validate page number
-    if (pageNumber > (scoreVersion.page_count || 0)) {
-      throw new HTTPException(400, {
-        message: `Invalid page number. This score has ${scoreVersion.page_count} pages.`,
-      })
-    }
-
-    // Generate pre-signed URL for the PDF
-    const presigner = new R2Presigner(c.env)
-    const pdfUrl = await presigner.generatePresignedUrl(scoreVersion.r2_key)
-
-    // Launch browser
-    const browser = await launch(c.env.BROWSER)
+    const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
 
     try {
+      // For testing, use a public PDF
+      const testPdfUrl = 'https://www.africau.edu/images/default/sample.pdf'
+
+      // Use Google Docs viewer
+      const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(testPdfUrl)}&embedded=true&hl=en#:0.page.${pageNumber}`
+
       const page = await browser.newPage()
 
-      // Set viewport based on requested width
+      // Set viewport
       await page.setViewport({
-        width: params.width,
-        height: Math.floor(params.width * 1.414), // A4 aspect ratio
-        deviceScaleFactor: 1,
+        width: width,
+        height: Math.floor(width * 1.414), // A4 ratio
+        deviceScaleFactor: 2,
       })
 
-      // Load our custom PDF viewer with the PDF URL embedded
-      const viewerHtml = PDF_VIEWER_HTML.replace(
-        "const pdfUrl = params.get('url');",
-        `const pdfUrl = '${pdfUrl}';`
-      )
-        .replace(
-          "const pageNumber = parseInt(params.get('page') || '1');",
-          `const pageNumber = ${pageNumber};`
-        )
-        .replace(
-          "const scale = parseFloat(params.get('scale') || '2.0');",
-          `const scale = ${params.scale};`
-        )
-
-      // Set the content directly
-      await page.setContent(viewerHtml, {
-        waitUntil: 'networkidle0',
+      // Navigate to Google Docs viewer
+      await page.goto(googleViewerUrl, {
+        waitUntil: 'networkidle2',
+        timeout: 30000,
       })
 
-      // Wait for PDF to be rendered
-      await page.waitForFunction('window.renderingComplete === true', {
+      // Wait for the viewer to load
+      await page.waitForSelector('img[role="img"]', {
+        visible: true,
         timeout: 20000,
       })
 
-      // Additional wait to ensure full render
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Wait a bit more for full render
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Take screenshot of the canvas
-      const canvas = await page.$('#pdf-canvas')
-      if (!canvas) {
-        throw new Error('PDF canvas not found')
-      }
-
-      const screenshot = await canvas.screenshot({
-        type: params.format as 'png' | 'jpeg' | 'webp',
-        quality: params.format === 'png' ? undefined : params.quality,
+      // Take screenshot
+      const screenshot = await page.screenshot({
+        type: 'webp',
+        quality: 85,
+        fullPage: false,
       })
 
       await browser.close()
 
-      // Cache the result
-      await c.env.CACHE.put(cacheKey, screenshot, {
-        expirationTtl: 86400 * 30, // 30 days
-      })
-
-      // Update render count analytics
-      await c.env.DB.prepare(
-        'UPDATE score_analytics SET render_count = render_count + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE score_id = ?'
-      )
-        .bind(scoreId)
-        .run()
-
       return new Response(screenshot, {
         headers: {
-          'Content-Type': `image/${params.format}`,
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          'X-Cache': 'MISS',
-          'X-Score-Id': scoreId,
-          'X-Page-Number': pageNumber.toString(),
-          'X-Page-Count': (scoreVersion.page_count || 0).toString(),
+          'Content-Type': 'image/webp',
+          'Cache-Control': 'public, max-age=86400',
         },
       })
     } catch (error) {
       await browser.close()
-      console.error('Browser rendering error:', error)
+      console.error('Google Docs rendering error:', error)
       throw new HTTPException(500, {
-        message: `Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`,
+        message: `Failed to render with Google Docs: ${error instanceof Error ? error.message : String(error)}`,
       })
     }
-  } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      throw new HTTPException(400, {
-        message: 'Invalid parameters',
-        cause: error.errors,
-      })
-    }
-
-    // Re-throw HTTP exceptions
-    if (error instanceof HTTPException) {
-      throw error
-    }
-
-    // Generic error
-    console.error('PDF rendering error:', error)
-    throw new HTTPException(500, {
-      message: `Failed to render: ${error instanceof Error ? error.message : String(error)}`,
-    })
   }
-})
+)
+
+// Production-ready: Render score from R2 storage
+pdfRendererHandler.get(
+  '/render/:scoreId/page/:pageNumber',
+  rateLimiters.perScore,
+  async c => {
+    // Local development fallback - serve a placeholder image
+    if (!c.env.BROWSER) {
+      console.warn(
+        'Browser Rendering not available - serving placeholder for local development'
+      )
+
+      // For local development, create a simple placeholder image
+      const scoreId = c.req.param('scoreId')
+      const pageNumber = c.req.param('pageNumber')
+
+      // Create a simple SVG placeholder
+      const placeholderSvg = `
+      <svg width="800" height="1131" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="1131" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
+        <text x="400" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#666">
+          Score: ${scoreId}
+        </text>
+        <text x="400" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#888">
+          Page ${pageNumber}
+        </text>
+        <text x="400" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#aaa">
+          (Local Development Mode)
+        </text>
+        <text x="400" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#aaa">
+          Browser Rendering API not available locally
+        </text>
+        <rect x="100" y="600" width="600" height="400" fill="#fff" stroke="#ccc" stroke-width="1"/>
+        <text x="400" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" fill="#ddd">
+          🎼
+        </text>
+      </svg>
+    `
+
+      return new Response(placeholderSvg.trim(), {
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'no-cache',
+          'X-Development-Mode': 'true',
+        },
+      })
+    }
+
+    try {
+      // Validate inputs
+      const scoreId = scoreIdSchema.parse(c.req.param('scoreId'))
+      const pageNumber = pageNumberSchema.parse(
+        parseInt(c.req.param('pageNumber'))
+      )
+
+      // Parse query parameters with defaults
+      const params = renderParamsSchema.parse({
+        width: parseInt(c.req.query('width') || '1200'),
+        format: c.req.query('format'),
+        quality: parseInt(c.req.query('quality') || '85'),
+        scale: parseFloat(c.req.query('scale') || '2'),
+      })
+
+      // Check cache first
+      const cacheKey = `pdf-render:${scoreId}:${pageNumber}:${params.width}:${params.format}:${params.scale}`
+      const cached = await c.env.CACHE.get(cacheKey, { type: 'stream' })
+
+      if (cached) {
+        return new Response(cached, {
+          headers: {
+            'Content-Type': `image/${params.format}`,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'X-Cache': 'HIT',
+            'X-Score-Id': scoreId,
+            'X-Page-Number': pageNumber.toString(),
+          },
+        })
+      }
+
+      // Special handling for test scores
+      let pdfUrl: string
+      let pageCount: number = 10 // Default for test scores
+
+      if (scoreId.startsWith('test_')) {
+        // For test scores, get PDF from R2 using presigned URL
+        const testPdfMap: Record<string, { r2Key: string; pageCount: number }> =
+          {
+            test_aire_sureno: { r2Key: 'test-data/score_01.pdf', pageCount: 1 },
+            test_romance_anonimo: {
+              r2Key: 'test-data/score_02.pdf',
+              pageCount: 3,
+            },
+          }
+
+        const testPdfInfo = testPdfMap[scoreId]
+        if (!testPdfInfo) {
+          throw new HTTPException(404, {
+            message: 'Test score not found',
+          })
+        }
+
+        pageCount = testPdfInfo.pageCount
+
+        // Generate pre-signed URL for the test PDF in R2
+        const presigner = new R2Presigner(c.env)
+        pdfUrl = await presigner.generatePresignedUrl(testPdfInfo.r2Key)
+      } else {
+        // Get score version from database for real scores
+        const scoreVersion = await c.env.DB.prepare(
+          'SELECT r2_key, page_count FROM score_versions WHERE score_id = ? AND format = ? AND processing_status = ?'
+        )
+          .bind(scoreId, 'pdf', 'completed')
+          .first<{ r2_key: string; page_count: number }>()
+
+        if (!scoreVersion) {
+          throw new HTTPException(404, {
+            message: 'Score not found or not yet processed',
+          })
+        }
+
+        pageCount = scoreVersion.page_count || 0
+
+        // Generate pre-signed URL for the PDF
+        const presigner = new R2Presigner(c.env)
+        pdfUrl = await presigner.generatePresignedUrl(scoreVersion.r2_key)
+      }
+
+      // Validate page number
+      if (pageNumber > pageCount) {
+        throw new HTTPException(400, {
+          message: `Invalid page number. This score has ${pageCount} pages.`,
+        })
+      }
+
+      // Launch browser
+      const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
+
+      try {
+        const page = await browser.newPage()
+
+        // Set viewport based on requested width
+        await page.setViewport({
+          width: params.width,
+          height: Math.floor(params.width * 1.414), // A4 aspect ratio
+          deviceScaleFactor: 1,
+        })
+
+        // Load our custom PDF viewer with the PDF URL embedded
+        const viewerHtml = PDF_VIEWER_HTML.replace(
+          "const pdfUrl = params.get('url');",
+          `const pdfUrl = '${pdfUrl}';`
+        )
+          .replace(
+            "const pageNumber = parseInt(params.get('page') || '1');",
+            `const pageNumber = ${pageNumber};`
+          )
+          .replace(
+            "const scale = parseFloat(params.get('scale') || '2.0');",
+            `const scale = ${params.scale};`
+          )
+
+        // Set the content directly
+        await page.setContent(viewerHtml, {
+          waitUntil: 'networkidle0',
+        })
+
+        // Wait for PDF to be rendered with better error handling
+        try {
+          await page.waitForFunction('window.renderingComplete === true', {
+            timeout: 15000, // Reduced timeout to fail faster
+          })
+        } catch (timeoutError) {
+          // Try to get any error information from the page
+          const pageError = await page.evaluate(getErrorElementText)
+
+          if (pageError) {
+            throw new Error(`PDF rendering failed: ${pageError}`)
+          }
+
+          // Check if PDF.js loaded at all
+          const pdfJsLoaded = await page.evaluate(isPdfJsLoaded)
+          if (!pdfJsLoaded) {
+            throw new Error('PDF.js library failed to load')
+          }
+
+          throw new Error(
+            'PDF rendering timeout - page took too long to render'
+          )
+        }
+
+        // Additional wait to ensure full render
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        // Take screenshot of the canvas
+        const canvas = await page.$('#pdf-canvas')
+        if (!canvas) {
+          throw new Error('PDF canvas not found')
+        }
+
+        const screenshot = await canvas.screenshot({
+          type: params.format as 'png' | 'jpeg' | 'webp',
+          quality: params.format === 'png' ? undefined : params.quality,
+        })
+
+        await browser.close()
+
+        // Cache the result
+        await c.env.CACHE.put(cacheKey, screenshot, {
+          expirationTtl: 86400 * 30, // 30 days
+        })
+
+        // Update render count analytics
+        await c.env.DB.prepare(
+          'UPDATE score_analytics SET render_count = render_count + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE score_id = ?'
+        )
+          .bind(scoreId)
+          .run()
+
+        return new Response(screenshot, {
+          headers: {
+            'Content-Type': `image/${params.format}`,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'X-Cache': 'MISS',
+            'X-Score-Id': scoreId,
+            'X-Page-Number': pageNumber.toString(),
+            'X-Page-Count': pageCount.toString(),
+          },
+        })
+      } catch (error) {
+        await browser.close()
+        console.error('Browser rendering error:', error)
+        throw new HTTPException(500, {
+          message: `Failed to render PDF: ${error instanceof Error ? error.message : String(error)}`,
+        })
+      }
+    } catch (error) {
+      // Handle validation errors
+      if (error instanceof z.ZodError) {
+        throw new HTTPException(400, {
+          message: 'Invalid parameters',
+          cause: error.errors,
+        })
+      }
+
+      // Re-throw HTTP exceptions
+      if (error instanceof HTTPException) {
+        throw error
+      }
+
+      // Generic error
+      console.error('PDF rendering error:', error)
+      throw new HTTPException(500, {
+        message: `Failed to render: ${error instanceof Error ? error.message : String(error)}`,
+      })
+    }
+  }
+)

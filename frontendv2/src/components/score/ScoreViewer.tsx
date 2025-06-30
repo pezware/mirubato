@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useScoreStore } from '../../stores/scoreStore'
-import { scoreService, type Score } from '../../services/scoreService'
-import PdfViewer, { type PdfError } from './PdfViewer'
+import { type Score } from '../../services/scoreService'
+import AdaptivePdfViewer from './AdaptivePdfViewer'
+import { type PdfError } from './PdfViewer'
 
 interface ScoreViewerProps {
   score: Score
@@ -16,13 +17,6 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
     setTotalPages,
   } = useScoreStore()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [pdfUrl, setPdfUrl] = useState<string>('')
-
-  // Get PDF URL for the score
-  useEffect(() => {
-    const url = scoreService.getScorePdfUrl(score.id)
-    setPdfUrl(url)
-  }, [score.id])
 
   // Handle PDF load success
   const handlePdfLoad = (info: { numPages: number }) => {
@@ -30,7 +24,9 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
   }
 
   // Handle PDF load error
-  const handlePdfError = (error: PdfError) => {
+  const handlePdfError = (
+    error: PdfError | { message: string; type: string }
+  ) => {
     console.error('PDF load error:', error)
   }
 
@@ -58,40 +54,17 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
     <div className="flex-1 relative bg-white" ref={containerRef}>
       <div className="h-full overflow-auto">
         <div className="max-w-5xl mx-auto sm:p-4 p-2">
-          {/* PDF Display using pdf.js */}
-          {pdfUrl && (
-            <div className="relative bg-morandi-stone-50 rounded-lg shadow-lg sm:p-4 p-2">
-              <PdfViewer
-                url={pdfUrl}
-                currentPage={currentPage}
-                onLoad={handlePdfLoad}
-                onError={handlePdfError}
-                onPageChange={handlePageChange}
-                className="w-full"
-                scale={1.0}
-                enableTextLayer={false}
-                enableAnnotationLayer={false}
-                mobileOptimized={true}
-                enableTouchGestures={true}
-              />
-            </div>
-          )}
-
-          {/* Fallback for development - show score info */}
-          {!pdfUrl && (
-            <div className="bg-morandi-stone-50 rounded-lg p-8 min-h-[600px] flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎼</div>
-                <h3 className="text-xl font-medium text-morandi-stone-800 mb-2">
-                  {score.title}
-                </h3>
-                <p className="text-morandi-stone-600 mb-1">{score.composer}</p>
-                <p className="text-sm text-morandi-stone-500">
-                  {score.instrument} • {score.difficulty}
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Adaptive PDF Display - automatically chooses best viewer */}
+          <div className="relative bg-morandi-stone-50 rounded-lg shadow-lg sm:p-4 p-2">
+            <AdaptivePdfViewer
+              scoreId={score.id}
+              currentPage={currentPage}
+              onLoad={handlePdfLoad}
+              onError={handlePdfError}
+              onPageChange={handlePageChange}
+              className="w-full"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -122,6 +122,64 @@ scoresHandler.get('/:id', async c => {
   }
 })
 
+// Get score metadata including page count
+scoresHandler.get('/:id/metadata', async c => {
+  try {
+    const id = c.req.param('id')
+
+    // Check if score exists
+    const score = await c.env.DB.prepare(
+      'SELECT id, title FROM scores WHERE id = ?'
+    )
+      .bind(id)
+      .first()
+
+    if (!score) {
+      throw new HTTPException(404, { message: 'Score not found' })
+    }
+
+    // Special handling for test scores
+    let numPages: number = 0
+
+    if (id.startsWith('test_')) {
+      // Hardcoded page counts for test scores
+      const testPageCounts: Record<string, number> = {
+        test_aire_sureno: 1,
+        test_romance_anonimo: 3,
+      }
+      numPages = testPageCounts[id] || 0
+    } else {
+      // Get the PDF version page count for real scores
+      const pdfVersion = await c.env.DB.prepare(
+        'SELECT page_count FROM score_versions WHERE score_id = ? AND format = ? AND processing_status = ?'
+      )
+        .bind(id, 'pdf', 'completed')
+        .first()
+
+      numPages = Number(pdfVersion?.page_count) || 0
+    }
+
+    const response: ApiResponse<{
+      numPages: number
+      scoreId: string
+      title: string
+    }> = {
+      success: true,
+      data: {
+        numPages,
+        scoreId: score.id as string,
+        title: score.title as string,
+      },
+    }
+
+    return c.json(response)
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error getting score metadata:', error)
+    throw new HTTPException(500, { message: 'Failed to get score metadata' })
+  }
+})
+
 // Create new score
 scoresHandler.post('/', authMiddleware, async c => {
   try {

@@ -75,8 +75,8 @@ export async function uploadScore(c: Context) {
         const scoreId = crypto.randomUUID()
 
         await env.DB.prepare(
-          `INSERT INTO scores (id, title, composer, instrument, difficulty, pdf_url, created_by)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO scores (id, title, composer, instrument, difficulty, pdf_url, created_by, processing_status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             scoreId,
@@ -85,16 +85,27 @@ export async function uploadScore(c: Context) {
             metadata.instrument || 'GENERAL',
             metadata.difficulty || 'INTERMEDIATE',
             result.key,
-            userId
+            userId,
+            'pending'
           )
           .run()
+
+        // Queue PDF processing if queue is available
+        if (env.PDF_QUEUE) {
+          await env.PDF_QUEUE.send({
+            type: 'process-new-score',
+            scoreId,
+            r2Key: result.key,
+            uploadedAt: new Date().toISOString(),
+          })
+        }
 
         return c.json({
           success: true,
           scoreId,
           key: result.key,
           url: result.url,
-          message: 'Score uploaded successfully',
+          message: 'Score uploaded successfully and queued for processing',
         })
       } catch (dbError) {
         // If DB insert fails, try to clean up the uploaded file

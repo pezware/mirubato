@@ -23,6 +23,7 @@ import {
   cacheResponse,
   handleConditionalRequest,
 } from './utils/cache'
+import { processPdfScore } from './queue/pdf-processor'
 
 const app = new Hono<{ Bindings: Env }>()
 
@@ -47,7 +48,9 @@ app.use(
         'https://www.mirubato.com',
         'https://api.mirubato.com',
         'https://staging.mirubato.com',
+        'https://www-staging.mirubato.com',
         'https://api-staging.mirubato.com',
+        'https://scores-staging.mirubato.com',
         'https://mirubato.pezware.workers.dev',
         'https://api.mirubato.pezware.workers.dev',
       ]
@@ -386,7 +389,32 @@ app.notFound(c => {
 })
 
 // Export for Cloudflare Workers
-export default app
+export default {
+  fetch: app.fetch,
+  queue: async (batch: MessageBatch<ProcessPdfMessage>, env: Env) => {
+    // Process messages from the queue
+    for (const message of batch.messages) {
+      try {
+        const body = message.body
+
+        // Handle new format messages
+        if (body.type === 'process-new-score' && body.r2Key) {
+          await processPdfScore(body as any, env)
+        } else {
+          // Log legacy format messages for now
+          console.log('Legacy queue message format:', body)
+        }
+
+        // Acknowledge successful processing
+        message.ack()
+      } catch (error) {
+        console.error('Failed to process message:', error)
+        // Retry the message if retries are available
+        message.retry()
+      }
+    }
+  },
+}
 
 // Export for testing
 export { app }

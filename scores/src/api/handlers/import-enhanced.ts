@@ -94,8 +94,8 @@ enhancedImportHandler.post('/pdf', async c => {
       .run()
 
     // Queue for preview generation
-    if (c.env.SCORE_QUEUE) {
-      await c.env.SCORE_QUEUE.send({
+    if (c.env.PDF_QUEUE) {
+      await c.env.PDF_QUEUE.send({
         scoreId,
         action: 'generate-previews',
         data: {
@@ -219,11 +219,11 @@ enhancedImportHandler.post('/imslp', async c => {
 
     // Queue for PDF download and processing
     if (
-      c.env.SCORE_QUEUE &&
+      c.env.PDF_QUEUE &&
       validatedData.autoProcess &&
       metadata.pdfLinks?.length > 0
     ) {
-      await c.env.SCORE_QUEUE.send({
+      await c.env.PDF_QUEUE.send({
         scoreId,
         action: 'download-imslp-pdf',
         data: {
@@ -272,8 +272,8 @@ enhancedImportHandler.post('/batch', async c => {
           const scoreId = nanoid()
 
           // Queue for processing
-          if (c.env.SCORE_QUEUE) {
-            await c.env.SCORE_QUEUE.send({
+          if (c.env.PDF_QUEUE) {
+            await c.env.PDF_QUEUE.send({
               scoreId,
               action: 'import-imslp',
               data: { url },
