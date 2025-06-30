@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import * as pdfjs from 'pdfjs-dist'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-
-// Configure pdf.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).toString()
+import { usePdfRenderingService } from '../../contexts/PdfRenderingContext'
 
 export interface PdfInfo {
   numPages: number
@@ -59,14 +54,14 @@ export default function PdfJsViewer({
   onLoad,
   onError,
 }: PdfJsViewerProps) {
+  const renderingService = usePdfRenderingService()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const secondCanvasRef = useRef<HTMLCanvasElement>(null) // For double page view
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null)
   const [pageNum, setPageNum] = useState(currentPage)
   const [numPages, setNumPages] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [_rendering, setRendering] = useState(false)
-  const renderTaskRef = useRef<pdfjs.RenderTask | null>(null)
+  const [rendering, setRendering] = useState(false)
 
   // Handle errors - defined before useEffect that uses it
   const handleError = useCallback(
@@ -117,10 +112,10 @@ export default function PdfJsViewer({
   // Load PDF document
   useEffect(() => {
     let cancelled = false
-    const loadingTask = pdfjs.getDocument(url)
 
-    loadingTask.promise
-      .then(pdf => {
+    const loadDocument = async () => {
+      try {
+        const pdf = await renderingService.loadDocument(url)
         if (cancelled) return
 
         setPdfDoc(pdf)
@@ -128,71 +123,81 @@ export default function PdfJsViewer({
         setLoading(false)
 
         // Extract metadata
-        pdf.getMetadata().then(metadata => {
-          const metaInfo = metadata.info as Record<string, unknown> | null
-          const info: PdfInfo = {
-            numPages: pdf.numPages,
-            title: metaInfo?.['Title'] as string | undefined,
-            author: metaInfo?.['Author'] as string | undefined,
-            subject: metaInfo?.['Subject'] as string | undefined,
-            keywords: metaInfo?.['Keywords'] as string | undefined,
-            creator: metaInfo?.['Creator'] as string | undefined,
-            producer: metaInfo?.['Producer'] as string | undefined,
-            creationDate: metaInfo?.['CreationDate']
-              ? new Date(metaInfo['CreationDate'] as string)
-              : undefined,
-            modificationDate: metaInfo?.['ModDate']
-              ? new Date(metaInfo['ModDate'] as string)
-              : undefined,
-          }
-          onLoad?.(info)
-        })
-      })
-      .catch(error => {
+        const metadata = await pdf.getMetadata()
+        const metaInfo = metadata.info as Record<string, unknown> | null
+        const info: PdfInfo = {
+          numPages: pdf.numPages,
+          title: metaInfo?.['Title'] as string | undefined,
+          author: metaInfo?.['Author'] as string | undefined,
+          subject: metaInfo?.['Subject'] as string | undefined,
+          keywords: metaInfo?.['Keywords'] as string | undefined,
+          creator: metaInfo?.['Creator'] as string | undefined,
+          producer: metaInfo?.['Producer'] as string | undefined,
+          creationDate: metaInfo?.['CreationDate']
+            ? new Date(metaInfo['CreationDate'] as string)
+            : undefined,
+          modificationDate: metaInfo?.['ModDate']
+            ? new Date(metaInfo['ModDate'] as string)
+            : undefined,
+        }
+        onLoad?.(info)
+      } catch (error) {
         if (cancelled) return
-
         setLoading(false)
         handleError(error)
-      })
+      }
+    }
+
+    loadDocument()
 
     return () => {
       cancelled = true
-      loadingTask.destroy()
     }
-  }, [url, onLoad, handleError])
+  }, [url, onLoad, handleError, renderingService])
 
   // Render page
   const renderPage = useCallback(
     async (pageNumber: number) => {
       if (!pdfDoc || !canvasRef.current) return
 
-      // Cancel any ongoing render
-      if (renderTaskRef.current) {
-        renderTaskRef.current.cancel()
-      }
-
       setRendering(true)
 
       try {
-        const page = await pdfDoc.getPage(pageNumber)
-        const viewport = page.getViewport({ scale })
+        // Use rendering service to get the rendered page
+        const startTime = performance.now()
+        const imageData = await renderingService.renderPage(
+          url,
+          pageNumber,
+          scale
+        )
+        const renderTime = performance.now() - startTime
 
         const canvas = canvasRef.current
         const context = canvas.getContext('2d')
         if (!context) return
 
-        canvas.height = viewport.height
-        canvas.width = viewport.width
+        // Set canvas size from image data
+        canvas.width = imageData.width
+        canvas.height = imageData.height
 
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
+        // Draw the image data
+        context.putImageData(imageData, 0, 0)
+
+        // Log performance metrics in development
+        if (process.env.NODE_ENV === 'development') {
+          const stats = renderingService.getMemoryUsage()
+          console.debug(
+            `PDF Page ${pageNumber} rendered in ${renderTime.toFixed(2)}ms`,
+            {
+              cacheHitRate: `${(stats.hitRate * 100).toFixed(1)}%`,
+              memoryUsed: `${stats.usedMB.toFixed(1)}MB / ${stats.maxMB}MB`,
+              cachedPages: stats.cachedPages,
+            }
+          )
         }
 
-        const renderTask = page.render(renderContext)
-        renderTaskRef.current = renderTask
-
-        await renderTask.promise
+        // Trigger preloading of adjacent pages
+        renderingService.preloadPages(pdfDoc, pageNumber, viewMode, scale)
 
         // Render second page if in double mode
         if (
@@ -200,20 +205,18 @@ export default function PdfJsViewer({
           secondCanvasRef.current &&
           pageNumber < numPages
         ) {
-          const secondPage = await pdfDoc.getPage(pageNumber + 1)
+          const secondImageData = await renderingService.renderPage(
+            url,
+            pageNumber + 1,
+            scale
+          )
           const secondCanvas = secondCanvasRef.current
           const secondContext = secondCanvas.getContext('2d')
           if (!secondContext) return
 
-          secondCanvas.height = viewport.height
-          secondCanvas.width = viewport.width
-
-          const secondRenderContext = {
-            canvasContext: secondContext,
-            viewport: viewport,
-          }
-
-          await secondPage.render(secondRenderContext).promise
+          secondCanvas.width = secondImageData.width
+          secondCanvas.height = secondImageData.height
+          secondContext.putImageData(secondImageData, 0, 0)
         }
       } catch (error) {
         // Ignore cancelled renders
@@ -225,10 +228,9 @@ export default function PdfJsViewer({
         }
       } finally {
         setRendering(false)
-        renderTaskRef.current = null
       }
     },
-    [pdfDoc, scale, viewMode, numPages, handleError]
+    [pdfDoc, scale, viewMode, numPages, handleError, url, renderingService]
   )
 
   // Update page when props change

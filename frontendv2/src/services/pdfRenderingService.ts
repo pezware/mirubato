@@ -1,4 +1,11 @@
+import * as pdfjs from 'pdfjs-dist'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
+
+// Configure pdf.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.mjs',
+  import.meta.url
+).toString()
 
 interface CacheNode {
   key: string
@@ -146,10 +153,50 @@ export class PdfRenderingService {
   private renderQueue: RenderRequest[] = []
   private isRendering = false
   private config: RenderingConfig
+  private documentCache = new Map<string, PDFDocumentProxy>()
+  private loadingDocuments = new Map<string, Promise<PDFDocumentProxy>>()
 
   constructor(config: RenderingConfig) {
     this.config = config
     this.lruCache = new LRUCache(config.maxMemoryMB)
+  }
+
+  async loadDocument(url: string): Promise<PDFDocumentProxy> {
+    // Check if already loaded
+    if (this.documentCache.has(url)) {
+      return this.documentCache.get(url)!
+    }
+
+    // Check if currently loading
+    if (this.loadingDocuments.has(url)) {
+      return this.loadingDocuments.get(url)!
+    }
+
+    // Start loading
+    const loadingPromise = pdfjs
+      .getDocument(url)
+      .promise.then(doc => {
+        this.documentCache.set(url, doc)
+        this.loadingDocuments.delete(url)
+        return doc
+      })
+      .catch(error => {
+        this.loadingDocuments.delete(url)
+        throw error
+      })
+
+    this.loadingDocuments.set(url, loadingPromise)
+    return loadingPromise
+  }
+
+  async renderPage(
+    url: string,
+    pageNumber: number,
+    scale: number,
+    rotation = 0
+  ): Promise<ImageData> {
+    const pdfDoc = await this.loadDocument(url)
+    return this.getRenderedPage(pdfDoc, pageNumber, scale, rotation)
   }
 
   async getRenderedPage(
@@ -199,38 +246,67 @@ export class PdfRenderingService {
   async preloadPages(
     pdfDoc: PDFDocumentProxy,
     currentPage: number,
-    viewMode: 'single' | 'double'
+    viewMode: 'single' | 'double',
+    scale = 1.0
   ): Promise<void> {
     const pagesToPreload: number[] = []
+    const isLargePdf = pdfDoc.numPages >= 10
 
-    if (this.config.preloadStrategy === 'adjacent') {
-      // Preload adjacent pages
-      if (viewMode === 'single') {
-        if (currentPage > 1) pagesToPreload.push(currentPage - 1)
-        if (currentPage < pdfDoc.numPages) pagesToPreload.push(currentPage + 1)
-      } else {
-        // Double page mode
-        if (currentPage > 2) {
-          pagesToPreload.push(currentPage - 2, currentPage - 1)
+    if (viewMode === 'single') {
+      // For large PDFs, preload more aggressively
+      const preloadRange = isLargePdf ? 3 : 1
+
+      // Preload backwards (fewer pages)
+      for (let i = 1; i <= preloadRange; i++) {
+        if (currentPage - i >= 1) {
+          pagesToPreload.push(currentPage - i)
         }
-        if (currentPage + 1 < pdfDoc.numPages) {
-          pagesToPreload.push(currentPage + 2, currentPage + 3)
+      }
+
+      // Preload forwards (more pages - users typically read forward)
+      const forwardRange = isLargePdf ? 6 : 2
+      for (let i = 1; i <= forwardRange; i++) {
+        if (currentPage + i <= pdfDoc.numPages) {
+          pagesToPreload.push(currentPage + i)
         }
       }
     } else {
-      // Smart preloading based on user behavior
-      // For now, same as adjacent
-      // TODO: Implement predictive preloading based on navigation patterns
+      // Double page mode
+      const preloadRange = isLargePdf ? 2 : 1
+
+      // Preload previous spreads
+      for (let i = 1; i <= preloadRange; i++) {
+        const leftPage = currentPage - i * 2
+        const rightPage = leftPage + 1
+        if (leftPage >= 1) pagesToPreload.push(leftPage)
+        if (rightPage >= 1) pagesToPreload.push(rightPage)
+      }
+
+      // Preload next spreads
+      for (let i = 1; i <= preloadRange * 2; i++) {
+        const leftPage = currentPage + i * 2 - 1
+        const rightPage = leftPage + 1
+        if (leftPage <= pdfDoc.numPages) pagesToPreload.push(leftPage)
+        if (rightPage <= pdfDoc.numPages) pagesToPreload.push(rightPage)
+      }
     }
 
     // Use requestIdleCallback for non-blocking preload
     if ('requestIdleCallback' in window) {
-      pagesToPreload.forEach(pageNum => {
-        requestIdleCallback(() => {
-          this.getRenderedPage(pdfDoc, pageNum, 1.0).catch(() => {
-            // Ignore preload errors
-          })
-        })
+      pagesToPreload.forEach((pageNum, index) => {
+        // Stagger the preloading to avoid overwhelming the system
+        const delay = index * 100 // 100ms between each preload
+
+        setTimeout(() => {
+          requestIdleCallback(
+            () => {
+              this.getRenderedPage(pdfDoc, pageNum, scale).catch(() => {
+                // Ignore preload errors
+              })
+            },
+            { timeout: 5000 }
+          ) // 5 second max wait
+        }, delay)
       })
     }
   }
