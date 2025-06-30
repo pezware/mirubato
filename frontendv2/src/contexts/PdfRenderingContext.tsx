@@ -2,8 +2,8 @@ import React, { createContext, useMemo } from 'react'
 import {
   PdfRenderingService,
   getRenderingService,
-} from '../services/PdfRenderingService'
-import type { RenderingConfig } from '../services/PdfRenderingService'
+} from '../services/pdfRenderingService'
+import type { RenderingConfig } from '../services/pdfRenderingService'
 
 export const PdfRenderingContext = createContext<PdfRenderingService | null>(
   null
