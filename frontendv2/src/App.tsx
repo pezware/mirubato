@@ -18,6 +18,7 @@ const LogbookPage = lazy(() => import('./pages/Logbook'))
 const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
 const ScorebookPage = lazy(() => import('./pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
+const TestPdfRendering = lazy(() => import('./pages/TestPdfRendering'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -52,6 +53,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/auth/verify" element={<AuthVerifyPage />} />
+              <Route path="/test-pdf" element={<TestPdfRendering />} />
 
               {/* Protected routes (but work for anonymous users too) */}
               <Route
