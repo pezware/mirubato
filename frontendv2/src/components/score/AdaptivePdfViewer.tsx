@@ -137,21 +137,7 @@ export default function AdaptivePdfViewer({
           preloadRange={2}
         />
 
-        {/* Viewer toggle for desktop users */}
-        {window.innerWidth > 768 && (
-          <div className="mt-2 text-center">
-            <button
-              onClick={() => {
-                localStorage.setItem('preferImageViewer', 'false')
-                setUseImageViewer(false)
-                setPdfUrl(scoreService.getScorePdfUrl(scoreId))
-              }}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
-              Switch to PDF viewer
-            </button>
-          </div>
-        )}
+        {/* Viewer toggle removed - image viewer disabled */}
       </div>
     )
   }
@@ -172,27 +158,7 @@ export default function AdaptivePdfViewer({
         enableTouchGestures={true}
       />
 
-      {/* Viewer toggle for desktop users (not shown in local dev) */}
-      {window.innerWidth > 768 &&
-        !window.location.hostname.includes('localhost') && (
-          <div className="mt-2 text-center">
-            <button
-              onClick={async () => {
-                localStorage.setItem('preferImageViewer', 'true')
-                setUseImageViewer(true)
-                try {
-                  const metadata = await scoreService.getScoreMetadata(scoreId)
-                  setTotalPages(metadata.numPages)
-                } catch (error) {
-                  console.warn('Failed to fetch score metadata:', error)
-                }
-              }}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
-              Switch to image viewer (better for mobile)
-            </button>
-          </div>
-        )}
+      {/* Viewer toggle removed - image viewer disabled due to API instability */}
     </div>
   )
 }
