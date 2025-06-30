@@ -400,29 +400,56 @@ pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
       })
     }
 
-    // Get score version from database
-    const scoreVersion = await c.env.DB.prepare(
-      'SELECT r2_key, page_count FROM score_versions WHERE score_id = ? AND format = ? AND processing_status = ?'
-    )
-      .bind(scoreId, 'pdf', 'completed')
-      .first<{ r2_key: string; page_count: number }>()
+    // Special handling for test scores
+    let pdfUrl: string
+    let pageCount: number = 10 // Default for test scores
 
-    if (!scoreVersion) {
-      throw new HTTPException(404, {
-        message: 'Score not found or not yet processed',
-      })
+    if (scoreId.startsWith('test_')) {
+      // For test scores, get PDF from R2 using presigned URL
+      const testPdfMap: Record<string, { r2Key: string; pageCount: number }> = {
+        test_aire_sureno: { r2Key: 'test-data/score_01.pdf', pageCount: 1 },
+        test_romance_anonimo: { r2Key: 'test-data/score_02.pdf', pageCount: 3 },
+      }
+
+      const testPdfInfo = testPdfMap[scoreId]
+      if (!testPdfInfo) {
+        throw new HTTPException(404, {
+          message: 'Test score not found',
+        })
+      }
+
+      pageCount = testPdfInfo.pageCount
+
+      // Generate pre-signed URL for the test PDF in R2
+      const presigner = new R2Presigner(c.env)
+      pdfUrl = await presigner.generatePresignedUrl(testPdfInfo.r2Key)
+    } else {
+      // Get score version from database for real scores
+      const scoreVersion = await c.env.DB.prepare(
+        'SELECT r2_key, page_count FROM score_versions WHERE score_id = ? AND format = ? AND processing_status = ?'
+      )
+        .bind(scoreId, 'pdf', 'completed')
+        .first<{ r2_key: string; page_count: number }>()
+
+      if (!scoreVersion) {
+        throw new HTTPException(404, {
+          message: 'Score not found or not yet processed',
+        })
+      }
+
+      pageCount = scoreVersion.page_count || 0
+
+      // Generate pre-signed URL for the PDF
+      const presigner = new R2Presigner(c.env)
+      pdfUrl = await presigner.generatePresignedUrl(scoreVersion.r2_key)
     }
 
     // Validate page number
-    if (pageNumber > (scoreVersion.page_count || 0)) {
+    if (pageNumber > pageCount) {
       throw new HTTPException(400, {
-        message: `Invalid page number. This score has ${scoreVersion.page_count} pages.`,
+        message: `Invalid page number. This score has ${pageCount} pages.`,
       })
     }
-
-    // Generate pre-signed URL for the PDF
-    const presigner = new R2Presigner(c.env)
-    const pdfUrl = await presigner.generatePresignedUrl(scoreVersion.r2_key)
 
     // Launch browser
     const browser = await launch(c.env.BROWSER)
@@ -496,7 +523,7 @@ pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
           'X-Cache': 'MISS',
           'X-Score-Id': scoreId,
           'X-Page-Number': pageNumber.toString(),
-          'X-Page-Count': (scoreVersion.page_count || 0).toString(),
+          'X-Page-Count': pageCount.toString(),
         },
       })
     } catch (error) {
