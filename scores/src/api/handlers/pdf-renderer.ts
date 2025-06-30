@@ -189,7 +189,7 @@ pdfRendererHandler.get('/test-webpage', async c => {
     throw new HTTPException(500, { message: 'Browser Rendering not available' })
   }
 
-  const browser = await launch(c.env.BROWSER)
+  const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
 
   try {
     const page = await browser.newPage()
@@ -278,7 +278,7 @@ pdfRendererHandler.get(
     const pageNumber = parseInt(c.req.param('pageNumber'))
     const width = parseInt(c.req.query('width') || '1200')
 
-    const browser = await launch(c.env.BROWSER)
+    const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
 
     try {
       // For testing, use a public PDF
@@ -470,7 +470,7 @@ pdfRendererHandler.get(
       }
 
       // Launch browser
-      const browser = await launch(c.env.BROWSER)
+      const browser = await launch(c.env.BROWSER, { keep_alive: 60000 }) // 1 minute
 
       try {
         const page = await browser.newPage()

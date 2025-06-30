@@ -89,7 +89,7 @@ async function analyzePdf(
   env: Env,
   pdfUrl: string
 ): Promise<{ pageCount: number }> {
-  const browser = await launch(env.BROWSER, { keep_alive: 60 })
+  const browser = await launch(env.BROWSER, { keep_alive: 60000 }) // 60 seconds
 
   try {
     const page = await browser.newPage()
@@ -153,7 +153,7 @@ async function renderAndStorePage(
   pdfUrl: string,
   pageNumber: number
 ): Promise<void> {
-  const browser = await launch(env.BROWSER, { keep_alive: 120 })
+  const browser = await launch(env.BROWSER, { keep_alive: 120000 }) // 2 minutes
 
   try {
     const page = await browser.newPage()

@@ -138,7 +138,7 @@ async function renderPage(
 ): Promise<ArrayBuffer> {
   const browser = await launch(browserBinding, {
     // Keep browser alive for 5 minutes for complex PDFs
-    keep_alive: 300,
+    keep_alive: 300000, // 5 minutes in milliseconds
   })
 
   try {
