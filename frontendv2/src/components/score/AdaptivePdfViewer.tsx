@@ -51,6 +51,13 @@ export default function AdaptivePdfViewer({
         return
       }
 
+      // TEMPORARY: Disable image viewer due to browser rendering instability
+      // TODO: Re-enable once browser rendering is more stable or implement pre-rendering
+      console.log('Using PDF viewer - image rendering temporarily disabled')
+      setUseImageViewer(false)
+      setPdfUrl(scoreService.getScorePdfUrl(scoreId))
+      return
+
       // Use device detection to determine viewer mode
       const deviceScore = DeviceDetection.getDeviceScore()
       const shouldUseImage = DeviceDetection.shouldUseImageViewer()
