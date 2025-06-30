@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { useAuthStore } from '../../stores/authStore'
 import { cn } from '../../utils/cn'
+import { getMetronome } from '../../services/metronomeService'
 
 export default function ScoreControls() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -16,6 +17,7 @@ export default function ScoreControls() {
     stopPractice,
     setTempo,
     toggleMetronome,
+    setMetronomeVolume,
     toggleAutoScroll,
     toggleManagement,
     currentPage,
@@ -25,6 +27,36 @@ export default function ScoreControls() {
 
   const [elapsedTime, setElapsedTime] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const metronome = getMetronome()
+
+  // Handle metronome state changes
+  useEffect(() => {
+    if (metronomeSettings.isActive) {
+      metronome.start({
+        tempo: metronomeSettings.tempo,
+        volume: metronomeSettings.volume,
+        accentBeats: metronomeSettings.accentBeats,
+      })
+    } else {
+      metronome.stop()
+    }
+
+    return () => {
+      metronome.stop()
+    }
+  }, [metronomeSettings.isActive])
+
+  // Handle tempo changes while playing
+  useEffect(() => {
+    if (metronomeSettings.isActive) {
+      metronome.setTempo(metronomeSettings.tempo)
+    }
+  }, [metronomeSettings.tempo])
+
+  // Handle volume changes
+  useEffect(() => {
+    metronome.setVolume(metronomeSettings.volume)
+  }, [metronomeSettings.volume])
 
   // Detect mobile device
   useEffect(() => {
@@ -141,56 +173,172 @@ export default function ScoreControls() {
 
           {metronomeSettings.isActive && (
             <>
-              <button
-                onClick={() =>
-                  setTempo(Math.max(40, metronomeSettings.tempo - 10))
-                }
-                className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
-                title={t('scorebook:decreaseTempo', 'Decrease tempo')}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 12H4"
-                  />
-                </svg>
-              </button>
-
               <div className="flex items-center gap-1">
-                <span className="text-lg font-mono font-medium text-morandi-stone-800 w-12 text-center">
-                  {metronomeSettings.tempo}
-                </span>
-                <span className="text-xs text-morandi-stone-500">BPM</span>
+                <button
+                  onClick={() =>
+                    setTempo(Math.max(40, metronomeSettings.tempo - 10))
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:decreaseTempo10', 'Decrease tempo by 10')}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M18 12H6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12H9"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={() =>
+                    setTempo(Math.max(40, metronomeSettings.tempo - 1))
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:decreaseTempo', 'Decrease tempo')}
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 12H4"
+                    />
+                  </svg>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  <span className="text-lg font-mono font-medium text-morandi-stone-800 w-12 text-center">
+                    {metronomeSettings.tempo}
+                  </span>
+                  <span className="text-xs text-morandi-stone-500">BPM</span>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setTempo(Math.min(240, metronomeSettings.tempo + 1))
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:increaseTempo', 'Increase tempo')}
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={() =>
+                    setTempo(Math.min(240, metronomeSettings.tempo + 10))
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:increaseTempo10', 'Increase tempo by 10')}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v12m6-6H6"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v6m3-3H9"
+                    />
+                  </svg>
+                </button>
               </div>
 
-              <button
-                onClick={() =>
-                  setTempo(Math.min(240, metronomeSettings.tempo + 10))
-                }
-                className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
-                title={t('scorebook:increaseTempo', 'Increase tempo')}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-morandi-stone-300">
+                <button
+                  onClick={() =>
+                    setMetronomeVolume(
+                      Math.max(0, metronomeSettings.volume - 0.1)
+                    )
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:decreaseVolume', 'Decrease volume')}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  className="w-2 h-2 rounded-full bg-morandi-stone-400"
+                  style={{
+                    transform: `scale(${0.5 + metronomeSettings.volume * 0.5})`,
+                    opacity: 0.4 + metronomeSettings.volume * 0.6,
+                  }}
+                />
+
+                <button
+                  onClick={() =>
+                    setMetronomeVolume(
+                      Math.min(1, metronomeSettings.volume + 0.1)
+                    )
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:increaseVolume', 'Increase volume')}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.314M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -371,57 +519,199 @@ export default function ScoreControls() {
           </button>
 
           {metronomeSettings.isActive && (
-            <div className="flex flex-col items-center gap-1 bg-morandi-stone-50 rounded-lg p-2">
-              <button
-                onClick={() =>
-                  setTempo(Math.min(240, metronomeSettings.tempo + 10))
-                }
-                className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
-                title={t('scorebook:increaseTempo', 'Increase tempo')}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 15l7-7 7 7"
-                  />
-                </svg>
-              </button>
+            <div className="flex flex-col items-center gap-2 bg-morandi-stone-50 rounded-lg p-2">
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex gap-1">
+                  <button
+                    onClick={() =>
+                      setTempo(Math.min(240, metronomeSettings.tempo + 1))
+                    }
+                    className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                    title={t('scorebook:increaseTempo', 'Increase tempo')}
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 15l7-7 7 7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      setTempo(Math.min(240, metronomeSettings.tempo + 10))
+                    }
+                    className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                    title={t(
+                      'scorebook:increaseTempo10',
+                      'Increase tempo by 10'
+                    )}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 15l7-7 7 7"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12l4-4 4 4"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
-              <div className="flex flex-col items-center">
-                <span className="text-lg font-mono font-medium text-morandi-stone-800">
-                  {metronomeSettings.tempo}
-                </span>
-                <span className="text-xs text-morandi-stone-500">BPM</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-lg font-mono font-medium text-morandi-stone-800">
+                    {metronomeSettings.tempo}
+                  </span>
+                  <span className="text-xs text-morandi-stone-500">BPM</span>
+                </div>
+
+                <div className="flex gap-1">
+                  <button
+                    onClick={() =>
+                      setTempo(Math.max(40, metronomeSettings.tempo - 1))
+                    }
+                    className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                    title={t('scorebook:decreaseTempo', 'Decrease tempo')}
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      setTempo(Math.max(40, metronomeSettings.tempo - 10))
+                    }
+                    className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                    title={t(
+                      'scorebook:decreaseTempo10',
+                      'Decrease tempo by 10'
+                    )}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 12l-4 4-4-4"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
-              <button
-                onClick={() =>
-                  setTempo(Math.max(40, metronomeSettings.tempo - 10))
-                }
-                className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
-                title={t('scorebook:decreaseTempo', 'Decrease tempo')}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="h-px w-full bg-morandi-stone-200" />
+
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() =>
+                    setMetronomeVolume(
+                      Math.min(1, metronomeSettings.volume + 0.1)
+                    )
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:increaseVolume', 'Increase volume')}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 15l7-7 7 7"
+                    />
+                  </svg>
+                </button>
+
+                <div className="relative w-8 h-8 flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-morandi-stone-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.314M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    />
+                  </svg>
+                  <div
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{
+                      opacity: metronomeSettings.volume,
+                    }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-morandi-sage-500" />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setMetronomeVolume(
+                      Math.max(0, metronomeSettings.volume - 0.1)
+                    )
+                  }
+                  className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                  title={t('scorebook:decreaseVolume', 'Decrease volume')}
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </div>
