@@ -103,7 +103,7 @@ healthHandler.get('/health', async c => {
     {
       status: allHealthy ? 'healthy' : 'degraded',
       service: 'mirubato-scores',
-      version: '1.0.0',
+      version: '1.1.0',
       environment: c.env.ENVIRONMENT,
       timestamp: new Date().toISOString(),
       uptime: process.uptime ? process.uptime() : 'N/A',
@@ -143,7 +143,7 @@ healthHandler.get('/health/detailed', async c => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT,
     service: 'mirubato-scores',
-    version: '1.0.0',
+    version: '1.1.0',
     latency: Date.now() - startTime,
     system: systemInfo,
     database: {
@@ -178,7 +178,7 @@ healthHandler.get('/metrics', async c => {
     // Get basic metrics from database
     const metrics = await c.env.DB.prepare(
       `
-      SELECT 
+      SELECT
         (SELECT COUNT(*) FROM scores) as total_scores,
         (SELECT COUNT(*) FROM collections) as total_collections,
         (SELECT COUNT(*) FROM score_versions) as total_versions,
@@ -211,7 +211,7 @@ score_downloads_total ${metrics?.total_downloads || 0}
 
 # HELP scores_service_info Service information
 # TYPE scores_service_info gauge
-scores_service_info{version="1.0.0",environment="${c.env.ENVIRONMENT}"} 1
+scores_service_info{version="1.1.0",environment="${c.env.ENVIRONMENT}"} 1
 `.trim()
 
     return c.text(prometheusMetrics, 200, {
@@ -395,8 +395,8 @@ async function runSmokeTests(env: Env) {
     // Test 1: Complex database query
     await env.DB.prepare(
       `
-      SELECT COUNT(*) as count 
-      FROM scores 
+      SELECT COUNT(*) as count
+      FROM scores
       WHERE created_at > datetime('now', '-7 days')
     `
     ).first()

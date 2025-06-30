@@ -11,7 +11,7 @@ export const api = new Hono<{ Bindings: Env }>()
 // API documentation
 api.get('/', c => {
   return c.json({
-    version: '1.0.0',
+    version: '1.1.0',
     documentation: '/docs',
     openapi: '/openapi.json',
     endpoints: {

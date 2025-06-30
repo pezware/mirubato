@@ -2,7 +2,7 @@ export const openAPISpec = {
   openapi: '3.0.0',
   info: {
     title: 'Mirubato API',
-    version: '1.0.0',
+    version: '1.1.0',
     description:
       'REST API for Mirubato cloud sync and authentication. This API serves authenticated users only for data synchronization.',
     contact: {
@@ -12,15 +12,15 @@ export const openAPISpec = {
   },
   servers: [
     {
-      url: 'https://apiv2.mirubato.com',
+      url: 'https://api.mirubato.com',
       description: 'Production',
     },
     {
-      url: 'https://apiv2-staging.mirubato.com',
+      url: 'https://api-staging.mirubato.com',
       description: 'Staging',
     },
     {
-      url: 'http://localhost:8787',
+      url: 'http://api-mirubato.localhost:9797',
       description: 'Development',
     },
   ],

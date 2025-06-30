@@ -6,7 +6,7 @@ export const openAPISpec = {
   openapi: '3.1.0',
   info: {
     title: 'Mirubato Scores API',
-    version: '1.0.0',
+    version: '1.1.0',
     description: `
 The Mirubato Scores Service provides a comprehensive API for managing sheet music scores, including storage, processing, and delivery.
 
@@ -47,7 +47,7 @@ API requests are limited to 100 requests per minute per IP address.
       description: 'Staging',
     },
     {
-      url: 'http://localhost:8787',
+      url: 'http://scores-mirubato.localhost:9788',
       description: 'Local Development',
     },
   ],
