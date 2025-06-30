@@ -36,7 +36,7 @@ export default function ScoreControls() {
 
   // Visual callback for metronome beats
   const visualCallback: VisualCallback = {
-    onBeat: (beatNumber, isAccent) => {
+    onBeat: (_beatNumber, _isAccent) => {
       // Clear any existing timeout
       if (pulseTimeoutRef.current) {
         clearTimeout(pulseTimeoutRef.current)
