@@ -1,9 +1,13 @@
-import { defineConfig } from 'vite'
+import { defineConfig, splitVendorChunkPlugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Use Vite's built-in vendor chunk splitting
+    splitVendorChunkPlugin(),
+  ],
   server: {
     port: 4000,
     strictPort: false,
@@ -16,15 +20,20 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Split vendor chunks based on node_modules packages
+          // More granular vendor chunk splitting
           if (id.includes('node_modules')) {
-            if (
-              id.includes('react') ||
-              id.includes('react-dom') ||
-              id.includes('react-router')
-            ) {
-              return 'react-vendor'
+            // Split React ecosystem
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-core'
             }
+            if (id.includes('react-router')) {
+              return 'react-router'
+            }
+            if (id.includes('zustand')) {
+              return 'state-management'
+            }
+
+            // Split UI libraries
             if (
               id.includes('@headlessui') ||
               id.includes('@heroicons') ||
@@ -32,34 +41,69 @@ export default defineConfig({
             ) {
               return 'ui-vendor'
             }
-            if (id.includes('vexflow') || id.includes('tone')) {
-              return 'music-vendor'
+
+            // Split music libraries separately
+            if (id.includes('vexflow')) {
+              return 'vexflow-vendor'
             }
-            if (
-              id.includes('axios') ||
-              id.includes('date-fns') ||
-              id.includes('clsx') ||
-              id.includes('tailwind-merge')
-            ) {
-              return 'utils-vendor'
+            if (id.includes('tone')) {
+              return 'tone-vendor'
             }
+
+            // PDF.js should be loaded separately
+            if (id.includes('pdfjs-dist')) {
+              return 'pdf-vendor'
+            }
+
+            // Utilities
+            if (id.includes('axios')) {
+              return 'http-vendor'
+            }
+            if (id.includes('date-fns')) {
+              return 'date-vendor'
+            }
+            if (id.includes('clsx') || id.includes('tailwind-merge')) {
+              return 'style-utils'
+            }
+
+            // i18n
             if (id.includes('i18next') || id.includes('react-i18next')) {
               return 'i18n-vendor'
             }
           }
         },
+        // Optimize chunk names for better caching
+        chunkFileNames: chunkInfo => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split('/').pop()
+            : 'chunk'
+          return `assets/${chunkInfo.name || facadeModuleId}-[hash].js`
+        },
       },
     },
-    // Increase chunk size warning limit slightly since we're splitting
-    chunkSizeWarningLimit: 200,
-    // Use default esbuild minification (faster than terser)
+    // Increase chunk size warning limit for PDF.js worker
+    chunkSizeWarningLimit: 500,
+    // Use esbuild for faster builds
     minify: 'esbuild',
     // Generate source maps for production debugging
     sourcemap: true,
+    // Target modern browsers for smaller builds
+    target: 'es2020',
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'vexflow', 'tone', 'pdfjs-dist'],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'vexflow',
+      'tone',
+      'pdfjs-dist',
+      'zustand',
+      'axios',
+      'date-fns',
+    ],
+    exclude: ['pdfjs-dist/build/pdf.worker.mjs'],
   },
   // Ensure PDF.js worker is properly handled
   worker: {
