@@ -1,13 +1,9 @@
-import { defineConfig, splitVendorChunkPlugin } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    // Use Vite's built-in vendor chunk splitting
-    splitVendorChunkPlugin(),
-  ],
+  plugins: [react()],
   server: {
     port: 4000,
     strictPort: false,
@@ -20,14 +16,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // More granular vendor chunk splitting
+          // Vendor chunk splitting - keep React ecosystem together
           if (id.includes('node_modules')) {
-            // Split React ecosystem
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-core'
-            }
-            if (id.includes('react-router')) {
-              return 'react-router'
+            // Keep React and React-DOM together to avoid conflicts
+            if (
+              id.includes('react') ||
+              id.includes('react-dom') ||
+              id.includes('react-router')
+            ) {
+              return 'react-vendor'
             }
             if (id.includes('zustand')) {
               return 'state-management'
