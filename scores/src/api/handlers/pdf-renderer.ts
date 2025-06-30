@@ -327,8 +327,46 @@ pdfRendererHandler.get('/render-google/:scoreId/page/:pageNumber', async c => {
 
 // Production-ready: Render score from R2 storage
 pdfRendererHandler.get('/render/:scoreId/page/:pageNumber', async c => {
+  // Local development fallback - serve a placeholder image
   if (!c.env.BROWSER) {
-    throw new HTTPException(500, { message: 'Browser Rendering not available' })
+    console.warn(
+      'Browser Rendering not available - serving placeholder for local development'
+    )
+
+    // For local development, create a simple placeholder image
+    const scoreId = c.req.param('scoreId')
+    const pageNumber = c.req.param('pageNumber')
+
+    // Create a simple SVG placeholder
+    const placeholderSvg = `
+      <svg width="800" height="1131" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="1131" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
+        <text x="400" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#666">
+          Score: ${scoreId}
+        </text>
+        <text x="400" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#888">
+          Page ${pageNumber}
+        </text>
+        <text x="400" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#aaa">
+          (Local Development Mode)
+        </text>
+        <text x="400" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#aaa">
+          Browser Rendering API not available locally
+        </text>
+        <rect x="100" y="600" width="600" height="400" fill="#fff" stroke="#ccc" stroke-width="1"/>
+        <text x="400" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" fill="#ddd">
+          🎼
+        </text>
+      </svg>
+    `
+
+    return new Response(placeholderSvg.trim(), {
+      headers: {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-cache',
+        'X-Development-Mode': 'true',
+      },
+    })
   }
 
   try {
