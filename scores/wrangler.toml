@@ -67,6 +67,13 @@ id = "ecf57add945f48e2ad0ecaf2ca91ec95"
 binding = "PDF_QUEUE"
 queue = "pdf-processing-staging"
 
+[[env.staging.queues.consumers]]
+queue = "pdf-processing-staging"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "pdf-processing-staging-dlq"
+
 # Development configuration
 [env.dev]
 name = "mirubato-scores-dev"
@@ -94,6 +101,13 @@ id = "395e4bee05ed4e68b15f35ba7b3ba832"
 [[env.dev.queues.producers]]
 binding = "PDF_QUEUE"
 queue = "pdf-processing-dev"
+
+[[env.dev.queues.consumers]]
+queue = "pdf-processing-dev"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "pdf-processing-dev-dlq"
 
 # Local development configuration
 [env.local]
