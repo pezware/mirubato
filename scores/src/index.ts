@@ -47,7 +47,9 @@ app.use(
         'https://www.mirubato.com',
         'https://api.mirubato.com',
         'https://staging.mirubato.com',
+        'https://www-staging.mirubato.com',
         'https://api-staging.mirubato.com',
+        'https://scores-staging.mirubato.com',
         'https://mirubato.pezware.workers.dev',
         'https://api.mirubato.pezware.workers.dev',
       ]
