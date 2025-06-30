@@ -4,8 +4,11 @@ import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../../utils/r2-presigner'
 import { z } from 'zod'
 import { rateLimiters } from '../../middleware/rateLimiter'
-import { PdfCacheManager } from '../../utils/pdfCache'
 import { generatePdfHtmlTemplate } from '../../utils/pdfHtmlTemplate'
+import {
+  checkRenderError,
+  checkCanvasHasContent,
+} from '../../browser/pdf-page-evaluations'
 
 export const pdfRendererV2Handler = new Hono<{ Bindings: Env }>()
 
@@ -129,7 +132,7 @@ async function getPdfUrl(scoreId: string, env: Env): Promise<string> {
 
 // Render a single page with optimized settings
 async function renderPage(
-  browserBinding: any,
+  browserBinding: Env['BROWSER'],
   pdfUrl: string,
   params: z.infer<typeof renderParamsSchema>
 ): Promise<ArrayBuffer> {
@@ -178,25 +181,13 @@ async function renderPage(
       ])
 
       // Check if there was an error
-      const renderError = await page.evaluate(() => {
-        return (globalThis as any).renderError
-      })
+      const renderError = await page.evaluate(checkRenderError)
       if (renderError) {
         throw new Error(`PDF.js error: ${renderError}`)
       }
     } catch (timeoutError) {
       // If timeout, check if canvas has content
-      const hasContent = await page.evaluate(() => {
-        const doc = globalThis as any
-        const canvas = doc.document.getElementById('pdf-canvas')
-        if (!canvas) return false
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return false
-
-        // Check if canvas has been drawn to
-        const imageData = ctx.getImageData(0, 0, 1, 1)
-        return imageData.data.some((channel: number) => channel !== 0)
-      })
+      const hasContent = await page.evaluate(checkCanvasHasContent)
 
       if (!hasContent) {
         throw new Error('PDF rendering timeout - no content rendered')

@@ -4,6 +4,10 @@ import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../../utils/r2-presigner'
 import { z } from 'zod'
 import { rateLimiters } from '../../middleware/rateLimiter'
+import {
+  getErrorElementText,
+  isPdfJsLoaded,
+} from '../../browser/pdf-page-evaluations'
 
 export const pdfRendererHandler = new Hono<{ Bindings: Env }>()
 
@@ -504,21 +508,14 @@ pdfRendererHandler.get(
           })
         } catch (timeoutError) {
           // Try to get any error information from the page
-          const pageError = await page.evaluate(() => {
-            const doc = globalThis as any
-            const errorEl = doc.document.getElementById('error')
-            return errorEl ? errorEl.textContent : null
-          })
+          const pageError = await page.evaluate(getErrorElementText)
 
           if (pageError) {
             throw new Error(`PDF rendering failed: ${pageError}`)
           }
 
           // Check if PDF.js loaded at all
-          const pdfJsLoaded = await page.evaluate(() => {
-            const global = globalThis as any
-            return typeof global.pdfjsLib !== 'undefined'
-          })
+          const pdfJsLoaded = await page.evaluate(isPdfJsLoaded)
           if (!pdfJsLoaded) {
             throw new Error('PDF.js library failed to load')
           }
