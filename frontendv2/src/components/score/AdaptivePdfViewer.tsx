@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import PdfViewer, { type PdfError } from './PdfViewer'
 import ImageBasedPdfViewer from './ImageBasedPdfViewer'
 import { scoreService } from '../../services/scoreService'
+import { DeviceDetection } from '../../constants/deviceDetection'
 
 interface AdaptivePdfViewerProps {
   scoreId: string
@@ -43,52 +44,27 @@ export default function AdaptivePdfViewer({
       }
 
       // Check if running in local development
-      const isLocalDev =
-        window.location.hostname.includes('localhost') ||
-        window.location.hostname === '127.0.0.1'
-
-      // For local development, always use PDF viewer since Browser Rendering API isn't available
-      if (isLocalDev) {
+      if (DeviceDetection.isLocalDevelopment()) {
         console.log('Local development detected - using PDF viewer')
         setUseImageViewer(false)
         setPdfUrl(scoreService.getScorePdfUrl(scoreId))
         return
       }
 
-      // Mobile detection
-      const isMobile =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) || window.innerWidth <= 768
+      // Use device detection to determine viewer mode
+      const deviceScore = DeviceDetection.getDeviceScore()
+      const shouldUseImage = DeviceDetection.shouldUseImageViewer()
 
-      // Memory constraints detection
-      const hasLowMemory =
-        'deviceMemory' in navigator &&
-        (navigator as Navigator & { deviceMemory?: number }).deviceMemory !==
-          undefined &&
-        (navigator as Navigator & { deviceMemory?: number }).deviceMemory! < 4 // Less than 4GB RAM
+      console.log(
+        `Device score: ${deviceScore}, using image viewer: ${shouldUseImage}`
+      )
 
-      // Connection quality detection
-      const connection = (
-        navigator as Navigator & {
-          connection?: {
-            effectiveType?: string
-            saveData?: boolean
-          }
-        }
-      ).connection
-      const isSlowConnection =
-        connection &&
-        (connection.effectiveType === 'slow-2g' ||
-          connection.effectiveType === '2g' ||
-          connection.saveData === true)
-
-      // Check if the browser supports the image-based viewer well
-      const supportsIntersectionObserver = 'IntersectionObserver' in window
+      // Check if the browser supports required APIs
+      const hasRequiredAPIs = DeviceDetection.hasRequiredAPIs()
 
       // Decision logic
-      if (isMobile || hasLowMemory || isSlowConnection) {
-        // Use image viewer for mobile, low-memory, or slow connections
+      if (shouldUseImage || !hasRequiredAPIs) {
+        // Use image viewer for low-capability devices or browsers
         setUseImageViewer(true)
 
         // Try to get metadata for total pages
@@ -99,10 +75,6 @@ export default function AdaptivePdfViewer({
           // If metadata fails, we'll let the image viewer handle it
           console.warn('Failed to fetch score metadata:', error)
         }
-      } else if (!supportsIntersectionObserver) {
-        // Fallback to PDF viewer for older browsers
-        setUseImageViewer(false)
-        setPdfUrl(scoreService.getScorePdfUrl(scoreId))
       } else {
         // Desktop with good resources - check user preference
         const preferImageViewer =

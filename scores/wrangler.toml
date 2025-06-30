@@ -7,6 +7,14 @@ compatibility_flags = ["nodejs_compat"]
 [browser]
 binding = "BROWSER"
 
+# Queue for PDF processing
+[[queues.consumers]]
+queue = "pdf-processing"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "pdf-processing-dlq"
+
 # Production configuration (default - no env flag needed)
 vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
 routes = [
@@ -25,6 +33,10 @@ bucket_name = "mirubato-scores-production"
 [[kv_namespaces]]
 binding = "CACHE"
 id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
+
+[[queues.producers]]
+binding = "PDF_QUEUE"
+queue = "pdf-processing"
 
 # Staging configuration
 [env.staging]
@@ -51,6 +63,10 @@ bucket_name = "mirubato-scores-staging"
 binding = "CACHE"
 id = "ecf57add945f48e2ad0ecaf2ca91ec95"
 
+[[env.staging.queues.producers]]
+binding = "PDF_QUEUE"
+queue = "pdf-processing-staging"
+
 # Development configuration
 [env.dev]
 name = "mirubato-scores-dev"
@@ -75,6 +91,10 @@ bucket_name = "mirubato-scores-dev"
 binding = "CACHE"
 id = "395e4bee05ed4e68b15f35ba7b3ba832"
 
+[[env.dev.queues.producers]]
+binding = "PDF_QUEUE"
+queue = "pdf-processing-dev"
+
 # Local development configuration
 [env.local]
 vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
@@ -94,6 +114,8 @@ bucket_name = "mirubato-scores-local"
 [[env.local.kv_namespaces]]
 binding = "CACHE"
 id = "local"
+
+# Note: Queues are not available in local development
 
 # Explicit production environment (for consistency)
 [env.production]
@@ -119,3 +141,7 @@ bucket_name = "mirubato-scores-production"
 [[env.production.kv_namespaces]]
 binding = "CACHE"
 id = "1f30ff61b4a04dc4a9a269ad6f828fe4"
+
+[[env.production.queues.producers]]
+binding = "PDF_QUEUE"
+queue = "pdf-processing"

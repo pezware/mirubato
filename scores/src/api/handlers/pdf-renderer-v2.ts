@@ -3,72 +3,11 @@ import { HTTPException } from 'hono/http-exception'
 import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../../utils/r2-presigner'
 import { z } from 'zod'
+import { rateLimiters } from '../../middleware/rateLimiter'
+import { PdfCacheManager } from '../../utils/pdfCache'
+import { generatePdfHtmlTemplate } from '../../utils/pdfHtmlTemplate'
 
 export const pdfRendererV2Handler = new Hono<{ Bindings: Env }>()
-
-// Simplified PDF viewer HTML - minimal overhead
-const SIMPLE_PDF_VIEWER = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: white; }
-    #container { 
-      width: 100vw; 
-      height: 100vh; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-    }
-    canvas { 
-      max-width: 100%; 
-      max-height: 100%; 
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <canvas id="pdf-canvas"></canvas>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
-    
-    async function renderPdf() {
-      try {
-        const loadingTask = pdfjsLib.getDocument('{{PDF_URL}}');
-        const pdf = await loadingTask.promise;
-        const page = await pdf.getPage({{PAGE_NUMBER}});
-        
-        // Use a fixed scale for consistent rendering
-        const scale = {{SCALE}};
-        const viewport = page.getViewport({ scale });
-        
-        const canvas = document.getElementById('pdf-canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise;
-        
-        // Signal completion
-        window.renderComplete = true;
-      } catch (error) {
-        console.error('PDF render error:', error);
-        window.renderError = error.message;
-      }
-    }
-    
-    // Start rendering immediately
-    renderPdf();
-  </script>
-</body>
-</html>`
 
 // Input validation
 const renderParamsSchema = z.object({
@@ -80,74 +19,78 @@ const renderParamsSchema = z.object({
 })
 
 // Main render endpoint
-pdfRendererV2Handler.get('/render/:scoreId/page/:pageNumber', async c => {
-  try {
-    // Validate inputs
-    const params = renderParamsSchema.parse({
-      scoreId: c.req.param('scoreId'),
-      pageNumber: parseInt(c.req.param('pageNumber')),
-      width: parseInt(c.req.query('width') || '1200'),
-      format: c.req.query('format'),
-      quality: parseInt(c.req.query('quality') || '85'),
-    })
+pdfRendererV2Handler.get(
+  '/render/:scoreId/page/:pageNumber',
+  rateLimiters.perScore,
+  async c => {
+    try {
+      // Validate inputs
+      const params = renderParamsSchema.parse({
+        scoreId: c.req.param('scoreId'),
+        pageNumber: parseInt(c.req.param('pageNumber')),
+        width: parseInt(c.req.query('width') || '1200'),
+        format: c.req.query('format'),
+        quality: parseInt(c.req.query('quality') || '85'),
+      })
 
-    // Check if pre-rendered version exists
-    const preRenderedKey = `rendered/${params.scoreId}/page-${params.pageNumber}.${params.format}`
-    const cached = await c.env.SCORES_BUCKET.get(preRenderedKey)
+      // Check if pre-rendered version exists
+      const preRenderedKey = `rendered/${params.scoreId}/page-${params.pageNumber}.${params.format}`
+      const cached = await c.env.SCORES_BUCKET.get(preRenderedKey)
 
-    if (cached) {
-      // Return pre-rendered image
-      return new Response(cached.body, {
+      if (cached) {
+        // Return pre-rendered image
+        return new Response(cached.body, {
+          headers: {
+            'Content-Type': `image/${params.format}`,
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'X-Cache-Status': 'HIT',
+          },
+        })
+      }
+
+      // Check Browser Rendering availability
+      if (!c.env.BROWSER) {
+        // Development fallback - return a placeholder
+        return generatePlaceholder(params.scoreId, params.pageNumber)
+      }
+
+      // Get PDF URL
+      const pdfUrl = await getPdfUrl(params.scoreId, c.env)
+
+      // Render the page
+      const image = await renderPage(c.env.BROWSER, pdfUrl, params)
+
+      // Store pre-rendered version for next time
+      c.executionCtx.waitUntil(
+        c.env.SCORES_BUCKET.put(preRenderedKey, image, {
+          httpMetadata: {
+            contentType: `image/${params.format}`,
+          },
+        })
+      )
+
+      return new Response(image, {
         headers: {
           'Content-Type': `image/${params.format}`,
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          'X-Cache-Status': 'HIT',
+          'Cache-Control': 'public, max-age=3600',
+          'X-Cache-Status': 'MISS',
         },
       })
-    }
+    } catch (error) {
+      console.error('PDF render error:', error)
 
-    // Check Browser Rendering availability
-    if (!c.env.BROWSER) {
-      // Development fallback - return a placeholder
-      return generatePlaceholder(params.scoreId, params.pageNumber)
-    }
+      if (error instanceof z.ZodError) {
+        throw new HTTPException(400, { message: 'Invalid parameters' })
+      }
 
-    // Get PDF URL
-    const pdfUrl = await getPdfUrl(params.scoreId, c.env)
+      if (error instanceof HTTPException) throw error
 
-    // Render the page
-    const image = await renderPage(c.env.BROWSER, pdfUrl, params)
-
-    // Store pre-rendered version for next time
-    c.executionCtx.waitUntil(
-      c.env.SCORES_BUCKET.put(preRenderedKey, image, {
-        httpMetadata: {
-          contentType: `image/${params.format}`,
-        },
+      throw new HTTPException(500, {
+        message: `Failed to render PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
       })
-    )
-
-    return new Response(image, {
-      headers: {
-        'Content-Type': `image/${params.format}`,
-        'Cache-Control': 'public, max-age=3600',
-        'X-Cache-Status': 'MISS',
-      },
-    })
-  } catch (error) {
-    console.error('PDF render error:', error)
-
-    if (error instanceof z.ZodError) {
-      throw new HTTPException(400, { message: 'Invalid parameters' })
     }
-
-    if (error instanceof HTTPException) throw error
-
-    throw new HTTPException(500, {
-      message: `Failed to render PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    })
   }
-})
+)
 
 // Get PDF URL for a score
 async function getPdfUrl(scoreId: string, env: Env): Promise<string> {
@@ -208,10 +151,13 @@ async function renderPage(
     // Calculate scale based on desired width
     const scale = params.width / 612 // Standard PDF width is 612 points
 
-    // Generate HTML with embedded values
-    const html = SIMPLE_PDF_VIEWER.replace('{{PDF_URL}}', pdfUrl)
-      .replace('{{PAGE_NUMBER}}', params.pageNumber.toString())
-      .replace('{{SCALE}}', scale.toFixed(2))
+    // Generate HTML with shared template
+    const html = generatePdfHtmlTemplate({
+      pdfUrl,
+      pageNumber: params.pageNumber,
+      scale,
+      quality: 'simple',
+    })
 
     // Load the page
     await page.setContent(html, {

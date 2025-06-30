@@ -1,5 +1,7 @@
 import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../utils/r2-presigner'
+import { PdfCacheManager } from '../utils/pdfCache'
+import { generatePdfHtmlTemplate } from '../utils/pdfHtmlTemplate'
 
 interface ProcessPdfMessage {
   type: 'process-new-score'
@@ -13,9 +15,23 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
   console.log(`Starting PDF processing for score ${scoreId}`)
 
+  const cacheManager = new PdfCacheManager(env.CACHE)
+  let documentHash: string | undefined
+
   try {
+    // Generate document hash for caching
+    documentHash = await cacheManager.generateCacheKey(r2Key, env)
+
+    // Check if already processed
+    if (await cacheManager.isProcessedRecently(documentHash)) {
+      console.log(`Score ${scoreId} already processed recently, skipping`)
+      await updateScoreStatus(env, scoreId, 'completed')
+      return
+    }
+
     // Update status to processing
     await updateScoreStatus(env, scoreId, 'processing')
+    await cacheManager.updateStatus(documentHash, 'processing')
 
     // Generate presigned URL for the PDF
     const presigner = new R2Presigner(env)
@@ -45,15 +61,26 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
     // Update status to completed
     await updateScoreStatus(env, scoreId, 'completed')
+    await cacheManager.setMetadata(documentHash, {
+      status: 'completed',
+      pageCount,
+      r2Prefix: `rendered/${scoreId}/`,
+      lastUpdated: new Date().toISOString(),
+      processingCompletedAt: new Date().toISOString(),
+    })
     console.log(`Completed processing score ${scoreId}`)
   } catch (error) {
     console.error(`Failed to process score ${scoreId}:`, error)
-    await updateScoreStatus(
-      env,
-      scoreId,
-      'failed',
+    const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
-    )
+
+    await updateScoreStatus(env, scoreId, 'failed', errorMessage)
+
+    // Update cache with failure status if we have a hash
+    if (documentHash) {
+      await cacheManager.updateStatus(documentHash, 'failed', errorMessage)
+    }
+
     throw error
   }
 }
@@ -73,8 +100,6 @@ async function analyzePdf(
       <html>
       <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs"></script>
-      </head>
-      <body>
         <script>
           pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
           
@@ -91,7 +116,8 @@ async function analyzePdf(
           
           analyze();
         </script>
-      </body>
+      </head>
+      <body></body>
       </html>
     `
 
@@ -139,48 +165,13 @@ async function renderAndStorePage(
       deviceScaleFactor: 2,
     })
 
-    // Render page
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          * { margin: 0; padding: 0; }
-          body { background: white; }
-          canvas { width: 100%; height: 100%; }
-        </style>
-      </head>
-      <body>
-        <canvas id="pdf-canvas"></canvas>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs"></script>
-        <script>
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
-          
-          async function render() {
-            try {
-              const pdf = await pdfjsLib.getDocument('${pdfUrl}').promise;
-              const page = await pdf.getPage(${pageNumber});
-              
-              const scale = 2.0; // High quality
-              const viewport = page.getViewport({ scale });
-              
-              const canvas = document.getElementById('pdf-canvas');
-              const context = canvas.getContext('2d');
-              canvas.width = viewport.width;
-              canvas.height = viewport.height;
-              
-              await page.render({ canvasContext: context, viewport }).promise;
-              window.renderComplete = true;
-            } catch (error) {
-              window.renderError = error.message;
-            }
-          }
-          
-          render();
-        </script>
-      </body>
-      </html>
-    `
+    // Render page with shared template
+    const html = generatePdfHtmlTemplate({
+      pdfUrl,
+      pageNumber,
+      scale: 2.0, // High quality
+      quality: 'simple',
+    })
 
     await page.setContent(html, { waitUntil: 'domcontentloaded' })
 

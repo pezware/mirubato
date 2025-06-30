@@ -1,3 +1,18 @@
+// Queue message types
+interface ProcessPdfMessage {
+  type?: 'process-new-score'
+  scoreId: string
+  r2Key?: string
+  uploadedAt?: string
+  // Legacy fields from import-enhanced
+  action?:
+    | 'generate-previews'
+    | 'download-imslp-pdf'
+    | 'analyze-imslp'
+    | 'import-imslp'
+  data?: any
+}
+
 interface Env {
   // Environment variables
   ENVIRONMENT: 'local' | 'development' | 'staging' | 'production'
@@ -23,7 +38,9 @@ interface Env {
   // Optional enhanced features (from wrangler-enhanced.toml)
   BROWSER?: any // Browser Rendering API
   AI?: any // Workers AI
-  SCORE_QUEUE?: Queue // Queue for background processing
+
+  // Queue bindings
+  PDF_QUEUE?: Queue<ProcessPdfMessage> // Queue producer for PDF processing
 
   // Durable Objects (if needed later)
   // SCORE_PROCESSOR: DurableObjectNamespace

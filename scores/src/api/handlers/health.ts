@@ -552,7 +552,7 @@ async function checkDependencies(env: Env) {
     apiService: !!env.API_SERVICE_URL,
     browser: !!env.BROWSER,
     ai: !!env.AI,
-    queue: !!env.SCORE_QUEUE,
+    queue: !!env.PDF_QUEUE,
   }
 
   const required = [

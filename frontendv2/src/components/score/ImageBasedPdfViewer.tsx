@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { scoreService } from '../../services/scoreService'
+import ProgressiveImage from '../ui/ProgressiveImage'
+import { ProgressiveImageLoader } from '../../utils/imageUtils'
 
 interface ImageBasedPdfViewerProps {
   scoreId: string
@@ -35,8 +37,8 @@ export default function ImageBasedPdfViewer({
     new Map()
   )
   const preloadedImagesRef = useRef<Map<number, string>>(new Map())
+  const imageLoader = useRef(new ProgressiveImageLoader())
   const [numPages, setNumPages] = useState(totalPages || 0)
-  const imageRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Update page when prop changes
@@ -73,14 +75,20 @@ export default function ImageBasedPdfViewer({
       if (pageNumber + i <= numPages) imagesToPreload.push(pageNumber + i)
     }
 
-    // Preload images
-    imagesToPreload.forEach(page => {
+    // Preload images using progressive loader
+    imagesToPreload.forEach(async page => {
       if (!preloadedImagesRef.current.has(page)) {
-        const img = new Image()
-        img.src = getPageUrl(page)
-        img.onload = () => {
-          preloadedImagesRef.current.set(page, img.src)
-          setPreloadedImages(new Map(preloadedImagesRef.current))
+        const url = getPageUrl(page)
+        try {
+          await imageLoader.current.load(url, {
+            generateLQIP: false, // Server-rendered images don't need LQIP
+            onFullImageReady: loadedUrl => {
+              preloadedImagesRef.current.set(page, loadedUrl)
+              setPreloadedImages(new Map(preloadedImagesRef.current))
+            },
+          })
+        } catch (error) {
+          console.warn(`Failed to preload page ${page}:`, error)
         }
       }
     })
@@ -234,14 +242,17 @@ export default function ImageBasedPdfViewer({
             </div>
           </div>
         ) : (
-          <img
-            ref={imageRef}
+          <ProgressiveImage
             src={preloadedImages.get(pageNumber) || getPageUrl(pageNumber)}
             alt={`Page ${pageNumber}`}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
             className="w-full h-auto mx-auto"
-            style={{ display: loading ? 'none' : 'block' }}
+            onLoad={handleImageLoad}
+            onError={error => {
+              console.error('Image load error:', error)
+              handleImageError()
+            }}
+            blurAmount={10}
+            transitionDuration={200}
           />
         )}
       </div>

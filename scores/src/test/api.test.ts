@@ -32,7 +32,10 @@ const mockEnv = {
 
 describe('Scores API', () => {
   it('should return health check', async () => {
-    const response = await app.request('/health', {}, mockEnv)
+    const response = await app.fetch(
+      new Request('http://localhost/health'),
+      mockEnv
+    )
     const json = (await response.json()) as any
 
     // In test environment, some services may not be fully healthy
@@ -53,7 +56,10 @@ describe('Scores API', () => {
   })
 
   it('should return API documentation page', async () => {
-    const response = await app.request('/api/docs', {}, mockEnv)
+    const response = await app.fetch(
+      new Request('http://localhost/api/docs'),
+      mockEnv
+    )
 
     // The /api/docs endpoint returns a redirect to /docs
     expect(response.status).toBe(302)
@@ -61,7 +67,10 @@ describe('Scores API', () => {
   })
 
   it('should handle 404', async () => {
-    const response = await app.request('/non-existent', {}, mockEnv)
+    const response = await app.fetch(
+      new Request('http://localhost/non-existent'),
+      mockEnv
+    )
     const json = (await response.json()) as any
 
     expect(response.status).toBe(404)
