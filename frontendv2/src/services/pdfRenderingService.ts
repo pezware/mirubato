@@ -1,11 +1,11 @@
 import * as pdfjs from 'pdfjs-dist'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 
-// Configure pdf.js worker - use unpkg CDN to avoid bundling the large worker file
+// Configure pdf.js worker - use CDN to avoid bundling the large worker file
 // This significantly reduces bundle size
 if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
-  // Use unpkg for newer versions of pdf.js
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs`
+  // Use the version that matches our pdfjs-dist
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 }
 
 interface CacheNode {

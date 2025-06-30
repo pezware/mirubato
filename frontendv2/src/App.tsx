@@ -9,6 +9,10 @@ import { useAuthStore } from './stores/authStore'
 import { migrateLegacyData } from './utils/migrateLegacyData'
 import { fixLocalStorageData } from './utils/fixLocalStorageData'
 import { PdfRenderingProvider } from './contexts/PdfRenderingContext'
+import { setupPdfWorker } from './utils/pdfWorkerSetup'
+
+// Set up PDF worker before any components load
+setupPdfWorker()
 
 // Eagerly load the home page (most visited)
 import HomePage from './pages/Home'

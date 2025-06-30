@@ -5,6 +5,8 @@ if (
   window.pdfjsLib &&
   !window.pdfjsLib.GlobalWorkerOptions.workerSrc
 ) {
+  // Use the version property if available, otherwise fallback to known version
+  const version = window.pdfjsLib.version || '5.3.31'
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs'
+    '//unpkg.com/pdfjs-dist@' + version + '/build/pdf.worker.min.mjs'
 }
