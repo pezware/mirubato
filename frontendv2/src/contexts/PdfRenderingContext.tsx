@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useMemo } from 'react'
 import {
   PdfRenderingService,
