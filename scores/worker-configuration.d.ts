@@ -38,6 +38,7 @@ interface Env {
   // Optional enhanced features (from wrangler-enhanced.toml)
   BROWSER?: any // Browser Rendering API
   AI?: any // Workers AI
+  GEMINI_API_KEY?: string // Vertex AI/Gemini API key
 
   // Queue bindings
   PDF_QUEUE?: Queue<ProcessPdfMessage> // Queue producer for PDF processing
