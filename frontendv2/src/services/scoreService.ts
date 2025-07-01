@@ -310,6 +310,34 @@ class ScoreService {
       throw error
     }
   }
+
+  // Import a score from URL or base64 data
+  async importScore(params: { url: string; filename?: string }): Promise<{
+    success: boolean
+    data: Score
+    warning?: string
+    error?: string
+  }> {
+    try {
+      const response = await scoresApiClient.post('/api/import', params)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          throw new Error(error.response.data.message || 'Rate limit exceeded')
+        }
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          error.response?.data?.error ||
+            error.response?.data?.message ||
+            'Import failed'
+        )
+      }
+      throw error
+    }
+  }
 }
 
 // Export a singleton instance

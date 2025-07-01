@@ -146,10 +146,11 @@ importHandler.post('/', async c => {
     // Create R2 key
     const r2Key = `imports/${scoreId}/${cleanFileName}`
 
-    // Upload to R2
+    // Upload to R2 with optimized cache headers
     await c.env.SCORES_BUCKET.put(r2Key, pdfBuffer, {
       httpMetadata: {
         contentType: 'application/pdf',
+        cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
       },
       customMetadata: {
         sourceUrl: url,
@@ -159,15 +160,33 @@ importHandler.post('/', async c => {
     })
 
     // Extract metadata using AI
-    const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
-    const aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+    let aiMetadata: any
+    try {
+      const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
+      aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
 
-    // Log if AI extraction failed
-    if (aiMetadata.error) {
-      console.warn('AI extraction had issues:', aiMetadata.error)
-    }
-    if (aiMetadata.confidence < 0.5) {
-      console.warn('Low confidence AI extraction, used fallback')
+      // Log if AI extraction failed
+      if (aiMetadata.error) {
+        console.warn('AI extraction had issues:', aiMetadata.error)
+      }
+      if (aiMetadata.confidence < 0.5) {
+        console.warn('Low confidence AI extraction, used fallback')
+      }
+    } catch (error) {
+      console.error('AI extraction failed:', error)
+      // Fallback metadata when AI fails
+      aiMetadata = {
+        title: cleanFileName.replace('.pdf', ''),
+        composer: 'Unknown',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 5,
+        tags: [],
+        confidence: 0,
+        error:
+          'AI extraction failed: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      }
     }
 
     // Create database record

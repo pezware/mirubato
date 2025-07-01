@@ -83,11 +83,11 @@ export function addCacheHeaders(
   // Determine cache strategy based on content type and options
   let cacheConfig = CACHE_CONFIG.dynamic
 
-  if (options?.isVersioned) {
-    // Versioned content is immutable
+  if (options?.isVersioned || contentType.includes('pdf')) {
+    // Versioned content and PDFs are immutable
     cacheConfig = CACHE_CONFIG.immutable
-  } else if (contentType.includes('pdf') || contentType.includes('musicxml')) {
-    // PDFs and music files are generally static
+  } else if (contentType.includes('musicxml')) {
+    // Music files are generally static
     cacheConfig = CACHE_CONFIG.static
   } else if (contentType.includes('image')) {
     // Images are static but might be updated

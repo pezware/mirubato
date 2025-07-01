@@ -136,10 +136,11 @@ export class UploadService {
         uploadedAt: new Date().toISOString(),
       }
 
-      // Upload to R2
+      // Upload to R2 with optimized cache headers
       await env.SCORES_BUCKET.put(key, arrayBuffer, {
         httpMetadata: {
           contentType: file.type,
+          cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
         },
         customMetadata: {
           ...metadata,

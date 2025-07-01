@@ -60,17 +60,25 @@ api.get('/', c => {
 api.route('/scores', scoresHandler)
 api.route('/search', searchHandler)
 
-// Use enhanced import handler if browser rendering is available
+// Mount the basic import handler first (for /api/import endpoint)
+api.route('/import', importHandler)
+
+// Use enhanced import handler for specific routes if browser rendering is available
 api.use('/import/*', async (c, next) => {
-  if (c.env.BROWSER) {
+  // Only intercept specific enhanced routes, not the base /import route
+  const path = c.req.path
+  if (
+    c.env.BROWSER &&
+    (path.includes('/pdf') ||
+      path.includes('/imslp') ||
+      path.includes('/batch'))
+  ) {
     // Use enhanced handler with browser rendering
     return enhancedImportHandler.fetch(c.req.raw, c.env, c.executionCtx)
   }
   // Fall back to basic handler
   await next()
 })
-
-api.route('/import', importHandler)
 api.route('/collections', collectionsHandler)
 
 // Render routes need special handling due to nested paths

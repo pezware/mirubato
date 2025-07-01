@@ -118,16 +118,96 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    - ✅ Tested with various instruments (piano, guitar)
    - ✅ Support for any public PDF URL
 
+6. **Recent Improvements** (Dec 2024)
+   - ✅ Fixed file upload functionality in ScoreManagement
+   - ✅ Implemented drag & drop for PDF uploads
+   - ✅ Fixed search API response handling
+   - ✅ Added predictive search with debouncing
+   - ✅ Fixed routing conflicts on staging
+   - ✅ Implemented PDF serving from R2
+   - ✅ Optimized R2 cache headers (1 year immutable)
+   - ✅ Decision: Keep R2 private for licensing safety
+
+### 🚧 Current Development: User Collections & Image Uploads
+
+#### Phase 5.5: Personal Score Collections (January 2025) - IN PROGRESS
+
+##### Features to Implement:
+
+1. **Image Upload for Personal Scores**
+   - Accept PNG, JPG, JPEG formats (photos of paper scores)
+   - Support multiple images per score (for multi-page pieces)
+   - Optional metadata: title, composer (with "Unknown" defaults)
+   - Store in user-specific R2 paths (`user-uploads/{userId}/{scoreId}/`)
+
+2. **AI Processing for Images**
+   - Send images to Gemini for metadata extraction
+   - Handle fragmented/partial scores gracefully
+   - Lower confidence thresholds for handwritten music
+   - Store AI confidence scores for future improvements
+
+3. **User Collections**
+   - "My Uploads" collection auto-created for each user
+   - Custom collections for organization
+   - Private by default (no public sharing initially)
+   - Collection sharing in future phases
+
+4. **Frontend Updates**
+   - Add image upload to ScoreManagement component
+   - Support drag & drop for multiple images
+   - Image preview before upload
+   - Reorder pages interface for multi-image scores
+
+5. **Database Schema Updates**
+
+   ```sql
+   -- Add to scores table
+   ALTER TABLE scores ADD COLUMN user_id TEXT;
+   ALTER TABLE scores ADD COLUMN visibility TEXT DEFAULT 'private';
+   ALTER TABLE scores ADD COLUMN source_type TEXT; -- 'pdf', 'image', 'multi-image'
+   ALTER TABLE scores ADD COLUMN page_count INTEGER DEFAULT 1;
+
+   -- User collections table
+   CREATE TABLE user_collections (
+     id TEXT PRIMARY KEY,
+     user_id TEXT NOT NULL,
+     name TEXT NOT NULL,
+     description TEXT,
+     is_default BOOLEAN DEFAULT FALSE,
+     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+   );
+
+   -- Score pages for multi-image scores
+   CREATE TABLE score_pages (
+     id TEXT PRIMARY KEY,
+     score_id TEXT NOT NULL,
+     page_number INTEGER NOT NULL,
+     image_url TEXT NOT NULL,
+     r2_key TEXT NOT NULL,
+     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     FOREIGN KEY (score_id) REFERENCES scores(id)
+   );
+   ```
+
+##### Technical Considerations:
+
+- **Privacy**: All user uploads stored in private R2 paths
+- **Rate Limiting**: Same limits apply (1/10min anon, unlimited auth)
+- **File Size**: Max 10MB per image, 50MB total per score
+- **Processing**: Queue system for AI analysis of images
+- **Storage**: Separate tracking of user storage quotas
+
 ##### 📋 Next Steps: Enhanced Features
 
-1. **Two-Page View Implementation** (Week 2)
-1. **Touch Gesture Support**
+1. **Two-Page View Implementation** (After Phase 5.5)
+2. **Touch Gesture Support**
    - Pinch-to-zoom with gesture library
    - Pan/drag with boundary checking
    - Momentum scrolling
    - Double-tap zoom
 
-1. **Zoom Controls UI**
+3. **Zoom Controls UI**
    - Zoom buttons (+/-/fit)
    - Preset levels (50%, 75%, 100%, 125%, 150%)
    - Maintain zoom across pages
@@ -369,8 +449,18 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
   - Created `seeds/` directory with environment-specific data
   - Removed PDFs from repo (use import API instead)
   - Single source of truth for all seed data
-- **Next - Week 1**: Two-page view and zoom features
-- **Week 2**: Admin UI for bulk imports
+- **✅ Dec 2024 Improvements**:
+  - Fixed upload/search functionality
+  - Added predictive search
+  - Optimized R2 caching
+  - Decision: Keep R2 private for licensing
+- **🚧 Current (Jan 2025)**: Phase 5.5 - User Collections & Image Uploads
+  - Image upload for paper scores
+  - AI metadata extraction for images
+  - Personal collections system
+  - Multi-page image support
+- **Next - Week 1**: Complete image upload implementation
+- **Week 2**: Two-page view and zoom features
 - **Weeks 3-4**: Build initial content library (50+ scores)
 - **Month 2**: Search, print, and offline support
 - **Months 3-4**: Annotations system
@@ -389,13 +479,32 @@ Phase 5 Complete:
 - [x] Support for both URL and file upload
 - [x] Graceful error handling and user feedback
 
+Dec 2024 Improvements Complete:
+
+- [x] Fixed file upload functionality
+- [x] Implemented drag & drop
+- [x] Fixed search API handling
+- [x] Added predictive search
+- [x] Optimized R2 caching (1 year immutable)
+- [x] PDF serving from R2
+
+Current Phase (5.5 - User Collections):
+
+- [ ] Database schema updates for user collections
+- [ ] Image upload endpoint (`/api/import/image`)
+- [ ] Multi-image support for scores
+- [ ] AI metadata extraction for images
+- [ ] Frontend image upload UI
+- [ ] User collections management UI
+- [ ] Private storage paths for user uploads
+- [ ] "My Uploads" default collection
+
 Next Phase (Phase 6):
 
-- [ ] Admin UI for bulk imports
 - [ ] Two-page view toggle
 - [ ] Zoom controls implementation
-- [ ] Initial content library (20+ scores)
 - [ ] Touch gesture support
+- [ ] Initial content library (50+ scores)
 - [ ] Print optimization
 
 ---

@@ -83,7 +83,50 @@ renderHandler.get('/scores/:id/render', async c => {
   }
 })
 
-// Download score in specific format
+// Simple PDF download handler for imported scores
+renderHandler.get('/scores/:id/download/pdf', async c => {
+  try {
+    const scoreId = c.req.param('id')
+
+    // Get score from database
+    const score = await c.env.DB.prepare('SELECT * FROM scores WHERE id = ?')
+      .bind(scoreId)
+      .first<any>()
+
+    if (!score) {
+      throw new HTTPException(404, { message: 'Score not found' })
+    }
+
+    // If this is an imported score with pdf_url, serve it from R2
+    if (score.pdf_url && score.pdf_url.startsWith('/files/')) {
+      const r2Key = score.pdf_url.replace('/files/', '')
+      const object = await c.env.SCORES_BUCKET.get(r2Key)
+
+      if (!object) {
+        throw new HTTPException(404, { message: 'PDF file not found' })
+      }
+
+      // Return the PDF with appropriate headers for viewing
+      const headers = new Headers({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="${score.file_name || 'score.pdf'}"`,
+        'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*', // Allow cross-origin requests for PDF viewer
+      })
+
+      return new Response(object.body, { headers })
+    }
+
+    // Fall back to original logic for non-imported scores
+    // ... original download logic continues below
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error downloading PDF:', error)
+    throw new HTTPException(500, { message: 'Failed to download PDF' })
+  }
+})
+
+// Original download handler for multiple formats
 renderHandler.get('/scores/:id/download/:format', async c => {
   try {
     // Check edge cache first

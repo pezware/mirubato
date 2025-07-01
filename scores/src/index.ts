@@ -296,12 +296,6 @@ app.get('/files/*', async c => {
         'Content-Security-Policy',
         "frame-ancestors 'self' *.mirubato.com http://localhost:* http://*.localhost:*"
       )
-
-      // Enhanced cache headers for PDFs
-      const fileName = path.split('/').pop() || 'document.pdf'
-      headers.set('ETag', `"${fileName}-v1"`)
-      headers.set('Last-Modified', new Date().toUTCString())
-      headers.set('Vary', 'Accept-Encoding')
     }
 
     // Create response
