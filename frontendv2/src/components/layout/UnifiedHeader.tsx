@@ -14,7 +14,13 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
   showAuth = true,
   onSignInClick,
 }) => {
-  const { t } = useTranslation(['common', 'logbook', 'toolbox', 'scorebook', 'auth'])
+  const { t } = useTranslation([
+    'common',
+    'logbook',
+    'toolbox',
+    'scorebook',
+    'auth',
+  ])
   const { user, isAuthenticated } = useAuthStore()
 
   const pages = [
@@ -82,8 +88,7 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
               <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">
                 <span className="flex items-center gap-1">
                   <span className="hidden sm:inline">
-                    {getAuthIcon()} {getAuthStatus()}{' '}
-                    {isAuthenticated && '•'}
+                    {getAuthIcon()} {getAuthStatus()} {isAuthenticated && '•'}
                   </span>
                   {isAuthenticated && (
                     <span className="text-xs sm:text-sm">{user?.email}</span>
