@@ -65,9 +65,8 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
     metronome.setTempo(bpm)
     metronome.setVolume(volume / 100)
     return () => {
-      if (isPlaying) {
-        metronome.stop()
-      }
+      // Always stop metronome when component unmounts
+      metronome.stop()
     }
   }, [])
 
@@ -167,6 +166,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
         await metronome.start({
           tempo: bpm,
           volume: volume / 100,
+          beatValue: beatValue,
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)

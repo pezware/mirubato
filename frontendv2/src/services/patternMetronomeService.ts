@@ -3,6 +3,7 @@ import * as Tone from 'tone'
 export interface PatternConfig {
   tempo: number
   volume: number
+  beatValue?: number // 4 for quarter note, 8 for eighth note, etc.
   patterns: {
     accent: boolean[]
     click: boolean[]
@@ -23,6 +24,7 @@ class PatternMetronomeService {
   >
   private currentBeat: number = 0
   private beatsPerMeasure: number = 4
+  private beatValue: number = 4
   private isPlaying: boolean = false
   private volume: Tone.Volume
   private visualCallback?: VisualCallback
@@ -124,7 +126,7 @@ class PatternMetronomeService {
     this.currentBeat = 0
     this.tempo = config.tempo
     this.patterns = config.patterns
-    this.nextNoteTime = Tone.now()
+    this.beatValue = config.beatValue || 4
 
     // Calculate beats per measure from the pattern length
     this.beatsPerMeasure = config.patterns.accent.length
@@ -132,8 +134,11 @@ class PatternMetronomeService {
     // Set Transport BPM
     Tone.Transport.bpm.value = config.tempo
 
-    // Start the Transport
+    // Start the Transport and get the start time
     Tone.Transport.start()
+
+    // Initialize next note time to current transport time
+    this.nextNoteTime = Tone.Transport.seconds
 
     // Start the lookahead scheduler
     this.scheduler()
@@ -141,8 +146,11 @@ class PatternMetronomeService {
   }
 
   private scheduler(): void {
+    // Use Transport.seconds for more accurate timing
+    const currentTime = Tone.Transport.seconds
+
     // Schedule all notes that need to play before the next interval
-    while (this.nextNoteTime < Tone.now() + this.lookaheadTime) {
+    while (this.nextNoteTime < currentTime + this.lookaheadTime) {
       this.scheduleNote(this.nextNoteTime)
       this.nextNote()
     }
@@ -198,7 +206,10 @@ class PatternMetronomeService {
 
   private nextNote(): void {
     // Calculate time until next beat
-    const secondsPerBeat = 60.0 / this.tempo
+    // For different beat values: quarter note = 4, eighth note = 8
+    // If beatValue is 8, we need to adjust the tempo calculation
+    const beatMultiplier = 4 / this.beatValue
+    const secondsPerBeat = (60.0 / this.tempo) * beatMultiplier
     this.nextNoteTime += secondsPerBeat
 
     // Advance beat counter
@@ -217,6 +228,9 @@ class PatternMetronomeService {
     // Stop and clean Transport
     Tone.Transport.stop()
     Tone.Transport.cancel()
+
+    // Clear the Transport position
+    Tone.Transport.position = 0
 
     // Reset state
     this.currentBeat = 0
