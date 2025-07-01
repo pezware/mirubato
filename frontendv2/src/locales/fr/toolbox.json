@@ -15,28 +15,44 @@
     },
     "patterns": {
       "basic": {
-        "name": "Basic",
-        "description": "Piste de clic standard"
+        "name": "Basic Beat",
+        "description": "4/4 standard avec accent sur 1"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "Accent sur les temps 2 et 4"
       },
       "waltz": {
-        "name": "Waltz",
-        "description": "Mesure 3/4 avec accent sur 1"
+        "name": "Waltz (3/4)",
+        "description": "Motif fort-faible-faible"
       },
-      "rumba": {
-        "name": "Rumba",
-        "description": "Motif rythmique latin"
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "Motif de clave latine"
       },
-      "offBeat": {
-        "name": "Pratique contretemps",
-        "description": "Clic sur les contretemps"
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "Sensation de triolet avec note du milieu silencieuse"
       },
-      "subdivision": {
-        "name": "Subdivision",
-        "description": "Subdivision en croches"
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "Sensation de deux noires pointées"
       },
-      "afrocuban": {
-        "name": "Afro-Cuban",
-        "description": "Motif latin complexe"
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "Motif rythmique brésilien"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "Pratique des croches et double-croches"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "Clic sur les contretemps seulement"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "Motif d'accent mobile"
       }
     }
   },

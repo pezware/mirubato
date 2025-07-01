@@ -15,28 +15,44 @@
     },
     "patterns": {
       "basic": {
-        "name": "Basic",
-        "description": "Standard-Klickspur"
+        "name": "Basic Beat",
+        "description": "Standard 4/4 mit Betonung auf 1"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "Betonung auf Schlägen 2 und 4"
       },
       "waltz": {
-        "name": "Waltz",
-        "description": "3/4-Takt mit Betonung auf 1"
+        "name": "Waltz (3/4)",
+        "description": "Stark-schwach-schwach Muster"
       },
-      "rumba": {
-        "name": "Rumba",
-        "description": "Lateinamerikanisches Rhythmusmuster"
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "Lateinamerikanisches Clave-Muster"
       },
-      "offBeat": {
-        "name": "Offbeat-Übung",
-        "description": "Klick auf Offbeats"
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "Triolen-Gefühl mit stummer mittlerer Note"
       },
-      "subdivision": {
-        "name": "Unterteilung",
-        "description": "Achtelnoten-Unterteilung"
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "Zwei punktierte Viertel-Gefühl"
       },
-      "afrocuban": {
-        "name": "Afro-Cuban",
-        "description": "Komplexes lateinamerikanisches Muster"
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "Brasilianisches Rhythmusmuster"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "Übung für Achtel- & Sechzehntelnoten"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "Klick nur auf Offbeats"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "Wanderndes Betonungsmuster"
       }
     }
   },

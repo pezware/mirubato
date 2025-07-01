@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../stores/scoreStore'
@@ -6,6 +6,7 @@ import ScoreViewer from '../components/score/ScoreViewer'
 import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
+import SignInModal from '../components/auth/SignInModal'
 
 export default function ScorebookPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -20,6 +21,8 @@ export default function ScorebookPage() {
     clearError,
     loadCollections,
   } = useScoreStore()
+
+  const [showSignInModal, setShowSignInModal] = useState(false)
 
   // Load score if scoreId is provided
   useEffect(() => {
@@ -41,7 +44,10 @@ export default function ScorebookPage() {
 
   return (
     <div className="min-h-screen bg-morandi-sand-100 flex flex-col">
-      <UnifiedHeader currentPage="scorebook" />
+      <UnifiedHeader
+        currentPage="scorebook"
+        onSignInClick={() => setShowSignInModal(true)}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
@@ -108,6 +114,12 @@ export default function ScorebookPage() {
 
       {/* Score Management Panel */}
       {showManagement && <ScoreManagement />}
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+      />
     </div>
   )
 }

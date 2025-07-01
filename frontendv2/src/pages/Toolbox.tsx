@@ -6,6 +6,7 @@ import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
+import SignInModal from '../components/auth/SignInModal'
 
 type PatternState = {
   accent: boolean[]
@@ -17,11 +18,13 @@ type PatternState = {
 
 const Toolbox: React.FC = () => {
   const { t } = useTranslation(['toolbox', 'common'])
-  const { settings, updateSettings } = useMetronomeSettings()
+  const { settings, updateSettings, saveCurrentPattern } =
+    useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
+  const [showSignInModal, setShowSignInModal] = useState(false)
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -35,8 +38,35 @@ const Toolbox: React.FC = () => {
     return pattern
   }, [settings.selectedPattern])
 
-  // Initialize patterns state from current pattern
+  // Initialize patterns state from saved pattern or current pattern
   const [patterns, setPatterns] = useState<PatternState>(() => {
+    // Check if we have a saved custom pattern first
+    if (settings.currentCustomPattern) {
+      return {
+        accent: [
+          ...settings.currentCustomPattern.accent,
+          ...Array(16).fill(false),
+        ].slice(0, 16),
+        click: [
+          ...settings.currentCustomPattern.click,
+          ...Array(16).fill(false),
+        ].slice(0, 16),
+        woodblock: [
+          ...settings.currentCustomPattern.woodblock,
+          ...Array(16).fill(false),
+        ].slice(0, 16),
+        shaker: [
+          ...settings.currentCustomPattern.shaker,
+          ...Array(16).fill(false),
+        ].slice(0, 16),
+        triangle: [
+          ...settings.currentCustomPattern.triangle,
+          ...Array(16).fill(false),
+        ].slice(0, 16),
+      }
+    }
+
+    // Otherwise use the current pattern data
     const paddedPattern = {
       accent: [
         ...currentPatternData.pattern.accent,
@@ -202,12 +232,17 @@ const Toolbox: React.FC = () => {
   }
 
   const toggleBeat = (layer: keyof PatternState, beat: number) => {
-    setPatterns(prev => ({
-      ...prev,
-      [layer]: prev[layer].map((v: boolean, i: number) =>
-        i === beat ? !v : v
-      ),
-    }))
+    setPatterns(prev => {
+      const newPatterns = {
+        ...prev,
+        [layer]: prev[layer].map((v: boolean, i: number) =>
+          i === beat ? !v : v
+        ),
+      }
+      // Save the updated pattern automatically
+      saveCurrentPattern(newPatterns)
+      return newPatterns
+    })
   }
 
   const loadPattern = (patternId: string) => {
@@ -217,6 +252,7 @@ const Toolbox: React.FC = () => {
         selectedPattern: patternId,
         beatsPerMeasure: pattern.beats,
         beatValue: pattern.value,
+        currentCustomPattern: undefined, // Clear custom pattern when loading preset
       })
       const paddedPattern = {
         accent: [...pattern.pattern.accent, ...Array(16).fill(false)].slice(
@@ -246,7 +282,10 @@ const Toolbox: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-morandi-stone-50">
-      <UnifiedHeader currentPage="toolbox" />
+      <UnifiedHeader
+        currentPage="toolbox"
+        onSignInClick={() => setShowSignInModal(true)}
+      />
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -480,6 +519,12 @@ const Toolbox: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+      />
     </div>
   )
 }

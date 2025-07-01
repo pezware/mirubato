@@ -15,6 +15,7 @@ interface MetronomeSettings {
   volume: number
   selectedPattern: string
   customPatterns?: Record<string, PatternData>
+  currentCustomPattern?: PatternData
   position: 'side' | 'corner'
   isExpanded: boolean
 }
@@ -64,10 +65,15 @@ export function useMetronomeSettings() {
     localStorage.removeItem('mirubato-metronome-settings')
   }
 
+  const saveCurrentPattern = (pattern: PatternData) => {
+    setSettings(prev => ({ ...prev, currentCustomPattern: pattern }))
+  }
+
   return {
     settings,
     updateSettings,
     resetSettings,
+    saveCurrentPattern,
   }
 }
 
