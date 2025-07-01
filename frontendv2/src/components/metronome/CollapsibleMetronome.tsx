@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Play,
   Pause,
@@ -11,6 +11,7 @@ import {
 import { getPatternMetronome } from '../../services/patternMetronomeService'
 import metronomeData from '../../data/metronomePatterns.json'
 import type { MetronomePattern } from '../../types/metronome'
+import { useMetronomeSettings } from '../../hooks/useMetronomeSettings'
 
 interface CollapsibleMetronomeProps {
   position?: 'side' | 'corner'
@@ -26,34 +27,72 @@ type PatternState = {
 }
 
 const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
-  position = 'corner',
+  position: propPosition,
   onTripleClick,
 }) => {
+  const { settings, updateSettings } = useMetronomeSettings()
+
+  // Use prop position if provided, otherwise use settings position
+  const position = propPosition ?? settings.position
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [bpm, setBpm] = useState(120)
-  const [beatsPerMeasure, setBeatsPerMeasure] = useState(4)
-  const [beatValue, setBeatValue] = useState(4)
-  const [volume, setVolume] = useState(70)
-  const [selectedPattern, setSelectedPattern] = useState('basic')
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [clickCount, setClickCount] = useState(0)
 
-  const [patterns, setPatterns] = useState<PatternState>({
-    accent: [true, false, false, false],
-    click: [false, true, true, true],
-    woodblock: [false, false, false, false],
-    shaker: [false, false, false, false],
-    triangle: [false, false, false, false],
+  // Get current pattern data from JSON file
+  const currentPatternData = useMemo(() => {
+    const pattern = metronomeData.patterns.find(
+      p => p.id === settings.selectedPattern
+    )
+    if (!pattern) {
+      // Fallback to basic pattern if selected pattern not found
+      return metronomeData.patterns.find(p => p.id === 'basic')!
+    }
+    return pattern
+  }, [settings.selectedPattern])
+
+  // Initialize patterns state from current pattern
+  const [patterns, setPatterns] = useState<PatternState>(() => {
+    const paddedPattern = {
+      accent: [
+        ...currentPatternData.pattern.accent,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      click: [
+        ...currentPatternData.pattern.click,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      woodblock: [
+        ...currentPatternData.pattern.woodblock,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      shaker: [
+        ...currentPatternData.pattern.shaker,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      triangle: [
+        ...currentPatternData.pattern.triangle,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+    }
+    return paddedPattern
   })
 
   const commonPatterns = metronomeData.patterns as MetronomePattern[]
+  // Color mapping for Tailwind classes (must be explicit for production build)
+  const colorMap: Record<string, string> = {
+    'morandi-purple-400': 'bg-morandi-purple-400',
+    'morandi-sky-400': 'bg-morandi-sky-400',
+    'morandi-sage-400': 'bg-morandi-sage-400',
+    'morandi-sand-400': 'bg-morandi-sand-400',
+    'morandi-blush-400': 'bg-morandi-blush-400',
+  }
+
   const soundLayers = Object.entries(metronomeData.soundLayers).map(
     ([id, layer]) => ({
       id,
       name: layer.name,
-      color: `bg-${layer.color}`,
+      color: colorMap[layer.color] || 'bg-morandi-stone-400',
     })
   )
 
@@ -62,8 +101,8 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
 
   // Initialize metronome
   useEffect(() => {
-    metronome.setTempo(bpm)
-    metronome.setVolume(volume / 100)
+    metronome.setTempo(settings.bpm)
+    metronome.setVolume(settings.volume / 100)
     return () => {
       // Always stop metronome when component unmounts
       metronome.stop()
@@ -72,27 +111,27 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
 
   // Handle tempo changes
   useEffect(() => {
-    metronome.setTempo(bpm)
-  }, [bpm])
+    metronome.setTempo(settings.bpm)
+  }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
-    metronome.setVolume(volume / 100)
-  }, [volume])
+    metronome.setVolume(settings.volume / 100)
+  }, [settings.volume])
 
   // Handle pattern changes while playing
   useEffect(() => {
     if (isPlaying) {
       const trimmedPatterns = {
-        accent: patterns.accent.slice(0, beatsPerMeasure),
-        click: patterns.click.slice(0, beatsPerMeasure),
-        woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
-        shaker: patterns.shaker.slice(0, beatsPerMeasure),
-        triangle: patterns.triangle.slice(0, beatsPerMeasure),
+        accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+        click: patterns.click.slice(0, settings.beatsPerMeasure),
+        woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+        shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+        triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
       }
       metronome.setPatterns(trimmedPatterns)
     }
-  }, [patterns, beatsPerMeasure, isPlaying])
+  }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator
   useEffect(() => {
@@ -103,10 +142,10 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
 
       const scheduleBeat = () => {
         const now = Date.now()
-        const beatInterval = (60 / bpm) * 1000
+        const beatInterval = (60 / settings.bpm) * 1000
 
         if (now >= nextBeatTime) {
-          setCurrentBeat(beatCount % beatsPerMeasure)
+          setCurrentBeat(beatCount % settings.beatsPerMeasure)
           setIsFlashing(true)
           setTimeout(() => setIsFlashing(false), 100)
 
@@ -131,14 +170,14 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
     } else {
       setCurrentBeat(0)
     }
-  }, [isPlaying, bpm, beatsPerMeasure])
+  }, [isPlaying, settings.bpm, settings.beatsPerMeasure])
 
   const handleTripleClick = () => {
     if (clickCount === 2) {
       if (onTripleClick) {
         onTripleClick()
       } else {
-        setIsExpanded(!isExpanded)
+        updateSettings({ isExpanded: !settings.isExpanded })
       }
       setClickCount(0)
     } else {
@@ -156,17 +195,17 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       try {
         // Only use the beats that are within the current beats per measure
         const trimmedPatterns = {
-          accent: patterns.accent.slice(0, beatsPerMeasure),
-          click: patterns.click.slice(0, beatsPerMeasure),
-          woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
-          shaker: patterns.shaker.slice(0, beatsPerMeasure),
-          triangle: patterns.triangle.slice(0, beatsPerMeasure),
+          accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+          click: patterns.click.slice(0, settings.beatsPerMeasure),
+          woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+          shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+          triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
         }
 
         await metronome.start({
-          tempo: bpm,
-          volume: volume / 100,
-          beatValue: beatValue,
+          tempo: settings.bpm,
+          volume: settings.volume / 100,
+          beatValue: settings.beatValue,
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)
@@ -188,9 +227,11 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   const loadPattern = (patternId: string) => {
     const pattern = commonPatterns.find(p => p.id === patternId)
     if (pattern) {
-      setSelectedPattern(patternId)
-      setBeatsPerMeasure(pattern.beats)
-      setBeatValue(pattern.value)
+      updateSettings({
+        selectedPattern: patternId,
+        beatsPerMeasure: pattern.beats,
+        beatValue: pattern.value,
+      })
       const paddedPattern = {
         accent: [...pattern.pattern.accent, ...Array(16).fill(false)].slice(
           0,
@@ -227,9 +268,11 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
     >
       <div
         className={`rounded-lg shadow-lg transition-all duration-300 ${
-          isExpanded ? 'w-80 bg-morandi-stone-50/90 backdrop-blur-sm' : 'w-16'
+          settings.isExpanded
+            ? 'w-80 bg-morandi-stone-50/90 backdrop-blur-sm'
+            : 'w-16'
         } ${
-          position === 'corner' && !isExpanded
+          position === 'corner' && !settings.isExpanded
             ? 'bg-morandi-stone-50/80 backdrop-blur-sm'
             : 'bg-morandi-stone-50'
         } ${
@@ -237,7 +280,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
         }`}
         onClick={handleTripleClick}
       >
-        {!isExpanded ? (
+        {!settings.isExpanded ? (
           /* Collapsed State */
           <div className="p-2 space-y-2">
             <button
@@ -256,18 +299,18 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               }`}
             >
               <div className="text-xl font-bold text-morandi-stone-900">
-                {bpm}
+                {settings.bpm}
               </div>
               <div className="text-xs text-morandi-stone-500">BPM</div>
             </div>
 
             <div className="text-center">
               <div className="text-sm font-semibold text-morandi-stone-700">
-                {beatsPerMeasure}/{beatValue}
+                {settings.beatsPerMeasure}/{settings.beatValue}
               </div>
               {isPlaying && (
                 <div className="flex justify-center mt-1 space-x-1">
-                  {Array.from({ length: beatsPerMeasure }, (_, i) => (
+                  {Array.from({ length: settings.beatsPerMeasure }, (_, i) => (
                     <div
                       key={i}
                       className={`w-1.5 h-1.5 rounded-full transition-all duration-100 ${
@@ -298,7 +341,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               <button
                 onClick={e => {
                   e.stopPropagation()
-                  setIsExpanded(false)
+                  updateSettings({ isExpanded: false })
                 }}
                 className="text-morandi-stone-400 hover:text-morandi-stone-600"
                 title="Collapse"
@@ -311,19 +354,23 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
                 <button
-                  onClick={() => setBpm(Math.max(40, bpm - 5))}
+                  onClick={() =>
+                    updateSettings({ bpm: Math.max(40, settings.bpm - 5) })
+                  }
                   className="w-8 h-8 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
                 >
                   <Minus size={14} />
                 </button>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-morandi-stone-900">
-                    {bpm}
+                    {settings.bpm}
                   </div>
                   <div className="text-xs text-morandi-stone-500">BPM</div>
                 </div>
                 <button
-                  onClick={() => setBpm(Math.min(240, bpm + 5))}
+                  onClick={() =>
+                    updateSettings({ bpm: Math.min(240, settings.bpm + 5) })
+                  }
                   className="w-8 h-8 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
                 >
                   <Plus size={14} />
@@ -333,8 +380,8 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                 type="range"
                 min="40"
                 max="240"
-                value={bpm}
-                onChange={e => setBpm(Number(e.target.value))}
+                value={settings.bpm}
+                onChange={e => updateSettings({ bpm: Number(e.target.value) })}
                 className="w-full h-2 accent-morandi-purple-400"
               />
             </div>
@@ -358,7 +405,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                 Pattern
               </label>
               <select
-                value={selectedPattern}
+                value={settings.selectedPattern}
                 onChange={e => loadPattern(e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-morandi-stone-200 rounded"
               >
@@ -380,18 +427,23 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                   type="number"
                   min="1"
                   max="16"
-                  value={beatsPerMeasure}
+                  value={settings.beatsPerMeasure}
                   onChange={e =>
-                    setBeatsPerMeasure(
-                      Math.max(1, Math.min(16, Number(e.target.value)))
-                    )
+                    updateSettings({
+                      beatsPerMeasure: Math.max(
+                        1,
+                        Math.min(16, Number(e.target.value))
+                      ),
+                    })
                   }
                   className="w-12 px-1 py-1 text-sm text-center border border-morandi-stone-200 rounded"
                 />
                 <span className="text-lg text-morandi-stone-400">/</span>
                 <select
-                  value={beatValue}
-                  onChange={e => setBeatValue(Number(e.target.value))}
+                  value={settings.beatValue}
+                  onChange={e =>
+                    updateSettings({ beatValue: Number(e.target.value) })
+                  }
                   className="w-12 px-1 py-1 text-sm border border-morandi-stone-200 rounded"
                 >
                   <option value="2">2</option>
@@ -406,14 +458,16 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
             <div className="mb-4">
               <label className="text-xs text-morandi-stone-600 mb-1 block flex items-center gap-1">
                 <Volume2 size={12} />
-                Volume: {volume}%
+                Volume: {settings.volume}%
               </label>
               <input
                 type="range"
                 min="0"
                 max="100"
-                value={volume}
-                onChange={e => setVolume(Number(e.target.value))}
+                value={settings.volume}
+                onChange={e =>
+                  updateSettings({ volume: Number(e.target.value) })
+                }
                 className="w-full h-2 accent-morandi-purple-400"
               />
             </div>
@@ -430,20 +484,22 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                       {layer.name}
                     </div>
                     <div className="flex gap-0.5">
-                      {Array.from({ length: beatsPerMeasure }, (_, i) => (
-                        <button
-                          key={i}
-                          onClick={() =>
-                            toggleBeat(layer.id as keyof PatternState, i)
-                          }
-                          className={`w-6 h-6 rounded text-xs transition-all ${
-                            patterns[layer.id as keyof PatternState][i]
-                              ? layer.color.replace('bg-', 'bg-') +
-                                ' opacity-80'
-                              : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
-                          }`}
-                        />
-                      ))}
+                      {Array.from(
+                        { length: settings.beatsPerMeasure },
+                        (_, i) => (
+                          <button
+                            key={i}
+                            onClick={() =>
+                              toggleBeat(layer.id as keyof PatternState, i)
+                            }
+                            className={`w-6 h-6 rounded text-xs transition-all ${
+                              patterns[layer.id as keyof PatternState][i]
+                                ? layer.color + ' opacity-80'
+                                : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                            }`}
+                          />
+                        )
+                      )}
                     </div>
                   </div>
                 ))}

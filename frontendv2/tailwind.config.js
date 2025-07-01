@@ -115,4 +115,12 @@ export default {
     },
   },
   plugins: [],
+  safelist: [
+    // Metronome sound layer colors
+    'bg-morandi-purple-400',
+    'bg-morandi-sky-400',
+    'bg-morandi-sage-400',
+    'bg-morandi-sand-400',
+    'bg-morandi-blush-400',
+  ],
 }

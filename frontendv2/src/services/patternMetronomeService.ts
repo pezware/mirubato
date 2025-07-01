@@ -97,13 +97,14 @@ class PatternMetronomeService {
       triangle: new Tone.MetalSynth({
         envelope: {
           attack: 0.001,
-          decay: 0.2,
-          release: 0.2,
+          decay: 0.1, // Reduced from 0.2 for tighter sound
+          release: 0.1, // Reduced from 0.2
         },
         harmonicity: 5.1,
         modulationIndex: 32,
         resonance: 4000,
         octaves: 1.5,
+        volume: -6, // Slightly quieter to balance with other sounds
       }).connect(this.volume),
     }
   }
@@ -168,29 +169,43 @@ class PatternMetronomeService {
 
     // Check each layer's pattern for this beat
     if (this.patterns.accent[this.currentBeat]) {
-      this.synths.accent.triggerAttackRelease('G2', '16n', time)
+      // Calculate relative time from now
+      const now = Tone.now()
+      const relativeTime = time - Tone.Transport.seconds + now
+      this.synths.accent.triggerAttackRelease('G2', '16n', relativeTime)
       layersToPlay.accent = true
     }
 
     if (this.patterns.click[this.currentBeat]) {
-      this.synths.click.triggerAttackRelease('C3', '16n', time)
+      const now = Tone.now()
+      const relativeTime = time - Tone.Transport.seconds + now
+      this.synths.click.triggerAttackRelease('C3', '16n', relativeTime)
       layersToPlay.click = true
     }
 
     if (this.patterns.woodblock[this.currentBeat]) {
-      this.synths.woodblock.triggerAttackRelease('E4', '16n', time)
+      const now = Tone.now()
+      const relativeTime = time - Tone.Transport.seconds + now
+      this.synths.woodblock.triggerAttackRelease('E4', '16n', relativeTime)
       layersToPlay.woodblock = true
     }
 
     if (this.patterns.shaker[this.currentBeat]) {
-      ;(this.synths.shaker as Tone.NoiseSynth).triggerAttackRelease('8n', time)
+      const now = Tone.now()
+      const relativeTime = time - Tone.Transport.seconds + now
+      ;(this.synths.shaker as Tone.NoiseSynth).triggerAttackRelease(
+        '8n',
+        relativeTime
+      )
       layersToPlay.shaker = true
     }
 
     if (this.patterns.triangle[this.currentBeat]) {
+      const now = Tone.now()
+      const relativeTime = time - Tone.Transport.seconds + now
       ;(this.synths.triangle as Tone.MetalSynth).triggerAttackRelease(
         '16n',
-        time
+        relativeTime
       )
       layersToPlay.triangle = true
     }

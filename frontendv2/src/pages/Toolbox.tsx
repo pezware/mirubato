@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
+import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
 
 type PatternState = {
   accent: boolean[]
@@ -14,30 +15,66 @@ type PatternState = {
 }
 
 const Toolbox: React.FC = () => {
+  const { settings, updateSettings } = useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
-  const [bpm, setBpm] = useState(120)
-  const [beatsPerMeasure, setBeatsPerMeasure] = useState(4)
-  const [beatValue, setBeatValue] = useState(4)
-  const [volume, setVolume] = useState(70)
-  const [selectedPattern, setSelectedPattern] = useState('basic')
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
 
-  const [patterns, setPatterns] = useState<PatternState>({
-    accent: [true, false, false, false],
-    click: [false, true, true, true],
-    woodblock: [false, false, false, false],
-    shaker: [false, false, false, false],
-    triangle: [false, false, false, false],
+  // Get current pattern data from JSON file
+  const currentPatternData = useMemo(() => {
+    const pattern = metronomeData.patterns.find(
+      p => p.id === settings.selectedPattern
+    )
+    if (!pattern) {
+      // Fallback to basic pattern if selected pattern not found
+      return metronomeData.patterns.find(p => p.id === 'basic')!
+    }
+    return pattern
+  }, [settings.selectedPattern])
+
+  // Initialize patterns state from current pattern
+  const [patterns, setPatterns] = useState<PatternState>(() => {
+    const paddedPattern = {
+      accent: [
+        ...currentPatternData.pattern.accent,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      click: [
+        ...currentPatternData.pattern.click,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      woodblock: [
+        ...currentPatternData.pattern.woodblock,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      shaker: [
+        ...currentPatternData.pattern.shaker,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+      triangle: [
+        ...currentPatternData.pattern.triangle,
+        ...Array(16).fill(false),
+      ].slice(0, 16),
+    }
+    return paddedPattern
   })
 
   const commonPatterns = metronomeData.patterns as MetronomePattern[]
+  // Color mapping for Tailwind classes (must be explicit for production build)
+  const colorMap: Record<string, string> = {
+    'morandi-purple-400': 'bg-morandi-purple-400',
+    'morandi-sky-400': 'bg-morandi-sky-400',
+    'morandi-sage-400': 'bg-morandi-sage-400',
+    'morandi-sand-400': 'bg-morandi-sand-400',
+    'morandi-blush-400': 'bg-morandi-blush-400',
+  }
+
   const soundLayers = Object.entries(metronomeData.soundLayers).map(
     ([id, layer]) => ({
       id,
       name: layer.name,
-      color: `bg-${layer.color}`,
+      color: colorMap[layer.color] || 'bg-morandi-stone-400',
     })
   )
 
@@ -46,8 +83,8 @@ const Toolbox: React.FC = () => {
 
   // Initialize metronome
   useEffect(() => {
-    metronome.setTempo(bpm)
-    metronome.setVolume(volume / 100)
+    metronome.setTempo(settings.bpm)
+    metronome.setVolume(settings.volume / 100)
     return () => {
       // Always stop metronome when leaving the page
       metronome.stop()
@@ -56,27 +93,27 @@ const Toolbox: React.FC = () => {
 
   // Handle tempo changes
   useEffect(() => {
-    metronome.setTempo(bpm)
-  }, [bpm])
+    metronome.setTempo(settings.bpm)
+  }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
-    metronome.setVolume(volume / 100)
-  }, [volume])
+    metronome.setVolume(settings.volume / 100)
+  }, [settings.volume])
 
   // Handle pattern changes while playing
   useEffect(() => {
     if (isPlaying) {
       const trimmedPatterns = {
-        accent: patterns.accent.slice(0, beatsPerMeasure),
-        click: patterns.click.slice(0, beatsPerMeasure),
-        woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
-        shaker: patterns.shaker.slice(0, beatsPerMeasure),
-        triangle: patterns.triangle.slice(0, beatsPerMeasure),
+        accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+        click: patterns.click.slice(0, settings.beatsPerMeasure),
+        woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+        shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+        triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
       }
       metronome.setPatterns(trimmedPatterns)
     }
-  }, [patterns, beatsPerMeasure, isPlaying])
+  }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator
   useEffect(() => {
@@ -87,10 +124,10 @@ const Toolbox: React.FC = () => {
 
       const scheduleBeat = () => {
         const now = Date.now()
-        const beatInterval = (60 / bpm) * 1000
+        const beatInterval = (60 / settings.bpm) * 1000
 
         if (now >= nextBeatTime) {
-          setCurrentBeat(beatCount % beatsPerMeasure)
+          setCurrentBeat(beatCount % settings.beatsPerMeasure)
           setIsFlashing(true)
           setTimeout(() => setIsFlashing(false), 100)
 
@@ -115,7 +152,7 @@ const Toolbox: React.FC = () => {
     } else {
       setCurrentBeat(0)
     }
-  }, [isPlaying, bpm, beatsPerMeasure])
+  }, [isPlaying, settings.bpm, settings.beatsPerMeasure])
 
   const handlePlayPause = async () => {
     if (isPlaying) {
@@ -125,17 +162,17 @@ const Toolbox: React.FC = () => {
       try {
         // Only use the beats that are within the current beats per measure
         const trimmedPatterns = {
-          accent: patterns.accent.slice(0, beatsPerMeasure),
-          click: patterns.click.slice(0, beatsPerMeasure),
-          woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
-          shaker: patterns.shaker.slice(0, beatsPerMeasure),
-          triangle: patterns.triangle.slice(0, beatsPerMeasure),
+          accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+          click: patterns.click.slice(0, settings.beatsPerMeasure),
+          woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+          shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+          triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
         }
 
         await metronome.start({
-          tempo: bpm,
-          volume: volume / 100,
-          beatValue: beatValue,
+          tempo: settings.bpm,
+          volume: settings.volume / 100,
+          beatValue: settings.beatValue,
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)
@@ -156,7 +193,7 @@ const Toolbox: React.FC = () => {
       }
       const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length
       const newBpm = Math.round(60000 / avgInterval)
-      setBpm(Math.max(40, Math.min(240, newBpm)))
+      updateSettings({ bpm: Math.max(40, Math.min(240, newBpm)) })
     }
 
     setTapTimes(recentTaps)
@@ -174,9 +211,11 @@ const Toolbox: React.FC = () => {
   const loadPattern = (patternId: string) => {
     const pattern = commonPatterns.find(p => p.id === patternId)
     if (pattern) {
-      setSelectedPattern(patternId)
-      setBeatsPerMeasure(pattern.beats)
-      setBeatValue(pattern.value)
+      updateSettings({
+        selectedPattern: patternId,
+        beatsPerMeasure: pattern.beats,
+        beatValue: pattern.value,
+      })
       const paddedPattern = {
         accent: [...pattern.pattern.accent, ...Array(16).fill(false)].slice(
           0,
@@ -246,21 +285,29 @@ const Toolbox: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-center gap-4 mb-2">
                       <button
-                        onClick={() => setBpm(Math.max(40, bpm - 5))}
+                        onClick={() =>
+                          updateSettings({
+                            bpm: Math.max(40, settings.bpm - 5),
+                          })
+                        }
                         className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
                       >
                         <Minus size={18} />
                       </button>
                       <div className="text-center">
                         <div className="text-4xl font-bold text-morandi-stone-900">
-                          {bpm}
+                          {settings.bpm}
                         </div>
                         <div className="text-sm text-morandi-stone-500">
                           BPM
                         </div>
                       </div>
                       <button
-                        onClick={() => setBpm(Math.min(240, bpm + 5))}
+                        onClick={() =>
+                          updateSettings({
+                            bpm: Math.min(240, settings.bpm + 5),
+                          })
+                        }
                         className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
                       >
                         <Plus size={18} />
@@ -270,8 +317,10 @@ const Toolbox: React.FC = () => {
                       type="range"
                       min="40"
                       max="240"
-                      value={bpm}
-                      onChange={e => setBpm(Number(e.target.value))}
+                      value={settings.bpm}
+                      onChange={e =>
+                        updateSettings({ bpm: Number(e.target.value) })
+                      }
                       className="w-full accent-morandi-purple-400"
                     />
                     <button
@@ -292,18 +341,23 @@ const Toolbox: React.FC = () => {
                         type="number"
                         min="1"
                         max="16"
-                        value={beatsPerMeasure}
+                        value={settings.beatsPerMeasure}
                         onChange={e =>
-                          setBeatsPerMeasure(
-                            Math.max(1, Math.min(16, Number(e.target.value)))
-                          )
+                          updateSettings({
+                            beatsPerMeasure: Math.max(
+                              1,
+                              Math.min(16, Number(e.target.value))
+                            ),
+                          })
                         }
                         className="w-16 px-2 py-1 text-center border border-morandi-stone-200 rounded"
                       />
                       <span className="text-xl text-morandi-stone-400">/</span>
                       <select
-                        value={beatValue}
-                        onChange={e => setBeatValue(Number(e.target.value))}
+                        value={settings.beatValue}
+                        onChange={e =>
+                          updateSettings({ beatValue: Number(e.target.value) })
+                        }
                         className="w-16 px-2 py-1 border border-morandi-stone-200 rounded"
                       >
                         <option value="2">2</option>
@@ -318,14 +372,16 @@ const Toolbox: React.FC = () => {
                   <div>
                     <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
                       <Volume2 size={16} />
-                      Volume: {volume}%
+                      Volume: {settings.volume}%
                     </label>
                     <input
                       type="range"
                       min="0"
                       max="100"
-                      value={volume}
-                      onChange={e => setVolume(Number(e.target.value))}
+                      value={settings.volume}
+                      onChange={e =>
+                        updateSettings({ volume: Number(e.target.value) })
+                      }
                       className="w-full accent-morandi-purple-400"
                     />
                   </div>
@@ -333,16 +389,19 @@ const Toolbox: React.FC = () => {
                   {/* Beat Indicator */}
                   {isPlaying && (
                     <div className="flex justify-center gap-2">
-                      {Array.from({ length: beatsPerMeasure }, (_, i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 rounded-full transition-all duration-100 ${
-                            i === currentBeat
-                              ? 'bg-morandi-purple-400 scale-125'
-                              : 'bg-morandi-stone-300'
-                          }`}
-                        />
-                      ))}
+                      {Array.from(
+                        { length: settings.beatsPerMeasure },
+                        (_, i) => (
+                          <div
+                            key={i}
+                            className={`w-3 h-3 rounded-full transition-all duration-100 ${
+                              i === currentBeat
+                                ? 'bg-morandi-purple-400 scale-125'
+                                : 'bg-morandi-stone-300'
+                            }`}
+                          />
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -354,7 +413,7 @@ const Toolbox: React.FC = () => {
                   Preset Patterns
                 </label>
                 <select
-                  value={selectedPattern}
+                  value={settings.selectedPattern}
                   onChange={e => loadPattern(e.target.value)}
                   className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
                 >
@@ -376,14 +435,17 @@ const Toolbox: React.FC = () => {
                   {/* Beat Numbers */}
                   <div className="flex mb-2">
                     <div className="w-24"></div>
-                    {Array.from({ length: beatsPerMeasure }, (_, i) => (
-                      <div
-                        key={i}
-                        className="w-10 text-center text-sm text-morandi-stone-600"
-                      >
-                        {i + 1}
-                      </div>
-                    ))}
+                    {Array.from(
+                      { length: settings.beatsPerMeasure },
+                      (_, i) => (
+                        <div
+                          key={i}
+                          className="w-10 text-center text-sm text-morandi-stone-600"
+                        >
+                          {i + 1}
+                        </div>
+                      )
+                    )}
                   </div>
 
                   {/* Sound Layers */}
@@ -392,20 +454,22 @@ const Toolbox: React.FC = () => {
                       <div className="w-24 text-sm text-morandi-stone-700 pr-2">
                         {layer.name}
                       </div>
-                      {Array.from({ length: beatsPerMeasure }, (_, i) => (
-                        <button
-                          key={i}
-                          onClick={() =>
-                            toggleBeat(layer.id as keyof PatternState, i)
-                          }
-                          className={`w-10 h-10 mr-1 rounded transition-all ${
-                            patterns[layer.id as keyof PatternState][i]
-                              ? layer.color.replace('bg-', 'bg-') +
-                                ' text-white'
-                              : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
-                          }`}
-                        />
-                      ))}
+                      {Array.from(
+                        { length: settings.beatsPerMeasure },
+                        (_, i) => (
+                          <button
+                            key={i}
+                            onClick={() =>
+                              toggleBeat(layer.id as keyof PatternState, i)
+                            }
+                            className={`w-10 h-10 mr-1 rounded transition-all ${
+                              patterns[layer.id as keyof PatternState][i]
+                                ? layer.color + ' text-white'
+                                : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                            }`}
+                          />
+                        )
+                      )}
                     </div>
                   ))}
                 </div>
