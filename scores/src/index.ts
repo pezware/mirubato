@@ -401,8 +401,7 @@ export default {
         if (body.type === 'process-new-score' && body.r2Key) {
           await processPdfScore(body as any, env)
         } else {
-          // Log legacy format messages for now
-          console.log('Legacy queue message format:', body)
+          // Skip legacy format messages
         }
 
         // Acknowledge successful processing

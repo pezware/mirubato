@@ -51,7 +51,7 @@ describe('Scores API', () => {
 
     // If degraded, check which services are failing
     if (response.status === 503) {
-      console.log('Health check degraded. Service statuses:', json.services)
+      // Health check degraded. Service statuses available in json.services
     }
   })
 

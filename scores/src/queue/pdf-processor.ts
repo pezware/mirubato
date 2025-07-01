@@ -13,7 +13,7 @@ interface ProcessPdfMessage {
 export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
   const { scoreId, r2Key } = message
 
-  console.log(`Starting PDF processing for score ${scoreId}`)
+  // Starting PDF processing for score
 
   const cacheManager = new PdfCacheManager(env.CACHE)
   let documentHash: string | undefined
@@ -24,7 +24,7 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
     // Check if already processed
     if (await cacheManager.isProcessedRecently(documentHash)) {
-      console.log(`Score ${scoreId} already processed recently, skipping`)
+      // Score already processed recently, skipping
       await updateScoreStatus(env, scoreId, 'completed')
       return
     }
@@ -39,7 +39,7 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
     // Analyze PDF to get page count
     const { pageCount } = await analyzePdf(env, pdfUrl)
-    console.log(`PDF has ${pageCount} pages`)
+    // PDF has multiple pages
 
     // Create score version entry
     await createScoreVersion(env, scoreId, r2Key, pageCount)
@@ -54,9 +54,7 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
 
       // Process batch in parallel
       await Promise.all(batch)
-      console.log(
-        `Processed pages ${i + 1} to ${Math.min(i + batchSize, pageCount)}`
-      )
+      // Processed batch of pages
     }
 
     // Update status to completed
@@ -68,7 +66,7 @@ export async function processPdfScore(message: ProcessPdfMessage, env: Env) {
       lastUpdated: new Date().toISOString(),
       processingCompletedAt: new Date().toISOString(),
     })
-    console.log(`Completed processing score ${scoreId}`)
+    // Completed processing score
   } catch (error) {
     console.error(`Failed to process score ${scoreId}:`, error)
     const errorMessage =

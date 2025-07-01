@@ -348,3 +348,7 @@ newrelic.js
 audio-processing/
 temp-audio/
 api-final.log
+
+# Test data and PDFs
+scores/test-data/
+scores/music-library/**/*.pdf
