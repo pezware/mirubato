@@ -8,7 +8,7 @@ import {
   Minus,
   Volume2,
 } from 'lucide-react'
-import { getMetronome } from '../../services/metronomeService'
+import { getPatternMetronome } from '../../services/patternMetronomeService'
 import metronomeData from '../../data/metronomePatterns.json'
 import type { MetronomePattern } from '../../types/metronome'
 
@@ -58,7 +58,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   )
 
   // Get metronome instance
-  const metronome = getMetronome()
+  const metronome = getPatternMetronome()
 
   // Initialize metronome
   useEffect(() => {
@@ -80,6 +80,20 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   useEffect(() => {
     metronome.setVolume(volume / 100)
   }, [volume])
+
+  // Handle pattern changes while playing
+  useEffect(() => {
+    if (isPlaying) {
+      const trimmedPatterns = {
+        accent: patterns.accent.slice(0, beatsPerMeasure),
+        click: patterns.click.slice(0, beatsPerMeasure),
+        woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
+        shaker: patterns.shaker.slice(0, beatsPerMeasure),
+        triangle: patterns.triangle.slice(0, beatsPerMeasure),
+      }
+      metronome.setPatterns(trimmedPatterns)
+    }
+  }, [patterns, beatsPerMeasure, isPlaying])
 
   // Visual beat indicator
   useEffect(() => {
@@ -141,10 +155,19 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       setIsPlaying(false)
     } else {
       try {
+        // Only use the beats that are within the current beats per measure
+        const trimmedPatterns = {
+          accent: patterns.accent.slice(0, beatsPerMeasure),
+          click: patterns.click.slice(0, beatsPerMeasure),
+          woodblock: patterns.woodblock.slice(0, beatsPerMeasure),
+          shaker: patterns.shaker.slice(0, beatsPerMeasure),
+          triangle: patterns.triangle.slice(0, beatsPerMeasure),
+        }
+
         await metronome.start({
           tempo: bpm,
           volume: volume / 100,
-          accentBeats: true,
+          patterns: trimmedPatterns,
         })
         setIsPlaying(true)
       } catch (error) {
