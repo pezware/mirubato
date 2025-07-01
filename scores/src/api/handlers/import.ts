@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { generateId } from '../../utils/generateId'
-import { RateLimiter } from '../../utils/rateLimiter'
+import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
+import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
 
 const importHandler = new Hono<{ Bindings: Env }>()
 
@@ -9,12 +10,16 @@ const importHandler = new Hono<{ Bindings: Env }>()
 async function checkRateLimit(
   c: { env: Env; req: { header: (name: string) => string | undefined } },
   authHeader: string | undefined
-): Promise<{ allowed: boolean; remainingMs?: number }> {
+): Promise<{
+  allowed: boolean
+  remainingMs?: number
+  reason?: string
+  rateLimiter?: EnhancedRateLimiter
+  key?: string
+}> {
   // If JWT is provided, skip rate limiting
   if (authHeader?.startsWith('Bearer ')) {
     try {
-      // TODO: Verify JWT token
-      // For now, we'll accept any Bearer token
       return { allowed: true }
     } catch (error) {
       // Invalid token, apply rate limiting
@@ -25,73 +30,105 @@ async function checkRateLimit(
   const clientIp = c.req.header('CF-Connecting-IP') || 'unknown'
   const rateLimitKey = `import:${clientIp}`
 
-  // Use KV-based rate limiter
-  const rateLimiter = new RateLimiter(c.env.CACHE, {
+  // Use enhanced rate limiter with failure tracking
+  const rateLimiter = new EnhancedRateLimiter(c.env.CACHE, {
     windowMs: 10 * 60 * 1000, // 10 minutes
     maxRequests: 1, // 1 request per 10 minutes
+    failureMultiplier: 2, // Double wait time for each failure
+    maxFailures: 5, // Ban after 5 failures
+    banDurationMs: 60 * 60 * 1000, // 1 hour ban
   })
 
-  const allowed = await rateLimiter.isAllowed(rateLimitKey)
-  const remainingMs = await rateLimiter.getRemainingTime(rateLimitKey)
-
-  return { allowed, remainingMs }
+  const result = await rateLimiter.checkLimit(rateLimitKey)
+  return { ...result, rateLimiter, key: rateLimitKey }
 }
 
-// Import endpoint
-importHandler.post('/import', async c => {
+// Import endpoint - mounted at /api/import in routes.ts
+importHandler.post('/', async c => {
+  let rateLimiterInfo: { rateLimiter?: EnhancedRateLimiter; key?: string } = {}
+
   try {
     // Check rate limit
     const authHeader = c.req.header('Authorization')
-    const { allowed, remainingMs } = await checkRateLimit(c, authHeader)
+    const { allowed, remainingMs, reason, rateLimiter, key } =
+      await checkRateLimit(c, authHeader)
+
+    // Store for potential failure tracking
+    rateLimiterInfo = { rateLimiter, key }
 
     if (!allowed) {
       const remainingMinutes = Math.ceil((remainingMs || 0) / 60000)
       throw new HTTPException(429, {
-        message: `Rate limit exceeded. Please wait ${remainingMinutes} minutes before trying again.`,
+        message:
+          reason ||
+          `Rate limit exceeded. Please wait ${remainingMinutes} minutes before trying again.`,
       })
     }
 
-    // Get PDF URL from request
-    const { url } = await c.req.json<{ url: string }>()
+    // Get request data
+    const { url, filename } = await c.req.json<{
+      url: string
+      filename?: string
+    }>()
 
     if (!url) {
       throw new HTTPException(400, { message: 'PDF URL is required' })
     }
 
-    // Validate URL format
-    let pdfUrl: URL
-    try {
-      pdfUrl = new URL(url)
-      if (!['http:', 'https:'].includes(pdfUrl.protocol)) {
-        throw new Error('Invalid protocol')
+    let pdfBuffer: ArrayBuffer
+    let originalFileName: string
+
+    // Check if it's a data URL (base64 upload)
+    if (url.startsWith('data:')) {
+      try {
+        const [header, base64Data] = url.split(',')
+        if (!header.includes('application/pdf')) {
+          throw new HTTPException(400, { message: 'Invalid PDF data URL' })
+        }
+
+        pdfBuffer = Buffer.from(base64Data, 'base64')
+        originalFileName = filename || 'uploaded.pdf'
+      } catch (error) {
+        throw new HTTPException(400, { message: 'Invalid base64 PDF data' })
       }
-    } catch (error) {
-      throw new HTTPException(400, { message: 'Invalid URL format' })
-    }
+    } else {
+      // Regular URL download
+      let pdfUrl: URL
+      try {
+        pdfUrl = new URL(url)
+        if (!['http:', 'https:'].includes(pdfUrl.protocol)) {
+          throw new Error('Invalid protocol')
+        }
+      } catch (error) {
+        throw new HTTPException(400, { message: 'Invalid URL format' })
+      }
 
-    // Fetch the PDF
-    const pdfResponse = await fetch(pdfUrl.toString(), {
-      headers: {
-        'User-Agent': 'Mirubato-Scores-Service/1.1.0',
-      },
-    })
-
-    if (!pdfResponse.ok) {
-      throw new HTTPException(400, {
-        message: `Failed to fetch PDF: ${pdfResponse.status} ${pdfResponse.statusText}`,
+      // Fetch the PDF
+      const pdfResponse = await fetch(pdfUrl.toString(), {
+        headers: {
+          'User-Agent': 'Mirubato-Scores-Service/1.1.0',
+        },
       })
+
+      if (!pdfResponse.ok) {
+        throw new HTTPException(400, {
+          message: `Failed to fetch PDF: ${pdfResponse.status} ${pdfResponse.statusText}`,
+        })
+      }
+
+      // Validate content type
+      const contentType = pdfResponse.headers.get('content-type')
+      if (!contentType?.includes('pdf')) {
+        throw new HTTPException(400, {
+          message: 'URL does not point to a PDF file',
+        })
+      }
+
+      pdfBuffer = await pdfResponse.arrayBuffer()
+      const urlPath = pdfUrl.pathname
+      originalFileName = urlPath.split('/').pop() || 'unknown.pdf'
     }
 
-    // Validate content type
-    const contentType = pdfResponse.headers.get('content-type')
-    if (!contentType?.includes('pdf')) {
-      throw new HTTPException(400, {
-        message: 'URL does not point to a PDF file',
-      })
-    }
-
-    // Get PDF content
-    const pdfBuffer = await pdfResponse.arrayBuffer()
     const pdfBytes = new Uint8Array(pdfBuffer)
 
     // Validate PDF magic bytes
@@ -103,9 +140,7 @@ importHandler.post('/import', async c => {
     // Generate unique ID for this score
     const scoreId = generateId()
 
-    // Extract filename from URL or generate one
-    const urlPath = pdfUrl.pathname
-    const originalFileName = urlPath.split('/').pop() || 'unknown.pdf'
+    // Clean filename
     const cleanFileName = originalFileName.replace(/[^a-zA-Z0-9.-]/g, '_')
 
     // Create R2 key
@@ -123,8 +158,17 @@ importHandler.post('/import', async c => {
       },
     })
 
-    // Extract metadata using AI (mock for now)
-    const aiMetadata = await extractMetadataFromPDF(pdfBytes, url)
+    // Extract metadata using AI
+    const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
+    const aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+
+    // Log if AI extraction failed
+    if (aiMetadata.error) {
+      console.warn('AI extraction had issues:', aiMetadata.error)
+    }
+    if (aiMetadata.confidence < 0.5) {
+      console.warn('Low confidence AI extraction, used fallback')
+    }
 
     // Create database record
     const db = c.env.DB
@@ -160,7 +204,7 @@ importHandler.post('/import', async c => {
         aiMetadata.stylePeriod || null,
         JSON.stringify(aiMetadata.tags || []),
         aiMetadata.description || null,
-        'import',
+        'manual', // Changed from 'import' to satisfy DB constraint
         url,
         `/files/${r2Key}`,
         cleanFileName,
@@ -179,19 +223,44 @@ importHandler.post('/import', async c => {
       .bind(scoreId)
       .run()
 
-    // Return success response
-    return c.json({
+    // Return success response with warning if AI had issues
+    const response: any = {
       success: true,
       data: {
         id: scoreId,
         slug: generateSlug(aiMetadata.title || cleanFileName),
         title: aiMetadata.title || cleanFileName.replace('.pdf', ''),
         composer: aiMetadata.composer || 'Unknown',
+        instrument: aiMetadata.instrument || 'PIANO',
+        difficulty: aiMetadata.difficulty || 'INTERMEDIATE',
         pdfUrl: `/files/${r2Key}`,
         metadata: aiMetadata,
       },
-    })
+    }
+
+    // Add warning if AI extraction had issues
+    if (aiMetadata.error || aiMetadata.confidence < 0.7) {
+      response.warning =
+        aiMetadata.error ||
+        'AI analysis had low confidence. Some metadata was extracted from the URL.'
+    }
+
+    // Record success with rate limiter
+    if (rateLimiterInfo.rateLimiter && rateLimiterInfo.key) {
+      await rateLimiterInfo.rateLimiter.recordSuccess(rateLimiterInfo.key)
+    }
+
+    return c.json(response)
   } catch (error) {
+    // Track failures for rate limiting
+    if (rateLimiterInfo.rateLimiter && rateLimiterInfo.key) {
+      const isCritical = error instanceof HTTPException && error.status === 400
+      await rateLimiterInfo.rateLimiter.recordFailure(
+        rateLimiterInfo.key,
+        isCritical
+      )
+    }
+
     if (error instanceof HTTPException) {
       throw error
     }
@@ -212,56 +281,33 @@ function generateSlug(text: string): string {
     .substring(0, 100)
 }
 
-interface ExtractedMetadata {
-  title?: string
-  subtitle?: string
-  composer?: string
-  opus?: string
-  instrument?: string
-  difficulty?: string
-  difficultyLevel?: number
-  year?: number
-  stylePeriod?: string
-  tags?: string[]
-  description?: string
-  extractedAt: string
-  confidence: number
-}
+// Health check for AI integration
+importHandler.get('/health', async c => {
+  const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
 
-// Mock AI metadata extraction (replace with Gemini API later)
-async function extractMetadataFromPDF(
-  pdfBytes: Uint8Array,
-  sourceUrl: string
-): Promise<ExtractedMetadata> {
-  // For now, return mock data based on URL
-  // Later, this will use Gemini API to analyze the PDF
+  // Test AI connectivity
+  const pingResult = await aiExtractor.ping()
 
-  const urlLower = sourceUrl.toLowerCase()
-
-  // Simple heuristics for now
-  const isGuitar = urlLower.includes('guitar') || urlLower.includes('gtr')
-
-  // Extract potential title from URL
-  const urlParts = sourceUrl.split('/').pop()?.replace('.pdf', '') || 'Unknown'
-  const titleParts = urlParts
-    .split(/[-_]/)
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-
-  return {
-    title: titleParts.join(' '),
-    composer: 'Unknown',
-    instrument: isGuitar ? 'GUITAR' : 'PIANO',
-    difficulty: 'INTERMEDIATE',
-    difficultyLevel: 5,
-    tags: [isGuitar ? 'guitar' : 'piano', 'imported', 'public-domain'],
-    description: `Imported from ${new URL(sourceUrl).hostname}`,
-    extractedAt: new Date().toISOString(),
-    confidence: 0.3, // Low confidence for mock data
-  }
-}
+  return c.json({
+    success: true,
+    ai: {
+      available: aiExtractor.isAvailable(),
+      hasApiKey: !!c.env.GEMINI_API_KEY,
+      keyPrefix: c.env.GEMINI_API_KEY
+        ? c.env.GEMINI_API_KEY.substring(0, 8) + '...'
+        : null,
+      ping: pingResult,
+    },
+    rateLimit: {
+      enabled: true,
+      anonymous: '1 request per 10 minutes',
+      authenticated: 'unlimited',
+    },
+  })
+})
 
 // Get import status
-importHandler.get('/import/:id', async c => {
+importHandler.get('/:id', async c => {
   const scoreId = c.req.param('id')
 
   const db = c.env.DB

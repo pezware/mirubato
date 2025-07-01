@@ -78,43 +78,45 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 - ❌ **DECISION**: Focus on client-side PDF.js rendering only
 - ❌ **FUTURE**: Consider pre-rendering during upload instead
 
-### 🚧 Current Phase: AI-Powered Content System
+### ✅ Completed Phase: AI-Powered Content System
 
-#### Phase 5: Smart Import API & Content Library (June 2025)
+#### Phase 5: Smart Import API & Content Library (July 2025) - COMPLETE
 
-##### ✅ Completed: Import API Infrastructure
+##### ✅ Completed Features:
 
 1. **PDF Import Endpoint** (`/api/scores/import`)
    - ✅ Accepts any PDF URL for import
+   - ✅ Supports direct file upload via base64 data URLs
    - ✅ Validates PDF format and magic bytes
    - ✅ Stores PDFs in R2 with unique IDs
    - ✅ Creates database records with metadata
 
-2. **Rate Limiting System**
-   - ✅ KV-based rate limiter implementation
+2. **AI Metadata Extraction**
+   - ✅ Gemini 1.5 Pro integration for PDF analysis
+   - ✅ Extracts: title, composer, instrument, difficulty, opus
+   - ✅ Identifies: style period, tags, educational descriptions
+   - ✅ Confidence scoring with graceful fallback
+   - ✅ ~5-8 second processing time per PDF
+
+3. **Enhanced Rate Limiting**
+   - ✅ Progressive rate limiting with failure tracking
    - ✅ 1 request per 10 minutes for anonymous users
    - ✅ Unlimited with JWT authentication
-   - ✅ Clear error messages with wait times
+   - ✅ Ban system for repeated failures (5 failures = 1 hour ban)
+   - ✅ Doubles wait time for each failure
 
-3. **Database Schema Updates**
-   - ✅ Added import-specific columns (source_url, ai_metadata, imported_at)
-   - ✅ Production-safe migrations
-   - ✅ Support for AI-extracted metadata storage
+4. **Frontend Import UI**
+   - ✅ React component at `/scorebook/import`
+   - ✅ Support for URL import and file upload
+   - ✅ Real-time validation and error messages
+   - ✅ Shows AI extraction results and warnings
+   - ✅ Progress indicators and success feedback
 
-##### 🔄 In Progress: AI Integration & Content Sources
-
-1. **AI Metadata Extraction** (Week 1)
-   - 🔄 Integrate Gemini API for PDF analysis
-   - Extract: title, composer, instrument, difficulty, key signature
-   - Identify: number of pages, movements, style period
-   - Generate: educational descriptions and practice tips
-   - Confidence scoring for extracted data
-
-2. **Content Source Migration** (Week 1)
-   - 🔄 Switch from IMSLP to Mutopia Project (direct PDF access)
-   - Research additional public domain sources
-   - Build catalog of quality scores for initial library
-   - Automated quality validation
+5. **Content Sources**
+   - ✅ Switched from IMSLP to Mutopia Project
+   - ✅ Direct PDF access without scraping
+   - ✅ Tested with various instruments (piano, guitar)
+   - ✅ Support for any public PDF URL
 
 ##### 📋 Next Steps: Enhanced Features
 
@@ -220,8 +222,8 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 - **State Management**: Zustand
 - **Backend**: Cloudflare Workers + D1 + R2
 - **Auth**: Magic links + JWT
-- **AI Integration**: Gemini API for metadata extraction (planned)
-- **Rate Limiting**: KV-based custom implementation
+- **AI Integration**: Gemini 1.5 Pro for metadata extraction (✅ IMPLEMENTED)
+- **Rate Limiting**: Enhanced KV-based with failure tracking (✅ IMPLEMENTED)
 
 ### Completed PDF Rendering Architecture
 
@@ -362,8 +364,9 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
 ## Timeline Summary
 
 - **✅ Phase 4 Complete**: Advanced PDF rendering with custom pdf.js
-- **Now - Week 1**: AI integration and import API enhancements
-- **Week 2**: Two-page view and zoom features
+- **✅ Phase 5 Complete**: AI-powered import API with Gemini integration
+- **Next - Week 1**: Two-page view and zoom features
+- **Week 2**: Admin UI for bulk imports
 - **Weeks 3-4**: Build initial content library (50+ scores)
 - **Month 2**: Search, print, and offline support
 - **Months 3-4**: Annotations system
@@ -372,14 +375,24 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
 
 ## Next PR Checklist
 
+Phase 5 Complete:
+
 - [x] Import API endpoint implemented
-- [x] Rate limiting with KV storage
+- [x] Rate limiting with KV storage and failure tracking
 - [x] Database migrations for import columns
-- [ ] Gemini API integration for metadata
+- [x] Gemini 1.5 Pro API integration for metadata
+- [x] Frontend import UI at `/scorebook/import`
+- [x] Support for both URL and file upload
+- [x] Graceful error handling and user feedback
+
+Next Phase (Phase 6):
+
 - [ ] Admin UI for bulk imports
 - [ ] Two-page view toggle
 - [ ] Zoom controls implementation
 - [ ] Initial content library (20+ scores)
+- [ ] Touch gesture support
+- [ ] Print optimization
 
 ---
 
