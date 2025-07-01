@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 
 interface ExtractedMetadata {
   title?: string
@@ -19,7 +19,7 @@ interface ExtractedMetadata {
 
 export class AiMetadataExtractor {
   private genAI: GoogleGenerativeAI | null = null
-  private model: any = null
+  private model: GenerativeModel | null = null
   private isInitialized = false
 
   constructor(private apiKey?: string) {
@@ -47,12 +47,13 @@ export class AiMetadataExtractor {
         'Hello, please respond with "pong"'
       )
       const response = await result.response
-      const text = response.text()
+      // Validate response exists
+      response.text()
       return { success: true }
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
-        error: error.message || 'AI ping failed',
+        error: error instanceof Error ? error.message : 'AI ping failed',
       }
     }
   }

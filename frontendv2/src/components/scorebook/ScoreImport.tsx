@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Upload, Link, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
-import { useAuthStore } from '../../stores/authStore'
 
 interface ImportResult {
   success: boolean
@@ -23,7 +22,7 @@ export const ScoreImport: React.FC = () => {
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
-  const { token } = useAuthStore()
+  const token = localStorage.getItem('auth-token')
 
   const validateUrl = (url: string): boolean => {
     try {
