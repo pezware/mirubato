@@ -64,6 +64,12 @@ export default function HomePage() {
                 >
                   {t('common:navigation.logbook')}
                 </Link>
+                <Link
+                  to="/toolbox"
+                  className="text-white/90 hover:text-white text-sm transition-colors"
+                >
+                  Toolbox
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-white/90 hover:text-white text-sm transition-colors"

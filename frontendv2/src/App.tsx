@@ -27,6 +27,7 @@ const ScoreImport = lazy(() =>
     default: module.ScoreImport,
   }))
 )
+const Toolbox = lazy(() => import('./pages/Toolbox'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -61,6 +62,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/auth/verify" element={<AuthVerifyPage />} />
+              <Route path="/toolbox" element={<Toolbox />} />
 
               {/* Protected routes (but work for anonymous users too) */}
               <Route
