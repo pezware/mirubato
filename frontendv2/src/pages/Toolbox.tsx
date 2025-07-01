@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
+import { Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
@@ -406,7 +406,9 @@ const Toolbox: React.FC = () => {
                   {commonPatterns.map(pattern => (
                     <option key={pattern.id} value={pattern.id}>
                       {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
-                      {t(`toolbox:metronome.patterns.${pattern.id}.description`)}
+                      {t(
+                        `toolbox:metronome.patterns.${pattern.id}.description`
+                      )}
                     </option>
                   ))}
                 </select>
@@ -467,6 +469,7 @@ const Toolbox: React.FC = () => {
                         ))}
                       </React.Fragment>
                     ))}
+                  </div>
                 </div>
               </div>
 
