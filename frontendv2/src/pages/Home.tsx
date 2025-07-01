@@ -64,6 +64,18 @@ export default function HomePage() {
                 >
                   {t('common:navigation.logbook')}
                 </Link>
+                <Link
+                  to="/scorebook"
+                  className="text-white/90 hover:text-white text-sm transition-colors"
+                >
+                  Scorebook
+                </Link>
+                <Link
+                  to="/metronome-mock"
+                  className="text-white/90 hover:text-white text-sm transition-colors"
+                >
+                  Tools
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-white/90 hover:text-white text-sm transition-colors"

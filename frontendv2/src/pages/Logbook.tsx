@@ -52,6 +52,18 @@ export default function LogbookPage() {
               <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
                 {t('logbook:title')}
               </h1>
+              <Link
+                to="/scorebook"
+                className="text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
+              >
+                Scorebook
+              </Link>
+              <Link
+                to="/metronome-mock"
+                className="text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
+              >
+                Tools
+              </Link>
             </div>
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">

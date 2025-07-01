@@ -78,6 +78,7 @@ export default function ScoreControls() {
         clearTimeout(pulseTimeoutRef.current)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronomeSettings.isActive])
 
   // Handle tempo changes while playing
@@ -85,11 +86,13 @@ export default function ScoreControls() {
     if (metronomeSettings.isActive) {
       metronome.setTempo(metronomeSettings.tempo)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronomeSettings.tempo])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(metronomeSettings.volume)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metronomeSettings.volume])
 
   // Detect mobile device

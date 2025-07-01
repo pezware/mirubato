@@ -48,8 +48,15 @@ export default {
             100: '#eef2f5',
             200: '#dde5eb',
             300: '#c2d1db',
-            400: '#a7bdcb',
-            500: '#8ca9bb',
+            400: '#a8bccb',
+            500: '#8ea7bb',
+          },
+          purple: {
+            100: '#f3f0f5',
+            200: '#e5dded',
+            300: '#d0c2db',
+            400: '#b8a6c9',
+            500: '#9f8ab7',
           },
           rose: {
             50: '#fdf2f2',

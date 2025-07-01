@@ -1,0 +1,217 @@
+{
+  "patterns": [
+    {
+      "id": "basic",
+      "name": "Basic Beat",
+      "beats": 4,
+      "value": 4,
+      "description": "Standard 4/4 with accent on 1",
+      "category": "fundamental",
+      "difficulty": "beginner",
+      "pattern": {
+        "accent": [true, false, false, false],
+        "click": [false, true, true, true],
+        "woodblock": [false, false, false, false],
+        "shaker": [false, false, false, false],
+        "triangle": [false, false, false, false]
+      }
+    },
+    {
+      "id": "backbeat",
+      "name": "Backbeat (2 & 4)",
+      "beats": 4,
+      "value": 4,
+      "description": "Accent on beats 2 and 4",
+      "category": "rock",
+      "difficulty": "beginner",
+      "pattern": {
+        "accent": [false, true, false, true],
+        "click": [true, false, true, false],
+        "woodblock": [false, false, false, false],
+        "shaker": [false, false, false, false],
+        "triangle": [false, false, false, false]
+      }
+    },
+    {
+      "id": "waltz",
+      "name": "Waltz (3/4)",
+      "beats": 3,
+      "value": 4,
+      "description": "Strong-weak-weak pattern",
+      "category": "classical",
+      "difficulty": "beginner",
+      "pattern": {
+        "accent": [true, false, false],
+        "click": [false, true, true],
+        "woodblock": [false, false, false],
+        "shaker": [false, false, false],
+        "triangle": [false, false, false]
+      }
+    },
+    {
+      "id": "clave32",
+      "name": "3-2 Clave",
+      "beats": 8,
+      "value": 8,
+      "description": "Latin clave pattern",
+      "category": "latin",
+      "difficulty": "intermediate",
+      "pattern": {
+        "accent": [true, false, false, true, false, false, true, false],
+        "click": [false, false, false, false, false, false, false, false],
+        "woodblock": [false, false, true, false, false, true, false, true],
+        "shaker": [true, true, true, true, true, true, true, true],
+        "triangle": [false, false, false, false, false, false, false, false]
+      }
+    },
+    {
+      "id": "shuffle",
+      "name": "Shuffle/Swing",
+      "beats": 4,
+      "value": 4,
+      "description": "Triplet feel with middle note silent",
+      "category": "jazz",
+      "difficulty": "intermediate",
+      "pattern": {
+        "accent": [true, false, false, false],
+        "click": [false, false, true, false],
+        "woodblock": [false, true, false, true],
+        "shaker": [true, false, true, false],
+        "triangle": [false, false, false, false]
+      }
+    },
+    {
+      "id": "sixeight",
+      "name": "6/8 Time",
+      "beats": 6,
+      "value": 8,
+      "description": "Two dotted quarter feel",
+      "category": "classical",
+      "difficulty": "intermediate",
+      "pattern": {
+        "accent": [true, false, false, true, false, false],
+        "click": [false, true, true, false, true, true],
+        "woodblock": [false, false, false, false, false, false],
+        "shaker": [false, false, false, false, false, false],
+        "triangle": [false, false, false, false, false, false]
+      }
+    },
+    {
+      "id": "bossa",
+      "name": "Bossa Nova",
+      "beats": 8,
+      "value": 8,
+      "description": "Brazilian rhythm pattern",
+      "category": "latin",
+      "difficulty": "advanced",
+      "pattern": {
+        "accent": [true, false, false, true, false, false, true, false],
+        "click": [false, false, false, false, false, false, false, false],
+        "woodblock": [false, false, true, false, true, false, false, true],
+        "shaker": [true, true, true, true, true, true, true, true],
+        "triangle": [true, false, false, false, false, false, false, false]
+      }
+    },
+    {
+      "id": "subdivisions",
+      "name": "Subdivisions",
+      "beats": 4,
+      "value": 4,
+      "description": "Practice eighth & sixteenth notes",
+      "category": "practice",
+      "difficulty": "beginner",
+      "pattern": {
+        "accent": [true, false, false, false],
+        "click": [false, false, false, false],
+        "woodblock": [true, true, true, true],
+        "shaker": [true, true, true, true],
+        "triangle": [false, false, false, false]
+      }
+    },
+    {
+      "id": "offbeat",
+      "name": "Off-beat Practice",
+      "beats": 4,
+      "value": 4,
+      "description": "Click on off-beats only",
+      "category": "practice",
+      "difficulty": "intermediate",
+      "pattern": {
+        "accent": [false, false, false, false],
+        "click": [false, true, false, true],
+        "woodblock": [true, false, true, false],
+        "shaker": [false, false, false, false],
+        "triangle": [false, false, false, false]
+      }
+    },
+    {
+      "id": "progressive",
+      "name": "Progressive Accent",
+      "beats": 4,
+      "value": 4,
+      "description": "Moving accent pattern",
+      "category": "practice",
+      "difficulty": "advanced",
+      "pattern": {
+        "accent": [true, false, false, false],
+        "click": [false, true, false, false],
+        "woodblock": [false, false, true, false],
+        "shaker": [false, false, false, true],
+        "triangle": [false, false, false, false]
+      }
+    }
+  ],
+  "categories": {
+    "fundamental": {
+      "name": "Fundamental",
+      "description": "Basic patterns for beginners"
+    },
+    "rock": {
+      "name": "Rock/Pop",
+      "description": "Common patterns in rock and pop music"
+    },
+    "jazz": {
+      "name": "Jazz/Swing",
+      "description": "Jazz and swing rhythm patterns"
+    },
+    "latin": {
+      "name": "Latin",
+      "description": "Latin American rhythm patterns"
+    },
+    "classical": {
+      "name": "Classical",
+      "description": "Classical music time signatures"
+    },
+    "practice": {
+      "name": "Practice",
+      "description": "Patterns for developing timing skills"
+    }
+  },
+  "soundLayers": {
+    "accent": {
+      "name": "Accent",
+      "description": "Strong click for downbeats",
+      "color": "morandi-purple-400"
+    },
+    "click": {
+      "name": "Click",
+      "description": "Standard metronome click",
+      "color": "morandi-sky-400"
+    },
+    "woodblock": {
+      "name": "Wood Block",
+      "description": "Percussive wood sound",
+      "color": "morandi-sage-400"
+    },
+    "shaker": {
+      "name": "Shaker",
+      "description": "Soft shaker rhythm",
+      "color": "morandi-sand-400"
+    },
+    "triangle": {
+      "name": "Triangle",
+      "description": "Bright metallic accent",
+      "color": "morandi-blush-400"
+    }
+  }
+}
