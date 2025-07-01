@@ -146,10 +146,11 @@ importHandler.post('/', async c => {
     // Create R2 key
     const r2Key = `imports/${scoreId}/${cleanFileName}`
 
-    // Upload to R2
+    // Upload to R2 with optimized cache headers
     await c.env.SCORES_BUCKET.put(r2Key, pdfBuffer, {
       httpMetadata: {
         contentType: 'application/pdf',
+        cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
       },
       customMetadata: {
         sourceUrl: url,
