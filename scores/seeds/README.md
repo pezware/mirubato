@@ -48,3 +48,37 @@ curl -X POST https://scores.mirubato.com/api/import \
 
 # Or use the import UI at /scorebook/import
 ```
+
+## Troubleshooting
+
+### Error: "table scores has no column named subtitle"
+
+This happens when the local database is missing columns from recent migrations.
+
+**Solution**:
+
+```bash
+# Fix migration conflicts (if needed)
+./scripts/fix-local-migrations.sh
+
+# Run migrations
+npm run db:migrate
+
+# Then try seeding again
+npm run seed:dev
+```
+
+### Fresh Local Database Setup
+
+If you want to start with a fresh local database:
+
+```bash
+# Remove local database
+rm -rf .wrangler/state/v3/d1
+
+# Run migrations
+npm run db:migrate
+
+# Seed development data
+npm run seed:dev
+```
