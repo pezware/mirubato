@@ -1,17 +1,16 @@
 import { useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '../stores/authStore'
 import { useScoreStore } from '../stores/scoreStore'
 import ScoreViewer from '../components/score/ScoreViewer'
 import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
+import UnifiedHeader from '../components/layout/UnifiedHeader'
 
 export default function ScorebookPage() {
   const { t } = useTranslation(['scorebook', 'common'])
   const { scoreId } = useParams<{ scoreId?: string }>()
   const navigate = useNavigate()
-  const { isAuthenticated, user } = useAuthStore()
   const {
     currentScore,
     isLoading,
@@ -42,49 +41,7 @@ export default function ScorebookPage() {
 
   return (
     <div className="min-h-screen bg-morandi-sand-100 flex flex-col">
-      {/* Minimal Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
-              >
-                {t('common:appName')}
-              </Link>
-              <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
-                {t('scorebook:title', 'Scorebook')}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">
-                {isAuthenticated ? (
-                  <span className="flex items-center gap-1">
-                    <span className="hidden sm:inline">
-                      ☁️ {t('scorebook:fullAccess', 'Full Access')} •
-                    </span>
-                    <span className="text-xs sm:text-sm">{user?.email}</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <span className="hidden sm:inline">👁️</span>
-                    <span>{t('scorebook:readOnly', 'Read-Only Mode')}</span>
-                  </span>
-                )}
-              </div>
-              {!isAuthenticated && (
-                <Link
-                  to="/auth"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
-                >
-                  {t('common:signIn')}
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <UnifiedHeader currentPage="scorebook" />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">

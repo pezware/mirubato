@@ -1,0 +1,48 @@
+{
+  "title": "Boîte à outils",
+  "metronome": {
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Signature rythmique",
+    "volume": "Volume",
+    "presetPatterns": "Modèles prédéfinis",
+    "clickToCreate": "Cliquez sur la grille pour créer votre propre motif rythmique. Chaque ligne représente une couche sonore différente.",
+    "sounds": {
+      "accent": "accent",
+      "click": "clic",
+      "woodblock": "wood block",
+      "shaker": "shaker",
+      "triangle": "triangle"
+    },
+    "patterns": {
+      "basic": {
+        "name": "Basic",
+        "description": "Piste de clic standard"
+      },
+      "waltz": {
+        "name": "Waltz",
+        "description": "Mesure 3/4 avec accent sur 1"
+      },
+      "rumba": {
+        "name": "Rumba",
+        "description": "Motif rythmique latin"
+      },
+      "offBeat": {
+        "name": "Pratique contretemps",
+        "description": "Clic sur les contretemps"
+      },
+      "subdivision": {
+        "name": "Subdivision",
+        "description": "Subdivision en croches"
+      },
+      "afrocuban": {
+        "name": "Afro-Cuban",
+        "description": "Motif latin complexe"
+      }
+    }
+  },
+  "syncStatus": {
+    "synced": "Synchronisé",
+    "localOnly": "Stockage local"
+  },
+  "backToLogbook": "Retour au journal"
+}

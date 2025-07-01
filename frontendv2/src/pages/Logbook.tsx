@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
 import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import UnifiedHeader from '../components/layout/UnifiedHeader'
 
 export default function LogbookPage() {
   const { t } = useTranslation(['logbook', 'common', 'auth', 'errors'])
   const {
-    user,
     isAuthenticated,
     login,
     isLoading: authLoading,
@@ -38,67 +37,10 @@ export default function LogbookPage() {
 
   return (
     <div className="min-h-screen bg-morandi-sand-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
-              >
-                {t('common:appName')}
-              </Link>
-              <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
-                {t('logbook:title')}
-              </h1>
-              <Link
-                to="/toolbox"
-                className="text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
-              >
-                Toolbox
-              </Link>
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="text-xs sm:text-sm font-inter text-morandi-stone-600">
-                {isAuthenticated ? (
-                  <span className="flex items-center gap-1">
-                    <span className="hidden sm:inline">
-                      ☁️ {t('logbook:syncStatus.synced')} •
-                    </span>
-                    <span className="text-xs sm:text-sm">{user?.email}</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <span className="hidden sm:inline">💾</span>
-                    <span>{t('logbook:syncStatus.localOnly')}</span>
-                  </span>
-                )}
-              </div>
-              {isAuthenticated ? (
-                <button
-                  onClick={async () => {
-                    const { logout } = useAuthStore.getState()
-                    await logout()
-                    // Clear any error that might be displayed
-                    clearError()
-                  }}
-                  className="text-xs sm:text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 sm:px-3 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
-                >
-                  {t('auth:signOut')}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowLoginForm(true)}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
-                >
-                  {t('auth:signIn')}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <UnifiedHeader
+        currentPage="logbook"
+        onSignInClick={() => setShowLoginForm(true)}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Error Display */}

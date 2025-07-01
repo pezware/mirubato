@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '../stores/authStore'
 import {
   scoreService,
   type Score,
   type Collection,
 } from '../services/scoreService'
+import UnifiedHeader from '../components/layout/UnifiedHeader'
 
 export default function ScoreBrowserPage() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const { slug } = useParams<{ slug?: string }>()
-  const { isAuthenticated } = useAuthStore()
   const [scores, setScores] = useState<Score[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -63,34 +62,7 @@ export default function ScoreBrowserPage() {
 
   return (
     <div className="min-h-screen bg-morandi-sand-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-xl sm:text-2xl font-lexend font-light text-mirubato-wood-800 hover:text-mirubato-wood-600 transition-colors"
-              >
-                {t('common:appName')}
-              </Link>
-              <h1 className="text-base sm:text-lg font-inter font-normal text-morandi-stone-600">
-                {t('scorebook:browser', 'Score Library')}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              {!isAuthenticated && (
-                <Link
-                  to="/auth"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
-                >
-                  {t('common:signIn')}
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <UnifiedHeader currentPage="scorebook" />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Filters */}
