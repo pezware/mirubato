@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
 import { useAuthStore } from '../../stores/authStore'
 import { scoreService } from '../../services/scoreService'
-import type { Score } from '../../services/scoreService'
+import Autocomplete from '../ui/Autocomplete'
+import { useScoreSearch } from '../../hooks/useScoreSearch'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -12,9 +13,19 @@ export default function ScoreManagement() {
   const { isAuthenticated } = useAuthStore()
   const { toggleManagement, collections, userLibrary, loadUserLibrary } =
     useScoreStore()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Score[]>([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file')
+  const [uploadUrl, setUploadUrl] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState<{
+    success: boolean
+    message: string
+    scoreId?: string
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Use the score search hook for predictive search
+  const scoreSearch = useScoreSearch({ minLength: 0 })
 
   // Load user library on mount
   useEffect(() => {
@@ -23,24 +34,139 @@ export default function ScoreManagement() {
     }
   }, [isAuthenticated, loadUserLibrary])
 
-  // Search functionality
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return
-
-    setIsSearching(true)
-    try {
-      const results = await scoreService.searchScores({ query: searchQuery })
-      setSearchResults(results.items)
-    } catch (error) {
-      console.error('Search failed:', error)
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
   const handleScoreSelect = (scoreId: string) => {
     navigate(`/scorebook/${scoreId}`)
     toggleManagement()
+  }
+
+  // File upload handlers
+  const handleFileUpload = async (file: File) => {
+    if (!file || file.type !== 'application/pdf') {
+      setUploadResult({
+        success: false,
+        message: 'Please select a valid PDF file',
+      })
+      return
+    }
+
+    setIsUploading(true)
+    setUploadResult(null)
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader()
+      reader.onload = async e => {
+        const base64 = e.target?.result as string
+
+        const response = await scoreService.importScore({
+          url: base64,
+          filename: file.name,
+        })
+
+        if (response.success) {
+          setUploadResult({
+            success: true,
+            message: `Successfully uploaded ${response.data.title}`,
+            scoreId: response.data.id,
+          })
+          loadUserLibrary() // Reload user library
+        } else {
+          setUploadResult({
+            success: false,
+            message: response.error || 'Upload failed',
+          })
+        }
+        setIsUploading(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('Upload failed:', error)
+      setUploadResult({
+        success: false,
+        message: 'Upload failed. Please try again.',
+      })
+      setIsUploading(false)
+    }
+  }
+
+  const handleUrlImport = async () => {
+    if (!uploadUrl.trim()) {
+      setUploadResult({
+        success: false,
+        message: 'Please enter a URL',
+      })
+      return
+    }
+
+    setIsUploading(true)
+    setUploadResult(null)
+
+    try {
+      const response = await scoreService.importScore({ url: uploadUrl })
+
+      if (response.success) {
+        setUploadResult({
+          success: true,
+          message: `Successfully imported ${response.data.title}`,
+          scoreId: response.data.id,
+        })
+        loadUserLibrary()
+        setUploadUrl('')
+      } else {
+        setUploadResult({
+          success: false,
+          message: response.error || 'Import failed',
+        })
+      }
+    } catch (error) {
+      console.error('Import failed:', error)
+      setUploadResult({
+        success: false,
+        message: 'Import failed. Please try again.',
+      })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const target = e.target as HTMLElement
+    if (target.classList.contains('drop-zone')) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    const pdfFile = files.find(file => file.type === 'application/pdf')
+
+    if (pdfFile) {
+      handleFileUpload(pdfFile)
+    } else {
+      setUploadResult({
+        success: false,
+        message: 'Please drop a PDF file',
+      })
+    }
   }
 
   return (
@@ -84,44 +210,43 @@ export default function ScoreManagement() {
               <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
                 {t('scorebook:searchScores', 'Search Scores')}
               </h4>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                  placeholder={t(
-                    'scorebook:searchPlaceholder',
-                    'Search by title, composer...'
-                  )}
-                  className="flex-1 px-4 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-                />
-                <button
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                  className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors disabled:opacity-50"
-                >
-                  {isSearching ? '...' : t('common:search')}
-                </button>
-              </div>
+              <Autocomplete
+                value={scoreSearch.query}
+                onChange={query => scoreSearch.setQuery(query)}
+                onSelect={option => {
+                  // Navigate to the selected score
+                  handleScoreSelect(option.value)
+                }}
+                options={scoreSearch.suggestions}
+                placeholder={t(
+                  'scorebook:searchPlaceholder',
+                  'Search by title, composer...'
+                )}
+                isLoading={scoreSearch.isLoading}
+                className="w-full"
+                inputClassName="bg-morandi-stone-50"
+                dropdownClassName="max-h-80"
+                emptyMessage={
+                  scoreSearch.query.length < 2
+                    ? t('scorebook:typeToSearch', 'Type to search...')
+                    : t('scorebook:noResults', 'No scores found')
+                }
+              />
 
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {searchResults.map(score => (
-                    <button
-                      key={score.id}
-                      onClick={() => handleScoreSelect(score.id)}
-                      className="w-full text-left p-3 bg-morandi-stone-50 rounded-lg hover:bg-morandi-stone-100 transition-colors"
-                    >
-                      <div className="font-medium text-morandi-stone-800">
-                        {score.title}
-                      </div>
-                      <div className="text-sm text-morandi-stone-600">
-                        {score.composer} • {score.instrument}
-                      </div>
-                    </button>
-                  ))}
+              {/* Show recent results if there are any */}
+              {scoreSearch.results.length > 0 && scoreSearch.query && (
+                <div className="mt-3 text-xs text-morandi-stone-500">
+                  {t(
+                    'scorebook:foundResults',
+                    `Found ${scoreSearch.results.length} scores`
+                  )}
+                </div>
+              )}
+
+              {/* Error message */}
+              {scoreSearch.error && (
+                <div className="mt-2 text-sm text-red-600">
+                  {scoreSearch.error}
                 </div>
               )}
             </div>
@@ -132,29 +257,133 @@ export default function ScoreManagement() {
                 <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
                   {t('scorebook:uploadScore', 'Upload New Score')}
                 </h4>
-                <div className="border-2 border-dashed border-morandi-stone-300 rounded-lg p-8 text-center">
-                  <svg
-                    className="w-12 h-12 mx-auto text-morandi-stone-400 mb-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+
+                {/* Mode selector */}
+                <div className="flex gap-2 mb-3">
+                  <button
+                    onClick={() => setUploadMode('file')}
+                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      uploadMode === 'file'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                  <p className="text-sm text-morandi-stone-600 mb-2">
-                    {t(
-                      'scorebook:uploadPrompt',
-                      'Drop PDF files here or click to browse'
-                    )}
-                  </p>
-                  <button className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm">
-                    {t('scorebook:selectFiles', 'Select Files')}
+                    Upload File
                   </button>
+                  <button
+                    onClick={() => setUploadMode('url')}
+                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      uploadMode === 'url'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
+                  >
+                    Import from URL
+                  </button>
+                </div>
+
+                {uploadMode === 'file' ? (
+                  <div
+                    className={`drop-zone border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      isDragging
+                        ? 'border-morandi-sage-500 bg-morandi-sage-50'
+                        : 'border-morandi-stone-300'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      onChange={e => {
+                        const file = e.target.files?.[0]
+                        if (file) handleFileUpload(file)
+                      }}
+                      className="hidden"
+                    />
+                    <svg
+                      className="w-12 h-12 mx-auto text-morandi-stone-400 mb-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                    <p className="text-sm text-morandi-stone-600 mb-2">
+                      {t(
+                        'scorebook:uploadPrompt',
+                        'Drop PDF files here or click to browse'
+                      )}
+                    </p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                    >
+                      {isUploading
+                        ? 'Uploading...'
+                        : t('scorebook:selectFiles', 'Select Files')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <input
+                      type="url"
+                      value={uploadUrl}
+                      onChange={e => setUploadUrl(e.target.value)}
+                      placeholder="https://example.com/score.pdf"
+                      className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                    />
+                    <button
+                      onClick={handleUrlImport}
+                      disabled={isUploading || !uploadUrl.trim()}
+                      className="w-full px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                    >
+                      {isUploading ? 'Importing...' : 'Import from URL'}
+                    </button>
+                    <p className="text-xs text-morandi-stone-500">
+                      Import PDFs from Mutopia Project or other sources
+                    </p>
+                  </div>
+                )}
+
+                {/* Upload result message */}
+                {uploadResult && (
+                  <div
+                    className={`mt-3 p-3 rounded-lg text-sm ${
+                      uploadResult.success
+                        ? 'bg-green-50 text-green-800 border border-green-200'
+                        : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                  >
+                    {uploadResult.message}
+                    {uploadResult.success && uploadResult.scoreId && (
+                      <button
+                        onClick={() => handleScoreSelect(uploadResult.scoreId!)}
+                        className="block mt-2 text-xs underline hover:no-underline"
+                      >
+                        View Score →
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Link to import page */}
+                <div className="mt-3 text-center">
+                  <a
+                    href="/scorebook/import"
+                    className="text-xs text-morandi-sage-600 hover:text-morandi-sage-700 underline"
+                  >
+                    Advanced import options →
+                  </a>
                 </div>
               </div>
             )}
