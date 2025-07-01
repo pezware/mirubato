@@ -7,6 +7,7 @@ import {
   type Collection,
 } from '../services/scoreService'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
+import SignInModal from '../components/auth/SignInModal'
 
 export default function ScoreBrowserPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -17,6 +18,7 @@ export default function ScoreBrowserPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
+  const [showSignInModal, setShowSignInModal] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -62,7 +64,10 @@ export default function ScoreBrowserPage() {
 
   return (
     <div className="min-h-screen bg-morandi-sand-100">
-      <UnifiedHeader currentPage="scorebook" />
+      <UnifiedHeader
+        currentPage="scorebook"
+        onSignInClick={() => setShowSignInModal(true)}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Filters */}
@@ -206,6 +211,12 @@ export default function ScoreBrowserPage() {
           )}
         </div>
       </div>
+
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+      />
     </div>
   )
 }
