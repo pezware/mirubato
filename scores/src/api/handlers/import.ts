@@ -159,15 +159,33 @@ importHandler.post('/', async c => {
     })
 
     // Extract metadata using AI
-    const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
-    const aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+    let aiMetadata: any
+    try {
+      const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
+      aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
 
-    // Log if AI extraction failed
-    if (aiMetadata.error) {
-      console.warn('AI extraction had issues:', aiMetadata.error)
-    }
-    if (aiMetadata.confidence < 0.5) {
-      console.warn('Low confidence AI extraction, used fallback')
+      // Log if AI extraction failed
+      if (aiMetadata.error) {
+        console.warn('AI extraction had issues:', aiMetadata.error)
+      }
+      if (aiMetadata.confidence < 0.5) {
+        console.warn('Low confidence AI extraction, used fallback')
+      }
+    } catch (error) {
+      console.error('AI extraction failed:', error)
+      // Fallback metadata when AI fails
+      aiMetadata = {
+        title: cleanFileName.replace('.pdf', ''),
+        composer: 'Unknown',
+        instrument: 'PIANO',
+        difficulty: 'INTERMEDIATE',
+        difficultyLevel: 5,
+        tags: [],
+        confidence: 0,
+        error:
+          'AI extraction failed: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      }
     }
 
     // Create database record
