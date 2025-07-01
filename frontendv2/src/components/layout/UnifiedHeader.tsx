@@ -105,7 +105,7 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                 >
                   {t('auth:signOut')}
                 </button>
-              ) : currentPage === 'logbook' && onSignInClick ? (
+              ) : onSignInClick ? (
                 <button
                   onClick={onSignInClick}
                   className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"

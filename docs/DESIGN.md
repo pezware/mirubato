@@ -239,11 +239,36 @@ The frontend uses a straightforward React architecture without the complex modul
 
 #### Key Components
 
-- **Pages**: Home, Logbook, Auth (simple routing)
+**Pages**
+
+- **Home**: Landing page with feature overview
+- **Logbook**: Practice session tracking and reporting
+- **Toolbox**: Metronome with customizable patterns
+- **Scorebook**: Sheet music browser and viewer
+- **Auth**: Authentication pages (verify, callback)
+
+**Core Components**
+
 - **LogbookEntryList**: Main entry management component
 - **EnhancedPracticeReports**: Advanced reporting with charts
 - **ManualEntryForm**: Practice entry creation
 - **InteractivePiano**: Simple piano widget (lazy loaded)
+
+**Layout Components**
+
+- **UnifiedHeader**: Consistent navigation header across all pages
+  - Handles authentication state display
+  - Provides navigation between main sections
+  - Triggers sign-in modal when needed
+
+**Auth Components**
+
+- **SignInModal**: Shared authentication modal used across all pages
+  - Google OAuth integration via One Tap
+  - Magic link email authentication
+  - Consistent user experience across the app
+- **GoogleSignInButton**: Google OAuth button component
+- **ProtectedRoute**: Route guard for authenticated pages
 
 #### Data Flow
 

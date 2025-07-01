@@ -15,28 +15,44 @@
     },
     "patterns": {
       "basic": {
-        "name": "Basic",
-        "description": "标准节拍器"
+        "name": "Basic Beat",
+        "description": "标准4/4拍，第1拍重音"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "第2、4拍重音"
       },
       "waltz": {
-        "name": "Waltz",
-        "description": "3/4拍，强调第1拍"
+        "name": "Waltz (3/4)",
+        "description": "强-弱-弱模式"
       },
-      "rumba": {
-        "name": "Rumba",
-        "description": "拉丁节奏模式"
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "拉丁克拉维模式"
       },
-      "offBeat": {
-        "name": "反拍练习",
-        "description": "在反拍上点击"
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "三连音感觉，中间音符静音"
       },
-      "subdivision": {
-        "name": "细分",
-        "description": "八分音符细分"
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "两个附点四分音符感觉"
       },
-      "afrocuban": {
-        "name": "Afro-Cuban",
-        "description": "复杂的拉丁模式"
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "巴西节奏模式"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "八分音符和十六分音符练习"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "仅在反拍点击"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "移动重音模式"
       }
     }
   },
