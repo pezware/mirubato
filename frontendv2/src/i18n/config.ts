@@ -9,6 +9,7 @@ import enLogbook from '../locales/en/logbook.json'
 import enReports from '../locales/en/reports.json'
 import enErrors from '../locales/en/errors.json'
 import enScorebook from '../locales/en/scorebook.json'
+import enToolbox from '../locales/en/toolbox.json'
 
 import esCommon from '../locales/es/common.json'
 import esAuth from '../locales/es/auth.json'
@@ -16,6 +17,7 @@ import esLogbook from '../locales/es/logbook.json'
 import esReports from '../locales/es/reports.json'
 import esErrors from '../locales/es/errors.json'
 import esScorebook from '../locales/es/scorebook.json'
+import esToolbox from '../locales/es/toolbox.json'
 
 import frCommon from '../locales/fr/common.json'
 import frAuth from '../locales/fr/auth.json'
@@ -23,6 +25,7 @@ import frLogbook from '../locales/fr/logbook.json'
 import frReports from '../locales/fr/reports.json'
 import frErrors from '../locales/fr/errors.json'
 import frScorebook from '../locales/fr/scorebook.json'
+import frToolbox from '../locales/fr/toolbox.json'
 
 import zhTWCommon from '../locales/zh-TW/common.json'
 import zhTWAuth from '../locales/zh-TW/auth.json'
@@ -30,6 +33,7 @@ import zhTWLogbook from '../locales/zh-TW/logbook.json'
 import zhTWReports from '../locales/zh-TW/reports.json'
 import zhTWErrors from '../locales/zh-TW/errors.json'
 import zhTWScorebook from '../locales/zh-TW/scorebook.json'
+import zhTWToolbox from '../locales/zh-TW/toolbox.json'
 
 import deCommon from '../locales/de/common.json'
 import deAuth from '../locales/de/auth.json'
@@ -37,6 +41,7 @@ import deLogbook from '../locales/de/logbook.json'
 import deReports from '../locales/de/reports.json'
 import deErrors from '../locales/de/errors.json'
 import deScorebook from '../locales/de/scorebook.json'
+import deToolbox from '../locales/de/toolbox.json'
 
 import zhCNCommon from '../locales/zh-CN/common.json'
 import zhCNAuth from '../locales/zh-CN/auth.json'
@@ -44,6 +49,7 @@ import zhCNLogbook from '../locales/zh-CN/logbook.json'
 import zhCNReports from '../locales/zh-CN/reports.json'
 import zhCNErrors from '../locales/zh-CN/errors.json'
 import zhCNScorebook from '../locales/zh-CN/scorebook.json'
+import zhCNToolbox from '../locales/zh-CN/toolbox.json'
 
 export const defaultNS = 'common'
 export const resources = {
@@ -54,6 +60,7 @@ export const resources = {
     reports: enReports,
     errors: enErrors,
     scorebook: enScorebook,
+    toolbox: enToolbox,
   },
   es: {
     common: esCommon,
@@ -62,6 +69,7 @@ export const resources = {
     reports: esReports,
     errors: esErrors,
     scorebook: esScorebook,
+    toolbox: esToolbox,
   },
   fr: {
     common: frCommon,
@@ -70,6 +78,7 @@ export const resources = {
     reports: frReports,
     errors: frErrors,
     scorebook: frScorebook,
+    toolbox: frToolbox,
   },
   'zh-TW': {
     common: zhTWCommon,
@@ -78,6 +87,7 @@ export const resources = {
     reports: zhTWReports,
     errors: zhTWErrors,
     scorebook: zhTWScorebook,
+    toolbox: zhTWToolbox,
   },
   de: {
     common: deCommon,
@@ -86,6 +96,7 @@ export const resources = {
     reports: deReports,
     errors: deErrors,
     scorebook: deScorebook,
+    toolbox: deToolbox,
   },
   'zh-CN': {
     common: zhCNCommon,
@@ -94,6 +105,7 @@ export const resources = {
     reports: zhCNReports,
     errors: zhCNErrors,
     scorebook: zhCNScorebook,
+    toolbox: zhCNToolbox,
   },
 } as const
 

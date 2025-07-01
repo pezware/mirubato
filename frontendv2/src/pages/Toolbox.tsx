@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
+import UnifiedHeader from '../components/layout/UnifiedHeader'
 
 type PatternState = {
   accent: boolean[]
@@ -15,6 +16,7 @@ type PatternState = {
 }
 
 const Toolbox: React.FC = () => {
+  const { t } = useTranslation(['toolbox', 'common'])
   const { settings, updateSettings } = useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
@@ -244,23 +246,7 @@ const Toolbox: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-morandi-stone-50">
-      {/* Header */}
-      <div className="bg-white border-b border-morandi-stone-200">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/logbook"
-              className="flex items-center gap-1 text-morandi-stone-600 hover:text-morandi-stone-700"
-            >
-              <ArrowLeft size={18} />
-              <span className="text-sm">Back to Logbook</span>
-            </Link>
-            <h1 className="text-lg font-semibold text-morandi-stone-900">
-              Toolbox
-            </h1>
-          </div>
-        </div>
-      </div>
+      <UnifiedHeader currentPage="toolbox" />
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -327,14 +313,14 @@ const Toolbox: React.FC = () => {
                       onClick={handleTapTempo}
                       className="w-full mt-2 py-2 bg-morandi-stone-100 text-morandi-stone-700 rounded-lg hover:bg-morandi-stone-200 text-sm font-medium"
                     >
-                      Tap Tempo
+                      {t('toolbox:metronome.tapTempo')}
                     </button>
                   </div>
 
                   {/* Time Signature */}
                   <div>
                     <label className="text-sm text-morandi-stone-600 mb-1 block">
-                      Time Signature
+                      {t('toolbox:metronome.timeSignature')}
                     </label>
                     <div className="flex items-center justify-center gap-2">
                       <input
@@ -372,7 +358,7 @@ const Toolbox: React.FC = () => {
                   <div>
                     <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
                       <Volume2 size={16} />
-                      Volume: {settings.volume}%
+                      {t('toolbox:metronome.volume')}: {settings.volume}%
                     </label>
                     <input
                       type="range"
@@ -410,7 +396,7 @@ const Toolbox: React.FC = () => {
               {/* Pattern Selector */}
               <div>
                 <label className="text-sm text-morandi-stone-600 mb-2 block">
-                  Preset Patterns
+                  {t('toolbox:metronome.presetPatterns')}
                 </label>
                 <select
                   value={settings.selectedPattern}
@@ -419,7 +405,8 @@ const Toolbox: React.FC = () => {
                 >
                   {commonPatterns.map(pattern => (
                     <option key={pattern.id} value={pattern.id}>
-                      {pattern.name} - {pattern.description}
+                      {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
+                      {t(`toolbox:metronome.patterns.${pattern.id}.description`)}
                     </option>
                   ))}
                 </select>
@@ -432,54 +419,59 @@ const Toolbox: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="overflow-x-auto">
                 <div className="min-w-[600px]">
-                  {/* Beat Numbers */}
-                  <div className="flex mb-2">
-                    <div className="w-24"></div>
+                  {/* Grid with beat numbers and layers */}
+                  <div className="grid grid-cols-[96px_repeat(16,40px)] gap-1">
+                    {/* Header row with beat numbers */}
+                    <div></div>
                     {Array.from(
                       { length: settings.beatsPerMeasure },
                       (_, i) => (
                         <div
                           key={i}
-                          className="w-10 text-center text-sm text-morandi-stone-600"
+                          className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
                         >
                           {i + 1}
                         </div>
                       )
                     )}
-                  </div>
+                    {/* Fill remaining columns */}
+                    {Array.from(
+                      { length: 16 - settings.beatsPerMeasure },
+                      (_, i) => (
+                        <div key={`empty-${i}`}></div>
+                      )
+                    )}
 
-                  {/* Sound Layers */}
-                  {soundLayers.map(layer => (
-                    <div key={layer.id} className="flex items-center mb-3">
-                      <div className="w-24 text-sm text-morandi-stone-700 pr-2">
-                        {layer.name}
-                      </div>
-                      {Array.from(
-                        { length: settings.beatsPerMeasure },
-                        (_, i) => (
+                    {/* Sound Layers */}
+                    {soundLayers.map(layer => (
+                      <React.Fragment key={layer.id}>
+                        <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
+                          {t(`toolbox:metronome.sounds.${layer.id}`)}
+                        </div>
+                        {Array.from({ length: 16 }, (_, i) => (
                           <button
                             key={i}
                             onClick={() =>
+                              i < settings.beatsPerMeasure &&
                               toggleBeat(layer.id as keyof PatternState, i)
                             }
-                            className={`w-10 h-10 mr-1 rounded transition-all ${
-                              patterns[layer.id as keyof PatternState][i]
-                                ? layer.color + ' text-white'
-                                : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                            disabled={i >= settings.beatsPerMeasure}
+                            className={`w-10 h-10 rounded transition-all ${
+                              i < settings.beatsPerMeasure
+                                ? patterns[layer.id as keyof PatternState][i]
+                                  ? layer.color + ' text-white'
+                                  : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                : 'bg-transparent cursor-default'
                             }`}
                           />
-                        )
-                      )}
-                    </div>
-                  ))}
+                        ))}
+                      </React.Fragment>
+                    ))}
                 </div>
               </div>
 
               <div className="mt-6 text-sm text-morandi-stone-600">
-                <p>
-                  Click on the grid to create your own rhythm pattern. Each row
-                  represents a different sound layer.
-                </p>
+                <p>{t('toolbox:metronome.clickToCreate')}</p>
               </div>
             </div>
           </div>

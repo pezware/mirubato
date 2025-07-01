@@ -1,0 +1,64 @@
+{
+  "title": "Toolbox",
+  "metronome": {
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Time Signature",
+    "volume": "Volume",
+    "presetPatterns": "Preset Patterns",
+    "clickToCreate": "Click on the grid to create your own rhythm pattern. Each row represents a different sound layer.",
+    "sounds": {
+      "accent": "accent",
+      "click": "click",
+      "woodblock": "wood block",
+      "shaker": "shaker",
+      "triangle": "triangle"
+    },
+    "patterns": {
+      "basic": {
+        "name": "Basic Beat",
+        "description": "Standard 4/4 with accent on 1"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "Accent on beats 2 and 4"
+      },
+      "waltz": {
+        "name": "Waltz (3/4)",
+        "description": "Strong-weak-weak pattern"
+      },
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "Latin clave pattern"
+      },
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "Triplet feel with middle note silent"
+      },
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "Two dotted quarter feel"
+      },
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "Brazilian rhythm pattern"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "Practice eighth & sixteenth notes"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "Click on off-beats only"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "Moving accent pattern"
+      }
+    }
+  },
+  "syncStatus": {
+    "synced": "Synced",
+    "localOnly": "Local storage"
+  },
+  "backToLogbook": "Back to Logbook"
+}

@@ -4,6 +4,8 @@ import type auth from '../locales/en/auth.json'
 import type logbook from '../locales/en/logbook.json'
 import type reports from '../locales/en/reports.json'
 import type errors from '../locales/en/errors.json'
+import type scorebook from '../locales/en/scorebook.json'
+import type toolbox from '../locales/en/toolbox.json'
 
 declare module 'react-i18next' {
   interface CustomTypeOptions {
@@ -14,6 +16,8 @@ declare module 'react-i18next' {
       logbook: typeof logbook
       reports: typeof reports
       errors: typeof errors
+      scorebook: typeof scorebook
+      toolbox: typeof toolbox
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "title": "工具箱",
+  "metronome": {
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "拍号",
+    "volume": "音量",
+    "presetPatterns": "预设模式",
+    "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",
+    "sounds": {
+      "accent": "重音",
+      "click": "点击",
+      "woodblock": "wood block",
+      "shaker": "shaker",
+      "triangle": "三角铁"
+    },
+    "patterns": {
+      "basic": {
+        "name": "Basic",
+        "description": "标准节拍器"
+      },
+      "waltz": {
+        "name": "Waltz",
+        "description": "3/4拍，强调第1拍"
+      },
+      "rumba": {
+        "name": "Rumba",
+        "description": "拉丁节奏模式"
+      },
+      "offBeat": {
+        "name": "反拍练习",
+        "description": "在反拍上点击"
+      },
+      "subdivision": {
+        "name": "细分",
+        "description": "八分音符细分"
+      },
+      "afrocuban": {
+        "name": "Afro-Cuban",
+        "description": "复杂的拉丁模式"
+      }
+    }
+  },
+  "syncStatus": {
+    "synced": "已同步",
+    "localOnly": "本地存储"
+  },
+  "backToLogbook": "返回日志"
+}

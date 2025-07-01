@@ -1,0 +1,48 @@
+{
+  "title": "Werkzeugkasten",
+  "metronome": {
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Taktart",
+    "volume": "Lautstärke",
+    "presetPatterns": "Voreingestellte Muster",
+    "clickToCreate": "Klicken Sie auf das Raster, um Ihr eigenes Rhythmusmuster zu erstellen. Jede Zeile stellt eine andere Klangschicht dar.",
+    "sounds": {
+      "accent": "akzent",
+      "click": "klick",
+      "woodblock": "wood block",
+      "shaker": "shaker",
+      "triangle": "triangel"
+    },
+    "patterns": {
+      "basic": {
+        "name": "Basic",
+        "description": "Standard-Klickspur"
+      },
+      "waltz": {
+        "name": "Waltz",
+        "description": "3/4-Takt mit Betonung auf 1"
+      },
+      "rumba": {
+        "name": "Rumba",
+        "description": "Lateinamerikanisches Rhythmusmuster"
+      },
+      "offBeat": {
+        "name": "Offbeat-Übung",
+        "description": "Klick auf Offbeats"
+      },
+      "subdivision": {
+        "name": "Unterteilung",
+        "description": "Achtelnoten-Unterteilung"
+      },
+      "afrocuban": {
+        "name": "Afro-Cuban",
+        "description": "Komplexes lateinamerikanisches Muster"
+      }
+    }
+  },
+  "syncStatus": {
+    "synced": "Synchronisiert",
+    "localOnly": "Lokaler Speicher"
+  },
+  "backToLogbook": "Zurück zum Tagebuch"
+}

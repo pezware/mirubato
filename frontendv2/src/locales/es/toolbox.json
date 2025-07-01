@@ -1,0 +1,48 @@
+{
+  "title": "Caja de herramientas",
+  "metronome": {
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Compás",
+    "volume": "Volumen",
+    "presetPatterns": "Patrones preestablecidos",
+    "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",
+    "sounds": {
+      "accent": "acento",
+      "click": "clic",
+      "woodblock": "wood block",
+      "shaker": "shaker",
+      "triangle": "triángulo"
+    },
+    "patterns": {
+      "basic": {
+        "name": "Basic",
+        "description": "Pista de clic estándar"
+      },
+      "waltz": {
+        "name": "Waltz",
+        "description": "Compás 3/4 con énfasis en 1"
+      },
+      "rumba": {
+        "name": "Rumba",
+        "description": "Patrón de ritmo latino"
+      },
+      "offBeat": {
+        "name": "Práctica de contratiempo",
+        "description": "Clic en contratiempos"
+      },
+      "subdivision": {
+        "name": "Subdivisión",
+        "description": "Subdivisión de corcheas"
+      },
+      "afrocuban": {
+        "name": "Afro-Cuban",
+        "description": "Patrón latino complejo"
+      }
+    }
+  },
+  "syncStatus": {
+    "synced": "Sincronizado",
+    "localOnly": "Almacenamiento local"
+  },
+  "backToLogbook": "Volver al diario"
+}
