@@ -161,12 +161,14 @@ rm -rf .wrangler/state
 - PDF viewing with pagination
 - Clean, focused interface
 - Loading states and error handling
+- Support for image-based scores
 
 ### 2. Score Browsing (All Users)
 
 - Search by title, composer, instrument, difficulty
 - Browse curated collections
 - Filter and sort options
+- Public scores only for anonymous users
 
 ### 3. Practice Tracking (Authenticated Users)
 
@@ -182,25 +184,50 @@ rm -rf .wrangler/state
 
 ### 5. Score Management (Authenticated Users)
 
-- Upload personal scores
-- Organize in collections
-- Add notes and annotations
+- Upload PDFs via URL or file
+- Upload images of paper scores (NEW)
+- Organize in personal collections
+- Private by default for user uploads
+
+### 6. Personal Collections (Authenticated Users) - NEW
+
+- **Image Upload Support**:
+  - Photos of paper scores (PNG, JPG, JPEG)
+  - Multiple images per score for multi-page pieces
+  - Drag & drop interface with preview
+  - Automatic page ordering
+
+- **AI-Powered Organization**:
+  - Gemini extracts metadata from images
+  - Handles partial/fragmented scores
+  - Optional manual metadata entry
+  - Confidence scoring for AI results
+
+- **Collection Management**:
+  - "My Uploads" auto-created collection
+  - Create custom collections
+  - Private storage in user-specific paths
+  - Future: collection sharing features
 
 ## API Endpoints
 
 ### Public Endpoints
 
-- `GET /api/scores` - List all scores
+- `GET /api/scores` - List all public scores
 - `GET /api/scores/:id` - Get specific score metadata
-- `GET /api/collections` - List collections
-- `GET /api/search` - Search scores
+- `GET /api/collections` - List public collections
+- `GET /api/search` - Search public scores
 - `GET /api/test-data/:filename` - Serve test PDFs (development only)
 
 ### Protected Endpoints (Authentication Required)
 
-- `POST /api/import/pdf` - Upload new score
-- `PUT /api/scores/:id` - Update score metadata
-- `DELETE /api/scores/:id` - Delete score
+- `POST /api/import` - Import score from URL or file upload
+- `POST /api/import/image` - Upload score images (NEW)
+- `GET /api/user/scores` - List user's private scores
+- `GET /api/user/collections` - List user's collections
+- `POST /api/user/collections` - Create new collection
+- `PUT /api/scores/:id` - Update score metadata (own scores only)
+- `DELETE /api/scores/:id` - Delete score (own scores only)
 
 ### Development Endpoints
 
