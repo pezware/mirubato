@@ -22,6 +22,11 @@ const LogbookPage = lazy(() => import('./pages/Logbook'))
 const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
 const ScorebookPage = lazy(() => import('./pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
+const ScoreImport = lazy(() =>
+  import('./components/scorebook/ScoreImport').then(module => ({
+    default: module.ScoreImport,
+  }))
+)
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -98,6 +103,14 @@ function App() {
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <ScoreBrowser />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="import"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <ScoreImport />
                     </Suspense>
                   }
                 />

@@ -14,6 +14,8 @@ export default defineConfig({
     copyPublicDir: true,
     // Optimize chunks
     rollupOptions: {
+      // Increase max parallel file operations limit
+      maxParallelFileOps: 2,
       output: {
         manualChunks(id) {
           // Vendor chunk splitting - keep React ecosystem together

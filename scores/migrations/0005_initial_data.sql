@@ -1,7 +1,7 @@
 -- Insert some initial curated collections
 -- These will be populated with scores as they are imported
 
-INSERT INTO collections (id, name, slug, description, instrument, difficulty, score_ids, display_order, is_featured) VALUES
+INSERT OR IGNORE INTO collections (id, name, slug, description, instrument, difficulty, score_ids, display_order, is_featured) VALUES
 -- Piano collections
 ('coll_piano_beginner', 'Piano for Beginners', 'piano-for-beginners', 
  'Essential pieces for starting your piano journey. Includes simple melodies and basic chord progressions.', 
@@ -35,7 +35,7 @@ INSERT INTO collections (id, name, slug, description, instrument, difficulty, sc
 
 -- Create placeholder entries for some classical pieces
 -- These would normally be imported from IMSLP or uploaded
-INSERT INTO scores (
+INSERT OR IGNORE INTO scores (
   id, title, composer, instrument, difficulty, difficulty_level, 
   style_period, source, tags, metadata
 ) VALUES 
@@ -75,10 +75,10 @@ INSERT INTO scores (
 
 -- Update collections with these scores
 UPDATE collections SET score_ids = '["score_bach_minuet_g", "score_sor_study_1"]' 
-WHERE id = 'coll_piano_beginner';
+WHERE id = 'coll_piano_beginner' AND score_ids = '[]';
 
 UPDATE collections SET score_ids = '["score_bach_invention_1", "score_mozart_sonata_16", "score_chopin_prelude_4"]' 
-WHERE id = 'coll_piano_classical';
+WHERE id = 'coll_piano_classical' AND score_ids = '[]';
 
 UPDATE collections SET score_ids = '["score_sor_study_1", "score_tarrega_lagrima"]' 
-WHERE id = 'coll_guitar_beginner';
+WHERE id = 'coll_guitar_beginner' AND score_ids = '[]';
