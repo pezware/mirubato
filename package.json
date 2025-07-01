@@ -9,7 +9,6 @@
     "scores"
   ],
   "scripts": {
-    "postinstall": "echo 'Dependencies installed successfully'",
     "dev": "npm run dev -w @mirubato/frontendv2",
     "dev:api": "npm run dev -w @mirubato/api",
     "build": "npm run build --workspaces",
