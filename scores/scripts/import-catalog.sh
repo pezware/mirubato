@@ -67,15 +67,22 @@ echo "Starting import process..."
 echo "Note: This respects rate limits (1 per 10 minutes for anonymous users)"
 echo ""
 
-# Piano pieces
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/02085/wxcv" "Bach - Prelude in C Major"
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/300406/wx4c" "Beethoven - Für Elise"
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/399256/xupd" "Chopin - Waltz in A minor"
+# Note: These are example PDFs from IMSLP's public domain collection
+# You'll need to find the actual direct PDF download links from IMSLP
 
-# Guitar pieces
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/170099/dzzd" "Tárrega - Lágrima"
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/419968/gcml" "Sor - Study in B minor"
-import_score "https://imslp.org/wiki/Special:ImagefromIndex/419833/gcml" "Villa-Lobos - Prelude No. 1"
+# Piano pieces - Using direct PDF URLs
+# Example: Bach - Prelude in C Major BWV 846
+import_score "https://ks4.imslp.info/files/imglnks/usimg/d/d2/IMSLP03819-Bach_-_The_Well_Tempered_Clavier_Book_1_-_01_Prelude_No._1_in_C_Major_BWV_846a.pdf" "Bach - Prelude in C Major"
+
+# For testing with a known working PDF:
+import_score "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" "Test PDF Document"
+
+# Note: The other pieces are commented out until we have direct PDF URLs
+# import_score "DIRECT_PDF_URL" "Beethoven - Für Elise"
+# import_score "DIRECT_PDF_URL" "Chopin - Waltz in A minor"
+# import_score "DIRECT_PDF_URL" "Tárrega - Lágrima"
+# import_score "DIRECT_PDF_URL" "Sor - Study in B minor"
+# import_score "DIRECT_PDF_URL" "Villa-Lobos - Prelude No. 1"
 
 echo ""
 echo "🎉 Import process complete!"

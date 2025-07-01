@@ -44,9 +44,29 @@ After seeding metadata, import PDFs using:
 curl -X POST https://scores.mirubato.com/api/import \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $AUTH_TOKEN" \
-  -d '{"url": "https://imslp.org/..."}'
+  -d '{"url": "https://www.mutopiaproject.org/..."}'
 
 # Or use the import UI at /scorebook/import
+```
+
+### Respectful Import Guidelines
+
+When importing from external sources like Mutopia Project:
+
+1. **Be courteous**: Don't import too many files too quickly
+2. **Use delays**: Wait 30+ seconds between imports
+3. **Give attribution**: Credit the source (Mutopia Project)
+4. **Respect licenses**: Ensure compliance with CC licenses
+5. **Test locally first**: Use `import-mutopia.sh local` before production
+
+### Import Scripts
+
+```bash
+# Courteous import with delays
+./scripts/import-mutopia.sh local
+
+# Test import functionality
+./scripts/test-import-local.sh
 ```
 
 ## Troubleshooting
