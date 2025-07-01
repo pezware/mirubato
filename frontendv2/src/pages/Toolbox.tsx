@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
-import { metronome } from '../services/metronomeService'
+import { getMetronome } from '../services/metronomeService'
 
 type PatternState = {
   accent: boolean[]
@@ -40,6 +40,9 @@ const Toolbox: React.FC = () => {
       color: `bg-${layer.color}`,
     })
   )
+
+  // Get metronome instance
+  const metronome = getMetronome()
 
   // Initialize metronome
   useEffect(() => {
@@ -107,7 +110,11 @@ const Toolbox: React.FC = () => {
       setIsPlaying(false)
     } else {
       try {
-        await metronome.start()
+        await metronome.start({
+          tempo: bpm,
+          volume: volume / 100,
+          accentBeats: true,
+        })
         setIsPlaying(true)
       } catch (error) {
         console.error('Failed to start metronome:', error)

@@ -8,7 +8,7 @@ import {
   Minus,
   Volume2,
 } from 'lucide-react'
-import { metronome } from '../../services/metronomeService'
+import { getMetronome } from '../../services/metronomeService'
 import metronomeData from '../../data/metronomePatterns.json'
 import type { MetronomePattern } from '../../types/metronome'
 
@@ -56,6 +56,9 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       color: `bg-${layer.color}`,
     })
   )
+
+  // Get metronome instance
+  const metronome = getMetronome()
 
   // Initialize metronome
   useEffect(() => {
@@ -138,7 +141,11 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       setIsPlaying(false)
     } else {
       try {
-        await metronome.start()
+        await metronome.start({
+          tempo: bpm,
+          volume: volume / 100,
+          accentBeats: true,
+        })
         setIsPlaying(true)
       } catch (error) {
         console.error('Failed to start metronome:', error)
