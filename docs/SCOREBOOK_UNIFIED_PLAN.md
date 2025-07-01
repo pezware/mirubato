@@ -365,6 +365,10 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
 
 - **✅ Phase 4 Complete**: Advanced PDF rendering with custom pdf.js
 - **✅ Phase 5 Complete**: AI-powered import API with Gemini integration
+- **✅ Phase 5.5 Complete**: Data seeding refactor - unified approach
+  - Created `seeds/` directory with environment-specific data
+  - Removed PDFs from repo (use import API instead)
+  - Single source of truth for all seed data
 - **Next - Week 1**: Two-page view and zoom features
 - **Week 2**: Admin UI for bulk imports
 - **Weeks 3-4**: Build initial content library (50+ scores)
