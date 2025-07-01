@@ -28,6 +28,7 @@ const ScoreImport = lazy(() =>
   }))
 )
 const MetronomeMock = lazy(() => import('./pages/MetronomeMock'))
+const Toolbox = lazy(() => import('./pages/Toolbox'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -63,6 +64,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/auth/verify" element={<AuthVerifyPage />} />
               <Route path="/metronome-mock" element={<MetronomeMock />} />
+              <Route path="/toolbox" element={<Toolbox />} />
 
               {/* Protected routes (but work for anonymous users too) */}
               <Route
