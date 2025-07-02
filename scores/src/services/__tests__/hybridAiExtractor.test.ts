@@ -232,8 +232,10 @@ describe('HybridAiExtractor', () => {
       const result = await extractorNoGemini.extractFromPdf(pdfBuffer)
 
       expect(mockExtractMetadataFromPdf).not.toHaveBeenCalled()
-      expect(result.confidence).toBe(0)
-      expect(result.description).toBe('No AI extraction results available')
+      expect(result.confidence).toBe(0.8)
+      expect(result.description).toBe(
+        'Metadata will be extracted via visual analysis during PDF processing'
+      )
     })
   })
 

@@ -40,19 +40,26 @@ export class HybridAiExtractor {
     }
 
     try {
-      // If we prefer Cloudflare and don't need cross-validation
-      if (
-        this.options.preferCloudflare &&
-        !this.options.enableCrossValidation
-      ) {
-        // Try Cloudflare AI first (requires image conversion)
-        // For now, skip directly to Gemini since we need PDF processing
-        // In the future, we'd convert PDF to image first
-        // PDF to image conversion needed for Cloudflare AI
+      // If we only have Cloudflare AI (no Gemini), we'll rely on visual analysis during PDF processing
+      if (!this.geminiApiKey) {
+        // Return a result indicating Cloudflare-only mode
+        // Visual analysis will happen during PDF rendering in the queue processor
+        return {
+          ...results,
+          provider: 'cloudflare',
+          confidence: 0.8, // Default confidence for Cloudflare-only mode
+          description:
+            'Metadata will be extracted via visual analysis during PDF processing',
+          title: url ? this.extractTitleFromUrl(url) : undefined,
+        }
       }
 
-      // Use Gemini for PDF analysis
-      if (this.geminiApiKey) {
+      // If we prefer Cloudflare and don't need cross-validation, still use Gemini as backup
+      if (
+        this.options.preferCloudflare &&
+        !this.options.enableCrossValidation &&
+        this.geminiApiKey
+      ) {
         try {
           const geminiResult = await extractMetadataFromPdf(
             pdfData,
@@ -347,5 +354,23 @@ export class HybridAiExtractor {
       bytes[i] = binaryString.charCodeAt(i)
     }
     return bytes.buffer
+  }
+
+  private extractTitleFromUrl(url: string): string | undefined {
+    try {
+      const urlObj = new URL(url)
+      const pathname = urlObj.pathname
+      const filename = pathname.split('/').pop() || ''
+
+      // Remove file extension and clean up
+      const title = filename
+        .replace(/\.(pdf|PDF)$/, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase())
+
+      return title || undefined
+    } catch {
+      return undefined
+    }
   }
 }

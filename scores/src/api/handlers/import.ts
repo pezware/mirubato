@@ -168,15 +168,17 @@ importHandler.post('/', async c => {
       const hasCloudflareAi = !!c.env.AI
       const hasGeminiApi = !!c.env.GEMINI_API_KEY
 
-      if (hasCloudflareAi && hasGeminiApi && aiProvider !== 'gemini') {
-        // Use hybrid approach for best results
-        // Using hybrid AI extraction (Cloudflare + Gemini)
+      // Default to Cloudflare AI unless explicitly requesting gemini
+      if (hasCloudflareAi && aiProvider !== 'gemini') {
+        // Primary: Use Cloudflare AI (cost-effective, fast)
         const hybridExtractor = new HybridAiExtractor(
-          c.env.AI as any, // Type assertion needed due to workers-types mismatch
+          c.env.AI as unknown as ConstructorParameters<
+            typeof HybridAiExtractor
+          >[0], // Type assertion needed due to workers-types mismatch
           {
-            geminiApiKey: c.env.GEMINI_API_KEY,
+            geminiApiKey: hasGeminiApi ? c.env.GEMINI_API_KEY : undefined,
             preferCloudflare: true,
-            enableCrossValidation: aiProvider === 'hybrid',
+            enableCrossValidation: aiProvider === 'hybrid' && hasGeminiApi,
           }
         )
 
@@ -202,17 +204,10 @@ importHandler.post('/', async c => {
           discrepancies: hybridResult.discrepancies,
         } as Record<string, unknown>
       } else if (hasGeminiApi) {
-        // Fallback to Gemini-only extraction
-        // Using Gemini AI extraction
+        // Fallback: Use Gemini if Cloudflare AI not available or explicitly requested
         const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
         const extractedResult = await aiExtractor.extractFromPdf(pdfBytes, url)
         aiMetadata = extractedResult as Record<string, unknown>
-      } else if (hasCloudflareAi) {
-        // Use Cloudflare AI only (would need PDF to image conversion)
-        console.warn(
-          'Cloudflare AI only - PDF to image conversion not yet implemented'
-        )
-        throw new Error('PDF to image conversion required for Cloudflare AI')
       } else {
         throw new Error('No AI provider configured')
       }
@@ -369,7 +364,7 @@ importHandler.post('/', async c => {
 function generateSlug(
   titleOrText: string,
   opus?: string,
-  composer?: string
+  _composer?: string
 ): string {
   // If called with just one argument (backward compatibility)
   if (arguments.length === 1) {
