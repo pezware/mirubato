@@ -375,16 +375,6 @@ export default function ScoreManagement() {
                     )}
                   </div>
                 )}
-
-                {/* Link to import page */}
-                <div className="mt-3 text-center">
-                  <a
-                    href="/scorebook/import"
-                    className="text-xs text-morandi-sage-600 hover:text-morandi-sage-700 underline"
-                  >
-                    Advanced import options →
-                  </a>
-                </div>
               </div>
             )}
 
