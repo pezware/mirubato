@@ -10,10 +10,8 @@ routes = [
 ]
 
 # Observability
-[observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[observability.logs]
+enabled = true
 
 # Browser Rendering binding
 [browser]
@@ -54,10 +52,8 @@ name = "mirubato-scores-staging"
 vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
 
 # Observability
-[env.staging.observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[env.staging.observability.logs]
+enabled = true
 
 [env.staging.browser]
 binding = "BROWSER"
@@ -102,10 +98,8 @@ routes = [
 ]
 
 # Observability
-[env.dev.observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[env.dev.observability.logs]
+enabled = true
 
 [env.dev.browser]
 binding = "BROWSER"
@@ -142,10 +136,8 @@ dead_letter_queue = "pdf-processing-dev-dlq"
 vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
 # Observability
-[env.local.observability]
-logs = [
-  { enabled = false }
-]
+[env.local.observability.logs]
+enabled = false
 
 [env.local.browser]
 binding = "BROWSER"
@@ -174,10 +166,8 @@ name = "mirubato-scores"
 vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
 
 # Observability
-[env.production.observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[env.production.observability.logs]
+enabled = true
 
 [env.production.browser]
 binding = "BROWSER"

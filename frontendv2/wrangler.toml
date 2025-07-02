@@ -14,10 +14,8 @@ API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
 
 # Observability
-[observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[observability.logs]
+enabled = true
 
 [[routes]]
 pattern = "mirubato.com"
@@ -37,10 +35,8 @@ API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
 
 # Observability
-[env.production.observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[env.production.observability.logs]
+enabled = true
 
 [[env.production.routes]]
 pattern = "mirubato.com"
@@ -64,10 +60,8 @@ API_URL = "https://api-staging.mirubato.com"
 SCORES_URL = "https://scores-staging.mirubato.com"
 
 # Observability
-[env.staging.observability]
-logs = [
-  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
-]
+[env.staging.observability.logs]
+enabled = true
 
 [[env.staging.routes]]
 pattern = "staging.mirubato.com"
@@ -95,7 +89,5 @@ API_URL = "http://api-mirubato.localhost:9797"
 SCORES_URL = "http://scores-mirubato.localhost:9788"
 
 # Observability
-[env.local.observability]
-logs = [
-  { enabled = false }
-]
+[env.local.observability.logs]
+enabled = false
