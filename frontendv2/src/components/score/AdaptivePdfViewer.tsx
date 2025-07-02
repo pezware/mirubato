@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import PdfViewer, { type PdfError } from './PdfViewer'
 import ImageBasedPdfViewer from './ImageBasedPdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
@@ -28,10 +28,17 @@ export default function AdaptivePdfViewer({
 }: AdaptivePdfViewerProps) {
   const [useImageViewer, setUseImageViewer] = useState(false)
   const [isImageBasedScore, setIsImageBasedScore] = useState(false)
-  const [pdfUrl, setPdfUrl] = useState('')
   const [totalPages, setTotalPages] = useState<number | undefined>()
   const [errorCount, setErrorCount] = useState(0)
   const maxRetries = 3
+
+  // Memoize PDF URL to prevent re-renders
+  const pdfUrl = useMemo(() => {
+    if (!useImageViewer && !isImageBasedScore) {
+      return scoreService.getScorePdfUrl(scoreId)
+    }
+    return ''
+  }, [scoreId, useImageViewer, isImageBasedScore])
 
   // Reset error count when scoreId changes
   useEffect(() => {
@@ -62,7 +69,6 @@ export default function AdaptivePdfViewer({
       }
       if (forcePdfViewer) {
         setUseImageViewer(false)
-        setPdfUrl(scoreService.getScorePdfUrl(scoreId))
         return
       }
 
@@ -70,7 +76,6 @@ export default function AdaptivePdfViewer({
       if (DeviceDetection.isLocalDevelopment()) {
         console.log('Local development detected - using PDF viewer')
         setUseImageViewer(false)
-        setPdfUrl(scoreService.getScorePdfUrl(scoreId))
         return
       }
 
@@ -78,7 +83,6 @@ export default function AdaptivePdfViewer({
       // TODO: Re-enable once browser rendering is more stable or implement pre-rendering
       console.log('Using PDF viewer - image rendering temporarily disabled')
       setUseImageViewer(false)
-      setPdfUrl(scoreService.getScorePdfUrl(scoreId))
       return
 
       // Use device detection to determine viewer mode
@@ -121,7 +125,6 @@ export default function AdaptivePdfViewer({
         } else {
           // Default to PDF viewer on desktop
           setUseImageViewer(false)
-          setPdfUrl(scoreService.getScorePdfUrl(scoreId))
         }
       }
     }
@@ -147,7 +150,6 @@ export default function AdaptivePdfViewer({
     if (useImageViewer && !forcePdfViewer) {
       console.log('Image viewer failed, falling back to PDF viewer')
       setUseImageViewer(false)
-      setPdfUrl(scoreService.getScorePdfUrl(scoreId))
     }
 
     onError?.(error)
