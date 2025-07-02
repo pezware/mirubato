@@ -263,7 +263,10 @@ importHandler.post('/', async c => {
       )
       .bind(
         scoreId,
-        generateSlug((aiMetadata.title as string) || cleanFileName),
+        generateSlug(
+          (aiMetadata.title as string) || cleanFileName,
+          aiMetadata.opus as string
+        ),
         (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
         (aiMetadata.subtitle as string) || null,
         (aiMetadata.composer as string) || 'Unknown',
@@ -314,7 +317,10 @@ importHandler.post('/', async c => {
       success: true,
       data: {
         id: scoreId,
-        slug: generateSlug((aiMetadata.title as string) || cleanFileName),
+        slug: generateSlug(
+          (aiMetadata.title as string) || cleanFileName,
+          aiMetadata.opus as string
+        ),
         title:
           (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
         composer: (aiMetadata.composer as string) || 'Unknown',
@@ -359,9 +365,35 @@ importHandler.post('/', async c => {
   }
 })
 
-// Helper function to generate slug
-function generateSlug(text: string): string {
-  return text
+// Helper function to generate slug with opus information
+function generateSlug(
+  titleOrText: string,
+  opus?: string,
+  composer?: string
+): string {
+  // If called with just one argument (backward compatibility)
+  if (arguments.length === 1) {
+    return titleOrText
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 100)
+  }
+
+  // Enhanced slug generation including opus
+  const slugParts = [titleOrText]
+
+  if (opus) {
+    // Extract opus number and part (e.g., "Op. 11 No. 6" -> "op11-no6")
+    const opusSlug = opus
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+    slugParts.push(opusSlug)
+  }
+
+  return slugParts
+    .join('-')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
