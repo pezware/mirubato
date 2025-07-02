@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 
 // Configure pdf.js worker - must be set before any PDF operations
@@ -402,6 +402,14 @@ export default function PdfViewer({
     }
   }, [])
 
+  // Memoize document options to prevent re-renders
+  const documentOptions = useMemo(() => {
+    const token = localStorage.getItem('auth-token')
+    return {
+      httpHeaders: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  }, []) // Empty deps - we don't want to re-create on token changes during the session
+
   if (error) {
     return (
       <div
@@ -435,13 +443,7 @@ export default function PdfViewer({
         file={url}
         onLoadSuccess={handleDocumentLoadSuccess}
         onLoadError={handleDocumentLoadError}
-        options={{
-          httpHeaders: {
-            Authorization: localStorage.getItem('auth-token')
-              ? `Bearer ${localStorage.getItem('auth-token')}`
-              : undefined,
-          },
-        }}
+        options={documentOptions}
         loading={
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
