@@ -56,6 +56,7 @@ npm run dev
 - **Frontend**: React + TypeScript + Vite + Tailwind + Zustand
 - **API**: Cloudflare Workers + Hono + D1 (SQLite) + R2 (Object Storage)
 - **PDF Viewing**: Client-side PDF.js rendering (image-based rendering abandoned)
+- **AI Integration**: Cloudflare AI (primary) + Gemini (fallback) for metadata extraction
 - **Audio**: Tone.js for metronome (not yet implemented)
 
 ### Component Structure
@@ -198,10 +199,12 @@ rm -rf .wrangler/state
   - Automatic page ordering
 
 - **AI-Powered Organization**:
-  - Gemini extracts metadata from images
+  - Cloudflare AI Vision for primary metadata extraction (25x cheaper)
+  - Gemini as fallback for enhanced accuracy
   - Handles partial/fragmented scores
   - Optional manual metadata entry
   - Confidence scoring for AI results
+  - Visual analysis stored in database
 
 - **Collection Management**:
   - "My Uploads" auto-created collection
@@ -222,6 +225,8 @@ rm -rf .wrangler/state
 ### Protected Endpoints (Authentication Required)
 
 - `POST /api/import` - Import score from URL or file upload
+  - Supports `aiProvider` parameter: `cloudflare` (default), `gemini`, or `hybrid`
+  - Enhanced slug generation with opus information
 - `POST /api/import/image` - Upload score images (NEW)
 - `GET /api/user/scores` - List user's private scores
 - `GET /api/user/collections` - List user's collections
@@ -326,6 +331,19 @@ npm run seed:local  # Seeds test scores in D1 database
 - [ ] Full access indicator for authenticated users
 - [ ] Practice tracking only available when signed in
 
+## Recent Improvements (Jan 2025)
+
+1. **Cloudflare AI Integration**:
+   - Primary AI provider for metadata extraction (25x cheaper than Gemini)
+   - Visual analysis of sheet music images
+   - Hybrid approach with Gemini as fallback
+   - ~2-3 second processing vs ~5-8 seconds with Gemini
+
+2. **Slug Generation Enhancement**:
+   - Fixed duplicate slug issues for pieces with same title
+   - Now includes opus information (e.g., "etude-op-10-no-1")
+   - Prevents import failures for similar pieces
+
 ## Known Issues & Next Steps
 
 ### Current Limitations
@@ -358,10 +376,13 @@ npm run seed:local  # Seeds test scores in D1 database
    - Teacher assignments
    - Group challenges
 
-3. **AI Integration**
-   - Difficulty analysis
-   - Practice recommendations
-   - Automated feedback
+3. **AI Integration** (Partially Complete)
+   - ✅ Metadata extraction with Cloudflare AI
+   - ✅ Visual analysis of sheet music
+   - ✅ Confidence scoring and validation
+   - [ ] Difficulty analysis
+   - [ ] Practice recommendations
+   - [ ] Automated feedback
 
 ## Security & Access Control
 
