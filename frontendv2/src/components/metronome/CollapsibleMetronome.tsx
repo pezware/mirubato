@@ -269,12 +269,12 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       <div
         className={`rounded-lg shadow-lg transition-all duration-300 ${
           settings.isExpanded
-            ? 'w-80 bg-morandi-stone-50/90 backdrop-blur-sm'
+            ? 'w-80 bg-morandi-stone-50/70 backdrop-blur-sm'
             : 'w-16'
         } ${
           position === 'corner' && !settings.isExpanded
-            ? 'bg-morandi-stone-50/80 backdrop-blur-sm'
-            : 'bg-morandi-stone-50'
+            ? 'bg-morandi-stone-50/70 backdrop-blur-sm'
+            : 'bg-morandi-stone-50/70 backdrop-blur-sm'
         } ${
           isFlashing && isPlaying ? 'ring-2 ring-morandi-purple-400/50' : ''
         }`}
@@ -333,7 +333,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
           </div>
         ) : (
           /* Expanded State */
-          <div className="p-4 opacity-90">
+          <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-morandi-stone-900">
                 Advanced Metronome
