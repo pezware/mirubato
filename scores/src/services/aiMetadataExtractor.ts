@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 
-interface ExtractedMetadata {
+export interface ExtractedMetadata {
   title?: string
   subtitle?: string
   composer?: string
@@ -15,6 +15,7 @@ interface ExtractedMetadata {
   extractedAt: string
   confidence: number
   error?: string
+  [key: string]: unknown // Add index signature
 }
 
 export class AiMetadataExtractor {

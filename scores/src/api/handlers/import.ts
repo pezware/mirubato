@@ -4,7 +4,6 @@ import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
 import { HybridAiExtractor } from '../../services/hybridAiExtractor'
-import { CloudflareAiExtractor } from '../../services/cloudflareAiExtractor'
 
 const importHandler = new Hono<{ Bindings: Env }>()
 
@@ -163,7 +162,7 @@ importHandler.post('/', async c => {
     })
 
     // Extract metadata using AI (with provider selection)
-    let aiMetadata: any
+    let aiMetadata: Record<string, unknown>
     try {
       // Check which AI providers are available
       const hasCloudflareAi = !!c.env.AI
@@ -171,19 +170,21 @@ importHandler.post('/', async c => {
 
       if (hasCloudflareAi && hasGeminiApi && aiProvider !== 'gemini') {
         // Use hybrid approach for best results
-        console.log('Using hybrid AI extraction (Cloudflare + Gemini)')
-        const hybridExtractor = new HybridAiExtractor(c.env.AI as any, {
-          geminiApiKey: c.env.GEMINI_API_KEY,
-          preferCloudflare: true,
-          enableCrossValidation: aiProvider === 'hybrid',
-        })
+        // Using hybrid AI extraction (Cloudflare + Gemini)
+        const hybridExtractor = new HybridAiExtractor(
+          c.env.AI as any, // Type assertion needed due to workers-types mismatch
+          {
+            geminiApiKey: c.env.GEMINI_API_KEY,
+            preferCloudflare: true,
+            enableCrossValidation: aiProvider === 'hybrid',
+          }
+        )
 
         const hybridResult = await hybridExtractor.extractFromPdf(
           pdfBuffer,
           url
         )
         aiMetadata = {
-          ...hybridResult,
           title: hybridResult.title,
           subtitle: hybridResult.subtitle,
           composer: hybridResult.composer,
@@ -199,12 +200,13 @@ importHandler.post('/', async c => {
           extractedAt: new Date().toISOString(),
           provider: hybridResult.provider,
           discrepancies: hybridResult.discrepancies,
-        }
+        } as Record<string, unknown>
       } else if (hasGeminiApi) {
         // Fallback to Gemini-only extraction
-        console.log('Using Gemini AI extraction')
+        // Using Gemini AI extraction
         const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
-        aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+        const extractedResult = await aiExtractor.extractFromPdf(pdfBytes, url)
+        aiMetadata = extractedResult as Record<string, unknown>
       } else if (hasCloudflareAi) {
         // Use Cloudflare AI only (would need PDF to image conversion)
         console.warn(
@@ -219,7 +221,7 @@ importHandler.post('/', async c => {
       if (aiMetadata.error) {
         console.warn('AI extraction had issues:', aiMetadata.error)
       }
-      if (aiMetadata.confidence < 0.5) {
+      if ((aiMetadata.confidence as number) < 0.5) {
         console.warn('Low confidence AI extraction, used fallback')
       }
     } catch (error) {
@@ -261,24 +263,24 @@ importHandler.post('/', async c => {
       )
       .bind(
         scoreId,
-        generateSlug(aiMetadata.title || cleanFileName),
-        aiMetadata.title || cleanFileName.replace('.pdf', ''),
-        aiMetadata.subtitle || null,
-        aiMetadata.composer || 'Unknown',
-        aiMetadata.opus || null,
-        aiMetadata.instrument || 'PIANO',
-        aiMetadata.difficulty || 'INTERMEDIATE',
-        aiMetadata.difficultyLevel || 5,
-        aiMetadata.year || null,
-        aiMetadata.stylePeriod || null,
-        JSON.stringify(aiMetadata.tags || []),
-        aiMetadata.description || null,
+        generateSlug((aiMetadata.title as string) || cleanFileName),
+        (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
+        (aiMetadata.subtitle as string) || null,
+        (aiMetadata.composer as string) || 'Unknown',
+        (aiMetadata.opus as string) || null,
+        (aiMetadata.instrument as string) || 'PIANO',
+        (aiMetadata.difficulty as string) || 'INTERMEDIATE',
+        (aiMetadata.difficultyLevel as number) || 5,
+        (aiMetadata.year as number) || null,
+        (aiMetadata.stylePeriod as string) || null,
+        JSON.stringify((aiMetadata.tags as string[]) || []),
+        (aiMetadata.description as string) || null,
         'manual', // Changed from 'import' to satisfy DB constraint
         url,
         `/files/${r2Key}`,
         cleanFileName,
         'completed',
-        JSON.stringify(aiMetadata),
+        JSON.stringify(aiMetadata as Record<string, unknown>),
         new Date().toISOString()
       )
       .run()
@@ -293,24 +295,40 @@ importHandler.post('/', async c => {
       .run()
 
     // Return success response with warning if AI had issues
-    const response: any = {
+    interface ImportResponse {
+      success: boolean
+      data: {
+        id: string
+        slug: string
+        title: string
+        composer: string
+        instrument: string
+        difficulty: string
+        pdfUrl: string
+        metadata: Record<string, unknown>
+      }
+      warning?: string
+    }
+
+    const response: ImportResponse = {
       success: true,
       data: {
         id: scoreId,
-        slug: generateSlug(aiMetadata.title || cleanFileName),
-        title: aiMetadata.title || cleanFileName.replace('.pdf', ''),
-        composer: aiMetadata.composer || 'Unknown',
-        instrument: aiMetadata.instrument || 'PIANO',
-        difficulty: aiMetadata.difficulty || 'INTERMEDIATE',
+        slug: generateSlug((aiMetadata.title as string) || cleanFileName),
+        title:
+          (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
+        composer: (aiMetadata.composer as string) || 'Unknown',
+        instrument: (aiMetadata.instrument as string) || 'PIANO',
+        difficulty: (aiMetadata.difficulty as string) || 'INTERMEDIATE',
         pdfUrl: `/files/${r2Key}`,
         metadata: aiMetadata,
       },
     }
 
     // Add warning if AI extraction had issues
-    if (aiMetadata.error || aiMetadata.confidence < 0.7) {
+    if (aiMetadata.error || (aiMetadata.confidence as number) < 0.7) {
       response.warning =
-        aiMetadata.error ||
+        (aiMetadata.error as string) ||
         'AI analysis had low confidence. Some metadata was extracted from the URL.'
     }
 

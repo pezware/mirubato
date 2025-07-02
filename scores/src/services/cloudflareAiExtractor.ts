@@ -115,14 +115,19 @@ Analyze the complexity and density of the musical notation.`
   }
 
   private parseResponse(
-    response: any,
-    analysisType: string
+    response: unknown,
+    _analysisType: string
   ): ImageAnalysisResult {
     try {
       // Extract JSON from the response
-      let parsedData: any
-      const responseText =
-        response?.response || response?.choices?.[0]?.message?.content || ''
+      let parsedData: Record<string, unknown>
+      const responseRecord = response as Record<string, unknown>
+      const choices = responseRecord?.choices as
+        | Array<{ message?: { content?: string } }>
+        | undefined
+      const responseText = String(
+        responseRecord?.response || choices?.[0]?.message?.content || ''
+      )
 
       // Try to find JSON in the response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
@@ -135,18 +140,23 @@ Analyze the complexity and density of the musical notation.`
 
       // Map to our result structure
       const result: ImageAnalysisResult = {
-        title: parsedData.title,
-        composer: parsedData.composer || parsedData.arranger,
-        instrument: parsedData.instrument,
-        difficulty: parsedData.difficulty,
-        difficultyLabel: this.getDifficultyLabel(parsedData.difficulty),
-        year: parsedData.year,
-        stylePeriod: parsedData.stylePeriod,
-        tags: parsedData.tags || [],
-        description: parsedData.description,
+        title: parsedData.title as string | undefined,
+        composer: (parsedData.composer || parsedData.arranger) as
+          | string
+          | undefined,
+        instrument: parsedData.instrument as string | undefined,
+        difficulty: parsedData.difficulty as number | undefined,
+        difficultyLabel: this.getDifficultyLabel(
+          parsedData.difficulty as number | undefined
+        ),
+        year: parsedData.year as number | undefined,
+        stylePeriod: parsedData.stylePeriod as string | undefined,
+        tags: (parsedData.tags as string[]) || [],
+        description: parsedData.description as string | undefined,
         confidence: this.calculateConfidence(parsedData),
         provider: 'cloudflare',
-        visualFeatures: parsedData.visualFeatures,
+        visualFeatures:
+          parsedData.visualFeatures as ImageAnalysisResult['visualFeatures'],
         rawResponse: response,
       }
 
@@ -159,40 +169,56 @@ Analyze the complexity and density of the musical notation.`
         provider: 'cloudflare',
         rawResponse: response,
         description: 'Failed to parse AI response',
+        tags: [],
       }
     }
   }
 
-  private calculateConfidence(data: any): number {
+  private calculateConfidence(data: Record<string, unknown>): number {
     let confidence = 0
     let fields = 0
 
     // Check each field and add to confidence
-    if (data.title && data.title.length > 0) {
+    const title = data.title as string | undefined
+    if (title && title.length > 0) {
       confidence += 0.2
       fields++
     }
-    if (data.composer && data.composer.length > 0) {
+
+    const composer = data.composer as string | undefined
+    if (composer && composer.length > 0) {
       confidence += 0.2
       fields++
     }
-    if (data.instrument && data.instrument.length > 0) {
+
+    const instrument = data.instrument as string | undefined
+    if (instrument && instrument.length > 0) {
       confidence += 0.15
       fields++
     }
-    if (data.difficulty && data.difficulty >= 1 && data.difficulty <= 10) {
+
+    const difficulty = data.difficulty as number | undefined
+    if (difficulty && difficulty >= 1 && difficulty <= 10) {
       confidence += 0.15
       fields++
     }
-    if (data.visualFeatures && Object.keys(data.visualFeatures).length > 3) {
+
+    const visualFeatures = data.visualFeatures as
+      | Record<string, unknown>
+      | undefined
+    if (visualFeatures && Object.keys(visualFeatures).length > 3) {
       confidence += 0.15
       fields++
     }
-    if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
+
+    const tags = data.tags as unknown[]
+    if (tags && Array.isArray(tags) && tags.length > 0) {
       confidence += 0.1
       fields++
     }
-    if (data.description && data.description.length > 10) {
+
+    const description = data.description as string | undefined
+    if (description && description.length > 10) {
       confidence += 0.05
       fields++
     }
@@ -213,8 +239,8 @@ Analyze the complexity and density of the musical notation.`
 
   // Utility method to convert PDF page to image if needed
   async convertPdfPageToImage(
-    pdfData: ArrayBuffer,
-    pageNumber: number = 1
+    _pdfData: ArrayBuffer,
+    _pageNumber: number = 1
   ): Promise<{ imageData: string; mimeType: 'image/png' }> {
     // This would need to be implemented using PDF.js or similar
     // For now, throw an error indicating this needs external processing

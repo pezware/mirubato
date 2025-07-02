@@ -130,7 +130,12 @@ async function analyzePdf(
     )
 
     const result = await page.evaluate(() => {
-      const global = globalThis as any
+      const global = globalThis as {
+        pdfInfo?: { pageCount: number }
+        pdfError?: string
+        renderComplete?: boolean
+        renderError?: string
+      }
       return {
         info: global.pdfInfo,
         error: global.pdfError,
@@ -141,7 +146,7 @@ async function analyzePdf(
       throw new Error(`PDF analysis failed: ${result.error}`)
     }
 
-    return { pageCount: result.info.pageCount }
+    return { pageCount: result.info?.pageCount || 0 }
   } finally {
     await browser.close()
   }
@@ -183,7 +188,12 @@ async function renderAndStorePage(
 
     // Check for errors
     const error = await page.evaluate(() => {
-      const global = globalThis as any
+      const global = globalThis as {
+        pdfInfo?: { pageCount: number }
+        pdfError?: string
+        renderComplete?: boolean
+        renderError?: string
+      }
       return global.renderError
     })
     if (error) {
@@ -208,7 +218,7 @@ async function renderAndStorePage(
     // For the first page, perform AI analysis if Cloudflare AI is available
     if (pageNumber === 1 && env.AI) {
       try {
-        console.log('Performing AI visual analysis on first page')
+        // Performing AI visual analysis on first page
 
         // Convert webp to base64 for AI analysis
         const base64Image = btoa(
@@ -241,10 +251,7 @@ async function renderAndStorePage(
             )
             .run()
 
-          console.log(
-            'Visual analysis stored with confidence:',
-            visualAnalysis.confidence
-          )
+          // Visual analysis stored with confidence: {visualAnalysis.confidence}
         }
       } catch (error) {
         console.error('Visual analysis failed:', error)

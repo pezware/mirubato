@@ -1,11 +1,7 @@
 import { Ai } from '@cloudflare/workers-types'
 import { CloudflareAiExtractor } from './cloudflareAiExtractor'
 import { extractMetadataFromPdf } from './aiMetadataExtractor'
-import {
-  AiMetadataResult,
-  HybridAnalysisResult,
-  ImageAnalysisRequest,
-} from '../types/ai'
+import { HybridAnalysisResult, ImageAnalysisRequest } from '../types/ai'
 
 export interface HybridAiOptions {
   preferCloudflare?: boolean // Use Cloudflare AI as primary (cost-effective)
@@ -40,6 +36,7 @@ export class HybridAiExtractor {
       provider: 'hybrid',
       mergedConfidence: 0,
       discrepancies: [],
+      tags: [],
     }
 
     try {
@@ -51,7 +48,7 @@ export class HybridAiExtractor {
         // Try Cloudflare AI first (requires image conversion)
         // For now, skip directly to Gemini since we need PDF processing
         // In the future, we'd convert PDF to image first
-        console.log('PDF to image conversion needed for Cloudflare AI')
+        // PDF to image conversion needed for Cloudflare AI
       }
 
       // Use Gemini for PDF analysis
@@ -67,6 +64,7 @@ export class HybridAiExtractor {
             difficulty: geminiResult.difficultyLevel, // Use numeric difficulty
             confidence: this.calculateGeminiConfidence(geminiResult),
             provider: 'gemini',
+            tags: geminiResult.tags || [],
           }
         } catch (error) {
           console.error('Gemini extraction failed:', error)
@@ -89,6 +87,7 @@ export class HybridAiExtractor {
       provider: 'hybrid',
       mergedConfidence: 0,
       discrepancies: [],
+      tags: [],
     }
 
     try {
@@ -128,6 +127,7 @@ export class HybridAiExtractor {
             difficulty: geminiResult.difficultyLevel, // Use numeric difficulty
             confidence: this.calculateGeminiConfidence(geminiResult),
             provider: 'gemini',
+            tags: geminiResult.tags || [],
           }
         } catch (error) {
           console.error('Gemini extraction failed:', error)
@@ -173,6 +173,7 @@ export class HybridAiExtractor {
         discrepancies: [],
         confidence: 0,
         mergedConfidence: 0,
+        tags: [],
       }
 
       // Compare and merge fields
@@ -304,7 +305,7 @@ export class HybridAiExtractor {
     return value1
   }
 
-  private calculateGeminiConfidence(result: any): number {
+  private calculateGeminiConfidence(result: Record<string, unknown>): number {
     let confidence = 0
     let fields = 0
 
@@ -324,7 +325,8 @@ export class HybridAiExtractor {
       confidence += 0.15
       fields++
     }
-    if (result.tags && result.tags.length > 0) {
+    const tags = result.tags as string[] | undefined
+    if (tags && tags.length > 0) {
       confidence += 0.1
       fields++
     }

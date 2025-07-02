@@ -10,11 +10,11 @@ export interface AiMetadataResult {
   difficultyLabel?: string
   year?: number
   stylePeriod?: string
-  tags?: string[]
+  tags: string[]
   description?: string
   confidence: number
   provider: 'cloudflare' | 'gemini' | 'hybrid'
-  rawResponse?: any
+  rawResponse?: unknown
   visualFeatures?: {
     notationType?: 'standard' | 'tablature' | 'chord-chart' | 'lead-sheet'
     staffCount?: number
