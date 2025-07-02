@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 
-interface ExtractedMetadata {
+export interface ExtractedMetadata {
   title?: string
   subtitle?: string
   composer?: string
@@ -15,6 +15,7 @@ interface ExtractedMetadata {
   extractedAt: string
   confidence: number
   error?: string
+  [key: string]: unknown // Add index signature
 }
 
 export class AiMetadataExtractor {
@@ -174,4 +175,16 @@ Example response:
   isAvailable(): boolean {
     return this.isInitialized
   }
+}
+
+// Export helper function for backward compatibility
+export async function extractMetadataFromPdf(
+  pdfBytes: ArrayBuffer | Uint8Array,
+  apiKey?: string,
+  sourceUrl?: string
+): Promise<ExtractedMetadata> {
+  const extractor = new AiMetadataExtractor(apiKey)
+  const uint8Array =
+    pdfBytes instanceof ArrayBuffer ? new Uint8Array(pdfBytes) : pdfBytes
+  return extractor.extractFromPdf(uint8Array, sourceUrl || '')
 }

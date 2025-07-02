@@ -37,7 +37,7 @@ interface Env {
 
   // Optional enhanced features (from wrangler-enhanced.toml)
   BROWSER?: any // Browser Rendering API
-  AI?: any // Workers AI
+  AI?: Ai // Workers AI binding
   GEMINI_API_KEY?: string // Vertex AI/Gemini API key
 
   // Queue bindings

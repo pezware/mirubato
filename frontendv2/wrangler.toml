@@ -13,6 +13,10 @@ binding = "ASSETS"
 API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
 
+# Observability
+[observability.logs]
+enabled = true
+
 [[routes]]
 pattern = "mirubato.com"
 custom_domain = true
@@ -29,6 +33,10 @@ workers_dev = false
 [env.production.vars]
 API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
+
+# Observability
+[env.production.observability.logs]
+enabled = true
 
 [[env.production.routes]]
 pattern = "mirubato.com"
@@ -50,6 +58,10 @@ workers_dev = false
 [env.staging.vars]
 API_URL = "https://api-staging.mirubato.com"
 SCORES_URL = "https://scores-staging.mirubato.com"
+
+# Observability
+[env.staging.observability.logs]
+enabled = true
 
 [[env.staging.routes]]
 pattern = "staging.mirubato.com"
@@ -75,3 +87,7 @@ workers_dev = true
 [env.local.vars]
 API_URL = "http://api-mirubato.localhost:9797"
 SCORES_URL = "http://scores-mirubato.localhost:9788"
+
+# Observability
+[env.local.observability.logs]
+enabled = false

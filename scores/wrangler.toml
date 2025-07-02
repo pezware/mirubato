@@ -9,9 +9,17 @@ routes = [
   { pattern = "scores.mirubato.com", custom_domain = true }
 ]
 
+# Observability
+[observability.logs]
+enabled = true
+
 # Browser Rendering binding
 [browser]
 binding = "BROWSER"
+
+# AI binding for Cloudflare Workers AI
+[ai]
+binding = "AI"
 
 # Queue for PDF processing
 [[queues.consumers]]
@@ -43,8 +51,15 @@ queue = "pdf-processing"
 name = "mirubato-scores-staging"
 vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
 
+# Observability
+[env.staging.observability.logs]
+enabled = true
+
 [env.staging.browser]
 binding = "BROWSER"
+
+[env.staging.ai]
+binding = "AI"
 
 [[env.staging.routes]]
 pattern = "scores-staging.mirubato.com"
@@ -82,8 +97,15 @@ routes = [
   { pattern = "scores-dev.pezware.workers.dev", zone_name = "pezware.workers.dev" }
 ]
 
+# Observability
+[env.dev.observability.logs]
+enabled = true
+
 [env.dev.browser]
 binding = "BROWSER"
+
+[env.dev.ai]
+binding = "AI"
 
 [[env.dev.d1_databases]]
 binding = "DB"
@@ -113,8 +135,15 @@ dead_letter_queue = "pdf-processing-dev-dlq"
 [env.local]
 vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
+# Observability
+[env.local.observability.logs]
+enabled = false
+
 [env.local.browser]
 binding = "BROWSER"
+
+[env.local.ai]
+binding = "AI"
 
 [[env.local.d1_databases]]
 binding = "DB"
@@ -136,8 +165,15 @@ id = "local"
 name = "mirubato-scores"
 vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
 
+# Observability
+[env.production.observability.logs]
+enabled = true
+
 [env.production.browser]
 binding = "BROWSER"
+
+[env.production.ai]
+binding = "AI"
 
 [[env.production.routes]]
 pattern = "scores.mirubato.com"

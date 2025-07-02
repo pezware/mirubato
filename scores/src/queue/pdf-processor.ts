@@ -2,6 +2,8 @@ import { launch } from '@cloudflare/puppeteer'
 import { R2Presigner } from '../utils/r2-presigner'
 import { PdfCacheManager } from '../utils/pdfCache'
 import { generatePdfHtmlTemplate } from '../utils/pdfHtmlTemplate'
+import { CloudflareAiExtractor } from '../services/cloudflareAiExtractor'
+import { ImageAnalysisRequest } from '../types/ai'
 
 interface ProcessPdfMessage {
   type: 'process-new-score'
@@ -128,7 +130,12 @@ async function analyzePdf(
     )
 
     const result = await page.evaluate(() => {
-      const global = globalThis as any
+      const global = globalThis as {
+        pdfInfo?: { pageCount: number }
+        pdfError?: string
+        renderComplete?: boolean
+        renderError?: string
+      }
       return {
         info: global.pdfInfo,
         error: global.pdfError,
@@ -139,7 +146,7 @@ async function analyzePdf(
       throw new Error(`PDF analysis failed: ${result.error}`)
     }
 
-    return { pageCount: result.info.pageCount }
+    return { pageCount: result.info?.pageCount || 0 }
   } finally {
     await browser.close()
   }
@@ -181,7 +188,12 @@ async function renderAndStorePage(
 
     // Check for errors
     const error = await page.evaluate(() => {
-      const global = globalThis as any
+      const global = globalThis as {
+        pdfInfo?: { pageCount: number }
+        pdfError?: string
+        renderComplete?: boolean
+        renderError?: string
+      }
       return global.renderError
     })
     if (error) {
@@ -202,6 +214,50 @@ async function renderAndStorePage(
         contentType: 'image/webp',
       },
     })
+
+    // For the first page, perform AI analysis if Cloudflare AI is available
+    if (pageNumber === 1 && env.AI) {
+      try {
+        // Performing AI visual analysis on first page
+
+        // Convert webp to base64 for AI analysis
+        const base64Image = btoa(
+          String.fromCharCode(...new Uint8Array(screenshot))
+        )
+
+        const aiExtractor = new CloudflareAiExtractor(env.AI as any)
+        const analysisRequest: ImageAnalysisRequest = {
+          imageData: base64Image,
+          mimeType: 'image/webp',
+          analysisType: 'score-metadata',
+        }
+
+        const visualAnalysis =
+          await aiExtractor.extractFromImage(analysisRequest)
+
+        // Store visual analysis results in the database
+        if (visualAnalysis.confidence > 0.5) {
+          await env.DB.prepare(
+            `UPDATE scores 
+             SET visual_analysis = ?, 
+                 visual_confidence = ?,
+                 updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`
+          )
+            .bind(
+              JSON.stringify(visualAnalysis),
+              visualAnalysis.confidence,
+              scoreId
+            )
+            .run()
+
+          // Visual analysis stored with confidence: {visualAnalysis.confidence}
+        }
+      } catch (error) {
+        console.error('Visual analysis failed:', error)
+        // Don't fail the whole process if AI analysis fails
+      }
+    }
   } finally {
     await browser.close()
   }
