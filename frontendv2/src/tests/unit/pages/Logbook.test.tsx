@@ -139,10 +139,10 @@ describe('LogbookPage', () => {
 
     expect(screen.getByText('auth:signIn')).toBeInTheDocument()
     // The sync status is hidden on mobile but still in the DOM
-    // We need to use a query that finds hidden elements
-    const hiddenSpan = document.querySelector('.hidden.sm\\:inline')
-    expect(hiddenSpan).toBeInTheDocument()
-    expect(hiddenSpan?.textContent).toContain('logbook:syncStatus.localOnly')
+    // We need to use a query that finds hidden elements with the updated class
+    const hiddenDiv = document.querySelector('.hidden.sm\\:block')
+    expect(hiddenDiv).toBeInTheDocument()
+    expect(hiddenDiv?.textContent).toContain('logbook:syncStatus.localOnly')
   })
 
   it('should show user email and sign out when authenticated', () => {

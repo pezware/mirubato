@@ -30,7 +30,9 @@
     "home": "Accueil",
     "logbook": "Journal",
     "reports": "Rapports",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "menu": "Menu",
+    "closeMenu": "Fermer le menu"
   },
   "time": {
     "minute": "minute",

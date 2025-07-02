@@ -106,6 +106,14 @@
     "piano": "Klavier",
     "guitar": "Gitarre"
   },
+  "navigation": {
+    "home": "Startseite",
+    "logbook": "Übungsbuch",
+    "reports": "Berichte",
+    "settings": "Einstellungen",
+    "menu": "Menü",
+    "closeMenu": "Menü schließen"
+  },
   "music": {
     "practice": "Üben",
     "lesson": "Unterricht",

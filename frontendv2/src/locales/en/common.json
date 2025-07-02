@@ -30,7 +30,9 @@
     "home": "Home",
     "logbook": "Logbook",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "menu": "Menu",
+    "closeMenu": "Close menu"
   },
   "time": {
     "minute": "minute",

@@ -28,7 +28,9 @@
     "home": "Inicio",
     "logbook": "Diario",
     "reports": "Informes",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "menu": "Menú",
+    "closeMenu": "Cerrar menú"
   },
   "time": {
     "minute": "minuto",
