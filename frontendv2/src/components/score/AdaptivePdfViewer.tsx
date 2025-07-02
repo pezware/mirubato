@@ -48,7 +48,20 @@ export default function AdaptivePdfViewer({
   // Detect device and capabilities
   useEffect(() => {
     const detectViewerMode = async () => {
-      // First, check if this is an image-based score
+      // When forcePdfViewer is true, we know it's a PDF - skip everything
+      if (forcePdfViewer) {
+        setUseImageViewer(false)
+        setIsImageBasedScore(false) // Explicitly set to false
+        return
+      }
+
+      // Check for forced image viewer
+      if (forceImageViewer) {
+        setUseImageViewer(true)
+        return
+      }
+
+      // Only check score type when NOT forced
       try {
         const score = await scoreService.getScore(scoreId)
         if (
@@ -60,16 +73,6 @@ export default function AdaptivePdfViewer({
         }
       } catch (error) {
         console.error('Failed to fetch score details:', error)
-      }
-
-      // Check for forced modes first
-      if (forceImageViewer) {
-        setUseImageViewer(true)
-        return
-      }
-      if (forcePdfViewer) {
-        setUseImageViewer(false)
-        return
       }
 
       // Check if running in local development
