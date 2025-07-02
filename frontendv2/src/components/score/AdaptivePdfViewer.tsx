@@ -30,6 +30,13 @@ export default function AdaptivePdfViewer({
   const [isImageBasedScore, setIsImageBasedScore] = useState(false)
   const [pdfUrl, setPdfUrl] = useState('')
   const [totalPages, setTotalPages] = useState<number | undefined>()
+  const [errorCount, setErrorCount] = useState(0)
+  const maxRetries = 3
+
+  // Reset error count when scoreId changes
+  useEffect(() => {
+    setErrorCount(0)
+  }, [scoreId])
 
   // Detect device and capabilities
   useEffect(() => {
@@ -126,6 +133,16 @@ export default function AdaptivePdfViewer({
   const handleError = (error: PdfError | { message: string; type: string }) => {
     console.error('Viewer error:', error)
 
+    // Increment error count
+    setErrorCount(prev => prev + 1)
+
+    // If we've exceeded max retries, stop trying
+    if (errorCount >= maxRetries) {
+      console.error(`Max retries (${maxRetries}) exceeded, stopping`)
+      onError?.(error)
+      return
+    }
+
     // If image viewer fails, try PDF viewer as fallback
     if (useImageViewer && !forcePdfViewer) {
       console.log('Image viewer failed, falling back to PDF viewer')
@@ -171,6 +188,30 @@ export default function AdaptivePdfViewer({
         />
 
         {/* Viewer toggle removed - image viewer disabled */}
+      </div>
+    )
+  }
+
+  // Show error if max retries exceeded
+  if (errorCount >= maxRetries) {
+    return (
+      <div className={`adaptive-pdf-viewer ${className}`}>
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold mb-2">Unable to Load Score</h3>
+            <p className="text-gray-600 mb-4">
+              We're having trouble loading this score. Please try refreshing the
+              page or contact support if the issue persists.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
