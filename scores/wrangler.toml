@@ -13,6 +13,10 @@ routes = [
 [browser]
 binding = "BROWSER"
 
+# AI binding for Cloudflare Workers AI
+[ai]
+binding = "AI"
+
 # Queue for PDF processing
 [[queues.consumers]]
 queue = "pdf-processing"
@@ -45,6 +49,9 @@ vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubat
 
 [env.staging.browser]
 binding = "BROWSER"
+
+[env.staging.ai]
+binding = "AI"
 
 [[env.staging.routes]]
 pattern = "scores-staging.mirubato.com"
@@ -85,6 +92,9 @@ routes = [
 [env.dev.browser]
 binding = "BROWSER"
 
+[env.dev.ai]
+binding = "AI"
+
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-dev"
@@ -116,6 +126,9 @@ vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-o
 [env.local.browser]
 binding = "BROWSER"
 
+[env.local.ai]
+binding = "AI"
+
 [[env.local.d1_databases]]
 binding = "DB"
 database_name = "mirubato-scores-local"
@@ -138,6 +151,9 @@ vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com
 
 [env.production.browser]
 binding = "BROWSER"
+
+[env.production.ai]
+binding = "AI"
 
 [[env.production.routes]]
 pattern = "scores.mirubato.com"

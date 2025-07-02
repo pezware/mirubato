@@ -175,3 +175,15 @@ Example response:
     return this.isInitialized
   }
 }
+
+// Export helper function for backward compatibility
+export async function extractMetadataFromPdf(
+  pdfBytes: ArrayBuffer | Uint8Array,
+  apiKey?: string,
+  sourceUrl?: string
+): Promise<ExtractedMetadata> {
+  const extractor = new AiMetadataExtractor(apiKey)
+  const uint8Array =
+    pdfBytes instanceof ArrayBuffer ? new Uint8Array(pdfBytes) : pdfBytes
+  return extractor.extractFromPdf(uint8Array, sourceUrl || '')
+}

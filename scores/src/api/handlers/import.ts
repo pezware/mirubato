@@ -3,6 +3,8 @@ import { HTTPException } from 'hono/http-exception'
 import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
+import { HybridAiExtractor } from '../../services/hybridAiExtractor'
+import { CloudflareAiExtractor } from '../../services/cloudflareAiExtractor'
 
 const importHandler = new Hono<{ Bindings: Env }>()
 
@@ -66,9 +68,10 @@ importHandler.post('/', async c => {
     }
 
     // Get request data
-    const { url, filename } = await c.req.json<{
+    const { url, filename, aiProvider } = await c.req.json<{
       url: string
       filename?: string
+      aiProvider?: 'cloudflare' | 'gemini' | 'hybrid'
     }>()
 
     if (!url) {
@@ -159,13 +162,60 @@ importHandler.post('/', async c => {
       },
     })
 
-    // Extract metadata using AI
+    // Extract metadata using AI (with provider selection)
     let aiMetadata: any
     try {
-      const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
-      aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+      // Check which AI providers are available
+      const hasCloudflareAi = !!c.env.AI
+      const hasGeminiApi = !!c.env.GEMINI_API_KEY
 
-      // Log if AI extraction failed
+      if (hasCloudflareAi && hasGeminiApi && aiProvider !== 'gemini') {
+        // Use hybrid approach for best results
+        console.log('Using hybrid AI extraction (Cloudflare + Gemini)')
+        const hybridExtractor = new HybridAiExtractor(c.env.AI as any, {
+          geminiApiKey: c.env.GEMINI_API_KEY,
+          preferCloudflare: true,
+          enableCrossValidation: aiProvider === 'hybrid',
+        })
+
+        const hybridResult = await hybridExtractor.extractFromPdf(
+          pdfBuffer,
+          url
+        )
+        aiMetadata = {
+          ...hybridResult,
+          title: hybridResult.title,
+          subtitle: hybridResult.subtitle,
+          composer: hybridResult.composer,
+          opus: hybridResult.opus,
+          instrument: hybridResult.instrument,
+          difficulty: hybridResult.difficultyLabel || 'INTERMEDIATE',
+          difficultyLevel: hybridResult.difficulty || 5,
+          year: hybridResult.year,
+          stylePeriod: hybridResult.stylePeriod,
+          tags: hybridResult.tags || [],
+          description: hybridResult.description,
+          confidence: hybridResult.mergedConfidence || hybridResult.confidence,
+          extractedAt: new Date().toISOString(),
+          provider: hybridResult.provider,
+          discrepancies: hybridResult.discrepancies,
+        }
+      } else if (hasGeminiApi) {
+        // Fallback to Gemini-only extraction
+        console.log('Using Gemini AI extraction')
+        const aiExtractor = new AiMetadataExtractor(c.env.GEMINI_API_KEY)
+        aiMetadata = await aiExtractor.extractFromPdf(pdfBytes, url)
+      } else if (hasCloudflareAi) {
+        // Use Cloudflare AI only (would need PDF to image conversion)
+        console.warn(
+          'Cloudflare AI only - PDF to image conversion not yet implemented'
+        )
+        throw new Error('PDF to image conversion required for Cloudflare AI')
+      } else {
+        throw new Error('No AI provider configured')
+      }
+
+      // Log if AI extraction had issues
       if (aiMetadata.error) {
         console.warn('AI extraction had issues:', aiMetadata.error)
       }
