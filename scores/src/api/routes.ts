@@ -7,6 +7,7 @@ import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
 import { pdfRendererV2Handler } from './handlers/pdf-renderer-v2'
+import { adminHandler } from './handlers/admin'
 
 export const api = new Hono<{ Bindings: Env }>()
 
@@ -88,3 +89,6 @@ api.route('/', renderHandler)
 api.route('/pdf/v2', pdfRendererV2Handler)
 // Keep original for backwards compatibility
 api.route('/pdf', pdfRendererHandler)
+
+// Admin routes (protected)
+api.route('/admin', adminHandler)
