@@ -6,7 +6,6 @@ export function setupPdfWorker(): void {
   if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
     const pdfjsVersion = pdfjs.version
     // Use CDN for the worker to reduce bundle size
-    // PDF.js v5.x uses ES modules, so we use .mjs extension
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.mjs`
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`
   }
 }

@@ -551,6 +551,7 @@ scoresHandler.get('/:id/pages/:pageNumber', async c => {
     const headers = new Headers()
     headers.set('Content-Type', page.mime_type as string)
     headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+    headers.set('Access-Control-Allow-Origin', '*') // Allow cross-origin requests
 
     return new Response(imageObject.body, { headers })
   } catch (error) {
