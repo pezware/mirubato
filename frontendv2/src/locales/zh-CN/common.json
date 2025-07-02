@@ -106,6 +106,14 @@
     "piano": "钢琴",
     "guitar": "吉他"
   },
+  "navigation": {
+    "home": "首页",
+    "logbook": "练习日志",
+    "reports": "报告",
+    "settings": "设置",
+    "menu": "菜单",
+    "closeMenu": "关闭菜单"
+  },
   "music": {
     "practice": "练习",
     "lesson": "课程",
