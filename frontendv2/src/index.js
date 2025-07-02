@@ -40,6 +40,18 @@ export default {
           headers.set('content-type', 'application/json; charset=utf-8')
         }
 
+        // Set Content Security Policy to allow jsdelivr CDN
+        if (
+          url.pathname === '/' ||
+          url.pathname === '/index.html' ||
+          !url.pathname.includes('.')
+        ) {
+          headers.set(
+            'Content-Security-Policy',
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com https://accounts.google.com https://apis.google.com https://unpkg.com https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self';"
+          )
+        }
+
         // Create new response with updated headers
         response = new Response(response.body, {
           status: response.status,
