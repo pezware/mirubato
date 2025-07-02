@@ -431,6 +431,7 @@ export default function PdfViewer({
       onTouchEnd={handleTouchEnd}
     >
       <Document
+        key={url} // Add key to prevent unnecessary reloads
         file={url}
         onLoadSuccess={handleDocumentLoadSuccess}
         onLoadError={handleDocumentLoadError}

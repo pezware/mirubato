@@ -109,17 +109,12 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     try {
       const score = await scoreService.getScore(id)
 
-      // For test scores, we know the page counts
-      let totalPages = 1
-      if (id === 'test_romance_anonimo') {
-        totalPages = 3
-      }
-      // In production, this would come from the score metadata
-
+      // Don't set totalPages here - let the PDF viewer report the actual count
+      // This prevents conflicts between hardcoded values and actual PDF pages
       set({
         currentScore: score,
         currentPage: 1,
-        totalPages,
+        totalPages: 1, // Default to 1, will be updated when PDF loads
         isLoading: false,
       })
     } catch (error) {

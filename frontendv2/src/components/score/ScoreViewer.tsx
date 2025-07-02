@@ -75,6 +75,8 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
                 onError={handlePdfError}
                 onPageChange={handlePageChange}
                 className="w-full"
+                // Force PDF viewer to prevent the adaptive logic from running
+                forcePdfViewer={true}
               />
             )}
           </div>
