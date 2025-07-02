@@ -255,6 +255,50 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/scores/${scoreId}/pages/${pageNumber}`
   }
 
+  // Get user's own scores
+  async getUserScores(params?: ScoreSearchParams): Promise<ScoreListResponse> {
+    try {
+      const response = await scoresApiClient.get('/api/scores/user/library', {
+        params,
+      })
+      return {
+        items: response.data.data,
+        total: response.data.pagination?.total || response.data.data.length,
+        limit: response.data.pagination?.limit || 50,
+        offset: response.data.pagination?.offset || 0,
+        hasMore: response.data.pagination?.hasMore || false,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to fetch user scores: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Get user's collections
+  async getUserCollections(): Promise<Collection[]> {
+    try {
+      const response = await scoresApiClient.get('/api/user/collections')
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to fetch user collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {

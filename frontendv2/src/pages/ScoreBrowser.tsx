@@ -8,13 +8,17 @@ import {
 } from '../services/scoreService'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
+import { useAuthStore } from '../stores/authStore'
 
 export default function ScoreBrowserPage() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const { slug } = useParams<{ slug?: string }>()
+  const { isAuthenticated } = useAuthStore()
   const [scores, setScores] = useState<Score[]>([])
+  const [userScores, setUserScores] = useState<Score[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
+  const [userCollections, setUserCollections] = useState<Collection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
@@ -23,7 +27,7 @@ export default function ScoreBrowserPage() {
   useEffect(() => {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, selectedInstrument, selectedDifficulty])
+  }, [slug, selectedInstrument, selectedDifficulty, isAuthenticated])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -31,6 +35,20 @@ export default function ScoreBrowserPage() {
       // Load collections
       const collectionsData = await scoreService.getCollections()
       setCollections(collectionsData)
+
+      // Load user's collections and scores if authenticated
+      if (isAuthenticated) {
+        try {
+          const userCollectionsData = await scoreService.getUserCollections()
+          setUserCollections(userCollectionsData)
+
+          const userScoresData = await scoreService.getUserScores()
+          setUserScores(userScoresData.items)
+        } catch (error) {
+          console.error('Failed to load user data:', error)
+          // Continue loading public data even if user data fails
+        }
+      }
 
       // Load scores based on filters or collection
       if (slug) {
@@ -142,6 +160,57 @@ export default function ScoreBrowserPage() {
                     </div>
                   </Link>
                 ))}
+            </div>
+          </div>
+        )}
+
+        {/* My Scores Section - Only show if authenticated and not viewing a collection */}
+        {isAuthenticated && !slug && userScores.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-medium text-morandi-stone-800 mb-4">
+              {t('scorebook:myScores', 'My Scores')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userScores.map(score => (
+                <button
+                  key={score.id}
+                  onClick={() => handleScoreSelect(score.id)}
+                  className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 hover:shadow-md transition-shadow text-left"
+                >
+                  <h3 className="font-medium text-morandi-stone-800 mb-2">
+                    {score.title}
+                  </h3>
+                  <p className="text-sm text-morandi-stone-600 mb-3">
+                    {score.composer}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="px-2 py-1 bg-morandi-sand-100 text-morandi-stone-700 rounded">
+                      {score.instrument === 'PIANO' ? '🎹' : '🎸'}{' '}
+                      {score.instrument}
+                    </span>
+                    <span className="px-2 py-1 bg-morandi-sage-100 text-morandi-stone-700 rounded">
+                      {score.difficulty}
+                    </span>
+                    {score.source_type && (
+                      <span className="px-2 py-1 bg-morandi-rose-100 text-morandi-stone-700 rounded">
+                        {score.source_type === 'multi-image' ? '📷' : '📄'}
+                      </span>
+                    )}
+                  </div>
+                  {score.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {score.tags.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         )}
