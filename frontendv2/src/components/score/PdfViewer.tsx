@@ -3,7 +3,8 @@ import { Document, Page, pdfjs } from 'react-pdf'
 
 // Configure pdf.js worker - must be set before any PDF operations
 // Using the exact version that react-pdf bundles
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
+// Using jsDelivr CDN for better reliability and CORS support
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.mjs`
 
 // Note: Custom fetch with caching is implemented in pdfCache utility
 
