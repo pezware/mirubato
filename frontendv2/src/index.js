@@ -40,18 +40,6 @@ export default {
           headers.set('content-type', 'application/json; charset=utf-8')
         }
 
-        // Set Content Security Policy to allow jsdelivr CDN
-        if (
-          url.pathname === '/' ||
-          url.pathname === '/index.html' ||
-          !url.pathname.includes('.')
-        ) {
-          headers.set(
-            'Content-Security-Policy',
-            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com https://accounts.google.com https://apis.google.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://scores.mirubato.com https://scores-staging.mirubato.com http://scores-mirubato.localhost:* http://api-mirubato.localhost:*; connect-src 'self' https://api.mirubato.com https://api-staging.mirubato.com https://scores.mirubato.com https://scores-staging.mirubato.com https://accounts.google.com https://oauth2.googleapis.com https://cloudflareinsights.com https://tonejs.github.io; frame-src 'self' https://accounts.google.com https://scores.mirubato.com https://scores-staging.mirubato.com; object-src 'self' https://scores.mirubato.com https://scores-staging.mirubato.com; media-src 'self' blob: data: https://tonejs.github.io; worker-src 'self' blob: https://unpkg.com https://cdn.jsdelivr.net"
-          )
-        }
-
         // Create new response with updated headers
         response = new Response(response.body, {
           status: response.status,
