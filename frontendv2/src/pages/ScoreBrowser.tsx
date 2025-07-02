@@ -18,7 +18,6 @@ export default function ScoreBrowserPage() {
   const [scores, setScores] = useState<Score[]>([])
   const [userScores, setUserScores] = useState<Score[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
-  const [userCollections, setUserCollections] = useState<Collection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
@@ -36,12 +35,9 @@ export default function ScoreBrowserPage() {
       const collectionsData = await scoreService.getCollections()
       setCollections(collectionsData)
 
-      // Load user's collections and scores if authenticated
+      // Load user's scores if authenticated
       if (isAuthenticated) {
         try {
-          const userCollectionsData = await scoreService.getUserCollections()
-          setUserCollections(userCollectionsData)
-
           const userScoresData = await scoreService.getUserScores()
           setUserScores(userScoresData.items)
         } catch (error) {
