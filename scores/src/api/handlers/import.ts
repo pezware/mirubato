@@ -277,7 +277,7 @@ importHandler.post('/', async c => {
         url,
         `/files/${r2Key}`,
         cleanFileName,
-        'completed',
+        'pending', // Set to pending so it gets processed by the queue
         JSON.stringify(aiMetadata as Record<string, unknown>),
         new Date().toISOString()
       )
@@ -292,6 +292,16 @@ importHandler.post('/', async c => {
       .bind(scoreId)
       .run()
 
+    // Trigger PDF processing queue
+    if (c.env.PDF_QUEUE) {
+      await c.env.PDF_QUEUE.send({
+        type: 'process-new-score',
+        scoreId: scoreId,
+        r2Key: r2Key,
+        uploadedAt: new Date().toISOString(),
+      })
+    }
+
     // Return success response with warning if AI had issues
     interface ImportResponse {
       success: boolean
@@ -304,6 +314,7 @@ importHandler.post('/', async c => {
         difficulty: string
         pdfUrl: string
         metadata: Record<string, unknown>
+        processingStatus?: string
       }
       warning?: string
     }
@@ -323,6 +334,7 @@ importHandler.post('/', async c => {
         difficulty: (aiMetadata.difficulty as string) || 'INTERMEDIATE',
         pdfUrl: `/files/${r2Key}`,
         metadata: aiMetadata,
+        processingStatus: 'pending', // Indicate that processing is pending
       },
     }
 

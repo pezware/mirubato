@@ -20,6 +20,7 @@ interface Env {
   JWT_SECRET?: string // Will be set as secret for staging/production
   FRONTEND_URL?: string
   SCORES_URL?: string
+  ADMIN_TOKEN?: string // Admin API token for protected endpoints
 
   // R2 Configuration
   CLOUDFLARE_ACCOUNT_ID?: string
