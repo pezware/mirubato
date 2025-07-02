@@ -17,9 +17,9 @@ ALTER TABLE scores ADD COLUMN source_type TEXT DEFAULT 'pdf'
 ALTER TABLE scores ADD COLUMN page_count INTEGER DEFAULT 1;
 
 -- Create indexes for efficient querying
-CREATE INDEX idx_scores_user_id ON scores(user_id);
-CREATE INDEX idx_scores_visibility ON scores(visibility);
-CREATE INDEX idx_scores_source_type ON scores(source_type);
+CREATE INDEX IF NOT EXISTS idx_scores_user_id ON scores(user_id);
+CREATE INDEX IF NOT EXISTS idx_scores_visibility ON scores(visibility);
+CREATE INDEX IF NOT EXISTS idx_scores_source_type ON scores(source_type);
 
 -- Update existing scores to be public (platform-curated content)
 -- Set all scores without a user_id to public (these are platform scores)

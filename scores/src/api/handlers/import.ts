@@ -236,6 +236,17 @@ importHandler.post('/', async c => {
       }
     }
 
+    // Get user ID from auth header if available
+    let userId: string | null = null
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { getUserIdFromAuth } = await import('../../utils/auth')
+        userId = await getUserIdFromAuth(c as any)
+      } catch (error) {
+        // Continue without auth - will be anonymous upload
+      }
+    }
+
     // Create database record
     const db = c.env.DB
     await db
@@ -246,6 +257,7 @@ importHandler.post('/', async c => {
           year, style_period, tags, description,
           source, source_url, pdf_url, file_name,
           processing_status, ai_metadata, imported_at,
+          user_id, visibility, source_type, page_count,
           created_at, updated_at
         ) VALUES (
           ?, ?, ?, ?, ?, ?,
@@ -253,6 +265,7 @@ importHandler.post('/', async c => {
           ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?,
+          ?, ?, ?, ?,
           datetime('now'), datetime('now')
         )`
       )
@@ -279,7 +292,11 @@ importHandler.post('/', async c => {
         cleanFileName,
         'pending', // Set to pending so it gets processed by the queue
         JSON.stringify(aiMetadata as Record<string, unknown>),
-        new Date().toISOString()
+        new Date().toISOString(),
+        userId, // user_id - null for anonymous uploads
+        userId ? 'private' : 'public', // visibility - private for authenticated users, public for anonymous
+        'pdf', // source_type
+        null // page_count - will be updated by PDF processor
       )
       .run()
 
