@@ -324,11 +324,14 @@ importImagesHandler.post('/', async c => {
       .run()
 
     // Insert page records
-    for (const img of imageUrls) {
+    for (let i = 0; i < imageUrls.length; i++) {
+      const img = imageUrls[i]
+      const processedImg = processedImages[i]
+
       await c.env.DB.prepare(
         `INSERT INTO score_pages (
-          id, score_id, page_number, image_url, r2_key, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?)`
+          id, score_id, page_number, image_url, r2_key, mime_type, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
         .bind(
           generateId(),
@@ -336,6 +339,7 @@ importImagesHandler.post('/', async c => {
           img.pageNumber,
           img.url,
           img.r2Key,
+          processedImg.mimeType,
           new Date().toISOString()
         )
         .run()

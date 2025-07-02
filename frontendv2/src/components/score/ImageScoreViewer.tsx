@@ -1,22 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { scoreService } from '../../services/scoreService'
 
-// Helper to get the base URL for the scores API
-const getScoresApiUrl = () => {
-  const hostname = window.location.hostname
-  if (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname.endsWith('.localhost')
-  ) {
-    return 'http://scores-mirubato.localhost:9788'
-  } else if (hostname.includes('staging')) {
-    return 'https://scores-staging.mirubato.com'
-  } else {
-    return 'https://scores.mirubato.com'
-  }
-}
-
 interface ImageScoreViewerProps {
   scoreId: string
   currentPage: number
@@ -71,7 +55,7 @@ export default function ImageScoreViewer({
           pagesData.push({
             id: `${scoreId}-page-${i}`,
             pageNumber: i,
-            imageUrl: `${getScoresApiUrl()}/api/scores/${scoreId}/pages/${i}`,
+            imageUrl: scoreService.getImagePageUrl(scoreId, i),
           })
         }
 

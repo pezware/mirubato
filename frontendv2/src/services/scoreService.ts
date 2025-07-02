@@ -250,6 +250,11 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
   }
 
+  // Get the URL for an image-based score page
+  getImagePageUrl(scoreId: string, pageNumber: number): string {
+    return `${this.scoresApiUrl}/api/scores/${scoreId}/pages/${pageNumber}`
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {

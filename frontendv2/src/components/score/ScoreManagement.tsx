@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { scoreService } from '../../services/scoreService'
 import Autocomplete from '../ui/Autocomplete'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
+import ImageEditor from './ImageEditor'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -29,6 +30,16 @@ export default function ScoreManagement() {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [imageTitle, setImageTitle] = useState('')
   const [imageComposer, setImageComposer] = useState('')
+  const [editingImageIndex, setEditingImageIndex] = useState<number | null>(
+    null
+  )
+  const [processedImages, setProcessedImages] = useState<
+    {
+      file: File
+      preview: string
+      edited?: boolean
+    }[]
+  >([])
 
   // Use the score search hook for predictive search
   const scoreSearch = useScoreSearch({ minLength: 0 })
@@ -120,7 +131,57 @@ export default function ScoreManagement() {
 
     setSelectedImages(validImages)
     setUploadResult(null)
+
+    // Create preview URLs for images
+    const previews = validImages.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      edited: false,
+    }))
+    setProcessedImages(previews)
   }
+
+  // Handle image editing
+  const handleEditImage = (index: number) => {
+    setEditingImageIndex(index)
+  }
+
+  const handleSaveEditedImage = async (editedBlob: Blob) => {
+    if (editingImageIndex === null) return
+
+    // Convert blob to File
+    const originalFile = processedImages[editingImageIndex].file
+    const editedFile = new File([editedBlob], originalFile.name, {
+      type: editedBlob.type,
+    })
+
+    // Update processed images
+    const newProcessedImages = [...processedImages]
+    newProcessedImages[editingImageIndex] = {
+      file: editedFile,
+      preview: URL.createObjectURL(editedBlob),
+      edited: true,
+    }
+    setProcessedImages(newProcessedImages)
+
+    // Update selected images
+    const newSelectedImages = [...selectedImages]
+    newSelectedImages[editingImageIndex] = editedFile
+    setSelectedImages(newSelectedImages)
+
+    setEditingImageIndex(null)
+  }
+
+  // Cleanup preview URLs
+  useEffect(() => {
+    return () => {
+      processedImages.forEach(img => {
+        if (img.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(img.preview)
+        }
+      })
+    }
+  }, [processedImages])
 
   const submitImageUpload = async () => {
     if (selectedImages.length === 0) return
@@ -162,6 +223,7 @@ export default function ScoreManagement() {
         })
         // Clear form
         setSelectedImages([])
+        setProcessedImages([])
         setImageTitle('')
         setImageComposer('')
         if (imageInputRef.current) imageInputRef.current.value = ''
@@ -509,6 +571,7 @@ export default function ScoreManagement() {
                           <button
                             onClick={() => {
                               setSelectedImages([])
+                              setProcessedImages([])
                               if (imageInputRef.current)
                                 imageInputRef.current.value = ''
                             }}
@@ -516,6 +579,50 @@ export default function ScoreManagement() {
                           >
                             Clear
                           </button>
+                        </div>
+
+                        {/* Image previews grid - Responsive */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {processedImages.map((img, index) => (
+                            <div
+                              key={index}
+                              className="relative group aspect-[3/4]"
+                            >
+                              <img
+                                src={img.preview}
+                                alt={`Page ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg border border-morandi-stone-200"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 p-2">
+                                <button
+                                  onClick={() => handleEditImage(index)}
+                                  className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-white text-morandi-stone-700 rounded text-xs sm:text-sm hover:bg-morandi-stone-100 transition-colors"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const newImages = selectedImages.filter(
+                                      (_, i) => i !== index
+                                    )
+                                    const newProcessed = processedImages.filter(
+                                      (_, i) => i !== index
+                                    )
+                                    setSelectedImages(newImages)
+                                    setProcessedImages(newProcessed)
+                                  }}
+                                  className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-red-600 text-white rounded text-xs sm:text-sm hover:bg-red-700 transition-colors"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              {img.edited && (
+                                <div className="absolute top-1 right-1 bg-morandi-sage-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded shadow-sm">
+                                  Edited
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
 
                         {/* Optional metadata */}
@@ -639,6 +746,15 @@ export default function ScoreManagement() {
           </div>
         </div>
       </div>
+
+      {/* Image Editor Modal */}
+      {editingImageIndex !== null && processedImages[editingImageIndex] && (
+        <ImageEditor
+          imageUrl={processedImages[editingImageIndex].preview}
+          onSave={handleSaveEditedImage}
+          onCancel={() => setEditingImageIndex(null)}
+        />
+      )}
     </div>
   )
 }
