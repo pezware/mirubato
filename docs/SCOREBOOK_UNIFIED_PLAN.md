@@ -92,11 +92,14 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    - ✅ Creates database records with metadata
 
 2. **AI Metadata Extraction**
-   - ✅ Gemini 1.5 Pro integration for PDF analysis
+   - ✅ **Cloudflare AI Primary** (Llama 3.2 11B Vision) - 25x cheaper than Gemini
+   - ✅ Gemini 1.5 Pro as fallback for enhanced accuracy when needed
+   - ✅ Hybrid AI approach with cross-validation capability
    - ✅ Extracts: title, composer, instrument, difficulty, opus
    - ✅ Identifies: style period, tags, educational descriptions
+   - ✅ Visual analysis during PDF rendering for better accuracy
    - ✅ Confidence scoring with graceful fallback
-   - ✅ ~5-8 second processing time per PDF
+   - ✅ ~2-3 seconds with Cloudflare AI (vs ~5-8 seconds with Gemini)
 
 3. **Enhanced Rate Limiting**
    - ✅ Progressive rate limiting with failure tracking
@@ -118,7 +121,7 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    - ✅ Tested with various instruments (piano, guitar)
    - ✅ Support for any public PDF URL
 
-6. **Recent Improvements** (Dec 2024)
+6. **Recent Improvements** (Dec 2024 - Jan 2025)
    - ✅ Fixed file upload functionality in ScoreManagement
    - ✅ Implemented drag & drop for PDF uploads
    - ✅ Fixed search API response handling
@@ -127,6 +130,16 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    - ✅ Implemented PDF serving from R2
    - ✅ Optimized R2 cache headers (1 year immutable)
    - ✅ Decision: Keep R2 private for licensing safety
+   - ✅ **Cloudflare AI Integration** (Jan 2025):
+     - Implemented CloudflareAiExtractor service
+     - Created HybridAiExtractor for AI provider flexibility
+     - Visual analysis of sheet music images
+     - Cost reduction: 25x cheaper than Gemini
+   - ✅ **Slug Generation Enhancement** (Jan 2025):
+     - Fixed duplicate slug issues for pieces with same title
+     - Now includes opus information (e.g., "etude-op-10-no-1")
+     - Database migration to update existing slugs
+     - Prevents import failures for similar pieces
 
 ### 🚧 Current Development: User Collections & Image Uploads
 
@@ -141,10 +154,12 @@ Build a world-class digital sheet music viewer optimized for music practice and 
    - Store in user-specific R2 paths (`user-uploads/{userId}/{scoreId}/`)
 
 2. **AI Processing for Images**
-   - Send images to Gemini for metadata extraction
+   - Primary: Cloudflare AI Vision for cost-effective analysis
+   - Fallback: Gemini for enhanced accuracy when needed
    - Handle fragmented/partial scores gracefully
    - Lower confidence thresholds for handwritten music
    - Store AI confidence scores for future improvements
+   - Visual analysis results stored in new database columns
 
 3. **User Collections**
    - "My Uploads" collection auto-created for each user
@@ -302,7 +317,10 @@ Build a world-class digital sheet music viewer optimized for music practice and 
 - **State Management**: Zustand
 - **Backend**: Cloudflare Workers + D1 + R2
 - **Auth**: Magic links + JWT
-- **AI Integration**: Gemini 1.5 Pro for metadata extraction (✅ IMPLEMENTED)
+- **AI Integration**:
+  - **Primary**: Cloudflare AI (Llama 3.2 11B Vision) - ✅ IMPLEMENTED
+  - **Fallback**: Gemini 1.5 Pro - ✅ IMPLEMENTED
+  - **Architecture**: Hybrid approach with cost optimization
 - **Rate Limiting**: Enhanced KV-based with failure tracking (✅ IMPLEMENTED)
 
 ### Completed PDF Rendering Architecture
@@ -336,18 +354,25 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
                      ↓              ↓            ↓
                 JWT Check      R2 Upload    AI Analysis
                                               ↓
-                                        Gemini API
-                                              ↓
-                                    Metadata Extraction
-                                              ↓
-                                     Database Insert
+                                     HybridAiExtractor
+                                         ↓        ↓
+                              Cloudflare AI    Gemini API
+                               (Primary)      (Fallback)
+                                         ↓
+                                 Metadata Extraction
+                                         ↓
+                                  Database Insert
 ```
 
 **Import Features:**
 
 - **Flexible Sources**: Any public PDF URL (Mutopia, IMSLP proxy, direct links)
 - **Smart Validation**: PDF magic bytes verification
-- **AI Metadata**: Gemini-powered extraction (title, composer, difficulty, etc.)
+- **AI Metadata**:
+  - Primary: Cloudflare AI for cost-effective extraction (25x cheaper)
+  - Fallback: Gemini for enhanced accuracy when needed
+  - Visual analysis of first page during PDF processing
+- **Slug Generation**: Now includes opus to prevent duplicates (e.g., "etude-op-10-no-1")
 - **Rate Protection**: 1/10min anonymous, unlimited with JWT
 - **Future Monetization**: Different JWT tiers for API access
 
