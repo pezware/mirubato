@@ -214,6 +214,18 @@ export default function PdfViewer({
           details: error,
           recoverable: false,
         }
+      } else if (
+        error.message.includes('403') ||
+        error.message.includes('Forbidden') ||
+        error.message.includes('Access denied')
+      ) {
+        pdfError = {
+          type: PdfErrorType.PERMISSION_DENIED,
+          message:
+            'Access denied. Please ensure you are logged in to view this score.',
+          details: error,
+          recoverable: true,
+        }
       } else if (error.message.includes('encrypt')) {
         pdfError = {
           type: PdfErrorType.PERMISSION_DENIED,
@@ -421,6 +433,13 @@ export default function PdfViewer({
         file={url}
         onLoadSuccess={handleDocumentLoadSuccess}
         onLoadError={handleDocumentLoadError}
+        options={{
+          httpHeaders: {
+            Authorization: localStorage.getItem('auth-token')
+              ? `Bearer ${localStorage.getItem('auth-token')}`
+              : undefined,
+          },
+        }}
         loading={
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
