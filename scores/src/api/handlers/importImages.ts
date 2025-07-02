@@ -275,7 +275,7 @@ importImagesHandler.post('/', async c => {
       source_type: 'multi-image' as const,
       page_count: processedImages.length,
       user_id: userId,
-      visibility: 'private' as const, // Always private for user uploads
+      visibility: 'public' as const, // Default to public so scores appear on browse page
       tags: JSON.stringify(tags || extractedMetadata.tags || []),
       metadata: JSON.stringify({
         uploadedImages: imageUrls.length,

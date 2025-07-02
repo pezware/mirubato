@@ -294,7 +294,7 @@ importHandler.post('/', async c => {
         JSON.stringify(aiMetadata as Record<string, unknown>),
         new Date().toISOString(),
         userId, // user_id - null for anonymous uploads
-        userId ? 'private' : 'public', // visibility - private for authenticated users, public for anonymous
+        'public', // visibility - default to public so scores appear on browse page
         'pdf', // source_type
         null // page_count - will be updated by PDF processor
       )
