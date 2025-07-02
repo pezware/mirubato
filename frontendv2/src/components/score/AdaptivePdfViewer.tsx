@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import PdfViewer, { type PdfError } from './PdfViewer'
 import ImageBasedPdfViewer from './ImageBasedPdfViewer'
+import ImageScoreViewer from './ImageScoreViewer'
 import { scoreService } from '../../services/scoreService'
 import { DeviceDetection } from '../../constants/deviceDetection'
 
@@ -26,12 +27,27 @@ export default function AdaptivePdfViewer({
   forcePdfViewer,
 }: AdaptivePdfViewerProps) {
   const [useImageViewer, setUseImageViewer] = useState(false)
+  const [isImageBasedScore, setIsImageBasedScore] = useState(false)
   const [pdfUrl, setPdfUrl] = useState('')
   const [totalPages, setTotalPages] = useState<number | undefined>()
 
   // Detect device and capabilities
   useEffect(() => {
     const detectViewerMode = async () => {
+      // First, check if this is an image-based score
+      try {
+        const score = await scoreService.getScore(scoreId)
+        if (
+          score.source_type === 'image' ||
+          score.source_type === 'multi-image'
+        ) {
+          setIsImageBasedScore(true)
+          return // Always use ImageScoreViewer for image-based scores
+        }
+      } catch (error) {
+        console.error('Failed to fetch score details:', error)
+      }
+
       // Check for forced modes first
       if (forceImageViewer) {
         setUseImageViewer(true)
@@ -121,6 +137,23 @@ export default function AdaptivePdfViewer({
   }
 
   // Render appropriate viewer
+  // For image-based scores (uploaded images), always use ImageScoreViewer
+  if (isImageBasedScore) {
+    return (
+      <div className={`adaptive-pdf-viewer ${className}`}>
+        <ImageScoreViewer
+          scoreId={scoreId}
+          currentPage={currentPage}
+          onPageChange={onPageChange}
+          onLoad={onLoad}
+          onError={handleError}
+          className="w-full"
+        />
+      </div>
+    )
+  }
+
+  // For PDF scores, use the appropriate viewer based on device capabilities
   if (useImageViewer) {
     return (
       <div className={`adaptive-pdf-viewer ${className}`}>

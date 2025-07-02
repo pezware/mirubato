@@ -24,6 +24,8 @@ export interface Score {
     | 'CONTEMPORARY'
     | null
   source?: string | null
+  source_type?: 'pdf' | 'image' | 'multi-image' | null
+  page_count?: number | null
   imslp_url?: string | null
   tags: string[]
   metadata?: Record<string, unknown>
@@ -333,6 +335,40 @@ class ScoreService {
           error.response?.data?.error ||
             error.response?.data?.message ||
             'Import failed'
+        )
+      }
+      throw error
+    }
+  }
+
+  // Import multiple images as a score
+  async importImages(params: {
+    images: Array<{ filename: string; data: string }>
+    title?: string
+    composer?: string
+    instrument?: string
+    difficulty?: string
+    tags?: string[]
+  }): Promise<{
+    success: boolean
+    data: Score
+    error?: string
+  }> {
+    try {
+      const response = await scoresApiClient.post('/api/import/images', params)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          throw new Error(error.response.data.message || 'Rate limit exceeded')
+        }
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required for image uploads')
+        }
+        throw new Error(
+          error.response?.data?.error ||
+            error.response?.data?.message ||
+            'Image upload failed'
         )
       }
       throw error

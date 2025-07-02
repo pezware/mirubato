@@ -19,10 +19,33 @@ scoresHandler.get('/', async c => {
     const limit = parseInt(c.req.query('limit') || '20')
     const offset = parseInt(c.req.query('offset') || '0')
 
+    // Get user ID from auth if available
+    let userId: string | null = null
+    try {
+      const authHeader = c.req.header('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const { getUserIdFromAuth } = await import('../../utils/auth')
+        userId = await getUserIdFromAuth(c as any)
+      }
+    } catch (error) {
+      // Continue without auth
+    }
+
     // Build query
     let query = 'SELECT * FROM scores'
     const conditions: string[] = []
     const params: any[] = []
+
+    // Add visibility filter
+    if (userId) {
+      // Authenticated users can see public scores and their own private scores
+      conditions.push('(visibility = ? OR (visibility = ? AND user_id = ?))')
+      params.push('public', 'private', userId)
+    } else {
+      // Anonymous users can only see public scores
+      conditions.push('visibility = ?')
+      params.push('public')
+    }
 
     // Add filters if provided
     const instrument = c.req.query('instrument')
@@ -87,6 +110,73 @@ scoresHandler.get('/', async c => {
   }
 })
 
+// Get user's own scores
+scoresHandler.get('/user/library', async c => {
+  try {
+    const limit = parseInt(c.req.query('limit') || '50')
+    const offset = parseInt(c.req.query('offset') || '0')
+
+    // Get user ID from auth (required)
+    const authHeader = c.req.header('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new HTTPException(401, { message: 'Authentication required' })
+    }
+
+    const { getUserIdFromAuth } = await import('../../utils/auth')
+    const userId = await getUserIdFromAuth(c as any)
+    if (!userId) {
+      throw new HTTPException(401, { message: 'Invalid authentication' })
+    }
+
+    // Get user's scores
+    const query = `
+      SELECT * FROM scores 
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `
+
+    const results = await c.env.DB.prepare(query)
+      .bind(userId, limit, offset)
+      .all()
+
+    // Get total count
+    const countResult = await c.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM scores WHERE user_id = ?'
+    )
+      .bind(userId)
+      .first()
+
+    const total = (countResult?.count as number) || 0
+
+    // Format results
+    const scores = results.results.map(score => ({
+      ...score,
+      tags: score.tags ? JSON.parse(score.tags as string) : [],
+      metadata: score.metadata ? JSON.parse(score.metadata as string) : {},
+      createdAt: new Date(score.created_at as string),
+      updatedAt: new Date(score.updated_at as string),
+    }))
+
+    const response = {
+      success: true,
+      data: scores as Score[],
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+    }
+
+    return c.json(response)
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error fetching user library:', error)
+    throw new HTTPException(500, { message: 'Failed to fetch user library' })
+  }
+})
+
 // Get single score by ID
 scoresHandler.get('/:id', async c => {
   try {
@@ -98,6 +188,25 @@ scoresHandler.get('/:id', async c => {
 
     if (!score) {
       throw new HTTPException(404, { message: 'Score not found' })
+    }
+
+    // Check visibility permissions
+    if (score.visibility === 'private') {
+      // Get user ID from auth if available
+      let userId: string | null = null
+      try {
+        const authHeader = c.req.header('Authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+          const { getUserIdFromAuth } = await import('../../utils/auth')
+          userId = await getUserIdFromAuth(c as any)
+        }
+      } catch (error) {
+        // Continue without auth
+      }
+
+      if (userId !== score.user_id) {
+        throw new HTTPException(403, { message: 'Access denied' })
+      }
     }
 
     // Parse JSON fields
@@ -378,5 +487,75 @@ scoresHandler.delete('/:id', authMiddleware, async c => {
     if (error instanceof HTTPException) throw error
     console.error('Error deleting score:', error)
     throw new HTTPException(500, { message: 'Failed to delete score' })
+  }
+})
+
+// Serve image pages for multi-image scores
+scoresHandler.get('/:id/pages/:pageNumber', async c => {
+  try {
+    const scoreId = c.req.param('id')
+    const pageNumber = parseInt(c.req.param('pageNumber'))
+
+    if (isNaN(pageNumber) || pageNumber < 1) {
+      throw new HTTPException(400, { message: 'Invalid page number' })
+    }
+
+    // Get score to check visibility
+    const score = await c.env.DB.prepare(
+      'SELECT user_id, visibility, source_type FROM scores WHERE id = ?'
+    )
+      .bind(scoreId)
+      .first()
+
+    if (!score) {
+      throw new HTTPException(404, { message: 'Score not found' })
+    }
+
+    // Check access permissions
+    if (score.visibility === 'private') {
+      // Get user ID from auth if available
+      let userId: string | null = null
+      try {
+        const authHeader = c.req.header('Authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+          const { getUserIdFromAuth } = await import('../../utils/auth')
+          userId = await getUserIdFromAuth(c as any)
+        }
+      } catch (error) {
+        // Continue without auth
+      }
+
+      if (userId !== score.user_id) {
+        throw new HTTPException(403, { message: 'Access denied' })
+      }
+    }
+
+    // Get page info from database
+    const page = await c.env.DB.prepare(
+      'SELECT r2_key, mime_type FROM score_pages WHERE score_id = ? AND page_number = ?'
+    )
+      .bind(scoreId, pageNumber)
+      .first()
+
+    if (!page) {
+      throw new HTTPException(404, { message: 'Page not found' })
+    }
+
+    // Get image from R2
+    const imageObject = await c.env.SCORES_BUCKET.get(page.r2_key as string)
+    if (!imageObject) {
+      throw new HTTPException(404, { message: 'Image file not found' })
+    }
+
+    // Return image with appropriate headers
+    const headers = new Headers()
+    headers.set('Content-Type', page.mime_type as string)
+    headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+
+    return new Response(imageObject.body, { headers })
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error serving image page:', error)
+    throw new HTTPException(500, { message: 'Failed to serve image' })
   }
 })

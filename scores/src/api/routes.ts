@@ -3,8 +3,10 @@ import { scoresHandler } from './handlers/scores'
 import { searchHandler } from './handlers/search'
 import { renderHandler } from './handlers/render'
 import { importHandler } from './handlers/import'
+import { importImagesHandler } from './handlers/importImages'
 import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
+import { userCollectionsHandler } from './handlers/userCollections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
 import { pdfRendererV2Handler } from './handlers/pdf-renderer-v2'
 import { adminHandler } from './handlers/admin'
@@ -42,16 +44,28 @@ api.get('/', c => {
           'Download score in specific format',
       },
       import: {
+        'POST /api/import': 'Import score from URL or file upload',
+        'POST /api/import/images': 'Import score from image files (PNG, JPG)',
         'POST /api/import/pdf': 'Import score from PDF upload',
         'POST /api/import/imslp': 'Import score from IMSLP URL',
         'POST /api/import/batch': 'Batch import multiple URLs',
       },
       collections: {
-        'GET /api/collections': 'List all collections',
+        'GET /api/collections': 'List all public collections',
         'GET /api/collections/:slug': 'Get collection by slug',
-        'POST /api/collections': 'Create a new collection',
-        'PUT /api/collections/:id': 'Update a collection',
-        'DELETE /api/collections/:id': 'Delete a collection',
+        'POST /api/collections': 'Create a new collection (admin)',
+        'PUT /api/collections/:id': 'Update a collection (admin)',
+        'DELETE /api/collections/:id': 'Delete a collection (admin)',
+      },
+      userCollections: {
+        'GET /api/user/collections': "List user's collections",
+        'GET /api/user/collections/:id': 'Get user collection details',
+        'POST /api/user/collections': 'Create new user collection',
+        'PUT /api/user/collections/:id': 'Update user collection',
+        'DELETE /api/user/collections/:id': 'Delete user collection',
+        'POST /api/user/collections/:id/scores': 'Add score to collection',
+        'DELETE /api/user/collections/:id/scores/:scoreId':
+          'Remove score from collection',
       },
     },
   })
@@ -63,6 +77,9 @@ api.route('/search', searchHandler)
 
 // Mount the basic import handler first (for /api/import endpoint)
 api.route('/import', importHandler)
+
+// Mount image import handler
+api.route('/import/images', importImagesHandler)
 
 // Use enhanced import handler for specific routes if browser rendering is available
 api.use('/import/*', async (c, next) => {
@@ -81,6 +98,9 @@ api.use('/import/*', async (c, next) => {
   await next()
 })
 api.route('/collections', collectionsHandler)
+
+// User collections routes
+api.route('/user/collections', userCollectionsHandler)
 
 // Render routes need special handling due to nested paths
 api.route('/', renderHandler)

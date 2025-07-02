@@ -14,7 +14,9 @@ export default function ScoreManagement() {
   const { toggleManagement, collections, userLibrary, loadUserLibrary } =
     useScoreStore()
   const [isDragging, setIsDragging] = useState(false)
-  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file')
+  const [uploadMode, setUploadMode] = useState<'file' | 'url' | 'images'>(
+    'file'
+  )
   const [uploadUrl, setUploadUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<{
@@ -23,6 +25,10 @@ export default function ScoreManagement() {
     scoreId?: string
   } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imageTitle, setImageTitle] = useState('')
+  const [imageComposer, setImageComposer] = useState('')
 
   // Use the score search hook for predictive search
   const scoreSearch = useScoreSearch({ minLength: 0 })
@@ -85,6 +91,95 @@ export default function ScoreManagement() {
         success: false,
         message: 'Upload failed. Please try again.',
       })
+      setIsUploading(false)
+    }
+  }
+
+  // Handle image uploads
+  const handleImageUpload = async (files: File[]) => {
+    // Validate files
+    const validImages = files.filter(file =>
+      ['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)
+    )
+
+    if (validImages.length === 0) {
+      setUploadResult({
+        success: false,
+        message: 'Please select valid image files (PNG, JPG, JPEG)',
+      })
+      return
+    }
+
+    if (validImages.length > 20) {
+      setUploadResult({
+        success: false,
+        message: 'Maximum 20 images allowed per score',
+      })
+      return
+    }
+
+    setSelectedImages(validImages)
+    setUploadResult(null)
+  }
+
+  const submitImageUpload = async () => {
+    if (selectedImages.length === 0) return
+
+    setIsUploading(true)
+    setUploadResult(null)
+
+    try {
+      // Convert images to base64
+      const imagesData = await Promise.all(
+        selectedImages.map(async file => {
+          return new Promise<{ filename: string; data: string }>(
+            (resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = e => {
+                resolve({
+                  filename: file.name,
+                  data: e.target?.result as string,
+                })
+              }
+              reader.onerror = reject
+              reader.readAsDataURL(file)
+            }
+          )
+        })
+      )
+
+      const response = await scoreService.importImages({
+        images: imagesData,
+        title: imageTitle || undefined,
+        composer: imageComposer || undefined,
+      })
+
+      if (response.success) {
+        setUploadResult({
+          success: true,
+          message: `Successfully uploaded ${response.data.title}`,
+          scoreId: response.data.id,
+        })
+        // Clear form
+        setSelectedImages([])
+        setImageTitle('')
+        setImageComposer('')
+        if (imageInputRef.current) imageInputRef.current.value = ''
+
+        loadUserLibrary() // Reload user library
+      } else {
+        setUploadResult({
+          success: false,
+          message: response.error || 'Upload failed',
+        })
+      }
+    } catch (error) {
+      console.error('Image upload failed:', error)
+      setUploadResult({
+        success: false,
+        message: 'Upload failed. Please try again.',
+      })
+    } finally {
       setIsUploading(false)
     }
   }
@@ -157,15 +252,19 @@ export default function ScoreManagement() {
     setIsDragging(false)
 
     const files = Array.from(e.dataTransfer.files)
-    const pdfFile = files.find(file => file.type === 'application/pdf')
 
-    if (pdfFile) {
-      handleFileUpload(pdfFile)
-    } else {
-      setUploadResult({
-        success: false,
-        message: 'Please drop a PDF file',
-      })
+    if (uploadMode === 'file') {
+      const pdfFile = files.find(file => file.type === 'application/pdf')
+      if (pdfFile) {
+        handleFileUpload(pdfFile)
+      } else {
+        setUploadResult({
+          success: false,
+          message: 'Please drop a PDF file',
+        })
+      }
+    } else if (uploadMode === 'images') {
+      handleImageUpload(files)
     }
   }
 
@@ -268,7 +367,17 @@ export default function ScoreManagement() {
                         : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                     }`}
                   >
-                    Upload File
+                    PDF
+                  </button>
+                  <button
+                    onClick={() => setUploadMode('images')}
+                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      uploadMode === 'images'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
+                  >
+                    Images
                   </button>
                   <button
                     onClick={() => setUploadMode('url')}
@@ -278,7 +387,7 @@ export default function ScoreManagement() {
                         : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
                     }`}
                   >
-                    Import from URL
+                    URL
                   </button>
                 </div>
 
@@ -332,6 +441,108 @@ export default function ScoreManagement() {
                         ? 'Uploading...'
                         : t('scorebook:selectFiles', 'Select Files')}
                     </button>
+                  </div>
+                ) : uploadMode === 'images' ? (
+                  <div className="space-y-3">
+                    {/* Image file input */}
+                    <div
+                      className={`drop-zone border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        isDragging
+                          ? 'border-morandi-sage-500 bg-morandi-sage-50'
+                          : 'border-morandi-stone-300'
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg"
+                        multiple
+                        onChange={e => {
+                          const files = Array.from(e.target.files || [])
+                          if (files.length > 0) handleImageUpload(files)
+                        }}
+                        className="hidden"
+                      />
+                      <svg
+                        className="w-12 h-12 mx-auto text-morandi-stone-400 mb-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className="text-sm text-morandi-stone-600 mb-2">
+                        {t(
+                          'scorebook:uploadImagesPrompt',
+                          'Drop image files here or click to browse'
+                        )}
+                      </p>
+                      <p className="text-xs text-morandi-stone-500 mb-3">
+                        PNG, JPG, JPEG • Max 20 images • 10MB per image
+                      </p>
+                      <button
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                      >
+                        {t('scorebook:selectImages', 'Select Images')}
+                      </button>
+                    </div>
+
+                    {/* Selected images preview */}
+                    {selectedImages.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-morandi-stone-700">
+                            {selectedImages.length} image
+                            {selectedImages.length > 1 ? 's' : ''} selected
+                          </p>
+                          <button
+                            onClick={() => {
+                              setSelectedImages([])
+                              if (imageInputRef.current)
+                                imageInputRef.current.value = ''
+                            }}
+                            className="text-sm text-red-600 hover:text-red-700"
+                          >
+                            Clear
+                          </button>
+                        </div>
+
+                        {/* Optional metadata */}
+                        <input
+                          type="text"
+                          value={imageTitle}
+                          onChange={e => setImageTitle(e.target.value)}
+                          placeholder="Title (optional - AI will extract)"
+                          className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={imageComposer}
+                          onChange={e => setImageComposer(e.target.value)}
+                          placeholder="Composer (optional - AI will extract)"
+                          className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                        />
+
+                        <button
+                          onClick={submitImageUpload}
+                          disabled={isUploading || selectedImages.length === 0}
+                          className="w-full px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                        >
+                          {isUploading ? 'Uploading...' : 'Upload Images'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">

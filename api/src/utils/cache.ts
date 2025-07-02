@@ -36,10 +36,10 @@ export const API_CACHE_CONFIG = {
   // Health checks (brief caching)
   health: {
     browserTTL: 0,
-    edgeTTL: 10, // 10 seconds
+    edgeTTL: 60, // 60 seconds (minimum for KV storage)
     headers: {
       'Cache-Control': 'no-cache',
-      'CDN-Cache-Control': 'public, max-age=10',
+      'CDN-Cache-Control': 'public, max-age=60',
     },
   },
 }
