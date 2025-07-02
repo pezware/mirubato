@@ -1,18 +1,19 @@
 -- Add user ownership and privacy fields to scores table
 -- This enables user-specific content and privacy controls
+-- Note: These ALTER TABLE statements may fail if columns exist, which is expected
 
--- Add user_id to track score ownership
+-- Add user_id to track score ownership (may already exist)
 ALTER TABLE scores ADD COLUMN user_id TEXT;
 
--- Add visibility field with default private for user uploads
+-- Add visibility field with default private for user uploads (may already exist)
 ALTER TABLE scores ADD COLUMN visibility TEXT DEFAULT 'private' 
   CHECK (visibility IN ('private', 'public', 'unlisted'));
 
--- Add source_type to distinguish between PDFs and images
+-- Add source_type to distinguish between PDFs and images (may already exist)
 ALTER TABLE scores ADD COLUMN source_type TEXT DEFAULT 'pdf'
   CHECK (source_type IN ('pdf', 'image', 'multi-image'));
 
--- Add page_count for better tracking (especially for multi-image scores)
+-- Add page_count for better tracking (may already exist)
 ALTER TABLE scores ADD COLUMN page_count INTEGER DEFAULT 1;
 
 -- Create indexes for efficient querying

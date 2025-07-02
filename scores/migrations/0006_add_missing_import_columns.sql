@@ -1,7 +1,8 @@
 -- Migration to add missing columns for import feature in staging
 -- This handles the case where some migrations were already partially applied
+-- Note: These ALTER TABLE statements may fail if columns exist, which is expected
 
--- Add new columns for import feature (only the ones that don't exist yet)
+-- Add new columns for import feature (may already exist)
 ALTER TABLE scores ADD COLUMN subtitle TEXT;
 ALTER TABLE scores ADD COLUMN year INTEGER;
 ALTER TABLE scores ADD COLUMN description TEXT;

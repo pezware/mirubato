@@ -1,8 +1,8 @@
 -- Create general collection for existing platform scores
 -- This ensures all existing scores are properly organized
 
--- Create the general collection
-INSERT INTO user_collections (
+-- Create the general collection (if it doesn't exist)
+INSERT OR IGNORE INTO user_collections (
   id, 
   user_id, 
   name, 
@@ -27,7 +27,7 @@ INSERT INTO user_collections (
 );
 
 -- Get all public platform scores and add them to collection_members
-INSERT INTO collection_members (id, collection_id, score_id)
+INSERT OR IGNORE INTO collection_members (id, collection_id, score_id)
 SELECT 
   'cm_' || ROW_NUMBER() OVER (ORDER BY s.created_at),
   'general-collection',
