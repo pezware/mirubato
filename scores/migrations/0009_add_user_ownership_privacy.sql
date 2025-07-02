@@ -21,5 +21,6 @@ CREATE INDEX idx_scores_visibility ON scores(visibility);
 CREATE INDEX idx_scores_source_type ON scores(source_type);
 
 -- Update existing scores to be public (platform-curated content)
-UPDATE scores SET visibility = 'public' WHERE visibility IS NULL;
+-- Set all scores without a user_id to public (these are platform scores)
+UPDATE scores SET visibility = 'public' WHERE user_id IS NULL OR user_id = '';
 UPDATE scores SET source_type = 'pdf' WHERE source_type IS NULL;
