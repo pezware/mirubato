@@ -10,6 +10,12 @@ command = "npm run build"
 [env.local]
 vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com", API_URL = "http://api-mirubato.localhost:9797", FRONTEND_URL = "http://www-mirubato.localhost:4000", SCORES_URL = "http://scores-mirubato.localhost:9788" }
 
+# Observability
+[env.local.observability]
+logs = [
+  { enabled = false }
+]
+
 [[env.local.d1_databases]]
 binding = "DB"
 database_name = "mirubato-dev"
@@ -31,6 +37,12 @@ simple = { limit = 10, period = 60 }
 name = "mirubato-api-staging"
 workers_dev = false
 vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
+
+# Observability
+[env.staging.observability]
+logs = [
+  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
+]
 
 [[env.staging.routes]]
 pattern = "api-staging.mirubato.com"
@@ -58,6 +70,12 @@ workers_dev = false
 [vars]
 ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
+
+# Observability
+[observability]
+logs = [
+  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
+]
 
 [[routes]]
 pattern = "api.mirubato.com"
@@ -87,6 +105,12 @@ workers_dev = false
 [env.production.vars]
 ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
+
+# Observability
+[env.production.observability]
+logs = [
+  { enabled = true, invocation_logs = true, destination = "cloudflare-logs" }
+]
 
 [[env.production.routes]]
 pattern = "api.mirubato.com"
