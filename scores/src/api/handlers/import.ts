@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
+import type { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
+import type { D1Database } from '@cloudflare/workers-types'
 import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
@@ -258,7 +260,11 @@ importHandler.post('/', async c => {
     if (authHeader?.startsWith('Bearer ')) {
       try {
         const { getAuthUser } = await import('../../utils/auth-enhanced')
-        const user = await getAuthUser(c as any)
+        const user = await getAuthUser(
+          c as unknown as Context<{
+            Bindings: { JWT_SECRET: string; DB: D1Database }
+          }>
+        )
         userId = user?.id || null
       } catch (error) {
         // Continue without auth - will be anonymous upload
@@ -329,10 +335,8 @@ importHandler.post('/', async c => {
 
     // If user is authenticated, optionally add the score to their default collection
     // Note: This is optional - users can organize scores into collections later
-    if (userId && false) {
-      // Disabled for now - let users organize manually
-      // Users can add scores to collections manually after upload
-    }
+    // Disabled for now - let users organize manually
+    // Users can add scores to collections manually after upload
 
     // Trigger PDF processing queue
     if (c.env.PDF_QUEUE) {

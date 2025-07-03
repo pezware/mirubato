@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { generateId } from '../../utils/generateId'
 import { getAuthUser } from '../../utils/auth-enhanced'
 import { generateSlug } from '../../utils/database'
+import type { Context } from 'hono'
+import type { D1Database } from '@cloudflare/workers-types'
 // import { VisibilityService } from '../../services/visibilityService' // Not needed - independent visibility
 
 const userCollectionsHandler = new Hono<{ Bindings: Env }>()
@@ -40,7 +42,11 @@ const UpdateCollectionSchema = z.object({
 userCollectionsHandler.get('/', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -54,11 +60,12 @@ userCollectionsHandler.get('/', async c => {
       .bind(user.id)
       .all()
 
-    console.log('User collections query result:', {
-      userId: user.id,
-      count: collections.results.length,
-      firstCollection: collections.results[0],
-    })
+    // Log collection count for debugging
+    // console.log('User collections query result:', {
+    //   userId: user.id,
+    //   count: collections.results.length,
+    //   firstCollection: collections.results[0],
+    // })
 
     // If user has no collections, create a default "General" collection
     if (collections.results.length === 0) {
@@ -131,7 +138,11 @@ userCollectionsHandler.get('/:id', async c => {
     const collectionId = c.req.param('id')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -149,7 +160,16 @@ userCollectionsHandler.get('/:id', async c => {
 
     // Get scores in collection with full details
     const scoreIds = JSON.parse((collection.score_ids as string) || '[]')
-    let scores: any[] = []
+    let scores: Array<{
+      id: string
+      title: string
+      composer: string
+      instrument: string
+      difficulty: string
+      tags: string[]
+      metadata: Record<string, unknown>
+      [key: string]: unknown
+    }> = []
 
     if (scoreIds.length > 0) {
       const placeholders = scoreIds.map(() => '?').join(',')
@@ -162,9 +182,14 @@ userCollectionsHandler.get('/:id', async c => {
         .all()
 
       scores = scoresResult.results.map(score => ({
-        ...score,
+        id: score.id as string,
+        title: score.title as string,
+        composer: score.composer as string,
+        instrument: score.instrument as string,
+        difficulty: score.difficulty as string,
         tags: JSON.parse((score.tags as string) || '[]'),
         metadata: JSON.parse((score.metadata as string) || '{}'),
+        ...score,
       }))
     }
 
@@ -193,7 +218,11 @@ userCollectionsHandler.get('/:id', async c => {
 userCollectionsHandler.post('/', async c => {
   try {
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -281,7 +310,11 @@ userCollectionsHandler.put('/:id', async c => {
     const collectionId = c.req.param('id')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -309,7 +342,7 @@ userCollectionsHandler.put('/:id', async c => {
 
     // Build update query
     const updates: string[] = []
-    const params: any[] = []
+    const params: Array<string | number | null> = []
 
     if (validatedData.name !== undefined) {
       updates.push('name = ?')
@@ -326,14 +359,12 @@ userCollectionsHandler.put('/:id', async c => {
       params.push(validatedData.description)
     }
 
-    let visibilityChanged = false
     if (
       validatedData.visibility !== undefined &&
       validatedData.visibility !== existing.visibility
     ) {
       updates.push('visibility = ?')
       params.push(validatedData.visibility)
-      visibilityChanged = true
     }
 
     if (validatedData.tags !== undefined) {
@@ -399,7 +430,11 @@ userCollectionsHandler.delete('/:id', async c => {
     const collectionId = c.req.param('id')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -444,20 +479,25 @@ userCollectionsHandler.post('/:id/scores', async c => {
     const body = await c.req.json()
     const { scoreId } = body
 
-    console.log('Add to collection request:', {
-      collectionId,
-      body,
-      scoreId,
-      path: c.req.path,
-      url: c.req.url,
-    })
+    // Log request details for debugging
+    // console.log('Add to collection request:', {
+    //   collectionId,
+    //   body,
+    //   scoreId,
+    //   path: c.req.path,
+    //   url: c.req.url,
+    // })
 
     if (!scoreId) {
       throw new HTTPException(400, { message: 'Score ID required' })
     }
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -538,7 +578,11 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
     const scoreId = c.req.param('scoreId')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
@@ -593,7 +637,11 @@ userCollectionsHandler.get('/score/:scoreId', async c => {
     const scoreId = c.req.param('scoreId')
 
     // Get authenticated user
-    const user = await getAuthUser(c as any)
+    const user = await getAuthUser(
+      c as unknown as Context<{
+        Bindings: { JWT_SECRET: string; DB: D1Database }
+      }>
+    )
     if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
