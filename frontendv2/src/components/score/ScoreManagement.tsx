@@ -8,6 +8,18 @@ import Autocomplete from '../ui/Autocomplete'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
 import CollectionsManager from './CollectionsManager'
+import Button from '../ui/Button'
+import {
+  X,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  Edit,
+  Check,
+  RotateCw,
+  Plus,
+} from 'lucide-react'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -384,24 +396,9 @@ export default function ScoreManagement() {
             <h3 className="text-lg font-medium text-morandi-stone-800">
               {t('scorebook:scoreManagement', 'Score Management')}
             </h3>
-            <button
-              onClick={toggleManagement}
-              className="p-2 hover:bg-morandi-stone-100 rounded-lg transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <Button onClick={toggleManagement} variant="ghost" size="icon-md">
+              <X className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
@@ -463,36 +460,30 @@ export default function ScoreManagement() {
 
                 {/* Mode selector */}
                 <div className="flex gap-2 mb-3">
-                  <button
+                  <Button
                     onClick={() => setUploadMode('file')}
-                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                      uploadMode === 'file'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
+                    variant={uploadMode === 'file' ? 'primary' : 'secondary'}
+                    size="sm"
+                    className="flex-1"
                   >
                     PDF
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setUploadMode('images')}
-                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                      uploadMode === 'images'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
+                    variant={uploadMode === 'images' ? 'primary' : 'secondary'}
+                    size="sm"
+                    className="flex-1"
                   >
                     Images
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setUploadMode('url')}
-                    className={`flex-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                      uploadMode === 'url'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
+                    variant={uploadMode === 'url' ? 'primary' : 'secondary'}
+                    size="sm"
+                    className="flex-1"
                   >
                     URL
-                  </button>
+                  </Button>
                 </div>
 
                 {uploadMode === 'file' ? (
@@ -536,15 +527,16 @@ export default function ScoreManagement() {
                         'Drop PDF files here or click to browse'
                       )}
                     </p>
-                    <button
+                    <Button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploading}
-                      className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                      loading={isUploading}
+                      size="sm"
                     >
                       {isUploading
                         ? 'Uploading...'
                         : t('scorebook:selectFiles', 'Select Files')}
-                    </button>
+                    </Button>
                   </div>
                 ) : uploadMode === 'images' ? (
                   <div className="space-y-3">
@@ -593,13 +585,14 @@ export default function ScoreManagement() {
                       <p className="text-xs text-morandi-stone-500 mb-3">
                         PNG, JPG, JPEG • Max 20 images • 10MB per image
                       </p>
-                      <button
+                      <Button
                         onClick={() => imageInputRef.current?.click()}
                         disabled={isUploading}
-                        className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                        loading={isUploading}
+                        size="sm"
                       >
                         {t('scorebook:selectImages', 'Select Images')}
-                      </button>
+                      </Button>
                     </div>
 
                     {/* Selected images preview */}
@@ -610,17 +603,18 @@ export default function ScoreManagement() {
                             {selectedImages.length} image
                             {selectedImages.length > 1 ? 's' : ''} selected
                           </p>
-                          <button
+                          <Button
                             onClick={() => {
                               setSelectedImages([])
                               setProcessedImages([])
                               if (imageInputRef.current)
                                 imageInputRef.current.value = ''
                             }}
-                            className="text-sm text-red-600 hover:text-red-700"
+                            variant="danger"
+                            size="sm"
                           >
                             Clear
-                          </button>
+                          </Button>
                         </div>
 
                         {/* Image previews grid - Responsive */}
@@ -636,13 +630,16 @@ export default function ScoreManagement() {
                                 className="w-full h-full object-cover rounded-lg border border-morandi-stone-200"
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 p-2">
-                                <button
+                                <Button
                                   onClick={() => handleEditImage(index)}
-                                  className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-white text-morandi-stone-700 rounded text-xs sm:text-sm hover:bg-morandi-stone-100 transition-colors"
+                                  variant="secondary"
+                                  size="sm"
+                                  className="w-full sm:w-auto"
+                                  leftIcon={<Edit className="w-3 h-3" />}
                                 >
                                   Edit
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                   onClick={() => {
                                     const newImages = selectedImages.filter(
                                       (_, i) => i !== index
@@ -653,10 +650,13 @@ export default function ScoreManagement() {
                                     setSelectedImages(newImages)
                                     setProcessedImages(newProcessed)
                                   }}
-                                  className="w-full sm:w-auto px-2 sm:px-3 py-1 bg-red-600 text-white rounded text-xs sm:text-sm hover:bg-red-700 transition-colors"
+                                  variant="danger"
+                                  size="sm"
+                                  className="w-full sm:w-auto"
+                                  leftIcon={<Trash2 className="w-3 h-3" />}
                                 >
                                   Remove
-                                </button>
+                                </Button>
                               </div>
                               {img.edited && (
                                 <div className="absolute top-1 right-1 bg-morandi-sage-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded shadow-sm">
@@ -683,13 +683,16 @@ export default function ScoreManagement() {
                           className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
                         />
 
-                        <button
+                        <Button
                           onClick={submitImageUpload}
                           disabled={isUploading || selectedImages.length === 0}
-                          className="w-full px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                          loading={isUploading}
+                          fullWidth
+                          size="sm"
+                          leftIcon={<Upload className="w-4 h-4" />}
                         >
                           {isUploading ? 'Uploading...' : 'Upload Images'}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -702,13 +705,15 @@ export default function ScoreManagement() {
                       placeholder="https://example.com/score.pdf"
                       className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
                     />
-                    <button
+                    <Button
                       onClick={handleUrlImport}
                       disabled={isUploading || !uploadUrl.trim()}
-                      className="w-full px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-400 transition-colors text-sm disabled:opacity-50"
+                      loading={isUploading}
+                      fullWidth
+                      size="sm"
                     >
                       {isUploading ? 'Importing...' : 'Import from URL'}
-                    </button>
+                    </Button>
                     <p className="text-xs text-morandi-stone-500">
                       Import PDFs from Mutopia Project or other sources
                     </p>
@@ -726,12 +731,14 @@ export default function ScoreManagement() {
                   >
                     {uploadResult.message}
                     {uploadResult.success && uploadResult.scoreId && (
-                      <button
+                      <Button
                         onClick={() => handleScoreSelect(uploadResult.scoreId!)}
-                        className="block mt-2 text-xs underline hover:no-underline"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2"
                       >
                         View Score →
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -746,18 +753,22 @@ export default function ScoreManagement() {
                 </h4>
                 <div className="space-y-2">
                   {userLibrary.slice(0, 5).map(score => (
-                    <button
+                    <Button
                       key={score.id}
                       onClick={() => handleScoreSelect(score.id)}
-                      className="w-full text-left p-3 bg-morandi-stone-50 rounded-lg hover:bg-morandi-stone-100 transition-colors"
+                      variant="secondary"
+                      fullWidth
+                      className="text-left p-3"
                     >
-                      <div className="font-medium text-morandi-stone-800">
-                        {score.title}
+                      <div>
+                        <div className="font-medium text-morandi-stone-800">
+                          {score.title}
+                        </div>
+                        <div className="text-sm text-morandi-stone-600">
+                          {score.composer} • {score.instrument}
+                        </div>
                       </div>
-                      <div className="text-sm text-morandi-stone-600">
-                        {score.composer} • {score.instrument}
-                      </div>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -769,29 +780,15 @@ export default function ScoreManagement() {
                 <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
                   {t('scorebook:myCollections', 'My Collections')}
                 </h4>
-                <button
+                <Button
                   onClick={() => setShowCollections(true)}
-                  className="w-full p-3 bg-morandi-sage-50 text-morandi-sage-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm font-medium"
+                  variant="secondary"
+                  fullWidth
+                  className="p-3 bg-morandi-sage-50 hover:bg-morandi-sage-100"
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
                 >
-                  <div className="flex items-center justify-between">
-                    <span>
-                      {t('scorebook:manageCollections', 'Manage Collections')}
-                    </span>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                </button>
+                  {t('scorebook:manageCollections', 'Manage Collections')}
+                </Button>
               </div>
             )}
 
@@ -802,15 +799,16 @@ export default function ScoreManagement() {
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 {featuredCollections.slice(0, 4).map(collection => (
-                  <button
+                  <Button
                     key={collection.id}
                     onClick={() =>
                       navigate(`/scorebook/collection/${collection.slug}`)
                     }
+                    variant="secondary"
                     className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
                   >
                     {collection.name}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
