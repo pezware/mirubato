@@ -10,6 +10,9 @@
 -- Since the role column may already exist from a previous partial migration,
 -- we'll just ensure the rest of the migration completes
 
+-- Add role column to users table (this will fail silently if it already exists)
+ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user';
+
 -- Create index for efficient role-based queries (IF NOT EXISTS handles duplicates)
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
