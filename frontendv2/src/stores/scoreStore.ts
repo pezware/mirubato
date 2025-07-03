@@ -33,6 +33,8 @@ interface ScoreStore {
 
   // Collections and library
   collections: Collection[]
+  userCollections: Collection[]
+  featuredCollections: Collection[]
   userLibrary: Score[]
 
   // Practice session
@@ -72,7 +74,16 @@ interface ScoreStore {
 
   // Collection actions
   loadCollections: () => Promise<void>
+  loadUserCollections: () => Promise<void>
+  loadFeaturedCollections: () => Promise<void>
   loadUserLibrary: () => Promise<void>
+  createCollection: (name: string, description?: string) => Promise<void>
+  deleteCollection: (id: string) => Promise<void>
+  addScoreToCollection: (collectionId: string, scoreId: string) => Promise<void>
+  removeScoreFromCollection: (
+    collectionId: string,
+    scoreId: string
+  ) => Promise<void>
 
   // Error handling
   clearError: () => void
@@ -87,6 +98,8 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
   error: null,
 
   collections: [],
+  userCollections: [],
+  featuredCollections: [],
   userLibrary: [],
 
   practiceSession: null,
@@ -285,6 +298,24 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     }
   },
 
+  loadUserCollections: async () => {
+    try {
+      const userCollections = await scoreService.getUserCollections()
+      set({ userCollections })
+    } catch (error) {
+      console.error('Failed to load user collections:', error)
+    }
+  },
+
+  loadFeaturedCollections: async () => {
+    try {
+      const featuredCollections = await scoreService.getFeaturedCollections()
+      set({ featuredCollections })
+    } catch (error) {
+      console.error('Failed to load featured collections:', error)
+    }
+  },
+
   loadUserLibrary: async () => {
     // For now, load all scores
     // In production, this would be filtered by user
@@ -293,6 +324,52 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       set({ userLibrary: response.items })
     } catch (error) {
       console.error('Failed to load user library:', error)
+    }
+  },
+
+  createCollection: async (name: string, description?: string) => {
+    try {
+      await scoreService.createCollection({
+        name,
+        description,
+        visibility: 'private',
+      })
+      // Reload collections
+      const userCollections = await scoreService.getUserCollections()
+      set({ userCollections })
+    } catch (error) {
+      console.error('Failed to create collection:', error)
+      throw error
+    }
+  },
+
+  deleteCollection: async (id: string) => {
+    try {
+      await scoreService.deleteCollection(id)
+      // Reload collections
+      const userCollections = await scoreService.getUserCollections()
+      set({ userCollections })
+    } catch (error) {
+      console.error('Failed to delete collection:', error)
+      throw error
+    }
+  },
+
+  addScoreToCollection: async (collectionId: string, scoreId: string) => {
+    try {
+      await scoreService.addScoreToCollection(collectionId, scoreId)
+    } catch (error) {
+      console.error('Failed to add score to collection:', error)
+      throw error
+    }
+  },
+
+  removeScoreFromCollection: async (collectionId: string, scoreId: string) => {
+    try {
+      await scoreService.removeScoreFromCollection(collectionId, scoreId)
+    } catch (error) {
+      console.error('Failed to remove score from collection:', error)
+      throw error
     }
   },
 

@@ -7,6 +7,7 @@ import { scoreService } from '../../services/scoreService'
 import Autocomplete from '../ui/Autocomplete'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
+import CollectionsManager from './CollectionsManager'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -40,6 +41,7 @@ export default function ScoreManagement() {
       edited?: boolean
     }[]
   >([])
+  const [showCollections, setShowCollections] = useState(false)
 
   // Use the score search hook for predictive search
   const scoreSearch = useScoreSearch({ minLength: 0 })
@@ -721,6 +723,38 @@ export default function ScoreManagement() {
               </div>
             )}
 
+            {/* My Collections (Authenticated only) */}
+            {isAuthenticated && (
+              <div>
+                <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
+                  {t('scorebook:myCollections', 'My Collections')}
+                </h4>
+                <button
+                  onClick={() => setShowCollections(true)}
+                  className="w-full p-3 bg-morandi-sage-50 text-morandi-sage-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm font-medium"
+                >
+                  <div className="flex items-center justify-between">
+                    <span>
+                      {t('scorebook:manageCollections', 'Manage Collections')}
+                    </span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            )}
+
             {/* Collections */}
             <div>
               <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
@@ -754,6 +788,21 @@ export default function ScoreManagement() {
           onSave={handleSaveEditedImage}
           onCancel={() => setEditingImageIndex(null)}
         />
+      )}
+
+      {/* Collections Manager Modal */}
+      {showCollections && (
+        <div
+          className="fixed inset-0 bg-black/50 z-60"
+          onClick={() => setShowCollections(false)}
+        >
+          <div
+            className="absolute right-0 top-0 h-full w-full sm:w-96 md:w-[480px] bg-white shadow-xl overflow-hidden flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <CollectionsManager onClose={() => setShowCollections(false)} />
+          </div>
+        </div>
       )}
     </div>
   )

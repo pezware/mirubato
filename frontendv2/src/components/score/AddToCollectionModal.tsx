@@ -1,0 +1,213 @@
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { scoreService } from '../../services/scoreService'
+import { Collection } from '../../types/collections'
+import Button from '../ui/Button'
+import Tag from '../ui/Tag'
+import { cn } from '../../utils/cn'
+
+interface AddToCollectionModalProps {
+  scoreId: string
+  scoreTitle: string
+  currentCollections?: string[] // Collection IDs the score is already in
+  onClose: () => void
+  onSave: () => void
+}
+
+export default function AddToCollectionModal({
+  scoreId,
+  scoreTitle,
+  currentCollections = [],
+  onClose,
+  onSave,
+}: AddToCollectionModalProps) {
+  const { t } = useTranslation(['scorebook', 'common'])
+  const [collections, setCollections] = useState<Collection[]>([])
+  const [selectedCollections, setSelectedCollections] = useState<Set<string>>(
+    new Set(currentCollections)
+  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadCollections()
+  }, [])
+
+  const loadCollections = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const userCollections = await scoreService.getUserCollections()
+      setCollections(userCollections)
+    } catch (err) {
+      console.error('Failed to load collections:', err)
+      setError(
+        t('scorebook:errors.loadCollections', 'Failed to load collections')
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const toggleCollection = (collectionId: string) => {
+    const newSelected = new Set(selectedCollections)
+    if (newSelected.has(collectionId)) {
+      newSelected.delete(collectionId)
+    } else {
+      newSelected.add(collectionId)
+    }
+    setSelectedCollections(newSelected)
+  }
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      // Find collections to add and remove
+      const toAdd = Array.from(selectedCollections).filter(
+        id => !currentCollections.includes(id)
+      )
+      const toRemove = currentCollections.filter(
+        id => !selectedCollections.has(id)
+      )
+
+      // Execute add/remove operations
+      await Promise.all([
+        ...toAdd.map(collectionId =>
+          scoreService.addScoreToCollection(collectionId, scoreId)
+        ),
+        ...toRemove.map(collectionId =>
+          scoreService.removeScoreFromCollection(collectionId, scoreId)
+        ),
+      ])
+
+      onSave()
+      onClose()
+    } catch (err) {
+      console.error('Failed to update collections:', err)
+      setError(
+        t('scorebook:errors.updateCollections', 'Failed to update collections')
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div
+        className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-morandi-stone-200">
+          <h3 className="text-lg font-medium text-morandi-stone-800">
+            {t('scorebook:addToCollections', 'Add to Collections')}
+          </h3>
+          <p className="text-sm text-morandi-stone-600 mt-1">{scoreTitle}</p>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500"></div>
+            </div>
+          ) : collections.length === 0 ? (
+            <div className="text-center py-8 text-morandi-stone-500">
+              <p>{t('scorebook:noCollections', 'No collections yet')}</p>
+              <p className="text-sm mt-1">
+                {t(
+                  'scorebook:createFirstCollection',
+                  'Create your first collection'
+                )}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {collections.map(collection => (
+                <label
+                  key={collection.id}
+                  className={cn(
+                    'flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all',
+                    selectedCollections.has(collection.id)
+                      ? 'border-morandi-sage-500 bg-morandi-sage-50'
+                      : 'border-morandi-stone-200 hover:border-morandi-stone-300'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCollections.has(collection.id)}
+                    onChange={() => toggleCollection(collection.id)}
+                    className="sr-only"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-morandi-stone-800">
+                      {collection.name}
+                    </div>
+                    {collection.description && (
+                      <div className="text-sm text-morandi-stone-600 mt-0.5">
+                        {collection.description}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      {collection.visibility === 'public' && (
+                        <Tag size="sm" variant="success">
+                          {t('scorebook:public', 'Public')}
+                        </Tag>
+                      )}
+                      {collection.scoreCount !== undefined && (
+                        <span className="text-xs text-morandi-stone-500">
+                          {collection.scoreCount} scores
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    {selectedCollections.has(collection.id) && (
+                      <svg
+                        className="w-5 h-5 text-morandi-sage-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-morandi-stone-200">
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={onClose} disabled={isSaving}>
+              {t('common:cancel', 'Cancel')}
+            </Button>
+            <Button
+              onClick={handleSave}
+              loading={isSaving}
+              disabled={isLoading}
+            >
+              {t('common:save', 'Save')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
