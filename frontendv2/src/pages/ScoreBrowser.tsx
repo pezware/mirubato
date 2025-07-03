@@ -5,6 +5,7 @@ import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
+import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import { useAuthStore } from '../stores/authStore'
 
 export default function ScoreBrowserPage() {
@@ -19,6 +20,9 @@ export default function ScoreBrowserPage() {
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
   const [showSignInModal, setShowSignInModal] = useState(false)
+  const [showCollectionModal, setShowCollectionModal] = useState(false)
+  const [selectedScoreForCollection, setSelectedScoreForCollection] =
+    useState<Score | null>(null)
 
   useEffect(() => {
     loadData()
@@ -69,6 +73,27 @@ export default function ScoreBrowserPage() {
 
   const handleScoreSelect = (scoreId: string) => {
     navigate(`/scorebook/${scoreId}`)
+  }
+
+  const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
+    e.stopPropagation() // Prevent triggering the score selection
+    if (!isAuthenticated) {
+      setShowSignInModal(true)
+      return
+    }
+    setSelectedScoreForCollection(score)
+    setShowCollectionModal(true)
+  }
+
+  const handleCollectionModalClose = () => {
+    setShowCollectionModal(false)
+    setSelectedScoreForCollection(null)
+  }
+
+  const handleCollectionModalSave = () => {
+    // Refresh data to show updated collections
+    loadData()
+    handleCollectionModalClose()
   }
 
   return (
@@ -223,44 +248,56 @@ export default function ScoreBrowserPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {scores.map(score => (
-                <button
-                  key={score.id}
-                  onClick={() => handleScoreSelect(score.id)}
-                  className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 hover:shadow-md transition-shadow text-left"
-                >
-                  <h3 className="font-medium text-morandi-stone-800 mb-2">
-                    {score.title}
-                  </h3>
-                  <p className="text-sm text-morandi-stone-600 mb-3">
-                    {score.composer}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="px-2 py-1 bg-morandi-sand-100 text-morandi-stone-700 rounded">
-                      {score.instrument === 'PIANO' ? '🎹' : '🎸'}{' '}
-                      {score.instrument}
-                    </span>
-                    <span className="px-2 py-1 bg-morandi-sage-100 text-morandi-stone-700 rounded">
-                      {score.difficulty}
-                    </span>
-                    {score.difficulty_level && (
-                      <span className="text-morandi-stone-500">
-                        Level {score.difficulty_level}
+                <div key={score.id} className="relative">
+                  <button
+                    onClick={() => handleScoreSelect(score.id)}
+                    className="w-full bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-6 hover:shadow-md transition-shadow text-left"
+                  >
+                    <h3 className="font-medium text-morandi-stone-800 mb-2">
+                      {score.title}
+                    </h3>
+                    <p className="text-sm text-morandi-stone-600 mb-3">
+                      {score.composer}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="px-2 py-1 bg-morandi-sand-100 text-morandi-stone-700 rounded">
+                        {score.instrument === 'PIANO' ? '🎹' : '🎸'}{' '}
+                        {score.instrument}
                       </span>
-                    )}
-                  </div>
-                  {score.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {score.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
-                        >
-                          #{tag}
+                      <span className="px-2 py-1 bg-morandi-sage-100 text-morandi-stone-700 rounded">
+                        {score.difficulty}
+                      </span>
+                      {score.difficulty_level && (
+                        <span className="text-morandi-stone-500">
+                          Level {score.difficulty_level}
                         </span>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </button>
+                    {score.tags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {score.tags.slice(0, 3).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Collections Button */}
+                  <button
+                    onClick={e => handleAddToCollection(e, score)}
+                    className="absolute top-2 right-2 w-8 h-8 bg-morandi-sage-100 hover:bg-morandi-sage-200 rounded-full flex items-center justify-center transition-colors group"
+                    title={t('scorebook:addToCollection', 'Add to collection')}
+                  >
+                    <span className="text-sm group-hover:scale-110 transition-transform">
+                      📚
+                    </span>
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -272,6 +309,16 @@ export default function ScoreBrowserPage() {
         isOpen={showSignInModal}
         onClose={() => setShowSignInModal(false)}
       />
+
+      {/* Add to Collection Modal */}
+      {showCollectionModal && selectedScoreForCollection && (
+        <AddToCollectionModal
+          scoreId={selectedScoreForCollection.id}
+          scoreTitle={selectedScoreForCollection.title}
+          onClose={handleCollectionModalClose}
+          onSave={handleCollectionModalSave}
+        />
+      )}
     </div>
   )
 }
