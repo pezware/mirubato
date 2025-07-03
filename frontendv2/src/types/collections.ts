@@ -69,7 +69,9 @@ export type UserRole = 'user' | 'teacher' | 'admin'
 
 // Helper functions
 export function isAdmin(user: User | null): boolean {
-  return user?.role === 'admin' || user?.email.endsWith('@mirubato.com')
+  return (
+    user?.role === 'admin' || (user?.email?.endsWith('@mirubato.com') ?? false)
+  )
 }
 
 export function isTeacher(user: User | null): boolean {

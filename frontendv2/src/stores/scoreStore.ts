@@ -1,9 +1,6 @@
 import { create } from 'zustand'
-import {
-  scoreService,
-  type Score,
-  type Collection,
-} from '../services/scoreService'
+import { scoreService, type Score } from '../services/scoreService'
+import type { Collection } from '../types/collections'
 
 interface PracticeSession {
   id: string

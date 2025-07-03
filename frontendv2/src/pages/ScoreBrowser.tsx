@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import {
-  scoreService,
-  type Score,
-  type Collection,
-} from '../services/scoreService'
+import { scoreService, type Score } from '../services/scoreService'
+import type { Collection } from '../types/collections'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import { useAuthStore } from '../stores/authStore'
@@ -49,13 +46,11 @@ export default function ScoreBrowserPage() {
       // Load scores based on filters or collection
       if (slug) {
         // Load specific collection
-        const collection = await scoreService.getCollection(slug)
-        // For now, load all scores and filter by IDs
+        await scoreService.getCollection(slug)
+        // TODO: Update this once the API supports fetching scores by collection
+        // For now, just load all scores as a placeholder
         const allScores = await scoreService.getScores()
-        const collectionScores = allScores.items.filter(score =>
-          collection.scoreIds.includes(score.id)
-        )
-        setScores(collectionScores)
+        setScores(allScores.items)
       } else {
         // Load all scores with filters
         const params: Record<string, string> = {}
@@ -121,14 +116,14 @@ export default function ScoreBrowserPage() {
         </div>
 
         {/* Collections */}
-        {collections.filter(c => c.isFeatured).length > 0 && !slug && (
+        {collections.filter(c => c.featuredAt).length > 0 && !slug && (
           <div className="mb-8">
             <h2 className="text-xl font-medium text-morandi-stone-800 mb-4">
               {t('scorebook:featuredCollections', 'Featured Collections')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {collections
-                .filter(c => c.isFeatured)
+                .filter(c => c.featuredAt)
                 .map(collection => (
                   <Link
                     key={collection.id}
@@ -142,17 +137,12 @@ export default function ScoreBrowserPage() {
                       {collection.description}
                     </p>
                     <div className="flex items-center gap-3 text-xs text-morandi-stone-500">
-                      {collection.instrument && (
+                      {collection.tags.length > 0 && (
                         <span className="px-2 py-1 bg-morandi-sand-100 rounded">
-                          {collection.instrument}
+                          {collection.tags[0]}
                         </span>
                       )}
-                      {collection.difficulty && (
-                        <span className="px-2 py-1 bg-morandi-sage-100 rounded">
-                          {collection.difficulty}
-                        </span>
-                      )}
-                      <span>{collection.scoreIds.length} scores</span>
+                      <span>{collection.scoreCount || 0} scores</span>
                     </div>
                   </Link>
                 ))}

@@ -33,8 +33,8 @@ export interface Score {
   updated_at: string
 }
 
-// Re-export from types for backward compatibility
-export type { Collection } from '../types/collections'
+// Import Collection type
+import type { Collection } from '../types/collections'
 
 export interface ScoreSearchParams {
   query?: string

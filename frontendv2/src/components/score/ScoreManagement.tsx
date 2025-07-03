@@ -13,8 +13,12 @@ export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
-  const { toggleManagement, collections, userLibrary, loadUserLibrary } =
-    useScoreStore()
+  const {
+    toggleManagement,
+    featuredCollections,
+    userLibrary,
+    loadUserLibrary,
+  } = useScoreStore()
   const [isDragging, setIsDragging] = useState(false)
   const [uploadMode, setUploadMode] = useState<'file' | 'url' | 'images'>(
     'file'
@@ -761,20 +765,17 @@ export default function ScoreManagement() {
                 {t('scorebook:collections', 'Browse Collections')}
               </h4>
               <div className="grid grid-cols-2 gap-2">
-                {collections
-                  .filter(c => c.isFeatured)
-                  .slice(0, 4)
-                  .map(collection => (
-                    <button
-                      key={collection.id}
-                      onClick={() =>
-                        navigate(`/scorebook/collection/${collection.slug}`)
-                      }
-                      className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
-                    >
-                      {collection.name}
-                    </button>
-                  ))}
+                {featuredCollections.slice(0, 4).map(collection => (
+                  <button
+                    key={collection.id}
+                    onClick={() =>
+                      navigate(`/scorebook/collection/${collection.slug}`)
+                    }
+                    className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
+                  >
+                    {collection.name}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

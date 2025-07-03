@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../stores/authStore'
-import { scoreService } from '../../services/scoreService'
 import { useScoreStore } from '../../stores/scoreStore'
-import {
-  Collection,
-  CreateCollectionInput,
-  isAdmin,
-  isTeacher,
-  canShareCollections,
-} from '../../types/collections'
+import { isAdmin, isTeacher } from '../../types/collections'
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
 import { cn } from '../../utils/cn'
@@ -34,7 +27,6 @@ export default function CollectionsManager({
     loadUserCollections,
     loadFeaturedCollections,
   } = useScoreStore()
-  const [collections, setCollections] = useState<Collection[]>([])
   const [selectedCollections, setSelectedCollections] = useState<Set<string>>(
     new Set()
   )
