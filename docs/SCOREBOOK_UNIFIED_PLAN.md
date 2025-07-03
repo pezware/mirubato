@@ -1,7 +1,7 @@
 # SCOREBOOK_UNIFIED_PLAN.md
 
-_Last Updated: June 2025_
-_Status: Active Development - Phase 5_
+_Last Updated: July 2025_
+_Status: Active Development - Phase 5.5_
 
 ## Executive Summary
 
@@ -141,79 +141,69 @@ Build a world-class digital sheet music viewer optimized for music practice and 
      - Database migration to update existing slugs
      - Prevents import failures for similar pieces
 
-### 🚧 Current Development: User Collections & Image Uploads
+### ✅ Completed Phase: Enhanced Collections System
 
-#### Phase 5.5: Personal Score Collections (January 2025) - IN PROGRESS
+#### Phase 5.5: Personal Score Collections (July 2025) - COMPLETE
 
-##### Features to Implement:
+##### ✅ Backend Implementation Complete:
 
-1. **Image Upload for Personal Scores**
-   - Accept PNG, JPG, JPEG formats (photos of paper scores)
-   - Support multiple images per score (for multi-page pieces)
-   - Optional metadata: title, composer (with "Unknown" defaults)
-   - Store in user-specific R2 paths (`user-uploads/{userId}/{scoreId}/`)
+1. **Enhanced Collections System**
+   - ✅ Role-based access control (admin, teacher, user)
+   - ✅ Tag-based collections with many-to-many relationships
+   - ✅ User namespace isolation for collection names
+   - ✅ Featured collections for admin curation
+   - ✅ Teacher collection sharing functionality
+   - ✅ Visibility inheritance from collections to scores
 
-2. **AI Processing for Images**
-   - Primary: Cloudflare AI Vision for cost-effective analysis
-   - Fallback: Gemini for enhanced accuracy when needed
-   - Handle fragmented/partial scores gracefully
-   - Lower confidence thresholds for handwritten music
-   - Store AI confidence scores for future improvements
-   - Visual analysis results stored in new database columns
+2. **Database Schema Updates**
+   - ✅ Added user roles to API database
+   - ✅ Enhanced user_collections with owner_type and shared_with
+   - ✅ Added derived_visibility to scores table
+   - ✅ Created collection_visibility_log for tracking changes
+   - ✅ Migrated existing collections to new schema
 
-3. **User Collections**
-   - "My Uploads" collection auto-created for each user
-   - Custom collections for organization
-   - Private by default (no public sharing initially)
-   - Collection sharing in future phases
+3. **API Endpoints**
+   - ✅ `/api/collections/featured` - Public featured collections
+   - ✅ `/api/collections/shared` - Teacher sharing endpoints
+   - ✅ Enhanced `/api/user/collections` with role-based permissions
+   - ✅ Automatic score visibility updates on collection changes
+   - ✅ Default "General" collection creation for users
 
-4. **Frontend Updates**
-   - Add image upload to ScoreManagement component
-   - Support drag & drop for multiple images
-   - Image preview before upload
-   - Reorder pages interface for multi-image scores
+4. **Security & Privacy**
+   - ✅ Private by default for user uploads
+   - ✅ Scores automatically added to user's General collection
+   - ✅ Admin email detection (@mirubato.com)
+   - ✅ JWT-based role verification
+   - ✅ Collection-based access control
 
-5. **Database Schema Updates**
+5. **Key Features Implemented**
+   - Users can have unlimited personal collections
+   - Teachers can share collections with specific students
+   - Admins can create featured collections visible to all
+   - Scores inherit visibility from their most permissive collection
+   - All new uploads default to private in user's General collection
 
-   ```sql
-   -- Add to scores table
-   ALTER TABLE scores ADD COLUMN user_id TEXT;
-   ALTER TABLE scores ADD COLUMN visibility TEXT DEFAULT 'private';
-   ALTER TABLE scores ADD COLUMN source_type TEXT; -- 'pdf', 'image', 'multi-image'
-   ALTER TABLE scores ADD COLUMN page_count INTEGER DEFAULT 1;
+##### 🚧 Frontend Implementation Needed:
 
-   -- User collections table
-   CREATE TABLE user_collections (
-     id TEXT PRIMARY KEY,
-     user_id TEXT NOT NULL,
-     name TEXT NOT NULL,
-     description TEXT,
-     is_default BOOLEAN DEFAULT FALSE,
-     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-   );
+1. **Collections Management UI**
+   - Tag-like interface similar to logbook
+   - Drag & drop score organization
+   - Bulk operations support
+   - Collection sharing interface for teachers
 
-   -- Score pages for multi-image scores
-   CREATE TABLE score_pages (
-     id TEXT PRIMARY KEY,
-     score_id TEXT NOT NULL,
-     page_number INTEGER NOT NULL,
-     image_url TEXT NOT NULL,
-     r2_key TEXT NOT NULL,
-     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (score_id) REFERENCES scores(id)
-   );
-   ```
+2. **Score Browser Updates**
+   - Featured collections display
+   - "Shared with me" section
+   - Collection filters
+   - Role-based UI elements
 
-##### Technical Considerations:
+3. **Admin Interface**
+   - Feature/unfeature collections
+   - Reorder featured collections
+   - View all public collections
+   - User management
 
-- **Privacy**: All user uploads stored in private R2 paths
-- **Rate Limiting**: Same limits apply (1/10min anon, unlimited auth)
-- **File Size**: Max 10MB per image, 50MB total per score
-- **Processing**: Queue system for AI analysis of images
-- **Storage**: Separate tracking of user storage quotas
-
-##### 📋 Next Steps: Enhanced Features
+##### 📋 Next Steps: Frontend Development
 
 1. **Two-Page View Implementation** (After Phase 5.5)
 2. **Touch Gesture Support**
@@ -469,28 +459,31 @@ Import Request → Rate Limiter → PDF Fetcher → Validator
 ## Timeline Summary
 
 - **✅ Phase 4 Complete**: Advanced PDF rendering with custom pdf.js
-- **✅ Phase 5 Complete**: AI-powered import API with Gemini integration
-- **✅ Phase 5.5 Complete**: Data seeding refactor - unified approach
-  - Created `seeds/` directory with environment-specific data
-  - Removed PDFs from repo (use import API instead)
-  - Single source of truth for all seed data
-- **✅ Dec 2024 Improvements**:
+- **✅ Phase 5 Complete**: AI-powered import API with Cloudflare AI/Gemini integration
+- **✅ Phase 5.5 Complete (July 2025)**: Enhanced Collections System
+  - Role-based access control (admin, teacher, user)
+  - Tag-based collections with visibility inheritance
+  - Featured collections for platform curation
+  - Teacher collection sharing
+  - Backend fully implemented, frontend pending
+- **✅ Dec 2024 - Jan 2025 Improvements**:
   - Fixed upload/search functionality
   - Added predictive search
   - Optimized R2 caching
-  - Decision: Keep R2 private for licensing
-- **🚧 Current (Jan 2025)**: Phase 5.5 - User Collections & Image Uploads
-  - Image upload for paper scores
-  - AI metadata extraction for images
-  - Personal collections system
-  - Multi-page image support
-- **Next - Week 1**: Complete image upload implementation
-- **Week 2**: Two-page view and zoom features
-- **Weeks 3-4**: Build initial content library (50+ scores)
-- **Month 2**: Search, print, and offline support
-- **Months 3-4**: Annotations system
-- **Months 5-6**: Practice tools integration
-- **Month 7+**: Advanced AI features (measure detection, practice recommendations)
+  - Cloudflare AI integration (25x cheaper)
+  - Image upload support for paper scores
+- **🚧 Current (July 2025)**: Frontend Implementation for Collections
+  - Collections management UI
+  - Featured collections display
+  - Teacher sharing interface
+  - Admin curation tools
+- **Next - Week 1-2**: Complete frontend collections implementation
+- **Week 3-4**: Two-page view and zoom features
+- **Month 2**: Build initial content library (50+ scores)
+- **Month 3**: Search, print, and offline support
+- **Months 4-5**: Annotations system
+- **Months 6-7**: Practice tools integration
+- **Month 8+**: Advanced AI features (measure detection, practice recommendations)
 
 ## Next PR Checklist
 
@@ -513,16 +506,27 @@ Dec 2024 Improvements Complete:
 - [x] Optimized R2 caching (1 year immutable)
 - [x] PDF serving from R2
 
-Current Phase (5.5 - User Collections):
+Phase 5.5 Complete (Backend):
 
-- [ ] Database schema updates for user collections
-- [ ] Image upload endpoint (`/api/import/image`)
-- [ ] Multi-image support for scores
-- [ ] AI metadata extraction for images
-- [ ] Frontend image upload UI
-- [ ] User collections management UI
-- [ ] Private storage paths for user uploads
-- [ ] "My Uploads" default collection
+- [x] Database schema updates for user collections
+- [x] Enhanced collections with role-based access
+- [x] Featured collections API endpoints
+- [x] Teacher sharing functionality
+- [x] Visibility inheritance system
+- [x] Default "General" collection creation
+- [x] Private storage paths for user uploads
+- [x] Admin role detection and permissions
+
+Frontend Implementation (In Progress):
+
+- [ ] Collections management UI component
+- [ ] Featured collections display
+- [ ] Teacher sharing interface
+- [ ] Admin curation tools
+- [ ] Drag & drop score organization
+- [ ] Bulk operations support
+- [ ] Collection badges on scores
+- [ ] Role-based UI elements
 
 Next Phase (Phase 6):
 

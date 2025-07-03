@@ -5,6 +5,7 @@ export interface User {
   email: string
   displayName?: string
   authProvider: 'magic_link' | 'google'
+  role?: 'user' | 'teacher' | 'admin'
   createdAt: string
 }
 

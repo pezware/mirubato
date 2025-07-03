@@ -21,6 +21,7 @@ const LogbookPage = lazy(() => import('./pages/Logbook'))
 const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
 const ScorebookPage = lazy(() => import('./pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
+const CollectionView = lazy(() => import('./pages/CollectionView'))
 const ScoreImport = lazy(() =>
   import('./components/scorebook/ScoreImport').then(module => ({
     default: module.ScoreImport,
@@ -91,10 +92,18 @@ function App() {
                 }
               />
               <Route
-                path=":scoreId"
+                path="import"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <ScorebookPage />
+                    <ScoreImport />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="collection/user/:id"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <CollectionView />
                   </Suspense>
                 }
               />
@@ -102,15 +111,15 @@ function App() {
                 path="collection/:slug"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <ScoreBrowser />
+                    <CollectionView />
                   </Suspense>
                 }
               />
               <Route
-                path="import"
+                path=":scoreId"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <ScoreImport />
+                    <ScorebookPage />
                   </Suspense>
                 }
               />

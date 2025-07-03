@@ -7,13 +7,18 @@ import { scoreService } from '../../services/scoreService'
 import Autocomplete from '../ui/Autocomplete'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
+import CollectionsManager from './CollectionsManager'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
-  const { toggleManagement, collections, userLibrary, loadUserLibrary } =
-    useScoreStore()
+  const {
+    toggleManagement,
+    featuredCollections,
+    userLibrary,
+    loadUserLibrary,
+  } = useScoreStore()
   const [isDragging, setIsDragging] = useState(false)
   const [uploadMode, setUploadMode] = useState<'file' | 'url' | 'images'>(
     'file'
@@ -40,6 +45,7 @@ export default function ScoreManagement() {
       edited?: boolean
     }[]
   >([])
+  const [showCollections, setShowCollections] = useState(false)
 
   // Use the score search hook for predictive search
   const scoreSearch = useScoreSearch({ minLength: 0 })
@@ -73,26 +79,53 @@ export default function ScoreManagement() {
       // Convert file to base64
       const reader = new FileReader()
       reader.onload = async e => {
-        const base64 = e.target?.result as string
+        try {
+          const base64 = e.target?.result as string
 
-        const response = await scoreService.importScore({
-          url: base64,
-          filename: file.name,
-        })
-
-        if (response.success) {
-          setUploadResult({
-            success: true,
-            message: `Successfully uploaded ${response.data.title}`,
-            scoreId: response.data.id,
+          const response = await scoreService.importScore({
+            url: base64,
+            filename: file.name,
           })
-          loadUserLibrary() // Reload user library
-        } else {
+
+          if (response.success) {
+            setUploadResult({
+              success: true,
+              message: `Successfully uploaded ${response.data.title}`,
+              scoreId: response.data.id,
+            })
+            // Reload user library with error handling
+            try {
+              await loadUserLibrary()
+            } catch (libError) {
+              console.error('Failed to reload library:', libError)
+              // Don't fail the whole upload if library reload fails
+            }
+          } else {
+            setUploadResult({
+              success: false,
+              message: response.error || 'Upload failed',
+            })
+          }
+        } catch (error) {
+          console.error('Import API error:', error)
           setUploadResult({
             success: false,
-            message: response.error || 'Upload failed',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Upload failed. Please try again.',
           })
+        } finally {
+          // Always clear uploading state
+          setIsUploading(false)
         }
+      }
+      reader.onerror = () => {
+        console.error('FileReader error')
+        setUploadResult({
+          success: false,
+          message: 'Failed to read file. Please try again.',
+        })
         setIsUploading(false)
       }
       reader.readAsDataURL(file)
@@ -267,7 +300,13 @@ export default function ScoreManagement() {
           message: `Successfully imported ${response.data.title}`,
           scoreId: response.data.id,
         })
-        loadUserLibrary()
+        // Reload user library with error handling
+        try {
+          await loadUserLibrary()
+        } catch (libError) {
+          console.error('Failed to reload library:', libError)
+          // Don't fail the whole upload if library reload fails
+        }
         setUploadUrl('')
       } else {
         setUploadResult({
@@ -279,7 +318,10 @@ export default function ScoreManagement() {
       console.error('Import failed:', error)
       setUploadResult({
         success: false,
-        message: 'Import failed. Please try again.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Import failed. Please try again.',
       })
     } finally {
       setIsUploading(false)
@@ -721,26 +763,55 @@ export default function ScoreManagement() {
               </div>
             )}
 
+            {/* My Collections (Authenticated only) */}
+            {isAuthenticated && (
+              <div>
+                <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
+                  {t('scorebook:myCollections', 'My Collections')}
+                </h4>
+                <button
+                  onClick={() => setShowCollections(true)}
+                  className="w-full p-3 bg-morandi-sage-50 text-morandi-sage-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm font-medium"
+                >
+                  <div className="flex items-center justify-between">
+                    <span>
+                      {t('scorebook:manageCollections', 'Manage Collections')}
+                    </span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            )}
+
             {/* Collections */}
             <div>
               <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
                 {t('scorebook:collections', 'Browse Collections')}
               </h4>
               <div className="grid grid-cols-2 gap-2">
-                {collections
-                  .filter(c => c.isFeatured)
-                  .slice(0, 4)
-                  .map(collection => (
-                    <button
-                      key={collection.id}
-                      onClick={() =>
-                        navigate(`/scorebook/collection/${collection.slug}`)
-                      }
-                      className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
-                    >
-                      {collection.name}
-                    </button>
-                  ))}
+                {featuredCollections.slice(0, 4).map(collection => (
+                  <button
+                    key={collection.id}
+                    onClick={() =>
+                      navigate(`/scorebook/collection/${collection.slug}`)
+                    }
+                    className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
+                  >
+                    {collection.name}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -754,6 +825,21 @@ export default function ScoreManagement() {
           onSave={handleSaveEditedImage}
           onCancel={() => setEditingImageIndex(null)}
         />
+      )}
+
+      {/* Collections Manager Modal */}
+      {showCollections && (
+        <div
+          className="fixed inset-0 bg-black/50 z-60"
+          onClick={() => setShowCollections(false)}
+        >
+          <div
+            className="absolute right-0 top-0 h-full w-full sm:w-96 md:w-[480px] bg-white shadow-xl overflow-hidden flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <CollectionsManager onClose={() => setShowCollections(false)} />
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
+import type { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
+import type { D1Database } from '@cloudflare/workers-types'
 import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
@@ -148,17 +150,33 @@ importHandler.post('/', async c => {
     // Create R2 key
     const r2Key = `imports/${scoreId}/${cleanFileName}`
 
+    // Prepare metadata - avoid storing large base64 URLs
+    const customMetadata: Record<string, string> = {
+      importedAt: new Date().toISOString(),
+      scoreId: scoreId,
+    }
+
+    // Only store sourceUrl if it's not a data URL (to avoid metadata size limit)
+    if (!url.startsWith('data:')) {
+      // For regular URLs, truncate if necessary to stay under 2KB limit
+      const maxUrlLength = 1500 // Leave room for other metadata
+      customMetadata.sourceUrl =
+        url.length > maxUrlLength ? url.substring(0, maxUrlLength) + '...' : url
+    } else {
+      // For data URLs, just indicate it was an upload
+      customMetadata.sourceUrl = 'file:upload'
+      if (filename) {
+        customMetadata.filename = filename
+      }
+    }
+
     // Upload to R2 with optimized cache headers
     await c.env.SCORES_BUCKET.put(r2Key, pdfBuffer, {
       httpMetadata: {
         contentType: 'application/pdf',
         cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
       },
-      customMetadata: {
-        sourceUrl: url,
-        importedAt: new Date().toISOString(),
-        scoreId: scoreId,
-      },
+      customMetadata,
     })
 
     // Extract metadata using AI (with provider selection)
@@ -228,6 +246,7 @@ importHandler.post('/', async c => {
         instrument: 'PIANO',
         difficulty: 'INTERMEDIATE',
         difficultyLevel: 5,
+        stylePeriod: null,
         tags: [],
         confidence: 0,
         error:
@@ -240,8 +259,13 @@ importHandler.post('/', async c => {
     let userId: string | null = null
     if (authHeader?.startsWith('Bearer ')) {
       try {
-        const { getUserIdFromAuth } = await import('../../utils/auth')
-        userId = await getUserIdFromAuth(c as any)
+        const { getAuthUser } = await import('../../utils/auth-enhanced')
+        const user = await getAuthUser(
+          c as unknown as Context<{
+            Bindings: { JWT_SECRET: string; DB: D1Database }
+          }>
+        )
+        userId = user?.id || null
       } catch (error) {
         // Continue without auth - will be anonymous upload
       }
@@ -279,11 +303,11 @@ importHandler.post('/', async c => {
         (aiMetadata.subtitle as string) || null,
         (aiMetadata.composer as string) || 'Unknown',
         (aiMetadata.opus as string) || null,
-        (aiMetadata.instrument as string) || 'PIANO',
-        (aiMetadata.difficulty as string) || 'INTERMEDIATE',
+        validateInstrument(aiMetadata.instrument as string),
+        validateDifficulty(aiMetadata.difficulty as string),
         (aiMetadata.difficultyLevel as number) || 5,
         (aiMetadata.year as number) || null,
-        (aiMetadata.stylePeriod as string) || null,
+        validateStylePeriod(aiMetadata.stylePeriod as string),
         JSON.stringify((aiMetadata.tags as string[]) || []),
         (aiMetadata.description as string) || null,
         'manual', // Changed from 'import' to satisfy DB constraint
@@ -294,7 +318,7 @@ importHandler.post('/', async c => {
         JSON.stringify(aiMetadata as Record<string, unknown>),
         new Date().toISOString(),
         userId, // user_id - null for anonymous uploads
-        'public', // visibility - default to public so scores appear on browse page
+        userId ? 'private' : 'public', // visibility - private for users, public for anonymous
         'pdf', // source_type
         null // page_count - will be updated by PDF processor
       )
@@ -308,6 +332,11 @@ importHandler.post('/', async c => {
       )
       .bind(scoreId)
       .run()
+
+    // If user is authenticated, optionally add the score to their default collection
+    // Note: This is optional - users can organize scores into collections later
+    // Disabled for now - let users organize manually
+    // Users can add scores to collections manually after upload
 
     // Trigger PDF processing queue
     if (c.env.PDF_QUEUE) {
@@ -347,8 +376,8 @@ importHandler.post('/', async c => {
         title:
           (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
         composer: (aiMetadata.composer as string) || 'Unknown',
-        instrument: (aiMetadata.instrument as string) || 'PIANO',
-        difficulty: (aiMetadata.difficulty as string) || 'INTERMEDIATE',
+        instrument: validateInstrument(aiMetadata.instrument as string),
+        difficulty: validateDifficulty(aiMetadata.difficulty as string),
         pdfUrl: `/files/${r2Key}`,
         metadata: aiMetadata,
         processingStatus: 'pending', // Indicate that processing is pending
@@ -388,6 +417,88 @@ importHandler.post('/', async c => {
     })
   }
 })
+
+// Helper function to validate instrument
+function validateInstrument(instrument: string | null | undefined): string {
+  const validInstruments = ['PIANO', 'GUITAR', 'BOTH']
+
+  if (!instrument) return 'PIANO'
+
+  const upperInstrument = instrument.toUpperCase()
+  if (validInstruments.includes(upperInstrument)) {
+    return upperInstrument
+  }
+
+  // Try to map common variations
+  if (upperInstrument.includes('PIANO')) return 'PIANO'
+  if (upperInstrument.includes('GUITAR')) return 'GUITAR'
+  if (upperInstrument.includes('BOTH')) return 'BOTH'
+
+  // Default to PIANO
+  return 'PIANO'
+}
+
+// Helper function to validate difficulty
+function validateDifficulty(difficulty: string | null | undefined): string {
+  const validDifficulties = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
+
+  if (!difficulty) return 'INTERMEDIATE'
+
+  const upperDifficulty = difficulty.toUpperCase()
+  if (validDifficulties.includes(upperDifficulty)) {
+    return upperDifficulty
+  }
+
+  // Try to map common variations
+  if (upperDifficulty.includes('BEGIN') || upperDifficulty.includes('EASY'))
+    return 'BEGINNER'
+  if (upperDifficulty.includes('INTER') || upperDifficulty.includes('MEDIUM'))
+    return 'INTERMEDIATE'
+  if (
+    upperDifficulty.includes('ADVAN') ||
+    upperDifficulty.includes('HARD') ||
+    upperDifficulty.includes('DIFFICULT')
+  )
+    return 'ADVANCED'
+
+  // Default to INTERMEDIATE
+  return 'INTERMEDIATE'
+}
+
+// Helper function to validate style period
+function validateStylePeriod(
+  stylePeriod: string | null | undefined
+): string | null {
+  const validPeriods = [
+    'BAROQUE',
+    'CLASSICAL',
+    'ROMANTIC',
+    'MODERN',
+    'CONTEMPORARY',
+  ]
+
+  if (!stylePeriod) return null
+
+  const upperPeriod = stylePeriod.toUpperCase()
+  if (validPeriods.includes(upperPeriod)) {
+    return upperPeriod
+  }
+
+  // Try to map common variations
+  if (upperPeriod.includes('BAROQUE')) return 'BAROQUE'
+  if (upperPeriod.includes('CLASSIC')) return 'CLASSICAL'
+  if (upperPeriod.includes('ROMANTIC')) return 'ROMANTIC'
+  if (
+    upperPeriod.includes('MODERN') ||
+    upperPeriod.includes('20TH') ||
+    upperPeriod.includes('21ST')
+  )
+    return 'MODERN'
+  if (upperPeriod.includes('CONTEMPORARY')) return 'CONTEMPORARY'
+
+  // Default to null if can't map
+  return null
+}
 
 // Helper function to generate slug with opus information
 function generateSlug(

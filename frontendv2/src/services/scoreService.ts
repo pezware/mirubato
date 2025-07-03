@@ -33,18 +33,8 @@ export interface Score {
   updated_at: string
 }
 
-export interface Collection {
-  id: string
-  name: string
-  slug: string
-  description?: string | null
-  instrument?: 'PIANO' | 'GUITAR' | 'BOTH' | null
-  difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null
-  scoreIds: string[]
-  isFeatured: boolean
-  createdAt: string
-  updatedAt: string
-}
+// Import Collection type
+import type { Collection } from '../types/collections'
 
 export interface ScoreSearchParams {
   query?: string
@@ -299,6 +289,194 @@ class ScoreService {
     }
   }
 
+  // Get a single user collection
+  async getUserCollection(id: string): Promise<Collection> {
+    try {
+      const response = await scoresApiClient.get(`/api/user/collections/${id}`)
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found')
+        }
+        throw new Error(
+          `Failed to fetch user collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Create a new collection
+  async createCollection(data: {
+    name: string
+    description?: string
+    visibility?: 'private' | 'public' | 'unlisted'
+    tags?: string[]
+  }): Promise<Collection> {
+    try {
+      const response = await scoresApiClient.post('/api/user/collections', data)
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to create collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Update a collection
+  async updateCollection(
+    id: string,
+    data: {
+      name?: string
+      description?: string
+      visibility?: 'private' | 'public' | 'unlisted'
+      tags?: string[]
+    }
+  ): Promise<Collection> {
+    try {
+      const response = await scoresApiClient.put(
+        `/api/user/collections/${id}`,
+        data
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found')
+        }
+        throw new Error(
+          `Failed to update collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Delete a collection
+  async deleteCollection(id: string): Promise<void> {
+    try {
+      await scoresApiClient.delete(`/api/user/collections/${id}`)
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found')
+        }
+        throw new Error(
+          `Failed to delete collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Add a score to a collection
+  async addScoreToCollection(
+    collectionId: string,
+    scoreId: string
+  ): Promise<void> {
+    try {
+      await scoresApiClient.post(
+        `/api/user/collections/${collectionId}/scores`,
+        { scoreId }
+      )
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection or score not found')
+        }
+        throw new Error(
+          `Failed to add score to collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Remove a score from a collection
+  async removeScoreFromCollection(
+    collectionId: string,
+    scoreId: string
+  ): Promise<void> {
+    try {
+      await scoresApiClient.delete(
+        `/api/user/collections/${collectionId}/scores/${scoreId}`
+      )
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection or score not found')
+        }
+        throw new Error(
+          `Failed to remove score from collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Get collections shared with the user
+  async getSharedCollections(): Promise<Collection[]> {
+    try {
+      const response = await scoresApiClient.get(
+        '/api/collections/shared/with-me'
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to fetch shared collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Get collections that contain a specific score
+  async getScoreCollections(scoreId: string): Promise<string[]> {
+    try {
+      const response = await scoresApiClient.get(
+        `/api/user/collections/score/${scoreId}`
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // User not authenticated, return empty array
+          return []
+        }
+        throw new Error(
+          `Failed to fetch score collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {
@@ -371,20 +549,35 @@ class ScoreService {
   }> {
     try {
       const response = await scoresApiClient.post('/api/import', params)
+      // Ensure the response has the expected structure
+      if (!response.data || typeof response.data !== 'object') {
+        throw new Error('Invalid response from server')
+      }
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 429) {
-          throw new Error(error.response.data.message || 'Rate limit exceeded')
+          throw new Error(
+            error.response.data?.message ||
+              'Rate limit exceeded. Please wait a few minutes and try again.'
+          )
         }
         if (error.response?.status === 401) {
           throw new Error('Authentication required')
         }
-        throw new Error(
+        if (error.response?.status === 413) {
+          throw new Error('File size too large. Maximum size is 10MB.')
+        }
+        if (error.response?.status === 415) {
+          throw new Error('Invalid file type. Please upload a PDF file.')
+        }
+        // Try to get a meaningful error message from the response
+        const errorMessage =
           error.response?.data?.error ||
-            error.response?.data?.message ||
-            'Import failed'
-        )
+          error.response?.data?.message ||
+          error.message ||
+          'Import failed'
+        throw new Error(errorMessage)
       }
       throw error
     }
