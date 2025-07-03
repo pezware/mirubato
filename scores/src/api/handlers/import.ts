@@ -327,42 +327,11 @@ importHandler.post('/', async c => {
       .bind(scoreId)
       .run()
 
-    // If user is authenticated, add the score to their default collection
-    if (userId) {
-      try {
-        const { VisibilityService } = await import(
-          '../../services/visibilityService'
-        )
-        const visibilityService = new VisibilityService(db)
-        const defaultCollectionId =
-          await visibilityService.getOrCreateDefaultCollection(userId)
-
-        // Add score to default collection
-        await db
-          .prepare(
-            'INSERT INTO collection_members (id, collection_id, score_id) VALUES (?, ?, ?)'
-          )
-          .bind(generateId(), defaultCollectionId, scoreId)
-          .run()
-
-        // Update collection score_ids JSON
-        const collection = await db
-          .prepare('SELECT score_ids FROM user_collections WHERE id = ?')
-          .bind(defaultCollectionId)
-          .first()
-
-        if (collection) {
-          const scoreIds = JSON.parse((collection.score_ids as string) || '[]')
-          scoreIds.push(scoreId)
-          await db
-            .prepare('UPDATE user_collections SET score_ids = ? WHERE id = ?')
-            .bind(JSON.stringify(scoreIds), defaultCollectionId)
-            .run()
-        }
-      } catch (error) {
-        console.error('Failed to add score to default collection:', error)
-        // Continue - score creation was successful even if collection add failed
-      }
+    // If user is authenticated, optionally add the score to their default collection
+    // Note: This is optional - users can organize scores into collections later
+    if (userId && false) {
+      // Disabled for now - let users organize manually
+      // Users can add scores to collections manually after upload
     }
 
     // Trigger PDF processing queue

@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { generateId } from '../../utils/generateId'
 import { getAuthUser } from '../../utils/auth-enhanced'
 import { generateSlug } from '../../utils/database'
-import { VisibilityService } from '../../services/visibilityService'
+// import { VisibilityService } from '../../services/visibilityService' // Not needed - independent visibility
 
 const userCollectionsHandler = new Hono<{ Bindings: Env }>()
 
@@ -358,14 +358,8 @@ userCollectionsHandler.put('/:id', async c => {
       .bind(...params)
       .run()
 
-    // If visibility changed, update all scores in the collection
-    if (visibilityChanged) {
-      const visibilityService = new VisibilityService(c.env.DB)
-      await visibilityService.updateCollectionScoresVisibility(
-        collectionId,
-        user.id
-      )
-    }
+    // Note: We do NOT update score visibility when collection visibility changes
+    // Scores and collections have independent visibility
 
     // Return updated collection
     const updated = await c.env.DB.prepare(
@@ -480,10 +474,11 @@ userCollectionsHandler.post('/:id/scores', async c => {
     }
 
     // Check if score exists and user has access
+    // Users can add: 1) their own scores (any visibility), or 2) any public scores
     const score = await c.env.DB.prepare(
-      'SELECT * FROM scores WHERE id = ? AND (visibility = ? OR user_id = ?)'
+      'SELECT * FROM scores WHERE id = ? AND (user_id = ? OR visibility = ?)'
     )
-      .bind(scoreId, 'public', user.id)
+      .bind(scoreId, user.id, 'public')
       .first()
 
     if (!score) {
@@ -520,9 +515,8 @@ userCollectionsHandler.post('/:id/scores', async c => {
       .bind(JSON.stringify(scoreIds), collectionId)
       .run()
 
-    // Update score visibility if collection is public
-    const visibilityService = new VisibilityService(c.env.DB)
-    await visibilityService.updateScoreVisibility(scoreId, user.id)
+    // Note: We do NOT update score visibility based on collection visibility
+    // Scores and collections have independent visibility
 
     return c.json({
       success: true,
@@ -577,9 +571,8 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
       .bind(JSON.stringify(filtered), collectionId)
       .run()
 
-    // Update score visibility after removal
-    const visibilityService = new VisibilityService(c.env.DB)
-    await visibilityService.updateScoreVisibility(scoreId, user.id)
+    // Note: We do NOT update score visibility after removal
+    // Scores and collections have independent visibility
 
     return c.json({
       success: true,
