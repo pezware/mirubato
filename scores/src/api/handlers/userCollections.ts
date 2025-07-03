@@ -8,6 +8,17 @@ import { VisibilityService } from '../../services/visibilityService'
 
 const userCollectionsHandler = new Hono<{ Bindings: Env }>()
 
+// Debug route
+userCollectionsHandler.all('/debug', async c => {
+  return c.json({
+    message: 'User collections handler debug',
+    method: c.req.method,
+    path: c.req.path,
+    url: c.req.url,
+    routePath: c.req.routePath,
+  })
+})
+
 // Schema for creating a collection
 const CreateCollectionSchema = z.object({
   name: z.string().min(1).max(200),
@@ -385,7 +396,16 @@ userCollectionsHandler.delete('/:id', async c => {
 userCollectionsHandler.post('/:id/scores', async c => {
   try {
     const collectionId = c.req.param('id')
-    const { scoreId } = await c.req.json()
+    const body = await c.req.json()
+    const { scoreId } = body
+
+    console.log('Add to collection request:', {
+      collectionId,
+      body,
+      scoreId,
+      path: c.req.path,
+      url: c.req.url,
+    })
 
     if (!scoreId) {
       throw new HTTPException(400, { message: 'Score ID required' })
