@@ -97,6 +97,25 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
       throw new HTTPException(404, { message: 'Score not found' })
     }
 
+    // Check visibility permissions
+    if (score.visibility === 'private') {
+      // Get user ID from auth if available
+      let userId: string | null = null
+      try {
+        const authHeader = c.req.header('Authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+          const { getUserIdFromAuth } = await import('../../utils/auth')
+          userId = await getUserIdFromAuth(c as any)
+        }
+      } catch (error) {
+        // Continue without auth
+      }
+
+      if (userId !== score.user_id) {
+        throw new HTTPException(403, { message: 'Access denied' })
+      }
+    }
+
     // If this is an imported score with pdf_url, serve it from R2
     if (score.pdf_url && score.pdf_url.startsWith('/files/')) {
       const r2Key = score.pdf_url.replace('/files/', '')
@@ -110,7 +129,11 @@ renderHandler.get('/scores/:id/download/pdf', async c => {
       const headers = new Headers({
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${score.file_name || 'score.pdf'}"`,
-        'Cache-Control': 'public, max-age=3600',
+        // Private content should not be cached publicly
+        'Cache-Control':
+          score.visibility === 'private'
+            ? 'private, no-cache, must-revalidate'
+            : 'public, max-age=3600',
         'Access-Control-Allow-Origin': '*', // Allow cross-origin requests for PDF viewer
       })
 

@@ -515,6 +515,129 @@ npm install
 npm audit
 ```
 
+## React Component Infinite Loop Issues
+
+### PDF Viewer Infinite Loading Loop
+
+**Problem**: PDF viewer enters infinite loop, repeatedly requesting the same PDF file every few seconds.
+
+**Root Causes Identified** (July 2025):
+
+1. **Unnecessary async operations**: AdaptivePdfViewer was making API calls even when `forcePdfViewer={true}`
+2. **Unstable object references**: Document options object recreated on every render
+3. **Circular dependencies**: useMemo depending on state that changes during async operations
+
+**Symptoms**:
+
+- Network tab shows repeated requests to same PDF URL (200 status)
+- PDF never displays despite successful requests
+- Requests happen at regular intervals (4-5 seconds)
+
+**Solution Applied**:
+
+1. **Skip async operations when forced** (commit e874e0c):
+
+   ```typescript
+   useEffect(() => {
+     const detectViewerMode = async () => {
+       // When forcePdfViewer is true, skip everything
+       if (forcePdfViewer) {
+         setUseImageViewer(false)
+         setIsImageBasedScore(false)
+         return
+       }
+       // Only check score type when NOT forced
+       // ... rest of logic
+     }
+   }, [scoreId, forceImageViewer, forcePdfViewer])
+   ```
+
+2. **Memoize Document options** (commit 5bf7eae):
+   ```typescript
+   // Prevent options object recreation
+   const documentOptions = useMemo(() => {
+     const token = localStorage.getItem('auth-token')
+     return {
+       httpHeaders: token ? { Authorization: `Bearer ${token}` } : undefined,
+     }
+   }, []) // Empty deps - stable for session
+   ```
+
+### Image Viewer Infinite Loop
+
+**Problem**: ImageScoreViewer repeatedly fetches score data in a loop.
+
+**Root Causes**:
+
+- Callback functions in useEffect dependencies
+- Parent component recreating callbacks on every render
+
+**Solution Applied** (commit 069a41d):
+
+1. **Remove callbacks from dependencies**:
+
+   ```typescript
+   useEffect(() => {
+     fetchPages()
+   }, [scoreId]) // Remove onLoad and onError
+   ```
+
+2. **Memoize callbacks in parent**:
+   ```typescript
+   const handlePdfLoad = useCallback(
+     (info: { numPages: number }) => {
+       setTotalPages(info.numPages)
+     },
+     [setTotalPages]
+   )
+   ```
+
+### Prevention Guidelines
+
+**To prevent infinite loops in React components**:
+
+1. **useEffect Dependencies**:
+   - Only include values that should trigger re-execution
+   - Avoid including callback functions unless memoized
+   - Be cautious with objects/arrays as dependencies
+
+2. **Memoization**:
+   - Use `useMemo` for expensive computations
+   - Use `useCallback` for functions passed as props
+   - Memoize objects passed to third-party components
+
+3. **Async Operations**:
+   - Don't trigger async operations when component state is predetermined
+   - Check for early exit conditions before async calls
+   - Be aware of state updates during async operations
+
+4. **Debugging Steps**:
+   - Check Network tab for repeated requests
+   - Use React DevTools Profiler to identify re-renders
+   - Add console.logs to track effect execution
+   - Review all useEffect dependencies
+
+**Common Patterns to Avoid**:
+
+```typescript
+// ❌ BAD: Object created inline
+<Component options={{ key: value }} />
+
+// ✅ GOOD: Memoized object
+const options = useMemo(() => ({ key: value }), [value])
+<Component options={options} />
+
+// ❌ BAD: Function in dependency array
+useEffect(() => {
+  fetchData()
+}, [onSuccess, onError]) // These might be recreated
+
+// ✅ GOOD: Remove or memoize callbacks
+useEffect(() => {
+  fetchData()
+}, [dataId]) // Only depend on data that changes
+```
+
 ## When All Else Fails
 
 1. Clear all caches (browser, service worker, CDN)

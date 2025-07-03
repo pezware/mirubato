@@ -426,13 +426,13 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                 <input
                   type="number"
                   min="1"
-                  max="16"
+                  max="36"
                   value={settings.beatsPerMeasure}
                   onChange={e =>
                     updateSettings({
                       beatsPerMeasure: Math.max(
                         1,
-                        Math.min(16, Number(e.target.value))
+                        Math.min(36, Number(e.target.value))
                       ),
                     })
                   }

@@ -24,6 +24,8 @@ export interface Score {
     | 'CONTEMPORARY'
     | null
   source?: string | null
+  source_type?: 'pdf' | 'image' | 'multi-image' | null
+  page_count?: number | null
   imslp_url?: string | null
   tags: string[]
   metadata?: Record<string, unknown>
@@ -248,6 +250,55 @@ class ScoreService {
     return `${this.scoresApiUrl}/api/pdf/v2/render/${scoreId}/page/${page}`
   }
 
+  // Get the URL for an image-based score page
+  getImagePageUrl(scoreId: string, pageNumber: number): string {
+    return `${this.scoresApiUrl}/api/scores/${scoreId}/pages/${pageNumber}`
+  }
+
+  // Get user's own scores
+  async getUserScores(params?: ScoreSearchParams): Promise<ScoreListResponse> {
+    try {
+      const response = await scoresApiClient.get('/api/scores/user/library', {
+        params,
+      })
+      return {
+        items: response.data.data,
+        total: response.data.pagination?.total || response.data.data.length,
+        limit: response.data.pagination?.limit || 50,
+        offset: response.data.pagination?.offset || 0,
+        hasMore: response.data.pagination?.hasMore || false,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to fetch user scores: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
+  // Get user's collections
+  async getUserCollections(): Promise<Collection[]> {
+    try {
+      const response = await scoresApiClient.get('/api/user/collections')
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        throw new Error(
+          `Failed to fetch user collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {
@@ -333,6 +384,40 @@ class ScoreService {
           error.response?.data?.error ||
             error.response?.data?.message ||
             'Import failed'
+        )
+      }
+      throw error
+    }
+  }
+
+  // Import multiple images as a score
+  async importImages(params: {
+    images: Array<{ filename: string; data: string }>
+    title?: string
+    composer?: string
+    instrument?: string
+    difficulty?: string
+    tags?: string[]
+  }): Promise<{
+    success: boolean
+    data: Score
+    error?: string
+  }> {
+    try {
+      const response = await scoresApiClient.post('/api/import/images', params)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          throw new Error(error.response.data.message || 'Rate limit exceeded')
+        }
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required for image uploads')
+        }
+        throw new Error(
+          error.response?.data?.error ||
+            error.response?.data?.message ||
+            'Image upload failed'
         )
       }
       throw error

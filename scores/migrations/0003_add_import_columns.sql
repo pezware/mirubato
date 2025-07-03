@@ -1,10 +1,12 @@
 -- Safe migration to add columns for the import feature
 -- This migration handles both local and production environments
+-- Note: ALTER TABLE ADD COLUMN will fail if column exists, but that's OK
+-- The migration system will continue with the rest of the statements
 
--- Add created_by column (production already has it, local doesn't)
+-- Add created_by column (may already exist)
 ALTER TABLE scores ADD COLUMN created_by TEXT;
 
--- Add new columns for import feature
+-- Add new columns for import feature (may already exist)
 ALTER TABLE scores ADD COLUMN subtitle TEXT;
 ALTER TABLE scores ADD COLUMN year INTEGER;
 ALTER TABLE scores ADD COLUMN description TEXT;

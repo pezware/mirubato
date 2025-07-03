@@ -45,24 +45,24 @@ const Toolbox: React.FC = () => {
       return {
         accent: [
           ...settings.currentCustomPattern.accent,
-          ...Array(16).fill(false),
-        ].slice(0, 16),
+          ...Array(36).fill(false),
+        ].slice(0, 36),
         click: [
           ...settings.currentCustomPattern.click,
-          ...Array(16).fill(false),
-        ].slice(0, 16),
+          ...Array(36).fill(false),
+        ].slice(0, 36),
         woodblock: [
           ...settings.currentCustomPattern.woodblock,
-          ...Array(16).fill(false),
-        ].slice(0, 16),
+          ...Array(36).fill(false),
+        ].slice(0, 36),
         shaker: [
           ...settings.currentCustomPattern.shaker,
-          ...Array(16).fill(false),
-        ].slice(0, 16),
+          ...Array(36).fill(false),
+        ].slice(0, 36),
         triangle: [
           ...settings.currentCustomPattern.triangle,
-          ...Array(16).fill(false),
-        ].slice(0, 16),
+          ...Array(36).fill(false),
+        ].slice(0, 36),
       }
     }
 
@@ -70,24 +70,24 @@ const Toolbox: React.FC = () => {
     const paddedPattern = {
       accent: [
         ...currentPatternData.pattern.accent,
-        ...Array(16).fill(false),
-      ].slice(0, 16),
+        ...Array(36).fill(false),
+      ].slice(0, 36),
       click: [
         ...currentPatternData.pattern.click,
-        ...Array(16).fill(false),
-      ].slice(0, 16),
+        ...Array(36).fill(false),
+      ].slice(0, 36),
       woodblock: [
         ...currentPatternData.pattern.woodblock,
-        ...Array(16).fill(false),
-      ].slice(0, 16),
+        ...Array(36).fill(false),
+      ].slice(0, 36),
       shaker: [
         ...currentPatternData.pattern.shaker,
-        ...Array(16).fill(false),
-      ].slice(0, 16),
+        ...Array(36).fill(false),
+      ].slice(0, 36),
       triangle: [
         ...currentPatternData.pattern.triangle,
-        ...Array(16).fill(false),
-      ].slice(0, 16),
+        ...Array(36).fill(false),
+      ].slice(0, 36),
     }
     return paddedPattern
   })
@@ -365,13 +365,13 @@ const Toolbox: React.FC = () => {
                       <input
                         type="number"
                         min="1"
-                        max="16"
+                        max="36"
                         value={settings.beatsPerMeasure}
                         onChange={e =>
                           updateSettings({
                             beatsPerMeasure: Math.max(
                               1,
-                              Math.min(16, Number(e.target.value))
+                              Math.min(36, Number(e.target.value))
                             ),
                           })
                         }
@@ -461,7 +461,7 @@ const Toolbox: React.FC = () => {
               <div className="overflow-x-auto">
                 <div className="min-w-[600px]">
                   {/* Grid with beat numbers and layers */}
-                  <div className="grid grid-cols-[96px_repeat(16,40px)] gap-1">
+                  <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
                     {/* Header row with beat numbers */}
                     <div></div>
                     {Array.from(
@@ -477,7 +477,7 @@ const Toolbox: React.FC = () => {
                     )}
                     {/* Fill remaining columns */}
                     {Array.from(
-                      { length: 16 - settings.beatsPerMeasure },
+                      { length: 36 - settings.beatsPerMeasure },
                       (_, i) => (
                         <div key={`empty-${i}`}></div>
                       )
@@ -489,7 +489,7 @@ const Toolbox: React.FC = () => {
                         <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
                           {t(`toolbox:metronome.sounds.${layer.id}`)}
                         </div>
-                        {Array.from({ length: 16 }, (_, i) => (
+                        {Array.from({ length: 36 }, (_, i) => (
                           <button
                             key={i}
                             onClick={() =>

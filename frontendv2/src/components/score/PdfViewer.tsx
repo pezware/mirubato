@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 
 // Configure pdf.js worker - must be set before any PDF operations
 // Using the exact version that react-pdf bundles
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+// Using jsDelivr CDN for better reliability and CORS support
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.mjs`
 
 // Note: Custom fetch with caching is implemented in pdfCache utility
 
@@ -214,6 +215,18 @@ export default function PdfViewer({
           details: error,
           recoverable: false,
         }
+      } else if (
+        error.message.includes('403') ||
+        error.message.includes('Forbidden') ||
+        error.message.includes('Access denied')
+      ) {
+        pdfError = {
+          type: PdfErrorType.PERMISSION_DENIED,
+          message:
+            'Access denied. Please ensure you are logged in to view this score.',
+          details: error,
+          recoverable: true,
+        }
       } else if (error.message.includes('encrypt')) {
         pdfError = {
           type: PdfErrorType.PERMISSION_DENIED,
@@ -389,6 +402,14 @@ export default function PdfViewer({
     }
   }, [])
 
+  // Memoize document options to prevent re-renders
+  const documentOptions = useMemo(() => {
+    const token = localStorage.getItem('auth-token')
+    return {
+      httpHeaders: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  }, []) // Empty deps - we don't want to re-create on token changes during the session
+
   if (error) {
     return (
       <div
@@ -418,9 +439,11 @@ export default function PdfViewer({
       onTouchEnd={handleTouchEnd}
     >
       <Document
+        key={url} // Add key to prevent unnecessary reloads
         file={url}
         onLoadSuccess={handleDocumentLoadSuccess}
         onLoadError={handleDocumentLoadError}
+        options={documentOptions}
         loading={
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
