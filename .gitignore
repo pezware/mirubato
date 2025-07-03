@@ -352,3 +352,6 @@ api-final.log
 # Test data and PDFs
 scores/test-data/
 scores/music-library/**/*.pdf
+
+# db back
+mirubato-db-backup/
