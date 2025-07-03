@@ -263,17 +263,24 @@ CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 
 ### Database Migrations
 
+**IMPORTANT**: Always use the safe migration script that includes automatic backups:
+
 ```bash
+cd api/scripts
+
+# Safe migration with automatic backup (recommended)
+./safe-migrate.sh                  # Staging (default)
+./safe-migrate.sh --env production  # Production (requires confirmation)
+
+# Direct migrations (only for development)
 cd backend
-
-# Local migrations
-npm run db:migrate
-
-# Remote migrations by environment
-npm run db:migrate:dev         # Development environment
-npm run db:migrate:staging     # Staging environment
-npm run db:migrate:production  # Production environment
+npm run db:migrate                  # Local only
+npm run db:migrate:dev              # Development environment
+npm run db:migrate:staging          # Staging environment
+npm run db:migrate:production       # Production environment
 ```
+
+**Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
 
 ## 🧪 Testing Guidelines
 

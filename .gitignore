@@ -355,3 +355,5 @@ scores/music-library/**/*.pdf
 
 # db back
 mirubato-db-backup/
+backup/
+backups/
