@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import { getAuthUser, isAdmin } from '../../utils/auth-enhanced'
-import type { AuthUser } from '../../utils/auth-enhanced'
 
 const featuredCollectionsHandler = new Hono<{ Bindings: Env }>()
 

@@ -190,27 +190,32 @@ rm -rf .wrangler/state
 - Organize in personal collections
 - Private by default for user uploads
 
-### 6. Personal Collections (Authenticated Users) - NEW
+### 6. Enhanced Collections System (Authenticated Users) - NEW (July 2025)
 
-- **Image Upload Support**:
-  - Photos of paper scores (PNG, JPG, JPEG)
-  - Multiple images per score for multi-page pieces
-  - Drag & drop interface with preview
-  - Automatic page ordering
+- **Role-Based Access Control**:
+  - **Admin** (@mirubato.com): Create featured collections, manage all content
+  - **Teacher**: Share collections with students, request featuring
+  - **User**: Personal collections only, private by default
 
-- **AI-Powered Organization**:
-  - Cloudflare AI Vision for primary metadata extraction (25x cheaper)
-  - Gemini as fallback for enhanced accuracy
-  - Handles partial/fragmented scores
-  - Optional manual metadata entry
-  - Confidence scoring for AI results
-  - Visual analysis stored in database
+- **Tag-Based Collections**:
+  - Many-to-many relationship between scores and collections
+  - User namespace isolation (multiple users can have "Practice" collection)
+  - Collections act like tags for organizing scores
+  - Scores can belong to multiple collections
 
-- **Collection Management**:
-  - "My Uploads" auto-created collection
-  - Create custom collections
-  - Private storage in user-specific paths
-  - Future: collection sharing features
+- **Visibility Inheritance**:
+  - Scores inherit visibility from their most permissive collection
+  - Adding to public/featured collection makes score public
+  - Removing from all public collections reverts to private
+  - Automatic visibility updates tracked in log
+
+- **Default Behavior**:
+  - All new uploads go to user's "General" collection
+  - Private by default for user uploads
+  - Public by default for anonymous uploads
+  - Teachers can share collections with specific users
+
+- **Frontend Status**: Backend complete, UI implementation pending
 
 ## API Endpoints
 
@@ -219,6 +224,7 @@ rm -rf .wrangler/state
 - `GET /api/scores` - List all public scores
 - `GET /api/scores/:id` - Get specific score metadata
 - `GET /api/collections` - List public collections
+- `GET /api/collections/featured` - List featured collections (NEW)
 - `GET /api/search` - Search public scores
 - `GET /api/test-data/:filename` - Serve test PDFs (development only)
 
@@ -227,12 +233,29 @@ rm -rf .wrangler/state
 - `POST /api/import` - Import score from URL or file upload
   - Supports `aiProvider` parameter: `cloudflare` (default), `gemini`, or `hybrid`
   - Enhanced slug generation with opus information
-- `POST /api/import/image` - Upload score images (NEW)
+  - Automatically adds to user's default collection
+- `POST /api/import/image` - Upload score images (planned)
 - `GET /api/user/scores` - List user's private scores
 - `GET /api/user/collections` - List user's collections
+- `GET /api/user/collections/:id` - Get collection with scores
 - `POST /api/user/collections` - Create new collection
-- `PUT /api/scores/:id` - Update score metadata (own scores only)
-- `DELETE /api/scores/:id` - Delete score (own scores only)
+- `PUT /api/user/collections/:id` - Update collection
+- `DELETE /api/user/collections/:id` - Delete collection
+- `POST /api/user/collections/:id/scores` - Add score to collection
+- `DELETE /api/user/collections/:id/scores/:scoreId` - Remove score from collection
+
+### Teacher Endpoints (Teacher/Admin Only)
+
+- `GET /api/collections/shared/with-me` - Collections shared with me
+- `GET /api/collections/shared/by-me` - Collections I've shared
+- `POST /api/collections/shared/:id/share` - Share collection with users
+- `DELETE /api/collections/shared/:id/share` - Unshare collection
+
+### Admin Endpoints (Admin Only)
+
+- `POST /api/collections/featured/feature` - Feature a collection
+- `DELETE /api/collections/featured/feature/:id` - Unfeature a collection
+- `PUT /api/collections/featured/order` - Reorder featured collections
 
 ### Development Endpoints
 
@@ -331,18 +354,26 @@ npm run seed:local  # Seeds test scores in D1 database
 - [ ] Full access indicator for authenticated users
 - [ ] Practice tracking only available when signed in
 
-## Recent Improvements (Jan 2025)
+## Recent Improvements (July 2025)
 
-1. **Cloudflare AI Integration**:
-   - Primary AI provider for metadata extraction (25x cheaper than Gemini)
-   - Visual analysis of sheet music images
-   - Hybrid approach with Gemini as fallback
-   - ~2-3 second processing vs ~5-8 seconds with Gemini
+1. **Enhanced Collections System**:
+   - Role-based access control (admin, teacher, user)
+   - Tag-based collections with many-to-many relationships
+   - Visibility inheritance from collections to scores
+   - Featured collections for platform curation
+   - Teacher collection sharing functionality
+   - Default "General" collection for all users
 
-2. **Slug Generation Enhancement**:
-   - Fixed duplicate slug issues for pieces with same title
-   - Now includes opus information (e.g., "etude-op-10-no-1")
-   - Prevents import failures for similar pieces
+2. **Backend Architecture Updates**:
+   - Enhanced auth utilities with role detection
+   - Visibility service for automatic updates
+   - Collection namespacing for user isolation
+   - Comprehensive logging of visibility changes
+
+3. **Previous Improvements** (Jan 2025):
+   - Cloudflare AI integration (25x cheaper than Gemini)
+   - Slug generation with opus information
+   - Image upload support (backend ready)
 
 ## Known Issues & Next Steps
 
