@@ -6,8 +6,12 @@ export interface DbUser {
   id: string
   email: string
   display_name: string | null
+  primary_instrument?: string | null
   auth_provider: string
   google_id: string | null
+  last_login_at?: string | null
+  login_count?: number
+  role?: string | null
   created_at: string
   updated_at: string
 }
