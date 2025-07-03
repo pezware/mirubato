@@ -183,12 +183,6 @@ INSERT OR IGNORE INTO user_collections (
 -- Add existing scores to appropriate collections based on their metadata
 -- This will be done through the application to ensure proper validation
 
--- Update trigger to ensure new users get a default "General" collection
-CREATE TRIGGER IF NOT EXISTS create_default_user_collection
-AFTER INSERT ON users
-BEGIN
-  -- This trigger would need to be in the API database
-  -- Documenting the intended behavior here:
-  -- When a new user is created, automatically create their default "General" collection
-  -- This ensures every user has at least one collection for organizing their scores
-END;
+-- Note: User default collection creation will be handled in the API layer
+-- when users are created, since the users table is in the API database.
+-- Each new user should get a default "General" collection automatically.
