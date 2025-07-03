@@ -4,6 +4,7 @@ import { RouteObject } from 'react-router-dom'
 // Lazy load the Scorebook components
 const ScorebookPage = lazy(() => import('../pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('../pages/ScoreBrowser'))
+const CollectionView = lazy(() => import('../pages/CollectionView'))
 
 export const scorebookRoutes: RouteObject[] = [
   {
@@ -23,7 +24,7 @@ export const scorebookRoutes: RouteObject[] = [
       },
       {
         path: 'collection/:slug',
-        element: <ScoreBrowser />,
+        element: <CollectionView />,
       },
     ],
   },

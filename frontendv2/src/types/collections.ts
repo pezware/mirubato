@@ -1,3 +1,6 @@
+// Import Score type
+import type { Score } from '../services/scoreService'
+
 // Collection types matching the backend implementation
 export interface Collection {
   id: string
@@ -24,6 +27,8 @@ export interface Collection {
     instrument: string
     difficulty: string
   }>
+  // For collections loaded with full score details
+  scores?: Score[]
 }
 
 export interface UserCollectionWithScores extends Collection {

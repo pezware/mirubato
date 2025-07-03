@@ -193,14 +193,26 @@ userCollectionsHandler.get('/:id', async c => {
       }))
     }
 
-    // Format collection
+    // Format collection - convert snake_case to camelCase
     const formattedCollection = {
-      ...collection,
+      id: collection.id,
+      userId: collection.user_id,
+      name: collection.name,
+      description: collection.description,
+      slug: collection.slug,
+      visibility: collection.visibility,
+      isDefault: collection.is_default,
+      collectionType: collection.collection_type,
       scoreIds: scoreIds,
       tags: JSON.parse((collection.tags as string) || '[]'),
+      displayOrder: collection.display_order,
+      ownerType: collection.owner_type,
+      sharedWith: JSON.parse((collection.shared_with as string) || '[]'),
+      featuredAt: collection.featured_at,
+      featuredBy: collection.featured_by,
       scores: scores, // Include full score details
-      createdAt: new Date(collection.created_at as string),
-      updatedAt: new Date(collection.updated_at as string),
+      createdAt: new Date(collection.created_at as string).toISOString(),
+      updatedAt: new Date(collection.updated_at as string).toISOString(),
     }
 
     return c.json({

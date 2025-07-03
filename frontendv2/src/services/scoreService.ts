@@ -289,6 +289,27 @@ class ScoreService {
     }
   }
 
+  // Get a single user collection
+  async getUserCollection(id: string): Promise<Collection> {
+    try {
+      const response = await scoresApiClient.get(`/api/user/collections/${id}`)
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Authentication required')
+        }
+        if (error.response?.status === 404) {
+          throw new Error('Collection not found')
+        }
+        throw new Error(
+          `Failed to fetch user collection: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Create a new collection
   async createCollection(data: {
     name: string
