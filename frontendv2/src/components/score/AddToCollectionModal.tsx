@@ -9,7 +9,6 @@ import { cn } from '../../utils/cn'
 interface AddToCollectionModalProps {
   scoreId: string
   scoreTitle: string
-  currentCollections?: string[] // Collection IDs the score is already in
   onClose: () => void
   onSave: () => void
 }
@@ -17,7 +16,6 @@ interface AddToCollectionModalProps {
 export default function AddToCollectionModal({
   scoreId,
   scoreTitle,
-  currentCollections = [],
   onClose,
   onSave,
 }: AddToCollectionModalProps) {
