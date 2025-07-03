@@ -92,18 +92,10 @@ function App() {
                 }
               />
               <Route
-                path=":scoreId"
+                path="import"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <ScorebookPage />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="collection/:slug"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <CollectionView />
+                    <ScoreImport />
                   </Suspense>
                 }
               />
@@ -116,10 +108,18 @@ function App() {
                 }
               />
               <Route
-                path="import"
+                path="collection/:slug"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <ScoreImport />
+                    <CollectionView />
+                  </Suspense>
+                }
+              />
+              <Route
+                path=":scoreId"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ScorebookPage />
                   </Suspense>
                 }
               />
