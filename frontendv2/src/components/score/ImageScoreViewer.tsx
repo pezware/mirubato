@@ -78,7 +78,7 @@ export default function ImageScoreViewer({
     }
 
     fetchPages()
-  }, [scoreId, onLoad, onError])
+  }, [scoreId]) // Remove onLoad and onError to prevent re-fetching
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -156,6 +156,11 @@ export default function ImageScoreViewer({
   const currentPageData =
     pages.find(p => p.pageNumber === currentPage) || pages[0]
 
+  // Reset image loading state when page changes
+  useEffect(() => {
+    setImageLoading(true)
+  }, [currentPage])
+
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Navigation buttons for multi-page scores */}
@@ -217,6 +222,7 @@ export default function ImageScoreViewer({
           </div>
         )}
         <img
+          key={currentPageData.id}
           ref={imageRef}
           src={currentPageData.imageUrl}
           alt={`Score page ${currentPage}`}

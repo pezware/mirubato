@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useScoreStore } from '../../stores/scoreStore'
 import { type Score } from '../../services/scoreService'
 import AdaptivePdfViewer from './AdaptivePdfViewer'
@@ -20,21 +20,28 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Handle PDF load success
-  const handlePdfLoad = (info: { numPages: number }) => {
-    setTotalPages(info.numPages)
-  }
+  const handlePdfLoad = useCallback(
+    (info: { numPages: number }) => {
+      setTotalPages(info.numPages)
+    },
+    [setTotalPages]
+  )
 
   // Handle PDF load error
-  const handlePdfError = (
-    error: PdfError | { message: string; type: string }
-  ) => {
-    console.error('PDF load error:', error)
-  }
+  const handlePdfError = useCallback(
+    (error: PdfError | { message: string; type: string }) => {
+      console.error('PDF load error:', error)
+    },
+    []
+  )
 
   // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page)
+    },
+    [setCurrentPage]
+  )
 
   // Auto-scroll functionality
   useEffect(() => {
