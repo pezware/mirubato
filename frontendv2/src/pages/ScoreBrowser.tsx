@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { scoreService, type Score } from '../services/scoreService'
+import {
+  scoreService,
+  type Score,
+  type ScoreSearchParams,
+} from '../services/scoreService'
 import type { Collection } from '../types/collections'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
@@ -61,7 +65,7 @@ export default function ScoreBrowserPage() {
         setScores(collectionScores.items)
       } else {
         // Load all scores with filters
-        const params: any = {}
+        const params: ScoreSearchParams = {}
         if (selectedInstrument) params.instrument = selectedInstrument
         if (selectedDifficulty) params.difficulty = selectedDifficulty
 
