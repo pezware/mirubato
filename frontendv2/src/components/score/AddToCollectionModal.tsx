@@ -24,7 +24,10 @@ export default function AddToCollectionModal({
   const { t } = useTranslation(['scorebook', 'common'])
   const [collections, setCollections] = useState<Collection[]>([])
   const [selectedCollections, setSelectedCollections] = useState<Set<string>>(
-    new Set(currentCollections)
+    new Set()
+  )
+  const [initialCollections, setInitialCollections] = useState<Set<string>>(
+    new Set()
   )
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -32,6 +35,7 @@ export default function AddToCollectionModal({
 
   useEffect(() => {
     loadCollections()
+    loadScoreCollections()
   }, [])
 
   const loadCollections = async () => {
@@ -51,6 +55,18 @@ export default function AddToCollectionModal({
     }
   }
 
+  const loadScoreCollections = async () => {
+    try {
+      const collectionIds = await scoreService.getScoreCollections(scoreId)
+      console.log('Score is in collections:', collectionIds)
+      setSelectedCollections(new Set(collectionIds))
+      setInitialCollections(new Set(collectionIds))
+    } catch (err) {
+      console.error('Failed to load score collections:', err)
+      // Don't show error - just start with empty selection
+    }
+  }
+
   const toggleCollection = (collectionId: string) => {
     const newSelected = new Set(selectedCollections)
     if (newSelected.has(collectionId)) {
@@ -66,23 +82,60 @@ export default function AddToCollectionModal({
     setError(null)
 
     try {
-      // Find collections to add and remove
+      // Find collections to add and remove based on initial state
       const toAdd = Array.from(selectedCollections).filter(
-        id => !currentCollections.includes(id)
+        id => !initialCollections.has(id)
       )
-      const toRemove = currentCollections.filter(
+      const toRemove = Array.from(initialCollections).filter(
         id => !selectedCollections.has(id)
       )
 
-      // Execute add/remove operations
-      await Promise.all([
-        ...toAdd.map(collectionId =>
-          scoreService.addScoreToCollection(collectionId, scoreId)
-        ),
-        ...toRemove.map(collectionId =>
-          scoreService.removeScoreFromCollection(collectionId, scoreId)
-        ),
-      ])
+      // Execute add/remove operations with error handling for each
+      const operations = [
+        ...toAdd.map(async collectionId => {
+          try {
+            await scoreService.addScoreToCollection(collectionId, scoreId)
+            return { success: true, collectionId, operation: 'add' }
+          } catch (err) {
+            console.warn(`Failed to add to collection ${collectionId}:`, err)
+            return {
+              success: false,
+              collectionId,
+              operation: 'add',
+              error: err,
+            }
+          }
+        }),
+        ...toRemove.map(async collectionId => {
+          try {
+            await scoreService.removeScoreFromCollection(collectionId, scoreId)
+            return { success: true, collectionId, operation: 'remove' }
+          } catch (err) {
+            console.warn(
+              `Failed to remove from collection ${collectionId}:`,
+              err
+            )
+            return {
+              success: false,
+              collectionId,
+              operation: 'remove',
+              error: err,
+            }
+          }
+        }),
+      ]
+
+      const results = await Promise.all(operations)
+      const failures = results.filter(r => !r.success)
+
+      // If some operations succeeded, consider it a partial success
+      if (failures.length > 0 && failures.length < results.length) {
+        console.warn('Some operations failed:', failures)
+        // Don't throw error - partial success is ok
+      } else if (failures.length === results.length && results.length > 0) {
+        // All operations failed
+        throw new Error('All operations failed')
+      }
 
       onSave()
       onClose()

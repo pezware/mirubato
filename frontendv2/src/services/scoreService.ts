@@ -435,6 +435,27 @@ class ScoreService {
     }
   }
 
+  // Get collections that contain a specific score
+  async getScoreCollections(scoreId: string): Promise<string[]> {
+    try {
+      const response = await scoresApiClient.get(
+        `/api/user/collections/score/${scoreId}`
+      )
+      return response.data.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          // User not authenticated, return empty array
+          return []
+        }
+        throw new Error(
+          `Failed to fetch score collections: ${error.response?.statusText || error.message}`
+        )
+      }
+      throw error
+    }
+  }
+
   // Get score metadata including number of pages
   async getScoreMetadata(scoreId: string): Promise<{ numPages: number }> {
     try {

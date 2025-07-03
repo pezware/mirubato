@@ -587,4 +587,40 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
   }
 })
 
+// Get collections containing a specific score
+userCollectionsHandler.get('/score/:scoreId', async c => {
+  try {
+    const scoreId = c.req.param('scoreId')
+
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
+      throw new HTTPException(401, { message: 'Authentication required' })
+    }
+
+    // Get collections that contain this score
+    const collections = await c.env.DB.prepare(
+      `SELECT uc.* FROM user_collections uc
+       JOIN collection_members cm ON uc.id = cm.collection_id
+       WHERE uc.user_id = ? AND cm.score_id = ?`
+    )
+      .bind(user.id, scoreId)
+      .all()
+
+    // Return collection IDs
+    const collectionIds = collections.results.map(c => c.id as string)
+
+    return c.json({
+      success: true,
+      data: collectionIds,
+    })
+  } catch (error) {
+    if (error instanceof HTTPException) throw error
+    console.error('Error getting score collections:', error)
+    throw new HTTPException(500, {
+      message: 'Failed to get score collections',
+    })
+  }
+})
+
 export { userCollectionsHandler }
