@@ -7,6 +7,8 @@ import { importImagesHandler } from './handlers/importImages'
 import { enhancedImportHandler } from './handlers/import-enhanced'
 import { collectionsHandler } from './handlers/collections'
 import { userCollectionsHandler } from './handlers/userCollections'
+import { featuredCollectionsHandler } from './handlers/featuredCollections'
+import { sharedCollectionsHandler } from './handlers/sharedCollections'
 import { pdfRendererHandler } from './handlers/pdf-renderer'
 import { pdfRendererV2Handler } from './handlers/pdf-renderer-v2'
 import { adminHandler } from './handlers/admin'
@@ -67,6 +69,23 @@ api.get('/', c => {
         'DELETE /api/user/collections/:id/scores/:scoreId':
           'Remove score from collection',
       },
+      featuredCollections: {
+        'GET /api/collections/featured': 'List featured collections (public)',
+        'POST /api/collections/featured/feature':
+          'Feature a collection (admin)',
+        'DELETE /api/collections/featured/feature/:id':
+          'Unfeature a collection (admin)',
+        'PUT /api/collections/featured/order':
+          'Update featured collection order (admin)',
+      },
+      sharedCollections: {
+        'GET /api/collections/shared/with-me': 'Collections shared with me',
+        'GET /api/collections/shared/by-me':
+          'Collections I have shared (teacher)',
+        'POST /api/collections/shared/:id/share': 'Share collection (teacher)',
+        'DELETE /api/collections/shared/:id/share':
+          'Unshare collection (teacher)',
+      },
     },
   })
 })
@@ -101,6 +120,12 @@ api.route('/collections', collectionsHandler)
 
 // User collections routes
 api.route('/user/collections', userCollectionsHandler)
+
+// Featured collections routes (public access)
+api.route('/collections/featured', featuredCollectionsHandler)
+
+// Shared collections routes (authenticated access)
+api.route('/collections/shared', sharedCollectionsHandler)
 
 // Render routes need special handling due to nested paths
 api.route('/', renderHandler)

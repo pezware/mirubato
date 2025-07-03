@@ -240,8 +240,9 @@ importHandler.post('/', async c => {
     let userId: string | null = null
     if (authHeader?.startsWith('Bearer ')) {
       try {
-        const { getUserIdFromAuth } = await import('../../utils/auth')
-        userId = await getUserIdFromAuth(c as any)
+        const { getAuthUser } = await import('../../utils/auth-enhanced')
+        const user = await getAuthUser(c as any)
+        userId = user?.id || null
       } catch (error) {
         // Continue without auth - will be anonymous upload
       }
@@ -294,7 +295,7 @@ importHandler.post('/', async c => {
         JSON.stringify(aiMetadata as Record<string, unknown>),
         new Date().toISOString(),
         userId, // user_id - null for anonymous uploads
-        'public', // visibility - default to public so scores appear on browse page
+        userId ? 'private' : 'public', // visibility - private for users, public for anonymous
         'pdf', // source_type
         null // page_count - will be updated by PDF processor
       )
@@ -308,6 +309,44 @@ importHandler.post('/', async c => {
       )
       .bind(scoreId)
       .run()
+
+    // If user is authenticated, add the score to their default collection
+    if (userId) {
+      try {
+        const { VisibilityService } = await import(
+          '../../services/visibilityService'
+        )
+        const visibilityService = new VisibilityService(db)
+        const defaultCollectionId =
+          await visibilityService.getOrCreateDefaultCollection(userId)
+
+        // Add score to default collection
+        await db
+          .prepare(
+            'INSERT INTO collection_members (id, collection_id, score_id) VALUES (?, ?, ?)'
+          )
+          .bind(generateId(), defaultCollectionId, scoreId)
+          .run()
+
+        // Update collection score_ids JSON
+        const collection = await db
+          .prepare('SELECT score_ids FROM user_collections WHERE id = ?')
+          .bind(defaultCollectionId)
+          .first()
+
+        if (collection) {
+          const scoreIds = JSON.parse((collection.score_ids as string) || '[]')
+          scoreIds.push(scoreId)
+          await db
+            .prepare('UPDATE user_collections SET score_ids = ? WHERE id = ?')
+            .bind(JSON.stringify(scoreIds), defaultCollectionId)
+            .run()
+        }
+      } catch (error) {
+        console.error('Failed to add score to default collection:', error)
+        // Continue - score creation was successful even if collection add failed
+      }
+    }
 
     // Trigger PDF processing queue
     if (c.env.PDF_QUEUE) {

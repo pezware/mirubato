@@ -2,8 +2,9 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import { generateId } from '../../utils/generateId'
-import { getUserIdFromAuth } from '../../utils/auth'
+import { getAuthUser } from '../../utils/auth-enhanced'
 import { generateSlug } from '../../utils/database'
+import { VisibilityService } from '../../services/visibilityService'
 
 const userCollectionsHandler = new Hono<{ Bindings: Env }>()
 
@@ -27,9 +28,9 @@ const UpdateCollectionSchema = z.object({
 // List user's collections
 userCollectionsHandler.get('/', async c => {
   try {
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -39,7 +40,7 @@ userCollectionsHandler.get('/', async c => {
        WHERE user_id = ? 
        ORDER BY is_default DESC, display_order ASC, created_at DESC`
     )
-      .bind(userId)
+      .bind(user.id)
       .all()
 
     // Format results
@@ -67,9 +68,9 @@ userCollectionsHandler.get('/:id', async c => {
   try {
     const collectionId = c.req.param('id')
 
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -77,7 +78,7 @@ userCollectionsHandler.get('/:id', async c => {
     const collection = await c.env.DB.prepare(
       'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
     )
-      .bind(collectionId, userId)
+      .bind(collectionId, user.id)
       .first()
 
     if (!collection) {
@@ -129,9 +130,9 @@ userCollectionsHandler.get('/:id', async c => {
 // Create new collection
 userCollectionsHandler.post('/', async c => {
   try {
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -147,7 +148,7 @@ userCollectionsHandler.post('/', async c => {
     const existing = await c.env.DB.prepare(
       'SELECT id FROM user_collections WHERE user_id = ? AND slug = ?'
     )
-      .bind(userId, slug)
+      .bind(user.id, slug)
       .first()
 
     if (existing) {
@@ -165,7 +166,7 @@ userCollectionsHandler.post('/', async c => {
     )
       .bind(
         id,
-        userId,
+        user.id,
         validatedData.name,
         validatedData.description || null,
         slug,
@@ -217,9 +218,9 @@ userCollectionsHandler.put('/:id', async c => {
   try {
     const collectionId = c.req.param('id')
 
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -227,7 +228,7 @@ userCollectionsHandler.put('/:id', async c => {
     const existing = await c.env.DB.prepare(
       'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
     )
-      .bind(collectionId, userId)
+      .bind(collectionId, user.id)
       .first()
 
     if (!existing) {
@@ -263,9 +264,14 @@ userCollectionsHandler.put('/:id', async c => {
       params.push(validatedData.description)
     }
 
-    if (validatedData.visibility !== undefined) {
+    let visibilityChanged = false
+    if (
+      validatedData.visibility !== undefined &&
+      validatedData.visibility !== existing.visibility
+    ) {
       updates.push('visibility = ?')
       params.push(validatedData.visibility)
+      visibilityChanged = true
     }
 
     if (validatedData.tags !== undefined) {
@@ -289,6 +295,15 @@ userCollectionsHandler.put('/:id', async c => {
     )
       .bind(...params)
       .run()
+
+    // If visibility changed, update all scores in the collection
+    if (visibilityChanged) {
+      const visibilityService = new VisibilityService(c.env.DB)
+      await visibilityService.updateCollectionScoresVisibility(
+        collectionId,
+        user.id
+      )
+    }
 
     // Return updated collection
     const updated = await c.env.DB.prepare(
@@ -327,9 +342,9 @@ userCollectionsHandler.delete('/:id', async c => {
   try {
     const collectionId = c.req.param('id')
 
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -337,7 +352,7 @@ userCollectionsHandler.delete('/:id', async c => {
     const existing = await c.env.DB.prepare(
       'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
     )
-      .bind(collectionId, userId)
+      .bind(collectionId, user.id)
       .first()
 
     if (!existing) {
@@ -376,9 +391,9 @@ userCollectionsHandler.post('/:id/scores', async c => {
       throw new HTTPException(400, { message: 'Score ID required' })
     }
 
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -386,7 +401,7 @@ userCollectionsHandler.post('/:id/scores', async c => {
     const collection = await c.env.DB.prepare(
       'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
     )
-      .bind(collectionId, userId)
+      .bind(collectionId, user.id)
       .first()
 
     if (!collection) {
@@ -397,7 +412,7 @@ userCollectionsHandler.post('/:id/scores', async c => {
     const score = await c.env.DB.prepare(
       'SELECT * FROM scores WHERE id = ? AND (visibility = ? OR user_id = ?)'
     )
-      .bind(scoreId, 'public', userId)
+      .bind(scoreId, 'public', user.id)
       .first()
 
     if (!score) {
@@ -434,6 +449,10 @@ userCollectionsHandler.post('/:id/scores', async c => {
       .bind(JSON.stringify(scoreIds), collectionId)
       .run()
 
+    // Update score visibility if collection is public
+    const visibilityService = new VisibilityService(c.env.DB)
+    await visibilityService.updateScoreVisibility(scoreId, user.id)
+
     return c.json({
       success: true,
       message: 'Score added to collection',
@@ -453,9 +472,9 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
     const collectionId = c.req.param('id')
     const scoreId = c.req.param('scoreId')
 
-    // Get user ID from auth (required)
-    const userId = await getUserIdFromAuth(c as any)
-    if (!userId) {
+    // Get authenticated user
+    const user = await getAuthUser(c as any)
+    if (!user) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
 
@@ -463,7 +482,7 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
     const collection = await c.env.DB.prepare(
       'SELECT * FROM user_collections WHERE id = ? AND user_id = ?'
     )
-      .bind(collectionId, userId)
+      .bind(collectionId, user.id)
       .first()
 
     if (!collection) {
@@ -486,6 +505,10 @@ userCollectionsHandler.delete('/:id/scores/:scoreId', async c => {
     )
       .bind(JSON.stringify(filtered), collectionId)
       .run()
+
+    // Update score visibility after removal
+    const visibilityService = new VisibilityService(c.env.DB)
+    await visibilityService.updateScoreVisibility(scoreId, user.id)
 
     return c.json({
       success: true,

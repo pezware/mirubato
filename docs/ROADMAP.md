@@ -1,18 +1,18 @@
 # Mirubato Development Roadmap
 
-## Current Status - Version 1.1.0 (June 2025)
+## Current Status - Version 1.2.0 (July 2025)
 
-### 🎉 MVP Complete - Production Ready
+### 🎉 Scorebook Phase 5.5 Complete - Image Upload Support
 
-✅ **Version 1.1.0 Released**: MVP feature complete with production deployment
+✅ **Version 1.2.0 Released**: Personal score collections with image upload support
 
-- All MVP features implemented and tested
-- D1 sync errors resolved - proper null value handling for database
-- Calendar rendering fixed - complete Tailwind color palette configuration
-- 290+ tests passing across all services
-- Production deployment stable at mirubato.com
-- Pragmatic architecture chosen over complex module system
-- Focus on shipping working features over perfect architecture
+- Image upload support for sheet music (PNG, JPG, JPEG) complete
+- Multi-page image support for photographed scores
+- AI-powered metadata extraction using Cloudflare AI (primary) and Gemini (fallback)
+- Fixed PDF viewer infinite loops and performance issues
+- Enhanced "My Scores" section for authenticated users
+- All MVP features from v1.1.0 maintained and stable
+- Production deployment at mirubato.com with new scorebook features
 
 ✅ **REST API Migration Complete**: Full transition from GraphQL to REST API architecture
 
@@ -32,6 +32,8 @@
 
 ✅ **Core Features Implemented**:
 
+**Logbook & Practice Tracking (v1.1.0)**:
+
 - Practice logging with manual entry and timer modes
 - Enhanced practice reports with calendar visualization
 - Goal setting and tracking with progress visualization
@@ -44,26 +46,46 @@
 - Data export (CSV, JSON)
 - Comprehensive test coverage (290+ tests)
 
-## Immediate Priority: Content & Stabilization (1-2 weeks)
+**Scorebook Features (v1.2.0)**:
 
-### Goal: Add real music content and ensure rock-solid stability
+- PDF viewing with custom PDF.js implementation
+- AI-powered import API with metadata extraction
+- Cloudflare AI integration (25x cheaper than Gemini)
+- Image upload support for paper scores
+- Multi-page image handling
+- "My Scores" section for personal library
+- Enhanced slug generation preventing duplicates
+- Rate limiting with progressive failure tracking
 
-**Add Music Content to Scores Service**
+## Immediate Priority: User Collections Implementation (1-2 weeks)
 
-- [ ] Import 10 curated public domain pieces (5 piano, 5 guitar)
-- [ ] Add proper metadata (difficulty, composer, tags)
-- [ ] Create simple browsing interface
-- [ ] Link scores to practice sessions
-- [ ] Test content delivery performance
+### Goal: Complete the user collections system for personal score organization
 
-**Fix Remaining Bugs**
+**Database Schema Updates**
 
-- [ ] Address any VexFlow rendering issues
-- [ ] Ensure mobile audio playback works reliably
-- [ ] Fix any remaining sync edge cases
-- [ ] Optimize bundle size (remove unused music libraries?)
+- [ ] Add user_id and visibility columns to scores table
+- [ ] Create user_collections table for custom collections
+- [ ] Create score_pages table for multi-image scores
+- [ ] Add collection membership tracking
+- [ ] Run database migrations on staging/production
 
-**Expected Outcome**: A stable MVP with real content that users can practice with.
+**Backend Implementation**
+
+- [ ] Implement user collections CRUD endpoints
+- [ ] Add "My Uploads" default collection creation
+- [ ] Update score queries to respect user ownership
+- [ ] Add collection membership management
+- [ ] Implement collection-based filtering
+
+**Frontend Features**
+
+- [ ] Create collections management UI
+- [ ] Add collection selector in score upload
+- [ ] Implement collection browsing interface
+- [ ] Add drag-and-drop for organizing scores
+- [ ] Create collection sharing UI (future phase)
+
+**Expected Outcome**: Users can organize their uploaded scores into personal collections for better library management.
 
 ## Priority 1: Frontend Polish & UX (2-3 weeks)
 
@@ -169,14 +191,14 @@
 
 ### Goal: Expand platform capabilities with new core features
 
-**Scorebook: Sheet Music Library Management**
+**Scorebook: Sheet Music Library Management** ✅ PARTIALLY COMPLETE
 
-- [ ] Design scorebook data model and API
-- [ ] Implement sheet music upload and storage
-- [ ] Add metadata extraction (composer, difficulty, tags)
-- [ ] Create browsing and search interface
-- [ ] Integrate with practice sessions
-- [ ] Add favorites and collections
+- [x] Design scorebook data model and API
+- [x] Implement sheet music upload and storage (PDF and images)
+- [x] Add metadata extraction (AI-powered with Cloudflare/Gemini)
+- [x] Create browsing and search interface
+- [ ] Integrate with practice sessions (in progress)
+- [ ] Add favorites and collections (user collections in development)
 - [ ] Implement sharing and collaboration features
 
 **Gradebook: Progress Tracking and Assessments**
@@ -342,11 +364,12 @@ Practice Complete → Grades Worker → LLM analyzes performance
 
 **Implementation Timeline**
 
-- **Q1 2025**: Enhance Scores Worker for curated Scorebook
-- **Q2 2025**: Build Goals & Practice Workers (core value proposition)
-- **Q3 2025**: Add Grades Worker with LLM integration
-- **Q4 2025**: Analytics Worker for comprehensive insights
-- **2026**: Performance Worker for presentations and recitals
+- **Q1-Q2 2025**: ✅ Enhanced Scores Worker with AI metadata extraction
+- **Q3 2025**: Complete user collections and practice integration
+- **Q4 2025**: Build Goals & Practice Workers (core value proposition)
+- **Q1 2026**: Add Grades Worker with LLM integration
+- **Q2 2026**: Analytics Worker for comprehensive insights
+- **2026+**: Performance Worker for presentations and recitals
 
 **Expected Outcome**: A modular, scalable platform that can evolve from simple score storage to a comprehensive AI-enhanced music education system.
 
@@ -486,5 +509,5 @@ Based on the success of the MVP, Mirubato will continue to prioritize:
 
 ---
 
-**Next Review**: July 2025
-**Last Updated**: June 28, 2025 (v1.1.0)
+**Next Review**: October 2025
+**Last Updated**: July 2, 2025 (v1.2.0)
