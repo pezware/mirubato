@@ -326,7 +326,10 @@ export default function ScoreBrowserPage() {
               </p>
 
               <div className="flex items-center gap-4 mt-2 text-xs text-morandi-stone-500">
-                <span>{collection.scoreCount || 0} scores</span>
+                <span>
+                  {collection.scoreIds?.length || collection.scoreCount || 0}{' '}
+                  scores
+                </span>
                 {collection.tags.length > 0 && (
                   <span>{collection.tags.join(', ')}</span>
                 )}

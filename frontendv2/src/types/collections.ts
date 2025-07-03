@@ -16,6 +16,7 @@ export interface Collection {
   displayOrder?: number | null
   sharedWith?: string[] // Array of user IDs
   scoreCount?: number
+  scoreIds?: string[] // Array of score IDs
   createdAt: string
   updatedAt: string
   // For featured collections
