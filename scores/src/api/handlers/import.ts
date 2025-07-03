@@ -148,17 +148,33 @@ importHandler.post('/', async c => {
     // Create R2 key
     const r2Key = `imports/${scoreId}/${cleanFileName}`
 
+    // Prepare metadata - avoid storing large base64 URLs
+    const customMetadata: Record<string, string> = {
+      importedAt: new Date().toISOString(),
+      scoreId: scoreId,
+    }
+
+    // Only store sourceUrl if it's not a data URL (to avoid metadata size limit)
+    if (!url.startsWith('data:')) {
+      // For regular URLs, truncate if necessary to stay under 2KB limit
+      const maxUrlLength = 1500 // Leave room for other metadata
+      customMetadata.sourceUrl =
+        url.length > maxUrlLength ? url.substring(0, maxUrlLength) + '...' : url
+    } else {
+      // For data URLs, just indicate it was an upload
+      customMetadata.sourceUrl = 'file:upload'
+      if (filename) {
+        customMetadata.filename = filename
+      }
+    }
+
     // Upload to R2 with optimized cache headers
     await c.env.SCORES_BUCKET.put(r2Key, pdfBuffer, {
       httpMetadata: {
         contentType: 'application/pdf',
         cacheControl: 'public, max-age=31536000, immutable', // 1 year cache for immutable PDFs
       },
-      customMetadata: {
-        sourceUrl: url,
-        importedAt: new Date().toISOString(),
-        scoreId: scoreId,
-      },
+      customMetadata,
     })
 
     // Extract metadata using AI (with provider selection)

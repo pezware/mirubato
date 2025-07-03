@@ -79,26 +79,53 @@ export default function ScoreManagement() {
       // Convert file to base64
       const reader = new FileReader()
       reader.onload = async e => {
-        const base64 = e.target?.result as string
+        try {
+          const base64 = e.target?.result as string
 
-        const response = await scoreService.importScore({
-          url: base64,
-          filename: file.name,
-        })
-
-        if (response.success) {
-          setUploadResult({
-            success: true,
-            message: `Successfully uploaded ${response.data.title}`,
-            scoreId: response.data.id,
+          const response = await scoreService.importScore({
+            url: base64,
+            filename: file.name,
           })
-          loadUserLibrary() // Reload user library
-        } else {
+
+          if (response.success) {
+            setUploadResult({
+              success: true,
+              message: `Successfully uploaded ${response.data.title}`,
+              scoreId: response.data.id,
+            })
+            // Reload user library with error handling
+            try {
+              await loadUserLibrary()
+            } catch (libError) {
+              console.error('Failed to reload library:', libError)
+              // Don't fail the whole upload if library reload fails
+            }
+          } else {
+            setUploadResult({
+              success: false,
+              message: response.error || 'Upload failed',
+            })
+          }
+        } catch (error) {
+          console.error('Import API error:', error)
           setUploadResult({
             success: false,
-            message: response.error || 'Upload failed',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Upload failed. Please try again.',
           })
+        } finally {
+          // Always clear uploading state
+          setIsUploading(false)
         }
+      }
+      reader.onerror = () => {
+        console.error('FileReader error')
+        setUploadResult({
+          success: false,
+          message: 'Failed to read file. Please try again.',
+        })
         setIsUploading(false)
       }
       reader.readAsDataURL(file)
@@ -273,7 +300,13 @@ export default function ScoreManagement() {
           message: `Successfully imported ${response.data.title}`,
           scoreId: response.data.id,
         })
-        loadUserLibrary()
+        // Reload user library with error handling
+        try {
+          await loadUserLibrary()
+        } catch (libError) {
+          console.error('Failed to reload library:', libError)
+          // Don't fail the whole upload if library reload fails
+        }
         setUploadUrl('')
       } else {
         setUploadResult({
@@ -285,7 +318,10 @@ export default function ScoreManagement() {
       console.error('Import failed:', error)
       setUploadResult({
         success: false,
-        message: 'Import failed. Please try again.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Import failed. Please try again.',
       })
     } finally {
       setIsUploading(false)

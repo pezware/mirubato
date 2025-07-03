@@ -507,20 +507,35 @@ class ScoreService {
   }> {
     try {
       const response = await scoresApiClient.post('/api/import', params)
+      // Ensure the response has the expected structure
+      if (!response.data || typeof response.data !== 'object') {
+        throw new Error('Invalid response from server')
+      }
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 429) {
-          throw new Error(error.response.data.message || 'Rate limit exceeded')
+          throw new Error(
+            error.response.data?.message ||
+              'Rate limit exceeded. Please wait a few minutes and try again.'
+          )
         }
         if (error.response?.status === 401) {
           throw new Error('Authentication required')
         }
-        throw new Error(
+        if (error.response?.status === 413) {
+          throw new Error('File size too large. Maximum size is 10MB.')
+        }
+        if (error.response?.status === 415) {
+          throw new Error('Invalid file type. Please upload a PDF file.')
+        }
+        // Try to get a meaningful error message from the response
+        const errorMessage =
           error.response?.data?.error ||
-            error.response?.data?.message ||
-            'Import failed'
-        )
+          error.response?.data?.message ||
+          error.message ||
+          'Import failed'
+        throw new Error(errorMessage)
       }
       throw error
     }

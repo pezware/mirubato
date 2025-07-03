@@ -314,13 +314,27 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
   },
 
   loadUserLibrary: async () => {
-    // For now, load all scores
-    // In production, this would be filtered by user
     try {
-      const response = await scoreService.getScores()
+      // Try to load user's specific scores first (for authenticated users)
+      const response = await scoreService.getUserScores()
       set({ userLibrary: response.items })
     } catch (error) {
-      console.error('Failed to load user library:', error)
+      // If getUserScores fails (likely due to authentication), fall back to public scores
+      if (
+        error instanceof Error &&
+        error.message.includes('Authentication required')
+      ) {
+        try {
+          const publicResponse = await scoreService.getScores()
+          set({ userLibrary: publicResponse.items })
+        } catch (publicError) {
+          console.error('Failed to load public library:', publicError)
+          set({ userLibrary: [] })
+        }
+      } else {
+        console.error('Failed to load user library:', error)
+        set({ userLibrary: [] })
+      }
     }
   },
 
