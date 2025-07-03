@@ -31,15 +31,10 @@ export interface Collection {
   scores?: Score[]
 }
 
-export interface UserCollectionWithScores extends Collection {
-  scores: Array<{
-    id: string
-    title: string
-    composer: string
-    instrument: string
-    difficulty: string
-    addedAt: string
-  }>
+// This interface extends Collection but overrides the scores property
+// to ensure it's always populated with full Score objects
+export interface UserCollectionWithScores extends Omit<Collection, 'scores'> {
+  scores: Score[]
 }
 
 export interface CreateCollectionInput {

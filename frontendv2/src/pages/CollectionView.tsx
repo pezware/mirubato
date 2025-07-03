@@ -7,7 +7,6 @@ import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import { useAuthStore } from '../stores/authStore'
-import { cn } from '../utils/cn'
 
 export default function CollectionViewPage() {
   const { t } = useTranslation(['scorebook', 'common'])
