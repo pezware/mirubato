@@ -244,6 +244,7 @@ importHandler.post('/', async c => {
         instrument: 'PIANO',
         difficulty: 'INTERMEDIATE',
         difficultyLevel: 5,
+        stylePeriod: null,
         tags: [],
         confidence: 0,
         error:
@@ -296,11 +297,11 @@ importHandler.post('/', async c => {
         (aiMetadata.subtitle as string) || null,
         (aiMetadata.composer as string) || 'Unknown',
         (aiMetadata.opus as string) || null,
-        (aiMetadata.instrument as string) || 'PIANO',
-        (aiMetadata.difficulty as string) || 'INTERMEDIATE',
+        validateInstrument(aiMetadata.instrument as string),
+        validateDifficulty(aiMetadata.difficulty as string),
         (aiMetadata.difficultyLevel as number) || 5,
         (aiMetadata.year as number) || null,
-        (aiMetadata.stylePeriod as string) || null,
+        validateStylePeriod(aiMetadata.stylePeriod as string),
         JSON.stringify((aiMetadata.tags as string[]) || []),
         (aiMetadata.description as string) || null,
         'manual', // Changed from 'import' to satisfy DB constraint
@@ -402,8 +403,8 @@ importHandler.post('/', async c => {
         title:
           (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
         composer: (aiMetadata.composer as string) || 'Unknown',
-        instrument: (aiMetadata.instrument as string) || 'PIANO',
-        difficulty: (aiMetadata.difficulty as string) || 'INTERMEDIATE',
+        instrument: validateInstrument(aiMetadata.instrument as string),
+        difficulty: validateDifficulty(aiMetadata.difficulty as string),
         pdfUrl: `/files/${r2Key}`,
         metadata: aiMetadata,
         processingStatus: 'pending', // Indicate that processing is pending
@@ -443,6 +444,88 @@ importHandler.post('/', async c => {
     })
   }
 })
+
+// Helper function to validate instrument
+function validateInstrument(instrument: string | null | undefined): string {
+  const validInstruments = ['PIANO', 'GUITAR', 'BOTH']
+
+  if (!instrument) return 'PIANO'
+
+  const upperInstrument = instrument.toUpperCase()
+  if (validInstruments.includes(upperInstrument)) {
+    return upperInstrument
+  }
+
+  // Try to map common variations
+  if (upperInstrument.includes('PIANO')) return 'PIANO'
+  if (upperInstrument.includes('GUITAR')) return 'GUITAR'
+  if (upperInstrument.includes('BOTH')) return 'BOTH'
+
+  // Default to PIANO
+  return 'PIANO'
+}
+
+// Helper function to validate difficulty
+function validateDifficulty(difficulty: string | null | undefined): string {
+  const validDifficulties = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
+
+  if (!difficulty) return 'INTERMEDIATE'
+
+  const upperDifficulty = difficulty.toUpperCase()
+  if (validDifficulties.includes(upperDifficulty)) {
+    return upperDifficulty
+  }
+
+  // Try to map common variations
+  if (upperDifficulty.includes('BEGIN') || upperDifficulty.includes('EASY'))
+    return 'BEGINNER'
+  if (upperDifficulty.includes('INTER') || upperDifficulty.includes('MEDIUM'))
+    return 'INTERMEDIATE'
+  if (
+    upperDifficulty.includes('ADVAN') ||
+    upperDifficulty.includes('HARD') ||
+    upperDifficulty.includes('DIFFICULT')
+  )
+    return 'ADVANCED'
+
+  // Default to INTERMEDIATE
+  return 'INTERMEDIATE'
+}
+
+// Helper function to validate style period
+function validateStylePeriod(
+  stylePeriod: string | null | undefined
+): string | null {
+  const validPeriods = [
+    'BAROQUE',
+    'CLASSICAL',
+    'ROMANTIC',
+    'MODERN',
+    'CONTEMPORARY',
+  ]
+
+  if (!stylePeriod) return null
+
+  const upperPeriod = stylePeriod.toUpperCase()
+  if (validPeriods.includes(upperPeriod)) {
+    return upperPeriod
+  }
+
+  // Try to map common variations
+  if (upperPeriod.includes('BAROQUE')) return 'BAROQUE'
+  if (upperPeriod.includes('CLASSIC')) return 'CLASSICAL'
+  if (upperPeriod.includes('ROMANTIC')) return 'ROMANTIC'
+  if (
+    upperPeriod.includes('MODERN') ||
+    upperPeriod.includes('20TH') ||
+    upperPeriod.includes('21ST')
+  )
+    return 'MODERN'
+  if (upperPeriod.includes('CONTEMPORARY')) return 'CONTEMPORARY'
+
+  // Default to null if can't map
+  return null
+}
 
 // Helper function to generate slug with opus information
 function generateSlug(
