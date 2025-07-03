@@ -31,6 +31,12 @@ export default function ImageScoreViewer({
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
 
+  // Reset image loading state when page changes
+  // This effect must be before any conditional returns
+  useEffect(() => {
+    setImageLoading(true)
+  }, [currentPage])
+
   // Fetch score pages from API
   useEffect(() => {
     const fetchPages = async () => {
@@ -78,7 +84,8 @@ export default function ImageScoreViewer({
     }
 
     fetchPages()
-  }, [scoreId]) // Remove onLoad and onError to prevent re-fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scoreId]) // Intentionally omit onLoad and onError to prevent re-fetching loops
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -155,11 +162,6 @@ export default function ImageScoreViewer({
 
   const currentPageData =
     pages.find(p => p.pageNumber === currentPage) || pages[0]
-
-  // Reset image loading state when page changes
-  useEffect(() => {
-    setImageLoading(true)
-  }, [currentPage])
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
