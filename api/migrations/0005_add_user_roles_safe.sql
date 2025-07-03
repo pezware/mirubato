@@ -32,3 +32,7 @@ WHEN NEW.email LIKE '%@mirubato.com' AND OLD.role != 'admin'
 BEGIN
   UPDATE users SET role = 'admin' WHERE id = NEW.id;
 END;
+
+-- Note: We cannot modify the primary_instrument column constraints in SQLite
+-- without recreating the table. Since this would cause data loss, we'll handle
+-- the 'BOTH' option validation in application code instead.
