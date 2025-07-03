@@ -102,7 +102,7 @@ authHandler.post(
       // Generate tokens
       const accessToken = await generateAccessToken(
         userId,
-        email,
+        email.toLowerCase().trim(),
         c.env.JWT_SECRET
       )
       const refreshToken = await generateRefreshToken(userId, c.env.JWT_SECRET)
@@ -131,6 +131,7 @@ authHandler.post(
           email: user.email as string,
           displayName: user.display_name as string,
           authProvider: user.auth_provider as string,
+          role: user.role || 'user',
           createdAt: user.created_at as string,
         },
         accessToken,
@@ -215,7 +216,7 @@ authHandler.post(
       // Generate tokens
       const accessToken = await generateAccessToken(
         userId,
-        email!,
+        email!.toLowerCase().trim(),
         c.env.JWT_SECRET
       )
       const refreshToken = await generateRefreshToken(userId, c.env.JWT_SECRET)
@@ -244,6 +245,7 @@ authHandler.post(
           email: user.email as string,
           displayName: user.display_name as string,
           authProvider: user.auth_provider as string,
+          role: user.role || 'user',
           createdAt: user.created_at as string,
         },
         accessToken,

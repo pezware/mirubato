@@ -18,7 +18,9 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await login(email)
+      // Normalize email to lowercase
+      const normalizedEmail = email.toLowerCase().trim()
+      await login(normalizedEmail)
       setLoginSuccess(true)
       onClose()
     } catch {

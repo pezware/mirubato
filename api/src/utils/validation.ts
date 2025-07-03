@@ -5,11 +5,17 @@ import { z } from 'zod'
  */
 export const schemas = {
   // Email validation
-  email: z.string().email('Invalid email address'),
+  email: z
+    .string()
+    .email('Invalid email address')
+    .transform(email => email.toLowerCase().trim()),
 
   // Auth schemas
   requestMagicLink: z.object({
-    email: z.string().email('Invalid email address'),
+    email: z
+      .string()
+      .email('Invalid email address')
+      .transform(email => email.toLowerCase().trim()),
   }),
 
   verifyMagicLink: z.object({

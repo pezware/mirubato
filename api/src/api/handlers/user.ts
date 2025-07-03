@@ -30,6 +30,7 @@ userHandler.get('/me', async c => {
       email: user.email,
       displayName: user.display_name,
       authProvider: user.auth_provider,
+      role: user.role || 'user',
       createdAt: user.created_at,
     })
   } catch (error) {

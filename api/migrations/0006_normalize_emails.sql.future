@@ -1,0 +1,38 @@
+-- Normalize all email addresses to lowercase
+-- 
+-- WARNING: Only run this migration after:
+-- 1. The new code with email normalization is deployed to all environments
+-- 2. All users have re-authenticated (invalidating old tokens)
+-- 3. Or after a coordinated migration with user notification
+--
+-- This migration will:
+-- - Convert all emails to lowercase
+-- - Merge any duplicate accounts created due to case differences
+-- - Update all related data to use the normalized emails
+
+-- First, check for potential duplicates
+-- SELECT LOWER(email) as normalized_email, COUNT(*) as count 
+-- FROM users 
+-- GROUP BY LOWER(email) 
+-- HAVING COUNT(*) > 1;
+
+-- Step 1: Update emails to lowercase where no conflicts exist
+UPDATE users 
+SET email = LOWER(TRIM(email))
+WHERE id IN (
+  SELECT id FROM users u1
+  WHERE NOT EXISTS (
+    SELECT 1 FROM users u2 
+    WHERE u2.id != u1.id 
+    AND LOWER(u2.email) = LOWER(u1.email)
+  )
+);
+
+-- Step 2: Handle duplicates manually
+-- For each duplicate set, decide which account to keep based on:
+-- - Most recent login (last_login_at)
+-- - Most data (check sync_data counts)
+-- - User preference (if contacted)
+
+-- Step 3: After handling duplicates, add a unique constraint on lowercase email
+-- This would require recreating the table again with a proper constraint

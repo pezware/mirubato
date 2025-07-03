@@ -8,7 +8,9 @@ export class AuthService {
    * Generate a magic link token for email authentication
    */
   async generateMagicLink(email: string): Promise<string> {
-    return generateMagicLinkToken(email, this.env.MAGIC_LINK_SECRET)
+    // Normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim()
+    return generateMagicLinkToken(normalizedEmail, this.env.MAGIC_LINK_SECRET)
   }
 
   /**

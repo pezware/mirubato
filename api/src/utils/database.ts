@@ -19,9 +19,10 @@ export class DatabaseHelpers {
    * Find user by email
    */
   async findUserByEmail(email: string): Promise<DbUser | null> {
+    // Use case-insensitive comparison to handle existing tokens with mixed-case emails
     return await this.db
-      .prepare('SELECT * FROM users WHERE email = ?')
-      .bind(email)
+      .prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)')
+      .bind(email.toLowerCase().trim())
       .first<DbUser>()
   }
 
@@ -44,7 +45,9 @@ export class DatabaseHelpers {
     authProvider: string
     googleId?: string | null
   }) {
-    const existingUser = await this.findUserByEmail(data.email)
+    // Normalize email to lowercase
+    const normalizedEmail = data.email.toLowerCase().trim()
+    const existingUser = await this.findUserByEmail(normalizedEmail)
 
     if (existingUser) {
       // Update existing user
@@ -78,7 +81,7 @@ export class DatabaseHelpers {
         )
         .bind(
           userId,
-          data.email,
+          normalizedEmail,
           data.displayName ?? null,
           data.authProvider,
           data.googleId ?? null

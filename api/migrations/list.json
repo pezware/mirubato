@@ -11,6 +11,14 @@
     {
       "name": "0003_add_user_tracking_fields.sql",
       "version": 3
+    },
+    {
+      "name": "0004_fix_sync_metadata_schema.sql",
+      "version": 4
+    },
+    {
+      "name": "0005_add_user_roles.sql",
+      "version": 5
     }
   ]
 }
