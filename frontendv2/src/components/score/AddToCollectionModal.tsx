@@ -39,6 +39,7 @@ export default function AddToCollectionModal({
     setError(null)
     try {
       const userCollections = await scoreService.getUserCollections()
+      console.log('Loaded collections:', userCollections)
       setCollections(userCollections)
     } catch (err) {
       console.error('Failed to load collections:', err)

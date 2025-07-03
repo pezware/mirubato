@@ -54,13 +54,64 @@ userCollectionsHandler.get('/', async c => {
       .bind(user.id)
       .all()
 
-    // Format results
+    console.log('User collections query result:', {
+      userId: user.id,
+      count: collections.results.length,
+      firstCollection: collections.results[0],
+    })
+
+    // If user has no collections, create a default "General" collection
+    if (collections.results.length === 0) {
+      const defaultCollectionId = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO user_collections (
+          id, user_id, name, description, slug, 
+          visibility, is_default, collection_type, score_ids, tags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+        .bind(
+          defaultCollectionId,
+          user.id,
+          'General',
+          'Your default collection',
+          'general',
+          'private',
+          1, // is_default = true
+          'personal',
+          '[]',
+          '[]'
+        )
+        .run()
+
+      // Re-fetch collections
+      const updatedCollections = await c.env.DB.prepare(
+        `SELECT * FROM user_collections WHERE id = ?`
+      )
+        .bind(defaultCollectionId)
+        .all()
+
+      collections.results = updatedCollections.results
+    }
+
+    // Format results - convert snake_case to camelCase for frontend
     const formattedCollections = collections.results.map(col => ({
-      ...col,
+      id: col.id,
+      userId: col.user_id,
+      name: col.name,
+      description: col.description,
+      slug: col.slug,
+      visibility: col.visibility,
+      isDefault: col.is_default,
+      collectionType: col.collection_type,
       scoreIds: JSON.parse((col.score_ids as string) || '[]'),
       tags: JSON.parse((col.tags as string) || '[]'),
-      createdAt: new Date(col.created_at as string),
-      updatedAt: new Date(col.updated_at as string),
+      displayOrder: col.display_order,
+      ownerType: col.owner_type,
+      sharedWith: JSON.parse((col.shared_with as string) || '[]'),
+      featuredAt: col.featured_at,
+      featuredBy: col.featured_by,
+      createdAt: new Date(col.created_at as string).toISOString(),
+      updatedAt: new Date(col.updated_at as string).toISOString(),
     }))
 
     return c.json({
