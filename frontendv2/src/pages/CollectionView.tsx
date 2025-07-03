@@ -11,7 +11,7 @@ import { useAuthStore } from '../stores/authStore'
 export default function CollectionViewPage() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
-  const { slug } = useParams<{ slug: string }>()
+  const { slug, id } = useParams<{ slug?: string; id?: string }>()
   const { isAuthenticated } = useAuthStore()
   const [collection, setCollection] = useState<Collection | null>(null)
   const [scores, setScores] = useState<Score[]>([])
@@ -24,50 +24,55 @@ export default function CollectionViewPage() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    if (slug) {
+    if (slug || id) {
       loadCollection()
     }
-  }, [slug])
+  }, [slug, id])
 
   const loadCollection = async () => {
-    if (!slug) return
-
     setIsLoading(true)
     setError(null)
     try {
-      // First, check if this is a user collection by trying to find it in user collections
-      if (isAuthenticated) {
+      // If we have an ID parameter, this is a user collection
+      if (id && isAuthenticated) {
         try {
-          const userCollections = await scoreService.getUserCollections()
-          const userCollection = userCollections.find(c => c.slug === slug)
-
-          if (userCollection) {
-            // This is a user collection, fetch it with scores
-            const fullCollection = await scoreService.getUserCollection(
-              userCollection.id
-            )
-            setCollection(fullCollection)
-            // The collection should have scores property with full score details
-            if (fullCollection.scores) {
-              setScores(fullCollection.scores)
-            }
-            return
+          console.log('Loading user collection by ID:', id)
+          const fullCollection = await scoreService.getUserCollection(id)
+          console.log('Full collection with scores:', fullCollection)
+          setCollection(fullCollection)
+          // The collection should have scores property with full score details
+          if (fullCollection.scores) {
+            setScores(fullCollection.scores)
           }
+          return
         } catch (error) {
-          console.error('Error checking user collections:', error)
+          console.error('Error loading user collection:', error)
+          setError(
+            t('scorebook:errors.loadCollection', 'Failed to load collection')
+          )
+          return
         }
       }
 
-      // If not a user collection, try public collections
-      const publicCollection = await scoreService.getCollection(slug)
-      setCollection(publicCollection)
+      // If we have a slug parameter, this is a public collection
+      if (slug) {
+        try {
+          const publicCollection = await scoreService.getCollection(slug)
+          setCollection(publicCollection)
 
-      // For public collections, we need to load scores by tags
-      if (publicCollection.tags && publicCollection.tags.length > 0) {
-        const collectionScores = await scoreService.getScores({
-          tags: publicCollection.tags,
-        })
-        setScores(collectionScores.items)
+          // For public collections, we need to load scores by tags
+          if (publicCollection.tags && publicCollection.tags.length > 0) {
+            const collectionScores = await scoreService.getScores({
+              tags: publicCollection.tags,
+            })
+            setScores(collectionScores.items)
+          }
+        } catch (error) {
+          console.error('Failed to load public collection:', error)
+          setError(
+            t('scorebook:errors.loadCollection', 'Failed to load collection')
+          )
+        }
       }
     } catch (error) {
       console.error('Failed to load collection:', error)

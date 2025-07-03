@@ -336,7 +336,12 @@ export default function ScoreBrowserPage() {
             <button
               onClick={e => {
                 e.stopPropagation()
-                navigate(`/scorebook/collection/${collection.slug}`)
+                // For user collections, pass the ID in the URL
+                if (tabView === 'myCollections') {
+                  navigate(`/scorebook/collection/user/${collection.id}`)
+                } else {
+                  navigate(`/scorebook/collection/${collection.slug}`)
+                }
               }}
               className="p-2 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
               title={t('scorebook:viewCollection', 'View collection')}
@@ -389,7 +394,12 @@ export default function ScoreBrowserPage() {
             <button
               onClick={e => {
                 e.stopPropagation()
-                navigate(`/scorebook/collection/${collection.slug}`)
+                // For user collections, pass the ID in the URL
+                if (tabView === 'myCollections') {
+                  navigate(`/scorebook/collection/user/${collection.id}`)
+                } else {
+                  navigate(`/scorebook/collection/${collection.slug}`)
+                }
               }}
               className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-600 transition-colors text-sm"
             >

@@ -26,6 +26,10 @@ export const scorebookRoutes: RouteObject[] = [
         path: 'collection/:slug',
         element: <CollectionView />,
       },
+      {
+        path: 'collection/user/:id',
+        element: <CollectionView />,
+      },
     ],
   },
 ]
