@@ -220,7 +220,7 @@ export default function ManualEntryForm({
               { value: 'LESSON', label: t('common:music.lesson') },
               { value: 'PERFORMANCE', label: t('common:music.performance') },
               { value: 'REHEARSAL', label: t('common:music.rehearsal') },
-            ].map((option) => (
+            ].map(option => (
               <button
                 key={option.value}
                 type="button"
