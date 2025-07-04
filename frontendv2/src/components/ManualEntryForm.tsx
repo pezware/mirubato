@@ -23,7 +23,7 @@ export default function ManualEntryForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form state
-  const [duration, setDuration] = useState(entry?.duration || 30)
+  const [duration, setDuration] = useState<number>(entry?.duration || 30)
   const [type, setType] = useState<LogbookEntry['type']>(
     entry?.type || 'PRACTICE'
   )
@@ -96,7 +96,7 @@ export default function ManualEntryForm({
 
       const entryData = {
         timestamp: selectedDate.toISOString(),
-        duration,
+        duration: Math.max(1, duration), // Ensure minimum duration of 1
         type,
         instrument,
         pieces: pieces
@@ -207,10 +207,22 @@ export default function ManualEntryForm({
               <input
                 type="number"
                 min="1"
-                value={duration}
+                value={duration === 0 ? '' : duration}
                 onChange={e => {
-                  const value = parseInt(e.target.value)
-                  setDuration(isNaN(value) ? 1 : Math.max(1, value))
+                  const inputValue = e.target.value
+                  // Allow empty string for clearing the field
+                  if (inputValue === '') {
+                    setDuration(0)
+                  } else {
+                    const value = parseInt(inputValue)
+                    setDuration(isNaN(value) ? 0 : Math.max(1, value))
+                  }
+                }}
+                onBlur={() => {
+                  // Ensure minimum value of 1 when user leaves the field
+                  if (duration < 1) {
+                    setDuration(1)
+                  }
                 }}
                 className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
                 required

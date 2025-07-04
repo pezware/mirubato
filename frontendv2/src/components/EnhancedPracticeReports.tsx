@@ -10,16 +10,27 @@ import {
   TimePeriod,
   SortBy,
 } from './practice-reports/ReportsFilters'
-// import { PracticeOverview } from './practice-reports/PracticeOverview'
-import { PiecesStatistics } from './practice-reports/PiecesStatistics'
-import { SummaryStats } from './practice-reports/SummaryStats'
-import { PieceComposerStats } from './practice-reports/PieceComposerStats'
 import { LoadingSkeleton } from './ui/Loading'
 import { Trash2, Edit2, Download } from 'lucide-react'
 import Button from './ui/Button'
 
-// Lazy load the manual entry form
+// Lazy load components for better performance
 const ManualEntryForm = lazy(() => import('./ManualEntryForm'))
+const PiecesStatistics = lazy(() =>
+  import('./practice-reports/PiecesStatistics').then(module => ({
+    default: module.PiecesStatistics,
+  }))
+)
+const SummaryStats = lazy(() =>
+  import('./practice-reports/SummaryStats').then(module => ({
+    default: module.SummaryStats,
+  }))
+)
+const PieceComposerStats = lazy(() =>
+  import('./practice-reports/PieceComposerStats').then(module => ({
+    default: module.PieceComposerStats,
+  }))
+)
 
 export default function EnhancedPracticeReports() {
   const { t } = useTranslation(['reports', 'common', 'logbook'])
@@ -34,6 +45,16 @@ export default function EnhancedPracticeReports() {
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week')
+  const [customDateRange, setCustomDateRange] = useState<
+    { start: Date; end: Date } | undefined
+  >()
+
+  // Clear custom date range and selected date when time period changes
+  const handleTimePeriodChange = (period: TimePeriod) => {
+    setTimePeriod(period)
+    setCustomDateRange(undefined)
+    setSelectedDate(null)
+  }
 
   // Autocomplete hooks
   const pieceAutocomplete = useAutocomplete({
@@ -56,8 +77,16 @@ export default function EnhancedPracticeReports() {
   const filteredAndSortedEntries = useMemo(() => {
     let filtered = [...entries]
 
-    // Filter by time period
-    if (timePeriod !== 'all') {
+    // Filter by custom date range if set
+    if (customDateRange) {
+      filtered = filtered.filter(e => {
+        const entryDate = new Date(e.timestamp)
+        return (
+          entryDate >= customDateRange.start && entryDate <= customDateRange.end
+        )
+      })
+    } else if (timePeriod !== 'all') {
+      // Filter by time period
       const now = new Date()
 
       if (timePeriod === 'week') {
@@ -148,11 +177,12 @@ export default function EnhancedPracticeReports() {
     selectedPiece,
     selectedComposer,
     sortBy,
+    customDateRange,
   ])
 
-  // Use analytics hook
+  // Use analytics hook - use all entries for calendar heatmap
   const analytics = usePracticeAnalytics({
-    entries: filteredAndSortedEntries,
+    entries: entries, // Use all entries so calendar can show all practice days
     sortBy,
     selectedDate,
     selectedPiece,
@@ -313,7 +343,7 @@ export default function EnhancedPracticeReports() {
           <div className="p-4 md:p-6 border-b border-morandi-stone-200">
             <ReportsFilters
               timePeriod={timePeriod}
-              setTimePeriod={setTimePeriod}
+              setTimePeriod={handleTimePeriodChange}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               selectedPiece={selectedPiece}
@@ -326,26 +356,29 @@ export default function EnhancedPracticeReports() {
               pieceAutocomplete={pieceAutocomplete}
               composerAutocomplete={composerAutocomplete}
               analytics={analytics}
+              customDateRange={customDateRange}
+              setCustomDateRange={setCustomDateRange}
             >
               {/* Summary Stats in right column */}
               <div className="space-y-3">
-                <SummaryStats
-                  analytics={analytics}
-                  timePeriod={timePeriod}
-                  entries={entries}
-                  filteredAndSortedEntries={filteredAndSortedEntries}
-                  formatDuration={formatDuration}
-                />
+                <Suspense fallback={<LoadingSkeleton className="h-32" />}>
+                  <SummaryStats
+                    filteredAndSortedEntries={filteredAndSortedEntries}
+                    formatDuration={formatDuration}
+                  />
+                </Suspense>
 
                 {/* Piece/Composer specific stats - only in pieces view */}
                 {reportView === 'pieces' &&
                   (selectedPiece || selectedComposer) && (
-                    <PieceComposerStats
-                      analytics={analytics}
-                      selectedPiece={selectedPiece}
-                      selectedComposer={selectedComposer}
-                      formatDuration={formatDuration}
-                    />
+                    <Suspense fallback={<LoadingSkeleton className="h-24" />}>
+                      <PieceComposerStats
+                        analytics={analytics}
+                        selectedPiece={selectedPiece}
+                        selectedComposer={selectedComposer}
+                        formatDuration={formatDuration}
+                      />
+                    </Suspense>
                   )}
               </div>
             </ReportsFilters>
@@ -433,13 +466,15 @@ export default function EnhancedPracticeReports() {
                     onEdit={handleEditEntry}
                   />
                 ) : (
-                  <PiecesStatistics
-                    analytics={analytics}
-                    selectedPiece={selectedPiece}
-                    selectedComposer={selectedComposer}
-                    setSelectedPiece={setSelectedPiece}
-                    formatDuration={formatDuration}
-                  />
+                  <Suspense fallback={<LoadingSkeleton className="h-96" />}>
+                    <PiecesStatistics
+                      analytics={analytics}
+                      selectedPiece={selectedPiece}
+                      selectedComposer={selectedComposer}
+                      setSelectedPiece={setSelectedPiece}
+                      formatDuration={formatDuration}
+                    />
+                  </Suspense>
                 )}
               </>
             ) : null}
