@@ -35,6 +35,15 @@ export default function EnhancedPracticeReports() {
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week')
+  const [customDateRange, setCustomDateRange] = useState<
+    { start: Date; end: Date } | undefined
+  >()
+
+  // Clear custom date range when time period changes
+  const handleTimePeriodChange = (period: TimePeriod) => {
+    setTimePeriod(period)
+    setCustomDateRange(undefined)
+  }
 
   // Autocomplete hooks
   const pieceAutocomplete = useAutocomplete({
@@ -57,8 +66,16 @@ export default function EnhancedPracticeReports() {
   const filteredAndSortedEntries = useMemo(() => {
     let filtered = [...entries]
 
-    // Filter by time period
-    if (timePeriod !== 'all') {
+    // Filter by custom date range if set
+    if (customDateRange) {
+      filtered = filtered.filter(e => {
+        const entryDate = new Date(e.timestamp)
+        return (
+          entryDate >= customDateRange.start && entryDate <= customDateRange.end
+        )
+      })
+    } else if (timePeriod !== 'all') {
+      // Filter by time period
       const now = new Date()
 
       if (timePeriod === 'week') {
@@ -149,6 +166,7 @@ export default function EnhancedPracticeReports() {
     selectedPiece,
     selectedComposer,
     sortBy,
+    customDateRange,
   ])
 
   // Use analytics hook
@@ -314,7 +332,7 @@ export default function EnhancedPracticeReports() {
           <div className="p-4 md:p-6 border-b border-morandi-stone-200">
             <ReportsFilters
               timePeriod={timePeriod}
-              setTimePeriod={setTimePeriod}
+              setTimePeriod={handleTimePeriodChange}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               selectedPiece={selectedPiece}
@@ -327,6 +345,8 @@ export default function EnhancedPracticeReports() {
               pieceAutocomplete={pieceAutocomplete}
               composerAutocomplete={composerAutocomplete}
               analytics={analytics}
+              customDateRange={customDateRange}
+              setCustomDateRange={setCustomDateRange}
             >
               {/* Summary Stats in right column */}
               <div className="space-y-3">

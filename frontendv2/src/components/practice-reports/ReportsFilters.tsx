@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { useState, useEffect } from 'react'
 import Autocomplete from '../ui/Autocomplete'
 import Button from '../ui/Button'
-import { X } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
 
 // Type for autocomplete hook return
@@ -39,6 +40,8 @@ interface ReportsFiltersProps {
   pieceAutocomplete: AutocompleteHook
   composerAutocomplete: AutocompleteHook
   analytics: AnalyticsData
+  customDateRange?: { start: Date; end: Date }
+  setCustomDateRange?: (range: { start: Date; end: Date } | undefined) => void
   children?: React.ReactNode
 }
 
@@ -57,9 +60,60 @@ export function ReportsFilters({
   pieceAutocomplete,
   composerAutocomplete,
   analytics,
+  customDateRange,
+  setCustomDateRange,
   children,
 }: ReportsFiltersProps) {
   const { t } = useTranslation(['reports', 'common'])
+
+  // State for managing the current viewing period
+  const [currentViewDate, setCurrentViewDate] = useState(new Date())
+
+  // Update view date when custom range changes
+  useEffect(() => {
+    if (customDateRange) {
+      setCurrentViewDate(customDateRange.start)
+    }
+  }, [customDateRange])
+
+  // Navigation functions
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentViewDate)
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1)
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1)
+    }
+
+    setCurrentViewDate(newDate)
+
+    // Update custom date range for the new month
+    if (setCustomDateRange) {
+      const start = new Date(newDate.getFullYear(), newDate.getMonth(), 1)
+      const end = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0)
+      setCustomDateRange({ start, end })
+    }
+  }
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentViewDate)
+    if (direction === 'prev') {
+      newDate.setDate(newDate.getDate() - 7)
+    } else {
+      newDate.setDate(newDate.getDate() + 7)
+    }
+
+    setCurrentViewDate(newDate)
+
+    // Update custom date range for the new week
+    if (setCustomDateRange) {
+      const start = new Date(newDate)
+      start.setDate(start.getDate() - start.getDay()) // Start of week
+      const end = new Date(start)
+      end.setDate(end.getDate() + 6) // End of week
+      setCustomDateRange({ start, end })
+    }
+  }
 
   return (
     <>
@@ -96,14 +150,55 @@ export function ReportsFilters({
         <div>
           {/* Calendar Heat Map */}
           <div className="mb-4">
-            <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
-              {t('reports:practiceCalendar')}
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-morandi-stone-700">
+                {t('reports:practiceCalendar')}
+              </h3>
+              {timePeriod !== 'all' && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() =>
+                      timePeriod === 'month'
+                        ? navigateMonth('prev')
+                        : navigateWeek('prev')
+                    }
+                    variant="ghost"
+                    size="icon-sm"
+                    className="w-6 h-6"
+                    data-testid="calendar-nav-left"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-morandi-stone-600 min-w-[120px] text-center">
+                    {timePeriod === 'month'
+                      ? currentViewDate.toLocaleDateString(undefined, {
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : `${new Date(currentViewDate.getTime() - currentViewDate.getDay() * 86400000).toLocaleDateString()} - ${new Date(currentViewDate.getTime() + (6 - currentViewDate.getDay()) * 86400000).toLocaleDateString()}`}
+                  </span>
+                  <Button
+                    onClick={() =>
+                      timePeriod === 'month'
+                        ? navigateMonth('next')
+                        : navigateWeek('next')
+                    }
+                    variant="ghost"
+                    size="icon-sm"
+                    className="w-6 h-6"
+                    data-testid="calendar-nav-right"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
             {timePeriod === 'week' && (
               <CalendarWeekView
                 analytics={analytics}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
+                currentViewDate={currentViewDate}
               />
             )}
             {timePeriod === 'month' && (
@@ -111,6 +206,7 @@ export function ReportsFilters({
                 analytics={analytics}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
+                currentViewDate={currentViewDate}
               />
             )}
           </div>
@@ -217,18 +313,21 @@ function CalendarWeekView({
   analytics,
   selectedDate,
   setSelectedDate,
+  currentViewDate,
 }: {
   analytics: AnalyticsData
   selectedDate: string | null
   setSelectedDate: (date: string | null) => void
+  currentViewDate: Date
 }) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const startOfWeek = new Date(currentViewDate)
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  startOfWeek.setHours(0, 0, 0, 0)
 
   const weekDates: Date[] = []
   for (let i = 0; i < 7; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - 6 + i)
+    const date = new Date(startOfWeek)
+    date.setDate(startOfWeek.getDate() + i)
     weekDates.push(date)
   }
 
@@ -252,7 +351,7 @@ function CalendarWeekView({
             practiceMinutes > 0 ? Math.min(practiceMinutes / 60, 1) : 0
           const isSelected =
             selectedDate && new Date(selectedDate).toDateString() === dateStr
-          const isToday = today.toDateString() === dateStr
+          const isToday = new Date().toDateString() === dateStr
 
           return (
             <Button
@@ -269,7 +368,13 @@ function CalendarWeekView({
                 isSelected ? 'ring-2 ring-morandi-sage-500 ring-offset-2' : ''
               } ${
                 practiceMinutes > 0
-                  ? `bg-morandi-sage-${Math.round(intensity * 500)}`
+                  ? intensity > 0.75
+                    ? 'bg-morandi-sage-700'
+                    : intensity > 0.5
+                      ? 'bg-morandi-sage-600'
+                      : intensity > 0.25
+                        ? 'bg-morandi-sage-500'
+                        : 'bg-morandi-sage-400'
                   : 'bg-morandi-stone-100'
               } ${isToday ? 'font-bold' : ''}`}
             >
@@ -299,14 +404,15 @@ function CalendarMonthView({
   analytics,
   selectedDate,
   setSelectedDate,
+  currentViewDate,
 }: {
   analytics: AnalyticsData
   selectedDate: string | null
   setSelectedDate: (date: string | null) => void
+  currentViewDate: Date
 }) {
-  const today = new Date()
-  const currentMonth = today.getMonth()
-  const currentYear = today.getFullYear()
+  const currentMonth = currentViewDate.getMonth()
+  const currentYear = currentViewDate.getFullYear()
 
   const firstDay = new Date(currentYear, currentMonth, 1)
   const lastDay = new Date(currentYear, currentMonth + 1, 0)
@@ -349,7 +455,7 @@ function CalendarMonthView({
             practiceMinutes > 0 ? Math.min(practiceMinutes / 60, 1) : 0
           const isSelected =
             selectedDate && new Date(selectedDate).toDateString() === dateStr
-          const isToday = today.toDateString() === dateStr
+          const isToday = new Date().toDateString() === dateStr
 
           return (
             <Button
@@ -366,7 +472,13 @@ function CalendarMonthView({
                 isSelected ? 'ring-2 ring-morandi-sage-500 ring-offset-1' : ''
               } ${
                 practiceMinutes > 0
-                  ? `bg-morandi-sage-${Math.round(intensity * 500)}`
+                  ? intensity > 0.75
+                    ? 'bg-morandi-sage-700'
+                    : intensity > 0.5
+                      ? 'bg-morandi-sage-600'
+                      : intensity > 0.25
+                        ? 'bg-morandi-sage-500'
+                        : 'bg-morandi-sage-400'
                   : 'bg-morandi-stone-100'
               } ${isToday ? 'font-bold' : ''}`}
             >
