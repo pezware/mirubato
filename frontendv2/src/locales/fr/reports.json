@@ -93,5 +93,7 @@
   "pieceDetails": "Détails de la pièce",
   "topPieces": "Pièces principales",
   "mostPracticedTechniques": "Techniques les plus pratiquées",
-  "avgPerSession": "Moyenne par session"
+  "avgPerSession": "Moyenne par session",
+  "entriesForPiece": "Entrées de pratique pour {{piece}}",
+  "entriesForComposer": "Entrées de pratique pour {{composer}}"
 }

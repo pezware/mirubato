@@ -93,5 +93,7 @@
   "pieceDetails": "作品詳情",
   "topPieces": "熱門曲目",
   "mostPracticedTechniques": "最常練習的技巧",
-  "avgPerSession": "每次平均"
+  "avgPerSession": "每次平均",
+  "entriesForPiece": "{{piece}}的練習記錄",
+  "entriesForComposer": "{{composer}}的練習記錄"
 }
