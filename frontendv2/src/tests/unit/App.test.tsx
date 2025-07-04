@@ -8,10 +8,6 @@ import { useAuthStore } from '../../stores/authStore'
 vi.mock('../../stores/authStore')
 
 // Mock utils
-vi.mock('../../utils/migrateLegacyData', () => ({
-  migrateLegacyData: vi.fn(),
-}))
-
 vi.mock('../../utils/fixLocalStorageData', () => ({
   fixLocalStorageData: vi.fn(),
 }))
@@ -65,7 +61,6 @@ describe('App', () => {
   })
 
   it('should call initialization functions on mount', async () => {
-    const { migrateLegacyData } = await import('../../utils/migrateLegacyData')
     const { fixLocalStorageData } = await import(
       '../../utils/fixLocalStorageData'
     )
@@ -74,7 +69,6 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(fixLocalStorageData).toHaveBeenCalledTimes(1)
-      expect(migrateLegacyData).toHaveBeenCalledTimes(1)
       expect(mockRefreshAuth).toHaveBeenCalledTimes(1)
     })
   })
@@ -137,7 +131,6 @@ describe('App', () => {
   })
 
   it('should call initialization in correct order', async () => {
-    const { migrateLegacyData } = await import('../../utils/migrateLegacyData')
     const { fixLocalStorageData } = await import(
       '../../utils/fixLocalStorageData'
     )
@@ -149,9 +142,6 @@ describe('App', () => {
         callOrder.push('fixLocalStorageData')
       }
     )
-    ;(migrateLegacyData as ReturnType<typeof vi.fn>).mockImplementation(() => {
-      callOrder.push('migrateLegacyData')
-    })
 
     mockRefreshAuth.mockImplementation(() => {
       callOrder.push('refreshAuth')
@@ -160,11 +150,7 @@ describe('App', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(callOrder).toEqual([
-        'fixLocalStorageData',
-        'migrateLegacyData',
-        'refreshAuth',
-      ])
+      expect(callOrder).toEqual(['fixLocalStorageData', 'refreshAuth'])
     })
   })
 })
