@@ -264,11 +264,42 @@ export default function EnhancedPracticeReports() {
           <div className="p-4 md:p-6">
             {reportView === 'overview' ? (
               <>
+                {/* Sort buttons */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setSortBy('mostRecent')}
+                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                      sortBy === 'mostRecent'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
+                  >
+                    {t('reports:sort.mostRecent')}
+                  </button>
+                  <button
+                    onClick={() => setSortBy('mostPracticed')}
+                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                      sortBy === 'mostPracticed'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
+                  >
+                    {t('reports:sort.mostPracticed')}
+                  </button>
+                  <button
+                    onClick={() => setSortBy('longestSessions')}
+                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                      sortBy === 'longestSessions'
+                        ? 'bg-morandi-sage-500 text-white'
+                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                    }`}
+                  >
+                    {t('reports:sort.longestSessions')}
+                  </button>
+                </div>
+
                 {/* Recent Entries List */}
                 <div>
-                  <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
-                    {t('reports:recentEntries')}
-                  </h3>
                   <EntryList
                     entries={filteredAndSortedEntries.slice(0, 10)}
                     onDelete={handleDeleteEntry}
@@ -280,18 +311,11 @@ export default function EnhancedPracticeReports() {
               <>
                 {/* Show filtered entries if piece/composer is selected */}
                 {(selectedPiece || selectedComposer) ? (
-                  <div>
-                    <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
-                      {selectedPiece
-                        ? t('reports:entriesForPiece', { piece: selectedPiece })
-                        : t('reports:entriesForComposer', { composer: selectedComposer })}
-                    </h3>
-                    <EntryList
-                      entries={filteredAndSortedEntries}
-                      onDelete={handleDeleteEntry}
-                      onEdit={handleEditEntry}
-                    />
-                  </div>
+                  <EntryList
+                    entries={filteredAndSortedEntries}
+                    onDelete={handleDeleteEntry}
+                    onEdit={handleEditEntry}
+                  />
                 ) : (
                   <PiecesStatistics
                     analytics={analytics}

@@ -195,29 +195,6 @@ export function ReportsFilters({
             </div>
           )}
 
-          {/* Sort options */}
-          {reportView === 'overview' && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                {t('reports:sortBy')}
-              </h4>
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as SortBy)}
-                className="w-full px-3 py-2 text-sm border border-morandi-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-morandi-sage-500"
-              >
-                <option value="mostRecent">
-                  {t('reports:sort.mostRecent')}
-                </option>
-                <option value="mostPracticed">
-                  {t('reports:sort.mostPracticed')}
-                </option>
-                <option value="longestSessions">
-                  {t('reports:sort.longestSessions')}
-                </option>
-              </select>
-            </div>
-          )}
         </div>
 
         {/* Right: Summary Stats */}
