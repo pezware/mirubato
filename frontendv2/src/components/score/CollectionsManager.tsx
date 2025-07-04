@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '../../stores/authStore'
 import { useScoreStore } from '../../stores/scoreStore'
-import { isAdmin, isTeacher } from '../../types/collections'
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
-import Input from '../ui/Input'
+import { Input } from '../ui/Input'
 import { cn } from '../../utils/cn'
 import { X } from 'lucide-react'
 
@@ -21,7 +19,6 @@ export default function CollectionsManager({
   className,
 }: CollectionsManagerProps) {
   const { t } = useTranslation(['scorebook', 'common'])
-  const { user } = useAuthStore()
   const {
     userCollections,
     featuredCollections,
@@ -187,8 +184,10 @@ export default function CollectionsManager({
                   <Input
                     type="text"
                     value={newCollectionName}
-                    onChange={e => setNewCollectionName(e.target.value)}
-                    onKeyDown={e => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setNewCollectionName(e.target.value)
+                    }
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                       if (e.key === 'Enter') handleCreateCollection()
                     }}
                     placeholder={t(
