@@ -8,7 +8,16 @@ import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
 interface AutocompleteHook {
   query: string
   setQuery: (query: string) => void
-  suggestions: Array<{ value: string; label: string; metadata?: any }>
+  suggestions: Array<{
+    value: string
+    label: string
+    metadata?: {
+      composer?: string
+      gradeLevel?: number
+      instrument?: string
+      [key: string]: unknown
+    }
+  }>
   isLoading: boolean
 }
 
@@ -42,8 +51,8 @@ export function ReportsFilters({
   setSelectedPiece,
   selectedComposer,
   setSelectedComposer,
-  sortBy,
-  setSortBy,
+  sortBy: _sortBy,
+  setSortBy: _setSortBy,
   reportView,
   pieceAutocomplete,
   composerAutocomplete,
@@ -194,7 +203,6 @@ export function ReportsFilters({
               </div>
             </div>
           )}
-
         </div>
 
         {/* Right: Summary Stats */}
