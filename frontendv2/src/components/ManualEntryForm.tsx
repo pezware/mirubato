@@ -4,6 +4,7 @@ import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
+import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 
 interface ManualEntryFormProps {
@@ -190,11 +191,10 @@ export default function ManualEntryForm({
                   className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   required
                 />
-                <input
-                  type="time"
+                <TimePicker
                   value={practiceTime}
-                  onChange={e => setPracticeTime(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-datetime-edit-hour-field]:text-morandi-stone-700 [&::-webkit-datetime-edit-minute-field]:text-morandi-stone-700 [&::-webkit-datetime-edit-ampm-field]:text-morandi-stone-700"
+                  onChange={setPracticeTime}
+                  className="w-full sm:w-auto"
                   required
                 />
               </div>
