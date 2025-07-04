@@ -214,21 +214,26 @@ export default function ManualEntryForm({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-              {t('logbook:entry.type')}
-            </label>
-            <SplitButton<LogbookEntry['type']>
-              options={[
-                { value: 'PRACTICE', label: t('common:music.practice') },
-                { value: 'LESSON', label: t('common:music.lesson') },
-                { value: 'PERFORMANCE', label: t('common:music.performance') },
-                { value: 'REHEARSAL', label: t('common:music.rehearsal') },
-              ]}
-              value={type}
-              onChange={value => value && setType(value)}
-              orientation="horizontal"
-            />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { value: 'PRACTICE', label: t('common:music.practice') },
+              { value: 'LESSON', label: t('common:music.lesson') },
+              { value: 'PERFORMANCE', label: t('common:music.performance') },
+              { value: 'REHEARSAL', label: t('common:music.rehearsal') },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setType(option.value as LogbookEntry['type'])}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  type === option.value
+                    ? 'bg-morandi-sage-500 text-white'
+                    : 'bg-white border border-morandi-stone-300 text-morandi-stone-600 hover:bg-morandi-stone-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
