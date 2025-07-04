@@ -487,7 +487,7 @@ function EntryList({
   if (entries.length === 0) {
     return (
       <p className="text-sm text-morandi-stone-500 italic">
-        {t('logbook:noEntries')}
+        {t('logbook:empty')}
       </p>
     )
   }
