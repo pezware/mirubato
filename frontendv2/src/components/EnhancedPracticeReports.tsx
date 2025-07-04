@@ -14,6 +14,7 @@ import {
 import { PiecesStatistics } from './practice-reports/PiecesStatistics'
 import { SummaryStats } from './practice-reports/SummaryStats'
 import { PieceComposerStats } from './practice-reports/PieceComposerStats'
+import { MonthlySummaries } from './practice-reports/MonthlySummaries'
 import { LoadingSkeleton } from './ui/Loading'
 import { Trash2, Edit2, Download } from 'lucide-react'
 import Button from './ui/Button'
@@ -422,6 +423,15 @@ export default function EnhancedPracticeReports() {
                     onEdit={handleEditEntry}
                   />
                 </div>
+
+                {/* Monthly History */}
+                <MonthlySummaries
+                  entries={filteredAndSortedEntries}
+                  recentEntriesCount={10}
+                  formatDuration={formatDuration}
+                  onDeleteEntry={handleDeleteEntry}
+                  onEditEntry={handleEditEntry}
+                />
               </>
             ) : reportView === 'pieces' ? (
               <>
