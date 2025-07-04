@@ -15,6 +15,7 @@
   "scoreManagement": "Score Management",
   "searchScores": "Search Scores",
   "searchPlaceholder": "Search by title, composer...",
+  "importScore": "Import Score",
   "uploadScore": "Upload New Score",
   "uploadPrompt": "Drop PDF files here or click to browse",
   "selectFiles": "Select Files",
@@ -35,6 +36,10 @@
   "featured": "Featured",
   "public": "Public",
   "shared": "Shared",
+  "private": "Private",
+  "privateCollectionHelp": "Only you can see this collection",
+  "publicCollectionHelp": "Others can discover and use this collection",
+  "tags": "Tags",
   "collectionScores": "Collection Scores",
   "allScores": "All Scores",
   "allInstruments": "All Instruments",
@@ -50,8 +55,20 @@
   "progress": "Progress",
   "saveToLogbook": "Save to Logbook",
   "discard": "Discard",
+  "importPdf": "PDF",
+  "importImages": "Images",
+  "importUrl": "URL",
+  "import": "Import",
+  "selectedImages": "{{count}} images selected",
+  "importUrlPlaceholder": "Enter URL to PDF file...",
+  "importUrlHelp": "Enter a direct link to a PDF file",
+  "addToCollections": "Add to Collections (optional)",
   "errors": {
     "loadCollections": "Failed to load collections",
-    "createCollection": "Failed to create collection"
+    "createCollection": "Failed to create collection",
+    "invalidPdf": "Please select a valid PDF file",
+    "invalidImages": "Please select valid image files",
+    "importFailed": "Import failed",
+    "updateCollections": "Failed to update collections"
   }
 }

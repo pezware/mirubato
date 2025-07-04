@@ -32,6 +32,7 @@ export default function CollectionsManager({
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
+  const [newCollectionPublic, setNewCollectionPublic] = useState(false)
   const [activeTab, setActiveTab] = useState<'my' | 'featured'>('my')
   const [error, setError] = useState<string | null>(null)
 
@@ -69,10 +70,15 @@ export default function CollectionsManager({
     setIsCreating(true)
     setError(null)
     try {
-      await createCollection(newCollectionName.trim())
+      await createCollection(
+        newCollectionName.trim(),
+        undefined, // description
+        newCollectionPublic ? 'public' : 'private'
+      )
 
       // Reset form
       setNewCollectionName('')
+      setNewCollectionPublic(false)
 
       // Collections are automatically reloaded by the store
     } catch (err) {
@@ -179,7 +185,7 @@ export default function CollectionsManager({
           <div className="space-y-4">
             {/* Create new collection (My Collections tab only) */}
             {activeTab === 'my' && (
-              <div className="mb-6">
+              <div className="mb-6 space-y-3">
                 <div className="flex gap-2">
                   <Input
                     type="text"
@@ -204,6 +210,51 @@ export default function CollectionsManager({
                   >
                     {t('common:create', 'Create')}
                   </Button>
+                </div>
+
+                {/* Public/Private toggle */}
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newCollectionPublic}
+                      onChange={e => setNewCollectionPublic(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={cn(
+                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                        newCollectionPublic
+                          ? 'bg-morandi-sage-500'
+                          : 'bg-morandi-stone-300'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                          newCollectionPublic
+                            ? 'translate-x-6'
+                            : 'translate-x-1'
+                        )}
+                      />
+                    </div>
+                    <span className="ml-3 text-sm font-medium text-morandi-stone-700">
+                      {newCollectionPublic
+                        ? t('scorebook:public', 'Public')
+                        : t('scorebook:private', 'Private')}
+                    </span>
+                  </label>
+                  <span className="text-xs text-morandi-stone-500">
+                    {newCollectionPublic
+                      ? t(
+                          'scorebook:publicCollectionHelp',
+                          'Others can discover and use this collection'
+                        )
+                      : t(
+                          'scorebook:privateCollectionHelp',
+                          'Only you can see this collection'
+                        )}
+                  </span>
                 </div>
               </div>
             )}
