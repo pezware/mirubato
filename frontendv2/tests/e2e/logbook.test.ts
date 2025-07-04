@@ -182,7 +182,7 @@ test.describe('Logbook', () => {
         if (exportJsonVisible) {
           const download = await logbookPage.exportAsJson()
           expect(download.suggestedFilename()).toMatch(
-            /mirubato-export-.*\.json/
+            /mirubato-logbook-.*\.json/
           )
         }
       })
@@ -210,7 +210,7 @@ test.describe('Logbook', () => {
         if (exportCsvVisible) {
           const download = await logbookPage.exportAsCsv()
           expect(download.suggestedFilename()).toMatch(
-            /mirubato-export-.*\.csv/
+            /mirubato-logbook-.*\.csv/
           )
         }
       })
