@@ -7,20 +7,14 @@ import { scoreService } from '../../services/scoreService'
 import Autocomplete from '../ui/Autocomplete'
 import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
-import CollectionsManager from './CollectionsManager'
 import Button from '../ui/Button'
-import { X, Upload, ChevronRight, Trash2, Edit } from 'lucide-react'
+import { X, Upload, Trash2, Edit } from 'lucide-react'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
-  const {
-    toggleManagement,
-    featuredCollections,
-    userLibrary,
-    loadUserLibrary,
-  } = useScoreStore()
+  const { toggleManagement, userLibrary, loadUserLibrary } = useScoreStore()
   const [isDragging, setIsDragging] = useState(false)
   const [uploadMode, setUploadMode] = useState<'file' | 'url' | 'images'>(
     'file'
@@ -47,7 +41,6 @@ export default function ScoreManagement() {
       edited?: boolean
     }[]
   >([])
-  const [showCollections, setShowCollections] = useState(false)
 
   // Use the score search hook for predictive search
   const scoreSearch = useScoreSearch({ minLength: 0 })
@@ -763,45 +756,6 @@ export default function ScoreManagement() {
                 </div>
               </div>
             )}
-
-            {/* My Collections (Authenticated only) */}
-            {isAuthenticated && (
-              <div>
-                <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
-                  {t('scorebook:myCollections', 'My Collections')}
-                </h4>
-                <Button
-                  onClick={() => setShowCollections(true)}
-                  variant="secondary"
-                  fullWidth
-                  className="p-3 bg-morandi-sage-50 hover:bg-morandi-sage-100"
-                  rightIcon={<ChevronRight className="w-4 h-4" />}
-                >
-                  {t('scorebook:manageCollections', 'Manage Collections')}
-                </Button>
-              </div>
-            )}
-
-            {/* Collections */}
-            <div>
-              <h4 className="text-sm font-medium text-morandi-stone-700 mb-3">
-                {t('scorebook:collections', 'Browse Collections')}
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {featuredCollections.slice(0, 4).map(collection => (
-                  <Button
-                    key={collection.id}
-                    onClick={() =>
-                      navigate(`/scorebook/collection/${collection.slug}`)
-                    }
-                    variant="secondary"
-                    className="p-3 bg-morandi-sage-50 text-morandi-stone-700 rounded-lg hover:bg-morandi-sage-100 transition-colors text-sm text-center"
-                  >
-                    {collection.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -813,21 +767,6 @@ export default function ScoreManagement() {
           onSave={handleSaveEditedImage}
           onCancel={() => setEditingImageIndex(null)}
         />
-      )}
-
-      {/* Collections Manager Modal */}
-      {showCollections && (
-        <div
-          className="fixed inset-0 bg-black/50 z-60"
-          onClick={() => setShowCollections(false)}
-        >
-          <div
-            className="absolute right-0 top-0 h-full w-full sm:w-96 md:w-[480px] bg-white shadow-xl overflow-hidden flex flex-col"
-            onClick={e => e.stopPropagation()}
-          >
-            <CollectionsManager onClose={() => setShowCollections(false)} />
-          </div>
-        </div>
       )}
     </div>
   )

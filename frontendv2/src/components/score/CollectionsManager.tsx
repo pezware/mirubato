@@ -5,7 +5,9 @@ import { useScoreStore } from '../../stores/scoreStore'
 import { isAdmin, isTeacher } from '../../types/collections'
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
+import Input from '../ui/Input'
 import { cn } from '../../utils/cn'
+import { X } from 'lucide-react'
 
 interface CollectionsManagerProps {
   scoreId?: string
@@ -33,7 +35,7 @@ export default function CollectionsManager({
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState('')
-  const [activeTab, setActiveTab] = useState<'my' | 'shared' | 'featured'>('my')
+  const [activeTab, setActiveTab] = useState<'my' | 'featured'>('my')
   const [error, setError] = useState<string | null>(null)
 
   // Load collections on mount
@@ -109,16 +111,11 @@ export default function CollectionsManager({
   const filteredCollections = (() => {
     if (activeTab === 'my') {
       return userCollections
-    } else if (activeTab === 'shared') {
-      // TODO: Return shared collections when available
-      return []
     } else if (activeTab === 'featured') {
       return featuredCollections
     }
     return []
   })()
-
-  const showTabs = isTeacher(user) || isAdmin(user)
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -130,67 +127,44 @@ export default function CollectionsManager({
             : t('scorebook:myCollections', 'My Collections')}
         </h3>
         {onClose && (
-          <button
+          <Button
             onClick={onClose}
-            className="p-2 hover:bg-morandi-stone-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon-md"
+            aria-label={t('common:close', 'Close')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <X className="w-5 h-5" />
+          </Button>
         )}
       </div>
 
       {/* Tabs */}
-      {showTabs && (
-        <div className="flex border-b border-morandi-stone-200">
-          <button
-            onClick={() => setActiveTab('my')}
-            className={cn(
-              'flex-1 px-4 py-2 text-sm font-medium transition-colors',
-              activeTab === 'my'
-                ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
-                : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-            )}
-          >
-            {t('scorebook:myCollections', 'My Collections')}
-          </button>
-          {isTeacher(user) && (
-            <button
-              onClick={() => setActiveTab('shared')}
-              className={cn(
-                'flex-1 px-4 py-2 text-sm font-medium transition-colors',
-                activeTab === 'shared'
-                  ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
-                  : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-              )}
-            >
-              {t('scorebook:sharedWithMe', 'Shared with Me')}
-            </button>
+      <div className="flex border-b border-morandi-stone-200">
+        <Button
+          onClick={() => setActiveTab('my')}
+          variant="ghost"
+          className={cn(
+            'flex-1 rounded-none px-4 py-2 text-sm font-medium transition-colors',
+            activeTab === 'my'
+              ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
+              : 'text-morandi-stone-600 hover:text-morandi-stone-800'
           )}
-          <button
-            onClick={() => setActiveTab('featured')}
-            className={cn(
-              'flex-1 px-4 py-2 text-sm font-medium transition-colors',
-              activeTab === 'featured'
-                ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
-                : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-            )}
-          >
-            {t('scorebook:featured', 'Featured')}
-          </button>
-        </div>
-      )}
+        >
+          {t('scorebook:myCollections', 'My Collections')}
+        </Button>
+        <Button
+          onClick={() => setActiveTab('featured')}
+          variant="ghost"
+          className={cn(
+            'flex-1 rounded-none px-4 py-2 text-sm font-medium transition-colors',
+            activeTab === 'featured'
+              ? 'text-morandi-sage-600 border-b-2 border-morandi-sage-500'
+              : 'text-morandi-stone-600 hover:text-morandi-stone-800'
+          )}
+        >
+          {t('scorebook:featured', 'Featured')}
+        </Button>
+      </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
@@ -210,7 +184,7 @@ export default function CollectionsManager({
             {activeTab === 'my' && (
               <div className="mb-6">
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="text"
                     value={newCollectionName}
                     onChange={e => setNewCollectionName(e.target.value)}
@@ -221,7 +195,7 @@ export default function CollectionsManager({
                       'scorebook:newCollectionPlaceholder',
                       'New collection name...'
                     )}
-                    className="flex-1 px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
+                    className="flex-1"
                   />
                   <Button
                     onClick={handleCreateCollection}
@@ -251,14 +225,6 @@ export default function CollectionsManager({
                         )}
                       </p>
                     </>
-                  )}
-                  {activeTab === 'shared' && (
-                    <p>
-                      {t(
-                        'scorebook:noSharedCollections',
-                        'No collections shared with you'
-                      )}
-                    </p>
                   )}
                   {activeTab === 'featured' && (
                     <p>
@@ -323,12 +289,6 @@ export default function CollectionsManager({
                           {t('scorebook:featured', 'Featured')}
                         </Tag>
                       )}
-                      {collection.sharedWith &&
-                        collection.sharedWith.length > 0 && (
-                          <Tag size="sm" variant="warning">
-                            {t('scorebook:shared', 'Shared')}
-                          </Tag>
-                        )}
                     </div>
                   </div>
                 ))

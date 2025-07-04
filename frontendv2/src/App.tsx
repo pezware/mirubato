@@ -21,11 +21,6 @@ const AuthVerifyPage = lazy(() => import('./pages/AuthVerify'))
 const ScorebookPage = lazy(() => import('./pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
 const CollectionView = lazy(() => import('./pages/CollectionView'))
-const ScoreImport = lazy(() =>
-  import('./components/scorebook/ScoreImport').then(module => ({
-    default: module.ScoreImport,
-  }))
-)
 const Toolbox = lazy(() => import('./pages/Toolbox'))
 
 // Components
@@ -84,14 +79,6 @@ function App() {
                 element={
                   <Suspense fallback={<PageLoader />}>
                     <ScoreBrowser />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="import"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <ScoreImport />
                   </Suspense>
                 }
               />
