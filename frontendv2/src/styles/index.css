@@ -97,4 +97,50 @@
       transform: translateY(0);
     }
   }
+
+  /* Time and Date Input Styling */
+  input[type='time'],
+  input[type='date'] {
+    color-scheme: light;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='date']::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60 hover:opacity-100;
+    filter: invert(0.3);
+  }
+
+  input[type='time']::-webkit-datetime-edit,
+  input[type='date']::-webkit-datetime-edit {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-fields-wrapper,
+  input[type='date']::-webkit-datetime-edit-fields-wrapper {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-hour-field,
+  input[type='time']::-webkit-datetime-edit-minute-field,
+  input[type='time']::-webkit-datetime-edit-ampm-field,
+  input[type='date']::-webkit-datetime-edit-day-field,
+  input[type='date']::-webkit-datetime-edit-month-field,
+  input[type='date']::-webkit-datetime-edit-year-field {
+    @apply text-morandi-stone-700 focus:bg-morandi-sage-100 focus:outline-none rounded;
+  }
+
+  /* Firefox */
+  input[type='time']::-moz-focus-inner,
+  input[type='date']::-moz-focus-inner {
+    @apply border-0;
+  }
+
+  /* Ensure mobile time picker doesn't overflow */
+  @media (max-width: 640px) {
+    input[type='time'] {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
 }

@@ -172,7 +172,7 @@ export default function ManualEntryForm({
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.practiceDate', 'Practice Date')}
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="date"
                   value={practiceDate}
@@ -187,14 +187,14 @@ export default function ManualEntryForm({
                       String(today.getDate()).padStart(2, '0')
                     )
                   })()} // Don't allow future dates
-                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   required
                 />
                 <input
                   type="time"
                   value={practiceTime}
                   onChange={e => setPracticeTime(e.target.value)}
-                  className="px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                  className="w-full sm:w-auto px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-datetime-edit-hour-field]:text-morandi-stone-700 [&::-webkit-datetime-edit-minute-field]:text-morandi-stone-700 [&::-webkit-datetime-edit-ampm-field]:text-morandi-stone-700"
                   required
                 />
               </div>
