@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAutocomplete } from '../hooks/useAutocomplete'
 import { usePracticeAnalytics } from '../hooks/usePracticeAnalytics'
+import { LogbookEntry } from '../api/logbook'
 import { ReportsTabs, ReportView } from './practice-reports/ReportsTabs'
 import {
   ReportsFilters,
   TimePeriod,
   SortBy,
 } from './practice-reports/ReportsFilters'
-import { PracticeOverview } from './practice-reports/PracticeOverview'
+// import { PracticeOverview } from './practice-reports/PracticeOverview'
 import { PiecesStatistics } from './practice-reports/PiecesStatistics'
 import { SummaryStats } from './practice-reports/SummaryStats'
 import { PieceComposerStats } from './practice-reports/PieceComposerStats'
@@ -264,16 +265,8 @@ export default function EnhancedPracticeReports() {
           <div className="p-4 md:p-6">
             {reportView === 'overview' ? (
               <>
-                <PracticeOverview
-                  analytics={analytics}
-                  timePeriod={timePeriod}
-                  entries={entries}
-                  filteredAndSortedEntries={filteredAndSortedEntries}
-                  formatDuration={formatDuration}
-                />
-
                 {/* Recent Entries List */}
-                <div className="mt-6">
+                <div>
                   <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
                     {t('reports:recentEntries')}
                   </h3>
@@ -286,13 +279,32 @@ export default function EnhancedPracticeReports() {
                 </div>
               </>
             ) : reportView === 'pieces' ? (
-              <PiecesStatistics
-                analytics={analytics}
-                selectedPiece={selectedPiece}
-                selectedComposer={selectedComposer}
-                setSelectedPiece={setSelectedPiece}
-                formatDuration={formatDuration}
-              />
+              <>
+                {/* Show filtered entries if piece/composer is selected */}
+                {(selectedPiece || selectedComposer) ? (
+                  <div>
+                    <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
+                      {selectedPiece
+                        ? t('reports:entriesForPiece', { piece: selectedPiece })
+                        : t('reports:entriesForComposer', { composer: selectedComposer })}
+                    </h3>
+                    <EntryList
+                      entries={filteredAndSortedEntries}
+                      formatDuration={formatDuration}
+                      onDelete={handleDeleteEntry}
+                      onEdit={handleEditEntry}
+                    />
+                  </div>
+                ) : (
+                  <PiecesStatistics
+                    analytics={analytics}
+                    selectedPiece={selectedPiece}
+                    selectedComposer={selectedComposer}
+                    setSelectedPiece={setSelectedPiece}
+                    formatDuration={formatDuration}
+                  />
+                )}
+              </>
             ) : null}
           </div>
         )}
@@ -307,8 +319,13 @@ export default function EnhancedPracticeReports() {
             )}
             <Suspense fallback={<LoadingSkeleton className="h-96" />}>
               <ManualEntryForm
-                onEntrySaved={handleEntrySaved}
-                editingEntryId={editingEntryId}
+                onClose={() => setReportView('overview')}
+                onSave={handleEntrySaved}
+                entry={
+                  editingEntryId
+                    ? entries.find(e => e.id === editingEntryId)
+                    : undefined
+                }
               />
             </Suspense>
           </div>
@@ -325,7 +342,7 @@ function EntryList({
   onDelete,
   onEdit,
 }: {
-  entries: any[]
+  entries: LogbookEntry[]
   formatDuration: (minutes: number) => string
   onDelete: (id: string) => void
   onEdit: (id: string) => void
@@ -349,13 +366,29 @@ function EntryList({
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="font-medium text-morandi-stone-900">
-                {entry.pieces.map((p: any) => p.title).join(', ')}
-              </p>
+              <div className="mb-1">
+                {entry.pieces.map((p, index) => (
+                  <p key={index} className="font-medium text-morandi-stone-900">
+                    {p.composer ? `${p.composer} - ` : ''}
+                    {p.title}
+                    {p.measures && (
+                      <span className="text-sm text-morandi-stone-600">
+                        {' '}
+                        (mm. {p.measures})
+                      </span>
+                    )}
+                  </p>
+                ))}
+              </div>
               <p className="text-sm text-morandi-stone-600">
-                {new Date(entry.timestamp).toLocaleDateString()} •{' '}
-                {formatDuration(entry.duration)}
+                {new Date(entry.timestamp).toLocaleString()} •{' '}
+                {formatDuration(entry.duration)} • {entry.instrument}
               </p>
+              {entry.notes && (
+                <p className="text-sm text-morandi-stone-500 mt-1 italic">
+                  {entry.notes}
+                </p>
+              )}
               {entry.techniques.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {entry.techniques.map((technique: string) => (

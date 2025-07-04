@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Card } from '../ui/Card'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
-import { LogbookEntry } from '../../types/practice'
+import { LogbookEntry } from '../../api/logbook'
 
 interface SummaryStatsProps {
   analytics: AnalyticsData

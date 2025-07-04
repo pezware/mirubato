@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
 import { Card } from '../ui/Card'
-import Button from '../ui/Button'
 import { ChevronRight } from 'lucide-react'
 
 interface PiecesStatisticsProps {
@@ -91,7 +90,7 @@ export function PiecesStatistics({
     <div className="space-y-4">
       {/* Selected Piece/Composer Summary */}
       {(selectedPiece || selectedComposer) && (
-        <Card className="bg-morandi-sage-50 p-4">
+        <Card className="bg-white border border-morandi-stone-200 p-4">
           {selectedPiece && (
             <>
               <h3 className="font-medium text-morandi-stone-900 mb-2">
@@ -176,8 +175,6 @@ export function PiecesStatistics({
 
         <div className="space-y-2">
           {pieceStats.map(piece => {
-            const [composer, title] = piece.key.split(' - ')
-
             return (
               <Card
                 key={piece.key}
@@ -225,9 +222,15 @@ function PieceStatsDisplay({
   formatDuration,
   t,
 }: {
-  stats: any
+  stats: {
+    key: string
+    count: number
+    totalDuration: number
+    lastPracticed: string
+    techniques: Set<string>
+  }
   formatDuration: (minutes: number) => string
-  t: any
+  t: (key: string) => string
 }) {
   return (
     <div className="grid grid-cols-2 gap-4">

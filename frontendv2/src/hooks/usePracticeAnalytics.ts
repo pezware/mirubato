@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { LogbookEntry } from '../types/practice'
+import { LogbookEntry } from '../api/logbook'
 import { reportsCache } from '../utils/reportsCacheManager'
 
 export interface AnalyticsData {

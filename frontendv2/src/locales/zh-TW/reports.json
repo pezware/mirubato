@@ -83,5 +83,15 @@
   "searchPieces": "搜尋曲目...",
   "searchComposers": "搜尋作曲家...",
   "composers": "作曲家",
-  "techniquesPracticed": "練習的技巧"
+  "techniquesPracticed": "練習的技巧",
+  "sortBy": "排序方式",
+  "recentEntries": "最近記錄",
+  "entryCreated": "記錄創建成功",
+  "weekOverview": "週概覽",
+  "todaysPractice": "今日練習",
+  "piecesByComposer": "{{composer}}的作品",
+  "pieceDetails": "作品詳情",
+  "topPieces": "熱門曲目",
+  "mostPracticedTechniques": "最常練習的技巧",
+  "avgPerSession": "每次平均"
 }

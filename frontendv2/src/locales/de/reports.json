@@ -83,5 +83,16 @@
   "searchPieces": "Stücke suchen...",
   "searchComposers": "Komponisten suchen...",
   "composers": "Komponisten",
-  "techniquesPracticed": "Geübte Techniken"
+  "techniquesPracticed": "Geübte Techniken",
+  "dayStreak": "Tage-Serie",
+  "sortBy": "Sortieren nach",
+  "recentEntries": "Letzte Einträge",
+  "entryCreated": "Eintrag erfolgreich erstellt",
+  "weekOverview": "Wochenübersicht",
+  "todaysPractice": "Heutiges Üben",
+  "piecesByComposer": "Stücke von {{composer}}",
+  "pieceDetails": "Stückdetails",
+  "topPieces": "Top Stücke",
+  "mostPracticedTechniques": "Meistgeübte Techniken",
+  "avgPerSession": "Durchschnitt pro Sitzung"
 }

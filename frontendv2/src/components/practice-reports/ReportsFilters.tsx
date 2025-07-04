@@ -2,8 +2,15 @@ import { useTranslation } from 'react-i18next'
 import Autocomplete from '../ui/Autocomplete'
 import Button from '../ui/Button'
 import { X } from 'lucide-react'
-import { AutocompleteHook } from '../../hooks/useAutocomplete'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
+
+// Type for autocomplete hook return
+interface AutocompleteHook {
+  query: string
+  setQuery: (query: string) => void
+  suggestions: Array<{ value: string; label: string; metadata?: any }>
+  isLoading: boolean
+}
 
 export type TimePeriod = 'all' | 'month' | 'week'
 export type SortBy = 'mostRecent' | 'mostPracticed' | 'longestSessions'
@@ -200,13 +207,13 @@ export function ReportsFilters({
                 className="w-full px-3 py-2 text-sm border border-morandi-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-morandi-sage-500"
               >
                 <option value="mostRecent">
-                  {t('reports:sortOptions.mostRecent')}
+                  {t('reports:sort.mostRecent')}
                 </option>
                 <option value="mostPracticed">
-                  {t('reports:sortOptions.mostPracticed')}
+                  {t('reports:sort.mostPracticed')}
                 </option>
                 <option value="longestSessions">
-                  {t('reports:sortOptions.longestSessions')}
+                  {t('reports:sort.longestSessions')}
                 </option>
               </select>
             </div>
