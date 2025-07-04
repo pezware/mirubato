@@ -97,4 +97,65 @@
       transform: translateY(0);
     }
   }
+
+  /* Time and Date Input Styling */
+  input[type='time'],
+  input[type='date'] {
+    color-scheme: light;
+    accent-color: #94a37b; /* Morandi sage color for browser elements */
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='date']::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60 hover:opacity-100;
+    filter: invert(0.4) sepia(1) saturate(0.7) hue-rotate(60deg) brightness(0.9);
+  }
+
+  input[type='time']::-webkit-datetime-edit,
+  input[type='date']::-webkit-datetime-edit {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-fields-wrapper,
+  input[type='date']::-webkit-datetime-edit-fields-wrapper {
+    @apply text-morandi-stone-700;
+  }
+
+  input[type='time']::-webkit-datetime-edit-hour-field,
+  input[type='time']::-webkit-datetime-edit-minute-field,
+  input[type='time']::-webkit-datetime-edit-ampm-field,
+  input[type='date']::-webkit-datetime-edit-day-field,
+  input[type='date']::-webkit-datetime-edit-month-field,
+  input[type='date']::-webkit-datetime-edit-year-field {
+    @apply text-morandi-stone-700 focus:bg-morandi-sage-100 focus:outline-none rounded px-1;
+  }
+
+  /* Time picker specific styling for WebKit */
+  input[type='time']::-webkit-datetime-edit-hour-field:focus,
+  input[type='time']::-webkit-datetime-edit-minute-field:focus,
+  input[type='time']::-webkit-datetime-edit-ampm-field:focus {
+    background-color: #94a37b !important; /* Morandi sage */
+    color: white !important;
+  }
+
+  /* Try to override the time picker popup colors */
+  input[type='time']::-webkit-time-picker-indicator {
+    @apply cursor-pointer;
+    filter: invert(0.4) sepia(1) saturate(0.7) hue-rotate(60deg) brightness(0.9);
+  }
+
+  /* Firefox */
+  input[type='time']::-moz-focus-inner,
+  input[type='date']::-moz-focus-inner {
+    @apply border-0;
+  }
+
+  /* Ensure mobile time picker doesn't overflow */
+  @media (max-width: 640px) {
+    input[type='time'] {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
 }

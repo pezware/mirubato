@@ -83,5 +83,17 @@
   "searchPieces": "搜索曲目...",
   "searchComposers": "搜索作曲家...",
   "composers": "作曲家",
-  "techniquesPracticed": "练习的技巧"
+  "techniquesPracticed": "练习的技巧",
+  "sortBy": "排序方式",
+  "recentEntries": "最近记录",
+  "entryCreated": "记录创建成功",
+  "weekOverview": "周概览",
+  "todaysPractice": "今日练习",
+  "piecesByComposer": "{{composer}}的作品",
+  "pieceDetails": "作品详情",
+  "topPieces": "热门曲目",
+  "mostPracticedTechniques": "最常练习的技巧",
+  "avgPerSession": "每次平均",
+  "entriesForPiece": "{{piece}}的练习记录",
+  "entriesForComposer": "{{composer}}的练习记录"
 }

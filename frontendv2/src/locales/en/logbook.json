@@ -34,7 +34,9 @@
     "techniques": "Techniques",
     "practiceDate": "Practice Date",
     "successAdded": "Practice entry successfully added!",
-    "successUpdated": "Practice entry successfully updated!"
+    "successUpdated": "Practice entry successfully updated!",
+    "piecesNote": "Practice time will be divided equally among pieces",
+    "maxPiecesReached": "Maximum 3 pieces per entry"
   },
   "filters": {
     "last7Days": "Last 7 days",

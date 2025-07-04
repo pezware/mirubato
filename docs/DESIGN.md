@@ -4,15 +4,18 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.1.0 (June 2025)
+## Current Architecture - Version 1.4.0 (July 2025)
 
-### Version 1.1.0 Highlights
+### Version 1.4.0 Highlights
 
-- **D1 Database Stability**: Complete null value handling for all database operations
-- **Enhanced UI**: Full Tailwind color palette support for calendar visualization
-- **Improved Sync**: Robust error handling for online/offline transitions
-- **Test Coverage**: 290+ tests ensuring reliability across all services
-- **Production Ready**: All MVP features implemented and tested
+- **Component Architecture**: Modular component system with comprehensive refactoring
+- **UI Component Library**: Complete custom component library with Morandi design system
+- **Enhanced Practice Logging**: Time picker, multi-piece support, and intelligent time division
+- **Advanced Reporting**: Refactored reporting system with improved analytics
+- **Export Capabilities**: Robust CSV/JSON export functionality
+- **Mobile Optimization**: Responsive design improvements and touch interactions
+- **Test Coverage**: 270+ unit tests plus comprehensive E2E test coverage
+- **Code Quality**: Eliminated technical debt and improved maintainability
 
 ### Infrastructure
 
@@ -250,8 +253,13 @@ The frontend uses a straightforward React architecture without the complex modul
 **Core Components**
 
 - **LogbookEntryList**: Main entry management component
-- **EnhancedPracticeReports**: Advanced reporting with charts
-- **ManualEntryForm**: Practice entry creation
+- **EnhancedPracticeReports**: Advanced reporting with charts (refactored into modular components)
+  - **ReportsTabs**: Tab navigation for different report views
+  - **ReportsFilters**: Comprehensive filtering and calendar visualization
+  - **SummaryStats**: Practice statistics dashboard
+  - **PiecesStatistics**: Piece-specific analytics
+  - **PieceComposerStats**: Detailed composer and piece metrics
+- **ManualEntryForm**: Practice entry creation with time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 
 **Layout Components**
@@ -272,9 +280,9 @@ The frontend uses a straightforward React architecture without the complex modul
 - **GoogleSignInButton**: Google OAuth button component
 - **ProtectedRoute**: Route guard for authenticated pages
 
-**UI Component Library (v1.3.0 - July 2025)**
+**UI Component Library (v1.4.0 - July 2025)**
 
-A comprehensive set of reusable components following consistent design patterns:
+A comprehensive set of reusable components following consistent design patterns with Morandi color scheme:
 
 - **Button**: Enhanced component with variants (primary, secondary, ghost, danger, icon)
 - **Modal**: Accessible modal using @headlessui/react
@@ -282,10 +290,11 @@ A comprehensive set of reusable components following consistent design patterns:
 - **Loading**: Multiple loading states (spinner, dots, pulse, skeleton)
 - **Input/Textarea**: Form components with consistent styling
 - **Select/MultiSelect**: Accessible dropdowns
+- **TimePicker**: Custom time picker with Morandi colors (desktop) and native fallback (mobile)
 - **Toast**: Notification system with auto-dismiss
 - **Design System**: Constants for spacing, typography, shadows, animations
 
-All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation.
+All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation. The component library has been extensively refactored to eliminate native HTML usage in favor of consistent, branded components.
 
 #### Data Flow
 
@@ -463,18 +472,31 @@ The frontend implements aggressive code splitting:
 
 ## Architecture Phases
 
-### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.1.0)
+### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.4.0)
 
 - ✅ Core functionality: Practice logging and reporting
-- ✅ Manual practice entry with timer
+- ✅ Manual practice entry with timer and precise time selection
 - ✅ Enhanced reporting with calendar visualization
-- ✅ Data export (CSV, JSON)
+- ✅ Data export (CSV, JSON) with proper filename patterns
 - ✅ Works for both anonymous and authenticated users
 - ✅ Goal setting and tracking
 - ✅ Multi-instrument support (Piano & Guitar)
+- ✅ Multi-piece practice sessions with intelligent time division
 - ✅ Internationalization (6 languages)
 - ✅ Autocomplete for composers and pieces
+- ✅ Comprehensive UI component library with Morandi design system
+- ✅ Mobile-optimized responsive design
 - ✅ Production deployment at mirubato.com
+
+**Recent Enhancements (July 2025):**
+
+- **Component Refactoring**: Split large components into maintainable modules
+- **Time Management**: Added custom time picker with brand-consistent styling
+- **Multi-Piece Support**: Practice time intelligently divided among multiple pieces
+- **Export Functionality**: Robust CSV/JSON export with comprehensive data
+- **UI Polish**: Complete migration to custom component library
+- **Mobile UX**: Improved responsive design and touch interactions
+- **E2E Testing**: Comprehensive test coverage for all new features
 
 ### Phase 2: Practice Mode (Future)
 

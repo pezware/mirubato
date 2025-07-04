@@ -83,5 +83,17 @@
   "searchPieces": "Buscar piezas...",
   "searchComposers": "Buscar compositores...",
   "composers": "compositores",
-  "techniquesPracticed": "Técnicas practicadas"
+  "techniquesPracticed": "Técnicas practicadas",
+  "sortBy": "Ordenar por",
+  "recentEntries": "Entradas recientes",
+  "entryCreated": "Entrada creada con éxito",
+  "weekOverview": "Resumen semanal",
+  "todaysPractice": "Práctica de hoy",
+  "piecesByComposer": "Piezas de {{composer}}",
+  "pieceDetails": "Detalles de la pieza",
+  "topPieces": "Piezas principales",
+  "mostPracticedTechniques": "Técnicas más practicadas",
+  "avgPerSession": "Promedio por sesión",
+  "entriesForPiece": "Entradas de práctica para {{piece}}",
+  "entriesForComposer": "Entradas de práctica para {{composer}}"
 }

@@ -32,7 +32,11 @@
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
     "foundEntries": "Se encontraron {{count}} entradas",
     "techniques": "Técnicas",
-    "practiceDate": "Fecha de práctica"
+    "practiceDate": "Fecha de práctica",
+    "successAdded": "¡Entrada de práctica agregada exitosamente!",
+    "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
+    "piecesNote": "El tiempo de práctica se dividirá equitativamente entre las piezas",
+    "maxPiecesReached": "Máximo 3 piezas por entrada"
   },
   "filters": {
     "last7Days": "Últimos 7 días",

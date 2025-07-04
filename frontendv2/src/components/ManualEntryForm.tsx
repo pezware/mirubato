@@ -4,6 +4,7 @@ import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
+import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 
 interface ManualEntryFormProps {
@@ -63,23 +64,35 @@ export default function ManualEntryForm({
     )
   })
 
+  // Time state - default to current time or existing entry time
+  const [practiceTime, setPracticeTime] = useState(() => {
+    if (entry?.timestamp) {
+      // Convert existing timestamp to HH:MM format in local timezone
+      const date = new Date(entry.timestamp)
+      return (
+        String(date.getHours()).padStart(2, '0') +
+        ':' +
+        String(date.getMinutes()).padStart(2, '0')
+      )
+    }
+    // Default to current time in local timezone
+    const now = new Date()
+    return (
+      String(now.getHours()).padStart(2, '0') +
+      ':' +
+      String(now.getMinutes()).padStart(2, '0')
+    )
+  })
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      // Create a date object from the selected date and current time in local timezone
+      // Create a date object from the selected date and time in local timezone
       const [year, month, day] = practiceDate.split('-').map(Number)
-      const now = new Date()
-      const selectedDate = new Date(
-        year,
-        month - 1,
-        day,
-        now.getHours(),
-        now.getMinutes(),
-        now.getSeconds(),
-        now.getMilliseconds()
-      )
+      const [hours, minutes] = practiceTime.split(':').map(Number)
+      const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
 
       const entryData = {
         timestamp: selectedDate.toISOString(),
@@ -119,7 +132,9 @@ export default function ManualEntryForm({
   }
 
   const addPiece = () => {
-    setPieces([...pieces, { title: '', composer: '' }])
+    if (pieces.length < 3) {
+      setPieces([...pieces, { title: '', composer: '' }])
+    }
   }
 
   const updatePiece = (
@@ -158,23 +173,31 @@ export default function ManualEntryForm({
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.practiceDate', 'Practice Date')}
               </label>
-              <input
-                type="date"
-                value={practiceDate}
-                onChange={e => setPracticeDate(e.target.value)}
-                max={(() => {
-                  const today = new Date()
-                  return (
-                    today.getFullYear() +
-                    '-' +
-                    String(today.getMonth() + 1).padStart(2, '0') +
-                    '-' +
-                    String(today.getDate()).padStart(2, '0')
-                  )
-                })()} // Don't allow future dates
-                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-                required
-              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="date"
+                  value={practiceDate}
+                  onChange={e => setPracticeDate(e.target.value)}
+                  max={(() => {
+                    const today = new Date()
+                    return (
+                      today.getFullYear() +
+                      '-' +
+                      String(today.getMonth() + 1).padStart(2, '0') +
+                      '-' +
+                      String(today.getDate()).padStart(2, '0')
+                    )
+                  })()} // Don't allow future dates
+                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  required
+                />
+                <TimePicker
+                  value={practiceTime}
+                  onChange={setPracticeTime}
+                  className="w-full sm:w-auto"
+                  required
+                />
+              </div>
             </div>
 
             <div className="flex-1">
@@ -214,21 +237,26 @@ export default function ManualEntryForm({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-              {t('logbook:entry.type')}
-            </label>
-            <SplitButton<LogbookEntry['type']>
-              options={[
-                { value: 'PRACTICE', label: t('common:music.practice') },
-                { value: 'LESSON', label: t('common:music.lesson') },
-                { value: 'PERFORMANCE', label: t('common:music.performance') },
-                { value: 'REHEARSAL', label: t('common:music.rehearsal') },
-              ]}
-              value={type}
-              onChange={value => value && setType(value)}
-              orientation="horizontal"
-            />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { value: 'PRACTICE', label: t('common:music.practice') },
+              { value: 'LESSON', label: t('common:music.lesson') },
+              { value: 'PERFORMANCE', label: t('common:music.performance') },
+              { value: 'REHEARSAL', label: t('common:music.rehearsal') },
+            ].map(option => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setType(option.value as LogbookEntry['type'])}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  type === option.value
+                    ? 'bg-morandi-sage-500 text-white'
+                    : 'bg-white border border-morandi-stone-300 text-morandi-stone-600 hover:bg-morandi-stone-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -236,6 +264,14 @@ export default function ManualEntryForm({
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             {t('logbook:entry.pieces')}
+            {pieces.length > 1 && (
+              <span className="text-xs text-morandi-stone-500 ml-2">
+                {t(
+                  'logbook:entry.piecesNote',
+                  'Practice time will be divided equally among pieces'
+                )}
+              </span>
+            )}
           </label>
           {pieces.map((piece, index) => (
             <PieceInput
@@ -246,15 +282,26 @@ export default function ManualEntryForm({
               onRemove={removePiece}
             />
           ))}
-          <Button
-            type="button"
-            onClick={addPiece}
-            variant="ghost"
-            size="sm"
-            leftIcon={<span>+</span>}
-          >
-            {t('logbook:entry.addPiece')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={addPiece}
+              variant="ghost"
+              size="sm"
+              leftIcon={<span>+</span>}
+              disabled={pieces.length >= 3}
+            >
+              {t('logbook:entry.addPiece')}
+            </Button>
+            {pieces.length >= 3 && (
+              <span className="text-xs text-morandi-stone-500">
+                {t(
+                  'logbook:entry.maxPiecesReached',
+                  'Maximum 3 pieces per entry'
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Notes */}
