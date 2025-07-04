@@ -6,7 +6,6 @@ import {
   Navigate,
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
-import { migrateLegacyData } from './utils/migrateLegacyData'
 import { fixLocalStorageData } from './utils/fixLocalStorageData'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 
@@ -45,9 +44,6 @@ function App() {
   useEffect(() => {
     // Fix any corrupted localStorage data first
     fixLocalStorageData()
-
-    // Migrate any legacy data on first load
-    migrateLegacyData()
 
     // Check if user is authenticated on app load
     refreshAuth()
