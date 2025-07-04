@@ -69,6 +69,13 @@ export function ReportsFilters({
   // State for managing the current viewing period
   const [currentViewDate, setCurrentViewDate] = useState(new Date())
 
+  // Reset currentViewDate when time period changes
+  useEffect(() => {
+    setCurrentViewDate(new Date())
+    // Also clear the selected date when switching time periods
+    setSelectedDate(null)
+  }, [timePeriod, setSelectedDate])
+
   // Update view date when custom range changes
   useEffect(() => {
     if (customDateRange) {

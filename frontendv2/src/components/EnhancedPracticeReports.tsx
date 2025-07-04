@@ -49,10 +49,11 @@ export default function EnhancedPracticeReports() {
     { start: Date; end: Date } | undefined
   >()
 
-  // Clear custom date range when time period changes
+  // Clear custom date range and selected date when time period changes
   const handleTimePeriodChange = (period: TimePeriod) => {
     setTimePeriod(period)
     setCustomDateRange(undefined)
+    setSelectedDate(null)
   }
 
   // Autocomplete hooks

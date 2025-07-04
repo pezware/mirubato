@@ -40,11 +40,15 @@ vi.mock('../../../components/practice-reports/SummaryStats', () => ({
 }))
 
 vi.mock('../../../components/practice-reports/PiecesStatistics', () => ({
-  PiecesStatistics: () => <div data-testid="pieces-statistics">Pieces Statistics</div>,
+  PiecesStatistics: () => (
+    <div data-testid="pieces-statistics">Pieces Statistics</div>
+  ),
 }))
 
 vi.mock('../../../components/practice-reports/PieceComposerStats', () => ({
-  PieceComposerStats: () => <div data-testid="piece-composer-stats">Piece Composer Stats</div>,
+  PieceComposerStats: () => (
+    <div data-testid="piece-composer-stats">Piece Composer Stats</div>
+  ),
 }))
 
 // Mock the chart.js components
