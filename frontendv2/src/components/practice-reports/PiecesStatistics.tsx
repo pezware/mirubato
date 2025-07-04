@@ -164,55 +164,34 @@ export function PiecesStatistics({
       )}
 
       {/* Pieces List */}
-      <div>
-        <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
-          {selectedComposer
-            ? t('reports:piecesByComposer', { composer: selectedComposer })
-            : selectedPiece
-              ? t('reports:pieceDetails')
-              : t('reports:topPieces')}
-        </h3>
-
-        <div className="space-y-2">
-          {pieceStats.map(piece => {
-            return (
-              <Card
-                key={piece.key}
-                className="p-3 hover:bg-morandi-stone-50 transition-colors cursor-pointer"
-                onClick={() => setSelectedPiece(piece.key)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-morandi-stone-900">
-                      {piece.key}
-                    </h4>
-                    <div className="flex items-center gap-4 mt-1">
-                      <span className="text-xs text-morandi-stone-500">
-                        {formatDuration(piece.totalDuration)} total
-                      </span>
-                      <span className="text-xs text-morandi-stone-500">
-                        {piece.count}{' '}
-                        {piece.count === 1 ? 'session' : 'sessions'}
-                      </span>
-                    </div>
+      <div className="space-y-2">
+        {pieceStats.map(piece => {
+          return (
+            <div
+              key={piece.key}
+              className="p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer"
+              onClick={() => setSelectedPiece(piece.key)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium text-morandi-stone-900">
+                    {piece.key}
+                  </h4>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-xs text-morandi-stone-500">
+                      {formatDuration(piece.totalDuration)} total
+                    </span>
+                    <span className="text-xs text-morandi-stone-500">
+                      {piece.count} {piece.count === 1 ? 'session' : 'sessions'}
+                    </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-morandi-stone-400" />
                 </div>
-              </Card>
-            )
-          })}
-        </div>
+                <ChevronRight className="w-4 h-4 text-morandi-stone-400" />
+              </div>
+            </div>
+          )
+        })}
       </div>
-
-      {/* Most Practiced Techniques */}
-      {!selectedPiece && !selectedComposer && (
-        <Card className="p-4">
-          <h3 className="text-sm font-medium text-morandi-stone-700 mb-3">
-            {t('reports:mostPracticedTechniques')}
-          </h3>
-          <TechniquesChart analytics={analytics} />
-        </Card>
-      )}
     </div>
   )
 }
@@ -283,59 +262,6 @@ function PieceStatsDisplay({
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function TechniquesChart({ analytics }: { analytics: AnalyticsData }) {
-  // Count technique frequency across all pieces
-  const techniqueCount = new Map<string, number>()
-
-  analytics.pieceStats.forEach(stats => {
-    stats.techniques.forEach(technique => {
-      techniqueCount.set(technique, (techniqueCount.get(technique) || 0) + 1)
-    })
-  })
-
-  // Get top 6 techniques
-  const topTechniques = Array.from(techniqueCount.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-
-  if (topTechniques.length === 0) {
-    return (
-      <p className="text-sm text-morandi-stone-500 italic">
-        No techniques recorded yet
-      </p>
-    )
-  }
-
-  const maxCount = Math.max(...topTechniques.map(([, count]) => count))
-
-  return (
-    <div className="space-y-2">
-      {topTechniques.map(([technique, count]) => {
-        const percentage = (count / maxCount) * 100
-
-        return (
-          <div key={technique} className="flex items-center gap-3">
-            <div className="w-24 text-xs text-morandi-stone-600 truncate">
-              {technique}
-            </div>
-            <div className="flex-1 relative">
-              <div className="h-4 bg-morandi-stone-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-morandi-peach-400 to-morandi-rose-400 rounded-full transition-all duration-500"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-            </div>
-            <div className="w-8 text-xs text-morandi-stone-600 text-right">
-              {count}
-            </div>
-          </div>
-        )
-      })}
     </div>
   )
 }

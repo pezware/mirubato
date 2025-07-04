@@ -15,7 +15,8 @@ import { PiecesStatistics } from './practice-reports/PiecesStatistics'
 import { SummaryStats } from './practice-reports/SummaryStats'
 import { PieceComposerStats } from './practice-reports/PieceComposerStats'
 import { LoadingSkeleton } from './ui/Loading'
-import { Trash2, Edit2 } from 'lucide-react'
+import { Trash2, Edit2, Download } from 'lucide-react'
+import Button from './ui/Button'
 
 // Lazy load the manual entry form
 const ManualEntryForm = lazy(() => import('./ManualEntryForm'))
@@ -205,6 +206,98 @@ export default function EnhancedPracticeReports() {
     }
   }
 
+  // Export functions
+  const exportAsJSON = () => {
+    const dataToExport = {
+      entries: filteredAndSortedEntries.map(entry => ({
+        ...entry,
+        localDate: new Date(entry.timestamp).toLocaleDateString(),
+        localTime: new Date(entry.timestamp).toLocaleTimeString(),
+      })),
+      exportDate: new Date().toISOString(),
+      filters: {
+        timePeriod,
+        sortBy,
+        selectedDate,
+        selectedPiece,
+        selectedComposer,
+      },
+    }
+
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.setAttribute('href', url)
+    a.setAttribute(
+      'download',
+      `mirubato-logbook-${new Date().toISOString().split('T')[0]}.json`
+    )
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportAsCSV = () => {
+    // Create CSV header
+    const headers = [
+      'Date',
+      'Time',
+      'Duration (min)',
+      'Type',
+      'Instrument',
+      'Pieces',
+      'Techniques',
+      'Mood',
+      'Notes',
+    ]
+
+    // Convert entries to CSV rows
+    const rows = filteredAndSortedEntries.map(entry => {
+      const date = new Date(entry.timestamp)
+      return [
+        date.toLocaleDateString(),
+        date.toLocaleTimeString(),
+        entry.duration,
+        entry.type,
+        entry.instrument,
+        entry.pieces
+          .map(p => `${p.title}${p.composer ? ` - ${p.composer}` : ''}`)
+          .join('; '),
+        entry.techniques.join('; '),
+        entry.mood || '',
+        entry.notes || '',
+      ]
+    })
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row =>
+        row
+          .map(cell =>
+            // Escape cells containing commas or quotes
+            typeof cell === 'string' &&
+            (cell.includes(',') || cell.includes('"'))
+              ? `"${cell.replace(/"/g, '""')}"`
+              : cell
+          )
+          .join(',')
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.setAttribute('href', url)
+    a.setAttribute(
+      'download',
+      `mirubato-logbook-${new Date().toISOString().split('T')[0]}.csv`
+    )
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="mb-6">
       <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
@@ -264,38 +357,59 @@ export default function EnhancedPracticeReports() {
           <div className="p-4 md:p-6">
             {reportView === 'overview' ? (
               <>
-                {/* Sort buttons */}
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setSortBy('mostRecent')}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      sortBy === 'mostRecent'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
-                  >
-                    {t('reports:sort.mostRecent')}
-                  </button>
-                  <button
-                    onClick={() => setSortBy('mostPracticed')}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      sortBy === 'mostPracticed'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
-                  >
-                    {t('reports:sort.mostPracticed')}
-                  </button>
-                  <button
-                    onClick={() => setSortBy('longestSessions')}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      sortBy === 'longestSessions'
-                        ? 'bg-morandi-sage-500 text-white'
-                        : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                    }`}
-                  >
-                    {t('reports:sort.longestSessions')}
-                  </button>
+                {/* Sort buttons and Export buttons */}
+                <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSortBy('mostRecent')}
+                      className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                        sortBy === 'mostRecent'
+                          ? 'bg-morandi-sage-500 text-white'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                      }`}
+                    >
+                      {t('reports:sort.mostRecent')}
+                    </button>
+                    <button
+                      onClick={() => setSortBy('mostPracticed')}
+                      className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                        sortBy === 'mostPracticed'
+                          ? 'bg-morandi-sage-500 text-white'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                      }`}
+                    >
+                      {t('reports:sort.mostPracticed')}
+                    </button>
+                    <button
+                      onClick={() => setSortBy('longestSessions')}
+                      className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                        sortBy === 'longestSessions'
+                          ? 'bg-morandi-sage-500 text-white'
+                          : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
+                      }`}
+                    >
+                      {t('reports:sort.longestSessions')}
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={exportAsJSON}
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<Download className="w-3 h-3" />}
+                    >
+                      {t('reports:export.exportJSON')}
+                    </Button>
+                    <Button
+                      onClick={exportAsCSV}
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<Download className="w-3 h-3" />}
+                    >
+                      {t('reports:export.exportCSV')}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Recent Entries List */}
@@ -310,7 +424,7 @@ export default function EnhancedPracticeReports() {
             ) : reportView === 'pieces' ? (
               <>
                 {/* Show filtered entries if piece/composer is selected */}
-                {(selectedPiece || selectedComposer) ? (
+                {selectedPiece || selectedComposer ? (
                   <EntryList
                     entries={filteredAndSortedEntries}
                     onDelete={handleDeleteEntry}
@@ -393,16 +507,20 @@ function EntryList({
                   {new Date(entry.timestamp).toLocaleDateString()}
                 </span>
                 <span className="text-sm text-morandi-stone-500">
-                  {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(entry.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </span>
                 <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
                   {entry.type}
                 </span>
                 <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                  {entry.instrument === 'PIANO' ? '🎹' : '🎸'} {entry.instrument}
+                  {entry.instrument === 'PIANO' ? '🎹' : '🎸'}{' '}
+                  {entry.instrument}
                 </span>
               </div>
-              
+
               {/* Duration and mood */}
               <div className="flex items-center gap-2 md:gap-4 mb-2">
                 <span className="text-morandi-stone-700 text-sm">
@@ -410,14 +528,19 @@ function EntryList({
                 </span>
                 {entry.mood && (
                   <span className="text-base md:text-lg">
-                    {entry.mood === 'FRUSTRATED' ? '😣' : 
-                     entry.mood === 'NEUTRAL' ? '😐' : 
-                     entry.mood === 'SATISFIED' ? '😊' : 
-                     entry.mood === 'EXCITED' ? '🤩' : ''}
+                    {entry.mood === 'FRUSTRATED'
+                      ? '😣'
+                      : entry.mood === 'NEUTRAL'
+                        ? '😐'
+                        : entry.mood === 'SATISFIED'
+                          ? '😊'
+                          : entry.mood === 'EXCITED'
+                            ? '🤩'
+                            : ''}
                   </span>
                 )}
               </div>
-              
+
               {/* Notes - show on separate line if present */}
               {entry.notes && (
                 <p className="text-sm text-morandi-stone-500 mb-2 line-clamp-2">
@@ -440,12 +563,14 @@ function EntryList({
                         {piece.title}
                         {piece.composer && (
                           <span className="text-morandi-stone-600">
-                            {' '}- {piece.composer}
+                            {' '}
+                            - {piece.composer}
                           </span>
                         )}
                         {piece.measures && (
                           <span className="text-morandi-stone-500">
-                            {' '}(mm. {piece.measures})
+                            {' '}
+                            (mm. {piece.measures})
                           </span>
                         )}
                       </div>
@@ -473,7 +598,7 @@ function EntryList({
                 </div>
               )}
             </div>
-            
+
             {/* Action buttons */}
             <div className="flex gap-1 ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <button

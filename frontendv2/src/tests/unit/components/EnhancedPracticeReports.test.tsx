@@ -412,20 +412,33 @@ describe('EnhancedPracticeReports', () => {
     fireEvent.click(pieceCard.closest('div[class*="cursor-pointer"]')!)
 
     // Should show detailed stats for selected piece
-    expect(screen.getByText('reports:stats.totalPractice')).toBeInTheDocument()
-    expect(screen.getByText('reports:stats.avgSession')).toBeInTheDocument()
+    expect(screen.getByText('reports:totalTime')).toBeInTheDocument()
+    expect(screen.getByText('reports:avgPerSession')).toBeInTheDocument()
   })
 
-  it('should display techniques practiced', () => {
+  it('should show filtered entries when piece is selected', () => {
     render(<EnhancedPracticeReports />)
 
     fireEvent.click(screen.getByText('reports:tabs.pieces'))
 
-    // Should show technique tags
-    expect(screen.getByText('scales')).toBeInTheDocument()
-    expect(screen.getByText('arpeggios')).toBeInTheDocument()
-    // Multiple dynamics tags exist, use getAllByText
-    expect(screen.getAllByText('dynamics').length).toBeGreaterThan(0)
+    // Click on a piece to see filtered entries
+    const pieceCard = screen.getByText('Beethoven - Moonlight Sonata')
+    fireEvent.click(pieceCard.closest('div[class*="cursor-pointer"]')!)
+
+    // Should show the piece summary card with stats
+    const moonlightElements = screen.getAllByText('Moonlight Sonata')
+    expect(moonlightElements.length).toBeGreaterThan(0)
+
+    // Should show Beethoven in multiple places
+    const beethovenElements = screen.getAllByText('Beethoven')
+    expect(beethovenElements.length).toBeGreaterThan(0)
+
+    // Should show the techniques in the piece stats
+    const scalesElements = screen.getAllByText('scales')
+    expect(scalesElements.length).toBeGreaterThan(0)
+
+    const arpeggiosElements = screen.getAllByText('arpeggios')
+    expect(arpeggiosElements.length).toBeGreaterThan(0)
   })
 
   it('should format duration correctly', () => {
