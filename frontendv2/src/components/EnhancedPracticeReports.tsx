@@ -15,7 +15,6 @@ import { PiecesStatistics } from './practice-reports/PiecesStatistics'
 import { SummaryStats } from './practice-reports/SummaryStats'
 import { PieceComposerStats } from './practice-reports/PieceComposerStats'
 import { LoadingSkeleton } from './ui/Loading'
-import Button from './ui/Button'
 import { Trash2, Edit2 } from 'lucide-react'
 
 // Lazy load the manual entry form
@@ -272,7 +271,6 @@ export default function EnhancedPracticeReports() {
                   </h3>
                   <EntryList
                     entries={filteredAndSortedEntries.slice(0, 10)}
-                    formatDuration={formatDuration}
                     onDelete={handleDeleteEntry}
                     onEdit={handleEditEntry}
                   />
@@ -290,7 +288,6 @@ export default function EnhancedPracticeReports() {
                     </h3>
                     <EntryList
                       entries={filteredAndSortedEntries}
-                      formatDuration={formatDuration}
                       onDelete={handleDeleteEntry}
                       onEdit={handleEditEntry}
                     />
@@ -338,16 +335,14 @@ export default function EnhancedPracticeReports() {
 // Entry List Component
 function EntryList({
   entries,
-  formatDuration,
   onDelete,
   onEdit,
 }: {
   entries: LogbookEntry[]
-  formatDuration: (minutes: number) => string
   onDelete: (id: string) => void
   onEdit: (id: string) => void
 }) {
-  const { t } = useTranslation(['logbook'])
+  const { t } = useTranslation(['logbook', 'common'])
 
   if (entries.length === 0) {
     return (
