@@ -27,7 +27,12 @@ export default function CollectionBadges({
       onClick(collection)
     } else {
       // Default behavior: navigate to collection
-      navigate(`/scorebook/browse/${collection.slug}`)
+      // For private/user collections, use ID; for public collections, use slug
+      if (collection.visibility === 'private') {
+        navigate(`/scorebook/collection/user/${collection.id}`)
+      } else {
+        navigate(`/scorebook/collection/${collection.slug}`)
+      }
     }
   }
 
