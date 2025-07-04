@@ -9,17 +9,7 @@ import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
 import CollectionsManager from './CollectionsManager'
 import Button from '../ui/Button'
-import {
-  X,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  Trash2,
-  Edit,
-  Check,
-  RotateCw,
-  Plus,
-} from 'lucide-react'
+import { X, Upload, ChevronRight, Trash2, Edit } from 'lucide-react'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
