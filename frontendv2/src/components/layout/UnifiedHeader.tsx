@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Menu, X, Cloud, HardDrive, Eye } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
+import Button from '../ui/Button'
 
 interface UnifiedHeaderProps {
   currentPage: 'logbook' | 'toolbox' | 'scorebook'
@@ -111,22 +112,21 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                   </span>
                 </div>
                 {isAuthenticated ? (
-                  <button
+                  <Button
                     onClick={async () => {
                       const { logout } = useAuthStore.getState()
                       await logout()
                     }}
-                    className="hidden sm:block text-xs sm:text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-2 sm:px-3 py-1 rounded-md hover:bg-morandi-stone-100 transition-all"
+                    variant="ghost"
+                    size="sm"
+                    className="hidden sm:block"
                   >
                     {t('auth:signOut')}
-                  </button>
+                  </Button>
                 ) : onSignInClick ? (
-                  <button
-                    onClick={onSignInClick}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-morandi-sage-500 text-white text-xs sm:text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
-                  >
+                  <Button onClick={onSignInClick} variant="primary" size="sm">
                     {t('auth:signIn')}
-                  </button>
+                  </Button>
                 ) : (
                   <Link
                     to="/auth"
@@ -136,9 +136,11 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                   </Link>
                 )}
 
-                <button
+                <Button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="sm:hidden p-2 rounded-md hover:bg-morandi-stone-100 transition-colors"
+                  variant="ghost"
+                  size="icon-md"
+                  className="sm:hidden"
                   aria-label={
                     isMobileMenuOpen
                       ? t('common:navigation.closeMenu')
@@ -146,11 +148,11 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                   }
                 >
                   {isMobileMenuOpen ? (
-                    <X className="w-5 h-5 text-morandi-stone-600" />
+                    <X className="w-5 h-5" />
                   ) : (
-                    <Menu className="w-5 h-5 text-morandi-stone-600" />
+                    <Menu className="w-5 h-5" />
                   )}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -170,13 +172,14 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
               <span className="text-lg font-lexend font-light text-mirubato-wood-800">
                 {t('common:navigation.menu')}
               </span>
-              <button
+              <Button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-md hover:bg-morandi-stone-100 transition-colors"
+                variant="ghost"
+                size="icon-md"
                 aria-label={t('common:navigation.closeMenu')}
               >
-                <X className="w-5 h-5 text-morandi-stone-600" />
-              </button>
+                <X className="w-5 h-5" />
+              </Button>
             </div>
 
             {/* Navigation Links */}
@@ -213,26 +216,29 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                 </div>
 
                 {isAuthenticated ? (
-                  <button
+                  <Button
                     onClick={async () => {
                       const { logout } = useAuthStore.getState()
                       await logout()
                       setIsMobileMenuOpen(false)
                     }}
-                    className="w-full text-sm font-inter text-morandi-stone-600 hover:text-morandi-stone-700 px-3 py-2 rounded-md hover:bg-morandi-stone-100 transition-all text-left"
+                    variant="ghost"
+                    fullWidth
+                    className="text-left justify-start"
                   >
                     {t('auth:signOut')}
-                  </button>
+                  </Button>
                 ) : onSignInClick ? (
-                  <button
+                  <Button
                     onClick={() => {
                       onSignInClick()
                       setIsMobileMenuOpen(false)
                     }}
-                    className="w-full px-4 py-2 bg-morandi-sage-500 text-white text-sm font-inter font-medium rounded-lg hover:bg-morandi-sage-400 transition-all duration-200"
+                    variant="primary"
+                    fullWidth
                   >
                     {t('auth:signIn')}
-                  </button>
+                  </Button>
                 ) : (
                   <Link
                     to="/auth"

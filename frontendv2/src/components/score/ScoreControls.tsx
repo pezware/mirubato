@@ -8,6 +8,14 @@ import {
   type VisualCallback,
 } from '../../services/metronomeService'
 import CollapsibleMetronome from '../metronome/CollapsibleMetronome'
+import Button from '../ui/Button'
+import {
+  ChevronUp,
+  ChevronDown,
+  Clock,
+  Scroll,
+  MoreVertical,
+} from 'lucide-react'
 
 export default function ScoreControls() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -176,14 +184,11 @@ export default function ScoreControls() {
         <div className="fixed right-4 bottom-20 flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-morandi-stone-200/50 p-3 z-40">
           {/* Practice Tracking Toggle - Compact */}
           {isAuthenticated && (
-            <button
+            <Button
               onClick={() => (isRecording ? stopPractice() : startPractice())}
-              className={cn(
-                'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all text-sm',
-                isRecording
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-              )}
+              variant={isRecording ? 'danger' : 'secondary'}
+              size="sm"
+              className="flex flex-col items-center gap-1"
             >
               <div
                 className={cn(
@@ -201,77 +206,54 @@ export default function ScoreControls() {
                   t('scorebook:practice', 'Practice')
                 )}
               </span>
-            </button>
+            </Button>
           )}
 
           {/* Metronome Controls - Vertical */}
           {!showAdvancedMetronome && (
             <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={handleMetronomeClick}
-                className={cn(
-                  'relative p-3 rounded-full transition-all',
-                  metronomeSettings.isActive
-                    ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-morandi-stone-200 text-morandi-stone-600 hover:bg-morandi-stone-300'
-                )}
-                title={t('scorebook:metronome', 'Metronome')}
-              >
+              <div className="relative">
+                <Button
+                  onClick={handleMetronomeClick}
+                  variant={metronomeSettings.isActive ? 'primary' : 'secondary'}
+                  size="icon-lg"
+                  className="relative"
+                  title={t('scorebook:metronome', 'Metronome')}
+                >
+                  <Clock className="w-5 h-5 relative z-10" />
+                </Button>
                 {/* Subtle visual pulse overlay */}
                 {metronomeSettings.isActive && (
                   <div
                     className={cn(
-                      'absolute inset-0 rounded-full bg-white pointer-events-none',
+                      'absolute inset-0 rounded-lg bg-white pointer-events-none',
                       'transition-opacity duration-100',
                       visualPulse ? 'opacity-20' : 'opacity-0'
                     )}
                   />
                 )}
-                <svg
-                  className="w-5 h-5 relative z-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
+              </div>
 
               {metronomeSettings.isActive && (
                 <div className="flex flex-col items-center gap-2 bg-morandi-stone-50/80 rounded-lg p-2">
                   <div className="flex flex-col items-center gap-1">
                     <div className="flex gap-1">
-                      <button
+                      <Button
                         onClick={() =>
                           setTempo(Math.min(240, metronomeSettings.tempo + 1))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t('scorebook:increaseTempo', 'Increase tempo')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      </button>
-                      <button
+                        <ChevronUp className="w-3 h-3" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           setTempo(Math.min(240, metronomeSettings.tempo + 10))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t(
                           'scorebook:increaseTempo10',
                           'Increase tempo by 10'
@@ -296,7 +278,7 @@ export default function ScoreControls() {
                             d="M8 12l4-4 4 4"
                           />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
 
                     <div className="flex flex-col items-center">
@@ -309,32 +291,22 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex gap-1">
-                      <button
+                      <Button
                         onClick={() =>
                           setTempo(Math.max(40, metronomeSettings.tempo - 1))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t('scorebook:decreaseTempo', 'Decrease tempo')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
-                      <button
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           setTempo(Math.max(40, metronomeSettings.tempo - 10))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t(
                           'scorebook:decreaseTempo10',
                           'Decrease tempo by 10'
@@ -359,36 +331,25 @@ export default function ScoreControls() {
                             d="M16 12l-4 4-4-4"
                           />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   <div className="h-px w-full bg-morandi-stone-200" />
 
                   <div className="flex flex-col items-center gap-1">
-                    <button
+                    <Button
                       onClick={() =>
                         setMetronomeVolume(
                           Math.min(1, metronomeSettings.volume + 0.1)
                         )
                       }
-                      className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                      variant="ghost"
+                      size="icon-sm"
                       title={t('scorebook:increaseVolume', 'Increase volume')}
                     >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 15l7-7 7 7"
-                        />
-                      </svg>
-                    </button>
+                      <ChevronUp className="w-3 h-3" />
+                    </Button>
 
                     <div className="relative w-8 h-8 flex items-center justify-center">
                       <svg
@@ -414,29 +375,18 @@ export default function ScoreControls() {
                       </div>
                     </div>
 
-                    <button
+                    <Button
                       onClick={() =>
                         setMetronomeVolume(
                           Math.max(0, metronomeSettings.volume - 0.1)
                         )
                       }
-                      className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                      variant="ghost"
+                      size="icon-sm"
                       title={t('scorebook:decreaseVolume', 'Decrease volume')}
                     >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               )}
@@ -444,51 +394,24 @@ export default function ScoreControls() {
           )}
 
           {/* Auto-scroll Toggle */}
-          <button
+          <Button
             onClick={toggleAutoScroll}
-            className={cn(
-              'p-3 rounded-full transition-all',
-              autoScrollEnabled
-                ? 'bg-morandi-sky-100 text-morandi-sky-700'
-                : 'bg-morandi-stone-100 text-morandi-stone-600 hover:bg-morandi-stone-200'
-            )}
+            variant={autoScrollEnabled ? 'primary' : 'secondary'}
+            size="icon-lg"
             title={t('scorebook:autoScroll', 'Auto-scroll')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-              />
-            </svg>
-          </button>
+            <Scroll className="w-5 h-5" />
+          </Button>
 
           {/* Management Menu Toggle */}
-          <button
+          <Button
             onClick={toggleManagement}
-            className="p-3 text-morandi-stone-600 hover:text-morandi-stone-800 rounded-full hover:bg-morandi-stone-100 transition-all"
+            variant="ghost"
+            size="icon-lg"
             title={t('scorebook:menu', 'Menu')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-              />
-            </svg>
-          </button>
+            <MoreVertical className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Show advanced metronome if enabled */}
@@ -510,26 +433,15 @@ export default function ScoreControls() {
           {/* Page Navigation Controls */}
           {totalPages > 1 && (
             <>
-              <button
+              <Button
                 onClick={() => changePage(-1)}
                 disabled={currentPage <= 1}
-                className="p-3 bg-gray-100 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="secondary"
+                size="icon-lg"
                 title={t('scorebook:previousPage', 'Previous page')}
               >
-                <svg
-                  className="w-4 h-4 transform rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
+                <ChevronUp className="w-4 h-4" />
+              </Button>
 
               <div className="flex flex-col items-center gap-1 py-2">
                 <input
@@ -543,26 +455,15 @@ export default function ScoreControls() {
                 <span className="text-xs text-gray-600">of {totalPages}</span>
               </div>
 
-              <button
+              <Button
                 onClick={() => changePage(1)}
                 disabled={currentPage >= totalPages}
-                className="p-3 bg-gray-100 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="secondary"
+                size="icon-lg"
                 title={t('scorebook:nextPage', 'Next page')}
               >
-                <svg
-                  className="w-4 h-4 transform -rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
+                <ChevronDown className="w-4 h-4" />
+              </Button>
 
               <div className="h-px w-full bg-morandi-stone-200" />
             </>
@@ -570,14 +471,11 @@ export default function ScoreControls() {
           {/* Practice Tracking Toggle */}
           {isAuthenticated && (
             <div className="w-full">
-              <button
+              <Button
                 onClick={() => (isRecording ? stopPractice() : startPractice())}
-                className={cn(
-                  'w-full flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all text-sm',
-                  isRecording
-                    ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'bg-morandi-stone-100 text-morandi-stone-700 hover:bg-morandi-stone-200'
-                )}
+                variant={isRecording ? 'danger' : 'secondary'}
+                fullWidth
+                className="flex flex-col items-center gap-1 py-2"
               >
                 <div
                   className={cn(
@@ -595,7 +493,7 @@ export default function ScoreControls() {
                     t('scorebook:practice', 'Practice')
                   )}
                 </span>
-              </button>
+              </Button>
             </div>
           )}
 
@@ -604,71 +502,48 @@ export default function ScoreControls() {
           {/* Metronome Controls */}
           {!showAdvancedMetronome && (
             <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={handleMetronomeClick}
-                className={cn(
-                  'relative p-3 rounded-full transition-all',
-                  metronomeSettings.isActive
-                    ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-morandi-stone-200 text-morandi-stone-600 hover:bg-morandi-stone-300'
-                )}
-                title={t('scorebook:metronome', 'Metronome')}
-              >
+              <div className="relative">
+                <Button
+                  onClick={handleMetronomeClick}
+                  variant={metronomeSettings.isActive ? 'primary' : 'secondary'}
+                  size="icon-lg"
+                  className="relative"
+                  title={t('scorebook:metronome', 'Metronome')}
+                >
+                  <Clock className="w-5 h-5 relative z-10" />
+                </Button>
                 {/* Subtle visual pulse overlay */}
                 {metronomeSettings.isActive && (
                   <div
                     className={cn(
-                      'absolute inset-0 rounded-full bg-white pointer-events-none',
+                      'absolute inset-0 rounded-lg bg-white pointer-events-none',
                       'transition-opacity duration-100',
                       visualPulse ? 'opacity-20' : 'opacity-0'
                     )}
                   />
                 )}
-                <svg
-                  className="w-5 h-5 relative z-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
+              </div>
 
               {metronomeSettings.isActive && (
                 <div className="flex flex-col items-center gap-2 bg-morandi-stone-50 rounded-lg p-2">
                   <div className="flex flex-col items-center gap-1">
                     <div className="flex gap-1">
-                      <button
+                      <Button
                         onClick={() =>
                           setTempo(Math.min(240, metronomeSettings.tempo + 1))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t('scorebook:increaseTempo', 'Increase tempo')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 15l7-7 7 7"
-                          />
-                        </svg>
-                      </button>
-                      <button
+                        <ChevronUp className="w-3 h-3" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           setTempo(Math.min(240, metronomeSettings.tempo + 10))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t(
                           'scorebook:increaseTempo10',
                           'Increase tempo by 10'
@@ -693,7 +568,7 @@ export default function ScoreControls() {
                             d="M8 12l4-4 4 4"
                           />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
 
                     <div className="flex flex-col items-center">
@@ -706,32 +581,22 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex gap-1">
-                      <button
+                      <Button
                         onClick={() =>
                           setTempo(Math.max(40, metronomeSettings.tempo - 1))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t('scorebook:decreaseTempo', 'Decrease tempo')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
-                      <button
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                      <Button
                         onClick={() =>
                           setTempo(Math.max(40, metronomeSettings.tempo - 10))
                         }
-                        className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                        variant="ghost"
+                        size="icon-sm"
                         title={t(
                           'scorebook:decreaseTempo10',
                           'Decrease tempo by 10'
@@ -756,36 +621,25 @@ export default function ScoreControls() {
                             d="M16 12l-4 4-4-4"
                           />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   <div className="h-px w-full bg-morandi-stone-200" />
 
                   <div className="flex flex-col items-center gap-1">
-                    <button
+                    <Button
                       onClick={() =>
                         setMetronomeVolume(
                           Math.min(1, metronomeSettings.volume + 0.1)
                         )
                       }
-                      className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                      variant="ghost"
+                      size="icon-sm"
                       title={t('scorebook:increaseVolume', 'Increase volume')}
                     >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 15l7-7 7 7"
-                        />
-                      </svg>
-                    </button>
+                      <ChevronUp className="w-3 h-3" />
+                    </Button>
 
                     <div className="relative w-8 h-8 flex items-center justify-center">
                       <svg
@@ -811,29 +665,18 @@ export default function ScoreControls() {
                       </div>
                     </div>
 
-                    <button
+                    <Button
                       onClick={() =>
                         setMetronomeVolume(
                           Math.max(0, metronomeSettings.volume - 0.1)
                         )
                       }
-                      className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800"
+                      variant="ghost"
+                      size="icon-sm"
                       title={t('scorebook:decreaseVolume', 'Decrease volume')}
                     >
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               )}
@@ -843,51 +686,24 @@ export default function ScoreControls() {
           <div className="h-px w-full bg-morandi-stone-200" />
 
           {/* Auto-scroll Toggle */}
-          <button
+          <Button
             onClick={toggleAutoScroll}
-            className={cn(
-              'p-3 rounded-full transition-all',
-              autoScrollEnabled
-                ? 'bg-morandi-sky-100 text-morandi-sky-700'
-                : 'bg-morandi-stone-100 text-morandi-stone-600 hover:bg-morandi-stone-200'
-            )}
+            variant={autoScrollEnabled ? 'primary' : 'secondary'}
+            size="icon-lg"
             title={t('scorebook:autoScroll', 'Auto-scroll')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-              />
-            </svg>
-          </button>
+            <Scroll className="w-5 h-5" />
+          </Button>
 
           {/* Management Menu Toggle */}
-          <button
+          <Button
             onClick={toggleManagement}
-            className="p-3 text-morandi-stone-600 hover:text-morandi-stone-800 rounded-full hover:bg-morandi-stone-100 transition-all"
+            variant="ghost"
+            size="icon-lg"
             title={t('scorebook:menu', 'Menu')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-              />
-            </svg>
-          </button>
+            <MoreVertical className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
