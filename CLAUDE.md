@@ -117,7 +117,7 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 - [ ] Let pre-commit hooks run (NEVER use `--no-verify`)
 - [ ] No `console.log` statements in code
 - [ ] No `any` types in TypeScript
-- [ ] **GraphQL types are generated and up-to-date** (run `npm run codegen`)
+- [ ] **Use UI component library** - No native HTML buttons/inputs/modals
 - [ ] Update CLAUDE.md if you discover new patterns
 
 ### Key Principles
@@ -129,6 +129,32 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 5. **Open Source**: Keep endpoints public for debugging
 6. **PATH** always use pwd to check what is current path
 7. **BRANCH** always check what is current branch, if at main branch, must create a new branch before editing.
+
+## 🎨 UI Component Usage (IMPORTANT)
+
+### Always Use the Component Library
+
+When creating or updating UI components:
+
+1. **Never use native HTML elements**:
+   - ❌ `<button>Click me</button>`
+   - ✅ `<Button>Click me</Button>`
+2. **Import from the UI library**:
+
+   ```tsx
+   import { Button, Modal, Card, Input, Select } from '@/components/ui'
+   ```
+
+3. **Available Components**:
+   - **Button**: 5 variants (primary, secondary, ghost, danger, icon)
+   - **Modal**: Accessible modals with multiple sizes
+   - **Card**: Container with borders, elevation, or ghost styles
+   - **Input/Textarea**: Form inputs with error states
+   - **Select/MultiSelect**: Dropdown components
+   - **Loading**: Spinner, dots, pulse, skeleton
+   - **Toast**: Notification system
+
+4. **Documentation**: See `frontendv2/docs/COMPONENT-LIBRARY.md`
 
 ## 🎯 Current Focus Areas
 
@@ -154,12 +180,17 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 
 2. **Code Quality**
    - Remove console.log statements
-   - Split large classes (700+ lines)
+   - Split large classes (700+ lines) - EnhancedPracticeReports.tsx needs splitting (1515 lines)
    - Replace `any` types with proper types
+   - Continue refactoring ~150 files still using native buttons
 
 ### Core Technologies
 
 - **Frontend**: React + TypeScript + Vite + Tailwind + Zustand
+- **UI Components**: Custom component library in `frontendv2/src/components/ui/`
+  - Always use Button, Modal, Card, Input, Select, Toast components
+  - Import from `@/components/ui`
+  - See `frontendv2/docs/COMPONENT-LIBRARY.md` for usage
 - **API**: Cloudflare Workers + Hono + D1 (SQLite) + REST
 - **Auth**: Magic links + Google OAuth + JWT
 - **Music**: VexFlow.js (notation) + Tone.js (audio)
@@ -314,13 +345,14 @@ npm test -- src/utils/audioManager.test.ts
 npm test -- --watch
 ```
 
-### Current Test Status (as of latest update)
+### Current Test Status (as of July 2025)
 
 - **Frontend Coverage**: ~29% (Target: 80%)
   - ✅ AuthContext: 100%
   - ✅ notationRenderer: 100%
   - ✅ audioManager: 91.54%
   - ✅ Practice page: 91.66%
+  - ✅ All tests passing: 270+ tests
 - **Backend Coverage**: ~43% (Target: 80%)
   - ✅ practice resolver: 100%
   - ✅ sheetMusic resolver: 100%

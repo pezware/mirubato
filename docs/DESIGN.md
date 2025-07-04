@@ -260,6 +260,7 @@ The frontend uses a straightforward React architecture without the complex modul
   - Handles authentication state display
   - Provides navigation between main sections
   - Triggers sign-in modal when needed
+  - Mobile-responsive with hamburger menu (PR #201)
 
 **Auth Components**
 
@@ -267,8 +268,24 @@ The frontend uses a straightforward React architecture without the complex modul
   - Google OAuth integration via One Tap
   - Magic link email authentication
   - Consistent user experience across the app
+  - Refactored to use new UI component library (Modal, Button, Input)
 - **GoogleSignInButton**: Google OAuth button component
 - **ProtectedRoute**: Route guard for authenticated pages
+
+**UI Component Library (v1.3.0 - July 2025)**
+
+A comprehensive set of reusable components following consistent design patterns:
+
+- **Button**: Enhanced component with variants (primary, secondary, ghost, danger, icon)
+- **Modal**: Accessible modal using @headlessui/react
+- **Card**: Flexible container with multiple variants
+- **Loading**: Multiple loading states (spinner, dots, pulse, skeleton)
+- **Input/Textarea**: Form components with consistent styling
+- **Select/MultiSelect**: Accessible dropdowns
+- **Toast**: Notification system with auto-dismiss
+- **Design System**: Constants for spacing, typography, shadows, animations
+
+All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation.
 
 #### Data Flow
 
@@ -287,6 +304,7 @@ The original design envisioned a complex module system with EventBus for loose c
 ## Key Technologies
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios, Chart.js
+- **UI Components**: Custom component library with @headlessui/react for accessibility
 - **Music Libraries**: VexFlow.js and Tone.js (present but minimally used)
 - **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
 - **API Framework**: Hono with Zod validation
