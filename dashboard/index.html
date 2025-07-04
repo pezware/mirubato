@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirubato Documentation & Status Dashboard</title>
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>🎼 Mirubato</h1>
+        <p>Documentation & Status Dashboard</p>
+        <div class="system-status" id="systemStatus">
+          <span class="status-indicator" id="statusIndicator"></span>
+          <span class="status-text" id="statusText"
+            >Checking System Status...</span
+          >
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <!-- Service Status Grid -->
+        <section class="services-grid">
+          <h2>Service Status</h2>
+          <div class="service-cards">
+            <div class="service-card" id="frontendCard">
+              <div class="card-header">
+                <h3>Frontend</h3>
+                <div class="status-badge" id="frontendStatus">
+                  <span class="indicator"></span>
+                  <span class="text">Checking...</span>
+                </div>
+              </div>
+              <div class="card-details">
+                <p>
+                  <strong>Production:</strong>
+                  <a href="https://mirubato.com" target="_blank"
+                    >mirubato.com</a
+                  >
+                </p>
+                <p>
+                  <strong>Staging:</strong>
+                  <a href="https://staging.mirubato.com" target="_blank"
+                    >staging.mirubato.com</a
+                  >
+                </p>
+                <p><strong>Tech:</strong> React + Cloudflare Workers</p>
+              </div>
+              <div class="card-actions">
+                <a href="services/frontend/" class="btn btn-secondary"
+                  >📚 Docs</a
+                >
+                <a
+                  href="https://mirubato.com"
+                  target="_blank"
+                  class="btn btn-primary"
+                  >🚀 Open App</a
+                >
+              </div>
+            </div>
+
+            <div class="service-card" id="apiCard">
+              <div class="card-header">
+                <h3>API</h3>
+                <div class="status-badge" id="apiStatus">
+                  <span class="indicator"></span>
+                  <span class="text">Checking...</span>
+                </div>
+              </div>
+              <div class="card-details">
+                <p>
+                  <strong>Production:</strong>
+                  <a href="https://api.mirubato.com" target="_blank"
+                    >api.mirubato.com</a
+                  >
+                </p>
+                <p>
+                  <strong>Staging:</strong>
+                  <a href="https://api-staging.mirubato.com" target="_blank"
+                    >api-staging.mirubato.com</a
+                  >
+                </p>
+                <p><strong>Tech:</strong> Hono + D1 + Cloudflare Workers</p>
+              </div>
+              <div class="card-actions">
+                <a
+                  href="https://api.mirubato.com/docs"
+                  target="_blank"
+                  class="btn btn-secondary"
+                  >📚 API Docs</a
+                >
+                <a
+                  href="https://api.mirubato.com/health"
+                  target="_blank"
+                  class="btn btn-primary"
+                  >🔍 Health</a
+                >
+              </div>
+            </div>
+
+            <div class="service-card" id="scoresCard">
+              <div class="card-header">
+                <h3>Scores</h3>
+                <div class="status-badge" id="scoresStatus">
+                  <span class="indicator"></span>
+                  <span class="text">Checking...</span>
+                </div>
+              </div>
+              <div class="card-details">
+                <p>
+                  <strong>Production:</strong>
+                  <a href="https://scores.mirubato.com" target="_blank"
+                    >scores.mirubato.com</a
+                  >
+                </p>
+                <p>
+                  <strong>Staging:</strong>
+                  <a href="https://scores-staging.mirubato.com" target="_blank"
+                    >scores-staging.mirubato.com</a
+                  >
+                </p>
+                <p>
+                  <strong>Tech:</strong> Hono + D1 + R2 + Cloudflare Workers
+                </p>
+              </div>
+              <div class="card-actions">
+                <a
+                  href="https://scores.mirubato.com/docs"
+                  target="_blank"
+                  class="btn btn-secondary"
+                  >📚 API Docs</a
+                >
+                <a
+                  href="https://scores.mirubato.com/health"
+                  target="_blank"
+                  class="btn btn-primary"
+                  >🔍 Health</a
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Documentation Links -->
+        <section class="documentation-section">
+          <h2>Documentation</h2>
+          <div class="docs-grid">
+            <div class="doc-card">
+              <h3>🚀 Quick Start</h3>
+              <p>Get started with Mirubato development</p>
+              <a
+                href="https://github.com/pezware/mirubato#quick-start"
+                target="_blank"
+                class="btn btn-primary"
+                >Read Guide</a
+              >
+            </div>
+            <div class="doc-card">
+              <h3>🏗️ Architecture</h3>
+              <p>System architecture and design decisions</p>
+              <a
+                href="https://github.com/pezware/mirubato/blob/main/docs/DESIGN.md"
+                target="_blank"
+                class="btn btn-primary"
+                >View Docs</a
+              >
+            </div>
+            <div class="doc-card">
+              <h3>🔧 Development</h3>
+              <p>Local setup and development workflow</p>
+              <a
+                href="https://github.com/pezware/mirubato/blob/main/CLAUDE.md"
+                target="_blank"
+                class="btn btn-primary"
+                >Dev Guide</a
+              >
+            </div>
+            <div class="doc-card">
+              <h3>📊 Monitoring</h3>
+              <p>Health checks, metrics, and monitoring</p>
+              <a href="status/" class="btn btn-primary">View Status</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Environment Info -->
+        <section class="environment-section">
+          <h2>Environment Information</h2>
+          <div class="env-grid">
+            <div class="env-card">
+              <h3>🌐 Production</h3>
+              <ul>
+                <li><strong>Frontend:</strong> mirubato.com</li>
+                <li><strong>API:</strong> api.mirubato.com</li>
+                <li><strong>Scores:</strong> scores.mirubato.com</li>
+              </ul>
+            </div>
+            <div class="env-card">
+              <h3>🔧 Staging</h3>
+              <ul>
+                <li><strong>Frontend:</strong> staging.mirubato.com</li>
+                <li><strong>API:</strong> api-staging.mirubato.com</li>
+                <li><strong>Scores:</strong> scores-staging.mirubato.com</li>
+              </ul>
+            </div>
+            <div class="env-card">
+              <h3>💻 Local Dev</h3>
+              <ul>
+                <li><strong>Frontend:</strong> www-mirubato.localhost:4000</li>
+                <li><strong>API:</strong> api-mirubato.localhost:9797</li>
+                <li><strong>Scores:</strong> scores-mirubato.localhost:9788</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>&copy; 2025 Mirubato. Licensed under MIT License.</p>
+        <p>
+          <a href="https://github.com/pezware/mirubato" target="_blank"
+            >📦 GitHub</a
+          >
+          | <a href="status/uptime.html">📈 Uptime</a> |
+          <a href="#" id="lastUpdated">Last updated: Loading...</a>
+        </p>
+      </footer>
+    </div>
+
+    <script src="assets/js/dashboard.js"></script>
+  </body>
+</html>

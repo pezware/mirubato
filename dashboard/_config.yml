@@ -1,0 +1,57 @@
+# GitHub Pages Configuration for Mirubato Documentation
+title: 'Mirubato Documentation & Status Dashboard'
+description: 'Unified documentation and status monitoring for Mirubato services'
+baseurl: ''
+url: 'https://docs.mirubato.com'
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Plugin settings
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Include/exclude settings
+include:
+  - assets
+  - services
+  - status
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .sass-cache
+  - .jekyll-cache
+  - .jekyll-metadata
+
+# Custom settings
+author:
+  name: 'Mirubato Team'
+  email: 'team@mirubato.com'
+
+social:
+  name: 'Mirubato'
+  links:
+    - 'https://github.com/pezware/mirubato'
+    - 'https://mirubato.com'
+
+# SEO settings
+lang: en_US
+logo: /assets/images/logo.png
+
+# GitHub repository
+repository: 'pezware/mirubato'
+github_username: 'pezware'
+
+# Analytics (can be added later)
+# google_analytics: UA-NNNNNNNN-N
+
+# Timezone
+timezone: America/New_York
