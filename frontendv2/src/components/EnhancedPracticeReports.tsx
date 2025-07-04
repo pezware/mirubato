@@ -388,7 +388,7 @@ function EntryList({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               {/* Date, time, type and instrument badges */}
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="text-sm text-morandi-stone-700 font-medium">
                   {new Date(entry.timestamp).toLocaleDateString()}
                 </span>
@@ -404,36 +404,38 @@ function EntryList({
               </div>
               
               {/* Duration and mood */}
-              <div className="flex items-center gap-4">
-                <span className="text-morandi-stone-700">
+              <div className="flex items-center gap-2 md:gap-4 mb-2">
+                <span className="text-morandi-stone-700 text-sm">
                   {t('common:time.minute', { count: entry.duration })}
                 </span>
                 {entry.mood && (
-                  <span className="text-lg">
+                  <span className="text-base md:text-lg">
                     {entry.mood === 'FRUSTRATED' ? '😣' : 
                      entry.mood === 'NEUTRAL' ? '😐' : 
                      entry.mood === 'SATISFIED' ? '😊' : 
                      entry.mood === 'EXCITED' ? '🤩' : ''}
                   </span>
                 )}
-                {entry.notes && (
-                  <span className="text-sm text-morandi-stone-500 truncate max-w-md">
-                    {entry.notes}
-                  </span>
-                )}
               </div>
+              
+              {/* Notes - show on separate line if present */}
+              {entry.notes && (
+                <p className="text-sm text-morandi-stone-500 mb-2 line-clamp-2">
+                  📝 {entry.notes}
+                </p>
+              )}
 
               {/* Pieces - shown below if present */}
               {entry.pieces.length > 0 && (
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                <div className="mt-2">
+                  <h4 className="text-xs md:text-sm font-medium text-morandi-stone-700 mb-1.5">
                     🎵 {t('logbook:entry.pieces')}:
                   </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {entry.pieces.map((piece, index) => (
                       <div
                         key={index}
-                        className="px-3 py-1 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-sm border border-morandi-sky-200"
+                        className="px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-xs border border-morandi-sky-200"
                       >
                         {piece.title}
                         {piece.composer && (
@@ -442,7 +444,7 @@ function EntryList({
                           </span>
                         )}
                         {piece.measures && (
-                          <span className="text-morandi-stone-500 text-xs">
+                          <span className="text-morandi-stone-500">
                             {' '}(mm. {piece.measures})
                           </span>
                         )}
@@ -454,15 +456,15 @@ function EntryList({
 
               {/* Techniques if present */}
               {entry.techniques.length > 0 && (
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                <div className="mt-2">
+                  <h4 className="text-xs md:text-sm font-medium text-morandi-stone-700 mb-1.5">
                     ⚡ {t('logbook:entry.techniques')}:
                   </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {entry.techniques.map((technique: string) => (
                       <span
                         key={technique}
-                        className="px-3 py-1 bg-morandi-peach-100 text-morandi-stone-700 rounded-full text-sm"
+                        className="px-2 py-0.5 bg-morandi-peach-100 text-morandi-stone-700 rounded-full text-xs"
                       >
                         {technique}
                       </span>
@@ -473,17 +475,17 @@ function EntryList({
             </div>
             
             {/* Action buttons */}
-            <div className="flex gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1 ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => onEdit(entry.id)}
-                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
+                className="p-1.5 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
                 aria-label={t('logbook:entry.editEntry')}
               >
                 <Edit2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onDelete(entry.id)}
-                className="p-2 text-red-600 hover:text-red-800 transition-colors"
+                className="p-1.5 text-red-600 hover:text-red-800 transition-colors"
                 aria-label={t('logbook:entry.deleteEntry')}
               >
                 <Trash2 className="w-4 h-4" />
