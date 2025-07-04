@@ -1,6 +1,15 @@
 /**
  * Mirubato Documentation Dashboard JavaScript
  * Handles real-time health checking and status updates
+ *
+ * Health Check Metrics:
+ * - Healthy: Service responds with status:"healthy" within timeout
+ * - Degraded: Service responds but status is not "healthy" or response is not OK
+ * - Unhealthy: Service does not respond or times out (5 seconds)
+ *
+ * Response times are shown for healthy/degraded services to indicate latency.
+ * The dashboard auto-refreshes every 30 seconds and can be manually refreshed
+ * by clicking the system status.
  */
 
 class MirubatoDashboard {
@@ -120,7 +129,7 @@ class MirubatoDashboard {
       const response = await fetch(testUrl, {
         method: 'GET',
         signal: controller.signal,
-        mode: 'no-cors', // Avoid CORS issues for frontend tests
+        mode: service.type === 'frontend' ? 'no-cors' : 'cors', // Only use no-cors for frontend
         cache: 'no-cache',
       })
 

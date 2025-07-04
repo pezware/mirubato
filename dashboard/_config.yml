@@ -7,19 +7,34 @@ url: 'https://docs.mirubato.com'
 # Build settings
 markdown: kramdown
 highlighter: rouge
-theme: minima
+# No theme - using custom CSS
 
-# Plugin settings
-plugins:
-  - jekyll-feed
-  - jekyll-sitemap
-  - jekyll-seo-tag
+# Plugin settings (comment out if not available on GitHub Pages)
+# plugins:
+#   - jekyll-feed
+#   - jekyll-sitemap
+#   - jekyll-seo-tag
+
+# Collections for documentation
+collections:
+  docs:
+    output: true
+    permalink: /docs/:path
+
+# Default layout for docs
+defaults:
+  - scope:
+      path: ''
+      type: 'docs'
+    values:
+      layout: 'doc'
 
 # Include/exclude settings
 include:
   - assets
   - services
   - status
+  - _layouts
 
 exclude:
   - README.md
