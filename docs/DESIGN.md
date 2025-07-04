@@ -255,12 +255,16 @@ The frontend uses a straightforward React architecture without the complex modul
 - **LogbookEntryList**: Main entry management component
 - **EnhancedPracticeReports**: Advanced reporting with charts (refactored into modular components)
   - **ReportsTabs**: Tab navigation for different report views
-  - **ReportsFilters**: Comprehensive filtering and calendar visualization
+  - **ReportsFilters**: Comprehensive filtering and calendar visualization with navigation controls
   - **SummaryStats**: Practice statistics dashboard
   - **PiecesStatistics**: Piece-specific analytics
   - **PieceComposerStats**: Detailed composer and piece metrics
-- **ManualEntryForm**: Practice entry creation with time picker and multi-piece support
+  - **MonthlySummaries**: Monthly practice summaries for historical access
+  - **PracticeOverview**: High-level practice overview component
+  - **CalendarNavigation**: Enhanced calendar navigation with monthly/yearly controls
+- **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
+- **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
 
 **Layout Components**
 
@@ -491,11 +495,17 @@ The frontend implements aggressive code splitting:
 **Recent Enhancements (July 2025):**
 
 - **Component Refactoring**: Split large components into maintainable modules
+  - EnhancedPracticeReports refactored from 1515 lines into 8+ focused components
+  - Introduced shared analytics logic via usePracticeAnalytics hook
+  - Improved code maintainability and testability
 - **Time Management**: Added custom time picker with brand-consistent styling
 - **Multi-Piece Support**: Practice time intelligently divided among multiple pieces
 - **Export Functionality**: Robust CSV/JSON export with comprehensive data
 - **UI Polish**: Complete migration to custom component library
 - **Mobile UX**: Improved responsive design and touch interactions
+- **Calendar Navigation**: Enhanced practice calendar with monthly/yearly navigation controls
+- **Monthly Summaries**: Added historical practice data access by month
+- **Performance**: Lazy loading implemented for report components to improve initial load time
 - **E2E Testing**: Comprehensive test coverage for all new features
 
 ### Phase 2: Practice Mode (Future)

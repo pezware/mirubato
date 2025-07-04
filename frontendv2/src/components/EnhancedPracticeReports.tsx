@@ -10,17 +10,27 @@ import {
   TimePeriod,
   SortBy,
 } from './practice-reports/ReportsFilters'
-// import { PracticeOverview } from './practice-reports/PracticeOverview'
-import { PiecesStatistics } from './practice-reports/PiecesStatistics'
-import { SummaryStats } from './practice-reports/SummaryStats'
-import { PieceComposerStats } from './practice-reports/PieceComposerStats'
-import { MonthlySummaries } from './practice-reports/MonthlySummaries'
 import { LoadingSkeleton } from './ui/Loading'
 import { Trash2, Edit2, Download } from 'lucide-react'
 import Button from './ui/Button'
 
-// Lazy load the manual entry form
+// Lazy load components for better performance
 const ManualEntryForm = lazy(() => import('./ManualEntryForm'))
+const PiecesStatistics = lazy(() =>
+  import('./practice-reports/PiecesStatistics').then(module => ({
+    default: module.PiecesStatistics,
+  }))
+)
+const SummaryStats = lazy(() =>
+  import('./practice-reports/SummaryStats').then(module => ({
+    default: module.SummaryStats,
+  }))
+)
+const PieceComposerStats = lazy(() =>
+  import('./practice-reports/PieceComposerStats').then(module => ({
+    default: module.PieceComposerStats,
+  }))
+)
 
 export default function EnhancedPracticeReports() {
   const { t } = useTranslation(['reports', 'common', 'logbook'])
@@ -350,20 +360,24 @@ export default function EnhancedPracticeReports() {
             >
               {/* Summary Stats in right column */}
               <div className="space-y-3">
-                <SummaryStats
-                  filteredAndSortedEntries={filteredAndSortedEntries}
-                  formatDuration={formatDuration}
-                />
+                <Suspense fallback={<LoadingSkeleton className="h-32" />}>
+                  <SummaryStats
+                    filteredAndSortedEntries={filteredAndSortedEntries}
+                    formatDuration={formatDuration}
+                  />
+                </Suspense>
 
                 {/* Piece/Composer specific stats - only in pieces view */}
                 {reportView === 'pieces' &&
                   (selectedPiece || selectedComposer) && (
-                    <PieceComposerStats
-                      analytics={analytics}
-                      selectedPiece={selectedPiece}
-                      selectedComposer={selectedComposer}
-                      formatDuration={formatDuration}
-                    />
+                    <Suspense fallback={<LoadingSkeleton className="h-24" />}>
+                      <PieceComposerStats
+                        analytics={analytics}
+                        selectedPiece={selectedPiece}
+                        selectedComposer={selectedComposer}
+                        formatDuration={formatDuration}
+                      />
+                    </Suspense>
                   )}
               </div>
             </ReportsFilters>
@@ -440,15 +454,6 @@ export default function EnhancedPracticeReports() {
                     onEdit={handleEditEntry}
                   />
                 </div>
-
-                {/* Monthly History */}
-                <MonthlySummaries
-                  entries={filteredAndSortedEntries}
-                  recentEntriesCount={10}
-                  formatDuration={formatDuration}
-                  onDeleteEntry={handleDeleteEntry}
-                  onEditEntry={handleEditEntry}
-                />
               </>
             ) : reportView === 'pieces' ? (
               <>
@@ -460,13 +465,15 @@ export default function EnhancedPracticeReports() {
                     onEdit={handleEditEntry}
                   />
                 ) : (
-                  <PiecesStatistics
-                    analytics={analytics}
-                    selectedPiece={selectedPiece}
-                    selectedComposer={selectedComposer}
-                    setSelectedPiece={setSelectedPiece}
-                    formatDuration={formatDuration}
-                  />
+                  <Suspense fallback={<LoadingSkeleton className="h-96" />}>
+                    <PiecesStatistics
+                      analytics={analytics}
+                      selectedPiece={selectedPiece}
+                      selectedComposer={selectedComposer}
+                      setSelectedPiece={setSelectedPiece}
+                      formatDuration={formatDuration}
+                    />
+                  </Suspense>
                 )}
               </>
             ) : null}

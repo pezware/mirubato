@@ -150,10 +150,7 @@ export function ReportsFilters({
         <div>
           {/* Calendar Heat Map */}
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-morandi-stone-700">
-                {t('reports:practiceCalendar')}
-              </h3>
+            <div className="flex items-center justify-end mb-3">
               {timePeriod !== 'all' && (
                 <div className="flex items-center gap-2">
                   <Button
