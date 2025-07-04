@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import EnhancedPracticeReports from '../../../components/EnhancedPracticeReports'
 import { useLogbookStore } from '../../../stores/logbookStore'
 import { useAutocomplete } from '../../../hooks/useAutocomplete'
+import { LogbookEntry } from '../../../api/logbook'
 
 // Mock the stores and hooks
 vi.mock('../../../stores/logbookStore')
@@ -40,7 +41,7 @@ vi.mock('../../../components/practice-reports/SummaryStats', () => ({
     filteredAndSortedEntries,
     formatDuration,
   }: {
-    filteredAndSortedEntries: any[]
+    filteredAndSortedEntries: LogbookEntry[]
     formatDuration: (minutes: number) => string
   }) => {
     const totalMinutes = filteredAndSortedEntries.reduce(
