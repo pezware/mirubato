@@ -358,67 +358,117 @@ function EntryList({
   }
 
   return (
-    <div className="space-y-2">
-      {entries.map(entry => (
+    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
+      {entries.map((entry, index) => (
         <div
           key={entry.id}
-          className="p-3 bg-morandi-stone-50 rounded-lg hover:bg-morandi-stone-100 transition-colors"
+          className={`p-4 hover:bg-morandi-stone-50 transition-colors group ${
+            index !== 0 ? 'border-t border-morandi-stone-200' : ''
+          }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="mb-1">
-                {entry.pieces.map((p, index) => (
-                  <p key={index} className="font-medium text-morandi-stone-900">
-                    {p.composer ? `${p.composer} - ` : ''}
-                    {p.title}
-                    {p.measures && (
-                      <span className="text-sm text-morandi-stone-600">
-                        {' '}
-                        (mm. {p.measures})
-                      </span>
-                    )}
-                  </p>
-                ))}
+              {/* Date, time, type and instrument badges */}
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-sm text-morandi-stone-700 font-medium">
+                  {new Date(entry.timestamp).toLocaleDateString()}
+                </span>
+                <span className="text-sm text-morandi-stone-500">
+                  {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
+                  {entry.type}
+                </span>
+                <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
+                  {entry.instrument === 'PIANO' ? '🎹' : '🎸'} {entry.instrument}
+                </span>
               </div>
-              <p className="text-sm text-morandi-stone-600">
-                {new Date(entry.timestamp).toLocaleString()} •{' '}
-                {formatDuration(entry.duration)} • {entry.instrument}
-              </p>
-              {entry.notes && (
-                <p className="text-sm text-morandi-stone-500 mt-1 italic">
-                  {entry.notes}
-                </p>
+              
+              {/* Duration and mood */}
+              <div className="flex items-center gap-4">
+                <span className="text-morandi-stone-700">
+                  {t('common:time.minute', { count: entry.duration })}
+                </span>
+                {entry.mood && (
+                  <span className="text-lg">
+                    {entry.mood === 'FRUSTRATED' ? '😣' : 
+                     entry.mood === 'NEUTRAL' ? '😐' : 
+                     entry.mood === 'SATISFIED' ? '😊' : 
+                     entry.mood === 'EXCITED' ? '🤩' : ''}
+                  </span>
+                )}
+                {entry.notes && (
+                  <span className="text-sm text-morandi-stone-500 truncate max-w-md">
+                    {entry.notes}
+                  </span>
+                )}
+              </div>
+
+              {/* Pieces - shown below if present */}
+              {entry.pieces.length > 0 && (
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                    🎵 {t('logbook:entry.pieces')}:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {entry.pieces.map((piece, index) => (
+                      <div
+                        key={index}
+                        className="px-3 py-1 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-sm border border-morandi-sky-200"
+                      >
+                        {piece.title}
+                        {piece.composer && (
+                          <span className="text-morandi-stone-600">
+                            {' '}- {piece.composer}
+                          </span>
+                        )}
+                        {piece.measures && (
+                          <span className="text-morandi-stone-500 text-xs">
+                            {' '}(mm. {piece.measures})
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
+
+              {/* Techniques if present */}
               {entry.techniques.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {entry.techniques.map((technique: string) => (
-                    <span
-                      key={technique}
-                      className="px-2 py-0.5 bg-morandi-stone-200 text-morandi-stone-700 rounded text-xs"
-                    >
-                      {technique}
-                    </span>
-                  ))}
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                    ⚡ {t('logbook:entry.techniques')}:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {entry.techniques.map((technique: string) => (
+                      <span
+                        key={technique}
+                        className="px-3 py-1 bg-morandi-peach-100 text-morandi-stone-700 rounded-full text-sm"
+                      >
+                        {technique}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex gap-1 ml-2">
-              <Button
+            
+            {/* Action buttons */}
+            <div className="flex gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
                 onClick={() => onEdit(entry.id)}
-                variant="ghost"
-                size="icon-sm"
-                title={t('logbook:editEntry')}
+                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
+                aria-label={t('logbook:entry.editEntry')}
               >
                 <Edit2 className="w-4 h-4" />
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => onDelete(entry.id)}
-                variant="ghost"
-                size="icon-sm"
-                title={t('logbook:deleteEntry')}
+                className="p-2 text-red-600 hover:text-red-800 transition-colors"
+                aria-label={t('logbook:entry.deleteEntry')}
               >
                 <Trash2 className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>
