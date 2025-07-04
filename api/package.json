@@ -16,15 +16,9 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write src/**/*.ts",
     "type-check": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
-    "db:migrate:production": "wrangler d1 migrations apply DB",
-    "migrate:sync": "tsx scripts/migrate-backend-to-sync-data.ts",
-    "migrate:sync:dry": "tsx scripts/migrate-backend-to-sync-data.ts --dry-run",
-    "migrate:sync:staging": "tsx scripts/migrate-backend-to-sync-data.ts --env staging",
-    "migrate:sync:production": "tsx scripts/migrate-backend-to-sync-data.ts --env production",
-    "migrate:test": "tsx scripts/test-migration.ts"
+    "db:migrate:production": "wrangler d1 migrations apply DB"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.0",
