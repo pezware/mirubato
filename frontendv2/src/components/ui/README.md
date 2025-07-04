@@ -40,7 +40,6 @@ Accessible modal dialog with backdrop and animations.
 
 ```tsx
 import { Modal, ModalBody, ModalFooter } from '@/components/ui'
-
 ;<Modal isOpen={isOpen} onClose={handleClose} title="Settings">
   <ModalBody>Content goes here</ModalBody>
   <ModalFooter>
@@ -66,7 +65,6 @@ Container component with multiple style variants.
 
 ```tsx
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
-
 ;<Card variant="elevated">
   <CardHeader>
     <CardTitle>Practice Stats</CardTitle>
