@@ -1,19 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
 import { LogbookEntry } from '../../api/logbook'
 
 interface SummaryStatsProps {
-  analytics: AnalyticsData
-  timePeriod: 'all' | 'month' | 'week'
-  entries: LogbookEntry[]
   filteredAndSortedEntries: LogbookEntry[]
   formatDuration: (minutes: number) => string
 }
 
 export function SummaryStats({
-  analytics,
-  timePeriod,
-  entries,
   filteredAndSortedEntries,
   formatDuration,
 }: SummaryStatsProps) {
@@ -21,42 +14,36 @@ export function SummaryStats({
 
   // Calculate time period totals
   const getTimePeriodTotal = () => {
-    if (timePeriod === 'week') {
-      return analytics.weekTotal
-    } else if (timePeriod === 'month') {
-      return Array.from(analytics.practiceByDay.entries())
-        .filter(([date]) => {
-          const d = new Date(date)
-          const now = new Date()
-          return (
-            d.getMonth() === now.getMonth() &&
-            d.getFullYear() === now.getFullYear()
-          )
-        })
-        .reduce((sum, [, mins]) => sum + mins, 0)
-    } else {
-      return Array.from(analytics.practiceByDay.values()).reduce(
-        (sum, mins) => sum + mins,
-        0
-      )
-    }
+    // Use filtered entries directly as they already contain the correct date range
+    return filteredAndSortedEntries.reduce(
+      (sum, entry) => sum + entry.duration,
+      0
+    )
   }
 
   const getSessionCount = () => {
-    if (timePeriod === 'week') {
-      return analytics.weekCount
-    } else if (timePeriod === 'month') {
-      return filteredAndSortedEntries.filter(e => {
-        const d = new Date(e.timestamp)
-        const now = new Date()
-        return (
-          d.getMonth() === now.getMonth() &&
-          d.getFullYear() === now.getFullYear()
-        )
-      }).length
-    } else {
-      return entries.length
-    }
+    // Use filtered entries count directly
+    return filteredAndSortedEntries.length
+  }
+
+  const getUniquePieces = () => {
+    const pieces = new Set<string>()
+    filteredAndSortedEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        pieces.add(`${piece.composer || 'Unknown'} - ${piece.title}`)
+      })
+    })
+    return pieces.size
+  }
+
+  const getUniqueComposers = () => {
+    const composers = new Set<string>()
+    filteredAndSortedEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        composers.add(piece.composer || 'Unknown')
+      })
+    })
+    return composers.size
   }
 
   return (
@@ -83,7 +70,7 @@ export function SummaryStats({
 
         <div className="bg-morandi-peach-50 rounded-lg p-3">
           <p className="text-2xl font-bold text-morandi-stone-900">
-            {analytics.uniquePieces}
+            {getUniquePieces()}
           </p>
           <p className="text-xs text-morandi-stone-600">
             {t('reports:pieces')} {t('reports:practiced')}
@@ -92,7 +79,7 @@ export function SummaryStats({
 
         <div className="bg-morandi-rose-50 rounded-lg p-3">
           <p className="text-2xl font-bold text-morandi-stone-900">
-            {analytics.uniqueComposers}
+            {getUniqueComposers()}
           </p>
           <p className="text-xs text-morandi-stone-600">
             {t('reports:composers')}

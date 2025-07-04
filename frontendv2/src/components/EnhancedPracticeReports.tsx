@@ -169,9 +169,9 @@ export default function EnhancedPracticeReports() {
     customDateRange,
   ])
 
-  // Use analytics hook
+  // Use analytics hook - use all entries for calendar heatmap
   const analytics = usePracticeAnalytics({
-    entries: filteredAndSortedEntries,
+    entries: entries, // Use all entries so calendar can show all practice days
     sortBy,
     selectedDate,
     selectedPiece,
@@ -351,9 +351,6 @@ export default function EnhancedPracticeReports() {
               {/* Summary Stats in right column */}
               <div className="space-y-3">
                 <SummaryStats
-                  analytics={analytics}
-                  timePeriod={timePeriod}
-                  entries={entries}
                   filteredAndSortedEntries={filteredAndSortedEntries}
                   formatDuration={formatDuration}
                 />
