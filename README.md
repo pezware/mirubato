@@ -39,7 +39,11 @@ cd ../scores && npm run dev    # Scores: scores-mirubato.localhost:9788
 
 Based on proven pedagogical methods including the **"Keep Going Method"** from [_Sight-Reading for Guitar_](https://press.rebus.community/sightreadingforguitar/) by Chelsea Green (CC BY 4.0).
 
-**Special thanks** to Chelsea Green and Rebus Community for open-sourcing educational resources.
+**Special thanks** to:
+
+- Chelsea Green and Rebus Community for open-sourcing educational resources
+- [The Mutopia Project](https://www.mutopiaproject.org/) for free sheet music with open licenses
+- [IMSLP/Petrucci Music Library](https://imslp.org/) for public domain musical scores
 
 ## Project Info
 
