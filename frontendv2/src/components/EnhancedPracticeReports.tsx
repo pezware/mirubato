@@ -398,6 +398,7 @@ export default function EnhancedPracticeReports() {
                       variant="secondary"
                       size="sm"
                       leftIcon={<Download className="w-3 h-3" />}
+                      data-testid="export-json-button"
                     >
                       {t('reports:export.exportJSON')}
                     </Button>
@@ -406,6 +407,7 @@ export default function EnhancedPracticeReports() {
                       variant="secondary"
                       size="sm"
                       leftIcon={<Download className="w-3 h-3" />}
+                      data-testid="export-csv-button"
                     >
                       {t('reports:export.exportCSV')}
                     </Button>
@@ -495,6 +497,7 @@ function EntryList({
       {entries.map((entry, index) => (
         <div
           key={entry.id}
+          data-testid="logbook-entry"
           className={`p-4 hover:bg-morandi-stone-50 transition-colors group ${
             index !== 0 ? 'border-t border-morandi-stone-200' : ''
           }`}
