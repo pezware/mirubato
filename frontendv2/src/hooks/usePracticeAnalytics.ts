@@ -100,6 +100,12 @@ export function usePracticeAnalytics({
       }
 
       // Track composers and pieces
+      // Divide duration equally among pieces in the same entry
+      const durationPerPiece =
+        entry.pieces.length > 0
+          ? entry.duration / entry.pieces.length
+          : entry.duration
+
       entry.pieces.forEach(piece => {
         const composer = piece.composer || 'Unknown'
         const pieceKey = `${composer} - ${piece.title}`
@@ -116,7 +122,7 @@ export function usePracticeAnalytics({
         }
 
         existing.count++
-        existing.totalDuration += entry.duration
+        existing.totalDuration += durationPerPiece
         if (new Date(entry.timestamp) > new Date(existing.lastPracticed)) {
           existing.lastPracticed = entry.timestamp
         }
