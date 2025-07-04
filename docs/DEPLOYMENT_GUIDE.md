@@ -180,12 +180,42 @@ No manual `wrangler deploy` needed for staging/production.
 
 ### Frontend Service
 
-The frontend is built and deployed as a Cloudflare Worker:
+The frontend is built and deployed as a Cloudflare Worker.
+
+#### Local Build and Deploy
 
 ```bash
 cd frontendv2
 npm run build         # Creates dist/
 wrangler deploy       # Deploys with assets
+```
+
+#### Cloudflare Dashboard Build Configuration
+
+When configuring via Cloudflare dashboard:
+
+- **Framework preset**: None
+- **Build command**: `npm install && npm run build:frontend`
+- **Build output directory**: `frontendv2/dist`
+- **Root directory**: `/` (leave empty for repository root)
+- **Environment variables**: `NODE_VERSION=22`
+
+Note: The `maxParallelFileOps: 2` in vite.config.ts handles file descriptor limit issues.
+
+#### Troubleshooting Build Issues
+
+**"Failed to resolve import" errors**:
+
+```bash
+# Ensure workspace dependencies are installed
+npm install && npm run build:frontend
+```
+
+**"EMFILE: too many open files"**:
+
+```bash
+# Use the CF-optimized build script
+npm install && cd frontendv2 && npm run build:cf
 ```
 
 ## Monitoring & Debugging
