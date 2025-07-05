@@ -222,4 +222,4 @@ const { t } = useTranslation('scorebook')
 4. ⏳ PENDING: Update API endpoints to match new model (Backend)
    - Fix public collections API to return all public collections
 5. ✅ DONE: Frontend implementation complete and tested
-6. ⏳ PENDING: Complete i18n translations for all languages (currently EN/FR only)
+6. ✅ DONE: Complete i18n translations for all languages
