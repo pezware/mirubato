@@ -741,9 +741,9 @@ export default function ScoreManagement() {
                       onClick={() => handleScoreSelect(score.id)}
                       variant="secondary"
                       fullWidth
-                      className="text-left p-3"
+                      className="justify-start text-left p-3"
                     >
-                      <div>
+                      <div className="w-full">
                         <div className="font-medium text-morandi-stone-800">
                           {score.title}
                         </div>

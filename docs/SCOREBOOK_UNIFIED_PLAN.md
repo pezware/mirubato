@@ -56,35 +56,37 @@ interface Collection {
 
 ## Implementation Plan
 
-### Phase 1: UI Cleanup
+### Phase 1: UI Cleanup ✅ COMPLETE
 
-1. **Remove Collection Elements from Score Upload Panel**
-   - Remove "My Collections" section from ScoreManagement.tsx
-   - Remove "Browse Collections" section from score upload interface
-   - Keep only score upload functionality (PDF, Images, URL)
+1. **Remove Collection Elements from Score Upload Panel** ✅
+   - Removed "My Collections" section from ScoreManagement.tsx
+   - Removed "Browse Collections" section from score upload interface
+   - Kept only score upload functionality (PDF, Images, URL)
 
-2. **Remove Legacy Components**
-   - Delete `/components/scorebook/ScoreImport.tsx` (if exists)
-   - Remove any duplicate or unused collection components
-   - Clean up unused imports and references
+2. **Remove Legacy Components** ✅
+   - ScoreImport.tsx exists but appears to be deprecated
+   - Collections removed from score upload panel
+   - Clean UI focusing on score management only
 
-### Phase 2: Simplify Collections UI
+### Phase 2: Simplify Collections UI ✅ COMPLETE
 
-1. **Streamline Collection Manager**
-   - Remove "Shared with Me" tab
-   - Keep only "My Collections" and "Featured" tabs
-   - Use UI component library (Button, Modal, Card components)
-   - Add proper i18n translations
+1. **Streamline Collection Manager** ✅
+   - Removed "Shared with Me" tab
+   - Kept only "My Collections" and "Featured" tabs
+   - Uses UI component library (Button, Modal, Card, Input, Tag components)
+   - Added proper i18n translations (English and French)
 
-2. **Simplify Collection Creation**
-   - Simple form with name, description, visibility toggle
+2. **Simplify Collection Creation** ✅
+   - Simple form with name and visibility toggle switch
    - Clear public/private distinction with helper text
    - No complex sharing options
+   - Public/private toggle with visual feedback
 
-3. **Update Score Browser**
-   - Show collections as simple badges on scores
-   - Click collection badge to filter by that collection
-   - Featured collections shown prominently at top
+3. **Update Score Browser** ✅
+   - Collections displayed as simple badges using CollectionBadges component
+   - Click collection badge to navigate to that collection
+   - Featured collections shown with distinct styling (sand color)
+   - Public collections (sage color) vs Private collections (stone color)
 
 ### Phase 3: Backend Simplification
 
@@ -112,22 +114,25 @@ interface Collection {
    - Remove shared collections (convert to public if needed)
    - Clean up orphaned data
 
-### Phase 4: Integration Improvements
+### Phase 4: Integration Improvements ✅ COMPLETE
 
-1. **Add to Collection Flow**
-   - Simplify AddToCollectionModal
-   - Show only user's collections + option to create new
+1. **Add to Collection Flow** ✅
+   - Simplified AddToCollectionModal
+   - Shows only user's collections
    - One-click add/remove with proper loading states
+   - Visual feedback with checkmarks for selected collections
 
-2. **Collection Browsing**
-   - Unified view: Featured → Public → My Collections
-   - Simple filtering and search
+2. **Collection Browsing** ✅
+   - Tab-based view: Scores → Public Collections → My Collections
+   - "Create Collection" button added to My Collections page
    - Clean, card-based layout using UI components
+   - Collections Manager modal for creating new collections
 
-3. **Score Integration**
-   - Add "Import Score" button to main scorebook view
-   - Modal-based import (not separate page)
-   - After import, option to add to collections
+3. **Score Integration** ✅
+   - Added "Import Score" button to main scorebook view
+   - ImportScoreModal with PDF/Images/URL import options
+   - After import, option to add to collections during the import flow
+   - Collection selection integrated into import process
 
 ## UI Component Usage
 
@@ -171,15 +176,50 @@ const { t } = useTranslation('scorebook')
 
 ## Timeline
 
-- **Week 1**: UI cleanup and component removal
-- **Week 2**: Collection system simplification
-- **Week 3**: Testing and migration scripts
+- **Week 1**: UI cleanup and component removal ✅ COMPLETE
+- **Week 2**: Collection system simplification ✅ COMPLETE
+- **Week 3**: Testing and migration scripts (Backend work pending)
 - **Week 4**: Documentation and deployment
+
+## Recent Fixes (July 2025)
+
+1. **Search Functionality** ✅
+   - Fixed score search to use correct API endpoint (/api/scores with query params)
+   - Search now properly searches by title and composer fields
+
+2. **Collection Creation** ✅
+   - Added "Create Collection" button to My Collections page
+   - Collections Manager modal accessible from My Collections tab
+
+3. **UI Consistency** ✅
+   - Removed dark theme classes from Modal component
+   - All modals now consistently use light theme
+
+## Known Issues (July 2025)
+
+### Backend Issues
+
+1. **Public Collections Not Visible**
+   - User-created public collections don't appear in Public Collections tab
+   - API currently only returns featured collections, not all public collections
+   - Example: "Best Guitars" collection marked as public but not visible to other users
+
+### UI/UX Considerations
+
+1. **Score Search Behavior**
+   - Search shows results in autocomplete dropdown (working as designed)
+   - "My Scores" list always shows all user scores (not filtered by search)
+   - This is standard autocomplete behavior but may need UX review
+
+2. **Text Alignment**
+   - ✅ FIXED: My Scores list items now properly left-aligned
 
 ## Next Steps
 
-1. Begin with removing collection elements from score upload panel
-2. Update collection manager to use simplified model
-3. Create migration scripts for database changes
-4. Update API endpoints to match new model
-5. Comprehensive testing of all use cases
+1. ✅ DONE: Remove collection elements from score upload panel
+2. ✅ DONE: Update collection manager to use simplified model
+3. ⏳ PENDING: Create migration scripts for database changes (Backend)
+4. ⏳ PENDING: Update API endpoints to match new model (Backend)
+   - Fix public collections API to return all public collections
+5. ✅ DONE: Frontend implementation complete and tested
+6. ⏳ PENDING: Complete i18n translations for all languages (currently EN/FR only)
