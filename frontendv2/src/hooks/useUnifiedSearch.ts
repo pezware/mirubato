@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useScoreStore } from '../stores/scoreStore'
 import type { LogbookEntry } from '../api/logbook'
-import type { Score } from '../stores/scoreStore'
+import type { Score } from '../services/scoreService'
 
 export interface UnifiedSearchResult {
   type: 'logbook' | 'score'
@@ -66,7 +66,6 @@ function searchScores(scores: Score[], query: string): UnifiedSearchResult[] {
       const searchableText = [
         score.title,
         score.composer,
-        score.genre || '',
         score.difficulty || '',
         ...(score.tags || []),
       ]
@@ -87,7 +86,7 @@ function searchScores(scores: Score[], query: string): UnifiedSearchResult[] {
 
 export function useUnifiedSearch(query: string) {
   const { entries } = useLogbookStore()
-  const { scores } = useScoreStore()
+  const { userLibrary } = useScoreStore()
 
   const results = useMemo(() => {
     if (!query || query.length < 2) {
@@ -99,7 +98,7 @@ export function useUnifiedSearch(query: string) {
     }
 
     const logResults = searchLogEntries(entries, query)
-    const scoreResults = searchScores(scores, query)
+    const scoreResults = searchScores(userLibrary, query)
 
     // Combine and sort by relevance/date
     const combined = [...logResults, ...scoreResults].sort((a, b) => {
@@ -131,7 +130,7 @@ export function useUnifiedSearch(query: string) {
       scoreResults,
       combined,
     }
-  }, [entries, scores, query])
+  }, [entries, userLibrary, query])
 
   return results
 }

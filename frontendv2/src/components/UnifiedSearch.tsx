@@ -7,7 +7,7 @@ import {
 } from '../hooks/useUnifiedSearch'
 import type { LogbookEntry } from '../api/logbook'
 import { Input } from './ui/Input'
-import Card from './ui/Card'
+import { Card } from './ui/Card'
 import { cn } from '../utils/cn'
 
 interface UnifiedSearchProps {

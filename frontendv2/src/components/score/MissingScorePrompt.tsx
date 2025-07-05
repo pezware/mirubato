@@ -2,9 +2,8 @@ import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import Button from '../ui/Button'
-import Card from '../ui/Card'
-import Modal from '../ui/Modal'
-import { Input } from '../ui/Input'
+import { Card } from '../ui/Card'
+import { Modal } from '../ui/Modal'
 
 interface MissingScorePromptProps {
   scoreId: string
@@ -14,7 +13,7 @@ interface MissingScorePromptProps {
 }
 
 export default function MissingScorePrompt({
-  scoreId,
+  scoreId: _scoreId,
   scoreTitle,
   scoreComposer,
   onUpload,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, useBeforeUnload } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../stores/scoreStore'
 import { usePracticeStore } from '../stores/practiceStore'
@@ -8,7 +8,7 @@ import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
-import Modal from '../components/ui/Modal'
+import { Modal } from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 
 export default function ScorebookPage() {
@@ -58,18 +58,21 @@ export default function ScorebookPage() {
   }, [currentSession, showPracticeWarning])
 
   // Browser refresh/close warning
-  useBeforeUnload(
-    e => {
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (currentSession?.isActive) {
         e.preventDefault()
         e.returnValue = ''
       }
-    },
-    [currentSession]
-  )
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [currentSession])
 
   const handleStopPractice = () => {
-    stopPractice()
+    usePracticeStore.getState().stopPractice()
+    useScoreStore.getState().stopPractice()
     setShowPracticeWarning(false)
     if (pendingNavigation) {
       navigate(pendingNavigation)

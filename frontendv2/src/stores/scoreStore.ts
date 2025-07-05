@@ -3,7 +3,6 @@ import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
 import { usePracticeStore } from './practiceStore'
 import { useLogbookStore } from './logbookStore'
-import { useAuthStore } from './authStore'
 
 interface PracticeSession {
   id: string
@@ -186,9 +185,9 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     const { currentScore } = get()
     if (!currentScore) return
 
-    // Get user's instrument preference
-    const user = useAuthStore.getState().user
-    const instrument = user?.primaryInstrument || 'PIANO'
+    // Get user's instrument preference (default to PIANO for now)
+    // TODO: Add user instrument preference to profile
+    const instrument = 'PIANO' as const
 
     // Start practice in practiceStore
     usePracticeStore.getState().startPractice(currentScore, instrument)
@@ -214,7 +213,7 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       timestamp: new Date().toISOString(),
       duration: sessionData.duration,
       type: 'PRACTICE',
-      instrument: useAuthStore.getState().user?.primaryInstrument || 'PIANO',
+      instrument: 'PIANO' as const, // TODO: Add user instrument preference
       pieces: [
         {
           title: sessionData.scoreTitle,
