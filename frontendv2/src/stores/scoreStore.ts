@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
+import { usePracticeStore } from './practiceStore'
+import { useLogbookStore } from './logbookStore'
+import { useAuthStore } from './authStore'
 
 interface PracticeSession {
   id: string
@@ -180,46 +183,58 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
 
   // Practice actions
   startPractice: () => {
-    const { currentScore, metronomeSettings } = get()
+    const { currentScore } = get()
     if (!currentScore) return
 
-    const session: PracticeSession = {
-      id: `practice_${Date.now()}`,
-      scoreId: currentScore.id,
-      startTime: new Date(),
-      duration: 0,
-      measuresCompleted: [],
-      tempo: metronomeSettings.tempo,
-    }
+    // Get user's instrument preference
+    const user = useAuthStore.getState().user
+    const instrument = user?.primaryInstrument || 'PIANO'
 
-    set({ practiceSession: session, isRecording: true })
+    // Start practice in practiceStore
+    usePracticeStore.getState().startPractice(currentScore, instrument)
+
+    // Mark as recording in scoreStore for UI
+    set({ isRecording: true })
   },
 
   stopPractice: () => {
-    const { practiceSession } = get()
-    if (!practiceSession) return
+    const { currentScore } = get()
+    if (!currentScore) return
 
-    const endTime = new Date()
-    const duration = Math.floor(
-      (endTime.getTime() - practiceSession.startTime.getTime()) / 1000
-    )
+    // Stop practice and get session data
+    const sessionData = usePracticeStore.getState().stopPractice()
+    if (!sessionData) {
+      set({ isRecording: false })
+      return
+    }
 
-    set({
-      practiceSession: {
-        ...practiceSession,
-        endTime,
-        duration,
+    // Create logbook entry
+    const logbookStore = useLogbookStore.getState()
+    logbookStore.createEntry({
+      timestamp: new Date().toISOString(),
+      duration: sessionData.duration,
+      type: 'PRACTICE',
+      instrument: useAuthStore.getState().user?.primaryInstrument || 'PIANO',
+      pieces: [
+        {
+          title: sessionData.scoreTitle,
+          composer: sessionData.scoreComposer || undefined,
+        },
+      ],
+      techniques: [],
+      goalIds: [],
+      tags: [],
+      metadata: {
+        source: 'score-viewer',
       },
-      isRecording: false,
+      // Score integration fields
+      scoreId: sessionData.scoreId,
+      scoreTitle: sessionData.scoreTitle,
+      scoreComposer: sessionData.scoreComposer,
+      autoTracked: true,
     })
 
-    // Here we would save to logbook
-    // For now, just log it
-    console.log('Practice session completed:', {
-      ...practiceSession,
-      duration,
-      endTime,
-    })
+    set({ isRecording: false })
   },
 
   updatePracticeProgress: (measure: number) => {

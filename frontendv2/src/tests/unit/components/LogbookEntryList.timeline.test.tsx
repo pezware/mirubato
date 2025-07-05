@@ -1,12 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { act } from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import LogbookEntryList from '../../../components/LogbookEntryList'
 import { useLogbookStore } from '../../../stores/logbookStore'
 import type { LogbookEntry } from '../../../api/logbook'
 
 vi.mock('../../../stores/logbookStore')
+
+// Mock useNavigate
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  }
+})
 
 // Mock specific translations for this test
 vi.mock('react-i18next', () => ({
@@ -144,7 +154,11 @@ describe('LogbookEntryList Timeline Filtering', () => {
     const onUpdate = vi.fn()
 
     await act(async () => {
-      render(<LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />)
+      render(
+        <BrowserRouter>
+          <LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />
+        </BrowserRouter>
+      )
     })
 
     // Wait for component to initialize
@@ -165,7 +179,11 @@ describe('LogbookEntryList Timeline Filtering', () => {
     const onUpdate = vi.fn()
 
     await act(async () => {
-      render(<LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />)
+      render(
+        <BrowserRouter>
+          <LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />
+        </BrowserRouter>
+      )
     })
 
     // Wait for initial render (Week 4)
@@ -193,7 +211,11 @@ describe('LogbookEntryList Timeline Filtering', () => {
     const onUpdate = vi.fn()
 
     await act(async () => {
-      render(<LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />)
+      render(
+        <BrowserRouter>
+          <LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />
+        </BrowserRouter>
+      )
     })
 
     // Wait for initial render
@@ -220,7 +242,11 @@ describe('LogbookEntryList Timeline Filtering', () => {
     const onUpdate = vi.fn()
 
     await act(async () => {
-      render(<LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />)
+      render(
+        <BrowserRouter>
+          <LogbookEntryList entries={mockEntries} onUpdate={onUpdate} />
+        </BrowserRouter>
+      )
     })
 
     // Click on the year level (2025)
@@ -243,7 +269,9 @@ describe('LogbookEntryList Timeline Filtering', () => {
 
     await act(async () => {
       render(
-        <LogbookEntryList entries={emptyWeekEntries} onUpdate={onUpdate} />
+        <BrowserRouter>
+          <LogbookEntryList entries={emptyWeekEntries} onUpdate={onUpdate} />
+        </BrowserRouter>
       )
     })
 

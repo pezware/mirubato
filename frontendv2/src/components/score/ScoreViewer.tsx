@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useScoreStore } from '../../stores/scoreStore'
+import { usePracticeStore } from '../../stores/practiceStore'
 import { type Score } from '../../services/scoreService'
 import AdaptivePdfViewer from './AdaptivePdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
@@ -39,6 +40,8 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
   const handlePageChange = useCallback(
     (page: number) => {
       setCurrentPage(page)
+      // Track page view in practice session if active
+      usePracticeStore.getState().updatePageView(page)
     },
     [setCurrentPage]
   )

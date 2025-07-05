@@ -24,6 +24,11 @@ export interface LogbookEntry {
     notesPlayed?: number
     mistakeCount?: number
   }
+  // Score integration fields
+  scoreId?: string // Link to score in scorebook
+  scoreTitle?: string // Cached score title for display
+  scoreComposer?: string // Cached composer for display
+  autoTracked?: boolean // Flag for automatically tracked sessions
   createdAt: string
   updatedAt: string
   deletedAt?: string
@@ -52,11 +57,19 @@ export interface Goal {
 type CreateEntryData = Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> & {
   notes?: string | null
   mood?: LogbookEntry['mood'] | null
+  scoreId?: string | null
+  scoreTitle?: string | null
+  scoreComposer?: string | null
+  autoTracked?: boolean | null
 }
 
 type UpdateEntryData = Partial<LogbookEntry> & {
   notes?: string | null | undefined
   mood?: LogbookEntry['mood'] | null | undefined
+  scoreId?: string | null | undefined
+  scoreTitle?: string | null | undefined
+  scoreComposer?: string | null | undefined
+  autoTracked?: boolean | null | undefined
 }
 
 export const logbookApi = {
@@ -82,6 +95,10 @@ export const logbookApi = {
       // Ensure fields are properly typed for D1
       notes: entry.notes || null,
       mood: entry.mood || null,
+      scoreId: entry.scoreId || undefined,
+      scoreTitle: entry.scoreTitle || undefined,
+      scoreComposer: entry.scoreComposer || undefined,
+      autoTracked: entry.autoTracked || undefined,
     }
 
     const response = await apiClient.post<{ success: boolean }>(
@@ -124,6 +141,10 @@ export const logbookApi = {
       ...updatedEntry,
       notes: updatedEntry.notes || null,
       mood: updatedEntry.mood || null,
+      scoreId: updatedEntry.scoreId || undefined,
+      scoreTitle: updatedEntry.scoreTitle || undefined,
+      scoreComposer: updatedEntry.scoreComposer || undefined,
+      autoTracked: updatedEntry.autoTracked || undefined,
       pieces:
         updatedEntry.pieces?.map(p => ({
           ...p,

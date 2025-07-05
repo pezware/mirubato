@@ -6,6 +6,7 @@ interface LogbookState {
   // Data - Using Maps for O(1) access
   entriesMap: Map<string, LogbookEntry>
   goalsMap: Map<string, Goal>
+  scoreMetadata: Record<string, { title: string; composer?: string }> // Cache score info
 
   // UI State
   isLoading: boolean
@@ -50,6 +51,7 @@ interface LogbookState {
 // Local storage keys
 const ENTRIES_KEY = 'mirubato:logbook:entries'
 const GOALS_KEY = 'mirubato:logbook:goals'
+const SCORE_METADATA_KEY = 'mirubato:logbook:scoreMetadata'
 
 // Debounce helper
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +95,7 @@ const sortEntriesByTimestamp = (entries: LogbookEntry[]): LogbookEntry[] => {
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
   goalsMap: new Map(),
+  scoreMetadata: {},
   isLoading: false,
   error: null,
   searchQuery: '',
@@ -110,11 +113,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const stored = localStorage.getItem(ENTRIES_KEY)
       const entries: LogbookEntry[] = stored ? JSON.parse(stored) : []
 
+      // Load score metadata
+      const storedMetadata = localStorage.getItem(SCORE_METADATA_KEY)
+      const scoreMetadata = storedMetadata ? JSON.parse(storedMetadata) : {}
+
       // Convert array to Map for O(1) access
       const entriesMap = new Map(entries.map(entry => [entry.id, entry]))
       set({
         entriesMap,
         entries: sortEntriesByTimestamp(Array.from(entriesMap.values())),
+        scoreMetadata,
         isLoading: false,
       })
 
@@ -168,12 +176,29 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       }
 
+      // Cache score metadata if present
+      let updatedScoreMetadata = get().scoreMetadata
+      if (entry.scoreId && entry.scoreTitle) {
+        updatedScoreMetadata = {
+          ...updatedScoreMetadata,
+          [entry.scoreId]: {
+            title: entry.scoreTitle,
+            composer: entry.scoreComposer,
+          },
+        }
+        immediateLocalStorageWrite(
+          SCORE_METADATA_KEY,
+          JSON.stringify(updatedScoreMetadata)
+        )
+      }
+
       // O(1) insertion
       const newEntriesMap = new Map(get().entriesMap)
       newEntriesMap.set(entry.id, entry)
       set({
         entriesMap: newEntriesMap,
         entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+        scoreMetadata: updatedScoreMetadata,
       })
 
       // Immediate write to localStorage for new entries

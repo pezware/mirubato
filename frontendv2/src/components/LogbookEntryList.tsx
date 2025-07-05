@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
@@ -17,6 +18,7 @@ export default function LogbookEntryList({
 }: LogbookEntryListProps) {
   const { t, i18n } = useTranslation(['logbook', 'common'])
   const { deleteEntry } = useLogbookStore()
+  const navigate = useNavigate()
   const [editingEntry, setEditingEntry] = useState<LogbookEntry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState('week')
@@ -84,6 +86,15 @@ export default function LogbookEntryList({
       newExpanded.add(id)
     }
     setExpandedEntries(newExpanded)
+  }
+
+  const handleScoreClick = (entry: LogbookEntry) => {
+    if (entry.scoreId) {
+      navigate(`/scorebook/${entry.scoreId}`)
+    } else if (entry.scoreTitle) {
+      // If no scoreId but has title, navigate to search
+      navigate(`/scorebook/browse?q=${encodeURIComponent(entry.scoreTitle)}`)
+    }
   }
 
   // Calculate the current week number of the month
@@ -407,6 +418,30 @@ export default function LogbookEntryList({
                           {getMoodEmoji(entry.mood)}
                         </span>
                       )}
+                      {entry.scoreId && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation()
+                            handleScoreClick(entry)
+                          }}
+                          className="flex items-center gap-1 px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 text-xs rounded-full hover:bg-morandi-sky-200 transition-colors"
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                            />
+                          </svg>
+                          {entry.scoreTitle || t('logbook:viewScore')}
+                        </button>
+                      )}
                       {entry.notes && !isExpanded && (
                         <span className="text-sm text-morandi-stone-500 truncate max-w-md">
                           {entry.notes}
@@ -479,6 +514,49 @@ export default function LogbookEntryList({
               {/* Collapsible Content */}
               {isExpanded && (
                 <div className="px-4 pb-4 animate-fade-in">
+                  {/* Score Information */}
+                  {entry.scoreId && (
+                    <div className="mb-3 p-3 bg-morandi-sky-50 rounded-lg border border-morandi-sky-200">
+                      <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+                        📄 {t('logbook:linkedScore')}:
+                      </h4>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          handleScoreClick(entry)
+                        }}
+                        className="flex items-center gap-2 text-morandi-stone-700 hover:text-morandi-stone-900 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                          />
+                        </svg>
+                        <span className="font-medium">
+                          {entry.scoreTitle || 'View Score'}
+                        </span>
+                        {entry.scoreComposer && (
+                          <span className="text-sm text-morandi-stone-600">
+                            by {entry.scoreComposer}
+                          </span>
+                        )}
+                      </button>
+                      {entry.autoTracked && (
+                        <span className="inline-block mt-2 px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
+                          {t('logbook:autoTracked')}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Pieces */}
                   {entry.pieces.length > 0 && (
                     <div className="mb-3">

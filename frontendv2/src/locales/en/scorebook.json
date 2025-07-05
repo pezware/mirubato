@@ -36,5 +36,17 @@
   "duration": "Duration",
   "progress": "Progress",
   "saveToLogbook": "Save to Logbook",
-  "discard": "Discard"
+  "discard": "Discard",
+  "practice": "Practice",
+  "practiceInProgress": "Practice in Progress",
+  "practiceWarning": "You have an active practice session. Would you like to save it before leaving?",
+  "practiceDuration": "Duration",
+  "discardPractice": "Discard",
+  "savePractice": "Save & Exit",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "increaseVolume": "Increase volume",
+  "decreaseVolume": "Decrease volume",
+  "increaseTempo10": "Increase tempo by 10",
+  "decreaseTempo10": "Decrease tempo by 10"
 }
