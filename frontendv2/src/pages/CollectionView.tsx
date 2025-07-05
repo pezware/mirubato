@@ -41,8 +41,45 @@ export default function CollectionViewPage() {
           console.log('Full collection with scores:', fullCollection)
           setCollection(fullCollection)
           // The collection should have scores property with full score details
-          if (fullCollection.scores) {
-            setScores(fullCollection.scores)
+          if (fullCollection.scores && Array.isArray(fullCollection.scores)) {
+            console.log('Score data structure:', fullCollection.scores[0])
+            // Ensure each score has tags property (at least empty array)
+            const normalizedScores = fullCollection.scores.map(score => ({
+              ...score,
+              tags: score.tags || [],
+            }))
+            setScores(normalizedScores)
+          } else if (
+            fullCollection.scoreIds &&
+            fullCollection.scoreIds.length > 0
+          ) {
+            // If we only have scoreIds but no full scores, we need to load them
+            console.log(
+              'Collection has scoreIds but no scores, loading scores:',
+              fullCollection.scoreIds
+            )
+            const scorePromises = fullCollection.scoreIds.map(id =>
+              scoreService.getScore(id).catch(err => {
+                console.error(`Failed to load score ${id}:`, err)
+                return null
+              })
+            )
+            const loadedScores = await Promise.all(scorePromises)
+            const validScores = loadedScores
+              .filter(s => s !== null)
+              .map(score => ({
+                ...score,
+                tags: score.tags || [],
+              }))
+            setScores(validScores)
+          } else {
+            console.warn('No scores found in collection', {
+              collection: fullCollection,
+              hasScores: !!fullCollection.scores,
+              isArray: Array.isArray(fullCollection.scores),
+              scoreIds: fullCollection.scoreIds,
+            })
+            setScores([])
           }
           return
         } catch (error) {
@@ -65,7 +102,14 @@ export default function CollectionViewPage() {
             const collectionScores = await scoreService.getScores({
               tags: publicCollection.tags,
             })
-            setScores(collectionScores.items)
+            // Normalize scores to ensure tags property exists
+            const normalizedScores = collectionScores.items.map(score => ({
+              ...score,
+              tags: score.tags || [],
+            }))
+            setScores(normalizedScores)
+          } else {
+            setScores([])
           }
         } catch (error) {
           console.error('Failed to load public collection:', error)

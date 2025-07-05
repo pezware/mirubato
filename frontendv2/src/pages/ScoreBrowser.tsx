@@ -75,7 +75,11 @@ export default function ScoreBrowserPage() {
         const collectionScores = await scoreService.getScores({
           tags: [collection.slug],
         })
-        loadedScores = collectionScores.items
+        // Normalize scores to ensure tags property exists
+        loadedScores = collectionScores.items.map(score => ({
+          ...score,
+          tags: score.tags || [],
+        }))
         setScores(loadedScores)
       } else {
         // Load all scores with filters
@@ -84,7 +88,11 @@ export default function ScoreBrowserPage() {
         if (selectedDifficulty) params.difficulty = selectedDifficulty
 
         const scoresData = await scoreService.getScores(params)
-        loadedScores = scoresData.items
+        // Normalize scores to ensure tags property exists
+        loadedScores = scoresData.items.map(score => ({
+          ...score,
+          tags: score.tags || [],
+        }))
         setScores(loadedScores)
       }
 
