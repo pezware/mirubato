@@ -32,7 +32,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={props.id}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-gray-700"
           >
             {label}
             {props.required && <span className="ml-1 text-red-500">*</span>}
@@ -41,23 +41,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           {leftIcon && (
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">
-                {leftIcon}
-              </span>
+              <span className="text-gray-500 sm:text-sm">{leftIcon}</span>
             </div>
           )}
           <input
             type={type}
             className={cn(
-              'block w-full rounded-md border px-3 py-2 text-gray-900 dark:text-gray-100',
-              'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+              'block w-full rounded-md border px-3 py-2 text-gray-900',
+              'placeholder:text-gray-400',
               'focus:outline-none focus:ring-2 focus:ring-offset-2',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'transition-colors duration-200',
-              'bg-white dark:bg-gray-800',
+              'bg-white !important',
               hasError
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 dark:border-gray-600 focus:border-morandi-sage-500 focus:ring-morandi-sage-500',
+                : 'border-gray-300 focus:border-morandi-sage-500 focus:ring-morandi-sage-500',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               className
@@ -75,25 +73,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
           {rightIcon && (
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">
-                {rightIcon}
-              </span>
+              <span className="text-gray-500 sm:text-sm">{rightIcon}</span>
             </div>
           )}
         </div>
         {error && (
-          <p
-            className="text-sm text-red-600 dark:text-red-400"
-            id={`${props.id}-error`}
-          >
+          <p className="text-sm text-red-600" id={`${props.id}-error`}>
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p
-            className="text-sm text-gray-500 dark:text-gray-400"
-            id={`${props.id}-description`}
-          >
+          <p className="text-sm text-gray-500" id={`${props.id}-description`}>
             {helperText}
           </p>
         )}
@@ -124,7 +114,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={props.id}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-gray-700"
           >
             {label}
             {props.required && <span className="ml-1 text-red-500">*</span>}
@@ -132,16 +122,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         <textarea
           className={cn(
-            'block w-full rounded-md border px-3 py-2 text-gray-900 dark:text-gray-100',
-            'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'block w-full rounded-md border px-3 py-2 text-gray-900',
+            'placeholder:text-gray-400',
             'focus:outline-none focus:ring-2 focus:ring-offset-2',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'transition-colors duration-200',
-            'bg-white dark:bg-gray-800',
+            'bg-white',
             'resize-y min-h-[80px]',
             hasError
               ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 dark:border-gray-600 focus:border-morandi-sage-500 focus:ring-morandi-sage-500',
+              : 'border-gray-300 focus:border-morandi-sage-500 focus:ring-morandi-sage-500',
             className
           )}
           ref={ref}
@@ -156,18 +146,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p
-            className="text-sm text-red-600 dark:text-red-400"
-            id={`${props.id}-error`}
-          >
+          <p className="text-sm text-red-600" id={`${props.id}-error`}>
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p
-            className="text-sm text-gray-500 dark:text-gray-400"
-            id={`${props.id}-description`}
-          >
+          <p className="text-sm text-gray-500" id={`${props.id}-description`}>
             {helperText}
           </p>
         )}

@@ -63,7 +63,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
           <div className="w-full border-t border-morandi-stone-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white/90 text-morandi-stone-500">
+          <span className="px-4 bg-white text-morandi-stone-500">
             {t('auth:orContinueWithEmail')}
           </span>
         </div>
