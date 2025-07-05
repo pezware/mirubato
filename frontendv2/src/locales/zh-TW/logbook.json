@@ -32,7 +32,11 @@
     "confirmDelete": "您確定要刪除這筆記錄嗎？",
     "foundEntries": "找到 {{count}} 筆記錄",
     "techniques": "技巧",
-    "practiceDate": "練習日期"
+    "practiceDate": "練習日期",
+    "successAdded": "練習記錄新增成功！",
+    "successUpdated": "練習記錄更新成功！",
+    "piecesNote": "練習時間將平均分配給各曲目",
+    "maxPiecesReached": "每筆記錄最多3個曲目"
   },
   "filters": {
     "last7Days": "最近 7 天",
@@ -54,5 +58,8 @@
   },
   "autocomplete": {
     "offline": "離線模式 - 顯示您的歷史記錄"
-  }
+  },
+  "viewScore": "查看樂譜",
+  "linkedScore": "關聯的樂譜",
+  "autoTracked": "從樂譜練習自動追蹤"
 }

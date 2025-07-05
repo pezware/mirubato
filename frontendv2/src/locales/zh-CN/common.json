@@ -12,6 +12,8 @@
   "next": "下一个",
   "previous": "上一个",
   "search": "搜索",
+  "searchScoresAndLogs": "搜索乐谱和练习日志...",
+  "noResults": "没有找到结果",
   "filter": "筛选",
   "sort": "排序",
   "refresh": "刷新",
@@ -39,6 +41,7 @@
   "profile": "个人资料",
   "logout": "登出",
   "login": "登录",
+  "signIn": "登录",
   "register": "注册",
   "email": "邮箱",
   "password": "密码",
@@ -56,6 +59,8 @@
   "pending": "待处理",
   "failed": "失败",
   "retry": "重试",
+  "minutes": "分钟",
+  "goBack": "返回",
   "skip": "跳过",
   "continue": "继续",
   "finish": "完成",
@@ -115,6 +120,15 @@
     "closeMenu": "关闭菜单"
   },
   "music": {
+    "notes": {
+      "C": "C",
+      "D": "D",
+      "E": "E",
+      "F": "F",
+      "G": "G",
+      "A": "A",
+      "B": "B"
+    },
     "practice": "练习",
     "lesson": "课程",
     "performance": "演出",
@@ -133,5 +147,53 @@
     "october": "十月",
     "november": "十一月",
     "december": "十二月"
-  }
+  },
+  "time": {
+    "minute": "分钟",
+    "minute_one": "{{count}} 分钟",
+    "minute_other": "{{count}} 分钟",
+    "minute_plural": "分钟",
+    "hour": "小时",
+    "hour_one": "{{count}} 小时",
+    "hour_other": "{{count}} 小时",
+    "hour_plural": "小时",
+    "day": "天",
+    "day_one": "{{count}} 天",
+    "day_other": "{{count}} 天",
+    "day_plural": "天",
+    "week": "周",
+    "week_plural": "周",
+    "month": "月",
+    "month_plural": "月",
+    "year": "年",
+    "year_plural": "年",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "lastWeek": "上周",
+    "thisMonth": "本月",
+    "lastMonth": "上月",
+    "allTime": "全部时间"
+  },
+  "days": {
+    "short": {
+      "0": "日",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六"
+    },
+    "full": {
+      "sunday": "星期日",
+      "monday": "星期一",
+      "tuesday": "星期二",
+      "wednesday": "星期三",
+      "thursday": "星期四",
+      "friday": "星期五",
+      "saturday": "星期六"
+    }
+  },
+  "tagline": "和我一起演奏"
 }

@@ -12,6 +12,8 @@
   "next": "Weiter",
   "previous": "Zurück",
   "search": "Suchen",
+  "searchScoresAndLogs": "Noten und Übungsprotokolle durchsuchen...",
+  "noResults": "Keine Ergebnisse gefunden",
   "filter": "Filtern",
   "sort": "Sortieren",
   "refresh": "Aktualisieren",
@@ -56,6 +58,8 @@
   "pending": "Ausstehend",
   "failed": "Fehlgeschlagen",
   "retry": "Erneut versuchen",
+  "minutes": "Min",
+  "goBack": "Zurück",
   "skip": "Überspringen",
   "continue": "Fortfahren",
   "finish": "Fertigstellen",
@@ -115,6 +119,15 @@
     "closeMenu": "Menü schließen"
   },
   "music": {
+    "notes": {
+      "C": "C",
+      "D": "D",
+      "E": "E",
+      "F": "F",
+      "G": "G",
+      "A": "A",
+      "B": "H"
+    },
     "practice": "Üben",
     "lesson": "Unterricht",
     "performance": "Aufführung",
@@ -133,5 +146,53 @@
     "october": "Oktober",
     "november": "November",
     "december": "Dezember"
-  }
+  },
+  "time": {
+    "minute": "Minute",
+    "minute_one": "{{count}} Minute",
+    "minute_other": "{{count}} Minuten",
+    "minute_plural": "Minuten",
+    "hour": "Stunde",
+    "hour_one": "{{count}} Stunde",
+    "hour_other": "{{count}} Stunden",
+    "hour_plural": "Stunden",
+    "day": "Tag",
+    "day_one": "{{count}} Tag",
+    "day_other": "{{count}} Tage",
+    "day_plural": "Tage",
+    "week": "Woche",
+    "week_plural": "Wochen",
+    "month": "Monat",
+    "month_plural": "Monate",
+    "year": "Jahr",
+    "year_plural": "Jahre",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "thisWeek": "Diese Woche",
+    "lastWeek": "Letzte Woche",
+    "thisMonth": "Diesen Monat",
+    "lastMonth": "Letzten Monat",
+    "allTime": "Alle Zeit"
+  },
+  "days": {
+    "short": {
+      "0": "S",
+      "1": "M",
+      "2": "D",
+      "3": "M",
+      "4": "D",
+      "5": "F",
+      "6": "S"
+    },
+    "full": {
+      "sunday": "Sonntag",
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag"
+    }
+  },
+  "tagline": "spiel mit mir"
 }

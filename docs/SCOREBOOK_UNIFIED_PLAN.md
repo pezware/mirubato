@@ -335,31 +335,73 @@ The collections system has been simplified as outlined in previous phases:
 3. **Public/Private visibility only** ✅
 4. **Import flow integration** ✅
 
-## Timeline for Integration
+## Implementation Status
 
-### Week 1: Core Integration
+### Completed Features ✅
 
-- Day 1-2: Update data models and create practiceStore
-- Day 3-4: Enhance LogbookEntryList with score display
-- Day 5: Implement click-to-score navigation
+1. **Data Model Updates**
+   - Added scoreId, scoreTitle, scoreComposer to LogbookEntry interface
+   - Created practiceStore for managing active practice sessions
+   - Updated scoreStore to integrate with practice tracking
 
-### Week 2: Practice Tracking
+2. **Click-to-Score Navigation**
+   - LogbookEntryList now shows linked scores
+   - Click functionality to navigate directly to scores
+   - Fallback to scorebook when score not linked
 
-- Day 1-2: Add practice controls to ScoreViewer
-- Day 3-4: Implement automatic logbook entry creation
-- Day 5: Add exit confirmation handling
+3. **Practice Tracking Integration**
+   - Start/Stop practice controls in ScoreControls component
+   - Automatic logbook entry creation on practice stop
+   - Practice duration tracking with real-time updates
+   - Exit confirmation when closing score with active practice
 
-### Week 3: Search and Analytics
+4. **Unified Search**
+   - Created useUnifiedSearch hook for searching both logs and scores
+   - UnifiedSearch component with keyboard navigation
+   - Integrated into UnifiedHeader
+   - Results show both scores and logbook entries
 
-- Day 1-2: Implement unified search
-- Day 3-4: Add practice history to scores
-- Day 5: Testing and bug fixes
+5. **Missing Score Handling**
+   - MissingScorePrompt component for scores without files
+   - Support for external and manual score types
+   - Prepared upload functionality interface
 
-### Week 4: Polish and Deploy
+### Implementation Timeline (Completed)
 
-- Day 1-2: Handle edge cases (missing scores, offline)
-- Day 3-4: Performance optimization
-- Day 5: Documentation and deployment
+#### Week 1: Core Integration ✅
+
+- Updated data models and created practiceStore
+- Enhanced LogbookEntryList with score display
+- Implemented click-to-score navigation
+
+#### Week 2: Practice Tracking ✅
+
+- Added practice controls to ScoreViewer
+- Implemented automatic logbook entry creation
+- Added exit confirmation handling
+
+#### Week 3: Search and UI ✅
+
+- Implemented unified search
+- Created missing score handling
+- Fixed TypeScript errors and tests
+
+### Remaining Work
+
+1. **Analytics Dashboard** (Future)
+   - Practice history per score
+   - Progress visualization
+   - Practice streaks
+
+2. **Smart Collections** (Future)
+   - Auto-create "Recently Practiced"
+   - "Most Practiced" collection
+   - Time-based collections
+
+3. **Upload Functionality** (Future)
+   - Complete file upload for missing scores
+   - Support for multiple file types
+   - Progress indicators
 
 ## Success Metrics
 

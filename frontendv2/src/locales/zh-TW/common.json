@@ -10,6 +10,8 @@
   "remove": "移除",
   "create": "建立",
   "search": "搜尋",
+  "searchScoresAndLogs": "搜尋樂譜和練習日誌...",
+  "noResults": "沒有找到結果",
   "filter": "篩選",
   "previous": "上一頁",
   "next": "下一頁",
@@ -22,6 +24,10 @@
   "success": "成功",
   "warning": "警告",
   "info": "資訊",
+  "signIn": "登入",
+  "retry": "重試",
+  "minutes": "分鐘",
+  "goBack": "返回",
   "instruments": {
     "piano": "鋼琴",
     "guitar": "吉他"
@@ -74,6 +80,26 @@
     "october": "十月",
     "november": "十一月",
     "december": "十二月"
+  },
+  "days": {
+    "short": {
+      "0": "日",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六"
+    },
+    "full": {
+      "sunday": "星期日",
+      "monday": "星期一",
+      "tuesday": "星期二",
+      "wednesday": "星期三",
+      "thursday": "星期四",
+      "friday": "星期五",
+      "saturday": "星期六"
+    }
   },
   "music": {
     "notes": {
