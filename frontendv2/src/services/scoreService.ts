@@ -160,7 +160,8 @@ class ScoreService {
   // Search scores
   async searchScores(params: ScoreSearchParams): Promise<ScoreListResponse> {
     try {
-      const response = await scoresApiClient.get('/api/search', { params })
+      // Use the same endpoint as getScores, which supports query parameters
+      const response = await scoresApiClient.get('/api/scores', { params })
       return response.data.data
     } catch (error) {
       if (axios.isAxiosError(error)) {

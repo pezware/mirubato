@@ -12,6 +12,7 @@ import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionBadges from '../components/score/CollectionBadges'
+import CollectionsManager from '../components/score/CollectionsManager'
 import { useAuthStore } from '../stores/authStore'
 import { cn } from '../utils/cn'
 import Button from '../components/ui/Button'
@@ -33,6 +34,7 @@ export default function ScoreBrowserPage() {
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
+  const [showCollectionsManager, setShowCollectionsManager] = useState(false)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
@@ -713,27 +715,55 @@ export default function ScoreBrowserPage() {
 
                 {/* My Collections Tab */}
                 {tabView === 'myCollections' && isAuthenticated && (
-                  <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
-                    {userCollections.length === 0 ? (
-                      <div className="p-8 text-center text-morandi-stone-600">
-                        <p>
-                          {t(
-                            'scorebook:noUserCollections',
-                            'You have no collections yet'
-                          )}
-                        </p>
-                        <p className="text-sm mt-2">
-                          {t(
-                            'scorebook:createFirstCollection',
-                            'Create your first collection to organize your scores'
-                          )}
-                        </p>
-                      </div>
-                    ) : (
-                      userCollections.map(collection =>
-                        renderCollectionRow(collection)
-                      )
-                    )}
+                  <div>
+                    {/* Header with Create Button */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-medium text-morandi-stone-800">
+                        {t('scorebook:myCollections', 'My Collections')}
+                      </h2>
+                      <Button
+                        onClick={() => setShowCollectionsManager(true)}
+                        size="sm"
+                        variant="primary"
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        {t('scorebook:createCollection', 'Create Collection')}
+                      </Button>
+                    </div>
+
+                    <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
+                      {userCollections.length === 0 ? (
+                        <div className="p-8 text-center text-morandi-stone-600">
+                          <p>
+                            {t(
+                              'scorebook:noUserCollections',
+                              'You have no collections yet'
+                            )}
+                          </p>
+                          <p className="text-sm mt-2">
+                            {t(
+                              'scorebook:createFirstCollection',
+                              'Create your first collection to organize your scores'
+                            )}
+                          </p>
+                          <Button
+                            onClick={() => setShowCollectionsManager(true)}
+                            variant="secondary"
+                            className="mt-4"
+                          >
+                            {t(
+                              'scorebook:createCollection',
+                              'Create Collection'
+                            )}
+                          </Button>
+                        </div>
+                      ) : (
+                        userCollections.map(collection =>
+                          renderCollectionRow(collection)
+                        )
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -764,6 +794,22 @@ export default function ScoreBrowserPage() {
         onClose={() => setShowImportModal(false)}
         onSuccess={handleImportSuccess}
       />
+
+      {/* Collections Manager Modal */}
+      {showCollectionsManager && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <CollectionsManager
+              onClose={() => {
+                setShowCollectionsManager(false)
+                // Reload user collections after closing
+                loadData()
+              }}
+              className="h-full"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
