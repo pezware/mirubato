@@ -4,9 +4,9 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.4.0 (July 2025)
+## Current Architecture - Version 1.4.1 (July 2025)
 
-### Version 1.4.0 Highlights
+### Version 1.4.1 Highlights
 
 - **Component Architecture**: Modular component system with comprehensive refactoring
 - **UI Component Library**: Complete custom component library with Morandi design system
@@ -16,6 +16,7 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Mobile Optimization**: Responsive design improvements and touch interactions
 - **Test Coverage**: 270+ unit tests plus comprehensive E2E test coverage
 - **Code Quality**: Eliminated technical debt and improved maintainability
+- **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
 
 ### Infrastructure
 
@@ -247,7 +248,7 @@ The frontend uses a straightforward React architecture without the complex modul
 - **Home**: Landing page with feature overview
 - **Logbook**: Practice session tracking and reporting
 - **Toolbox**: Metronome with customizable patterns
-- **Scorebook**: Sheet music browser and viewer
+- **Scorebook**: Sheet music browser with collections support (July 2025 update)
 - **Auth**: Authentication pages (verify, callback)
 
 **Core Components**
@@ -265,6 +266,15 @@ The frontend uses a straightforward React architecture without the complex modul
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
+
+**Scorebook Components (July 2025)**
+
+- **ScoreBrowser**: Main scorebook page with tabs for Scores, Public Collections, My Collections
+- **CollectionsManager**: Simplified collection creation and management
+- **CollectionBadges**: Lightweight collection display as clickable badges
+- **ImportScoreModal**: Unified import flow for PDF/Images/URL with collection selection
+- **AddToCollectionModal**: Quick add scores to collections
+- **ScoreManagement**: Simplified score upload without collection elements
 
 **Layout Components**
 
@@ -476,7 +486,7 @@ The frontend implements aggressive code splitting:
 
 ## Architecture Phases
 
-### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.4.0)
+### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.4.1)
 
 - ✅ Core functionality: Practice logging and reporting
 - ✅ Manual practice entry with timer and precise time selection
@@ -507,6 +517,16 @@ The frontend implements aggressive code splitting:
 - **Monthly Summaries**: Added historical practice data access by month
 - **Performance**: Lazy loading implemented for report components to improve initial load time
 - **E2E Testing**: Comprehensive test coverage for all new features
+
+**Scorebook Collections Simplification (July 2025):**
+
+- **Collections as Lightweight Tags**: Simplified from complex sharing system to organizational badges
+- **UI Streamlining**: Removed collections from score upload, added dedicated management modal
+- **Import Flow**: New ImportScoreModal with PDF/Images/URL support and collection selection
+- **Visual Design**: Collection badges with color coding (public: sage, private: stone, featured: sand)
+- **Search Fix**: Score search now properly queries by title and composer
+- **UI Consistency**: Fixed modal theming issues for consistent light theme
+- **My Collections Page**: Added collection creation button and management capabilities
 
 ### Phase 2: Practice Mode (Future)
 

@@ -10,8 +10,13 @@ import type { Collection } from '../types/collections'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
+import ImportScoreModal from '../components/score/ImportScoreModal'
+import CollectionBadges from '../components/score/CollectionBadges'
+import CollectionsManager from '../components/score/CollectionsManager'
 import { useAuthStore } from '../stores/authStore'
 import { cn } from '../utils/cn'
+import Button from '../components/ui/Button'
+import { Plus } from 'lucide-react'
 
 type TabView = 'scores' | 'publicCollections' | 'myCollections'
 
@@ -28,10 +33,15 @@ export default function ScoreBrowserPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [showCollectionsManager, setShowCollectionsManager] = useState(false)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [scoreCollections, setScoreCollections] = useState<
+    Record<string, Collection[]>
+  >({})
 
   useEffect(() => {
     loadData()
@@ -46,23 +56,27 @@ export default function ScoreBrowserPage() {
       setCollections(collectionsData)
 
       // Load user's data if authenticated
+      let allUserCollections: Collection[] = []
       if (isAuthenticated) {
         try {
           const userCollectionsData = await scoreService.getUserCollections()
           setUserCollections(userCollectionsData)
+          allUserCollections = userCollectionsData
         } catch (error) {
           console.error('Failed to load user data:', error)
         }
       }
 
       // Load scores based on filters or collection
+      let loadedScores: Score[] = []
       if (slug) {
         // Load specific collection
         const collection = await scoreService.getCollection(slug)
         const collectionScores = await scoreService.getScores({
           tags: [collection.slug],
         })
-        setScores(collectionScores.items)
+        loadedScores = collectionScores.items
+        setScores(loadedScores)
       } else {
         // Load all scores with filters
         const params: ScoreSearchParams = {}
@@ -70,13 +84,95 @@ export default function ScoreBrowserPage() {
         if (selectedDifficulty) params.difficulty = selectedDifficulty
 
         const scoresData = await scoreService.getScores(params)
-        setScores(scoresData.items)
+        loadedScores = scoresData.items
+        setScores(loadedScores)
+      }
+
+      // Load collections for each score
+      if (loadedScores.length > 0) {
+        // Include both user collections and public collections
+        const allCollections = [
+          ...allUserCollections,
+          ...collectionsData.filter(col => col.visibility === 'public'),
+        ]
+        await loadScoreCollections(loadedScores, allCollections)
       }
     } catch (error) {
       console.error('Failed to load data:', error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const loadScoreCollections = async (
+    scores: Score[],
+    allCollections: Collection[]
+  ) => {
+    const collectionMap: Record<string, Collection[]> = {}
+
+    // For public collections, we need to check which scores they contain
+    // Since we don't have a direct API to get score's public collections,
+    // we'll match based on tags for now
+    scores.forEach(score => {
+      const scoreCollectionsList: Collection[] = []
+
+      // Check public collections that might contain this score
+      allCollections.forEach(collection => {
+        // If collection has tags that match score tags, it might contain the score
+        if (
+          collection.visibility === 'public' &&
+          collection.tags &&
+          score.tags.some(tag => collection.tags?.includes(tag))
+        ) {
+          scoreCollectionsList.push(collection)
+        }
+      })
+
+      if (scoreCollectionsList.length > 0) {
+        collectionMap[score.id] = scoreCollectionsList
+      }
+    })
+
+    // If authenticated, also load user's private collections for scores
+    if (isAuthenticated) {
+      const userCollectionIds = allCollections
+        .filter(col => col.visibility !== 'public')
+        .map(col => col.id)
+
+      if (userCollectionIds.length > 0) {
+        const collectionById = new Map(allCollections.map(col => [col.id, col]))
+
+        await Promise.all(
+          scores.map(async score => {
+            try {
+              const collectionIds = await scoreService.getScoreCollections(
+                score.id
+              )
+              const userScoreCollections = collectionIds
+                .map(id => collectionById.get(id))
+                .filter(
+                  (col): col is Collection =>
+                    col !== undefined && col.visibility !== 'public'
+                )
+
+              if (userScoreCollections.length > 0) {
+                collectionMap[score.id] = [
+                  ...(collectionMap[score.id] || []),
+                  ...userScoreCollections,
+                ]
+              }
+            } catch (error) {
+              console.error(
+                `Failed to load collections for score ${score.id}:`,
+                error
+              )
+            }
+          })
+        )
+      }
+    }
+
+    setScoreCollections(collectionMap)
   }
 
   const handleScoreSelect = (scoreId: string) => {
@@ -108,9 +204,41 @@ export default function ScoreBrowserPage() {
     setSelectedScoreForCollection(null)
   }
 
-  const handleCollectionModalSave = () => {
-    loadData()
+  const handleCollectionModalSave = async () => {
     handleCollectionModalClose()
+    // Refresh only the collections for the affected score
+    if (selectedScoreForCollection && isAuthenticated) {
+      try {
+        const userCollections = await scoreService.getUserCollections()
+        const collectionIds = await scoreService.getScoreCollections(
+          selectedScoreForCollection.id
+        )
+        const collectionById = new Map(
+          userCollections.map(col => [col.id, col])
+        )
+        const scoreCollectionsList = collectionIds
+          .map(id => collectionById.get(id))
+          .filter((col): col is Collection => col !== undefined)
+
+        setScoreCollections(prev => ({
+          ...prev,
+          [selectedScoreForCollection.id]: scoreCollectionsList,
+        }))
+      } catch (error) {
+        console.error('Failed to refresh collections:', error)
+      }
+    }
+  }
+
+  const handleImportSuccess = async (
+    score: Score,
+    _selectedCollectionIds?: string[]
+  ) => {
+    setShowImportModal(false)
+    // Refresh data to show the new score
+    await loadData()
+    // Navigate to the imported score
+    navigate(`/scorebook/${score.id}`)
   }
 
   const renderScoreRow = (score: Score) => {
@@ -147,6 +275,13 @@ export default function ScoreBrowserPage() {
                   <span className="text-xs text-morandi-stone-500">
                     Level {score.difficulty_level}
                   </span>
+                )}
+                {!isExpanded && scoreCollections[score.id] && (
+                  <CollectionBadges
+                    collections={scoreCollections[score.id]}
+                    maxDisplay={2}
+                    size="sm"
+                  />
                 )}
                 {!isExpanded && score.tags.length > 0 && (
                   <div className="flex gap-1">
@@ -255,10 +390,24 @@ export default function ScoreBrowserPage() {
               </div>
             </div>
 
+            {scoreCollections[score.id] &&
+              scoreCollections[score.id].length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-morandi-stone-700 mb-2">
+                    {t('scorebook:collections', 'Collections')}:
+                  </p>
+                  <CollectionBadges
+                    collections={scoreCollections[score.id]}
+                    maxDisplay={10}
+                    size="md"
+                  />
+                </div>
+              )}
+
             {score.tags.length > 0 && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-morandi-stone-700 mb-2">
-                  Tags:
+                  {t('scorebook:tags', 'Tags')}:
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {score.tags.map((tag, index) => (
@@ -423,6 +572,24 @@ export default function ScoreBrowserPage() {
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
+          {/* Header with Import Button */}
+          <div className="flex items-center justify-between px-4 md:px-6 pt-4">
+            <h1 className="text-xl font-semibold text-morandi-stone-800">
+              {t('scorebook:title', 'Scorebook')}
+            </h1>
+            {isAuthenticated && (
+              <Button
+                onClick={() => setShowImportModal(true)}
+                size="sm"
+                variant="primary"
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                {t('scorebook:importScore', 'Import Score')}
+              </Button>
+            )}
+          </div>
+
           {/* Navigation Tabs */}
           <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg">
             <button
@@ -548,27 +715,55 @@ export default function ScoreBrowserPage() {
 
                 {/* My Collections Tab */}
                 {tabView === 'myCollections' && isAuthenticated && (
-                  <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
-                    {userCollections.length === 0 ? (
-                      <div className="p-8 text-center text-morandi-stone-600">
-                        <p>
-                          {t(
-                            'scorebook:noUserCollections',
-                            'You have no collections yet'
-                          )}
-                        </p>
-                        <p className="text-sm mt-2">
-                          {t(
-                            'scorebook:createFirstCollection',
-                            'Create your first collection to organize your scores'
-                          )}
-                        </p>
-                      </div>
-                    ) : (
-                      userCollections.map(collection =>
-                        renderCollectionRow(collection)
-                      )
-                    )}
+                  <div>
+                    {/* Header with Create Button */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-medium text-morandi-stone-800">
+                        {t('scorebook:myCollections', 'My Collections')}
+                      </h2>
+                      <Button
+                        onClick={() => setShowCollectionsManager(true)}
+                        size="sm"
+                        variant="primary"
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        {t('scorebook:createCollection', 'Create Collection')}
+                      </Button>
+                    </div>
+
+                    <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
+                      {userCollections.length === 0 ? (
+                        <div className="p-8 text-center text-morandi-stone-600">
+                          <p>
+                            {t(
+                              'scorebook:noUserCollections',
+                              'You have no collections yet'
+                            )}
+                          </p>
+                          <p className="text-sm mt-2">
+                            {t(
+                              'scorebook:createFirstCollection',
+                              'Create your first collection to organize your scores'
+                            )}
+                          </p>
+                          <Button
+                            onClick={() => setShowCollectionsManager(true)}
+                            variant="secondary"
+                            className="mt-4"
+                          >
+                            {t(
+                              'scorebook:createCollection',
+                              'Create Collection'
+                            )}
+                          </Button>
+                        </div>
+                      ) : (
+                        userCollections.map(collection =>
+                          renderCollectionRow(collection)
+                        )
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -591,6 +786,29 @@ export default function ScoreBrowserPage() {
           onClose={handleCollectionModalClose}
           onSave={handleCollectionModalSave}
         />
+      )}
+
+      {/* Import Score Modal */}
+      <ImportScoreModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={handleImportSuccess}
+      />
+
+      {/* Collections Manager Modal */}
+      {showCollectionsManager && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <CollectionsManager
+              onClose={() => {
+                setShowCollectionsManager(false)
+                // Reload user collections after closing
+                loadData()
+              }}
+              className="h-full"
+            />
+          </div>
+        </div>
       )}
     </div>
   )

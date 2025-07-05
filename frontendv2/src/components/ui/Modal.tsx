@@ -64,7 +64,7 @@ export function Modal({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-gray-800',
+                  'w-full transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all',
                   sizeClasses[size],
                   className
                 )}
@@ -74,7 +74,7 @@ export function Modal({
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+                        className="text-lg font-medium leading-6 text-gray-900"
                       >
                         {title}
                       </Dialog.Title>
@@ -82,7 +82,7 @@ export function Modal({
                     {showCloseButton && (
                       <button
                         type="button"
-                        className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                        className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
                         onClick={onClose}
                       >
                         <X className="h-5 w-5" />

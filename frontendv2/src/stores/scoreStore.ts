@@ -74,7 +74,11 @@ interface ScoreStore {
   loadUserCollections: () => Promise<void>
   loadFeaturedCollections: () => Promise<void>
   loadUserLibrary: () => Promise<void>
-  createCollection: (name: string, description?: string) => Promise<void>
+  createCollection: (
+    name: string,
+    description?: string,
+    visibility?: 'private' | 'public'
+  ) => Promise<void>
   deleteCollection: (id: string) => Promise<void>
   addScoreToCollection: (collectionId: string, scoreId: string) => Promise<void>
   removeScoreFromCollection: (
@@ -338,12 +342,16 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     }
   },
 
-  createCollection: async (name: string, description?: string) => {
+  createCollection: async (
+    name: string,
+    description?: string,
+    visibility: 'private' | 'public' = 'private'
+  ) => {
     try {
       await scoreService.createCollection({
         name,
         description,
-        visibility: 'private',
+        visibility,
       })
       // Reload collections
       const userCollections = await scoreService.getUserCollections()
