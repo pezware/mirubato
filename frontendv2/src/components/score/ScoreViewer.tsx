@@ -4,6 +4,7 @@ import { usePracticeStore } from '../../stores/practiceStore'
 import { type Score } from '../../services/scoreService'
 import AdaptivePdfViewer from './AdaptivePdfViewer'
 import ImageScoreViewer from './ImageScoreViewer'
+import MissingScorePrompt from './MissingScorePrompt'
 import { type PdfError } from './PdfViewer'
 
 interface ScoreViewerProps {
@@ -63,33 +64,54 @@ export default function ScoreViewer({ score }: ScoreViewerProps) {
   const isImageScore =
     score.source_type === 'image' || score.source_type === 'multi-image'
 
+  // Check if score has no file (external or user's own material)
+  // A score without source_type or with source_type 'external' means it's user's own material
+  const hasNoFile = score.source_type === 'external' || !score.source_type
+
+  // Handle file upload for missing scores
+  const handleScoreUpload = async (file: File) => {
+    // TODO: Implement actual upload functionality
+    console.log('Upload file:', file)
+    // This would typically call an API to upload the file
+    // and associate it with the score
+  }
+
   return (
     <div className="flex-1 relative bg-white" ref={containerRef}>
       <div className="h-full overflow-auto">
         <div className="max-w-5xl mx-auto sm:p-4 p-2">
-          <div className="relative bg-morandi-stone-50 rounded-lg shadow-lg sm:p-4 p-2">
-            {isImageScore ? (
-              <ImageScoreViewer
-                scoreId={score.id}
-                currentPage={currentPage}
-                onLoad={handlePdfLoad}
-                onError={handlePdfError}
-                onPageChange={handlePageChange}
-                className="w-full"
-              />
-            ) : (
-              <AdaptivePdfViewer
-                scoreId={score.id}
-                currentPage={currentPage}
-                onLoad={handlePdfLoad}
-                onError={handlePdfError}
-                onPageChange={handlePageChange}
-                className="w-full"
-                // Force PDF viewer to prevent the adaptive logic from running
-                forcePdfViewer={true}
-              />
-            )}
-          </div>
+          {hasNoFile ? (
+            <MissingScorePrompt
+              scoreId={score.id}
+              scoreTitle={score.title}
+              scoreComposer={score.composer}
+              onUpload={handleScoreUpload}
+            />
+          ) : (
+            <div className="relative bg-morandi-stone-50 rounded-lg shadow-lg sm:p-4 p-2">
+              {isImageScore ? (
+                <ImageScoreViewer
+                  scoreId={score.id}
+                  currentPage={currentPage}
+                  onLoad={handlePdfLoad}
+                  onError={handlePdfError}
+                  onPageChange={handlePageChange}
+                  className="w-full"
+                />
+              ) : (
+                <AdaptivePdfViewer
+                  scoreId={score.id}
+                  currentPage={currentPage}
+                  onLoad={handlePdfLoad}
+                  onError={handlePdfError}
+                  onPageChange={handlePageChange}
+                  className="w-full"
+                  // Force PDF viewer to prevent the adaptive logic from running
+                  forcePdfViewer={true}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

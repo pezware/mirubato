@@ -27,6 +27,7 @@
   "signIn": "Sign In",
   "retry": "Retry",
   "minutes": "min",
+  "goBack": "Go Back",
   "instruments": {
     "piano": "Piano",
     "guitar": "Guitar"

@@ -43,6 +43,24 @@
   "practiceDuration": "Duration",
   "discardPractice": "Discard",
   "savePractice": "Save & Exit",
+  "by": "by",
+  "tip": "Tip",
+  "missingScore": {
+    "description": "This score is not available in our library.",
+    "userMaterial": "This might be your own sheet music or material from another source.",
+    "practiceWithoutFile": "You can still practice with this score entry and track your progress in the logbook!"
+  },
+  "upload": {
+    "uploadScore": "Upload Score",
+    "selectFile": "Select a PDF or image file of your sheet music",
+    "clickToSelect": "Click to select a file",
+    "acceptedFormats": "PDF, JPG, PNG (max 10MB)",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "invalidFileType": "Please select a PDF or image file",
+    "fileTooLarge": "File is too large. Maximum size is 10MB",
+    "failed": "Upload failed. Please try again."
+  },
   "previousPage": "Previous page",
   "nextPage": "Next page",
   "increaseVolume": "Increase volume",
