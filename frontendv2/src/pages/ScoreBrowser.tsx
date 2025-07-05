@@ -122,6 +122,7 @@ export default function ScoreBrowserPage() {
         if (
           collection.visibility === 'public' &&
           collection.tags &&
+          score.tags &&
           score.tags.some(tag => collection.tags?.includes(tag))
         ) {
           scoreCollectionsList.push(collection)
@@ -283,9 +284,9 @@ export default function ScoreBrowserPage() {
                     size="sm"
                   />
                 )}
-                {!isExpanded && score.tags.length > 0 && (
+                {!isExpanded && score.tags && score.tags.length > 0 && (
                   <div className="flex gap-1">
-                    {score.tags.slice(0, 2).map((tag, index) => (
+                    {score.tags?.slice(0, 2).map((tag, index) => (
                       <span
                         key={index}
                         className="px-2 py-0.5 bg-morandi-stone-100 text-morandi-stone-600 rounded-full text-xs"
@@ -293,7 +294,7 @@ export default function ScoreBrowserPage() {
                         #{tag}
                       </span>
                     ))}
-                    {score.tags.length > 2 && (
+                    {score.tags && score.tags.length > 2 && (
                       <span className="text-xs text-morandi-stone-500">
                         +{score.tags.length - 2}
                       </span>
@@ -404,13 +405,13 @@ export default function ScoreBrowserPage() {
                 </div>
               )}
 
-            {score.tags.length > 0 && (
+            {score.tags && score.tags.length > 0 && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-morandi-stone-700 mb-2">
                   {t('scorebook:tags', 'Tags')}:
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {score.tags.map((tag, index) => (
+                  {score.tags?.map((tag, index) => (
                     <span
                       key={index}
                       className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"

@@ -243,7 +243,7 @@ export default function CollectionViewPage() {
               </div>
             </div>
 
-            {score.tags.length > 0 && (
+            {score.tags && score.tags.length > 0 && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-morandi-stone-700 mb-2">
                   Tags:
