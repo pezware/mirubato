@@ -16,7 +16,7 @@ interface ScoreListItemProps {
 }
 
 export default function ScoreListItem({
-  score,
+  score: propScore,
   onAddToCollection,
   collections = [],
   showCollections = false,
@@ -26,6 +26,12 @@ export default function ScoreListItem({
   const { t } = useTranslation(['scorebook', 'common'])
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(false)
+
+  // Ensure score always has required properties
+  const score = {
+    ...propScore,
+    tags: propScore.tags || [],
+  }
 
   const handleScoreSelect = (e: React.MouseEvent) => {
     e.stopPropagation()
