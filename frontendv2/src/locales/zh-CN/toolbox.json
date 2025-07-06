@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "练习计数器",
+    "mode": {
+      "up": "递增计数",
+      "down": "递减计数"
+    },
+    "start_at": {
+      "placeholder": "起始值"
+    },
+    "button": {
+      "start": "开始",
+      "finish": "完成",
+      "save_to_log": "保存到日志",
+      "start_new": "重新开始"
+    },
+    "summary": {
+      "title": "练习总结",
+      "total_reps": "总重复次数",
+      "total_time": "总时间",
+      "rep_column": "次数",
+      "duration_column": "时长"
+    },
+    "log_summary": "使用计数器练习：{{time}}内完成{{reps}}次重复",
+    "practice_title": "重复练习",
+    "saved_to_log": "练习记录已保存到日志",
+    "save_failed": "保存练习记录失败"
+  },
+  "tabs": {
+    "metronome": "节拍器",
+    "counter": "练习计数器"
+  },
   "syncStatus": {
     "synced": "已同步",
     "localOnly": "本地存储"
