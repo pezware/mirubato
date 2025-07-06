@@ -180,7 +180,7 @@ When creating or updating UI components:
 
 2. **Code Quality**
    - Remove console.log statements
-   - Split large classes (700+ lines) - EnhancedPracticeReports.tsx needs splitting (1515 lines)
+   - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
    - Replace `any` types with proper types
    - Continue refactoring ~150 files still using native buttons
 
@@ -352,7 +352,7 @@ npm test -- --watch
   - ✅ notationRenderer: 100%
   - ✅ audioManager: 91.54%
   - ✅ Practice page: 91.66%
-  - ✅ All tests passing: 270+ tests
+  - ✅ All tests passing: 270+ unit tests, 65 E2E tests (including smoke tests)
 - **Backend Coverage**: ~43% (Target: 80%)
   - ✅ practice resolver: 100%
   - ✅ sheetMusic resolver: 100%

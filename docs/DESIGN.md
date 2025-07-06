@@ -14,9 +14,10 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Advanced Reporting**: Refactored reporting system with improved analytics
 - **Export Capabilities**: Robust CSV/JSON export functionality
 - **Mobile Optimization**: Responsive design improvements and touch interactions
-- **Test Coverage**: 270+ unit tests plus comprehensive E2E test coverage
+- **Test Coverage**: 270+ unit tests plus 65 E2E tests (all passing, including smoke tests)
 - **Code Quality**: Eliminated technical debt and improved maintainability
 - **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
+- **Practice Counter**: New toolbox feature for visual practice tracking
 
 ### Infrastructure
 
@@ -504,6 +505,11 @@ The frontend implements aggressive code splitting:
 
 **Recent Enhancements (July 2025):**
 
+- **Practice Counter** (Latest): Added new practice counter feature to toolbox
+  - Visual counter for practice sessions
+  - Integrated with scorebook and logbook
+  - Full i18n support across all 6 languages
+
 - **Component Refactoring**: Split large components into maintainable modules
   - EnhancedPracticeReports refactored from 1515 lines into 8+ focused components
   - Introduced shared analytics logic via usePracticeAnalytics hook
@@ -516,7 +522,7 @@ The frontend implements aggressive code splitting:
 - **Calendar Navigation**: Enhanced practice calendar with monthly/yearly navigation controls
 - **Monthly Summaries**: Added historical practice data access by month
 - **Performance**: Lazy loading implemented for report components to improve initial load time
-- **E2E Testing**: Comprehensive test coverage for all new features
+- **E2E Testing**: Comprehensive test coverage with 65 tests passing (including all smoke tests)
 
 **Scorebook Collections Simplification (July 2025):**
 
