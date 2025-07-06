@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Menu, X, Cloud, HardDrive, Eye } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import Button from '../ui/Button'
+import UnifiedSearch from '../UnifiedSearch'
 
 interface UnifiedHeaderProps {
   currentPage: 'logbook' | 'toolbox' | 'scorebook'
@@ -95,6 +96,9 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                   </Link>
                 ))}
               </nav>
+            </div>
+            <div className="hidden md:block flex-1 max-w-md mx-4">
+              <UnifiedSearch placeholder={t('common:searchScoresAndLogs')} />
             </div>
             {showAuth && (
               <div className="flex items-center gap-3">

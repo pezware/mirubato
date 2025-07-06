@@ -32,7 +32,11 @@
     "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
     "foundEntries": "{{count}} Einträge gefunden",
     "techniques": "Techniken",
-    "practiceDate": "Übungsdatum"
+    "practiceDate": "Übungsdatum",
+    "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
+    "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
+    "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
+    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag"
   },
   "filters": {
     "last7Days": "Letzte 7 Tage",
@@ -54,5 +58,8 @@
   },
   "autocomplete": {
     "offline": "Offline - zeigt Ihre Historie"
-  }
+  },
+  "viewScore": "Noten ansehen",
+  "linkedScore": "Verknüpfte Noten",
+  "autoTracked": "Automatisch von Notenübung erfasst"
 }

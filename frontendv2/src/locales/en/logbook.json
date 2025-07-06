@@ -58,5 +58,8 @@
   },
   "autocomplete": {
     "offline": "Offline - showing your history"
-  }
+  },
+  "viewScore": "View Score",
+  "linkedScore": "Linked Score",
+  "autoTracked": "Auto-tracked from score practice"
 }

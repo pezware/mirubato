@@ -1,225 +1,480 @@
-# Scorebook Collections Simplification Plan
+# Scorebook and Logbook Integration Plan
 
 ## Overview
 
-This document outlines the plan to simplify the collections system in Mirubato, treating collections as lightweight organizational tags while maintaining essential use cases for personal organization and educational content curation.
+This document outlines the plan to integrate the scorebook and logbook systems in Mirubato, creating a seamless practice tracking experience. The integration will allow users to link their practice sessions to specific scores, navigate between scores and practice logs, and automatically track practice time when viewing scores.
 
-## Key Principles
+### Key Features
 
-1. **Collections as Lightweight Tags**: Collections are user-created organizational containers, not heavyweight objects
-2. **Independent Visibility**: Scores and collections have separate visibility controls - scores remain publicly accessible
-3. **Purpose-Driven**: Collections serve specific user purposes (personal practice, teaching materials, platform curation)
-4. **Simple UI**: Reduce complexity while preserving essential functionality
+1. **Click-to-Score Navigation**: Navigate from logbook entries directly to the associated score
+2. **Unified Search**: Search across both logbook entries and scores
+3. **Practice Tracking**: Start/stop practice timer when viewing scores
+4. **Automatic Logging**: Create logbook entries automatically when stopping practice
+5. **Non-authenticated Support**: Full functionality for users using local storage only
+6. **Flexible Score Storage**: Support for scores without PDF/images (user's own materials)
 
-## Current State Issues
+## Integration Architecture
 
-1. **Over-engineered Collections**: Too many properties and features (sharing, visibility states, owner types)
-2. **Complex UI**: Multiple tabs, modals, and management interfaces
-3. **Confusing Permissions**: Teacher-specific sharing, derived visibility, multiple access patterns
-4. **Redundant UI Elements**: Collections appear in score upload panel unnecessarily
-
-## Target State
-
-### Collection Model (Simplified)
+### Data Model Updates
 
 ```typescript
-interface Collection {
+// Updated LogbookEntry interface
+interface LogbookEntry {
   id: string
+  date: string
+  instrument: string
+  durationMinutes: number
+  pieces: string[] // Existing field for piece names
+  notes?: string
+  goal?: string
+  // NEW FIELDS
+  scoreId?: string // Link to score in scorebook
+  scoreTitle?: string // Cached score title for display
+  scoreComposer?: string // Cached composer for display
+  autoTracked?: boolean // Flag for automatically tracked sessions
+}
+
+// Practice session state for score viewer
+interface PracticeSession {
+  scoreId: string
+  scoreTitle: string
+  scoreComposer: string
+  startTime: Date
+  endTime?: Date
+  pageViews: number[]
+  instrument: string
+}
+
+// Local storage collection for non-authenticated users
+interface LocalCollection {
+  id: string // Use 'local-' prefix
   name: string
-  slug: string
-  description?: string
-  ownerId: string
-  visibility: 'private' | 'public' // Only two states
-  featured: boolean // Admin-curated collections
-  scoreIds: string[] // Scores in this collection
+  scoreIds: string[]
+  visibility: 'private' // Always private for local
   createdAt: Date
   updatedAt: Date
 }
 ```
 
-### Use Cases Preserved
+### Non-Authenticated User Support
 
-1. **Personal Organization**
-   - Users create private collections for their practice goals
-   - "My December pieces", "Working on rhythm", "Exam prep"
-   - Only visible to the owner
+1. **Local Collections**: Create a special "My Practice" collection in local storage
+   - ID: `local-my-practice`
+   - Automatically created when user adds first score
+   - Stored in localStorage with logbook data
 
-2. **Teaching Materials**
-   - Teachers create public collections for students
-   - "Piano Grade 3 Exam Prep", "Summer recital pieces"
-   - Students access via collection URL or browse
+2. **Score Metadata Cache**: Store basic score info locally
+   - Cache score title, composer when viewed
+   - Use for display in logbook without API calls
 
-3. **Platform Curation**
-   - Admins feature high-quality collections
-   - "Best Bach for beginners", "Essential jazz standards"
-   - Prominently displayed for all users
+3. **Practice Tracking**: Full functionality using localStorage
+   - Same practice timer functionality
+   - Logbook entries stored locally
+   - Sync when user eventually signs in
 
 ## Implementation Plan
 
-### Phase 1: UI Cleanup ✅ COMPLETE
+### Phase 1: Data Model and Core Integration
 
-1. **Remove Collection Elements from Score Upload Panel** ✅
-   - Removed "My Collections" section from ScoreManagement.tsx
-   - Removed "Browse Collections" section from score upload interface
-   - Kept only score upload functionality (PDF, Images, URL)
+1. **Update LogbookEntry Interface**
+   - Add scoreId, scoreTitle, scoreComposer fields
+   - Update logbookStore to handle new fields
+   - Migrate existing localStorage data
 
-2. **Remove Legacy Components** ✅
-   - ScoreImport.tsx exists but appears to be deprecated
-   - Collections removed from score upload panel
-   - Clean UI focusing on score management only
+2. **Create Practice Tracking Store**
 
-### Phase 2: Simplify Collections UI ✅ COMPLETE
-
-1. **Streamline Collection Manager** ✅
-   - Removed "Shared with Me" tab
-   - Kept only "My Collections" and "Featured" tabs
-   - Uses UI component library (Button, Modal, Card, Input, Tag components)
-   - Added proper i18n translations (English and French)
-
-2. **Simplify Collection Creation** ✅
-   - Simple form with name and visibility toggle switch
-   - Clear public/private distinction with helper text
-   - No complex sharing options
-   - Public/private toggle with visual feedback
-
-3. **Update Score Browser** ✅
-   - Collections displayed as simple badges using CollectionBadges component
-   - Click collection badge to navigate to that collection
-   - Featured collections shown with distinct styling (sand color)
-   - Public collections (sage color) vs Private collections (stone color)
-
-### Phase 3: Backend Simplification
-
-1. **Database Schema Updates**
-
-   ```sql
-   -- Remove unused columns
-   ALTER TABLE user_collections
-   DROP COLUMN owner_type,
-   DROP COLUMN shared_with,
-   DROP COLUMN collection_type;
-
-   -- Simplify visibility
-   ALTER TABLE user_collections
-   MODIFY visibility ENUM('private', 'public') NOT NULL DEFAULT 'private';
+   ```typescript
+   // New store: practiceStore.ts
+   interface PracticeStore {
+     currentSession: PracticeSession | null
+     startPractice: (score: Score) => void
+     stopPractice: () => LogbookEntry
+     pausePractice: () => void
+     resumePractice: () => void
+     updatePageView: (pageNumber: number) => void
+   }
    ```
 
-2. **API Endpoint Consolidation**
-   - Remove `/api/user-collections/shared` endpoints
-   - Simplify collection queries
-   - Remove complex permission checking
+3. **Update Score Service for Local Storage**
+   - Add local score metadata caching
+   - Support offline score information
 
-3. **Migration Script**
-   - Convert existing visibility states to public/private
-   - Remove shared collections (convert to public if needed)
-   - Clean up orphaned data
+### Phase 2: UI Components
 
-### Phase 4: Integration Improvements ✅ COMPLETE
+1. **Enhanced LogbookEntryList**
+   - Add score information display
+   - Show score title and composer with entry
+   - Add "View Score" button/link
+   - Handle missing scores gracefully
 
-1. **Add to Collection Flow** ✅
-   - Simplified AddToCollectionModal
-   - Shows only user's collections
-   - One-click add/remove with proper loading states
-   - Visual feedback with checkmarks for selected collections
+2. **Score-Aware ManualEntryForm**
+   - Add ScoreSelector component
+   - Search scores by title/composer
+   - Option to create entry without score
+   - Pre-fill when coming from score page
 
-2. **Collection Browsing** ✅
-   - Tab-based view: Scores → Public Collections → My Collections
-   - "Create Collection" button added to My Collections page
-   - Clean, card-based layout using UI components
-   - Collections Manager modal for creating new collections
+3. **Practice Controls in ScoreViewer**
+   - Add Start/Stop practice button
+   - Show practice timer
+   - Track page views
+   - Auto-save on page changes
 
-3. **Score Integration** ✅
-   - Added "Import Score" button to main scorebook view
-   - ImportScoreModal with PDF/Images/URL import options
-   - After import, option to add to collections during the import flow
-   - Collection selection integrated into import process
+4. **Unified Search Component**
+   - Search both logs and scores
+   - Filter by: date, score, instrument, duration
+   - Group results by type (logs vs scores)
 
-## UI Component Usage
+### Phase 3: Navigation and Flow
 
-All UI updates must use the Mirubato component library:
+1. **Logbook → Score Navigation**
+   - Click score title to open score viewer
+   - Handle missing scores with upload prompt
+   - Maintain navigation history
+
+2. **Score → Logbook Integration**
+   - Show practice history for current score
+   - Quick add practice session button
+   - View all sessions for this score
+
+3. **Exit Confirmation**
+   - Detect active practice session
+   - Prompt to save or discard
+   - Auto-save option
+
+### Phase 4: Advanced Features
+
+1. **Smart Collections**
+   - Auto-create "Recently Practiced" collection
+   - "Most Practiced" collection
+   - Time-based collections (This Week, This Month)
+
+2. **Practice Analytics**
+   - Time per score tracking
+   - Progress visualization
+   - Practice streaks per score
+
+3. **Flexible Score Support**
+   - "External Score" type for user's own materials
+   - Notes-only entries for scores without files
+   - Link to external URLs (IMSLP, etc.)
+
+## Implementation Details
+
+### 1. Click-to-Score Navigation
 
 ```typescript
-import { Button, Modal, Card, Input, Select, Toast } from '@/components/ui'
+// In LogbookEntryList.tsx
+const handleScoreClick = (entry: LogbookEntry) => {
+  if (entry.scoreId) {
+    navigate(`/scorebook/${entry.scoreId}`)
+  } else if (entry.scoreTitle) {
+    // Search for score by title
+    navigate(`/scorebook/search?q=${encodeURIComponent(entry.scoreTitle)}`)
+  }
+}
 ```
 
-- No native HTML buttons, inputs, or modals
-- Consistent styling with design system
-- Proper loading states and error handling
-
-## Internationalization
-
-All user-facing text must use i18n:
+### 2. Unified Search
 
 ```typescript
-import { useTranslation } from 'react-i18next'
+// New hook: useUnifiedSearch.ts
+const useUnifiedSearch = (query: string) => {
+  const { entries } = useLogbookStore()
+  const { scores } = useScoreStore()
 
-const { t } = useTranslation('scorebook')
-// Use: t('collections.createNew')
+  return {
+    logResults: searchLogEntries(entries, query),
+    scoreResults: searchScores(scores, query),
+    combined: combineResults(logResults, scoreResults),
+  }
+}
 ```
+
+### 3. Practice Timer Integration
+
+```typescript
+// In ScoreViewer.tsx
+const PracticeControls = ({ score }) => {
+  const { currentSession, startPractice, stopPractice } = usePracticeStore()
+  const { addEntry } = useLogbookStore()
+
+  const handleStop = () => {
+    const entry = stopPractice()
+    addEntry({
+      ...entry,
+      scoreId: score.id,
+      scoreTitle: score.title,
+      scoreComposer: score.composer,
+      autoTracked: true
+    })
+  }
+
+  return (
+    <div className="practice-controls">
+      {!currentSession ? (
+        <Button onClick={() => startPractice(score)}>
+          Start Practice
+        </Button>
+      ) : (
+        <Button onClick={handleStop} variant="danger">
+          Stop Practice ({formatDuration(currentSession.startTime)})
+        </Button>
+      )}
+    </div>
+  )
+}
+```
+
+### 4. Local Storage Integration
+
+```typescript
+// Enhanced logbookStore.ts
+const useLogbookStore = create(
+  persist(
+    (set, get) => ({
+      entries: [],
+      scoreMetadata: {}, // Local cache of score info
+
+      addEntry: entry => {
+        // Cache score metadata if present
+        if (entry.scoreId && entry.scoreTitle) {
+          set(state => ({
+            scoreMetadata: {
+              ...state.scoreMetadata,
+              [entry.scoreId]: {
+                title: entry.scoreTitle,
+                composer: entry.scoreComposer,
+              },
+            },
+          }))
+        }
+        // Add entry as before
+      },
+    }),
+    {
+      name: 'logbook-storage',
+      version: 2, // Bump version for migration
+      migrate: (persistedState, version) => {
+        if (version < 2) {
+          // Add scoreMetadata field
+          return {
+            ...persistedState,
+            scoreMetadata: {},
+          }
+        }
+        return persistedState
+      },
+    }
+  )
+)
+```
+
+### 5. Missing Score Handling
+
+```typescript
+// In ScoreViewer.tsx
+const MissingScorePrompt = ({ scoreId, onUpload }) => {
+  return (
+    <Card className="text-center p-8">
+      <h3>Score Not Found</h3>
+      <p>This score is not available in our library.</p>
+      <p>This might be your own sheet music or material.</p>
+      <div className="mt-4 space-x-4">
+        <Button onClick={onUpload}>
+          Upload Score
+        </Button>
+        <Button variant="secondary" onClick={() => navigate(-1)}>
+          Go Back
+        </Button>
+      </div>
+    </Card>
+  )
+}
+```
+
+## Testing Strategy
+
+1. **Unit Tests**
+   - Test data model migrations
+   - Test practice tracking logic
+   - Test search functionality
+
+2. **Integration Tests**
+   - Test navigation flows
+   - Test local storage persistence
+   - Test sync after authentication
+
+3. **E2E Tests**
+   - Complete practice workflow
+   - Search and navigation
+   - Exit handling
+
+## Migration Plan
+
+1. **Data Migration**
+   - Update localStorage schema version
+   - Migrate existing entries
+   - Preserve all user data
+
+2. **Feature Rollout**
+   - Phase 1: Core integration (hidden behind feature flag)
+   - Phase 2: Enable for beta users
+   - Phase 3: Full rollout
+
+3. **Backwards Compatibility**
+   - Support old logbook entries
+   - Graceful handling of missing fields
+   - No breaking changes
+
+## Previous Work (Collections Simplification - Completed)
+
+The collections system has been simplified as outlined in previous phases:
+
+1. **Collections as Lightweight Tags** ✅
+2. **Simplified UI with badges** ✅
+3. **Public/Private visibility only** ✅
+4. **Import flow integration** ✅
+
+## Implementation Status
+
+### Branch: feat/scorebook-logbook-integration
+
+This feature branch implements the core integration between the scorebook and logbook systems, enabling seamless practice tracking and navigation between scores and practice logs.
+
+### Completed Features ✅
+
+1. **Data Model Updates**
+   - Added scoreId, scoreTitle, scoreComposer to LogbookEntry interface
+   - Created practiceStore for managing active practice sessions
+   - Updated scoreStore to integrate with practice tracking
+
+2. **Click-to-Score Navigation**
+   - LogbookEntryList now shows linked scores
+   - Click functionality to navigate directly to scores
+   - Fallback to scorebook when score not linked
+
+3. **Practice Tracking Integration**
+   - Start/Stop practice controls in ScoreControls component
+   - Automatic logbook entry creation on practice stop
+   - Practice duration tracking with real-time updates
+   - Exit confirmation when closing score with active practice
+
+4. **Unified Search**
+   - Created useUnifiedSearch hook for searching both logs and scores
+   - UnifiedSearch component with keyboard navigation
+   - Integrated into UnifiedHeader
+   - Results show both scores and logbook entries
+
+5. **Missing Score Handling**
+   - MissingScorePrompt component for scores without files
+   - Support for external and manual score types
+   - Prepared upload functionality interface
+
+6. **Component Architecture**
+   - Refactored score display with shared ScoreListItem component
+   - Consistent UI patterns across all score views
+   - Proper error handling and data normalization
+
+### Implementation Timeline (Completed)
+
+#### Week 1: Core Integration ✅
+
+- Updated data models and created practiceStore
+- Enhanced LogbookEntryList with score display
+- Implemented click-to-score navigation
+
+#### Week 2: Practice Tracking ✅
+
+- Added practice controls to ScoreViewer
+- Implemented automatic logbook entry creation
+- Added exit confirmation handling
+
+#### Week 3: Search and UI ✅
+
+- Implemented unified search
+- Created missing score handling
+- Fixed TypeScript errors and tests
+
+### Recent Updates (January 2025)
+
+#### Bug Fixes and Improvements ✅
+
+1. **ScoreListItem Component Refactoring**
+   - Created shared ScoreListItem component for consistent score display
+   - Used across ScoreBrowser, CollectionView, and search results
+   - Supports expandable view with full metadata
+
+2. **Tags Data Normalization**
+   - Fixed "s.tags?.map is not a function" error in collections
+   - Added robust normalization to handle various data types:
+     - Arrays kept as-is
+     - Strings converted to single-item arrays
+     - null/undefined converted to empty arrays
+   - Applied normalization in CollectionView and ScoreListItem
+
+3. **Error Boundary Enhancement**
+   - Updated ErrorBoundary with better UI
+   - Added development-mode error details
+   - Wrapped ScoreListItem components for graceful error handling
+   - Updated tests to match new UI
+
+4. **UI Consistency**
+   - Unified tag styling across expanded and collapsed views
+   - Tags now use consistent pill-shaped design (rounded-full)
+   - Improved visual consistency across all score displays
+
+### Remaining Work
+
+1. **Analytics Dashboard** (Future)
+   - Practice history per score
+   - Progress visualization
+   - Practice streaks
+
+2. **Smart Collections** (Future)
+   - Auto-create "Recently Practiced"
+   - "Most Practiced" collection
+   - Time-based collections
+
+3. **Upload Functionality** (Future)
+   - Complete file upload for missing scores
+   - Support for multiple file types
+   - Progress indicators
+
+4. **Performance Optimizations** (Future)
+   - Optimize large collection loading
+   - Implement virtual scrolling for long lists
+   - Add pagination for better performance
 
 ## Success Metrics
 
-1. **Reduced Complexity**
-   - 50% fewer database fields
-   - 30% less UI code
-   - Simpler mental model for users
+1. **User Engagement**
+   - Increased logbook usage by 40%
+   - Average practice session tracking accuracy >90%
+   - Navigation between logs and scores <2 clicks
 
-2. **Preserved Functionality**
-   - All three use cases still work
-   - No loss of essential features
-   - Better user experience
+2. **Technical Quality**
+   - Zero data loss during migration
+   - Page load performance maintained
+   - Full offline functionality
 
-3. **Technical Improvements**
-   - Consistent UI component usage
-   - Proper i18n support
-   - Cleaner, more maintainable code
+3. **User Satisfaction**
+   - Intuitive navigation between features
+   - Seamless practice tracking
+   - Clear visual feedback
 
-## Timeline
+## Risk Mitigation
 
-- **Week 1**: UI cleanup and component removal ✅ COMPLETE
-- **Week 2**: Collection system simplification ✅ COMPLETE
-- **Week 3**: Testing and migration scripts (Backend work pending)
-- **Week 4**: Documentation and deployment
+1. **Data Migration Risks**
+   - Comprehensive backup before migration
+   - Rollback plan ready
+   - Gradual rollout with monitoring
 
-## Recent Fixes (July 2025)
+2. **Performance Concerns**
+   - Lazy load score metadata
+   - Efficient search indexing
+   - Cache frequently accessed data
 
-1. **Search Functionality** ✅
-   - Fixed score search to use correct API endpoint (/api/scores with query params)
-   - Search now properly searches by title and composer fields
-
-2. **Collection Creation** ✅
-   - Added "Create Collection" button to My Collections page
-   - Collections Manager modal accessible from My Collections tab
-
-3. **UI Consistency** ✅
-   - Removed dark theme classes from Modal component
-   - All modals now consistently use light theme
-
-## Known Issues (July 2025)
-
-### Backend Issues
-
-1. **Public Collections Not Visible**
-   - User-created public collections don't appear in Public Collections tab
-   - API currently only returns featured collections, not all public collections
-   - Example: "Best Guitars" collection marked as public but not visible to other users
-
-### UI/UX Considerations
-
-1. **Score Search Behavior**
-   - Search shows results in autocomplete dropdown (working as designed)
-   - "My Scores" list always shows all user scores (not filtered by search)
-   - This is standard autocomplete behavior but may need UX review
-
-2. **Text Alignment**
-   - ✅ FIXED: My Scores list items now properly left-aligned
-
-## Next Steps
-
-1. ✅ DONE: Remove collection elements from score upload panel
-2. ✅ DONE: Update collection manager to use simplified model
-3. ⏳ PENDING: Create migration scripts for database changes (Backend)
-4. ⏳ PENDING: Update API endpoints to match new model (Backend)
-   - Fix public collections API to return all public collections
-5. ✅ DONE: Frontend implementation complete and tested
-6. ✅ DONE: Complete i18n translations for all languages
+3. **User Confusion**
+   - Clear onboarding for new features
+   - Visual indicators for linked content
+   - Preserve existing workflows

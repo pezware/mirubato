@@ -11,8 +11,8 @@ import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
-import CollectionBadges from '../components/score/CollectionBadges'
 import CollectionsManager from '../components/score/CollectionsManager'
+import ScoreListItem from '../components/score/ScoreListItem'
 import { useAuthStore } from '../stores/authStore'
 import { cn } from '../utils/cn'
 import Button from '../components/ui/Button'
@@ -38,7 +38,9 @@ export default function ScoreBrowserPage() {
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
+    new Set()
+  )
   const [scoreCollections, setScoreCollections] = useState<
     Record<string, Collection[]>
   >({})
@@ -75,7 +77,11 @@ export default function ScoreBrowserPage() {
         const collectionScores = await scoreService.getScores({
           tags: [collection.slug],
         })
-        loadedScores = collectionScores.items
+        // Normalize scores to ensure tags property exists
+        loadedScores = collectionScores.items.map(score => ({
+          ...score,
+          tags: score.tags || [],
+        }))
         setScores(loadedScores)
       } else {
         // Load all scores with filters
@@ -84,7 +90,11 @@ export default function ScoreBrowserPage() {
         if (selectedDifficulty) params.difficulty = selectedDifficulty
 
         const scoresData = await scoreService.getScores(params)
-        loadedScores = scoresData.items
+        // Normalize scores to ensure tags property exists
+        loadedScores = scoresData.items.map(score => ({
+          ...score,
+          tags: score.tags || [],
+        }))
         setScores(loadedScores)
       }
 
@@ -122,6 +132,7 @@ export default function ScoreBrowserPage() {
         if (
           collection.visibility === 'public' &&
           collection.tags &&
+          score.tags &&
           score.tags.some(tag => collection.tags?.includes(tag))
         ) {
           scoreCollectionsList.push(collection)
@@ -175,18 +186,14 @@ export default function ScoreBrowserPage() {
     setScoreCollections(collectionMap)
   }
 
-  const handleScoreSelect = (scoreId: string) => {
-    navigate(`/scorebook/${scoreId}`)
-  }
-
-  const toggleItemExpansion = (id: string) => {
-    const newExpanded = new Set(expandedItems)
+  const toggleCollectionExpansion = (id: string) => {
+    const newExpanded = new Set(expandedCollections)
     if (newExpanded.has(id)) {
       newExpanded.delete(id)
     } else {
       newExpanded.add(id)
     }
-    setExpandedItems(newExpanded)
+    setExpandedCollections(newExpanded)
   }
 
   const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
@@ -241,206 +248,8 @@ export default function ScoreBrowserPage() {
     navigate(`/scorebook/${score.id}`)
   }
 
-  const renderScoreRow = (score: Score) => {
-    const isExpanded = expandedItems.has(score.id)
-
-    return (
-      <div
-        key={score.id}
-        className="border-b border-morandi-stone-200 last:border-b-0"
-      >
-        <div
-          className="p-4 hover:bg-morandi-stone-50 cursor-pointer group"
-          onClick={() => toggleItemExpansion(score.id)}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-medium text-morandi-stone-800">
-                  {score.title}
-                </h3>
-                <span className="text-sm text-morandi-stone-600">
-                  {score.composer}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                  {score.instrument}
-                </span>
-                <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
-                  {score.difficulty}
-                </span>
-                {score.difficulty_level && (
-                  <span className="text-xs text-morandi-stone-500">
-                    Level {score.difficulty_level}
-                  </span>
-                )}
-                {!isExpanded && scoreCollections[score.id] && (
-                  <CollectionBadges
-                    collections={scoreCollections[score.id]}
-                    maxDisplay={2}
-                    size="sm"
-                  />
-                )}
-                {!isExpanded && score.tags.length > 0 && (
-                  <div className="flex gap-1">
-                    {score.tags.slice(0, 2).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-0.5 bg-morandi-stone-100 text-morandi-stone-600 rounded-full text-xs"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                    {score.tags.length > 2 && (
-                      <span className="text-xs text-morandi-stone-500">
-                        +{score.tags.length - 2}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 ml-4">
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleAddToCollection(e, score)
-                }}
-                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                title={t('scorebook:addToCollection', 'Add to collection')}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleScoreSelect(score.id)
-                }}
-                className="p-2 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
-                title={t('scorebook:viewScore', 'View score')}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Expanded content */}
-        {isExpanded && (
-          <div className="px-4 pb-4 bg-morandi-stone-50 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                {score.opus && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Opus:</span> {score.opus}
-                  </p>
-                )}
-                {score.time_signature && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Time:</span>{' '}
-                    {score.time_signature}
-                  </p>
-                )}
-                {score.key_signature && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Key:</span>{' '}
-                    {score.key_signature}
-                  </p>
-                )}
-              </div>
-              <div>
-                {score.style_period && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Period:</span>{' '}
-                    {score.style_period}
-                  </p>
-                )}
-                {score.source && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Source:</span> {score.source}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {scoreCollections[score.id] &&
-              scoreCollections[score.id].length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm font-medium text-morandi-stone-700 mb-2">
-                    {t('scorebook:collections', 'Collections')}:
-                  </p>
-                  <CollectionBadges
-                    collections={scoreCollections[score.id]}
-                    maxDisplay={10}
-                    size="md"
-                  />
-                </div>
-              )}
-
-            {score.tags.length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm font-medium text-morandi-stone-700 mb-2">
-                  {t('scorebook:tags', 'Tags')}:
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {score.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleScoreSelect(score.id)
-                }}
-                className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-600 transition-colors text-sm"
-              >
-                {t('scorebook:viewScore', 'View Score')}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
   const renderCollectionRow = (collection: Collection) => {
-    const isExpanded = expandedItems.has(collection.id)
+    const isExpanded = expandedCollections.has(collection.id)
 
     return (
       <div
@@ -449,7 +258,7 @@ export default function ScoreBrowserPage() {
       >
         <div
           className="p-4 hover:bg-morandi-stone-50 cursor-pointer"
-          onClick={() => toggleItemExpansion(collection.id)}
+          onClick={() => toggleCollectionExpansion(collection.id)}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -688,7 +497,16 @@ export default function ScoreBrowserPage() {
                         {t('scorebook:noScoresFound', 'No scores found')}
                       </div>
                     ) : (
-                      scores.map(score => renderScoreRow(score))
+                      scores.map(score => (
+                        <ScoreListItem
+                          key={score.id}
+                          score={score}
+                          onAddToCollection={handleAddToCollection}
+                          collections={scoreCollections[score.id]}
+                          showCollections={true}
+                          showTagsInCollapsed={true}
+                        />
+                      ))
                     )}
                   </div>
                 )}

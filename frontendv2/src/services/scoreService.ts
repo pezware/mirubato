@@ -24,10 +24,10 @@ export interface Score {
     | 'CONTEMPORARY'
     | null
   source?: string | null
-  source_type?: 'pdf' | 'image' | 'multi-image' | null
+  source_type?: 'pdf' | 'image' | 'multi-image' | 'external' | 'manual' | null
   page_count?: number | null
   imslp_url?: string | null
-  tags: string[]
+  tags?: string[]
   metadata?: Record<string, unknown>
   created_at: string
   updated_at: string

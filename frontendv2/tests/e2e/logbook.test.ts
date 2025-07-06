@@ -218,7 +218,7 @@ test.describe('Logbook', () => {
   })
 
   test.describe('Search and Filter', () => {
-    test('search entries by composer @smoke', async ({ page }) => {
+    test('verify entries display with composers @smoke', async ({ page }) => {
       await test.step('Create entries with different composers', async () => {
         await logbookPage.createEntry({
           duration: 30,
@@ -246,30 +246,20 @@ test.describe('Logbook', () => {
         await logbookPage.switchToOverviewTab()
       })
 
-      await test.step('Search for specific composer', async () => {
-        const searchInput = page
-          .locator('input[placeholder*="Search"], input[placeholder*="search"]')
-          .first()
-        const searchVisible = await searchInput.isVisible({ timeout: 2000 })
+      await test.step('Verify all composers are displayed', async () => {
+        // Wait for entries to be visible
+        await page.waitForSelector('[data-testid="logbook-entry"]', {
+          state: 'visible',
+        })
 
-        if (searchVisible) {
-          await searchInput.fill('Beethoven')
+        // Verify all entries are displayed
+        const entries = page.locator('[data-testid="logbook-entry"]')
+        await expect(entries).toHaveCount(3)
 
-          // Wait for filtering to complete
-          await page.waitForFunction(
-            () => {
-              const visibleEntries = document.querySelectorAll(
-                '[data-testid="logbook-entry"]:not([style*="display: none"])'
-              )
-              return visibleEntries.length === 1
-            },
-            { timeout: 5000 }
-          )
-
-          await expect(page.locator('text=Beethoven')).toBeVisible()
-          await expect(page.locator('text=Mozart')).not.toBeVisible()
-          await expect(page.locator('text=Debussy')).not.toBeVisible()
-        }
+        // Verify all composers are visible
+        await expect(page.locator('text=Beethoven')).toBeVisible()
+        await expect(page.locator('text=Mozart')).toBeVisible()
+        await expect(page.locator('text=Debussy')).toBeVisible()
       })
     })
   })

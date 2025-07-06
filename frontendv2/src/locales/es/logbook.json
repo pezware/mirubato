@@ -58,5 +58,8 @@
   },
   "autocomplete": {
     "offline": "Sin conexión - mostrando tu historial"
-  }
+  },
+  "viewScore": "Ver partitura",
+  "linkedScore": "Partitura vinculada",
+  "autoTracked": "Rastreado automáticamente desde la práctica de partituras"
 }

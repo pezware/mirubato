@@ -32,7 +32,11 @@
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
     "foundEntries": "{{count}} entrées trouvées",
     "techniques": "Techniques",
-    "practiceDate": "Date de pratique"
+    "practiceDate": "Date de pratique",
+    "successAdded": "Entrée de pratique ajoutée avec succès !",
+    "successUpdated": "Entrée de pratique mise à jour avec succès !",
+    "piecesNote": "Le temps de pratique sera divisé également entre les pièces",
+    "maxPiecesReached": "Maximum 3 pièces par entrée"
   },
   "filters": {
     "last7Days": "7 derniers jours",
@@ -54,5 +58,8 @@
   },
   "autocomplete": {
     "offline": "Hors ligne - affichage de votre historique"
-  }
+  },
+  "viewScore": "Voir la partition",
+  "linkedScore": "Partition liée",
+  "autoTracked": "Suivi automatique depuis la pratique de partition"
 }

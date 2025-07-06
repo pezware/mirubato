@@ -69,35 +69,62 @@
 - Enhanced slug generation preventing duplicates
 - Rate limiting with progressive failure tracking
 
-## Immediate Priority: User Collections Implementation (1-2 weeks)
+## Latest Updates: Scorebook-Logbook Integration (July 2025)
 
-### Goal: Complete the user collections system for personal score organization
+### 🎉 Integration Phase Complete
 
-**Database Schema Updates**
+✅ **Scorebook and Logbook Integration**: Seamless practice tracking across features
 
-- [ ] Add user_id and visibility columns to scores table
-- [ ] Create user_collections table for custom collections
-- [ ] Create score_pages table for multi-image scores
-- [ ] Add collection membership tracking
-- [ ] Run database migrations on staging/production
+- Click-to-score navigation from logbook entries
+- Unified search across logs and scores
+- Automatic practice tracking with start/stop controls in score viewer
+- Practice state protection when closing scores
+- Missing score handling for external/manual scores
+- Support for non-authenticated users using local storage
 
-**Backend Implementation**
+**Technical Implementation**:
 
-- [ ] Implement user collections CRUD endpoints
-- [ ] Add "My Uploads" default collection creation
-- [ ] Update score queries to respect user ownership
-- [ ] Add collection membership management
-- [ ] Implement collection-based filtering
+- Created practiceStore for managing active sessions
+- Added score fields to LogbookEntry interface
+- Implemented UnifiedSearch component with keyboard navigation
+- Created MissingScorePrompt for scores without files
+- All features work offline with local storage
 
-**Frontend Features**
+## Immediate Priority: E2E Test Fixes & Localization (1-2 days)
 
-- [ ] Create collections management UI
-- [ ] Add collection selector in score upload
-- [ ] Implement collection browsing interface
-- [ ] Add drag-and-drop for organizing scores
-- [ ] Create collection sharing UI (future phase)
+### Goal: Fix failing smoke tests and complete internationalization
 
-**Expected Outcome**: Users can organize their uploaded scores into personal collections for better library management.
+**Test Fixes**
+
+- [ ] Fix logbook search test waiting for composer filter
+- [ ] Update test selectors for new unified search
+- [ ] Ensure all smoke tests pass consistently
+
+**Localization**
+
+- [ ] Complete translations for all 6 languages (de, es, fr, zh-CN, zh-TW)
+- [ ] Add new keys: searchScoresAndLogs, viewScore, linkedScore, autoTracked
+- [ ] Add missing score and upload translations
+- [ ] Verify all languages have complete coverage
+
+## Next Phase: Analytics Dashboard (2 weeks)
+
+### Goal: Provide insights into practice patterns and progress
+
+**Practice Analytics**
+
+- [ ] Practice history per score
+- [ ] Progress visualization over time
+- [ ] Practice streaks and consistency tracking
+- [ ] Time distribution by piece/composer
+- [ ] Export analytics data
+
+**Smart Collections**
+
+- [ ] Auto-create "Recently Practiced" collection
+- [ ] "Most Practiced" collection
+- [ ] Time-based collections (This Week, This Month)
+- [ ] Practice goal collections
 
 ## Priority 1: Frontend Polish & UX ✅ PARTIALLY COMPLETE (PR #206)
 

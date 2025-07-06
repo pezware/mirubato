@@ -19,16 +19,16 @@ export const scorebookRoutes: RouteObject[] = [
         element: <ScoreBrowser />,
       },
       {
-        path: ':scoreId',
-        element: <ScorebookPage />,
-      },
-      {
         path: 'collection/:slug',
         element: <CollectionView />,
       },
       {
         path: 'collection/user/:id',
         element: <CollectionView />,
+      },
+      {
+        path: ':scoreId',
+        element: <ScorebookPage />,
       },
     ],
   },

@@ -10,6 +10,8 @@
   "remove": "Retirer",
   "create": "Créer",
   "search": "Rechercher",
+  "searchScoresAndLogs": "Rechercher partitions et journaux de pratique...",
+  "noResults": "Aucun résultat trouvé",
   "filter": "Filtrer",
   "previous": "Précédent",
   "next": "Suivant",
@@ -24,6 +26,8 @@
   "info": "Information",
   "signIn": "Se connecter",
   "retry": "Réessayer",
+  "minutes": "min",
+  "goBack": "Retour",
   "instruments": {
     "piano": "Piano",
     "guitar": "Guitare"
@@ -76,6 +80,26 @@
     "october": "Octobre",
     "november": "Novembre",
     "december": "Décembre"
+  },
+  "days": {
+    "short": {
+      "0": "D",
+      "1": "L",
+      "2": "M",
+      "3": "M",
+      "4": "J",
+      "5": "V",
+      "6": "S"
+    },
+    "full": {
+      "sunday": "Dimanche",
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi"
+    }
   },
   "music": {
     "notes": {

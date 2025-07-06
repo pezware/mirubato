@@ -6,6 +6,8 @@ import type { Collection } from '../types/collections'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
+import ScoreListItem from '../components/score/ScoreListItem'
+import ErrorBoundary from '../components/ErrorBoundary'
 import { useAuthStore } from '../stores/authStore'
 
 export default function CollectionViewPage() {
@@ -21,7 +23,6 @@ export default function CollectionViewPage() {
   const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (slug || id) {
@@ -41,8 +42,57 @@ export default function CollectionViewPage() {
           console.log('Full collection with scores:', fullCollection)
           setCollection(fullCollection)
           // The collection should have scores property with full score details
-          if (fullCollection.scores) {
-            setScores(fullCollection.scores)
+          if (fullCollection.scores && Array.isArray(fullCollection.scores)) {
+            console.log('Score data structure:', fullCollection.scores[0])
+            // Ensure each score has tags property (at least empty array)
+            const normalizedScores = fullCollection.scores.map(score => ({
+              ...score,
+              tags: Array.isArray(score.tags)
+                ? score.tags
+                : typeof score.tags === 'string'
+                  ? [score.tags]
+                  : score.tags === null || score.tags === undefined
+                    ? []
+                    : [],
+            }))
+            setScores(normalizedScores)
+          } else if (
+            fullCollection.scoreIds &&
+            fullCollection.scoreIds.length > 0
+          ) {
+            // If we only have scoreIds but no full scores, we need to load them
+            console.log(
+              'Collection has scoreIds but no scores, loading scores:',
+              fullCollection.scoreIds
+            )
+            const scorePromises = fullCollection.scoreIds.map(id =>
+              scoreService.getScore(id).catch(err => {
+                console.error(`Failed to load score ${id}:`, err)
+                return null
+              })
+            )
+            const loadedScores = await Promise.all(scorePromises)
+            const validScores = loadedScores
+              .filter(s => s !== null)
+              .map(score => ({
+                ...score,
+                tags: Array.isArray(score.tags)
+                  ? score.tags
+                  : typeof score.tags === 'string'
+                    ? [score.tags]
+                    : score.tags === null || score.tags === undefined
+                      ? []
+                      : [],
+              }))
+            setScores(validScores)
+          } else {
+            console.warn('No scores found in collection', {
+              collection: fullCollection,
+              hasScores: !!fullCollection.scores,
+              isArray: Array.isArray(fullCollection.scores),
+              scoreIds: fullCollection.scoreIds,
+            })
+            setScores([])
           }
           return
         } catch (error) {
@@ -65,7 +115,20 @@ export default function CollectionViewPage() {
             const collectionScores = await scoreService.getScores({
               tags: publicCollection.tags,
             })
-            setScores(collectionScores.items)
+            // Normalize scores to ensure tags property exists
+            const normalizedScores = collectionScores.items.map(score => ({
+              ...score,
+              tags: Array.isArray(score.tags)
+                ? score.tags
+                : typeof score.tags === 'string'
+                  ? [score.tags]
+                  : score.tags === null || score.tags === undefined
+                    ? []
+                    : [],
+            }))
+            setScores(normalizedScores)
+          } else {
+            setScores([])
           }
         } catch (error) {
           console.error('Failed to load public collection:', error)
@@ -82,20 +145,6 @@ export default function CollectionViewPage() {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleScoreSelect = (scoreId: string) => {
-    navigate(`/scorebook/${scoreId}`)
-  }
-
-  const toggleItemExpansion = (id: string) => {
-    const newExpanded = new Set(expandedItems)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedItems(newExpanded)
   }
 
   const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
@@ -116,166 +165,6 @@ export default function CollectionViewPage() {
   const handleCollectionModalSave = () => {
     loadCollection()
     handleCollectionModalClose()
-  }
-
-  const renderScoreRow = (score: Score) => {
-    const isExpanded = expandedItems.has(score.id)
-
-    return (
-      <div
-        key={score.id}
-        className="border-b border-morandi-stone-200 last:border-b-0"
-      >
-        <div
-          className="p-4 hover:bg-morandi-stone-50 cursor-pointer group"
-          onClick={() => toggleItemExpansion(score.id)}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-medium text-morandi-stone-800">
-                  {score.title}
-                </h3>
-                <span className="text-sm text-morandi-stone-600">
-                  {score.composer}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                  {score.instrument}
-                </span>
-                <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
-                  {score.difficulty}
-                </span>
-                {score.difficulty_level && (
-                  <span className="text-xs text-morandi-stone-500">
-                    Level {score.difficulty_level}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 ml-4">
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleAddToCollection(e, score)
-                }}
-                className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                title={t('scorebook:addToCollection', 'Add to collection')}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleScoreSelect(score.id)
-                }}
-                className="p-2 text-morandi-sage-600 hover:text-morandi-sage-800 transition-colors"
-                title={t('scorebook:viewScore', 'View score')}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Expanded content */}
-        {isExpanded && (
-          <div className="px-4 pb-4 bg-morandi-stone-50 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                {score.opus && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Opus:</span> {score.opus}
-                  </p>
-                )}
-                {score.time_signature && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Time:</span>{' '}
-                    {score.time_signature}
-                  </p>
-                )}
-                {score.key_signature && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Key:</span>{' '}
-                    {score.key_signature}
-                  </p>
-                )}
-              </div>
-              <div>
-                {score.style_period && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Period:</span>{' '}
-                    {score.style_period}
-                  </p>
-                )}
-                {score.source && (
-                  <p className="text-morandi-stone-600 mb-1">
-                    <span className="font-medium">Source:</span> {score.source}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {score.tags.length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm font-medium text-morandi-stone-700 mb-2">
-                  Tags:
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {score.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  handleScoreSelect(score.id)
-                }}
-                className="px-4 py-2 bg-morandi-sage-500 text-white rounded-lg hover:bg-morandi-sage-600 transition-colors text-sm"
-              >
-                {t('scorebook:viewScore', 'View Score')}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -365,7 +254,16 @@ export default function CollectionViewPage() {
               </div>
             ) : (
               <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
-                {scores.map(score => renderScoreRow(score))}
+                {scores.map(score => (
+                  <ErrorBoundary key={score.id}>
+                    <ScoreListItem
+                      score={score}
+                      onAddToCollection={handleAddToCollection}
+                      showCollections={false}
+                      showTagsInCollapsed={false}
+                    />
+                  </ErrorBoundary>
+                ))}
               </div>
             )}
           </div>

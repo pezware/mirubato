@@ -10,6 +10,8 @@
   "remove": "Remove",
   "create": "Create",
   "search": "Search",
+  "searchScoresAndLogs": "Search scores and practice logs...",
+  "noResults": "No results found",
   "filter": "Filter",
   "previous": "Previous",
   "next": "Next",
@@ -24,6 +26,8 @@
   "info": "Info",
   "signIn": "Sign In",
   "retry": "Retry",
+  "minutes": "min",
+  "goBack": "Go Back",
   "instruments": {
     "piano": "Piano",
     "guitar": "Guitar"

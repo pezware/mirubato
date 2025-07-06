@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
+import { usePracticeStore } from './practiceStore'
+import { useLogbookStore } from './logbookStore'
 
 interface PracticeSession {
   id: string
@@ -123,10 +125,16 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     try {
       const score = await scoreService.getScore(id)
 
+      // Normalize score data to ensure tags is always an array
+      const normalizedScore = {
+        ...score,
+        tags: score.tags || [],
+      }
+
       // Don't set totalPages here - let the PDF viewer report the actual count
       // This prevents conflicts between hardcoded values and actual PDF pages
       set({
-        currentScore: score,
+        currentScore: normalizedScore,
         currentPage: 1,
         totalPages: 1, // Default to 1, will be updated when PDF loads
         isLoading: false,
@@ -180,46 +188,58 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
 
   // Practice actions
   startPractice: () => {
-    const { currentScore, metronomeSettings } = get()
+    const { currentScore } = get()
     if (!currentScore) return
 
-    const session: PracticeSession = {
-      id: `practice_${Date.now()}`,
-      scoreId: currentScore.id,
-      startTime: new Date(),
-      duration: 0,
-      measuresCompleted: [],
-      tempo: metronomeSettings.tempo,
-    }
+    // Get user's instrument preference (default to PIANO for now)
+    // TODO: Add user instrument preference to profile
+    const instrument = 'PIANO' as const
 
-    set({ practiceSession: session, isRecording: true })
+    // Start practice in practiceStore
+    usePracticeStore.getState().startPractice(currentScore, instrument)
+
+    // Mark as recording in scoreStore for UI
+    set({ isRecording: true })
   },
 
   stopPractice: () => {
-    const { practiceSession } = get()
-    if (!practiceSession) return
+    const { currentScore } = get()
+    if (!currentScore) return
 
-    const endTime = new Date()
-    const duration = Math.floor(
-      (endTime.getTime() - practiceSession.startTime.getTime()) / 1000
-    )
+    // Stop practice and get session data
+    const sessionData = usePracticeStore.getState().stopPractice()
+    if (!sessionData) {
+      set({ isRecording: false })
+      return
+    }
 
-    set({
-      practiceSession: {
-        ...practiceSession,
-        endTime,
-        duration,
+    // Create logbook entry
+    const logbookStore = useLogbookStore.getState()
+    logbookStore.createEntry({
+      timestamp: new Date().toISOString(),
+      duration: sessionData.duration,
+      type: 'PRACTICE',
+      instrument: 'PIANO' as const, // TODO: Add user instrument preference
+      pieces: [
+        {
+          title: sessionData.scoreTitle,
+          composer: sessionData.scoreComposer || undefined,
+        },
+      ],
+      techniques: [],
+      goalIds: [],
+      tags: [],
+      metadata: {
+        source: 'score-viewer',
       },
-      isRecording: false,
+      // Score integration fields
+      scoreId: sessionData.scoreId,
+      scoreTitle: sessionData.scoreTitle,
+      scoreComposer: sessionData.scoreComposer,
+      autoTracked: true,
     })
 
-    // Here we would save to logbook
-    // For now, just log it
-    console.log('Practice session completed:', {
-      ...practiceSession,
-      duration,
-      endTime,
-    })
+    set({ isRecording: false })
   },
 
   updatePracticeProgress: (measure: number) => {
@@ -321,7 +341,12 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     try {
       // Try to load user's specific scores first (for authenticated users)
       const response = await scoreService.getUserScores()
-      set({ userLibrary: response.items })
+      // Normalize scores to ensure tags is always an array
+      const normalizedScores = response.items.map(score => ({
+        ...score,
+        tags: score.tags || [],
+      }))
+      set({ userLibrary: normalizedScores })
     } catch (error) {
       // If getUserScores fails (likely due to authentication), fall back to public scores
       if (
@@ -330,7 +355,12 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       ) {
         try {
           const publicResponse = await scoreService.getScores()
-          set({ userLibrary: publicResponse.items })
+          // Normalize public scores as well
+          const normalizedPublicScores = publicResponse.items.map(score => ({
+            ...score,
+            tags: score.tags || [],
+          }))
+          set({ userLibrary: normalizedPublicScores })
         } catch (publicError) {
           console.error('Failed to load public library:', publicError)
           set({ userLibrary: [] })
