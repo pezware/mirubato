@@ -27,10 +27,16 @@ export default function ScoreListItem({
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Ensure score always has required properties
+  // Ensure score always has required properties and tags is always an array
   const score = {
     ...propScore,
-    tags: propScore.tags || [],
+    tags: Array.isArray(propScore.tags)
+      ? propScore.tags
+      : typeof propScore.tags === 'string'
+        ? [propScore.tags]
+        : propScore.tags === null || propScore.tags === undefined
+          ? []
+          : [],
   }
 
   const handleScoreSelect = (e: React.MouseEvent) => {
@@ -92,7 +98,7 @@ export default function ScoreListItem({
                 score.tags &&
                 score.tags.length > 0 && (
                   <div className="flex gap-1">
-                    {score.tags?.slice(0, 2).map((tag, index) => (
+                    {score.tags.slice(0, 2).map((tag, index) => (
                       <span
                         key={index}
                         className="px-2 py-0.5 bg-morandi-stone-100 text-morandi-stone-600 rounded-full text-xs"
@@ -217,7 +223,7 @@ export default function ScoreListItem({
                 {t('scorebook:tags', 'Tags')}:
               </p>
               <div className="flex flex-wrap gap-1">
-                {score.tags?.map((tag, index) => (
+                {score.tags.map((tag, index) => (
                   <span
                     key={index}
                     className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"

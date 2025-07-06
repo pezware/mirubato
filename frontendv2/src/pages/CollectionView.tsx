@@ -7,6 +7,7 @@ import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ScoreListItem from '../components/score/ScoreListItem'
+import ErrorBoundary from '../components/ErrorBoundary'
 import { useAuthStore } from '../stores/authStore'
 
 export default function CollectionViewPage() {
@@ -46,7 +47,13 @@ export default function CollectionViewPage() {
             // Ensure each score has tags property (at least empty array)
             const normalizedScores = fullCollection.scores.map(score => ({
               ...score,
-              tags: score.tags || [],
+              tags: Array.isArray(score.tags)
+                ? score.tags
+                : typeof score.tags === 'string'
+                  ? [score.tags]
+                  : score.tags === null || score.tags === undefined
+                    ? []
+                    : [],
             }))
             setScores(normalizedScores)
           } else if (
@@ -69,7 +76,13 @@ export default function CollectionViewPage() {
               .filter(s => s !== null)
               .map(score => ({
                 ...score,
-                tags: score.tags || [],
+                tags: Array.isArray(score.tags)
+                  ? score.tags
+                  : typeof score.tags === 'string'
+                    ? [score.tags]
+                    : score.tags === null || score.tags === undefined
+                      ? []
+                      : [],
               }))
             setScores(validScores)
           } else {
@@ -105,7 +118,13 @@ export default function CollectionViewPage() {
             // Normalize scores to ensure tags property exists
             const normalizedScores = collectionScores.items.map(score => ({
               ...score,
-              tags: score.tags || [],
+              tags: Array.isArray(score.tags)
+                ? score.tags
+                : typeof score.tags === 'string'
+                  ? [score.tags]
+                  : score.tags === null || score.tags === undefined
+                    ? []
+                    : [],
             }))
             setScores(normalizedScores)
           } else {
@@ -236,13 +255,14 @@ export default function CollectionViewPage() {
             ) : (
               <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden">
                 {scores.map(score => (
-                  <ScoreListItem
-                    key={score.id}
-                    score={score}
-                    onAddToCollection={handleAddToCollection}
-                    showCollections={false}
-                    showTagsInCollapsed={false}
-                  />
+                  <ErrorBoundary key={score.id}>
+                    <ScoreListItem
+                      score={score}
+                      onAddToCollection={handleAddToCollection}
+                      showCollections={false}
+                      showTagsInCollapsed={false}
+                    />
+                  </ErrorBoundary>
                 ))}
               </div>
             )}
