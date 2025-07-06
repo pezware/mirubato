@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "練習計數器",
+    "mode": {
+      "up": "遞增計數",
+      "down": "遞減計數"
+    },
+    "start_at": {
+      "placeholder": "起始值"
+    },
+    "button": {
+      "start": "開始",
+      "finish": "完成",
+      "save_to_log": "儲存到日誌",
+      "start_new": "重新開始"
+    },
+    "summary": {
+      "title": "練習總結",
+      "total_reps": "總重複次數",
+      "total_time": "總時間",
+      "rep_column": "次數",
+      "duration_column": "時長"
+    },
+    "log_summary": "使用計數器練習：{{time}}內完成{{reps}}次重複",
+    "practice_title": "重複練習",
+    "saved_to_log": "練習記錄已儲存到日誌",
+    "save_failed": "儲存練習記錄失敗"
+  },
+  "tabs": {
+    "metronome": "節拍器",
+    "counter": "練習計數器"
+  },
   "syncStatus": {
     "synced": "已同步",
     "localOnly": "本地儲存"

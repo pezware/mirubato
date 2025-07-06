@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "Compteur d'entraînement",
+    "mode": {
+      "up": "Compter vers le haut",
+      "down": "Compter vers le bas"
+    },
+    "start_at": {
+      "placeholder": "Commencer à"
+    },
+    "button": {
+      "start": "Démarrer",
+      "finish": "Terminer",
+      "save_to_log": "Sauvegarder dans le journal",
+      "start_new": "Recommencer"
+    },
+    "summary": {
+      "title": "Résumé de la session",
+      "total_reps": "Répétitions totales",
+      "total_time": "Temps total",
+      "rep_column": "Rép",
+      "duration_column": "Durée"
+    },
+    "log_summary": "Pratiqué avec le compteur : {{reps}} répétitions en {{time}}",
+    "practice_title": "Pratique de répétitions",
+    "saved_to_log": "Session d'entraînement sauvegardée dans le journal",
+    "save_failed": "Échec de la sauvegarde de la session d'entraînement"
+  },
+  "tabs": {
+    "metronome": "Métronome",
+    "counter": "Compteur d'entraînement"
+  },
   "syncStatus": {
     "synced": "Synchronisé",
     "localOnly": "Stockage local"

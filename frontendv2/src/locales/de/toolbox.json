@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "Übungszähler",
+    "mode": {
+      "up": "Aufwärts zählen",
+      "down": "Abwärts zählen"
+    },
+    "start_at": {
+      "placeholder": "Startwert"
+    },
+    "button": {
+      "start": "Start",
+      "finish": "Beenden",
+      "save_to_log": "Im Tagebuch speichern",
+      "start_new": "Neu beginnen"
+    },
+    "summary": {
+      "title": "Übungszusammenfassung",
+      "total_reps": "Wiederholungen gesamt",
+      "total_time": "Gesamtzeit",
+      "rep_column": "Wdh.",
+      "duration_column": "Dauer"
+    },
+    "log_summary": "Mit dem Zähler geübt: {{reps}} Wiederholungen in {{time}}",
+    "practice_title": "Wiederholungsübung",
+    "saved_to_log": "Übungseinheit im Tagebuch gespeichert",
+    "save_failed": "Fehler beim Speichern der Übungseinheit"
+  },
+  "tabs": {
+    "metronome": "Metronom",
+    "counter": "Übungszähler"
+  },
   "syncStatus": {
     "synced": "Synchronisiert",
     "localOnly": "Lokaler Speicher"

@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "Contador de práctica",
+    "mode": {
+      "up": "Contar hacia arriba",
+      "down": "Contar hacia abajo"
+    },
+    "start_at": {
+      "placeholder": "Empezar en"
+    },
+    "button": {
+      "start": "Iniciar",
+      "finish": "Finalizar",
+      "save_to_log": "Guardar en el diario",
+      "start_new": "Comenzar nuevo"
+    },
+    "summary": {
+      "title": "Resumen de la sesión",
+      "total_reps": "Repeticiones totales",
+      "total_time": "Tiempo total",
+      "rep_column": "Rep",
+      "duration_column": "Duración"
+    },
+    "log_summary": "Practicado con el contador: {{reps}} repeticiones en {{time}}",
+    "practice_title": "Práctica de repeticiones",
+    "saved_to_log": "Sesión de práctica guardada en el diario",
+    "save_failed": "Error al guardar la sesión de práctica"
+  },
+  "tabs": {
+    "metronome": "Metrónomo",
+    "counter": "Contador de práctica"
+  },
   "syncStatus": {
     "synced": "Sincronizado",
     "localOnly": "Almacenamiento local"

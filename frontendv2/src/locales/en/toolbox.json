@@ -56,6 +56,37 @@
       }
     }
   },
+  "counter": {
+    "title": "Practice Counter",
+    "mode": {
+      "up": "Count Up",
+      "down": "Count Down"
+    },
+    "start_at": {
+      "placeholder": "Start at"
+    },
+    "button": {
+      "start": "Start",
+      "finish": "Finish",
+      "save_to_log": "Save to Log",
+      "start_new": "Start New"
+    },
+    "summary": {
+      "title": "Session Summary",
+      "total_reps": "Total Reps",
+      "total_time": "Total Time",
+      "rep_column": "Rep",
+      "duration_column": "Duration"
+    },
+    "log_summary": "Practiced using the Counter: {{reps}} reps in {{time}}",
+    "practice_title": "Repetition Practice",
+    "saved_to_log": "Practice session saved to logbook",
+    "save_failed": "Failed to save practice session"
+  },
+  "tabs": {
+    "metronome": "Metronome",
+    "counter": "Practice Counter"
+  },
   "syncStatus": {
     "synced": "Synced",
     "localOnly": "Local storage"
