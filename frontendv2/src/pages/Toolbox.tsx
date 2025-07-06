@@ -17,6 +17,10 @@ import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
 import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
+import {
+  usePracticeTracking,
+  PracticeSummaryModal,
+} from '../modules/auto-logging'
 
 type PatternState = {
   accent: boolean[]
@@ -124,6 +128,26 @@ const Toolbox: React.FC = () => {
   // Get metronome instance
   const metronome = getPatternMetronome()
 
+  // Practice tracking for metronome
+  const {
+    isTracking,
+    formattedTime,
+    showSummary,
+    pendingSession,
+    start: startTracking,
+    stop: stopTracking,
+    update: updateTracking,
+    confirmSave,
+    dismissSummary,
+  } = usePracticeTracking({
+    type: 'metronome',
+    metadata: {
+      title: 'Metronome Practice',
+      instrument: 'PIANO', // Could be made configurable later
+      patterns: [currentPatternData.name],
+    },
+  })
+
   // Initialize metronome
   useEffect(() => {
     metronome.setTempo(settings.bpm)
@@ -137,20 +161,39 @@ const Toolbox: React.FC = () => {
   // Handle tempo changes
   useEffect(() => {
     metronome.setTempo(settings.bpm)
-  }, [settings.bpm])
+    // Update tracking metadata with tempo info
+    if (isTracking) {
+      updateTracking({
+        averageTempo: settings.bpm,
+      })
+    }
+  }, [settings.bpm, isTracking, updateTracking])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
   }, [settings.volume])
 
+  // Update tracking when pattern changes
+  useEffect(() => {
+    if (isTracking) {
+      updateTracking({
+        patterns: [currentPatternData.name],
+      })
+    }
+  }, [currentPatternData.name, isTracking, updateTracking])
+
   // Stop metronome when switching tabs
   useEffect(() => {
     if (activeTab !== 'metronome' && isPlaying) {
       metronome.stop()
       setIsPlaying(false)
+      // Also stop practice tracking
+      if (isTracking) {
+        stopTracking()
+      }
     }
-  }, [activeTab])
+  }, [activeTab, isTracking, stopTracking])
 
   // Handle pattern changes while playing
   useEffect(() => {
@@ -209,6 +252,10 @@ const Toolbox: React.FC = () => {
     if (isPlaying) {
       metronome.stop()
       setIsPlaying(false)
+      // Stop practice tracking when metronome stops
+      if (isTracking) {
+        stopTracking()
+      }
     } else {
       try {
         // Only use the beats that are within the current beats per measure
@@ -227,6 +274,10 @@ const Toolbox: React.FC = () => {
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)
+        // Start practice tracking when metronome starts
+        if (!isTracking) {
+          startTracking()
+        }
       } catch (error) {
         console.error('Failed to start metronome:', error)
       }
@@ -335,6 +386,12 @@ const Toolbox: React.FC = () => {
               <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
+                  {/* Practice time display */}
+                  {isTracking && (
+                    <div className="mb-2 text-sm text-morandi-stone-600">
+                      {t('common:practice.duration')}: {formattedTime}
+                    </div>
+                  )}
                   <button
                     onClick={handlePlayPause}
                     className={`w-20 h-20 mx-auto mb-4 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
@@ -572,6 +629,17 @@ const Toolbox: React.FC = () => {
       <SignInModal
         isOpen={showSignInModal}
         onClose={() => setShowSignInModal(false)}
+      />
+
+      {/* Practice Summary Modal */}
+      <PracticeSummaryModal
+        isOpen={showSummary}
+        onClose={dismissSummary}
+        onSave={confirmSave}
+        onDiscard={dismissSummary}
+        duration={pendingSession?.duration || 0}
+        metadata={pendingSession?.metadata || {}}
+        title={t('common:practice.practiceSummary')}
       />
     </div>
   )

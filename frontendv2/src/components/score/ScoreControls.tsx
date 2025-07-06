@@ -16,6 +16,10 @@ import {
   Scroll,
   MoreVertical,
 } from 'lucide-react'
+import {
+  usePracticeTracking,
+  PracticeSummaryModal,
+} from '../../modules/auto-logging'
 
 export default function ScoreControls() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -25,8 +29,8 @@ export default function ScoreControls() {
     metronomeSettings,
     autoScrollEnabled,
     practiceSession,
-    startPractice,
-    stopPractice,
+    startPractice: originalStartPractice,
+    stopPractice: originalStopPractice,
     setTempo,
     toggleMetronome,
     setMetronomeVolume,
@@ -35,6 +39,7 @@ export default function ScoreControls() {
     currentPage,
     totalPages,
     setCurrentPage,
+    currentScore,
   } = useScoreStore()
 
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -44,6 +49,30 @@ export default function ScoreControls() {
   const [clickCount, setClickCount] = useState(0)
   const metronome = getMetronome()
   const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Practice tracking with auto-logging
+  const {
+    isTracking,
+    formattedTime,
+    showSummary,
+    pendingSession,
+    start: startTracking,
+    stop: stopTracking,
+    update: updateTracking,
+    confirmSave,
+    dismissSummary,
+  } = usePracticeTracking({
+    type: 'score',
+    metadata: currentScore
+      ? {
+          scoreId: currentScore.id,
+          scoreTitle: currentScore.title,
+          scoreComposer: currentScore.composer,
+          instrument: 'PIANO', // Could be made configurable
+          pagesViewed: [currentPage],
+        }
+      : {},
+  })
 
   // Visual callback for metronome beats
   const visualCallback: VisualCallback = {
@@ -140,6 +169,18 @@ export default function ScoreControls() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Update tracking when page changes
+  useEffect(() => {
+    if (isTracking && currentPage) {
+      updateTracking({
+        pagesViewed: [
+          ...(pendingSession?.metadata.pagesViewed || []),
+          currentPage,
+        ],
+      })
+    }
+  }, [currentPage, isTracking, updateTracking])
+
   // Page navigation handlers
   const changePage = useCallback(
     (offset: number) => {
@@ -177,6 +218,21 @@ export default function ScoreControls() {
     setShowAdvancedMetronome(false)
   }
 
+  // Wrapper functions for practice tracking with auto-logging
+  const startPractice = useCallback(() => {
+    originalStartPractice()
+    if (!isTracking) {
+      startTracking()
+    }
+  }, [originalStartPractice, isTracking, startTracking])
+
+  const stopPractice = useCallback(() => {
+    originalStopPractice()
+    if (isTracking) {
+      stopTracking()
+    }
+  }, [originalStopPractice, isTracking, stopTracking])
+
   // Mobile: Right side vertical layout with semi-transparency
   if (isMobile) {
     return (
@@ -200,7 +256,9 @@ export default function ScoreControls() {
                 {isRecording ? (
                   <>
                     {t('scorebook:recording', 'Rec')}
-                    <div className="text-xs">{formatTime(elapsedTime)}</div>
+                    <div className="text-xs">
+                      {isTracking ? formattedTime : formatTime(elapsedTime)}
+                    </div>
                   </>
                 ) : (
                   t('scorebook:practice', 'Practice')
@@ -487,7 +545,9 @@ export default function ScoreControls() {
                   {isRecording ? (
                     <>
                       {t('scorebook:recording', 'Recording')}
-                      <div className="text-xs">{formatTime(elapsedTime)}</div>
+                      <div className="text-xs">
+                        {isTracking ? formattedTime : formatTime(elapsedTime)}
+                      </div>
                     </>
                   ) : (
                     t('scorebook:practice', 'Practice')
@@ -714,6 +774,17 @@ export default function ScoreControls() {
           onTripleClick={handleAdvancedMetronomeTripleClick}
         />
       )}
+
+      {/* Practice Summary Modal */}
+      <PracticeSummaryModal
+        isOpen={showSummary}
+        onClose={dismissSummary}
+        onSave={confirmSave}
+        onDiscard={dismissSummary}
+        duration={pendingSession?.duration || 0}
+        metadata={pendingSession?.metadata || {}}
+        title={t('common:practice.practiceSummary')}
+      />
     </>
   )
 }
