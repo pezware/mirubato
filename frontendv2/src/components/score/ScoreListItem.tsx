@@ -226,7 +226,7 @@ export default function ScoreListItem({
                 {score.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
+                    className="px-2 py-0.5 bg-morandi-stone-100 text-morandi-stone-600 rounded-full text-xs"
                   >
                     #{tag}
                   </span>
