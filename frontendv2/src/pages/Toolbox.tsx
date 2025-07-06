@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Play, Pause, Plus, Minus, Volume2 } from 'lucide-react'
+import {
+  Play,
+  Pause,
+  Plus,
+  Minus,
+  Volume2,
+  Music,
+  ListChecks,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
@@ -7,6 +15,8 @@ import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 import SignInModal from '../components/auth/SignInModal'
+import { Tabs } from '../components/ui'
+import PracticeCounter from '../components/practice-counter'
 
 type PatternState = {
   accent: boolean[]
@@ -25,6 +35,7 @@ const Toolbox: React.FC = () => {
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [showSignInModal, setShowSignInModal] = useState(false)
+  const [activeTab, setActiveTab] = useState('metronome')
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -132,6 +143,14 @@ const Toolbox: React.FC = () => {
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
   }, [settings.volume])
+
+  // Stop metronome when switching tabs
+  useEffect(() => {
+    if (activeTab !== 'metronome' && isPlaying) {
+      metronome.stop()
+      setIsPlaying(false)
+    }
+  }, [activeTab])
 
   // Handle pattern changes while playing
   useEffect(() => {
@@ -289,235 +308,264 @@ const Toolbox: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Control Panel */}
-          <div className="lg:w-1/3">
-            <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-              {/* Play/Pause and BPM */}
-              <div className="text-center">
-                <button
-                  onClick={handlePlayPause}
-                  className={`w-20 h-20 mx-auto mb-4 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
-                    isFlashing && isPlaying
-                      ? 'scale-110 bg-morandi-purple-500'
-                      : ''
-                  }`}
-                >
-                  {isPlaying ? <Pause size={32} /> : <Play size={32} />}
-                </button>
+        {/* Tabs */}
+        <Tabs
+          tabs={[
+            {
+              id: 'metronome',
+              label: t('tabs.metronome'),
+              icon: <Music size={20} />,
+            },
+            {
+              id: 'counter',
+              label: t('tabs.counter'),
+              icon: <ListChecks size={20} />,
+            },
+          ]}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          className="mb-6"
+        />
 
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-center gap-4 mb-2">
-                      <button
-                        onClick={() =>
-                          updateSettings({
-                            bpm: Math.max(40, settings.bpm - 5),
-                          })
-                        }
-                        className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
-                      >
-                        <Minus size={18} />
-                      </button>
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-morandi-stone-900">
-                          {settings.bpm}
+        {/* Tab Content */}
+        {activeTab === 'metronome' && (
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Control Panel */}
+            <div className="lg:w-1/3">
+              <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+                {/* Play/Pause and BPM */}
+                <div className="text-center">
+                  <button
+                    onClick={handlePlayPause}
+                    className={`w-20 h-20 mx-auto mb-4 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
+                      isFlashing && isPlaying
+                        ? 'scale-110 bg-morandi-purple-500'
+                        : ''
+                    }`}
+                  >
+                    {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+                  </button>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-center gap-4 mb-2">
+                        <button
+                          onClick={() =>
+                            updateSettings({
+                              bpm: Math.max(40, settings.bpm - 5),
+                            })
+                          }
+                          className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
+                        >
+                          <Minus size={18} />
+                        </button>
+                        <div className="text-center">
+                          <div className="text-4xl font-bold text-morandi-stone-900">
+                            {settings.bpm}
+                          </div>
+                          <div className="text-sm text-morandi-stone-500">
+                            BPM
+                          </div>
                         </div>
-                        <div className="text-sm text-morandi-stone-500">
-                          BPM
-                        </div>
+                        <button
+                          onClick={() =>
+                            updateSettings({
+                              bpm: Math.min(240, settings.bpm + 5),
+                            })
+                          }
+                          className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
+                        >
+                          <Plus size={18} />
+                        </button>
                       </div>
-                      <button
-                        onClick={() =>
-                          updateSettings({
-                            bpm: Math.min(240, settings.bpm + 5),
-                          })
+                      <input
+                        type="range"
+                        min="40"
+                        max="240"
+                        value={settings.bpm}
+                        onChange={e =>
+                          updateSettings({ bpm: Number(e.target.value) })
                         }
-                        className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
+                        className="w-full accent-morandi-purple-400"
+                      />
+                      <button
+                        onClick={handleTapTempo}
+                        className="w-full mt-2 py-2 bg-morandi-stone-100 text-morandi-stone-700 rounded-lg hover:bg-morandi-stone-200 text-sm font-medium"
                       >
-                        <Plus size={18} />
+                        {t('toolbox:metronome.tapTempo')}
                       </button>
                     </div>
-                    <input
-                      type="range"
-                      min="40"
-                      max="240"
-                      value={settings.bpm}
-                      onChange={e =>
-                        updateSettings({ bpm: Number(e.target.value) })
-                      }
-                      className="w-full accent-morandi-purple-400"
-                    />
-                    <button
-                      onClick={handleTapTempo}
-                      className="w-full mt-2 py-2 bg-morandi-stone-100 text-morandi-stone-700 rounded-lg hover:bg-morandi-stone-200 text-sm font-medium"
-                    >
-                      {t('toolbox:metronome.tapTempo')}
-                    </button>
-                  </div>
 
-                  {/* Time Signature */}
-                  <div>
-                    <label className="text-sm text-morandi-stone-600 mb-1 block">
-                      {t('toolbox:metronome.timeSignature')}
-                    </label>
-                    <div className="flex items-center justify-center gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        max="36"
-                        value={settings.beatsPerMeasure}
-                        onChange={e =>
-                          updateSettings({
-                            beatsPerMeasure: Math.max(
-                              1,
-                              Math.min(36, Number(e.target.value))
-                            ),
-                          })
-                        }
-                        className="w-16 px-2 py-1 text-center border border-morandi-stone-200 rounded"
-                      />
-                      <span className="text-xl text-morandi-stone-400">/</span>
-                      <select
-                        value={settings.beatValue}
-                        onChange={e =>
-                          updateSettings({ beatValue: Number(e.target.value) })
-                        }
-                        className="w-16 px-2 py-1 border border-morandi-stone-200 rounded"
-                      >
-                        <option value="2">2</option>
-                        <option value="4">4</option>
-                        <option value="8">8</option>
-                        <option value="16">16</option>
-                      </select>
+                    {/* Time Signature */}
+                    <div>
+                      <label className="text-sm text-morandi-stone-600 mb-1 block">
+                        {t('toolbox:metronome.timeSignature')}
+                      </label>
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          max="36"
+                          value={settings.beatsPerMeasure}
+                          onChange={e =>
+                            updateSettings({
+                              beatsPerMeasure: Math.max(
+                                1,
+                                Math.min(36, Number(e.target.value))
+                              ),
+                            })
+                          }
+                          className="w-16 px-2 py-1 text-center border border-morandi-stone-200 rounded"
+                        />
+                        <span className="text-xl text-morandi-stone-400">
+                          /
+                        </span>
+                        <select
+                          value={settings.beatValue}
+                          onChange={e =>
+                            updateSettings({
+                              beatValue: Number(e.target.value),
+                            })
+                          }
+                          className="w-16 px-2 py-1 border border-morandi-stone-200 rounded"
+                        >
+                          <option value="2">2</option>
+                          <option value="4">4</option>
+                          <option value="8">8</option>
+                          <option value="16">16</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Volume */}
-                  <div>
-                    <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
-                      <Volume2 size={16} />
-                      {t('toolbox:metronome.volume')}: {settings.volume}%
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={settings.volume}
-                      onChange={e =>
-                        updateSettings({ volume: Number(e.target.value) })
-                      }
-                      className="w-full accent-morandi-purple-400"
-                    />
-                  </div>
+                    {/* Volume */}
+                    <div>
+                      <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
+                        <Volume2 size={16} />
+                        {t('toolbox:metronome.volume')}: {settings.volume}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={settings.volume}
+                        onChange={e =>
+                          updateSettings({ volume: Number(e.target.value) })
+                        }
+                        className="w-full accent-morandi-purple-400"
+                      />
+                    </div>
 
-                  {/* Beat Indicator */}
-                  {isPlaying && (
-                    <div className="flex justify-center gap-2">
+                    {/* Beat Indicator */}
+                    {isPlaying && (
+                      <div className="flex justify-center gap-2">
+                        {Array.from(
+                          { length: settings.beatsPerMeasure },
+                          (_, i) => (
+                            <div
+                              key={i}
+                              className={`w-3 h-3 rounded-full transition-all duration-100 ${
+                                i === currentBeat
+                                  ? 'bg-morandi-purple-400 scale-125'
+                                  : 'bg-morandi-stone-300'
+                              }`}
+                            />
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pattern Selector */}
+                <div>
+                  <label className="text-sm text-morandi-stone-600 mb-2 block">
+                    {t('toolbox:metronome.presetPatterns')}
+                  </label>
+                  <select
+                    value={settings.selectedPattern}
+                    onChange={e => loadPattern(e.target.value)}
+                    className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
+                  >
+                    {commonPatterns.map(pattern => (
+                      <option key={pattern.id} value={pattern.id}>
+                        {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
+                        {t(
+                          `toolbox:metronome.patterns.${pattern.id}.description`
+                        )}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Beat Pattern Grid */}
+            <div className="lg:w-2/3">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="overflow-x-auto">
+                  <div className="min-w-[600px]">
+                    {/* Grid with beat numbers and layers */}
+                    <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
+                      {/* Header row with beat numbers */}
+                      <div></div>
                       {Array.from(
                         { length: settings.beatsPerMeasure },
                         (_, i) => (
                           <div
                             key={i}
-                            className={`w-3 h-3 rounded-full transition-all duration-100 ${
-                              i === currentBeat
-                                ? 'bg-morandi-purple-400 scale-125'
-                                : 'bg-morandi-stone-300'
-                            }`}
-                          />
+                            className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
+                          >
+                            {i + 1}
+                          </div>
                         )
                       )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Pattern Selector */}
-              <div>
-                <label className="text-sm text-morandi-stone-600 mb-2 block">
-                  {t('toolbox:metronome.presetPatterns')}
-                </label>
-                <select
-                  value={settings.selectedPattern}
-                  onChange={e => loadPattern(e.target.value)}
-                  className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
-                >
-                  {commonPatterns.map(pattern => (
-                    <option key={pattern.id} value={pattern.id}>
-                      {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
-                      {t(
-                        `toolbox:metronome.patterns.${pattern.id}.description`
+                      {/* Fill remaining columns */}
+                      {Array.from(
+                        { length: 36 - settings.beatsPerMeasure },
+                        (_, i) => (
+                          <div key={`empty-${i}`}></div>
+                        )
                       )}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
 
-          {/* Beat Pattern Grid */}
-          <div className="lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="overflow-x-auto">
-                <div className="min-w-[600px]">
-                  {/* Grid with beat numbers and layers */}
-                  <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
-                    {/* Header row with beat numbers */}
-                    <div></div>
-                    {Array.from(
-                      { length: settings.beatsPerMeasure },
-                      (_, i) => (
-                        <div
-                          key={i}
-                          className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
-                        >
-                          {i + 1}
-                        </div>
-                      )
-                    )}
-                    {/* Fill remaining columns */}
-                    {Array.from(
-                      { length: 36 - settings.beatsPerMeasure },
-                      (_, i) => (
-                        <div key={`empty-${i}`}></div>
-                      )
-                    )}
-
-                    {/* Sound Layers */}
-                    {soundLayers.map(layer => (
-                      <React.Fragment key={layer.id}>
-                        <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
-                          {t(`toolbox:metronome.sounds.${layer.id}`)}
-                        </div>
-                        {Array.from({ length: 36 }, (_, i) => (
-                          <button
-                            key={i}
-                            onClick={() =>
-                              i < settings.beatsPerMeasure &&
-                              toggleBeat(layer.id as keyof PatternState, i)
-                            }
-                            disabled={i >= settings.beatsPerMeasure}
-                            className={`w-10 h-10 rounded transition-all ${
-                              i < settings.beatsPerMeasure
-                                ? patterns[layer.id as keyof PatternState][i]
-                                  ? layer.color + ' text-white'
-                                  : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
-                                : 'bg-transparent cursor-default'
-                            }`}
-                          />
-                        ))}
-                      </React.Fragment>
-                    ))}
+                      {/* Sound Layers */}
+                      {soundLayers.map(layer => (
+                        <React.Fragment key={layer.id}>
+                          <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
+                            {t(`toolbox:metronome.sounds.${layer.id}`)}
+                          </div>
+                          {Array.from({ length: 36 }, (_, i) => (
+                            <button
+                              key={i}
+                              onClick={() =>
+                                i < settings.beatsPerMeasure &&
+                                toggleBeat(layer.id as keyof PatternState, i)
+                              }
+                              disabled={i >= settings.beatsPerMeasure}
+                              className={`w-10 h-10 rounded transition-all ${
+                                i < settings.beatsPerMeasure
+                                  ? patterns[layer.id as keyof PatternState][i]
+                                    ? layer.color + ' text-white'
+                                    : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                  : 'bg-transparent cursor-default'
+                              }`}
+                            />
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-6 text-sm text-morandi-stone-600">
-                <p>{t('toolbox:metronome.clickToCreate')}</p>
+                <div className="mt-6 text-sm text-morandi-stone-600">
+                  <p>{t('toolbox:metronome.clickToCreate')}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Practice Counter Tab */}
+        {activeTab === 'counter' && <PracticeCounter />}
       </div>
 
       {/* Sign In Modal */}
