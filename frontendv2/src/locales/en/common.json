@@ -32,6 +32,27 @@
     "piano": "Piano",
     "guitar": "Guitar"
   },
+  "practice": {
+    "duration": "Practice Duration",
+    "repetitions": "Repetitions",
+    "startPractice": "Start Practice",
+    "stopPractice": "Stop Practice",
+    "practiceSummary": "Practice Summary",
+    "saveToLogbook": "Save to Logbook",
+    "discardSession": "Discard Session"
+  },
+  "metronome": {
+    "averageTempo": "Average Tempo",
+    "tempoChanges": "Tempo Changes",
+    "patterns": "Patterns Used"
+  },
+  "duration": {
+    "hms": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "ms": "{{minutes}}m {{seconds}}s",
+    "s": "{{seconds}}s"
+  },
+  "discard": "Discard",
+  "saveToLogbook": "Save to Logbook",
   "navigation": {
     "home": "Home",
     "logbook": "Logbook",
