@@ -91,9 +91,15 @@ export const PracticeCounter: React.FC = () => {
   }
 
   // Handle save from CounterSummary
-  const handleSaveToLog = () => {
+  const handleSaveToLog = async () => {
     // Stop tracking which will show the auto-logging modal
-    stopTracking()
+    const session = await stopTracking()
+
+    // If no modal is shown (config.showSummary might be false),
+    // navigate directly to logbook
+    if (session && !showSummary) {
+      navigate('/logbook')
+    }
   }
 
   const handleStartNew = () => {
@@ -131,6 +137,14 @@ export const PracticeCounter: React.FC = () => {
             onSaveToLog={handleSaveToLog}
             onStartNew={handleStartNew}
           />
+        )}
+
+        {/* Debug info - remove later */}
+        {state === 'summary' && (
+          <div className="mt-4 p-2 bg-gray-100 text-xs">
+            Debug: isTracking={String(isTracking)}, showSummary=
+            {String(showSummary)}
+          </div>
         )}
       </div>
 
