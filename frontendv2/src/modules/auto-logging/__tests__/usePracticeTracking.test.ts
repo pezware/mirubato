@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { usePracticeTracking } from '../usePracticeTracking'
-import { useAutoLogging } from '../AutoLoggingProvider'
+import { useAutoLogging } from '../context'
 
-// Mock the AutoLoggingProvider
-vi.mock('../AutoLoggingProvider', () => ({
+// Mock the context
+vi.mock('../context', () => ({
   useAutoLogging: vi.fn(),
 }))
 

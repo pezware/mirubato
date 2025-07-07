@@ -181,6 +181,7 @@ When creating or updating UI components:
 2. **Code Quality**
    - Remove console.log statements
    - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
+   - ✅ Auto-logging module added for reusable practice tracking across features
    - Replace `any` types with proper types
    - Continue refactoring ~150 files still using native buttons
 
@@ -229,6 +230,62 @@ npm run docs:generate
 # 6. Check coverage
 npm test -- src/modules/newModule --coverage
 ```
+
+### Auto-Logging Module (July 2025)
+
+The auto-logging module provides automatic practice session tracking across features:
+
+**Usage Example:**
+
+```typescript
+import { usePracticeTracking, PracticeSummaryModal } from '@/modules/auto-logging'
+
+function MyPracticeComponent() {
+  const {
+    isTracking,
+    formattedTime,
+    showSummary,
+    pendingSession,
+    start,
+    stop,
+    confirmSave,
+    dismissSummary,
+  } = usePracticeTracking({
+    type: 'metronome', // or 'score', 'counter', 'custom'
+    metadata: {
+      title: 'Practice Session',
+      instrument: 'PIANO',
+      // ... other metadata
+    },
+  })
+
+  return (
+    <>
+      <Button onClick={isTracking ? stop : start}>
+        {isTracking ? `Stop (${formattedTime})` : 'Start Practice'}
+      </Button>
+
+      <PracticeSummaryModal
+        isOpen={showSummary}
+        onClose={dismissSummary}
+        onSave={confirmSave}
+        onDiscard={dismissSummary}
+        duration={pendingSession?.duration || 0}
+        metadata={pendingSession?.metadata || {}}
+      />
+    </>
+  )
+}
+```
+
+**Key Features:**
+
+- Automatic session tracking with start/stop/pause/resume
+- Real-time duration display
+- Summary modal before saving to logbook
+- Configurable auto-logging preferences
+- TypeScript support with comprehensive types
+- Integrated with Metronome and Scorebook features
 
 ### API Development Workflow
 
@@ -352,6 +409,7 @@ npm test -- --watch
   - ✅ notationRenderer: 100%
   - ✅ audioManager: 91.54%
   - ✅ Practice page: 91.66%
+  - ✅ Auto-logging module: 100%
   - ✅ All tests passing: 270+ unit tests, 65 E2E tests (including smoke tests)
 - **Backend Coverage**: ~43% (Target: 80%)
   - ✅ practice resolver: 100%

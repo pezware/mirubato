@@ -28,7 +28,7 @@ export interface PracticeMetadata {
   mode?: 'up' | 'down'
 
   // Custom fields for extensibility
-  customData?: Record<string, any>
+  customData?: Record<string, string | number | boolean | string[] | number[]>
 }
 
 export interface PracticeSession {

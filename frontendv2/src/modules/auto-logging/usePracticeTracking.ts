@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useAutoLogging } from './AutoLoggingProvider'
+import { useAutoLogging } from './context'
 import type { PracticeType, PracticeMetadata } from './types'
 
 interface UsePracticeTrackingOptions {

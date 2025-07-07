@@ -1,14 +1,8 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { useAuthStore } from '../../stores/authStore'
+import { AutoLoggingContext } from './context'
 import type {
   PracticeSession,
   PracticeType,
@@ -24,16 +18,6 @@ const DEFAULT_CONFIG: AutoLoggingConfig = {
   showSummary: true,
   defaultTags: ['auto-logged'],
   defaultInstrument: 'PIANO',
-}
-
-const AutoLoggingContext = createContext<AutoLoggingContextValue | null>(null)
-
-export const useAutoLogging = () => {
-  const context = useContext(AutoLoggingContext)
-  if (!context) {
-    throw new Error('useAutoLogging must be used within AutoLoggingProvider')
-  }
-  return context
 }
 
 interface AutoLoggingProviderProps {
