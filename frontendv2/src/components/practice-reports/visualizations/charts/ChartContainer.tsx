@@ -36,22 +36,7 @@ ChartJS.register(
 
 interface ChartContainerProps {
   config: ChartConfig
-  data: {
-    labels: string[]
-    datasets: Array<
-      {
-        label?: string
-        data: number[]
-        backgroundColor?: string | string[]
-        borderColor?: string | string[]
-        borderWidth?: number
-        tension?: number
-        fill?: boolean
-        borderDash?: number[]
-        pointRadius?: number
-      } & Record<string, unknown>
-    >
-  }
+  data: any // Chart.js data types are complex and vary by chart type
   className?: string
   onFullscreen?: () => void
   onExport?: (format: 'png' | 'svg') => void
@@ -149,10 +134,10 @@ export function ChartContainer({
     ...defaultOptions,
     ...config.options,
     plugins: {
-      ...defaultOptions.plugins,
-      ...(config.options.plugins || {}),
+      ...(defaultOptions.plugins || {}),
+      ...((config.options as any)?.plugins || {}),
     },
-  }
+  } as ChartOptions
 
   // Handle export
   const handleExport = (format: 'png' | 'svg') => {
@@ -182,7 +167,7 @@ export function ChartContainer({
 
   // Apply colors if not specified
   if (!data.datasets[0].backgroundColor && !data.datasets[0].borderColor) {
-    data.datasets = data.datasets.map((dataset, index: number) => ({
+    data.datasets = data.datasets.map((dataset: any, index: number) => ({
       ...dataset,
       backgroundColor:
         config.type === 'pie' || config.type === 'donut'

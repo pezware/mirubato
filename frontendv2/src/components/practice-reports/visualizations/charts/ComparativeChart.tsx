@@ -117,7 +117,7 @@ export function ComparativeChart({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (

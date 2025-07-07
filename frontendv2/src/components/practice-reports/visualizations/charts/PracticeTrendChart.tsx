@@ -63,7 +63,7 @@ export function PracticeTrendChart({
         borderDash: [5, 5],
         tension: 0.4,
         fill: false,
-      })
+      } as any)
     }
 
     // Add goal line if specified
@@ -78,7 +78,7 @@ export function PracticeTrendChart({
         pointRadius: 0,
         tension: 0,
         fill: false,
-      })
+      } as any)
     }
 
     return {
@@ -126,7 +126,7 @@ export function PracticeTrendChart({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (

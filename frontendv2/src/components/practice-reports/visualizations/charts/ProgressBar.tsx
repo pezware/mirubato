@@ -66,7 +66,7 @@ export function ProgressBar({
         borderColor: ['#E5C1A6'],
         borderWidth: 2,
         borderDash: [5, 5],
-      })
+      } as any)
     }
 
     return {
@@ -130,7 +130,7 @@ export function ProgressBar({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (
