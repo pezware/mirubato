@@ -268,6 +268,24 @@ The frontend uses a straightforward React architecture without the complex modul
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
 
+**Auto-Logging Module (July 2025)**
+
+- **AutoLoggingProvider**: Context provider for global practice session management
+  - Manages active practice sessions across features
+  - Handles automatic session creation in logbook
+  - Persists configuration to localStorage
+  - Provides session lifecycle management
+- **usePracticeTracking**: Reusable hook for integrating practice tracking
+  - Start/stop/pause/resume session tracking
+  - Real-time duration updates
+  - Metadata management for different practice types
+  - Automatic session completion handling
+- **PracticeSummaryModal**: Session review modal before saving
+  - Shows practice duration and metadata
+  - Allows user to review before creating logbook entry
+  - Option to discard session
+  - Consistent UI with component library
+
 **Scorebook Components (July 2025)**
 
 - **ScoreBrowser**: Main scorebook page with tabs for Scores, Public Collections, My Collections
@@ -505,7 +523,15 @@ The frontend implements aggressive code splitting:
 
 **Recent Enhancements (July 2025):**
 
-- **Practice Counter** (Latest): Added new practice counter feature to toolbox
+- **Auto-Logging Module** (Latest): Added reusable auto-logging system for practice tracking
+  - AutoLoggingProvider for global practice session management
+  - usePracticeTracking hook for easy integration
+  - PracticeSummaryModal for session review before saving
+  - Integrated into Metronome and Scorebook features
+  - Automatic session tracking with configurable options
+  - Seamless integration with existing logbook functionality
+
+- **Practice Counter**: Added new practice counter feature to toolbox
   - Visual counter for practice sessions
   - Integrated with scorebook and logbook
   - Full i18n support across all 6 languages

@@ -14,12 +14,16 @@ interface CounterActiveProps {
   mode: CounterMode
   initialValue: number
   onFinish: (reps: RepetitionData[], totalTime: number) => void
+  practiceTime?: string
+  isTracking?: boolean
 }
 
 export const CounterActive: React.FC<CounterActiveProps> = ({
   mode,
   initialValue,
   onFinish,
+  practiceTime,
+  isTracking,
 }) => {
   const { t } = useTranslation('toolbox')
   const [count, setCount] = useState(mode === 'up' ? 0 : initialValue)
@@ -28,22 +32,27 @@ export const CounterActive: React.FC<CounterActiveProps> = ({
   const startTimeRef = useRef<number>(Date.now())
   const lastClickTimeRef = useRef<number>(Date.now())
 
-  // Format time display
-  const formatTime = (ms: number) => {
+  // Use the practice time from the auto-logging system if provided
+  // Otherwise fall back to local timer (for backward compatibility)
+  const [localElapsedTime, setLocalElapsedTime] = useState(0)
+
+  useEffect(() => {
+    if (!practiceTime) {
+      const interval = setInterval(() => {
+        setLocalElapsedTime(Date.now() - startTimeRef.current)
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [practiceTime])
+
+  const formatLocalTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  // Timer for elapsed time display
-  const [elapsedTime, setElapsedTime] = useState(0)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedTime(Date.now() - startTimeRef.current)
-    }, 100)
-    return () => clearInterval(interval)
-  }, [])
+  const displayTime = practiceTime || formatLocalTime(localElapsedTime)
 
   // Auto-finish when countdown reaches 0
   useEffect(() => {
@@ -82,7 +91,8 @@ export const CounterActive: React.FC<CounterActiveProps> = ({
     <div className="flex flex-col items-center space-y-6 p-6">
       {/* Elapsed Time Display */}
       <div className="text-sm text-morandi-stone-600">
-        {formatTime(elapsedTime)}
+        {isTracking && <span className="text-xs mr-1">●</span>}
+        {displayTime}
       </div>
 
       {/* Main Count Display */}

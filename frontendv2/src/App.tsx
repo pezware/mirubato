@@ -8,6 +8,7 @@ import {
 import { useAuthStore } from './stores/authStore'
 import { fixLocalStorageData } from './utils/fixLocalStorageData'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
+import { AutoLoggingProvider } from './modules/auto-logging'
 
 // Set up PDF worker before any components load
 setupPdfWorker()
@@ -45,75 +46,77 @@ function App() {
   }, [refreshAuth])
 
   return (
-    <Router>
-      <div className="min-h-screen bg-morandi-stone-100">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/auth/verify" element={<AuthVerifyPage />} />
-            <Route path="/toolbox" element={<Toolbox />} />
+    <AutoLoggingProvider>
+      <Router>
+        <div className="min-h-screen bg-morandi-stone-100">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/auth/verify" element={<AuthVerifyPage />} />
+              <Route path="/toolbox" element={<Toolbox />} />
 
-            {/* Protected routes (but work for anonymous users too) */}
-            <Route
-              path="/logbook"
-              element={
-                <ProtectedRoute>
-                  <LogbookPage />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected routes (but work for anonymous users too) */}
+              <Route
+                path="/logbook"
+                element={
+                  <ProtectedRoute>
+                    <LogbookPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Scorebook routes (public access) */}
-            <Route path="/scorebook">
-              <Route
-                index
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <ScoreBrowser />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="browse"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <ScoreBrowser />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="collection/user/:id"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <CollectionView />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="collection/:slug"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <CollectionView />
-                  </Suspense>
-                }
-              />
-              <Route
-                path=":scoreId"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <ScorebookPage />
-                  </Suspense>
-                }
-              />
-            </Route>
+              {/* Scorebook routes (public access) */}
+              <Route path="/scorebook">
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <ScoreBrowser />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="browse"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <ScoreBrowser />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="collection/user/:id"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <CollectionView />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="collection/:slug"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <CollectionView />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path=":scoreId"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <ScorebookPage />
+                    </Suspense>
+                  }
+                />
+              </Route>
 
-            {/* Redirect unknown routes to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </div>
-    </Router>
+              {/* Redirect unknown routes to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </Router>
+    </AutoLoggingProvider>
   )
 }
 
