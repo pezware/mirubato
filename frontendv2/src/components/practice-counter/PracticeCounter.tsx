@@ -8,7 +8,6 @@ import {
   usePracticeTracking,
   PracticeSummaryModal,
 } from '../../modules/auto-logging'
-import { useLogbookStore } from '../../stores/logbookStore'
 
 type CounterState = 'setup' | 'active' | 'summary'
 
@@ -22,7 +21,6 @@ interface SessionData {
 export const PracticeCounter: React.FC = () => {
   const { t } = useTranslation('toolbox')
   const navigate = useNavigate()
-  const { createEntry } = useLogbookStore()
 
   const [state, setState] = useState<CounterState>('setup')
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
@@ -95,46 +93,9 @@ export const PracticeCounter: React.FC = () => {
   // Handle save from CounterSummary
   const handleSaveToLog = async () => {
     if (isTracking) {
-      // Stop tracking to get session data
-      const session = await stopTracking()
-
-      // Since auto-logging only works when authenticated, we need to manually save for non-auth users
-      if (session) {
-        const duration = session.endTime
-          ? session.endTime.getTime() - session.startTime.getTime()
-          : 0
-        const durationMinutes = Math.ceil(duration / 60000)
-
-        // Build description
-        let description = `Practice Counter Session\n`
-        if (session.metadata.totalReps) {
-          description += `Total Repetitions: ${session.metadata.totalReps}\n`
-        }
-        if (session.metadata.mode) {
-          description += `Mode: ${session.metadata.mode}\n`
-        }
-
-        // Create entry in logbook (works with local storage for non-auth users)
-        await createEntry({
-          timestamp: session.startTime.toISOString(),
-          duration: durationMinutes,
-          type: 'PRACTICE',
-          instrument: session.metadata.instrument || 'PIANO',
-          pieces: [
-            {
-              title: session.metadata.title || t('counter.practice_title'),
-              composer: '',
-            },
-          ],
-          techniques: [],
-          goalIds: [],
-          notes: description,
-          mood: null,
-          tags: ['practice-counter', 'auto-logged'],
-        })
-      }
+      // Stop tracking - this will auto-save the session via AutoLoggingProvider
+      await stopTracking()
     }
-
     // Navigate to logbook
     navigate('/logbook')
   }

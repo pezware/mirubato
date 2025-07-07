@@ -120,8 +120,8 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
       duration,
     }
 
-    // Auto-log if enabled and user is authenticated
-    if (config.enabled && isAuthenticated) {
+    // Auto-log if enabled (works for both authenticated and non-authenticated users)
+    if (config.enabled) {
       try {
         // Calculate rounded duration in minutes
         const durationMinutes =
