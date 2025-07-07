@@ -1,6 +1,11 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type ChartData, type TooltipItem, type LegendItem } from 'chart.js'
+import {
+  type ChartData,
+  type TooltipItem,
+  type LegendItem,
+  type Chart,
+} from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { DistributionData, ChartConfig } from '../../../../types/reporting'
 
@@ -106,7 +111,7 @@ export function DistributionPie({
         legend: {
           position: 'right' as const,
           labels: {
-            generateLabels: (chart: any) => {
+            generateLabels: (chart: Chart) => {
               const data = chart.data
               if (data.labels?.length && data.datasets?.length) {
                 const dataset = data.datasets[0]
@@ -137,7 +142,10 @@ export function DistributionPie({
         },
         datalabels: showPercentages
           ? {
-              formatter: (value: number, context: any) => {
+              formatter: (
+                value: number,
+                context: { dataset: { data: unknown[] } }
+              ) => {
                 const total = (context.dataset.data as number[]).reduce(
                   (a, b) => a + b,
                   0

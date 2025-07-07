@@ -173,16 +173,17 @@ When creating or updating UI components:
 
 ### Technical Debt (Ongoing)
 
-1. **Type Alignment** (IN PROGRESS)
-   - Unify types across backend/frontend/shared
-   - Setup GraphQL Code Generator
+1. **Type Alignment** (COMPLETED)
+   - ✅ Chart.js components properly typed without `any`
+   - ✅ Using ChartData<T>, ChartDataset<T>, TooltipItem<ChartType>
+   - ✅ Extended ChartOptions interface for all features
    - Remove duplicate type definitions
 
 2. **Code Quality**
    - Remove console.log statements
    - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
    - ✅ Auto-logging module added for reusable practice tracking across features
-   - Replace `any` types with proper types
+   - ✅ Chart.js visualization components properly typed
    - Continue refactoring ~150 files still using native buttons
 
 ### Core Technologies
@@ -192,6 +193,10 @@ When creating or updating UI components:
   - Always use Button, Modal, Card, Input, Select, Toast components
   - Import from `@/components/ui`
   - See `frontendv2/docs/COMPONENT-LIBRARY.md` for usage
+- **Data Visualization**: Chart.js v4.4.9 + react-chartjs-2 v5.3.0
+  - Properly typed with ChartData<T>, ChartDataset<T>, TooltipItem<ChartType>
+  - Custom chart components in `src/components/practice-reports/visualizations/charts/`
+  - No `any` types - use proper Chart.js generics
 - **API**: Cloudflare Workers + Hono + D1 (SQLite) + REST
 - **Auth**: Magic links + Google OAuth + JWT
 - **Music**: VexFlow.js (notation) + Tone.js (audio)
@@ -286,6 +291,55 @@ function MyPracticeComponent() {
 - Configurable auto-logging preferences
 - TypeScript support with comprehensive types
 - Integrated with Metronome and Scorebook features
+
+### Enhanced Reporting UI (July 2025)
+
+The enhanced reporting UI provides comprehensive data visualization and filtering for practice data:
+
+**Key Components:**
+
+```typescript
+// Chart components with proper TypeScript types
+import { type ChartData, type ChartDataset, type TooltipItem } from 'chart.js'
+
+// Available chart components
+import { PracticeTrendChart } from '@/components/practice-reports/visualizations/charts/PracticeTrendChart'
+import { DistributionPie } from '@/components/practice-reports/visualizations/charts/DistributionPie'
+import { ComparativeChart } from '@/components/practice-reports/visualizations/charts/ComparativeChart'
+import { ProgressBar } from '@/components/practice-reports/visualizations/charts/ProgressBar'
+```
+
+**Proper Chart.js Typing Pattern:**
+
+```typescript
+// Always use proper generics, never 'any'
+const chartData = useMemo<ChartData<'line'>>(() => { ... })
+const datasets: ChartDataset<'bar', number[]>[] = [...]
+
+// Tooltip callbacks with proper types
+tooltip: {
+  callbacks: {
+    label: (context: TooltipItem<'pie'>) => {
+      // Type-safe access to context properties
+    }
+  }
+}
+
+// For borderDash and other extended properties
+datasets.push({
+  ...datasetConfig,
+  borderDash: [5, 5],
+} as ChartDataset<'line', number[]>)
+```
+
+**Features:**
+
+- Advanced filtering by date ranges, duration, pieces, composers, instruments
+- Grouping and aggregation capabilities
+- Multiple visualization types (line, bar, pie, donut)
+- Calendar heatmap for practice patterns
+- Export functionality for all visualizations
+- Fully typed without any `any` assertions
 
 ### API Development Workflow
 

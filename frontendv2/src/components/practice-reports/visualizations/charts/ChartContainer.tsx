@@ -134,7 +134,7 @@ export function ChartContainer<T extends ChartJSType = ChartJSType>({
   // Merge with custom options
   const chartOptions = {
     ...defaultOptions,
-    ...(config.options as any),
+    ...config.options,
     plugins: {
       ...defaultOptions.plugins,
       ...((config.options.plugins as Record<string, unknown>) || {}),

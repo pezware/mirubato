@@ -264,6 +264,12 @@ The frontend uses a straightforward React architecture without the complex modul
   - **MonthlySummaries**: Monthly practice summaries for historical access
   - **PracticeOverview**: High-level practice overview component
   - **CalendarNavigation**: Enhanced calendar navigation with monthly/yearly controls
+  - **Visualization Charts** (July 2025): Comprehensive data visualization components
+    - **PracticeTrendChart**: Line charts with moving averages and goal lines
+    - **DistributionPie**: Pie/donut charts for practice distribution
+    - **ComparativeChart**: Bar/line charts for comparative analysis
+    - **ProgressBar**: Horizontal/vertical progress charts with targets
+    - **ChartContainer**: Reusable wrapper with export functionality
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
@@ -345,7 +351,8 @@ The original design envisioned a complex module system with EventBus for loose c
 
 ## Key Technologies
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios, Chart.js
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios
+- **Data Visualization**: Chart.js v4.4.9 with react-chartjs-2 v5.3.0
 - **UI Components**: Custom component library with @headlessui/react for accessibility
 - **Music Libraries**: VexFlow.js and Tone.js (present but minimally used)
 - **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
@@ -523,7 +530,15 @@ The frontend implements aggressive code splitting:
 
 **Recent Enhancements (July 2025):**
 
-- **Auto-Logging Module** (Latest): Added reusable auto-logging system for practice tracking
+- **Enhanced Reporting UI** (Latest): Added comprehensive data visualization and filtering
+  - Advanced filtering system with date ranges, duration, pieces, composers, instruments
+  - Multiple chart types using Chart.js with proper TypeScript types
+  - Calendar heatmap visualization for daily practice patterns
+  - Grouping and aggregation capabilities for data analysis
+  - Export functionality for all visualizations
+  - Properly typed Chart.js components without any type assertions
+
+- **Auto-Logging Module**: Added reusable auto-logging system for practice tracking
   - AutoLoggingProvider for global practice session management
   - usePracticeTracking hook for easy integration
   - PracticeSummaryModal for session review before saving
