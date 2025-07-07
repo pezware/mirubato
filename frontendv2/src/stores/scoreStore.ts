@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
 import { usePracticeStore } from './practiceStore'
-import { useLogbookStore } from './logbookStore'
 
 interface PracticeSession {
   id: string
@@ -213,31 +212,8 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       return
     }
 
-    // Create logbook entry
-    const logbookStore = useLogbookStore.getState()
-    logbookStore.createEntry({
-      timestamp: new Date().toISOString(),
-      duration: sessionData.duration,
-      type: 'PRACTICE',
-      instrument: 'PIANO' as const, // TODO: Add user instrument preference
-      pieces: [
-        {
-          title: sessionData.scoreTitle,
-          composer: sessionData.scoreComposer || undefined,
-        },
-      ],
-      techniques: [],
-      goalIds: [],
-      tags: [],
-      metadata: {
-        source: 'score-viewer',
-      },
-      // Score integration fields
-      scoreId: sessionData.scoreId,
-      scoreTitle: sessionData.scoreTitle,
-      scoreComposer: sessionData.scoreComposer,
-      autoTracked: true,
-    })
+    // Note: Logbook entry creation is now handled by the auto-logging module
+    // in ScoreControls component to avoid duplicate entries
 
     set({ isRecording: false })
   },
