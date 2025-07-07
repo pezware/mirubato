@@ -155,7 +155,12 @@ const Toolbox: React.FC = () => {
     return () => {
       // Always stop metronome when leaving the page
       metronome.stop()
+      // Also stop tracking if it's active
+      if (isTracking) {
+        stopTracking()
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle tempo changes
@@ -185,15 +190,18 @@ const Toolbox: React.FC = () => {
 
   // Stop metronome when switching tabs
   useEffect(() => {
-    if (activeTab !== 'metronome' && isPlaying) {
-      metronome.stop()
-      setIsPlaying(false)
+    if (activeTab !== 'metronome') {
+      if (isPlaying) {
+        metronome.stop()
+        setIsPlaying(false)
+      }
       // Also stop practice tracking
       if (isTracking) {
         stopTracking()
       }
     }
-  }, [activeTab, isTracking, stopTracking])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]) // Removed isTracking and stopTracking from deps to prevent loops
 
   // Handle pattern changes while playing
   useEffect(() => {

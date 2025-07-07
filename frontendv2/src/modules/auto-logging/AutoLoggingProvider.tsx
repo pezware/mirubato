@@ -63,6 +63,10 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
   // Update elapsed time
   useEffect(() => {
     if (currentSession && !currentSession.endTime) {
+      // Set initial elapsed time immediately
+      const initialElapsed = Date.now() - currentSession.startTime.getTime()
+      setElapsedTime(Math.floor(initialElapsed / 1000))
+
       intervalRef.current = setInterval(() => {
         const elapsed = Date.now() - currentSession.startTime.getTime()
         setElapsedTime(Math.floor(elapsed / 1000))
