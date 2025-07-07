@@ -1,0 +1,36 @@
+{
+  "name": "@mirubato/monitoring",
+  "version": "1.0.0",
+  "description": "Infrastructure monitoring worker for Mirubato",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev --port 9789 --env local --local-protocol http",
+    "build": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "db:migrate": "wrangler d1 execute mirubato-monitoring --file=./schema.sql --local",
+    "db:migrate:staging": "wrangler d1 execute mirubato-monitoring --file=./schema.sql --env staging",
+    "db:migrate:production": "wrangler d1 execute mirubato-monitoring --file=./schema.sql --env production",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "monitoring",
+    "observability"
+  ],
+  "author": "Mirubato Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "wrangler": "^3.22.4"
+  },
+  "dependencies": {
+    "hono": "^3.12.0",
+    "zod": "^3.22.4"
+  }
+}

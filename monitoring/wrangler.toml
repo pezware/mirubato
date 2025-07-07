@@ -1,0 +1,130 @@
+name = "mirubato-monitoring"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "npm run build"
+
+# Routes
+routes = [
+  { pattern = "monitoring.mirubato.com/*", zone_name = "mirubato.com" }
+]
+
+# Cron triggers for periodic tasks
+[triggers]
+crons = [
+  "*/5 * * * *",    # Every 5 minutes: aggregate recent metrics
+  "0 * * * *",      # Every hour: calculate costs
+  "0 0 * * *",      # Daily: cleanup old data
+  "0 6 * * MON"     # Weekly: generate reports
+]
+
+# Production environment (default)
+vars = { ENVIRONMENT = "production" }
+
+# Analytics Engine binding for reading metrics
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "mirubato_metrics"
+
+# D1 Database for historical data
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-monitoring"
+database_id = "YOUR_DATABASE_ID_HERE"
+
+# KV for real-time metrics cache
+[[kv_namespaces]]
+binding = "METRICS_CACHE"
+id = "YOUR_KV_NAMESPACE_ID_HERE"
+
+# Queue for async processing
+[[queues.producers]]
+binding = "ALERT_QUEUE"
+queue = "monitoring-alerts"
+
+[[queues.consumers]]
+queue = "monitoring-alerts"
+max_batch_size = 100
+max_batch_timeout = 30
+
+# Durable Objects for stateful aggregation
+[[durable_objects.bindings]]
+name = "AGGREGATOR"
+class_name = "MetricAggregator"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["MetricAggregator"]
+
+# Service bindings to other workers
+[[services]]
+binding = "API"
+service = "mirubato-api"
+
+[[services]]
+binding = "SCORES"
+service = "mirubato-scores"
+
+[[services]]
+binding = "FRONTEND"
+service = "mirubato-frontendv2"
+
+# R2 bucket for report storage
+[[r2_buckets]]
+binding = "REPORTS"
+bucket_name = "mirubato-monitoring-reports"
+
+# Observability
+[observability.logs]
+enabled = true
+
+# Staging environment
+[env.staging]
+name = "mirubato-monitoring-staging"
+vars = { ENVIRONMENT = "staging" }
+
+routes = [
+  { pattern = "monitoring-staging.mirubato.com/*", zone_name = "mirubato.com" }
+]
+
+[[env.staging.analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "mirubato_metrics_staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-monitoring-staging"
+database_id = "YOUR_STAGING_DATABASE_ID_HERE"
+
+[[env.staging.kv_namespaces]]
+binding = "METRICS_CACHE"
+id = "YOUR_STAGING_KV_NAMESPACE_ID_HERE"
+
+[[env.staging.r2_buckets]]
+binding = "REPORTS"
+bucket_name = "mirubato-monitoring-reports-staging"
+
+# Local development
+[env.local]
+vars = { ENVIRONMENT = "local" }
+
+[[env.local.analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-monitoring-local"
+database_id = "local"
+
+[[env.local.kv_namespaces]]
+binding = "METRICS_CACHE"
+id = "local"
+
+[[env.local.r2_buckets]]
+binding = "REPORTS"
+bucket_name = "mirubato-monitoring-reports-local"
+
+[env.local.observability.logs]
+enabled = false
