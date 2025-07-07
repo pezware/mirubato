@@ -1,10 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import CounterSetup, { CounterMode } from './CounterSetup'
 import CounterActive, { RepetitionData } from './CounterActive'
 import CounterSummary from './CounterSummary'
-import { useLogbookStore } from '../../stores/logbookStore'
+import {
+  usePracticeTracking,
+  PracticeSummaryModal,
+} from '../../modules/auto-logging'
 
 type CounterState = 'setup' | 'active' | 'summary'
 
@@ -18,10 +21,32 @@ interface SessionData {
 export const PracticeCounter: React.FC = () => {
   const { t } = useTranslation('toolbox')
   const navigate = useNavigate()
-  const { createEntry } = useLogbookStore()
 
   const [state, setState] = useState<CounterState>('setup')
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
+
+  // Practice tracking with auto-logging
+  const {
+    isTracking,
+    formattedTime,
+    showSummary,
+    pendingSession,
+    start: startTracking,
+    stop: stopTracking,
+    update: updateTracking,
+    confirmSave,
+    dismissSummary,
+  } = usePracticeTracking({
+    type: 'counter',
+    metadata: {
+      title: t('counter.practice_title'),
+      instrument: 'PIANO', // Could be made configurable
+    },
+    onSessionEnd: useCallback(() => {
+      // Navigate to logbook after saving
+      navigate('/logbook')
+    }, [navigate]),
+  })
 
   const handleStart = (mode: CounterMode, initialValue = 0) => {
     setSessionData({
@@ -31,6 +56,15 @@ export const PracticeCounter: React.FC = () => {
       totalTime: 0,
     })
     setState('active')
+
+    // Start practice tracking
+    startTracking()
+
+    // Update metadata with mode info
+    updateTracking({
+      mode,
+      totalReps: mode === 'down' ? initialValue : undefined,
+    })
   }
 
   const handleFinish = (repetitions: RepetitionData[], totalTime: number) => {
@@ -40,107 +74,79 @@ export const PracticeCounter: React.FC = () => {
         repetitions,
         totalTime,
       })
+
+      // Update tracking with final data
+      updateTracking({
+        repetitions: repetitions.map(rep => ({
+          repNumber: rep.repNumber,
+          duration: rep.duration,
+          timestamp: rep.timestamp,
+        })),
+        totalReps: repetitions.length,
+      })
+
+      // Stop tracking (will show summary modal)
+      stopTracking()
+
       setState('summary')
     }
   }
 
-  const handleSaveToLog = async () => {
-    if (!sessionData) return
-
-    const { repetitions, totalTime } = sessionData
-    const totalReps = repetitions.length
-
-    // Format the summary for the log entry
-    const summary = t('counter.log_summary', {
-      reps: totalReps,
-      time: formatTime(totalTime),
-    })
-
-    // Create detailed breakdown
-    const breakdown = repetitions
-      .map(
-        rep =>
-          `${t('counter.summary.rep_column')} ${rep.repNumber}: ${formatDuration(rep.duration)}`
-      )
-      .join('\n')
-
-    const description = `${summary}\n\n${breakdown}`
-
-    // Calculate practice duration in minutes
-    const durationMinutes = Math.ceil(totalTime / 60000)
-
-    try {
-      // Create a new logbook entry
-      await createEntry({
-        timestamp: new Date().toISOString(),
-        duration: durationMinutes,
-        type: 'PRACTICE',
-        instrument: 'PIANO', // Default to piano, could be made configurable
-        pieces: [
-          {
-            title: t('counter.practice_title'),
-            composer: '',
-          },
-        ],
-        techniques: [],
-        goalIds: [],
-        notes: description,
-        mood: null,
-        tags: ['practice-counter', `${totalReps}-reps`],
-      })
-
-      // Navigate to logbook after successful save
-      navigate('/logbook')
-    } catch (error) {
-      console.error('Failed to save to log:', error)
-      // Could show error in UI if needed
+  // The old handleSaveToLog is no longer needed - handled by auto-logging
+  // Just kept for backward compatibility with CounterSummary component
+  const handleSaveToLog = () => {
+    // This will be called from CounterSummary but the actual saving
+    // is handled by the auto-logging system through confirmSave
+    if (showSummary) {
+      confirmSave()
     }
   }
 
   const handleStartNew = () => {
     setSessionData(null)
     setState('setup')
-  }
-
-  const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-    return `${minutes}m ${seconds}s`
-  }
-
-  const formatDuration = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s`
+    // Dismiss any pending summary modal
+    if (showSummary) {
+      dismissSummary()
     }
-    return `${seconds}s`
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      {state === 'setup' && <CounterSetup onStart={handleStart} />}
+    <>
+      <div className="bg-white rounded-lg shadow-sm">
+        {state === 'setup' && <CounterSetup onStart={handleStart} />}
 
-      {state === 'active' && sessionData && (
-        <CounterActive
-          mode={sessionData.mode}
-          initialValue={sessionData.initialValue}
-          onFinish={handleFinish}
-        />
-      )}
+        {state === 'active' && sessionData && (
+          <CounterActive
+            mode={sessionData.mode}
+            initialValue={sessionData.initialValue}
+            onFinish={handleFinish}
+            practiceTime={formattedTime}
+            isTracking={isTracking}
+          />
+        )}
 
-      {state === 'summary' && sessionData && (
-        <CounterSummary
-          repetitions={sessionData.repetitions}
-          totalTime={sessionData.totalTime}
-          onSaveToLog={handleSaveToLog}
-          onStartNew={handleStartNew}
-        />
-      )}
-    </div>
+        {state === 'summary' && sessionData && !showSummary && (
+          <CounterSummary
+            repetitions={sessionData.repetitions}
+            totalTime={sessionData.totalTime}
+            onSaveToLog={handleSaveToLog}
+            onStartNew={handleStartNew}
+          />
+        )}
+      </div>
+
+      {/* Practice Summary Modal */}
+      <PracticeSummaryModal
+        isOpen={showSummary}
+        onClose={dismissSummary}
+        onSave={confirmSave}
+        onDiscard={dismissSummary}
+        duration={pendingSession?.duration || 0}
+        metadata={pendingSession?.metadata || {}}
+        title={t('common:practice.practiceSummary')}
+      />
+    </>
   )
 }
 
