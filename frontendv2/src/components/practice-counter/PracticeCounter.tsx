@@ -85,26 +85,24 @@ export const PracticeCounter: React.FC = () => {
         totalReps: repetitions.length,
       })
 
-      // Stop tracking (will show summary modal)
-      stopTracking()
-
+      // Don't stop tracking here - let the user decide via the summary screen
       setState('summary')
     }
   }
 
-  // The old handleSaveToLog is no longer needed - handled by auto-logging
-  // Just kept for backward compatibility with CounterSummary component
+  // Handle save from CounterSummary
   const handleSaveToLog = () => {
-    // This will be called from CounterSummary but the actual saving
-    // is handled by the auto-logging system through confirmSave
-    if (showSummary) {
-      confirmSave()
-    }
+    // Stop tracking which will show the auto-logging modal
+    stopTracking()
   }
 
   const handleStartNew = () => {
     setSessionData(null)
     setState('setup')
+    // Stop tracking if still active (user clicked "Start New" without saving)
+    if (isTracking) {
+      stopTracking()
+    }
     // Dismiss any pending summary modal
     if (showSummary) {
       dismissSummary()
@@ -126,7 +124,7 @@ export const PracticeCounter: React.FC = () => {
           />
         )}
 
-        {state === 'summary' && sessionData && !showSummary && (
+        {state === 'summary' && sessionData && (
           <CounterSummary
             repetitions={sessionData.repetitions}
             totalTime={sessionData.totalTime}
