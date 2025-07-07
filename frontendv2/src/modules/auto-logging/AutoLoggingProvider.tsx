@@ -167,22 +167,36 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
             description = metadata.title || 'Practice Session'
         }
 
+        // For score practice, use the actual score title and composer
+        // For other practice types (metronome, counter), don't include as pieces
+        const pieces =
+          completedSession.type === 'score' &&
+          (metadata.scoreTitle || metadata.title)
+            ? [
+                {
+                  title: metadata.scoreTitle || metadata.title || '',
+                  composer: metadata.scoreComposer || metadata.composer || '',
+                },
+              ]
+            : []
+
+        // Add practice type to tags for non-score sessions
+        const practiceTypeTags =
+          completedSession.type !== 'score'
+            ? [`${completedSession.type}-practice`]
+            : []
+
         await createEntry({
           timestamp: currentSession.startTime.toISOString(),
           duration: durationMinutes,
           type: 'PRACTICE',
           instrument: metadata.instrument || config.defaultInstrument,
-          pieces: [
-            {
-              title: metadata.title || `${completedSession.type} Practice`,
-              composer: metadata.composer || '',
-            },
-          ],
+          pieces,
           techniques: [],
           goalIds: [],
           notes: description,
           mood: null,
-          tags: metadata.tags || config.defaultTags,
+          tags: [...(metadata.tags || config.defaultTags), ...practiceTypeTags],
           scoreId: metadata.scoreId,
         })
       } catch (error) {
