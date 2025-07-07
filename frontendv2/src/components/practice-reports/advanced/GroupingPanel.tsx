@@ -134,15 +134,15 @@ function GroupLevelRow({
 
       <Select
         value={group.field}
-        onValueChange={value => onUpdate({ field: value as GroupField })}
+        onChange={(value: string | number) =>
+          onUpdate({ field: value as GroupField })
+        }
+        options={selectableFields.map(field => ({
+          value: field.value,
+          label: field.label,
+        }))}
         className="flex-1"
-      >
-        {selectableFields.map(field => (
-          <option key={field.value} value={field.value}>
-            {field.label}
-          </option>
-        ))}
-      </Select>
+      />
 
       <div className="flex items-center gap-2">
         <Button

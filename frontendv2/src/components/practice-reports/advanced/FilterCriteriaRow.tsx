@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import Button from '../../ui/Button'
 import { Select } from '../../ui/Select'
-import Input from '../../ui/Input'
-import { MultiSelect } from '../../ui/MultiSelect'
+import { Input } from '../../ui/Input'
+import { MultiSelect } from '../../ui/Select'
 import { useReportingStore } from '../../../stores/reportingStore'
 import { useLogbookStore } from '../../../stores/logbookStore'
 import { useAutocomplete } from '../../../hooks/useAutocomplete'
@@ -14,6 +14,7 @@ import {
   FilterOperator,
   FilterValue,
   DateRange,
+  DurationRange,
 } from '../../../types/reporting'
 import { format } from 'date-fns'
 
@@ -164,7 +165,8 @@ export function FilterCriteriaRow({
     if (filter.field === 'date' && filter.operator === 'between') {
       handleValueChange(dateRange)
     }
-  }, [dateRange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, filter.field, filter.operator])
 
   // Render value input based on field and operator
   const renderValueInput = () => {
@@ -181,7 +183,7 @@ export function FilterCriteriaRow({
               <Input
                 type="date"
                 value={format(dateRange.start, 'yyyy-MM-dd')}
-                onChange={e =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setDateRange({
                     ...dateRange,
                     start: new Date(e.target.value),
@@ -195,7 +197,7 @@ export function FilterCriteriaRow({
               <Input
                 type="date"
                 value={format(dateRange.end, 'yyyy-MM-dd')}
-                onChange={e =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setDateRange({
                     ...dateRange,
                     end: new Date(e.target.value),
@@ -222,13 +224,18 @@ export function FilterCriteriaRow({
 
       case 'duration':
         if (filter.operator === 'between') {
-          const range = (filter.value as any) || { min: 0, max: 60 }
+          const range =
+            filter.value &&
+            typeof filter.value === 'object' &&
+            'min' in filter.value
+              ? (filter.value as DurationRange)
+              : { min: 0, max: 60 }
           return (
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
                 value={range.min}
-                onChange={e =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleValueChange({
                     min: parseInt(e.target.value) || 0,
                     max: range.max,
@@ -243,7 +250,7 @@ export function FilterCriteriaRow({
               <Input
                 type="number"
                 value={range.max}
-                onChange={e =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleValueChange({
                     min: range.min,
                     max: parseInt(e.target.value) || 0,
@@ -262,8 +269,10 @@ export function FilterCriteriaRow({
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
-                value={filter.value || ''}
-                onChange={e => handleValueChange(parseInt(e.target.value) || 0)}
+                value={(filter.value as number) || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleValueChange(parseInt(e.target.value) || 0)
+                }
                 placeholder="0"
                 className="w-20"
               />
@@ -279,7 +288,9 @@ export function FilterCriteriaRow({
           return (
             <MultiSelect
               value={(filter.value as string[]) || []}
-              onChange={values => handleValueChange(values)}
+              onChange={(values: (string | number)[]) =>
+                handleValueChange(values.map(String))
+              }
               options={pieceAutocomplete.suggestions.map(s => ({
                 value: s.value,
                 label: s.label,
@@ -292,16 +303,16 @@ export function FilterCriteriaRow({
           return (
             <Select
               value={(filter.value as string) || ''}
-              onValueChange={value => handleValueChange(value)}
+              onChange={(value: string | number) => handleValueChange(value)}
+              options={[
+                { value: '', label: t('reports:filters.selectPiece') },
+                ...pieceAutocomplete.suggestions.map(s => ({
+                  value: s.value,
+                  label: s.label,
+                })),
+              ]}
               className="w-64"
-            >
-              <option value="">{t('reports:filters.selectPiece')}</option>
-              {pieceAutocomplete.suggestions.map(s => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
+            />
           )
         }
 
@@ -310,7 +321,9 @@ export function FilterCriteriaRow({
           return (
             <MultiSelect
               value={(filter.value as string[]) || []}
-              onChange={values => handleValueChange(values)}
+              onChange={(values: (string | number)[]) =>
+                handleValueChange(values.map(String))
+              }
               options={composerAutocomplete.suggestions.map(s => ({
                 value: s.value,
                 label: s.label,
@@ -323,28 +336,30 @@ export function FilterCriteriaRow({
           return (
             <Select
               value={(filter.value as string) || ''}
-              onValueChange={value => handleValueChange(value)}
+              onChange={(value: string | number) => handleValueChange(value)}
+              options={[
+                { value: '', label: t('reports:filters.selectComposer') },
+                ...composerAutocomplete.suggestions.map(s => ({
+                  value: s.value,
+                  label: s.label,
+                })),
+              ]}
               className="w-64"
-            >
-              <option value="">{t('reports:filters.selectComposer')}</option>
-              {composerAutocomplete.suggestions.map(s => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
+            />
           )
         }
 
       case 'instrument':
       case 'type':
-      case 'mood':
+      case 'mood': {
         const fieldValues = getFieldValues(filter.field)
         if (filter.operator === 'in' || filter.operator === 'notIn') {
           return (
             <MultiSelect
               value={(filter.value as string[]) || []}
-              onChange={values => handleValueChange(values)}
+              onChange={(values: (string | number)[]) =>
+                handleValueChange(values.map(String))
+              }
               options={fieldValues.map(v => ({ value: v, label: v }))}
               placeholder={t(
                 `reports:filters.select${filter.field.charAt(0).toUpperCase() + filter.field.slice(1)}s`
@@ -356,28 +371,29 @@ export function FilterCriteriaRow({
           return (
             <Select
               value={(filter.value as string) || ''}
-              onValueChange={value => handleValueChange(value)}
+              onChange={(value: string | number) => handleValueChange(value)}
+              options={[
+                {
+                  value: '',
+                  label: t(
+                    `reports:filters.select${filter.field.charAt(0).toUpperCase() + filter.field.slice(1)}`
+                  ),
+                },
+                ...fieldValues.map(v => ({ value: v, label: v })),
+              ]}
               className="w-48"
-            >
-              <option value="">
-                {t(
-                  `reports:filters.select${filter.field.charAt(0).toUpperCase() + filter.field.slice(1)}`
-                )}
-              </option>
-              {fieldValues.map(v => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </Select>
+            />
           )
         }
+      }
 
       case 'techniques':
         return (
           <Input
             value={(filter.value as string) || ''}
-            onChange={e => handleValueChange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleValueChange(e.target.value)
+            }
             placeholder={t('reports:filters.enterTechnique')}
             className="w-48"
           />
@@ -387,13 +403,16 @@ export function FilterCriteriaRow({
         return (
           <Select
             value={(filter.value as string) || ''}
-            onValueChange={value => handleValueChange(value === 'true')}
+            onChange={(value: string | number) =>
+              handleValueChange(value === 'true')
+            }
+            options={[
+              { value: '', label: t('reports:filters.select') },
+              { value: 'true', label: t('reports:filters.yes') },
+              { value: 'false', label: t('reports:filters.no') },
+            ]}
             className="w-32"
-          >
-            <option value="">{t('reports:filters.select')}</option>
-            <option value="true">{t('reports:filters.yes')}</option>
-            <option value="false">{t('reports:filters.no')}</option>
-          </Select>
+          />
         )
 
       default:
@@ -408,39 +427,40 @@ export function FilterCriteriaRow({
       {showLogic && (
         <Select
           value={filter.logic || 'AND'}
-          onValueChange={value =>
+          onChange={(value: string | number) =>
             updateFilter(filter.id, { logic: value as 'AND' | 'OR' })
           }
+          options={[
+            { value: 'AND', label: t('reports:filters.and') },
+            { value: 'OR', label: t('reports:filters.or') },
+          ]}
           className="w-20"
-        >
-          <option value="AND">{t('reports:filters.and')}</option>
-          <option value="OR">{t('reports:filters.or')}</option>
-        </Select>
+        />
       )}
 
       <Select
         value={filter.field}
-        onValueChange={value => handleFieldChange(value as FilterField)}
+        onChange={(value: string | number) =>
+          handleFieldChange(value as FilterField)
+        }
+        options={availableFields.map(field => ({
+          value: field.value,
+          label: field.label,
+        }))}
         className="w-40"
-      >
-        {availableFields.map(field => (
-          <option key={field.value} value={field.value}>
-            {field.label}
-          </option>
-        ))}
-      </Select>
+      />
 
       <Select
         value={filter.operator}
-        onValueChange={value => handleOperatorChange(value as FilterOperator)}
+        onChange={(value: string | number) =>
+          handleOperatorChange(value as FilterOperator)
+        }
+        options={operators.map(op => ({
+          value: op.value,
+          label: op.label,
+        }))}
         className="w-40"
-      >
-        {operators.map(op => (
-          <option key={op.value} value={op.value}>
-            {op.label}
-          </option>
-        ))}
-      </Select>
+      />
 
       {renderValueInput()}
 

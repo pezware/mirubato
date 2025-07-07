@@ -4,14 +4,10 @@ import { Plus, Save, X } from 'lucide-react'
 import Button from '../../ui/Button'
 import { Card } from '../../ui/Card'
 import { Select } from '../../ui/Select'
-import Modal from '../../ui/Modal'
-import Input from '../../ui/Input'
+import { Modal } from '../../ui/Modal'
+import { Input } from '../../ui/Input'
 import { useReportingStore } from '../../../stores/reportingStore'
-import {
-  FilterCriteria,
-  FilterField,
-  FilterOperator,
-} from '../../../types/reporting'
+import { FilterField } from '../../../types/reporting'
 import { FilterCriteriaRow } from './FilterCriteriaRow'
 
 export function FilterBuilder() {
@@ -63,11 +59,11 @@ export function FilterBuilder() {
     }
   }
 
-  const handlePresetChange = (presetId: string) => {
-    if (presetId === 'none') {
+  const handlePresetChange = (presetId: string | number) => {
+    if (String(presetId) === 'none') {
       clearFilters()
     } else {
-      loadFilterPreset(presetId)
+      loadFilterPreset(String(presetId))
     }
   }
 
@@ -133,16 +129,16 @@ export function FilterBuilder() {
             <div className="flex items-center gap-4">
               <Select
                 value={activePresetId || 'none'}
-                onValueChange={handlePresetChange}
+                onChange={handlePresetChange}
+                options={[
+                  { value: 'none', label: t('reports:filters.noPreset') },
+                  ...filterPresets.map(preset => ({
+                    value: preset.id,
+                    label: preset.name,
+                  })),
+                ]}
                 className="flex-1"
-              >
-                <option value="none">{t('reports:filters.noPreset')}</option>
-                {filterPresets.map(preset => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name}
-                  </option>
-                ))}
-              </Select>
+              />
               {filters.length > 0 && (
                 <>
                   <Button
@@ -179,14 +175,18 @@ export function FilterBuilder() {
           <Input
             label={t('reports:filters.savePresetModal.name')}
             value={presetName}
-            onChange={e => setPresetName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPresetName(e.target.value)
+            }
             placeholder={t('reports:filters.savePresetModal.namePlaceholder')}
             autoFocus
           />
           <Input
             label={t('reports:filters.savePresetModal.description')}
             value={presetDescription}
-            onChange={e => setPresetDescription(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPresetDescription(e.target.value)
+            }
             placeholder={t(
               'reports:filters.savePresetModal.descriptionPlaceholder'
             )}

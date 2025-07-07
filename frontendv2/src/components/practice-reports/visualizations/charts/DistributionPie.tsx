@@ -66,7 +66,7 @@ export function DistributionPie({
         {
           data: displayData.map(d => d.value),
           backgroundColor: displayData.map(
-            (_, i) => d.color || morandiColors[i % morandiColors.length]
+            (d, i) => d.color || morandiColors[i % morandiColors.length]
           ),
           borderWidth: 2,
           borderColor: '#ffffff',
@@ -85,7 +85,11 @@ export function DistributionPie({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: {
+              label?: string
+              parsed?: number
+              dataset: { data: number[] }
+            }) => {
               const label = context.label || ''
               const value = context.parsed || 0
               const percentage = (
@@ -105,7 +109,17 @@ export function DistributionPie({
         legend: {
           position: 'right' as const,
           labels: {
-            generateLabels: (chart: any) => {
+            generateLabels: (chart: {
+              data: {
+                labels: string[]
+                datasets: Array<{
+                  data: number[]
+                  backgroundColor: string[]
+                  borderColor: string
+                  borderWidth: number
+                }>
+              }
+            }) => {
               const data = chart.data
               if (data.labels.length && data.datasets.length) {
                 const dataset = data.datasets[0]
@@ -134,7 +148,12 @@ export function DistributionPie({
         },
         datalabels: showPercentages
           ? {
-              formatter: (value: number, context: any) => {
+              formatter: (
+                value: number,
+                context: {
+                  dataset: { data: number[] }
+                }
+              ) => {
                 const total = context.dataset.data.reduce(
                   (a: number, b: number) => a + b,
                   0
@@ -151,7 +170,7 @@ export function DistributionPie({
           : false,
       },
       cutout: type === 'donut' ? '50%' : undefined,
-    },
+    } as any,
   }
 
   return (

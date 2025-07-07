@@ -71,7 +71,11 @@ export function ComparativeChart({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: {
+              dataset: { label?: string }
+              parsed: { y?: number }
+              dataIndex: number
+            }) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
               const dataIndex = context.dataIndex
@@ -104,7 +108,7 @@ export function ComparativeChart({
             text: t('reports:charts.duration'),
           },
           ticks: {
-            callback: (value: any) => formatDuration(value as number),
+            callback: (value: string | number) => formatDuration(Number(value)),
           },
         },
         x: {
@@ -113,7 +117,7 @@ export function ComparativeChart({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (

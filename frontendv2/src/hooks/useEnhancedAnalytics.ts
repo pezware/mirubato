@@ -146,9 +146,9 @@ function evaluateFilter(entry: LogbookEntry, filter: FilterCriteria): boolean {
     case 'lessThanOrEqual':
       return Number(fieldValue) <= Number(value)
     case 'in':
-      return Array.isArray(value) && value.includes(fieldValue)
+      return Array.isArray(value) && value.includes(String(fieldValue))
     case 'notIn':
-      return Array.isArray(value) && !value.includes(fieldValue)
+      return Array.isArray(value) && !value.includes(String(fieldValue))
     case 'isEmpty':
       return (
         !fieldValue || (Array.isArray(fieldValue) && fieldValue.length === 0)
@@ -162,7 +162,10 @@ function evaluateFilter(entry: LogbookEntry, filter: FilterCriteria): boolean {
   }
 }
 
-function getFieldValue(entry: LogbookEntry, field: string): any {
+function getFieldValue(
+  entry: LogbookEntry,
+  field: string
+): Date | number | string | string[] | boolean | null | undefined {
   switch (field) {
     case 'date':
       return new Date(entry.timestamp)

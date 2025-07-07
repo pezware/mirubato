@@ -40,7 +40,20 @@ export type FilterOperator =
   | 'isEmpty'
   | 'isNotEmpty'
 
-export type FilterValue = string | number | Date | string[] | DateRange | null
+export interface DurationRange {
+  min: number
+  max: number
+}
+
+export type FilterValue =
+  | string
+  | number
+  | Date
+  | string[]
+  | DateRange
+  | DurationRange
+  | boolean
+  | null
 
 export interface DateRange {
   start: Date
@@ -196,7 +209,7 @@ export interface TimeSeriesData {
   date: string
   value: number
   label?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface DistributionData {

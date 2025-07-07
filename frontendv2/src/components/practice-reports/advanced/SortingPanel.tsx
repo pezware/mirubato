@@ -145,15 +145,15 @@ function SortFieldRow({
 
       <Select
         value={sort.field}
-        onValueChange={value => onUpdate({ field: value as SortField })}
+        onChange={(value: string | number) =>
+          onUpdate({ field: value as SortField })
+        }
+        options={selectableFields.map(field => ({
+          value: field.value,
+          label: field.label,
+        }))}
         className="flex-1"
-      >
-        {selectableFields.map(field => (
-          <option key={field.value} value={field.value}>
-            {field.label}
-          </option>
-        ))}
-      </Select>
+      />
 
       <div className="flex items-center gap-2">
         <Button

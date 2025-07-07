@@ -62,11 +62,11 @@ export function ProgressBar({
       datasets.push({
         label: t('reports:charts.target'),
         data: displayData.map(d => d.target || 0),
-        backgroundColor: '#E5C1A633',
-        borderColor: '#E5C1A6',
+        backgroundColor: ['#E5C1A633'],
+        borderColor: ['#E5C1A6'],
         borderWidth: 2,
         borderDash: [5, 5],
-      })
+      } as any)
     }
 
     return {
@@ -76,7 +76,7 @@ export function ProgressBar({
   }, [data, showTargets, t])
 
   const config: ChartConfig = {
-    type: horizontal ? 'horizontalBar' : 'bar',
+    type: horizontal ? 'bar' : 'bar',
     dataKey: 'progress',
     options: {
       title: title || t('reports:charts.practiceProgress'),
@@ -86,7 +86,10 @@ export function ProgressBar({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: {
+              dataset: { label?: string }
+              parsed: { x?: number; y?: number }
+            }) => {
               const label = context.dataset.label || ''
               const value = context.parsed[horizontal ? 'x' : 'y'] || 0
               return `${label}: ${formatDuration(value)}`
@@ -113,7 +116,7 @@ export function ProgressBar({
             text: t('reports:charts.duration'),
           },
           ticks: {
-            callback: (value: any) => formatDuration(value as number),
+            callback: (value: string | number) => formatDuration(Number(value)),
           },
         },
         [horizontal ? 'y' : 'x']: {
@@ -127,7 +130,7 @@ export function ProgressBar({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (

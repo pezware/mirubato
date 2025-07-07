@@ -109,7 +109,9 @@ export const useReportingStore = create<ReportingState>()(
 
       updateFilter: (id, updates) =>
         set(state => {
-          const index = state.filters.findIndex(f => f.id === id)
+          const index = state.filters.findIndex(
+            (f: FilterCriteria) => f.id === id
+          )
           if (index !== -1) {
             Object.assign(state.filters[index], updates)
           }
@@ -117,7 +119,9 @@ export const useReportingStore = create<ReportingState>()(
 
       removeFilter: id =>
         set(state => {
-          state.filters = state.filters.filter(f => f.id !== id)
+          state.filters = state.filters.filter(
+            (f: FilterCriteria) => f.id !== id
+          )
         }),
 
       clearFilters: () =>
@@ -143,7 +147,9 @@ export const useReportingStore = create<ReportingState>()(
 
       loadFilterPreset: presetId =>
         set(state => {
-          const preset = state.filterPresets.find(p => p.id === presetId)
+          const preset = state.filterPresets.find(
+            (p: FilterPreset) => p.id === presetId
+          )
           if (preset) {
             state.filters = [...preset.filters]
             state.activePresetId = presetId
@@ -153,7 +159,7 @@ export const useReportingStore = create<ReportingState>()(
       deleteFilterPreset: presetId =>
         set(state => {
           state.filterPresets = state.filterPresets.filter(
-            p => p.id !== presetId
+            (p: FilterPreset) => p.id !== presetId
           )
           if (state.activePresetId === presetId) {
             state.activePresetId = null
@@ -162,7 +168,9 @@ export const useReportingStore = create<ReportingState>()(
 
       updateFilterPreset: (presetId, updates) =>
         set(state => {
-          const index = state.filterPresets.findIndex(p => p.id === presetId)
+          const index = state.filterPresets.findIndex(
+            (p: FilterPreset) => p.id === presetId
+          )
           if (index !== -1) {
             Object.assign(state.filterPresets[index], {
               ...updates,
@@ -212,7 +220,7 @@ export const useReportingStore = create<ReportingState>()(
         set(state => {
           state.sortBy.splice(index, 1)
           // Update priorities
-          state.sortBy.forEach((sort, i) => {
+          state.sortBy.forEach((sort: SortConfig, i: number) => {
             sort.priority = i
           })
         }),
@@ -251,7 +259,9 @@ export const useReportingStore = create<ReportingState>()(
 
       updateDashboardWidget: (id, updates) =>
         set(state => {
-          const index = state.dashboardWidgets.findIndex(w => w.id === id)
+          const index = state.dashboardWidgets.findIndex(
+            (w: DashboardWidget) => w.id === id
+          )
           if (index !== -1) {
             Object.assign(state.dashboardWidgets[index], updates)
           }
@@ -260,7 +270,7 @@ export const useReportingStore = create<ReportingState>()(
       removeDashboardWidget: id =>
         set(state => {
           state.dashboardWidgets = state.dashboardWidgets.filter(
-            w => w.id !== id
+            (w: DashboardWidget) => w.id !== id
           )
         }),
 

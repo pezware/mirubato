@@ -63,7 +63,7 @@ export function PracticeTrendChart({
         borderDash: [5, 5],
         tension: 0.4,
         fill: false,
-      })
+      } as any)
     }
 
     // Add goal line if specified
@@ -78,7 +78,7 @@ export function PracticeTrendChart({
         pointRadius: 0,
         tension: 0,
         fill: false,
-      })
+      } as any)
     }
 
     return {
@@ -97,7 +97,10 @@ export function PracticeTrendChart({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: {
+              dataset: { label?: string }
+              parsed: { y?: number }
+            }) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
               return `${label}: ${formatDuration(value)}`
@@ -113,7 +116,7 @@ export function PracticeTrendChart({
             text: t('reports:charts.duration'),
           },
           ticks: {
-            callback: (value: any) => formatDuration(value as number),
+            callback: (value: string | number) => formatDuration(Number(value)),
           },
         },
         x: {
@@ -123,7 +126,7 @@ export function PracticeTrendChart({
           },
         },
       },
-    },
+    } as any,
   }
 
   return (

@@ -1,12 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  ChevronRight,
-  ChevronDown,
-  Download,
-  Maximize2,
-  Filter,
-} from 'lucide-react'
+import { ChevronRight, ChevronDown, Download } from 'lucide-react'
 import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
 import { GroupedData } from '../../../../types/reporting'
@@ -181,7 +175,6 @@ function GroupRow({
   onEntryClick,
   formatDuration,
 }: GroupRowProps) {
-  const { t } = useTranslation(['reports'])
   const hasChildren = group.children && group.children.length > 0
   const indent = level * 24
 

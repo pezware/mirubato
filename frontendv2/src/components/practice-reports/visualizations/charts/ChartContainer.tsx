@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,7 +36,22 @@ ChartJS.register(
 
 interface ChartContainerProps {
   config: ChartConfig
-  data: any
+  data: {
+    labels: string[]
+    datasets: Array<
+      {
+        label?: string
+        data: number[]
+        backgroundColor?: string | string[]
+        borderColor?: string | string[]
+        borderWidth?: number
+        tension?: number
+        fill?: boolean
+        borderDash?: number[]
+        pointRadius?: number
+      } & Record<string, any>
+    >
+  }
   className?: string
   onFullscreen?: () => void
   onExport?: (format: 'png' | 'svg') => void
@@ -75,7 +90,7 @@ export function ChartContainer({
         titleFont: {
           family: 'Inter, system-ui, sans-serif',
           size: 13,
-          weight: '600',
+          weight: 600 as const,
         },
         bodyFont: {
           family: 'Inter, system-ui, sans-serif',
@@ -93,7 +108,7 @@ export function ChartContainer({
             font: {
               family: 'Inter, system-ui, sans-serif',
               size: 16,
-              weight: '600',
+              weight: 600 as const,
             },
             padding: 20,
           }
@@ -135,7 +150,7 @@ export function ChartContainer({
     ...config.options,
     plugins: {
       ...defaultOptions.plugins,
-      ...config.options.plugins,
+      ...(config.options as any).plugins,
     },
   }
 
@@ -167,7 +182,7 @@ export function ChartContainer({
 
   // Apply colors if not specified
   if (!data.datasets[0].backgroundColor && !data.datasets[0].borderColor) {
-    data.datasets = data.datasets.map((dataset: any, index: number) => ({
+    data.datasets = data.datasets.map((dataset, index: number) => ({
       ...dataset,
       backgroundColor:
         config.type === 'pie' || config.type === 'donut'

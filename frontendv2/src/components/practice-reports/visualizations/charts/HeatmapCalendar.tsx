@@ -9,7 +9,6 @@ import {
   getDay,
   getWeek,
   isSameDay,
-  parseISO,
 } from 'date-fns'
 
 interface HeatmapCalendarProps {
