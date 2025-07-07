@@ -170,7 +170,7 @@ export function DistributionPie({
           : false,
       },
       cutout: type === 'donut' ? '50%' : undefined,
-    } as any,
+    },
   }
 
   return (

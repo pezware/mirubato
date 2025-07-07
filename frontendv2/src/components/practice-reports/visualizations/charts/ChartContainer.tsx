@@ -49,7 +49,7 @@ interface ChartContainerProps {
         fill?: boolean
         borderDash?: number[]
         pointRadius?: number
-      } & Record<string, any>
+      } & Record<string, unknown>
     >
   }
   className?: string
@@ -150,7 +150,7 @@ export function ChartContainer({
     ...config.options,
     plugins: {
       ...defaultOptions.plugins,
-      ...(config.options as any).plugins,
+      ...(config.options.plugins || {}),
     },
   }
 
