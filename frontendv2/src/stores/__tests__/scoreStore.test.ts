@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useScoreStore } from '../scoreStore'
-import { usePracticeStore } from '../practiceStore'
 import { useLogbookStore } from '../logbookStore'
 
 // Mock functions
