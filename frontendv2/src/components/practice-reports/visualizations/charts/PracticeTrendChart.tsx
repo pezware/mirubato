@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { type ChartData, type TooltipItem, type ChartDataset } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { TimeSeriesData, ChartConfig } from '../../../../types/reporting'
 import {
@@ -27,7 +28,7 @@ export function PracticeTrendChart({
 }: PracticeTrendChartProps) {
   const { t } = useTranslation(['reports'])
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<'line'>>(() => {
     // Group data by period
     const groupedData = groupDataByPeriod(data, period)
 
@@ -38,7 +39,7 @@ export function PracticeTrendChart({
     const sortedData = filledData.sort((a, b) => a.date.localeCompare(b.date))
 
     // Create chart datasets
-    const datasets = [
+    const datasets: ChartDataset<'line', number[]>[] = [
       {
         label: t('reports:charts.practiceTime'),
         data: sortedData.map(d => d.value),
@@ -60,10 +61,10 @@ export function PracticeTrendChart({
         data: movingAvg,
         borderColor: '#B4A394',
         backgroundColor: 'transparent',
-        borderDash: [5, 5],
         tension: 0.4,
         fill: false,
-      } as any)
+        borderDash: [5, 5],
+      } as ChartDataset<'line', number[]>)
     }
 
     // Add goal line if specified
@@ -78,7 +79,7 @@ export function PracticeTrendChart({
         pointRadius: 0,
         tension: 0,
         fill: false,
-      } as any)
+      } as ChartDataset<'line', number[]>)
     }
 
     return {
@@ -97,10 +98,7 @@ export function PracticeTrendChart({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: {
-              dataset: { label?: string }
-              parsed: { y?: number }
-            }) => {
+            label: (context: TooltipItem<'line'>) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
               return `${label}: ${formatDuration(value)}`
@@ -126,7 +124,7 @@ export function PracticeTrendChart({
           },
         },
       },
-    } as any,
+    },
   }
 
   return (

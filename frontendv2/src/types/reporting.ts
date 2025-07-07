@@ -147,6 +147,10 @@ export interface ChartOptions {
   stacked?: boolean
   showDataLabels?: boolean
   aspectRatio?: number
+  plugins?: Record<string, unknown>
+  indexAxis?: 'x' | 'y'
+  scales?: Record<string, unknown>
+  cutout?: string | number
 }
 
 export interface DashboardWidget {

@@ -11,8 +11,9 @@ import {
   Tooltip,
   Legend,
   Filler,
-  ChartOptions,
-  ChartType as ChartJSType,
+  type ChartOptions,
+  type ChartType as ChartJSType,
+  type ChartData,
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
 import { Card } from '../../../ui/Card'
@@ -34,26 +35,27 @@ ChartJS.register(
   Filler
 )
 
-interface ChartContainerProps {
+interface ChartContainerProps<T extends ChartJSType = ChartJSType> {
   config: ChartConfig
-  data: any // Chart.js data types are complex and vary by chart type
+  data: ChartData<T>
   className?: string
   onFullscreen?: () => void
   onExport?: (format: 'png' | 'svg') => void
 }
 
-export function ChartContainer({
+export function ChartContainer<T extends ChartJSType = ChartJSType>({
   config,
   data,
   className = '',
   onFullscreen,
   onExport,
-}: ChartContainerProps) {
-  const chartRef = useRef<ChartJS>(null)
+}: ChartContainerProps<T>) {
+  const chartRef =
+    useRef<ChartJS<T, (number | [number, number] | null)[], unknown>>(null)
   const [showInfo, setShowInfo] = useState(false)
 
   // Default chart options with Morandi color scheme
-  const defaultOptions: ChartOptions = {
+  const defaultOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -132,12 +134,12 @@ export function ChartContainer({
   // Merge with custom options
   const chartOptions = {
     ...defaultOptions,
-    ...config.options,
+    ...(config.options as any),
     plugins: {
-      ...(defaultOptions.plugins || {}),
-      ...((config.options as any)?.plugins || {}),
+      ...defaultOptions.plugins,
+      ...((config.options.plugins as Record<string, unknown>) || {}),
     },
-  } as ChartOptions
+  } as ChartOptions<T>
 
   // Handle export
   const handleExport = (format: 'png' | 'svg') => {
@@ -167,7 +169,7 @@ export function ChartContainer({
 
   // Apply colors if not specified
   if (!data.datasets[0].backgroundColor && !data.datasets[0].borderColor) {
-    data.datasets = data.datasets.map((dataset: any, index: number) => ({
+    data.datasets = data.datasets.map((dataset, index: number) => ({
       ...dataset,
       backgroundColor:
         config.type === 'pie' || config.type === 'donut'
@@ -227,7 +229,7 @@ export function ChartContainer({
       <div className="h-full w-full p-4" style={{ minHeight: '300px' }}>
         <Chart
           ref={chartRef}
-          type={config.type as ChartJSType}
+          type={config.type as T}
           data={data}
           options={chartOptions}
         />

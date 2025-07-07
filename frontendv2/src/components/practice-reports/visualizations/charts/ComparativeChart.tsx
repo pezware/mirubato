@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { type ChartData, type TooltipItem } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { ComparativeData, ChartConfig } from '../../../../types/reporting'
 
@@ -20,7 +21,7 @@ export function ComparativeChart({
 }: ComparativeChartProps) {
   const { t } = useTranslation(['reports'])
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<typeof type>>(() => {
     const datasets = []
 
     // Current values dataset
@@ -71,11 +72,7 @@ export function ComparativeChart({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: {
-              dataset: { label?: string }
-              parsed: { y?: number }
-              dataIndex: number
-            }) => {
+            label: (context: TooltipItem<typeof type>) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
               const dataIndex = context.dataIndex
@@ -117,7 +114,7 @@ export function ComparativeChart({
           },
         },
       },
-    } as any,
+    },
   }
 
   return (

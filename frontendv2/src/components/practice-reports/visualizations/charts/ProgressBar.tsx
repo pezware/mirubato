@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { type ChartData, type TooltipItem, type ChartDataset } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { ChartConfig } from '../../../../types/reporting'
 
@@ -27,7 +28,7 @@ export function ProgressBar({
 }: ProgressBarProps) {
   const { t } = useTranslation(['reports'])
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<'bar'>>(() => {
     // Sort data by value descending
     const sortedData = [...data].sort((a, b) => b.value - a.value)
 
@@ -43,7 +44,7 @@ export function ProgressBar({
       '#E5C1A6', // peach
     ]
 
-    const datasets = [
+    const datasets: ChartDataset<'bar', number[]>[] = [
       {
         label: t('reports:charts.practiceTime'),
         data: displayData.map(d => d.value),
@@ -62,11 +63,11 @@ export function ProgressBar({
       datasets.push({
         label: t('reports:charts.target'),
         data: displayData.map(d => d.target || 0),
-        backgroundColor: ['#E5C1A633'],
-        borderColor: ['#E5C1A6'],
+        backgroundColor: '#E5C1A633',
+        borderColor: '#E5C1A6',
         borderWidth: 2,
         borderDash: [5, 5],
-      } as any)
+      } as ChartDataset<'bar', number[]>)
     }
 
     return {
@@ -86,10 +87,7 @@ export function ProgressBar({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: {
-              dataset: { label?: string }
-              parsed: { x?: number; y?: number }
-            }) => {
+            label: (context: TooltipItem<'bar'>) => {
               const label = context.dataset.label || ''
               const value = context.parsed[horizontal ? 'x' : 'y'] || 0
               return `${label}: ${formatDuration(value)}`
@@ -130,7 +128,7 @@ export function ProgressBar({
           },
         },
       },
-    } as any,
+    },
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { type ChartData, type TooltipItem, type LegendItem } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
 import { DistributionData, ChartConfig } from '../../../../types/reporting'
 
@@ -22,7 +23,7 @@ export function DistributionPie({
 }: DistributionPieProps) {
   const { t } = useTranslation(['reports'])
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<'pie'>>(() => {
     // Sort data by value descending
     const sortedData = [...data].sort((a, b) => b.value - a.value)
 
@@ -76,7 +77,7 @@ export function DistributionPie({
   }, [data, t])
 
   const config: ChartConfig = {
-    type: type,
+    type: 'pie',
     dataKey: 'distribution',
     options: {
       title: title || t('reports:charts.distribution'),
@@ -85,61 +86,49 @@ export function DistributionPie({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: {
-              label?: string
-              parsed?: number
-              dataset: { data: number[] }
-            }) => {
+            label: (context: TooltipItem<'pie'>) => {
               const label = context.label || ''
               const value = context.parsed || 0
               const percentage = (
                 (value /
-                  context.dataset.data.reduce(
-                    (a: number, b: number) => a + b,
+                  (context.dataset.data as number[]).reduce(
+                    (a, b) => a + b,
                     0
                   )) *
                 100
               ).toFixed(1)
               return showPercentages
-                ? `${label}: ${formatDuration(value)} (${percentage}%)`
-                : `${label}: ${formatDuration(value)}`
+                ? `${label}: ${formatDuration(Number(value))} (${percentage}%)`
+                : `${label}: ${formatDuration(Number(value))}`
             },
           },
         },
         legend: {
           position: 'right' as const,
           labels: {
-            generateLabels: (chart: {
-              data: {
-                labels: string[]
-                datasets: Array<{
-                  data: number[]
-                  backgroundColor: string[]
-                  borderColor: string
-                  borderWidth: number
-                }>
-              }
-            }) => {
+            generateLabels: (chart: any) => {
               const data = chart.data
-              if (data.labels.length && data.datasets.length) {
+              if (data.labels?.length && data.datasets?.length) {
                 const dataset = data.datasets[0]
-                const total = dataset.data.reduce(
-                  (a: number, b: number) => a + b,
+                const total = (dataset.data as number[]).reduce(
+                  (a, b) => a + b,
                   0
                 )
 
-                return data.labels.map((label: string, i: number) => {
-                  const value = dataset.data[i]
+                return (data.labels as string[]).map((label, i) => {
+                  const value = dataset.data[i] as number
                   const percentage = ((value / total) * 100).toFixed(1)
 
                   return {
                     text: showPercentages ? `${label} (${percentage}%)` : label,
-                    fillStyle: dataset.backgroundColor[i],
+                    fillStyle: Array.isArray(dataset.backgroundColor)
+                      ? dataset.backgroundColor[i]
+                      : dataset.backgroundColor,
                     strokeStyle: dataset.borderColor,
                     lineWidth: dataset.borderWidth,
                     hidden: false,
                     index: i,
-                  }
+                  } as LegendItem
                 })
               }
               return []
@@ -148,14 +137,9 @@ export function DistributionPie({
         },
         datalabels: showPercentages
           ? {
-              formatter: (
-                value: number,
-                context: {
-                  dataset: { data: number[] }
-                }
-              ) => {
-                const total = context.dataset.data.reduce(
-                  (a: number, b: number) => a + b,
+              formatter: (value: number, context: any) => {
+                const total = (context.dataset.data as number[]).reduce(
+                  (a, b) => a + b,
                   0
                 )
                 const percentage = ((value / total) * 100).toFixed(0)
@@ -170,7 +154,7 @@ export function DistributionPie({
           : false,
       },
       cutout: type === 'donut' ? '50%' : undefined,
-    } as any,
+    },
   }
 
   return (
