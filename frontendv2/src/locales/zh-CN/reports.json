@@ -37,6 +37,14 @@
     "comparative": "对比分析"
   },
   "filters": {
+    "title": "筛选器",
+    "addFilter": "添加筛选",
+    "noFilters": "无筛选",
+    "addFirstFilter": "添加第一个筛选",
+    "clearAll": "全部清除",
+    "savePreset": "保存预设",
+    "deletePreset": "删除预设",
+    "noPreset": "无预设",
     "last7Days": "最近7天",
     "last30Days": "最近30天",
     "thisMonth": "本月",

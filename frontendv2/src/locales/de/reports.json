@@ -33,6 +33,14 @@
     "comparative": "Vergleichende Analyse"
   },
   "filters": {
+    "title": "Filter",
+    "addFilter": "Filter hinzufügen",
+    "noFilters": "Keine Filter angewendet",
+    "addFirstFilter": "Ersten Filter hinzufügen",
+    "clearAll": "Alle löschen",
+    "savePreset": "Voreinstellung speichern",
+    "deletePreset": "Voreinstellung löschen",
+    "noPreset": "Keine Voreinstellung ausgewählt",
     "last7Days": "Letzte 7 Tage",
     "last30Days": "Letzte 30 Tage",
     "thisMonth": "Dieser Monat",

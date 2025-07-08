@@ -217,6 +217,14 @@
     "collapseGroup": "Collapse group"
   },
   "filters": {
+    "title": "Filters",
+    "addFilter": "Add Filter",
+    "noFilters": "No filters applied",
+    "addFirstFilter": "Add First Filter",
+    "clearAll": "Clear All",
+    "savePreset": "Save Preset",
+    "deletePreset": "Delete Preset",
+    "noPreset": "No preset selected",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
     "thisMonth": "This month",
