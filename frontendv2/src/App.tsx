@@ -23,6 +23,7 @@ const ScorebookPage = lazy(() => import('./pages/Scorebook'))
 const ScoreBrowser = lazy(() => import('./pages/ScoreBrowser'))
 const CollectionView = lazy(() => import('./pages/CollectionView'))
 const Toolbox = lazy(() => import('./pages/Toolbox'))
+const ReportsDemo = lazy(() => import('./pages/ReportsDemo'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
@@ -55,6 +56,11 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/auth/verify" element={<AuthVerifyPage />} />
               <Route path="/toolbox" element={<Toolbox />} />
+
+              {/* Demo/UAT route for Enhanced Reporting */}
+              {process.env.NODE_ENV !== 'production' && (
+                <Route path="/reports-demo" element={<ReportsDemo />} />
+              )}
 
               {/* Protected routes (but work for anonymous users too) */}
               <Route
