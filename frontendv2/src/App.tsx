@@ -57,8 +57,9 @@ function App() {
               <Route path="/auth/verify" element={<AuthVerifyPage />} />
               <Route path="/toolbox" element={<Toolbox />} />
 
-              {/* Demo/UAT route for Enhanced Reporting */}
-              {process.env.NODE_ENV !== 'production' && (
+              {/* Demo/UAT route for Enhanced Reporting (staging/dev only) */}
+              {(window.location.hostname.includes('staging') ||
+                window.location.hostname.includes('localhost')) && (
                 <Route path="/reports-demo" element={<ReportsDemo />} />
               )}
 
