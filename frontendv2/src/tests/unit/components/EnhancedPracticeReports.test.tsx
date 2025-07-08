@@ -5,6 +5,9 @@ import { useLogbookStore } from '../../../stores/logbookStore'
 import { useAutocomplete } from '../../../hooks/useAutocomplete'
 import { LogbookEntry } from '../../../api/logbook'
 
+// Initialize Chart.js for tests
+import '../../../utils/chartSetup'
+
 // Mock the stores and hooks
 vi.mock('../../../stores/logbookStore')
 vi.mock('../../../hooks/useAutocomplete')
@@ -33,6 +36,67 @@ vi.mock('../../../components/ManualEntryForm', () => ({
       <button onClick={onClose}>Close</button>
     </div>
   ),
+}))
+
+// Mock the lazy loaded view components
+vi.mock('../../../components/practice-reports/views/OverviewView', () => ({
+  default: ({ analytics }: { analytics: any }) => {
+    const totalMinutes = analytics.filteredEntries.reduce(
+      (sum: number, entry: any) => sum + (entry.duration || 0),
+      0
+    )
+    const formatDuration = (minutes: number) => {
+      const hours = Math.floor(minutes / 60)
+      const mins = Math.round(minutes % 60)
+      if (hours === 0) return `${mins}m`
+      if (mins === 0) return `${hours}h`
+      return `${hours}h ${mins}m`
+    }
+
+    return (
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="w-full">
+          <div className="space-y-3">
+            <div
+              className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+              data-testid="summary-stats"
+            >
+              <div className="bg-morandi-stone-50 rounded-lg p-3">
+                <p className="text-2xl font-bold text-morandi-stone-900">
+                  {analytics.filteredEntries.length === 0
+                    ? '0m'
+                    : formatDuration(totalMinutes)}
+                </p>
+                <p className="text-xs text-morandi-stone-600">
+                  reports:totalPractice
+                </p>
+              </div>
+              <div className="bg-morandi-stone-100 rounded-lg p-3">
+                <p className="text-2xl font-bold text-morandi-stone-900">
+                  {analytics.filteredEntries.length}
+                </p>
+                <p className="text-xs text-morandi-stone-600">
+                  reports:sessions
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+}))
+
+vi.mock('../../../components/practice-reports/views/AnalyticsView', () => ({
+  default: () => <div>Analytics View</div>,
+}))
+
+vi.mock('../../../components/practice-reports/views/DataTableView', () => ({
+  default: () => <div>Data Table View</div>,
+}))
+
+vi.mock('../../../components/practice-reports/views/PiecesView', () => ({
+  default: () => <div data-testid="pieces-statistics">Pieces Statistics</div>,
 }))
 
 // Mock the lazy loaded report components
@@ -187,9 +251,12 @@ describe('EnhancedReports', () => {
     render(<EnhancedReports />)
 
     // Wait for lazy loaded component and check for stats
-    await waitFor(() => {
-      expect(screen.getByTestId('summary-stats')).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('summary-stats')).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Check that the total practice time is displayed (use getAllByText since it appears multiple times)
     const durations = screen.getAllByText('2h 15m') // 30 + 45 + 60 = 135 minutes

@@ -1,16 +1,6 @@
 import { useRef, useState } from 'react'
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
+  type Chart as ChartJS,
   type ChartOptions,
   type ChartType as ChartJSType,
   type ChartData,
@@ -20,20 +10,6 @@ import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
 import { Download, Maximize2, Info } from 'lucide-react'
 import { ChartConfig } from '../../../../types/reporting'
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-)
 
 interface ChartContainerProps<T extends ChartJSType = ChartJSType> {
   config: ChartConfig
