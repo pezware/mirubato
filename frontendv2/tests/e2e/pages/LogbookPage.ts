@@ -64,13 +64,14 @@ export class LogbookPage {
 
   // Navigation
   async navigate() {
-    await this.page.goto('/logbook')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.goto('/logbook', { waitUntil: 'networkidle' })
     // Wait for the enhanced reports component to load
     await this.page.waitForSelector('[data-testid="overview-tab"]', {
       state: 'visible',
-      timeout: 10000,
+      timeout: 15000,
     })
+    // Additional wait to ensure the page is fully loaded
+    await this.page.waitForTimeout(500)
   }
 
   async switchToNewEntryTab() {

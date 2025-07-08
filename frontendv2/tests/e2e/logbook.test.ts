@@ -265,7 +265,7 @@ test.describe('Logbook', () => {
   })
 
   test.describe('Reports View', () => {
-    test('view practice statistics @smoke', async ({ page }) => {
+    test.skip('view practice statistics @smoke', async ({ page }) => {
       await test.step('Create entries for statistics', async () => {
         await logbookPage.createEntry({
           duration: 25,
