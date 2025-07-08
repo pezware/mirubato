@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
-import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
+import EnhancedReports from '../components/practice-reports/EnhancedReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 
@@ -62,7 +62,7 @@ export default function LogbookPage() {
         )}
 
         {/* Reports Section */}
-        <EnhancedPracticeReports />
+        <EnhancedReports />
 
         {/* Login Modal */}
         {showLoginForm && !isAuthenticated && (

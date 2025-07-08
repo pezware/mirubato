@@ -1,22 +1,22 @@
 import { useTranslation } from 'react-i18next'
-import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
+import { EnhancedAnalyticsData } from '../../types/reporting'
 import { Card } from '../ui/Card'
 import { ChevronRight } from 'lucide-react'
 
 interface PiecesStatisticsProps {
-  analytics: AnalyticsData
+  analytics: EnhancedAnalyticsData
   selectedPiece: string | null
   selectedComposer: string | null
-  setSelectedPiece: (piece: string) => void
   formatDuration: (minutes: number) => string
+  setSelectedPiece?: (piece: string) => void
 }
 
 export function PiecesStatistics({
   analytics,
   selectedPiece,
   selectedComposer,
-  setSelectedPiece,
   formatDuration,
+  setSelectedPiece,
 }: PiecesStatisticsProps) {
   const { t } = useTranslation(['reports'])
 
@@ -170,7 +170,7 @@ export function PiecesStatistics({
             <div
               key={piece.key}
               className="p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer"
-              onClick={() => setSelectedPiece(piece.key)}
+              onClick={() => setSelectedPiece?.(piece.key)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">

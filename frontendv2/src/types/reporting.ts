@@ -205,8 +205,25 @@ export interface EnhancedAnalyticsData {
   // New analytics for enhanced reporting
   groupedData?: GroupedData[]
   timeSeriesData?: TimeSeriesData[]
-  distributionData?: DistributionData[]
-  comparativeData?: ComparativeData[]
+  distributionData?: {
+    byInstrument: DistributionItem[]
+    byType: DistributionItem[]
+    byPiece: DistributionItem[]
+    byComposer: DistributionItem[]
+  }
+  comparativeData?: {
+    weekOverWeek: ComparativeData[]
+    monthOverMonth: ComparativeData[]
+    byPiece?: Record<string, ComparativeData[]>
+  }
+  filteredEntries: LogbookEntry[]
+  summaryStats: {
+    averageDuration: number
+    practiceFrequency: number
+    consistencyScore: number
+  }
+  progressData?: ProgressData[]
+  insights?: InsightData[]
 }
 
 export interface TimeSeriesData {
@@ -216,11 +233,12 @@ export interface TimeSeriesData {
   metadata?: Record<string, unknown>
 }
 
-export interface DistributionData {
-  category: string
+export interface DistributionItem {
+  label: string
   value: number
   percentage: number
   color?: string
+  metadata?: Record<string, unknown>
 }
 
 export interface ComparativeData {
@@ -230,4 +248,19 @@ export interface ComparativeData {
   target?: number
   change?: number
   changePercent?: number
+}
+
+export interface ProgressData {
+  label: string
+  current: number
+  target: number
+  percentage: number
+  color?: string
+}
+
+export interface InsightData {
+  icon: string
+  title: string
+  description: string
+  type?: 'positive' | 'negative' | 'neutral'
 }

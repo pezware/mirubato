@@ -181,7 +181,7 @@ When creating or updating UI components:
 
 2. **Code Quality**
    - Remove console.log statements
-   - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
+   - ✅ EnhancedReports.tsx - New modular reporting system with 4 view components
    - ✅ Auto-logging module added for reusable practice tracking across features
    - ✅ Chart.js visualization components properly typed
    - Continue refactoring ~150 files still using native buttons
@@ -294,19 +294,31 @@ function MyPracticeComponent() {
 
 ### Enhanced Reporting UI (July 2025)
 
-The enhanced reporting UI provides comprehensive data visualization and filtering for practice data:
+The enhanced reporting UI provides comprehensive data visualization and filtering for practice data with a modular architecture:
 
 **Key Components:**
 
 ```typescript
-// Chart components with proper TypeScript types
-import { type ChartData, type ChartDataset, type TooltipItem } from 'chart.js'
+// Main orchestrator component
+import EnhancedReports from '@/components/practice-reports/EnhancedReports'
 
-// Available chart components
+// View components
+import OverviewView from '@/components/practice-reports/views/OverviewView'
+import AnalyticsView from '@/components/practice-reports/views/AnalyticsView'
+import DataTableView from '@/components/practice-reports/views/DataTableView'
+import PiecesView from '@/components/practice-reports/views/PiecesView'
+
+// Chart components with proper TypeScript types
+import { HeatmapCalendar } from '@/components/practice-reports/visualizations/charts/HeatmapCalendar'
 import { PracticeTrendChart } from '@/components/practice-reports/visualizations/charts/PracticeTrendChart'
 import { DistributionPie } from '@/components/practice-reports/visualizations/charts/DistributionPie'
 import { ComparativeChart } from '@/components/practice-reports/visualizations/charts/ComparativeChart'
 import { ProgressBar } from '@/components/practice-reports/visualizations/charts/ProgressBar'
+
+// Advanced features
+import { FilterBuilder } from '@/components/practice-reports/advanced/FilterBuilder'
+import { GroupingPanel } from '@/components/practice-reports/advanced/GroupingPanel'
+import { SortingPanel } from '@/components/practice-reports/advanced/SortingPanel'
 ```
 
 **Proper Chart.js Typing Pattern:**
@@ -334,12 +346,18 @@ datasets.push({
 
 **Features:**
 
-- Advanced filtering by date ranges, duration, pieces, composers, instruments
-- Grouping and aggregation capabilities
-- Multiple visualization types (line, bar, pie, donut)
-- Calendar heatmap for practice patterns
-- Export functionality for all visualizations
-- Fully typed without any `any` assertions
+- **Modular Views**:
+  - Overview: Practice streaks, calendar heatmap, trend charts, distributions
+  - Analytics: Advanced filtering, grouping, sorting with trend analysis
+  - Data Table: Grouped data view with export capabilities
+  - Pieces: Piece and composer-specific analytics
+- **Advanced Filtering**: FilterBuilder with complex criteria and presets
+- **Data Visualization**: Line, bar, pie, donut charts, calendar heatmap
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Export Options**: CSV and JSON export for all data
+- **Performance**: Caching system with `reportsCacheManager`
+- **Type Safety**: Fully typed without any `any` assertions
+- **State Management**: Centralized `reportingStore` using Zustand
 
 ### API Development Workflow
 

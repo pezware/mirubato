@@ -11,13 +11,18 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Component Architecture**: Modular component system with comprehensive refactoring
 - **UI Component Library**: Complete custom component library with Morandi design system
 - **Enhanced Practice Logging**: Time picker, multi-piece support, and intelligent time division
-- **Advanced Reporting**: Refactored reporting system with improved analytics
+- **Advanced Reporting**: Fully modular reporting system with 4 specialized views
+  - Overview View: Practice streaks, calendar heatmap, trend charts
+  - Analytics View: Advanced filtering, grouping, sorting with visualizations
+  - Data Table View: Grouped data with export capabilities
+  - Pieces View: Piece and composer-specific analytics
 - **Export Capabilities**: Robust CSV/JSON export functionality
 - **Mobile Optimization**: Responsive design improvements and touch interactions
 - **Test Coverage**: 270+ unit tests plus 65 E2E tests (all passing, including smoke tests)
 - **Code Quality**: Eliminated technical debt and improved maintainability
 - **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
 - **Practice Counter**: New toolbox feature for visual practice tracking
+- **Auto-Logging Module**: Seamless practice session tracking across features
 
 ### Infrastructure
 
@@ -255,21 +260,28 @@ The frontend uses a straightforward React architecture without the complex modul
 **Core Components**
 
 - **LogbookEntryList**: Main entry management component
-- **EnhancedPracticeReports**: Advanced reporting with charts (refactored into modular components)
-  - **ReportsTabs**: Tab navigation for different report views
-  - **ReportsFilters**: Comprehensive filtering and calendar visualization with navigation controls
-  - **SummaryStats**: Practice statistics dashboard
-  - **PiecesStatistics**: Piece-specific analytics
-  - **PieceComposerStats**: Detailed composer and piece metrics
-  - **MonthlySummaries**: Monthly practice summaries for historical access
-  - **PracticeOverview**: High-level practice overview component
-  - **CalendarNavigation**: Enhanced calendar navigation with monthly/yearly controls
-  - **Visualization Charts** (July 2025): Comprehensive data visualization components
-    - **PracticeTrendChart**: Line charts with moving averages and goal lines
-    - **DistributionPie**: Pie/donut charts for practice distribution
-    - **ComparativeChart**: Bar/line charts for comparative analysis
-    - **ProgressBar**: Horizontal/vertical progress charts with targets
+- **EnhancedReports**: Modular reporting system with specialized views (July 2025)
+  - **View Components**:
+    - **OverviewView**: Dashboard with practice streaks, calendar heatmap, and trend charts
+    - **AnalyticsView**: Advanced analytics with filtering, grouping, and sorting
+    - **DataTableView**: Grouped data table with export capabilities
+    - **PiecesView**: Piece and composer-specific analytics and visualizations
+  - **Advanced Components**:
+    - **FilterBuilder**: Complex filter creation with presets and logic operators
+    - **GroupingPanel**: Multi-level data grouping configuration
+    - **SortingPanel**: Multi-field sorting with direction control
+  - **Visualization Charts**:
+    - **HeatmapCalendar**: GitHub-style practice calendar visualization
+    - **PracticeTrendChart**: Time series charts with period aggregation
+    - **DistributionPie**: Pie/donut charts for categorical data
+    - **ComparativeChart**: Period-over-period comparison charts
+    - **ProgressBar**: Goal tracking progress indicators
     - **ChartContainer**: Reusable wrapper with export functionality
+  - **Supporting Components**:
+    - **ReportsTabs**: Tab navigation for different report views
+    - **SummaryStats**: Practice statistics cards
+    - **PiecesStatistics**: Detailed piece practice table
+    - **PieceComposerStats**: Composer and piece metrics
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations

@@ -35,10 +35,8 @@ vi.mock('../../../components/ManualEntryForm', () => ({
   ),
 }))
 
-vi.mock('../../../components/EnhancedPracticeReports', () => ({
-  default: () => (
-    <div data-testid="enhanced-practice-reports">Enhanced Practice Reports</div>
-  ),
+vi.mock('../../../components/practice-reports/EnhancedReports', () => ({
+  default: () => <div data-testid="enhanced-reports">Enhanced Reports</div>,
 }))
 
 vi.mock('../../../components/GoogleSignInButton', () => ({
@@ -331,7 +329,7 @@ describe('LogbookPage', () => {
 
   // Note: The EnhancedPracticeReports component should be tested in its own test file
   // The test below just verifies it's included in the page
-  it('should include EnhancedPracticeReports component', () => {
+  it('should include EnhancedReports component', () => {
     render(
       <MemoryRouter>
         <LogbookPage />
@@ -339,6 +337,6 @@ describe('LogbookPage', () => {
     )
 
     // Check for the presence of the mocked component
-    expect(screen.getByTestId('enhanced-practice-reports')).toBeInTheDocument() // Component appears once in the page
+    expect(screen.getByTestId('enhanced-reports')).toBeInTheDocument() // Component appears once in the page
   })
 })

@@ -7,7 +7,7 @@ import {
   GroupedData,
   EnhancedAnalyticsData,
   TimeSeriesData,
-  DistributionData,
+  DistributionItem,
   ComparativeData,
 } from '../types/reporting'
 import { reportsCache } from '../utils/reportsCacheManager'
@@ -53,7 +53,18 @@ export function useEnhancedAnalytics({
     const distributionData = calculateDistributionData(filteredEntries)
 
     // Calculate comparative data
-    const comparativeData = calculateComparativeData(filteredEntries, entries)
+    const comparativeData = calculateComparativeData(filteredEntries)
+
+    // Calculate summary stats
+    const summaryStats = {
+      averageDuration:
+        filteredEntries.length > 0
+          ? filteredEntries.reduce((sum, e) => sum + e.duration, 0) /
+            filteredEntries.length
+          : 0,
+      practiceFrequency: calculatePracticeFrequency(filteredEntries),
+      consistencyScore: calculateConsistencyScore(filteredEntries),
+    }
 
     const result: EnhancedAnalyticsData = {
       ...baseAnalytics,
@@ -61,6 +72,8 @@ export function useEnhancedAnalytics({
       timeSeriesData,
       distributionData,
       comparativeData,
+      filteredEntries,
+      summaryStats,
     }
 
     // Cache the result
@@ -68,6 +81,46 @@ export function useEnhancedAnalytics({
 
     return result
   }, [entries, filters, groupBy, sortBy, entriesHash])
+}
+
+function calculatePracticeFrequency(entries: LogbookEntry[]): number {
+  if (entries.length === 0) return 0
+
+  const dates = new Set(entries.map(e => new Date(e.timestamp).toDateString()))
+
+  if (dates.size === 0) return 0
+
+  // Calculate the date range
+  const timestamps = entries.map(e => new Date(e.timestamp).getTime())
+  const minDate = new Date(Math.min(...timestamps))
+  const maxDate = new Date(Math.max(...timestamps))
+
+  // Calculate weeks between min and max date
+  const daysDiff = Math.floor(
+    (maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
+  const weeks = Math.max(1, daysDiff / 7)
+
+  return dates.size / weeks
+}
+
+function calculateConsistencyScore(entries: LogbookEntry[]): number {
+  if (entries.length === 0) return 0
+
+  // Get the last 30 days
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const recentEntries = entries.filter(
+    e => new Date(e.timestamp) >= thirtyDaysAgo
+  )
+
+  const practiceDays = new Set(
+    recentEntries.map(e => new Date(e.timestamp).toDateString())
+  ).size
+
+  // Consistency score is the percentage of days practiced in the last 30 days
+  return (practiceDays / 30) * 100
 }
 
 // Filter application logic
@@ -494,42 +547,142 @@ function calculateTimeSeriesData(entries: LogbookEntry[]): TimeSeriesData[] {
 }
 
 // Calculate distribution data for pie charts
-function calculateDistributionData(
-  entries: LogbookEntry[]
-): DistributionData[] {
-  const distribution = new Map<string, number>()
+function calculateDistributionData(entries: LogbookEntry[]): {
+  byInstrument: DistributionItem[]
+  byType: DistributionItem[]
+  byPiece: DistributionItem[]
+  byComposer: DistributionItem[]
+} {
   const total = entries.reduce((sum, e) => sum + e.duration, 0)
 
   // Group by instrument
+  const instrumentMap = new Map<string, number>()
+  const typeMap = new Map<string, number>()
+  const pieceMap = new Map<string, number>()
+  const composerMap = new Map<string, number>()
+
   entries.forEach(entry => {
-    distribution.set(
+    // Instrument distribution
+    instrumentMap.set(
       entry.instrument,
-      (distribution.get(entry.instrument) || 0) + entry.duration
+      (instrumentMap.get(entry.instrument) || 0) + entry.duration
     )
+
+    // Type distribution
+    const type = entry.type || 'general'
+    typeMap.set(type, (typeMap.get(type) || 0) + entry.duration)
+
+    // Piece and composer distribution
+    entry.pieces.forEach(piece => {
+      const pieceKey = piece.title
+      const composerKey = piece.composer || 'Unknown'
+
+      pieceMap.set(pieceKey, (pieceMap.get(pieceKey) || 0) + entry.duration)
+      composerMap.set(
+        composerKey,
+        (composerMap.get(composerKey) || 0) + entry.duration
+      )
+    })
   })
 
-  return Array.from(distribution.entries()).map(([category, value]) => ({
-    category,
-    value,
-    percentage: total > 0 ? (value / total) * 100 : 0,
-  }))
+  const toDistributionItems = (
+    map: Map<string, number>
+  ): DistributionItem[] => {
+    return Array.from(map.entries())
+      .map(([label, value]) => ({
+        label,
+        value,
+        percentage: total > 0 ? (value / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.value - a.value)
+  }
+
+  return {
+    byInstrument: toDistributionItems(instrumentMap),
+    byType: toDistributionItems(typeMap),
+    byPiece: toDistributionItems(pieceMap),
+    byComposer: toDistributionItems(composerMap),
+  }
 }
 
 // Calculate comparative data
-function calculateComparativeData(
-  filteredEntries: LogbookEntry[],
-  allEntries: LogbookEntry[]
-): ComparativeData[] {
-  const current = filteredEntries.reduce((sum, e) => sum + e.duration, 0)
-  const total = allEntries.reduce((sum, e) => sum + e.duration, 0)
+function calculateComparativeData(filteredEntries: LogbookEntry[]): {
+  weekOverWeek: ComparativeData[]
+  monthOverMonth: ComparativeData[]
+  byPiece?: Record<string, ComparativeData[]>
+} {
+  const now = new Date()
+  const currentWeekStart = new Date(now)
+  currentWeekStart.setDate(now.getDate() - now.getDay())
+  const previousWeekStart = new Date(currentWeekStart)
+  previousWeekStart.setDate(previousWeekStart.getDate() - 7)
 
-  return [
-    {
-      category: 'Filtered Practice Time',
-      current,
-      previous: total - current,
-      change: current - (total - current),
-      changePercent: total > 0 ? (current / total) * 100 : 0,
-    },
-  ]
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+  // Week over week
+  const currentWeekEntries = filteredEntries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= currentWeekStart
+  })
+  const previousWeekEntries = filteredEntries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= previousWeekStart && date < currentWeekStart
+  })
+
+  const currentWeekTotal = currentWeekEntries.reduce(
+    (sum, e) => sum + e.duration,
+    0
+  )
+  const previousWeekTotal = previousWeekEntries.reduce(
+    (sum, e) => sum + e.duration,
+    0
+  )
+
+  // Month over month
+  const currentMonthEntries = filteredEntries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= currentMonthStart
+  })
+  const previousMonthEntries = filteredEntries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= previousMonthStart && date < currentMonthStart
+  })
+
+  const currentMonthTotal = currentMonthEntries.reduce(
+    (sum, e) => sum + e.duration,
+    0
+  )
+  const previousMonthTotal = previousMonthEntries.reduce(
+    (sum, e) => sum + e.duration,
+    0
+  )
+
+  return {
+    weekOverWeek: [
+      {
+        category: 'Practice Time',
+        current: currentWeekTotal,
+        previous: previousWeekTotal,
+        change: currentWeekTotal - previousWeekTotal,
+        changePercent:
+          previousWeekTotal > 0
+            ? ((currentWeekTotal - previousWeekTotal) / previousWeekTotal) * 100
+            : 0,
+      },
+    ],
+    monthOverMonth: [
+      {
+        category: 'Practice Time',
+        current: currentMonthTotal,
+        previous: previousMonthTotal,
+        change: currentMonthTotal - previousMonthTotal,
+        changePercent:
+          previousMonthTotal > 0
+            ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) *
+              100
+            : 0,
+      },
+    ],
+  }
 }

@@ -7,14 +7,14 @@ import {
   type Chart,
 } from 'chart.js'
 import { ChartContainer } from './ChartContainer'
-import { DistributionData, ChartConfig } from '../../../../types/reporting'
+import { DistributionItem, ChartConfig } from '../../../../types/reporting'
 
 interface DistributionPieProps {
-  data: DistributionData[]
+  data: DistributionItem[]
   title?: string
   showPercentages?: boolean
   showLegend?: boolean
-  type?: 'pie' | 'donut'
+  type?: 'pie' | 'donut' | 'instrument' | 'piece' | 'composer'
   className?: string
 }
 
@@ -26,6 +26,7 @@ export function DistributionPie({
   type = 'pie',
   className,
 }: DistributionPieProps) {
+  const chartType = type === 'donut' || type === 'pie' ? type : 'pie'
   const { t } = useTranslation(['reports'])
 
   const chartData = useMemo<ChartData<'pie'>>(() => {
@@ -44,7 +45,7 @@ export function DistributionPie({
       displayData = [
         ...top10,
         {
-          category: t('reports:charts.other'),
+          label: t('reports:charts.other'),
           value: otherValue,
           percentage: (otherValue / total) * 100,
         },
@@ -67,7 +68,7 @@ export function DistributionPie({
     ]
 
     return {
-      labels: displayData.map(d => d.category),
+      labels: displayData.map(d => d.label),
       datasets: [
         {
           data: displayData.map(d => d.value),
@@ -82,7 +83,7 @@ export function DistributionPie({
   }, [data, t])
 
   const config: ChartConfig = {
-    type: 'pie',
+    type: chartType,
     dataKey: 'distribution',
     options: {
       title: title || t('reports:charts.distribution'),
@@ -161,7 +162,7 @@ export function DistributionPie({
             }
           : false,
       },
-      cutout: type === 'donut' ? '50%' : undefined,
+      cutout: chartType === 'donut' ? '50%' : undefined,
     },
   }
 
