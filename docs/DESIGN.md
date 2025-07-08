@@ -23,6 +23,7 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
 - **Practice Counter**: New toolbox feature for visual practice tracking
 - **Auto-Logging Module**: Seamless practice session tracking across features
+- **Chart.js Global Registration**: Fixed production build issues with centralized chart component registration
 
 ### Infrastructure
 
@@ -285,6 +286,17 @@ The frontend uses a straightforward React architecture without the complex modul
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
+
+**Chart.js Integration**
+
+- **Global Registration**: All Chart.js components are registered globally in `src/utils/chartSetup.ts`
+  - Imported in `main.tsx` before any components load
+  - Prevents "controller not registered" errors in production
+  - Registers: CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler, RadialLinearScale, TimeScale
+- **Type Safety**: All chart components use proper TypeScript generics
+  - `ChartData<'line'>`, `ChartDataset<'bar', number[]>`, `TooltipItem<'pie'>`
+  - No `any` types in chart implementations
+- **Lazy Loading**: Chart components are lazy loaded with React.lazy() for performance
 
 **Auto-Logging Module (July 2025)**
 

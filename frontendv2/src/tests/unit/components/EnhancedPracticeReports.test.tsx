@@ -40,9 +40,13 @@ vi.mock('../../../components/ManualEntryForm', () => ({
 
 // Mock the lazy loaded view components
 vi.mock('../../../components/practice-reports/views/OverviewView', () => ({
-  default: ({ analytics }: { analytics: any }) => {
+  default: ({
+    analytics,
+  }: {
+    analytics: { filteredEntries: LogbookEntry[] }
+  }) => {
     const totalMinutes = analytics.filteredEntries.reduce(
-      (sum: number, entry: any) => sum + (entry.duration || 0),
+      (sum: number, entry: LogbookEntry) => sum + (entry.duration || 0),
       0
     )
     const formatDuration = (minutes: number) => {

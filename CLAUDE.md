@@ -87,13 +87,14 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 
 ### Common Issues
 
-| Problem                  | See DEBUG.md Section         |
-| ------------------------ | ---------------------------- |
-| VexFlow "Too Many Ticks" | Known Issues #1              |
-| GraphQL 500 errors       | Known Issues #2              |
-| Mobile audio issues      | Known Issues #6              |
-| Type misalignment        | Common Development Issues #1 |
-| Memory leaks             | Common Development Issues #4 |
+| Problem                              | See DEBUG.md Section                         |
+| ------------------------------------ | -------------------------------------------- |
+| VexFlow "Too Many Ticks"             | Known Issues #1                              |
+| GraphQL 500 errors                   | Known Issues #2                              |
+| Mobile audio issues                  | Known Issues #6                              |
+| Type misalignment                    | Common Development Issues #1                 |
+| Memory leaks                         | Common Development Issues #4                 |
+| Chart.js "controller not registered" | Ensure chartSetup.ts is imported in main.tsx |
 
 ## 📋 Development Checklist
 
@@ -295,6 +296,46 @@ function MyPracticeComponent() {
 ### Enhanced Reporting UI (July 2025)
 
 The enhanced reporting UI provides comprehensive data visualization and filtering for practice data with a modular architecture:
+
+**IMPORTANT - Chart.js Setup:**
+
+Chart.js controllers must be registered globally before any chart components are rendered. This is handled automatically in `src/utils/chartSetup.ts` which is imported in `main.tsx`:
+
+```typescript
+// src/utils/chartSetup.ts - Registers all Chart.js components globally
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  RadialLinearScale,
+  TimeScale,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+)
+```
+
+This prevents "controller not registered" errors in production builds. The setup must happen before any components load.
 
 **Key Components:**
 
