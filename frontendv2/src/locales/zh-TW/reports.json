@@ -21,7 +21,11 @@
     "todaysPractice": "今日練習",
     "thisWeek": "本週",
     "totalPractice": "總練習時間",
-    "avgSession": "平均時長"
+    "avgSession": "平均時長",
+    "totalDays": "總天數",
+    "totalTime": "總時間",
+    "avgPerDay": "每日平均",
+    "longestDay": "最長的一天"
   },
   "tabs": {
     "overview": "總覽",
@@ -37,7 +41,26 @@
     "last30Days": "最近 30 天",
     "thisMonth": "本月",
     "lastMonth": "上月",
-    "allTime": "所有時間"
+    "allTime": "所有時間",
+    "savePresetModal": {
+      "title": "儲存篩選預設",
+      "name": "預設名稱",
+      "namePlaceholder": "輸入預設名稱",
+      "description": "描述",
+      "descriptionPlaceholder": "輸入預設描述"
+    },
+    "fields": {
+      "date": "日期",
+      "duration": "時長",
+      "piece": "曲目",
+      "composer": "作曲家",
+      "instrument": "樂器",
+      "type": "類型",
+      "mood": "心情",
+      "techniques": "技巧",
+      "scoreId": "樂譜 ID",
+      "autoTracked": "自動追蹤"
+    }
   },
   "sort": {
     "byTime": "總時間",
@@ -132,6 +155,96 @@
   "charts": {
     "current": "當前",
     "previous": "之前",
-    "change": "變化"
+    "change": "變化",
+    "practiceHeatmap": "練習熱力圖",
+    "practiceTrend": "練習趨勢",
+    "less": "較少",
+    "more": "較多",
+    "date": "日期",
+    "noDataAvailable": "所選時期無資料",
+    "practiceTime": "練習時間",
+    "sessions": "練習次數",
+    "averageDuration": "平均時長",
+    "totalDuration": "總時長",
+    "weekday": {
+      "0": "週日",
+      "1": "週一",
+      "2": "週二",
+      "3": "週三",
+      "4": "週四",
+      "5": "週五",
+      "6": "週六"
+    },
+    "month": {
+      "0": "一月",
+      "1": "二月",
+      "2": "三月",
+      "3": "四月",
+      "4": "五月",
+      "5": "六月",
+      "6": "七月",
+      "7": "八月",
+      "8": "九月",
+      "9": "十月",
+      "10": "十一月",
+      "11": "十二月"
+    }
+  },
+  "table": {
+    "title": "數據表",
+    "expandAll": "全部展開",
+    "collapseAll": "全部收合",
+    "export": "匯出",
+    "group": "群組",
+    "sessions": "練習次數",
+    "totalTime": "總時間",
+    "avgTime": "平均時間",
+    "pieces": "曲目",
+    "composers": "作曲家",
+    "noData": "無可用資料",
+    "showingEntries": "顯示 {{count}} 筆記錄",
+    "expandGroup": "展開群組",
+    "collapseGroup": "收合群組"
+  },
+  "applyGroupingToSeeData": "套用分組以表格格式查看資料",
+  "noEntriesFound": "未找到練習記錄",
+  "sorting": {
+    "sortBy": "排序依據",
+    "ascending": "升序",
+    "descending": "降序",
+    "field": "欄位",
+    "direction": "方向"
+  },
+  "filter": {
+    "addFilter": "新增篩選",
+    "removeFilter": "移除篩選",
+    "field": "欄位",
+    "operator": "運算子",
+    "value": "值",
+    "and": "且",
+    "or": "或"
+  },
+  "grouping": {
+    "title": "分組",
+    "addLevel": "新增層級",
+    "noGrouping": "未套用分組",
+    "addFirstLevel": "新增第一層級",
+    "helpText": "按多個維度對您的練習資料進行分組，以分析模式和趨勢。",
+    "level": "層級 {{level}}",
+    "sortAscending": "升序排序",
+    "sortDescending": "降序排序",
+    "showTotals": "顯示總計",
+    "fields": {
+      "dateDay": "日期（天）",
+      "dateWeek": "日期（週）",
+      "dateMonth": "日期（月）",
+      "dateYear": "日期（年）",
+      "piece": "曲目",
+      "composer": "作曲家",
+      "instrument": "樂器",
+      "type": "類型",
+      "mood": "心情",
+      "durationRange": "時長範圍"
+    }
   }
 }

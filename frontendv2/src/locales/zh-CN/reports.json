@@ -21,7 +21,11 @@
     "todaysPractice": "今日练习",
     "thisWeek": "本周",
     "totalPractice": "总练习时间",
-    "avgSession": "平均时长"
+    "avgSession": "平均时长",
+    "totalDays": "总天数",
+    "totalTime": "总时间",
+    "avgPerDay": "每日平均",
+    "longestDay": "最长的一天"
   },
   "tabs": {
     "overview": "概览",
@@ -37,7 +41,26 @@
     "last30Days": "最近30天",
     "thisMonth": "本月",
     "lastMonth": "上月",
-    "allTime": "所有时间"
+    "allTime": "所有时间",
+    "savePresetModal": {
+      "title": "保存筛选预设",
+      "name": "预设名称",
+      "namePlaceholder": "输入预设名称",
+      "description": "描述",
+      "descriptionPlaceholder": "输入预设描述"
+    },
+    "fields": {
+      "date": "日期",
+      "duration": "时长",
+      "piece": "曲目",
+      "composer": "作曲家",
+      "instrument": "乐器",
+      "type": "类型",
+      "mood": "心情",
+      "techniques": "技巧",
+      "scoreId": "乐谱 ID",
+      "autoTracked": "自动跟踪"
+    }
   },
   "sort": {
     "byTime": "总时间",
@@ -132,6 +155,96 @@
   "charts": {
     "current": "当前",
     "previous": "之前",
-    "change": "变化"
+    "change": "变化",
+    "practiceHeatmap": "练习热力图",
+    "practiceTrend": "练习趋势",
+    "less": "较少",
+    "more": "较多",
+    "date": "日期",
+    "noDataAvailable": "所选时期无数据",
+    "practiceTime": "练习时间",
+    "sessions": "练习次数",
+    "averageDuration": "平均时长",
+    "totalDuration": "总时长",
+    "weekday": {
+      "0": "周日",
+      "1": "周一",
+      "2": "周二",
+      "3": "周三",
+      "4": "周四",
+      "5": "周五",
+      "6": "周六"
+    },
+    "month": {
+      "0": "一月",
+      "1": "二月",
+      "2": "三月",
+      "3": "四月",
+      "4": "五月",
+      "5": "六月",
+      "6": "七月",
+      "7": "八月",
+      "8": "九月",
+      "9": "十月",
+      "10": "十一月",
+      "11": "十二月"
+    }
+  },
+  "table": {
+    "title": "数据表",
+    "expandAll": "全部展开",
+    "collapseAll": "全部折叠",
+    "export": "导出",
+    "group": "分组",
+    "sessions": "练习次数",
+    "totalTime": "总时间",
+    "avgTime": "平均时间",
+    "pieces": "曲目",
+    "composers": "作曲家",
+    "noData": "无可用数据",
+    "showingEntries": "显示 {{count}} 条记录",
+    "expandGroup": "展开分组",
+    "collapseGroup": "折叠分组"
+  },
+  "applyGroupingToSeeData": "应用分组以表格格式查看数据",
+  "noEntriesFound": "未找到练习记录",
+  "sorting": {
+    "sortBy": "排序依据",
+    "ascending": "升序",
+    "descending": "降序",
+    "field": "字段",
+    "direction": "方向"
+  },
+  "filter": {
+    "addFilter": "添加筛选",
+    "removeFilter": "移除筛选",
+    "field": "字段",
+    "operator": "运算符",
+    "value": "值",
+    "and": "且",
+    "or": "或"
+  },
+  "grouping": {
+    "title": "分组",
+    "addLevel": "添加层级",
+    "noGrouping": "未应用分组",
+    "addFirstLevel": "添加第一层级",
+    "helpText": "按多个维度对您的练习数据进行分组，以分析模式和趋势。",
+    "level": "层级 {{level}}",
+    "sortAscending": "升序排序",
+    "sortDescending": "降序排序",
+    "showTotals": "显示总计",
+    "fields": {
+      "dateDay": "日期（天）",
+      "dateWeek": "日期（周）",
+      "dateMonth": "日期（月）",
+      "dateYear": "日期（年）",
+      "piece": "曲目",
+      "composer": "作曲家",
+      "instrument": "乐器",
+      "type": "类型",
+      "mood": "心情",
+      "durationRange": "时长范围"
+    }
   }
 }

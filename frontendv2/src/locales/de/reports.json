@@ -37,7 +37,26 @@
     "last30Days": "Letzte 30 Tage",
     "thisMonth": "Dieser Monat",
     "lastMonth": "Letzter Monat",
-    "allTime": "Gesamte Zeit"
+    "allTime": "Gesamte Zeit",
+    "savePresetModal": {
+      "title": "Filtervoreinstellung speichern",
+      "name": "Voreinstellungsname",
+      "namePlaceholder": "Voreinstellungsname eingeben",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Beschreibung eingeben"
+    },
+    "fields": {
+      "date": "Datum",
+      "duration": "Dauer",
+      "piece": "Stück",
+      "composer": "Komponist",
+      "instrument": "Instrument",
+      "type": "Typ",
+      "mood": "Stimmung",
+      "techniques": "Techniken",
+      "scoreId": "Partitur-ID",
+      "autoTracked": "Automatisch erfasst"
+    }
   },
   "sort": {
     "byTime": "Gesamtzeit",
@@ -133,6 +152,78 @@
   "charts": {
     "current": "Aktuell",
     "previous": "Vorherig",
-    "change": "Änderung"
+    "change": "Änderung",
+    "practiceHeatmap": "Übungs-Heatmap",
+    "practiceTrend": "Übungstrend",
+    "less": "Weniger",
+    "more": "Mehr",
+    "date": "Datum",
+    "noDataAvailable": "Keine Daten für den ausgewählten Zeitraum verfügbar",
+    "practiceTime": "Übungszeit",
+    "sessions": "Sitzungen",
+    "averageDuration": "Durchschnittliche Dauer",
+    "totalDuration": "Gesamtdauer",
+    "weekday": {
+      "0": "So",
+      "1": "Mo",
+      "2": "Di",
+      "3": "Mi",
+      "4": "Do",
+      "5": "Fr",
+      "6": "Sa"
+    },
+    "month": {
+      "0": "Jan",
+      "1": "Feb",
+      "2": "Mär",
+      "3": "Apr",
+      "4": "Mai",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aug",
+      "8": "Sep",
+      "9": "Okt",
+      "10": "Nov",
+      "11": "Dez"
+    }
+  },
+  "grouping": {
+    "title": "Gruppierung",
+    "addLevel": "Ebene hinzufügen",
+    "noGrouping": "Keine Gruppierung angewendet",
+    "addFirstLevel": "Erste Ebene hinzufügen",
+    "helpText": "Gruppieren Sie Ihre Übungsdaten nach mehreren Dimensionen, um Muster und Trends zu analysieren.",
+    "level": "Ebene {{level}}",
+    "sortAscending": "Aufsteigend sortieren",
+    "sortDescending": "Absteigend sortieren",
+    "showTotals": "Summen anzeigen",
+    "fields": {
+      "dateDay": "Datum (Tag)",
+      "dateWeek": "Datum (Woche)",
+      "dateMonth": "Datum (Monat)",
+      "dateYear": "Datum (Jahr)",
+      "piece": "Stück",
+      "composer": "Komponist",
+      "instrument": "Instrument",
+      "type": "Typ",
+      "mood": "Stimmung",
+      "durationRange": "Dauerbereich"
+    }
+  },
+  "table": {
+    "title": "Datentabelle",
+    "expandAll": "Alle erweitern",
+    "collapseAll": "Alle einklappen",
+    "export": "Exportieren",
+    "group": "Gruppe",
+    "sessions": "Sitzungen",
+    "totalTime": "Gesamtzeit",
+    "avgTime": "Durchschn. Zeit",
+    "pieces": "Stücke",
+    "composers": "Komponisten",
+    "noData": "Keine Daten verfügbar",
+    "showingEntries": "{{count}} Einträge anzeigen",
+    "expandGroup": "Gruppe erweitern",
+    "collapseGroup": "Gruppe einklappen"
   }
 }

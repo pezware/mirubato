@@ -21,7 +21,11 @@
     "todaysPractice": "Pratique d'aujourd'hui",
     "thisWeek": "Cette semaine",
     "totalPractice": "Pratique totale",
-    "avgSession": "Session moyenne"
+    "avgSession": "Session moyenne",
+    "totalDays": "Jours totaux",
+    "totalTime": "Temps total",
+    "avgPerDay": "Moyenne par jour",
+    "longestDay": "Jour le plus long"
   },
   "tabs": {
     "overview": "Vue d'ensemble",
@@ -37,7 +41,26 @@
     "last30Days": "30 derniers jours",
     "thisMonth": "Ce mois",
     "lastMonth": "Mois dernier",
-    "allTime": "Tout le temps"
+    "allTime": "Tout le temps",
+    "savePresetModal": {
+      "title": "Enregistrer le filtre prédéfini",
+      "name": "Nom du filtre",
+      "namePlaceholder": "Entrez le nom du filtre",
+      "description": "Description",
+      "descriptionPlaceholder": "Entrez la description du filtre"
+    },
+    "fields": {
+      "date": "Date",
+      "duration": "Durée",
+      "piece": "Pièce",
+      "composer": "Compositeur",
+      "instrument": "Instrument",
+      "type": "Type",
+      "mood": "Humeur",
+      "techniques": "Techniques",
+      "scoreId": "ID de partition",
+      "autoTracked": "Suivi automatique"
+    }
   },
   "sort": {
     "byTime": "Temps total",
@@ -132,6 +155,96 @@
   "charts": {
     "current": "Actuel",
     "previous": "Précédent",
-    "change": "Changement"
+    "change": "Changement",
+    "practiceHeatmap": "Carte de chaleur de pratique",
+    "practiceTrend": "Tendance de pratique",
+    "less": "Moins",
+    "more": "Plus",
+    "date": "Date",
+    "noDataAvailable": "Aucune donnée disponible pour la période sélectionnée",
+    "practiceTime": "Temps de pratique",
+    "sessions": "Sessions",
+    "averageDuration": "Durée moyenne",
+    "totalDuration": "Durée totale",
+    "weekday": {
+      "0": "Dim",
+      "1": "Lun",
+      "2": "Mar",
+      "3": "Mer",
+      "4": "Jeu",
+      "5": "Ven",
+      "6": "Sam"
+    },
+    "month": {
+      "0": "Jan",
+      "1": "Fév",
+      "2": "Mar",
+      "3": "Avr",
+      "4": "Mai",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aoû",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Déc"
+    }
+  },
+  "table": {
+    "title": "Tableau de données",
+    "expandAll": "Tout développer",
+    "collapseAll": "Tout réduire",
+    "export": "Exporter",
+    "group": "Groupe",
+    "sessions": "Sessions",
+    "totalTime": "Temps total",
+    "avgTime": "Temps moyen",
+    "pieces": "Pièces",
+    "composers": "Compositeurs",
+    "noData": "Aucune donnée disponible",
+    "showingEntries": "Affichage de {{count}} entrées",
+    "expandGroup": "Développer le groupe",
+    "collapseGroup": "Réduire le groupe"
+  },
+  "applyGroupingToSeeData": "Appliquez un regroupement pour voir les données en format tableau",
+  "noEntriesFound": "Aucune entrée de pratique trouvée",
+  "sorting": {
+    "sortBy": "Trier par",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+    "field": "Champ",
+    "direction": "Direction"
+  },
+  "filter": {
+    "addFilter": "Ajouter un filtre",
+    "removeFilter": "Supprimer le filtre",
+    "field": "Champ",
+    "operator": "Opérateur",
+    "value": "Valeur",
+    "and": "ET",
+    "or": "OU"
+  },
+  "grouping": {
+    "title": "Regroupement",
+    "addLevel": "Ajouter un niveau",
+    "noGrouping": "Aucun regroupement appliqué",
+    "addFirstLevel": "Ajouter le premier niveau",
+    "helpText": "Regroupez vos données de pratique par plusieurs dimensions pour analyser les modèles et les tendances.",
+    "level": "Niveau {{level}}",
+    "sortAscending": "Tri croissant",
+    "sortDescending": "Tri décroissant",
+    "showTotals": "Afficher les totaux",
+    "fields": {
+      "dateDay": "Date (Jour)",
+      "dateWeek": "Date (Semaine)",
+      "dateMonth": "Date (Mois)",
+      "dateYear": "Date (Année)",
+      "piece": "Pièce",
+      "composer": "Compositeur",
+      "instrument": "Instrument",
+      "type": "Type",
+      "mood": "Humeur",
+      "durationRange": "Plage de durée"
+    }
   }
 }

@@ -176,5 +176,108 @@
     "value": "Value",
     "and": "AND",
     "or": "OR"
+  },
+  "grouping": {
+    "title": "Grouping",
+    "addLevel": "Add Level",
+    "noGrouping": "No grouping applied",
+    "addFirstLevel": "Add First Level",
+    "helpText": "Group your practice data by multiple dimensions to analyze patterns and trends.",
+    "level": "Level {{level}}",
+    "sortAscending": "Sort Ascending",
+    "sortDescending": "Sort Descending",
+    "showTotals": "Show Totals",
+    "fields": {
+      "dateDay": "Date (Day)",
+      "dateWeek": "Date (Week)",
+      "dateMonth": "Date (Month)",
+      "dateYear": "Date (Year)",
+      "piece": "Piece",
+      "composer": "Composer",
+      "instrument": "Instrument",
+      "type": "Type",
+      "mood": "Mood",
+      "durationRange": "Duration Range"
+    }
+  },
+  "table": {
+    "title": "Data Table",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "export": "Export",
+    "group": "Group",
+    "sessions": "Sessions",
+    "totalTime": "Total Time",
+    "avgTime": "Avg Time",
+    "pieces": "Pieces",
+    "composers": "Composers",
+    "noData": "No data available",
+    "showingEntries": "Showing {{count}} entries",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group"
+  },
+  "filters": {
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "allTime": "All time",
+    "savePresetModal": {
+      "title": "Save Filter Preset",
+      "name": "Preset Name",
+      "namePlaceholder": "Enter preset name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter preset description"
+    },
+    "fields": {
+      "date": "Date",
+      "duration": "Duration",
+      "piece": "Piece",
+      "composer": "Composer",
+      "instrument": "Instrument",
+      "type": "Type",
+      "mood": "Mood",
+      "techniques": "Techniques",
+      "scoreId": "Score ID",
+      "autoTracked": "Auto Tracked"
+    }
+  },
+  "charts": {
+    "current": "Current",
+    "previous": "Previous",
+    "change": "Change",
+    "practiceHeatmap": "Practice Heatmap",
+    "practiceTrend": "Practice Trend",
+    "less": "Less",
+    "more": "More",
+    "date": "Date",
+    "noDataAvailable": "No data available for the selected period",
+    "practiceTime": "Practice Time",
+    "sessions": "Sessions",
+    "averageDuration": "Average Duration",
+    "totalDuration": "Total Duration",
+    "weekday": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "month": {
+      "0": "Jan",
+      "1": "Feb",
+      "2": "Mar",
+      "3": "Apr",
+      "4": "May",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aug",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Dec"
+    }
   }
 }

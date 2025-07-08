@@ -21,7 +21,11 @@
     "todaysPractice": "Práctica de hoy",
     "thisWeek": "Esta semana",
     "totalPractice": "Práctica total",
-    "avgSession": "Sesión promedio"
+    "avgSession": "Sesión promedio",
+    "totalDays": "Días totales",
+    "totalTime": "Tiempo total",
+    "avgPerDay": "Promedio por día",
+    "longestDay": "Día más largo"
   },
   "tabs": {
     "overview": "Resumen",
@@ -37,7 +41,26 @@
     "last30Days": "Últimos 30 días",
     "thisMonth": "Este mes",
     "lastMonth": "Mes pasado",
-    "allTime": "Todo el tiempo"
+    "allTime": "Todo el tiempo",
+    "savePresetModal": {
+      "title": "Guardar filtro predefinido",
+      "name": "Nombre del filtro",
+      "namePlaceholder": "Ingrese el nombre del filtro",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ingrese la descripción del filtro"
+    },
+    "fields": {
+      "date": "Fecha",
+      "duration": "Duración",
+      "piece": "Pieza",
+      "composer": "Compositor",
+      "instrument": "Instrumento",
+      "type": "Tipo",
+      "mood": "Estado de ánimo",
+      "techniques": "Técnicas",
+      "scoreId": "ID de partitura",
+      "autoTracked": "Seguimiento automático"
+    }
   },
   "sort": {
     "byTime": "Tiempo total",
@@ -132,6 +155,96 @@
   "charts": {
     "current": "Actual",
     "previous": "Anterior",
-    "change": "Cambio"
+    "change": "Cambio",
+    "practiceHeatmap": "Mapa de calor de práctica",
+    "practiceTrend": "Tendencia de práctica",
+    "less": "Menos",
+    "more": "Más",
+    "date": "Fecha",
+    "noDataAvailable": "No hay datos disponibles para el período seleccionado",
+    "practiceTime": "Tiempo de práctica",
+    "sessions": "Sesiones",
+    "averageDuration": "Duración promedio",
+    "totalDuration": "Duración total",
+    "weekday": {
+      "0": "Dom",
+      "1": "Lun",
+      "2": "Mar",
+      "3": "Mié",
+      "4": "Jue",
+      "5": "Vie",
+      "6": "Sáb"
+    },
+    "month": {
+      "0": "Ene",
+      "1": "Feb",
+      "2": "Mar",
+      "3": "Abr",
+      "4": "May",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Ago",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Dic"
+    }
+  },
+  "table": {
+    "title": "Tabla de datos",
+    "expandAll": "Expandir todo",
+    "collapseAll": "Contraer todo",
+    "export": "Exportar",
+    "group": "Grupo",
+    "sessions": "Sesiones",
+    "totalTime": "Tiempo total",
+    "avgTime": "Tiempo promedio",
+    "pieces": "Piezas",
+    "composers": "Compositores",
+    "noData": "No hay datos disponibles",
+    "showingEntries": "Mostrando {{count}} entradas",
+    "expandGroup": "Expandir grupo",
+    "collapseGroup": "Contraer grupo"
+  },
+  "applyGroupingToSeeData": "Aplique agrupación para ver los datos en formato de tabla",
+  "noEntriesFound": "No se encontraron entradas de práctica",
+  "sorting": {
+    "sortBy": "Ordenar por",
+    "ascending": "Ascendente",
+    "descending": "Descendente",
+    "field": "Campo",
+    "direction": "Dirección"
+  },
+  "filter": {
+    "addFilter": "Agregar filtro",
+    "removeFilter": "Eliminar filtro",
+    "field": "Campo",
+    "operator": "Operador",
+    "value": "Valor",
+    "and": "Y",
+    "or": "O"
+  },
+  "grouping": {
+    "title": "Agrupación",
+    "addLevel": "Agregar nivel",
+    "noGrouping": "No se aplicó agrupación",
+    "addFirstLevel": "Agregar primer nivel",
+    "helpText": "Agrupe sus datos de práctica por múltiples dimensiones para analizar patrones y tendencias.",
+    "level": "Nivel {{level}}",
+    "sortAscending": "Ordenar ascendente",
+    "sortDescending": "Ordenar descendente",
+    "showTotals": "Mostrar totales",
+    "fields": {
+      "dateDay": "Fecha (Día)",
+      "dateWeek": "Fecha (Semana)",
+      "dateMonth": "Fecha (Mes)",
+      "dateYear": "Fecha (Año)",
+      "piece": "Pieza",
+      "composer": "Compositor",
+      "instrument": "Instrumento",
+      "type": "Tipo",
+      "mood": "Estado de ánimo",
+      "durationRange": "Rango de duración"
+    }
   }
 }
