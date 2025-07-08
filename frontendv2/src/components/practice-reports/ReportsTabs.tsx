@@ -22,7 +22,7 @@ export function ReportsTabs({
   const { t } = useTranslation(['reports'])
 
   return (
-    <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg">
+    <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-2 sm:mx-4 md:mx-6 mt-4 rounded-lg overflow-x-auto">
       <Button
         onClick={() => {
           onViewChange('overview')
@@ -82,14 +82,16 @@ export function ReportsTabs({
         onClick={() => onViewChange('newEntry')}
         data-testid="new-entry-tab"
         variant="ghost"
-        className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors ${
+        className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
           reportView === 'newEntry'
             ? 'bg-white text-morandi-stone-900 shadow-sm'
             : 'text-morandi-stone-600 hover:text-morandi-stone-900'
         }`}
       >
-        <span className="hidden md:inline">➕ </span>
-        {t('reports:tabs.newEntry')}
+        <span className="hidden sm:inline">➕ </span>
+        <span className="sm:hidden">➕</span>
+        <span className="hidden sm:inline">{t('reports:tabs.newEntry')}</span>
+        <span className="sm:hidden">New</span>
       </Button>
     </div>
   )

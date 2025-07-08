@@ -119,7 +119,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
           </h3>
           <DistributionPie
             data={analytics.distributionData?.byComposer.slice(0, 10) || []}
-            type="donut"
+            type="doughnut"
             showLegend
           />
         </div>

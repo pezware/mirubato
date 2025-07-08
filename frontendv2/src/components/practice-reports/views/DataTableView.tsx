@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { GroupedDataTable } from '../visualizations/tables/GroupedDataTable'
 import { FilterBuilder } from '../advanced/FilterBuilder'
+import { GroupingPanel } from '../advanced/GroupingPanel'
 import { useReportingStore } from '../../../stores/reportingStore'
 import { Card } from '../../ui/Card'
-import { Download, Filter } from 'lucide-react'
+import { Download, Filter, Layers } from 'lucide-react'
 import Button from '../../ui/Button'
 
 interface DataTableViewProps {
@@ -15,7 +16,15 @@ interface DataTableViewProps {
 export default function DataTableView({ analytics }: DataTableViewProps) {
   const { t } = useTranslation(['reports', 'common'])
   const [showFilters, setShowFilters] = useState(false)
-  const { filters } = useReportingStore()
+  const [showGrouping, setShowGrouping] = useState(false)
+  const { filters, groupBy, setGroupBy } = useReportingStore()
+
+  // Set default grouping if none exists
+  useEffect(() => {
+    if (groupBy.length === 0) {
+      setGroupBy([{ field: 'date:month', order: 'desc' }])
+    }
+  }, [])
 
   const handleExportData = () => {
     // Export grouped data functionality
@@ -49,6 +58,20 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
               </span>
             )}
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowGrouping(!showGrouping)}
+            className="flex items-center gap-2"
+          >
+            <Layers className="w-4 h-4" />
+            {t('reports:grouping')}
+            {groupBy.length > 0 && (
+              <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2">
+                {groupBy.length}
+              </span>
+            )}
+          </Button>
           <span className="text-sm text-morandi-stone-600">
             {analytics.filteredEntries.length} {t('reports:entries')}
           </span>
@@ -71,9 +94,27 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         </Card>
       )}
 
+      {/* Grouping Panel */}
+      {showGrouping && (
+        <Card className="mb-4 p-4">
+          <GroupingPanel />
+        </Card>
+      )}
+
       {/* Data Table */}
       <Card>
-        <GroupedDataTable data={analytics.groupedData || []} />
+        {analytics.groupedData && analytics.groupedData.length > 0 ? (
+          <GroupedDataTable data={analytics.groupedData} />
+        ) : (
+          <div className="p-8 text-center">
+            <p className="text-gray-500 mb-4">{t('reports:table.noData')}</p>
+            <p className="text-sm text-gray-400">
+              {analytics.filteredEntries.length > 0
+                ? t('reports:applyGroupingToSeeData')
+                : t('reports:noEntriesFound')}
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   )

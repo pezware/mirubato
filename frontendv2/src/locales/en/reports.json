@@ -21,7 +21,11 @@
     "todaysPractice": "Today's Practice",
     "thisWeek": "This Week",
     "totalPractice": "Total Practice",
-    "avgSession": "Avg Session"
+    "avgSession": "Avg Session",
+    "totalDays": "Total Days",
+    "totalTime": "Total Time",
+    "avgPerDay": "Avg Per Day",
+    "longestDay": "Longest Day"
   },
   "tabs": {
     "overview": "Overview",
@@ -37,7 +41,14 @@
     "last30Days": "Last 30 days",
     "thisMonth": "This month",
     "lastMonth": "Last month",
-    "allTime": "All time"
+    "allTime": "All time",
+    "savePresetModal": {
+      "title": "Save Filter Preset",
+      "name": "Preset Name",
+      "namePlaceholder": "Enter preset name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter preset description"
+    }
   },
   "totalPractice": "Total Practice",
   "sort": {
@@ -135,6 +146,35 @@
   "charts": {
     "current": "Current",
     "previous": "Previous",
-    "change": "Change"
+    "change": "Change",
+    "practiceHeatmap": "Practice Heatmap",
+    "practiceTrend": "Practice Trend",
+    "less": "Less",
+    "more": "More",
+    "date": "Date"
+  },
+  "table": {
+    "noData": "No data available",
+    "showingEntries": "Showing {{count}} entries",
+    "expandGroup": "Expand group",
+    "collapseGroup": "Collapse group"
+  },
+  "applyGroupingToSeeData": "Apply grouping to see data in table format",
+  "noEntriesFound": "No practice entries found",
+  "sorting": {
+    "sortBy": "Sort by",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "field": "Field",
+    "direction": "Direction"
+  },
+  "filter": {
+    "addFilter": "Add Filter",
+    "removeFilter": "Remove Filter",
+    "field": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "and": "AND",
+    "or": "OR"
   }
 }

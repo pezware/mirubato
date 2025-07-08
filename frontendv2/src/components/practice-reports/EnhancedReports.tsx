@@ -162,6 +162,7 @@ export default function EnhancedReports() {
                     isExporting || analytics.filteredEntries.length === 0
                   }
                   className="btn-secondary text-sm"
+                  data-testid="export-csv-button"
                 >
                   {t('reports:exportCSV')}
                 </button>
@@ -171,6 +172,7 @@ export default function EnhancedReports() {
                     isExporting || analytics.filteredEntries.length === 0
                   }
                   className="btn-secondary text-sm"
+                  data-testid="export-json-button"
                 >
                   {t('reports:exportJSON')}
                 </button>

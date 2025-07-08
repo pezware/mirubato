@@ -14,7 +14,7 @@ interface DistributionPieProps {
   title?: string
   showPercentages?: boolean
   showLegend?: boolean
-  type?: 'pie' | 'donut' | 'instrument' | 'piece' | 'composer'
+  type?: 'pie' | 'doughnut' | 'instrument' | 'piece' | 'composer'
   className?: string
 }
 
@@ -26,7 +26,7 @@ export function DistributionPie({
   type = 'pie',
   className,
 }: DistributionPieProps) {
-  const chartType = type === 'donut' || type === 'pie' ? type : 'pie'
+  const chartType = type === 'doughnut' || type === 'pie' ? type : 'pie'
   const { t } = useTranslation(['reports'])
 
   const chartData = useMemo<ChartData<'pie'>>(() => {
@@ -162,7 +162,7 @@ export function DistributionPie({
             }
           : false,
       },
-      cutout: chartType === 'donut' ? '50%' : undefined,
+      cutout: chartType === 'doughnut' ? '50%' : undefined,
     },
   }
 

@@ -135,7 +135,7 @@ export type ChartType =
   | 'bar'
   | 'horizontalBar'
   | 'pie'
-  | 'donut'
+  | 'doughnut'
   | 'heatmap'
   | 'scatter'
 

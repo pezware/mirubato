@@ -148,7 +148,7 @@ export function ChartContainer<T extends ChartJSType = ChartJSType>({
     data.datasets = data.datasets.map((dataset, index: number) => ({
       ...dataset,
       backgroundColor:
-        config.type === 'pie' || config.type === 'donut'
+        config.type === 'pie' || config.type === 'doughnut'
           ? morandiColors
           : morandiColors[index % morandiColors.length],
       borderColor:

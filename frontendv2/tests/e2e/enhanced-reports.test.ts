@@ -11,6 +11,9 @@ test.describe('Enhanced Reports', () => {
     await page.goto('/')
     await logbookPage.clearAllEntries()
 
+    // Navigate to logbook page
+    await logbookPage.navigate()
+
     // Create test data with various entries
     await test.step('Create test entries', async () => {
       // Week 1 entries
@@ -36,7 +39,7 @@ test.describe('Enhanced Reports', () => {
         title: 'Moonlight Sonata',
         composer: 'Beethoven',
         notes: 'Second movement',
-        mood: 'focused',
+        mood: 'satisfied',
       })
 
       await logbookPage.createEntry({
