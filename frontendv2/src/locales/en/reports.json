@@ -248,6 +248,24 @@
       "techniques": "Techniques",
       "scoreId": "Score ID",
       "autoTracked": "Auto Tracked"
+    },
+    "operators": {
+      "equals": "equals",
+      "notEquals": "does not equal",
+      "greaterThan": "greater than",
+      "lessThan": "less than",
+      "between": "between",
+      "contains": "contains",
+      "notContains": "does not contain",
+      "in": "is one of",
+      "notIn": "is not one of",
+      "isEmpty": "is empty",
+      "isNotEmpty": "is not empty",
+      "after": "after",
+      "before": "before",
+      "on": "on",
+      "is": "is",
+      "isNot": "is not"
     }
   },
   "charts": {
@@ -264,6 +282,8 @@
     "sessions": "Sessions",
     "averageDuration": "Average Duration",
     "totalDuration": "Total Duration",
+    "other": "Other",
+    "distribution": "Distribution",
     "weekday": {
       "0": "Sun",
       "1": "Mon",
@@ -286,6 +306,22 @@
       "9": "Oct",
       "10": "Nov",
       "11": "Dec"
+    }
+  },
+  "sorting": {
+    "title": "Sorting",
+    "addField": "Add Sort Field",
+    "noSorting": "No sorting applied",
+    "addFirstField": "Add First Sort Field",
+    "helpText": "Sort order is applied in sequence, from top to bottom.",
+    "fields": {
+      "date": "Date",
+      "duration": "Duration",
+      "piece": "Piece",
+      "composer": "Composer",
+      "practiceCount": "Practice Count",
+      "totalDuration": "Total Duration",
+      "lastPracticed": "Last Practiced"
     }
   }
 }

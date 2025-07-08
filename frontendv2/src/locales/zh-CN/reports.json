@@ -68,6 +68,24 @@
       "techniques": "技巧",
       "scoreId": "乐谱 ID",
       "autoTracked": "自动跟踪"
+    },
+    "operators": {
+      "equals": "等于",
+      "notEquals": "不等于",
+      "greaterThan": "大于",
+      "lessThan": "小于",
+      "between": "介于",
+      "contains": "包含",
+      "notContains": "不包含",
+      "in": "在其中",
+      "notIn": "不在其中",
+      "isEmpty": "为空",
+      "isNotEmpty": "不为空",
+      "after": "之后",
+      "before": "之前",
+      "on": "在",
+      "is": "是",
+      "isNot": "不是"
     }
   },
   "sort": {
@@ -174,6 +192,8 @@
     "sessions": "练习次数",
     "averageDuration": "平均时长",
     "totalDuration": "总时长",
+    "other": "其他",
+    "distribution": "分布",
     "weekday": {
       "0": "周日",
       "1": "周一",
@@ -217,11 +237,25 @@
   "applyGroupingToSeeData": "应用分组以表格格式查看数据",
   "noEntriesFound": "未找到练习记录",
   "sorting": {
+    "title": "排序",
+    "addField": "添加字段",
+    "noSorting": "无排序",
+    "addFirstField": "添加第一个字段",
+    "helpText": "按多个字段排序您的练习数据，以更好地组织信息。",
     "sortBy": "排序依据",
     "ascending": "升序",
     "descending": "降序",
     "field": "字段",
-    "direction": "方向"
+    "direction": "方向",
+    "fields": {
+      "date": "日期",
+      "duration": "时长",
+      "piece": "曲目",
+      "composer": "作曲家",
+      "practiceCount": "练习次数",
+      "totalDuration": "总时长",
+      "lastPracticed": "最后练习"
+    }
   },
   "filter": {
     "addFilter": "添加筛选",

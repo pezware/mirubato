@@ -68,6 +68,24 @@
       "techniques": "Técnicas",
       "scoreId": "ID de partitura",
       "autoTracked": "Seguimiento automático"
+    },
+    "operators": {
+      "equals": "es igual a",
+      "notEquals": "no es igual a",
+      "greaterThan": "es mayor que",
+      "lessThan": "es menor que",
+      "between": "está entre",
+      "contains": "contiene",
+      "notContains": "no contiene",
+      "in": "está en",
+      "notIn": "no está en",
+      "isEmpty": "está vacío",
+      "isNotEmpty": "no está vacío",
+      "after": "después de",
+      "before": "antes de",
+      "on": "en",
+      "is": "es",
+      "isNot": "no es"
     }
   },
   "sort": {
@@ -174,6 +192,8 @@
     "sessions": "Sesiones",
     "averageDuration": "Duración promedio",
     "totalDuration": "Duración total",
+    "other": "Otro",
+    "distribution": "Distribución",
     "weekday": {
       "0": "Dom",
       "1": "Lun",
@@ -217,11 +237,25 @@
   "applyGroupingToSeeData": "Aplique agrupación para ver los datos en formato de tabla",
   "noEntriesFound": "No se encontraron entradas de práctica",
   "sorting": {
+    "title": "Ordenación",
+    "addField": "Agregar campo",
+    "noSorting": "Sin ordenación",
+    "addFirstField": "Agregar primer campo",
+    "helpText": "Ordene sus datos de práctica por múltiples campos para organizar mejor la información.",
     "sortBy": "Ordenar por",
     "ascending": "Ascendente",
     "descending": "Descendente",
     "field": "Campo",
-    "direction": "Dirección"
+    "direction": "Dirección",
+    "fields": {
+      "date": "Fecha",
+      "duration": "Duración",
+      "piece": "Pieza",
+      "composer": "Compositor",
+      "practiceCount": "Cantidad de prácticas",
+      "totalDuration": "Duración total",
+      "lastPracticed": "Última práctica"
+    }
   },
   "filter": {
     "addFilter": "Agregar filtro",

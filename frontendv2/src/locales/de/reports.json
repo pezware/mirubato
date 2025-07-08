@@ -64,6 +64,24 @@
       "techniques": "Techniken",
       "scoreId": "Partitur-ID",
       "autoTracked": "Automatisch erfasst"
+    },
+    "operators": {
+      "equals": "gleich",
+      "notEquals": "ungleich",
+      "greaterThan": "größer als",
+      "lessThan": "kleiner als",
+      "between": "zwischen",
+      "contains": "enthält",
+      "notContains": "enthält nicht",
+      "in": "ist eines von",
+      "notIn": "ist keines von",
+      "isEmpty": "ist leer",
+      "isNotEmpty": "ist nicht leer",
+      "after": "nach",
+      "before": "vor",
+      "on": "am",
+      "is": "ist",
+      "isNot": "ist nicht"
     }
   },
   "sort": {
@@ -193,7 +211,9 @@
       "9": "Okt",
       "10": "Nov",
       "11": "Dez"
-    }
+    },
+    "other": "Sonstige",
+    "distribution": "Verteilung"
   },
   "grouping": {
     "title": "Gruppierung",
@@ -233,5 +253,21 @@
     "showingEntries": "{{count}} Einträge anzeigen",
     "expandGroup": "Gruppe erweitern",
     "collapseGroup": "Gruppe einklappen"
+  },
+  "sorting": {
+    "title": "Sortierung",
+    "addField": "Sortierfeld hinzufügen",
+    "noSorting": "Keine Sortierung angewendet",
+    "addFirstField": "Erstes Sortierfeld hinzufügen",
+    "helpText": "Die Sortierreihenfolge wird der Reihe nach von oben nach unten angewendet.",
+    "fields": {
+      "date": "Datum",
+      "duration": "Dauer",
+      "piece": "Stück",
+      "composer": "Komponist",
+      "practiceCount": "Übungsanzahl",
+      "totalDuration": "Gesamtdauer",
+      "lastPracticed": "Zuletzt geübt"
+    }
   }
 }

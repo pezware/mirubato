@@ -68,6 +68,24 @@
       "techniques": "Techniques",
       "scoreId": "ID de partition",
       "autoTracked": "Suivi automatique"
+    },
+    "operators": {
+      "equals": "est égal à",
+      "notEquals": "n'est pas égal à",
+      "greaterThan": "est supérieur à",
+      "lessThan": "est inférieur à",
+      "between": "est entre",
+      "contains": "contient",
+      "notContains": "ne contient pas",
+      "in": "est dans",
+      "notIn": "n'est pas dans",
+      "isEmpty": "est vide",
+      "isNotEmpty": "n'est pas vide",
+      "after": "après",
+      "before": "avant",
+      "on": "le",
+      "is": "est",
+      "isNot": "n'est pas"
     }
   },
   "sort": {
@@ -174,6 +192,8 @@
     "sessions": "Sessions",
     "averageDuration": "Durée moyenne",
     "totalDuration": "Durée totale",
+    "other": "Autre",
+    "distribution": "Répartition",
     "weekday": {
       "0": "Dim",
       "1": "Lun",
@@ -217,11 +237,25 @@
   "applyGroupingToSeeData": "Appliquez un regroupement pour voir les données en format tableau",
   "noEntriesFound": "Aucune entrée de pratique trouvée",
   "sorting": {
+    "title": "Tri",
+    "addField": "Ajouter un champ",
+    "noSorting": "Aucun tri",
+    "addFirstField": "Ajouter le premier champ",
+    "helpText": "Triez vos données de pratique par plusieurs champs pour mieux organiser l'information.",
     "sortBy": "Trier par",
     "ascending": "Croissant",
     "descending": "Décroissant",
     "field": "Champ",
-    "direction": "Direction"
+    "direction": "Direction",
+    "fields": {
+      "date": "Date",
+      "duration": "Durée",
+      "piece": "Pièce",
+      "composer": "Compositeur",
+      "practiceCount": "Nombre de pratiques",
+      "totalDuration": "Durée totale",
+      "lastPracticed": "Dernière pratique"
+    }
   },
   "filter": {
     "addFilter": "Ajouter un filtre",
