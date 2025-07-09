@@ -23,9 +23,9 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
       <Card className="mb-6">
         <Tabs
           tabs={[
-            { id: 'filters', label: t('reports:filters') },
-            { id: 'grouping', label: t('reports:grouping') },
-            { id: 'sorting', label: t('reports:sorting') },
+            { id: 'filters', label: t('reports:filters.title') },
+            { id: 'grouping', label: t('reports:grouping.title') },
+            { id: 'sorting', label: t('reports:sorting.title') },
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}

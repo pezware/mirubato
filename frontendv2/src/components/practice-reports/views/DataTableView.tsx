@@ -51,7 +51,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             className="flex items-center gap-2"
           >
             <Filter className="w-4 h-4" />
-            {t('reports:filters')}
+            {t('reports:filters.title')}
             {filters.length > 0 && (
               <span className="bg-morandi-purple-600 text-white text-xs rounded-full px-2">
                 {filters.length}
@@ -65,7 +65,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             className="flex items-center gap-2"
           >
             <Layers className="w-4 h-4" />
-            {t('reports:grouping')}
+            {t('reports:grouping.title')}
             {groupBy.length > 0 && (
               <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2">
                 {groupBy.length}
@@ -83,7 +83,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
           className="flex items-center gap-2"
         >
           <Download className="w-4 h-4" />
-          {t('reports:export')}
+          {t('reports:table.export')}
         </Button>
       </div>
 
