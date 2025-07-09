@@ -13,27 +13,39 @@ export async function waitForElementStable(
   const box = await locator.boundingBox()
   if (!box) throw new Error('Element not found')
 
-  await locator.page().waitForFunction(
-    ([selector, initialBox]) => {
-      const element = document.querySelector(selector)
-      if (!element) return false
+  const startTime = Date.now()
 
-      const currentBox = element.getBoundingClientRect()
-      return (
-        currentBox.x === initialBox.x &&
-        currentBox.y === initialBox.y &&
-        currentBox.width === initialBox.width &&
-        currentBox.height === initialBox.height
-      )
-    },
-    [
-      await locator
-        .elementHandle()
-        .then(h => h?.getAttribute('data-testid') || ''),
-      box,
-    ],
-    { timeout: options.timeout }
-  )
+  // Wait a bit for any initial animations to start
+  await locator.page().waitForTimeout(100)
+
+  // Now check if element is stable
+  let previousBox = box
+  let stableCount = 0
+  const requiredStableChecks = 3
+
+  while (stableCount < requiredStableChecks) {
+    await locator.page().waitForTimeout(100)
+    const currentBox = await locator.boundingBox()
+
+    if (!currentBox) throw new Error('Element disappeared')
+
+    if (
+      Math.abs(currentBox.x - previousBox.x) < 1 &&
+      Math.abs(currentBox.y - previousBox.y) < 1 &&
+      Math.abs(currentBox.width - previousBox.width) < 1 &&
+      Math.abs(currentBox.height - previousBox.height) < 1
+    ) {
+      stableCount++
+    } else {
+      stableCount = 0
+      previousBox = currentBox
+    }
+
+    // Timeout check
+    if (Date.now() - startTime > options.timeout) {
+      throw new Error('Element did not stabilize within timeout')
+    }
+  }
 }
 
 /**

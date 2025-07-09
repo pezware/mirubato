@@ -8,14 +8,21 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
 
-    // Clear all data before navigation
+    // Navigate to logbook page first
+    await logbookPage.navigate()
+
+    // Clear all data after navigation to avoid security errors
     await page.evaluate(() => {
       localStorage.clear()
       sessionStorage.clear()
     })
 
-    // Navigate to logbook page
-    await logbookPage.navigate()
+    // Reload page after clearing storage to ensure clean state
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 10000,
+    })
 
     // Create comprehensive test data
     await test.step('Create diverse test entries', async () => {

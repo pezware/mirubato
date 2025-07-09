@@ -11,14 +11,21 @@ test.describe('Enhanced Reports', () => {
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
-    // Clear all data before navigation
+    logbookPage = new LogbookPage(page)
+    await logbookPage.navigate()
+
+    // Clear all data after navigation to avoid security errors
     await page.evaluate(() => {
       localStorage.clear()
       sessionStorage.clear()
     })
 
-    logbookPage = new LogbookPage(page)
-    await logbookPage.navigate()
+    // Reload page after clearing storage to ensure clean state
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 10000,
+    })
 
     // Create test data with various entries
     await test.step('Create test entries', async () => {
