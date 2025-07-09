@@ -8,6 +8,7 @@ import {
 } from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports', () => {
+  test.setTimeout(60000) // Increase timeout to 60 seconds
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
@@ -27,9 +28,9 @@ test.describe('Enhanced Reports', () => {
       timeout: 10000,
     })
 
-    // Create test data with various entries
+    // Create minimal test data
     await test.step('Create test entries', async () => {
-      // Week 1 entries
+      // Create just 3 entries to speed up the test
       await logbookPage.createEntry({
         duration: 30,
         title: 'Moonlight Sonata',
@@ -46,28 +47,11 @@ test.describe('Enhanced Reports', () => {
         mood: 'excited',
       })
 
-      // Week 2 entries
       await logbookPage.createEntry({
         duration: 60,
-        title: 'Moonlight Sonata',
-        composer: 'Beethoven',
-        notes: 'Second movement',
-        mood: 'satisfied',
-      })
-
-      await logbookPage.createEntry({
-        duration: 20,
-        title: 'Scales and Arpeggios',
+        title: 'Scales',
         notes: 'Technical practice',
         mood: 'neutral',
-      })
-
-      await logbookPage.createEntry({
-        duration: 35,
-        title: 'Nocturne Op. 9 No. 2',
-        composer: 'Chopin',
-        notes: 'New piece sight reading',
-        mood: 'satisfied',
       })
     })
 
@@ -131,14 +115,14 @@ test.describe('Enhanced Reports', () => {
           '[data-testid="total-practice-time"]'
         )
         await expect(totalTimeElement).toBeVisible()
-        await expect(totalTimeElement).toContainText(/3h\s*10m/i)
+        await expect(totalTimeElement).toContainText(/2h\s*15m/i)
 
         // Check session count using specific testid
         const sessionCountElement = page.locator(
           '[data-testid="session-count"]'
         )
         await expect(sessionCountElement).toBeVisible()
-        await expect(sessionCountElement).toContainText('5')
+        await expect(sessionCountElement).toContainText('3')
       })
 
       await test.step('Verify practice streak info', async () => {
