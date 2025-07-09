@@ -11,13 +11,19 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Component Architecture**: Modular component system with comprehensive refactoring
 - **UI Component Library**: Complete custom component library with Morandi design system
 - **Enhanced Practice Logging**: Time picker, multi-piece support, and intelligent time division
-- **Advanced Reporting**: Refactored reporting system with improved analytics
+- **Advanced Reporting**: Fully modular reporting system with 4 specialized views
+  - Overview View: Practice streaks, calendar heatmap, trend charts
+  - Analytics View: Advanced filtering, grouping, sorting with visualizations
+  - Data Table View: Grouped data with export capabilities
+  - Pieces View: Piece and composer-specific analytics
 - **Export Capabilities**: Robust CSV/JSON export functionality
 - **Mobile Optimization**: Responsive design improvements and touch interactions
 - **Test Coverage**: 270+ unit tests plus 65 E2E tests (all passing, including smoke tests)
 - **Code Quality**: Eliminated technical debt and improved maintainability
 - **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
 - **Practice Counter**: New toolbox feature for visual practice tracking
+- **Auto-Logging Module**: Seamless practice session tracking across features
+- **Chart.js Global Registration**: Fixed production build issues with centralized chart component registration
 
 ### Infrastructure
 
@@ -67,7 +73,7 @@ All services run as Cloudflare Workers with the following domains:
   - Offline-first with local storage sync
   - Optimized bundle with code splitting
   - Comprehensive caching headers for static assets
-  - Internationalization (i18n) with 6 languages
+  - Internationalization (i18n) with 6 languages (en, es, fr, de, zh-TW, zh-CN)
 
 **Note**: The documented module-based architecture with EventBus is not currently implemented. The actual implementation uses a simpler, more pragmatic approach with React components and Zustand stores.
 
@@ -255,18 +261,42 @@ The frontend uses a straightforward React architecture without the complex modul
 **Core Components**
 
 - **LogbookEntryList**: Main entry management component
-- **EnhancedPracticeReports**: Advanced reporting with charts (refactored into modular components)
-  - **ReportsTabs**: Tab navigation for different report views
-  - **ReportsFilters**: Comprehensive filtering and calendar visualization with navigation controls
-  - **SummaryStats**: Practice statistics dashboard
-  - **PiecesStatistics**: Piece-specific analytics
-  - **PieceComposerStats**: Detailed composer and piece metrics
-  - **MonthlySummaries**: Monthly practice summaries for historical access
-  - **PracticeOverview**: High-level practice overview component
-  - **CalendarNavigation**: Enhanced calendar navigation with monthly/yearly controls
+- **EnhancedReports**: Modular reporting system with specialized views (July 2025)
+  - **View Components**:
+    - **OverviewView**: Dashboard with practice streaks, calendar heatmap, and trend charts
+    - **AnalyticsView**: Advanced analytics with filtering, grouping, and sorting
+    - **DataTableView**: Grouped data table with export capabilities
+    - **PiecesView**: Piece and composer-specific analytics and visualizations
+  - **Advanced Components**:
+    - **FilterBuilder**: Complex filter creation with presets and logic operators
+    - **GroupingPanel**: Multi-level data grouping configuration
+    - **SortingPanel**: Multi-field sorting with direction control
+  - **Visualization Charts**:
+    - **HeatmapCalendar**: GitHub-style practice calendar visualization
+    - **PracticeTrendChart**: Time series charts with period aggregation
+    - **DistributionPie**: Pie/donut charts for categorical data
+    - **ComparativeChart**: Period-over-period comparison charts
+    - **ProgressBar**: Goal tracking progress indicators
+    - **ChartContainer**: Reusable wrapper with export functionality
+  - **Supporting Components**:
+    - **ReportsTabs**: Tab navigation for different report views
+    - **SummaryStats**: Practice statistics cards
+    - **PiecesStatistics**: Detailed piece practice table
+    - **PieceComposerStats**: Composer and piece metrics
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
+
+**Chart.js Integration**
+
+- **Global Registration**: All Chart.js components are registered globally in `src/utils/chartSetup.ts`
+  - Imported in `main.tsx` before any components load
+  - Prevents "controller not registered" errors in production
+  - Registers: CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler, RadialLinearScale, TimeScale
+- **Type Safety**: All chart components use proper TypeScript generics
+  - `ChartData<'line'>`, `ChartDataset<'bar', number[]>`, `TooltipItem<'pie'>`
+  - No `any` types in chart implementations
+- **Lazy Loading**: Chart components are lazy loaded with React.lazy() for performance
 
 **Auto-Logging Module (July 2025)**
 
@@ -329,6 +359,28 @@ A comprehensive set of reusable components following consistent design patterns 
 
 All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation. The component library has been extensively refactored to eliminate native HTML usage in favor of consistent, branded components.
 
+**Theme Management (July 2025)**
+
+Currently, the application is forced to light theme to ensure consistency across all user systems:
+
+```css
+/* Force light theme throughout the app */
+:root {
+  color-scheme: light;
+}
+
+/* Tailwind configuration */
+module.exports = {
+  darkmode:
+    'class',
+    // Manual control instead of 'media'
+    ; // ... rest of config
+
+}
+```
+
+This prevents the browser from automatically applying dark mode based on system preferences. A proper theme switcher (light/dark/system) is planned for future implementation (see ROADMAP.md Priority 1.5).
+
 #### Data Flow
 
 ```
@@ -345,13 +397,14 @@ The original design envisioned a complex module system with EventBus for loose c
 
 ## Key Technologies
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios, Chart.js
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios
+- **Data Visualization**: Chart.js v4.4.9 with react-chartjs-2 v5.3.0
 - **UI Components**: Custom component library with @headlessui/react for accessibility
 - **Music Libraries**: VexFlow.js and Tone.js (present but minimally used)
 - **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
 - **API Framework**: Hono with Zod validation
 - **Auth**: JWT tokens, magic links, Google OAuth
-- **i18n**: react-i18next (6 languages: en, es, fr, de, ja, zh)
+- **i18n**: react-i18next (6 languages: en, es, fr, de, zh-TW, zh-CN)
 - **Testing**: Vitest, Playwright
 
 ## Performance Considerations
@@ -445,6 +498,73 @@ cd api && npm run db:migrate:production   # Production
 cd api && npm run db:migrate:staging      # Staging
 ```
 
+## Internationalization (i18n) Architecture
+
+### Overview
+
+Mirubato supports 6 languages with a comprehensive i18n system built on react-i18next:
+
+- **English (en)** - Reference language
+- **Spanish (es)**
+- **French (fr)**
+- **German (de)**
+- **Traditional Chinese (zh-TW)**
+- **Simplified Chinese (zh-CN)**
+
+### Implementation
+
+1. **Structure**: Translation files organized by namespace and language
+
+   ```
+   src/locales/
+   ├── en/          # Reference language
+   │   ├── auth.json      # Authentication strings
+   │   ├── common.json    # Shared UI elements
+   │   ├── errors.json    # Error messages
+   │   ├── logbook.json   # Practice log features
+   │   ├── reports.json   # Analytics and reporting
+   │   ├── scorebook.json # Score/sheet music features
+   │   └── toolbox.json   # Practice tools
+   └── [es|fr|de|zh-TW|zh-CN]/  # Same structure for each language
+   ```
+
+2. **Key Features**:
+   - Namespace-based organization for code splitting
+   - Lazy loading of translation files
+   - Automatic language detection
+   - Fallback to English for missing translations
+   - Interpolation support for dynamic values
+   - Pluralization rules for each language
+
+3. **Translation Management**:
+   - Validation scripts ensure 100% translation coverage
+   - Sync tools maintain consistency across languages
+   - English serves as the reference for all translations
+   - `[NEEDS TRANSLATION]` markers for new keys
+
+### Development Workflow
+
+```bash
+# Check translation completeness
+npm run validate:i18n
+
+# Sync missing keys from English
+npm run sync:i18n
+
+# Fix and sort keys
+npm run i18n:fix
+```
+
+### Best Practices
+
+1. **Always use translation keys** - Never hardcode UI text
+2. **Namespace appropriately** - Use `common` for shared strings
+3. **Maintain consistency** - Use the same terminology across namespaces
+4. **Consider context** - Musical terms may vary by language/culture
+5. **Test with different languages** - Ensure UI handles varying text lengths
+
+See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
+
 ## Caching Architecture
 
 ### Edge Caching Strategy
@@ -523,7 +643,15 @@ The frontend implements aggressive code splitting:
 
 **Recent Enhancements (July 2025):**
 
-- **Auto-Logging Module** (Latest): Added reusable auto-logging system for practice tracking
+- **Enhanced Reporting UI** (Latest): Added comprehensive data visualization and filtering
+  - Advanced filtering system with date ranges, duration, pieces, composers, instruments
+  - Multiple chart types using Chart.js with proper TypeScript types
+  - Calendar heatmap visualization for daily practice patterns
+  - Grouping and aggregation capabilities for data analysis
+  - Export functionality for all visualizations
+  - Properly typed Chart.js components without any type assertions
+
+- **Auto-Logging Module**: Added reusable auto-logging system for practice tracking
   - AutoLoggingProvider for global practice session management
   - usePracticeTracking hook for easy integration
   - PracticeSummaryModal for session review before saving

@@ -154,7 +154,7 @@ export default function ManualEntryForm({
   }
 
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-4 sm:p-6">
       <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
         {entry
           ? `📝 ${t('logbook:entry.editEntry')}`

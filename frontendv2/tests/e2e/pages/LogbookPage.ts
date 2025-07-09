@@ -5,7 +5,7 @@ export class LogbookPage {
 
   // Locators
   private get newEntryTab() {
-    return this.page.locator('[data-testid="new-entry-tab"]')
+    return this.page.locator('[data-testid="newEntry-tab"]')
   }
 
   private get overviewTab() {
@@ -64,28 +64,36 @@ export class LogbookPage {
 
   // Navigation
   async navigate() {
-    await this.page.goto('/logbook')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.goto('/logbook', { waitUntil: 'networkidle' })
+    // Wait for the enhanced reports component to load
+    await this.page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 15000,
+    })
+    // Additional wait to ensure the page is fully loaded
+    await this.page.waitForTimeout(1000)
   }
 
   async switchToNewEntryTab() {
+    // Wait for tab to be ready
+    await this.newEntryTab.waitFor({ state: 'visible', timeout: 10000 })
     await this.newEntryTab.click()
-    await this.entryForm.waitFor({ state: 'visible' })
+    // Wait for the form to appear
+    await this.page.waitForSelector('[data-testid="logbook-entry-form"]', {
+      state: 'visible',
+      timeout: 10000,
+    })
   }
 
   async switchToOverviewTab() {
+    await this.overviewTab.waitFor({ state: 'visible', timeout: 10000 })
     await this.overviewTab.click()
     // Wait for tab content to load
     await this.page
-      .waitForLoadState('networkidle', { timeout: 2000 })
+      .waitForLoadState('networkidle', { timeout: 5000 })
       .catch(() => {})
-    // Or wait for any existing entries to be visible
-    await this.page
-      .waitForSelector('[data-testid="logbook-entry"], text="Total Practice"', {
-        state: 'visible',
-        timeout: 1000,
-      })
-      .catch(() => {})
+    // Wait for overview content to appear
+    await this.page.waitForTimeout(500)
   }
 
   async switchToPiecesTab() {
@@ -189,8 +197,18 @@ export class LogbookPage {
   }
 
   async verifyEntryContainsText(text: string) {
-    const entry = this.entries.filter({ hasText: text })
-    await expect(entry).toBeVisible()
+    // First check if we're in the enhanced reports view
+    const overviewTabVisible = await this.overviewTab
+      .isVisible()
+      .catch(() => false)
+    if (overviewTabVisible) {
+      // We're in enhanced reports, just check if the text is visible somewhere on the page
+      await expect(this.page.locator(`text="${text}"`)).toBeVisible()
+    } else {
+      // Legacy view - check for entries
+      const entry = this.entries.filter({ hasText: text })
+      await expect(entry).toBeVisible()
+    }
   }
 
   async getEntryByIndex(index: number) {

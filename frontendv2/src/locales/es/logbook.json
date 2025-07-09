@@ -1,65 +1,65 @@
 {
-  "title": "Diario",
-  "openLogbook": "Abrir diario",
-  "continueToLogbook": "Continuar al diario",
-  "loading": "Cargando tus sesiones de práctica...",
-  "empty": "Aún no hay entradas de práctica. ¡Comienza a registrar tu viaje musical!",
-  "noResults": "No hay entradas que coincidan con tu búsqueda.",
-  "searchPlaceholder": "Buscar entradas...",
-  "syncStatus": {
-    "synced": "Sincronizado",
-    "localOnly": "Almacenamiento local"
-  },
-  "entry": {
-    "addEntry": "Añadir entrada",
-    "addFirstEntry": "Añadir tu primera entrada",
-    "saveEntry": "Guardar entrada",
-    "updateEntry": "Actualizar entrada",
-    "deleteEntry": "Eliminar entrada",
-    "editEntry": "Editar entrada",
-    "duration": "Duración (minutos)",
-    "durationPlaceholder": "30",
-    "type": "Tipo",
-    "pieces": "Piezas",
-    "notes": "Notas",
-    "notesPlaceholder": "¿En qué trabajaste? ¿Alguna observación?",
-    "addPiece": "Añadir pieza",
-    "pieceTitle": "Título de la pieza",
-    "composer": "Compositor",
-    "entry_one": "{{count}} entrada",
-    "entry_other": "{{count}} entradas",
-    "mood": "¿Cómo te fue?",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
-    "foundEntries": "Se encontraron {{count}} entradas",
-    "techniques": "Técnicas",
-    "practiceDate": "Fecha de práctica",
-    "successAdded": "¡Entrada de práctica agregada exitosamente!",
-    "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
-    "piecesNote": "El tiempo de práctica se dividirá equitativamente entre las piezas",
-    "maxPiecesReached": "Máximo 3 piezas por entrada"
-  },
-  "filters": {
-    "last7Days": "Últimos 7 días",
-    "last30Days": "Últimos 30 días",
-    "thisMonth": "Este mes",
-    "lastMonth": "Mes pasado",
-    "allTime": "Todo el tiempo"
-  },
-  "timeline": {
-    "week": "Semana {{number}}",
-    "month": "{{month}}",
-    "year": "{{year}}"
-  },
-  "mood": {
-    "frustrated": "Frustrado",
-    "neutral": "Neutral",
-    "satisfied": "Satisfecho",
-    "excited": "Emocionado"
-  },
+  "autoTracked": "Rastreado automáticamente desde la práctica de partituras",
   "autocomplete": {
     "offline": "Sin conexión - mostrando tu historial"
   },
-  "viewScore": "Ver partitura",
+  "continueToLogbook": "Continuar al diario",
+  "empty": "Aún no hay entradas de práctica. ¡Comienza a registrar tu viaje musical!",
+  "entry": {
+    "addEntry": "Añadir entrada",
+    "addFirstEntry": "Añadir tu primera entrada",
+    "addPiece": "Añadir pieza",
+    "composer": "Compositor",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta entrada?",
+    "deleteEntry": "Eliminar entrada",
+    "duration": "Duración (minutos)",
+    "durationPlaceholder": "30",
+    "editEntry": "Editar entrada",
+    "entry_one": "{{count}} entrada",
+    "entry_other": "{{count}} entradas",
+    "foundEntries": "Se encontraron {{count}} entradas",
+    "maxPiecesReached": "Máximo 3 piezas por entrada",
+    "mood": "¿Cómo te fue?",
+    "notes": "Notas",
+    "notesPlaceholder": "¿En qué trabajaste? ¿Alguna observación?",
+    "pieceTitle": "Título de la pieza",
+    "pieces": "Piezas",
+    "piecesNote": "El tiempo de práctica se dividirá equitativamente entre las piezas",
+    "practiceDate": "Fecha de práctica",
+    "saveEntry": "Guardar entrada",
+    "successAdded": "¡Entrada de práctica agregada exitosamente!",
+    "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
+    "techniques": "Técnicas",
+    "type": "Tipo",
+    "updateEntry": "Actualizar entrada"
+  },
+  "filters": {
+    "allTime": "Todo el tiempo",
+    "last30Days": "Últimos 30 días",
+    "last7Days": "Últimos 7 días",
+    "lastMonth": "Mes pasado",
+    "thisMonth": "Este mes"
+  },
   "linkedScore": "Partitura vinculada",
-  "autoTracked": "Rastreado automáticamente desde la práctica de partituras"
+  "loading": "Cargando tus sesiones de práctica...",
+  "mood": {
+    "excited": "Emocionado",
+    "frustrated": "Frustrado",
+    "neutral": "Neutral",
+    "satisfied": "Satisfecho"
+  },
+  "noResults": "No hay entradas que coincidan con tu búsqueda.",
+  "openLogbook": "Abrir diario",
+  "searchPlaceholder": "Buscar entradas...",
+  "syncStatus": {
+    "localOnly": "Almacenamiento local",
+    "synced": "Sincronizado"
+  },
+  "timeline": {
+    "month": "{{month}}",
+    "week": "Semana {{number}}",
+    "year": "{{year}}"
+  },
+  "title": "Diario",
+  "viewScore": "Ver partitura"
 }

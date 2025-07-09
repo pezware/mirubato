@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useAuthStore } from '../stores/authStore'
-import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
+import EnhancedReports from '../components/practice-reports/EnhancedReports'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
 
@@ -36,13 +36,13 @@ export default function LogbookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100">
+    <div className="min-h-screen bg-morandi-stone-50">
       <UnifiedHeader
         currentPage="logbook"
         onSignInClick={() => setShowLoginForm(true)}
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Error Display */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
@@ -62,7 +62,7 @@ export default function LogbookPage() {
         )}
 
         {/* Reports Section */}
-        <EnhancedPracticeReports />
+        <EnhancedReports />
 
         {/* Login Modal */}
         {showLoginForm && !isAuthenticated && (

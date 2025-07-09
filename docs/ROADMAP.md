@@ -168,6 +168,40 @@
 
 **Expected Outcome**: More polished, professional-looking application with better mobile experience. ✅ ACHIEVED
 
+## Priority 1.5: Theme System Implementation (1 week)
+
+### Goal: Implement proper dark/light/system theme switcher
+
+**Current Status**
+
+- App currently forced to light theme via CSS override
+- UI components have dark mode classes but no control mechanism
+- System preference detection causes inconsistent behavior
+
+**Implementation Plan**
+
+- [ ] Configure Tailwind for manual dark mode control (`darkMode: 'class'`)
+- [ ] Create theme store using Zustand with persistence
+- [ ] Add theme switcher UI component in header
+- [ ] Support three modes: Light, Dark, System (auto)
+- [ ] Remove CSS override forcing light theme
+- [ ] Ensure all UI components respect theme preference
+- [ ] Add smooth theme transition animations
+- [ ] Test across all pages and modals
+
+**Technical Details**
+
+```typescript
+// Theme store structure
+interface ThemeStore {
+  theme: 'light' | 'dark' | 'system'
+  effectiveTheme: 'light' | 'dark' // Computed based on system preference
+  setTheme: (theme: Theme) => void
+}
+```
+
+**Expected Outcome**: Users can choose their preferred theme, improving accessibility and user satisfaction.
+
 ## Priority 2: E2E Testing with Playwright (2-3 weeks)
 
 ### Goal: Comprehensive automated testing coverage

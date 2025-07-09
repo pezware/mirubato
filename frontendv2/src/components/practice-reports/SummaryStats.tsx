@@ -47,7 +47,7 @@ export function SummaryStats({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="summary-stats">
       {/* Summary Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-morandi-stone-50 rounded-lg p-3">

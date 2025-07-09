@@ -1,65 +1,65 @@
 {
-  "title": "練習日誌",
-  "openLogbook": "開啟練習日誌",
-  "continueToLogbook": "繼續至練習日誌",
-  "loading": "正在載入您的練習記錄...",
-  "empty": "尚無練習記錄。開始記錄您的音樂旅程吧！",
-  "noResults": "沒有符合搜尋條件的記錄。",
-  "searchPlaceholder": "搜尋記錄...",
-  "syncStatus": {
-    "synced": "已同步",
-    "localOnly": "本地儲存"
-  },
-  "entry": {
-    "addEntry": "新增記錄",
-    "addFirstEntry": "新增您的第一筆記錄",
-    "saveEntry": "儲存記錄",
-    "updateEntry": "更新記錄",
-    "deleteEntry": "刪除記錄",
-    "editEntry": "編輯記錄",
-    "duration": "時長（分鐘）",
-    "durationPlaceholder": "30",
-    "type": "類型",
-    "pieces": "曲目",
-    "notes": "筆記",
-    "notesPlaceholder": "您練習了什麼？有什麼觀察？",
-    "addPiece": "新增曲目",
-    "pieceTitle": "曲目名稱",
-    "composer": "作曲家",
-    "entry_one": "{{count}} 筆記錄",
-    "entry_other": "{{count}} 筆記錄",
-    "mood": "練習感受如何？",
-    "confirmDelete": "您確定要刪除這筆記錄嗎？",
-    "foundEntries": "找到 {{count}} 筆記錄",
-    "techniques": "技巧",
-    "practiceDate": "練習日期",
-    "successAdded": "練習記錄新增成功！",
-    "successUpdated": "練習記錄更新成功！",
-    "piecesNote": "練習時間將平均分配給各曲目",
-    "maxPiecesReached": "每筆記錄最多3個曲目"
-  },
-  "filters": {
-    "last7Days": "最近 7 天",
-    "last30Days": "最近 30 天",
-    "thisMonth": "本月",
-    "lastMonth": "上個月",
-    "allTime": "全部時間"
-  },
-  "timeline": {
-    "week": "第 {{number}} 週",
-    "month": "{{month}}",
-    "year": "{{year}}"
-  },
-  "mood": {
-    "frustrated": "沮喪",
-    "neutral": "一般",
-    "satisfied": "滿意",
-    "excited": "興奮"
-  },
+  "autoTracked": "從樂譜練習自動追蹤",
   "autocomplete": {
     "offline": "離線模式 - 顯示您的歷史記錄"
   },
-  "viewScore": "查看樂譜",
+  "continueToLogbook": "繼續至練習日誌",
+  "empty": "尚無練習記錄。開始記錄您的音樂旅程吧！",
+  "entry": {
+    "addEntry": "新增記錄",
+    "addFirstEntry": "新增您的第一筆記錄",
+    "addPiece": "新增曲目",
+    "composer": "作曲家",
+    "confirmDelete": "您確定要刪除這筆記錄嗎？",
+    "deleteEntry": "刪除記錄",
+    "duration": "時長（分鐘）",
+    "durationPlaceholder": "30",
+    "editEntry": "編輯記錄",
+    "entry_one": "{{count}} 筆記錄",
+    "entry_other": "{{count}} 筆記錄",
+    "foundEntries": "找到 {{count}} 筆記錄",
+    "maxPiecesReached": "每筆記錄最多3個曲目",
+    "mood": "練習感受如何？",
+    "notes": "筆記",
+    "notesPlaceholder": "您練習了什麼？有什麼觀察？",
+    "pieceTitle": "曲目名稱",
+    "pieces": "曲目",
+    "piecesNote": "練習時間將平均分配給各曲目",
+    "practiceDate": "練習日期",
+    "saveEntry": "儲存記錄",
+    "successAdded": "練習記錄新增成功！",
+    "successUpdated": "練習記錄更新成功！",
+    "techniques": "技巧",
+    "type": "類型",
+    "updateEntry": "更新記錄"
+  },
+  "filters": {
+    "allTime": "全部時間",
+    "last30Days": "最近 30 天",
+    "last7Days": "最近 7 天",
+    "lastMonth": "上個月",
+    "thisMonth": "本月"
+  },
   "linkedScore": "關聯的樂譜",
-  "autoTracked": "從樂譜練習自動追蹤"
+  "loading": "正在載入您的練習記錄...",
+  "mood": {
+    "excited": "興奮",
+    "frustrated": "沮喪",
+    "neutral": "一般",
+    "satisfied": "滿意"
+  },
+  "noResults": "沒有符合搜尋條件的記錄。",
+  "openLogbook": "開啟練習日誌",
+  "searchPlaceholder": "搜尋記錄...",
+  "syncStatus": {
+    "localOnly": "本地儲存",
+    "synced": "已同步"
+  },
+  "timeline": {
+    "month": "{{month}}",
+    "week": "第 {{number}} 週",
+    "year": "{{year}}"
+  },
+  "title": "練習日誌",
+  "viewScore": "查看樂譜"
 }

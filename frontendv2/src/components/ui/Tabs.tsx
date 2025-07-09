@@ -5,6 +5,7 @@ interface Tab {
   id: string
   label: string
   icon?: React.ReactNode
+  shortLabel?: string
 }
 
 interface TabsProps {
@@ -22,20 +23,29 @@ export const Tabs: React.FC<TabsProps> = ({
 }) => {
   return (
     <div className={cn('border-b border-morandi-stone-200', className)}>
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <nav
+        className="-mb-px flex space-x-2 sm:space-x-4 md:space-x-8 overflow-x-auto scrollbar-hide"
+        aria-label="Tabs"
+      >
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
+            data-testid={`${tab.id}-tab`}
             className={cn(
-              'group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+              'group inline-flex items-center py-2 sm:py-3 md:py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0',
               activeTab === tab.id
                 ? 'border-morandi-purple-400 text-morandi-purple-600'
                 : 'border-transparent text-morandi-stone-500 hover:text-morandi-stone-700 hover:border-morandi-stone-300'
             )}
           >
-            {tab.icon && <span className="mr-2">{tab.icon}</span>}
-            {tab.label}
+            {tab.icon && (
+              <span className="mr-1 sm:mr-2 flex-shrink-0">{tab.icon}</span>
+            )}
+            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="sm:hidden">
+              {tab.shortLabel || tab.label.split(' ')[0]}
+            </span>
           </button>
         ))}
       </nav>

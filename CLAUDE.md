@@ -53,8 +53,6 @@ mirubato/
 │   └── wrangler.toml  # All environments defined here
 ├── scores/            # Scores service → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
-└── config/
-    └── environments.json  # Domain and team configuration
 ```
 
 ### Local Development Architecture
@@ -87,13 +85,14 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 
 ### Common Issues
 
-| Problem                  | See DEBUG.md Section         |
-| ------------------------ | ---------------------------- |
-| VexFlow "Too Many Ticks" | Known Issues #1              |
-| GraphQL 500 errors       | Known Issues #2              |
-| Mobile audio issues      | Known Issues #6              |
-| Type misalignment        | Common Development Issues #1 |
-| Memory leaks             | Common Development Issues #4 |
+| Problem                              | See DEBUG.md Section                         |
+| ------------------------------------ | -------------------------------------------- |
+| VexFlow "Too Many Ticks"             | Known Issues #1                              |
+| GraphQL 500 errors                   | Known Issues #2                              |
+| Mobile audio issues                  | Known Issues #6                              |
+| Type misalignment                    | Common Development Issues #1                 |
+| Memory leaks                         | Common Development Issues #4                 |
+| Chart.js "controller not registered" | Ensure chartSetup.ts is imported in main.tsx |
 
 ## 📋 Development Checklist
 
@@ -173,16 +172,17 @@ When creating or updating UI components:
 
 ### Technical Debt (Ongoing)
 
-1. **Type Alignment** (IN PROGRESS)
-   - Unify types across backend/frontend/shared
-   - Setup GraphQL Code Generator
+1. **Type Alignment** (COMPLETED)
+   - ✅ Chart.js components properly typed without `any`
+   - ✅ Using ChartData<T>, ChartDataset<T>, TooltipItem<ChartType>
+   - ✅ Extended ChartOptions interface for all features
    - Remove duplicate type definitions
 
 2. **Code Quality**
    - Remove console.log statements
-   - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
+   - ✅ EnhancedReports.tsx - New modular reporting system with 4 view components
    - ✅ Auto-logging module added for reusable practice tracking across features
-   - Replace `any` types with proper types
+   - ✅ Chart.js visualization components properly typed
    - Continue refactoring ~150 files still using native buttons
 
 ### Core Technologies
@@ -192,6 +192,10 @@ When creating or updating UI components:
   - Always use Button, Modal, Card, Input, Select, Toast components
   - Import from `@/components/ui`
   - See `frontendv2/docs/COMPONENT-LIBRARY.md` for usage
+- **Data Visualization**: Chart.js v4.4.9 + react-chartjs-2 v5.3.0
+  - Properly typed with ChartData<T>, ChartDataset<T>, TooltipItem<ChartType>
+  - Custom chart components in `src/components/practice-reports/visualizations/charts/`
+  - No `any` types - use proper Chart.js generics
 - **API**: Cloudflare Workers + Hono + D1 (SQLite) + REST
 - **Auth**: Magic links + Google OAuth + JWT
 - **Music**: VexFlow.js (notation) + Tone.js (audio)
@@ -287,6 +291,113 @@ function MyPracticeComponent() {
 - TypeScript support with comprehensive types
 - Integrated with Metronome and Scorebook features
 
+### Enhanced Reporting UI (July 2025)
+
+The enhanced reporting UI provides comprehensive data visualization and filtering for practice data with a modular architecture:
+
+**IMPORTANT - Chart.js Setup:**
+
+Chart.js controllers must be registered globally before any chart components are rendered. This is handled automatically in `src/utils/chartSetup.ts` which is imported in `main.tsx`:
+
+```typescript
+// src/utils/chartSetup.ts - Registers all Chart.js components globally
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  RadialLinearScale,
+  TimeScale,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+)
+```
+
+This prevents "controller not registered" errors in production builds. The setup must happen before any components load.
+
+**Key Components:**
+
+```typescript
+// Main orchestrator component
+import EnhancedReports from '@/components/practice-reports/EnhancedReports'
+
+// View components
+import OverviewView from '@/components/practice-reports/views/OverviewView'
+import AnalyticsView from '@/components/practice-reports/views/AnalyticsView'
+import DataTableView from '@/components/practice-reports/views/DataTableView'
+import PiecesView from '@/components/practice-reports/views/PiecesView'
+
+// Chart components with proper TypeScript types
+import { HeatmapCalendar } from '@/components/practice-reports/visualizations/charts/HeatmapCalendar'
+import { PracticeTrendChart } from '@/components/practice-reports/visualizations/charts/PracticeTrendChart'
+import { DistributionPie } from '@/components/practice-reports/visualizations/charts/DistributionPie'
+import { ComparativeChart } from '@/components/practice-reports/visualizations/charts/ComparativeChart'
+import { ProgressBar } from '@/components/practice-reports/visualizations/charts/ProgressBar'
+
+// Advanced features
+import { FilterBuilder } from '@/components/practice-reports/advanced/FilterBuilder'
+import { GroupingPanel } from '@/components/practice-reports/advanced/GroupingPanel'
+import { SortingPanel } from '@/components/practice-reports/advanced/SortingPanel'
+```
+
+**Proper Chart.js Typing Pattern:**
+
+```typescript
+// Always use proper generics, never 'any'
+const chartData = useMemo<ChartData<'line'>>(() => { ... })
+const datasets: ChartDataset<'bar', number[]>[] = [...]
+
+// Tooltip callbacks with proper types
+tooltip: {
+  callbacks: {
+    label: (context: TooltipItem<'pie'>) => {
+      // Type-safe access to context properties
+    }
+  }
+}
+
+// For borderDash and other extended properties
+datasets.push({
+  ...datasetConfig,
+  borderDash: [5, 5],
+} as ChartDataset<'line', number[]>)
+```
+
+**Features:**
+
+- **Modular Views**:
+  - Overview: Practice streaks, calendar heatmap, trend charts, distributions
+  - Analytics: Advanced filtering, grouping, sorting with trend analysis
+  - Data Table: Grouped data view with export capabilities
+  - Pieces: Piece and composer-specific analytics
+- **Advanced Filtering**: FilterBuilder with complex criteria and presets
+- **Data Visualization**: Line, bar, pie, donut charts, calendar heatmap
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Export Options**: CSV and JSON export for all data
+- **Performance**: Caching system with `reportsCacheManager`
+- **Type Safety**: Fully typed without any `any` assertions
+- **State Management**: Centralized `reportingStore` using Zustand
+
 ### API Development Workflow
 
 **IMPORTANT**: The API uses REST endpoints with TypeScript interfaces for type safety.
@@ -369,6 +480,124 @@ npm run db:migrate:production       # Production environment
 ```
 
 **Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
+
+## 🌐 Internationalization (i18n) & Localization (l10n)
+
+### Supported Languages
+
+- **English (en)** - Reference language
+- **Spanish (es)**
+- **French (fr)**
+- **German (de)**
+- **Traditional Chinese (zh-TW)**
+- **Simplified Chinese (zh-CN)**
+
+### i18n Commands
+
+```bash
+# Check translation completeness
+npm run validate:i18n
+
+# Sync missing keys from English reference
+npm run sync:i18n
+
+# Sync with alphabetical sorting
+npm run i18n:fix
+
+# Advanced options
+npm run sync:i18n -- --dry-run         # Preview changes
+npm run sync:i18n -- --remove-extra    # Remove non-reference keys
+npm run sync:i18n -- --namespace auth  # Target specific namespace
+```
+
+### Translation Workflow
+
+1. **Before adding new UI text**: Always use translation keys
+
+   ```tsx
+   // ❌ Bad
+   <Button>Click me</Button>
+
+   // ✅ Good
+   <Button>{t('common:button.click')}</Button>
+   ```
+
+2. **After adding new keys**:
+
+   ```bash
+   # Add to English file first
+   # Then sync to other languages
+   npm run sync:i18n
+
+   # Check completeness
+   npm run validate:i18n
+   ```
+
+3. **Translation Structure**:
+   ```
+   src/locales/
+   ├── en/          # Reference language
+   │   ├── auth.json
+   │   ├── common.json
+   │   ├── errors.json
+   │   ├── logbook.json
+   │   ├── reports.json
+   │   ├── scorebook.json
+   │   └── toolbox.json
+   ├── es/          # Spanish
+   ├── fr/          # French
+   ├── de/          # German
+   ├── zh-TW/       # Traditional Chinese
+   └── zh-CN/       # Simplified Chinese
+   ```
+
+### Key Guidelines
+
+- **Namespace Usage**:
+  - `common`: Shared UI elements, buttons, labels
+  - `auth`: Authentication related
+  - `errors`: Error messages
+  - `logbook`: Practice log features
+  - `reports`: Analytics and reporting
+  - `scorebook`: Score/sheet music features
+  - `toolbox`: Practice tools (metronome, etc.)
+
+- **Key Naming**:
+
+  ```json
+  {
+    "section": {
+      "title": "Section Title",
+      "button": {
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    }
+  }
+  ```
+
+- **Interpolation**:
+  ```json
+  {
+    "welcome": "Welcome, {{name}}!",
+    "items_count": "{{count}} items"
+  }
+  ```
+
+### Common Issues
+
+1. **Missing keys in English**: Run `fix-english-reference.cjs` to identify and add
+2. **Incomplete translations**: Look for `[NEEDS TRANSLATION]` markers
+3. **Consistency**: Use validation tool to ensure all languages have same keys
+
+### i18n Scripts
+
+- `validate-translations.cjs`: Check completeness across all languages
+- `sync-translations.cjs`: Synchronize missing keys
+- `translate-missing.cjs`: Helper for bulk translations
+- `fix-english-reference.cjs`: Fix incomplete English reference
+
+See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
 
 ## 🧪 Testing Guidelines
 

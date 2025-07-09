@@ -63,6 +63,34 @@ export class ReportsCacheManager {
   }
 
   /**
+   * Generic get method for any cache key
+   */
+  get(key: string): unknown | null {
+    const entry = this.cache.get(key)
+    if (entry && this.isValid(entry)) {
+      return entry.data
+    }
+
+    // Clean up expired entry
+    if (entry) {
+      this.cache.delete(key)
+    }
+
+    return null
+  }
+
+  /**
+   * Generic set method for any cache key
+   */
+  set(key: string, data: unknown, ttl?: number): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttl || this.config.analytics.ttl,
+    })
+  }
+
+  /**
    * Get analytics data from cache
    */
   getAnalytics(

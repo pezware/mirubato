@@ -1,95 +1,95 @@
 {
-  "title": "工具箱",
-  "metronome": {
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "拍号",
-    "volume": "音量",
-    "presetPatterns": "预设模式",
-    "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",
-    "sounds": {
-      "accent": "重音",
-      "click": "点击",
-      "woodblock": "wood block",
-      "shaker": "shaker",
-      "triangle": "三角铁"
-    },
-    "patterns": {
-      "basic": {
-        "name": "Basic Beat",
-        "description": "标准4/4拍，第1拍重音"
-      },
-      "backbeat": {
-        "name": "Backbeat (2 & 4)",
-        "description": "第2、4拍重音"
-      },
-      "waltz": {
-        "name": "Waltz (3/4)",
-        "description": "强-弱-弱模式"
-      },
-      "clave32": {
-        "name": "3-2 Clave",
-        "description": "拉丁克拉维模式"
-      },
-      "shuffle": {
-        "name": "Shuffle/Swing",
-        "description": "三连音感觉，中间音符静音"
-      },
-      "sixeight": {
-        "name": "6/8 Time",
-        "description": "两个附点四分音符感觉"
-      },
-      "bossa": {
-        "name": "Bossa Nova",
-        "description": "巴西节奏模式"
-      },
-      "subdivisions": {
-        "name": "Subdivisions",
-        "description": "八分音符和十六分音符练习"
-      },
-      "offbeat": {
-        "name": "Off-beat Practice",
-        "description": "仅在反拍点击"
-      },
-      "progressive": {
-        "name": "Progressive Accent",
-        "description": "移动重音模式"
-      }
-    }
-  },
+  "backToLogbook": "返回日志",
   "counter": {
-    "title": "练习计数器",
-    "mode": {
-      "up": "递增计数",
-      "down": "递减计数"
+    "button": {
+      "finish": "完成",
+      "save_to_log": "保存到日志",
+      "start": "开始",
+      "start_new": "重新开始"
     },
+    "log_summary": "使用计数器练习：{{time}}内完成{{reps}}次重复",
+    "mode": {
+      "down": "递减计数",
+      "up": "递增计数"
+    },
+    "practice_title": "重复练习",
+    "save_failed": "保存练习记录失败",
+    "saved_to_log": "练习记录已保存到日志",
     "start_at": {
       "placeholder": "起始值"
     },
-    "button": {
-      "start": "开始",
-      "finish": "完成",
-      "save_to_log": "保存到日志",
-      "start_new": "重新开始"
-    },
     "summary": {
+      "duration_column": "时长",
+      "rep_column": "次数",
       "title": "练习总结",
       "total_reps": "总重复次数",
-      "total_time": "总时间",
-      "rep_column": "次数",
-      "duration_column": "时长"
+      "total_time": "总时间"
     },
-    "log_summary": "使用计数器练习：{{time}}内完成{{reps}}次重复",
-    "practice_title": "重复练习",
-    "saved_to_log": "练习记录已保存到日志",
-    "save_failed": "保存练习记录失败"
+    "title": "练习计数器"
   },
-  "tabs": {
-    "metronome": "节拍器",
-    "counter": "练习计数器"
+  "metronome": {
+    "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",
+    "patterns": {
+      "backbeat": {
+        "description": "第2、4拍重音",
+        "name": "Backbeat (2 & 4)"
+      },
+      "basic": {
+        "description": "标准4/4拍，第1拍重音",
+        "name": "Basic Beat"
+      },
+      "bossa": {
+        "description": "巴西节奏模式",
+        "name": "Bossa Nova"
+      },
+      "clave32": {
+        "description": "拉丁克拉维模式",
+        "name": "3-2 Clave"
+      },
+      "offbeat": {
+        "description": "仅在反拍点击",
+        "name": "Off-beat Practice"
+      },
+      "progressive": {
+        "description": "移动重音模式",
+        "name": "Progressive Accent"
+      },
+      "shuffle": {
+        "description": "三连音感觉，中间音符静音",
+        "name": "Shuffle/Swing"
+      },
+      "sixeight": {
+        "description": "两个附点四分音符感觉",
+        "name": "6/8 Time"
+      },
+      "subdivisions": {
+        "description": "八分音符和十六分音符练习",
+        "name": "Subdivisions"
+      },
+      "waltz": {
+        "description": "强-弱-弱模式",
+        "name": "Waltz (3/4)"
+      }
+    },
+    "presetPatterns": "预设模式",
+    "sounds": {
+      "accent": "重音",
+      "click": "点击",
+      "shaker": "shaker",
+      "triangle": "三角铁",
+      "woodblock": "wood block"
+    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "拍号",
+    "volume": "音量"
   },
   "syncStatus": {
-    "synced": "已同步",
-    "localOnly": "本地存储"
+    "localOnly": "本地存储",
+    "synced": "已同步"
   },
-  "backToLogbook": "返回日志"
+  "tabs": {
+    "counter": "练习计数器",
+    "metronome": "节拍器"
+  },
+  "title": "工具箱"
 }
