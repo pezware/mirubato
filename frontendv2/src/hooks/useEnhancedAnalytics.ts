@@ -401,6 +401,9 @@ function formatGroupLabel(key: string, field: string): string {
     if (match) {
       return `Week ${match[2]}, ${match[1]}`
     }
+  } else if (field === 'date:year') {
+    // Handle year keys - just return the year string
+    return key
   } else if (field.startsWith('date:')) {
     const date = new Date(key)
     if (!isNaN(date.getTime())) {

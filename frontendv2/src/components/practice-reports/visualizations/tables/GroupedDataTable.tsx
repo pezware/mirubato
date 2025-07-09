@@ -67,16 +67,22 @@ export function GroupedDataTable({
               variant="ghost"
               size="sm"
               onClick={() => {
-                // Expand all groups
-                const allKeys = new Set<string>()
+                // Expand all groups and entries
+                const allGroupKeys = new Set<string>()
+                const allEntryKeys = new Set<string>()
                 const collectKeys = (groups: GroupedData[]) => {
                   groups.forEach(g => {
-                    allKeys.add(g.key)
+                    allGroupKeys.add(g.key)
+                    // Add all entry IDs from this group
+                    g.entries.forEach(entry => {
+                      allEntryKeys.add(entry.id)
+                    })
                     if (g.children) collectKeys(g.children)
                   })
                 }
                 collectKeys(data)
-                setExpandedGroups(allKeys)
+                setExpandedGroups(allGroupKeys)
+                setExpandedEntries(allEntryKeys)
               }}
             >
               {t('reports:table.expandAll')}
@@ -84,7 +90,10 @@ export function GroupedDataTable({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setExpandedGroups(new Set())}
+              onClick={() => {
+                setExpandedGroups(new Set())
+                setExpandedEntries(new Set())
+              }}
             >
               {t('reports:table.collapseAll')}
             </Button>

@@ -135,6 +135,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
           formatDuration={formatDuration}
           selectedPiece={selectedPiece}
           selectedComposer={selectedComposer}
+          setSelectedPiece={setSelectedPiece}
         />
       </div>
 
