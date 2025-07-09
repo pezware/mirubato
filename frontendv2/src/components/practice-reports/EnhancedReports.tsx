@@ -135,20 +135,34 @@ export default function EnhancedReports() {
   }
 
   return (
-    <div className="mb-6">
-      <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-        {/* Navigation Tabs */}
-        <ReportsTabs
-          reportView={reportView}
-          onViewChange={setReportView}
-          onOverviewClick={() => {
-            setReportView('overview')
-            clearFilters()
-          }}
-        />
+    <div>
+      {/* Navigation Tabs - Outside the white box to match Toolbox */}
+      <ReportsTabs
+        reportView={reportView}
+        onViewChange={setReportView}
+        onOverviewClick={() => {
+          setReportView('overview')
+          clearFilters()
+        }}
+      />
 
-        {/* Export Controls */}
-        {reportView !== 'newEntry' && (
+      {/* Main Content Area */}
+      {reportView === 'newEntry' ? (
+        <Suspense
+          fallback={
+            <div className="p-6">
+              <LoadingSkeleton className="h-96" />
+            </div>
+          }
+        >
+          <ManualEntryForm
+            onClose={() => setReportView('overview')}
+            onSave={() => setReportView('overview')}
+          />
+        </Suspense>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
+          {/* Export Controls */}
           <div className="px-4 py-2 border-b border-morandi-stone-200 bg-morandi-sand-50">
             <div className="flex items-center justify-between">
               <div className="text-sm text-morandi-stone-600">
@@ -179,21 +193,21 @@ export default function EnhancedReports() {
               </div>
             </div>
           </div>
-        )}
 
-        {/* Main Content Area */}
-        <div className="relative">
-          <Suspense
-            fallback={
-              <div className="p-6">
-                <LoadingSkeleton className="h-96" />
-              </div>
-            }
-          >
-            {renderView()}
-          </Suspense>
+          {/* View Content */}
+          <div className="relative">
+            <Suspense
+              fallback={
+                <div className="p-6">
+                  <LoadingSkeleton className="h-96" />
+                </div>
+              }
+            >
+              {renderView()}
+            </Suspense>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

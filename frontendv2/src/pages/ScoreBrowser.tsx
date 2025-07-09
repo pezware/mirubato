@@ -16,7 +16,8 @@ import ScoreListItem from '../components/score/ScoreListItem'
 import { useAuthStore } from '../stores/authStore'
 import { cn } from '../utils/cn'
 import Button from '../components/ui/Button'
-import { Plus } from 'lucide-react'
+import { Tabs } from '../components/ui'
+import { Plus, BookOpen, Folder, User } from 'lucide-react'
 
 type TabView = 'scores' | 'publicCollections' | 'myCollections'
 
@@ -373,20 +374,45 @@ export default function ScoreBrowserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100">
+    <div className="min-h-screen bg-morandi-stone-50">
       <UnifiedHeader
         currentPage="scorebook"
         onSignInClick={() => setShowSignInModal(true)}
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
+        <Tabs
+          tabs={[
+            {
+              id: 'scores',
+              label: t('scorebook:scores', 'Scores'),
+              icon: <BookOpen size={20} />,
+            },
+            {
+              id: 'publicCollections',
+              label: t('scorebook:publicCollections', 'Public Collections'),
+              icon: <Folder size={20} />,
+            },
+            ...(isAuthenticated
+              ? [
+                  {
+                    id: 'myCollections',
+                    label: t('scorebook:myCollections', 'My Collections'),
+                    icon: <User size={20} />,
+                  },
+                ]
+              : []),
+          ]}
+          activeTab={tabView}
+          onTabChange={tabId => setTabView(tabId as TabView)}
+          className="mb-6"
+        />
+
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
-          {/* Header with Import Button */}
-          <div className="flex items-center justify-between px-4 md:px-6 pt-4">
-            <h1 className="text-xl font-semibold text-morandi-stone-800">
-              {t('scorebook:title', 'Scorebook')}
-            </h1>
-            {isAuthenticated && (
+          {/* Import Button - moved here after tabs */}
+          {isAuthenticated && tabView === 'scores' && (
+            <div className="flex items-center justify-end px-4 md:px-6 pt-4">
               <Button
                 onClick={() => setShowImportModal(true)}
                 size="sm"
@@ -396,47 +422,8 @@ export default function ScoreBrowserPage() {
                 <Plus className="w-4 h-4" />
                 {t('scorebook:importScore', 'Import Score')}
               </Button>
-            )}
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg">
-            <button
-              onClick={() => setTabView('scores')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                tabView === 'scores'
-                  ? 'bg-white text-morandi-stone-800 shadow-sm'
-                  : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-              )}
-            >
-              {t('scorebook:scores', 'Scores')}
-            </button>
-            <button
-              onClick={() => setTabView('publicCollections')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                tabView === 'publicCollections'
-                  ? 'bg-white text-morandi-stone-800 shadow-sm'
-                  : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-              )}
-            >
-              {t('scorebook:publicCollections', 'Public Collections')}
-            </button>
-            {isAuthenticated && (
-              <button
-                onClick={() => setTabView('myCollections')}
-                className={cn(
-                  'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                  tabView === 'myCollections'
-                    ? 'bg-white text-morandi-stone-800 shadow-sm'
-                    : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-                )}
-              >
-                {t('scorebook:myCollections', 'My Collections')}
-              </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Filters - only show for scores tab */}
           {tabView === 'scores' && (

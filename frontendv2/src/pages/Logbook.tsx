@@ -36,13 +36,13 @@ export default function LogbookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100">
+    <div className="min-h-screen bg-morandi-stone-50">
       <UnifiedHeader
         currentPage="logbook"
         onSignInClick={() => setShowLoginForm(true)}
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Error Display */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">

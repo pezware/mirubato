@@ -98,7 +98,7 @@ export default function ScorebookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100 flex flex-col">
+    <div className="min-h-screen bg-morandi-stone-50 flex flex-col">
       <UnifiedHeader
         currentPage="scorebook"
         onSignInClick={() => setShowSignInModal(true)}

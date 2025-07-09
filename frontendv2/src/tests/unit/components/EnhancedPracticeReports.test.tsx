@@ -246,9 +246,14 @@ describe('EnhancedReports', () => {
   it('should render the component with tabs', () => {
     render(<EnhancedReports />)
 
-    expect(screen.getByText('reports:tabs.overview')).toBeInTheDocument()
-    expect(screen.getByText('reports:tabs.pieces')).toBeInTheDocument()
-    expect(screen.getByText('reports:tabs.newEntry')).toBeInTheDocument()
+    // Use getAllByText since tabs now render both full and short labels
+    expect(screen.getAllByText('reports:tabs.overview').length).toBeGreaterThan(
+      0
+    )
+    expect(screen.getAllByText('reports:tabs.pieces').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('reports:tabs.newEntry').length).toBeGreaterThan(
+      0
+    )
   })
 
   it('should display practice statistics in overview tab', async () => {
@@ -281,7 +286,10 @@ describe('EnhancedReports', () => {
 
     // The calendar is now part of the lazy-loaded OverviewView
     // Instead of checking for specific calendar elements, we'll verify the view loaded
-    expect(screen.getByText('reports:tabs.overview')).toBeInTheDocument()
+    // Use getAllByText since tabs render both full and short labels
+    expect(screen.getAllByText('reports:tabs.overview').length).toBeGreaterThan(
+      0
+    )
   })
 
   it('should switch between tabs', async () => {
@@ -289,7 +297,7 @@ describe('EnhancedReports', () => {
 
     // Check that overview tab is active by default
     const overviewTab = screen.getByTestId('overview-tab')
-    expect(overviewTab).toHaveClass('bg-white')
+    expect(overviewTab).toHaveClass('border-morandi-purple-400')
 
     // Click on pieces tab
     const piecesTab = screen.getByTestId('pieces-tab')
@@ -297,15 +305,16 @@ describe('EnhancedReports', () => {
 
     // Wait for pieces view to load
     await waitFor(() => {
-      expect(piecesTab).toHaveClass('bg-white')
-      expect(overviewTab).not.toHaveClass('bg-white')
+      expect(piecesTab).toHaveClass('border-morandi-purple-400')
+      expect(overviewTab).not.toHaveClass('border-morandi-purple-400')
     })
   })
 
   it('should switch to pieces tab', async () => {
     render(<EnhancedReports />)
 
-    const piecesTab = screen.getByText('reports:tabs.pieces')
+    // Use getByTestId which is unique
+    const piecesTab = screen.getByTestId('pieces-tab')
     fireEvent.click(piecesTab)
 
     // Wait for the pieces view to load
@@ -330,15 +339,16 @@ describe('EnhancedReports', () => {
   it('should display export buttons', () => {
     render(<EnhancedReports />)
 
-    // Check that export buttons are present
-    expect(screen.getByText('reports:exportCSV')).toBeInTheDocument()
-    expect(screen.getByText('reports:exportJSON')).toBeInTheDocument()
+    // Check that export buttons are present (using data-testid for uniqueness)
+    expect(screen.getByTestId('export-csv-button')).toBeInTheDocument()
+    expect(screen.getByTestId('export-json-button')).toBeInTheDocument()
   })
 
   it('should switch to new entry tab and show form', async () => {
     render(<EnhancedReports />)
 
-    const newEntryTab = screen.getByText('reports:tabs.newEntry')
+    // Use getByTestId which is unique
+    const newEntryTab = screen.getByTestId('newEntry-tab')
     fireEvent.click(newEntryTab)
 
     // Wait for lazy loaded component
@@ -388,7 +398,7 @@ describe('EnhancedReports', () => {
 
     // Wait for analytics view to load
     await waitFor(() => {
-      expect(analyticsTab).toHaveClass('bg-white')
+      expect(analyticsTab).toHaveClass('border-morandi-purple-400')
     })
   })
 
@@ -421,7 +431,7 @@ describe('EnhancedReports', () => {
 
     render(<EnhancedReports />)
 
-    const exportJsonButton = screen.getByText('reports:exportJSON')
+    const exportJsonButton = screen.getByTestId('export-json-button')
     fireEvent.click(exportJsonButton)
 
     expect(mockClick).toHaveBeenCalled()
@@ -460,7 +470,7 @@ describe('EnhancedReports', () => {
 
     render(<EnhancedReports />)
 
-    const exportCsvButton = screen.getByText('reports:exportCSV')
+    const exportCsvButton = screen.getByTestId('export-csv-button')
     fireEvent.click(exportCsvButton)
 
     expect(mockClick).toHaveBeenCalled()
@@ -478,14 +488,14 @@ describe('EnhancedReports', () => {
 
     // Wait for data view to load
     await waitFor(() => {
-      expect(dataTab).toHaveClass('bg-white')
+      expect(dataTab).toHaveClass('border-morandi-purple-400')
     })
   })
 
   it('should switch to new entry tab', async () => {
     render(<EnhancedReports />)
 
-    const newEntryTab = screen.getByTestId('new-entry-tab')
+    const newEntryTab = screen.getByTestId('newEntry-tab')
     fireEvent.click(newEntryTab)
 
     // Wait for manual entry form to load
@@ -514,11 +524,11 @@ describe('EnhancedReports', () => {
     const piecesTab = screen.getByTestId('pieces-tab')
 
     // Overview tab should be active by default
-    expect(overviewTab).toHaveClass('bg-white')
+    expect(overviewTab).toHaveClass('border-morandi-purple-400')
 
     // Click pieces tab
     fireEvent.click(piecesTab)
-    expect(piecesTab).toHaveClass('bg-white')
+    expect(piecesTab).toHaveClass('border-morandi-purple-400')
   })
 
   it('should render all navigation tabs', () => {
@@ -529,6 +539,6 @@ describe('EnhancedReports', () => {
     expect(screen.getByTestId('pieces-tab')).toBeInTheDocument()
     expect(screen.getByTestId('analytics-tab')).toBeInTheDocument()
     expect(screen.getByTestId('data-tab')).toBeInTheDocument()
-    expect(screen.getByTestId('new-entry-tab')).toBeInTheDocument()
+    expect(screen.getByTestId('newEntry-tab')).toBeInTheDocument()
   })
 })

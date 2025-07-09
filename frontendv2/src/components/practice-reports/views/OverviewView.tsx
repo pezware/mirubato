@@ -140,7 +140,7 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
       {/* Practice Trend Chart */}
       <div className="w-full">
         <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
-          {t('reports:practiceTrend')}
+          {t('reports:charts.practiceTrend')}
         </h3>
         <PracticeTrendChart
           data={analytics.timeSeriesData || []}
