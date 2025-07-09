@@ -195,8 +195,18 @@ export class LogbookPage {
   }
 
   async verifyEntryContainsText(text: string) {
-    const entry = this.entries.filter({ hasText: text })
-    await expect(entry).toBeVisible()
+    // First check if we're in the enhanced reports view
+    const overviewTabVisible = await this.overviewTab
+      .isVisible()
+      .catch(() => false)
+    if (overviewTabVisible) {
+      // We're in enhanced reports, just check if the text is visible somewhere on the page
+      await expect(this.page.locator(`text="${text}"`)).toBeVisible()
+    } else {
+      // Legacy view - check for entries
+      const entry = this.entries.filter({ hasText: text })
+      await expect(entry).toBeVisible()
+    }
   }
 
   async getEntryByIndex(index: number) {

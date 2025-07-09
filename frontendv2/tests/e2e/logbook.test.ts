@@ -7,8 +7,10 @@ test.describe('Logbook', () => {
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
 
-    // Set up clean state
+    // Set up clean state - navigate first
     await page.goto('/')
+
+    // Clear entries after navigation
     await logbookPage.clearAllEntries()
 
     // Mock APIs to prevent flakiness

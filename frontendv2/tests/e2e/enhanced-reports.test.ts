@@ -7,13 +7,13 @@ test.describe('Enhanced Reports', () => {
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
 
-    // Clear any existing data
+    // Navigate directly to logbook page first
+    await page.goto('/logbook')
+
+    // Clear any existing data after navigation
     await page.evaluate(() => {
       localStorage.removeItem('mirubato:logbook:entries')
     })
-
-    // Navigate directly to logbook page
-    await page.goto('/logbook')
 
     // Create test data with various entries
     await test.step('Create test entries', async () => {
@@ -114,11 +114,17 @@ test.describe('Enhanced Reports', () => {
         await page.waitForTimeout(1000) // Give time for data to render
 
         // Check total practice time (30+45+60+20+35 = 190 minutes = 3h 10m)
-        await expect(page.locator('text=/3h\\s*10m/i')).toBeVisible()
+        await expect(
+          page
+            .locator('[data-testid="summary-stats"]')
+            .locator('text=/3h\\s*10m/i')
+        ).toBeVisible()
 
         // Check session count - look for "5 sessions" or just "5"
         await expect(
-          page.locator('text=/5\\s*(sessions?)?/i').first()
+          page
+            .locator('[data-testid="summary-stats"]')
+            .locator('text=/5\\s*(sessions?)?/i')
         ).toBeVisible()
       })
 
@@ -313,7 +319,11 @@ test.describe('Enhanced Reports', () => {
     test('statistics match actual data', async ({ page }) => {
       await test.step('Verify total practice time', async () => {
         // Total: 30+45+60+20+35 = 190 minutes = 3h 10m
-        await expect(page.locator('text=/3h\\s*10m/i')).toBeVisible()
+        await expect(
+          page
+            .locator('[data-testid="summary-stats"]')
+            .locator('text=/3h\\s*10m/i')
+        ).toBeVisible()
       })
 
       await test.step('Verify session count', async () => {

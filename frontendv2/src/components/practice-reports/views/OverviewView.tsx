@@ -7,6 +7,8 @@ import { DistributionPie } from '../visualizations/charts/DistributionPie'
 import { ProgressBar } from '../visualizations/charts/ProgressBar'
 import { SummaryStats } from '../SummaryStats'
 import { formatDuration } from '../../../utils/dateUtils'
+import { LogbookEntry } from '../../../types/logbook'
+import { formatDate } from '../../../utils/dateUtils'
 
 interface OverviewViewProps {
   analytics: EnhancedAnalyticsData
@@ -82,6 +84,16 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
     maxStreak = Math.max(maxStreak, tempStreak)
 
     return { currentStreak, maxStreak, totalDays: dates.size }
+  }, [analytics.filteredEntries])
+
+  // Get recent entries (last 5)
+  const recentEntries = useMemo(() => {
+    return [...analytics.filteredEntries]
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+      .slice(0, 5)
   }, [analytics.filteredEntries])
 
   return (
@@ -189,6 +201,50 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
                   },
                 ]}
               />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Entries */}
+      {recentEntries.length > 0 && (
+        <div>
+          <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+            {t('reports:recentEntries')}
+          </h3>
+          <div className="space-y-2">
+            {recentEntries.map(entry => (
+              <div
+                key={entry.id}
+                data-testid="logbook-entry"
+                className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-morandi-stone-200"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-morandi-stone-900">
+                        {entry.pieces && entry.pieces.length > 0
+                          ? entry.pieces.map(p => p.title).join(', ')
+                          : entry.type}
+                      </span>
+                      {entry.mood && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-morandi-purple-100 text-morandi-purple-700">
+                          {entry.mood.toLowerCase()}
+                        </span>
+                      )}
+                    </div>
+                    {entry.notes && (
+                      <p className="text-sm text-morandi-stone-600 line-clamp-2">
+                        {entry.notes}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-morandi-stone-500">
+                    <span>{formatDuration(entry.duration)}</span>
+                    <span>{formatDate(entry.timestamp)}</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>

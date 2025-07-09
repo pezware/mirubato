@@ -7,13 +7,13 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
 
-    // Clear any existing data
+    // Navigate to logbook page first
+    await page.goto('/logbook')
+
+    // Clear any existing data after navigation
     await page.evaluate(() => {
       localStorage.removeItem('mirubato:logbook:entries')
     })
-
-    // Navigate directly to logbook page
-    await page.goto('/logbook')
 
     // Create comprehensive test data
     await test.step('Create diverse test entries', async () => {
