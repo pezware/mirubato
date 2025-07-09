@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { ComparativeChart } from '../visualizations/charts/ComparativeChart'
 import { PracticeTrendChart } from '../visualizations/charts/PracticeTrendChart'
+import { DistributionPie } from '../visualizations/charts/DistributionPie'
 import { FilterBuilder } from '../advanced/FilterBuilder'
 import { GroupingPanel } from '../advanced/GroupingPanel'
 import { SortingPanel } from '../advanced/SortingPanel'
@@ -43,6 +44,61 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
 
       {/* Analytics Visualizations */}
       <div className="space-y-6">
+        {/* Practice Trend (from Overview) */}
+        <div>
+          <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+            {t('reports:analytics.practiceTrend')}
+          </h3>
+          <PracticeTrendChart
+            data={analytics.timeSeriesData || []}
+            period="day"
+          />
+        </div>
+
+        {/* Distribution Charts (from Overview & Pieces) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+              {t('reports:analytics.instrumentDistribution')}
+            </h3>
+            <DistributionPie
+              data={analytics.distributionData?.byInstrument || []}
+              type="instrument"
+            />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+              {t('reports:analytics.typeDistribution')}
+            </h3>
+            <DistributionPie
+              data={analytics.distributionData?.byType || []}
+              type="pie"
+            />
+          </div>
+        </div>
+
+        {/* Top Charts (from Pieces) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+              {t('reports:analytics.topPieces')}
+            </h3>
+            <DistributionPie
+              data={analytics.distributionData?.byPiece?.slice(0, 10) || []}
+              type="donut"
+            />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+              {t('reports:analytics.topComposers')}
+            </h3>
+            <DistributionPie
+              data={analytics.distributionData?.byComposer?.slice(0, 10) || []}
+              type="donut"
+            />
+          </div>
+        </div>
+
         {/* Trend Analysis */}
         <div>
           <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">

@@ -6,6 +6,7 @@ import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
+import { TechniqueSelector } from './logbook/TechniqueSelector'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -37,7 +38,9 @@ export default function ManualEntryForm({
   const [pieces, setPieces] = useState(
     entry?.pieces || [{ title: '', composer: '' }]
   )
-  const [techniques] = useState<string[]>(entry?.techniques || [])
+  const [techniques, setTechniques] = useState<string[]>(
+    entry?.techniques || []
+  )
   const [tags] = useState<string[]>(entry?.tags || [])
 
   // Date state - default to today or existing entry date
@@ -249,12 +252,25 @@ export default function ManualEntryForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {[
-              { value: 'PRACTICE', label: t('common:music.practice') },
-              { value: 'LESSON', label: t('common:music.lesson') },
-              { value: 'PERFORMANCE', label: t('common:music.performance') },
-              { value: 'REHEARSAL', label: t('common:music.rehearsal') },
+              {
+                value: 'PRACTICE',
+                label: t('logbook:entry.typeOptions.practice'),
+              },
+              { value: 'LESSON', label: t('logbook:entry.typeOptions.lesson') },
+              {
+                value: 'PERFORMANCE',
+                label: t('logbook:entry.typeOptions.performance'),
+              },
+              {
+                value: 'REHEARSAL',
+                label: t('logbook:entry.typeOptions.rehearsal'),
+              },
+              {
+                value: 'TECHNIQUE',
+                label: t('logbook:entry.typeOptions.technique'),
+              },
             ].map(option => (
               <button
                 key={option.value}
@@ -315,6 +331,15 @@ export default function ManualEntryForm({
             )}
           </div>
         </div>
+
+        {/* Technique Selection - Only show when type is TECHNIQUE */}
+        {type === 'TECHNIQUE' && (
+          <TechniqueSelector
+            selectedTechniques={techniques}
+            onTechniquesChange={setTechniques}
+            className="mt-4"
+          />
+        )}
 
         {/* Notes */}
         <div>

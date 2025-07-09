@@ -56,14 +56,21 @@ export function HeatmapCalendar({
     return { weeks: Array.from(weeks.values()), maxValue }
   }, [data, year])
 
-  // Month labels
+  // Month labels with proper positions
   const monthLabels = useMemo(() => {
     const labels = []
+    const startDate = startOfYear(new Date(year, 0, 1))
+
     for (let i = 0; i < 12; i++) {
-      const date = new Date(year, i, 1)
+      const firstDayOfMonth = new Date(year, i, 1)
+      const weeksSinceStart = Math.floor(
+        (firstDayOfMonth.getTime() - startDate.getTime()) /
+          (7 * 24 * 60 * 60 * 1000)
+      )
+
       labels.push({
-        month: format(date, 'MMM'),
-        week: getWeek(date),
+        month: format(firstDayOfMonth, 'MMM'),
+        position: weeksSinceStart * 13 + 8, // 13px per week (12px + 1px gap) + 8px offset
       })
     }
     return labels
@@ -92,19 +99,15 @@ export function HeatmapCalendar({
   return (
     <Card className={className} data-testid="heatmap-calendar">
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-morandi-stone-800 mb-4">
-          {t('reports:charts.practiceHeatmap', { year })}
-        </h3>
-
         <div className="overflow-x-auto">
           <div className="inline-block">
-            {/* Month labels */}
-            <div className="flex mb-2 ml-8">
+            {/* Month labels with proper alignment */}
+            <div className="relative h-6 mb-2">
               {monthLabels.map((label, i) => (
                 <div
                   key={i}
-                  className="text-xs text-morandi-stone-600"
-                  style={{ width: '52px' }}
+                  className="absolute text-xs text-morandi-stone-600"
+                  style={{ left: `${label.position}px` }}
                 >
                   {label.month}
                 </div>

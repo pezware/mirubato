@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
-import { DistributionPie } from '../visualizations/charts/DistributionPie'
-import { ComparativeChart } from '../visualizations/charts/ComparativeChart'
 import { PiecesStatistics } from '../PiecesStatistics'
 import { PieceComposerStats } from '../PieceComposerStats'
 import { useAutocomplete } from '../../../hooks/useAutocomplete'
@@ -101,30 +99,6 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
         />
       )}
 
-      {/* Distribution Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h3 className="text-lg font-semibold text-morandi-stone-700 mb-3">
-            {t('reports:topPieces')}
-          </h3>
-          <DistributionPie
-            data={filteredPieceStats.slice(0, 10)}
-            type="pie"
-            showLegend
-          />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-morandi-stone-700 mb-3">
-            {t('reports:topComposers')}
-          </h3>
-          <DistributionPie
-            data={analytics.distributionData?.byComposer.slice(0, 10) || []}
-            type="doughnut"
-            showLegend
-          />
-        </div>
-      </div>
-
       {/* Pieces Statistics Table */}
       <div>
         <h3 className="text-lg font-semibold text-morandi-stone-700 mb-3">
@@ -138,20 +112,6 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
           setSelectedPiece={setSelectedPiece}
         />
       </div>
-
-      {/* Practice Patterns by Piece */}
-      {analytics.comparativeData && selectedPiece && (
-        <div>
-          <h3 className="text-lg font-semibold text-morandi-stone-700 mb-3">
-            {t('reports:practicePatterns')}
-          </h3>
-          <ComparativeChart
-            data={analytics.comparativeData?.byPiece?.[selectedPiece] || []}
-            title={selectedPiece}
-            type="bar"
-          />
-        </div>
-      )}
     </div>
   )
 }

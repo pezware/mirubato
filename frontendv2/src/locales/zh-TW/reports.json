@@ -321,5 +321,12 @@
   "unknown": "未知",
   "viewReports": "查看報表",
   "weekOverWeek": "週對比",
-  "weekOverview": "週概覽"
+  "weekOverview": "週概覽",
+  "analytics": {
+    "instrumentDistribution": "[NEEDS TRANSLATION] Instrument Distribution",
+    "typeDistribution": "[NEEDS TRANSLATION] Type Distribution",
+    "practiceTrend": "[NEEDS TRANSLATION] Practice Trend",
+    "topPieces": "[NEEDS TRANSLATION] Top Pieces",
+    "topComposers": "[NEEDS TRANSLATION] Top Composers"
+  }
 }

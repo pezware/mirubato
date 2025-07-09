@@ -1,6 +1,13 @@
 {
   "allComposers": "All Composers",
   "allPieces": "All Pieces",
+  "analytics": {
+    "instrumentDistribution": "Instrument Distribution",
+    "typeDistribution": "Type Distribution",
+    "practiceTrend": "Practice Trend",
+    "topPieces": "Top Pieces",
+    "topComposers": "Top Composers"
+  },
   "applyGroupingToSeeData": "Apply grouping to see data in table format",
   "average": "avg",
   "averageSessionDuration": "Average Session Duration",

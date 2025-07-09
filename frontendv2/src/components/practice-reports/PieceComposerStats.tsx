@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
 import { LogbookEntry } from '../../api/logbook'
 import { Card } from '../ui/Card'
-import { formatDate } from '../../utils/dateUtils'
+import { EntryCard } from './components/EntryCard'
 
 interface PieceComposerStatsProps {
   analytics: AnalyticsData & { filteredEntries?: LogbookEntry[] }
@@ -177,7 +177,7 @@ export function PieceComposerStats({
               {relatedEntries.length} {t('reports:entries')}
             </p>
           </div>
-          <div className="divide-y divide-morandi-stone-100">
+          <div className="p-4 space-y-3">
             {relatedEntries
               .sort(
                 (a, b) =>
@@ -185,42 +185,7 @@ export function PieceComposerStats({
                   new Date(a.timestamp).getTime()
               )
               .map(entry => (
-                <div
-                  key={entry.id}
-                  className="p-4 hover:bg-morandi-stone-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-morandi-stone-900">
-                      {formatDate(entry.timestamp)}
-                    </span>
-                    <span className="text-sm text-morandi-stone-600">
-                      {formatDuration(entry.duration)}
-                    </span>
-                  </div>
-                  {entry.pieces.length > 0 && (
-                    <div className="text-sm text-morandi-stone-700 mb-1">
-                      {entry.pieces.map(
-                        (p: LogbookEntry['pieces'][0], i: number) => (
-                          <span key={i}>
-                            {p.title}
-                            {p.composer && ` - ${p.composer}`}
-                            {i < entry.pieces.length - 1 && ', '}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  )}
-                  {entry.notes && (
-                    <p className="text-sm text-morandi-stone-600 line-clamp-2">
-                      {entry.notes}
-                    </p>
-                  )}
-                  {entry.mood && (
-                    <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-morandi-purple-100 text-morandi-purple-700">
-                      {entry.mood.toLowerCase()}
-                    </span>
-                  )}
-                </div>
+                <EntryCard key={entry.id} entry={entry} />
               ))}
           </div>
         </Card>

@@ -20,6 +20,13 @@
     "duration": "Duration (minutes)",
     "durationPlaceholder": "30",
     "type": "Type",
+    "typeOptions": {
+      "practice": "Practice",
+      "lesson": "Lesson",
+      "performance": "Performance",
+      "rehearsal": "Rehearsal",
+      "technique": "Technique"
+    },
     "pieces": "Pieces",
     "notes": "Notes",
     "notesPlaceholder": "What did you work on? Any observations?",
@@ -32,6 +39,16 @@
     "confirmDelete": "Are you sure you want to delete this entry?",
     "foundEntries": "Found {{count}} entries",
     "techniques": "Techniques",
+    "techniqueOptions": {
+      "scale": "Scale",
+      "arpeggio": "Arpeggio",
+      "octave": "Octave",
+      "rhythm": "Rhythm",
+      "custom": "Custom",
+      "selectTechniques": "Select techniques practiced",
+      "addCustom": "Add custom technique",
+      "customPlaceholder": "Enter custom technique name"
+    },
     "practiceDate": "Practice Date",
     "successAdded": "Practice entry successfully added!",
     "successUpdated": "Practice entry successfully updated!",

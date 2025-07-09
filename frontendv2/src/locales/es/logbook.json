@@ -31,7 +31,24 @@
     "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
     "techniques": "Técnicas",
     "type": "Tipo",
-    "updateEntry": "Actualizar entrada"
+    "updateEntry": "Actualizar entrada",
+    "typeOptions": {
+      "practice": "[NEEDS TRANSLATION] Practice",
+      "lesson": "[NEEDS TRANSLATION] Lesson",
+      "performance": "[NEEDS TRANSLATION] Performance",
+      "rehearsal": "[NEEDS TRANSLATION] Rehearsal",
+      "technique": "[NEEDS TRANSLATION] Technique"
+    },
+    "techniqueOptions": {
+      "scale": "[NEEDS TRANSLATION] Scale",
+      "arpeggio": "[NEEDS TRANSLATION] Arpeggio",
+      "octave": "[NEEDS TRANSLATION] Octave",
+      "rhythm": "[NEEDS TRANSLATION] Rhythm",
+      "custom": "[NEEDS TRANSLATION] Custom",
+      "selectTechniques": "[NEEDS TRANSLATION] Select techniques practiced",
+      "addCustom": "[NEEDS TRANSLATION] Add custom technique",
+      "customPlaceholder": "[NEEDS TRANSLATION] Enter custom technique name"
+    }
   },
   "filters": {
     "allTime": "Todo el tiempo",

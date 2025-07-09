@@ -31,7 +31,24 @@
     "successUpdated": "练习记录更新成功！",
     "techniques": "技巧",
     "type": "类型",
-    "updateEntry": "更新记录"
+    "updateEntry": "更新记录",
+    "typeOptions": {
+      "practice": "[NEEDS TRANSLATION] Practice",
+      "lesson": "[NEEDS TRANSLATION] Lesson",
+      "performance": "[NEEDS TRANSLATION] Performance",
+      "rehearsal": "[NEEDS TRANSLATION] Rehearsal",
+      "technique": "[NEEDS TRANSLATION] Technique"
+    },
+    "techniqueOptions": {
+      "scale": "[NEEDS TRANSLATION] Scale",
+      "arpeggio": "[NEEDS TRANSLATION] Arpeggio",
+      "octave": "[NEEDS TRANSLATION] Octave",
+      "rhythm": "[NEEDS TRANSLATION] Rhythm",
+      "custom": "[NEEDS TRANSLATION] Custom",
+      "selectTechniques": "[NEEDS TRANSLATION] Select techniques practiced",
+      "addCustom": "[NEEDS TRANSLATION] Add custom technique",
+      "customPlaceholder": "[NEEDS TRANSLATION] Enter custom technique name"
+    }
   },
   "filters": {
     "allTime": "全部时间",
