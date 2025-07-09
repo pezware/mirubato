@@ -115,7 +115,9 @@ export function TechniqueSelector({
                 key={technique}
                 className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-sand-100 text-sand-800"
               >
-                {DEFAULT_TECHNIQUES.includes(technique as any)
+                {DEFAULT_TECHNIQUES.includes(
+                  technique as (typeof DEFAULT_TECHNIQUES)[number]
+                )
                   ? t(`logbook:entry.techniqueOptions.${technique}`)
                   : technique}
                 <button

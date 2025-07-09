@@ -8,6 +8,7 @@ import { RecentEntries } from '../components/RecentEntries'
 import { formatDuration } from '../../../utils/dateUtils'
 import { useNavigate } from 'react-router-dom'
 import { useLogbookStore } from '../../../stores/logbookStore'
+import { LogbookEntry } from '../../../api/logbook'
 
 interface OverviewViewProps {
   analytics: EnhancedAnalyticsData
@@ -19,12 +20,12 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
   const { deleteEntry } = useLogbookStore()
 
   // Handlers for entry actions
-  const handleEditEntry = (entry: any) => {
+  const handleEditEntry = (entry: LogbookEntry) => {
     // Navigate to edit tab with entry data
     navigate('/logbook?tab=newEntry', { state: { editEntry: entry } })
   }
 
-  const handleDeleteEntry = async (entry: any) => {
+  const handleDeleteEntry = async (entry: LogbookEntry) => {
     if (window.confirm(t('logbook:entry.confirmDelete'))) {
       await deleteEntry(entry.id)
     }
