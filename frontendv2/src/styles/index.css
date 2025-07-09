@@ -16,6 +16,22 @@
   body {
     @apply bg-white text-morandi-stone-700;
   }
+
+  /* Override dark mode styles for UI components */
+  .dark\:bg-gray-800 {
+    background-color: white !important;
+  }
+
+  .dark\:border-gray-700,
+  .dark\:border-gray-600 {
+    border-color: rgb(229 231 235) !important; /* gray-200 */
+  }
+
+  .dark\:text-gray-100,
+  .dark\:text-gray-300,
+  .dark\:text-gray-400 {
+    color: rgb(75 85 99) !important; /* gray-600 */
+  }
 }
 
 @layer components {
