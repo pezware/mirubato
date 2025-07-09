@@ -270,7 +270,7 @@ test.describe('Enhanced Reports', () => {
         // Try to wait for chart rendering with more flexible selector
         try {
           await waitForChartRender(page, 'canvas', { timeout: 10000 })
-        } catch (error) {
+        } catch (_error) {
           console.log(
             'Chart content validation failed, but canvas elements are present'
           )
