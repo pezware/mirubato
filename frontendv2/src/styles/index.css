@@ -2,7 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force light theme throughout the app until proper theme system is implemented
+   TODO: Replace this with a proper theme switcher (dark/light/system) in the future */
+:root {
+  color-scheme: light;
+}
+
 @layer base {
+  html {
+    color-scheme: light !important;
+  }
+
   body {
     @apply bg-white text-morandi-stone-700;
   }

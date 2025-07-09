@@ -53,8 +53,6 @@ mirubato/
 │   └── wrangler.toml  # All environments defined here
 ├── scores/            # Scores service → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
-└── config/
-    └── environments.json  # Domain and team configuration
 ```
 
 ### Local Development Architecture
