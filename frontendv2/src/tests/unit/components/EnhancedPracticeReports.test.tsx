@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import EnhancedReports from '../../../components/practice-reports/EnhancedReports'
 import { useLogbookStore } from '../../../stores/logbookStore'
 import { useAutocomplete } from '../../../hooks/useAutocomplete'
@@ -244,7 +245,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should render the component with tabs', () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Use getAllByText since tabs now render both full and short labels
     expect(screen.getAllByText('reports:tabs.overview').length).toBeGreaterThan(
@@ -257,7 +262,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should display practice statistics in overview tab', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Wait for lazy loaded component and check for stats
     await waitFor(
@@ -277,7 +286,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should display practice calendar', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Wait for the overview view to load
     await waitFor(() => {
@@ -293,7 +306,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch between tabs', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Check that overview tab is active by default
     const overviewTab = screen.getByTestId('overview-tab')
@@ -311,7 +328,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch to pieces tab', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Use getByTestId which is unique
     const piecesTab = screen.getByTestId('pieces-tab')
@@ -325,7 +346,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should display piece statistics in pieces tab', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const piecesTab = screen.getByTestId('pieces-tab')
     fireEvent.click(piecesTab)
@@ -337,7 +362,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should display export buttons', () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Check that export buttons are present (using data-testid for uniqueness)
     expect(screen.getByTestId('export-csv-button')).toBeInTheDocument()
@@ -345,7 +374,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch to new entry tab and show form', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Use getByTestId which is unique
     const newEntryTab = screen.getByTestId('newEntry-tab')
@@ -363,7 +396,11 @@ describe('EnhancedReports', () => {
       deleteEntry: mockDeleteEntry,
     })
 
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Wait for the component to load
     await waitFor(() => {
@@ -380,7 +417,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should show entry count', () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Check that the entry count is displayed in the header
     // The component shows "3 reports:entriesFound" as a single text node
@@ -391,7 +432,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch to analytics tab', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const analyticsTab = screen.getByTestId('analytics-tab')
     fireEvent.click(analyticsTab)
@@ -429,7 +474,11 @@ describe('EnhancedReports', () => {
     global.URL.createObjectURL = mockCreateObjectURL
     global.URL.revokeObjectURL = mockRevokeObjectURL
 
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const exportJsonButton = screen.getByTestId('export-json-button')
     fireEvent.click(exportJsonButton)
@@ -468,7 +517,11 @@ describe('EnhancedReports', () => {
     global.URL.createObjectURL = mockCreateObjectURL
     global.URL.revokeObjectURL = mockRevokeObjectURL
 
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const exportCsvButton = screen.getByTestId('export-csv-button')
     fireEvent.click(exportCsvButton)
@@ -481,7 +534,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch to data table view', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const dataTab = screen.getByTestId('data-tab')
     fireEvent.click(dataTab)
@@ -493,7 +550,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should switch to new entry tab', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const newEntryTab = screen.getByTestId('newEntry-tab')
     fireEvent.click(newEntryTab)
@@ -505,7 +566,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should format duration correctly', async () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Wait for stats to load
     await waitFor(() => {
@@ -518,7 +583,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should handle tab switching with keyboard', () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     const overviewTab = screen.getByTestId('overview-tab')
     const piecesTab = screen.getByTestId('pieces-tab')
@@ -532,7 +601,11 @@ describe('EnhancedReports', () => {
   })
 
   it('should render all navigation tabs', () => {
-    render(<EnhancedReports />)
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <EnhancedReports />
+      </MemoryRouter>
+    )
 
     // Check all tabs are present
     expect(screen.getByTestId('overview-tab')).toBeInTheDocument()

@@ -1,10 +1,12 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { useReportingStore } from '../../stores/reportingStore'
 import { useEnhancedAnalytics } from '../../hooks/useEnhancedAnalytics'
 import { LoadingSkeleton } from '../ui/Loading'
 import { ReportsTabs, ReportView } from './ReportsTabs'
+import { LogbookEntry } from '../../api/logbook'
 
 // Lazy load view components
 const OverviewView = lazy(() => import('./views/OverviewView'))
@@ -17,10 +19,41 @@ export default function EnhancedReports() {
   const { t } = useTranslation(['reports', 'common', 'logbook'])
   const { entries } = useLogbookStore()
   const { filters, groupBy, sortBy, clearFilters } = useReportingStore()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // State management
   const [reportView, setReportView] = useState<ReportView>('overview')
   const [isExporting, setIsExporting] = useState(false)
+  const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
+    undefined
+  )
+
+  // Handle URL parameters and navigation state
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'newEntry') {
+      setReportView('newEntry')
+      // Check if we have an entry to edit from navigation state
+      if (location.state && 'editEntry' in location.state) {
+        setEditEntry(location.state.editEntry as LogbookEntry)
+      }
+    }
+  }, [searchParams, location.state])
+
+  // Update URL when tab changes
+  const handleViewChange = (view: ReportView) => {
+    setReportView(view)
+    if (view === 'newEntry') {
+      setSearchParams({ tab: 'newEntry' })
+    } else {
+      setSearchParams({})
+    }
+    // Clear edit entry when switching away from newEntry
+    if (view !== 'newEntry') {
+      setEditEntry(undefined)
+    }
+  }
 
   // Generate entries hash for caching
   const entriesHash = useMemo(() => {
@@ -125,8 +158,15 @@ export default function EnhancedReports() {
       case 'newEntry':
         return (
           <ManualEntryForm
-            onClose={() => setReportView('overview')}
-            onSave={() => setReportView('overview')}
+            entry={editEntry}
+            onClose={() => {
+              handleViewChange('overview')
+              setEditEntry(undefined)
+            }}
+            onSave={() => {
+              handleViewChange('overview')
+              setEditEntry(undefined)
+            }}
           />
         )
       default:
@@ -139,9 +179,9 @@ export default function EnhancedReports() {
       {/* Navigation Tabs - Outside the white box to match Toolbox */}
       <ReportsTabs
         reportView={reportView}
-        onViewChange={setReportView}
+        onViewChange={handleViewChange}
         onOverviewClick={() => {
-          setReportView('overview')
+          handleViewChange('overview')
           clearFilters()
         }}
       />
