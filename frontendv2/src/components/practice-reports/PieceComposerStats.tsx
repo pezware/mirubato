@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
-import { LogbookEntry } from '../../types/logbook'
+import { LogbookEntry } from '../../api/logbook'
 import { Card } from '../ui/Card'
 import { formatDate } from '../../utils/dateUtils'
 
@@ -66,14 +66,18 @@ export function PieceComposerStats({
     if (selectedPiece) {
       return analytics.filteredEntries.filter(entry =>
         entry.pieces.some(
-          p => `${p.composer || 'Unknown'} - ${p.title}` === selectedPiece
+          (p: LogbookEntry['pieces'][0]) =>
+            `${p.composer || 'Unknown'} - ${p.title}` === selectedPiece
         )
       )
     }
 
     if (selectedComposer) {
       return analytics.filteredEntries.filter(entry =>
-        entry.pieces.some(p => (p.composer || 'Unknown') === selectedComposer)
+        entry.pieces.some(
+          (p: LogbookEntry['pieces'][0]) =>
+            (p.composer || 'Unknown') === selectedComposer
+        )
       )
     }
 
@@ -195,13 +199,15 @@ export function PieceComposerStats({
                   </div>
                   {entry.pieces.length > 0 && (
                     <div className="text-sm text-morandi-stone-700 mb-1">
-                      {entry.pieces.map((p, i) => (
-                        <span key={i}>
-                          {p.title}
-                          {p.composer && ` - ${p.composer}`}
-                          {i < entry.pieces.length - 1 && ', '}
-                        </span>
-                      ))}
+                      {entry.pieces.map(
+                        (p: LogbookEntry['pieces'][0], i: number) => (
+                          <span key={i}>
+                            {p.title}
+                            {p.composer && ` - ${p.composer}`}
+                            {i < entry.pieces.length - 1 && ', '}
+                          </span>
+                        )
+                      )}
                     </div>
                   )}
                   {entry.notes && (
