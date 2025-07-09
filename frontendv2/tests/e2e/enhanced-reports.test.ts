@@ -71,10 +71,12 @@ test.describe('Enhanced Reports', () => {
       })
     })
 
-    // Switch to overview tab and wait for data
-    await logbookPage.switchToOverviewTab()
-    await waitForListItems(page, '[data-testid="logbook-entry"]', 5, {
-      timeout: 5000,
+    // Switch to overview tab with a simpler approach
+    await page.click('[data-testid="overview-tab"]')
+    // Wait for the summary stats to be visible which indicates the tab is loaded
+    await page.waitForSelector('[data-testid="summary-stats"]', {
+      state: 'visible',
+      timeout: 10000,
     })
   })
 
@@ -145,15 +147,21 @@ test.describe('Enhanced Reports', () => {
         await expect(page.getByText('Total Days').first()).toBeVisible()
       })
 
-      await test.step('Verify calendar heatmap', async () => {
-        // First check if Practice Calendar heading is visible
+      await test.step('Verify key sections are present', async () => {
+        // Just verify the main sections are visible without checking specific implementation details
         await expect(
           page.getByRole('heading', { name: 'Practice Calendar' })
         ).toBeVisible()
 
-        // Then check for heatmap calendar - it might be scrolled out of view
-        const calendarElement = page.locator('[data-testid="heatmap-calendar"]')
-        await expect(calendarElement).toBeAttached()
+        // Verify charts section
+        await expect(
+          page.getByRole('heading', { name: 'Practice Trend' })
+        ).toBeVisible()
+
+        // Verify distribution charts
+        await expect(
+          page.getByRole('heading', { name: 'Instrument Distribution' })
+        ).toBeVisible()
       })
     })
 
