@@ -1,8 +1,7 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LogbookEntry } from '@/api/logbook'
+import { LogbookEntry } from '../../../api/logbook'
 import { EntryCard } from './EntryCard'
-import { Card } from '@/components/ui'
+import { Card } from '../../ui/Card'
 
 interface RecentEntriesProps {
   entries: LogbookEntry[]

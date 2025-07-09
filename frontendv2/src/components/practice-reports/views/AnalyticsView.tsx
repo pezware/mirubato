@@ -85,7 +85,7 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
             </h3>
             <DistributionPie
               data={analytics.distributionData?.byPiece?.slice(0, 10) || []}
-              type="donut"
+              type="doughnut"
             />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
             </h3>
             <DistributionPie
               data={analytics.distributionData?.byComposer?.slice(0, 10) || []}
-              type="donut"
+              type="doughnut"
             />
           </div>
         </div>

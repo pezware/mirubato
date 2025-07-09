@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { PiecesStatistics } from '../PiecesStatistics'
@@ -30,20 +30,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
     minLength: 0,
   })
 
-  // Filter pieces based on search
-  const filteredPieceStats = useMemo(() => {
-    if (!searchQuery || !analytics.distributionData)
-      return analytics.distributionData?.byPiece || []
-
-    return analytics.distributionData.byPiece.filter(
-      item =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.metadata?.composer &&
-          String(item.metadata.composer)
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()))
-    )
-  }, [analytics.distributionData, searchQuery])
+  // Filter pieces based on search - removed as unused
 
   return (
     <div className="p-6 space-y-6">

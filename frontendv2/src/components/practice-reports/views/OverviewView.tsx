@@ -7,7 +7,7 @@ import { SummaryStats } from '../SummaryStats'
 import { RecentEntries } from '../components/RecentEntries'
 import { formatDuration } from '../../../utils/dateUtils'
 import { useNavigate } from 'react-router-dom'
-import { logbookStore } from '@/stores/logbookStore'
+import { useLogbookStore } from '../../../stores/logbookStore'
 
 interface OverviewViewProps {
   analytics: EnhancedAnalyticsData
@@ -16,6 +16,7 @@ interface OverviewViewProps {
 export default function OverviewView({ analytics }: OverviewViewProps) {
   const { t } = useTranslation(['reports', 'common'])
   const navigate = useNavigate()
+  const { deleteEntry } = useLogbookStore()
 
   // Handlers for entry actions
   const handleEditEntry = (entry: any) => {
@@ -25,7 +26,7 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
 
   const handleDeleteEntry = async (entry: any) => {
     if (window.confirm(t('logbook:entry.confirmDelete'))) {
-      await logbookStore.deleteEntry(entry.id)
+      await deleteEntry(entry.id)
     }
   }
 
@@ -98,15 +99,7 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
     return { currentStreak, maxStreak, totalDays: dates.size }
   }, [analytics.filteredEntries])
 
-  // Get recent entries (last 5)
-  const recentEntries = useMemo(() => {
-    return [...analytics.filteredEntries]
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-      .slice(0, 5)
-  }, [analytics.filteredEntries])
+  // Recent entries calculation removed - handled by RecentEntries component
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">

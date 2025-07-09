@@ -1,8 +1,7 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LogbookEntry } from '@/api/logbook'
-import { Button } from '@/components/ui'
-import { formatDuration } from '@/utils/formatters'
+import { LogbookEntry } from '../../../api/logbook'
+import Button from '../../ui/Button'
+import { formatDuration } from '../../../utils/dateUtils'
 
 interface EntryCardProps {
   entry: LogbookEntry
@@ -17,11 +16,7 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
   // Extract date parts
   const month = date.toLocaleDateString('en', { month: 'short' })
   const day = date.getDate()
-  const time = date.toLocaleTimeString('en', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+  // Removed unused time variable
 
   return (
     <div className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">

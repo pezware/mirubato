@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
-import { DEFAULT_TECHNIQUES } from '@/constants/techniques'
+import Button from '../ui/Button'
+import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
 
 interface TechniqueSelectorProps {
