@@ -90,7 +90,7 @@ export function HeatmapCalendar({
   }
 
   return (
-    <Card className={className}>
+    <Card className={className} data-testid="heatmap-calendar">
       <div className="p-6">
         <h3 className="text-lg font-semibold text-morandi-stone-800 mb-4">
           {t('reports:charts.practiceHeatmap', { year })}
@@ -178,12 +178,17 @@ export function HeatmapCalendar({
 
         {/* Summary stats */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <SummaryStat label={t('reports:stats.totalDays')} value={data.size} />
+          <SummaryStat
+            label={t('reports:stats.totalDays')}
+            value={data.size}
+            testId="heatmap-total-days"
+          />
           <SummaryStat
             label={t('reports:stats.totalTime')}
             value={formatDuration(
               Array.from(data.values()).reduce((a, b) => a + b, 0)
             )}
+            testId="heatmap-total-time"
           />
           <SummaryStat
             label={t('reports:stats.avgPerDay')}
@@ -193,10 +198,12 @@ export function HeatmapCalendar({
                     data.size
                 : 0
             )}
+            testId="heatmap-avg-per-day"
           />
           <SummaryStat
             label={t('reports:stats.longestDay')}
             value={formatDuration(Math.max(...Array.from(data.values()), 0))}
+            testId="heatmap-longest-day"
           />
         </div>
       </div>
@@ -207,12 +214,14 @@ export function HeatmapCalendar({
 function SummaryStat({
   label,
   value,
+  testId,
 }: {
   label: string
   value: string | number
+  testId?: string
 }) {
   return (
-    <div className="bg-morandi-stone-50 rounded-lg p-3">
+    <div className="bg-morandi-stone-50 rounded-lg p-3" data-testid={testId}>
       <div className="text-xs text-morandi-stone-600">{label}</div>
       <div className="text-lg font-semibold text-morandi-stone-800">
         {value}

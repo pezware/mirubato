@@ -51,7 +51,10 @@ export function SummaryStats({
       {/* Summary Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-morandi-stone-50 rounded-lg p-3">
-          <p className="text-2xl font-bold text-morandi-stone-900">
+          <p
+            className="text-2xl font-bold text-morandi-stone-900"
+            data-testid="total-practice-time"
+          >
             {formatDuration(getTimePeriodTotal())}
           </p>
           <p className="text-xs text-morandi-stone-600">
@@ -60,7 +63,10 @@ export function SummaryStats({
         </div>
 
         <div className="bg-morandi-stone-100 rounded-lg p-3">
-          <p className="text-2xl font-bold text-morandi-stone-900">
+          <p
+            className="text-2xl font-bold text-morandi-stone-900"
+            data-testid="session-count"
+          >
             {getSessionCount()}
           </p>
           <p className="text-xs text-morandi-stone-600">

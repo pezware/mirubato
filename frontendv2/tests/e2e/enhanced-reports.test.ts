@@ -1,19 +1,25 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
+import {
+  waitForChartRender,
+  waitForListItems,
+  retryWithBackoff,
+  waitForElementStable,
+  waitForTabContent,
+} from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports', () => {
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
-    logbookPage = new LogbookPage(page)
-
-    // Navigate directly to logbook page first
-    await page.goto('/logbook')
-
-    // Clear any existing data after navigation
+    // Clear all data before navigation
     await page.evaluate(() => {
-      localStorage.removeItem('mirubato:logbook:entries')
+      localStorage.clear()
+      sessionStorage.clear()
     })
+
+    logbookPage = new LogbookPage(page)
+    await logbookPage.navigate()
 
     // Create test data with various entries
     await test.step('Create test entries', async () => {
@@ -59,10 +65,10 @@ test.describe('Enhanced Reports', () => {
       })
     })
 
-    // Wait for the reports to load
-    await page.waitForSelector('[data-testid="overview-tab"]', {
-      state: 'visible',
-      timeout: 10000,
+    // Switch to overview tab and wait for data
+    await logbookPage.switchToOverviewTab()
+    await waitForListItems(page, '[data-testid="logbook-entry"]', 5, {
+      timeout: 5000,
     })
   })
 
@@ -79,8 +85,7 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Navigate to pieces view', async () => {
-        await page.click('[data-testid="pieces-tab"]')
-        await page.waitForTimeout(1000)
+        await logbookPage.switchToPiecesTab()
         // Verify pieces view loaded - check for active state
         const piecesTabClasses = await page
           .locator('[data-testid="pieces-tab"]')
@@ -90,7 +95,7 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
-        await page.waitForTimeout(1000)
+        await waitForTabContent(page, 'analytics-tab', 'analytics-content')
         const analyticsTabClasses = await page
           .locator('[data-testid="analytics-tab"]')
           .getAttribute('class')
@@ -99,7 +104,7 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Navigate to data view', async () => {
         await page.click('[data-testid="data-tab"]')
-        await page.waitForTimeout(1000)
+        await waitForTabContent(page, 'data-tab', 'data-table')
         const dataTabClasses = await page
           .locator('[data-testid="data-tab"]')
           .getAttribute('class')
@@ -109,26 +114,21 @@ test.describe('Enhanced Reports', () => {
 
     test('overview view displays statistics @smoke', async ({ page }) => {
       await test.step('Verify summary statistics', async () => {
-        // Wait for stats to load
-        await page.waitForLoadState('networkidle')
-        await page.waitForSelector('[data-testid="summary-stats"]', {
-          state: 'visible',
-          timeout: 10000,
-        })
+        // Wait for stats to load using smart wait
+        const summaryStats = page.locator('[data-testid="summary-stats"]')
+        await waitForElementStable(summaryStats)
 
-        // Check total practice time (30+45+60+20+35 = 190 minutes = 3h 10m)
-        await expect(
-          page
-            .locator('[data-testid="summary-stats"]')
-            .locator('text=/3h\\s*10m/i')
-        ).toBeVisible()
+        // Check total practice time using specific testid
+        const totalTimeElement = page.locator(
+          '[data-testid="total-practice-time"]'
+        )
+        await expect(totalTimeElement).toContainText(/3h\s*10m/i)
 
-        // Check session count - look for "5 sessions" or just "5"
-        await expect(
-          page
-            .locator('[data-testid="summary-stats"]')
-            .locator('text=/5\\s*(sessions?)?/i')
-        ).toBeVisible()
+        // Check session count using specific testid
+        const sessionCountElement = page.locator(
+          '[data-testid="session-count"]'
+        )
+        await expect(sessionCountElement).toContainText('5')
       })
 
       await test.step('Verify practice streak info', async () => {
@@ -138,20 +138,16 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Verify calendar heatmap', async () => {
-        // Calendar should be visible - look for canvas or svg elements
-        const hasCalendar = await page
-          .locator('canvas, svg')
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false)
-        expect(hasCalendar).toBeTruthy()
+        // Calendar should be visible using smart wait
+        const calendarElement = page.locator('[data-testid="heatmap-calendar"]')
+        await waitForElementStable(calendarElement)
+        await expect(calendarElement).toBeVisible()
       })
     })
 
     test('pieces view shows piece statistics', async ({ page }) => {
       await test.step('Navigate to pieces view', async () => {
-        await page.click('[data-testid="pieces-tab"]')
-        await page.waitForLoadState('networkidle')
+        await logbookPage.switchToPiecesTab()
       })
 
       await test.step('Verify pieces are listed', async () => {
@@ -204,6 +200,7 @@ test.describe('Enhanced Reports', () => {
     test('data view shows tabular data', async ({ page }) => {
       await test.step('Navigate to data view', async () => {
         await page.click('[data-testid="data-tab"]')
+        await waitForTabContent(page, 'data-tab', 'data-table')
         await page.waitForLoadState('networkidle')
       })
 
@@ -264,7 +261,8 @@ test.describe('Enhanced Reports', () => {
       await test.step('Wait for charts to render', async () => {
         // Overview tab should be active by default
         await page.waitForLoadState('networkidle')
-        await page.waitForTimeout(2000) // Give charts time to render
+        // Wait for chart containers to be visible
+        await waitForChartRender(page, '[data-testid="chart-canvas-wrapper"]')
       })
 
       await test.step('Verify no Chart.js errors', async () => {

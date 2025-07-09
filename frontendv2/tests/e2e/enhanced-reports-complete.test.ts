@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
+import {
+  waitForChartRender,
+  waitForListItems,
+  waitForTabContent,
+} from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports - Complete Test Suite', () => {
   let logbookPage: LogbookPage
@@ -7,16 +12,13 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
 
-    // Navigate to logbook page first
-    await logbookPage.navigate()
-
-    // Clear any existing data after navigation
+    // Clear all data before navigation
     await page.evaluate(() => {
-      localStorage.removeItem('mirubato:logbook:entries')
+      localStorage.clear()
+      sessionStorage.clear()
     })
 
-    // Reload to ensure clean state
-    await page.reload()
+    // Navigate to logbook page
     await logbookPage.navigate()
 
     // Create comprehensive test data
@@ -99,7 +101,7 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
     test('filter by composer', async ({ page }) => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
-        await page.waitForLoadState('networkidle')
+        await waitForTabContent(page, 'analytics-tab', 'analytics-content')
       })
 
       await test.step('Open filters', async () => {
@@ -132,7 +134,7 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
     test('filter by duration range', async ({ page }) => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
-        await page.waitForLoadState('networkidle')
+        await waitForTabContent(page, 'analytics-tab', 'analytics-content')
       })
 
       await test.step('Add duration filter', async () => {
@@ -158,7 +160,7 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
     test('combine multiple filters', async ({ page }) => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
-        await page.waitForLoadState('networkidle')
+        await waitForTabContent(page, 'analytics-tab', 'analytics-content')
       })
 
       await test.step('Add multiple filters', async () => {
@@ -239,7 +241,7 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
     test('sort by duration', async ({ page }) => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
-        await page.waitForLoadState('networkidle')
+        await waitForTabContent(page, 'analytics-tab', 'analytics-content')
       })
 
       await test.step('Open sorting options', async () => {

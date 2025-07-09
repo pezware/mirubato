@@ -18,7 +18,7 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
   const [activeTab, setActiveTab] = useState('filters')
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6" data-testid="analytics-content">
       {/* Advanced Controls */}
       <Card className="mb-6">
         <Tabs
