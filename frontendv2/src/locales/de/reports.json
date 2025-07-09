@@ -323,10 +323,10 @@
   "weekOverWeek": "Woche über Woche",
   "weekOverview": "Wochenübersicht",
   "analytics": {
-    "instrumentDistribution": "[NEEDS TRANSLATION] Instrument Distribution",
-    "typeDistribution": "[NEEDS TRANSLATION] Type Distribution",
-    "practiceTrend": "[NEEDS TRANSLATION] Practice Trend",
-    "topPieces": "[NEEDS TRANSLATION] Top Pieces",
-    "topComposers": "[NEEDS TRANSLATION] Top Composers"
+    "instrumentDistribution": "Instrumentenverteilung",
+    "typeDistribution": "Typverteilung",
+    "practiceTrend": "Übungstrend",
+    "topPieces": "Top-Stücke",
+    "topComposers": "Top-Komponisten"
   }
 }

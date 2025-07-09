@@ -33,21 +33,21 @@
     "type": "Type",
     "updateEntry": "Mettre à jour l'entrée",
     "typeOptions": {
-      "practice": "[NEEDS TRANSLATION] Practice",
-      "lesson": "[NEEDS TRANSLATION] Lesson",
-      "performance": "[NEEDS TRANSLATION] Performance",
-      "rehearsal": "[NEEDS TRANSLATION] Rehearsal",
-      "technique": "[NEEDS TRANSLATION] Technique"
+      "practice": "Pratique",
+      "lesson": "Cours",
+      "performance": "Représentation",
+      "rehearsal": "Répétition",
+      "technique": "Technique"
     },
     "techniqueOptions": {
-      "scale": "[NEEDS TRANSLATION] Scale",
-      "arpeggio": "[NEEDS TRANSLATION] Arpeggio",
-      "octave": "[NEEDS TRANSLATION] Octave",
-      "rhythm": "[NEEDS TRANSLATION] Rhythm",
-      "custom": "[NEEDS TRANSLATION] Custom",
-      "selectTechniques": "[NEEDS TRANSLATION] Select techniques practiced",
-      "addCustom": "[NEEDS TRANSLATION] Add custom technique",
-      "customPlaceholder": "[NEEDS TRANSLATION] Enter custom technique name"
+      "scale": "Gamme",
+      "arpeggio": "Arpège",
+      "octave": "Octave",
+      "rhythm": "Rythme",
+      "custom": "Personnalisé",
+      "selectTechniques": "Sélectionner les techniques pratiquées",
+      "addCustom": "Ajouter une technique personnalisée",
+      "customPlaceholder": "Entrez le nom de la technique personnalisée"
     }
   },
   "filters": {

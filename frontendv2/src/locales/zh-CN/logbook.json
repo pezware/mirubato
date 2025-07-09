@@ -33,21 +33,21 @@
     "type": "类型",
     "updateEntry": "更新记录",
     "typeOptions": {
-      "practice": "[NEEDS TRANSLATION] Practice",
-      "lesson": "[NEEDS TRANSLATION] Lesson",
-      "performance": "[NEEDS TRANSLATION] Performance",
-      "rehearsal": "[NEEDS TRANSLATION] Rehearsal",
-      "technique": "[NEEDS TRANSLATION] Technique"
+      "practice": "练习",
+      "lesson": "课程",
+      "performance": "演出",
+      "rehearsal": "排练",
+      "technique": "技巧"
     },
     "techniqueOptions": {
-      "scale": "[NEEDS TRANSLATION] Scale",
-      "arpeggio": "[NEEDS TRANSLATION] Arpeggio",
-      "octave": "[NEEDS TRANSLATION] Octave",
-      "rhythm": "[NEEDS TRANSLATION] Rhythm",
-      "custom": "[NEEDS TRANSLATION] Custom",
-      "selectTechniques": "[NEEDS TRANSLATION] Select techniques practiced",
-      "addCustom": "[NEEDS TRANSLATION] Add custom technique",
-      "customPlaceholder": "[NEEDS TRANSLATION] Enter custom technique name"
+      "scale": "音阶",
+      "arpeggio": "琴音",
+      "octave": "八度",
+      "rhythm": "节奏",
+      "custom": "自定义",
+      "selectTechniques": "选择练习的技巧",
+      "addCustom": "添加自定义技巧",
+      "customPlaceholder": "输入自定义技巧名称"
     }
   },
   "filters": {

@@ -33,21 +33,21 @@
     "type": "Art",
     "updateEntry": "Eintrag aktualisieren",
     "typeOptions": {
-      "practice": "[NEEDS TRANSLATION] Practice",
-      "lesson": "[NEEDS TRANSLATION] Lesson",
-      "performance": "[NEEDS TRANSLATION] Performance",
-      "rehearsal": "[NEEDS TRANSLATION] Rehearsal",
-      "technique": "[NEEDS TRANSLATION] Technique"
+      "practice": "Üben",
+      "lesson": "Unterricht",
+      "performance": "Aufführung",
+      "rehearsal": "Probe",
+      "technique": "Technik"
     },
     "techniqueOptions": {
-      "scale": "[NEEDS TRANSLATION] Scale",
-      "arpeggio": "[NEEDS TRANSLATION] Arpeggio",
-      "octave": "[NEEDS TRANSLATION] Octave",
-      "rhythm": "[NEEDS TRANSLATION] Rhythm",
-      "custom": "[NEEDS TRANSLATION] Custom",
-      "selectTechniques": "[NEEDS TRANSLATION] Select techniques practiced",
-      "addCustom": "[NEEDS TRANSLATION] Add custom technique",
-      "customPlaceholder": "[NEEDS TRANSLATION] Enter custom technique name"
+      "scale": "Tonleiter",
+      "arpeggio": "Arpeggio",
+      "octave": "Oktave",
+      "rhythm": "Rhythmus",
+      "custom": "Benutzerdefiniert",
+      "selectTechniques": "Geübte Techniken auswählen",
+      "addCustom": "Benutzerdefinierte Technik hinzufügen",
+      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben"
     }
   },
   "filters": {
