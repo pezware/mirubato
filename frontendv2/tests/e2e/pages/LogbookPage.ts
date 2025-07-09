@@ -1,9 +1,5 @@
 import { Page, expect } from '@playwright/test'
-import {
-  waitForTabContent,
-  waitForListItems,
-  waitForAnimations,
-} from '../helpers/wait-helpers'
+import { waitForTabContent, waitForAnimations } from '../helpers/wait-helpers'
 
 export class LogbookPage {
   constructor(private page: Page) {}

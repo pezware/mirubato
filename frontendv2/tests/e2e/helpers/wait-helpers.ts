@@ -108,7 +108,7 @@ export async function waitForDataLoad(
     waitForNetwork: true,
   }
 ) {
-  const promises: Promise<any>[] = []
+  const promises: Promise<unknown>[] = []
 
   if (options.waitForNetwork) {
     promises.push(

@@ -3,7 +3,6 @@ import { LogbookPage } from './pages/LogbookPage'
 import {
   waitForChartRender,
   waitForListItems,
-  retryWithBackoff,
   waitForElementStable,
   waitForTabContent,
 } from './helpers/wait-helpers'

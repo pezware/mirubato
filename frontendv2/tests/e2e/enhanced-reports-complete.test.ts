@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
-import {
-  waitForChartRender,
-  waitForListItems,
-  waitForTabContent,
-} from './helpers/wait-helpers'
+import { waitForTabContent } from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports - Complete Test Suite', () => {
   let logbookPage: LogbookPage
