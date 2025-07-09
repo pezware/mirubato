@@ -6,9 +6,7 @@ import { PracticeTrendChart } from '../visualizations/charts/PracticeTrendChart'
 import { DistributionPie } from '../visualizations/charts/DistributionPie'
 import { ProgressBar } from '../visualizations/charts/ProgressBar'
 import { SummaryStats } from '../SummaryStats'
-import { formatDuration } from '../../../utils/dateUtils'
-import { LogbookEntry } from '../../../types/logbook'
-import { formatDate } from '../../../utils/dateUtils'
+import { formatDuration, formatDate } from '../../../utils/dateUtils'
 
 interface OverviewViewProps {
   analytics: EnhancedAnalyticsData
