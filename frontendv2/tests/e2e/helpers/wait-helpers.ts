@@ -86,15 +86,33 @@ export async function waitForChartRender(
       // Wait for chart to have content
       await page.waitForFunction(
         selector => {
-          const canvas = document.querySelector(selector) as HTMLCanvasElement
+          const canvas = document.querySelector(selector)
           if (!canvas) return false
 
-          const ctx = canvas.getContext('2d')
+          // Ensure it's actually a canvas element
+          if (canvas.tagName !== 'CANVAS') return false
+
+          const htmlCanvas = canvas as HTMLCanvasElement
+          if (!htmlCanvas.getContext) return false
+
+          const ctx = htmlCanvas.getContext('2d')
           if (!ctx) return false
 
-          // Check if canvas has been drawn on
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-          return imageData.data.some(pixel => pixel !== 0)
+          // Check if canvas has been drawn on (has non-zero dimensions and some content)
+          if (htmlCanvas.width === 0 || htmlCanvas.height === 0) return false
+
+          try {
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              htmlCanvas.width,
+              htmlCanvas.height
+            )
+            return imageData.data.some(pixel => pixel !== 0)
+          } catch (e) {
+            // If getImageData fails, canvas might not be ready
+            return false
+          }
         },
         chartSelector,
         { timeout: options.timeout }

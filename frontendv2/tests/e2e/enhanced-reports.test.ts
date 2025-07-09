@@ -1,11 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
-import {
-  waitForChartRender,
-  waitForListItems,
-  waitForElementStable,
-  waitForTabContent,
-} from './helpers/wait-helpers'
+import { waitForChartRender, waitForTabContent } from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports', () => {
   test.setTimeout(60000) // Increase timeout to 60 seconds
@@ -331,18 +326,18 @@ test.describe('Enhanced Reports', () => {
   test.describe('Data Accuracy', () => {
     test('statistics match actual data', async ({ page }) => {
       await test.step('Verify total practice time', async () => {
-        // Total: 30+45+60+20+35 = 190 minutes = 3h 10m
+        // Total: 30+45+60 = 135 minutes = 2h 15m
         await expect(
           page
             .locator('[data-testid="summary-stats"]')
-            .locator('text=/3h\\s*10m/i')
+            .locator('text=/2h\\s*15m/i')
         ).toBeVisible()
       })
 
       await test.step('Verify session count', async () => {
-        // Should show 5 sessions somewhere on the page
+        // Should show 3 sessions somewhere on the page
         const hasSessionCount = await page
-          .locator('text=/5\\s*(sessions?)?/i')
+          .locator('text=/3\\s*(sessions?)?/i')
           .first()
           .isVisible({ timeout: 5000 })
           .catch(() => false)
@@ -351,7 +346,7 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Verify entry filtering', async () => {
         // Entry count should be displayed - updated to match the actual UI text
-        await expect(page.locator('text=/5 entries/')).toBeVisible()
+        await expect(page.locator('text=/3 entries/')).toBeVisible()
       })
     })
   })

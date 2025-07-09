@@ -92,12 +92,17 @@ test.describe('Logbook', () => {
 
       await test.step('Expand entry', async () => {
         await logbookPage.switchToOverviewTab()
+        // Wait for entry to be visible first
+        await expect(page.locator('text=Sonata No. 11')).toBeVisible()
         await logbookPage.expandEntry(0)
       })
 
       await test.step('Verify expanded details', async () => {
         await expect(page.locator('text=Sonata No. 11')).toBeVisible()
-        await expect(page.locator('text=Mozart')).toBeVisible()
+        // Look for Mozart in the expanded content area
+        await expect(page.locator('text=Mozart')).toBeVisible({
+          timeout: 10000,
+        })
       })
     })
   })
@@ -184,7 +189,7 @@ test.describe('Logbook', () => {
         if (exportJsonVisible) {
           const download = await logbookPage.exportAsJson()
           expect(download.suggestedFilename()).toMatch(
-            /mirubato-logbook-.*\.json/
+            /mirubato-practice-report-.*\.json/
           )
         }
       })
@@ -212,7 +217,7 @@ test.describe('Logbook', () => {
         if (exportCsvVisible) {
           const download = await logbookPage.exportAsCsv()
           expect(download.suggestedFilename()).toMatch(
-            /mirubato-logbook-.*\.csv/
+            /mirubato-practice-report-.*\.csv/
           )
         }
       })

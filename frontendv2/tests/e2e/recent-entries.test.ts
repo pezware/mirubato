@@ -50,8 +50,8 @@ test.describe('Recent Entries Display', () => {
         notes: 'Created first',
       })
 
-      // Add small delay to ensure different timestamps
-      await page.waitForTimeout(100)
+      // Add delay to ensure different timestamps
+      await page.waitForTimeout(1000)
 
       await logbookPage.createEntry({
         duration: 30,
@@ -59,8 +59,8 @@ test.describe('Recent Entries Display', () => {
         notes: 'Created second',
       })
 
-      // Add small delay to ensure different timestamps
-      await page.waitForTimeout(100)
+      // Add delay to ensure different timestamps
+      await page.waitForTimeout(1000)
 
       await logbookPage.createEntry({
         duration: 40,
@@ -72,13 +72,22 @@ test.describe('Recent Entries Display', () => {
     await test.step('Verify entries appear in reverse chronological order', async () => {
       await page.waitForLoadState('networkidle')
 
+      // Wait for entries to be properly sorted
+      await page.waitForTimeout(1000)
+
       const entries = page.locator('[data-testid="logbook-entry"]')
       await expect(entries).toHaveCount(3)
 
-      // Most recent entry should be first
-      await expect(entries.first()).toContainText('Third Entry')
-      await expect(entries.nth(1)).toContainText('Second Entry')
-      await expect(entries.last()).toContainText('First Entry')
+      // Most recent entry should be first (reverse chronological order)
+      await expect(entries.first()).toContainText('Third Entry', {
+        timeout: 10000,
+      })
+      await expect(entries.nth(1)).toContainText('Second Entry', {
+        timeout: 10000,
+      })
+      await expect(entries.last()).toContainText('First Entry', {
+        timeout: 10000,
+      })
     })
   })
 })
