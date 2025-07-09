@@ -51,7 +51,9 @@
     "changes": "[NEEDS TRANSLATION] Changes",
     "comparison": "[NEEDS TRANSLATION] Comparison",
     "duration": "[NEEDS TRANSLATION] Duration (minutes)",
-    "target": "[NEEDS TRANSLATION] Target"
+    "target": "[NEEDS TRANSLATION] Target",
+    "goal": "目标",
+    "movingAverage": "7日平均"
   },
   "clear": "清除",
   "comparativeAnalysis": "对比分析",
@@ -296,7 +298,7 @@
     "overview": "概览",
     "pieces": "曲目",
     "progress": "进度",
-    "new": "[NEEDS TRANSLATION] New"
+    "new": "新增"
   },
   "techniqueFocus": "技巧重点",
   "techniquesPracticed": "练习的技巧",

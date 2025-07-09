@@ -51,7 +51,9 @@
     "changes": "[NEEDS TRANSLATION] Changes",
     "comparison": "[NEEDS TRANSLATION] Comparison",
     "duration": "[NEEDS TRANSLATION] Duration (minutes)",
-    "target": "[NEEDS TRANSLATION] Target"
+    "target": "[NEEDS TRANSLATION] Target",
+    "goal": "Ziel",
+    "movingAverage": "7-Tage-Durchschnitt"
   },
   "clear": "Löschen",
   "comparativeAnalysis": "Vergleichsanalyse",
@@ -296,7 +298,7 @@
     "overview": "Übersicht",
     "pieces": "Stücke",
     "progress": "Fortschritt",
-    "new": "[NEEDS TRANSLATION] New"
+    "new": "Neu"
   },
   "techniqueFocus": "Technik-Fokus",
   "techniquesPracticed": "Geübte Techniken",
