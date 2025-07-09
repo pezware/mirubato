@@ -13,6 +13,10 @@ on:
     paths:
       - 'frontendv2/src/locales/**'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   validate-translations:
     runs-on: ubuntu-latest
@@ -64,10 +68,10 @@ jobs:
 
             if (resultFile) {
               const results = JSON.parse(fs.readFileSync(path.join(scriptsDir, resultFile), 'utf8'));
-              
+
               let comment = '## 🌐 Translation Validation Failed\n\n';
               comment += 'Missing or invalid translations were detected. Please fix these issues:\n\n';
-              
+
               // Summary
               Object.entries(results.statistics).forEach(([namespace, stats]) => {
                 comment += `### ${namespace.toUpperCase()}\n`;
@@ -81,7 +85,7 @@ jobs:
                 });
                 comment += '\n';
               });
-              
+
               comment += '\n### How to fix:\n';
               comment += '```bash\n';
               comment += 'cd frontendv2\n';
@@ -89,7 +93,7 @@ jobs:
               comment += 'npm run validate:i18n       # Verify fixes\n';
               comment += '```\n';
               comment += '\nKeys will be marked with `[NEEDS TRANSLATION]` and need to be translated.';
-              
+
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
