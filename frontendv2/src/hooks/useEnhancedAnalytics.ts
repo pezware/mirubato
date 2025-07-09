@@ -382,7 +382,26 @@ function getDurationRange(minutes: number): string {
 }
 
 function formatGroupLabel(key: string, field: string): string {
-  if (field.startsWith('date:')) {
+  if (field === 'date:month') {
+    // Handle month keys in YYYY-MM format
+    const match = key.match(/^(\d{4})-(\d{2})$/)
+    if (match) {
+      const year = parseInt(match[1])
+      const month = parseInt(match[2])
+      // Create date on the 15th to avoid timezone issues
+      const date = new Date(year, month - 1, 15)
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+      })
+    }
+  } else if (field === 'date:week') {
+    // Handle week keys in YYYY-Www format
+    const match = key.match(/^(\d{4})-W(\d{2})$/)
+    if (match) {
+      return `Week ${match[2]}, ${match[1]}`
+    }
+  } else if (field.startsWith('date:')) {
     const date = new Date(key)
     if (!isNaN(date.getTime())) {
       return date.toLocaleDateString()
