@@ -47,7 +47,11 @@
       "4": "週四",
       "5": "週五",
       "6": "週六"
-    }
+    },
+    "changes": "[NEEDS TRANSLATION] Changes",
+    "comparison": "[NEEDS TRANSLATION] Comparison",
+    "duration": "[NEEDS TRANSLATION] Duration (minutes)",
+    "target": "[NEEDS TRANSLATION] Target"
   },
   "clear": "清除",
   "comparativeAnalysis": "比較分析",
@@ -125,7 +129,9 @@
       "notContains": "不包含",
       "notEquals": "不等於",
       "notIn": "不是其中之一",
-      "on": "開"
+      "on": "開",
+      "linked": "[NEEDS TRANSLATION] linked to score",
+      "notLinked": "[NEEDS TRANSLATION] not linked to score"
     },
     "savePreset": "儲存預設",
     "savePresetModal": {
@@ -136,7 +142,25 @@
       "title": "儲存篩選預設"
     },
     "thisMonth": "本月",
-    "title": "篩選器"
+    "title": "篩選器",
+    "and": "[NEEDS TRANSLATION] AND",
+    "enterTechnique": "[NEEDS TRANSLATION] Enter technique",
+    "minutes": "[NEEDS TRANSLATION] minutes",
+    "no": "[NEEDS TRANSLATION] No",
+    "or": "[NEEDS TRANSLATION] OR",
+    "select": "[NEEDS TRANSLATION] Select",
+    "selectComposer": "[NEEDS TRANSLATION] Select composer",
+    "selectComposers": "[NEEDS TRANSLATION] Select composers",
+    "selectInstrument": "[NEEDS TRANSLATION] Select instrument",
+    "selectInstruments": "[NEEDS TRANSLATION] Select instruments",
+    "selectMood": "[NEEDS TRANSLATION] Select mood",
+    "selectMoods": "[NEEDS TRANSLATION] Select moods",
+    "selectPiece": "[NEEDS TRANSLATION] Select piece",
+    "selectPieces": "[NEEDS TRANSLATION] Select pieces",
+    "selectType": "[NEEDS TRANSLATION] Select type",
+    "selectTypes": "[NEEDS TRANSLATION] Select types",
+    "to": "[NEEDS TRANSLATION] to",
+    "yes": "[NEEDS TRANSLATION] Yes"
   },
   "grouping": {
     "addFirstLevel": "新增第一層級",
@@ -229,7 +253,9 @@
     "helpText": "按多個欄位排序您的練習資料，以更好地組織資訊。",
     "noSorting": "無排序",
     "sortBy": "排序依據",
-    "title": "排序"
+    "title": "排序",
+    "primary": "[NEEDS TRANSLATION] Primary",
+    "secondary": "[NEEDS TRANSLATION] Secondary"
   },
   "stats": {
     "avgPerDay": "每日平均",

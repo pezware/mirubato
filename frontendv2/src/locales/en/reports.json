@@ -12,9 +12,12 @@
   "charts": {
     "averageDuration": "Average Duration",
     "change": "Change",
+    "changes": "Changes",
+    "comparison": "Comparison",
     "current": "Current",
     "date": "Date",
     "distribution": "Distribution",
+    "duration": "Duration (minutes)",
     "less": "Less",
     "month": {
       "0": "Jan",
@@ -38,6 +41,7 @@
     "practiceTrend": "Practice Trend",
     "previous": "Previous",
     "sessions": "Sessions",
+    "target": "Target",
     "totalDuration": "Total Duration",
     "weekday": {
       "0": "Sun",
@@ -90,8 +94,10 @@
     "addFilter": "Add Filter",
     "addFirstFilter": "Add First Filter",
     "allTime": "All time",
+    "and": "AND",
     "clearAll": "Clear All",
     "deletePreset": "Delete Preset",
+    "enterTechnique": "Enter technique",
     "fields": {
       "autoTracked": "Auto Tracked",
       "composer": "Composer",
@@ -107,6 +113,8 @@
     "last30Days": "Last 30 days",
     "last7Days": "Last 7 days",
     "lastMonth": "Last month",
+    "minutes": "minutes",
+    "no": "No",
     "noFilters": "No filters applied",
     "noPreset": "No preset selected",
     "operators": {
@@ -122,11 +130,14 @@
       "isNot": "is not",
       "isNotEmpty": "is not empty",
       "lessThan": "less than",
+      "linked": "linked to score",
       "notContains": "does not contain",
       "notEquals": "does not equal",
       "notIn": "is not one of",
+      "notLinked": "not linked to score",
       "on": "on"
     },
+    "or": "OR",
     "savePreset": "Save Preset",
     "savePresetModal": {
       "description": "Description",
@@ -135,8 +146,21 @@
       "namePlaceholder": "Enter preset name",
       "title": "Save Filter Preset"
     },
+    "select": "Select",
+    "selectComposer": "Select composer",
+    "selectComposers": "Select composers",
+    "selectInstrument": "Select instrument",
+    "selectInstruments": "Select instruments",
+    "selectMood": "Select mood",
+    "selectMoods": "Select moods",
+    "selectPiece": "Select piece",
+    "selectPieces": "Select pieces",
+    "selectType": "Select type",
+    "selectTypes": "Select types",
     "thisMonth": "This month",
-    "title": "Filters"
+    "title": "Filters",
+    "to": "to",
+    "yes": "Yes"
   },
   "grouping": {
     "addFirstLevel": "Add First Level",
@@ -228,6 +252,8 @@
     },
     "helpText": "Sort order is applied in sequence, from top to bottom.",
     "noSorting": "No sorting applied",
+    "primary": "Primary",
+    "secondary": "Secondary",
     "sortBy": "Sort by",
     "title": "Sorting"
   },
