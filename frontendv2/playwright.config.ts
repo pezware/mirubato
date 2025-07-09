@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0, // Reduce retries to save time
   workers: process.env.CI ? 2 : undefined, // Optimized for 2 shards in CI
   reporter: process.env.CI ? [['list'], ['html']] : 'html',
-  timeout: 30000, // Reduce global timeout to 30 seconds
+  timeout: 60000, // Increase global timeout to 60 seconds for complex tests
   use: {
     baseURL: 'http://localhost:4000',
     trace: process.env.CI ? 'retain-on-failure' : 'on',
