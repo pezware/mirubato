@@ -75,9 +75,7 @@ test.describe('Enhanced Reports', () => {
           page.locator('[data-testid="analytics-tab"]')
         ).toBeVisible()
         await expect(page.locator('[data-testid="data-tab"]')).toBeVisible()
-        await expect(
-          page.locator('[data-testid="new-entry-tab"]')
-        ).toBeVisible()
+        await expect(page.locator('[data-testid="newEntry-tab"]')).toBeVisible()
       })
 
       await test.step('Navigate to pieces view', async () => {
@@ -87,7 +85,7 @@ test.describe('Enhanced Reports', () => {
         const piecesTabClasses = await page
           .locator('[data-testid="pieces-tab"]')
           .getAttribute('class')
-        expect(piecesTabClasses).toContain('bg-white')
+        expect(piecesTabClasses).toContain('border-morandi-purple-400')
       })
 
       await test.step('Navigate to analytics view', async () => {
@@ -96,7 +94,7 @@ test.describe('Enhanced Reports', () => {
         const analyticsTabClasses = await page
           .locator('[data-testid="analytics-tab"]')
           .getAttribute('class')
-        expect(analyticsTabClasses).toContain('bg-white')
+        expect(analyticsTabClasses).toContain('border-morandi-purple-400')
       })
 
       await test.step('Navigate to data view', async () => {
@@ -105,7 +103,7 @@ test.describe('Enhanced Reports', () => {
         const dataTabClasses = await page
           .locator('[data-testid="data-tab"]')
           .getAttribute('class')
-        expect(dataTabClasses).toContain('bg-white')
+        expect(dataTabClasses).toContain('border-morandi-purple-400')
       })
     })
 
@@ -288,7 +286,7 @@ test.describe('Enhanced Reports', () => {
         // Should be able to switch tabs
         await page.click('[data-testid="pieces-tab"]')
         await expect(page.locator('[data-testid="pieces-tab"]')).toHaveClass(
-          /bg-white/
+          /border-morandi-purple-400/
         )
       })
     })

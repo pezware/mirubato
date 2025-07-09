@@ -5,7 +5,7 @@ export class LogbookPage {
 
   // Locators
   private get newEntryTab() {
-    return this.page.locator('[data-testid="new-entry-tab"]')
+    return this.page.locator('[data-testid="newEntry-tab"]')
   }
 
   private get overviewTab() {
