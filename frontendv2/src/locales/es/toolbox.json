@@ -1,95 +1,95 @@
 {
-  "title": "Caja de herramientas",
-  "metronome": {
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "Compás",
-    "volume": "Volumen",
-    "presetPatterns": "Patrones preestablecidos",
-    "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",
-    "sounds": {
-      "accent": "acento",
-      "click": "clic",
-      "woodblock": "wood block",
-      "shaker": "shaker",
-      "triangle": "triángulo"
-    },
-    "patterns": {
-      "basic": {
-        "name": "Basic Beat",
-        "description": "4/4 estándar con acento en 1"
-      },
-      "backbeat": {
-        "name": "Backbeat (2 & 4)",
-        "description": "Acento en tiempos 2 y 4"
-      },
-      "waltz": {
-        "name": "Waltz (3/4)",
-        "description": "Patrón fuerte-débil-débil"
-      },
-      "clave32": {
-        "name": "3-2 Clave",
-        "description": "Patrón de clave latina"
-      },
-      "shuffle": {
-        "name": "Shuffle/Swing",
-        "description": "Sensación de tresillo con nota media silenciosa"
-      },
-      "sixeight": {
-        "name": "6/8 Time",
-        "description": "Sensación de dos negras con puntillo"
-      },
-      "bossa": {
-        "name": "Bossa Nova",
-        "description": "Patrón rítmico brasileño"
-      },
-      "subdivisions": {
-        "name": "Subdivisions",
-        "description": "Práctica de corcheas y semicorcheas"
-      },
-      "offbeat": {
-        "name": "Off-beat Practice",
-        "description": "Clic solo en contratiempos"
-      },
-      "progressive": {
-        "name": "Progressive Accent",
-        "description": "Patrón de acento móvil"
-      }
-    }
-  },
+  "backToLogbook": "Volver al diario",
   "counter": {
-    "title": "Contador de práctica",
-    "mode": {
-      "up": "Contar hacia arriba",
-      "down": "Contar hacia abajo"
+    "button": {
+      "finish": "Finalizar",
+      "save_to_log": "Guardar en el diario",
+      "start": "Iniciar",
+      "start_new": "Comenzar nuevo"
     },
+    "log_summary": "Practicado con el contador: {{reps}} repeticiones en {{time}}",
+    "mode": {
+      "down": "Contar hacia abajo",
+      "up": "Contar hacia arriba"
+    },
+    "practice_title": "Práctica de repeticiones",
+    "save_failed": "Error al guardar la sesión de práctica",
+    "saved_to_log": "Sesión de práctica guardada en el diario",
     "start_at": {
       "placeholder": "Empezar en"
     },
-    "button": {
-      "start": "Iniciar",
-      "finish": "Finalizar",
-      "save_to_log": "Guardar en el diario",
-      "start_new": "Comenzar nuevo"
-    },
     "summary": {
+      "duration_column": "Duración",
+      "rep_column": "Rep",
       "title": "Resumen de la sesión",
       "total_reps": "Repeticiones totales",
-      "total_time": "Tiempo total",
-      "rep_column": "Rep",
-      "duration_column": "Duración"
+      "total_time": "Tiempo total"
     },
-    "log_summary": "Practicado con el contador: {{reps}} repeticiones en {{time}}",
-    "practice_title": "Práctica de repeticiones",
-    "saved_to_log": "Sesión de práctica guardada en el diario",
-    "save_failed": "Error al guardar la sesión de práctica"
+    "title": "Contador de práctica"
   },
-  "tabs": {
-    "metronome": "Metrónomo",
-    "counter": "Contador de práctica"
+  "metronome": {
+    "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",
+    "patterns": {
+      "backbeat": {
+        "description": "Acento en tiempos 2 y 4",
+        "name": "Backbeat (2 & 4)"
+      },
+      "basic": {
+        "description": "4/4 estándar con acento en 1",
+        "name": "Basic Beat"
+      },
+      "bossa": {
+        "description": "Patrón rítmico brasileño",
+        "name": "Bossa Nova"
+      },
+      "clave32": {
+        "description": "Patrón de clave latina",
+        "name": "3-2 Clave"
+      },
+      "offbeat": {
+        "description": "Clic solo en contratiempos",
+        "name": "Off-beat Practice"
+      },
+      "progressive": {
+        "description": "Patrón de acento móvil",
+        "name": "Progressive Accent"
+      },
+      "shuffle": {
+        "description": "Sensación de tresillo con nota media silenciosa",
+        "name": "Shuffle/Swing"
+      },
+      "sixeight": {
+        "description": "Sensación de dos negras con puntillo",
+        "name": "6/8 Time"
+      },
+      "subdivisions": {
+        "description": "Práctica de corcheas y semicorcheas",
+        "name": "Subdivisions"
+      },
+      "waltz": {
+        "description": "Patrón fuerte-débil-débil",
+        "name": "Waltz (3/4)"
+      }
+    },
+    "presetPatterns": "Patrones preestablecidos",
+    "sounds": {
+      "accent": "acento",
+      "click": "clic",
+      "shaker": "shaker",
+      "triangle": "triángulo",
+      "woodblock": "wood block"
+    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Compás",
+    "volume": "Volumen"
   },
   "syncStatus": {
-    "synced": "Sincronizado",
-    "localOnly": "Almacenamiento local"
+    "localOnly": "Almacenamiento local",
+    "synced": "Sincronizado"
   },
-  "backToLogbook": "Volver al diario"
+  "tabs": {
+    "counter": "Contador de práctica",
+    "metronome": "Metrónomo"
+  },
+  "title": "Caja de herramientas"
 }

@@ -16,7 +16,12 @@
     "type-check": "tsc --noEmit",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
-    "deploy:production": "wrangler deploy --env production"
+    "deploy:production": "wrangler deploy --env production",
+    "validate:i18n": "node scripts/validate-translations.cjs",
+    "sync:i18n": "node scripts/sync-translations.cjs",
+    "i18n:check": "npm run validate:i18n",
+    "i18n:fix": "npm run sync:i18n -- --sort-keys",
+    "translate:missing": "node scripts/translate-missing.cjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -60,6 +65,7 @@
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/coverage-v8": "^1.0.0",
     "autoprefixer": "^10.4.16",
+    "chalk": "^4.1.2",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",

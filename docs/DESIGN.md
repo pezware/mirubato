@@ -73,7 +73,7 @@ All services run as Cloudflare Workers with the following domains:
   - Offline-first with local storage sync
   - Optimized bundle with code splitting
   - Comprehensive caching headers for static assets
-  - Internationalization (i18n) with 6 languages
+  - Internationalization (i18n) with 6 languages (en, es, fr, de, zh-TW, zh-CN)
 
 **Note**: The documented module-based architecture with EventBus is not currently implemented. The actual implementation uses a simpler, more pragmatic approach with React components and Zustand stores.
 
@@ -382,7 +382,7 @@ The original design envisioned a complex module system with EventBus for loose c
 - **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
 - **API Framework**: Hono with Zod validation
 - **Auth**: JWT tokens, magic links, Google OAuth
-- **i18n**: react-i18next (6 languages: en, es, fr, de, ja, zh)
+- **i18n**: react-i18next (6 languages: en, es, fr, de, zh-TW, zh-CN)
 - **Testing**: Vitest, Playwright
 
 ## Performance Considerations
@@ -475,6 +475,73 @@ cd [service] && wrangler deploy --env staging # Staging
 cd api && npm run db:migrate:production   # Production
 cd api && npm run db:migrate:staging      # Staging
 ```
+
+## Internationalization (i18n) Architecture
+
+### Overview
+
+Mirubato supports 6 languages with a comprehensive i18n system built on react-i18next:
+
+- **English (en)** - Reference language
+- **Spanish (es)**
+- **French (fr)**
+- **German (de)**
+- **Traditional Chinese (zh-TW)**
+- **Simplified Chinese (zh-CN)**
+
+### Implementation
+
+1. **Structure**: Translation files organized by namespace and language
+
+   ```
+   src/locales/
+   ├── en/          # Reference language
+   │   ├── auth.json      # Authentication strings
+   │   ├── common.json    # Shared UI elements
+   │   ├── errors.json    # Error messages
+   │   ├── logbook.json   # Practice log features
+   │   ├── reports.json   # Analytics and reporting
+   │   ├── scorebook.json # Score/sheet music features
+   │   └── toolbox.json   # Practice tools
+   └── [es|fr|de|zh-TW|zh-CN]/  # Same structure for each language
+   ```
+
+2. **Key Features**:
+   - Namespace-based organization for code splitting
+   - Lazy loading of translation files
+   - Automatic language detection
+   - Fallback to English for missing translations
+   - Interpolation support for dynamic values
+   - Pluralization rules for each language
+
+3. **Translation Management**:
+   - Validation scripts ensure 100% translation coverage
+   - Sync tools maintain consistency across languages
+   - English serves as the reference for all translations
+   - `[NEEDS TRANSLATION]` markers for new keys
+
+### Development Workflow
+
+```bash
+# Check translation completeness
+npm run validate:i18n
+
+# Sync missing keys from English
+npm run sync:i18n
+
+# Fix and sort keys
+npm run i18n:fix
+```
+
+### Best Practices
+
+1. **Always use translation keys** - Never hardcode UI text
+2. **Namespace appropriately** - Use `common` for shared strings
+3. **Maintain consistency** - Use the same terminology across namespaces
+4. **Consider context** - Musical terms may vary by language/culture
+5. **Test with different languages** - Ensure UI handles varying text lengths
+
+See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
 
 ## Caching Architecture
 

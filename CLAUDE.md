@@ -483,6 +483,124 @@ npm run db:migrate:production       # Production environment
 
 **Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
 
+## 🌐 Internationalization (i18n) & Localization (l10n)
+
+### Supported Languages
+
+- **English (en)** - Reference language
+- **Spanish (es)**
+- **French (fr)**
+- **German (de)**
+- **Traditional Chinese (zh-TW)**
+- **Simplified Chinese (zh-CN)**
+
+### i18n Commands
+
+```bash
+# Check translation completeness
+npm run validate:i18n
+
+# Sync missing keys from English reference
+npm run sync:i18n
+
+# Sync with alphabetical sorting
+npm run i18n:fix
+
+# Advanced options
+npm run sync:i18n -- --dry-run         # Preview changes
+npm run sync:i18n -- --remove-extra    # Remove non-reference keys
+npm run sync:i18n -- --namespace auth  # Target specific namespace
+```
+
+### Translation Workflow
+
+1. **Before adding new UI text**: Always use translation keys
+
+   ```tsx
+   // ❌ Bad
+   <Button>Click me</Button>
+
+   // ✅ Good
+   <Button>{t('common:button.click')}</Button>
+   ```
+
+2. **After adding new keys**:
+
+   ```bash
+   # Add to English file first
+   # Then sync to other languages
+   npm run sync:i18n
+
+   # Check completeness
+   npm run validate:i18n
+   ```
+
+3. **Translation Structure**:
+   ```
+   src/locales/
+   ├── en/          # Reference language
+   │   ├── auth.json
+   │   ├── common.json
+   │   ├── errors.json
+   │   ├── logbook.json
+   │   ├── reports.json
+   │   ├── scorebook.json
+   │   └── toolbox.json
+   ├── es/          # Spanish
+   ├── fr/          # French
+   ├── de/          # German
+   ├── zh-TW/       # Traditional Chinese
+   └── zh-CN/       # Simplified Chinese
+   ```
+
+### Key Guidelines
+
+- **Namespace Usage**:
+  - `common`: Shared UI elements, buttons, labels
+  - `auth`: Authentication related
+  - `errors`: Error messages
+  - `logbook`: Practice log features
+  - `reports`: Analytics and reporting
+  - `scorebook`: Score/sheet music features
+  - `toolbox`: Practice tools (metronome, etc.)
+
+- **Key Naming**:
+
+  ```json
+  {
+    "section": {
+      "title": "Section Title",
+      "button": {
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    }
+  }
+  ```
+
+- **Interpolation**:
+  ```json
+  {
+    "welcome": "Welcome, {{name}}!",
+    "items_count": "{{count}} items"
+  }
+  ```
+
+### Common Issues
+
+1. **Missing keys in English**: Run `fix-english-reference.cjs` to identify and add
+2. **Incomplete translations**: Look for `[NEEDS TRANSLATION]` markers
+3. **Consistency**: Use validation tool to ensure all languages have same keys
+
+### i18n Scripts
+
+- `validate-translations.cjs`: Check completeness across all languages
+- `sync-translations.cjs`: Synchronize missing keys
+- `translate-missing.cjs`: Helper for bulk translations
+- `fix-english-reference.cjs`: Fix incomplete English reference
+
+See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
+
 ## 🧪 Testing Guidelines
 
 ### Test-Driven Development (TDD)
