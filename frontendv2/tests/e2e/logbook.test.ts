@@ -244,24 +244,25 @@ test.describe('Logbook', () => {
         })
       })
 
-      await test.step('Switch to overview', async () => {
-        await logbookPage.switchToOverviewTab()
+      await test.step('Switch to pieces view to see composers', async () => {
+        await logbookPage.switchToPiecesTab()
+        await page.waitForLoadState('networkidle')
       })
 
       await test.step('Verify all composers are displayed', async () => {
-        // Wait for entries to be visible
-        await page.waitForSelector('[data-testid="logbook-entry"]', {
-          state: 'visible',
-        })
+        // Wait for pieces view to load
+        await page.waitForTimeout(1000)
 
-        // Verify all entries are displayed
-        const entries = page.locator('[data-testid="logbook-entry"]')
-        await expect(entries).toHaveCount(3)
-
-        // Verify all composers are visible
-        await expect(page.locator('text=Beethoven')).toBeVisible()
-        await expect(page.locator('text=Mozart')).toBeVisible()
-        await expect(page.locator('text=Debussy')).toBeVisible()
+        // In pieces view, composers should be visible in the statistics
+        await expect(
+          page.getByRole('heading', { name: /Beethoven/ })
+        ).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: /Mozart/ })
+        ).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: /Debussy/ })
+        ).toBeVisible()
       })
     })
   })

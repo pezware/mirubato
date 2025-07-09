@@ -8,12 +8,16 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
     logbookPage = new LogbookPage(page)
 
     // Navigate to logbook page first
-    await page.goto('/logbook')
+    await logbookPage.navigate()
 
     // Clear any existing data after navigation
     await page.evaluate(() => {
       localStorage.removeItem('mirubato:logbook:entries')
     })
+
+    // Reload to ensure clean state
+    await page.reload()
+    await logbookPage.navigate()
 
     // Create comprehensive test data
     await test.step('Create diverse test entries', async () => {

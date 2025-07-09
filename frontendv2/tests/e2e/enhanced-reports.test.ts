@@ -109,9 +109,12 @@ test.describe('Enhanced Reports', () => {
 
     test('overview view displays statistics @smoke', async ({ page }) => {
       await test.step('Verify summary statistics', async () => {
-        // Wait for stats to load - look for the total practice time text
+        // Wait for stats to load
         await page.waitForLoadState('networkidle')
-        await page.waitForTimeout(1000) // Give time for data to render
+        await page.waitForSelector('[data-testid="summary-stats"]', {
+          state: 'visible',
+          timeout: 10000,
+        })
 
         // Check total practice time (30+45+60+20+35 = 190 minutes = 3h 10m)
         await expect(
@@ -129,9 +132,9 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Verify practice streak info', async () => {
-        await expect(page.locator('text=Current Streak')).toBeVisible()
-        await expect(page.locator('text=Longest Streak')).toBeVisible()
-        await expect(page.locator('text=Total Days')).toBeVisible()
+        await expect(page.getByText('Current Streak').first()).toBeVisible()
+        await expect(page.getByText('Longest Streak').first()).toBeVisible()
+        await expect(page.getByText('Total Days').first()).toBeVisible()
       })
 
       await test.step('Verify calendar heatmap', async () => {
@@ -173,14 +176,22 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Check filter tabs', async () => {
         // Analytics view should have filter/grouping/sorting tabs
-        await expect(page.locator('text=Filters')).toBeVisible()
-        await expect(page.locator('text=Grouping')).toBeVisible()
-        await expect(page.locator('text=Sorting')).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Filters' })
+        ).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Grouping' })
+        ).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Sorting' })
+        ).toBeVisible()
       })
 
       await test.step('Verify analytics charts', async () => {
         // Should show trend analysis
-        await expect(page.locator('text=Trend Analysis')).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Trend Analysis' })
+        ).toBeVisible()
 
         // Key metrics should be visible
         await expect(
