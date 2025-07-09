@@ -109,7 +109,7 @@ export async function waitForChartRender(
               htmlCanvas.height
             )
             return imageData.data.some(pixel => pixel !== 0)
-          } catch (e) {
+          } catch (_e) {
             // If getImageData fails, canvas might not be ready
             return false
           }
