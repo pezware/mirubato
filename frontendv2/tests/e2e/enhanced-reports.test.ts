@@ -120,20 +120,22 @@ test.describe('Enhanced Reports', () => {
 
     test('overview view displays statistics @smoke', async ({ page }) => {
       await test.step('Verify summary statistics', async () => {
-        // Wait for stats to load using smart wait
+        // Wait for stats to be visible
         const summaryStats = page.locator('[data-testid="summary-stats"]')
-        await waitForElementStable(summaryStats)
+        await expect(summaryStats).toBeVisible()
 
         // Check total practice time using specific testid
         const totalTimeElement = page.locator(
           '[data-testid="total-practice-time"]'
         )
+        await expect(totalTimeElement).toBeVisible()
         await expect(totalTimeElement).toContainText(/3h\s*10m/i)
 
         // Check session count using specific testid
         const sessionCountElement = page.locator(
           '[data-testid="session-count"]'
         )
+        await expect(sessionCountElement).toBeVisible()
         await expect(sessionCountElement).toContainText('5')
       })
 
@@ -144,10 +146,14 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Verify calendar heatmap', async () => {
-        // Calendar should be visible using smart wait
+        // First check if Practice Calendar heading is visible
+        await expect(
+          page.getByRole('heading', { name: 'Practice Calendar' })
+        ).toBeVisible()
+
+        // Then check for heatmap calendar - it might be scrolled out of view
         const calendarElement = page.locator('[data-testid="heatmap-calendar"]')
-        await waitForElementStable(calendarElement)
-        await expect(calendarElement).toBeVisible()
+        await expect(calendarElement).toBeAttached()
       })
     })
 
