@@ -359,6 +359,28 @@ A comprehensive set of reusable components following consistent design patterns 
 
 All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation. The component library has been extensively refactored to eliminate native HTML usage in favor of consistent, branded components.
 
+**Theme Management (July 2025)**
+
+Currently, the application is forced to light theme to ensure consistency across all user systems:
+
+```css
+/* Force light theme throughout the app */
+:root {
+  color-scheme: light;
+}
+
+/* Tailwind configuration */
+module.exports = {
+  darkmode:
+    'class',
+    // Manual control instead of 'media'
+    ; // ... rest of config
+
+}
+```
+
+This prevents the browser from automatically applying dark mode based on system preferences. A proper theme switcher (light/dark/system) is planned for future implementation (see ROADMAP.md Priority 1.5).
+
 #### Data Flow
 
 ```
