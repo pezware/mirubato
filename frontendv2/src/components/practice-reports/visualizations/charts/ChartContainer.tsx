@@ -162,7 +162,10 @@ export function ChartContainer<T extends ChartJSType = ChartJSType>({
   }
 
   return (
-    <Card className={`relative ${className}`}>
+    <Card
+      className={`relative ${className}`}
+      data-testid={`chart-container-${config.type}`}
+    >
       <div className="absolute top-4 right-4 flex gap-2 z-10">
         {config.options.title && (
           <Button
@@ -202,7 +205,11 @@ export function ChartContainer<T extends ChartJSType = ChartJSType>({
         </div>
       )}
 
-      <div className="h-full w-full p-4" style={{ minHeight: '300px' }}>
+      <div
+        className="h-full w-full p-4"
+        style={{ minHeight: '300px' }}
+        data-testid="chart-canvas-wrapper"
+      >
         <Chart
           ref={chartRef}
           type={config.type as T}

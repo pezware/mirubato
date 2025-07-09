@@ -87,7 +87,7 @@ export function PiecesStatistics({
   const composerStats = getComposerStats()
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="pieces-statistics">
       {/* Selected Piece/Composer Summary */}
       {(selectedPiece || selectedComposer) && (
         <Card className="bg-white border border-morandi-stone-200 p-4">

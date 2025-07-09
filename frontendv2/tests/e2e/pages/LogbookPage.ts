@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test'
+import { waitForTabContent, waitForAnimations } from '../helpers/wait-helpers'
 
 export class LogbookPage {
   constructor(private page: Page) {}
@@ -52,52 +53,43 @@ export class LogbookPage {
 
   // Helper to wait for autocomplete to settle
   private async waitForAutocomplete() {
-    // Wait for any network requests to complete
+    // Wait for autocomplete dropdown to appear or disappear
     await this.page
-      .waitForLoadState('networkidle', { timeout: 2000 })
+      .waitForFunction(
+        () => {
+          const dropdown = document.querySelector('[role="listbox"]')
+          return !dropdown || dropdown.children.length > 0
+        },
+        { timeout: 2000 }
+      )
       .catch(() => {})
-    // Wait for debounce using evaluate instead of fixed timeout
-    await this.page.evaluate(
-      () => new Promise(resolve => setTimeout(resolve, 100))
-    )
   }
 
   // Navigation
   async navigate() {
-    await this.page.goto('/logbook', { waitUntil: 'networkidle' })
+    await this.page.goto('/logbook', { waitUntil: 'domcontentloaded' })
     // Wait for the enhanced reports component to load
     await this.page.waitForSelector('[data-testid="overview-tab"]', {
       state: 'visible',
       timeout: 15000,
     })
-    // Additional wait to ensure the page is fully loaded
-    await this.page.waitForTimeout(1000)
-  }
-
-  async switchToNewEntryTab() {
-    // Wait for tab to be ready
-    await this.newEntryTab.waitFor({ state: 'visible', timeout: 10000 })
-    await this.newEntryTab.click()
-    // Wait for the form to appear
-    await this.page.waitForSelector('[data-testid="logbook-entry-form"]', {
-      state: 'visible',
-      timeout: 10000,
-    })
-  }
-
-  async switchToOverviewTab() {
-    await this.overviewTab.waitFor({ state: 'visible', timeout: 10000 })
-    await this.overviewTab.click()
-    // Wait for tab content to load
+    // Wait for initial data load
     await this.page
       .waitForLoadState('networkidle', { timeout: 5000 })
       .catch(() => {})
-    // Wait for overview content to appear
-    await this.page.waitForTimeout(500)
+    await waitForAnimations(this.page)
+  }
+
+  async switchToNewEntryTab() {
+    await waitForTabContent(this.page, 'newEntry-tab', 'logbook-entry-form')
+  }
+
+  async switchToOverviewTab() {
+    await waitForTabContent(this.page, 'overview-tab', 'summary-stats')
   }
 
   async switchToPiecesTab() {
-    await this.piecesTab.click()
+    await waitForTabContent(this.page, 'pieces-tab', 'pieces-statistics')
   }
 
   // Entry creation
