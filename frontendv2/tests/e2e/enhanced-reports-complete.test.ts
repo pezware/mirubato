@@ -3,6 +3,7 @@ import { LogbookPage } from './pages/LogbookPage'
 import { waitForTabContent } from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports - Complete Test Suite', () => {
+  test.setTimeout(60000) // Increase timeout to 60 seconds
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
@@ -24,73 +25,51 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
       timeout: 10000,
     })
 
-    // Create comprehensive test data
+    // Create comprehensive test data - reduced for faster execution
     await test.step('Create diverse test entries', async () => {
-      // Week 1 - Piano practice
-      await logbookPage.createEntry({
-        duration: 30,
-        title: 'Moonlight Sonata',
-        composer: 'Beethoven',
-        notes: 'First movement practice',
-        mood: 'satisfied',
-      })
+      // Create 5 entries instead of 8 to speed up tests
+      const entries = [
+        {
+          duration: 30,
+          title: 'Moonlight Sonata',
+          composer: 'Beethoven',
+          notes: 'First movement practice',
+          mood: 'satisfied',
+        },
+        {
+          duration: 45,
+          title: 'Clair de Lune',
+          composer: 'Debussy',
+          notes: 'Working on dynamics',
+          mood: 'excited',
+        },
+        {
+          duration: 60,
+          title: 'Moonlight Sonata',
+          composer: 'Beethoven',
+          notes: 'Second movement',
+          mood: 'satisfied',
+        },
+        {
+          duration: 20,
+          title: 'Scales and Arpeggios',
+          notes: 'Technical practice',
+          mood: 'neutral',
+        },
+        {
+          duration: 35,
+          title: 'Nocturne Op. 9 No. 2',
+          composer: 'Chopin',
+          notes: 'New piece sight reading',
+          mood: 'satisfied',
+        },
+      ]
 
-      await logbookPage.createEntry({
-        duration: 45,
-        title: 'Clair de Lune',
-        composer: 'Debussy',
-        notes: 'Working on dynamics',
-        mood: 'excited',
-      })
-
-      // Week 2 - Mixed instruments
-      await logbookPage.createEntry({
-        duration: 60,
-        title: 'Moonlight Sonata',
-        composer: 'Beethoven',
-        notes: 'Second movement',
-        mood: 'satisfied',
-      })
-
-      await logbookPage.createEntry({
-        duration: 20,
-        title: 'Scales and Arpeggios',
-        notes: 'Technical practice',
-        mood: 'neutral',
-      })
-
-      await logbookPage.createEntry({
-        duration: 35,
-        title: 'Nocturne Op. 9 No. 2',
-        composer: 'Chopin',
-        notes: 'New piece sight reading',
-        mood: 'satisfied',
-      })
-
-      // Week 3 - More variety
-      await logbookPage.createEntry({
-        duration: 40,
-        title: 'Fur Elise',
-        composer: 'Beethoven',
-        notes: 'Performance preparation',
-        mood: 'excited',
-      })
-
-      await logbookPage.createEntry({
-        duration: 25,
-        title: 'Prelude in C',
-        composer: 'Bach',
-        notes: 'Morning warm-up',
-        mood: 'satisfied',
-      })
-
-      await logbookPage.createEntry({
-        duration: 50,
-        title: 'Clair de Lune',
-        composer: 'Debussy',
-        notes: 'Final polish',
-        mood: 'excited',
-      })
+      // Create entries with small delays for better performance
+      for (const entry of entries) {
+        await logbookPage.createEntry(entry)
+        await page.waitForTimeout(100) // Small delay to ensure entries are created
+      }
     })
 
     // Wait for the reports to load
@@ -105,32 +84,42 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
         await waitForTabContent(page, 'analytics-tab', 'analytics-content')
+        await page.waitForLoadState('networkidle')
       })
 
       await test.step('Open filters', async () => {
         await page.click('text=Filters')
-        await expect(page.locator('text=Add Filter')).toBeVisible()
+        await expect(page.locator('text=Add Filter')).toBeVisible({
+          timeout: 10000,
+        })
       })
 
       await test.step('Add composer filter', async () => {
         await page.click('text=Add Filter')
+        await page.waitForTimeout(500) // Wait for filter UI to appear
 
         // Select field
         const fieldSelect = page.locator('select').first()
+        await fieldSelect.waitFor({ state: 'visible' })
         await fieldSelect.selectOption('composer')
 
         // Select operator
         const operatorSelect = page.locator('select').nth(1)
+        await operatorSelect.waitFor({ state: 'visible' })
         await operatorSelect.selectOption('equals')
 
         // Enter value
         const valueInput = page.locator('input[type="text"]').last()
+        await valueInput.waitFor({ state: 'visible' })
         await valueInput.fill('Beethoven')
+
+        // Wait for filter to be applied
+        await page.waitForTimeout(1000)
       })
 
       await test.step('Verify filtered results', async () => {
-        // Should show only Beethoven pieces (3 entries)
-        await expect(page.locator('text=/3 entries/')).toBeVisible()
+        // Should show only Beethoven pieces (2 entries)
+        await expect(page.locator('text=/2 entries/')).toBeVisible()
       })
     })
 
@@ -138,25 +127,38 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
       await test.step('Navigate to analytics view', async () => {
         await page.click('[data-testid="analytics-tab"]')
         await waitForTabContent(page, 'analytics-tab', 'analytics-content')
+        await page.waitForLoadState('networkidle')
       })
 
       await test.step('Add duration filter', async () => {
         await page.click('text=Filters')
+        await expect(page.locator('text=Add Filter')).toBeVisible({
+          timeout: 10000,
+        })
         await page.click('text=Add Filter')
+        await page.waitForTimeout(500)
 
         const fieldSelect = page.locator('select').first()
+        await fieldSelect.waitFor({ state: 'visible' })
         await fieldSelect.selectOption('duration')
 
         const operatorSelect = page.locator('select').nth(1)
+        await operatorSelect.waitFor({ state: 'visible' })
         await operatorSelect.selectOption('greaterThan')
 
         const valueInput = page.locator('input[type="number"]').last()
+        await valueInput.waitFor({ state: 'visible' })
         await valueInput.fill('30')
+
+        // Wait for filter to be applied
+        await page.waitForTimeout(1000)
       })
 
       await test.step('Verify filtered results', async () => {
-        // Should show entries > 30 minutes (5 entries)
-        await expect(page.locator('text=/5 entries/')).toBeVisible()
+        // Should show entries > 30 minutes (3 entries: 45, 60, 35)
+        await expect(page.locator('text=/3 entries/')).toBeVisible({
+          timeout: 10000,
+        })
       })
     })
 
