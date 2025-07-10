@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { PiecesStatistics } from '../PiecesStatistics'
@@ -18,7 +18,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
   const [selectedComposer, setSelectedComposer] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Autocomplete hooks
+  // Autocomplete hooks - with search query
   const pieceAutocomplete = useAutocomplete({
     type: 'piece',
     composer: selectedComposer || undefined,
@@ -30,7 +30,95 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
     minLength: 0,
   })
 
-  // Filter pieces based on search - removed as unused
+  // Update autocomplete queries when search changes
+  useEffect(() => {
+    pieceAutocomplete.setQuery(searchQuery)
+  }, [searchQuery, pieceAutocomplete])
+
+  // Filter analytics based on search query
+  const filteredAnalytics = useMemo(() => {
+    if (!searchQuery.trim()) return analytics
+
+    const searchLower = searchQuery.toLowerCase()
+
+    // Filter entries based on piece or composer matching search
+    const filteredEntries = analytics.filteredEntries.filter(entry =>
+      entry.pieces.some(
+        piece =>
+          piece.title.toLowerCase().includes(searchLower) ||
+          (piece.composer && piece.composer.toLowerCase().includes(searchLower))
+      )
+    )
+
+    // Recalculate piece stats based on filtered entries
+    const newPieceStats = new Map<
+      string,
+      {
+        count: number
+        totalDuration: number
+        lastPracticed: string
+        techniques: Set<string>
+      }
+    >()
+
+    filteredEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        const key = piece.composer
+          ? `${piece.composer} - ${piece.title}`
+          : piece.title
+
+        const existing = newPieceStats.get(key) || {
+          count: 0,
+          totalDuration: 0,
+          lastPracticed: entry.timestamp,
+          techniques: new Set<string>(),
+        }
+
+        existing.count += 1
+        existing.totalDuration += entry.duration / entry.pieces.length
+        existing.techniques = new Set([
+          ...existing.techniques,
+          ...entry.techniques,
+        ])
+
+        if (new Date(entry.timestamp) > new Date(existing.lastPracticed)) {
+          existing.lastPracticed = entry.timestamp
+        }
+
+        newPieceStats.set(key, existing)
+      })
+    })
+
+    return {
+      ...analytics,
+      filteredEntries,
+      pieceStats: newPieceStats,
+    }
+  }, [analytics, searchQuery])
+
+  // Get all unique composers and pieces for dropdowns
+  const allComposers = useMemo(() => {
+    const composers = new Set<string>()
+    analytics.filteredEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        if (piece.composer) composers.add(piece.composer)
+      })
+    })
+    return Array.from(composers).sort()
+  }, [analytics])
+
+  const allPieces = useMemo(() => {
+    const pieces = new Set<string>()
+    analytics.filteredEntries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        const key = piece.composer
+          ? `${piece.composer} - ${piece.title}`
+          : piece.title
+        pieces.add(key)
+      })
+    })
+    return Array.from(pieces).sort()
+  }, [analytics])
 
   return (
     <div className="p-6 space-y-6">
@@ -54,9 +142,9 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
               className="px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
             >
               <option value="">{t('reports:allComposers')}</option>
-              {composerAutocomplete.suggestions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+              {allComposers.map(composer => (
+                <option key={composer} value={composer}>
+                  {composer}
                 </option>
               ))}
             </select>
@@ -66,11 +154,15 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
               className="px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
             >
               <option value="">{t('reports:allPieces')}</option>
-              {pieceAutocomplete.suggestions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {allPieces
+                .filter(
+                  piece => !selectedComposer || piece.includes(selectedComposer)
+                )
+                .map(piece => (
+                  <option key={piece} value={piece}>
+                    {piece}
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -79,7 +171,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
       {/* Selected Piece/Composer Stats */}
       {(selectedPiece || selectedComposer) && (
         <PieceComposerStats
-          analytics={analytics}
+          analytics={filteredAnalytics}
           selectedPiece={selectedPiece}
           selectedComposer={selectedComposer}
           formatDuration={formatDuration}
@@ -92,7 +184,7 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
           {t('reports:detailedStatistics')}
         </h3>
         <PiecesStatistics
-          analytics={analytics}
+          analytics={filteredAnalytics}
           formatDuration={formatDuration}
           selectedPiece={selectedPiece}
           selectedComposer={selectedComposer}
