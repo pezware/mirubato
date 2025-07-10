@@ -70,16 +70,13 @@ export function HeatmapCalendar({
     return { weeks, maxValue }
   }, [data, year])
 
-  // Month labels with proper positions
+  // Month labels - find which column each month starts in
   const monthLabels = useMemo(() => {
-    const labels = []
+    const labels: { month: string; columnIndex: number }[] = []
 
     // Find which column index each month starts in
     for (let i = 0; i < 12; i++) {
-      const firstDayOfMonth = new Date(year, i, 1)
-
-      // Find which week (column) this date appears in
-      let columnIndex = -1
+      // Find which week (column) this month's first day appears in
       calendarData.weeks.forEach((week, index) => {
         if (
           week.some(
@@ -89,16 +86,12 @@ export function HeatmapCalendar({
               d.date.getDate() === 1
           )
         ) {
-          columnIndex = index
+          labels.push({
+            month: format(new Date(year, i, 1), 'MMM'),
+            columnIndex: index,
+          })
         }
       })
-
-      if (columnIndex !== -1) {
-        labels.push({
-          month: format(firstDayOfMonth, 'MMM'),
-          position: columnIndex * 13 + 8, // 13px per week (12px block + 1px gap) + 8px offset for day labels
-        })
-      }
     }
     return labels
   }, [year, calendarData.weeks])
@@ -128,22 +121,12 @@ export function HeatmapCalendar({
       <div className="p-6">
         <div className="overflow-x-auto">
           <div className="inline-block">
-            {/* Month labels with proper alignment */}
-            <div className="relative h-6 mb-2">
-              {monthLabels.map((label, i) => (
-                <div
-                  key={i}
-                  className="absolute text-xs text-morandi-stone-600"
-                  style={{ left: `${label.position}px` }}
-                >
-                  {label.month}
-                </div>
-              ))}
-            </div>
-
             <div className="flex">
               {/* Day labels */}
               <div className="flex flex-col mr-2">
+                {/* Empty space for month row */}
+                <div className="h-3" style={{ marginBottom: '2px' }}></div>
+                {/* Day labels */}
                 {dayLabels.map((day, i) => (
                   <div
                     key={i}
@@ -159,6 +142,25 @@ export function HeatmapCalendar({
               <div className="flex gap-1">
                 {calendarData.weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
+                    {/* Month label cell */}
+                    <div
+                      className="h-3 flex items-center justify-center"
+                      style={{ marginBottom: '2px' }}
+                    >
+                      {monthLabels.find(
+                        label => label.columnIndex === weekIndex
+                      ) && (
+                        <span className="text-xs text-morandi-stone-600">
+                          {
+                            monthLabels.find(
+                              label => label.columnIndex === weekIndex
+                            )?.month
+                          }
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Day cells */}
                     {week.map((dayData, dayIndex) => {
                       // Check if this is a placeholder (date year is 1970)
                       if (dayData.date.getFullYear() === 1970) {
