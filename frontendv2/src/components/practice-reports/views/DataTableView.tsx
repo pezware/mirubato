@@ -1,30 +1,49 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { GroupedDataTable } from '../visualizations/tables/GroupedDataTable'
 import { FilterBuilder } from '../advanced/FilterBuilder'
 import { GroupingPanel } from '../advanced/GroupingPanel'
 import { useReportingStore } from '../../../stores/reportingStore'
+import { useLogbookStore } from '../../../stores/logbookStore'
 import { Card } from '../../ui/Card'
 import { Download, Filter, Layers } from 'lucide-react'
 import Button from '../../ui/Button'
+import { LogbookEntry } from '../../../api/logbook'
 
 interface DataTableViewProps {
   analytics: EnhancedAnalyticsData
 }
 
 export default function DataTableView({ analytics }: DataTableViewProps) {
-  const { t } = useTranslation(['reports', 'common'])
+  const { t } = useTranslation(['reports', 'common', 'logbook'])
+  const navigate = useNavigate()
   const [showFilters, setShowFilters] = useState(false)
   const [showGrouping, setShowGrouping] = useState(false)
   const { filters, groupBy, setGroupBy } = useReportingStore()
+  const { deleteEntry } = useLogbookStore()
 
   // Set default grouping if none exists
   useEffect(() => {
     if (groupBy.length === 0) {
       setGroupBy([{ field: 'date:month', order: 'desc' }])
     }
-  }, [])
+  }, [groupBy.length, setGroupBy])
+
+  // Handlers for entry actions
+  const handleEditEntry = (entry: LogbookEntry) => {
+    // Navigate to edit tab with entry data
+    navigate(`/logbook?tab=newEntry&editId=${entry.id}`, {
+      state: { editEntry: entry },
+    })
+  }
+
+  const handleDeleteEntry = async (entry: LogbookEntry) => {
+    if (window.confirm(t('logbook:entry.confirmDelete'))) {
+      await deleteEntry(entry.id)
+    }
+  }
 
   const handleExportData = () => {
     // Export grouped data functionality
@@ -104,7 +123,11 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
       {/* Data Table */}
       <Card>
         {analytics.groupedData && analytics.groupedData.length > 0 ? (
-          <GroupedDataTable data={analytics.groupedData} />
+          <GroupedDataTable
+            data={analytics.groupedData}
+            onEditEntry={handleEditEntry}
+            onDeleteEntry={handleDeleteEntry}
+          />
         ) : (
           <div className="p-8 text-center">
             <p className="text-gray-500 mb-4">{t('reports:table.noData')}</p>

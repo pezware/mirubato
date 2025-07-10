@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, ChevronDown, Download } from 'lucide-react'
+import { ChevronRight, ChevronDown, Download, Edit, Trash2 } from 'lucide-react'
 import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
 import { GroupedData } from '../../../../types/reporting'
@@ -11,6 +11,8 @@ interface GroupedDataTableProps {
   data: GroupedData[]
   showAggregates?: boolean
   onEntryClick?: (entry: LogbookEntry) => void
+  onEditEntry?: (entry: LogbookEntry) => void
+  onDeleteEntry?: (entry: LogbookEntry) => void
   onExport?: () => void
   className?: string
 }
@@ -19,6 +21,8 @@ export function GroupedDataTable({
   data,
   showAggregates = true,
   onEntryClick,
+  onEditEntry,
+  onDeleteEntry,
   onExport,
   className,
 }: GroupedDataTableProps) {
@@ -151,6 +155,8 @@ export function GroupedDataTable({
                 onToggle={() => toggleGroup(group.key)}
                 onToggleEntry={toggleEntry}
                 onEntryClick={onEntryClick}
+                onEditEntry={onEditEntry}
+                onDeleteEntry={onDeleteEntry}
                 formatDuration={formatDuration}
               />
             ))}
@@ -170,6 +176,8 @@ interface GroupRowProps {
   onToggle: () => void
   onToggleEntry: (id: string) => void
   onEntryClick?: (entry: LogbookEntry) => void
+  onEditEntry?: (entry: LogbookEntry) => void
+  onDeleteEntry?: (entry: LogbookEntry) => void
   formatDuration: (minutes: number) => string
 }
 
@@ -182,6 +190,8 @@ function GroupRow({
   onToggle,
   onToggleEntry,
   onEntryClick,
+  onEditEntry,
+  onDeleteEntry,
   formatDuration,
 }: GroupRowProps) {
   const hasChildren = group.children && group.children.length > 0
@@ -247,6 +257,8 @@ function GroupRow({
               onToggle={() => onToggleEntry(child.key)}
               onToggleEntry={onToggleEntry}
               onEntryClick={onEntryClick}
+              onEditEntry={onEditEntry}
+              onDeleteEntry={onDeleteEntry}
               formatDuration={formatDuration}
             />
           ))}
@@ -263,6 +275,8 @@ function GroupRow({
               expanded={expandedEntries.has(entry.id)}
               onToggle={() => onToggleEntry(entry.id)}
               onClick={() => onEntryClick?.(entry)}
+              onEdit={() => onEditEntry?.(entry)}
+              onDelete={() => onDeleteEntry?.(entry)}
               formatDuration={formatDuration}
             />
           ))}
@@ -278,6 +292,8 @@ interface EntryRowProps {
   expanded: boolean
   onToggle: () => void
   onClick?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
   formatDuration: (minutes: number) => string
 }
 
@@ -287,8 +303,11 @@ function EntryRow({
   expanded,
   onToggle,
   onClick,
+  onEdit,
+  onDelete,
   formatDuration,
 }: EntryRowProps) {
+  const { t } = useTranslation(['common'])
   const indent = level * 24
 
   return (
@@ -316,32 +335,64 @@ function EntryRow({
               )}
             </button>
             <div className="ml-2 flex-1">
-              <div className="flex items-center gap-3">
-                <span className="text-morandi-stone-700">
-                  {format(new Date(entry.timestamp), 'MMM d, yyyy h:mm a')}
-                </span>
-                <span className="text-morandi-stone-500">•</span>
-                <span className="text-morandi-stone-700">
-                  {formatDuration(entry.duration)}
-                </span>
-                <span className="text-morandi-stone-500">•</span>
-                <span className="text-morandi-stone-700">{entry.type}</span>
-                {entry.mood && (
-                  <>
-                    <span className="text-morandi-stone-500">•</span>
-                    <span className="text-base">
-                      {entry.mood === 'FRUSTRATED'
-                        ? '😣'
-                        : entry.mood === 'NEUTRAL'
-                          ? '😐'
-                          : entry.mood === 'SATISFIED'
-                            ? '😊'
-                            : entry.mood === 'EXCITED'
-                              ? '🤩'
-                              : ''}
-                    </span>
-                  </>
-                )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-morandi-stone-700">
+                    {format(new Date(entry.timestamp), 'MMM d, yyyy h:mm a')}
+                  </span>
+                  <span className="text-morandi-stone-500">•</span>
+                  <span className="text-morandi-stone-700">
+                    {formatDuration(entry.duration)}
+                  </span>
+                  <span className="text-morandi-stone-500">•</span>
+                  <span className="text-morandi-stone-700">{entry.type}</span>
+                  {entry.mood && (
+                    <>
+                      <span className="text-morandi-stone-500">•</span>
+                      <span className="text-base">
+                        {entry.mood === 'FRUSTRATED'
+                          ? '😣'
+                          : entry.mood === 'NEUTRAL'
+                            ? '😐'
+                            : entry.mood === 'SATISFIED'
+                              ? '😊'
+                              : entry.mood === 'EXCITED'
+                                ? '🤩'
+                                : ''}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={e => {
+                        e.stopPropagation()
+                        onEdit()
+                      }}
+                      title={t('common:edit')}
+                      className="p-1"
+                    >
+                      <Edit className="w-4 h-4 text-morandi-stone-600" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={e => {
+                        e.stopPropagation()
+                        onDelete()
+                      }}
+                      title={t('common:delete')}
+                      className="p-1 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4 text-morandi-stone-600" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
