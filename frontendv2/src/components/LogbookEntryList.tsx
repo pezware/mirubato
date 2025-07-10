@@ -65,13 +65,13 @@ export default function LogbookEntryList({
 
   const getMoodEmoji = (mood?: LogbookEntry['mood']) => {
     switch (mood) {
-      case 'FRUSTRATED':
+      case 'frustrated':
         return '😤'
-      case 'NEUTRAL':
+      case 'neutral':
         return '😐'
-      case 'SATISFIED':
+      case 'satisfied':
         return '😊'
-      case 'EXCITED':
+      case 'excited':
         return '🎉'
       default:
         return ''

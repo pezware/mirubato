@@ -68,7 +68,7 @@ export default function ScoreControls() {
           scoreId: currentScore.id,
           scoreTitle: currentScore.title,
           scoreComposer: currentScore.composer,
-          instrument: 'PIANO', // Could be made configurable
+          instrument: 'piano', // Could be made configurable
           pagesViewed: [currentPage],
         }
       : {},

@@ -606,17 +606,17 @@ API requests are limited to 100 requests per minute per IP address.
     schemas: {
       Instrument: {
         type: 'string',
-        enum: ['PIANO', 'GUITAR', 'BOTH'],
+        enum: ['piano', 'guitar', 'both'],
         description: 'Musical instrument',
       },
       Difficulty: {
         type: 'string',
-        enum: ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'],
+        enum: ['beginner', 'intermediate', 'advanced'],
         description: 'Difficulty level',
       },
       StylePeriod: {
         type: 'string',
-        enum: ['BAROQUE', 'CLASSICAL', 'ROMANTIC', 'MODERN', 'CONTEMPORARY'],
+        enum: ['baroque', 'classical', 'romantic', 'modern', 'contemporary'],
         description: 'Musical style period',
       },
       Score: {

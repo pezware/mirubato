@@ -40,7 +40,7 @@ export const PracticeCounter: React.FC = () => {
     type: 'counter',
     metadata: {
       title: t('counter.practice_title'),
-      instrument: 'PIANO', // Could be made configurable
+      instrument: 'piano', // Could be made configurable
     },
     onSessionEnd: useCallback(() => {
       // Navigate to logbook after saving

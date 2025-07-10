@@ -186,9 +186,9 @@ enhancedImportHandler.post('/imslp', async c => {
     const scoreId = nanoid()
 
     // Determine instrument from instrumentation
-    let instrument: Instrument = 'PIANO'
+    let instrument: Instrument = 'piano'
     if (metadata.instrumentation?.toLowerCase().includes('guitar')) {
-      instrument = 'GUITAR'
+      instrument = 'guitar'
     }
 
     await c.env.DB.prepare(

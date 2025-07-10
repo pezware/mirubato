@@ -17,7 +17,7 @@ const DEFAULT_CONFIG: AutoLoggingConfig = {
   roundingInterval: 1, // round to nearest minute
   showSummary: true,
   defaultTags: ['auto-logged'],
-  defaultInstrument: 'PIANO',
+  defaultInstrument: 'piano',
 }
 
 interface AutoLoggingProviderProps {
@@ -189,7 +189,7 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
         await createEntry({
           timestamp: currentSession.startTime.toISOString(),
           duration: durationMinutes,
-          type: 'PRACTICE',
+          type: 'practice',
           instrument: metadata.instrument || config.defaultInstrument,
           pieces,
           techniques: [],

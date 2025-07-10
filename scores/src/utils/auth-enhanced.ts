@@ -7,7 +7,7 @@ export interface EnhancedTokenPayload {
   email: string
   role?: UserRole
   displayName?: string
-  primaryInstrument?: 'PIANO' | 'GUITAR' | 'BOTH'
+  primaryInstrument?: 'piano' | 'guitar' | 'both'
   iat?: number
   exp?: number
 }
@@ -17,7 +17,7 @@ export interface AuthUser {
   email: string
   role: UserRole
   displayName?: string
-  primaryInstrument?: 'PIANO' | 'GUITAR' | 'BOTH'
+  primaryInstrument?: 'piano' | 'guitar' | 'both'
 }
 
 /**

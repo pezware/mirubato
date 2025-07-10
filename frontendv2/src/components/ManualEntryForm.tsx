@@ -26,10 +26,10 @@ export default function ManualEntryForm({
   // Form state
   const [duration, setDuration] = useState<number>(entry?.duration || 30)
   const [type, setType] = useState<LogbookEntry['type']>(
-    entry?.type || 'PRACTICE'
+    entry?.type || 'practice'
   )
   const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
-    entry?.instrument || 'PIANO'
+    entry?.instrument || 'piano'
   )
   const [notes, setNotes] = useState(entry?.notes || '')
   const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
@@ -237,11 +237,11 @@ export default function ManualEntryForm({
               <SplitButton<LogbookEntry['instrument']>
                 options={[
                   {
-                    value: 'PIANO',
+                    value: 'piano',
                     label: `🎹 ${t('common:instruments.piano')}`,
                   },
                   {
-                    value: 'GUITAR',
+                    value: 'guitar',
                     label: `🎸 ${t('common:instruments.guitar')}`,
                   },
                 ]}
@@ -332,8 +332,8 @@ export default function ManualEntryForm({
           </div>
         </div>
 
-        {/* Technique Selection - Only show when type is TECHNIQUE */}
-        {type === 'TECHNIQUE' && (
+        {/* Technique Selection - Only show when type is technique */}
+        {type === 'technique' && (
           <TechniqueSelector
             selectedTechniques={techniques}
             onTechniquesChange={setTechniques}

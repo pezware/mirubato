@@ -252,9 +252,9 @@ importImagesHandler.post('/', async c => {
     const finalTitle = title || extractedMetadata.title || 'Untitled Score'
     const finalComposer = composer || extractedMetadata.composer || 'Unknown'
     const finalInstrument =
-      instrument || extractedMetadata.instrument || 'PIANO'
+      instrument || extractedMetadata.instrument || 'piano'
     const finalDifficulty =
-      difficulty || extractedMetadata.difficulty || 'INTERMEDIATE'
+      difficulty || extractedMetadata.difficulty || 'intermediate'
 
     // Generate slug
     const slug = generateSlug(

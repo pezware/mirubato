@@ -4,7 +4,7 @@ export interface PracticeMetadata {
   // Common fields
   title?: string
   composer?: string
-  instrument?: 'PIANO' | 'GUITAR'
+  instrument?: 'piano' | 'guitar'
   tags?: string[]
 
   // Metronome specific
@@ -47,7 +47,7 @@ export interface AutoLoggingConfig {
   roundingInterval: number // round duration to nearest X minutes (1, 5, 15)
   showSummary: boolean // show summary before saving
   defaultTags: string[]
-  defaultInstrument: 'PIANO' | 'GUITAR'
+  defaultInstrument: 'piano' | 'guitar'
 }
 
 export interface AutoLoggingContextValue {

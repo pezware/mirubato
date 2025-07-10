@@ -9,6 +9,7 @@ import { useAuthStore } from './stores/authStore'
 import { fixLocalStorageData } from './utils/fixLocalStorageData'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
+import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
 
 // Set up PDF worker before any components load
 setupPdfWorker()
@@ -40,6 +41,9 @@ function App() {
   useEffect(() => {
     // Fix any corrupted localStorage data first
     fixLocalStorageData()
+
+    // Run lowercase migration for enum values
+    runLowercaseMigration()
 
     // Check if user is authenticated on app load
     refreshAuth()

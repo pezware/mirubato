@@ -195,7 +195,7 @@ describe('HybridAiExtractor', () => {
         title: 'PDF Title',
         composer: 'PDF Composer',
         instrument: 'Guitar',
-        difficulty: 'INTERMEDIATE',
+        difficulty: 'intermediate',
         difficultyLevel: 5,
       }
 

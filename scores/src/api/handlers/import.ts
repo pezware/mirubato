@@ -210,7 +210,7 @@ importHandler.post('/', async c => {
           composer: hybridResult.composer,
           opus: hybridResult.opus,
           instrument: hybridResult.instrument,
-          difficulty: hybridResult.difficultyLabel || 'INTERMEDIATE',
+          difficulty: hybridResult.difficultyLabel || 'intermediate',
           difficultyLevel: hybridResult.difficulty || 5,
           year: hybridResult.year,
           stylePeriod: hybridResult.stylePeriod,
@@ -243,8 +243,8 @@ importHandler.post('/', async c => {
       aiMetadata = {
         title: cleanFileName.replace('.pdf', ''),
         composer: 'Unknown',
-        instrument: 'PIANO',
-        difficulty: 'INTERMEDIATE',
+        instrument: 'piano',
+        difficulty: 'intermediate',
         difficultyLevel: 5,
         stylePeriod: null,
         tags: [],
@@ -420,49 +420,49 @@ importHandler.post('/', async c => {
 
 // Helper function to validate instrument
 function validateInstrument(instrument: string | null | undefined): string {
-  const validInstruments = ['PIANO', 'GUITAR', 'BOTH']
+  const validInstruments = ['piano', 'guitar', 'both']
 
-  if (!instrument) return 'PIANO'
+  if (!instrument) return 'piano'
 
-  const upperInstrument = instrument.toUpperCase()
-  if (validInstruments.includes(upperInstrument)) {
-    return upperInstrument
+  const lowerInstrument = instrument.toLowerCase()
+  if (validInstruments.includes(lowerInstrument)) {
+    return lowerInstrument
   }
 
   // Try to map common variations
-  if (upperInstrument.includes('PIANO')) return 'PIANO'
-  if (upperInstrument.includes('GUITAR')) return 'GUITAR'
-  if (upperInstrument.includes('BOTH')) return 'BOTH'
+  if (lowerInstrument.includes('piano')) return 'piano'
+  if (lowerInstrument.includes('guitar')) return 'guitar'
+  if (lowerInstrument.includes('both')) return 'both'
 
-  // Default to PIANO
-  return 'PIANO'
+  // Default to piano
+  return 'piano'
 }
 
 // Helper function to validate difficulty
 function validateDifficulty(difficulty: string | null | undefined): string {
-  const validDifficulties = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
+  const validDifficulties = ['beginner', 'intermediate', 'advanced']
 
-  if (!difficulty) return 'INTERMEDIATE'
+  if (!difficulty) return 'intermediate'
 
-  const upperDifficulty = difficulty.toUpperCase()
-  if (validDifficulties.includes(upperDifficulty)) {
-    return upperDifficulty
+  const lowerDifficulty = difficulty.toLowerCase()
+  if (validDifficulties.includes(lowerDifficulty)) {
+    return lowerDifficulty
   }
 
   // Try to map common variations
-  if (upperDifficulty.includes('BEGIN') || upperDifficulty.includes('EASY'))
-    return 'BEGINNER'
-  if (upperDifficulty.includes('INTER') || upperDifficulty.includes('MEDIUM'))
-    return 'INTERMEDIATE'
+  if (lowerDifficulty.includes('begin') || lowerDifficulty.includes('easy'))
+    return 'beginner'
+  if (lowerDifficulty.includes('inter') || lowerDifficulty.includes('medium'))
+    return 'intermediate'
   if (
-    upperDifficulty.includes('ADVAN') ||
-    upperDifficulty.includes('HARD') ||
-    upperDifficulty.includes('DIFFICULT')
+    lowerDifficulty.includes('advan') ||
+    lowerDifficulty.includes('hard') ||
+    lowerDifficulty.includes('difficult')
   )
-    return 'ADVANCED'
+    return 'advanced'
 
-  // Default to INTERMEDIATE
-  return 'INTERMEDIATE'
+  // Default to intermediate
+  return 'intermediate'
 }
 
 // Helper function to validate style period

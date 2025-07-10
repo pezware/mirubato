@@ -143,7 +143,7 @@ const Toolbox: React.FC = () => {
     type: 'metronome',
     metadata: {
       title: 'Metronome Practice',
-      instrument: 'PIANO', // Could be made configurable later
+      instrument: 'piano', // Could be made configurable later
       patterns: [currentPatternData.name],
     },
   })
