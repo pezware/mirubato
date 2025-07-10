@@ -34,51 +34,74 @@ export function HeatmapCalendar({
     // Find max value for intensity calculation
     const maxValue = Math.max(...Array.from(data.values()), 1)
 
-    // Group days by week
-    const weeks = new Map<
-      number,
+    // Group days by visual columns (not ISO weeks)
+    // Each column represents 7 days starting from the first Sunday
+    const weeks: Array<
       Array<{ date: Date; value: number; intensity: number }>
-    >()
+    > = []
+    let currentWeek: Array<{ date: Date; value: number; intensity: number }> =
+      []
+
+    // Add empty days at the beginning if year doesn't start on Sunday
+    const firstDayOfYear = getDay(startDate)
+    for (let i = 0; i < firstDayOfYear; i++) {
+      currentWeek.push({ date: new Date(0), value: 0, intensity: 0 }) // placeholder
+    }
 
     days.forEach(date => {
-      const weekNum = getWeek(date)
       const dateStr = format(date, 'yyyy-MM-dd')
       const value = data.get(dateStr) || 0
       const intensity = value > 0 ? Math.ceil((value / maxValue) * 4) : 0
 
-      if (!weeks.has(weekNum)) {
-        weeks.set(weekNum, [])
-      }
+      currentWeek.push({ date, value, intensity })
 
-      weeks.get(weekNum)!.push({ date, value, intensity })
+      // Start new week column after Saturday
+      if (getDay(date) === 6) {
+        weeks.push(currentWeek)
+        currentWeek = []
+      }
     })
 
-    return { weeks: Array.from(weeks.values()), maxValue }
+    // Add any remaining days
+    if (currentWeek.length > 0) {
+      weeks.push(currentWeek)
+    }
+
+    return { weeks, maxValue }
   }, [data, year])
 
   // Month labels with proper positions
   const monthLabels = useMemo(() => {
     const labels = []
-    const startDate = startOfYear(new Date(year, 0, 1))
-    const firstDayOfWeek = getDay(startDate) // 0 = Sunday, 6 = Saturday
 
+    // Find which column index each month starts in
     for (let i = 0; i < 12; i++) {
       const firstDayOfMonth = new Date(year, i, 1)
-      const daysSinceStart = Math.floor(
-        (firstDayOfMonth.getTime() - startDate.getTime()) /
-          (24 * 60 * 60 * 1000)
-      )
 
-      // Calculate the week position accounting for the starting day of the year
-      const weekPosition = Math.floor((daysSinceStart + firstDayOfWeek) / 7)
-
-      labels.push({
-        month: format(firstDayOfMonth, 'MMM'),
-        position: weekPosition * 13 + 8, // 13px per week (12px block + 1px gap) + 8px offset for day labels
+      // Find which week (column) this date appears in
+      let columnIndex = -1
+      calendarData.weeks.forEach((week, index) => {
+        if (
+          week.some(
+            d =>
+              d.date.getFullYear() === year &&
+              d.date.getMonth() === i &&
+              d.date.getDate() === 1
+          )
+        ) {
+          columnIndex = index
+        }
       })
+
+      if (columnIndex !== -1) {
+        labels.push({
+          month: format(firstDayOfMonth, 'MMM'),
+          position: columnIndex * 13 + 8, // 13px per week (12px block + 1px gap) + 8px offset for day labels
+        })
+      }
     }
     return labels
-  }, [year])
+  }, [year, calendarData.weeks])
 
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -136,12 +159,9 @@ export function HeatmapCalendar({
               <div className="flex gap-1">
                 {calendarData.weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
-                    {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => {
-                      const dayData = week.find(
-                        d => getDay(d.date) === dayIndex
-                      )
-
-                      if (!dayData) {
+                    {week.map((dayData, dayIndex) => {
+                      // Check if this is a placeholder (date year is 1970)
+                      if (dayData.date.getFullYear() === 1970) {
                         return <div key={dayIndex} className="w-3 h-3" />
                       }
 
