@@ -70,28 +70,38 @@ export function HeatmapCalendar({
     return { weeks, maxValue }
   }, [data, year])
 
-  // Month labels - find which column each month starts in
+  // Month labels - find which column each month starts in (first visible day)
   const monthLabels = useMemo(() => {
     const labels: { month: string; columnIndex: number }[] = []
 
-    // Find which column index each month starts in
+    // For each month, find the column containing the first visible day
     for (let i = 0; i < 12; i++) {
-      // Find which week (column) this month's first day appears in
-      calendarData.weeks.forEach((week, index) => {
-        if (
-          week.some(
-            d =>
-              d.date.getFullYear() === year &&
-              d.date.getMonth() === i &&
-              d.date.getDate() === 1
-          )
-        ) {
+      let found = false
+
+      // Look through each column to find the first occurrence of this month
+      for (
+        let colIndex = 0;
+        colIndex < calendarData.weeks.length && !found;
+        colIndex++
+      ) {
+        const week = calendarData.weeks[colIndex]
+
+        // Check if this column contains any real days (not placeholders) from this month
+        const hasMonthDay = week.some(
+          d =>
+            d.date.getFullYear() === year &&
+            d.date.getMonth() === i &&
+            d.date.getFullYear() !== 1970 // Not a placeholder
+        )
+
+        if (hasMonthDay) {
           labels.push({
             month: format(new Date(year, i, 1), 'MMM'),
-            columnIndex: index,
+            columnIndex: colIndex,
           })
+          found = true
         }
-      })
+      }
     }
     return labels
   }, [year, calendarData.weeks])
