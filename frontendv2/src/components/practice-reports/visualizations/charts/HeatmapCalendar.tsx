@@ -60,17 +60,21 @@ export function HeatmapCalendar({
   const monthLabels = useMemo(() => {
     const labels = []
     const startDate = startOfYear(new Date(year, 0, 1))
+    const firstDayOfWeek = getDay(startDate) // 0 = Sunday, 6 = Saturday
 
     for (let i = 0; i < 12; i++) {
       const firstDayOfMonth = new Date(year, i, 1)
-      const weeksSinceStart = Math.floor(
+      const daysSinceStart = Math.floor(
         (firstDayOfMonth.getTime() - startDate.getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
+          (24 * 60 * 60 * 1000)
       )
+
+      // Calculate the week position accounting for the starting day of the year
+      const weekPosition = Math.floor((daysSinceStart + firstDayOfWeek) / 7)
 
       labels.push({
         month: format(firstDayOfMonth, 'MMM'),
-        position: weeksSinceStart * 13 + 8, // 13px per week (12px + 1px gap) + 8px offset
+        position: weekPosition * 13 + 8, // 13px per week (12px block + 1px gap) + 8px offset for day labels
       })
     }
     return labels

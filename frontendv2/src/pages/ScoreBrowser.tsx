@@ -38,6 +38,7 @@ export default function ScoreBrowserPage() {
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
+  const [hasInitializedTab, setHasInitializedTab] = useState(false)
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     new Set()
   )
@@ -49,6 +50,14 @@ export default function ScoreBrowserPage() {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, selectedInstrument, selectedDifficulty, isAuthenticated])
+
+  // Set default tab to "My Collections" if user is authenticated and has collections
+  useEffect(() => {
+    if (!hasInitializedTab && isAuthenticated && userCollections.length > 0) {
+      setTabView('myCollections')
+      setHasInitializedTab(true)
+    }
+  }, [isAuthenticated, userCollections, hasInitializedTab])
 
   const loadData = async () => {
     setIsLoading(true)

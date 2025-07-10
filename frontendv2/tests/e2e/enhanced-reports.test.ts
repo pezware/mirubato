@@ -127,20 +127,13 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Verify key sections are present', async () => {
-        // Just verify the main sections are visible without checking specific implementation details
+        // Verify the heatmap calendar is present by its test id
         await expect(
-          page.getByRole('heading', { name: 'Practice Calendar' })
+          page.locator('[data-testid="heatmap-calendar"]')
         ).toBeVisible()
 
-        // Verify charts section
-        await expect(
-          page.getByRole('heading', { name: 'Practice Trend' })
-        ).toBeVisible()
-
-        // Verify distribution charts
-        await expect(
-          page.getByRole('heading', { name: 'Instrument Distribution' })
-        ).toBeVisible()
+        // Note: Practice Trend and Instrument Distribution headings are in Analytics tab, not Overview
+        // We'll verify them when we test the Analytics tab
       })
     })
 
@@ -194,26 +187,16 @@ test.describe('Enhanced Reports', () => {
           .getAttribute('class')
         expect(analyticsTabClasses).toContain('border-morandi-purple-400')
 
-        // Check if we can find any analytics-related content
-        const hasAnalyticsContent =
-          (await page
-            .locator('text=Analytics')
-            .isVisible({ timeout: 5000 })
-            .catch(() => false)) ||
-          (await page
-            .locator('text=Filter')
-            .isVisible({ timeout: 5000 })
-            .catch(() => false)) ||
-          (await page
-            .locator('text=Trend')
-            .isVisible({ timeout: 5000 })
-            .catch(() => false))
+        // Check for analytics content
+        await expect(
+          page.getByRole('heading', { name: 'Practice Trend' })
+        ).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Instrument Distribution' })
+        ).toBeVisible()
 
-        // If no analytics content loads, that's still a "pass" - the tab switched successfully
-        console.log('Analytics content loaded:', hasAnalyticsContent)
-
-        // Basic requirement: tab navigation worked
-        expect(analyticsTabClasses).toContain('border-morandi-purple-400')
+        // Verify filtering capabilities
+        await expect(page.getByText('Advanced Filtering')).toBeVisible()
       })
     })
 

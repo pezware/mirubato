@@ -323,14 +323,16 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
 
     test('view calendar heatmap', async ({ page }) => {
       await test.step('Verify calendar heatmap', async () => {
-        // Calendar should be visible
-        await expect(page.locator('text=Practice Calendar')).toBeVisible({
+        // Calendar should be visible by its test id
+        await expect(
+          page.locator('[data-testid="heatmap-calendar"]')
+        ).toBeVisible({
           timeout: 15000,
         })
 
-        // Check for calendar elements with extended timeout
+        // Check for calendar elements (the calendar grid) with extended timeout
         const hasCalendarElements = await page
-          .locator('rect, .cal-heatmap-cell')
+          .locator('[data-testid="heatmap-calendar"] button')
           .first()
           .isVisible({ timeout: 15000 })
           .catch(() => false)
