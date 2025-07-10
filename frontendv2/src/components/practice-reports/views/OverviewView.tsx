@@ -22,7 +22,9 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
   // Handlers for entry actions
   const handleEditEntry = (entry: LogbookEntry) => {
     // Navigate to edit tab with entry data
-    navigate('/logbook?tab=newEntry', { state: { editEntry: entry } })
+    navigate(`/logbook?tab=newEntry&editId=${entry.id}`, {
+      state: { editEntry: entry },
+    })
   }
 
   const handleDeleteEntry = async (entry: LogbookEntry) => {

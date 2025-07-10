@@ -32,22 +32,43 @@ export default function EnhancedReports() {
   // Handle URL parameters and navigation state
   useEffect(() => {
     const tab = searchParams.get('tab')
+    const editId = searchParams.get('editId')
+
     if (tab === 'newEntry') {
       setReportView('newEntry')
-      // Check if we have an entry to edit from navigation state
-      if (location.state && 'editEntry' in location.state) {
+
+      // First check for entry ID in URL
+      if (editId) {
+        const entryToEdit = entries.find(e => e.id === editId)
+        if (entryToEdit) {
+          setEditEntry(entryToEdit)
+        }
+      }
+      // Fallback to navigation state
+      else if (location.state && 'editEntry' in location.state) {
         setEditEntry(location.state.editEntry as LogbookEntry)
       }
+    } else if (!tab) {
+      // Reset to overview if no tab parameter
+      setReportView('overview')
     }
-  }, [searchParams, location.state])
+  }, [searchParams, location.state, entries])
 
   // Update URL when tab changes
   const handleViewChange = (view: ReportView) => {
     setReportView(view)
     if (view === 'newEntry') {
-      setSearchParams({ tab: 'newEntry' })
+      // Keep editId if it exists
+      const editId = searchParams.get('editId')
+      if (editId) {
+        setSearchParams({ tab: 'newEntry', editId })
+      } else {
+        setSearchParams({ tab: 'newEntry' })
+      }
     } else {
       setSearchParams({})
+      // Clear navigation state when switching away
+      window.history.replaceState({}, document.title)
     }
     // Clear edit entry when switching away from newEntry
     if (view !== 'newEntry') {
@@ -160,11 +181,13 @@ export default function EnhancedReports() {
           <ManualEntryForm
             entry={editEntry}
             onClose={() => {
-              handleViewChange('overview')
+              setSearchParams({})
+              setReportView('overview')
               setEditEntry(undefined)
             }}
             onSave={() => {
-              handleViewChange('overview')
+              setSearchParams({})
+              setReportView('overview')
               setEditEntry(undefined)
             }}
           />
@@ -196,8 +219,17 @@ export default function EnhancedReports() {
           }
         >
           <ManualEntryForm
-            onClose={() => setReportView('overview')}
-            onSave={() => setReportView('overview')}
+            entry={editEntry}
+            onClose={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
+            onSave={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
           />
         </Suspense>
       ) : (
