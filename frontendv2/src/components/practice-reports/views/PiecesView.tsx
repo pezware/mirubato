@@ -18,15 +18,10 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
   const [selectedComposer, setSelectedComposer] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Autocomplete hooks - with search query
+  // Autocomplete hook for pieces - with search query
   const pieceAutocomplete = useAutocomplete({
     type: 'piece',
     composer: selectedComposer || undefined,
-    minLength: 0,
-  })
-
-  const composerAutocomplete = useAutocomplete({
-    type: 'composer',
     minLength: 0,
   })
 
