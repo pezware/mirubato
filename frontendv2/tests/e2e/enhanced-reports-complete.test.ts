@@ -302,6 +302,13 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
 
   test.describe('Chart Interactions', () => {
     test('interact with practice trend chart', async ({ page }) => {
+      await test.step('Navigate to Analytics tab', async () => {
+        // Charts are in the Analytics tab
+        await page.click('[data-testid="analytics-tab"]')
+        await page.waitForLoadState('networkidle')
+        await page.waitForTimeout(2000) // Give time for charts to render
+      })
+
       await test.step('Verify trend chart is visible', async () => {
         // Wait for canvas elements to be rendered with extended timeout
         await page.waitForSelector('canvas', {
@@ -323,14 +330,16 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
 
     test('view calendar heatmap', async ({ page }) => {
       await test.step('Verify calendar heatmap', async () => {
-        // Calendar should be visible
-        await expect(page.locator('text=Practice Calendar')).toBeVisible({
+        // Calendar should be visible by its test id
+        await expect(
+          page.locator('[data-testid="heatmap-calendar"]')
+        ).toBeVisible({
           timeout: 15000,
         })
 
-        // Check for calendar elements with extended timeout
+        // Check for calendar elements (the calendar grid) with extended timeout
         const hasCalendarElements = await page
-          .locator('rect, .cal-heatmap-cell')
+          .locator('[data-testid="heatmap-calendar"] button')
           .first()
           .isVisible({ timeout: 15000 })
           .catch(() => false)

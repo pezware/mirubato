@@ -7,7 +7,6 @@ import {
   endOfYear,
   eachDayOfInterval,
   getDay,
-  getWeek,
   isSameDay,
 } from 'date-fns'
 
@@ -34,47 +33,77 @@ export function HeatmapCalendar({
     // Find max value for intensity calculation
     const maxValue = Math.max(...Array.from(data.values()), 1)
 
-    // Group days by week
-    const weeks = new Map<
-      number,
+    // Group days by visual columns (not ISO weeks)
+    // Each column represents 7 days starting from the first Sunday
+    const weeks: Array<
       Array<{ date: Date; value: number; intensity: number }>
-    >()
+    > = []
+    let currentWeek: Array<{ date: Date; value: number; intensity: number }> =
+      []
+
+    // Add empty days at the beginning if year doesn't start on Sunday
+    const firstDayOfYear = getDay(startDate)
+    for (let i = 0; i < firstDayOfYear; i++) {
+      currentWeek.push({ date: new Date(0), value: 0, intensity: 0 }) // placeholder
+    }
 
     days.forEach(date => {
-      const weekNum = getWeek(date)
       const dateStr = format(date, 'yyyy-MM-dd')
       const value = data.get(dateStr) || 0
       const intensity = value > 0 ? Math.ceil((value / maxValue) * 4) : 0
 
-      if (!weeks.has(weekNum)) {
-        weeks.set(weekNum, [])
-      }
+      currentWeek.push({ date, value, intensity })
 
-      weeks.get(weekNum)!.push({ date, value, intensity })
+      // Start new week column after Saturday
+      if (getDay(date) === 6) {
+        weeks.push(currentWeek)
+        currentWeek = []
+      }
     })
 
-    return { weeks: Array.from(weeks.values()), maxValue }
+    // Add any remaining days
+    if (currentWeek.length > 0) {
+      weeks.push(currentWeek)
+    }
+
+    return { weeks, maxValue }
   }, [data, year])
 
-  // Month labels with proper positions
+  // Month labels - find which column each month starts in (first visible day)
   const monthLabels = useMemo(() => {
-    const labels = []
-    const startDate = startOfYear(new Date(year, 0, 1))
+    const labels: { month: string; columnIndex: number }[] = []
 
+    // For each month, find the column containing the first visible day
     for (let i = 0; i < 12; i++) {
-      const firstDayOfMonth = new Date(year, i, 1)
-      const weeksSinceStart = Math.floor(
-        (firstDayOfMonth.getTime() - startDate.getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
-      )
+      let found = false
 
-      labels.push({
-        month: format(firstDayOfMonth, 'MMM'),
-        position: weeksSinceStart * 13 + 8, // 13px per week (12px + 1px gap) + 8px offset
-      })
+      // Look through each column to find the first occurrence of this month
+      for (
+        let colIndex = 0;
+        colIndex < calendarData.weeks.length && !found;
+        colIndex++
+      ) {
+        const week = calendarData.weeks[colIndex]
+
+        // Check if this column contains any real days (not placeholders) from this month
+        const hasMonthDay = week.some(
+          d =>
+            d.date.getFullYear() === year &&
+            d.date.getMonth() === i &&
+            d.date.getFullYear() !== 1970 // Not a placeholder
+        )
+
+        if (hasMonthDay) {
+          labels.push({
+            month: format(new Date(year, i, 1), 'MMM'),
+            columnIndex: colIndex,
+          })
+          found = true
+        }
+      }
     }
     return labels
-  }, [year])
+  }, [year, calendarData.weeks])
 
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -101,22 +130,12 @@ export function HeatmapCalendar({
       <div className="p-6">
         <div className="overflow-x-auto">
           <div className="inline-block">
-            {/* Month labels with proper alignment */}
-            <div className="relative h-6 mb-2">
-              {monthLabels.map((label, i) => (
-                <div
-                  key={i}
-                  className="absolute text-xs text-morandi-stone-600"
-                  style={{ left: `${label.position}px` }}
-                >
-                  {label.month}
-                </div>
-              ))}
-            </div>
-
             <div className="flex">
               {/* Day labels */}
               <div className="flex flex-col mr-2">
+                {/* Empty space for month row */}
+                <div className="h-3" style={{ marginBottom: '2px' }}></div>
+                {/* Day labels */}
                 {dayLabels.map((day, i) => (
                   <div
                     key={i}
@@ -132,12 +151,28 @@ export function HeatmapCalendar({
               <div className="flex gap-1">
                 {calendarData.weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
-                    {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => {
-                      const dayData = week.find(
-                        d => getDay(d.date) === dayIndex
-                      )
+                    {/* Month label cell */}
+                    <div
+                      className="h-3 flex items-center justify-center"
+                      style={{ marginBottom: '2px' }}
+                    >
+                      {monthLabels.find(
+                        label => label.columnIndex === weekIndex
+                      ) && (
+                        <span className="text-xs text-morandi-stone-600">
+                          {
+                            monthLabels.find(
+                              label => label.columnIndex === weekIndex
+                            )?.month
+                          }
+                        </span>
+                      )}
+                    </div>
 
-                      if (!dayData) {
+                    {/* Day cells */}
+                    {week.map((dayData, dayIndex) => {
+                      // Check if this is a placeholder (date year is 1970)
+                      if (dayData.date.getFullYear() === 1970) {
                         return <div key={dayIndex} className="w-3 h-3" />
                       }
 

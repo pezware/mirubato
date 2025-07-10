@@ -235,9 +235,9 @@ export default function EnhancedReports() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
           {/* Export Controls */}
-          <div className="px-4 py-2 border-b border-morandi-stone-200 bg-morandi-sand-50">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-morandi-stone-600">
+          <div className="px-3 sm:px-4 py-2 border-b border-morandi-stone-200 bg-morandi-sand-50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-xs sm:text-sm text-morandi-stone-600">
                 {analytics.filteredEntries.length} {t('reports:entriesFound')}
                 {filters.length > 0 && ` (${t('reports:filtered')})`}
               </div>
@@ -247,7 +247,7 @@ export default function EnhancedReports() {
                   disabled={
                     isExporting || analytics.filteredEntries.length === 0
                   }
-                  className="btn-secondary text-sm"
+                  className="btn-secondary text-xs sm:text-sm px-2 sm:px-4"
                   data-testid="export-csv-button"
                 >
                   {t('reports:exportCSV')}
@@ -257,7 +257,7 @@ export default function EnhancedReports() {
                   disabled={
                     isExporting || analytics.filteredEntries.length === 0
                   }
-                  className="btn-secondary text-sm"
+                  className="btn-secondary text-xs sm:text-sm px-2 sm:px-4"
                   data-testid="export-json-button"
                 >
                   {t('reports:exportJSON')}
