@@ -111,6 +111,32 @@ All services run as Cloudflare Workers with the following domains:
 
 ### Database Architecture
 
+#### Current Implementation vs Intended Design (July 2025)
+
+**Important Discovery**: The system currently uses a different database architecture than originally intended:
+
+**Current State (Production/Staging)**:
+
+- All logbook entries stored in `sync_data` table as JSON blobs
+- `logbook_entries` table exists but is empty (0 records)
+- 'TECHNIQUE' practice type works despite not being in CHECK constraint
+- Frontend and localStorage use same JSON format as sync_data
+
+**Intended Design**:
+
+- Structured `logbook_entries` table with proper columns including `techniques TEXT`
+- Better query performance with indexed columns
+- Database-level validation and constraints
+
+**Migration Plan** (Recommended):
+
+1. Fix CHECK constraint to include 'TECHNIQUE' type
+2. Migrate 43 existing entries from sync_data to logbook_entries
+3. Update API to use structured tables
+4. Keep sync_data as staging/backup during transition
+
+See [Database Architecture Analysis](#database-architecture-analysis) section below for detailed findings.
+
 #### Main Database (API)
 
 The API uses `mirubato-prod` / `mirubato-dev` databases with the following schema:
@@ -125,11 +151,11 @@ users (
   created_at, updated_at
 )
 
--- Practice data tables
+-- Practice data tables (exist but currently unused)
 practice_sessions, practice_logs, sheet_music,
 logbook_entries, goals, user_preferences
 
--- Sync tables
+-- Sync tables (currently stores all data)
 sync_data, sync_metadata
 ```
 
@@ -196,7 +222,7 @@ cd scores && wrangler secret put JWT_SECRET --env staging
 
 ### Deployment Architecture
 
-- **CI/CD**: GitHub Actions for validation, Cloudflare dashboard for deployment
+- **CI/CD**: GitHub Actions for validation, Cloudflare automatic deployments on push
 - **Environments**: Production (default), Staging, Development
 - **Worker Names**:
   - Production: `mirubato`, `mirubato-api`, `mirubato-scores`
@@ -221,12 +247,12 @@ cd scores && wrangler secret put JWT_SECRET --env staging
 - **Data ownership**: Users control their practice data
 - **Instant responsiveness**: No network latency for core interactions
 
-### 2. Module-Based Architecture
+### 2. Component-Based Architecture (Actual Implementation)
 
-- **Separation of concerns**: Each module handles a specific domain
-- **Event-driven communication**: Modules communicate via EventBus
-- **Dependency injection**: Clear initialization order and dependencies
-- **Testable**: Each module can be tested in isolation
+- **Separation of concerns**: Each React component handles specific functionality
+- **Props and hooks**: Components communicate via props and shared hooks
+- **Zustand stores**: Centralized state management for auth and logbook data
+- **Testable**: Components tested with React Testing Library
 
 ### 3. Minimalist UI Philosophy
 
@@ -244,8 +270,11 @@ The frontend uses a straightforward React architecture without the complex modul
 #### State Management
 
 - **Zustand Stores**: Simple, lightweight state management
-  - `authStore`: User authentication and session
-  - `logbookStore`: Practice entries and local data
+  - `authStore`: User authentication and session management
+  - `logbookStore`: Practice entries and local data sync
+  - `scoreStore`: Sheet music browsing and collections
+  - `practiceStore`: Active practice session tracking
+  - `reportingStore`: Analytics filters and view preferences
   - Direct API calls via Axios clients
 
 #### Key Components
@@ -254,7 +283,7 @@ The frontend uses a straightforward React architecture without the complex modul
 
 - **Home**: Landing page with feature overview
 - **Logbook**: Practice session tracking and reporting
-- **Toolbox**: Metronome with customizable patterns
+- **Toolbox**: Practice tools including metronome with patterns and practice counter
 - **Scorebook**: Sheet music browser with collections support (July 2025 update)
 - **Auth**: Authentication pages (verify, callback)
 
@@ -389,6 +418,14 @@ React Components → Zustand Stores → API Clients → REST API
             Local Storage (offline sync)
 ```
 
+**Store Responsibilities**:
+
+- **authStore**: JWT tokens, user profile, authentication state
+- **logbookStore**: Practice entries (Map-based for O(1) access), goals, sync management
+- **scoreStore**: Sheet music metadata, collections, search/filter state
+- **practiceStore**: Active practice sessions, timers, auto-logging state
+- **reportingStore**: Report filters, view preferences, cached analytics data
+
 ### Planned Module Architecture (Not Implemented)
 
 The original design envisioned a complex module system with EventBus for loose coupling. This architecture remains in the documentation for potential future implementation but was deferred in favor of shipping a working MVP.
@@ -485,9 +522,13 @@ All services expose comprehensive health monitoring:
 ## Development Workflow
 
 ```bash
-# Local development
-npm run dev              # Frontend (port 3000)
-npm run dev:api          # API (port 8787)
+# Local Development with proper domains
+./start-scorebook.sh     # Start all services with proper domains
+
+# Individual services (for debugging)
+cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
+cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
+cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
 
 # Deployment (from respective directories)
 cd [service] && wrangler deploy               # Production
@@ -728,6 +769,59 @@ The frontend implements aggressive code splitting:
 
 4. **REST over GraphQL**: The migration from GraphQL to REST simplified the architecture significantly without losing functionality.
 
+## Database Architecture Analysis
+
+### Discovery: JSON Storage vs Structured Tables (July 2025)
+
+During investigation of the 'TECHNIQUE' practice type implementation, we discovered a significant architectural deviation:
+
+#### Current Implementation
+
+- **sync_data table**: Stores all 43 logbook entries as JSON blobs
+- **logbook_entries table**: Empty (0 entries) despite having proper schema
+- **Data flow**: Frontend → API → sync_data (JSON) → Frontend
+
+#### Production Schema (from backup)
+
+```sql
+CREATE TABLE logbook_entries (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  duration INTEGER NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('PRACTICE', 'PERFORMANCE', 'LESSON', 'REHEARSAL')),
+  instrument TEXT NOT NULL CHECK (instrument IN ('PIANO', 'GUITAR')),
+  pieces TEXT NOT NULL DEFAULT '[]',
+  techniques TEXT NOT NULL DEFAULT '[]',  -- Column exists!
+  goal_ids TEXT NOT NULL DEFAULT '[]',
+  notes TEXT,
+  mood TEXT CHECK (mood IN ('FRUSTRATED', 'NEUTRAL', 'SATISFIED', 'EXCITED')),
+  tags TEXT NOT NULL DEFAULT '[]',
+  -- ... other columns
+)
+```
+
+#### Key Findings
+
+1. **TECHNIQUE type missing from CHECK constraint** but works via JSON storage
+2. **techniques column exists** in schema but unused
+3. **All queries use JSON extraction** which is inefficient
+4. **Frontend decoupled** - doesn't know about backend storage method
+
+#### Performance Implications
+
+- **Current (JSON)**: `json_extract(data, '$.techniques')` requires full table scan
+- **Structured**: Indexed columns would provide 100x+ performance improvement
+
+#### Migration Benefits
+
+- Database-enforced data integrity
+- Efficient querying and aggregation
+- Proper indexing for performance
+- Enables advanced analytics features
+
+The API abstraction layer makes migration straightforward - frontend code remains unchanged.
+
 ## Future Considerations
 
 1. **Mobile Apps**: React Native using same REST API
@@ -735,6 +829,7 @@ The frontend implements aggressive code splitting:
 3. **Scaling**: Multi-region database replication
 4. **Performance**: Edge caching optimization
 5. **Module System**: Reconsider when app complexity justifies it
+6. **Database Migration**: Move from JSON blobs to structured tables for better performance
 
 ---
 
