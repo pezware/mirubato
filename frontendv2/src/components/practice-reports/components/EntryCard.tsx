@@ -19,7 +19,11 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
   // Removed unused time variable
 
   return (
-    <div className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div
+      className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+      data-testid="logbook-entry"
+      data-entry-id={entry.id}
+    >
       {/* Date Badge */}
       <div className="flex-shrink-0 text-center">
         <div className="w-16 h-16 bg-stone-100 rounded-lg flex flex-col items-center justify-center">

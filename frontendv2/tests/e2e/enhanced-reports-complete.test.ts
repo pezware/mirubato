@@ -302,6 +302,13 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
 
   test.describe('Chart Interactions', () => {
     test('interact with practice trend chart', async ({ page }) => {
+      await test.step('Navigate to Analytics tab', async () => {
+        // Charts are in the Analytics tab
+        await page.click('[data-testid="analytics-tab"]')
+        await page.waitForLoadState('networkidle')
+        await page.waitForTimeout(2000) // Give time for charts to render
+      })
+
       await test.step('Verify trend chart is visible', async () => {
         // Wait for canvas elements to be rendered with extended timeout
         await page.waitForSelector('canvas', {

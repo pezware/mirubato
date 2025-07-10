@@ -195,8 +195,10 @@ test.describe('Enhanced Reports', () => {
           page.getByRole('heading', { name: 'Instrument Distribution' })
         ).toBeVisible()
 
-        // Verify filtering capabilities
-        await expect(page.getByText('Advanced Filtering')).toBeVisible()
+        // Verify filtering capabilities - look for the Filters heading in analytics
+        await expect(
+          page.getByRole('heading', { name: 'Filters' })
+        ).toBeVisible()
       })
     })
 
@@ -264,6 +266,10 @@ test.describe('Enhanced Reports', () => {
       await test.step('Wait for charts to render', async () => {
         // Overview tab should be active by default
         await page.waitForLoadState('networkidle')
+
+        // Switch to Analytics tab where charts are more likely to be visible
+        await page.click('[data-testid="analytics-tab"]')
+        await page.waitForTimeout(2000) // Give time for charts to render
 
         // Wait for any canvas elements to be present
         await page.waitForSelector('canvas', {
