@@ -4,6 +4,9 @@
 
 ### Deployment Architecture (2025)
 
+- See @docs/ROADMAP.md for general roadmap.
+- See @docs/DESIGN.md for general design and spcs.
+- See @docs/DEBUG.md for known issues and how did we resolved them.
 - **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
 - **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
 - **Deployment**:
@@ -42,6 +45,8 @@ cd api && wrangler deploy --env staging    # Deploy to staging
 cd scores && wrangler deploy               # Deploy to production (default)
 cd scores && wrangler deploy --env staging # Deploy to staging
 ```
+
+- You run in an environment where `ast-grep` is available; whenever a search requires syntax-aware or structural matching, default to `ast-grep --lang typescript -p '<pattern>'` (or set `--lang` appropriately) and avoid falling back to text-only tools like `rg` or `grep` unless I explicitly request a plain-text search.
 
 ### Project Structure
 
@@ -88,7 +93,7 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 | Problem                              | See DEBUG.md Section                         |
 | ------------------------------------ | -------------------------------------------- |
 | VexFlow "Too Many Ticks"             | Known Issues #1                              |
-| GraphQL 500 errors                   | Known Issues #2                              |
+| API 500 errors                       | Known Issues #2                              |
 | Mobile audio issues                  | Known Issues #6                              |
 | Type misalignment                    | Common Development Issues #1                 |
 | Memory leaks                         | Common Development Issues #4                 |
