@@ -6,6 +6,7 @@ interface Tab {
   label: string
   icon?: React.ReactNode
   shortLabel?: string
+  mobileIconOnly?: boolean
 }
 
 interface TabsProps {
@@ -39,13 +40,25 @@ export const Tabs: React.FC<TabsProps> = ({
                 : 'border-transparent text-morandi-stone-500 hover:text-morandi-stone-700 hover:border-morandi-stone-300'
             )}
           >
-            {tab.icon && (
-              <span className="mr-1 sm:mr-2 flex-shrink-0">{tab.icon}</span>
+            {tab.mobileIconOnly ? (
+              <>
+                <span className="sm:hidden">{tab.icon}</span>
+                <span className="hidden sm:flex sm:items-center sm:gap-2">
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </span>
+              </>
+            ) : (
+              <>
+                {tab.icon && (
+                  <span className="mr-1 sm:mr-2 flex-shrink-0">{tab.icon}</span>
+                )}
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">
+                  {tab.shortLabel || tab.label.split(' ')[0]}
+                </span>
+              </>
             )}
-            <span className="hidden sm:inline">{tab.label}</span>
-            <span className="sm:hidden">
-              {tab.shortLabel || tab.label.split(' ')[0]}
-            </span>
           </button>
         ))}
       </nav>

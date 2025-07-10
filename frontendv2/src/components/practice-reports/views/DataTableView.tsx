@@ -7,7 +7,6 @@ import { FilterBuilder } from '../advanced/FilterBuilder'
 import { GroupingPanel } from '../advanced/GroupingPanel'
 import { useReportingStore } from '../../../stores/reportingStore'
 import { useLogbookStore } from '../../../stores/logbookStore'
-import { Card } from '../../ui/Card'
 import { Download, Filter, Layers } from 'lucide-react'
 import Button from '../../ui/Button'
 import { LogbookEntry } from '../../../api/logbook'
@@ -58,70 +57,153 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     URL.revokeObjectURL(url)
   }
 
+  const exportToCSV = (data: typeof analytics.filteredEntries) => {
+    // CSV export implementation
+    const headers = [
+      'Date',
+      'Duration',
+      'Piece',
+      'Composer',
+      'Instrument',
+      'Notes',
+    ]
+    const rows = data.map(entry => [
+      new Date(entry.timestamp).toLocaleDateString(),
+      `${Math.floor(entry.duration / 60)}:${(entry.duration % 60).toString().padStart(2, '0')}`,
+      entry.pieces.map(p => p.title).join(', ') || entry.scoreTitle || '',
+      entry.pieces
+        .map(p => p.composer)
+        .filter(Boolean)
+        .join(', ') ||
+        entry.scoreComposer ||
+        '',
+      entry.instrument || '',
+      entry.notes || '',
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row =>
+        row
+          .map(cell =>
+            typeof cell === 'string' &&
+            (cell.includes(',') || cell.includes('"'))
+              ? `"${cell.replace(/"/g, '""')}"`
+              : cell
+          )
+          .join(',')
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `mirubato-practice-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportToJSON = (data: typeof analytics.filteredEntries) => {
+    const jsonContent = JSON.stringify(data, null, 2)
+    const blob = new Blob([jsonContent], {
+      type: 'application/json;charset=utf-8;',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `mirubato-practice-report-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
-    <div className="p-6" data-testid="data-table">
-      {/* Controls */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="w-4 h-4" />
-            {t('reports:filters.title')}
-            {filters.length > 0 && (
-              <span className="bg-morandi-purple-600 text-white text-xs rounded-full px-2">
-                {filters.length}
-              </span>
-            )}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowGrouping(!showGrouping)}
-            className="flex items-center gap-2"
-          >
-            <Layers className="w-4 h-4" />
-            {t('reports:grouping.title')}
-            {groupBy.length > 0 && (
-              <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2">
-                {groupBy.length}
-              </span>
-            )}
-          </Button>
-          <span className="text-sm text-morandi-stone-600">
+    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
+      <div className="p-4 sm:p-6" data-testid="data-table">
+        {/* Entry count and Export - Always visible */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-4 border-b border-morandi-stone-200">
+          <div className="text-sm text-morandi-stone-600 opacity-0">
             {analytics.filteredEntries.length} {t('reports:entries')}
-          </span>
+            {filters.length > 0 && ` (${t('reports:filtered')})`}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => exportToCSV(analytics.filteredEntries)}
+              disabled={analytics.filteredEntries.length === 0}
+              className="btn-secondary text-xs sm:text-sm px-2 sm:px-4 flex-1 sm:flex-initial"
+              data-testid="export-csv-button"
+            >
+              {t('reports:exportCSV')}
+            </button>
+            <button
+              onClick={() => exportToJSON(analytics.filteredEntries)}
+              disabled={analytics.filteredEntries.length === 0}
+              className="btn-secondary text-xs sm:text-sm px-2 sm:px-4 flex-1 sm:flex-initial"
+              data-testid="export-json-button"
+            >
+              {t('reports:exportJSON')}
+            </button>
+          </div>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleExportData}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          {t('reports:table.export')}
-        </Button>
-      </div>
 
-      {/* Filters Panel */}
-      {showFilters && (
-        <Card className="mb-4 p-4">
-          <FilterBuilder />
-        </Card>
-      )}
+        {/* Controls - Stack on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
+              <Filter className="w-4 h-4" />
+              <span>{t('reports:filters.title')}</span>
+              {filters.length > 0 && (
+                <span className="bg-morandi-purple-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                  {filters.length}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowGrouping(!showGrouping)}
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
+              <Layers className="w-4 h-4" />
+              <span>{t('reports:grouping.title')}</span>
+              {groupBy.length > 0 && (
+                <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                  {groupBy.length}
+                </span>
+              )}
+            </Button>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportData}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            <Download className="w-4 h-4" />
+            <span>{t('reports:table.export')}</span>
+          </Button>
+        </div>
 
-      {/* Grouping Panel */}
-      {showGrouping && (
-        <Card className="mb-4 p-4">
-          <GroupingPanel />
-        </Card>
-      )}
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="mb-4">
+            <FilterBuilder />
+          </div>
+        )}
 
-      {/* Data Table */}
-      <Card>
+        {/* Grouping Panel */}
+        {showGrouping && (
+          <div className="mb-4">
+            <GroupingPanel />
+          </div>
+        )}
+
+        {/* Data Table */}
         {analytics.groupedData && analytics.groupedData.length > 0 ? (
           <GroupedDataTable
             data={analytics.groupedData}
@@ -138,7 +220,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             </p>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   )
 }

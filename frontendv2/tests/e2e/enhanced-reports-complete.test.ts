@@ -395,6 +395,13 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
         await page.waitForTimeout(1000) // Allow filter to be applied
       })
 
+      await test.step('Navigate to Data tab for export', async () => {
+        await page.click('[data-testid="data-tab"]')
+        await expect(page.locator('[data-testid="data-tab"]')).toHaveClass(
+          /border-morandi-purple-400/
+        )
+      })
+
       await test.step('Export filtered data', async () => {
         const downloadPromise = page.waitForEvent('download')
         await page.click('text=Export CSV')
@@ -451,6 +458,12 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
       })
 
       await test.step('Verify mobile export', async () => {
+        // Navigate to Data tab where export buttons are
+        await page.click('[data-testid="data-tab"]')
+        await expect(page.locator('[data-testid="data-tab"]')).toHaveClass(
+          /border-morandi-purple-400/
+        )
+
         // Export buttons should be accessible
         await expect(page.locator('text=Export CSV')).toBeVisible({
           timeout: 10000,

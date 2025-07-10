@@ -116,68 +116,66 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
   }, [analytics])
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-morandi-stone-400 w-4 h-4" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={t('reports:searchPiecesComposers')}
-              className="w-full pl-10 pr-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex gap-2">
-            <select
-              value={selectedComposer || ''}
-              onChange={e => setSelectedComposer(e.target.value || null)}
-              className="px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
-            >
-              <option value="">{t('reports:allComposers')}</option>
-              {allComposers.map(composer => (
-                <option key={composer} value={composer}>
-                  {composer}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedPiece || ''}
-              onChange={e => setSelectedPiece(e.target.value || null)}
-              className="px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
-            >
-              <option value="">{t('reports:allPieces')}</option>
-              {allPieces
-                .filter(
-                  piece => !selectedComposer || piece.includes(selectedComposer)
-                )
-                .map(piece => (
-                  <option key={piece} value={piece}>
-                    {piece}
+    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
+      <div className="p-6 space-y-6">
+        {/* Search and Filters */}
+        <Card className="p-4">
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-morandi-stone-400 w-4 h-4" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder={t('reports:searchPiecesComposers')}
+                className="w-full pl-10 pr-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <select
+                value={selectedComposer || ''}
+                onChange={e => setSelectedComposer(e.target.value || null)}
+                className="w-full sm:w-auto sm:flex-1 px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
+              >
+                <option value="">{t('reports:allComposers')}</option>
+                {allComposers.map(composer => (
+                  <option key={composer} value={composer}>
+                    {composer}
                   </option>
                 ))}
-            </select>
+              </select>
+              <select
+                value={selectedPiece || ''}
+                onChange={e => setSelectedPiece(e.target.value || null)}
+                className="w-full sm:w-auto sm:flex-1 px-4 py-2 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-purple-500"
+              >
+                <option value="">{t('reports:allPieces')}</option>
+                {allPieces
+                  .filter(
+                    piece =>
+                      !selectedComposer || piece.includes(selectedComposer)
+                  )
+                  .map(piece => (
+                    <option key={piece} value={piece}>
+                      {piece}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Selected Piece/Composer Stats */}
-      {(selectedPiece || selectedComposer) && (
-        <PieceComposerStats
-          analytics={filteredAnalytics}
-          selectedPiece={selectedPiece}
-          selectedComposer={selectedComposer}
-          formatDuration={formatDuration}
-        />
-      )}
+        {/* Selected Piece/Composer Stats */}
+        {(selectedPiece || selectedComposer) && (
+          <PieceComposerStats
+            analytics={filteredAnalytics}
+            selectedPiece={selectedPiece}
+            selectedComposer={selectedComposer}
+            formatDuration={formatDuration}
+          />
+        )}
 
-      {/* Pieces Statistics Table */}
-      <div>
-        <h3 className="text-lg font-semibold text-morandi-stone-700 mb-3">
-          {t('reports:detailedStatistics')}
-        </h3>
+        {/* Pieces Statistics Table */}
         <PiecesStatistics
           analytics={filteredAnalytics}
           formatDuration={formatDuration}
