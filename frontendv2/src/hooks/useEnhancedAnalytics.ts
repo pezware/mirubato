@@ -310,10 +310,24 @@ function applyGroupingLevel(
       })
     )
 
-    // Sort children
+    // Sort children based on field type
     children.sort((a, b) => {
       const multiplier = config.order === 'asc' ? 1 : -1
+
+      // For date fields, sort by the key (which contains the date)
+      if (config.field.startsWith('date:')) {
+        return multiplier * a.key.localeCompare(b.key)
+      }
+
+      // For other fields, sort by total duration
       return multiplier * (a.totalDuration - b.totalDuration)
+    })
+
+    // Sort entries within each group by timestamp (newest first)
+    children.forEach(child => {
+      child.entries.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      })
     })
 
     return {
