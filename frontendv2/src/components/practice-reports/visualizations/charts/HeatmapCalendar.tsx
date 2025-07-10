@@ -7,7 +7,6 @@ import {
   endOfYear,
   eachDayOfInterval,
   getDay,
-  getWeek,
   isSameDay,
 } from 'date-fns'
 
