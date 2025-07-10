@@ -31,7 +31,24 @@
     "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
     "techniques": "Techniken",
     "type": "Art",
-    "updateEntry": "Eintrag aktualisieren"
+    "updateEntry": "Eintrag aktualisieren",
+    "typeOptions": {
+      "practice": "Üben",
+      "lesson": "Unterricht",
+      "performance": "Aufführung",
+      "rehearsal": "Probe",
+      "technique": "Technik"
+    },
+    "techniqueOptions": {
+      "scale": "Tonleiter",
+      "arpeggio": "Arpeggio",
+      "octave": "Oktave",
+      "rhythm": "Rhythmus",
+      "custom": "Benutzerdefiniert",
+      "selectTechniques": "Geübte Techniken auswählen",
+      "addCustom": "Benutzerdefinierte Technik hinzufügen",
+      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben"
+    }
   },
   "filters": {
     "allTime": "Gesamte Zeit",

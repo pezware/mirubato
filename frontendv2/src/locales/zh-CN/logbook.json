@@ -31,7 +31,24 @@
     "successUpdated": "练习记录更新成功！",
     "techniques": "技巧",
     "type": "类型",
-    "updateEntry": "更新记录"
+    "updateEntry": "更新记录",
+    "typeOptions": {
+      "practice": "练习",
+      "lesson": "课程",
+      "performance": "演出",
+      "rehearsal": "排练",
+      "technique": "技巧"
+    },
+    "techniqueOptions": {
+      "scale": "音阶",
+      "arpeggio": "琴音",
+      "octave": "八度",
+      "rhythm": "节奏",
+      "custom": "自定义",
+      "selectTechniques": "选择练习的技巧",
+      "addCustom": "添加自定义技巧",
+      "customPlaceholder": "输入自定义技巧名称"
+    }
   },
   "filters": {
     "allTime": "全部时间",

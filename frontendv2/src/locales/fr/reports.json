@@ -321,5 +321,12 @@
   "unknown": "Inconnu",
   "viewReports": "Voir les rapports",
   "weekOverWeek": "Semaine après semaine",
-  "weekOverview": "Aperçu de la semaine"
+  "weekOverview": "Aperçu de la semaine",
+  "analytics": {
+    "instrumentDistribution": "Répartition par instrument",
+    "typeDistribution": "Répartition par type",
+    "practiceTrend": "Tendance de pratique",
+    "topPieces": "Pièces principales",
+    "topComposers": "Compositeurs principaux"
+  }
 }

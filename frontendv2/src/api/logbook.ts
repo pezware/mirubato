@@ -4,7 +4,7 @@ export interface LogbookEntry {
   id: string
   timestamp: string
   duration: number
-  type: 'PRACTICE' | 'PERFORMANCE' | 'LESSON' | 'REHEARSAL'
+  type: 'PRACTICE' | 'PERFORMANCE' | 'LESSON' | 'REHEARSAL' | 'TECHNIQUE'
   instrument: 'PIANO' | 'GUITAR'
   pieces: Array<{
     id?: string

@@ -291,9 +291,17 @@ function MyPracticeComponent() {
 - TypeScript support with comprehensive types
 - Integrated with Metronome and Scorebook features
 
-### Enhanced Reporting UI (July 2025)
+### Enhanced Reporting UI (July 2025 - Updated)
 
-The enhanced reporting UI provides comprehensive data visualization and filtering for practice data with a modular architecture:
+The enhanced reporting UI provides comprehensive data visualization and filtering for practice data with a modular architecture.
+
+**Latest Updates:**
+
+- **Technique Practice Type**: Added 'TECHNIQUE' as a new practice type with tag selection (scale, arpeggio, octave, rhythm)
+- **Reorganized Overview Tab**: Recent entries moved to top with new card design
+- **Calendar Improvements**: Removed redundant labels, fixed month alignment
+- **Analytics Tab Enhancement**: Consolidated all distribution charts in Analytics tab
+- **Consistent Entry Cards**: Unified entry display across all views
 
 **IMPORTANT - Chart.js Setup:**
 

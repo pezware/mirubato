@@ -321,5 +321,12 @@
   "unknown": "未知",
   "viewReports": "查看报告",
   "weekOverWeek": "周对比",
-  "weekOverview": "周概览"
+  "weekOverview": "周概览",
+  "analytics": {
+    "instrumentDistribution": "乐器分布",
+    "typeDistribution": "类型分布",
+    "practiceTrend": "练习趋势",
+    "topPieces": "热门曲目",
+    "topComposers": "热门作曲家"
+  }
 }

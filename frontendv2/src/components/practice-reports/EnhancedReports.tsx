@@ -1,10 +1,12 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { useReportingStore } from '../../stores/reportingStore'
 import { useEnhancedAnalytics } from '../../hooks/useEnhancedAnalytics'
 import { LoadingSkeleton } from '../ui/Loading'
 import { ReportsTabs, ReportView } from './ReportsTabs'
+import { LogbookEntry } from '../../api/logbook'
 
 // Lazy load view components
 const OverviewView = lazy(() => import('./views/OverviewView'))
@@ -17,10 +19,62 @@ export default function EnhancedReports() {
   const { t } = useTranslation(['reports', 'common', 'logbook'])
   const { entries } = useLogbookStore()
   const { filters, groupBy, sortBy, clearFilters } = useReportingStore()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // State management
   const [reportView, setReportView] = useState<ReportView>('overview')
   const [isExporting, setIsExporting] = useState(false)
+  const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
+    undefined
+  )
+
+  // Handle URL parameters and navigation state
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    const editId = searchParams.get('editId')
+
+    if (tab === 'newEntry') {
+      setReportView('newEntry')
+
+      // First check for entry ID in URL
+      if (editId) {
+        const entryToEdit = entries.find(e => e.id === editId)
+        if (entryToEdit) {
+          setEditEntry(entryToEdit)
+        }
+      }
+      // Fallback to navigation state
+      else if (location.state && 'editEntry' in location.state) {
+        setEditEntry(location.state.editEntry as LogbookEntry)
+      }
+    } else if (!tab) {
+      // Reset to overview if no tab parameter
+      setReportView('overview')
+    }
+  }, [searchParams, location.state, entries])
+
+  // Update URL when tab changes
+  const handleViewChange = (view: ReportView) => {
+    setReportView(view)
+    if (view === 'newEntry') {
+      // Keep editId if it exists
+      const editId = searchParams.get('editId')
+      if (editId) {
+        setSearchParams({ tab: 'newEntry', editId })
+      } else {
+        setSearchParams({ tab: 'newEntry' })
+      }
+    } else {
+      setSearchParams({})
+      // Clear navigation state when switching away
+      window.history.replaceState({}, document.title)
+    }
+    // Clear edit entry when switching away from newEntry
+    if (view !== 'newEntry') {
+      setEditEntry(undefined)
+    }
+  }
 
   // Generate entries hash for caching
   const entriesHash = useMemo(() => {
@@ -125,8 +179,17 @@ export default function EnhancedReports() {
       case 'newEntry':
         return (
           <ManualEntryForm
-            onClose={() => setReportView('overview')}
-            onSave={() => setReportView('overview')}
+            entry={editEntry}
+            onClose={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
+            onSave={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
           />
         )
       default:
@@ -139,9 +202,9 @@ export default function EnhancedReports() {
       {/* Navigation Tabs - Outside the white box to match Toolbox */}
       <ReportsTabs
         reportView={reportView}
-        onViewChange={setReportView}
+        onViewChange={handleViewChange}
         onOverviewClick={() => {
-          setReportView('overview')
+          handleViewChange('overview')
           clearFilters()
         }}
       />
@@ -156,8 +219,17 @@ export default function EnhancedReports() {
           }
         >
           <ManualEntryForm
-            onClose={() => setReportView('overview')}
-            onSave={() => setReportView('overview')}
+            entry={editEntry}
+            onClose={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
+            onSave={() => {
+              setSearchParams({})
+              setReportView('overview')
+              setEditEntry(undefined)
+            }}
           />
         </Suspense>
       ) : (

@@ -31,7 +31,24 @@
     "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
     "techniques": "Técnicas",
     "type": "Tipo",
-    "updateEntry": "Actualizar entrada"
+    "updateEntry": "Actualizar entrada",
+    "typeOptions": {
+      "practice": "Práctica",
+      "lesson": "Lección",
+      "performance": "Actuación",
+      "rehearsal": "Ensayo",
+      "technique": "Técnica"
+    },
+    "techniqueOptions": {
+      "scale": "Escala",
+      "arpeggio": "Arpegio",
+      "octave": "Octava",
+      "rhythm": "Ritmo",
+      "custom": "Personalizado",
+      "selectTechniques": "Seleccionar técnicas practicadas",
+      "addCustom": "Agregar técnica personalizada",
+      "customPlaceholder": "Ingrese el nombre de la técnica personalizada"
+    }
   },
   "filters": {
     "allTime": "Todo el tiempo",
