@@ -42,16 +42,17 @@ export function ReportsTabs({
       shortLabel: t('reports:tabs.pieces'),
     },
     {
-      id: 'analytics',
-      label: t('reports:tabs.analytics'),
-      icon: <BarChart3 size={20} />,
-      shortLabel: t('reports:tabs.analytics'),
-    },
-    {
       id: 'data',
       label: t('reports:tabs.data'),
       icon: <Table size={20} />,
       shortLabel: t('reports:tabs.data'),
+    },
+    {
+      id: 'analytics',
+      label: t('reports:tabs.analytics'),
+      icon: <BarChart3 size={20} />,
+      shortLabel: '>',
+      mobileIconOnly: true,
     },
   ]
 

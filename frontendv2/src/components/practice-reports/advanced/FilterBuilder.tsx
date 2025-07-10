@@ -71,16 +71,17 @@ export function FilterBuilder() {
     <Card className="p-4">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h3 className="text-lg font-semibold text-morandi-stone-800">
             {t('reports:filters.title')}
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleAddFilter}
               leftIcon={<Plus className="w-4 h-4" />}
+              className="flex-1 sm:flex-initial"
             >
               {t('reports:filters.addFilter')}
             </Button>
@@ -90,6 +91,7 @@ export function FilterBuilder() {
                 size="sm"
                 onClick={clearFilters}
                 leftIcon={<X className="w-4 h-4" />}
+                className="flex-1 sm:flex-initial"
               >
                 {t('reports:filters.clearAll')}
               </Button>

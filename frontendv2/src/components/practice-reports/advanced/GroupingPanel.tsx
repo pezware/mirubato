@@ -48,7 +48,7 @@ export function GroupingPanel() {
     <Card className="p-4">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h3 className="text-lg font-semibold text-morandi-stone-800">
             {t('reports:grouping.title')}
           </h3>
@@ -58,6 +58,7 @@ export function GroupingPanel() {
               size="sm"
               onClick={handleAddGroupLevel}
               leftIcon={<Plus className="w-4 h-4" />}
+              className="w-full sm:w-auto"
             >
               {t('reports:grouping.addLevel')}
             </Button>
@@ -127,8 +128,8 @@ function GroupLevelRow({
   )
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-morandi-stone-50 rounded-lg">
-      <span className="text-sm font-medium text-morandi-stone-700 w-16">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 bg-morandi-stone-50 rounded-lg">
+      <span className="text-sm font-medium text-morandi-stone-700 sm:w-16">
         {t('reports:grouping.level', { level: index + 1 })}
       </span>
 
@@ -141,10 +142,10 @@ function GroupLevelRow({
           value: field.value,
           label: field.label,
         }))}
-        className="flex-1"
+        className="w-full sm:flex-1"
       />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
         <Button
           variant="ghost"
           size="sm"
@@ -164,19 +165,24 @@ function GroupLevelRow({
           )}
         </Button>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-1 sm:gap-2 text-sm flex-1 sm:flex-initial">
           <input
             type="checkbox"
             checked={group.showAggregates !== false}
             onChange={e => onUpdate({ showAggregates: e.target.checked })}
-            className="rounded border-morandi-stone-300 text-morandi-sage-500 focus:ring-morandi-sage-500"
+            className="rounded border-morandi-stone-300 text-morandi-sage-500 focus:ring-morandi-sage-500 flex-shrink-0"
           />
-          <span className="text-morandi-stone-600">
+          <span className="text-morandi-stone-600 whitespace-nowrap">
             {t('reports:grouping.showTotals')}
           </span>
         </label>
 
-        <Button variant="ghost" size="sm" onClick={onRemove}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          className="ml-auto sm:ml-0"
+        >
           <X className="w-4 h-4" />
         </Button>
       </div>

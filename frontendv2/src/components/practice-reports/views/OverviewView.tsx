@@ -105,86 +105,88 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
   // Recent entries calculation removed - handled by RecentEntries component
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      {/* Recent Entries - Moved to top */}
-      <RecentEntries
-        entries={analytics.filteredEntries}
-        limit={10}
-        onEdit={handleEditEntry}
-        onDelete={handleDeleteEntry}
-      />
-
-      {/* Summary Statistics */}
-      <div className="w-full">
-        <SummaryStats
-          filteredAndSortedEntries={analytics.filteredEntries}
-          formatDuration={formatDuration}
+    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Recent Entries - Moved to top */}
+        <RecentEntries
+          entries={analytics.filteredEntries}
+          limit={10}
+          onEdit={handleEditEntry}
+          onDelete={handleDeleteEntry}
         />
-      </div>
 
-      {/* Streak Information */}
-      <div className="bg-morandi-sand-50 rounded-lg p-4">
-        <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
-          {t('reports:practiceStreak')}
-        </h3>
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl font-bold text-morandi-purple-600">
-              {streakData.currentStreak}
-            </div>
-            <div className="text-xs sm:text-sm text-morandi-stone-600">
-              {t('reports:currentStreak')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl font-bold text-morandi-sage-600">
-              {streakData.maxStreak}
-            </div>
-            <div className="text-xs sm:text-sm text-morandi-stone-600">
-              {t('reports:longestStreak')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl font-bold text-morandi-rust-600">
-              {streakData.totalDays}
-            </div>
-            <div className="text-xs sm:text-sm text-morandi-stone-600">
-              {t('reports:totalDays')}
-            </div>
-          </div>
+        {/* Summary Statistics */}
+        <div className="w-full">
+          <SummaryStats
+            filteredAndSortedEntries={analytics.filteredEntries}
+            formatDuration={formatDuration}
+          />
         </div>
-      </div>
 
-      {/* Practice Calendar Heatmap - No label */}
-      <div className="w-full overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-        <div className="min-w-[600px]" data-testid="heatmap-calendar">
-          <HeatmapCalendar data={heatmapData} />
-        </div>
-      </div>
-
-      {/* Progress Indicators */}
-      {analytics.progressData && analytics.progressData.length > 0 && (
-        <div>
+        {/* Streak Information */}
+        <div className="bg-morandi-sand-50 rounded-lg p-4">
           <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
-            {t('reports:practiceGoals')}
+            {t('reports:practiceStreak')}
           </h3>
-          <div className="space-y-3">
-            {analytics.progressData.map((progress, index) => (
-              <ProgressBar
-                key={index}
-                data={[
-                  {
-                    label: progress.label,
-                    value: progress.current,
-                    target: progress.target,
-                    color: progress.color,
-                  },
-                ]}
-              />
-            ))}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="text-center">
+              <div className="text-xl sm:text-2xl font-bold text-morandi-purple-600">
+                {streakData.currentStreak}
+              </div>
+              <div className="text-xs sm:text-sm text-morandi-stone-600">
+                {t('reports:currentStreak')}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl sm:text-2xl font-bold text-morandi-sage-600">
+                {streakData.maxStreak}
+              </div>
+              <div className="text-xs sm:text-sm text-morandi-stone-600">
+                {t('reports:longestStreak')}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl sm:text-2xl font-bold text-morandi-rust-600">
+                {streakData.totalDays}
+              </div>
+              <div className="text-xs sm:text-sm text-morandi-stone-600">
+                {t('reports:totalDays')}
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Practice Calendar Heatmap - No label */}
+        <div className="w-full overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+          <div className="min-w-[600px]" data-testid="heatmap-calendar">
+            <HeatmapCalendar data={heatmapData} />
+          </div>
+        </div>
+
+        {/* Progress Indicators */}
+        {analytics.progressData && analytics.progressData.length > 0 && (
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
+              {t('reports:practiceGoals')}
+            </h3>
+            <div className="space-y-3">
+              {analytics.progressData.map((progress, index) => (
+                <ProgressBar
+                  key={index}
+                  data={[
+                    {
+                      label: progress.label,
+                      value: progress.current,
+                      target: progress.target,
+                      color: progress.color,
+                    },
+                  ]}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
