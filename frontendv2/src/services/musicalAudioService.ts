@@ -2,39 +2,41 @@ import * as Tone from 'tone'
 import { PlaybackMode } from '../components/circle-of-fifths/types'
 
 // Note frequency mapping (A4 = 440Hz)
-const noteFrequencies: Record<string, number> = {
-  C: 261.63,
-  'C#': 277.18,
-  Db: 277.18,
-  D: 293.66,
-  'D#': 311.13,
-  Eb: 311.13,
-  E: 329.63,
-  F: 349.23,
-  'F#': 369.99,
-  Gb: 369.99,
-  G: 392.0,
-  'G#': 415.3,
-  Ab: 415.3,
-  A: 440.0,
-  'A#': 466.16,
-  Bb: 466.16,
-  B: 493.88,
-  Cb: 493.88,
-  'B#': 261.63,
-  'E#': 349.23,
-  Fb: 329.63,
-}
+// Kept for potential future use with frequency-based synthesis
+// const noteFrequencies: Record<string, number> = {
+//   C: 261.63,
+//   'C#': 277.18,
+//   Db: 277.18,
+//   D: 293.66,
+//   'D#': 311.13,
+//   Eb: 311.13,
+//   E: 329.63,
+//   F: 349.23,
+//   'F#': 369.99,
+//   Gb: 369.99,
+//   G: 392.0,
+//   'G#': 415.3,
+//   Ab: 415.3,
+//   A: 440.0,
+//   'A#': 466.16,
+//   Bb: 466.16,
+//   B: 493.88,
+//   Cb: 493.88,
+//   'B#': 261.63,
+//   'E#': 349.23,
+//   Fb: 329.63,
+// }
 
 // Convert note name to frequency with octave
-const getNoteFrequency = (note: string, octave: number = 4): number => {
-  const baseFreq = noteFrequencies[note]
-  if (!baseFreq) return 440 // Default to A4 if note not found
-
-  // Adjust for octave (C4 is middle C)
-  const octaveOffset = octave - 4
-  return baseFreq * Math.pow(2, octaveOffset)
-}
+// Note: This function is kept for potential future use with frequency-based synthesis
+// const getNoteFrequency = (note: string, octave: number = 4): number => {
+//   const baseFreq = noteFrequencies[note]
+//   if (!baseFreq) return 440 // Default to A4 if note not found
+//
+//   // Adjust for octave (C4 is middle C)
+//   const octaveOffset = octave - 4
+//   return baseFreq * Math.pow(2, octaveOffset)
+// }
 
 // Convert note names to Tone.js format (e.g., "C#4")
 const toToneNote = (note: string, octave: number = 4): string => {
@@ -144,7 +146,6 @@ class MusicalAudioService {
     const noteDuration = 60 / tempo // Duration of each note in seconds
 
     // Create and start sequence
-    let noteIndex = 0
     this.currentSequence = new Tone.Sequence(
       (time, note) => {
         if (this.synth) {
@@ -226,20 +227,22 @@ class MusicalAudioService {
     tempo: number = 120
   ): Promise<void> {
     switch (mode) {
-      case 'chord':
+      case 'chord': {
         // Play the tonic chord (I chord)
         const tonicChord = this.buildChord(keyId, scale)
         await this.playChord(tonicChord)
         break
+      }
 
       case 'scale':
         await this.playScale(scale, 'both', tempo)
         break
 
-      case 'arpeggio':
+      case 'arpeggio': {
         const arpeggioNotes = this.buildChord(keyId, scale)
         await this.playArpeggio(arpeggioNotes, [0, 1, 2], tempo)
         break
+      }
     }
   }
 

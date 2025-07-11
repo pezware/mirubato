@@ -3,7 +3,7 @@ import CircleVisualization from './CircleVisualization'
 import KeyDetailsPanel from './KeyDetailsPanel'
 import CircleOfFifthsControls from './CircleOfFifthsControls'
 import PianoKeyboard from './PianoKeyboard'
-import { KeyInfo, PlaybackMode } from './types'
+import { PlaybackMode } from './types'
 import { getKeyData } from './keyData'
 import { musicalAudioService } from '../../services/musicalAudioService'
 
@@ -28,7 +28,7 @@ const CircleOfFifths: React.FC = () => {
     return () => {
       musicalAudioService.dispose()
     }
-  }, [isAudioEnabled])
+  }, [isAudioEnabled, volume])
 
   // Update volume when it changes
   useEffect(() => {

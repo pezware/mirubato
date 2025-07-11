@@ -1,6 +1,6 @@
 import React from 'react'
 import { Volume2, VolumeX, Play } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import Button from '../ui/Button'
 import { PlaybackMode } from './types'
 
 interface CircleOfFifthsControlsProps {

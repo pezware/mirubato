@@ -65,7 +65,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
   const relatedKeys = getRelatedKeys(selectedKey)
 
   // Handle key signatures display
-  const getKeySignatureDisplay = (keyData: any) => {
+  const getKeySignatureDisplay = (keyData: ReturnType<typeof getKeyData>) => {
     if (keyData.keySignature === 0) return ''
     const symbol = keyData.sharpsOrFlats === 'sharps' ? '♯' : '♭'
     return `${keyData.keySignature}${symbol}`
