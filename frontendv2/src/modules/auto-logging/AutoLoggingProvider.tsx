@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useLogbookStore } from '../../stores/logbookStore'
-import { useAuthStore } from '../../stores/authStore'
 import { AutoLoggingContext } from './context'
 import type {
   PracticeSession,
@@ -30,7 +29,6 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
   defaultConfig,
 }) => {
   const { createEntry } = useLogbookStore()
-  const { isAuthenticated } = useAuthStore()
 
   // Load config from localStorage or use defaults
   const [config, setConfig] = useState<AutoLoggingConfig>(() => {
