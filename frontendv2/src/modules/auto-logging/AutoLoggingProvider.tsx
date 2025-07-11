@@ -120,58 +120,70 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
       duration,
     }
 
-    // Auto-log if enabled (works for both authenticated and non-authenticated users)
-    if (config.enabled) {
+    setCurrentSession(null)
+    return completedSession
+  }, [currentSession, config.minDuration])
+
+  const saveSessionToLogbook = useCallback(
+    async (session: PracticeSession, userNotes?: string): Promise<void> => {
+      if (!config.enabled) return
+
       try {
+        const { duration, metadata } = session
+
         // Calculate rounded duration in minutes
         const durationMinutes =
           Math.ceil(duration / 60000 / config.roundingInterval) *
           config.roundingInterval
 
-        // Build description based on session type
-        let description = ''
-        const { metadata } = completedSession
+        // Build auto-generated description based on session type
+        let autoDescription = ''
 
-        switch (completedSession.type) {
+        switch (session.type) {
           case 'metronome':
-            description = `Metronome Practice\n`
+            autoDescription = `Metronome Practice`
             if (metadata.averageTempo) {
-              description += `Average Tempo: ${metadata.averageTempo} BPM\n`
+              autoDescription += `\nAverage Tempo: ${metadata.averageTempo} BPM`
             }
             if (metadata.patterns && metadata.patterns.length > 0) {
-              description += `Patterns: ${metadata.patterns.join(', ')}\n`
+              autoDescription += `\nPatterns: ${metadata.patterns.join(', ')}`
             }
             break
 
           case 'score':
-            description = `Score Practice: ${metadata.scoreTitle || 'Unknown'}`
+            autoDescription = `Score Practice: ${metadata.scoreTitle || 'Unknown'}`
             if (metadata.scoreComposer) {
-              description += ` by ${metadata.scoreComposer}`
+              autoDescription += ` by ${metadata.scoreComposer}`
             }
             if (metadata.pagesViewed && metadata.pagesViewed.length > 0) {
-              description += `\nPages viewed: ${metadata.pagesViewed.join(', ')}`
+              autoDescription += `\nPages viewed: ${metadata.pagesViewed.join(', ')}`
             }
             break
 
           case 'counter':
-            description = `Practice Counter Session\n`
+            autoDescription = `Practice Counter Session`
             if (metadata.totalReps) {
-              description += `Total Repetitions: ${metadata.totalReps}\n`
+              autoDescription += `\nTotal Repetitions: ${metadata.totalReps}`
             }
             if (metadata.mode) {
-              description += `Mode: ${metadata.mode}\n`
+              autoDescription += `\nMode: ${metadata.mode}`
             }
             break
 
           default:
-            description = metadata.title || 'Practice Session'
+            autoDescription = metadata.title || 'Practice Session'
+        }
+
+        // Combine auto-generated description with user notes
+        let finalNotes = autoDescription
+        if (userNotes && userNotes.trim()) {
+          finalNotes = `${autoDescription}\n\n${userNotes}`
         }
 
         // For score practice, use the actual score title and composer
         // For other practice types (metronome, counter), don't include as pieces
         const pieces =
-          completedSession.type === 'score' &&
-          (metadata.scoreTitle || metadata.title)
+          session.type === 'score' && (metadata.scoreTitle || metadata.title)
             ? [
                 {
                   title: metadata.scoreTitle || metadata.title || '',
@@ -182,31 +194,28 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
 
         // Add practice type to tags for non-score sessions
         const practiceTypeTags =
-          completedSession.type !== 'score'
-            ? [`${completedSession.type}-practice`]
-            : []
+          session.type !== 'score' ? [`${session.type}-practice`] : []
 
         await createEntry({
-          timestamp: currentSession.startTime.toISOString(),
+          timestamp: session.startTime.toISOString(),
           duration: durationMinutes,
           type: 'practice',
           instrument: metadata.instrument || config.defaultInstrument,
           pieces,
           techniques: [],
           goalIds: [],
-          notes: description,
+          notes: finalNotes,
           mood: null,
           tags: [...(metadata.tags || config.defaultTags), ...practiceTypeTags],
           scoreId: metadata.scoreId,
         })
       } catch (error) {
-        console.error('Failed to auto-log practice session:', error)
+        console.error('Failed to save practice session to logbook:', error)
+        throw error
       }
-    }
-
-    setCurrentSession(null)
-    return completedSession
-  }, [currentSession, config, isAuthenticated, createEntry])
+    },
+    [config, createEntry]
+  )
 
   const updateSession = useCallback((updates: Partial<PracticeMetadata>) => {
     setCurrentSession(prev =>
@@ -234,6 +243,7 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
     currentSession,
     startSession,
     stopSession,
+    saveSessionToLogbook,
     updateSession,
     cancelSession,
     config,

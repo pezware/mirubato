@@ -11,6 +11,7 @@ vi.mock('../context', () => ({
 describe('usePracticeTracking', () => {
   const mockStartSession = vi.fn()
   const mockStopSession = vi.fn()
+  const mockSaveSessionToLogbook = vi.fn()
   const mockUpdateSession = vi.fn()
   const mockCancelSession = vi.fn()
   const mockUpdateConfig = vi.fn()
@@ -19,6 +20,7 @@ describe('usePracticeTracking', () => {
     currentSession: null,
     startSession: mockStartSession,
     stopSession: mockStopSession,
+    saveSessionToLogbook: mockSaveSessionToLogbook,
     updateSession: mockUpdateSession,
     cancelSession: mockCancelSession,
     isTracking: false,
@@ -110,10 +112,7 @@ describe('usePracticeTracking', () => {
 
     expect(mockStopSession).toHaveBeenCalled()
     expect(result.current.showSummary).toBe(true)
-    expect(result.current.pendingSession).toEqual({
-      duration: 120000,
-      metadata: { title: 'Test Practice' },
-    })
+    expect(result.current.pendingSession).toEqual(mockSession)
   })
 
   it('should handle stop without summary when config.showSummary is false', async () => {
@@ -150,6 +149,7 @@ describe('usePracticeTracking', () => {
     })
 
     expect(result.current.showSummary).toBe(false)
+    expect(mockSaveSessionToLogbook).toHaveBeenCalledWith(mockSession)
     expect(onSessionEnd).toHaveBeenCalledWith(120000, {
       title: 'Test Practice',
     })
@@ -211,5 +211,46 @@ describe('usePracticeTracking', () => {
     )
 
     expect(result.current.durationMinutes).toBe(5) // Rounded up to 5 minutes
+  })
+
+  it('should pass user notes to saveSessionToLogbook in confirmSave', async () => {
+    const mockSession = {
+      id: '123',
+      type: 'metronome' as const,
+      startTime: new Date(),
+      endTime: new Date(),
+      duration: 120000,
+      metadata: { title: 'Test Practice' },
+      autoLogEnabled: true,
+    }
+
+    mockStopSession.mockResolvedValue(mockSession)
+
+    const { result } = renderHook(() =>
+      usePracticeTracking({
+        type: 'metronome',
+      })
+    )
+
+    // First stop the session to set pendingSession
+    await act(async () => {
+      await result.current.stop()
+    })
+
+    expect(result.current.showSummary).toBe(true)
+    expect(result.current.pendingSession).toEqual(mockSession)
+
+    // Now confirm save with user notes
+    const userNotes = 'Great practice session! Focused on rhythm patterns.'
+    await act(async () => {
+      await result.current.confirmSave(userNotes)
+    })
+
+    expect(mockSaveSessionToLogbook).toHaveBeenCalledWith(
+      mockSession,
+      userNotes
+    )
+    expect(result.current.showSummary).toBe(false)
+    expect(result.current.pendingSession).toBeNull()
   })
 })

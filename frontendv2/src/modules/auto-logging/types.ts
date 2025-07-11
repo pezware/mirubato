@@ -57,6 +57,10 @@ export interface AutoLoggingContextValue {
   // Actions
   startSession: (type: PracticeType, metadata?: PracticeMetadata) => void
   stopSession: () => Promise<PracticeSession | null>
+  saveSessionToLogbook: (
+    session: PracticeSession,
+    userNotes?: string
+  ) => Promise<void>
   updateSession: (updates: Partial<PracticeMetadata>) => void
   cancelSession: () => void
 
