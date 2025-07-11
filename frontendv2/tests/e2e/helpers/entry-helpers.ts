@@ -49,8 +49,8 @@ export async function waitForEntriesToAppear(
     '[class*="p-4"][class*="hover:bg"]',
     '[class*="transition-all"][class*="duration-200"]',
     'div:has(> div > div > span:has-text("minute"))',
-    'div:has(> div > div > span:has-text("PRACTICE"))',
-    'div:has(> div > div > span:has-text("LESSON"))',
+    'div:has(> div > div > span:has-text("practice"))',
+    'div:has(> div > div > span:has-text("lesson"))',
   ]
 
   for (const selector of alternativeSelectors) {

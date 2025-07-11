@@ -10,6 +10,21 @@ vi.mock('../../stores/authStore')
 // Mock utils
 vi.mock('../../utils/fixLocalStorageData', () => ({
   fixLocalStorageData: vi.fn(),
+  recoverFromBackup: vi.fn(),
+}))
+
+vi.mock('../../utils/migrations/lowercaseMigration', () => ({
+  runLowercaseMigration: vi.fn(),
+}))
+
+vi.mock('../../utils/pdfWorkerSetup', () => ({
+  setupPdfWorker: vi.fn(),
+}))
+
+vi.mock('../../modules/auto-logging', () => ({
+  AutoLoggingProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 // Import pages for test components

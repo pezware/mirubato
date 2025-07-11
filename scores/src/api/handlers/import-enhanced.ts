@@ -30,8 +30,8 @@ enhancedImportHandler.post('/pdf', async c => {
     let scoreData = {
       title: file.name.replace('.pdf', '') || 'Untitled Score',
       composer: 'Unknown',
-      instrument: 'PIANO' as const,
-      difficulty: 'INTERMEDIATE' as const,
+      instrument: 'piano' as const,
+      difficulty: 'intermediate' as const,
       source: 'upload' as const,
       tags: [] as string[],
     }
@@ -186,9 +186,9 @@ enhancedImportHandler.post('/imslp', async c => {
     const scoreId = nanoid()
 
     // Determine instrument from instrumentation
-    let instrument: Instrument = 'PIANO'
+    let instrument: Instrument = 'piano'
     if (metadata.instrumentation?.toLowerCase().includes('guitar')) {
-      instrument = 'GUITAR'
+      instrument = 'guitar'
     }
 
     await c.env.DB.prepare(
@@ -205,7 +205,7 @@ enhancedImportHandler.post('/imslp', async c => {
         metadata.composer || 'Unknown Composer',
         metadata.opus || null,
         instrument,
-        'INTERMEDIATE', // Default difficulty
+        'intermediate', // Default difficulty
         'imslp',
         validatedData.url,
         JSON.stringify(['imslp', 'imported']),

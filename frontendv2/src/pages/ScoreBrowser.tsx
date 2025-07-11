@@ -445,8 +445,8 @@ export default function ScoreBrowserPage() {
                   <option value="">
                     {t('scorebook:allInstruments', 'All Instruments')}
                   </option>
-                  <option value="PIANO">{t('scorebook:piano', 'Piano')}</option>
-                  <option value="GUITAR">
+                  <option value="piano">{t('scorebook:piano', 'Piano')}</option>
+                  <option value="guitar">
                     {t('scorebook:guitar', 'Guitar')}
                   </option>
                 </select>
@@ -459,13 +459,13 @@ export default function ScoreBrowserPage() {
                   <option value="">
                     {t('scorebook:allDifficulties', 'All Difficulties')}
                   </option>
-                  <option value="BEGINNER">
+                  <option value="beginner">
                     {t('scorebook:beginner', 'Beginner')}
                   </option>
-                  <option value="INTERMEDIATE">
+                  <option value="intermediate">
                     {t('scorebook:intermediate', 'Intermediate')}
                   </option>
-                  <option value="ADVANCED">
+                  <option value="advanced">
                     {t('scorebook:advanced', 'Advanced')}
                   </option>
                 </select>

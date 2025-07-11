@@ -48,8 +48,9 @@ export const useAuthStore = create<AuthState>(set => ({
         isLoading: false,
       })
 
-      // Trigger sync after successful authentication
-      const { syncWithServer } = useLogbookStore.getState()
+      // Set to online mode and trigger sync after successful authentication
+      const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+      setLocalMode(false) // Switch to online mode when authenticated
       syncWithServer().catch((error: unknown) => {
         console.warn('Initial sync failed:', error)
       })
@@ -73,8 +74,9 @@ export const useAuthStore = create<AuthState>(set => ({
         isLoading: false,
       })
 
-      // Sync logbook after successful Google login
-      const { syncWithServer } = useLogbookStore.getState()
+      // Set to online mode and sync logbook after successful Google login
+      const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+      setLocalMode(false) // Switch to online mode when authenticated
       await syncWithServer()
     } catch (error: unknown) {
       let errorMessage = 'Google login failed'
@@ -108,6 +110,30 @@ export const useAuthStore = create<AuthState>(set => ({
   logout: async () => {
     set({ isLoading: true })
     try {
+      // Save current logbook data to localStorage before logout
+      const logbookStore = useLogbookStore.getState()
+      const entries = Array.from(logbookStore.entriesMap.values())
+      const goals = Array.from(logbookStore.goalsMap.values())
+
+      // Save to localStorage to preserve data
+      if (entries.length > 0) {
+        localStorage.setItem(
+          'mirubato:logbook:entries',
+          JSON.stringify(entries)
+        )
+      }
+      if (goals.length > 0) {
+        localStorage.setItem('mirubato:logbook:goals', JSON.stringify(goals))
+      }
+
+      // Also save score metadata if present
+      if (Object.keys(logbookStore.scoreMetadata).length > 0) {
+        localStorage.setItem(
+          'mirubato:logbook:scoreMetadata',
+          JSON.stringify(logbookStore.scoreMetadata)
+        )
+      }
+
       await authApi.logout()
     } finally {
       set({
@@ -116,6 +142,10 @@ export const useAuthStore = create<AuthState>(set => ({
         isLoading: false,
         error: null,
       })
+
+      // Set back to local mode after logout
+      const { setLocalMode } = useLogbookStore.getState()
+      setLocalMode(true)
     }
   },
 
@@ -134,6 +164,10 @@ export const useAuthStore = create<AuthState>(set => ({
         isAuthenticated: true,
         isLoading: false,
       })
+
+      // Set to online mode when authenticated
+      const { setLocalMode } = useLogbookStore.getState()
+      setLocalMode(false)
     } catch {
       // Token is invalid, clear auth state
       localStorage.removeItem('auth-token')
@@ -143,6 +177,10 @@ export const useAuthStore = create<AuthState>(set => ({
         isAuthenticated: false,
         isLoading: false,
       })
+
+      // Set back to local mode when auth fails
+      const { setLocalMode } = useLogbookStore.getState()
+      setLocalMode(true)
     }
   },
 

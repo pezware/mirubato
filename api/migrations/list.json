@@ -19,6 +19,14 @@
     {
       "name": "0005_add_user_roles.sql",
       "version": 5
+    },
+    {
+      "name": "0006_lowercase_enums.sql",
+      "version": 6
+    },
+    {
+      "name": "0007_migrate_data_to_lowercase.sql",
+      "version": 7
     }
   ]
 }

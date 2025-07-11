@@ -65,13 +65,13 @@ export default function LogbookEntryList({
 
   const getMoodEmoji = (mood?: LogbookEntry['mood']) => {
     switch (mood) {
-      case 'FRUSTRATED':
+      case 'frustrated':
         return '😤'
-      case 'NEUTRAL':
+      case 'neutral':
         return '😐'
-      case 'SATISFIED':
+      case 'satisfied':
         return '😊'
-      case 'EXCITED':
+      case 'excited':
         return '🎉'
       default:
         return ''
@@ -404,9 +404,7 @@ export default function LogbookEntryList({
                         {entry.type}
                       </span>
                       <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                        {entry.instrument?.toUpperCase() === 'PIANO'
-                          ? '🎹'
-                          : '🎸'}{' '}
+                        {entry.instrument === 'piano' ? '🎹' : '🎸'}{' '}
                         {entry.instrument}
                       </span>
                     </div>

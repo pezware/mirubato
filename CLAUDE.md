@@ -494,6 +494,13 @@ npm run db:migrate:production       # Production environment
 
 **Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
 
+**Lowercase Migration Status (2025-07-11)**:
+
+- ✅ Staging: Complete (43 entries migrated)
+- 🔄 Production: Ready (164 entries to migrate)
+- **Critical Fix**: Migration 0007 includes `PRAGMA foreign_keys = OFF/ON` to prevent CASCADE deletes
+- See `docs/LOWERCASE_MIGRATION.md` for details
+
 ## 🌐 Internationalization (i18n) & Localization (l10n)
 
 ### Supported Languages

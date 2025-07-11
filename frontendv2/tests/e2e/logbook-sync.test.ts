@@ -102,9 +102,9 @@ test.describe('Logbook Sync and Data Persistence', () => {
     const firstEntry = entries[0]
     expect(firstEntry).toHaveProperty('id')
     expect(firstEntry).toHaveProperty('timestamp')
-    expect(firstEntry).toHaveProperty('type', 'PRACTICE')
+    expect(firstEntry).toHaveProperty('type', 'practice')
     expect(firstEntry).toHaveProperty('duration', 30)
-    expect(firstEntry).toHaveProperty('mood', 'SATISFIED')
+    expect(firstEntry).toHaveProperty('mood', 'satisfied')
     expect(firstEntry.pieces[0]).toMatchObject({
       title: 'Structure Test 1',
       composer: 'Composer A',
@@ -114,7 +114,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Verify second entry
     const secondEntry = entries[1]
     expect(secondEntry).toHaveProperty('duration', 45)
-    expect(secondEntry).toHaveProperty('mood', 'EXCITED')
+    expect(secondEntry).toHaveProperty('mood', 'excited')
     expect(secondEntry.pieces[0]).toMatchObject({
       title: 'Structure Test 2',
       composer: 'Composer B',

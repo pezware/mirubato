@@ -119,8 +119,16 @@ All services run as Cloudflare Workers with the following domains:
 
 - All logbook entries stored in `sync_data` table as JSON blobs
 - `logbook_entries` table exists but is empty (0 records)
-- 'TECHNIQUE' practice type works despite not being in CHECK constraint
 - Frontend and localStorage use same JSON format as sync_data
+- **UPDATE (2025-07-11)**: Successfully migrated to lowercase enum values
+  - Staging: 43 entries converted to lowercase
+  - Production: 164 entries ready for migration
+
+**Enum Values (Post-Migration)**:
+
+- **Practice Types**: `practice`, `performance`, `lesson`, `rehearsal`, `technique`
+- **Instruments**: `piano`, `guitar`
+- **Moods**: `frustrated`, `neutral`, `satisfied`, `excited`
 
 **Intended Design**:
 
@@ -128,12 +136,12 @@ All services run as Cloudflare Workers with the following domains:
 - Better query performance with indexed columns
 - Database-level validation and constraints
 
-**Migration Plan** (Recommended):
+**Migration Status**:
 
-1. Fix CHECK constraint to include 'TECHNIQUE' type
-2. Migrate 43 existing entries from sync_data to logbook_entries
-3. Update API to use structured tables
-4. Keep sync_data as staging/backup during transition
+1. ✅ CHECK constraints updated to accept lowercase values (migration 0006)
+2. ✅ Data migration script includes CASCADE delete protection (migration 0007)
+3. ✅ Staging deployment successful with data integrity preserved
+4. 🔄 Production deployment pending
 
 See [Database Architecture Analysis](#database-architecture-analysis) section below for detailed findings.
 
@@ -777,11 +785,15 @@ During investigation of the 'TECHNIQUE' practice type implementation, we discove
 
 #### Current Implementation
 
-- **sync_data table**: Stores all 43 logbook entries as JSON blobs
+- **sync_data table**: Stores all logbook entries as JSON blobs
+  - Staging: 43 entries (lowercase)
+  - Production: 164 entries (mixed case, awaiting migration)
 - **logbook_entries table**: Empty (0 entries) despite having proper schema
 - **Data flow**: Frontend → API → sync_data (JSON) → Frontend
 
-#### Production Schema (from backup)
+#### Schema Updates (2025-07-11)
+
+**Post-Migration Schema** (lowercase enums):
 
 ```sql
 CREATE TABLE logbook_entries (
@@ -789,13 +801,13 @@ CREATE TABLE logbook_entries (
   user_id TEXT NOT NULL,
   timestamp INTEGER NOT NULL,
   duration INTEGER NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('PRACTICE', 'PERFORMANCE', 'LESSON', 'REHEARSAL')),
-  instrument TEXT NOT NULL CHECK (instrument IN ('PIANO', 'GUITAR')),
+  type TEXT NOT NULL CHECK (type IN ('practice', 'performance', 'lesson', 'rehearsal', 'technique')),
+  instrument TEXT NOT NULL CHECK (instrument IN ('piano', 'guitar')),
   pieces TEXT NOT NULL DEFAULT '[]',
-  techniques TEXT NOT NULL DEFAULT '[]',  -- Column exists!
+  techniques TEXT NOT NULL DEFAULT '[]',
   goal_ids TEXT NOT NULL DEFAULT '[]',
   notes TEXT,
-  mood TEXT CHECK (mood IN ('FRUSTRATED', 'NEUTRAL', 'SATISFIED', 'EXCITED')),
+  mood TEXT CHECK (mood IN ('frustrated', 'neutral', 'satisfied', 'excited')),
   tags TEXT NOT NULL DEFAULT '[]',
   -- ... other columns
 )
@@ -803,10 +815,12 @@ CREATE TABLE logbook_entries (
 
 #### Key Findings
 
-1. **TECHNIQUE type missing from CHECK constraint** but works via JSON storage
-2. **techniques column exists** in schema but unused
-3. **All queries use JSON extraction** which is inefficient
-4. **Frontend decoupled** - doesn't know about backend storage method
+1. ✅ **TECHNIQUE type now included** in CHECK constraint
+2. ✅ **All enums converted to lowercase** for consistency
+3. **techniques column exists** in schema but unused
+4. **All queries use JSON extraction** which is inefficient
+5. **Frontend decoupled** - doesn't know about backend storage method
+6. **Critical fix applied**: Migration scripts now use `PRAGMA foreign_keys = OFF/ON` to prevent CASCADE deletes
 
 #### Performance Implications
 

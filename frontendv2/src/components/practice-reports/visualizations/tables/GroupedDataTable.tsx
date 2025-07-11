@@ -350,13 +350,13 @@ function EntryRow({
                     <>
                       <span className="text-morandi-stone-500">•</span>
                       <span className="text-base">
-                        {entry.mood === 'FRUSTRATED'
+                        {entry.mood === 'frustrated'
                           ? '😣'
-                          : entry.mood === 'NEUTRAL'
+                          : entry.mood === 'neutral'
                             ? '😐'
-                            : entry.mood === 'SATISFIED'
+                            : entry.mood === 'satisfied'
                               ? '😊'
-                              : entry.mood === 'EXCITED'
+                              : entry.mood === 'excited'
                                 ? '🤩'
                                 : ''}
                       </span>

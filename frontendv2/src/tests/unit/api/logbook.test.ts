@@ -62,7 +62,14 @@ describe('Logbook API', () => {
         types: ['logbook_entry'],
         since: null,
       })
-      expect(result).toEqual(mockEntries)
+      expect(result).toEqual([
+        {
+          ...mockEntries[0],
+          type: 'practice',
+          instrument: 'piano',
+          mood: 'satisfied',
+        },
+      ])
     })
 
     it('should return empty array if no entries in response', async () => {
@@ -349,7 +356,12 @@ describe('Logbook API', () => {
         expect(apiClient.get).toHaveBeenCalledWith('/api/goals', {
           params: undefined,
         })
-        expect(result).toEqual(mockGoals)
+        expect(result).toEqual([
+          {
+            ...mockGoals[0],
+            status: 'active',
+          },
+        ])
       })
 
       it('should fetch goals by status', async () => {
@@ -357,12 +369,17 @@ describe('Logbook API', () => {
           data: { goals: mockGoals },
         })
 
-        const result = await logbookApi.getGoals('ACTIVE')
+        const result = await logbookApi.getGoals('active')
 
         expect(apiClient.get).toHaveBeenCalledWith('/api/goals', {
-          params: { status: 'ACTIVE' },
+          params: { status: 'active' },
         })
-        expect(result).toEqual(mockGoals)
+        expect(result).toEqual([
+          {
+            ...mockGoals[0],
+            status: 'active',
+          },
+        ])
       })
 
       it('should handle API errors', async () => {
