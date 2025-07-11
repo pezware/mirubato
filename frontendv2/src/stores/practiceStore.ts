@@ -11,7 +11,7 @@ export interface PracticeSession {
   pausedTime?: Date
   totalPausedDuration: number // in milliseconds
   pageViews: number[]
-  instrument: 'PIANO' | 'GUITAR'
+  instrument: 'piano' | 'guitar'
   isActive: boolean
   isPaused: boolean
 }
@@ -21,7 +21,7 @@ interface PracticeState {
   currentSession: PracticeSession | null
 
   // Actions
-  startPractice: (score: Score, instrument?: 'PIANO' | 'GUITAR') => void
+  startPractice: (score: Score, instrument?: 'piano' | 'guitar') => void
   stopPractice: () => {
     duration: number
     scoreId: string
@@ -61,7 +61,7 @@ export const usePracticeStore = create<PracticeState>()(
     (set, get) => ({
       currentSession: null,
 
-      startPractice: (score, instrument = 'PIANO') => {
+      startPractice: (score, instrument = 'piano') => {
         // End any existing session first
         const existing = get().currentSession
         if (existing?.isActive) {

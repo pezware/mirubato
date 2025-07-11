@@ -404,9 +404,7 @@ export default function LogbookEntryList({
                         {entry.type}
                       </span>
                       <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                        {entry.instrument?.toUpperCase() === 'PIANO'
-                          ? '🎹'
-                          : '🎸'}{' '}
+                        {entry.instrument === 'piano' ? '🎹' : '🎸'}{' '}
                         {entry.instrument}
                       </span>
                     </div>

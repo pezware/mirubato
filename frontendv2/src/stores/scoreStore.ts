@@ -190,9 +190,9 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     const { currentScore } = get()
     if (!currentScore) return
 
-    // Get user's instrument preference (default to PIANO for now)
+    // Get user's instrument preference (default to piano for now)
     // TODO: Add user instrument preference to profile
-    const instrument = 'PIANO' as const
+    const instrument = 'piano' as const
 
     // Start practice in practiceStore
     usePracticeStore.getState().startPractice(currentScore, instrument)

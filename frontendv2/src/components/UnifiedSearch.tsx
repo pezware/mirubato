@@ -193,9 +193,7 @@ export default function UnifiedSearch({
                       </span>
                       {result.instrument && (
                         <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-600 text-xs rounded-full">
-                          {result.instrument?.toUpperCase() === 'PIANO'
-                            ? '🎹'
-                            : '🎸'}{' '}
+                          {result.instrument === 'piano' ? '🎹' : '🎸'}{' '}
                           {result.instrument}
                         </span>
                       )}
