@@ -23,17 +23,27 @@ CREATE TABLE scores_new (
   imslp_url TEXT,
   tags TEXT, -- JSON array
   metadata TEXT, -- JSON object with additional metadata
-  slug TEXT UNIQUE,
-  pdf_url TEXT,
-  pdf_r2_key TEXT,
-  pdf_pages INTEGER,
-  r2_import_id TEXT,
-  visibility TEXT DEFAULT 'public' CHECK (visibility IN ('public', 'private')),
-  upload_user_id TEXT,
-  visual_density TEXT,
-  visual_features TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  slug TEXT,
+  pdf_url TEXT,
+  created_by TEXT,
+  processing_status TEXT DEFAULT 'pending',
+  processing_error TEXT,
+  subtitle TEXT,
+  year INTEGER,
+  description TEXT,
+  file_name TEXT,
+  source_url TEXT,
+  imported_at DATETIME,
+  ai_metadata TEXT,
+  visual_analysis TEXT,
+  visual_confidence REAL,
+  user_id TEXT,
+  visibility TEXT DEFAULT 'private' CHECK (visibility IN ('private', 'public', 'unlisted')),
+  source_type TEXT DEFAULT 'pdf' CHECK (source_type IN ('pdf', 'image', 'multi-image')),
+  page_count INTEGER DEFAULT 1,
+  derived_visibility TEXT
 );
 
 -- Step 2: Copy data with lowercase conversion
@@ -61,17 +71,27 @@ SELECT
   imslp_url,
   tags,
   metadata,
+  created_at,
+  updated_at,
   slug,
   pdf_url,
-  pdf_r2_key,
-  pdf_pages,
-  r2_import_id,
+  created_by,
+  processing_status,
+  processing_error,
+  subtitle,
+  year,
+  description,
+  file_name,
+  source_url,
+  imported_at,
+  ai_metadata,
+  visual_analysis,
+  visual_confidence,
+  user_id,
   visibility,
-  upload_user_id,
-  visual_density,
-  visual_features,
-  created_at,
-  updated_at
+  source_type,
+  page_count,
+  derived_visibility
 FROM scores;
 
 -- Step 3: Drop old table and rename new table
@@ -86,7 +106,10 @@ CREATE INDEX idx_scores_style_period ON scores(style_period);
 CREATE INDEX idx_scores_created_at ON scores(created_at);
 CREATE INDEX idx_scores_updated_at ON scores(updated_at);
 CREATE INDEX idx_scores_slug ON scores(slug);
-CREATE INDEX idx_scores_upload_user_id ON scores(upload_user_id);
+CREATE INDEX idx_scores_user_id ON scores(user_id);
+CREATE INDEX idx_scores_visibility ON scores(visibility);
+CREATE INDEX idx_scores_derived_visibility ON scores(derived_visibility);
+CREATE INDEX idx_scores_source_type ON scores(source_type);
 
 -- Step 5: Update collections table
 CREATE TABLE collections_new (
