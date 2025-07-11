@@ -40,7 +40,6 @@ export const PracticeCounter: React.FC = () => {
     update: updateTracking,
     confirmSave,
     dismissSummary,
-    config,
   } = usePracticeTracking({
     type: 'counter',
     metadata: {

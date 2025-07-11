@@ -7,9 +7,15 @@ interface EntryCardProps {
   entry: LogbookEntry
   onEdit?: (entry: LogbookEntry) => void
   onDelete?: (entry: LogbookEntry) => void
+  showDateHeader?: boolean
 }
 
-export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
+export function EntryCard({
+  entry,
+  onEdit,
+  onDelete,
+  showDateHeader = true,
+}: EntryCardProps) {
   const { t } = useTranslation()
   const date = new Date(entry.timestamp)
 
@@ -25,7 +31,9 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
       data-entry-id={entry.id}
     >
       {/* Date Badge */}
-      <div className="flex-shrink-0 text-center">
+      <div
+        className={`flex-shrink-0 text-center ${showDateHeader ? '' : 'opacity-0'}`}
+      >
         <div className="w-16 h-16 bg-stone-100 rounded-lg flex flex-col items-center justify-center">
           <div className="text-xs text-stone-600 uppercase">{month}</div>
           <div className="text-xl font-semibold text-stone-900">{day}</div>

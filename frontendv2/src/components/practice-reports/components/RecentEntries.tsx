@@ -38,20 +38,32 @@ export function RecentEntries({
     )
   }
 
+  // Track which dates have been shown
+  const shownDates = new Set<string>()
+
   return (
     <div className={className}>
       <h2 className="text-xl font-semibold text-gray-900 mb-4">
         {t('reports:recentEntries')}
       </h2>
       <div className="space-y-3">
-        {recentEntries.map(entry => (
-          <EntryCard
-            key={entry.id}
-            entry={entry}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
+        {recentEntries.map(entry => {
+          const entryDate = new Date(entry.timestamp).toDateString()
+          const isFirstOfDay = !shownDates.has(entryDate)
+          if (isFirstOfDay) {
+            shownDates.add(entryDate)
+          }
+
+          return (
+            <EntryCard
+              key={entry.id}
+              entry={entry}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              showDateHeader={isFirstOfDay}
+            />
+          )
+        })}
       </div>
     </div>
   )
