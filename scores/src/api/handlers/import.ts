@@ -470,31 +470,31 @@ function validateStylePeriod(
   stylePeriod: string | null | undefined
 ): string | null {
   const validPeriods = [
-    'BAROQUE',
-    'CLASSICAL',
-    'ROMANTIC',
-    'MODERN',
-    'CONTEMPORARY',
+    'baroque',
+    'classical',
+    'romantic',
+    'modern',
+    'contemporary',
   ]
 
   if (!stylePeriod) return null
 
-  const upperPeriod = stylePeriod.toUpperCase()
-  if (validPeriods.includes(upperPeriod)) {
-    return upperPeriod
+  const lowerPeriod = stylePeriod.toLowerCase()
+  if (validPeriods.includes(lowerPeriod)) {
+    return lowerPeriod
   }
 
   // Try to map common variations
-  if (upperPeriod.includes('BAROQUE')) return 'BAROQUE'
-  if (upperPeriod.includes('CLASSIC')) return 'CLASSICAL'
-  if (upperPeriod.includes('ROMANTIC')) return 'ROMANTIC'
+  if (lowerPeriod.includes('baroque')) return 'baroque'
+  if (lowerPeriod.includes('classic')) return 'classical'
+  if (lowerPeriod.includes('romantic')) return 'romantic'
   if (
-    upperPeriod.includes('MODERN') ||
-    upperPeriod.includes('20TH') ||
-    upperPeriod.includes('21ST')
+    lowerPeriod.includes('modern') ||
+    lowerPeriod.includes('20th') ||
+    lowerPeriod.includes('21st')
   )
-    return 'MODERN'
-  if (upperPeriod.includes('CONTEMPORARY')) return 'CONTEMPORARY'
+    return 'modern'
+  if (lowerPeriod.includes('contemporary')) return 'contemporary'
 
   // Default to null if can't map
   return null
