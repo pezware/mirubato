@@ -89,7 +89,8 @@
   },
   "tabs": {
     "counter": "Compteur d'entraînement",
-    "metronome": "Métronome"
+    "metronome": "Métronome",
+    "circleOfFifths": "Circle of Fifths"
   },
   "title": "Boîte à outils"
 }

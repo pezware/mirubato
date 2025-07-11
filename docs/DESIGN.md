@@ -291,7 +291,7 @@ The frontend uses a straightforward React architecture without the complex modul
 
 - **Home**: Landing page with feature overview
 - **Logbook**: Practice session tracking and reporting
-- **Toolbox**: Practice tools including metronome with patterns and practice counter
+- **Toolbox**: Practice tools including metronome with patterns, practice counter, and Circle of Fifths
 - **Scorebook**: Sheet music browser with collections support (July 2025 update)
 - **Auth**: Authentication pages (verify, callback)
 
@@ -361,6 +361,17 @@ The frontend uses a straightforward React architecture without the complex modul
 - **ImportScoreModal**: Unified import flow for PDF/Images/URL with collection selection
 - **AddToCollectionModal**: Quick add scores to collections
 - **ScoreManagement**: Simplified score upload without collection elements
+
+**Toolbox Components (July 2025)**
+
+- **Circle of Fifths Components**:
+  - **CircleOfFifths**: Main component orchestrating the tool
+  - **CircleVisualization**: Interactive SVG circle with key segments
+  - **PianoKeyboard**: Synchronized piano keyboard with color-coded keys
+  - **KeyDetailsPanel**: Elegant card-based information panel
+  - **CircleOfFifthsControls**: Audio playback and interaction controls
+  - **keyData**: Comprehensive music theory data structure
+  - **musicalAudioService**: Web Audio API integration for sound generation
 
 **Layout Components**
 
@@ -712,6 +723,15 @@ The frontend implements aggressive code splitting:
   - Visual counter for practice sessions
   - Integrated with scorebook and logbook
   - Full i18n support across all 6 languages
+
+- **Circle of Fifths Tool**: Interactive music theory visualization (July 2025)
+  - Complete Circle of Fifths showing all 12 major and minor keys
+  - Interactive piano keyboard synchronized with circle selection
+  - Morandi-inspired color palette with elegant card-based UI
+  - Shows key relationships, scales, chords, and common progressions
+  - Audio playback integration for chords and scales
+  - Responsive design for desktop, tablet, and mobile
+  - Educational features including theory information and characteristics
 
 - **Component Refactoring**: Split large components into maintainable modules
   - EnhancedPracticeReports refactored from 1515 lines into 8+ focused components

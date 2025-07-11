@@ -89,7 +89,8 @@
   },
   "tabs": {
     "counter": "Übungszähler",
-    "metronome": "Metronom"
+    "metronome": "Metronom",
+    "circleOfFifths": "Circle of Fifths"
   },
   "title": "Werkzeugkasten"
 }
