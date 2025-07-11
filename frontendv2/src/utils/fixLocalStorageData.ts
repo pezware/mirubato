@@ -3,10 +3,15 @@
  */
 export function fixLocalStorageData() {
   const ENTRIES_KEY = 'mirubato:logbook:entries'
+  const BACKUP_KEY = 'mirubato:logbook:entries:backup'
 
   try {
     const stored = localStorage.getItem(ENTRIES_KEY)
     if (!stored) return
+
+    // Create a backup before attempting to fix
+    localStorage.setItem(BACKUP_KEY, stored)
+    console.log('Created backup of entries before fixing')
 
     const entries = JSON.parse(stored)
     if (!Array.isArray(entries)) return
@@ -90,10 +95,52 @@ export function fixLocalStorageData() {
     }
   } catch (error) {
     console.error('Failed to fix localStorage data:', error)
-    // If there's any error, clear the data to force a fresh sync
-    localStorage.removeItem(ENTRIES_KEY)
+    // DO NOT clear data on error - this causes data loss!
+    // Keep the original data even if we can't fix it
     console.log(
-      'Cleared localStorage entries due to error - will sync fresh data'
+      'Error fixing localStorage data, but keeping original data to prevent loss'
     )
   }
+}
+
+/**
+ * Attempts to recover entries from backup if main entries are missing
+ */
+export function recoverFromBackup() {
+  const ENTRIES_KEY = 'mirubato:logbook:entries'
+  const BACKUP_KEY = 'mirubato:logbook:entries:backup'
+
+  const currentEntries = localStorage.getItem(ENTRIES_KEY)
+  const backup = localStorage.getItem(BACKUP_KEY)
+
+  if (!currentEntries && backup) {
+    console.log('No entries found but backup exists, recovering...')
+    localStorage.setItem(ENTRIES_KEY, backup)
+    return true
+  }
+
+  if (backup) {
+    try {
+      const currentCount = currentEntries
+        ? JSON.parse(currentEntries).length
+        : 0
+      const backupCount = JSON.parse(backup).length
+      console.log(
+        `Current entries: ${currentCount}, Backup entries: ${backupCount}`
+      )
+
+      if (backupCount > currentCount) {
+        console.log(
+          'Backup has more entries than current, consider manual recovery'
+        )
+        console.log(
+          'Run: localStorage.setItem("mirubato:logbook:entries", localStorage.getItem("mirubato:logbook:entries:backup"))'
+        )
+      }
+    } catch (e) {
+      console.error('Error checking backup:', e)
+    }
+  }
+
+  return false
 }
