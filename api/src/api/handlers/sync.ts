@@ -47,8 +47,22 @@ syncHandler.post('/pull', async c => {
           typeof item.data === 'string' ? JSON.parse(item.data) : item.data
 
         if (item.entity_type === 'logbook_entry') {
+          // Normalize enum fields to lowercase
+          if (data.instrument && typeof data.instrument === 'string') {
+            data.instrument = data.instrument.toLowerCase()
+          }
+          if (data.type && typeof data.type === 'string') {
+            data.type = data.type.toLowerCase()
+          }
+          if (data.mood && typeof data.mood === 'string') {
+            data.mood = data.mood.toLowerCase()
+          }
           entries.push(data)
         } else if (item.entity_type === 'goal') {
+          // Normalize instrument field for goals
+          if (data.instrument && typeof data.instrument === 'string') {
+            data.instrument = data.instrument.toLowerCase()
+          }
           goals.push(data)
         }
       } catch (parseError) {
@@ -110,12 +124,20 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
       for (const entry of changes.entries as Array<{
         id: string
         instrument?: string
+        type?: string
+        mood?: string
         [key: string]: unknown
       }>) {
         try {
-          // Normalize instrument field to lowercase for database compatibility
+          // Normalize enum fields to lowercase for database compatibility
           if (entry.instrument && typeof entry.instrument === 'string') {
             entry.instrument = entry.instrument.toLowerCase()
+          }
+          if (entry.type && typeof entry.type === 'string') {
+            entry.type = entry.type.toLowerCase()
+          }
+          if (entry.mood && typeof entry.mood === 'string') {
+            entry.mood = entry.mood.toLowerCase()
           }
 
           const checksum = await calculateChecksum(entry)

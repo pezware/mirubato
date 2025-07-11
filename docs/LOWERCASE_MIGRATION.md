@@ -1,9 +1,9 @@
 # Lowercase Migration Plan
 
-## Migration Status: Phase 1 Complete ✅
+## Migration Status: Phases 1-3 Complete ✅
 
 **Last Updated**: 2025-07-11  
-**Current Phase**: 1 of 4 (Frontend Complete)  
+**Current Phase**: 3 of 4 (Frontend, API, and Database Scripts Complete)  
 **Branch**: `feature/lowercase-enum-migration`
 
 ## Overview
@@ -199,31 +199,52 @@ getEntries: async () => {
 - ✅ All backend and scores service tests passing
 - ✅ Full TypeScript type checking passes
 
-### Phase 2: API Updates (Day 1-2)
+### ✅ Phase 2: API Updates (Day 1-2) - COMPLETED (2025-07-11)
 
-#### 2.1 Update Sync Handler
+**Status**: All Phase 2 tasks completed successfully.
 
-The API already converts to lowercase in `api/src/api/handlers/sync.ts` (line 118), but we need to ensure it's consistent:
+**Completed Tasks**:
+
+#### 2.1 Update Sync Handler ✅
+
+Updated `api/src/api/handlers/sync.ts` to normalize all enum fields:
+
+- Added normalization for `type` and `mood` fields in addition to existing `instrument` normalization
+- Updated both push and pull endpoints to ensure consistent lowercase values
+- Added normalization for goals (instrument field)
 
 ```typescript
-// Ensure pull endpoint also normalizes
-entries.push({
-  ...data,
-  type: data.type?.toLowerCase(),
-  instrument: data.instrument?.toLowerCase(),
-  mood: data.mood?.toLowerCase(),
-})
+// Push endpoint normalization
+if (entry.instrument && typeof entry.instrument === 'string') {
+  entry.instrument = entry.instrument.toLowerCase()
+}
+if (entry.type && typeof entry.type === 'string') {
+  entry.type = entry.type.toLowerCase()
+}
+if (entry.mood && typeof entry.mood === 'string') {
+  entry.mood = entry.mood.toLowerCase()
+}
+
+// Pull endpoint normalization (similar for entries and goals)
 ```
 
-#### 2.2 Update Scores API
+#### 2.2 Update Scores API ✅
 
-Add similar normalization to scores endpoints in `scores/src/api/handlers/scores.ts`.
+The Scores API was already updated in Phase 1:
 
-### Phase 3: Database Schema Updates (Day 2)
+- TypeScript types and validation functions use lowercase
+- All handlers already work with lowercase values
+- No additional changes needed
 
-#### 3.1 Create Migration Script
+### ✅ Phase 3: Database Schema Updates (Day 2) - COMPLETED (2025-07-11)
 
-Create `api/migrations/0006_lowercase_enums.sql`:
+**Status**: All Phase 3 tasks completed successfully.
+
+**Completed Tasks**:
+
+#### 3.1 Create Migration Script ✅
+
+Created `api/migrations/0006_lowercase_enums.sql`:
 
 ```sql
 -- Update CHECK constraints to accept lowercase values
@@ -257,9 +278,9 @@ ALTER TABLE sheet_music ADD CONSTRAINT sheet_music_instrument_check
   CHECK (instrument IN ('piano', 'guitar'));
 ```
 
-#### 3.2 Create Data Migration Script
+#### 3.2 Create Data Migration Script ✅
 
-Create `api/migrations/0007_migrate_data_to_lowercase.sql`:
+Created `api/migrations/0007_migrate_data_to_lowercase.sql`:
 
 ```sql
 -- Migrate existing data to lowercase
@@ -305,9 +326,9 @@ UPDATE sheet_music SET instrument = LOWER(instrument)
 WHERE instrument != LOWER(instrument);
 ```
 
-#### 3.3 Scores Database Migration
+#### 3.3 Scores Database Migration ✅
 
-Create `scores/migrations/0001_migrate_to_lowercase.sql`:
+Created `scores/migrations/0016_migrate_to_lowercase.sql`:
 
 ```sql
 -- Update scores table
@@ -402,12 +423,12 @@ Update any tests that might be checking for uppercase values.
    ./backup-database.sh --env production
    ```
 
-2. **Keep Migration Scripts**
-   Create reverse migration scripts before deployment
+2. **Keep Migration Scripts** ✅
+   Rollback scripts have been created for emergency use.
 
-### Rollback Scripts
+### Rollback Scripts ✅
 
-Create `api/migrations/rollback_lowercase.sql`:
+**Created `api/migrations/rollback_lowercase.sql`**:
 
 ```sql
 -- Revert CHECK constraints to uppercase
@@ -431,6 +452,8 @@ SET data = json_set(
 )
 WHERE entity_type = 'logbook_entry';
 ```
+
+**Also created `scores/migrations/rollback_lowercase.sql`** for the scores database rollback.
 
 ## Monitoring
 
@@ -484,17 +507,44 @@ if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'production') {
 - Scores service required more updates than initially planned
 - Compatibility layer ensures smooth transition for users
 
-## Phase 1 Summary
+## Migration Summary
 
-Phase 1 is now complete with all frontend components, types, and tests updated to use lowercase enum values. The migration includes:
+### Phases 1-3 Complete ✅
+
+The lowercase enum migration is now ready for deployment. All code changes and database migration scripts have been completed:
+
+#### Phase 1 - Frontend (Complete) ✅
 
 1. **270+ tests updated and passing**
-2. **12 frontend components updated**
+2. **12+ frontend components updated**
 3. **Automatic localStorage migration**
 4. **Backward compatibility layer**
 5. **Full TypeScript type safety maintained**
 
-The application is now ready for Phase 2 (API updates) and Phase 3 (database migrations).
+#### Phase 2 - API (Complete) ✅
+
+1. **Sync handler updated** with full normalization
+2. **Scores API** already compatible from Phase 1
+3. **All API endpoints** handle lowercase values
+
+#### Phase 3 - Database Scripts (Complete) ✅
+
+1. **API migration scripts** (0006 & 0007) created
+2. **Scores migration script** (0016) created
+3. **Rollback scripts** created for emergency use
+4. **Migration list** updated
+
+### Ready for Deployment
+
+The migration is now ready for Phase 4 (Testing & Deployment). The deployment order should be:
+
+1. Deploy Frontend (with compatibility layer)
+2. Deploy API (with normalization)
+3. Run database migrations
+4. Deploy Scores service
+5. Verify in staging before production
+
+All changes maintain backward compatibility during the transition period.
 
 ---
 
