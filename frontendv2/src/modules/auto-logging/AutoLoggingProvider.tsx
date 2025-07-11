@@ -208,24 +208,19 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
     return completedSession
   }, [currentSession, config, isAuthenticated, createEntry])
 
-  const updateSession = useCallback(
-    (updates: Partial<PracticeMetadata>) => {
-      if (!currentSession) return
-
-      setCurrentSession(prev =>
-        prev
-          ? {
-              ...prev,
-              metadata: {
-                ...prev.metadata,
-                ...updates,
-              },
-            }
-          : null
-      )
-    },
-    [currentSession]
-  )
+  const updateSession = useCallback((updates: Partial<PracticeMetadata>) => {
+    setCurrentSession(prev =>
+      prev
+        ? {
+            ...prev,
+            metadata: {
+              ...prev.metadata,
+              ...updates,
+            },
+          }
+        : null
+    )
+  }, [])
 
   const cancelSession = useCallback(() => {
     setCurrentSession(null)
