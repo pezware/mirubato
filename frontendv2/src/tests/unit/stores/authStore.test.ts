@@ -27,6 +27,7 @@ const mockAuthApi = authApi as unknown as {
 }
 
 const mockSyncWithServer = vi.fn()
+const mockSetLocalMode = vi.fn()
 const mockLogbookStore = useLogbookStore as unknown as {
   getState: ReturnType<typeof vi.fn>
 }
@@ -48,8 +49,13 @@ describe('authStore', () => {
 
     mockSyncWithServer.mockReset()
     mockSyncWithServer.mockResolvedValue(undefined)
+    mockSetLocalMode.mockReset()
     mockLogbookStore.getState = vi.fn(() => ({
       syncWithServer: mockSyncWithServer,
+      setLocalMode: mockSetLocalMode,
+      entriesMap: new Map(),
+      goalsMap: new Map(),
+      scoreMetadata: {},
     })) as unknown as ReturnType<typeof vi.fn>
 
     // Reset localStorage mock
@@ -138,6 +144,25 @@ describe('authStore', () => {
       expect(mockSyncWithServer).toHaveBeenCalled()
     })
 
+    it('should set local mode to false when authenticated via magic link', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        displayName: 'Test User',
+      }
+      mockAuthApi.verifyMagicLink.mockResolvedValue({
+        success: true,
+        user: mockUser,
+        accessToken: 'test-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresIn: 3600,
+      })
+
+      await useAuthStore.getState().verifyMagicLink('test-token')
+
+      expect(mockSetLocalMode).toHaveBeenCalledWith(false)
+    })
+
     it('should handle invalid token error', async () => {
       const errorMessage = 'Invalid or expired token'
       mockAuthApi.verifyMagicLink.mockRejectedValue({
@@ -208,6 +233,25 @@ describe('authStore', () => {
 
       // Verify sync was triggered
       expect(mockSyncWithServer).toHaveBeenCalled()
+    })
+
+    it('should set local mode to false when authenticated via Google', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        displayName: 'Test User',
+      }
+      mockAuthApi.googleLogin.mockResolvedValue({
+        success: true,
+        user: mockUser,
+        accessToken: 'test-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresIn: 3600,
+      })
+
+      await useAuthStore.getState().googleLogin('test-credential')
+
+      expect(mockSetLocalMode).toHaveBeenCalledWith(false)
     })
 
     it('should handle 401 error with appropriate message', async () => {
@@ -316,6 +360,40 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false)
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
+    })
+
+    it('should save logbook data to localStorage and set local mode on logout', async () => {
+      mockAuthApi.logout.mockResolvedValue({ success: true })
+
+      // Set up some mock data in the logbook store
+      const mockEntries = [{ id: '1', title: 'Test Entry' }]
+      const mockGoals = [{ id: '2', title: 'Test Goal' }]
+      mockLogbookStore.getState = vi.fn(() => ({
+        syncWithServer: mockSyncWithServer,
+        setLocalMode: mockSetLocalMode,
+        entriesMap: new Map(mockEntries.map(e => [e.id, e])),
+        goalsMap: new Map(mockGoals.map(g => [g.id, g])),
+        scoreMetadata: { test: 'metadata' },
+      })) as unknown as ReturnType<typeof vi.fn>
+
+      await useAuthStore.getState().logout()
+
+      // Verify data was saved to localStorage
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:entries',
+        JSON.stringify(mockEntries)
+      )
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:goals',
+        JSON.stringify(mockGoals)
+      )
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:scoreMetadata',
+        JSON.stringify({ test: 'metadata' })
+      )
+
+      // Verify local mode was set back to true
+      expect(mockSetLocalMode).toHaveBeenCalledWith(true)
     })
 
     it('should clear state even if logout API call fails', async () => {
