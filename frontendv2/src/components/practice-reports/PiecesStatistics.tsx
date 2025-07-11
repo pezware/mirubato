@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../types/reporting'
 import { ChevronRight } from 'lucide-react'
 
@@ -17,8 +16,6 @@ export function PiecesStatistics({
   formatDuration,
   setSelectedPiece,
 }: PiecesStatisticsProps) {
-  const { t } = useTranslation(['reports'])
-
   // Get piece stats - either for selected piece/composer or top pieces
   const getPieceStats = () => {
     if (selectedPiece) {
