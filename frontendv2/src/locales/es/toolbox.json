@@ -89,7 +89,8 @@
   },
   "tabs": {
     "counter": "Contador de práctica",
-    "metronome": "Metrónomo"
+    "metronome": "Metrónomo",
+    "circleOfFifths": "Circle of Fifths"
   },
   "title": "Caja de herramientas"
 }

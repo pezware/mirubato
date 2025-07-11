@@ -89,7 +89,8 @@
   },
   "tabs": {
     "counter": "练习计数器",
-    "metronome": "节拍器"
+    "metronome": "节拍器",
+    "circleOfFifths": "Circle of Fifths"
   },
   "title": "工具箱"
 }
