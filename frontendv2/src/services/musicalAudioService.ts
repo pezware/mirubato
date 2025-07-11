@@ -222,7 +222,7 @@ class MusicalAudioService {
   async playKeyAudio(
     keyId: string,
     scale: string[],
-    primaryChords: string[],
+    _primaryChords: string[],
     mode: PlaybackMode,
     tempo: number = 120
   ): Promise<void> {
