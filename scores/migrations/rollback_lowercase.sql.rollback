@@ -1,0 +1,94 @@
+-- Rollback migration: Revert lowercase enum values back to uppercase
+-- Date: 2025-07-11
+-- Purpose: Emergency rollback if lowercase migration causes issues
+
+-- Step 1: Create table with uppercase CHECK constraints
+CREATE TABLE scores_rollback (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  composer TEXT NOT NULL,
+  opus TEXT,
+  movement TEXT,
+  instrument TEXT NOT NULL CHECK (instrument IN ('PIANO', 'GUITAR', 'BOTH')),
+  difficulty TEXT NOT NULL CHECK (difficulty IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED')),
+  difficulty_level INTEGER CHECK (difficulty_level >= 1 AND difficulty_level <= 10),
+  grade_level TEXT,
+  duration_seconds INTEGER,
+  time_signature TEXT,
+  key_signature TEXT,
+  tempo_marking TEXT,
+  suggested_tempo INTEGER,
+  style_period TEXT CHECK (style_period IN ('BAROQUE', 'CLASSICAL', 'ROMANTIC', 'MODERN', 'CONTEMPORARY')),
+  source TEXT CHECK (source IN ('imslp', 'upload', 'generated', 'manual')),
+  imslp_url TEXT,
+  tags TEXT,
+  metadata TEXT,
+  slug TEXT UNIQUE,
+  pdf_url TEXT,
+  pdf_r2_key TEXT,
+  pdf_pages INTEGER,
+  r2_import_id TEXT,
+  visibility TEXT DEFAULT 'public' CHECK (visibility IN ('public', 'private')),
+  upload_user_id TEXT,
+  visual_density TEXT,
+  visual_features TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Step 2: Copy data with uppercase conversion
+INSERT INTO scores_rollback
+SELECT 
+  id,
+  title,
+  composer,
+  opus,
+  movement,
+  UPPER(instrument) as instrument,
+  UPPER(difficulty) as difficulty,
+  difficulty_level,
+  grade_level,
+  duration_seconds,
+  time_signature,
+  key_signature,
+  tempo_marking,
+  suggested_tempo,
+  CASE 
+    WHEN style_period IS NOT NULL THEN UPPER(style_period)
+    ELSE NULL
+  END as style_period,
+  source,
+  imslp_url,
+  tags,
+  metadata,
+  slug,
+  pdf_url,
+  pdf_r2_key,
+  pdf_pages,
+  r2_import_id,
+  visibility,
+  upload_user_id,
+  visual_density,
+  visual_features,
+  created_at,
+  updated_at
+FROM scores;
+
+-- Step 3: Drop current table and rename rollback table
+DROP TABLE scores;
+ALTER TABLE scores_rollback RENAME TO scores;
+
+-- Step 4: Recreate indexes
+CREATE INDEX idx_scores_instrument ON scores(instrument);
+CREATE INDEX idx_scores_difficulty ON scores(difficulty);
+CREATE INDEX idx_scores_composer ON scores(composer);
+CREATE INDEX idx_scores_style_period ON scores(style_period);
+CREATE INDEX idx_scores_created_at ON scores(created_at);
+CREATE INDEX idx_scores_updated_at ON scores(updated_at);
+CREATE INDEX idx_scores_slug ON scores(slug);
+CREATE INDEX idx_scores_upload_user_id ON scores(upload_user_id);
+
+-- Step 5: Verify rollback
+SELECT 
+  'Rolled back ' || COUNT(*) || ' scores to uppercase enums' as rollback_result
+FROM scores;
