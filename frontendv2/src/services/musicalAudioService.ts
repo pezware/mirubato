@@ -40,6 +40,9 @@ import { PlaybackMode } from '../components/circle-of-fifths/types'
 
 // Convert note names to Tone.js format (e.g., "C#4")
 const toToneNote = (note: string, octave: number = 4): string => {
+  // Remove chord notation (m, dim, maj, etc.) to get just the note name
+  const noteOnly = note.replace(/m(aj)?|dim|aug|sus|add|[0-9]+/g, '').trim()
+
   // Handle enharmonic equivalents
   const noteMap: Record<string, string> = {
     'E#': 'F',
@@ -48,7 +51,7 @@ const toToneNote = (note: string, octave: number = 4): string => {
     Fb: 'E',
   }
 
-  const mappedNote = noteMap[note] || note
+  const mappedNote = noteMap[noteOnly] || noteOnly
   return `${mappedNote}${octave}`
 }
 
