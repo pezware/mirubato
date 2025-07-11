@@ -129,7 +129,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   className={`
                     relative w-10 h-28 border border-gray-400 rounded-b
                     transition-all duration-200 shadow-sm
-                    ${isActive ? 'bg-purple-400 shadow-inner' : isChordNote ? 'bg-purple-200' : isInScale ? 'bg-sage-100' : 'bg-white'}
+                    ${isActive ? 'bg-purple-400 shadow-inner' : isChordNote ? 'bg-purple-300' : isInScale ? 'bg-sage-200' : 'bg-white'}
                     ${!isActive && !isChordNote && 'hover:bg-gray-50'}
                   `}
                   style={{
@@ -193,11 +193,11 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-purple-200 rounded border border-gray-300"></div>
+          <div className="w-4 h-4 bg-purple-300 rounded border border-gray-300"></div>
           <span className="text-gray-600">Root Note</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-sage-100 rounded border border-gray-300"></div>
+          <div className="w-4 h-4 bg-sage-200 rounded border border-gray-300"></div>
           <span className="text-gray-600">Scale Notes</span>
         </div>
         <div className="flex items-center gap-2">
