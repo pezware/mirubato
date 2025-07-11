@@ -114,10 +114,6 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Piano Keyboard
-      </h3>
-
       <div className="relative bg-gray-100 rounded-lg p-4 overflow-x-auto">
         <div className="relative h-36 min-w-[600px]">
           {/* White Keys */}

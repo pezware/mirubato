@@ -98,29 +98,30 @@ const CircleOfFifths: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Circle Visualization - Takes up 2 columns on large screens */}
-        <div className="lg:col-span-2">
+        {/* Left side: Circle Visualization and Piano Keyboard - Takes up 2 columns on large screens */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Circle Visualization */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <CircleVisualization
               selectedKey={selectedKey}
               onKeySelect={handleKeySelect}
             />
           </div>
+
+          {/* Piano Keyboard */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <PianoKeyboard
+              selectedKey={selectedKey}
+              keyData={keyData}
+              isPlaying={isPlaying}
+            />
+          </div>
         </div>
 
-        {/* Key Details Panel - 1 column on large screens */}
+        {/* Right side: Key Details Panel - 1 column on large screens */}
         <div className="lg:col-span-1">
           <KeyDetailsPanel keyData={keyData} />
         </div>
-      </div>
-
-      {/* Piano Keyboard Section */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <PianoKeyboard
-          selectedKey={selectedKey}
-          keyData={keyData}
-          isPlaying={isPlaying}
-        />
       </div>
     </div>
   )

@@ -26,8 +26,8 @@ describe('CircleOfFifths', () => {
     // Check for key details panel (default is C Major)
     expect(screen.getByText('C Major')).toBeInTheDocument()
 
-    // Check for piano keyboard
-    expect(screen.getByText('Piano Keyboard')).toBeInTheDocument()
+    // Check for piano keyboard legend
+    expect(screen.getByText('Root Note')).toBeInTheDocument()
   })
 
   it('toggles audio on and off', () => {
