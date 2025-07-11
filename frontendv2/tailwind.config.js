@@ -75,6 +75,23 @@ export default {
             400: '#f47c52',
             500: '#ec5a2b',
           },
+          red: {
+            500: '#d63638', // Morandi red for root note font
+          },
+          'dusty-red': {
+            500: '#a55a5a', // Morandi dusty red for chord note font
+          },
+          orange: {
+            500: '#e08849', // Morandi orange for scale note font
+          },
+        },
+        // Custom colors for piano keys
+        piano: {
+          'root-white': '#dbeeed',
+          'root-black': '#3f4444',
+          'chord-white': '#b4c4c3',
+          'chord-black': '#666f6e',
+          scale: '#8d9999',
         },
         mirubato: {
           leaf: '#9ca888', // Morandi sage
