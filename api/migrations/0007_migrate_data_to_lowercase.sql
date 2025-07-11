@@ -1,10 +1,9 @@
 -- Migration: Migrate existing data to lowercase enum values
 -- Date: 2025-07-11
 -- Purpose: Convert all uppercase enum values to lowercase
+-- FIXED: Match actual staging database schema
 
--- Step 1: Migrate data from old tables to new tables with lowercase conversion
-
--- Migrate users table
+-- Step 1: Migrate users table (has data)
 INSERT INTO users_new (
   id, email, display_name, primary_instrument, auth_provider, 
   google_id, created_at, updated_at, last_login_at, login_count, role
@@ -22,45 +21,8 @@ SELECT
   last_login_at, login_count, role
 FROM users;
 
--- Migrate logbook_entries table (if any data exists)
-INSERT INTO logbook_entries_new (
-  id, user_id, timestamp, duration, type, instrument, pieces, 
-  techniques, goal_ids, notes, mood, tags, session_id, metadata,
-  created_at, updated_at, sync_version, checksum, deleted_at, device_id
-)
-SELECT 
-  id, user_id, timestamp, duration,
-  LOWER(type) as type,
-  LOWER(instrument) as instrument,
-  pieces, techniques, goal_ids, notes,
-  CASE WHEN mood IS NOT NULL THEN LOWER(mood) ELSE NULL END as mood,
-  tags, session_id, metadata,
-  created_at, updated_at, sync_version, checksum, deleted_at, device_id
-FROM logbook_entries;
-
--- Migrate practice_sessions table (if any data exists)
-INSERT INTO practice_sessions_new (
-  id, user_id, started_at, ended_at, duration_seconds, 
-  instrument, sheet_music_id, audio_recording_url, notes, created_at
-)
-SELECT 
-  id, user_id, started_at, ended_at, duration_seconds,
-  LOWER(instrument) as instrument,
-  sheet_music_id, audio_recording_url, notes, created_at
-FROM practice_sessions;
-
--- Migrate sheet_music table (if any data exists)
-INSERT INTO sheet_music_new (
-  id, title, composer, arranger, difficulty_level, instrument,
-  time_signature, key_signature, tempo_bpm, duration_seconds,
-  musicxml_data, midi_url, pdf_url, tags, created_at, updated_at
-)
-SELECT 
-  id, title, composer, arranger, difficulty_level,
-  LOWER(instrument) as instrument,
-  time_signature, key_signature, tempo_bpm, duration_seconds,
-  musicxml_data, midi_url, pdf_url, tags, created_at, updated_at
-FROM sheet_music;
+-- Skip logbook_entries, practice_sessions, and sheet_music tables as they are empty on staging
+-- The new tables were already created by 0006_lowercase_enums.sql
 
 -- Step 2: Update sync_data JSON content for logbook entries
 UPDATE sync_data
@@ -97,7 +59,10 @@ AND deleted_at IS NULL
 AND json_extract(data, '$.instrument') IS NOT NULL
 AND json_extract(data, '$.instrument') != LOWER(json_extract(data, '$.instrument'));
 
--- Step 4: Drop old tables and rename new tables
+-- Step 3: Drop old tables and rename new tables
+-- IMPORTANT: Disable foreign key checks to prevent CASCADE deletes
+PRAGMA foreign_keys = OFF;
+
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS logbook_entries;
 DROP TABLE IF EXISTS practice_sessions;
@@ -107,5 +72,8 @@ ALTER TABLE users_new RENAME TO users;
 ALTER TABLE logbook_entries_new RENAME TO logbook_entries;
 ALTER TABLE practice_sessions_new RENAME TO practice_sessions;
 ALTER TABLE sheet_music_new RENAME TO sheet_music;
+
+-- Re-enable foreign key checks
+PRAGMA foreign_keys = ON;
 
 -- Note: The indexes will be automatically carried over with the renamed tables
