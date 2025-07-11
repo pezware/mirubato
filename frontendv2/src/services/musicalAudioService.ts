@@ -40,8 +40,12 @@ import { PlaybackMode } from '../components/circle-of-fifths/types'
 
 // Convert note names to Tone.js format (e.g., "C#4")
 const toToneNote = (note: string, octave: number = 4): string => {
+  // Handle enharmonic slash notation (e.g., "F#/Gb" -> "F#")
+  const slashIndex = note.indexOf('/')
+  const baseNote = slashIndex > -1 ? note.substring(0, slashIndex) : note
+
   // Remove chord notation (m, dim, maj, etc.) to get just the note name
-  const noteOnly = note.replace(/m(aj)?|dim|aug|sus|add|[0-9]+/g, '').trim()
+  const noteOnly = baseNote.replace(/m(aj)?|dim|aug|sus|add|[0-9]+/g, '').trim()
 
   // Handle enharmonic equivalents
   const noteMap: Record<string, string> = {
@@ -250,11 +254,14 @@ class MusicalAudioService {
   }
 
   private buildChord(root: string, scale: string[]): string[] {
-    // Build a simple triad using the scale
-    const rootIndex = scale.findIndex(note => note === root)
-    if (rootIndex === -1) return [root] // Fallback to just root
+    // Handle enharmonic slash notation in root (e.g., "F#/Gb" -> "F#")
+    const cleanRoot = root.includes('/') ? root.split('/')[0] : root
 
-    const chord: string[] = [root]
+    // Build a simple triad using the scale
+    const rootIndex = scale.findIndex(note => note === cleanRoot)
+    if (rootIndex === -1) return [cleanRoot] // Fallback to just root
+
+    const chord: string[] = [cleanRoot]
 
     // Add third (2 scale degrees up)
     const thirdIndex = (rootIndex + 2) % scale.length
