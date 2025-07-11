@@ -7,27 +7,35 @@
 -- Migrate users table
 INSERT INTO users_new (
   id, email, display_name, primary_instrument, auth_provider, 
-  google_id, created_at, updated_at, last_login_at, login_count, last_active_at
+  google_id, created_at, updated_at, last_login_at, login_count, role
 )
 SELECT 
   id, email, display_name, 
-  LOWER(primary_instrument) as primary_instrument,
+  CASE 
+    WHEN primary_instrument IS NULL THEN NULL
+    WHEN UPPER(primary_instrument) = 'BOTH' THEN 'both'
+    WHEN UPPER(primary_instrument) = 'PIANO' THEN 'piano'
+    WHEN UPPER(primary_instrument) = 'GUITAR' THEN 'guitar'
+    ELSE LOWER(primary_instrument)
+  END as primary_instrument,
   auth_provider, google_id, created_at, updated_at, 
-  last_login_at, login_count, last_active_at
+  last_login_at, login_count, role
 FROM users;
 
 -- Migrate logbook_entries table (if any data exists)
 INSERT INTO logbook_entries_new (
   id, user_id, timestamp, duration, type, instrument, pieces, 
-  techniques, goal_ids, notes, mood, tags, created_at, updated_at
+  techniques, goal_ids, notes, mood, tags, session_id, metadata,
+  created_at, updated_at, sync_version, checksum, deleted_at, device_id
 )
 SELECT 
   id, user_id, timestamp, duration,
   LOWER(type) as type,
   LOWER(instrument) as instrument,
   pieces, techniques, goal_ids, notes,
-  LOWER(mood) as mood,
-  tags, created_at, updated_at
+  CASE WHEN mood IS NOT NULL THEN LOWER(mood) ELSE NULL END as mood,
+  tags, session_id, metadata,
+  created_at, updated_at, sync_version, checksum, deleted_at, device_id
 FROM logbook_entries;
 
 -- Migrate practice_sessions table (if any data exists)

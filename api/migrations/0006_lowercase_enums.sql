@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS users_new (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   display_name TEXT,
-  primary_instrument TEXT CHECK (primary_instrument IN ('piano', 'guitar')),
-  auth_provider TEXT NOT NULL DEFAULT 'magic_link',
+  primary_instrument TEXT DEFAULT 'piano' CHECK (primary_instrument IN ('piano', 'guitar', 'both', NULL)),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  auth_provider TEXT DEFAULT 'magic_link' CHECK (auth_provider IN ('magic_link', 'google')),
   google_id TEXT,
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  last_login_at INTEGER,
-  login_count INTEGER NOT NULL DEFAULT 0,
-  last_active_at INTEGER
+  last_login_at TIMESTAMP,
+  login_count INTEGER DEFAULT 0,
+  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'teacher', 'admin'))
 );
 
 CREATE TABLE IF NOT EXISTS logbook_entries_new (
@@ -51,9 +51,16 @@ CREATE TABLE IF NOT EXISTS logbook_entries_new (
   notes TEXT,
   mood TEXT CHECK (mood IN ('frustrated', 'neutral', 'satisfied', 'excited')),
   tags TEXT NOT NULL DEFAULT '[]',
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  session_id TEXT,
+  metadata TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  sync_version INTEGER DEFAULT 1,
+  checksum TEXT,
+  deleted_at DATETIME,
+  device_id TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (session_id) REFERENCES practice_sessions(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS practice_sessions_new (
