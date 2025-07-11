@@ -133,7 +133,7 @@ export function PieceComposerStats({
             </div>
           )}
           <div>
-            <p className="text-sm text-morandi-stone-900">
+            <p className="text-lg font-bold text-morandi-stone-900">
               {new Date(stats.lastPracticed).toLocaleDateString()}
             </p>
             <p className="text-xs text-morandi-stone-600">
