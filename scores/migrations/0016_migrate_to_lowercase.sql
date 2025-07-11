@@ -111,33 +111,14 @@ CREATE INDEX idx_scores_visibility ON scores(visibility);
 CREATE INDEX idx_scores_derived_visibility ON scores(derived_visibility);
 CREATE INDEX idx_scores_source_type ON scores(source_type);
 
--- Step 5: Update collections table
-CREATE TABLE collections_new (
-  id TEXT PRIMARY KEY,
-  slug TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL,
-  description TEXT,
-  type TEXT NOT NULL DEFAULT 'user' CHECK (type IN ('public', 'user')),
-  visibility TEXT NOT NULL DEFAULT 'public' CHECK (visibility IN ('public', 'private')),
-  user_id TEXT,
-  data_filter TEXT, -- JSON object
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  is_default BOOLEAN DEFAULT FALSE
-);
-
-INSERT INTO collections_new
-SELECT * FROM collections;
-
-DROP TABLE collections;
-ALTER TABLE collections_new RENAME TO collections;
-
--- Recreate indexes for collections
-CREATE INDEX idx_collections_slug ON collections(slug);
-CREATE INDEX idx_collections_user_id ON collections(user_id);
-CREATE INDEX idx_collections_type ON collections(type);
-CREATE INDEX idx_collections_visibility ON collections(visibility);
-CREATE INDEX idx_collections_is_default ON collections(is_default);
+-- Step 5: Update collections table - convert enum values to lowercase
+-- The collections table has instrument and difficulty columns that need updating
+UPDATE collections SET
+  instrument = LOWER(instrument),
+  difficulty = LOWER(difficulty)
+WHERE 
+  (instrument IS NOT NULL AND instrument != LOWER(instrument))
+  OR (difficulty IS NOT NULL AND difficulty != LOWER(difficulty));
 
 -- Step 6: Verify migration
 SELECT 
