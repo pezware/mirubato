@@ -29,9 +29,22 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     'A',
     'B',
   ]
+
+  // Black key positions - between C-D, D-E, F-G, G-A, A-B (no black key between E-F or B-C)
+  // Position values are relative to white key index (0.5 means between key 0 and 1)
   const blackKeyPositions = [
-    0.5, 1.5, 3.5, 4.5, 5.5, 7.5, 8.5, 10.5, 11.5, 12.5,
+    0.5, // C#/Db between C and D
+    1.5, // D#/Eb between D and E
+    3.5, // F#/Gb between F and G
+    4.5, // G#/Ab between G and A
+    5.5, // A#/Bb between A and B
+    7.5, // C#/Db between C and D (second octave)
+    8.5, // D#/Eb between D and E
+    10.5, // F#/Gb between F and G
+    11.5, // G#/Ab between G and A
+    12.5, // A#/Bb between A and B
   ]
+
   const blackKeyNotes = [
     'C#',
     'D#',
@@ -106,9 +119,9 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       </h3>
 
       <div className="relative bg-gray-100 rounded-lg p-4 overflow-x-auto">
-        <div className="relative h-32 min-w-[560px]">
+        <div className="relative h-36 min-w-[600px]">
           {/* White Keys */}
-          <div className="absolute bottom-0 left-0 right-0 flex">
+          <div className="absolute bottom-0 left-0 flex gap-0.5">
             {whiteKeys.map((note, index) => {
               const isInScale = isNoteInScale(note)
               const isChordNote = chordNotes.has(note)
@@ -118,16 +131,21 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`white-${index}`}
                   className={`
-                    relative w-10 h-24 border border-gray-300 rounded-b-md
-                    transition-all duration-200
-                    ${isActive ? 'bg-purple-400' : isChordNote ? 'bg-purple-200' : isInScale ? 'bg-sage-100' : 'bg-white'}
-                    ${!isActive && 'hover:bg-gray-50'}
+                    relative w-10 h-28 border border-gray-400 rounded-b
+                    transition-all duration-200 shadow-sm
+                    ${isActive ? 'bg-purple-400 shadow-inner' : isChordNote ? 'bg-purple-200' : isInScale ? 'bg-sage-100' : 'bg-white'}
+                    ${!isActive && !isChordNote && 'hover:bg-gray-50'}
                   `}
+                  style={{
+                    boxShadow: isActive
+                      ? 'inset 0 2px 4px rgba(0,0,0,0.2)'
+                      : '0 2px 4px rgba(0,0,0,0.1)',
+                  }}
                 >
                   <span
                     className={`
                     absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs
-                    ${isChordNote ? 'font-bold text-purple-700' : isInScale ? 'text-sage-700' : 'text-gray-500'}
+                    ${isChordNote ? 'font-bold text-purple-700' : isInScale ? 'text-sage-700 font-medium' : 'text-gray-400'}
                   `}
                   >
                     {note}
@@ -149,16 +167,22 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-${index}`}
                   className={`
-                    absolute w-7 h-16 rounded-b-md
-                    transition-all duration-200
-                    ${isActive ? 'bg-purple-600' : isChordNote ? 'bg-purple-400' : isInScale ? 'bg-sage-600' : 'bg-gray-800'}
+                    absolute w-6 h-16 rounded-b shadow-md
+                    transition-all duration-200 z-10
+                    ${isActive ? 'bg-purple-600 shadow-inner' : isChordNote ? 'bg-purple-500' : isInScale ? 'bg-sage-700' : 'bg-gray-900'}
+                    ${!isActive && !isChordNote && !isInScale && 'hover:bg-gray-800'}
                   `}
-                  style={{ left: `${position * 40 + 16}px` }}
+                  style={{
+                    left: `${position * 40.5 + 17}px`,
+                    boxShadow: isActive
+                      ? 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      : '0 2px 6px rgba(0,0,0,0.3)',
+                  }}
                 >
                   <span
                     className={`
-                    absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs
-                    ${isChordNote || isInScale ? 'text-white font-medium' : 'text-gray-300'}
+                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px]
+                    ${isChordNote || isInScale ? 'text-white font-medium' : 'text-gray-400'}
                   `}
                   >
                     {note.length > 2 ? note.substring(0, 2) : note}
