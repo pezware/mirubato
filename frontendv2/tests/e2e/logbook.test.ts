@@ -48,7 +48,7 @@ test.describe('Logbook', () => {
           duration: 30,
           pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
           notes: 'Worked on first movement dynamics',
-          mood: 'SATISFIED',
+          mood: 'satisfied',
         })
       })
     })
@@ -167,7 +167,7 @@ test.describe('Logbook', () => {
         const entry = entries[0]
         expect(entry).toHaveProperty('id')
         expect(entry).toHaveProperty('timestamp')
-        expect(entry).toHaveProperty('type', 'PRACTICE')
+        expect(entry).toHaveProperty('type', 'practice')
         expect(entry).toHaveProperty('duration', testData.duration)
         expect(entry).toHaveProperty('pieces')
         expect(entry.pieces[0]).toMatchObject({
