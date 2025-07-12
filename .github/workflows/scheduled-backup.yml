@@ -69,10 +69,13 @@ jobs:
 
           # Try to list databases to ensure authentication works
           echo "Testing wrangler authentication..."
-          if ! wrangler d1 list > /dev/null 2>&1; then
+          echo "DEBUG: Running wrangler d1 list to test authentication..."
+          if ! wrangler d1 list 2>&1; then
             echo "✗ Failed to authenticate with Cloudflare. Check CLOUDFLARE_API_TOKEN"
+            echo "DEBUG: Make sure the token has 'D1:Read' permission"
             exit 1
           fi
+          echo "✓ Authentication successful"
 
           # Export with error output visible for debugging
           echo "Attempting export..."
