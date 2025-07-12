@@ -67,8 +67,7 @@ jobs:
           # Export with suppressed output
           wrangler d1 export $DB_NAME \
             --output="backups/api_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
-            --remote \
-            --env $ENVIRONMENT > /dev/null 2>&1
+            --remote > /dev/null 2>&1
 
           # Only report success/failure, not data
           if [ $? -eq 0 ]; then
@@ -96,8 +95,7 @@ jobs:
           # Export with suppressed output
           wrangler d1 export $DB_NAME \
             --output="backups/scores_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
-            --remote \
-            --env $ENVIRONMENT > /dev/null 2>&1
+            --remote > /dev/null 2>&1
 
           # Only report success/failure, not data
           if [ $? -eq 0 ]; then
@@ -126,10 +124,10 @@ jobs:
 
           # Get table counts only - no data is logged
           # Redirect stderr to /dev/null to avoid logging any errors that might contain data
-          API_USERS=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM users;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
-          API_SYNC=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM sync_data;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          API_USERS=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM users;" --remote 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          API_SYNC=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM sync_data;" --remote 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
 
-          SCORES_COUNT=$(wrangler d1 execute $SCORES_DB --command "SELECT COUNT(*) as count FROM scores;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          SCORES_COUNT=$(wrangler d1 execute $SCORES_DB --command "SELECT COUNT(*) as count FROM scores;" --remote 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
 
           # Only output counts, no actual data
           echo "::add-mask::$API_USERS"
