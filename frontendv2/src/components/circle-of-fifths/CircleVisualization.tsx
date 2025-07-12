@@ -106,7 +106,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
         {majorKeys.map((key, index) => {
           const keyData = getKeyData(key)
           const isSelected = selectedKey === key
-          const isRelated = Object.values(relatedKeys).includes(key)
+          const _isRelated = Object.values(relatedKeys).includes(key)
 
           return (
             <g key={`major-${key}`}>
@@ -137,7 +137,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
         {minorKeys.map((key, index) => {
           const minorKeyData = getKeyData(key)
           const isSelected = selectedKey === key
-          const isRelated = Object.values(relatedKeys).includes(key)
+          const _isRelated = Object.values(relatedKeys).includes(key)
 
           return (
             <g key={`minor-${key}`}>
