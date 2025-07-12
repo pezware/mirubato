@@ -20,13 +20,6 @@
 - **Purpose**: Ensure i18n translations are complete
 - **Checks**: Missing keys, consistency across languages
 
-### 4. Scheduled D1 Database Backup (`scheduled-backup.yml`)
-
-- **Trigger**: Daily at 4 AM PT, Manual
-- **Purpose**: Backup D1 databases with encryption
-- **Security**: No data logged, encrypted storage
-- **Retention**: 7 days via GitHub Artifacts
-
 ## Security Notes
 
 Since this is a **public repository**, all workflows are designed to:
@@ -40,11 +33,7 @@ Since this is a **public repository**, all workflows are designed to:
 
 Configure in Settings → Secrets → Actions:
 
-| Secret                  | Used By              | Purpose            |
-| ----------------------- | -------------------- | ------------------ |
-| `CLOUDFLARE_API_TOKEN`  | scheduled-backup.yml | D1 database access |
-| `BACKUP_ENCRYPTION_KEY` | scheduled-backup.yml | Backup encryption  |
-| `CLOUDFLARE_ACCOUNT_ID` | scheduled-backup.yml | Future R2 support  |
+_Currently no secrets are required for the active workflows._
 
 ## Manual Workflow Triggers
 
@@ -78,7 +67,6 @@ When adding workflows to this public repo:
 ## Monitoring
 
 - Check Actions tab for workflow status
-- Failed workflows create issues (scheduled-backup)
 - Artifacts available for download
 - Workflow runs retained for 90 days
 
