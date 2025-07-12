@@ -64,16 +64,33 @@ jobs:
             DB_NAME="mirubato-dev"
           fi
 
-          # Export with suppressed output
+          # Debug: Check if the database exists and we have access
+          echo "Checking database: $DB_NAME"
+
+          # Try to list databases to ensure authentication works
+          echo "Testing wrangler authentication..."
+          if ! wrangler d1 list > /dev/null 2>&1; then
+            echo "✗ Failed to authenticate with Cloudflare. Check CLOUDFLARE_API_TOKEN"
+            exit 1
+          fi
+
+          # Export with error output visible for debugging
+          echo "Attempting export..."
           wrangler d1 export $DB_NAME \
             --output="backups/api_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
-            --remote > /dev/null 2>&1
+            --remote 2>&1 | grep -v "Downloading" || true
 
-          # Only report success/failure, not data
-          if [ $? -eq 0 ]; then
+          # Check if export was successful
+          if [ -f "backups/api_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" ]; then
             echo "✓ API database export completed"
           else
-            echo "✗ API database export failed"
+            echo "✗ API database export failed - file not created"
+            
+            # Try again with full debug output
+            echo "Debug: Running with full output..."
+            wrangler d1 export $DB_NAME \
+              --output="backups/api_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
+              --remote
             exit 1
           fi
 
@@ -92,16 +109,26 @@ jobs:
             DB_NAME="mirubato-scores-staging"
           fi
 
-          # Export with suppressed output
+          # Debug: Check database
+          echo "Checking database: $DB_NAME"
+
+          # Export with error output visible for debugging
+          echo "Attempting export..."
           wrangler d1 export $DB_NAME \
             --output="backups/scores_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
-            --remote > /dev/null 2>&1
+            --remote 2>&1 | grep -v "Downloading" || true
 
-          # Only report success/failure, not data
-          if [ $? -eq 0 ]; then
+          # Check if export was successful
+          if [ -f "backups/scores_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" ]; then
             echo "✓ Scores database export completed"
           else
-            echo "✗ Scores database export failed"
+            echo "✗ Scores database export failed - file not created"
+            
+            # Try again with full debug output
+            echo "Debug: Running with full output..."
+            wrangler d1 export $DB_NAME \
+              --output="backups/scores_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
+              --remote
             exit 1
           fi
 
