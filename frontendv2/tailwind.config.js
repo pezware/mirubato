@@ -9,6 +9,7 @@ export default {
         lexend: ['Lexend', 'system-ui', 'sans-serif'],
       },
       colors: {
+        'circle-border': '#262a2a',
         morandi: {
           sage: {
             50: '#f4f5f2',

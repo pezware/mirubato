@@ -88,7 +88,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 d={createSegmentPath(index, outerRadius, innerRadius)}
                 fill={keyData.color}
                 fillOpacity={0.7}
-                stroke={isSelected ? '#2D3748' : '#FFFFFF'}
+                stroke={isSelected ? '#262a2a' : '#FFFFFF'}
                 strokeWidth={isSelected ? '4' : '2'}
                 className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
                 onClick={() => onKeySelect(key)}
@@ -118,7 +118,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 d={createSegmentPath(index, innerRadius, innerCircleRadius)}
                 fill={minorKeyData.color}
                 fillOpacity={0.5}
-                stroke={isSelected ? '#2D3748' : '#FFFFFF'}
+                stroke={isSelected ? '#262a2a' : '#FFFFFF'}
                 strokeWidth={isSelected ? '3' : '2'}
                 className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
                 onClick={() => onKeySelect(key)}
