@@ -2,6 +2,8 @@
 
 # Secure D1 Database Restore Script
 # This script downloads and restores encrypted backups from GitHub artifacts
+# DEPRECATED: The automated backup workflow has been removed from the public repository.
+#            This script remains for manual backup/restore operations only.
 
 set -e  # Exit on error
 

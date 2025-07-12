@@ -1,5 +1,7 @@
 # D1 Database Backup System
 
+> **⚠️ DEPRECATED**: This backup system has been removed from the public repository due to security concerns with GitHub Artifacts being publicly accessible in public repositories. Database backups should be implemented in a private repository or using alternative secure storage methods.
+
 ## Overview
 
 This document describes the automated backup system for Mirubato's D1 databases. The system provides daily encrypted backups of both the API and Scores databases with secure storage and easy recovery options.
