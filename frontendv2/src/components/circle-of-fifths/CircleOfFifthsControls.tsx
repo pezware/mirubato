@@ -1,5 +1,5 @@
 import React from 'react'
-import { Volume2, VolumeX, Play } from 'lucide-react'
+import { Volume2, VolumeX, Play, Square } from 'lucide-react'
 import Button from '../ui/Button'
 import { PlaybackMode } from './types'
 
@@ -30,8 +30,6 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Audio Controls</h3>
-
       <div className="flex flex-wrap gap-4">
         {/* Audio Enable/Disable Toggle */}
         <div className="flex items-center gap-2">
@@ -72,17 +70,25 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
           </div>
         )}
 
-        {/* Play Button */}
+        {/* Play/Stop Button */}
         {isAudioEnabled && (
           <Button
-            variant="primary"
+            variant={isPlaying ? 'danger' : 'primary'}
             size="sm"
             onClick={onPlay}
-            disabled={isPlaying}
             className="flex items-center gap-2"
           >
-            <Play className="w-4 h-4" />
-            Play {playbackMode}
+            {isPlaying ? (
+              <>
+                <Square className="w-4 h-4" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                Play {playbackMode}
+              </>
+            )}
           </Button>
         )}
       </div>

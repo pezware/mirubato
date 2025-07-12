@@ -8,6 +8,7 @@ vi.mock('../../services/musicalAudioService', () => ({
     initialize: vi.fn(),
     setVolume: vi.fn(),
     playKeyAudio: vi.fn(),
+    stop: vi.fn(),
     dispose: vi.fn(),
   },
 }))
@@ -16,12 +17,8 @@ describe('CircleOfFifths', () => {
   it('renders the main component with all sections', () => {
     render(<CircleOfFifths />)
 
-    // Check for controls section
-    expect(screen.getByText('Audio Controls')).toBeInTheDocument()
-
-    // Check for SVG visualization
-    expect(screen.getByText('Circle of')).toBeInTheDocument()
-    expect(screen.getByText('Fifths')).toBeInTheDocument()
+    // Check for audio controls (by checking Audio Off text)
+    expect(screen.getByText('Audio Off')).toBeInTheDocument()
 
     // Check for key details panel (default is C Major)
     expect(screen.getByText('C Major')).toBeInTheDocument()

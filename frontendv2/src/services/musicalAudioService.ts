@@ -284,6 +284,11 @@ class MusicalAudioService {
     Tone.Transport.cancel()
   }
 
+  // Public method to stop playback
+  stop(): void {
+    this.stopCurrentSequence()
+  }
+
   dispose(): void {
     this.stopCurrentSequence()
 
