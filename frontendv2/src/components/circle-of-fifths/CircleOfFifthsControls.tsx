@@ -86,7 +86,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             ) : (
               <>
                 <Play className="w-4 h-4" />
-                Play {playbackMode}
+                Play
               </>
             )}
           </Button>
