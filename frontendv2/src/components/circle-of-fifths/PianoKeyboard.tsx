@@ -88,6 +88,45 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     return scaleNotes
   }
 
+  // Get the appropriate note name based on the scale
+  const getBlackKeyLabel = (index: number) => {
+    const sharpNote = blackKeyNotes[index]
+
+    // For keys that use flats (F, Bb, Eb, Ab, Db, Gb and their relative minors),
+    // always display flat names
+    if (keyData.sharpsOrFlats === 'flats') {
+      const sharpToFlatMap: Record<string, string> = {
+        'C#': 'Db',
+        'D#': 'Eb',
+        'F#': 'Gb',
+        'G#': 'Ab',
+        'A#': 'Bb',
+      }
+      return sharpToFlatMap[sharpNote] || sharpNote
+    }
+
+    // For sharp keys, check if the scale contains the sharp or its enharmonic
+    if (keyData.scale.includes(sharpNote)) {
+      return sharpNote
+    }
+
+    // Check for flat equivalent in scale (for edge cases)
+    const flatMap: Record<string, string> = {
+      'C#': 'Db',
+      'D#': 'Eb',
+      'F#': 'Gb',
+      'G#': 'Ab',
+      'A#': 'Bb',
+    }
+
+    const flatNote = flatMap[sharpNote]
+    if (flatNote && keyData.scale.includes(flatNote)) {
+      return flatNote
+    }
+
+    return sharpNote
+  }
+
   const scaleNotes = getScaleNotesWithEnharmonics()
 
   // Check if a note is in the current scale
@@ -121,8 +160,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-gray-100 rounded-lg p-4 overflow-x-auto">
-        <div className="relative h-36 min-w-[600px]">
+      <div className="relative bg-gray-100 rounded-lg p-2 md:p-4 overflow-x-auto">
+        <div className="relative h-32 md:h-36 min-w-[450px] md:min-w-[600px]">
           {/* White Keys */}
           <div className="absolute bottom-0 left-0 flex gap-0.5">
             {whiteKeys.map((note, index) => {
@@ -135,7 +174,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`white-${index}`}
                   className={`
-                    relative w-10 h-36 bg-white rounded-b
+                    relative w-8 md:w-10 h-32 md:h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
@@ -174,26 +213,31 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             })}
           </div>
 
-          {/* Black Keys */}
-          <div className="absolute top-0 left-0">
+          {/* Black Keys - Mobile */}
+          <div className="absolute top-0 left-0 md:hidden">
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
-              const isInScale = isNoteInScale(note)
-              const isChordNote = chordNotes.has(note)
-              const isRootNote = rootNoteWithEnharmonic.has(note)
+              const displayNote = getBlackKeyLabel(index)
+              const isInScale =
+                isNoteInScale(note) || isNoteInScale(displayNote)
+              const isChordNote =
+                chordNotes.has(note) || chordNotes.has(displayNote)
+              const isRootNote =
+                rootNoteWithEnharmonic.has(note) ||
+                rootNoteWithEnharmonic.has(displayNote)
               const isActive = isPlaying && isRootNote
 
               return (
                 <div
-                  key={`black-${index}`}
+                  key={`black-mobile-${index}`}
                   className={`
-                    absolute w-7 h-20 bg-gray-900 rounded-b shadow-md
+                    absolute w-5 h-16 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 40.5 + 17}px`,
+                    left: `${position * 32.5 + 14.5}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
@@ -221,7 +265,70 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     ${isRootNote ? 'text-red-400 font-bold' : isChordNote ? 'text-red-300 font-semibold' : isInScale ? 'text-orange-400 font-medium' : 'text-gray-500'}
                   `}
                   >
-                    {note.length > 2 ? note.substring(0, 2) : note}
+                    {displayNote.length > 2
+                      ? displayNote.substring(0, 2)
+                      : displayNote}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Black Keys - Desktop */}
+          <div className="absolute top-0 left-0 hidden md:block">
+            {blackKeyPositions.map((position, index) => {
+              const note = blackKeyNotes[index]
+              const displayNote = getBlackKeyLabel(index)
+              const isInScale =
+                isNoteInScale(note) || isNoteInScale(displayNote)
+              const isChordNote =
+                chordNotes.has(note) || chordNotes.has(displayNote)
+              const isRootNote =
+                rootNoteWithEnharmonic.has(note) ||
+                rootNoteWithEnharmonic.has(displayNote)
+              const isActive = isPlaying && isRootNote
+
+              return (
+                <div
+                  key={`black-desktop-${index}`}
+                  className={`
+                    absolute w-7 h-20 bg-gray-900 rounded-b shadow-md
+                    transition-all duration-200 z-10
+                    ${isActive ? 'shadow-inner' : ''}
+                    hover:bg-gray-800
+                  `}
+                  style={{
+                    left: `${position * 40.5 + 18.5}px`,
+                    top: '0px',
+                    border: '1px solid #374151',
+                    borderBottom: isRootNote
+                      ? '3px solid #DC2626'
+                      : isChordNote
+                        ? '3px solid #F87171'
+                        : isInScale
+                          ? '3px solid #FB923C'
+                          : '1px solid #374151',
+                    borderRight: isRootNote
+                      ? '2px solid #DC2626'
+                      : isChordNote
+                        ? '2px solid #F87171'
+                        : isInScale
+                          ? '2px solid #FB923C'
+                          : '1px solid #374151',
+                    boxShadow: isActive
+                      ? 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                      : '0 2px 6px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <span
+                    className={`
+                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px]
+                    ${isRootNote ? 'text-red-400 font-bold' : isChordNote ? 'text-red-300 font-semibold' : isInScale ? 'text-orange-400 font-medium' : 'text-gray-500'}
+                  `}
+                  >
+                    {displayNote.length > 2
+                      ? displayNote.substring(0, 2)
+                      : displayNote}
                   </span>
                 </div>
               )
