@@ -88,7 +88,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 d={createSegmentPath(index, outerRadius, innerRadius)}
                 fill={keyData.color}
                 fillOpacity={0.7}
-                stroke={isSelected ? '#262a2a' : '#FFFFFF'}
+                stroke={isSelected ? '#FB923C' : '#FFFFFF'}
                 strokeWidth={isSelected ? '4' : '2'}
                 className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
                 onClick={() => onKeySelect(key)}
@@ -118,24 +118,61 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 d={createSegmentPath(index, innerRadius, innerCircleRadius)}
                 fill={minorKeyData.color}
                 fillOpacity={0.5}
-                stroke={isSelected ? '#262a2a' : '#FFFFFF'}
+                stroke={isSelected ? '#FB923C' : '#FFFFFF'}
                 strokeWidth={isSelected ? '3' : '2'}
                 className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
                 onClick={() => onKeySelect(key)}
               />
-              <text
-                {...getTextPosition(
-                  index,
-                  (innerRadius + innerCircleRadius) / 2
-                )}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="pointer-events-none select-none"
-                fill={isSelected ? '#1A202C' : '#6B6B6B'}
-                fontSize="13"
-              >
-                {key}
-              </text>
+              {key === 'D#m/Ebm' ? (
+                <text
+                  {...getTextPosition(
+                    index,
+                    (innerRadius + innerCircleRadius) / 2
+                  )}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="pointer-events-none select-none"
+                  fill={isSelected ? '#1A202C' : '#6B6B6B'}
+                  fontSize="12"
+                >
+                  <tspan
+                    x={
+                      getTextPosition(
+                        index,
+                        (innerRadius + innerCircleRadius) / 2
+                      ).x
+                    }
+                    dy="-6"
+                  >
+                    D#m
+                  </tspan>
+                  <tspan
+                    x={
+                      getTextPosition(
+                        index,
+                        (innerRadius + innerCircleRadius) / 2
+                      ).x
+                    }
+                    dy="12"
+                  >
+                    Ebm
+                  </tspan>
+                </text>
+              ) : (
+                <text
+                  {...getTextPosition(
+                    index,
+                    (innerRadius + innerCircleRadius) / 2
+                  )}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="pointer-events-none select-none"
+                  fill={isSelected ? '#1A202C' : '#6B6B6B'}
+                  fontSize="13"
+                >
+                  {key}
+                </text>
+              )}
             </g>
           )
         })}
