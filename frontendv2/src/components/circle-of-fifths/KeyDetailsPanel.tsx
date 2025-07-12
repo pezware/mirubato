@@ -17,9 +17,9 @@ const KeyDetailsPanel: React.FC<KeyDetailsPanelProps> = ({ keyData }) => {
   return (
     <div className="bg-gray-50 rounded-lg shadow-sm p-4 space-y-4">
       {/* Key Header */}
-      <div className="bg-white rounded-lg p-4 border-l-4 border-morandi-purple-300">
+      <div className="bg-white rounded-lg p-4 border-l-4 border-morandi-sage-300">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <Music className="w-6 h-6 text-morandi-purple-400" />
+          <Music className="w-6 h-6 text-morandi-sage-500" />
           {keyData.name}
         </h2>
         <p className="text-sm text-gray-600 mt-1">{getKeySignatureDisplay()}</p>

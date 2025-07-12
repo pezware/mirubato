@@ -41,7 +41,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             aria-label={isAudioEnabled ? 'Disable audio' : 'Enable audio'}
           >
             {isAudioEnabled ? (
-              <Volume2 className="w-5 h-5 text-purple-600" />
+              <Volume2 className="w-5 h-5 text-morandi-sage-600" />
             ) : (
               <VolumeX className="w-5 h-5 text-gray-400" />
             )}
@@ -64,7 +64,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
               max="100"
               value={volume}
               onChange={e => onVolumeChange(Number(e.target.value))}
-              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morandi-sage-500"
             />
             <span className="text-sm text-gray-600 w-10">{volume}%</span>
           </div>
@@ -126,7 +126,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             max="180"
             value={tempo}
             onChange={e => onTempoChange(Number(e.target.value))}
-            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morandi-sage-500"
           />
           <span className="text-sm text-gray-600 w-16">{tempo} BPM</span>
         </div>
