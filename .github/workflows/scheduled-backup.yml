@@ -1,0 +1,308 @@
+name: Scheduled D1 Database Backup
+
+permissions:
+  contents: read
+  issues: write
+
+on:
+  schedule:
+    # Run at 4 AM PT (11 AM UTC, 12 PM UTC during DST)
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+    inputs:
+      environment:
+        description: 'Environment to backup'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  BACKUP_RETENTION_DAYS: 7
+
+jobs:
+  backup-databases:
+    name: Backup D1 Databases to R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Get current date
+        id: date
+        run: |
+          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+          echo "ISO_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Export API Database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          # SECURITY: Suppress all output to avoid leaking data
+          set +x  # Disable command echo
+          echo "Exporting API database..."
+          ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
+
+          if [ "$ENVIRONMENT" = "production" ]; then
+            DB_NAME="mirubato-prod"
+          else
+            DB_NAME="mirubato-dev"
+          fi
+
+          # Export with suppressed output
+          wrangler d1 export $DB_NAME \
+            --output="backups/api_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
+            --remote \
+            --env $ENVIRONMENT > /dev/null 2>&1
+
+          # Only report success/failure, not data
+          if [ $? -eq 0 ]; then
+            echo "✓ API database export completed"
+          else
+            echo "✗ API database export failed"
+            exit 1
+          fi
+
+      - name: Export Scores Database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          # SECURITY: Suppress all output to avoid leaking data
+          set +x  # Disable command echo
+          echo "Exporting Scores database..."
+          ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
+
+          if [ "$ENVIRONMENT" = "production" ]; then
+            DB_NAME="mirubato-scores-production"
+          else
+            DB_NAME="mirubato-scores-staging"
+          fi
+
+          # Export with suppressed output
+          wrangler d1 export $DB_NAME \
+            --output="backups/scores_${DB_NAME}_full_${{ steps.date.outputs.TIMESTAMP }}.sql" \
+            --remote \
+            --env $ENVIRONMENT > /dev/null 2>&1
+
+          # Only report success/failure, not data
+          if [ $? -eq 0 ]; then
+            echo "✓ Scores database export completed"
+          else
+            echo "✗ Scores database export failed"
+            exit 1
+          fi
+
+      - name: Get database statistics
+        id: stats
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          # SECURITY: Only collect counts, never query actual data
+          ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
+
+          # API database stats
+          if [ "$ENVIRONMENT" = "production" ]; then
+            API_DB="mirubato-prod"
+            SCORES_DB="mirubato-scores-production"
+          else
+            API_DB="mirubato-dev"
+            SCORES_DB="mirubato-scores-staging"
+          fi
+
+          # Get table counts only - no data is logged
+          # Redirect stderr to /dev/null to avoid logging any errors that might contain data
+          API_USERS=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM users;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          API_SYNC=$(wrangler d1 execute $API_DB --command "SELECT COUNT(*) as count FROM sync_data;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+
+          SCORES_COUNT=$(wrangler d1 execute $SCORES_DB --command "SELECT COUNT(*) as count FROM scores;" --remote --env $ENVIRONMENT 2>/dev/null | grep -o '"count":[0-9]*' | grep -o '[0-9]*' || echo "0")
+
+          # Only output counts, no actual data
+          echo "::add-mask::$API_USERS"
+          echo "::add-mask::$API_SYNC"
+          echo "::add-mask::$SCORES_COUNT"
+          echo "API_USERS=$API_USERS" >> $GITHUB_OUTPUT
+          echo "API_SYNC=$API_SYNC" >> $GITHUB_OUTPUT
+          echo "SCORES_COUNT=$SCORES_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Encrypt backups
+        env:
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          # SECURITY: Never echo the encryption key or file contents
+          set +x
+          echo "Encrypting backup files..."
+
+          # Count files for progress reporting only
+          FILE_COUNT=$(ls -1 backups/*.sql 2>/dev/null | wc -l)
+          echo "Found $FILE_COUNT SQL files to encrypt"
+
+          # Encrypt each SQL file
+          for file in backups/*.sql; do
+            if [ -f "$file" ]; then
+              # Only show filename, not contents
+              BASENAME=$(basename "$file")
+              echo "Encrypting $BASENAME..."
+              
+              # Encrypt with suppressed output
+              openssl enc -aes-256-cbc -salt -pbkdf2 \
+                -in "$file" \
+                -out "${file}.enc" \
+                -k "$BACKUP_ENCRYPTION_KEY" 2>/dev/null
+              
+              if [ $? -eq 0 ]; then
+                # Securely remove unencrypted file
+                shred -vz "$file" 2>/dev/null || rm -f "$file"
+                
+                # Report size without showing contents
+                SIZE=$(stat -c%s "${file}.enc" 2>/dev/null || stat -f%z "${file}.enc" 2>/dev/null || echo "unknown")
+                echo "✓ Encrypted: $BASENAME.enc (Size: $SIZE bytes)"
+              else
+                echo "✗ Failed to encrypt $BASENAME"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Create backup metadata
+        run: |
+          ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
+
+          cat > backups/backup_metadata_${{ steps.date.outputs.TIMESTAMP }}.json << EOF
+          {
+            "timestamp": "${{ steps.date.outputs.TIMESTAMP }}",
+            "date": "${{ steps.date.outputs.ISO_DATE }}",
+            "environment": "$ENVIRONMENT",
+            "databases": {
+              "api": {
+                "name": "${{ env.ENVIRONMENT == 'production' && 'mirubato-prod' || 'mirubato-dev' }}",
+                "users": ${{ steps.stats.outputs.API_USERS }},
+                "sync_data": ${{ steps.stats.outputs.API_SYNC }}
+              },
+              "scores": {
+                "name": "${{ env.ENVIRONMENT == 'production' && 'mirubato-scores-production' || 'mirubato-scores-staging' }}",
+                "scores": ${{ steps.stats.outputs.SCORES_COUNT }}
+              }
+            },
+            "files": {
+              "api": "api/mirubato-${ENVIRONMENT}_full_${{ steps.date.outputs.TIMESTAMP }}.sql.enc",
+              "scores": "scores/mirubato-scores-${ENVIRONMENT}_full_${{ steps.date.outputs.TIMESTAMP }}.sql.enc"
+            },
+            "encryption": "AES-256-CBC with PBKDF2"
+          }
+          EOF
+
+      - name: Store encrypted backups as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ steps.date.outputs.TIMESTAMP }}
+          path: |
+            backups/*.enc
+            backups/*.json
+          retention-days: ${{ env.BACKUP_RETENTION_DAYS }}
+          if-no-files-found: error
+
+      - name: List recent backup artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // List artifacts to show backup history
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const backupArtifacts = artifacts.data.artifacts
+              .filter(a => a.name.startsWith('db-backup-'))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .slice(0, 10);
+
+            console.log(`Found ${backupArtifacts.length} recent backup artifacts:`);
+            backupArtifacts.forEach(a => {
+              const sizeMB = (a.size_in_bytes / 1024 / 1024).toFixed(2);
+              console.log(`- ${a.name}: ${sizeMB} MB (expires: ${a.expires_at || 'never'})`);
+            });
+
+            // Note: GitHub automatically removes artifacts based on retention-days
+            // No manual cleanup needed
+
+      - name: Generate backup report
+        run: |
+          # SECURITY: Only report metadata, never actual data
+          ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
+
+          # Count encrypted files
+          ENC_COUNT=$(ls -1 backups/*.enc 2>/dev/null | wc -l)
+
+          cat > backup_report.txt << EOF
+          ====================================
+          D1 Database Backup Report
+          ====================================
+
+          Date: ${{ steps.date.outputs.ISO_DATE }}
+          Environment: $ENVIRONMENT
+
+          Database Statistics:
+          -------------------
+          API Database:
+            - Users: [REDACTED - See workflow output]
+            - Sync Data: [REDACTED - See workflow output]
+
+          Scores Database:
+            - Scores: [REDACTED - See workflow output]
+
+          Backup Summary:
+          --------------
+          - Encrypted files created: $ENC_COUNT
+          - Encryption: AES-256-CBC with PBKDF2
+          - Storage: GitHub Artifacts
+          - Retention: ${{ env.BACKUP_RETENTION_DAYS }} days
+
+          Status: SUCCESS
+          ====================================
+          EOF
+
+          # Display report without sensitive data
+          cat backup_report.txt
+
+      - name: Send notification on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create an issue on backup failure
+            const title = `D1 Backup Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `The scheduled D1 database backup failed.\n\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['backup', 'automated', 'urgent']
+            });
+
+      - name: Upload backup report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-report-${{ steps.date.outputs.TIMESTAMP }}
+          path: |
+            backup_report.txt
+            backups/backup_metadata_*.json
+          retention-days: 30
