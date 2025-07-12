@@ -59,7 +59,12 @@ const CircleOfFifths: React.FC = () => {
   }
 
   const handlePlay = async () => {
-    if (!isPlaying && isAudioEnabled) {
+    if (isPlaying) {
+      // Stop playback
+      musicalAudioService.stop()
+      setIsPlaying(false)
+    } else if (isAudioEnabled) {
+      // Start playback
       setIsPlaying(true)
 
       try {

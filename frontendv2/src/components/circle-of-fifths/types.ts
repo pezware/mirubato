@@ -3,7 +3,7 @@ export type PlaybackMode = 'chord' | 'scale' | 'arpeggio'
 export interface KeyInfo {
   id: string
   name: string
-  relativeMinor: string
+  relativeMinor: string // For major keys: their relative minor; For minor keys: their relative major
   keySignature: number
   sharpsOrFlats: 'sharps' | 'flats' | 'natural'
   fifthClockwise: string

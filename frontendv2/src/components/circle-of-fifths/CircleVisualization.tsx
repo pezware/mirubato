@@ -52,18 +52,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
     return { x, y }
   }
 
-  // Get related keys for highlighting
-  const getRelatedKeys = (keyId: string) => {
-    const keyData = getKeyData(keyId)
-    return {
-      dominant: keyData.fifthClockwise,
-      subdominant: keyData.fifthCounterClockwise,
-      relativeMinor: keyData.relativeMinor.split(' ')[0], // Extract just the key name
-    }
-  }
-
-  const relatedKeys = getRelatedKeys(selectedKey)
-
   // Handle key signatures display
   const getKeySignatureDisplay = (keyData: ReturnType<typeof getKeyData>) => {
     if (keyData.keySignature === 0) return ''
@@ -93,17 +81,16 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
         {majorKeys.map((key, index) => {
           const keyData = getKeyData(key)
           const isSelected = selectedKey === key
-          const isRelated = Object.values(relatedKeys).includes(key)
 
           return (
             <g key={`major-${key}`}>
               <path
                 d={createSegmentPath(index, outerRadius, innerRadius)}
                 fill={keyData.color}
-                fillOpacity={isSelected ? 1 : isRelated ? 0.7 : 0.4}
-                stroke="#FFFFFF"
-                strokeWidth="2"
-                className="cursor-pointer transition-all duration-300 hover:fill-opacity-80"
+                fillOpacity={0.7}
+                stroke={isSelected ? '#2D3748' : '#FFFFFF'}
+                strokeWidth={isSelected ? '4' : '2'}
+                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
                 onClick={() => onKeySelect(key)}
               />
               <text
@@ -111,7 +98,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="pointer-events-none select-none font-medium"
-                fill={isSelected ? '#FFFFFF' : '#4A4A4A'}
+                fill={isSelected ? '#1A202C' : '#4A4A4A'}
                 fontSize="16"
               >
                 {key}
@@ -122,22 +109,19 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
 
         {/* Minor key segments */}
         {minorKeys.map((key, index) => {
-          const majorKey = majorKeys[index]
-          const keyData = getKeyData(majorKey) // Use major key color
-          const keyName = key.replace('m', '')
-          const isSelected = selectedKey === keyName
-          const isRelated = Object.values(relatedKeys).includes(keyName)
+          const minorKeyData = getKeyData(key)
+          const isSelected = selectedKey === key
 
           return (
             <g key={`minor-${key}`}>
               <path
                 d={createSegmentPath(index, innerRadius, innerCircleRadius)}
-                fill={keyData.color}
-                fillOpacity={isSelected ? 1 : isRelated ? 0.5 : 0.2}
-                stroke="#FFFFFF"
-                strokeWidth="2"
-                className="cursor-pointer transition-all duration-300 hover:fill-opacity-60"
-                onClick={() => onKeySelect(keyName)}
+                fill={minorKeyData.color}
+                fillOpacity={0.5}
+                stroke={isSelected ? '#2D3748' : '#FFFFFF'}
+                strokeWidth={isSelected ? '3' : '2'}
+                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
+                onClick={() => onKeySelect(key)}
               />
               <text
                 {...getTextPosition(
@@ -147,7 +131,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="pointer-events-none select-none"
-                fill={isSelected ? '#FFFFFF' : '#6B6B6B'}
+                fill={isSelected ? '#1A202C' : '#6B6B6B'}
                 fontSize="13"
               >
                 {key}
@@ -165,28 +149,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
           stroke="#E8E6E1"
           strokeWidth="2"
         />
-
-        {/* Center text */}
-        <text
-          x={centerX}
-          y={centerY - 10}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          className="font-semibold text-gray-700"
-          fontSize="14"
-        >
-          Circle of
-        </text>
-        <text
-          x={centerX}
-          y={centerY + 10}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          className="font-semibold text-gray-700"
-          fontSize="14"
-        >
-          Fifths
-        </text>
 
         {/* Key signatures on outer ring */}
         {majorKeys.map((key, index) => {
@@ -210,42 +172,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
             </text>
           )
         })}
-
-        {/* Legend */}
-        <g transform="translate(20, 20)">
-          <rect
-            x="0"
-            y="0"
-            width="100"
-            height="60"
-            fill="white"
-            fillOpacity="0.9"
-            stroke="#E8E6E1"
-            rx="4"
-          />
-          <text x="10" y="20" fontSize="12" fill="#6B6B6B">
-            Selected
-          </text>
-          <rect
-            x="60"
-            y="10"
-            width="30"
-            height="12"
-            fill={getKeyData(selectedKey).color}
-            fillOpacity="1"
-          />
-          <text x="10" y="40" fontSize="12" fill="#6B6B6B">
-            Related
-          </text>
-          <rect
-            x="60"
-            y="30"
-            width="30"
-            height="12"
-            fill={getKeyData(selectedKey).color}
-            fillOpacity="0.7"
-          />
-        </g>
       </svg>
     </div>
   )

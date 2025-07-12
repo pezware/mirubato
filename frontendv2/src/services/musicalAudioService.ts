@@ -64,6 +64,7 @@ class MusicalAudioService {
   private volume: Tone.Volume | null = null
   private initialized = false
   private currentSequence: Tone.Sequence | null = null
+  private playbackTimeout: NodeJS.Timeout | null = null
 
   async initialize(): Promise<void> {
     if (this.initialized) return
@@ -119,6 +120,14 @@ class MusicalAudioService {
 
     // Play chord
     this.synth.triggerAttackRelease(toneNotes, duration)
+
+    // Wait for the chord to finish playing
+    return new Promise(resolve => {
+      this.playbackTimeout = setTimeout(() => {
+        this.playbackTimeout = null
+        resolve()
+      }, duration * 1000)
+    })
   }
 
   async playScale(
@@ -166,11 +175,14 @@ class MusicalAudioService {
     // Start transport
     Tone.Transport.start()
 
-    // Stop after sequence completes
+    // Stop after sequence completes and wait for it
     const totalDuration = sequence.length * noteDuration
-    setTimeout(() => {
-      this.stopCurrentSequence()
-    }, totalDuration * 1000)
+    return new Promise(resolve => {
+      this.playbackTimeout = setTimeout(() => {
+        this.stopCurrentSequence()
+        resolve()
+      }, totalDuration * 1000)
+    })
   }
 
   async playArpeggio(
@@ -219,11 +231,14 @@ class MusicalAudioService {
     // Start transport
     Tone.Transport.start()
 
-    // Stop after sequence completes
+    // Stop after sequence completes and wait for it
     const totalDuration = arpeggioNotes.length * noteDuration
-    setTimeout(() => {
-      this.stopCurrentSequence()
-    }, totalDuration * 1000)
+    return new Promise(resolve => {
+      this.playbackTimeout = setTimeout(() => {
+        this.stopCurrentSequence()
+        resolve()
+      }, totalDuration * 1000)
+    })
   }
 
   async playKeyAudio(
@@ -280,8 +295,17 @@ class MusicalAudioService {
       this.currentSequence.dispose()
       this.currentSequence = null
     }
+    if (this.playbackTimeout) {
+      clearTimeout(this.playbackTimeout)
+      this.playbackTimeout = null
+    }
     Tone.Transport.stop()
     Tone.Transport.cancel()
+  }
+
+  // Public method to stop playback
+  stop(): void {
+    this.stopCurrentSequence()
   }
 
   dispose(): void {

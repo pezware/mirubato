@@ -148,6 +148,8 @@ export default {
     'text-morandi-peach-500',
     'bg-morandi-sage-400',
     'text-morandi-sage-500',
+    'text-morandi-sage-600',
+    'accent-morandi-sage-500',
     'bg-morandi-stone-400',
     'bg-morandi-stone-500',
     'bg-morandi-stone-600',

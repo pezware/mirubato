@@ -1,5 +1,5 @@
 import React from 'react'
-import { Volume2, VolumeX, Play } from 'lucide-react'
+import { Volume2, VolumeX, Play, Square } from 'lucide-react'
 import Button from '../ui/Button'
 import { PlaybackMode } from './types'
 
@@ -30,8 +30,6 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Audio Controls</h3>
-
       <div className="flex flex-wrap gap-4">
         {/* Audio Enable/Disable Toggle */}
         <div className="flex items-center gap-2">
@@ -43,7 +41,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             aria-label={isAudioEnabled ? 'Disable audio' : 'Enable audio'}
           >
             {isAudioEnabled ? (
-              <Volume2 className="w-5 h-5 text-purple-600" />
+              <Volume2 className="w-5 h-5 text-morandi-sage-600" />
             ) : (
               <VolumeX className="w-5 h-5 text-gray-400" />
             )}
@@ -66,23 +64,31 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
               max="100"
               value={volume}
               onChange={e => onVolumeChange(Number(e.target.value))}
-              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morandi-sage-500"
             />
             <span className="text-sm text-gray-600 w-10">{volume}%</span>
           </div>
         )}
 
-        {/* Play Button */}
+        {/* Play/Stop Button */}
         {isAudioEnabled && (
           <Button
-            variant="primary"
+            variant={isPlaying ? 'danger' : 'primary'}
             size="sm"
             onClick={onPlay}
-            disabled={isPlaying}
             className="flex items-center gap-2"
           >
-            <Play className="w-4 h-4" />
-            Play {playbackMode}
+            {isPlaying ? (
+              <>
+                <Square className="w-4 h-4" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                Play
+              </>
+            )}
           </Button>
         )}
       </div>
@@ -120,7 +126,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             max="180"
             value={tempo}
             onChange={e => onTempoChange(Number(e.target.value))}
-            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morandi-sage-500"
           />
           <span className="text-sm text-gray-600 w-16">{tempo} BPM</span>
         </div>

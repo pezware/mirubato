@@ -135,12 +135,27 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`white-${index}`}
                   className={`
-                    relative w-10 h-28 border border-gray-400 rounded-b
+                    relative w-10 h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
-                    ${isActive ? 'bg-piano-root-white shadow-inner' : isRootNote ? 'bg-piano-root-white' : isChordNote ? 'bg-piano-chord-white' : isInScale ? 'bg-piano-scale' : 'bg-white'}
-                    ${!isActive && !isRootNote && !isChordNote && 'hover:bg-gray-50'}
+                    ${isActive ? 'shadow-inner' : ''}
+                    hover:bg-gray-50
                   `}
                   style={{
+                    border: '1px solid #E5E7EB',
+                    borderBottom: isRootNote
+                      ? '4px solid #DC2626'
+                      : isChordNote
+                        ? '4px solid #F87171'
+                        : isInScale
+                          ? '4px solid #FB923C'
+                          : '1px solid #E5E7EB',
+                    borderRight: isRootNote
+                      ? '3px solid #DC2626'
+                      : isChordNote
+                        ? '3px solid #F87171'
+                        : isInScale
+                          ? '3px solid #FB923C'
+                          : '1px solid #E5E7EB',
                     boxShadow: isActive
                       ? 'inset 0 2px 4px rgba(0,0,0,0.2)'
                       : '0 2px 4px rgba(0,0,0,0.1)',
@@ -149,7 +164,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <span
                     className={`
                     absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs
-                    ${isRootNote ? 'font-bold text-morandi-red-500' : isChordNote ? 'font-semibold text-morandi-dusty-red-500' : isInScale ? 'text-morandi-orange-500 font-medium' : 'text-gray-400'}
+                    ${isRootNote ? 'font-bold text-red-600' : isChordNote ? 'font-semibold text-red-400' : isInScale ? 'text-orange-500 font-medium' : 'text-gray-400'}
                   `}
                   >
                     {note}
@@ -172,13 +187,29 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-${index}`}
                   className={`
-                    absolute w-6 h-16 rounded-b shadow-md
+                    absolute w-7 h-20 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
-                    ${isActive ? 'bg-piano-root-black shadow-inner' : isRootNote ? 'bg-piano-root-black' : isChordNote ? 'bg-piano-chord-black' : isInScale ? 'bg-piano-scale' : 'bg-gray-900'}
-                    ${!isActive && !isRootNote && !isChordNote && !isInScale && 'hover:bg-gray-800'}
+                    ${isActive ? 'shadow-inner' : ''}
+                    hover:bg-gray-800
                   `}
                   style={{
                     left: `${position * 40.5 + 17}px`,
+                    top: '0px',
+                    border: '1px solid #374151',
+                    borderBottom: isRootNote
+                      ? '3px solid #DC2626'
+                      : isChordNote
+                        ? '3px solid #F87171'
+                        : isInScale
+                          ? '3px solid #FB923C'
+                          : '1px solid #374151',
+                    borderRight: isRootNote
+                      ? '2px solid #DC2626'
+                      : isChordNote
+                        ? '2px solid #F87171'
+                        : isInScale
+                          ? '2px solid #FB923C'
+                          : '1px solid #374151',
                     boxShadow: isActive
                       ? 'inset 0 2px 4px rgba(0,0,0,0.3)'
                       : '0 2px 6px rgba(0,0,0,0.3)',
@@ -187,7 +218,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <span
                     className={`
                     absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px]
-                    ${isRootNote ? 'text-morandi-red-500 font-bold' : isChordNote ? 'text-morandi-dusty-red-500 font-semibold' : isInScale ? 'text-morandi-orange-500 font-medium' : 'text-gray-400'}
+                    ${isRootNote ? 'text-red-400 font-bold' : isChordNote ? 'text-red-300 font-semibold' : isInScale ? 'text-orange-400 font-medium' : 'text-gray-500'}
                   `}
                   >
                     {note.length > 2 ? note.substring(0, 2) : note}
@@ -202,15 +233,15 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-piano-root-white rounded border border-gray-300"></div>
+          <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-red-600 border-t border-l border-gray-300"></div>
           <span className="text-gray-600">Root Note</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-piano-chord-white rounded border border-gray-300"></div>
+          <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-red-400 border-t border-l border-gray-300"></div>
           <span className="text-gray-600">Chord Notes</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-piano-scale rounded border border-gray-300"></div>
+          <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-orange-500 border-t border-l border-gray-300"></div>
           <span className="text-gray-600">Scale Notes</span>
         </div>
         <div className="flex items-center gap-2">
