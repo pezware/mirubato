@@ -52,31 +52,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
     return { x, y }
   }
 
-  // Get related keys for highlighting
-  const getRelatedKeys = (keyId: string) => {
-    const keyData = getKeyData(keyId)
-    const isMinorKey = keyId.includes('m')
-
-    if (isMinorKey) {
-      // For minor keys, relativeMinor field contains the relative major
-      const relativeMajor = keyData.relativeMinor.replace(' Major', '')
-      return {
-        dominant: keyData.fifthClockwise,
-        subdominant: keyData.fifthCounterClockwise,
-        relativeMajor: relativeMajor,
-      }
-    } else {
-      // For major keys, extract the relative minor key name
-      return {
-        dominant: keyData.fifthClockwise,
-        subdominant: keyData.fifthCounterClockwise,
-        relativeMinor: keyData.relativeMinor.split(' ')[0], // Extract just the key name
-      }
-    }
-  }
-
-  const relatedKeys = getRelatedKeys(selectedKey)
-
   // Handle key signatures display
   const getKeySignatureDisplay = (keyData: ReturnType<typeof getKeyData>) => {
     if (keyData.keySignature === 0) return ''
@@ -106,7 +81,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
         {majorKeys.map((key, index) => {
           const keyData = getKeyData(key)
           const isSelected = selectedKey === key
-          const _isRelated = Object.values(relatedKeys).includes(key)
 
           return (
             <g key={`major-${key}`}>
@@ -137,7 +111,6 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
         {minorKeys.map((key, index) => {
           const minorKeyData = getKeyData(key)
           const isSelected = selectedKey === key
-          const _isRelated = Object.values(relatedKeys).includes(key)
 
           return (
             <g key={`minor-${key}`}>
