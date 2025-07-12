@@ -135,7 +135,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`white-${index}`}
                   className={`
-                    relative w-10 h-32 bg-white rounded-b
+                    relative w-10 h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
@@ -194,7 +194,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   `}
                   style={{
                     left: `${position * 40.5 + 17}px`,
-                    top: '-4px',
+                    top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
                       ? '3px solid #DC2626'
