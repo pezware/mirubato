@@ -88,33 +88,29 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     return scaleNotes
   }
 
-  // Get the appropriate note name based on the scale (prefer flats for minor keys)
+  // Get the appropriate note name based on the scale
   const getBlackKeyLabel = (index: number) => {
     const sharpNote = blackKeyNotes[index]
-    const isMinorKey = selectedKey.includes('m')
 
-    // For minor keys, prefer flat names when they're in the scale
-    if (isMinorKey) {
-      const enharmonicMap: Record<string, string> = {
+    // For keys that use flats (F, Bb, Eb, Ab, Db, Gb and their relative minors),
+    // always display flat names
+    if (keyData.sharpsOrFlats === 'flats') {
+      const sharpToFlatMap: Record<string, string> = {
         'C#': 'Db',
         'D#': 'Eb',
         'F#': 'Gb',
         'G#': 'Ab',
         'A#': 'Bb',
       }
-
-      const flatEquivalent = enharmonicMap[sharpNote]
-      if (flatEquivalent && keyData.scale.includes(flatEquivalent)) {
-        return flatEquivalent
-      }
+      return sharpToFlatMap[sharpNote] || sharpNote
     }
 
-    // Check if the scale uses the sharp or flat version
+    // For sharp keys, check if the scale contains the sharp or its enharmonic
     if (keyData.scale.includes(sharpNote)) {
       return sharpNote
     }
 
-    // Check for flat equivalent in scale
+    // Check for flat equivalent in scale (for edge cases)
     const flatMap: Record<string, string> = {
       'C#': 'Db',
       'D#': 'Eb',
