@@ -1,5 +1,9 @@
 name: Scheduled D1 Database Backup
 
+permissions:
+  contents: read
+  issues: write
+
 on:
   schedule:
     # Run at 4 AM PT (11 AM UTC, 12 PM UTC during DST)
