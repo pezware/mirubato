@@ -8,7 +8,7 @@ interface PianoKeyboardProps {
 }
 
 const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
-  selectedKey,
+  selectedKey: _selectedKey,
   keyData,
   isPlaying,
 }) => {
