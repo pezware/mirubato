@@ -1,0 +1,117 @@
+# Mirubato Service Template Configuration
+
+name = "mirubato-template"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespaces for caching
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID_PROD"
+
+# R2 Buckets (if needed)
+# [[r2_buckets]]
+# binding = "STORAGE_BUCKET"
+# bucket_name = "mirubato-template-prod"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-template-prod"
+database_id = "YOUR_DB_ID_PROD"
+
+# Queue (if needed for async processing)
+# [[queues.producers]]
+# queue = "pdf-processing"
+# binding = "PDF_QUEUE"
+
+# Production Configuration (default)
+[env.production]
+vars = { 
+  ENVIRONMENT = "production",
+  CORS_ORIGIN = "https://mirubato.com",
+  LOG_LEVEL = "info"
+}
+routes = [
+  { pattern = "template.mirubato.com", custom_domain = true }
+]
+
+# Staging Environment
+[env.staging]
+name = "mirubato-template-staging"
+vars = { 
+  ENVIRONMENT = "staging",
+  CORS_ORIGIN = "https://staging.mirubato.com",
+  LOG_LEVEL = "debug"
+}
+routes = [
+  { pattern = "template-staging.mirubato.com", custom_domain = true }
+]
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID_STAGING"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-template-staging"
+database_id = "YOUR_DB_ID_STAGING"
+
+# Development Environment
+[env.development]
+name = "mirubato-template-dev"
+vars = { 
+  ENVIRONMENT = "development",
+  CORS_ORIGIN = "*",
+  LOG_LEVEL = "debug"
+}
+
+[[env.development.kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID_DEV"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "mirubato-template-dev"
+database_id = "YOUR_DB_ID_DEV"
+
+# Local Development
+[env.local]
+vars = { 
+  ENVIRONMENT = "local",
+  CORS_ORIGIN = "http://www-mirubato.localhost:4000",
+  LOG_LEVEL = "debug",
+  JWT_SECRET = "local-dev-secret-change-in-production"
+}
+
+[[env.local.kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-template-local"
+database_id = "local"
+
+# AI Models (if needed)
+# [ai]
+# binding = "AI"
+
+# Browser Rendering (if needed)
+# [browser]
+# binding = "BROWSER"
+
+# Observability
+[observability]
+enabled = true
+
+# Tail Workers (for logging)
+# [[tail_consumers]]
+# service = "mirubato-logger"
+
+# Service Bindings (to call other services)
+# [[services]]
+# binding = "API_SERVICE"
+# service = "mirubato-api"
+# environment = "production"
