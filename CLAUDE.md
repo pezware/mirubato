@@ -58,6 +58,10 @@ mirubato/
 │   └── wrangler.toml  # All environments defined here
 ├── scores/            # Scores service → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
+├── service-template/  # Template for new microservices
+│   ├── README.md      # Quick start guide
+│   ├── scripts/       # Setup automation
+│   └── src/           # Pre-configured service code
 ```
 
 ### Local Development Architecture
@@ -445,6 +449,48 @@ await Tone.start() // Required for mobile browsers
 -- Always include proper indexes
 CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
 ```
+
+## 🏗️ Creating New Services
+
+### Using the Service Template
+
+When creating a new microservice for Mirubato, use the standardized service template:
+
+```bash
+# 1. Copy the template
+cp -r service-template my-new-service
+cd my-new-service
+
+# 2. Run the setup script
+./scripts/setup.sh
+
+# 3. Follow the prompts to configure your service
+```
+
+The template provides:
+
+- ✅ **Complete Cloudflare Workers setup** with multi-environment config
+- ✅ **JWT authentication** matching other Mirubato services
+- ✅ **Rate limiting** and CORS middleware
+- ✅ **Health check endpoints** (/health, /livez, /readyz, /metrics)
+- ✅ **OpenAPI documentation** at /docs
+- ✅ **Drizzle ORM** for type-safe database queries
+- ✅ **Testing setup** with Vitest
+- ✅ **TypeScript** with strict mode
+- ✅ **Error handling** and logging
+- ✅ **Caching strategies** (Edge, KV)
+
+### Service Architecture Principles
+
+All Mirubato services follow these patterns:
+
+1. **Edge-first**: Run on Cloudflare Workers globally
+2. **JWT auth**: Shared secret across services
+3. **Health monitoring**: Standard endpoints for observability
+4. **Type safety**: TypeScript with Zod validation
+5. **Test coverage**: Minimum 80% for all code
+
+See `service-template/README.md` and `service-template/ARCHITECTURE.md` for detailed documentation.
 
 ## 🚀 Deployment Workflow
 
