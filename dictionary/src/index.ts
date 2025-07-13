@@ -70,11 +70,8 @@ app.use(
 // Error handling
 app.onError(errorHandler)
 
-// Health check endpoints (no auth required)
-app.route('/health', healthHandler)
-app.route('/livez', healthHandler)
-app.route('/readyz', healthHandler)
-app.route('/metrics', healthHandler)
+// Health check endpoints (mount the routes properly)
+app.route('/', healthHandler)
 
 // Documentation
 app.route('/docs', docsHandler)
