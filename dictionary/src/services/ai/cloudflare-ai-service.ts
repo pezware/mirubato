@@ -3,14 +3,9 @@
  */
 
 import { Env } from '../../types/env'
-import {
-  AIResponse,
-  CloudflareAIResponse,
-  AIError,
-  AIModelUsage,
-} from '../../types/ai'
+import { CloudflareAIResponse, AIModelUsage } from '../../types/ai'
 import { AIServiceError } from '../../utils/errors'
-import { CLOUDFLARE_AI_MODELS, selectModel } from '../../config/ai-models'
+import { CLOUDFLARE_AI_MODELS } from '../../config/ai-models'
 
 export class CloudflareAIService {
   constructor(private env: Env) {}
@@ -224,7 +219,7 @@ IMPORTANT: Respond with valid JSON only. No markdown, no additional text, just t
     cleaned = cleaned.replace(/```json\n?/gi, '').replace(/```\n?/g, '')
 
     // Remove any text before first { or [
-    const jsonStart = cleaned.match(/[{\[]/)
+    const jsonStart = cleaned.match(/[{[]/)
     if (jsonStart && jsonStart.index !== undefined) {
       cleaned = cleaned.substring(jsonStart.index)
     }

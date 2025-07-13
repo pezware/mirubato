@@ -17,7 +17,6 @@ import {
   SearchQuery,
   DictionaryEntry,
   SearchAnalytics,
-  TermType,
 } from '../../types/dictionary'
 
 export const searchHandler = new Hono<{ Bindings: Env }>()
@@ -151,7 +150,6 @@ searchHandler.post(
   ),
   async c => {
     const { query, limit, threshold } = c.req.valid('json')
-    const userInfo = getUserInfo(c)
 
     const db = new DictionaryDatabase(c.env.DB)
     const cacheService = new CacheService(c.env.CACHE, c.env)

@@ -204,7 +204,6 @@ export interface AdminUpdateRequest {
 export interface AuthenticatedRequest {
   headers: {
     authorization?: string
-    'x-api-key'?: string
   }
 }
 

@@ -11,7 +11,7 @@ import { analyticsHandler } from '../../api/handlers/analytics'
 import { auth } from '../../middleware/auth'
 import { errorHandler } from '../../utils/errors'
 
-export function createTestApp(env: Env): Hono<{ Bindings: Env }> {
+export function createTestApp(_env: Env): Hono<{ Bindings: Env }> {
   const app = new Hono<{ Bindings: Env }>()
 
   // Error handling

@@ -117,7 +117,7 @@ describe('Search Handler', () => {
 
     // Mock D1 database
     const mockDB = {
-      prepare: vi.fn((query: string) => ({
+      prepare: vi.fn((_query: string) => ({
         bind: vi.fn(() => ({
           all: vi.fn().mockResolvedValue({ results: [] }),
           first: vi.fn().mockResolvedValue(null),
@@ -331,12 +331,12 @@ describe('Search Handler', () => {
 
   describe('POST /api/v1/search/semantic', () => {
     it('should perform semantic search', async () => {
-      const CloudflareAIService = (
-        await import('../../services/ai/cloudflare-ai-service')
-      ).CloudflareAIService
-      const DictionaryDatabase = (
-        await import('../../services/storage/dictionary-database')
-      ).DictionaryDatabase
+      // const CloudflareAIService = (
+      //   await import('../../services/ai/cloudflare-ai-service')
+      // ).CloudflareAIService
+      // const DictionaryDatabase = (
+      //   await import('../../services/storage/dictionary-database')
+      // ).DictionaryDatabase
 
       const mockEmbedding = new Array(768).fill(0.1)
       mockAiMethods.generateEmbedding.mockResolvedValue(mockEmbedding)
@@ -403,10 +403,10 @@ describe('Search Handler', () => {
 
   describe('GET /api/v1/search/suggestions', () => {
     it('should return autocomplete suggestions', async () => {
-      const DictionaryDatabase = (
-        await import('../../services/storage/dictionary-database')
-      ).DictionaryDatabase
-      const mockDb = new DictionaryDatabase(mockEnv.DB)
+      // const DictionaryDatabase = (
+      //   await import('../../services/storage/dictionary-database')
+      // ).DictionaryDatabase
+      // const mockDb = new DictionaryDatabase(mockEnv.DB)
 
       // The search handler will directly query the DB prepare method
       // which is already mocked in our mockDB setup

@@ -46,7 +46,7 @@ exportHandler.get('/', zValidator('query', exportQuerySchema), async c => {
         })
       )
 
-    case 'csv':
+    case 'csv': {
       const csv = await generateCSV(entries)
       const csvBlob = new Blob([csv], { type: 'text/csv' })
 
@@ -75,8 +75,9 @@ exportHandler.get('/', zValidator('query', exportQuerySchema), async c => {
           entry_count: entries.length,
         })
       )
+    }
 
-    case 'sqlite':
+    case 'sqlite': {
       // Generate SQLite database file
       const sqliteData = await generateSQLite(entries)
       const sqliteBlob = new Blob([sqliteData], {
@@ -105,6 +106,7 @@ exportHandler.get('/', zValidator('query', exportQuerySchema), async c => {
           entry_count: entries.length,
         })
       )
+    }
 
     default:
       return c.json(

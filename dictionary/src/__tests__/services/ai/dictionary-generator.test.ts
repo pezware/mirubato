@@ -4,7 +4,7 @@ import type { Env } from '../../../types/env'
 import type {
   DictionaryEntry,
   Definition,
-  References,
+  // References,
 } from '../../../types/dictionary'
 import { CloudflareAIService } from '../../../services/ai/cloudflare-ai-service'
 
@@ -54,13 +54,13 @@ describe('DictionaryGenerator', () => {
         usage_example: 'She plays the piano beautifully.',
       }
 
-      const mockReferences: References = {
-        wikipedia: {
-          url: 'https://en.wikipedia.org/wiki/Piano',
-          extract: 'The piano is an acoustic instrument...',
-          last_verified: new Date().toISOString(),
-        },
-      }
+      // const mockReferences: References = {
+      //   wikipedia: {
+      //     url: 'https://en.wikipedia.org/wiki/Piano',
+      //     extract: 'The piano is an acoustic instrument...',
+      //     last_verified: new Date().toISOString(),
+      //   },
+      // }
 
       // Mock AI responses
       mockAIService.generateStructuredContent

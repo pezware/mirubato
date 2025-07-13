@@ -19,11 +19,10 @@ adminHandler.use('*', auth())
 
 // Check admin privileges
 adminHandler.use('*', async (c, next) => {
-  const user = c.get('user' as any)
-  const apiKey = c.get('apiKey' as any)
+  const userRoles = c.get('userRoles' as any) || []
 
-  // Check if user is admin (you would implement your own admin check)
-  const isAdmin = user?.role === 'admin' || apiKey?.tier === 'admin'
+  // Check if user has admin role
+  const isAdmin = userRoles.includes('admin')
 
   if (!isAdmin) {
     throw new AuthorizationError('Admin access required')
@@ -416,92 +415,4 @@ adminHandler.post('/bulk', zValidator('json', bulkOperationSchema), async c => {
     default:
       throw new ValidationError('Invalid operation')
   }
-})
-
-/**
- * API key management
- * POST /api/v1/admin/api-keys
- */
-const apiKeySchema = z.object({
-  name: z.string(),
-  tier: z.enum(['free', 'pro', 'enterprise', 'admin']),
-  rate_limit: z.number().min(10).max(10000),
-  expires_at: z.string().datetime().optional(),
-})
-
-adminHandler.post('/api-keys', zValidator('json', apiKeySchema), async c => {
-  const { name, tier, rate_limit, expires_at } = c.req.valid('json')
-
-  // Generate API key
-  const apiKey = `mdb_${tier}_${crypto.randomUUID().replace(/-/g, '')}`
-
-  const keyData = {
-    key: apiKey,
-    name,
-    tier,
-    rate_limit,
-    created_at: new Date().toISOString(),
-    expires_at,
-    usage: {
-      requests_today: 0,
-      requests_month: 0,
-      last_request: null,
-    },
-  }
-
-  // Store in KV
-  await c.env.CACHE.put(`api_key:${apiKey}`, JSON.stringify(keyData), {
-    expirationTtl: expires_at
-      ? Math.floor((new Date(expires_at).getTime() - Date.now()) / 1000)
-      : undefined,
-  })
-
-  return c.json(
-    createApiResponse({
-      message: 'API key created successfully',
-      api_key: apiKey,
-      ...keyData,
-    }),
-    201
-  )
-})
-
-/**
- * List API keys
- * GET /api/v1/admin/api-keys
- */
-adminHandler.get('/api-keys', async c => {
-  // In production, this would query a database
-  // For now, return a placeholder response
-  return c.json(
-    createApiResponse({
-      api_keys: [],
-      message: 'API key listing not implemented',
-    })
-  )
-})
-
-/**
- * Revoke API key
- * DELETE /api/v1/admin/api-keys/:key
- */
-adminHandler.delete('/api-keys/:key', async c => {
-  const key = c.req.param('key')
-
-  // Check if key exists
-  const keyData = await c.env.CACHE.get(`api_key:${key}`)
-
-  if (!keyData) {
-    throw new ValidationError('API key not found')
-  }
-
-  // Delete from KV
-  await c.env.CACHE.delete(`api_key:${key}`)
-
-  return c.json(
-    createApiResponse({
-      message: 'API key revoked successfully',
-      revoked_key: key,
-    })
-  )
 })

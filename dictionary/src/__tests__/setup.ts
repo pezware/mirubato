@@ -30,6 +30,25 @@ Object.defineProperty(global, 'crypto', {
       }
       return arr
     },
+    subtle: {
+      digest: async (algorithm: string, data: ArrayBuffer) => {
+        // Deterministic mock for SHA-256 based on input
+        const view = new Uint8Array(data)
+        const bytes = new Uint8Array(32)
+
+        // Create a simple hash by summing bytes
+        let sum = 0
+        for (let i = 0; i < view.length; i++) {
+          sum = (sum + view[i]) % 256
+        }
+
+        // Fill with deterministic values based on sum
+        for (let i = 0; i < 32; i++) {
+          bytes[i] = (sum + i) % 256
+        }
+        return bytes.buffer
+      },
+    },
   },
   writable: true,
 })

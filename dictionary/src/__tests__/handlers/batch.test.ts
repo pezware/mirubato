@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { batchHandler } from '../../api/handlers/batch'
 import type { Env } from '../../types/env'
-import type { DictionaryEntry } from '../../types/dictionary'
+// import type { DictionaryEntry } from '../../types/dictionary'
 import {
-  createExecutionContext,
   createTestRequest,
   testHandler,
   createMockEnv,
@@ -123,7 +122,7 @@ vi.mock('../../services/storage/dictionary-database', () => {
 })
 
 // Track create calls
-const createMock = vi.fn()
+// const createMock = vi.fn()
 
 vi.mock('../../services/ai/dictionary-generator', () => ({
   DictionaryGenerator: vi.fn().mockImplementation(() => ({
@@ -166,72 +165,12 @@ vi.mock('../../middleware/auth', () => ({
 
 describe('Batch Handler', () => {
   let mockEnv: Env
-  let mockEntries: DictionaryEntry[]
 
   beforeEach(() => {
     mockEnv = createMockEnv()
 
-    mockEntries = [
-      {
-        id: 'dict_piano_001',
-        term: 'piano',
-        normalized_term: 'piano',
-        type: 'instrument',
-        definition: {
-          concise: 'A large keyboard instrument.',
-          detailed: 'The piano is an acoustic instrument...',
-        },
-        references: {},
-        metadata: {
-          search_frequency: 100,
-          last_accessed: new Date().toISOString(),
-          access_count: 100,
-          related_terms: [],
-          categories: [],
-        },
-        quality_score: {
-          overall: 85,
-          definition_clarity: 90,
-          reference_completeness: 80,
-          accuracy_verification: 85,
-          last_ai_check: new Date().toISOString(),
-          human_verified: true,
-          confidence_level: 'high',
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        version: 1,
-      },
-      {
-        id: 'dict_forte_001',
-        term: 'forte',
-        normalized_term: 'forte',
-        type: 'technique',
-        definition: {
-          concise: 'Loud or strong in music.',
-          detailed: 'A dynamic marking indicating loud...',
-        },
-        references: {},
-        metadata: {
-          search_frequency: 50,
-          last_accessed: new Date().toISOString(),
-          related_terms: ['fortissimo', 'piano'],
-          categories: ['dynamics'],
-        },
-        quality_score: {
-          overall: 80,
-          definition_clarity: 85,
-          reference_completeness: 75,
-          accuracy_verification: 80,
-          last_ai_check: new Date().toISOString(),
-          human_verified: false,
-          confidence_level: 'medium',
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        version: 1,
-      },
-    ]
+    // Reset created entries in mock
+    vi.clearAllMocks()
   })
 
   afterEach(() => {

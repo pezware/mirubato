@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { healthHandler } from '../../api/handlers/health'
 import type { Env } from '../../types/env'
 import {
-  createExecutionContext,
   createTestRequest,
   testHandler,
   createMockEnv,

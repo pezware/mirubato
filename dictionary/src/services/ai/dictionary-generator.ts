@@ -15,7 +15,7 @@ import {
 import { CloudflareAIService } from './cloudflare-ai-service'
 import { PROMPT_TEMPLATES, selectModel } from '../../config/ai-models'
 import { normalizeTerm } from '../../utils/validation'
-import { AIServiceError } from '../../utils/errors'
+// import { AIServiceError } from '../../utils/errors'
 
 export interface GenerationOptions {
   term: string
@@ -100,9 +100,9 @@ export class DictionaryGenerator {
 
           // If this is not the last attempt, try again
           if (attempt < maxRetries) {
-            console.log(
-              `Quality score ${entry.quality_score.overall} below threshold ${qualityThreshold}, retrying (attempt ${attempt}/${maxRetries})`
-            )
+            // console.log(
+            //   `Quality score ${entry.quality_score.overall} below threshold ${qualityThreshold}, retrying (attempt ${attempt}/${maxRetries})`
+            // )
             continue
           }
         } else {

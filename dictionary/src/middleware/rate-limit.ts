@@ -157,36 +157,6 @@ export function tieredRateLimit(tiers: {
 }
 
 /**
- * API key based rate limiting
- */
-export function apiKeyRateLimit(
-  options: RateLimitOptions & {
-    apiKeyHeader?: string
-    apiKeyLimits?: Record<string, number>
-  } = {}
-) {
-  const {
-    apiKeyHeader = 'X-API-Key',
-    apiKeyLimits = {},
-    ...rateLimitOptions
-  } = options
-
-  return rateLimit({
-    ...rateLimitOptions,
-    keyGenerator: c => {
-      const apiKey = c.req.header(apiKeyHeader)
-      if (apiKey && apiKeyLimits[apiKey]) {
-        // Use API key specific limit
-        return `apikey:${apiKey}`
-      }
-      // Fall back to default key generation
-      return generateDefaultKey(c)
-    },
-    max: rateLimitOptions.max || 100,
-  } as RateLimitOptions)
-}
-
-/**
  * Sliding window rate limiter for more accurate limiting
  */
 export function slidingWindowRateLimit(options: RateLimitOptions = {}) {
@@ -270,12 +240,6 @@ function generateDefaultKey(c: Context): string {
   const userId = c.get('userId' as any)
   if (userId) {
     return `user:${userId}`
-  }
-
-  // Try to get API key
-  const apiKey = c.req.header('X-API-Key')
-  if (apiKey) {
-    return `api:${apiKey.substring(0, 16)}`
   }
 
   // Fall back to IP address

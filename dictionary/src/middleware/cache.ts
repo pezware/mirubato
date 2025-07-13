@@ -28,7 +28,7 @@ export function cache(options: CacheOptions = {}) {
       return await next()
     }
 
-    const cacheService = new CacheService(c.env.CACHE, c.env)
+    // const cacheService = new CacheService(c.env.CACHE, c.env)
 
     // Generate cache key
     const cacheKey = options.key

@@ -1,19 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import {
-  authMiddleware,
-  requireAuth,
-  validateAPIKey,
-} from '../../middleware/auth'
+import { auth, serviceAuth, getUserInfo } from '../../middleware/auth'
 import type { Context } from 'hono'
 import type { Env } from '../../types/env'
-import jwt from 'jsonwebtoken'
+import { verify } from 'hono/jwt'
 
-// Mock jsonwebtoken
-vi.mock('jsonwebtoken', () => ({
-  default: {
-    verify: vi.fn(),
-    sign: vi.fn(),
-  },
+// Mock hono/jwt
+vi.mock('hono/jwt', () => ({
+  verify: vi.fn(),
 }))
 
 describe('Auth Middleware', () => {
@@ -51,145 +44,139 @@ describe('Auth Middleware', () => {
     mockNext = vi.fn().mockResolvedValue(undefined)
   })
 
-  describe('authMiddleware', () => {
+  describe('auth middleware', () => {
     it('should parse valid JWT token from Bearer header', async () => {
-      const mockPayload = { user_id: 'user123', email: 'test@example.com' }
+      const mockPayload = { sub: 'user123', email: 'test@example.com' }
       ;(mockContext.req!.header as any).mockReturnValue('Bearer valid-token')
-      ;(jwt.verify as any).mockReturnValue(mockPayload)
+      ;(verify as any).mockResolvedValue(mockPayload)
 
-      await authMiddleware()(mockContext as Context, mockNext)
+      await auth()(mockContext as Context, mockNext)
 
-      expect(jwt.verify).toHaveBeenCalledWith('valid-token', 'test-secret')
-      expect(mockContext.set).toHaveBeenCalledWith('user', mockPayload)
+      expect(verify).toHaveBeenCalledWith('valid-token', 'test-secret')
+      expect(mockContext.set).toHaveBeenCalledWith('userId', 'user123')
+      expect(mockContext.set).toHaveBeenCalledWith(
+        'userEmail',
+        'test@example.com'
+      )
       expect(mockNext).toHaveBeenCalled()
     })
 
-    it('should handle missing authorization header', async () => {
+    it('should handle missing authorization header when optional', async () => {
       ;(mockContext.req!.header as any).mockReturnValue(undefined)
 
-      await authMiddleware()(mockContext as Context, mockNext)
+      await auth({ optional: true })(mockContext as Context, mockNext)
 
-      expect(mockContext.set).toHaveBeenCalledWith('user', null)
       expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('should throw on missing authorization header when required', async () => {
+      ;(mockContext.req!.header as any).mockReturnValue(undefined)
+
+      await expect(auth()(mockContext as Context, mockNext)).rejects.toThrow()
+      expect(mockNext).not.toHaveBeenCalled()
     })
 
     it('should handle invalid JWT token', async () => {
       ;(mockContext.req!.header as any).mockReturnValue('Bearer invalid-token')
-      ;(jwt.verify as any).mockImplementation(() => {
-        throw new Error('Invalid token')
-      })
+      ;(verify as any).mockRejectedValue(new Error('Invalid token'))
 
-      await authMiddleware()(mockContext as Context, mockNext)
-
-      expect(mockContext.set).toHaveBeenCalledWith('user', null)
-      expect(mockNext).toHaveBeenCalled()
-    })
-
-    it('should handle API key authentication', async () => {
-      ;(mockContext.req!.header as any).mockImplementation((header: string) => {
-        if (header === 'X-API-Key') return 'test-api-key'
-        return undefined
-      })
-
-      await authMiddleware()(mockContext as Context, mockNext)
-
-      expect(mockContext.set).toHaveBeenCalledWith('apiKey', 'test-api-key')
-      expect(mockNext).toHaveBeenCalled()
-    })
-  })
-
-  describe('requireAuth', () => {
-    it('should allow authenticated users', async () => {
-      mockContext.get = vi.fn().mockReturnValue({ user_id: 'user123' })
-
-      await requireAuth()(mockContext as Context, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
-    })
-
-    it('should reject unauthenticated requests', async () => {
-      mockContext.get = vi.fn().mockReturnValue(null)
-
-      const response = await requireAuth()(mockContext as Context, mockNext)
-
+      await expect(auth()(mockContext as Context, mockNext)).rejects.toThrow()
       expect(mockNext).not.toHaveBeenCalled()
-      expect(response.status).toBe(401)
-      const data = (await response.json()) as any
-      expect(data.error.code).toBe('UNAUTHORIZED')
-    })
-
-    it('should accept valid API key', async () => {
-      mockContext.get = vi.fn().mockImplementation((key: string) => {
-        if (key === 'user') return null
-        if (key === 'apiKey') return 'valid-api-key'
-      })
-
-      // Mock KV namespace for API key validation
-      mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(
-          JSON.stringify({
-            key: 'valid-api-key',
-            tier: 'pro',
-            rate_limit: 10000,
-          })
-        ),
-      } as any
-
-      await requireAuth()(mockContext as Context, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
-    })
-
-    it('should allow service-to-service communication', async () => {
-      mockContext.get = vi.fn().mockReturnValue(null)
-      ;(mockContext.req!.header as any).mockImplementation((header: string) => {
-        if (header === 'X-Service-Auth') return 'scores-service'
-        return undefined
-      })
-
-      await requireAuth()(mockContext as Context, mockNext)
-
-      expect(mockNext).toHaveBeenCalled()
     })
   })
 
-  describe('validateAPIKey', () => {
-    it('should validate existing API key', async () => {
-      const mockKeyData = {
-        key: 'test-api-key',
-        tier: 'pro',
-        rate_limit: 10000,
-        created_at: new Date().toISOString(),
-      }
+  describe('serviceAuth', () => {
+    it('should allow valid service authentication', async () => {
+      const allowedServices = ['api-service', 'scores-service']
 
-      mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(JSON.stringify(mockKeyData)),
-      } as any
+      // Generate the expected token to match what the middleware will generate
+      const encoder = new TextEncoder()
+      const data = encoder.encode('scores-service:test-secret')
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const expectedToken = hashArray
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
 
-      const result = await validateAPIKey('test-api-key', mockEnv)
+      ;(mockContext.req!.header as any).mockImplementation((header: string) => {
+        if (header === 'X-Service-Name') return 'scores-service'
+        if (header === 'X-Service-Token') return expectedToken
+        return undefined
+      })
 
-      expect(result).toEqual(mockKeyData)
-      expect(mockEnv.CACHE.get).toHaveBeenCalledWith('api_key:test-api-key')
+      await serviceAuth(allowedServices)(mockContext as Context, mockNext)
+
+      expect(mockContext.set).toHaveBeenCalledWith(
+        'serviceName',
+        'scores-service'
+      )
+      expect(mockNext).toHaveBeenCalled()
     })
 
-    it('should return null for invalid API key', async () => {
-      mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(null),
-      } as any
+    it('should reject invalid service authentication', async () => {
+      const allowedServices = ['api-service']
+      ;(mockContext.req!.header as any).mockImplementation((header: string) => {
+        if (header === 'X-Service-Auth') return 'unknown-service'
+        return undefined
+      })
 
-      const result = await validateAPIKey('invalid-key', mockEnv)
-
-      expect(result).toBeNull()
+      await expect(
+        serviceAuth(allowedServices)(mockContext as Context, mockNext)
+      ).rejects.toThrow()
+      expect(mockNext).not.toHaveBeenCalled()
     })
 
-    it('should handle cache errors gracefully', async () => {
-      mockEnv.CACHE = {
-        get: vi.fn().mockRejectedValue(new Error('Cache error')),
-      } as any
+    it('should reject missing service header', async () => {
+      const allowedServices = ['api-service']
+      ;(mockContext.req!.header as any).mockReturnValue(undefined)
 
-      const result = await validateAPIKey('test-api-key', mockEnv)
+      await expect(
+        serviceAuth(allowedServices)(mockContext as Context, mockNext)
+      ).rejects.toThrow()
+      expect(mockNext).not.toHaveBeenCalled()
+    })
+  })
 
-      expect(result).toBeNull()
+  describe('getUserInfo', () => {
+    it('should return user info for JWT auth', () => {
+      mockContext.get = vi.fn().mockImplementation((key: string) => {
+        if (key === 'userId') return 'user123'
+        if (key === 'userEmail') return 'test@example.com'
+        return undefined
+      })
+
+      const info = getUserInfo(mockContext as Context)
+
+      expect(info).toEqual({
+        userId: 'user123',
+        email: 'test@example.com',
+        authenticated: true,
+        method: 'jwt',
+      })
+    })
+
+    it('should return service info for service auth', () => {
+      mockContext.get = vi.fn().mockImplementation((key: string) => {
+        if (key === 'serviceName') return 'api-service'
+        return undefined
+      })
+
+      const info = getUserInfo(mockContext as Context)
+
+      expect(info).toEqual({
+        authenticated: true,
+        method: 'service',
+      })
+    })
+
+    it('should return unauthenticated for no auth', () => {
+      mockContext.get = vi.fn().mockReturnValue(undefined)
+
+      const info = getUserInfo(mockContext as Context)
+
+      expect(info).toEqual({
+        authenticated: false,
+      })
     })
   })
 })
