@@ -16,8 +16,67 @@ import {
 import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import { generateId } from '../../utils/id'
+import { TermType } from '../../types/dictionary'
 
 const app = new OpenAPIHono<{ Bindings: Env }>()
+
+// Helper function to format database entry for API response
+function formatDictionaryEntry(result: any) {
+  return {
+    id: result.id,
+    type: result.type,
+    term: result.term,
+    normalizedTerm: result.normalizedTerm,
+    conciseDefinition: result.conciseDefinition,
+    detailedDefinition: result.detailedDefinition,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    instrument: result.instrument || undefined,
+    difficultyLevel: result.difficultyLevel || undefined,
+    etymology: result.etymology || undefined,
+    usageExample: result.usageExample || undefined,
+    status: result.status || 'draft',
+    language: result.language || 'en',
+    region: result.region || undefined,
+    historicalPeriod: result.historical_period || undefined,
+    version: result.version,
+    previousVersionId: result.previousVersionId || undefined,
+    pronunciation: result.pronunciationIpa
+      ? {
+          ipa: result.pronunciationIpa,
+          syllables: result.pronunciationSyllables
+            ? JSON.parse(result.pronunciationSyllables)
+            : undefined,
+          stressPattern: result.pronunciationStressPattern || undefined,
+        }
+      : undefined,
+    scores: {
+      overall: result.overallScore || 0,
+      accuracy: result.accuracyScore || 0,
+      clarity: result.clarityScore || 0,
+      completeness: result.completenessScore || 0,
+      educationalValue: result.educationalValueScore || 0,
+    },
+    relatedTerms: result.relatedTerms
+      ? JSON.parse(result.relatedTerms)
+      : undefined,
+    externalReferences: result.externalReferences
+      ? JSON.parse(result.externalReferences)
+      : undefined,
+    notableExamples: result.notableExamples
+      ? JSON.parse(result.notableExamples)
+      : undefined,
+    commonMisconceptions: result.commonMisconceptions
+      ? JSON.parse(result.commonMisconceptions)
+      : undefined,
+    learningTips: result.learningTips
+      ? JSON.parse(result.learningTips)
+      : undefined,
+    culturalContext: result.culturalContext
+      ? JSON.parse(result.culturalContext)
+      : undefined,
+  }
+}
 
 // Get term by ID or slug
 const getTermRoute = createRoute({
@@ -77,7 +136,7 @@ app.openapi(getTermRoute, async c => {
       {
         success: false,
         error: 'Term not found',
-        data: {
+        details: {
           term,
           normalized_term: term.toLowerCase().replace(/\s+/g, '_'),
           suggestions: [], // TODO: Add fuzzy search suggestions
@@ -89,40 +148,19 @@ app.openapi(getTermRoute, async c => {
 
   // Parse JSON fields
   const result = entry[0]
-  const formattedEntry = {
-    ...result,
-    pronunciation: result.pronunciationIpa
-      ? {
-          ipa: result.pronunciationIpa,
-          syllables: result.pronunciationSyllables
-            ? JSON.parse(result.pronunciationSyllables)
-            : undefined,
-          stressPattern: result.pronunciationStressPattern,
-        }
-      : undefined,
-    scores: {
-      overall: result.overallScore || 0,
-      accuracy: result.accuracyScore || 0,
-      clarity: result.clarityScore || 0,
-      completeness: result.completenessScore || 0,
-      educationalValue: result.educationalValueScore || 0,
-    },
-    relatedTerms: result.relatedTerms
-      ? JSON.parse(result.relatedTerms)
-      : undefined,
-    externalReferences: result.externalReferences
-      ? JSON.parse(result.externalReferences)
-      : undefined,
-  }
+  const formattedEntry = formatDictionaryEntry(result)
 
-  return c.json({
-    success: true,
-    data: formattedEntry,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      version: '1.0.0',
+  return c.json(
+    {
+      success: true,
+      data: formattedEntry,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+      },
     },
-  })
+    200
+  )
 })
 
 // Create new term
@@ -181,6 +219,14 @@ const createTermRoute = createRoute({
       },
       description: 'Term already exists',
     },
+    500: {
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: 'Internal server error',
+    },
   },
 })
 
@@ -211,71 +257,76 @@ app.openapi(createTermRoute, async c => {
   }
 
   // Generate definition using AI
-  const aiService = new CloudflareAIService(c.env)
-  const generator = new DictionaryGenerator(aiService, db, c.env.CACHE)
+  const generator = new DictionaryGenerator(c.env)
 
   try {
-    const definition = await generator.generateDefinition(
-      body.term,
-      body.type,
-      {
+    const generatedEntry = await generator.generateEntry({
+      term: body.term,
+      type: body.type as TermType,
+      context: {
         instruments: body.instrument ? [body.instrument] : undefined,
         difficulty_level: body.difficultyLevel,
-      }
-    )
+      },
+    })
+
+    if (!generatedEntry) {
+      return c.json(
+        {
+          success: false,
+          error: 'Failed to generate definition',
+          details: 'AI generation returned null',
+        },
+        500
+      )
+    }
 
     // Create entry
     const entry: NewDictionaryEntry = {
-      id: generateId(),
+      id: generatedEntry.id,
       term: body.term,
       normalizedTerm,
       type: body.type,
-      instrument: body.instrument,
-      difficultyLevel: body.difficultyLevel,
-      conciseDefinition: definition.concise,
-      detailedDefinition: definition.detailed,
-      etymology: definition.etymology,
-      usageExample: definition.usage_example,
-      pronunciationIpa: definition.pronunciation?.ipa,
-      pronunciationSyllables: definition.pronunciation?.syllables
-        ? JSON.stringify(definition.pronunciation.syllables)
-        : undefined,
-      pronunciationStressPattern: definition.pronunciation?.stress_pattern,
-      overallScore: definition.quality_score,
+      instrument: body.instrument || null,
+      difficultyLevel: body.difficultyLevel || null,
+      conciseDefinition: generatedEntry.definition.concise,
+      detailedDefinition: generatedEntry.definition.detailed,
+      etymology: generatedEntry.definition.etymology || null,
+      usageExample: generatedEntry.definition.usage_example || null,
+      pronunciationIpa: generatedEntry.definition.pronunciation?.ipa || null,
+      pronunciationSyllables: generatedEntry.definition.pronunciation?.syllables
+        ? JSON.stringify(generatedEntry.definition.pronunciation.syllables)
+        : null,
+      pronunciationStressPattern:
+        generatedEntry.definition.pronunciation?.stress_pattern || null,
+      overallScore: generatedEntry.quality_score.overall,
+      accuracyScore: generatedEntry.quality_score.accuracy_verification,
+      clarityScore: generatedEntry.quality_score.definition_clarity,
+      completenessScore: generatedEntry.quality_score.reference_completeness,
+      educationalValueScore: 0,
       status: 'published',
-      language: body.language,
+      language: body.language || 'en',
       relatedTerms:
-        body.generateRelated && definition.related_terms
-          ? JSON.stringify(definition.related_terms)
-          : undefined,
-      externalReferences: definition.references
-        ? JSON.stringify(definition.references)
-        : undefined,
+        body.generateRelated && generatedEntry.metadata.related_terms
+          ? JSON.stringify(generatedEntry.metadata.related_terms)
+          : null,
+      externalReferences: generatedEntry.references
+        ? JSON.stringify(generatedEntry.references)
+        : null,
       generationMetadata: JSON.stringify({
-        model: definition.model_used,
-        latency: definition.generation_time_ms,
         timestamp: new Date().toISOString(),
       }),
     }
 
     await db.insert(dictionaryEntries).values(entry)
 
-    // Format response
-    const formattedEntry = {
-      ...entry,
-      pronunciation: definition.pronunciation,
-      scores: {
-        overall: definition.quality_score || 0,
-        accuracy: 0,
-        clarity: 0,
-        completeness: 0,
-        educationalValue: 0,
-      },
-      relatedTerms: definition.related_terms,
-      externalReferences: definition.references,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    // Format response - use the database result after insert
+    const [insertedEntry] = await db
+      .select()
+      .from(dictionaryEntries)
+      .where(eq(dictionaryEntries.id, entry.id))
+      .limit(1)
+
+    const formattedEntry = formatDictionaryEntry(insertedEntry)
 
     return c.json(
       {
@@ -413,31 +464,7 @@ app.openapi(listTermsRoute, async c => {
     .offset(offset)
 
   // Format results
-  const formattedResults = results.map(result => ({
-    ...result,
-    pronunciation: result.pronunciationIpa
-      ? {
-          ipa: result.pronunciationIpa,
-          syllables: result.pronunciationSyllables
-            ? JSON.parse(result.pronunciationSyllables)
-            : undefined,
-          stressPattern: result.pronunciationStressPattern,
-        }
-      : undefined,
-    scores: {
-      overall: result.overallScore || 0,
-      accuracy: result.accuracyScore || 0,
-      clarity: result.clarityScore || 0,
-      completeness: result.completenessScore || 0,
-      educationalValue: result.educationalValueScore || 0,
-    },
-    relatedTerms: result.relatedTerms
-      ? JSON.parse(result.relatedTerms)
-      : undefined,
-    externalReferences: result.externalReferences
-      ? JSON.parse(result.externalReferences)
-      : undefined,
-  }))
+  const formattedResults = results.map(formatDictionaryEntry)
 
   return c.json({
     success: true,
