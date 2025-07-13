@@ -44,19 +44,21 @@ All services run as Cloudflare Workers with the following domains:
 │                  mirubato / mirubato-staging                 │
 └─────────────────────┬───────────────────────────────────────┘
                       │
-                      ├─────────────────────────┬──────────────┐
-                      │                         │              │
-              ┌───────▼────────┐        ┌───────▼────────┐     │
-              │     API        │        │ Scores Service │     │
-              │    (REST)      │        │     (REST)     │     │
-              │ mirubato-api   │        │mirubato-scores │     │
-              └───────┬────────┘        └───────┬────────┘     │
-                      │                         │              │
-                      │                         │              │
-              ┌───────▼────────┐        ┌───────▼────────┐     │
-              │  D1 Database   │        │  D1 Database   │     │
-              │(mirubato-prod) │        │ (scores-prod)  │     │
-              └────────────────┘        └────────────────┘     │
+        ┌─────────────┼─────────────┬────────────┬────────────┐
+        │             │             │            │            │
+┌───────▼────────┐ ┌──▼──────────┐ ┌▼──────────┐ ┌──────────▼────────┐
+│     API        │ │Scores Service│ │Future Svc │ │ Future Service    │
+│    (REST)      │ │   (REST)    │ │  (REST)   │ │    (REST)         │
+│ mirubato-api   │ │mirubato-    │ │mirubato-  │ │ mirubato-*        │
+│                │ │scores       │ │*          │ │                   │
+└───────┬────────┘ └──────┬──────┘ └─────┬─────┘ └────────┬──────────┘
+        │                 │               │                │
+┌───────▼────────┐ ┌──────▼──────┐ ┌─────▼─────┐ ┌────────▼──────────┐
+│  D1 Database   │ │D1 Database  │ │D1 Database│ │  D1 Database      │
+│(mirubato-prod) │ │(scores-prod)│ │(*-prod)   │ │  (*-prod)         │
+└────────────────┘ └─────────────┘ └───────────┘ └───────────────────┘
+
+Note: All services follow the same architecture patterns defined in service-template/
 ```
 
 ### Service Details
@@ -856,6 +858,79 @@ CREATE TABLE logbook_entries (
 
 The API abstraction layer makes migration straightforward - frontend code remains unchanged.
 
+## Microservices Template
+
+### Service Template Architecture
+
+Mirubato provides a standardized service template (`service-template/`) for creating new microservices that align with the platform's architecture. This template encapsulates all the patterns and best practices learned from building the API and Scores services.
+
+#### Template Features
+
+1. **Complete Cloudflare Workers Setup**
+   - Multi-environment configuration (local, development, staging, production)
+   - Pre-configured `wrangler.toml` with all necessary bindings
+   - D1 database, KV namespace, R2 bucket, Queue support
+
+2. **Standardized Middleware Stack**
+   - JWT authentication with shared secret
+   - Rate limiting (sliding window algorithm using KV)
+   - CORS handling with environment-specific origins
+   - Request/response logging
+   - Global error handling
+   - Input validation with Zod schemas
+
+3. **Health Monitoring**
+   - `/livez` - Simple liveness check
+   - `/readyz` - Database connectivity check
+   - `/health` - Comprehensive health with all dependencies
+   - `/metrics` - Prometheus-compatible metrics
+
+4. **API Documentation**
+   - OpenAPI specification at `/docs`
+   - Swagger UI support
+   - Type-safe route definitions
+
+5. **Database Layer**
+   - Drizzle ORM for type-safe queries
+   - Migration system with versioning
+   - Example schemas following best practices
+
+6. **Testing Infrastructure**
+   - Vitest configuration for Workers
+   - Example tests for all middleware
+   - Mock environment setup
+   - Coverage reporting
+
+#### Creating a New Service
+
+```bash
+# 1. Copy the template
+cp -r service-template my-new-service
+cd my-new-service
+
+# 2. Run the automated setup
+./scripts/setup.sh
+
+# 3. Configure resources
+# The script will provide commands to:
+# - Create KV namespaces
+# - Create D1 databases
+# - Set JWT secret (must match other services)
+
+# 4. Start developing
+npm install
+npm run dev
+```
+
+#### Service Integration
+
+New services integrate seamlessly with the existing architecture:
+
+1. **Authentication**: Same JWT secret ensures token portability
+2. **Monitoring**: Consistent health endpoints for platform-wide observability
+3. **Deployment**: Same CI/CD patterns via Cloudflare GitHub integration
+4. **Development**: Consistent localhost domain pattern (service-name-mirubato.localhost)
+
 ## Future Considerations
 
 1. **Mobile Apps**: React Native using same REST API
@@ -864,6 +939,7 @@ The API abstraction layer makes migration straightforward - frontend code remain
 4. **Performance**: Edge caching optimization
 5. **Module System**: Reconsider when app complexity justifies it
 6. **Database Migration**: Move from JSON blobs to structured tables for better performance
+7. **New Services**: Use the service template for consistency across all microservices
 
 ---
 

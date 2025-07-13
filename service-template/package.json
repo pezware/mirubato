@@ -1,0 +1,49 @@
+{
+  "name": "@mirubato/service-template",
+  "version": "1.0.0",
+  "description": "Template for Mirubato microservices on Cloudflare Workers",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8788 --env local --local-protocol http",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate:sqlite --schema=./src/db/schema.ts",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:dev": "wrangler d1 migrations apply DB --env development",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging",
+    "db:migrate:production": "wrangler d1 migrations apply DB --env production"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "@hono/zod-openapi": "^0.18.0",
+    "@hono/swagger-ui": "^0.4.1",
+    "jose": "^5.9.6",
+    "zod": "^3.23.8",
+    "drizzle-orm": "^0.38.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "@cloudflare/vitest-pool-workers": "^0.5.40",
+    "@types/node": "^22.10.5",
+    "drizzle-kit": "^0.30.1",
+    "typescript": "^5.7.2",
+    "vitest": "2.1.8",
+    "wrangler": "^3.99.0",
+    "prettier": "^3.4.2",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
