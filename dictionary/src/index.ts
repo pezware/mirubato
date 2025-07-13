@@ -323,7 +323,7 @@ app.get('/', c => {
                 <h4>🏥 Health Status</h4>
                 <p>Service health information</p>
             </a>
-            <a href="/api/openapi.json" class="link-card">
+            <a href="/docs/openapi.json" class="link-card">
                 <h4>📄 OpenAPI Spec</h4>
                 <p>OpenAPI 3.0 specification</p>
             </a>
