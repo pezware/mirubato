@@ -7,6 +7,7 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { timing } from 'hono/timing'
 import { Env, Variables } from './types/env'
+import { MessageBatch } from '@cloudflare/workers-types'
 import { errorHandler } from './utils/errors'
 import { cache, edgeCache } from './middleware/cache'
 import { tieredRateLimit } from './middleware/rate-limit'
@@ -137,4 +138,42 @@ app.notFound(c => {
   )
 })
 
-export default app
+// Export the worker with queue handler
+export default {
+  fetch: app.fetch,
+
+  // Queue handler for batch processing
+  async queue(batch: MessageBatch, env: Env): Promise<void> {
+    console.log(`Processing ${batch.messages.length} messages from queue`)
+
+    for (const message of batch.messages) {
+      try {
+        // Process each message
+        const data = message.body as any
+
+        // Handle different message types
+        switch (data.type) {
+          case 'enhance_entry':
+            // Enhancement logic would go here
+            console.log(`Enhancing entry: ${data.entryId}`)
+            break
+
+          case 'batch_import':
+            // Batch import logic would go here
+            console.log(`Batch importing: ${data.entries?.length || 0} entries`)
+            break
+
+          default:
+            console.log(`Unknown message type: ${data.type}`)
+        }
+
+        // Acknowledge the message
+        message.ack()
+      } catch (error) {
+        console.error('Error processing queue message:', error)
+        // Retry the message
+        message.retry()
+      }
+    }
+  },
+}
