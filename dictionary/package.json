@@ -1,0 +1,46 @@
+{
+  "name": "@mirubato/dictionary",
+  "version": "1.0.0",
+  "description": "Music Dictionary Service - AI-powered music terminology definitions",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wrangler dev --port 9799 --env local --local-protocol http",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
+    "db:migrate:production": "wrangler d1 migrations apply DB --remote",
+    "test": "vitest",
+    "test:unit": "vitest run --passWithNoTests",
+    "test:coverage": "vitest --coverage",
+    "test:api": "curl http://dictionary-mirubato.localhost:9799/health | jq",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
+  },
+  "dependencies": {
+    "@cloudflare/ai": "^1.0.47",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-validator": "^0.7.0",
+    "hono": "^4.6.13",
+    "jose": "^5.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.11.1",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "jsonwebtoken": "^9.0.2",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.20.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

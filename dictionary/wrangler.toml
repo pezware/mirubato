@@ -1,0 +1,89 @@
+name = "mirubato-dictionary"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Production configuration (default)
+workers_dev = false
+routes = [
+  { pattern = "dictionary.mirubato.com/*", zone_name = "mirubato.com" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-prod"
+database_id = "your-prod-database-id"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-prod-kv-namespace-id"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-exports"
+
+[ai]
+binding = "AI"
+
+[vars]
+QUALITY_THRESHOLD = "70"
+CACHE_TTL = "3600"
+ENVIRONMENT = "production"
+API_SERVICE_URL = "https://api.mirubato.com"
+
+# Staging environment
+[env.staging]
+name = "mirubato-dictionary-staging"
+workers_dev = true
+routes = [
+  { pattern = "dictionary-staging.mirubato.com/*", zone_name = "mirubato.com" }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-staging"
+database_id = "your-staging-database-id"
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "your-staging-kv-namespace-id"
+
+[[env.staging.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-exports-staging"
+
+[env.staging.ai]
+binding = "AI"
+
+[env.staging.vars]
+QUALITY_THRESHOLD = "60"
+CACHE_TTL = "1800"
+ENVIRONMENT = "staging"
+API_SERVICE_URL = "https://api-staging.mirubato.com"
+
+# Local development environment
+[env.local]
+name = "mirubato-dictionary-local"
+workers_dev = true
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-local"
+database_id = "local"
+
+[[env.local.kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+[[env.local.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-exports-local"
+
+[env.local.ai]
+binding = "AI"
+
+[env.local.vars]
+QUALITY_THRESHOLD = "50"
+CACHE_TTL = "300"
+ENVIRONMENT = "local"
+API_SERVICE_URL = "http://api-mirubato.localhost:9797"
