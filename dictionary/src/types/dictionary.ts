@@ -2,15 +2,45 @@
  * Core dictionary types and interfaces
  */
 
-export type TermType = 'instrument' | 'genre' | 'technique' | 'composer' | 'theory' | 'general'
+export type TermType =
+  | 'instrument'
+  | 'genre'
+  | 'technique'
+  | 'composer'
+  | 'theory'
+  | 'general'
 
-export type CheckType = 'ai_validation' | 'human_review' | 'enhancement' | 'user_feedback'
+export type CheckType =
+  | 'ai_validation'
+  | 'human_review'
+  | 'enhancement'
+  | 'user_feedback'
 
-export type RelationshipType = 'synonym' | 'antonym' | 'see_also' | 'broader' | 'narrower' | 'related'
+export type RelationshipType =
+  | 'synonym'
+  | 'antonym'
+  | 'see_also'
+  | 'broader'
+  | 'narrower'
+  | 'related'
 
-export type SearchSource = 'web' | 'api' | 'mobile' | 'extension' | 'api_search' | 'api_direct'
+export type SearchSource =
+  | 'web'
+  | 'api'
+  | 'mobile'
+  | 'extension'
+  | 'api_search'
+  | 'api_direct'
 
-export type FeedbackType = 'accuracy' | 'clarity' | 'completeness' | 'other' | 'incorrect' | 'offensive' | 'spam' | 'copyright'
+export type FeedbackType =
+  | 'accuracy'
+  | 'clarity'
+  | 'completeness'
+  | 'other'
+  | 'incorrect'
+  | 'offensive'
+  | 'spam'
+  | 'copyright'
 
 export interface DictionaryEntry {
   id: string

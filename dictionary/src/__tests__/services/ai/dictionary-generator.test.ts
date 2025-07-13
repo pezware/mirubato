@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { DictionaryGenerator } from '../../../services/ai/dictionary-generator'
 import type { Env } from '../../../types/env'
-import type { DictionaryEntry, Definition, References } from '../../../types/dictionary'
+import type {
+  DictionaryEntry,
+  Definition,
+  References,
+} from '../../../types/dictionary'
 import { CloudflareAIService } from '../../../services/ai/cloudflare-ai-service'
 
 // Mock CloudflareAIService
@@ -23,13 +27,13 @@ describe('DictionaryGenerator', () => {
       ENVIRONMENT: 'test',
       API_SERVICE_URL: 'http://localhost:8787',
       OPENAI_API_KEY: 'test-openai-key',
-      ANTHROPIC_API_KEY: 'test-anthropic-key'
+      ANTHROPIC_API_KEY: 'test-anthropic-key',
     }
 
     // Create mock AI service
     mockAIService = {
       generateStructuredContent: vi.fn(),
-      parseJSONResponse: vi.fn()
+      parseJSONResponse: vi.fn(),
     }
 
     // Mock the CloudflareAIService constructor
@@ -45,40 +49,44 @@ describe('DictionaryGenerator', () => {
         detailed: 'The piano is an acoustic, stringed musical instrument...',
         etymology: 'From Italian pianoforte',
         pronunciation: {
-          ipa: '/piˈænoʊ/'
+          ipa: '/piˈænoʊ/',
         },
-        usage_example: 'She plays the piano beautifully.'
+        usage_example: 'She plays the piano beautifully.',
       }
 
       const mockReferences: References = {
         wikipedia: {
           url: 'https://en.wikipedia.org/wiki/Piano',
           extract: 'The piano is an acoustic instrument...',
-          last_verified: new Date().toISOString()
-        }
+          last_verified: new Date().toISOString(),
+        },
       }
 
       // Mock AI responses
       mockAIService.generateStructuredContent
         .mockResolvedValueOnce({ response: JSON.stringify(mockDefinition) })
-        .mockResolvedValueOnce({ 
+        .mockResolvedValueOnce({
           response: JSON.stringify({
             wikipedia_search: 'Piano',
-            youtube_search: 'piano instrument'
-          })
+            youtube_search: 'piano instrument',
+          }),
         })
         .mockResolvedValueOnce({
           response: JSON.stringify({
             score: 85,
             issues: [],
-            suggestions: []
-          })
+            suggestions: [],
+          }),
         })
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
-      const result = await generator.generateEntry({ term: 'piano', type: 'instrument' })
+      const result = await generator.generateEntry({
+        term: 'piano',
+        type: 'instrument',
+      })
 
       expect(result).toBeDefined()
       expect(result.term).toBe('piano')
@@ -93,25 +101,27 @@ describe('DictionaryGenerator', () => {
     it('should retry on low quality score', async () => {
       const lowQualityDefinition = {
         concise: 'Piano.',
-        detailed: 'A piano.'
+        detailed: 'A piano.',
       }
 
       const improvedDefinition = {
         concise: 'A large keyboard instrument with strings struck by hammers.',
         detailed: 'The piano is an acoustic, stringed musical instrument...',
-        etymology: 'From Italian pianoforte'
+        etymology: 'From Italian pianoforte',
       }
 
       // First attempt - low quality
       mockAIService.generateStructuredContent
-        .mockResolvedValueOnce({ response: JSON.stringify(lowQualityDefinition) })
+        .mockResolvedValueOnce({
+          response: JSON.stringify(lowQualityDefinition),
+        })
         .mockResolvedValueOnce({ response: '{}' })
         .mockResolvedValueOnce({
           response: JSON.stringify({
             score: 50,
             issues: ['Definition too short', 'Missing details'],
-            suggestions: ['Add more detail', 'Include etymology']
-          })
+            suggestions: ['Add more detail', 'Include etymology'],
+          }),
         })
         // Second attempt - improved
         .mockResolvedValueOnce({ response: JSON.stringify(improvedDefinition) })
@@ -120,14 +130,18 @@ describe('DictionaryGenerator', () => {
           response: JSON.stringify({
             score: 80,
             issues: [],
-            suggestions: []
-          })
+            suggestions: [],
+          }),
         })
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
-      const result = await generator.generateEntry({ term: 'piano', type: 'instrument' })
+      const result = await generator.generateEntry({
+        term: 'piano',
+        type: 'instrument',
+      })
 
       expect(result.definition).toEqual(improvedDefinition)
       expect(result.quality_score.overall).toBeGreaterThanOrEqual(70)
@@ -137,31 +151,34 @@ describe('DictionaryGenerator', () => {
     it('should throw error after max retries', async () => {
       const lowQualityDefinition = {
         concise: 'Bad.',
-        detailed: 'Bad definition.'
+        detailed: 'Bad definition.',
       }
 
       // Mock all attempts to return low quality
-      for (let i = 0; i < 9; i++) { // 3 attempts * 3 calls each
+      for (let i = 0; i < 9; i++) {
+        // 3 attempts * 3 calls each
         if (i % 3 === 0) {
-          mockAIService.generateStructuredContent
-            .mockResolvedValueOnce({ response: JSON.stringify(lowQualityDefinition) })
+          mockAIService.generateStructuredContent.mockResolvedValueOnce({
+            response: JSON.stringify(lowQualityDefinition),
+          })
         } else if (i % 3 === 1) {
-          mockAIService.generateStructuredContent
-            .mockResolvedValueOnce({ response: '{}' })
+          mockAIService.generateStructuredContent.mockResolvedValueOnce({
+            response: '{}',
+          })
         } else {
-          mockAIService.generateStructuredContent
-            .mockResolvedValueOnce({
-              response: JSON.stringify({
-                score: 40,
-                issues: ['Poor quality'],
-                suggestions: ['Improve everything']
-              })
-            })
+          mockAIService.generateStructuredContent.mockResolvedValueOnce({
+            response: JSON.stringify({
+              score: 40,
+              issues: ['Poor quality'],
+              suggestions: ['Improve everything'],
+            }),
+          })
         }
       }
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
       await expect(
         generator.generateEntry({ term: 'test', type: 'general' })
@@ -178,14 +195,14 @@ describe('DictionaryGenerator', () => {
         type: 'instrument',
         definition: {
           concise: 'A keyboard instrument.',
-          detailed: 'A piano is a musical instrument.'
+          detailed: 'A piano is a musical instrument.',
         },
         references: {},
         metadata: {
           search_frequency: 10,
           last_accessed: new Date().toISOString(),
           related_terms: [],
-          categories: []
+          categories: [],
         },
         quality_score: {
           overall: 50,
@@ -193,44 +210,51 @@ describe('DictionaryGenerator', () => {
           reference_completeness: 0,
           accuracy_verification: 70,
           last_ai_check: new Date().toISOString(),
-          human_verified: false
+          human_verified: false,
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        version: 1
+        version: 1,
       }
 
       const enhancedDefinition = {
-        concise: 'A large keyboard instrument with strings struck by hammers when keys are pressed.',
-        detailed: 'The piano is an acoustic, stringed musical instrument invented in Italy...',
+        concise:
+          'A large keyboard instrument with strings struck by hammers when keys are pressed.',
+        detailed:
+          'The piano is an acoustic, stringed musical instrument invented in Italy...',
         etymology: 'From Italian pianoforte, meaning "soft-loud"',
         pronunciation: {
-          ipa: '/piˈænoʊ/'
+          ipa: '/piˈænoʊ/',
         },
-        usage_example: 'She has been playing the piano since childhood.'
+        usage_example: 'She has been playing the piano since childhood.',
       }
 
       mockAIService.generateStructuredContent
-        .mockResolvedValueOnce({ response: JSON.stringify({ definition: enhancedDefinition }) })
-        .mockResolvedValueOnce({ 
+        .mockResolvedValueOnce({
+          response: JSON.stringify({ definition: enhancedDefinition }),
+        })
+        .mockResolvedValueOnce({
           response: JSON.stringify({
             references: {
               wikipedia: {
                 url: 'https://en.wikipedia.org/wiki/Piano',
                 extract: 'Enhanced reference',
-                last_verified: new Date().toISOString()
-              }
-            }
-          })
+                last_verified: new Date().toISOString(),
+              },
+            },
+          }),
         })
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
       const result = await generator.enhanceEntry(existingEntry)
 
       expect(result.definition).toEqual(enhancedDefinition)
-      expect(result.quality_score.overall).toBeGreaterThan(existingEntry.quality_score.overall)
+      expect(result.quality_score.overall).toBeGreaterThan(
+        existingEntry.quality_score.overall
+      )
       expect(result.version).toBe(2)
       expect(result.id).toBe(existingEntry.id)
     })
@@ -243,24 +267,25 @@ describe('DictionaryGenerator', () => {
         type: 'technique',
         definition: {
           concise: 'A dynamic marking in music indicating loud or strong.',
-          detailed: 'Forte is an Italian musical term meaning loud or strong...',
+          detailed:
+            'Forte is an Italian musical term meaning loud or strong...',
           etymology: 'From Italian forte, meaning "strong"',
           pronunciation: {
-            ipa: '/ˈfɔrteɪ/'
-          }
+            ipa: '/ˈfɔrteɪ/',
+          },
         },
         references: {
           wikipedia: {
             url: 'https://en.wikipedia.org/wiki/Dynamics_(music)',
             extract: 'Dynamics are indicators of the relative intensity...',
-            last_verified: new Date().toISOString()
-          }
+            last_verified: new Date().toISOString(),
+          },
         },
         metadata: {
           search_frequency: 100,
           last_accessed: new Date().toISOString(),
           related_terms: ['piano', 'fortissimo'],
-          categories: ['dynamics', 'musical notation']
+          categories: ['dynamics', 'musical notation'],
         },
         quality_score: {
           overall: 90,
@@ -268,33 +293,43 @@ describe('DictionaryGenerator', () => {
           reference_completeness: 85,
           accuracy_verification: 90,
           last_ai_check: new Date().toISOString(),
-          human_verified: true
+          human_verified: true,
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        version: 3
+        version: 3,
       }
 
-      mockAIService.generateStructuredContent
-        .mockResolvedValueOnce({ 
-          response: JSON.stringify({
-            definition: {
-              ...highQualityEntry.definition,
-              usage_example: 'The passage should be played forte throughout.'
-            }
-          })
-        })
+      mockAIService.generateStructuredContent.mockResolvedValueOnce({
+        response: JSON.stringify({
+          definition: {
+            ...highQualityEntry.definition,
+            usage_example: 'The passage should be played forte throughout.',
+          },
+        }),
+      })
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
-      const result = await generator.enhanceEntry(highQualityEntry, { focus_areas: ['definition'] })
+      const result = await generator.enhanceEntry(highQualityEntry, {
+        focus_areas: ['definition'],
+      })
 
       // Should add missing fields but preserve existing quality content
-      expect(result.definition.concise).toBe(highQualityEntry.definition.concise)
-      expect(result.definition.detailed).toBe(highQualityEntry.definition.detailed)
-      expect(result.definition.usage_example).toBe('The passage should be played forte throughout.')
-      expect(result.references.wikipedia).toEqual(highQualityEntry.references.wikipedia)
+      expect(result.definition.concise).toBe(
+        highQualityEntry.definition.concise
+      )
+      expect(result.definition.detailed).toBe(
+        highQualityEntry.definition.detailed
+      )
+      expect(result.definition.usage_example).toBe(
+        'The passage should be played forte throughout.'
+      )
+      expect(result.references.wikipedia).toEqual(
+        highQualityEntry.references.wikipedia
+      )
     })
   })
 
@@ -307,14 +342,15 @@ describe('DictionaryGenerator', () => {
         type: 'general',
         definition: {
           concise: 'A test definition.',
-          detailed: 'This is a detailed test definition with sufficient content.'
+          detailed:
+            'This is a detailed test definition with sufficient content.',
         },
         references: {},
         metadata: {
           search_frequency: 0,
           last_accessed: new Date().toISOString(),
           related_terms: [],
-          categories: []
+          categories: [],
         },
         quality_score: {
           overall: 0,
@@ -322,23 +358,24 @@ describe('DictionaryGenerator', () => {
           reference_completeness: 0,
           accuracy_verification: 0,
           last_ai_check: new Date().toISOString(),
-          human_verified: false
+          human_verified: false,
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        version: 1
+        version: 1,
       }
 
       mockAIService.generateStructuredContent.mockResolvedValueOnce({
         response: JSON.stringify({
           score: 75,
           issues: [],
-          suggestions: ['Add references for completeness']
-        })
+          suggestions: ['Add references for completeness'],
+        }),
       })
 
-      mockAIService.parseJSONResponse
-        .mockImplementation((response: string) => JSON.parse(response))
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
 
       const result = await generator.validateQuality(entry)
 

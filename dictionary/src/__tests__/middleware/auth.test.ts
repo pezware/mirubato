@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { authMiddleware, requireAuth, validateAPIKey } from '../../middleware/auth'
+import {
+  authMiddleware,
+  requireAuth,
+  validateAPIKey,
+} from '../../middleware/auth'
 import type { Context } from 'hono'
 import type { Env } from '../../types/env'
 import jwt from 'jsonwebtoken'
@@ -8,8 +12,8 @@ import jwt from 'jsonwebtoken'
 vi.mock('jsonwebtoken', () => ({
   default: {
     verify: vi.fn(),
-    sign: vi.fn()
-  }
+    sign: vi.fn(),
+  },
 }))
 
 describe('Auth Middleware', () => {
@@ -27,21 +31,21 @@ describe('Auth Middleware', () => {
       DB: {} as any,
       CACHE: {} as any,
       STORAGE: {} as any,
-      AI: {} as any
+      AI: {} as any,
     }
 
     mockContext = {
       env: mockEnv,
       req: {
-        header: vi.fn()
+        header: vi.fn(),
       } as any,
       set: vi.fn(),
       json: vi.fn((data: any, status?: number) => {
         return new Response(JSON.stringify(data), {
           status: status || 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         })
-      })
+      }),
     }
 
     mockNext = vi.fn().mockResolvedValue(undefined)
@@ -61,7 +65,7 @@ describe('Auth Middleware', () => {
     })
 
     it('should handle missing authorization header', async () => {
-      (mockContext.req!.header as any).mockReturnValue(undefined)
+      ;(mockContext.req!.header as any).mockReturnValue(undefined)
 
       await authMiddleware()(mockContext as Context, mockNext)
 
@@ -70,7 +74,7 @@ describe('Auth Middleware', () => {
     })
 
     it('should handle invalid JWT token', async () => {
-      (mockContext.req!.header as any).mockReturnValue('Bearer invalid-token')
+      ;(mockContext.req!.header as any).mockReturnValue('Bearer invalid-token')
       ;(jwt.verify as any).mockImplementation(() => {
         throw new Error('Invalid token')
       })
@@ -82,7 +86,7 @@ describe('Auth Middleware', () => {
     })
 
     it('should handle API key authentication', async () => {
-      (mockContext.req!.header as any).mockImplementation((header: string) => {
+      ;(mockContext.req!.header as any).mockImplementation((header: string) => {
         if (header === 'X-API-Key') return 'test-api-key'
         return undefined
       })
@@ -110,7 +114,7 @@ describe('Auth Middleware', () => {
 
       expect(mockNext).not.toHaveBeenCalled()
       expect(response.status).toBe(401)
-      const data = await response.json() as any
+      const data = (await response.json()) as any
       expect(data.error.code).toBe('UNAUTHORIZED')
     })
 
@@ -122,11 +126,13 @@ describe('Auth Middleware', () => {
 
       // Mock KV namespace for API key validation
       mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(JSON.stringify({
-          key: 'valid-api-key',
-          tier: 'pro',
-          rate_limit: 10000
-        }))
+        get: vi.fn().mockResolvedValue(
+          JSON.stringify({
+            key: 'valid-api-key',
+            tier: 'pro',
+            rate_limit: 10000,
+          })
+        ),
       } as any
 
       await requireAuth()(mockContext as Context, mockNext)
@@ -153,11 +159,11 @@ describe('Auth Middleware', () => {
         key: 'test-api-key',
         tier: 'pro',
         rate_limit: 10000,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       }
 
       mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(JSON.stringify(mockKeyData))
+        get: vi.fn().mockResolvedValue(JSON.stringify(mockKeyData)),
       } as any
 
       const result = await validateAPIKey('test-api-key', mockEnv)
@@ -168,7 +174,7 @@ describe('Auth Middleware', () => {
 
     it('should return null for invalid API key', async () => {
       mockEnv.CACHE = {
-        get: vi.fn().mockResolvedValue(null)
+        get: vi.fn().mockResolvedValue(null),
       } as any
 
       const result = await validateAPIKey('invalid-key', mockEnv)
@@ -178,7 +184,7 @@ describe('Auth Middleware', () => {
 
     it('should handle cache errors gracefully', async () => {
       mockEnv.CACHE = {
-        get: vi.fn().mockRejectedValue(new Error('Cache error'))
+        get: vi.fn().mockRejectedValue(new Error('Cache error')),
       } as any
 
       const result = await validateAPIKey('test-api-key', mockEnv)

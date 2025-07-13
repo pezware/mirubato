@@ -7,7 +7,7 @@ import { DictionaryEntry } from '../../types/dictionary'
 
 export class CacheService {
   private readonly DEFAULT_TTL = 3600 // 1 hour
-  
+
   constructor(
     private kv: KVNamespace,
     private env: Env
@@ -26,13 +26,13 @@ export class CacheService {
   async cacheTerm(term: string, entry: DictionaryEntry): Promise<void> {
     const key = this.getTermKey(term)
     await this.kv.put(key, JSON.stringify(entry), {
-      expirationTtl: this.getTTL()
+      expirationTtl: this.getTTL(),
     })
 
     // Also cache by ID
     const idKey = this.getIdKey(entry.id)
     await this.kv.put(idKey, JSON.stringify(entry), {
-      expirationTtl: this.getTTL()
+      expirationTtl: this.getTTL(),
     })
   }
 
@@ -67,11 +67,11 @@ export class CacheService {
     const data = {
       results,
       total,
-      cached_at: new Date().toISOString()
+      cached_at: new Date().toISOString(),
     }
-    
+
     await this.kv.put(key, JSON.stringify(data), {
-      expirationTtl: Math.floor(this.getTTL() / 2) // Shorter TTL for search results
+      expirationTtl: Math.floor(this.getTTL() / 2), // Shorter TTL for search results
     })
   }
 
@@ -81,31 +81,34 @@ export class CacheService {
   async getCachedSearchResults(
     query: string,
     filters: Record<string, unknown>
-  ): Promise<{ results: DictionaryEntry[], total: number } | null> {
+  ): Promise<{ results: DictionaryEntry[]; total: number } | null> {
     const key = this.getSearchKey(query, filters)
-    const cached = await this.kv.get(key, 'json') as any
-    
+    const cached = (await this.kv.get(key, 'json')) as any
+
     if (cached) {
       return {
         results: cached.results,
-        total: cached.total
+        total: cached.total,
       }
     }
-    
+
     return null
   }
 
   /**
    * Cache batch query results
    */
-  async cacheBatch(terms: string[], entries: Map<string, DictionaryEntry>): Promise<void> {
+  async cacheBatch(
+    terms: string[],
+    entries: Map<string, DictionaryEntry>
+  ): Promise<void> {
     // Cache individual entries
     const promises: Promise<void>[] = []
-    
+
     for (const [normalizedTerm, entry] of entries) {
       promises.push(this.cacheTerm(normalizedTerm, entry))
     }
-    
+
     await Promise.all(promises)
   }
 
@@ -115,7 +118,7 @@ export class CacheService {
   async cacheEmbedding(term: string, embedding: number[]): Promise<void> {
     const key = this.getEmbeddingKey(term)
     await this.kv.put(key, JSON.stringify(embedding), {
-      expirationTtl: this.getTTL() * 24 // Longer TTL for embeddings
+      expirationTtl: this.getTTL() * 24, // Longer TTL for embeddings
     })
   }
 
@@ -134,7 +137,7 @@ export class CacheService {
   async cacheExport(exportId: string, data: any): Promise<void> {
     const key = this.getExportKey(exportId)
     await this.kv.put(key, JSON.stringify(data), {
-      expirationTtl: 3600 * 24 // 24 hours for exports
+      expirationTtl: 3600 * 24, // 24 hours for exports
     })
   }
 
@@ -176,7 +179,7 @@ export class CacheService {
    * Warm cache with popular terms
    */
   async warmCache(entries: DictionaryEntry[]): Promise<void> {
-    const promises = entries.map(entry => 
+    const promises = entries.map(entry =>
       this.cacheTerm(entry.normalized_term, entry)
     )
     await Promise.all(promises)
@@ -195,14 +198,14 @@ export class CacheService {
       this.kv.list({ prefix: 'term:', limit: 1000 }),
       this.kv.list({ prefix: 'search:', limit: 1000 }),
       this.kv.list({ prefix: 'embedding:', limit: 1000 }),
-      this.kv.list({ prefix: 'export:', limit: 1000 })
+      this.kv.list({ prefix: 'export:', limit: 1000 }),
     ])
 
     return {
       terms: terms.keys.length,
       searches: searches.keys.length,
       embeddings: embeddings.keys.length,
-      exports: exports.keys.length
+      exports: exports.keys.length,
     }
   }
 
@@ -217,7 +220,10 @@ export class CacheService {
     return `id:${id}`
   }
 
-  private getSearchKey(query: string, filters: Record<string, unknown>): string {
+  private getSearchKey(
+    query: string,
+    filters: Record<string, unknown>
+  ): string {
     const filterStr = filters ? JSON.stringify(filters) : ''
     return `search:${query.toLowerCase().trim()}:${filterStr}`
   }

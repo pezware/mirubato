@@ -29,21 +29,26 @@ export function cache(options: CacheOptions = {}) {
     }
 
     const cacheService = new CacheService(c.env.CACHE, c.env)
-    
+
     // Generate cache key
-    const cacheKey = options.key 
+    const cacheKey = options.key
       ? options.key(c)
       : generateCacheKey(c, options.varyBy)
 
     // Try to get from cache
     try {
       const cached = await c.env.CACHE.get(cacheKey, 'json')
-      
-      if (cached && typeof cached === 'object' && 'data' in cached && 'headers' in cached) {
+
+      if (
+        cached &&
+        typeof cached === 'object' &&
+        'data' in cached &&
+        'headers' in cached
+      ) {
         // Add cache headers
         c.header('X-Cache', 'HIT')
         c.header('X-Cache-Key', cacheKey)
-        
+
         // Restore cached headers
         const headers = cached.headers as Record<string, string>
         Object.entries(headers).forEach(([key, value]) => {
@@ -51,7 +56,7 @@ export function cache(options: CacheOptions = {}) {
             c.header(key, value)
           }
         })
-        
+
         return c.json(cached.data as any)
       }
     } catch (error) {
@@ -63,7 +68,10 @@ export function cache(options: CacheOptions = {}) {
     await next()
 
     // Don't cache errors or non-JSON responses
-    if (c.res.status >= 400 || !c.res.headers.get('content-type')?.includes('application/json')) {
+    if (
+      c.res.status >= 400 ||
+      !c.res.headers.get('content-type')?.includes('application/json')
+    ) {
       c.header('X-Cache', 'SKIP')
       return
     }
@@ -72,11 +80,11 @@ export function cache(options: CacheOptions = {}) {
     try {
       const response = await c.res.clone()
       const data = await response.json()
-      
+
       // Capture relevant headers
       const headers: Record<string, string> = {}
       const headersToCache = ['content-type', 'etag', 'last-modified']
-      
+
       headersToCache.forEach(header => {
         const value = c.res.headers.get(header)
         if (value) headers[header] = value
@@ -100,15 +108,22 @@ export function cache(options: CacheOptions = {}) {
 /**
  * Cache invalidation middleware
  */
-export function invalidateCache(patterns: string[] | ((c: Context) => string[])) {
+export function invalidateCache(
+  patterns: string[] | ((c: Context) => string[])
+) {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
     await next()
 
     // Only invalidate on successful mutations
-    if (c.res.status >= 200 && c.res.status < 300 && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(c.req.method)) {
+    if (
+      c.res.status >= 200 &&
+      c.res.status < 300 &&
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(c.req.method)
+    ) {
       try {
         const cacheService = new CacheService(c.env.CACHE, c.env)
-        const keysToInvalidate = typeof patterns === 'function' ? patterns(c) : patterns
+        const keysToInvalidate =
+          typeof patterns === 'function' ? patterns(c) : patterns
 
         // Invalidate each pattern
         for (const pattern of keysToInvalidate) {
@@ -133,12 +148,14 @@ export function invalidateCache(patterns: string[] | ((c: Context) => string[]))
 /**
  * Edge cache headers middleware
  */
-export function edgeCache(options: {
-  maxAge?: number
-  sMaxAge?: number
-  staleWhileRevalidate?: number
-  public?: boolean
-} = {}) {
+export function edgeCache(
+  options: {
+    maxAge?: number
+    sMaxAge?: number
+    staleWhileRevalidate?: number
+    public?: boolean
+  } = {}
+) {
   return async (c: Context, next: Next) => {
     await next()
 
@@ -174,10 +191,7 @@ export function edgeCache(options: {
  */
 function generateCacheKey(c: Context, varyBy?: string[]): string {
   const url = new URL(c.req.url)
-  const parts = [
-    c.req.method,
-    url.pathname
-  ]
+  const parts = [c.req.method, url.pathname]
 
   // Add query parameters
   if (url.search) {

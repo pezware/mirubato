@@ -1,12 +1,12 @@
 import { Hono } from 'hono'
 import { Env } from '../../types/env'
 import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
-import { 
-  HealthCheckResponse, 
-  ServiceHealth, 
-  AIServiceHealth, 
+import {
+  HealthCheckResponse,
+  ServiceHealth,
+  AIServiceHealth,
   SmokeTestResults,
-  AIModelHealth 
+  AIModelHealth,
 } from '../../types/api'
 
 export const healthHandler = new Hono<{ Bindings: Env }>()
@@ -14,7 +14,7 @@ export const healthHandler = new Hono<{ Bindings: Env }>()
 /**
  * Liveness probe - simple check that service is alive
  */
-healthHandler.get('/livez', (c) => {
+healthHandler.get('/livez', c => {
   return c.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -24,7 +24,7 @@ healthHandler.get('/livez', (c) => {
 /**
  * Readiness probe - check if service is ready to handle requests
  */
-healthHandler.get('/readyz', async (c) => {
+healthHandler.get('/readyz', async c => {
   try {
     // Check database connection
     await c.env.DB.prepare('SELECT 1').first()
@@ -37,18 +37,26 @@ healthHandler.get('/readyz', async (c) => {
 /**
  * Comprehensive health check with smoke tests
  */
-healthHandler.get('/health', async (c) => {
+healthHandler.get('/health', async c => {
   const startTime = Date.now()
 
   // Run all health checks in parallel for better performance
-  const [database, cache, storage, cloudflareAI, openAI, anthropic, smokeTests] = await Promise.all([
+  const [
+    database,
+    cache,
+    storage,
+    cloudflareAI,
+    openAI,
+    anthropic,
+    smokeTests,
+  ] = await Promise.all([
     checkDatabase(c.env.DB),
     checkCache(c.env.CACHE),
     checkStorage(c.env.STORAGE),
     checkCloudflareAI(c.env),
     checkOpenAI(c.env.OPENAI_API_KEY),
     checkAnthropic(c.env.ANTHROPIC_API_KEY),
-    runSmokeTests(c.env)
+    runSmokeTests(c.env),
   ])
 
   const checks = {
@@ -58,9 +66,9 @@ healthHandler.get('/health', async (c) => {
     ai: {
       cloudflare: cloudflareAI,
       openai: openAI,
-      anthropic: anthropic
+      anthropic: anthropic,
     } as AIServiceHealth,
-    smokeTests
+    smokeTests,
   }
 
   const allHealthy = Object.values(checks).every(check => {
@@ -78,7 +86,7 @@ healthHandler.get('/health', async (c) => {
     environment: c.env.ENVIRONMENT || 'production',
     timestamp: new Date().toISOString(),
     totalLatency: Date.now() - startTime,
-    services: checks
+    services: checks,
   }
 
   return c.json(response, allHealthy ? 200 : 503)
@@ -87,14 +95,16 @@ healthHandler.get('/health', async (c) => {
 /**
  * Detailed health check with extended information
  */
-healthHandler.get('/health/detailed', async (c) => {
+healthHandler.get('/health/detailed', async c => {
   const startTime = Date.now()
 
   // Get system information
   const systemInfo = {
     cloudflareRay: c.req.header('CF-Ray'),
     colo: c.req.header('CF-IPCountry'),
-    requestId: c.req.header('X-Request-Id') || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    requestId:
+      c.req.header('X-Request-Id') ||
+      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
   }
 
   // Run extended checks
@@ -102,7 +112,7 @@ healthHandler.get('/health/detailed', async (c) => {
     checkDatabaseTables(c.env.DB),
     checkCacheStats(c.env.CACHE),
     testAllAIModels(c.env),
-    checkDependencies(c.env)
+    checkDependencies(c.env),
   ])
 
   return c.json({
@@ -125,8 +135,8 @@ healthHandler.get('/health/detailed', async (c) => {
       providers: {
         cloudflare: !!c.env.AI,
         openai: !!c.env.OPENAI_API_KEY,
-        anthropic: !!c.env.ANTHROPIC_API_KEY
-      }
+        anthropic: !!c.env.ANTHROPIC_API_KEY,
+      },
     },
     resources: {
       memory: {
@@ -143,40 +153,46 @@ healthHandler.get('/health/detailed', async (c) => {
 /**
  * AI-specific health check endpoint
  */
-healthHandler.get('/health/ai', async (c) => {
+healthHandler.get('/health/ai', async c => {
   const models = await testAllAIModels(c.env)
-  
+
   return c.json({
-    status: models.some(m => m.status === 'healthy') ? 'operational' : 'degraded',
+    status: models.some(m => m.status === 'healthy')
+      ? 'operational'
+      : 'degraded',
     timestamp: new Date().toISOString(),
-    models
+    models,
   })
 })
 
 /**
  * Metrics endpoint (Prometheus format)
  */
-healthHandler.get('/metrics', async (c) => {
+healthHandler.get('/metrics', async c => {
   try {
     // Get basic metrics from database
-    const metrics = await c.env.DB.prepare(`
+    const metrics = await c.env.DB.prepare(
+      `
       SELECT
         (SELECT COUNT(*) FROM dictionary_entries) as total_entries,
         (SELECT COUNT(*) FROM quality_checkpoints) as total_checkpoints,
         (SELECT COUNT(*) FROM search_analytics) as total_searches,
         (SELECT COUNT(*) FROM user_feedback) as total_feedback,
         (SELECT AVG(overall_score) FROM dictionary_entries) as avg_quality_score
-    `).first()
+    `
+    ).first()
 
     // Get AI usage metrics
-    const aiMetrics = await c.env.DB.prepare(`
+    const aiMetrics = await c.env.DB.prepare(
+      `
       SELECT 
         COUNT(*) as total_ai_requests,
         SUM(total_tokens) as total_tokens,
         SUM(cost_usd) as total_cost
       FROM ai_model_usage
       WHERE created_at > datetime('now', '-24 hours')
-    `).first()
+    `
+    ).first()
 
     // Format as Prometheus metrics
     const prometheusMetrics = `
@@ -225,7 +241,9 @@ dictionary_service_info{version="1.0.0",environment="${c.env.ENVIRONMENT}"} 1
 async function checkDatabase(db: D1Database): Promise<ServiceHealth> {
   try {
     const start = Date.now()
-    const result = await db.prepare('SELECT COUNT(*) as count FROM dictionary_entries').first()
+    const result = await db
+      .prepare('SELECT COUNT(*) as count FROM dictionary_entries')
+      .first()
     const latency = Date.now() - start
 
     return {
@@ -295,7 +313,7 @@ async function checkCloudflareAI(env: Env): Promise<ServiceHealth> {
   if (!env.AI) {
     return {
       status: 'unconfigured',
-      message: 'Cloudflare AI binding not configured'
+      message: 'Cloudflare AI binding not configured',
     }
   }
 
@@ -307,19 +325,19 @@ async function checkCloudflareAI(env: Env): Promise<ServiceHealth> {
       return {
         status: 'healthy',
         latency: testResult.latency,
-        message: 'Cloudflare AI operational'
+        message: 'Cloudflare AI operational',
       }
     } else {
       return {
         status: 'unhealthy',
-        error: testResult.error || 'AI service unavailable'
+        error: testResult.error || 'AI service unavailable',
       }
     }
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error?.toString(),
-      message: 'Cloudflare AI test failed'
+      message: 'Cloudflare AI test failed',
     }
   }
 }
@@ -328,19 +346,22 @@ async function checkOpenAI(apiKey: string | undefined): Promise<ServiceHealth> {
   if (!apiKey) {
     return {
       status: 'unconfigured',
-      message: 'OpenAI API key not configured'
+      message: 'OpenAI API key not configured',
     }
   }
 
   try {
     const start = Date.now()
-    
-    const response = await fetch('https://api.openai.com/v1/models/gpt-3.5-turbo', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+
+    const response = await fetch(
+      'https://api.openai.com/v1/models/gpt-3.5-turbo',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
       }
-    })
+    )
 
     const latency = Date.now() - start
 
@@ -348,49 +369,51 @@ async function checkOpenAI(apiKey: string | undefined): Promise<ServiceHealth> {
       return {
         status: 'healthy',
         latency,
-        message: 'OpenAI API operational'
+        message: 'OpenAI API operational',
       }
     } else {
       return {
         status: 'unhealthy',
         latency,
         httpStatus: response.status,
-        error: `API returned ${response.status}`
+        error: `API returned ${response.status}`,
       }
     }
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error?.toString(),
-      message: 'OpenAI API test failed'
+      message: 'OpenAI API test failed',
     }
   }
 }
 
-async function checkAnthropic(apiKey: string | undefined): Promise<ServiceHealth> {
+async function checkAnthropic(
+  apiKey: string | undefined
+): Promise<ServiceHealth> {
   if (!apiKey) {
     return {
       status: 'unconfigured',
-      message: 'Anthropic API key not configured'
+      message: 'Anthropic API key not configured',
     }
   }
 
   try {
     const start = Date.now()
-    
+
     // Just check if we can access the API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'claude-3-haiku-20240307',
         messages: [{ role: 'user', content: 'Hi' }],
-        max_tokens: 1
-      })
+        max_tokens: 1,
+      }),
     })
 
     const latency = Date.now() - start
@@ -402,21 +425,21 @@ async function checkAnthropic(apiKey: string | undefined): Promise<ServiceHealth
       return {
         status: response.ok ? 'healthy' : 'unhealthy',
         latency,
-        message: response.ok ? 'Anthropic API operational' : 'Invalid API key'
+        message: response.ok ? 'Anthropic API operational' : 'Invalid API key',
       }
     } else {
       return {
         status: 'unhealthy',
         latency,
         httpStatus: response.status,
-        error: `API returned ${response.status}`
+        error: `API returned ${response.status}`,
       }
     }
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error?.toString(),
-      message: 'Anthropic API test failed'
+      message: 'Anthropic API test failed',
     }
   }
 }
@@ -426,7 +449,7 @@ async function runSmokeTests(env: Env): Promise<SmokeTestResults> {
     definition_generation: false,
     quality_validation: false,
     reference_extraction: false,
-    multi_model_fallback: false
+    multi_model_fallback: false,
   }
 
   try {
@@ -478,24 +501,31 @@ async function runSmokeTests(env: Env): Promise<SmokeTestResults> {
     let fallbackWorked = false
     try {
       // Try primary model
-      await aiService.generateStructuredContent('Test', '@cf/meta/llama-3.1-8b-instruct', { max_tokens: 10 })
+      await aiService.generateStructuredContent(
+        'Test',
+        '@cf/meta/llama-3.1-8b-instruct',
+        { max_tokens: 10 }
+      )
       fallbackWorked = true
     } catch {
       // Try fallback with OpenAI if available
       if (env.OPENAI_API_KEY) {
         try {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: 'gpt-3.5-turbo',
-              messages: [{ role: 'user', content: 'Test' }],
-              max_tokens: 10
-            })
-          })
+          const response = await fetch(
+            'https://api.openai.com/v1/chat/completions',
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [{ role: 'user', content: 'Test' }],
+                max_tokens: 10,
+              }),
+            }
+          )
           fallbackWorked = response.ok
         } catch {
           fallbackWorked = false
@@ -509,13 +539,13 @@ async function runSmokeTests(env: Env): Promise<SmokeTestResults> {
     return {
       status: allPassed ? 'healthy' : 'degraded',
       tests,
-      message: allPassed ? 'All smoke tests passed' : 'Some smoke tests failed'
+      message: allPassed ? 'All smoke tests passed' : 'Some smoke tests failed',
     }
   } catch (error) {
     return {
       status: 'unhealthy',
       tests,
-      message: error?.toString() || 'Smoke tests failed'
+      message: error?.toString() || 'Smoke tests failed',
     }
   }
 }
@@ -529,12 +559,15 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Llama 3.1 8B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct' as any, {
-          prompt: 'Test',
-          max_tokens: 10
-        } as any) as any
+        const response = (await env.AI.run(
+          '@cf/meta/llama-3.1-8b-instruct' as any,
+          {
+            prompt: 'Test',
+            max_tokens: 10,
+          } as any
+        )) as any
         if (!response.response) throw new Error('No response')
-      }
+      },
     },
     {
       provider: 'cloudflare',
@@ -542,12 +575,15 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Mistral 7B v0.2',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = await env.AI.run('@cf/mistral/mistral-7b-instruct-v0.2' as any, {
-          prompt: 'Test',
-          max_tokens: 10
-        } as any) as any
+        const response = (await env.AI.run(
+          '@cf/mistral/mistral-7b-instruct-v0.2' as any,
+          {
+            prompt: 'Test',
+            max_tokens: 10,
+          } as any
+        )) as any
         if (!response.response) throw new Error('No response')
-      }
+      },
     },
     {
       provider: 'cloudflare',
@@ -555,12 +591,15 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'Gemma 7B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
-        const response = await env.AI.run('@cf/google/gemma-7b-it' as any, {
-          prompt: 'Test',
-          max_tokens: 10
-        } as any) as any
+        const response = (await env.AI.run(
+          '@cf/google/gemma-7b-it' as any,
+          {
+            prompt: 'Test',
+            max_tokens: 10,
+          } as any
+        )) as any
         if (!response.response) throw new Error('No response')
-      }
+      },
     },
     // External APIs
     {
@@ -569,11 +608,14 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
       name: 'GPT-3.5 Turbo',
       test: async () => {
         if (!env.OPENAI_API_KEY) throw new Error('No API key')
-        const response = await fetch('https://api.openai.com/v1/models/gpt-3.5-turbo', {
-          headers: { 'Authorization': `Bearer ${env.OPENAI_API_KEY}` }
-        })
+        const response = await fetch(
+          'https://api.openai.com/v1/models/gpt-3.5-turbo',
+          {
+            headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+          }
+        )
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      }
+      },
     },
     {
       provider: 'anthropic',
@@ -587,40 +629,42 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
           headers: {
             'x-api-key': env.ANTHROPIC_API_KEY,
             'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             model: 'claude-3-haiku-20240307',
             messages: [{ role: 'user', content: 'Test' }],
-            max_tokens: 1
-          })
+            max_tokens: 1,
+          }),
         })
         // Don't throw on 401 - just means key is invalid
         if (!response.ok && response.status !== 401) {
           throw new Error(`HTTP ${response.status}`)
         }
-      }
-    }
+      },
+    },
   ]
 
-  return Promise.all(models.map(async model => {
-    const startTime = Date.now()
-    try {
-      await model.test()
-      return {
-        ...model,
-        status: 'healthy' as const,
-        latency: Date.now() - startTime
+  return Promise.all(
+    models.map(async model => {
+      const startTime = Date.now()
+      try {
+        await model.test()
+        return {
+          ...model,
+          status: 'healthy' as const,
+          latency: Date.now() - startTime,
+        }
+      } catch (error) {
+        return {
+          ...model,
+          status: 'unhealthy' as const,
+          latency: Date.now() - startTime,
+          error: error?.toString(),
+        }
       }
-    } catch (error) {
-      return {
-        ...model,
-        status: 'unhealthy' as const,
-        latency: Date.now() - startTime,
-        error: error?.toString()
-      }
-    }
-  }))
+    })
+  )
 }
 
 async function checkDatabaseTables(db: D1Database) {
@@ -631,13 +675,15 @@ async function checkDatabaseTables(db: D1Database) {
       'quality_checkpoints',
       'search_analytics',
       'user_feedback',
-      'ai_model_usage'
+      'ai_model_usage',
     ]
     const results: Record<string, { exists: boolean; rowCount: number }> = {}
 
     for (const table of tables) {
       try {
-        const result = await db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first()
+        const result = await db
+          .prepare(`SELECT COUNT(*) as count FROM ${table}`)
+          .first()
         results[table] = {
           exists: true,
           rowCount: Number(result?.count) || 0,

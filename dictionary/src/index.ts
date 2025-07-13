@@ -26,39 +26,45 @@ import { analyticsHandler } from './api/handlers/analytics'
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 // Global middleware
-app.use('*', cors({
-  origin: [
-    'https://mirubato.com',
-    'https://www.mirubato.com',
-    'https://mirubato-staging.com',
-    'http://localhost:3000',
-    'http://localhost:4000',
-    'http://www-mirubato.localhost:4000'
-  ],
-  credentials: true,
-  allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}))
+app.use(
+  '*',
+  cors({
+    origin: [
+      'https://mirubato.com',
+      'https://www.mirubato.com',
+      'https://mirubato-staging.com',
+      'http://localhost:3000',
+      'http://localhost:4000',
+      'http://www-mirubato.localhost:4000',
+    ],
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  })
+)
 
 app.use('*', logger())
 app.use('*', timing())
 
 // Apply tiered rate limiting to API routes
-app.use('/api/*', tieredRateLimit({
-  anonymous: {
-    windowMs: 60000,
-    max: 60,
-    message: 'Too many requests from this IP, please try again later'
-  },
-  authenticated: {
-    windowMs: 60000,
-    max: 120,
-  },
-  premium: {
-    windowMs: 60000,
-    max: 600,
-  }
-}))
+app.use(
+  '/api/*',
+  tieredRateLimit({
+    anonymous: {
+      windowMs: 60000,
+      max: 60,
+      message: 'Too many requests from this IP, please try again later',
+    },
+    authenticated: {
+      windowMs: 60000,
+      max: 120,
+    },
+    premium: {
+      windowMs: 60000,
+      max: 600,
+    },
+  })
+)
 
 // Error handling
 app.onError(errorHandler)
@@ -93,7 +99,7 @@ v1.route('/admin', adminHandler)
 app.route('/api/v1', v1)
 
 // Root endpoint
-app.get('/', (c) => {
+app.get('/', c => {
   return c.json({
     service: 'Music Dictionary API',
     version: '1.0.0',
@@ -109,23 +115,26 @@ app.get('/', (c) => {
           export: '/api/v1/export',
           enhance: '/api/v1/enhance (auth required)',
           admin: '/api/v1/admin (auth required)',
-          analytics: '/api/v1/analytics/summary'
-        }
-      }
-    }
+          analytics: '/api/v1/analytics/summary',
+        },
+      },
+    },
   })
 })
 
 // 404 handler
-app.notFound((c) => {
-  return c.json({
-    status: 'error',
-    error: {
-      code: 'NOT_FOUND',
-      message: 'The requested endpoint does not exist',
-      timestamp: new Date().toISOString()
-    }
-  }, 404)
+app.notFound(c => {
+  return c.json(
+    {
+      status: 'error',
+      error: {
+        code: 'NOT_FOUND',
+        message: 'The requested endpoint does not exist',
+        timestamp: new Date().toISOString(),
+      },
+    },
+    404
+  )
 })
 
 export default app

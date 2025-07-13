@@ -10,21 +10,21 @@ describe('CloudflareAIService', () => {
   beforeEach(() => {
     mockEnv = {
       AI: {
-        run: vi.fn()
+        run: vi.fn(),
       } as any,
       DB: {
         prepare: vi.fn().mockReturnValue({
           bind: vi.fn().mockReturnValue({
-            run: vi.fn()
-          })
-        })
+            run: vi.fn(),
+          }),
+        }),
       } as any,
       CACHE: {} as any,
       STORAGE: {} as any,
       QUALITY_THRESHOLD: '70',
       CACHE_TTL: '3600',
       ENVIRONMENT: 'test',
-      API_SERVICE_URL: 'http://localhost:8787'
+      API_SERVICE_URL: 'http://localhost:8787',
     }
 
     service = new CloudflareAIService(mockEnv)
@@ -33,7 +33,7 @@ describe('CloudflareAIService', () => {
   describe('generateStructuredContent', () => {
     it('should generate structured content successfully', async () => {
       const mockResponse = {
-        response: '{"definition": "A piano is a keyboard instrument."}'
+        response: '{"definition": "A piano is a keyboard instrument."}',
       }
       ;(mockEnv.AI.run as any).mockResolvedValue(mockResponse)
 
@@ -47,13 +47,16 @@ describe('CloudflareAIService', () => {
       expect(result.latency_ms).toBeDefined()
       expect(result.cached).toBe(false)
 
-      expect(mockEnv.AI.run).toHaveBeenCalledWith('@cf/meta/llama-3.1-8b-instruct', {
-        prompt: expect.stringContaining('Define piano'),
-        max_tokens: 500,
-        temperature: 0.3,
-        top_p: 0.9,
-        stream: false
-      })
+      expect(mockEnv.AI.run).toHaveBeenCalledWith(
+        '@cf/meta/llama-3.1-8b-instruct',
+        {
+          prompt: expect.stringContaining('Define piano'),
+          max_tokens: 500,
+          temperature: 0.3,
+          top_p: 0.9,
+          stream: false,
+        }
+      )
     })
 
     it('should handle AI service errors', async () => {
@@ -73,19 +76,23 @@ describe('CloudflareAIService', () => {
       const mockResponse = { response: '{"test": true}' }
       ;(mockEnv.AI.run as any).mockResolvedValue(mockResponse)
 
-      await service.generateStructuredContent('Test prompt', '@cf/mistral/mistral-7b', {
-        max_tokens: 1000,
-        temperature: 0.7,
-        top_p: 0.95,
-        stream: true
-      })
+      await service.generateStructuredContent(
+        'Test prompt',
+        '@cf/mistral/mistral-7b',
+        {
+          max_tokens: 1000,
+          temperature: 0.7,
+          top_p: 0.95,
+          stream: true,
+        }
+      )
 
       expect(mockEnv.AI.run).toHaveBeenCalledWith('@cf/mistral/mistral-7b', {
         prompt: expect.any(String),
         max_tokens: 1000,
         temperature: 0.7,
         top_p: 0.95,
-        stream: true
+        stream: true,
       })
     })
   })
@@ -93,31 +100,32 @@ describe('CloudflareAIService', () => {
   describe('generateEmbedding', () => {
     it('should generate embeddings successfully', async () => {
       const mockEmbedding = {
-        data: [new Array(768).fill(0.1)]
+        data: [new Array(768).fill(0.1)],
       }
       ;(mockEnv.AI.run as any).mockResolvedValue(mockEmbedding)
 
-      const result = await service.generateEmbedding('piano keyboard instrument')
+      const result = await service.generateEmbedding(
+        'piano keyboard instrument'
+      )
 
       expect(result).toEqual(mockEmbedding.data[0])
       expect(result).toHaveLength(768)
-      expect(mockEnv.AI.run).toHaveBeenCalledWith(
-        '@cf/baai/bge-base-en-v1.5',
-        { text: 'piano keyboard instrument' }
-      )
+      expect(mockEnv.AI.run).toHaveBeenCalledWith('@cf/baai/bge-base-en-v1.5', {
+        text: 'piano keyboard instrument',
+      })
     })
 
     it('should handle embedding generation errors', async () => {
-      (mockEnv.AI.run as any).mockRejectedValue(new Error('Embedding failed'))
+      ;(mockEnv.AI.run as any).mockRejectedValue(new Error('Embedding failed'))
 
-      await expect(
-        service.generateEmbedding('test text')
-      ).rejects.toThrow(AIServiceError)
+      await expect(service.generateEmbedding('test text')).rejects.toThrow(
+        AIServiceError
+      )
     })
 
     it('should use custom embedding model', async () => {
       const mockEmbedding = {
-        data: [new Array(1024).fill(0.2)]
+        data: [new Array(1024).fill(0.2)],
       }
       ;(mockEnv.AI.run as any).mockResolvedValue(mockEmbedding)
 
@@ -138,11 +146,11 @@ describe('CloudflareAIService', () => {
         'Define violin',
         'Define drums',
         'Define flute',
-        'Define saxophone'
+        'Define saxophone',
       ]
 
       const mockResponses = prompts.map((_, i) => ({
-        response: `{"definition": "Definition ${i}"}`
+        response: `{"definition": "Definition ${i}"}`,
       }))
 
       let callCount = 0
@@ -154,7 +162,7 @@ describe('CloudflareAIService', () => {
 
       expect(results).toHaveLength(6)
       expect(mockEnv.AI.run).toHaveBeenCalledTimes(6)
-      
+
       // Should process in batches of 5
       expect(results.map(r => r.response)).toEqual(
         mockResponses.map(r => r.response)
@@ -163,7 +171,7 @@ describe('CloudflareAIService', () => {
 
     it('should handle partial batch failures gracefully', async () => {
       const prompts = ['prompt1', 'prompt2', 'prompt3']
-      
+
       ;(mockEnv.AI.run as any)
         .mockResolvedValueOnce({ response: '{"success": true}' })
         .mockRejectedValueOnce(new Error('AI error'))
@@ -171,7 +179,7 @@ describe('CloudflareAIService', () => {
 
       // The batchGenerate method uses allSettled so it doesn't throw
       const results = await service.batchGenerate(prompts)
-      
+
       expect(results).toHaveLength(3)
       expect(results[0].response).toBe('{"success": true}')
       expect(results[1].error).toBe('Cloudflare AI generation failed: AI error')
@@ -181,8 +189,8 @@ describe('CloudflareAIService', () => {
 
   describe('testConnection', () => {
     it('should test AI connection availability', async () => {
-      (mockEnv.AI.run as any).mockResolvedValue({
-        response: '{"status": "OK"}'
+      ;(mockEnv.AI.run as any).mockResolvedValue({
+        response: '{"status": "OK"}',
       })
 
       const result = await service.testConnection()
@@ -193,7 +201,9 @@ describe('CloudflareAIService', () => {
     })
 
     it('should handle connection test failures', async () => {
-      (mockEnv.AI.run as any).mockRejectedValue(new Error('Model not available'))
+      ;(mockEnv.AI.run as any).mockRejectedValue(
+        new Error('Model not available')
+      )
 
       const result = await service.testConnection()
 
@@ -202,7 +212,10 @@ describe('CloudflareAIService', () => {
     })
 
     it('should handle missing AI binding', async () => {
-      const serviceWithoutAI = new CloudflareAIService({ ...mockEnv, AI: undefined } as any)
+      const serviceWithoutAI = new CloudflareAIService({
+        ...mockEnv,
+        AI: undefined,
+      } as any)
       const result = await serviceWithoutAI.testConnection()
 
       expect(result.available).toBe(false)
@@ -213,7 +226,9 @@ describe('CloudflareAIService', () => {
   describe('parseJSONResponse', () => {
     it('should parse clean JSON', () => {
       const jsonString = '{"key": "value", "number": 42}'
-      const result = service.parseJSONResponse<{ key: string; number: number }>(jsonString)
+      const result = service.parseJSONResponse<{ key: string; number: number }>(
+        jsonString
+      )
 
       expect(result).toEqual({ key: 'value', number: 42 })
     })
@@ -226,7 +241,8 @@ describe('CloudflareAIService', () => {
     })
 
     it('should handle JSON with extra text', () => {
-      const jsonWithText = 'Here is the response: {"key": "value"} and some more text'
+      const jsonWithText =
+        'Here is the response: {"key": "value"} and some more text'
       const result = service.parseJSONResponse(jsonWithText)
 
       expect(result).toEqual({ key: 'value' })
@@ -240,11 +256,15 @@ describe('CloudflareAIService', () => {
     })
 
     it('should throw on invalid JSON', () => {
-      expect(() => service.parseJSONResponse('not json')).toThrow('Failed to parse AI response as JSON')
+      expect(() => service.parseJSONResponse('not json')).toThrow(
+        'Failed to parse AI response as JSON'
+      )
     })
 
     it('should throw on empty response', () => {
-      expect(() => service.parseJSONResponse('')).toThrow('Empty response from AI model')
+      expect(() => service.parseJSONResponse('')).toThrow(
+        'Empty response from AI model'
+      )
     })
   })
 
@@ -274,7 +294,7 @@ describe('CloudflareAIService', () => {
         completion_tokens: 20,
         total_tokens: 30,
         latency_ms: 500,
-        success: true
+        success: true,
       }
 
       await (service as any).logUsage(usage)
@@ -285,10 +305,10 @@ describe('CloudflareAIService', () => {
     })
 
     it('should handle logging errors gracefully', async () => {
-      (mockEnv.DB.prepare as any).mockReturnValue({
+      ;(mockEnv.DB.prepare as any).mockReturnValue({
         bind: vi.fn().mockReturnValue({
-          run: vi.fn().mockRejectedValue(new Error('DB error'))
-        })
+          run: vi.fn().mockRejectedValue(new Error('DB error')),
+        }),
       })
 
       // Should not throw

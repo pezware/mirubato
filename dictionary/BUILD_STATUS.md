@@ -3,6 +3,7 @@
 ## What We Fixed
 
 ### Phase 1: Configuration & Build Setup ✅
+
 1. **Package.json Configuration**
    - Aligned with scores service pattern
    - Added proper build and lint scripts
@@ -73,14 +74,18 @@ These mismatches won't prevent the service from running but indicate the analyti
 ## Next Steps
 
 ### Option 1: Quick Fix (Recommended for MVP)
+
 Add type assertions to bypass the property errors:
+
 ```typescript
 // In analytics handler
 const searchData = await db.getSearchAnalytics({...}) as any
 ```
 
 ### Option 2: Full Implementation
+
 Extend the database methods to return all expected properties, which would require:
+
 - More complex SQL queries
 - Additional database tables for metrics
 - Real AI usage tracking
@@ -106,6 +111,7 @@ wrangler deploy --env staging
 ```
 
 ### Required Secrets
+
 - JWT_SECRET (must match API service) - REQUIRED
 - OPENAI_API_KEY (for fallback AI) - Optional
 - ANTHROPIC_API_KEY (for fallback AI) - Optional
@@ -114,6 +120,7 @@ wrangler deploy --env staging
 ## Summary
 
 The dictionary service now has:
+
 - ✅ Proper build configuration matching scores service
 - ✅ All database methods implemented (some with basic/stub data)
 - ✅ All handlers using real database methods

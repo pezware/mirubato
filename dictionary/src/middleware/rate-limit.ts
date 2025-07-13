@@ -7,12 +7,12 @@ import { Env } from '../types/env'
 import { HTTPException } from 'hono/http-exception'
 
 export interface RateLimitOptions {
-  windowMs?: number      // Time window in milliseconds
-  max?: number          // Max requests per window
+  windowMs?: number // Time window in milliseconds
+  max?: number // Max requests per window
   keyGenerator?: (c: Context) => string
   skip?: (c: Context) => boolean
   handler?: (c: Context) => Response | Promise<Response>
-  headers?: boolean     // Send rate limit headers
+  headers?: boolean // Send rate limit headers
   message?: string
 }
 
@@ -21,13 +21,13 @@ export interface RateLimitOptions {
  */
 export function rateLimit(options: RateLimitOptions = {}) {
   const {
-    windowMs = 60000,  // 1 minute default
-    max = 100,         // 100 requests per window
+    windowMs = 60000, // 1 minute default
+    max = 100, // 100 requests per window
     keyGenerator,
     skip,
     handler,
     headers = true,
-    message = 'Too many requests, please try again later'
+    message = 'Too many requests, please try again later',
   } = options
 
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
@@ -42,9 +42,12 @@ export function rateLimit(options: RateLimitOptions = {}) {
 
     try {
       // Get current count
-      const record = await c.env.CACHE.get(rateLimitKey, 'json') as RateLimitRecord | null
+      const record = (await c.env.CACHE.get(
+        rateLimitKey,
+        'json'
+      )) as RateLimitRecord | null
       const now = Date.now()
-      
+
       let count = 0
       let resetTime = now + windowMs
 
@@ -67,7 +70,10 @@ export function rateLimit(options: RateLimitOptions = {}) {
           c.header('X-RateLimit-Limit', max.toString())
           c.header('X-RateLimit-Remaining', '0')
           c.header('X-RateLimit-Reset', new Date(resetTime).toISOString())
-          c.header('Retry-After', Math.ceil((resetTime - now) / 1000).toString())
+          c.header(
+            'Retry-After',
+            Math.ceil((resetTime - now) / 1000).toString()
+          )
         }
 
         // Use custom handler if provided
@@ -78,11 +84,14 @@ export function rateLimit(options: RateLimitOptions = {}) {
         // Default rate limit response
         throw new HTTPException(429, {
           message,
-          res: c.json({
-            error: 'Too Many Requests',
-            message,
-            retryAfter: Math.ceil((resetTime - now) / 1000)
-          }, 429)
+          res: c.json(
+            {
+              error: 'Too Many Requests',
+              message,
+              retryAfter: Math.ceil((resetTime - now) / 1000),
+            },
+            429
+          ),
         })
       }
 
@@ -150,15 +159,21 @@ export function tieredRateLimit(tiers: {
 /**
  * API key based rate limiting
  */
-export function apiKeyRateLimit(options: RateLimitOptions & {
-  apiKeyHeader?: string
-  apiKeyLimits?: Record<string, number>
-} = {}) {
-  const { apiKeyHeader = 'X-API-Key', apiKeyLimits = {}, ...rateLimitOptions } = options
+export function apiKeyRateLimit(
+  options: RateLimitOptions & {
+    apiKeyHeader?: string
+    apiKeyLimits?: Record<string, number>
+  } = {}
+) {
+  const {
+    apiKeyHeader = 'X-API-Key',
+    apiKeyLimits = {},
+    ...rateLimitOptions
+  } = options
 
   return rateLimit({
     ...rateLimitOptions,
-    keyGenerator: (c) => {
+    keyGenerator: c => {
       const apiKey = c.req.header(apiKeyHeader)
       if (apiKey && apiKeyLimits[apiKey]) {
         // Use API key specific limit
@@ -167,7 +182,7 @@ export function apiKeyRateLimit(options: RateLimitOptions & {
       // Fall back to default key generation
       return generateDefaultKey(c)
     },
-    max: rateLimitOptions.max || 100
+    max: rateLimitOptions.max || 100,
   } as RateLimitOptions)
 }
 
@@ -180,7 +195,7 @@ export function slidingWindowRateLimit(options: RateLimitOptions = {}) {
     max = 100,
     keyGenerator,
     skip,
-    headers = true
+    headers = true,
   } = options
 
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
@@ -197,7 +212,7 @@ export function slidingWindowRateLimit(options: RateLimitOptions = {}) {
       // Get all request timestamps in the current window
       const requests: number[] = []
       const list = await c.env.CACHE.list({ prefix: `${baseKey}:` })
-      
+
       for (const key of list.keys) {
         const timestamp = parseInt(key.name.split(':').pop() || '0')
         if (timestamp > windowStart) {
@@ -225,12 +240,15 @@ export function slidingWindowRateLimit(options: RateLimitOptions = {}) {
       // Add current request
       const requestKey = `${baseKey}:${now}`
       await c.env.CACHE.put(requestKey, '1', {
-        expirationTtl: Math.ceil(windowMs / 1000)
+        expirationTtl: Math.ceil(windowMs / 1000),
       })
 
       if (headers) {
         c.header('X-RateLimit-Limit', max.toString())
-        c.header('X-RateLimit-Remaining', (max - requests.length - 1).toString())
+        c.header(
+          'X-RateLimit-Remaining',
+          (max - requests.length - 1).toString()
+        )
       }
 
       await next()
@@ -261,10 +279,11 @@ function generateDefaultKey(c: Context): string {
   }
 
   // Fall back to IP address
-  const ip = c.req.header('CF-Connecting-IP') || 
-             c.req.header('X-Forwarded-For')?.split(',')[0] || 
-             'unknown'
-  
+  const ip =
+    c.req.header('CF-Connecting-IP') ||
+    c.req.header('X-Forwarded-For')?.split(',')[0] ||
+    'unknown'
+
   return `ip:${ip}`
 }
 
@@ -276,35 +295,44 @@ interface RateLimitRecord {
 /**
  * Progressive rate limiting that increases delays for repeated violations
  */
-export function progressiveRateLimit(options: RateLimitOptions & {
-  backoffMultiplier?: number
-  maxBackoff?: number
-} = {}) {
+export function progressiveRateLimit(
+  options: RateLimitOptions & {
+    backoffMultiplier?: number
+    maxBackoff?: number
+  } = {}
+) {
   const { backoffMultiplier = 2, maxBackoff = 300000, ...baseOptions } = options
 
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
-    const key = baseOptions.keyGenerator ? baseOptions.keyGenerator(c) : generateDefaultKey(c)
+    const key = baseOptions.keyGenerator
+      ? baseOptions.keyGenerator(c)
+      : generateDefaultKey(c)
     const violationKey = `violations:${key}`
 
     try {
       // Check for previous violations
-      const violations = await c.env.CACHE.get(violationKey, 'json') as ViolationRecord | null
-      
+      const violations = (await c.env.CACHE.get(
+        violationKey,
+        'json'
+      )) as ViolationRecord | null
+
       if (violations && violations.backoffUntil > Date.now()) {
-        const remainingBackoff = Math.ceil((violations.backoffUntil - Date.now()) / 1000)
-        
+        const remainingBackoff = Math.ceil(
+          (violations.backoffUntil - Date.now()) / 1000
+        )
+
         c.header('Retry-After', remainingBackoff.toString())
         throw new HTTPException(429, {
-          message: `Rate limit exceeded. Backoff period active: ${remainingBackoff}s remaining`
+          message: `Rate limit exceeded. Backoff period active: ${remainingBackoff}s remaining`,
         })
       }
 
       // Apply base rate limiting
       const baseMiddleware = rateLimit(baseOptions)
-      
+
       try {
         await baseMiddleware(c, next)
-        
+
         // Clear violations on successful request
         if (violations) {
           await c.env.CACHE.delete(violationKey)
@@ -314,26 +342,28 @@ export function progressiveRateLimit(options: RateLimitOptions & {
           // Rate limit exceeded - apply progressive backoff
           const currentViolations = violations?.count || 0
           const newBackoff = Math.min(
-            (baseOptions.windowMs || 60000) * Math.pow(backoffMultiplier, currentViolations),
+            (baseOptions.windowMs || 60000) *
+              Math.pow(backoffMultiplier, currentViolations),
             maxBackoff
           )
-          
+
           const newViolation: ViolationRecord = {
             count: currentViolations + 1,
             backoffUntil: Date.now() + newBackoff,
-            lastViolation: Date.now()
+            lastViolation: Date.now(),
           }
-          
-          await c.env.CACHE.put(
-            violationKey,
-            JSON.stringify(newViolation),
-            { expirationTtl: Math.ceil(newBackoff / 1000) }
-          )
-          
+
+          await c.env.CACHE.put(violationKey, JSON.stringify(newViolation), {
+            expirationTtl: Math.ceil(newBackoff / 1000),
+          })
+
           c.header('X-RateLimit-Violation-Count', newViolation.count.toString())
-          c.header('X-RateLimit-Backoff-Until', new Date(newViolation.backoffUntil).toISOString())
+          c.header(
+            'X-RateLimit-Backoff-Until',
+            new Date(newViolation.backoffUntil).toISOString()
+          )
         }
-        
+
         throw error
       }
     } catch (error) {

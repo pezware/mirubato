@@ -17,22 +17,36 @@ export const CLOUDFLARE_AI_MODELS: CloudflareAIModels = {
       presence_penalty: 0.1,
       cost_per_million_tokens: 0.04,
       latency_estimate_ms: 500,
-      strengths: ['Structured output', 'Musical knowledge', 'JSON formatting', 'Multi-language'],
-      use_cases: ['definition_generation', 'content_enhancement', 'reference_extraction']
+      strengths: [
+        'Structured output',
+        'Musical knowledge',
+        'JSON formatting',
+        'Multi-language',
+      ],
+      use_cases: [
+        'definition_generation',
+        'content_enhancement',
+        'reference_extraction',
+      ],
     },
-    
+
     MISTRAL_7B: {
-      model: '@cf/mistral/mistral-7b-instruct-v0.2', 
+      model: '@cf/mistral/mistral-7b-instruct-v0.2',
       provider: 'cloudflare',
       maxTokens: 1024,
       temperature: 0.1,
       top_p: 0.95,
       cost_per_million_tokens: 0.02,
       latency_estimate_ms: 300,
-      strengths: ['Fast response', 'Good for validation', 'Efficient', 'Consistent output'],
-      use_cases: ['quality_validation', 'simple_queries', 'classification']
+      strengths: [
+        'Fast response',
+        'Good for validation',
+        'Efficient',
+        'Consistent output',
+      ],
+      use_cases: ['quality_validation', 'simple_queries', 'classification'],
     },
-    
+
     GEMMA_7B: {
       model: '@cf/google/gemma-7b-it',
       provider: 'cloudflare',
@@ -42,33 +56,46 @@ export const CLOUDFLARE_AI_MODELS: CloudflareAIModels = {
       cost_per_million_tokens: 0.02,
       latency_estimate_ms: 400,
       strengths: ['Multilingual', 'Good reasoning', 'Creative content'],
-      use_cases: ['translation', 'etymology', 'creative_definitions']
-    }
+      use_cases: ['translation', 'etymology', 'creative_definitions'],
+    },
   },
-  
+
   EMBEDDINGS: {
     BGE_BASE: {
       model: '@cf/baai/bge-base-en-v1.5',
       dimensions: 768,
       maxTokens: 512,
-      use_cases: ['Term similarity', 'Related concepts', 'Semantic search', 'Clustering']
+      use_cases: [
+        'Term similarity',
+        'Related concepts',
+        'Semantic search',
+        'Clustering',
+      ],
     },
-    
+
     BGE_LARGE: {
       model: '@cf/baai/bge-large-en-v1.5',
       dimensions: 1024,
       maxTokens: 512,
-      use_cases: ['Complex queries', 'Document search', 'High-precision matching']
-    }
+      use_cases: [
+        'Complex queries',
+        'Document search',
+        'High-precision matching',
+      ],
+    },
   },
-  
+
   CLASSIFICATION: {
     DISTILBERT: {
       model: '@cf/huggingface/distilbert-sst-2-int8',
-      use_cases: ['Sentiment analysis', 'Quality scoring', 'Text classification'],
-      labels: ['positive', 'negative']
-    }
-  }
+      use_cases: [
+        'Sentiment analysis',
+        'Quality scoring',
+        'Text classification',
+      ],
+      labels: ['positive', 'negative'],
+    },
+  },
 }
 
 // Recommended pipeline configuration for the dictionary service
@@ -78,17 +105,17 @@ export const AI_PIPELINE_CONFIG: AIPipelineConfig = {
     primary: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B,
     fallback: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B,
     retries: 2,
-    timeout: 5000 // 5 seconds
+    timeout: 5000, // 5 seconds
   },
-  
+
   // Step 2: Quality Validation
   validation: {
     model: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B,
     scoreThreshold: 70,
     retries: 1,
-    timeout: 3000 // 3 seconds
+    timeout: 3000, // 3 seconds
   },
-  
+
   // Step 3: Enhancement (Weekly Batch)
   enhancement: {
     model: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B,
@@ -96,21 +123,25 @@ export const AI_PIPELINE_CONFIG: AIPipelineConfig = {
     schedule: '0 0 * * 0', // Weekly on Sunday at midnight
     config: {
       temperature: 0.7, // Higher for creativity
-      max_tokens: 1500
-    }
+      max_tokens: 1500,
+    },
   },
-  
+
   // Step 4: Embedding for Search
   search: {
     model: CLOUDFLARE_AI_MODELS.EMBEDDINGS.BGE_BASE,
     cacheEmbeddings: true,
-    similarityThreshold: 0.8
-  }
+    similarityThreshold: 0.8,
+  },
 }
 
 // Prompt templates for different operations
 export const PROMPT_TEMPLATES = {
-  definition: (term: string, type: string, context?: any) => `You are a professional music dictionary editor with deep knowledge of music theory, instruments, and musical terminology.
+  definition: (
+    term: string,
+    type: string,
+    context?: any
+  ) => `You are a professional music dictionary editor with deep knowledge of music theory, instruments, and musical terminology.
 
 Create a comprehensive dictionary entry for the music term: "${term}"
 Term type: ${type}
@@ -139,7 +170,11 @@ Guidelines:
 - Only include etymology if it's interesting or helps understanding
 - Format as valid JSON only, no additional text`,
 
-  validation: (definition: string, term: string, type: string) => `You are a music education quality reviewer. Evaluate the following dictionary definition for accuracy, clarity, and educational value.
+  validation: (
+    definition: string,
+    term: string,
+    type: string
+  ) => `You are a music education quality reviewer. Evaluate the following dictionary definition for accuracy, clarity, and educational value.
 
 Term: "${term}" (Type: ${type})
 Definition: "${definition}"
@@ -160,7 +195,10 @@ Provide your evaluation in JSON format:
 
 Be constructive and specific in your feedback.`,
 
-  enhancement: (entry: any, focusAreas?: string[]) => `You are enhancing a music dictionary entry to make it more comprehensive and valuable for learners.
+  enhancement: (
+    entry: any,
+    focusAreas?: string[]
+  ) => `You are enhancing a music dictionary entry to make it more comprehensive and valuable for learners.
 
 Current entry:
 ${JSON.stringify(entry, null, 2)}
@@ -180,7 +218,10 @@ Maintain the existing JSON structure but enrich the content. Ensure all addition
 
 Return the enhanced entry as valid JSON.`,
 
-  relatedTerms: (term: string, definition: string) => `Given the music term "${term}" with definition: "${definition}"
+  relatedTerms: (
+    term: string,
+    definition: string
+  ) => `Given the music term "${term}" with definition: "${definition}"
 
 List 5-10 related musical terms that students should also know. For each term, specify the relationship type:
 - synonym: terms with the same meaning
@@ -200,7 +241,10 @@ Format as JSON:
   ]
 }`,
 
-  referenceExtraction: (term: string, type: string) => `Help find authoritative references for the music term "${term}" (type: ${type}).
+  referenceExtraction: (
+    term: string,
+    type: string
+  ) => `Help find authoritative references for the music term "${term}" (type: ${type}).
 
 Suggest appropriate resources in JSON format:
 {
@@ -212,7 +256,9 @@ Suggest appropriate resources in JSON format:
 
 Focus on educational and authoritative sources.`,
 
-  qualityCheck: (entry: any) => `You are a music education quality reviewer. Evaluate the following dictionary entry for overall quality.
+  qualityCheck: (
+    entry: any
+  ) => `You are a music education quality reviewer. Evaluate the following dictionary entry for overall quality.
 
 Entry:
 ${JSON.stringify(entry, null, 2)}
@@ -231,32 +277,35 @@ Provide your evaluation in JSON format:
   "suggestions": ["specific improvements that could be made"]
 }
 
-Be objective and constructive in your assessment.`
+Be objective and constructive in your assessment.`,
 }
 
 // Model selection helper
-export function selectModel(operation: string, preferFast: boolean = false): string {
+export function selectModel(
+  operation: string,
+  preferFast: boolean = false
+): string {
   switch (operation) {
     case 'definition':
-      return preferFast 
+      return preferFast
         ? CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
         : CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
-    
+
     case 'validation':
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
-    
+
     case 'enhancement':
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
-    
+
     case 'translation':
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.GEMMA_7B.model
-    
+
     case 'embedding':
       return CLOUDFLARE_AI_MODELS.EMBEDDINGS.BGE_BASE.model
-    
+
     case 'quality':
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
-    
+
     default:
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
   }

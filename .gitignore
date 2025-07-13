@@ -26,6 +26,10 @@ shared/**/*.d.ts
 .env.production.local
 .env.*.local
 
+# Security and secrets
+.secrets
+dictionary/.secrets
+
 # Cloudflare
 .wrangler/
 wrangler.toml.local

@@ -4,13 +4,13 @@
  */
 
 import { Env } from '../../types/env'
-import { 
-  DictionaryEntry, 
+import {
+  DictionaryEntry,
   TermType,
   Definition,
   References,
   QualityScore,
-  EntryMetadata
+  EntryMetadata,
 } from '../../types/dictionary'
 import { CloudflareAIService } from './cloudflare-ai-service'
 import { PROMPT_TEMPLATES, selectModel } from '../../config/ai-models'
@@ -29,7 +29,9 @@ export interface GenerationOptions {
 }
 
 export interface EnhancementOptions {
-  focus_areas?: Array<'definition' | 'references' | 'related_terms' | 'examples' | 'etymology'>
+  focus_areas?: Array<
+    'definition' | 'references' | 'related_terms' | 'examples' | 'etymology'
+  >
   target_quality?: number
   preserve_manual_edits?: boolean
 }
@@ -44,10 +46,12 @@ export class DictionaryGenerator {
   /**
    * Generate a new dictionary entry from scratch
    */
-  async generateEntry(options: GenerationOptions): Promise<DictionaryEntry | null> {
+  async generateEntry(
+    options: GenerationOptions
+  ): Promise<DictionaryEntry | null> {
     const maxRetries = 3
     const qualityThreshold = parseInt(this.env.QUALITY_THRESHOLD || '70')
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // Step 1: Generate definition
@@ -55,10 +59,16 @@ export class DictionaryGenerator {
         if (!definition) continue
 
         // Step 2: Generate references
-        const references = await this.generateReferences(options.term, options.type)
+        const references = await this.generateReferences(
+          options.term,
+          options.type
+        )
 
         // Step 3: Calculate initial quality score
-        const qualityScore = await this.calculateQualityScore(definition, references)
+        const qualityScore = await this.calculateQualityScore(
+          definition,
+          references
+        )
 
         // Step 4: Generate metadata
         const metadata = this.generateMetadata(options)
@@ -75,22 +85,24 @@ export class DictionaryGenerator {
           quality_score: qualityScore,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          version: 1
+          version: 1,
         }
 
         // Step 5: Validate quality with AI (if score is below threshold)
         if (entry.quality_score.overall < qualityThreshold) {
           const validation = await this.validateQuality(entry)
-          
+
           // If AI validation gives a higher score, update it
           if (validation.score >= qualityThreshold) {
             entry.quality_score.overall = validation.score
             return entry
           }
-          
+
           // If this is not the last attempt, try again
           if (attempt < maxRetries) {
-            console.log(`Quality score ${entry.quality_score.overall} below threshold ${qualityThreshold}, retrying (attempt ${attempt}/${maxRetries})`)
+            console.log(
+              `Quality score ${entry.quality_score.overall} below threshold ${qualityThreshold}, retrying (attempt ${attempt}/${maxRetries})`
+            )
             continue
           }
         } else {
@@ -103,7 +115,7 @@ export class DictionaryGenerator {
         }
       }
     }
-    
+
     throw new Error('Failed to generate entry with acceptable quality')
   }
 
@@ -111,18 +123,25 @@ export class DictionaryGenerator {
    * Enhance an existing dictionary entry
    */
   async enhanceEntry(
-    entry: DictionaryEntry, 
+    entry: DictionaryEntry,
     options: EnhancementOptions = {}
   ): Promise<DictionaryEntry | null> {
     try {
       const enhanced = { ...entry }
-      const focusAreas = options.focus_areas || ['definition', 'references', 'examples']
+      const focusAreas = options.focus_areas || [
+        'definition',
+        'references',
+        'examples',
+      ]
 
       // Enhance definition if requested
       if (focusAreas.includes('definition')) {
         const enhancedDefinition = await this.enhanceDefinition(entry)
         if (enhancedDefinition) {
-          enhanced.definition = this.mergeDefinitions(entry.definition, enhancedDefinition)
+          enhanced.definition = this.mergeDefinitions(
+            entry.definition,
+            enhancedDefinition
+          )
         }
       }
 
@@ -130,7 +149,10 @@ export class DictionaryGenerator {
       if (focusAreas.includes('references')) {
         const enhancedReferences = await this.enhanceReferences(entry)
         if (enhancedReferences) {
-          enhanced.references = this.mergeReferences(entry.references, enhancedReferences)
+          enhanced.references = this.mergeReferences(
+            entry.references,
+            enhancedReferences
+          )
         }
       }
 
@@ -149,15 +171,21 @@ export class DictionaryGenerator {
       )
 
       // Return if quality improved OR if we added missing fields while maintaining quality
-      const addedNewFields = 
-        (enhanced.definition.usage_example && !entry.definition.usage_example) ||
+      const addedNewFields =
+        (enhanced.definition.usage_example &&
+          !entry.definition.usage_example) ||
         (enhanced.definition.etymology && !entry.definition.etymology) ||
-        (enhanced.definition.pronunciation && !entry.definition.pronunciation) ||
-        (enhanced.metadata.related_terms && enhanced.metadata.related_terms.length > (entry.metadata.related_terms?.length || 0))
-      
-      
-      if (enhanced.quality_score.overall > entry.quality_score.overall || 
-          (enhanced.quality_score.overall >= entry.quality_score.overall && addedNewFields)) {
+        (enhanced.definition.pronunciation &&
+          !entry.definition.pronunciation) ||
+        (enhanced.metadata.related_terms &&
+          enhanced.metadata.related_terms.length >
+            (entry.metadata.related_terms?.length || 0))
+
+      if (
+        enhanced.quality_score.overall > entry.quality_score.overall ||
+        (enhanced.quality_score.overall >= entry.quality_score.overall &&
+          addedNewFields)
+      ) {
         enhanced.updated_at = new Date().toISOString()
         enhanced.version = entry.version + 1
         enhanced.metadata.last_accessed = new Date().toISOString()
@@ -174,7 +202,9 @@ export class DictionaryGenerator {
   /**
    * Generate definition using AI
    */
-  private async generateDefinition(options: GenerationOptions): Promise<Definition | null> {
+  private async generateDefinition(
+    options: GenerationOptions
+  ): Promise<Definition | null> {
     const prompt = PROMPT_TEMPLATES.definition(
       options.term,
       options.type,
@@ -182,13 +212,18 @@ export class DictionaryGenerator {
     )
 
     const model = selectModel('definition')
-    const response = await this.aiService.generateStructuredContent(prompt, model)
+    const response = await this.aiService.generateStructuredContent(
+      prompt,
+      model
+    )
 
     if (!response.response) return null
 
     try {
-      const parsed = this.aiService.parseJSONResponse(response.response) as any as any
-      
+      const parsed = this.aiService.parseJSONResponse(
+        response.response
+      ) as any as any
+
       // Validate the structure
       if (!parsed.concise || !parsed.detailed) {
         throw new Error('Invalid definition structure')
@@ -199,7 +234,7 @@ export class DictionaryGenerator {
         detailed: parsed.detailed,
         etymology: parsed.etymology || undefined,
         pronunciation: parsed.pronunciation || undefined,
-        usage_example: parsed.usage_example || undefined
+        usage_example: parsed.usage_example || undefined,
       }
     } catch (error) {
       console.error('Failed to parse definition:', error)
@@ -210,14 +245,21 @@ export class DictionaryGenerator {
   /**
    * Generate references using AI
    */
-  private async generateReferences(term: string, type: TermType): Promise<References> {
+  private async generateReferences(
+    term: string,
+    type: TermType
+  ): Promise<References> {
     const prompt = PROMPT_TEMPLATES.referenceExtraction(term, type)
-    
+
     const model = selectModel('definition', true) // Use fast model for references
-    const response = await this.aiService.generateStructuredContent(prompt, model, {
-      max_tokens: 200,
-      temperature: 0.1
-    })
+    const response = await this.aiService.generateStructuredContent(
+      prompt,
+      model,
+      {
+        max_tokens: 200,
+        temperature: 0.1,
+      }
+    )
 
     const references: References = {
       wikipedia: undefined,
@@ -225,38 +267,40 @@ export class DictionaryGenerator {
       research_papers: [],
       media: undefined,
       shopping: undefined,
-      educational: []
+      educational: [],
     }
 
     if (!response.response) return references
 
     try {
       const parsed = this.aiService.parseJSONResponse(response.response) as any
-      
+
       // Generate placeholder references based on AI suggestions
       if (parsed.wikipedia_search) {
         references.wikipedia = {
           url: `https://en.wikipedia.org/wiki/${encodeURIComponent(parsed.wikipedia_search)}`,
           extract: 'Search Wikipedia for more information',
-          last_verified: new Date().toISOString()
+          last_verified: new Date().toISOString(),
         }
       }
 
       if (parsed.youtube_search) {
         references.media = {
           youtube: {
-            educational_videos: [{
-              title: `Search results for ${parsed.youtube_search}`,
-              channel: 'YouTube Search',
-              channel_id: 'search',
-              url: `https://www.youtube.com/results?search_query=${encodeURIComponent(parsed.youtube_search)}`,
-              video_id: 'search',
-              duration: 0,
-              view_count: 0,
-              published_date: new Date().toISOString(),
-              relevance_score: 0.5
-            }]
-          }
+            educational_videos: [
+              {
+                title: `Search results for ${parsed.youtube_search}`,
+                channel: 'YouTube Search',
+                channel_id: 'search',
+                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(parsed.youtube_search)}`,
+                video_id: 'search',
+                duration: 0,
+                view_count: 0,
+                published_date: new Date().toISOString(),
+                relevance_score: 0.5,
+              },
+            ],
+          },
         }
       }
 
@@ -288,15 +332,20 @@ export class DictionaryGenerator {
     // References score
     let totalRefs = 0
     if (references.wikipedia) totalRefs += 1
-    if (references.books && references.books.length > 0) totalRefs += references.books.length
-    if (references.research_papers && references.research_papers.length > 0) totalRefs += references.research_papers.length
+    if (references.books && references.books.length > 0)
+      totalRefs += references.books.length
+    if (references.research_papers && references.research_papers.length > 0)
+      totalRefs += references.research_papers.length
     if (references.media) totalRefs += 1
-    if (references.educational && references.educational.length > 0) totalRefs += references.educational.length
+    if (references.educational && references.educational.length > 0)
+      totalRefs += references.educational.length
 
     const referenceScore = Math.min(100, totalRefs * 20)
 
     // Calculate overall score
-    const overall = Math.round((70 + completeness + clarity + referenceScore) / 4)
+    const overall = Math.round(
+      (70 + completeness + clarity + referenceScore) / 4
+    )
 
     return {
       overall,
@@ -305,7 +354,8 @@ export class DictionaryGenerator {
       accuracy_verification: 70, // Base score for AI content
       last_ai_check: new Date().toISOString(),
       human_verified: false,
-      confidence_level: overall >= 80 ? 'high' : overall >= 60 ? 'medium' : 'low'
+      confidence_level:
+        overall >= 80 ? 'high' : overall >= 60 ? 'medium' : 'low',
     }
   }
 
@@ -320,23 +370,30 @@ export class DictionaryGenerator {
       related_terms: [],
       categories: [],
       tags: [],
-      difficulty_level: options.context?.difficulty_level as EntryMetadata['difficulty_level'],
+      difficulty_level: options.context
+        ?.difficulty_level as EntryMetadata['difficulty_level'],
       instruments: options.context?.instruments,
-      language: 'en'
+      language: 'en',
     }
   }
 
   /**
    * Enhance existing definition
    */
-  private async enhanceDefinition(entry: DictionaryEntry): Promise<Definition | null> {
+  private async enhanceDefinition(
+    entry: DictionaryEntry
+  ): Promise<Definition | null> {
     const prompt = PROMPT_TEMPLATES.enhancement(entry, ['definition'])
-    
+
     const model = selectModel('enhancement')
-    const response = await this.aiService.generateStructuredContent(prompt, model, {
-      temperature: 0.7,
-      max_tokens: 1500
-    })
+    const response = await this.aiService.generateStructuredContent(
+      prompt,
+      model,
+      {
+        temperature: 0.7,
+        max_tokens: 1500,
+      }
+    )
 
     if (!response.response) return null
 
@@ -352,14 +409,20 @@ export class DictionaryGenerator {
   /**
    * Enhance existing references
    */
-  private async enhanceReferences(entry: DictionaryEntry): Promise<References | null> {
+  private async enhanceReferences(
+    entry: DictionaryEntry
+  ): Promise<References | null> {
     const prompt = PROMPT_TEMPLATES.enhancement(entry, ['references'])
-    
+
     const model = selectModel('enhancement')
-    const response = await this.aiService.generateStructuredContent(prompt, model, {
-      temperature: 0.5,
-      max_tokens: 800
-    })
+    const response = await this.aiService.generateStructuredContent(
+      prompt,
+      model,
+      {
+        temperature: 0.5,
+        max_tokens: 800,
+      }
+    )
 
     if (!response.response) return null
 
@@ -383,33 +446,37 @@ export class DictionaryGenerator {
     try {
       const prompt = PROMPT_TEMPLATES.qualityCheck(entry)
       const model = selectModel('quality', true) // Use fast model
-      
-      const response = await this.aiService.generateStructuredContent(prompt, model, {
-        temperature: 0.1,
-        max_tokens: 500
-      })
+
+      const response = await this.aiService.generateStructuredContent(
+        prompt,
+        model,
+        {
+          temperature: 0.1,
+          max_tokens: 500,
+        }
+      )
 
       if (!response.response) {
         return {
           score: 0,
           issues: ['Validation failed'],
-          suggestions: []
+          suggestions: [],
         }
       }
 
       const parsed = this.aiService.parseJSONResponse(response.response) as any
-      
+
       return {
         score: parsed.score || 0,
         issues: parsed.issues || [],
-        suggestions: parsed.suggestions || []
+        suggestions: parsed.suggestions || [],
       }
     } catch (error) {
       console.error('Quality validation failed:', error)
       return {
         score: 0,
         issues: ['Validation failed'],
-        suggestions: []
+        suggestions: [],
       }
     }
   }
@@ -417,14 +484,23 @@ export class DictionaryGenerator {
   /**
    * Generate related terms
    */
-  private async generateRelatedTerms(entry: DictionaryEntry): Promise<any[] | null> {
-    const prompt = PROMPT_TEMPLATES.relatedTerms(entry.term, entry.definition.detailed)
-    
+  private async generateRelatedTerms(
+    entry: DictionaryEntry
+  ): Promise<any[] | null> {
+    const prompt = PROMPT_TEMPLATES.relatedTerms(
+      entry.term,
+      entry.definition.detailed
+    )
+
     const model = selectModel('definition', true)
-    const response = await this.aiService.generateStructuredContent(prompt, model, {
-      temperature: 0.3,
-      max_tokens: 400
-    })
+    const response = await this.aiService.generateStructuredContent(
+      prompt,
+      model,
+      {
+        temperature: 0.3,
+        max_tokens: 400,
+      }
+    )
 
     if (!response.response) return null
 
@@ -440,27 +516,33 @@ export class DictionaryGenerator {
   /**
    * Merge two definitions, preserving the best of both
    */
-  private mergeDefinitions(original: Definition, enhanced: Definition): Definition {
+  private mergeDefinitions(
+    original: Definition,
+    enhanced: Definition
+  ): Definition {
     return {
       concise: enhanced.concise || original.concise,
       detailed: enhanced.detailed || original.detailed,
       etymology: enhanced.etymology || original.etymology,
       pronunciation: enhanced.pronunciation || original.pronunciation,
-      usage_example: enhanced.usage_example || original.usage_example
+      usage_example: enhanced.usage_example || original.usage_example,
     }
   }
 
   /**
    * Merge two reference sets
    */
-  private mergeReferences(original: References, enhanced: References): References {
+  private mergeReferences(
+    original: References,
+    enhanced: References
+  ): References {
     const merged: References = {
       wikipedia: enhanced.wikipedia || original.wikipedia,
       books: [...(original.books || [])],
       research_papers: [...(original.research_papers || [])],
       media: enhanced.media || original.media,
       shopping: enhanced.shopping || original.shopping,
-      educational: [...(original.educational || [])]
+      educational: [...(original.educational || [])],
     }
 
     // Merge book arrays
@@ -476,7 +558,9 @@ export class DictionaryGenerator {
     // Merge research papers
     if (enhanced.research_papers) {
       for (const paper of enhanced.research_papers) {
-        const isDuplicate = merged.research_papers?.some(p => p.doi === paper.doi)
+        const isDuplicate = merged.research_papers?.some(
+          p => p.doi === paper.doi
+        )
         if (!isDuplicate && merged.research_papers) {
           merged.research_papers.push(paper)
         }
@@ -486,7 +570,9 @@ export class DictionaryGenerator {
     // Merge educational resources
     if (enhanced.educational) {
       for (const resource of enhanced.educational) {
-        const isDuplicate = merged.educational?.some(e => e.url === resource.url)
+        const isDuplicate = merged.educational?.some(
+          e => e.url === resource.url
+        )
         if (!isDuplicate && merged.educational) {
           merged.educational.push(resource)
         }
@@ -516,7 +602,7 @@ export class QualityValidator {
     suggestions: string[]
   }> {
     const aiService = new CloudflareAIService(this.env)
-    
+
     const prompt = PROMPT_TEMPLATES.validation(
       JSON.stringify(definition),
       term,
@@ -526,14 +612,14 @@ export class QualityValidator {
     const model = selectModel('validation')
     const response = await aiService.generateStructuredContent(prompt, model, {
       temperature: 0.1,
-      max_tokens: 300
+      max_tokens: 300,
     })
 
     if (!response.response) {
       return {
         score: 50,
         issues: ['Validation failed'],
-        suggestions: []
+        suggestions: [],
       }
     }
 
@@ -542,14 +628,14 @@ export class QualityValidator {
       return {
         score: parsed.score || 50,
         issues: parsed.issues || [],
-        suggestions: parsed.suggestions || []
+        suggestions: parsed.suggestions || [],
       }
     } catch (error) {
       console.error('Failed to parse validation:', error)
       return {
         score: 50,
         issues: ['Validation parsing failed'],
-        suggestions: []
+        suggestions: [],
       }
     }
   }

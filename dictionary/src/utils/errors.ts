@@ -4,7 +4,7 @@
 
 import { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { ApiError, ApiResponse } from '../types/api'
+import { ApiResponse } from '../types/api'
 
 export class DictionaryError extends Error {
   constructor(
@@ -49,14 +49,22 @@ export class RateLimitError extends DictionaryError {
 }
 
 export class AIServiceError extends DictionaryError {
-  constructor(message: string, provider?: string, details?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    provider?: string,
+    details?: Record<string, unknown>
+  ) {
     super('AI_SERVICE_ERROR', message, 503, { provider, ...details })
   }
 }
 
 // Alias for consistency with handlers
 export class APIError extends DictionaryError {
-  constructor(message: string, statusCode: number = 500, details?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    statusCode: number = 500,
+    details?: Record<string, unknown>
+  ) {
     super('API_ERROR', message, statusCode, details)
   }
 }
@@ -72,8 +80,8 @@ export const errorHandler = (err: Error, c: Context): Response => {
       error: {
         code: 'HTTP_ERROR',
         message: err.message,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
     return c.json(response, err.status)
   }
@@ -86,15 +94,15 @@ export const errorHandler = (err: Error, c: Context): Response => {
         code: err.code,
         message: err.message,
         details: err.details,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
-    
+
     // Add rate limit headers if applicable
     if (err instanceof RateLimitError && err.details?.retry_after) {
       c.header('Retry-After', err.details.retry_after.toString())
     }
-    
+
     return c.json(response, err.statusCode as any)
   }
 
@@ -107,8 +115,8 @@ export const errorHandler = (err: Error, c: Context): Response => {
         code: 'VALIDATION_ERROR',
         message: 'Invalid request data',
         details: zodError.errors || [],
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     }
     return c.json(response, 400 as any)
   }
@@ -119,25 +127,19 @@ export const errorHandler = (err: Error, c: Context): Response => {
     error: {
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred',
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   }
-  
+
   return c.json(response, 500 as any)
 }
 
 /**
  * Wrap async route handlers to catch errors
  */
-export function asyncHandler<T = unknown>(
-  handler: (c: Context) => Promise<Response>
-) {
+export function asyncHandler(handler: (c: Context) => Promise<Response>) {
   return async (c: Context): Promise<Response> => {
-    try {
-      return await handler(c)
-    } catch (error) {
-      throw error // Will be caught by the error handler
-    }
+    return await handler(c)
   }
 }
 
@@ -156,8 +158,8 @@ export function createApiResponse<T>(
       timestamp: new Date().toISOString(),
       version: '1.0.0',
       latency_ms: 0, // Will be set by timing middleware
-      ...meta
-    }
+      ...meta,
+    },
   }
 }
 
@@ -177,9 +179,9 @@ export function logError(
     error: {
       name: error.name,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     },
     context,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }

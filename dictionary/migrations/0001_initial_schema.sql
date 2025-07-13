@@ -1,5 +1,6 @@
--- Music Dictionary Service - Initial Schema
+-- Music Dictionary Service - Initial Schema (D1 Compatible)
 -- Created: 2024-01-15
+-- Modified: 2025-07-13 for D1 compatibility
 
 -- Main dictionary entries table
 CREATE TABLE IF NOT EXISTS dictionary_entries (
@@ -8,7 +9,7 @@ CREATE TABLE IF NOT EXISTS dictionary_entries (
   normalized_term TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('instrument', 'genre', 'technique', 'composer', 'theory', 'general')),
   definition TEXT NOT NULL, -- JSON
-  references TEXT NOT NULL, -- JSON
+  refs TEXT NOT NULL, -- JSON
   metadata TEXT NOT NULL, -- JSON
   quality_score TEXT NOT NULL, -- JSON
   overall_score REAL NOT NULL CHECK (overall_score >= 0 AND overall_score <= 100),
@@ -34,8 +35,7 @@ CREATE TABLE IF NOT EXISTS quality_checkpoints (
   improvements TEXT, -- JSON array of improvement suggestions
   model_used TEXT NOT NULL,
   checked_at TEXT NOT NULL DEFAULT (datetime('now')),
-  checked_by TEXT, -- User ID for human reviews
-  FOREIGN KEY (entry_id) REFERENCES dictionary_entries(id) ON DELETE CASCADE
+  checked_by TEXT -- User ID for human reviews
 );
 
 CREATE INDEX idx_quality_entry_id ON quality_checkpoints(entry_id);
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS search_analytics (
   id TEXT PRIMARY KEY,
   term TEXT NOT NULL,
   normalized_term TEXT NOT NULL,
-  found BOOLEAN NOT NULL,
+  found INTEGER NOT NULL, -- Changed from BOOLEAN to INTEGER for D1
   entry_id TEXT, -- NULL if not found
   response_time_ms INTEGER NOT NULL,
   searched_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -67,11 +67,10 @@ CREATE TABLE IF NOT EXISTS user_feedback (
   entry_id TEXT NOT NULL,
   user_id TEXT,
   rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-  helpful BOOLEAN,
+  helpful INTEGER, -- Changed from BOOLEAN to INTEGER for D1
   feedback_text TEXT,
   feedback_type TEXT CHECK (feedback_type IN ('accuracy', 'clarity', 'completeness', 'other')),
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (entry_id) REFERENCES dictionary_entries(id) ON DELETE CASCADE
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX idx_feedback_entry_id ON user_feedback(entry_id);
@@ -86,8 +85,6 @@ CREATE TABLE IF NOT EXISTS related_terms (
   relationship_type TEXT NOT NULL CHECK (relationship_type IN ('synonym', 'antonym', 'see_also', 'broader', 'narrower', 'related')),
   confidence_score REAL DEFAULT 1.0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (entry_id) REFERENCES dictionary_entries(id) ON DELETE CASCADE,
-  FOREIGN KEY (related_entry_id) REFERENCES dictionary_entries(id) ON DELETE CASCADE,
   UNIQUE(entry_id, related_entry_id, relationship_type)
 );
 
@@ -105,8 +102,7 @@ CREATE TABLE IF NOT EXISTS enhancement_queue (
   last_attempt_at TEXT,
   completed_at TEXT,
   error_message TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (entry_id) REFERENCES dictionary_entries(id) ON DELETE CASCADE
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX idx_enhancement_status ON enhancement_queue(status);

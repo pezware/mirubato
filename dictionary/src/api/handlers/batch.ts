@@ -12,7 +12,7 @@ import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import { auth, getUserInfo } from '../../middleware/auth'
 import { rateLimit } from '../../middleware/rate-limit'
 import { APIError } from '../../utils/errors'
-import { DictionaryEntry, TermType } from '../../types/dictionary'
+import { DictionaryEntry } from '../../types/dictionary'
 import { normalizeTerm } from '../../utils/validation'
 
 export const batchHandler = new Hono<{ Bindings: Env }>()
@@ -20,22 +20,31 @@ export const batchHandler = new Hono<{ Bindings: Env }>()
 // Batch query schema
 const batchQuerySchema = z.object({
   terms: z.array(z.string().min(1).max(200)).min(1).max(50),
-  type: z.enum(['instrument', 'genre', 'technique', 'composer', 'theory', 'general']).optional(),
+  type: z
+    .enum(['instrument', 'genre', 'technique', 'composer', 'theory', 'general'])
+    .optional(),
   generate_missing: z.boolean().default(false),
-  include_related: z.boolean().default(false)
+  include_related: z.boolean().default(false),
 })
 
 const batchUpdateSchema = z.object({
-  updates: z.array(z.object({
-    id: z.string(),
-    quality_score: z.object({
-      accuracy: z.number().min(0).max(100).optional(),
-      completeness: z.number().min(0).max(100).optional(),
-      clarity: z.number().min(0).max(100).optional(),
-      references: z.number().min(0).max(100).optional()
-    }).optional(),
-    metadata: z.record(z.any()).optional()
-  })).min(1).max(100)
+  updates: z
+    .array(
+      z.object({
+        id: z.string(),
+        quality_score: z
+          .object({
+            accuracy: z.number().min(0).max(100).optional(),
+            completeness: z.number().min(0).max(100).optional(),
+            clarity: z.number().min(0).max(100).optional(),
+            references: z.number().min(0).max(100).optional(),
+          })
+          .optional(),
+        metadata: z.record(z.any()).optional(),
+      })
+    )
+    .min(1)
+    .max(100),
 })
 
 /**
@@ -47,10 +56,11 @@ batchHandler.post(
   auth({ optional: true }),
   rateLimit({ windowMs: 60000, max: 30 }), // Lower limit for batch operations
   zValidator('json', batchQuerySchema),
-  async (c) => {
-    const { terms, type, generate_missing, include_related } = c.req.valid('json')
+  async c => {
+    const { terms, type, generate_missing, include_related } =
+      c.req.valid('json')
     const userInfo = getUserInfo(c)
-    
+
     const db = new DictionaryDatabase(c.env.DB)
     const cacheService = new CacheService(c.env.CACHE, c.env)
 
@@ -64,7 +74,7 @@ batchHandler.post(
       const uncachedTerms: string[] = []
 
       await Promise.all(
-        uniqueTerms.map(async (term) => {
+        uniqueTerms.map(async term => {
           const cached = await cacheService.getCachedTerm(term)
           if (cached) {
             cachedResults.set(term, cached)
@@ -78,12 +88,9 @@ batchHandler.post(
       let dbResults = new Map<string, DictionaryEntry>()
       if (uncachedTerms.length > 0) {
         dbResults = await db.findByTerms(uncachedTerms)
-        
+
         // Cache the found entries
-        await cacheService.cacheBatch(
-          uncachedTerms,
-          dbResults
-        )
+        await cacheService.cacheBatch(uncachedTerms, dbResults)
       }
 
       // Combine results
@@ -92,52 +99,54 @@ batchHandler.post(
       // Generate missing terms if requested
       if (generate_missing) {
         const missingTerms = uniqueTerms.filter(term => !allResults.has(term))
-        
+
         if (missingTerms.length > 0) {
           const generator = new DictionaryGenerator(c.env)
-          
+
           // Generate in parallel with limit
-          const generationPromises = missingTerms.slice(0, 5).map(async (term) => {
-            const entry = await generator.generateEntry({
-              term,
-              type: type || 'general',
-              context: {
-                requested_by: userInfo.userId || 'anonymous',
-                generation_reason: 'batch_request'
+          const generationPromises = missingTerms
+            .slice(0, 5)
+            .map(async term => {
+              const entry = await generator.generateEntry({
+                term,
+                type: type || 'general',
+                context: {
+                  requested_by: userInfo.userId || 'anonymous',
+                  generation_reason: 'batch_request',
+                },
+              })
+
+              if (entry) {
+                // Save to database
+                await db.create(entry)
+                allResults.set(entry.normalized_term, entry)
               }
             })
-            
-            if (entry) {
-              // Save to database
-              await db.create(entry)
-              allResults.set(entry.normalized_term, entry)
-            }
-          })
-          
+
           await Promise.all(generationPromises)
         }
       }
 
       // Prepare response
       const response: Record<string, any> = {}
-      
+
       for (const originalTerm of terms) {
         const normalized = normalizeTerm(originalTerm)
         const entry = allResults.get(normalized)
-        
+
         if (entry) {
           response[originalTerm] = {
             found: true,
             entry,
-            related_terms: include_related ? 
-              await db.getRelatedTerms(entry.id).then(r => r.slice(0, 3)) : 
-              undefined
+            related_terms: include_related
+              ? await db.getRelatedTerms(entry.id).then(r => r.slice(0, 3))
+              : undefined,
           }
         } else {
           response[originalTerm] = {
             found: false,
             normalized_term: normalized,
-            message: 'Term not found'
+            message: 'Term not found',
           }
         }
       }
@@ -150,13 +159,14 @@ batchHandler.post(
             total_requested: terms.length,
             found: Object.values(response).filter(r => r.found).length,
             not_found: Object.values(response).filter(r => !r.found).length,
-            generated: generate_missing ? 
-              Object.values(response).filter(r => r.entry?.metadata?.created_by === 'ai_generation').length : 
-              0
-          }
-        }
+            generated: generate_missing
+              ? Object.values(response).filter(
+                  r => r.entry?.metadata?.created_by === 'ai_generation'
+                ).length
+              : 0,
+          },
+        },
       })
-
     } catch (error) {
       console.error('Batch query error:', error)
       throw new APIError('Batch query failed', 500, { error })
@@ -172,12 +182,25 @@ batchHandler.post(
   '/refresh',
   auth({ roles: ['admin', 'moderator'] }),
   rateLimit({ windowMs: 3600000, max: 5 }), // 5 per hour
-  zValidator('json', z.object({
-    quality_threshold: z.number().min(0).max(100).default(60),
-    limit: z.number().min(1).max(100).default(20),
-    focus_areas: z.array(z.enum(['definition', 'references', 'related_terms', 'examples', 'etymology'])).optional()
-  })),
-  async (c) => {
+  zValidator(
+    'json',
+    z.object({
+      quality_threshold: z.number().min(0).max(100).default(60),
+      limit: z.number().min(1).max(100).default(20),
+      focus_areas: z
+        .array(
+          z.enum([
+            'definition',
+            'references',
+            'related_terms',
+            'examples',
+            'etymology',
+          ])
+        )
+        .optional(),
+    })
+  ),
+  async c => {
     const { quality_threshold, limit, focus_areas } = c.req.valid('json')
     const db = new DictionaryDatabase(c.env.DB)
     const generator = new DictionaryGenerator(c.env)
@@ -199,36 +222,36 @@ batchHandler.post(
           old_score: number
           new_score?: number
           status: 'enhanced' | 'unchanged' | 'failed'
-        }>
+        }>,
       }
 
       // Process each candidate
       for (const entry of candidates) {
         results.processed++
-        
+
         try {
           const enhanced = await generator.enhanceEntry(entry, {
             focus_areas: focus_areas as any,
-            target_quality: 80
+            target_quality: 80,
           })
 
           if (enhanced) {
             await db.update(enhanced)
             results.enhanced++
-            
+
             results.entries.push({
               id: entry.id,
               term: entry.term,
               old_score: entry.quality_score.overall,
               new_score: enhanced.quality_score.overall,
-              status: 'enhanced'
+              status: 'enhanced',
             })
           } else {
             results.entries.push({
               id: entry.id,
               term: entry.term,
               old_score: entry.quality_score.overall,
-              status: 'unchanged'
+              status: 'unchanged',
             })
           }
         } catch (error) {
@@ -237,16 +260,15 @@ batchHandler.post(
             id: entry.id,
             term: entry.term,
             old_score: entry.quality_score.overall,
-            status: 'failed'
+            status: 'failed',
           })
         }
       }
 
       return c.json({
         success: true,
-        data: results
+        data: results,
       })
-
     } catch (error) {
       console.error('Batch refresh error:', error)
       throw new APIError('Batch refresh failed', 500, { error })
@@ -263,10 +285,10 @@ batchHandler.put(
   auth({ roles: ['admin', 'moderator'] }),
   rateLimit({ windowMs: 60000, max: 10 }),
   zValidator('json', batchUpdateSchema),
-  async (c) => {
+  async c => {
     const { updates } = c.req.valid('json')
     const db = new DictionaryDatabase(c.env.DB)
-    const userInfo = getUserInfo(c)
+    // const userInfo = getUserInfo(c) // TODO: Use for tracking who made updates
 
     try {
       const results = {
@@ -276,18 +298,18 @@ batchHandler.put(
           id: string
           status: 'updated' | 'not_found' | 'failed'
           error?: string
-        }>
+        }>,
       }
 
       for (const update of updates) {
         try {
           const entry = await db.findById(update.id)
-          
+
           if (!entry) {
             results.failed++
             results.entries.push({
               id: update.id,
-              status: 'not_found'
+              status: 'not_found',
             })
             continue
           }
@@ -301,9 +323,11 @@ batchHandler.put(
                 Object.values({
                   ...entry.quality_score,
                   ...update.quality_score,
-                  overall: undefined
-                }).filter(v => typeof v === 'number').reduce((a, b) => a + b, 0) / 4
-              )
+                  overall: undefined,
+                })
+                  .filter(v => typeof v === 'number')
+                  .reduce((a, b) => a + b, 0) / 4
+              ),
             }
           }
 
@@ -311,38 +335,38 @@ batchHandler.put(
             entry.metadata = {
               ...entry.metadata,
               ...update.metadata,
-              last_accessed: new Date().toISOString()
+              last_accessed: new Date().toISOString(),
             }
           }
 
           await db.update(entry)
           results.updated++
-          
+
           results.entries.push({
             id: update.id,
-            status: 'updated'
+            status: 'updated',
           })
 
           // Invalidate cache
           c.executionCtx.waitUntil(
-            new CacheService(c.env.CACHE, c.env).invalidateTerm(entry.normalized_term)
+            new CacheService(c.env.CACHE, c.env).invalidateTerm(
+              entry.normalized_term
+            )
           )
-
         } catch (error) {
           results.failed++
           results.entries.push({
             id: update.id,
             status: 'failed',
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
         }
       }
 
       return c.json({
         success: true,
-        data: results
+        data: results,
       })
-
     } catch (error) {
       console.error('Batch update error:', error)
       throw new APIError('Batch update failed', 500, { error })
@@ -358,14 +382,14 @@ batchHandler.get(
   '/stats',
   auth({ optional: true }),
   rateLimit({ windowMs: 60000, max: 60 }),
-  async (c) => {
+  async c => {
     const db = new DictionaryDatabase(c.env.DB)
 
     try {
       const [summary, popular, lowQuality] = await Promise.all([
         db.getAnalyticsSummary(),
         db.getPopularSearches(10),
-        db.getEnhancementCandidates(10, 50)
+        db.getEnhancementCandidates(10, 50),
       ])
 
       return c.json({
@@ -377,11 +401,10 @@ batchHandler.get(
             id: e.id,
             term: e.term,
             quality_score: e.quality_score.overall,
-            last_updated: e.updated_at
-          }))
-        }
+            last_updated: e.updated_at,
+          })),
+        },
       })
-
     } catch (error) {
       console.error('Batch stats error:', error)
       throw new APIError('Failed to get batch statistics', 500, { error })

@@ -2,7 +2,7 @@
  * API request/response types
  */
 
-import { DictionaryEntry, SearchQuery, BatchQueryRequest, EnhancementRequest } from './dictionary'
+import { DictionaryEntry } from './dictionary'
 
 // Base response structure
 export interface ApiResponse<T> {
@@ -210,7 +210,11 @@ export interface AuthenticatedRequest {
 
 // Webhook types
 export interface WebhookEvent {
-  event_type: 'term.created' | 'term.updated' | 'quality.improved' | 'batch.completed'
+  event_type:
+    | 'term.created'
+    | 'term.updated'
+    | 'quality.improved'
+    | 'batch.completed'
   timestamp: string
   data: {
     term_id: string

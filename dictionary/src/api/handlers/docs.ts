@@ -37,44 +37,44 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
     contact: {
       name: 'Mirubato Support',
       email: 'support@mirubato.com',
-      url: 'https://mirubato.com'
+      url: 'https://mirubato.com',
     },
     license: {
       name: 'MIT',
-      url: 'https://opensource.org/licenses/MIT'
-    }
+      url: 'https://opensource.org/licenses/MIT',
+    },
   },
   servers: [
     {
       url: 'https://dictionary.mirubato.com',
-      description: 'Production server'
+      description: 'Production server',
     },
     {
       url: 'https://dictionary-staging.mirubato.com',
-      description: 'Staging server'
+      description: 'Staging server',
     },
     {
       url: 'http://localhost:8787',
-      description: 'Local development'
-    }
+      description: 'Local development',
+    },
   ],
   tags: [
     {
       name: 'Terms',
-      description: 'Dictionary term operations'
+      description: 'Dictionary term operations',
     },
     {
       name: 'Search',
-      description: 'Search and discovery endpoints'
+      description: 'Search and discovery endpoints',
     },
     {
       name: 'Batch',
-      description: 'Batch query operations'
+      description: 'Batch query operations',
     },
     {
       name: 'Health',
-      description: 'Service health and monitoring'
-    }
+      description: 'Service health and monitoring',
+    },
   ],
   paths: {
     '/health': {
@@ -88,29 +88,30 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/HealthCheck'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/HealthCheck',
+                },
+              },
+            },
           },
           '503': {
             description: 'Service is degraded',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/HealthCheck'
-                }
-              }
-            }
-          }
-        }
-      }
+                  $ref: '#/components/schemas/HealthCheck',
+                },
+              },
+            },
+          },
+        },
+      },
     },
     '/api/v1/terms/{term}': {
       get: {
         tags: ['Terms'],
         summary: 'Get dictionary entry by term',
-        description: 'Retrieves a comprehensive dictionary entry for the specified musical term',
+        description:
+          'Retrieves a comprehensive dictionary entry for the specified musical term',
         parameters: [
           {
             name: 'term',
@@ -119,8 +120,8 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             description: 'The musical term to look up',
             schema: {
               type: 'string',
-              example: 'forte'
-            }
+              example: 'forte',
+            },
           },
           {
             name: 'type',
@@ -128,8 +129,15 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             description: 'Filter by term type',
             schema: {
               type: 'string',
-              enum: ['instrument', 'genre', 'technique', 'composer', 'theory', 'general']
-            }
+              enum: [
+                'instrument',
+                'genre',
+                'technique',
+                'composer',
+                'theory',
+                'general',
+              ],
+            },
           },
           {
             name: 'enhance',
@@ -137,8 +145,8 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             description: 'Request AI enhancement if quality is low',
             schema: {
               type: 'boolean',
-              default: false
-            }
+              default: false,
+            },
           },
           {
             name: 'generate_if_missing',
@@ -146,9 +154,9 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             description: 'Generate entry using AI if not found',
             schema: {
               type: 'boolean',
-              default: false
-            }
-          }
+              default: false,
+            },
+          },
         ],
         responses: {
           '200': {
@@ -165,40 +173,41 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                         entry: { $ref: '#/components/schemas/DictionaryEntry' },
                         related_terms: {
                           type: 'array',
-                          items: { $ref: '#/components/schemas/RelatedTerm' }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                          items: { $ref: '#/components/schemas/RelatedTerm' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           '404': {
             description: 'Term not found',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Error'
-                }
-              }
-            }
-          }
-        }
-      }
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
+      },
     },
     '/api/v1/terms/{id}/feedback': {
       post: {
         tags: ['Terms'],
         summary: 'Submit feedback for a term',
-        description: 'Allows users to provide feedback on dictionary entry quality',
+        description:
+          'Allows users to provide feedback on dictionary entry quality',
         parameters: [
           {
             name: 'id',
             in: 'path',
             required: true,
-            schema: { type: 'string' }
-          }
+            schema: { type: 'string' },
+          },
         ],
         requestBody: {
           required: true,
@@ -210,28 +219,28 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                   rating: {
                     type: 'integer',
                     minimum: 1,
-                    maximum: 5
+                    maximum: 5,
                   },
                   helpful: { type: 'boolean' },
                   feedback_text: {
                     type: 'string',
-                    maxLength: 1000
+                    maxLength: 1000,
                   },
                   feedback_type: {
                     type: 'string',
-                    enum: ['accuracy', 'clarity', 'completeness', 'other']
-                  }
-                }
-              }
-            }
-          }
+                    enum: ['accuracy', 'clarity', 'completeness', 'other'],
+                  },
+                },
+              },
+            },
+          },
         },
         responses: {
           '200': {
-            description: 'Feedback submitted successfully'
-          }
-        }
-      }
+            description: 'Feedback submitted successfully',
+          },
+        },
+      },
     },
     '/api/v1/search': {
       get: {
@@ -247,8 +256,8 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             schema: {
               type: 'string',
               minLength: 1,
-              maxLength: 200
-            }
+              maxLength: 200,
+            },
           },
           {
             name: 'type',
@@ -256,8 +265,15 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             description: 'Filter by term type',
             schema: {
               type: 'string',
-              enum: ['instrument', 'genre', 'technique', 'composer', 'theory', 'general']
-            }
+              enum: [
+                'instrument',
+                'genre',
+                'technique',
+                'composer',
+                'theory',
+                'general',
+              ],
+            },
           },
           {
             name: 'limit',
@@ -266,8 +282,8 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
               type: 'integer',
               minimum: 1,
               maximum: 100,
-              default: 20
-            }
+              default: 20,
+            },
           },
           {
             name: 'offset',
@@ -275,8 +291,8 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             schema: {
               type: 'integer',
               minimum: 0,
-              default: 0
-            }
+              default: 0,
+            },
           },
           {
             name: 'sort_by',
@@ -284,9 +300,9 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
             schema: {
               type: 'string',
               enum: ['relevance', 'alphabetical', 'quality', 'popularity'],
-              default: 'relevance'
-            }
-          }
+              default: 'relevance',
+            },
+          },
         ],
         responses: {
           '200': {
@@ -302,20 +318,22 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                       properties: {
                         results: {
                           type: 'array',
-                          items: { $ref: '#/components/schemas/DictionaryEntry' }
+                          items: {
+                            $ref: '#/components/schemas/DictionaryEntry',
+                          },
                         },
                         total: { type: 'integer' },
-                        query: { type: 'object' }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                        query: { type: 'object' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -327,7 +345,14 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
           normalized_term: { type: 'string' },
           type: {
             type: 'string',
-            enum: ['instrument', 'genre', 'technique', 'composer', 'theory', 'general']
+            enum: [
+              'instrument',
+              'genre',
+              'technique',
+              'composer',
+              'theory',
+              'general',
+            ],
           },
           definition: {
             type: 'object',
@@ -341,13 +366,13 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                   ipa: { type: 'string' },
                   syllables: {
                     type: 'array',
-                    items: { type: 'string' }
+                    items: { type: 'string' },
                   },
-                  stress_pattern: { type: 'string' }
-                }
+                  stress_pattern: { type: 'string' },
+                },
               },
-              usage_example: { type: 'string' }
-            }
+              usage_example: { type: 'string' },
+            },
           },
           references: {
             type: 'object',
@@ -359,9 +384,9 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                   properties: {
                     title: { type: 'string' },
                     url: { type: 'string' },
-                    excerpt: { type: 'string' }
-                  }
-                }
+                    excerpt: { type: 'string' },
+                  },
+                },
               },
               books: {
                 type: 'array',
@@ -371,11 +396,11 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
                     title: { type: 'string' },
                     author: { type: 'string' },
                     isbn: { type: 'string' },
-                    year: { type: 'integer' }
-                  }
-                }
-              }
-            }
+                    year: { type: 'integer' },
+                  },
+                },
+              },
+            },
           },
           quality_score: {
             type: 'object',
@@ -384,13 +409,13 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
               completeness: { type: 'number' },
               clarity: { type: 'number' },
               references: { type: 'number' },
-              overall: { type: 'number' }
-            }
+              overall: { type: 'number' },
+            },
           },
           created_at: { type: 'string', format: 'date-time' },
           updated_at: { type: 'string', format: 'date-time' },
-          version: { type: 'integer' }
-        }
+          version: { type: 'integer' },
+        },
       },
       RelatedTerm: {
         type: 'object',
@@ -398,17 +423,17 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
           entry: { $ref: '#/components/schemas/DictionaryEntry' },
           relationship_type: {
             type: 'string',
-            enum: ['synonym', 'antonym', 'see_also', 'broader', 'narrower']
+            enum: ['synonym', 'antonym', 'see_also', 'broader', 'narrower'],
           },
-          confidence_score: { type: 'number' }
-        }
+          confidence_score: { type: 'number' },
+        },
       },
       HealthCheck: {
         type: 'object',
         properties: {
           status: {
             type: 'string',
-            enum: ['healthy', 'degraded', 'unhealthy']
+            enum: ['healthy', 'degraded', 'unhealthy'],
           },
           service: { type: 'string' },
           version: { type: 'string' },
@@ -421,10 +446,10 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
               database: { type: 'object' },
               cache: { type: 'object' },
               storage: { type: 'object' },
-              ai: { type: 'object' }
-            }
-          }
-        }
+              ai: { type: 'object' },
+            },
+          },
+        },
       },
       Error: {
         type: 'object',
@@ -432,27 +457,27 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
           success: { type: 'boolean', example: false },
           error: { type: 'string' },
           message: { type: 'string' },
-          code: { type: 'string' }
-        }
-      }
+          code: { type: 'string' },
+        },
+      },
     },
     securitySchemes: {
       bearerAuth: {
         type: 'http',
         scheme: 'bearer',
-        bearerFormat: 'JWT'
+        bearerFormat: 'JWT',
       },
       apiKey: {
         type: 'apiKey',
         in: 'header',
-        name: 'X-API-Key'
-      }
-    }
-  }
+        name: 'X-API-Key',
+      },
+    },
+  },
 }
 
 // Serve OpenAPI spec as JSON
-docsHandler.get('/openapi.json', (c) => {
+docsHandler.get('/openapi.json', c => {
   return c.json(openAPISpec)
 })
 
@@ -460,6 +485,6 @@ docsHandler.get('/openapi.json', (c) => {
 docsHandler.get('/', swaggerUI({ url: '/docs/openapi.json' }))
 
 // Redirect /docs to /docs/
-docsHandler.get('', (c) => {
+docsHandler.get('', c => {
   return c.redirect('/docs/', 301)
 })

@@ -12,96 +12,107 @@ const exportQuerySchema = z.object({
   format: z.enum(['json', 'csv', 'sqlite']).default('json'),
   min_quality: z.coerce.number().min(0).max(100).optional(),
   types: z.string().optional(), // comma-separated term types
-  limit: z.coerce.number().min(1).max(10000).optional()
+  limit: z.coerce.number().min(1).max(10000).optional(),
 })
 
 /**
  * Export dictionary data
  * GET /api/v1/export
  */
-exportHandler.get('/', zValidator('query', exportQuerySchema), async (c) => {
+exportHandler.get('/', zValidator('query', exportQuerySchema), async c => {
   const { format, min_quality, types, limit } = c.req.valid('query')
-  
+
   const db = new DictionaryDatabase(c.env.DB)
-  
+
   // Parse types if provided
   const termTypes = types ? types.split(',').map(t => t.trim()) : undefined
-  
+
   // Get filtered entries
   const entries = await db.exportEntries({
     minQuality: min_quality,
     types: termTypes,
-    limit
+    limit,
   })
 
   // Handle different export formats
   switch (format) {
     case 'json':
-      return c.json(createApiResponse({
-        format: 'json',
-        count: entries.length,
-        data: entries,
-        exported_at: new Date().toISOString()
-      }))
-    
+      return c.json(
+        createApiResponse({
+          format: 'json',
+          count: entries.length,
+          data: entries,
+          exported_at: new Date().toISOString(),
+        })
+      )
+
     case 'csv':
       const csv = await generateCSV(entries)
       const csvBlob = new Blob([csv], { type: 'text/csv' })
-      
+
       // Upload to R2 for download
       const exportId = `export_${Date.now()}_${crypto.randomUUID()}`
       const key = `exports/${exportId}.csv`
-      
+
       await c.env.STORAGE.put(key, csvBlob, {
         httpMetadata: {
           contentType: 'text/csv',
-          contentDisposition: `attachment; filename="mirubato-dictionary-${new Date().toISOString().split('T')[0]}.csv"`
-        }
+          contentDisposition: `attachment; filename="mirubato-dictionary-${new Date().toISOString().split('T')[0]}.csv"`,
+        },
       })
-      
+
       // Generate presigned URL (valid for 1 hour)
       const expiresIn = 3600
       const downloadUrl = `https://storage.mirubato.com/${key}?expires=${Date.now() + expiresIn * 1000}`
-      
-      return c.json(createApiResponse({
-        export_id: exportId,
-        format: 'csv',
-        download_url: downloadUrl,
-        expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
-        size_bytes: csvBlob.size,
-        entry_count: entries.length
-      }))
-    
+
+      return c.json(
+        createApiResponse({
+          export_id: exportId,
+          format: 'csv',
+          download_url: downloadUrl,
+          expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
+          size_bytes: csvBlob.size,
+          entry_count: entries.length,
+        })
+      )
+
     case 'sqlite':
       // Generate SQLite database file
       const sqliteData = await generateSQLite(entries)
-      const sqliteBlob = new Blob([sqliteData], { type: 'application/x-sqlite3' })
-      
+      const sqliteBlob = new Blob([sqliteData], {
+        type: 'application/x-sqlite3',
+      })
+
       const sqliteExportId = `export_${Date.now()}_${crypto.randomUUID()}`
       const sqliteKey = `exports/${sqliteExportId}.db`
-      
+
       await c.env.STORAGE.put(sqliteKey, sqliteBlob, {
         httpMetadata: {
           contentType: 'application/x-sqlite3',
-          contentDisposition: `attachment; filename="mirubato-dictionary-${new Date().toISOString().split('T')[0]}.db"`
-        }
+          contentDisposition: `attachment; filename="mirubato-dictionary-${new Date().toISOString().split('T')[0]}.db"`,
+        },
       })
-      
+
       const sqliteDownloadUrl = `https://storage.mirubato.com/${sqliteKey}?expires=${Date.now() + 3600 * 1000}`
-      
-      return c.json(createApiResponse({
-        export_id: sqliteExportId,
-        format: 'sqlite',
-        download_url: sqliteDownloadUrl,
-        expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
-        size_bytes: sqliteBlob.size,
-        entry_count: entries.length
-      }))
-    
+
+      return c.json(
+        createApiResponse({
+          export_id: sqliteExportId,
+          format: 'sqlite',
+          download_url: sqliteDownloadUrl,
+          expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+          size_bytes: sqliteBlob.size,
+          entry_count: entries.length,
+        })
+      )
+
     default:
-      return c.json(createApiResponse({
-        error: 'Unsupported format'
-      }), 400)
+      return c.json(
+        createApiResponse({
+          error: 'Unsupported format',
+        }),
+        400
+      )
   }
 })
 
@@ -109,14 +120,14 @@ exportHandler.get('/', zValidator('query', exportQuerySchema), async (c) => {
  * Get export status/download
  * GET /api/v1/export/:exportId
  */
-exportHandler.get('/:exportId', async (c) => {
+exportHandler.get('/:exportId', async c => {
   const exportId = c.req.param('exportId')
-  
+
   // Check if export exists in R2
   const formats = ['csv', 'db']
   let found = false
   let exportInfo: any = null
-  
+
   for (const ext of formats) {
     const key = `exports/${exportId}.${ext}`
     try {
@@ -125,7 +136,7 @@ exportHandler.get('/:exportId', async (c) => {
         found = true
         const expiresIn = 3600 // 1 hour
         const downloadUrl = `https://storage.mirubato.com/${key}?expires=${Date.now() + expiresIn * 1000}`
-        
+
         exportInfo = {
           export_id: exportId,
           status: 'ready',
@@ -133,7 +144,7 @@ exportHandler.get('/:exportId', async (c) => {
           expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
           size_bytes: object.size,
           format: ext === 'csv' ? 'csv' : 'sqlite',
-          created_at: object.uploaded.toISOString()
+          created_at: object.uploaded.toISOString(),
         }
         break
       }
@@ -141,13 +152,16 @@ exportHandler.get('/:exportId', async (c) => {
       // Continue checking other formats
     }
   }
-  
+
   if (!found) {
-    return c.json(createApiResponse({
-      error: 'Export not found'
-    }), 404)
+    return c.json(
+      createApiResponse({
+        error: 'Export not found',
+      }),
+      404
+    )
   }
-  
+
   return c.json(createApiResponse(exportInfo))
 })
 
@@ -169,9 +183,9 @@ async function generateCSV(entries: any[]): Promise<string> {
     'Categories',
     'Related Terms',
     'Created At',
-    'Updated At'
+    'Updated At',
   ]
-  
+
   const rows = entries.map(entry => [
     entry.id,
     entry.term,
@@ -186,13 +200,10 @@ async function generateCSV(entries: any[]): Promise<string> {
     (entry.metadata.categories || []).join('; '),
     (entry.metadata.related_terms || []).join('; '),
     entry.created_at,
-    entry.updated_at
+    entry.updated_at,
   ])
-  
-  return [
-    headers.join(','),
-    ...rows.map(row => row.join(','))
-  ].join('\n')
+
+  return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
 }
 
 /**
@@ -227,8 +238,9 @@ async function generateSQLite(entries: any[]): Promise<ArrayBuffer> {
       version INTEGER NOT NULL DEFAULT 1
     );`,
     '',
-    ...entries.map(entry => 
-      `INSERT INTO dictionary_entries VALUES (
+    ...entries.map(
+      entry =>
+        `INSERT INTO dictionary_entries VALUES (
         '${entry.id}',
         '${escapeSQLString(entry.term)}',
         '${escapeSQLString(entry.normalized_term)}',
@@ -242,9 +254,9 @@ async function generateSQLite(entries: any[]): Promise<ArrayBuffer> {
         '${entry.updated_at}',
         ${entry.version}
       );`
-    )
+    ),
   ]
-  
+
   const sqlDump = sqlStatements.join('\n')
   return new TextEncoder().encode(sqlDump)
 }

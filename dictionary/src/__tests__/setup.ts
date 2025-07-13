@@ -7,7 +7,7 @@ global.console = {
   error: console.error, // Keep error for debugging
   warn: vi.fn(),
   info: vi.fn(),
-  debug: vi.fn()
+  debug: vi.fn(),
 }
 
 // Mock crypto.randomUUID
@@ -17,9 +17,9 @@ Object.defineProperty(global, 'crypto', {
       // Generate a proper UUID v4 format for testing
       const hex = '0123456789abcdef'
       let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-      uuid = uuid.replace(/[xy]/g, (c) => {
+      uuid = uuid.replace(/[xy]/g, c => {
         const r = Math.floor(Math.random() * 16)
-        const v = c === 'x' ? r : (r & 0x3 | 0x8)
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
         return hex[v]
       })
       return uuid
@@ -29,9 +29,9 @@ Object.defineProperty(global, 'crypto', {
         arr[i] = Math.floor(Math.random() * 256)
       }
       return arr
-    }
+    },
   },
-  writable: true
+  writable: true,
 })
 
 // Mock fetch globally

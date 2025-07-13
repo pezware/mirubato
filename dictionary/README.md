@@ -45,6 +45,7 @@ npm run db:migrate:production
 ## API Endpoints
 
 ### Health & Monitoring
+
 - `GET /health` - Comprehensive health check
 - `GET /livez` - Liveness probe
 - `GET /readyz` - Readiness probe
@@ -52,10 +53,12 @@ npm run db:migrate:production
 - `GET /health/detailed` - Extended health information
 
 ### Documentation
+
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /docs/openapi.json` - OpenAPI specification
 
 ### Dictionary Operations
+
 - `GET /api/v1/terms/:term` - Get definition by term
 - `GET /api/v1/terms/id/:id` - Get definition by ID
 - `POST /api/v1/terms/:id/feedback` - Submit feedback
@@ -121,18 +124,21 @@ npm run deploy:production
 ## Architecture
 
 ### AI Pipeline
+
 1. **Generation**: Llama 3.1 8B for comprehensive definitions
 2. **Validation**: Mistral 7B for quality scoring
 3. **Enhancement**: Weekly batch jobs to improve low-quality entries
 4. **Embeddings**: BGE models for semantic search
 
 ### Storage Layers
+
 1. **D1 Database**: Primary storage for dictionary entries
 2. **KV Cache**: Fast access cache with TTL
 3. **R2 Storage**: Future expansion for multimedia content
 4. **Edge Cache**: CDN-level caching for public content
 
 ### Quality System
+
 - **Accuracy**: Factual correctness (AI validated)
 - **Completeness**: Coverage of definition aspects
 - **Clarity**: Readability and educational value
