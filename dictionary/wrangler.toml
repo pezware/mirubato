@@ -1,0 +1,149 @@
+name = "mirubato-dictionary"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Production configuration (default - no env flag needed)
+vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+routes = [
+  { pattern = "dictionary.mirubato.com", custom_domain = true }
+]
+
+# Observability
+[observability.logs]
+enabled = true
+
+# AI binding for Cloudflare Workers AI
+[ai]
+binding = "AI"
+
+# Queue for batch processing
+[[queues.consumers]]
+queue = "dictionary-processing"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "dictionary-processing-dlq"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-production"
+database_id = "1cc0df2f-aac5-41a9-b6d5-405f7d40b740"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-production"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "598693e0de544dd9858a724ecbc556ba"
+
+[[queues.producers]]
+binding = "BATCH_QUEUE"
+queue = "dictionary-processing"
+
+# Staging configuration
+[env.staging]
+name = "mirubato-dictionary-staging"
+vars = { QUALITY_THRESHOLD = "70", CACHE_TTL = "7200", ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
+
+# Observability
+[env.staging.observability.logs]
+enabled = true
+
+[env.staging.ai]
+binding = "AI"
+
+[[env.staging.routes]]
+pattern = "dictionary-staging.mirubato.com"
+custom_domain = true
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-staging"
+database_id = "2378ddbf-1950-47af-8911-5923474085a4"
+
+[[env.staging.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "e9c7178482e344dab8248969bb1f58e1"
+
+[[env.staging.queues.producers]]
+binding = "BATCH_QUEUE"
+queue = "dictionary-processing-staging"
+
+[[env.staging.queues.consumers]]
+queue = "dictionary-processing-staging"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "dictionary-processing-staging-dlq"
+
+# Local development configuration
+[env.local]
+vars = { QUALITY_THRESHOLD = "50", CACHE_TTL = "300", ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799" }
+
+# Observability
+[env.local.observability.logs]
+enabled = false
+
+[env.local.ai]
+binding = "AI"
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-local"
+database_id = "local"
+
+[[env.local.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-local"
+
+[[env.local.kv_namespaces]]
+binding = "CACHE"
+id = "local"
+
+# Note: Queues are not available in local development
+
+# Explicit production environment (for consistency)
+[env.production]
+name = "mirubato-dictionary"
+vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+
+# Observability
+[env.production.observability.logs]
+enabled = true
+
+[env.production.ai]
+binding = "AI"
+
+[[env.production.routes]]
+pattern = "dictionary.mirubato.com"
+custom_domain = true
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dictionary-production"
+database_id = "1cc0df2f-aac5-41a9-b6d5-405f7d40b740"
+
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "mirubato-dictionary-production"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "598693e0de544dd9858a724ecbc556ba"
+
+[[env.production.queues.producers]]
+binding = "BATCH_QUEUE"
+queue = "dictionary-processing"
+
+[[env.production.queues.consumers]]
+queue = "dictionary-processing"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "dictionary-processing-dlq"
