@@ -5,6 +5,7 @@
 The Music Dictionary Service is a new Cloudflare Worker module designed to provide comprehensive, AI-powered definitions and references for music-related terms. The service leverages AI models for content generation with a quality verification system, progressive enhancement through continuous learning, and durable caching for optimal performance and cost efficiency.
 
 ### Key Features
+
 - AI-powered music term definitions with quality verification
 - Multi-source reference aggregation (Wikipedia, books, stores, streaming)
 - Progressive quality improvement through continuous learning
@@ -51,6 +52,7 @@ The Music Dictionary Service is a new Cloudflare Worker module designed to provi
 ### 1. Cloudflare AI Workers (Recommended for Primary Use)
 
 **Models:**
+
 - **Llama 3.1 8B Instruct** (Primary Definition Generator)
   - Cost: $0.04 per 1M input tokens, $0.04 per 1M output tokens
   - Latency: ~500ms
@@ -64,6 +66,7 @@ The Music Dictionary Service is a new Cloudflare Worker module designed to provi
   - Rate Limit: 1000 requests/minute
 
 **Advantages:**
+
 - Native Cloudflare integration (no external API calls)
 - Low latency (edge deployment)
 - Cost-effective for high volume
@@ -89,25 +92,25 @@ The Music Dictionary Service is a new Cloudflare Worker module designed to provi
 ```typescript
 interface AIStrategy {
   primary: {
-    model: "llama-3.1-8b-instruct"
-    provider: "cloudflare"
-    useCase: "initial_definition_generation"
+    model: 'llama-3.1-8b-instruct'
+    provider: 'cloudflare'
+    useCase: 'initial_definition_generation'
   }
   validation: {
-    model: "mistral-7b-instruct-v0.2"
-    provider: "cloudflare"
-    useCase: "quality_verification"
+    model: 'mistral-7b-instruct-v0.2'
+    provider: 'cloudflare'
+    useCase: 'quality_verification'
   }
   enhancement: {
-    model: "claude-3-haiku"
-    provider: "anthropic"
-    useCase: "periodic_quality_improvement"
-    frequency: "weekly_batch"
+    model: 'claude-3-haiku'
+    provider: 'anthropic'
+    useCase: 'periodic_quality_improvement'
+    frequency: 'weekly_batch'
   }
   fallback: {
-    model: "gpt-3.5-turbo"
-    provider: "openai"
-    useCase: "error_recovery"
+    model: 'gpt-3.5-turbo'
+    provider: 'openai'
+    useCase: 'error_recovery'
   }
 }
 ```
@@ -118,26 +121,26 @@ interface AIStrategy {
 
 ```typescript
 interface DictionaryEntry {
-  id: string                    // Unique identifier
-  term: string                  // The music term/phrase
-  normalized_term: string       // Lowercase, normalized for search
-  type: TermType               // 'instrument' | 'genre' | 'technique' | 'composer' | 'theory' | 'general'
+  id: string // Unique identifier
+  term: string // The music term/phrase
+  normalized_term: string // Lowercase, normalized for search
+  type: TermType // 'instrument' | 'genre' | 'technique' | 'composer' | 'theory' | 'general'
   definition: Definition
   references: References
   metadata: EntryMetadata
   quality_score: QualityScore
-  created_at: string           // ISO 8601
-  updated_at: string           // ISO 8601
-  version: number              // For tracking updates
+  created_at: string // ISO 8601
+  updated_at: string // ISO 8601
+  version: number // For tracking updates
 }
 
 interface Definition {
-  concise: string              // 1-2 sentence definition
-  detailed: string             // Comprehensive explanation
-  etymology?: string           // Word origin for music terms
+  concise: string // 1-2 sentence definition
+  detailed: string // Comprehensive explanation
+  etymology?: string // Word origin for music terms
   pronunciation?: {
-    ipa: string                // International Phonetic Alphabet
-    audio_url?: string         // Link to pronunciation audio
+    ipa: string // International Phonetic Alphabet
+    audio_url?: string // Link to pronunciation audio
   }
   translations?: {
     [language: string]: string // Multi-language support
@@ -147,7 +150,7 @@ interface Definition {
 interface References {
   wikipedia?: {
     url: string
-    extract: string            // First paragraph
+    extract: string // First paragraph
     last_verified: string
   }
   books?: Book[]
@@ -162,7 +165,7 @@ interface Book {
   isbn: string
   amazon_url: string
   affiliate_url?: string
-  relevance_score: number      // 0-1
+  relevance_score: number // 0-1
 }
 
 interface Paper {
@@ -194,7 +197,7 @@ interface Video {
   title: string
   channel: string
   url: string
-  duration: number             // seconds
+  duration: number // seconds
   view_count: number
   relevance_score: number
 }
@@ -216,8 +219,8 @@ interface InstrumentStore {
 }
 
 interface QualityScore {
-  overall: number              // 0-100
-  definition_clarity: number   // 0-100
+  overall: number // 0-100
+  definition_clarity: number // 0-100
   reference_completeness: number // 0-100
   accuracy_verification: number // 0-100
   last_ai_check: string
@@ -231,7 +234,7 @@ interface EntryMetadata {
   related_terms: string[]
   categories: string[]
   difficulty_level?: 'beginner' | 'intermediate' | 'advanced' | 'professional'
-  instruments?: string[]       // Relevant instruments
+  instruments?: string[] // Relevant instruments
 }
 ```
 
@@ -287,6 +290,7 @@ CREATE INDEX idx_searched_at ON search_analytics(searched_at);
 ## API Specification
 
 ### Base URL
+
 ```
 https://dictionary.mirubato.com/api/v1
 ```
@@ -294,32 +298,41 @@ https://dictionary.mirubato.com/api/v1
 ### Endpoints
 
 #### 1. Query Single Term
+
 ```http
 GET /terms/:term
 ```
 
 **Parameters:**
+
 - `term` (path): The music term to look up
 - `enhance` (query, optional): Force AI enhancement check (boolean)
 - `include_related` (query, optional): Include related terms (boolean)
 
 **Response:**
+
 ```json
 {
   "status": "success",
   "data": {
-    "entry": { /* DictionaryEntry */ },
-    "related_terms": [ /* Array of related DictionaryEntry */ ]
+    "entry": {
+      /* DictionaryEntry */
+    },
+    "related_terms": [
+      /* Array of related DictionaryEntry */
+    ]
   }
 }
 ```
 
 #### 2. Batch Query
+
 ```http
 POST /terms/batch
 ```
 
 **Request Body:**
+
 ```json
 {
   "terms": ["piano", "forte", "crescendo"],
@@ -332,11 +345,14 @@ POST /terms/batch
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success",
   "data": {
-    "found": [ /* Array of DictionaryEntry */ ],
+    "found": [
+      /* Array of DictionaryEntry */
+    ],
     "not_found": ["term1", "term2"],
     "processing": ["term3"] // Currently being generated
   }
@@ -344,22 +360,27 @@ POST /terms/batch
 ```
 
 #### 3. Search Terms
+
 ```http
 GET /search
 ```
 
 **Parameters:**
+
 - `q` (query): Search query
 - `type` (query, optional): Filter by term type
 - `limit` (query, optional): Max results (default: 20)
 - `offset` (query, optional): Pagination offset
 
 **Response:**
+
 ```json
 {
   "status": "success",
   "data": {
-    "results": [ /* Array of DictionaryEntry */ ],
+    "results": [
+      /* Array of DictionaryEntry */
+    ],
     "total": 150,
     "limit": 20,
     "offset": 0
@@ -368,25 +389,30 @@ GET /search
 ```
 
 #### 4. Export Full Dictionary
+
 ```http
 GET /export
 ```
 
 **Parameters:**
+
 - `format` (query): 'json' | 'csv' | 'sqlite'
 - `min_quality` (query, optional): Minimum quality score
 - `types` (query, optional): Comma-separated term types
 
 **Response:**
+
 - For JSON: Direct JSON response
 - For CSV/SQLite: Presigned R2 URL for download
 
 #### 5. Trigger Quality Enhancement
+
 ```http
 POST /enhance
 ```
 
 **Request Body:**
+
 ```json
 {
   "mode": "batch" | "single",
@@ -400,6 +426,7 @@ POST /enhance
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success",
@@ -412,35 +439,51 @@ POST /enhance
 ```
 
 #### 6. Admin: Add/Update Entry
+
 ```http
 PUT /admin/terms/:term
 Authorization: Bearer {admin_token}
 ```
 
 **Request Body:**
+
 ```json
 {
-  "definition": { /* Definition object */ },
-  "references": { /* References object */ },
-  "metadata": { /* Metadata object */ }
+  "definition": {
+    /* Definition object */
+  },
+  "references": {
+    /* References object */
+  },
+  "metadata": {
+    /* Metadata object */
+  }
 }
 ```
 
 #### 7. Analytics Dashboard
+
 ```http
 GET /analytics/summary
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success",
   "data": {
     "total_terms": 5420,
     "avg_quality_score": 82.5,
-    "popular_searches": [ /* Top 20 terms */ ],
-    "recent_additions": [ /* Last 10 added */ ],
-    "low_quality_terms": [ /* Terms needing attention */ ]
+    "popular_searches": [
+      /* Top 20 terms */
+    ],
+    "recent_additions": [
+      /* Last 10 added */
+    ],
+    "low_quality_terms": [
+      /* Terms needing attention */
+    ]
   }
 }
 ```
@@ -478,7 +521,7 @@ interface QualityScoring {
       metadataRichness: 0.1,
       userFeedback: 0.1
     }
-    
+
     return (
       this.scoreDefinitionClarity(entry.definition) * weights.definitionClarity +
       this.scoreReferenceCompleteness(entry.references) * weights.referenceCompleteness +
@@ -487,7 +530,7 @@ interface QualityScoring {
       this.getUserFeedbackScore(entry.id) * weights.userFeedback
     )
   }
-  
+
   scoreDefinitionClarity(definition: Definition): number {
     // Check for:
     // - Appropriate length (not too short/long)
@@ -496,7 +539,7 @@ interface QualityScoring {
     // - Clarity for target audience
     // - Presence of examples where relevant
   }
-  
+
   scoreReferenceCompleteness(references: References): number {
     // Check for:
     // - Wikipedia link validity
@@ -582,30 +625,35 @@ Total: ~$57/month
 ## Implementation Timeline
 
 ### Phase 1: MVP (Week 1-2)
+
 - Basic worker setup
 - Single term query with Cloudflare AI
 - D1 database schema
 - Simple quality scoring
 
 ### Phase 2: Quality System (Week 3-4)
+
 - Validation model integration
 - Quality scoring algorithm
 - Batch processing endpoints
 - KV cache implementation
 
 ### Phase 3: References (Week 5-6)
+
 - Wikipedia integration
 - Book search (Google Books API)
 - Basic shopping links
 - Media references structure
 
 ### Phase 4: Enhancement (Week 7-8)
+
 - Continuous improvement system
 - Analytics dashboard
 - Export functionality
 - Admin interface
 
 ### Phase 5: Production (Week 9-10)
+
 - Performance optimization
 - Monitoring setup
 - Documentation
@@ -704,6 +752,7 @@ Total: ~$57/month
 ### A. Example API Responses
 
 #### Successful Term Query
+
 ```json
 {
   "status": "success",
@@ -755,8 +804,17 @@ Total: ~$57/month
       "metadata": {
         "search_frequency": 1523,
         "last_accessed": "2024-01-15T14:30:00Z",
-        "related_terms": ["keyboard", "pianoforte", "grand piano", "upright piano"],
-        "categories": ["instruments", "keyboard instruments", "classical music"],
+        "related_terms": [
+          "keyboard",
+          "pianoforte",
+          "grand piano",
+          "upright piano"
+        ],
+        "categories": [
+          "instruments",
+          "keyboard instruments",
+          "classical music"
+        ],
         "difficulty_level": "beginner"
       },
       "quality_score": {
@@ -783,7 +841,7 @@ import { DictionaryClient } from '@mirubato/dictionary-client'
 
 const dictionary = new DictionaryClient({
   apiKey: process.env.DICTIONARY_API_KEY,
-  baseUrl: 'https://dictionary.mirubato.com/api/v1'
+  baseUrl: 'https://dictionary.mirubato.com/api/v1',
 })
 
 // Simple query
@@ -794,15 +852,15 @@ const terms = await dictionary.batchQuery({
   terms: ['violin', 'viola', 'cello', 'double bass'],
   options: {
     includeRelated: true,
-    minQualityScore: 80
-  }
+    minQualityScore: 80,
+  },
 })
 
 // Search with filters
 const searchResults = await dictionary.search({
   query: 'string instruments',
   type: 'instrument',
-  limit: 20
+  limit: 20,
 })
 ```
 
@@ -812,7 +870,11 @@ The service can emit webhooks for various events:
 
 ```typescript
 interface WebhookEvent {
-  event_type: 'term.created' | 'term.updated' | 'quality.improved' | 'batch.completed'
+  event_type:
+    | 'term.created'
+    | 'term.updated'
+    | 'quality.improved'
+    | 'batch.completed'
   timestamp: string
   data: {
     term_id: string
@@ -829,6 +891,6 @@ interface WebhookEvent {
 
 ---
 
-*Last Updated: January 2024*
-*Version: 1.0*
-*Author: Mirubato Engineering Team*
+_Last Updated: January 2024_
+_Version: 1.0_
+_Author: Mirubato Engineering Team_
