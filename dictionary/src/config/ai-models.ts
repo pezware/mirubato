@@ -30,33 +30,38 @@ export const CLOUDFLARE_AI_MODELS: CloudflareAIModels = {
       ],
     },
 
-    MISTRAL_7B: {
-      model: '@cf/mistral/mistral-7b-instruct-v0.2',
+    LLAMA_3_2_3B: {
+      model: '@cf/meta/llama-3.2-3b-instruct',
       provider: 'cloudflare',
       maxTokens: 1024,
       temperature: 0.1,
       top_p: 0.95,
-      cost_per_million_tokens: 0.02,
-      latency_estimate_ms: 300,
+      cost_per_million_tokens: 0.049,
+      latency_estimate_ms: 200,
       strengths: [
-        'Fast response',
+        'Very fast response',
+        'Cost-effective',
         'Good for validation',
-        'Efficient',
         'Consistent output',
       ],
       use_cases: ['quality_validation', 'simple_queries', 'classification'],
     },
 
-    GEMMA_7B: {
-      model: '@cf/google/gemma-7b-it',
+    LLAMA_3_3_70B: {
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       provider: 'cloudflare',
-      maxTokens: 1024,
-      temperature: 0.5,
+      maxTokens: 2048,
+      temperature: 0.3,
       top_p: 0.9,
-      cost_per_million_tokens: 0.02,
-      latency_estimate_ms: 400,
-      strengths: ['Multilingual', 'Good reasoning', 'Creative content'],
-      use_cases: ['translation', 'etymology', 'creative_definitions'],
+      cost_per_million_tokens: 0.293, // Input cost, output is $2.253
+      latency_estimate_ms: 800,
+      strengths: [
+        'Highest quality output',
+        'Complex reasoning',
+        'Excellent for etymology',
+        'Superior musical knowledge',
+      ],
+      use_cases: ['complex_definitions', 'etymology', 'content_enhancement'],
     },
   },
 
@@ -103,14 +108,14 @@ export const AI_PIPELINE_CONFIG: AIPipelineConfig = {
   // Step 1: Definition Generation
   definition: {
     primary: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B,
-    fallback: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B,
+    fallback: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_2_3B,
     retries: 2,
     timeout: 5000, // 5 seconds
   },
 
   // Step 2: Quality Validation
   validation: {
-    model: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B,
+    model: CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_2_3B,
     scoreThreshold: 70,
     retries: 1,
     timeout: 3000, // 3 seconds
@@ -288,23 +293,23 @@ export function selectModel(
   switch (operation) {
     case 'definition':
       return preferFast
-        ? CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
+        ? CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_2_3B.model
         : CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
 
     case 'validation':
-      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
+      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_2_3B.model
 
     case 'enhancement':
-      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
+      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_3_70B.model
 
     case 'translation':
-      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.GEMMA_7B.model
+      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model
 
     case 'embedding':
       return CLOUDFLARE_AI_MODELS.EMBEDDINGS.BGE_BASE.model
 
     case 'quality':
-      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.MISTRAL_7B.model
+      return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_2_3B.model
 
     default:
       return CLOUDFLARE_AI_MODELS.TEXT_GENERATION.LLAMA_3_1_8B.model

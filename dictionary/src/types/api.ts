@@ -138,12 +138,13 @@ export interface HealthCheckResponse {
 export interface HealthCheckServices {
   database: ServiceHealth
   cache: ServiceHealth
+  storage: ServiceHealth
   ai: AIServiceHealth
-  smokeTests: SmokeTestResults
+  smokeTests?: SmokeTestResults
 }
 
 export interface ServiceHealth {
-  status: 'healthy' | 'degraded' | 'unhealthy' | 'unconfigured'
+  status: 'healthy' | 'degraded' | 'unhealthy' | 'unconfigured' | 'configured'
   latency?: number
   message?: string
   error?: string

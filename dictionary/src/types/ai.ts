@@ -19,8 +19,8 @@ export interface AIModelConfig {
 export interface CloudflareAIModels {
   TEXT_GENERATION: {
     LLAMA_3_1_8B: AIModelConfig
-    MISTRAL_7B: AIModelConfig
-    GEMMA_7B: AIModelConfig
+    LLAMA_3_2_3B: AIModelConfig
+    LLAMA_3_3_70B: AIModelConfig
   }
   EMBEDDINGS: {
     BGE_BASE: EmbeddingModelConfig
