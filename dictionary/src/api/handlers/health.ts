@@ -40,24 +40,26 @@ healthHandler.get('/readyz', async c => {
 healthHandler.get('/health', async c => {
   const startTime = Date.now()
 
-  // Run all health checks in parallel for better performance
-  const [
-    database,
-    cache,
-    storage,
-    cloudflareAI,
-    openAI,
-    anthropic,
-    smokeTests,
-  ] = await Promise.all([
+  // Run basic health checks only (no AI tests for speed)
+  const [database, cache, storage] = await Promise.all([
     checkDatabase(c.env.DB),
     checkCache(c.env.CACHE),
     checkStorage(c.env.STORAGE),
-    checkCloudflareAI(c.env),
-    checkOpenAI(c.env.OPENAI_API_KEY),
-    checkAnthropic(c.env.ANTHROPIC_API_KEY),
-    runSmokeTests(c.env),
   ])
+
+  // Quick AI availability check (no actual tests)
+  const cloudflareAI = {
+    status: c.env.AI ? 'configured' : 'unconfigured',
+    message: 'Use /health/ai for detailed AI status',
+  }
+  const openAI = {
+    status: c.env.OPENAI_API_KEY ? 'configured' : 'unconfigured',
+    message: 'Use /health/ai for detailed status',
+  }
+  const anthropic = {
+    status: c.env.ANTHROPIC_API_KEY ? 'configured' : 'unconfigured',
+    message: 'Use /health/ai for detailed status',
+  }
 
   const checks = {
     database,
@@ -68,15 +70,14 @@ healthHandler.get('/health', async c => {
       openai: openAI,
       anthropic: anthropic,
     } as AIServiceHealth,
-    smokeTests,
   }
 
   const allHealthy = Object.values(checks).every(check => {
     if (typeof check === 'object' && 'cloudflare' in check) {
-      // For AI checks, at least Cloudflare AI should be healthy
-      return check.cloudflare.status === 'healthy'
+      // For AI checks, just ensure Cloudflare AI is configured
+      return check.cloudflare.status === 'configured'
     }
-    return check.status === 'healthy'
+    return check.status === 'healthy' || check.status === 'configured'
   })
 
   const response: HealthCheckResponse = {
@@ -151,17 +152,26 @@ healthHandler.get('/health/detailed', async c => {
 })
 
 /**
- * AI-specific health check endpoint
+ * AI-specific health check endpoint with comprehensive tests
  */
 healthHandler.get('/health/ai', async c => {
-  const models = await testAllAIModels(c.env)
+  const startTime = Date.now()
+
+  // Run AI tests and smoke tests in parallel
+  const [models, smokeTests] = await Promise.all([
+    testAllAIModels(c.env),
+    runSmokeTests(c.env),
+  ])
+
+  const operational = models.some(m => m.status === 'healthy')
+  const smokeTestsPassed = smokeTests.status === 'healthy'
 
   return c.json({
-    status: models.some(m => m.status === 'healthy')
-      ? 'operational'
-      : 'degraded',
+    status: operational && smokeTestsPassed ? 'operational' : 'degraded',
     timestamp: new Date().toISOString(),
+    latency: Date.now() - startTime,
     models,
+    smokeTests,
   })
 })
 
@@ -469,12 +479,12 @@ async function runSmokeTests(env: Env): Promise<SmokeTestResults> {
       }
     }
 
-    // Test 2: Validate quality with Mistral
+    // Test 2: Validate quality with Llama 3.2 3B
     if (env.AI) {
       try {
         const response = await aiService.generateStructuredContent(
           'Rate this definition quality (1-10): "A piano is a keyboard instrument." Reply: {"score": N}',
-          '@cf/mistral/mistral-7b-instruct-v0.2',
+          '@cf/meta/llama-3.2-3b-instruct',
           { max_tokens: 50, temperature: 0.1 }
         )
         tests.quality_validation = !!response.response
@@ -571,12 +581,12 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
     },
     {
       provider: 'cloudflare',
-      model: '@cf/mistral/mistral-7b-instruct-v0.2',
-      name: 'Mistral 7B v0.2',
+      model: '@cf/meta/llama-3.2-3b-instruct',
+      name: 'Llama 3.2 3B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
         const response = (await env.AI.run(
-          '@cf/mistral/mistral-7b-instruct-v0.2' as any,
+          '@cf/meta/llama-3.2-3b-instruct' as any,
           {
             prompt: 'Test',
             max_tokens: 10,
@@ -587,12 +597,12 @@ async function testAllAIModels(env: Env): Promise<AIModelHealth[]> {
     },
     {
       provider: 'cloudflare',
-      model: '@cf/google/gemma-7b-it',
-      name: 'Gemma 7B',
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      name: 'Llama 3.3 70B',
       test: async () => {
         if (!env.AI) throw new Error('AI not configured')
         const response = (await env.AI.run(
-          '@cf/google/gemma-7b-it' as any,
+          '@cf/meta/llama-3.3-70b-instruct-fp8-fast' as any,
           {
             prompt: 'Test',
             max_tokens: 10,
