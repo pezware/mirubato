@@ -90,25 +90,22 @@ export const sanitizeOutput = (text: string | undefined | null): string => {
       'embed',
       'link',
       'meta',
+      'svg',
+      'img',
     ],
-    FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover'],
+    FORBID_ATTR: [
+      'onerror',
+      'onclick',
+      'onload',
+      'onmouseover',
+      'style',
+      'expression',
+    ],
+    ALLOW_UNKNOWN_PROTOCOLS: false, // Block unknown protocols
   }
 
-  // Sanitize with DOMPurify
-  let sanitized = DOMPurify.sanitize(text, config)
-
-  // Apply additional iterative sanitization for protocols and patterns
-  // This ensures even encoded or obfuscated patterns are removed
-  let previousSanitized = ''
-  while (sanitized !== previousSanitized) {
-    previousSanitized = sanitized
-    sanitized = sanitized
-      .replace(/(javascript|data|vbscript|about|file):/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .replace(/style\s*=/gi, '')
-      .replace(/expression\s*\(/gi, '')
-      .replace(/import\s+/gi, '')
-  }
+  // Sanitize with DOMPurify - it handles all XSS patterns including encoded ones
+  const sanitized = DOMPurify.sanitize(text, config)
 
   return sanitized.trim()
 }
