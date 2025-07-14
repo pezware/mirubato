@@ -14,6 +14,7 @@ import { exportHandler } from '../api/handlers/export'
 import { enhanceHandler } from '../api/handlers/enhance'
 import { adminHandler } from '../api/handlers/admin'
 import { analyticsHandler } from '../api/handlers/analytics'
+import { debugHandler } from '../api/handlers/debug'
 
 export const dictionaryRoutes = new Hono<{
   Bindings: Env
@@ -29,6 +30,15 @@ v1.route('/search', searchHandler)
 v1.route('/batch', batchHandler)
 v1.route('/export', exportHandler)
 v1.route('/analytics', analyticsHandler)
+
+// Debug endpoints (protect in production)
+v1.use('/debug/*', async (c, next) => {
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json({ error: 'Debug endpoints not available in production' }, 403)
+  }
+  await next()
+})
+v1.route('/debug', debugHandler)
 
 // Protected endpoints (require auth)
 v1.use('/enhance/*', auth())

@@ -12,6 +12,7 @@ binding = "ASSETS"
 [vars]
 API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
+DICTIONARY_URL = "https://dictionary.mirubato.com"
 
 # Observability
 [observability.logs]
@@ -33,6 +34,7 @@ workers_dev = false
 [env.production.vars]
 API_URL = "https://api.mirubato.com"
 SCORES_URL = "https://scores.mirubato.com"
+DICTIONARY_URL = "https://dictionary.mirubato.com"
 
 # Observability
 [env.production.observability.logs]
@@ -58,6 +60,7 @@ workers_dev = false
 [env.staging.vars]
 API_URL = "https://api-staging.mirubato.com"
 SCORES_URL = "https://scores-staging.mirubato.com"
+DICTIONARY_URL = "https://dictionary-staging.mirubato.com"
 
 # Observability
 [env.staging.observability.logs]
@@ -78,6 +81,7 @@ workers_dev = true
 
 [env.dev.vars]
 API_URL = "http://localhost:8787"
+DICTIONARY_URL = "http://localhost:9799"
 
 # Local development configuration
 [env.local]
@@ -87,6 +91,7 @@ workers_dev = true
 [env.local.vars]
 API_URL = "http://api-mirubato.localhost:9797"
 SCORES_URL = "http://scores-mirubato.localhost:9788"
+DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799"
 
 # Observability
 [env.local.observability.logs]

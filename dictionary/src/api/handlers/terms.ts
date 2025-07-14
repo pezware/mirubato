@@ -19,6 +19,7 @@ import {
   TermType,
   SearchAnalytics,
   UserFeedback,
+  SupportedLanguage,
 } from '../../types/dictionary'
 
 export const termsHandler = new Hono<{ Bindings: Env }>()
@@ -66,11 +67,18 @@ termsHandler.get(
   async c => {
     const startTime = Date.now()
     const term = c.req.param('term')
-    const { type, enhance, generate_if_missing } = c.req.query()
+    const { type, enhance, generate_if_missing, lang, searchAllLanguages } =
+      c.req.query()
 
     const db = new DictionaryDatabase(c.env.DB)
     const cacheService = new CacheService(c.env.CACHE, c.env)
     const userInfo = getUserInfo(c)
+
+    // Get language from query or Accept-Language header
+    const requestLang =
+      lang ||
+      c.req.header('Accept-Language')?.split(',')[0]?.split('-')[0] ||
+      'en'
 
     try {
       // Normalize the term
@@ -81,7 +89,9 @@ termsHandler.get(
 
       // Try database if not in cache
       if (!entry) {
-        entry = await db.findByTerm(normalizedTerm)
+        entry = await db.findByTerm(normalizedTerm, requestLang, {
+          searchAllLanguages: searchAllLanguages === 'true',
+        })
 
         if (entry) {
           // Cache the found entry
@@ -125,6 +135,8 @@ termsHandler.get(
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
         search_source: 'api_direct',
+        search_lang: requestLang as SupportedLanguage,
+        result_lang: entry?.lang,
       }
 
       // Log asynchronously to not block response
@@ -293,6 +305,44 @@ termsHandler.get(
     } catch (error) {
       console.error('Get by ID error:', error)
       throw new APIError('Failed to retrieve entry', 500, { error })
+    }
+  }
+)
+
+/**
+ * Get a term in multiple languages
+ * GET /api/v1/terms/:term/languages
+ */
+termsHandler.get(
+  '/:term/languages',
+  auth({ optional: true }),
+  rateLimit({ windowMs: 60000, max: 100 }),
+  cache({ ttl: 600 }),
+  edgeCache({ maxAge: 300, sMaxAge: 600 }),
+  async c => {
+    const term = c.req.param('term')
+    const { languages } = c.req.query()
+
+    const db = new DictionaryDatabase(c.env.DB)
+    const normalizedTerm = normalizeTerm(term)
+
+    try {
+      // Parse languages from query string (comma-separated)
+      const requestedLangs = languages
+        ? languages.split(',').map(l => l.trim())
+        : ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'] // Default to all supported languages
+
+      const result = await db.getTermInLanguages(normalizedTerm, requestedLangs)
+
+      return c.json({
+        success: true,
+        data: result,
+      })
+    } catch (error) {
+      console.error('Multi-language term error:', error)
+      throw new APIError('Failed to get term in multiple languages', 500, {
+        error,
+      })
     }
   }
 )

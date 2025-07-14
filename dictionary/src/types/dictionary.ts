@@ -3,11 +3,17 @@
  */
 
 export type TermType =
-  | 'instrument'
+  | 'tempo'
+  | 'dynamics'
+  | 'articulation'
+  | 'form'
   | 'genre'
+  | 'instrument'
   | 'technique'
-  | 'composer'
   | 'theory'
+  | 'composer'
+  | 'period'
+  | 'notation'
   | 'general'
 
 export type CheckType =
@@ -42,10 +48,18 @@ export type FeedbackType =
   | 'spam'
   | 'copyright'
 
+export type SupportedLanguage = 'en' | 'es' | 'fr' | 'de' | 'zh-CN' | 'zh-TW'
+
+// Extended languages for source_lang (includes common musical term origins)
+export type ExtendedLanguage = SupportedLanguage | 'it' | 'la' | null
+
 export interface DictionaryEntry {
   id: string
   term: string
   normalized_term: string
+  lang: SupportedLanguage // The language this entry is written in
+  source_lang?: ExtendedLanguage // The original language of the term
+  lang_confidence?: number // 0-1 confidence in language detection
   type: TermType
   definition: Definition
   references: References
@@ -269,6 +283,10 @@ export interface EntryMetadata {
 // Request/Response types
 export interface SearchQuery {
   q: string
+  lang?: SupportedLanguage // UI language for search
+  searchAllLanguages?: boolean // Enable cross-language search
+  preferredLangs?: SupportedLanguage[] // For comparison view
+  includeTranslations?: boolean // Return same term in multiple languages
   type?: TermType
   limit?: number
   offset?: number
@@ -283,6 +301,7 @@ export interface SearchFilters {
   difficulty_level?: string
   has_audio?: boolean
   has_references?: boolean
+  languages?: SupportedLanguage[] // Filter by specific languages
   language?: string
 }
 
@@ -325,6 +344,8 @@ export interface SearchAnalytics {
   user_session_id?: string
   user_id?: string
   search_source: SearchSource
+  search_lang?: SupportedLanguage // The UI language during search
+  result_lang?: SupportedLanguage // The language of the result returned
 }
 
 export interface UserFeedback {
@@ -348,4 +369,34 @@ export interface QualityCheckpoint {
   model_used: string
   checked_at: string
   checked_by?: string // User ID for human reviews
+}
+
+// Search result with language awareness
+export interface SearchResult {
+  entries: DictionaryEntry[]
+  total: number
+  query: SearchQuery
+  suggestedLanguages?: SupportedLanguage[] // Other languages with this term
+  detectedTermLanguage?: ExtendedLanguage // What language the term likely is
+}
+
+// Multi-language comparison response
+export interface MultiLanguageTermResponse {
+  term: string
+  normalized_term: string
+  languages: Partial<Record<SupportedLanguage, DictionaryEntry>>
+}
+
+// Seed queue for background generation
+export interface SeedQueueEntry {
+  id: string
+  term: string
+  languages: SupportedLanguage[]
+  priority: number
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  attempts: number
+  last_attempt_at?: string
+  completed_at?: string
+  error_message?: string
+  created_at: string
 }

@@ -8,7 +8,7 @@ command = "npm run build"
 
 # Local development
 [env.local]
-vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com", API_URL = "http://api-mirubato.localhost:9797", FRONTEND_URL = "http://www-mirubato.localhost:4000", SCORES_URL = "http://scores-mirubato.localhost:9788" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", MAGIC_LINK_SECRET = "local-magic-link-secret-for-development-only", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com", API_URL = "http://api-mirubato.localhost:9797", FRONTEND_URL = "http://www-mirubato.localhost:4000", SCORES_URL = "http://scores-mirubato.localhost:9788", DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799" }
 
 # Observability
 [env.local.observability.logs]
@@ -34,7 +34,7 @@ simple = { limit = 10, period = 60 }
 [env.staging]
 name = "mirubato-api-staging"
 workers_dev = false
-vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com" }
+vars = { ENVIRONMENT = "staging", GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com", API_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com", SCORES_URL = "https://scores-staging.mirubato.com", DICTIONARY_URL = "https://dictionary-staging.mirubato.com" }
 
 # Observability
 [env.staging.observability.logs]
@@ -66,6 +66,10 @@ workers_dev = false
 [vars]
 ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
+API_URL = "https://api.mirubato.com"
+FRONTEND_URL = "https://mirubato.com"
+SCORES_URL = "https://scores.mirubato.com"
+DICTIONARY_URL = "https://dictionary.mirubato.com"
 
 # Observability
 [observability.logs]
@@ -99,6 +103,10 @@ workers_dev = false
 [env.production.vars]
 ENVIRONMENT = "production"
 GOOGLE_CLIENT_ID = "588179480764-kqduhkmbjh34po7kgfond5anarg1b4vm.apps.googleusercontent.com"
+API_URL = "https://api.mirubato.com"
+FRONTEND_URL = "https://mirubato.com"
+SCORES_URL = "https://scores.mirubato.com"
+DICTIONARY_URL = "https://dictionary.mirubato.com"
 
 # Observability
 [env.production.observability.logs]

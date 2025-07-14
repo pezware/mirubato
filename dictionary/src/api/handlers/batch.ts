@@ -20,6 +20,10 @@ export const batchHandler = new Hono<{ Bindings: Env }>()
 // Batch query schema
 const batchQuerySchema = z.object({
   terms: z.array(z.string().min(1).max(200)).min(1).max(50),
+  lang: z
+    .enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'])
+    .optional()
+    .default('en'),
   type: z
     .enum(['instrument', 'genre', 'technique', 'composer', 'theory', 'general'])
     .optional(),
@@ -57,7 +61,7 @@ batchHandler.post(
   rateLimit({ windowMs: 60000, max: 30 }), // Lower limit for batch operations
   zValidator('json', batchQuerySchema),
   async c => {
-    const { terms, type, generate_missing, include_related } =
+    const { terms, lang, type, generate_missing, include_related } =
       c.req.valid('json')
     const userInfo = getUserInfo(c)
 
@@ -87,7 +91,7 @@ batchHandler.post(
       // Fetch uncached terms from database
       let dbResults = new Map<string, DictionaryEntry>()
       if (uncachedTerms.length > 0) {
-        dbResults = await db.findByTerms(uncachedTerms)
+        dbResults = await db.findByTerms(uncachedTerms, lang)
 
         // Cache the found entries
         await cacheService.cacheBatch(uncachedTerms, dbResults)

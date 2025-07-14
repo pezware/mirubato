@@ -8,6 +8,7 @@ import {
   Music,
   ListChecks,
   Circle,
+  Book,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import metronomeData from '../data/metronomePatterns.json'
@@ -19,6 +20,7 @@ import SignInModal from '../components/auth/SignInModal'
 import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
+import Dictionary from '../components/dictionary/Dictionary'
 import {
   usePracticeTracking,
   PracticeSummaryModal,
@@ -387,6 +389,11 @@ const Toolbox: React.FC = () => {
               label: t('tabs.circleOfFifths'),
               icon: <Circle size={20} />,
             },
+            {
+              id: 'dictionary',
+              label: t('tabs.dictionary'),
+              icon: <Book size={20} />,
+            },
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -641,6 +648,9 @@ const Toolbox: React.FC = () => {
 
         {/* Circle of Fifths Tab */}
         {activeTab === 'circle-of-fifths' && <CircleOfFifths />}
+
+        {/* Dictionary Tab */}
+        {activeTab === 'dictionary' && <Dictionary />}
       </div>
 
       {/* Sign In Modal */}

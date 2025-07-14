@@ -4,7 +4,7 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Production configuration (default - no env flag needed)
-vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", CORS_ORIGIN = "https://mirubato.com,https://www.mirubato.com" }
 routes = [
   { pattern = "dictionary.mirubato.com", custom_domain = true }
 ]
@@ -45,7 +45,7 @@ queue = "dictionary-processing"
 # Staging configuration
 [env.staging]
 name = "mirubato-dictionary-staging"
-vars = { QUALITY_THRESHOLD = "70", CACHE_TTL = "7200", ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
+vars = { QUALITY_THRESHOLD = "70", CACHE_TTL = "7200", ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com", CORS_ORIGIN = "https://staging.mirubato.com,https://www-staging.mirubato.com" }
 
 # Observability
 [env.staging.observability.logs]
@@ -84,7 +84,7 @@ dead_letter_queue = "dictionary-processing-staging-dlq"
 
 # Local development configuration
 [env.local]
-vars = { QUALITY_THRESHOLD = "50", CACHE_TTL = "300", ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799" }
+vars = { QUALITY_THRESHOLD = "50", CACHE_TTL = "300", ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799", CORS_ORIGIN = "http://www-mirubato.localhost:4000,http://localhost:4000,http://localhost:3000" }
 
 # Observability
 [env.local.observability.logs]
@@ -111,7 +111,7 @@ id = "local"
 # Explicit production environment (for consistency)
 [env.production]
 name = "mirubato-dictionary"
-vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", CORS_ORIGIN = "https://mirubato.com,https://www.mirubato.com" }
 
 # Observability
 [env.production.observability.logs]

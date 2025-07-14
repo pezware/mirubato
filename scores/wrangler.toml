@@ -4,7 +4,7 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Production configuration (default - no env flag needed)
-vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", DICTIONARY_URL = "https://dictionary.mirubato.com" }
 routes = [
   { pattern = "scores.mirubato.com", custom_domain = true }
 ]
@@ -49,7 +49,7 @@ queue = "pdf-processing"
 # Staging configuration
 [env.staging]
 name = "mirubato-scores-staging"
-vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com" }
+vars = { ENVIRONMENT = "staging", API_SERVICE_URL = "https://api-staging.mirubato.com", FRONTEND_URL = "https://staging.mirubato.com", DICTIONARY_URL = "https://dictionary-staging.mirubato.com" }
 
 # Observability
 [env.staging.observability.logs]
@@ -92,7 +92,7 @@ dead_letter_queue = "pdf-processing-staging-dlq"
 # Development configuration
 [env.dev]
 name = "mirubato-scores-dev"
-vars = { ENVIRONMENT = "development", API_SERVICE_URL = "https://api-staging.mirubato.com" }
+vars = { ENVIRONMENT = "development", API_SERVICE_URL = "https://api-staging.mirubato.com", DICTIONARY_URL = "https://dictionary-staging.mirubato.com" }
 routes = [
   { pattern = "scores-dev.pezware.workers.dev", zone_name = "pezware.workers.dev" }
 ]
@@ -133,7 +133,7 @@ dead_letter_queue = "pdf-processing-dev-dlq"
 
 # Local development configuration
 [env.local]
-vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788" }
+vars = { ENVIRONMENT = "local", JWT_SECRET = "local-jwt-secret-for-development-only", FRONTEND_URL = "http://www-mirubato.localhost:4000", API_SERVICE_URL = "http://api-mirubato.localhost:9797", SCORES_URL = "http://scores-mirubato.localhost:9788", DICTIONARY_URL = "http://dictionary-mirubato.localhost:9799" }
 
 # Observability
 [env.local.observability.logs]
@@ -163,7 +163,7 @@ id = "local"
 # Explicit production environment (for consistency)
 [env.production]
 name = "mirubato-scores"
-vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com" }
+vars = { ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", DICTIONARY_URL = "https://dictionary.mirubato.com" }
 
 # Observability
 [env.production.observability.logs]
