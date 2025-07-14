@@ -50,7 +50,8 @@ app.use('*', async (c, next) => {
         : [
             'https://mirubato.com',
             'https://www.mirubato.com',
-            'https://mirubato-staging.com',
+            'https://staging.mirubato.com',
+            'https://www-staging.mirubato.com',
             'http://localhost:3000',
             'http://localhost:4000',
             'http://www-mirubato.localhost:4000',
