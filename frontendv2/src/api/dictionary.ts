@@ -262,9 +262,10 @@ export class DictionaryAPIClient {
       } else if (Array.isArray(response.data)) {
         // Response is direct array
         return z.array(z.string()).parse(response.data)
-      } else {
-        throw new Error('Invalid response structure')
       }
+
+      // If no valid format found, return empty array
+      return []
     } catch (error) {
       // Don't throw for suggestions - just return empty array
       console.error('Failed to get suggestions:', error)
@@ -301,9 +302,10 @@ export class DictionaryAPIClient {
       } else if (Array.isArray(response.data)) {
         // Response is direct array
         return z.array(z.string()).parse(response.data)
-      } else {
-        throw new Error('Invalid response structure')
       }
+
+      // If no valid format found, return empty array
+      return []
     } catch (error) {
       console.error('Failed to get popular terms:', error)
       return []
@@ -343,9 +345,10 @@ export class DictionaryAPIClient {
       } else if (Array.isArray(response.data)) {
         // Response is direct array
         return z.array(z.string()).parse(response.data)
-      } else {
-        throw new Error('Invalid response structure')
       }
+
+      // If no valid format found, return empty array
+      return []
     } catch (error) {
       console.error('Failed to get related terms:', error)
       return []
