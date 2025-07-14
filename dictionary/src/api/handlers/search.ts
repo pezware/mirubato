@@ -25,7 +25,20 @@ export const searchHandler = new Hono<{ Bindings: Env }>()
 const searchQuerySchema = z.object({
   q: z.string().min(1).max(200),
   type: z
-    .enum(['instrument', 'genre', 'technique', 'composer', 'theory', 'general'])
+    .enum([
+      'tempo',
+      'dynamics',
+      'articulation',
+      'form',
+      'genre',
+      'instrument',
+      'technique',
+      'theory',
+      'composer',
+      'period',
+      'notation',
+      'general',
+    ])
     .optional(),
   limit: z.coerce.number().min(1).max(100).default(20),
   offset: z.coerce.number().min(0).default(0),

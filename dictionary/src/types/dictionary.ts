@@ -3,11 +3,17 @@
  */
 
 export type TermType =
-  | 'instrument'
+  | 'tempo'
+  | 'dynamics'
+  | 'articulation'
+  | 'form'
   | 'genre'
+  | 'instrument'
   | 'technique'
-  | 'composer'
   | 'theory'
+  | 'composer'
+  | 'period'
+  | 'notation'
   | 'general'
 
 export type CheckType =
