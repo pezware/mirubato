@@ -73,28 +73,41 @@ export const isValidMusicTerm = (term: string): boolean => {
 export const sanitizeOutput = (text: string | undefined | null): string => {
   if (!text || typeof text !== 'string') return ''
 
-  // Create a temporary element to decode HTML entities safely
-  const temp = document.createElement('div')
-  temp.textContent = text
-  let sanitized = temp.innerHTML
-  let previousSanitized = ''
+  // Use DOMPurify for robust sanitization
+  // Configure to strip ALL HTML and return plain text
+  const config = {
+    ALLOWED_TAGS: [], // No HTML tags allowed
+    ALLOWED_ATTR: [], // No attributes allowed
+    KEEP_CONTENT: true, // Keep text content
+    RETURN_DOM: false,
+    RETURN_DOM_FRAGMENT: false,
+    // Additional security settings
+    FORBID_TAGS: [
+      'script',
+      'style',
+      'iframe',
+      'object',
+      'embed',
+      'link',
+      'meta',
+    ],
+    FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover'],
+  }
 
-  // Apply sanitization iteratively until no more changes occur
+  // Sanitize with DOMPurify
+  let sanitized = DOMPurify.sanitize(text, config)
+
+  // Apply additional iterative sanitization for protocols and patterns
+  // This ensures even encoded or obfuscated patterns are removed
+  let previousSanitized = ''
   while (sanitized !== previousSanitized) {
     previousSanitized = sanitized
-
-    // Remove angle brackets and quotes that could be used for attribute injection
-    sanitized = sanitized.replace(/[<>'"]/g, '') // Remove angle brackets AND quotes
-
-    // Apply other sanitizations iteratively as well
     sanitized = sanitized
-      .replace(/(javascript|data|vbscript|about|file):/gi, '') // Remove dangerous protocols
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers
-      .replace(/style\s*=/gi, '') // Remove style attributes
-      .replace(/expression\s*\(/gi, '') // Remove CSS expressions
-      .replace(/import\s+/gi, '') // Remove import statements
-      .replace(/\\/g, '') // Remove backslashes that could be used for escaping
-      .replace(/&#/g, '') // Remove HTML entity encoding attempts
+      .replace(/(javascript|data|vbscript|about|file):/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .replace(/style\s*=/gi, '')
+      .replace(/expression\s*\(/gi, '')
+      .replace(/import\s+/gi, '')
   }
 
   return sanitized.trim()

@@ -45,12 +45,22 @@ describe('dictionarySecurity', () => {
   })
 
   describe('sanitizeOutput', () => {
-    it('should remove nested event handlers', () => {
-      const input = '<on<onload=load=alert()>'
-      const result = sanitizeOutput(input)
-      // The textContent property HTML-encodes the < and > characters
-      // So the sanitization doesn't work on the encoded text
-      expect(result).toBe('&lt;on&lt;load=alert()&gt;')
+    it('should remove HTML tags and dangerous content', () => {
+      // Test that HTML tags are stripped
+      const input1 = 'Hello<b>World</b>'
+      const result1 = sanitizeOutput(input1)
+      expect(result1).toBe('HelloWorld')
+
+      // Test that script tags and their content are removed
+      const input2 = '<script>alert("XSS")</script>Safe text'
+      const result2 = sanitizeOutput(input2)
+      expect(result2).toBe('Safe text')
+
+      // Verify no HTML remains
+      expect(result1).not.toContain('<')
+      expect(result1).not.toContain('>')
+      expect(result2).not.toContain('<')
+      expect(result2).not.toContain('>')
     })
 
     it('should remove all dangerous protocols', () => {
@@ -61,20 +71,26 @@ describe('dictionarySecurity', () => {
       })
     })
 
-    it('should handle multiple overlapping patterns', () => {
-      const input = '<style<style=xss>=expression(alert())'
+    it('should remove event handlers', () => {
+      const input = 'Click <span onclick="alert(1)">here</span> text'
       const result = sanitizeOutput(input)
-      // After HTML encoding the < and > become entities
-      expect(result).not.toContain('expression')
-      expect(result).toBe('&lt;style&lt;xss&gt;=alert())')
+      expect(result).toBe('Click here text')
+      expect(result).not.toContain('onclick')
+      expect(result).not.toContain('alert')
+
+      // Test inline event handlers
+      const input2 = 'text with onmouseover=alert(2) handler'
+      const result2 = sanitizeOutput(input2)
+      expect(result2).toBe('text with alert(2) handler')
+      expect(result2).not.toContain('onmouseover=')
     })
 
-    it('should handle HTML entities', () => {
-      // textContent doesn't decode entities, it treats them as literal text
+    it('should handle HTML entities by keeping them as-is', () => {
+      // DOMPurify will not decode entities when no tags are allowed
       const input = '&lt;script&gt;alert("XSS")&lt;/script&gt;'
       const result = sanitizeOutput(input)
-      // The entities are double-encoded by textContent
-      expect(result).toContain('amp')
+      // The entities remain as-is since they're treated as plain text
+      expect(result).toBe('&lt;script&gt;alert("XSS")&lt;/script&gt;')
       expect(result).not.toContain('<script>')
     })
   })
