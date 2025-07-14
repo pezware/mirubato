@@ -182,6 +182,14 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             <span className="px-3 py-1 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
               {getLanguageName(termEntry.lang)}
             </span>
+            {(termEntry as any).wasAIGenerated && (
+              <span
+                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                title={t('toolbox:dictionary.aiGeneratedTooltip')}
+              >
+                🤖 {t('toolbox:dictionary.aiGenerated')}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-4 text-sm text-stone-600 mt-2">
             <span className="capitalize">

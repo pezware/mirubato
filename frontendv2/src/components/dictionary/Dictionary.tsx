@@ -8,7 +8,7 @@ import {
   DictionaryState,
   SupportedLanguage,
 } from '@/types/dictionary'
-import { Card } from '@/components/ui'
+import { Card, Button } from '@/components/ui'
 import DictionarySearch from './DictionarySearch'
 import DictionaryResults from './DictionaryResults'
 import DictionaryTerm from './DictionaryTerm'
@@ -23,7 +23,16 @@ const Dictionary: React.FC = () => {
   const { t, i18n } = useTranslation(['toolbox'])
 
   // Component state
-  const [state, setState] = useState<DictionaryState>({
+  const [state, setState] = useState<
+    DictionaryState & {
+      errorDetails?: {
+        code?: string
+        suggestions?: string[]
+        jobId?: string
+        estimatedCompletion?: string
+      }
+    }
+  >({
     searchQuery: '',
     searchResults: [],
     selectedTerm: null,
@@ -137,14 +146,21 @@ const Dictionary: React.FC = () => {
         if (results.entries.length === 1) {
           setState(prev => ({ ...prev, selectedTerm: results.entries[0] }))
         }
-      } catch (error) {
+      } catch (error: any) {
+        // Handle different error types for search
+        let errorMessage = t('toolbox:dictionary.errors.searchFailed')
+        let errorDetails: { code?: string } = {}
+
+        if (error instanceof Error) {
+          errorMessage = error.message
+          errorDetails = { code: (error as any).code }
+        }
+
         setState(prev => ({
           ...prev,
           isLoading: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : t('toolbox:dictionary.errors.searchFailed'),
+          error: errorMessage,
+          errorDetails,
           searchResults: [],
         }))
       }
@@ -195,14 +211,52 @@ const Dictionary: React.FC = () => {
             console.error('Failed to fetch multi-language data:', error)
           }
         }
-      } catch (error) {
+      } catch (error: any) {
+        // Handle different error types
+        let errorMessage = t('toolbox:dictionary.errors.loadFailed')
+        let errorDetails: {
+          code?: string
+          suggestions?: string[]
+          jobId?: string
+          estimatedCompletion?: string
+        } = {}
+
+        if (error instanceof Error) {
+          errorMessage = error.message
+          errorDetails = {
+            code: (error as any).code,
+            suggestions: (error as any).suggestions,
+            jobId: (error as any).jobId,
+            estimatedCompletion: (error as any).estimatedCompletion,
+          }
+        }
+
+        // Handle specific error codes
+        if (errorDetails.code === 'TERM_NOT_FOUND') {
+          errorMessage = t('toolbox:dictionary.termNotFound', {
+            term: typeof term === 'string' ? term : term.term,
+          })
+          if (errorDetails.suggestions && errorDetails.suggestions.length > 0) {
+            errorMessage += '. ' + t('toolbox:dictionary.didYouMean')
+          }
+        } else if (errorDetails.code === 'AI_GENERATION_PENDING') {
+          errorMessage = t('toolbox:dictionary.aiGenerating')
+          if (errorDetails.estimatedCompletion) {
+            errorMessage +=
+              ' ' +
+              t('toolbox:dictionary.estimatedTime', {
+                time: errorDetails.estimatedCompletion,
+              })
+          }
+        } else if (errorDetails.code === 'AI_SERVICE_UNAVAILABLE') {
+          errorMessage = t('toolbox:dictionary.aiServiceUnavailable')
+        }
+
         setState(prev => ({
           ...prev,
           isLoading: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : t('toolbox:dictionary.errors.loadFailed'),
+          error: errorMessage,
+          errorDetails,
         }))
       }
     },
@@ -301,9 +355,45 @@ const Dictionary: React.FC = () => {
       {/* Error display */}
       {state.error && (
         <Card className="mb-6 bg-red-50 border-red-200">
-          <div className="flex items-center text-red-800">
-            <span className="text-xl mr-2">⚠️</span>
-            <p>{state.error}</p>
+          <div className="space-y-3">
+            <div className="flex items-center text-red-800">
+              <span className="text-xl mr-2">
+                {state.errorDetails?.code === 'AI_GENERATION_PENDING'
+                  ? '⏳'
+                  : '⚠️'}
+              </span>
+              <div className="flex-1">
+                <p className="font-medium">{state.error}</p>
+                {state.errorDetails?.code === 'TERM_NOT_FOUND' && (
+                  <p className="text-sm mt-1">
+                    {t('toolbox:dictionary.aiWillGenerate')}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Show suggestions if available */}
+            {state.errorDetails?.suggestions &&
+              state.errorDetails.suggestions.length > 0 && (
+                <div className="pt-3 border-t border-red-200">
+                  <p className="text-sm text-red-700 mb-2">
+                    {t('toolbox:dictionary.suggestions')}:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {state.errorDetails.suggestions.map((suggestion, idx) => (
+                      <Button
+                        key={idx}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleTermSelect(suggestion)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-100"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
           </div>
         </Card>
       )}

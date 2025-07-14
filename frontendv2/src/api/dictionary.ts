@@ -223,9 +223,53 @@ export class DictionaryAPIClient {
     try {
       const response = await this.client.get(url)
 
+      // Check if term was not found (404)
+      if (response.status === 404 && response.data) {
+        const notFoundData = response.data as {
+          success: boolean
+          error: string
+          data?: {
+            term: string
+            normalized_term: string
+            suggestions?: string[]
+          }
+        }
+
+        // Create a custom error with more information
+        const error = new Error(notFoundData.error || 'Term not found')
+        ;(error as any).code = 'TERM_NOT_FOUND'
+        ;(error as any).suggestions = notFoundData.data?.suggestions || []
+        throw error
+      }
+
+      // Check if AI generation is in progress (202 Accepted)
+      if (response.status === 202 && response.data) {
+        const pendingData = response.data as {
+          success: boolean
+          message: string
+          data?: {
+            job_id?: string
+            estimated_completion?: string
+          }
+        }
+
+        const error = new Error(
+          pendingData.message || 'AI generation in progress'
+        )
+        ;(error as any).code = 'AI_GENERATION_PENDING'
+        ;(error as any).jobId = pendingData.data?.job_id
+        ;(error as any).estimatedCompletion =
+          pendingData.data?.estimated_completion
+        throw error
+      }
+
+      // Check for valid success response
       if (!isValidApiResponse(response.data)) {
         throw new Error('Invalid response from server')
       }
+
+      // Check if this was AI-generated (look for header)
+      const wasGenerated = response.headers?.['x-generated'] === 'true'
 
       const validated = validateApiResponse(
         response.data,
@@ -235,12 +279,35 @@ export class DictionaryAPIClient {
         throw new Error(validated.error)
       }
 
-      return validated.data
+      // Add generation info to the result
+      const result = validated.data
+      if (wasGenerated) {
+        ;(result as any).wasAIGenerated = true
+      }
+
+      return result
     } catch (error) {
       if (error instanceof AxiosError) {
+        // Handle 404 specifically
         if (error.response?.status === 404) {
-          throw new Error('Term not found')
+          const notFoundError = new Error('Term not found in dictionary')
+          ;(notFoundError as any).code = 'TERM_NOT_FOUND'
+
+          // Extract suggestions if available
+          if (error.response.data?.data?.suggestions) {
+            ;(notFoundError as any).suggestions =
+              error.response.data.data.suggestions
+          }
+          throw notFoundError
         }
+
+        // Handle 503 (AI service unavailable)
+        if (error.response?.status === 503) {
+          const serviceError = new Error('AI service temporarily unavailable')
+          ;(serviceError as any).code = 'AI_SERVICE_UNAVAILABLE'
+          throw serviceError
+        }
+
         throw new Error(error.response?.data?.error || 'Failed to get term')
       }
       throw error
