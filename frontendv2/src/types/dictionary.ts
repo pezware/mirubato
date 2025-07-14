@@ -32,6 +32,31 @@ export const DifficultyLevel = z.enum([
 
 export type DifficultyLevel = z.infer<typeof DifficultyLevel>
 
+// Language types
+export const SupportedLanguage = z.enum([
+  'en',
+  'es',
+  'fr',
+  'de',
+  'zh-CN',
+  'zh-TW',
+])
+
+export type SupportedLanguage = z.infer<typeof SupportedLanguage>
+
+export const ExtendedLanguage = z.enum([
+  'en',
+  'es',
+  'fr',
+  'de',
+  'zh-CN',
+  'zh-TW',
+  'it',
+  'la',
+])
+
+export type ExtendedLanguage = z.infer<typeof ExtendedLanguage>
+
 // Safe string schema that sanitizes output
 const SafeString = z.string().transform(val => sanitizeOutput(val))
 
@@ -67,7 +92,7 @@ export const BookSchema = z.object({
   isbn: z.string().optional(),
   amazon_url: z.string().url().optional(),
   affiliate_url: z.string().url().optional(),
-  relevance_score: z.number().min(0).max(1).optional(),
+  relevance_score: z.number().min(0).max(100).optional(),
 })
 
 export const ResearchPaperSchema = z.object({
@@ -85,7 +110,7 @@ export const VideoSchema = z.object({
   url: z.string().url(),
   duration: z.number().optional(),
   view_count: z.number().optional(),
-  relevance_score: z.number().min(0).max(1).optional(),
+  relevance_score: z.number().min(0).max(100).optional(),
 })
 
 export const MediaReferencesSchema = z
@@ -160,10 +185,10 @@ export const ReferencesSchema = z
 
 export const QualityScoreSchema = z
   .object({
-    overall: z.number().min(0).max(1),
-    definition_clarity: z.number().min(0).max(1).optional(),
-    reference_completeness: z.number().min(0).max(1).optional(),
-    accuracy_verification: z.number().min(0).max(1).optional(),
+    overall: z.number().min(0).max(100),
+    definition_clarity: z.number().min(0).max(100).optional(),
+    reference_completeness: z.number().min(0).max(100).optional(),
+    accuracy_verification: z.number().min(0).max(100).optional(),
     last_ai_check: z.string().datetime().optional(),
     human_verified: z.boolean().optional(),
     improvement_suggestions: z.array(SafeString).optional(),
@@ -199,6 +224,9 @@ export const DictionaryEntrySchema = z.object({
   id: z.string().uuid(),
   term: SafeString,
   normalized_term: SafeString,
+  lang: SupportedLanguage.default('en'),
+  source_lang: ExtendedLanguage.nullable().optional(),
+  lang_confidence: z.number().min(0).max(1).optional(),
   type: TermType,
   definition: DefinitionSchema,
   references: ReferencesSchema,
@@ -216,6 +244,8 @@ export const SearchResultSchema = z.object({
   total: z.number(),
   page: z.number(),
   limit: z.number(),
+  suggestedLanguages: z.array(SupportedLanguage).optional(),
+  detectedTermLanguage: ExtendedLanguage.nullable().optional(),
 })
 
 export const BatchQueryResponseSchema = z.object({
@@ -237,6 +267,13 @@ export const EnhancementJobSchema = z.object({
   terms_processed: z.number().optional(),
   estimated_completion: z.string().datetime().optional(),
   error: SafeString.optional(),
+})
+
+// Multi-language response schema
+export const MultiLanguageTermResponseSchema = z.object({
+  term: SafeString,
+  normalized_term: SafeString,
+  languages: z.record(SupportedLanguage, DictionaryEntrySchema).partial(),
 })
 
 // API response wrapper schemas
@@ -281,6 +318,9 @@ export type SearchResult = z.infer<typeof SearchResultSchema>
 export type BatchQueryResponse = z.infer<typeof BatchQueryResponseSchema>
 export type Feedback = z.infer<typeof FeedbackSchema>
 export type EnhancementJob = z.infer<typeof EnhancementJobSchema>
+export type MultiLanguageTermResponse = z.infer<
+  typeof MultiLanguageTermResponseSchema
+>
 
 // Search and filter types
 export interface SearchFilters {
@@ -290,10 +330,15 @@ export interface SearchFilters {
   min_quality_score?: number
   has_references?: boolean
   has_audio?: boolean
+  languages?: SupportedLanguage[]
 }
 
 export interface SearchOptions {
   query: string
+  lang?: SupportedLanguage
+  searchAllLanguages?: boolean
+  preferredLangs?: SupportedLanguage[]
+  includeTranslations?: boolean
   filters?: SearchFilters
   sort_by?: 'relevance' | 'alphabetical' | 'quality' | 'popularity'
   sort_order?: 'asc' | 'desc'

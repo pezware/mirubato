@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
+import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import {
   createApiResponse,
   ValidationError,
@@ -11,6 +12,12 @@ import { auth } from '../../middleware/auth'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import type { DictionaryEntry } from '../../types/dictionary'
+import {
+  SEED_TERMS,
+  getSeedTermsByPriority,
+  seedTermsToQueueEntries,
+  getHighPrioritySeedTerms,
+} from '../../data/seed-terms'
 
 export const adminHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -416,3 +423,256 @@ adminHandler.post('/bulk', zValidator('json', bulkOperationSchema), async c => {
       throw new ValidationError('Invalid operation')
   }
 })
+
+/**
+ * Initialize seed queue with common terms
+ * POST /api/v1/admin/seed/initialize
+ */
+adminHandler.post(
+  '/seed/initialize',
+  zValidator(
+    'json',
+    z.object({
+      priority_threshold: z.number().min(1).max(10).default(8),
+      clear_existing: z.boolean().default(false),
+    })
+  ),
+  async c => {
+    const { priority_threshold, clear_existing } = c.req.valid('json')
+    const db = new DictionaryDatabase(c.env.DB)
+
+    try {
+      // Clear existing queue if requested
+      if (clear_existing) {
+        await c.env.DB.prepare('DELETE FROM seed_queue WHERE status = ?')
+          .bind('pending')
+          .run()
+      }
+
+      // Get terms by priority threshold
+      const termsToSeed = SEED_TERMS.filter(
+        term => term.priority >= priority_threshold
+      )
+      const queueEntries = seedTermsToQueueEntries(termsToSeed)
+
+      // Add to seed queue
+      await db.addToSeedQueue(queueEntries)
+
+      // Get stats
+      const stats = await db.getSeedQueueStats()
+
+      return c.json(
+        createApiResponse({
+          added: queueEntries.length,
+          total_terms: termsToSeed.length,
+          languages_per_term: termsToSeed[0]?.languages.length || 0,
+          queue_stats: stats,
+        })
+      )
+    } catch (error) {
+      console.error('Seed initialization error:', error)
+      throw new ValidationError('Failed to initialize seed queue')
+    }
+  }
+)
+
+/**
+ * Process seed queue items
+ * POST /api/v1/admin/seed/process
+ */
+adminHandler.post(
+  '/seed/process',
+  zValidator(
+    'json',
+    z.object({
+      batch_size: z.number().min(1).max(50).default(10),
+      dry_run: z.boolean().default(false),
+    })
+  ),
+  async c => {
+    const { batch_size, dry_run } = c.req.valid('json')
+    const db = new DictionaryDatabase(c.env.DB)
+    const generator = new DictionaryGenerator(c.env)
+
+    try {
+      // Get next items to process
+      const queueItems = await db.getNextSeedQueueItems(batch_size)
+
+      if (queueItems.length === 0) {
+        return c.json(
+          createApiResponse({
+            message: 'No pending items in queue',
+            processed: 0,
+          })
+        )
+      }
+
+      const results = {
+        processed: 0,
+        succeeded: 0,
+        failed: 0,
+        errors: [] as string[],
+      }
+
+      if (!dry_run) {
+        // Process each item
+        for (const item of queueItems) {
+          try {
+            // Update status to processing
+            await db.updateSeedQueueStatus(item.id, 'processing')
+
+            // Generate entry for each language
+            for (const lang of item.languages) {
+              // Check if entry already exists
+              const existing = await db.findByTerm(item.term, lang)
+
+              if (!existing) {
+                // Generate new entry
+                const entry = await generator.generateEntry({
+                  term: item.term,
+                  lang: lang as any,
+                  context: {
+                    requested_by: 'seed_queue',
+                    generation_reason: 'batch_seed',
+                  },
+                })
+
+                if (entry) {
+                  await db.create(entry)
+                }
+              }
+            }
+
+            // Mark as completed
+            await db.updateSeedQueueStatus(item.id, 'completed')
+            results.succeeded++
+          } catch (error) {
+            // Mark as failed
+            await db.updateSeedQueueStatus(
+              item.id,
+              'failed',
+              error instanceof Error ? error.message : 'Unknown error'
+            )
+            results.failed++
+            results.errors.push(`${item.term}: ${error}`)
+          }
+
+          results.processed++
+        }
+      }
+
+      return c.json(
+        createApiResponse({
+          dry_run,
+          queue_items: queueItems.map(item => ({
+            term: item.term,
+            languages: item.languages,
+            priority: item.priority,
+          })),
+          results: dry_run
+            ? { message: 'Dry run - no processing performed' }
+            : results,
+        })
+      )
+    } catch (error) {
+      console.error('Seed processing error:', error)
+      throw new ValidationError('Failed to process seed queue')
+    }
+  }
+)
+
+/**
+ * Get seed queue status
+ * GET /api/v1/admin/seed/status
+ */
+adminHandler.get('/seed/status', async c => {
+  const db = new DictionaryDatabase(c.env.DB)
+
+  try {
+    const stats = await db.getSeedQueueStats()
+
+    // Get recent items
+    const recentItems = await c.env.DB.prepare(
+      `
+      SELECT term, languages, priority, status, last_attempt_at, error_message
+      FROM seed_queue
+      ORDER BY 
+        CASE status
+          WHEN 'processing' THEN 0
+          WHEN 'failed' THEN 1
+          WHEN 'pending' THEN 2
+          ELSE 3
+        END,
+        created_at DESC
+      LIMIT 20
+    `
+    ).all()
+
+    return c.json(
+      createApiResponse({
+        stats,
+        recent_items: recentItems.results.map(row => ({
+          term: row.term,
+          languages: JSON.parse(row.languages as string),
+          priority: row.priority,
+          status: row.status,
+          last_attempt_at: row.last_attempt_at,
+          error_message: row.error_message,
+        })),
+        seed_terms_available: SEED_TERMS.length,
+        priority_distribution: Array.from(
+          getSeedTermsByPriority().entries()
+        ).map(([priority, terms]) => ({
+          priority,
+          count: terms.length,
+        })),
+      })
+    )
+  } catch (error) {
+    console.error('Seed status error:', error)
+    throw new ValidationError('Failed to get seed status')
+  }
+})
+
+/**
+ * Clear seed queue
+ * DELETE /api/v1/admin/seed/clear
+ */
+adminHandler.delete(
+  '/seed/clear',
+  zValidator(
+    'json',
+    z.object({
+      status: z
+        .enum(['all', 'pending', 'failed', 'completed'])
+        .default('failed'),
+    })
+  ),
+  async c => {
+    const { status } = c.req.valid('json')
+
+    try {
+      let query = 'DELETE FROM seed_queue'
+      const params: any[] = []
+
+      if (status !== 'all') {
+        query += ' WHERE status = ?'
+        params.push(status)
+      }
+
+      const result = await c.env.DB.prepare(query)
+        .bind(...params)
+        .run()
+
+      return c.json(
+        createApiResponse({
+          deleted: result.meta.changes || 0,
+          status_cleared: status,
+        })
+      )
+    } catch (error) {
+      console.error('Clear seed queue error:', error)
+      throw new ValidationError('Failed to clear seed queue')
+    }
+  }
+)

@@ -24,6 +24,15 @@ export const searchHandler = new Hono<{ Bindings: Env }>()
 // Search query schema
 const searchQuerySchema = z.object({
   q: z.string().min(1).max(200),
+  lang: z
+    .enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'])
+    .optional()
+    .default('en'),
+  searchAllLanguages: z.coerce.boolean().optional().default(false),
+  preferredLangs: z
+    .array(z.enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']))
+    .optional(),
+  includeTranslations: z.coerce.boolean().optional().default(false),
   type: z
     .enum([
       'tempo',
@@ -55,6 +64,9 @@ const searchQuerySchema = z.object({
         .optional(),
       has_audio: z.boolean().optional(),
       has_references: z.boolean().optional(),
+      languages: z
+        .array(z.enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']))
+        .optional(),
     })
     .optional(),
 })
@@ -100,6 +112,8 @@ searchHandler.get(
             total: cached.total,
             query,
             cached: true,
+            suggestedLanguages: undefined,
+            detectedTermLanguage: undefined,
           },
         })
       }
@@ -121,10 +135,13 @@ searchHandler.get(
         term: query.q,
         normalized_term: query.q.toLowerCase().trim(),
         found: searchResult.total > 0,
+        entry_id: searchResult.entries[0]?.id,
         response_time_ms: Date.now() - startTime,
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
         search_source: 'api_search',
+        search_lang: query.lang,
+        result_lang: searchResult.entries[0]?.lang,
       }
 
       c.executionCtx.waitUntil(db.logSearch(analytics))
@@ -132,10 +149,12 @@ searchHandler.get(
       return c.json({
         success: true,
         data: {
-          results: searchResult.results,
+          results: searchResult.entries,
           total: searchResult.total,
           query,
           cached: false,
+          suggestedLanguages: searchResult.suggestedLanguages,
+          detectedTermLanguage: searchResult.detectedTermLanguage,
         },
       })
     } catch (error) {

@@ -18,6 +18,7 @@
     "test:unit": "vitest run --passWithNoTests",
     "test:coverage": "vitest --coverage",
     "test:api": "curl http://dictionary-mirubato.localhost:9799/health | jq",
+    "test:language": "tsx test-language-support.ts",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

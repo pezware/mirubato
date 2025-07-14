@@ -6,10 +6,13 @@ import { D1Database } from '@cloudflare/workers-types'
 import {
   DictionaryEntry,
   SearchQuery,
+  SearchResult,
   QualityCheckpoint,
   SearchAnalytics,
   UserFeedback,
   TermType,
+  MultiLanguageTermResponse,
+  SeedQueueEntry,
 } from '../../types/dictionary'
 import { NotFoundError } from '../../utils/errors'
 import { normalizeTerm } from '../../utils/validation'
@@ -18,22 +21,39 @@ export class DictionaryDatabase {
   constructor(private db: D1Database) {}
 
   /**
-   * Find dictionary entry by term
+   * Find dictionary entry by term and language
    */
-  async findByTerm(term: string): Promise<DictionaryEntry | null> {
+  async findByTerm(
+    term: string,
+    lang: string = 'en',
+    options?: { searchAllLanguages?: boolean }
+  ): Promise<DictionaryEntry | null> {
     const normalizedTerm = normalizeTerm(term)
 
+    let query = `
+      SELECT * FROM dictionary_entries 
+      WHERE normalized_term = ? 
+      AND overall_score >= ?
+    `
+
+    const params: any[] = [normalizedTerm, 60]
+
+    if (!options?.searchAllLanguages) {
+      query += ` AND lang = ?`
+      params.push(lang)
+    }
+
+    query += ` ORDER BY 
+      CASE WHEN lang = ? THEN 0 ELSE 1 END,
+      overall_score DESC,
+      version DESC
+      LIMIT 1
+    `
+    params.push(lang)
+
     const result = await this.db
-      .prepare(
-        `
-        SELECT * FROM dictionary_entries 
-        WHERE normalized_term = ? 
-        AND overall_score >= ?
-        ORDER BY version DESC
-        LIMIT 1
-      `
-      )
-      .bind(normalizedTerm, 60)
+      .prepare(query)
+      .bind(...params)
       .first()
 
     if (!result) return null
@@ -65,16 +85,19 @@ export class DictionaryDatabase {
       .prepare(
         `
         INSERT INTO dictionary_entries (
-          id, term, normalized_term, type, definition, 
-          refs, metadata, quality_score, overall_score,
+          id, term, normalized_term, lang, source_lang, lang_confidence,
+          type, definition, refs, metadata, quality_score, overall_score,
           created_at, updated_at, version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       )
       .bind(
         entry.id,
         entry.term,
         entry.normalized_term,
+        entry.lang || 'en',
+        entry.source_lang || null,
+        entry.lang_confidence || 1.0,
         entry.type,
         JSON.stringify(entry.definition),
         JSON.stringify(entry.references),
@@ -101,7 +124,8 @@ export class DictionaryDatabase {
       .prepare(
         `
         UPDATE dictionary_entries 
-        SET term = ?, normalized_term = ?, type = ?, definition = ?, 
+        SET term = ?, normalized_term = ?, lang = ?, source_lang = ?, 
+            lang_confidence = ?, type = ?, definition = ?, 
             refs = ?, metadata = ?, quality_score = ?, 
             overall_score = ?, updated_at = ?, version = version + 1
         WHERE id = ?
@@ -110,6 +134,9 @@ export class DictionaryDatabase {
       .bind(
         entry.term,
         entry.normalized_term,
+        entry.lang || 'en',
+        entry.source_lang || null,
+        entry.lang_confidence || 1.0,
         entry.type,
         JSON.stringify(entry.definition),
         JSON.stringify(entry.references),
@@ -123,15 +150,13 @@ export class DictionaryDatabase {
   }
 
   /**
-   * Search dictionary entries
+   * Search dictionary entries with language support
    */
-  async search(query: SearchQuery): Promise<{
-    results: DictionaryEntry[]
-    total: number
-  }> {
+  async search(query: SearchQuery): Promise<SearchResult> {
     const normalizedQuery = normalizeTerm(query.q)
     const limit = query.limit || 20
     const offset = query.offset || 0
+    const uiLang = query.lang || 'en'
 
     // Build WHERE conditions
     const conditions: string[] = [
@@ -142,6 +167,16 @@ export class DictionaryDatabase {
       `%${query.q}%`,
       `%${normalizedQuery}%`,
     ]
+
+    // Language filtering
+    if (!query.searchAllLanguages && !query.filters?.languages?.length) {
+      conditions.push('lang = ?')
+      params.push(uiLang)
+    } else if (query.filters?.languages?.length) {
+      const langPlaceholders = query.filters.languages.map(() => '?').join(',')
+      conditions.push(`lang IN (${langPlaceholders})`)
+      params.push(...query.filters.languages)
+    }
 
     if (query.type) {
       conditions.push('type = ?')
@@ -183,6 +218,13 @@ export class DictionaryDatabase {
 
     // Get results with sorting
     let orderBy = 'ORDER BY '
+
+    // Always prioritize language match first when doing cross-language search
+    if (query.searchAllLanguages) {
+      orderBy += `CASE WHEN lang = ? THEN 0 ELSE 1 END, `
+      params.push(uiLang)
+    }
+
     switch (query.sort_by) {
       case 'alphabetical':
         orderBy += 'term ASC'
@@ -226,16 +268,42 @@ export class DictionaryDatabase {
       .bind(...params, limit, offset)
       .all()
 
+    // Get suggested languages if cross-language search
+    let suggestedLanguages: string[] | undefined
+    if (query.searchAllLanguages && results.results.length > 0) {
+      const langResult = await this.db
+        .prepare(
+          `
+          SELECT DISTINCT lang FROM dictionary_entries 
+          WHERE normalized_term = ?
+          AND lang != ?
+          ORDER BY overall_score DESC
+          LIMIT 5
+        `
+        )
+        .bind(normalizedQuery, uiLang)
+        .all()
+
+      suggestedLanguages = langResult.results.map(r => r.lang as string)
+    }
+
     return {
-      results: results.results.map(r => this.deserializeEntry(r)),
+      entries: results.results.map(r => this.deserializeEntry(r)),
       total,
+      query,
+      suggestedLanguages,
+      // TODO: Add language detection logic here
+      detectedTermLanguage: undefined,
     }
   }
 
   /**
    * Get multiple entries by terms (for batch queries)
    */
-  async findByTerms(terms: string[]): Promise<Map<string, DictionaryEntry>> {
+  async findByTerms(
+    terms: string[],
+    lang: string = 'en'
+  ): Promise<Map<string, DictionaryEntry>> {
     if (terms.length === 0) return new Map()
 
     const normalizedTerms = terms.map(normalizeTerm)
@@ -246,10 +314,12 @@ export class DictionaryDatabase {
         `
         SELECT * FROM dictionary_entries 
         WHERE normalized_term IN (${placeholders})
+        AND lang = ?
         AND overall_score >= 60
+        ORDER BY overall_score DESC
       `
       )
-      .bind(...normalizedTerms)
+      .bind(...normalizedTerms, lang)
       .all()
 
     const entriesMap = new Map<string, DictionaryEntry>()
@@ -308,8 +378,8 @@ export class DictionaryDatabase {
         INSERT INTO search_analytics (
           id, term, normalized_term, found, entry_id,
           response_time_ms, searched_at, user_session_id, 
-          user_id, search_source
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          user_id, search_source, search_lang, result_lang
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       )
       .bind(
@@ -322,7 +392,9 @@ export class DictionaryDatabase {
         analytics.searched_at,
         analytics.user_session_id || null,
         analytics.user_id || null,
-        analytics.search_source
+        analytics.search_source,
+        analytics.search_lang || 'en',
+        analytics.result_lang || null
       )
       .run()
   }
@@ -531,6 +603,48 @@ export class DictionaryDatabase {
   }
 
   /**
+   * Get term in multiple languages for comparison
+   */
+  async getTermInLanguages(
+    term: string,
+    languages: string[]
+  ): Promise<MultiLanguageTermResponse> {
+    const normalizedTerm = normalizeTerm(term)
+    const placeholders = languages.map(() => '?').join(',')
+
+    const results = await this.db
+      .prepare(
+        `
+        SELECT * FROM dictionary_entries
+        WHERE normalized_term = ?
+        AND lang IN (${placeholders})
+        ORDER BY overall_score DESC
+      `
+      )
+      .bind(normalizedTerm, ...languages)
+      .all()
+
+    const languageMap: Partial<Record<string, DictionaryEntry>> = {}
+
+    for (const row of results.results) {
+      const entry = this.deserializeEntry(row)
+      if (
+        !languageMap[entry.lang] ||
+        entry.quality_score.overall >
+          (languageMap[entry.lang]?.quality_score.overall || 0)
+      ) {
+        languageMap[entry.lang] = entry
+      }
+    }
+
+    return {
+      term,
+      normalized_term: normalizedTerm,
+      languages: languageMap,
+    }
+  }
+
+  /**
    * Deserialize database row to DictionaryEntry
    */
   private deserializeEntry(row: Record<string, unknown>): DictionaryEntry {
@@ -538,6 +652,9 @@ export class DictionaryDatabase {
       id: row.id as string,
       term: row.term as string,
       normalized_term: row.normalized_term as string,
+      lang: (row.lang as string) || 'en',
+      source_lang: (row.source_lang as string) || undefined,
+      lang_confidence: (row.lang_confidence as number) || 1.0,
       type: row.type as TermType,
       definition: JSON.parse(row.definition as string),
       references: JSON.parse(row.refs as string),
@@ -1057,6 +1174,145 @@ export class DictionaryDatabase {
       missing_count: data.count,
       suggestions: generateGapSuggestions(category, Array.from(data.types)),
     }))
+  }
+
+  /**
+   * Add terms to seed queue for background generation
+   */
+  async addToSeedQueue(
+    terms: Array<{
+      term: string
+      languages: string[]
+      priority?: number
+    }>
+  ): Promise<void> {
+    for (const item of terms) {
+      await this.db
+        .prepare(
+          `
+          INSERT OR IGNORE INTO seed_queue (
+            id, term, languages, priority, status, attempts, created_at
+          ) VALUES (?, ?, ?, ?, 'pending', 0, ?)
+        `
+        )
+        .bind(
+          crypto.randomUUID(),
+          item.term,
+          JSON.stringify(item.languages),
+          item.priority || 5,
+          new Date().toISOString()
+        )
+        .run()
+    }
+  }
+
+  /**
+   * Get next seed queue items to process
+   */
+  async getNextSeedQueueItems(limit: number = 10): Promise<SeedQueueEntry[]> {
+    const results = await this.db
+      .prepare(
+        `
+        SELECT * FROM seed_queue
+        WHERE status = 'pending'
+        ORDER BY priority DESC, created_at ASC
+        LIMIT ?
+      `
+      )
+      .bind(limit)
+      .all()
+
+    return results.results.map(row => ({
+      id: row.id as string,
+      term: row.term as string,
+      languages: JSON.parse(row.languages as string),
+      priority: row.priority as number,
+      status: row.status as any,
+      attempts: row.attempts as number,
+      last_attempt_at: row.last_attempt_at as string | undefined,
+      completed_at: row.completed_at as string | undefined,
+      error_message: row.error_message as string | undefined,
+      created_at: row.created_at as string,
+    }))
+  }
+
+  /**
+   * Update seed queue item status
+   */
+  async updateSeedQueueStatus(
+    id: string,
+    status: 'processing' | 'completed' | 'failed',
+    error?: string
+  ): Promise<void> {
+    const now = new Date().toISOString()
+
+    if (status === 'processing') {
+      await this.db
+        .prepare(
+          `
+          UPDATE seed_queue
+          SET status = ?, last_attempt_at = ?, attempts = attempts + 1
+          WHERE id = ?
+        `
+        )
+        .bind(status, now, id)
+        .run()
+    } else if (status === 'completed') {
+      await this.db
+        .prepare(
+          `
+          UPDATE seed_queue
+          SET status = ?, completed_at = ?
+          WHERE id = ?
+        `
+        )
+        .bind(status, now, id)
+        .run()
+    } else if (status === 'failed') {
+      await this.db
+        .prepare(
+          `
+          UPDATE seed_queue
+          SET status = ?, error_message = ?, last_attempt_at = ?
+          WHERE id = ?
+        `
+        )
+        .bind(status, error || 'Unknown error', now, id)
+        .run()
+    }
+  }
+
+  /**
+   * Get seed queue statistics
+   */
+  async getSeedQueueStats(): Promise<{
+    total: number
+    pending: number
+    processing: number
+    completed: number
+    failed: number
+  }> {
+    const result = await this.db
+      .prepare(
+        `
+        SELECT 
+          COUNT(*) as total,
+          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+          SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,
+          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed
+        FROM seed_queue
+      `
+      )
+      .first()
+
+    return {
+      total: Number(result?.total) || 0,
+      pending: Number(result?.pending) || 0,
+      processing: Number(result?.processing) || 0,
+      completed: Number(result?.completed) || 0,
+      failed: Number(result?.failed) || 0,
+    }
   }
 
   /**

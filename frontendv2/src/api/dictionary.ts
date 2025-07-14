@@ -13,12 +13,14 @@ import {
   Feedback,
   EnhancementJob,
   SearchOptions,
+  MultiLanguageTermResponse,
   validateApiResponse,
   DictionaryEntrySchema,
   SearchResultSchema,
   BatchQueryResponseSchema,
   EnhancementJobSchema,
   FeedbackSchema,
+  MultiLanguageTermResponseSchema,
 } from '@/types/dictionary'
 
 /**
@@ -115,6 +117,16 @@ export class DictionaryAPIClient {
     try {
       const params = new URLSearchParams({
         q: safeQuery,
+        ...(options.lang && { lang: options.lang }),
+        ...(options.searchAllLanguages !== undefined && {
+          searchAllLanguages: options.searchAllLanguages.toString(),
+        }),
+        ...(options.preferredLangs && {
+          preferredLangs: options.preferredLangs.join(','),
+        }),
+        ...(options.includeTranslations !== undefined && {
+          includeTranslations: options.includeTranslations.toString(),
+        }),
         ...(options.filters?.type && { type: options.filters.type.join(',') }),
         ...(options.filters?.difficulty_level && {
           difficulty: options.filters.difficulty_level.join(','),
@@ -130,6 +142,9 @@ export class DictionaryAPIClient {
         }),
         ...(options.filters?.has_audio !== undefined && {
           has_audio: options.filters.has_audio.toString(),
+        }),
+        ...(options.filters?.languages && {
+          languages: options.filters.languages.join(','),
         }),
         ...(options.sort_by && { sort_by: options.sort_by }),
         ...(options.sort_order && { sort_order: options.sort_order }),
@@ -182,15 +197,31 @@ export class DictionaryAPIClient {
    */
   async getTerm(
     term: string,
-    generateIfMissing = true
+    options?: {
+      generateIfMissing?: boolean
+      lang?: string
+      searchAllLanguages?: boolean
+    }
   ): Promise<DictionaryEntry> {
     const safeTerm = this.validateAndSanitize(term)
     const encodedTerm = encodeURIComponent(safeTerm)
 
+    const params = new URLSearchParams()
+    if (options?.generateIfMissing ?? true) {
+      params.append('generate_if_missing', 'true')
+    }
+    if (options?.lang) {
+      params.append('lang', options.lang)
+    }
+    if (options?.searchAllLanguages) {
+      params.append('searchAllLanguages', 'true')
+    }
+
+    const queryString = params.toString()
+    const url = `/terms/${encodedTerm}${queryString ? `?${queryString}` : ''}`
+
     try {
-      const response = await this.client.get(
-        `/terms/${encodedTerm}${generateIfMissing ? '?generate_if_missing=true' : ''}`
-      )
+      const response = await this.client.get(url)
 
       if (!isValidApiResponse(response.data)) {
         throw new Error('Invalid response from server')
@@ -211,6 +242,49 @@ export class DictionaryAPIClient {
           throw new Error('Term not found')
         }
         throw new Error(error.response?.data?.error || 'Failed to get term')
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Get a term in multiple languages
+   */
+  async getTermInLanguages(
+    term: string,
+    languages?: string[]
+  ): Promise<MultiLanguageTermResponse> {
+    const safeTerm = this.validateAndSanitize(term)
+    const encodedTerm = encodeURIComponent(safeTerm)
+
+    const params = new URLSearchParams()
+    if (languages && languages.length > 0) {
+      params.append('languages', languages.join(','))
+    }
+
+    const queryString = params.toString()
+    const url = `/terms/${encodedTerm}/languages${queryString ? `?${queryString}` : ''}`
+
+    try {
+      const response = await this.client.get(url)
+
+      if (!isValidApiResponse(response.data)) {
+        throw new Error('Invalid response from server')
+      }
+
+      // Extract data from dictionary API response
+      let termData = response.data
+      if (response.data.success && response.data.data) {
+        termData = response.data.data
+      }
+
+      return MultiLanguageTermResponseSchema.parse(termData)
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(
+          error.response?.data?.error ||
+            'Failed to get term in multiple languages'
+        )
       }
       throw error
     }
@@ -262,7 +336,19 @@ export class DictionaryAPIClient {
       if (response.data.success && response.data.data) {
         // Dictionary API returns {success: true, data: {suggestions: []}}
         if (response.data.data.suggestions !== undefined) {
-          return z.array(z.string()).parse(response.data.data.suggestions)
+          const suggestions = response.data.data.suggestions
+          if (Array.isArray(suggestions)) {
+            // If suggestions are objects with term property, extract just the terms
+            if (
+              suggestions.length > 0 &&
+              typeof suggestions[0] === 'object' &&
+              'term' in suggestions[0]
+            ) {
+              return suggestions.map((s: any) => s.term as string)
+            }
+            // Otherwise, assume they're already strings
+            return z.array(z.string()).parse(suggestions)
+          }
         }
         // Or it might be a direct array in data
         if (Array.isArray(response.data.data)) {
@@ -432,6 +518,7 @@ export class DictionaryAPIClient {
       force_refresh?: boolean
       include_low_quality?: boolean
       min_quality_score?: number
+      lang?: string
     }
   ): Promise<BatchQueryResponse> {
     // Check rate limit
@@ -453,7 +540,8 @@ export class DictionaryAPIClient {
     try {
       const response = await this.client.post('/batch/query', {
         terms: safeTerms,
-        options,
+        lang: options?.lang,
+        ...options,
       })
 
       if (!isValidApiResponse(response.data)) {
