@@ -70,8 +70,20 @@ export class APIError extends DictionaryError {
 }
 
 export const errorHandler = (err: Error, c: Context): Response => {
-  console.error('Error:', err)
-  console.error('Error stack:', err.stack)
+  // Log error details based on LOG_LEVEL
+  const env = c.env as any
+  if (env.LOG_LEVEL === 'debug' || env.ENVIRONMENT !== 'production') {
+    console.error('Error details:', {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      path: c.req.path,
+      method: c.req.method,
+      timestamp: new Date().toISOString(),
+    })
+  } else {
+    console.error(`Error: ${err.message} at ${c.req.method} ${c.req.path}`)
+  }
 
   // Handle HTTPException from Hono
   if (err instanceof HTTPException) {
