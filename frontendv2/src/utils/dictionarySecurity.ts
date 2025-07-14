@@ -82,13 +82,19 @@ export const sanitizeOutput = (text: string | undefined | null): string => {
   // Apply sanitization iteratively until no more changes occur
   while (sanitized !== previousSanitized) {
     previousSanitized = sanitized
+
+    // Remove angle brackets and quotes that could be used for attribute injection
+    sanitized = sanitized.replace(/[<>'"]/g, '') // Remove angle brackets AND quotes
+
+    // Apply other sanitizations iteratively as well
     sanitized = sanitized
-      .replace(/[<>]/g, '') // Remove angle brackets
       .replace(/(javascript|data|vbscript|about|file):/gi, '') // Remove dangerous protocols
       .replace(/on\w+\s*=/gi, '') // Remove event handlers
       .replace(/style\s*=/gi, '') // Remove style attributes
       .replace(/expression\s*\(/gi, '') // Remove CSS expressions
       .replace(/import\s+/gi, '') // Remove import statements
+      .replace(/\\/g, '') // Remove backslashes that could be used for escaping
+      .replace(/&#/g, '') // Remove HTML entity encoding attempts
   }
 
   return sanitized.trim()
