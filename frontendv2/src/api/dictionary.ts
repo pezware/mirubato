@@ -139,18 +139,24 @@ export class DictionaryAPIClient {
 
       const response = await this.client.get(`/search?${params.toString()}`)
 
-      // Validate API response structure
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
+      // Dictionary API uses different response format
+      if (response.data.success === false && response.data.error) {
+        throw new Error(response.data.error)
+      }
+
+      // Extract the data from the dictionary API response
+      let searchData = response.data
+      if (response.data.success && response.data.data) {
+        searchData = response.data.data
       }
 
       // Validate and return search results
-      const validated = validateApiResponse(response.data, SearchResultSchema)
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      try {
+        return SearchResultSchema.parse(searchData)
+      } catch (validationError) {
+        console.error('Search validation error:', validationError)
+        throw new Error('Invalid search results format')
       }
-
-      return validated.data
     } catch (error) {
       if (error instanceof AxiosError) {
         throw new Error(error.response?.data?.error || 'Failed to search terms')
@@ -237,13 +243,21 @@ export class DictionaryAPIClient {
         `/search/suggestions?q=${encodeURIComponent(safePartial)}`
       )
 
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
+      // Dictionary API returns different format, so skip isValidApiResponse check
+      // and handle the specific response format
 
       // Handle the response based on its structure
-      if (response.data.status === 'success' && response.data.data) {
-        // Response is wrapped in success response
+      if (response.data.success && response.data.data) {
+        // Dictionary API returns {success: true, data: {suggestions: []}}
+        if (response.data.data.suggestions !== undefined) {
+          return z.array(z.string()).parse(response.data.data.suggestions)
+        }
+        // Or it might be a direct array in data
+        if (Array.isArray(response.data.data)) {
+          return z.array(z.string()).parse(response.data.data)
+        }
+      } else if (response.data.status === 'success' && response.data.data) {
+        // Alternative response format
         return z.array(z.string()).parse(response.data.data)
       } else if (Array.isArray(response.data)) {
         // Response is direct array
@@ -265,13 +279,24 @@ export class DictionaryAPIClient {
     try {
       const response = await this.client.get(`/search/popular?limit=${limit}`)
 
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
+      // Dictionary API returns different format, so skip isValidApiResponse check
+      // and handle the specific response format
 
       // Handle the response based on its structure
-      if (response.data.status === 'success' && response.data.data) {
-        // Response is wrapped in success response
+      if (response.data.success && response.data.data) {
+        // Dictionary API returns {success: true, data: {popular: []}} or similar
+        if (Array.isArray(response.data.data)) {
+          return z.array(z.string()).parse(response.data.data)
+        }
+        // It might have a nested array
+        if (response.data.data.popular !== undefined) {
+          return z.array(z.string()).parse(response.data.data.popular)
+        }
+        if (response.data.data.terms !== undefined) {
+          return z.array(z.string()).parse(response.data.data.terms)
+        }
+      } else if (response.data.status === 'success' && response.data.data) {
+        // Alternative response format
         return z.array(z.string()).parse(response.data.data)
       } else if (Array.isArray(response.data)) {
         // Response is direct array
@@ -296,13 +321,24 @@ export class DictionaryAPIClient {
         `/search/related?term=${encodeURIComponent(safeTerm)}`
       )
 
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
+      // Dictionary API returns different format, so skip isValidApiResponse check
+      // and handle the specific response format
 
       // Handle the response based on its structure
-      if (response.data.status === 'success' && response.data.data) {
-        // Response is wrapped in success response
+      if (response.data.success && response.data.data) {
+        // Dictionary API returns {success: true, data: {related: []}} or similar
+        if (Array.isArray(response.data.data)) {
+          return z.array(z.string()).parse(response.data.data)
+        }
+        // It might have a nested array
+        if (response.data.data.related !== undefined) {
+          return z.array(z.string()).parse(response.data.data.related)
+        }
+        if (response.data.data.terms !== undefined) {
+          return z.array(z.string()).parse(response.data.data.terms)
+        }
+      } else if (response.data.status === 'success' && response.data.data) {
+        // Alternative response format
         return z.array(z.string()).parse(response.data.data)
       } else if (Array.isArray(response.data)) {
         // Response is direct array
