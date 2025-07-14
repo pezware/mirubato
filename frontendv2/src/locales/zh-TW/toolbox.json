@@ -202,6 +202,25 @@
       "emptySearch": "請輸入搜尋詞",
       "searchFailed": "搜尋失敗。請重試。",
       "loadFailed": "載入術語失敗。請重試。"
-    }
+    },
+    "searchAllLanguages": "搜尋所有語言",
+    "currentLanguage": "目前語言：{{lang}}",
+    "termInLanguage": "此術語使用{{lang}}",
+    "originalLanguage": "原始語言為{{lang}}",
+    "searchedAllLanguages": "已搜尋所有可用語言",
+    "availableInLanguages": "也可使用以下語言：",
+    "compareLanguages": "比較語言",
+    "showInLanguage": "以{{lang}}顯示",
+    "languageVersions": "語言版本",
+    "fetchingInLanguage": "正在取得{{lang}}版本...",
+    "languageNotAvailable": "{{lang}}版本不可用",
+    "termNotFound": "字典中找不到「{{term}}」",
+    "aiWillGenerate": "AI正在為此術語生成定義。請稍後再試。",
+    "aiGenerating": "AI正在為此術語生成定義...",
+    "estimatedTime": "預計完成時間：{{time}}",
+    "aiServiceUnavailable": "AI服務暫時無法使用。請稍後再試。",
+    "didYouMean": "您是指以下其中一個嗎？",
+    "aiGenerated": "AI生成",
+    "aiGeneratedTooltip": "此定義由AI生成"
   }
 }

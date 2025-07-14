@@ -202,6 +202,25 @@
       "emptySearch": "Bitte geben Sie einen Suchbegriff ein",
       "searchFailed": "Suche fehlgeschlagen. Bitte versuchen Sie es erneut.",
       "loadFailed": "Fehler beim Laden des Begriffs. Bitte versuchen Sie es erneut."
-    }
+    },
+    "searchAllLanguages": "In allen Sprachen suchen",
+    "currentLanguage": "Aktuelle Sprache: {{lang}}",
+    "termInLanguage": "Dieser Begriff ist auf {{lang}}",
+    "originalLanguage": "Ursprünglich aus {{lang}}",
+    "searchedAllLanguages": "In allen verfügbaren Sprachen gesucht",
+    "availableInLanguages": "Auch verfügbar in:",
+    "compareLanguages": "Sprachen vergleichen",
+    "showInLanguage": "Auf {{lang}} anzeigen",
+    "languageVersions": "Sprachversionen",
+    "fetchingInLanguage": "{{lang}}-Version wird abgerufen...",
+    "languageNotAvailable": "Nicht auf {{lang}} verfügbar",
+    "termNotFound": "\"{{term}}\" wurde im Wörterbuch nicht gefunden",
+    "aiWillGenerate": "Die KI arbeitet daran, eine Definition für diesen Begriff zu erstellen. Bitte versuchen Sie es in einem Moment erneut.",
+    "aiGenerating": "KI generiert eine Definition für diesen Begriff...",
+    "estimatedTime": "Geschätzte Zeit: {{time}}",
+    "aiServiceUnavailable": "Der KI-Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.",
+    "didYouMean": "Meinten Sie einen von diesen?",
+    "aiGenerated": "KI-generiert",
+    "aiGeneratedTooltip": "Diese Definition wurde von KI generiert"
   }
 }

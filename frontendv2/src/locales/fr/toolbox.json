@@ -202,6 +202,25 @@
       "emptySearch": "Veuillez entrer un terme de recherche",
       "searchFailed": "La recherche a échoué. Veuillez réessayer.",
       "loadFailed": "Échec du chargement du terme. Veuillez réessayer."
-    }
+    },
+    "searchAllLanguages": "Rechercher dans toutes les langues",
+    "currentLanguage": "Langue actuelle : {{lang}}",
+    "termInLanguage": "Ce terme est en {{lang}}",
+    "originalLanguage": "Originalement de {{lang}}",
+    "searchedAllLanguages": "Recherché dans toutes les langues disponibles",
+    "availableInLanguages": "Également disponible en :",
+    "compareLanguages": "Comparer les langues",
+    "showInLanguage": "Afficher en {{lang}}",
+    "languageVersions": "Versions linguistiques",
+    "fetchingInLanguage": "Récupération de la version {{lang}}...",
+    "languageNotAvailable": "Non disponible en {{lang}}",
+    "termNotFound": "\"{{term}}\" introuvable dans le dictionnaire",
+    "aiWillGenerate": "L'IA travaille pour générer une définition pour ce terme. Veuillez réessayer dans un instant.",
+    "aiGenerating": "L'IA génère une définition pour ce terme...",
+    "estimatedTime": "Temps estimé : {{time}}",
+    "aiServiceUnavailable": "Le service IA est temporairement indisponible. Veuillez réessayer plus tard.",
+    "didYouMean": "Vouliez-vous dire l'un de ceux-ci ?",
+    "aiGenerated": "Généré par IA",
+    "aiGeneratedTooltip": "Cette définition a été générée par IA"
   }
 }

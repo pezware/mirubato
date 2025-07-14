@@ -202,6 +202,25 @@
       "emptySearch": "Por favor ingresa un término de búsqueda",
       "searchFailed": "La búsqueda falló. Por favor intenta de nuevo.",
       "loadFailed": "Error al cargar el término. Por favor intenta de nuevo."
-    }
+    },
+    "searchAllLanguages": "Buscar en todos los idiomas",
+    "currentLanguage": "Idioma actual: {{lang}}",
+    "termInLanguage": "Este término está en {{lang}}",
+    "originalLanguage": "Originalmente de {{lang}}",
+    "searchedAllLanguages": "Se buscó en todos los idiomas disponibles",
+    "availableInLanguages": "También disponible en:",
+    "compareLanguages": "Comparar idiomas",
+    "showInLanguage": "Mostrar en {{lang}}",
+    "languageVersions": "Versiones por idioma",
+    "fetchingInLanguage": "Obteniendo versión en {{lang}}...",
+    "languageNotAvailable": "No disponible en {{lang}}",
+    "termNotFound": "\"{{term}}\" no se encontró en el diccionario",
+    "aiWillGenerate": "La IA está trabajando para generar una definición para este término. Por favor, intenta de nuevo en un momento.",
+    "aiGenerating": "La IA está generando una definición para este término...",
+    "estimatedTime": "Tiempo estimado: {{time}}",
+    "aiServiceUnavailable": "El servicio de IA no está disponible temporalmente. Por favor, intenta más tarde.",
+    "didYouMean": "¿Quisiste decir uno de estos?",
+    "aiGenerated": "Generado por IA",
+    "aiGeneratedTooltip": "Esta definición fue generada por IA"
   }
 }
