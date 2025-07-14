@@ -13,8 +13,15 @@ import DOMPurify from 'dompurify'
 export const sanitizeSearchInput = (input: string): string => {
   if (!input || typeof input !== 'string') return ''
 
-  // Remove any HTML/script tags
-  const cleaned = input.replace(/<[^>]*>/g, '')
+  // Remove any HTML/script tags iteratively to prevent bypass attempts
+  let cleaned = input
+  let previousCleaned = ''
+
+  // Keep removing tags until no more changes occur
+  while (cleaned !== previousCleaned) {
+    previousCleaned = cleaned
+    cleaned = cleaned.replace(/<[^>]*>/g, '')
+  }
 
   // Limit length to prevent abuse
   const truncated = cleaned.substring(0, 100)
@@ -52,7 +59,7 @@ export const isValidMusicTerm = (term: string): boolean => {
 
   // Must not contain common XSS patterns
   const xssPatterns =
-    /(javascript:|onerror=|onload=|<script|<iframe|<object|<embed|<svg|<img)/i
+    /(javascript:|data:|vbscript:|about:|file:|onerror=|onload=|<script|<iframe|<object|<embed|<svg|<img)/i
   if (xssPatterns.test(term)) return false
 
   return true
@@ -74,9 +81,11 @@ export const sanitizeOutput = (text: string | undefined | null): string => {
   // Remove any potential XSS vectors
   return decoded
     .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/(javascript|data|vbscript|about|file):/gi, '') // Remove dangerous protocols
     .replace(/on\w+\s*=/gi, '') // Remove event handlers
     .replace(/style\s*=/gi, '') // Remove style attributes
+    .replace(/expression\s*\(/gi, '') // Remove CSS expressions
+    .replace(/import\s+/gi, '') // Remove import statements
     .trim()
 }
 
