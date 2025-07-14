@@ -224,7 +224,7 @@ export const DictionaryEntrySchema = z.object({
   id: z.string().uuid(),
   term: SafeString,
   normalized_term: SafeString,
-  lang: SupportedLanguage.default('en'),
+  lang: SupportedLanguage,
   source_lang: ExtendedLanguage.nullable().optional(),
   lang_confidence: z.number().min(0).max(1).optional(),
   type: TermType,
@@ -273,7 +273,7 @@ export const EnhancementJobSchema = z.object({
 export const MultiLanguageTermResponseSchema = z.object({
   term: SafeString,
   normalized_term: SafeString,
-  languages: z.record(SupportedLanguage, DictionaryEntrySchema).partial(),
+  languages: z.record(SupportedLanguage, DictionaryEntrySchema),
 })
 
 // API response wrapper schemas

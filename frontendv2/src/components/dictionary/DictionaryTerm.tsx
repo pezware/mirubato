@@ -43,18 +43,6 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     'zh-TW',
   ]
 
-  // Fetch available language versions on mount
-  useEffect(() => {
-    fetchLanguageVersions()
-  }, [fetchLanguageVersions])
-
-  // If UI language differs from term language, try to fetch UI language version
-  useEffect(() => {
-    if (entry.lang !== currentLanguage) {
-      fetchSpecificLanguage(currentLanguage)
-    }
-  }, [entry.lang, currentLanguage, fetchSpecificLanguage])
-
   const fetchLanguageVersions = useCallback(async () => {
     try {
       setLoadingLanguages(true)
@@ -88,6 +76,18 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     [additionalEntries, entry.lang, entry.normalized_term]
   )
 
+  // Fetch available language versions on mount
+  useEffect(() => {
+    fetchLanguageVersions()
+  }, [fetchLanguageVersions])
+
+  // If UI language differs from term language, try to fetch UI language version
+  useEffect(() => {
+    if (entry.lang !== currentLanguage) {
+      fetchSpecificLanguage(currentLanguage)
+    }
+  }, [entry.lang, currentLanguage, fetchSpecificLanguage])
+
   const toggleLanguage = async (lang: string) => {
     if (lang === entry.lang) return // Can't deselect primary language
 
@@ -96,7 +96,10 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
       newSelected.delete(lang)
     } else {
       newSelected.add(lang)
-      if (!additionalEntries[lang] && languageVersions?.languages[lang]) {
+      if (
+        !additionalEntries[lang] &&
+        languageVersions?.languages[lang as SupportedLanguage]
+      ) {
         await fetchSpecificLanguage(lang)
       }
     }
@@ -370,7 +373,8 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             .filter(lang => lang !== entry.lang)
             .map(lang => {
               const langEntry =
-                additionalEntries[lang] || languageVersions?.languages[lang]
+                additionalEntries[lang] ||
+                languageVersions?.languages[lang as SupportedLanguage]
               if (!langEntry) {
                 return (
                   <Card key={lang} className="border-stone-200 bg-stone-50">
