@@ -344,7 +344,7 @@ export class DictionaryAPIClient {
               typeof suggestions[0] === 'object' &&
               'term' in suggestions[0]
             ) {
-              return suggestions.map((s: any) => s.term as string)
+              return suggestions.map((s: { term: string }) => s.term)
             }
             // Otherwise, assume they're already strings
             return z.array(z.string()).parse(suggestions)

@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
-import { DictionaryResultsProps } from '@/types/dictionary'
+import { DictionaryResultsProps, SupportedLanguage } from '@/types/dictionary'
 
 /**
  * Display dictionary search results with pagination
@@ -16,7 +16,8 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
   onPageChange,
   isLoading,
 }) => {
-  const { t } = useTranslation(['toolbox'])
+  const { t, i18n } = useTranslation(['toolbox'])
+  const currentLanguage = i18n.language as SupportedLanguage
 
   // Get quality color based on score
   const getQualityColor = (score?: number) => {
@@ -24,6 +25,29 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
     if (score >= 0.8) return 'bg-green-100 text-green-700'
     if (score >= 0.6) return 'bg-yellow-100 text-yellow-700'
     return 'bg-red-100 text-red-700'
+  }
+
+  // Get language display name
+  const getLanguageName = (lang: string) => {
+    const langNames: Record<string, string> = {
+      en: 'English',
+      es: 'Español',
+      fr: 'Français',
+      de: 'Deutsch',
+      'zh-CN': '简体中文',
+      'zh-TW': '繁體中文',
+      it: 'Italiano',
+      la: 'Latin',
+    }
+    return langNames[lang] || lang.toUpperCase()
+  }
+
+  // Get language indicator color
+  const getLanguageColor = (lang: string) => {
+    if (lang === currentLanguage) {
+      return 'bg-sage-100 text-sage-700 ring-1 ring-sage-300'
+    }
+    return 'bg-stone-100 text-stone-600'
   }
 
   // Render pagination controls
@@ -143,11 +167,39 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
             <div className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-stone-800">
-                    {sanitizeOutput(entry.term)}
-                  </h4>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-lg font-semibold text-stone-800">
+                      {sanitizeOutput(entry.term)}
+                    </h4>
+                    {/* Language indicator */}
+                    {entry.lang && (
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${getLanguageColor(
+                          entry.lang
+                        )}`}
+                        title={
+                          entry.lang === currentLanguage
+                            ? t('toolbox:dictionary.currentLanguage', {
+                                lang: getLanguageName(entry.lang),
+                              })
+                            : getLanguageName(entry.lang)
+                        }
+                      >
+                        {entry.lang.toUpperCase()}
+                        {entry.lang === currentLanguage && ' ★'}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-stone-600">
                     {t(`toolbox:dictionary.types.${entry.type}`)}
+                    {entry.source_lang && entry.source_lang !== entry.lang && (
+                      <span className="ml-2 text-stone-500">
+                        •{' '}
+                        {t('toolbox:dictionary.originalLanguage', {
+                          lang: getLanguageName(entry.source_lang),
+                        })}
+                      </span>
+                    )}
                   </p>
                 </div>
                 {entry.quality_score && (

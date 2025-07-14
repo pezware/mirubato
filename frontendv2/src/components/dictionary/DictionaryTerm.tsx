@@ -1,23 +1,107 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
-import { DictionaryTermProps } from '@/types/dictionary'
+import {
+  DictionaryTermProps,
+  DictionaryEntry,
+  SupportedLanguage,
+  MultiLanguageTermResponse,
+} from '@/types/dictionary'
 import DictionaryReferences from './DictionaryReferences'
 import { dictionaryAPI } from '@/api/dictionary'
 
 /**
- * Display a dictionary term with full details and references
+ * Display a dictionary term with full details, references, and multi-language support
  */
 const DictionaryTerm: React.FC<DictionaryTermProps> = ({
   entry,
   onFeedback,
   onReport,
 }) => {
-  const { t } = useTranslation(['toolbox'])
+  const { t, i18n } = useTranslation(['toolbox'])
   const [feedbackSent, setFeedbackSent] = useState(false)
   const [isReporting, setIsReporting] = useState(false)
   const [reportText, setReportText] = useState('')
+  const [languageVersions, setLanguageVersions] =
+    useState<MultiLanguageTermResponse | null>(null)
+  const [loadingLanguages, setLoadingLanguages] = useState(false)
+  const [selectedLanguages, setSelectedLanguages] = useState<Set<string>>(
+    new Set([entry.lang])
+  )
+  const [additionalEntries, setAdditionalEntries] = useState<
+    Record<string, DictionaryEntry>
+  >({})
+
+  const currentLanguage = i18n.language as SupportedLanguage
+  const availableLanguages: SupportedLanguage[] = [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'zh-CN',
+    'zh-TW',
+  ]
+
+  // Fetch available language versions on mount
+  useEffect(() => {
+    fetchLanguageVersions()
+  }, [fetchLanguageVersions])
+
+  // If UI language differs from term language, try to fetch UI language version
+  useEffect(() => {
+    if (entry.lang !== currentLanguage) {
+      fetchSpecificLanguage(currentLanguage)
+    }
+  }, [entry.lang, currentLanguage, fetchSpecificLanguage])
+
+  const fetchLanguageVersions = useCallback(async () => {
+    try {
+      setLoadingLanguages(true)
+      const response = await dictionaryAPI.getTermInLanguages(
+        entry.normalized_term,
+        availableLanguages
+      )
+      setLanguageVersions(response)
+    } catch (error) {
+      console.error('Failed to fetch language versions:', error)
+    } finally {
+      setLoadingLanguages(false)
+    }
+  }, [entry.normalized_term, availableLanguages])
+
+  const fetchSpecificLanguage = useCallback(
+    async (lang: string) => {
+      if (additionalEntries[lang] || lang === entry.lang) return
+
+      try {
+        const result = await dictionaryAPI.getTerm(entry.normalized_term, {
+          lang,
+          searchAllLanguages: false,
+        })
+        setAdditionalEntries(prev => ({ ...prev, [lang]: result }))
+        setSelectedLanguages(prev => new Set([...prev, lang]))
+      } catch (error) {
+        console.error(`Failed to fetch ${lang} version:`, error)
+      }
+    },
+    [additionalEntries, entry.lang, entry.normalized_term]
+  )
+
+  const toggleLanguage = async (lang: string) => {
+    if (lang === entry.lang) return // Can't deselect primary language
+
+    const newSelected = new Set(selectedLanguages)
+    if (newSelected.has(lang)) {
+      newSelected.delete(lang)
+    } else {
+      newSelected.add(lang)
+      if (!additionalEntries[lang] && languageVersions?.languages[lang]) {
+        await fetchSpecificLanguage(lang)
+      }
+    }
+    setSelectedLanguages(newSelected)
+  }
 
   // Handle helpful/not helpful feedback
   const handleFeedback = async (helpful: boolean) => {
@@ -63,137 +147,245 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     return 'text-red-600'
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Main term card */}
-      <Card>
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">
-              {sanitizeOutput(entry.term)}
-            </h1>
-            <div className="flex items-center gap-4 text-sm text-stone-600">
-              <span className="capitalize">
-                {t(`toolbox:dictionary.types.${entry.type}`)}
-              </span>
-              {entry.quality_score && (
-                <span
-                  className={`font-medium ${getQualityColor(qualityPercentage)}`}
-                >
-                  {t('toolbox:dictionary.qualityScore')}: {qualityPercentage}%
-                </span>
-              )}
-            </div>
-          </div>
+  // Get language display name
+  const getLanguageName = (lang: string) => {
+    const langNames: Record<string, string> = {
+      en: 'English',
+      es: 'Español',
+      fr: 'Français',
+      de: 'Deutsch',
+      'zh-CN': '简体中文',
+      'zh-TW': '繁體中文',
+      it: 'Italiano',
+      la: 'Latin',
+    }
+    return langNames[lang] || lang.toUpperCase()
+  }
 
-          {/* Pronunciation audio button */}
-          {entry.definition?.pronunciation?.audio_url && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                const audio = new Audio(
-                  entry.definition?.pronunciation?.audio_url
-                )
-                audio.play().catch(console.error)
-              }}
-              aria-label={t('toolbox:dictionary.playPronunciation')}
+  // Render a single term entry
+  const renderTermEntry = (
+    termEntry: DictionaryEntry,
+    isAdditional = false
+  ) => (
+    <Card key={termEntry.id} className={isAdditional ? 'border-sage-200' : ''}>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1
+              className={`${isAdditional ? 'text-2xl' : 'text-3xl'} font-bold text-stone-800`}
             >
-              🔊 {t('toolbox:dictionary.hear')}
-            </Button>
-          )}
-        </div>
-
-        {/* Definition section */}
-        <div className="space-y-4">
-          {/* Concise definition */}
-          {entry.definition?.concise ? (
-            <div>
-              <p className="text-lg text-stone-700">
-                {sanitizeOutput(entry.definition.concise)}
-              </p>
-            </div>
-          ) : (
-            <p className="text-stone-500 italic">
-              {t('toolbox:dictionary.definitionGenerating')}
-            </p>
-          )}
-
-          {/* Pronunciation */}
-          {entry.definition?.pronunciation?.ipa && (
-            <div className="text-sm text-stone-600">
-              <span className="font-medium">
-                {t('toolbox:dictionary.pronunciation')}:
-              </span>{' '}
-              <span className="font-mono">
-                {sanitizeOutput(entry.definition.pronunciation.ipa)}
+              {sanitizeOutput(termEntry.term)}
+            </h1>
+            <span className="px-3 py-1 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
+              {getLanguageName(termEntry.lang)}
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-stone-600 mt-2">
+            <span className="capitalize">
+              {t(`toolbox:dictionary.types.${termEntry.type}`)}
+            </span>
+            {termEntry.quality_score && (
+              <span
+                className={`font-medium ${getQualityColor(qualityPercentage)}`}
+              >
+                {t('toolbox:dictionary.qualityScore')}: {qualityPercentage}%
               </span>
-            </div>
-          )}
-
-          {/* Etymology */}
-          {entry.definition?.etymology && (
-            <div className="text-sm text-stone-600">
-              <span className="font-medium">
-                {t('toolbox:dictionary.etymology')}:
-              </span>{' '}
-              {sanitizeOutput(entry.definition.etymology)}
-            </div>
-          )}
-
-          {/* Detailed definition */}
-          {entry.definition?.detailed && (
-            <details className="mt-4">
-              <summary className="cursor-pointer text-sage-600 hover:text-sage-700 font-medium">
-                {t('toolbox:dictionary.readMore')}
-              </summary>
-              <div className="mt-2 text-stone-700 space-y-2">
-                <p>{sanitizeOutput(entry.definition.detailed)}</p>
-
-                {/* Usage example */}
-                {entry.definition.usage_example && (
-                  <div className="mt-3 p-3 bg-stone-50 rounded-md">
-                    <p className="text-sm font-medium text-stone-600 mb-1">
-                      {t('toolbox:dictionary.example')}:
-                    </p>
-                    <p className="italic">
-                      {sanitizeOutput(entry.definition.usage_example)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </details>
-          )}
+            )}
+            {termEntry.source_lang &&
+              termEntry.source_lang !== termEntry.lang && (
+                <span className="text-stone-500">
+                  {t('toolbox:dictionary.originalLanguage', {
+                    lang: getLanguageName(termEntry.source_lang),
+                  })}
+                </span>
+              )}
+          </div>
         </div>
 
-        {/* Metadata */}
-        {entry.metadata && (
-          <div className="mt-6 pt-6 border-t border-stone-200">
-            <div className="flex flex-wrap gap-2">
-              {entry.metadata.difficulty_level && (
-                <span className="px-3 py-1 bg-stone-100 rounded-full text-sm">
-                  {t(
-                    `toolbox:dictionary.difficulty.${entry.metadata.difficulty_level}`
-                  )}
-                </span>
-              )}
-              {entry.metadata.instruments?.map(instrument => (
-                <span
-                  key={instrument}
-                  className="px-3 py-1 bg-sage-100 rounded-full text-sm"
-                >
-                  {sanitizeOutput(instrument)}
-                </span>
-              ))}
-              {entry.metadata.cultural_origin && (
-                <span className="px-3 py-1 bg-peach-100 rounded-full text-sm">
-                  {sanitizeOutput(entry.metadata.cultural_origin)}
-                </span>
-              )}
-            </div>
+        {/* Pronunciation audio button */}
+        {termEntry.definition?.pronunciation?.audio_url && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const audio = new Audio(
+                termEntry.definition?.pronunciation?.audio_url
+              )
+              audio.play().catch(console.error)
+            }}
+            aria-label={t('toolbox:dictionary.playPronunciation')}
+          >
+            🔊 {t('toolbox:dictionary.hear')}
+          </Button>
+        )}
+      </div>
+
+      {/* Definition section */}
+      <div className="space-y-4">
+        {/* Concise definition */}
+        {termEntry.definition?.concise ? (
+          <div>
+            <p className="text-lg text-stone-700">
+              {sanitizeOutput(termEntry.definition.concise)}
+            </p>
+          </div>
+        ) : (
+          <p className="text-stone-500 italic">
+            {t('toolbox:dictionary.definitionGenerating')}
+          </p>
+        )}
+
+        {/* Pronunciation */}
+        {termEntry.definition?.pronunciation?.ipa && (
+          <div className="text-sm text-stone-600">
+            <span className="font-medium">
+              {t('toolbox:dictionary.pronunciation')}:
+            </span>{' '}
+            <span className="font-mono">
+              {sanitizeOutput(termEntry.definition.pronunciation.ipa)}
+            </span>
           </div>
         )}
-      </Card>
+
+        {/* Etymology */}
+        {termEntry.definition?.etymology && (
+          <div className="text-sm text-stone-600">
+            <span className="font-medium">
+              {t('toolbox:dictionary.etymology')}:
+            </span>{' '}
+            {sanitizeOutput(termEntry.definition.etymology)}
+          </div>
+        )}
+
+        {/* Detailed definition */}
+        {termEntry.definition?.detailed && (
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sage-600 hover:text-sage-700 font-medium">
+              {t('toolbox:dictionary.readMore')}
+            </summary>
+            <div className="mt-2 text-stone-700 space-y-2">
+              <p>{sanitizeOutput(termEntry.definition.detailed)}</p>
+
+              {/* Usage example */}
+              {termEntry.definition.usage_example && (
+                <div className="mt-3 p-3 bg-stone-50 rounded-md">
+                  <p className="text-sm font-medium text-stone-600 mb-1">
+                    {t('toolbox:dictionary.example')}:
+                  </p>
+                  <p className="italic">
+                    {sanitizeOutput(termEntry.definition.usage_example)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </details>
+        )}
+      </div>
+
+      {/* Metadata */}
+      {termEntry.metadata && (
+        <div className="mt-6 pt-6 border-t border-stone-200">
+          <div className="flex flex-wrap gap-2">
+            {termEntry.metadata.difficulty_level && (
+              <span className="px-3 py-1 bg-stone-100 rounded-full text-sm">
+                {t(
+                  `toolbox:dictionary.difficulty.${termEntry.metadata.difficulty_level}`
+                )}
+              </span>
+            )}
+            {termEntry.metadata.instruments?.map(instrument => (
+              <span
+                key={instrument}
+                className="px-3 py-1 bg-sage-100 rounded-full text-sm"
+              >
+                {sanitizeOutput(instrument)}
+              </span>
+            ))}
+            {termEntry.metadata.cultural_origin && (
+              <span className="px-3 py-1 bg-peach-100 rounded-full text-sm">
+                {sanitizeOutput(termEntry.metadata.cultural_origin)}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+
+  return (
+    <div className="space-y-6">
+      {/* Language selection badges */}
+      {languageVersions &&
+        Object.keys(languageVersions.languages).length > 1 && (
+          <Card className="bg-stone-50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-stone-700">
+                {t('toolbox:dictionary.availableInLanguages')}
+              </h3>
+              {selectedLanguages.size > 1 && (
+                <span className="text-xs text-sage-600">
+                  {t('toolbox:dictionary.compareLanguages')}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {availableLanguages.map(lang => {
+                const hasVersion =
+                  !!languageVersions.languages[lang] || lang === entry.lang
+                const isSelected = selectedLanguages.has(lang)
+                const isPrimary = lang === entry.lang
+                const isCurrent = lang === currentLanguage
+
+                if (!hasVersion) return null
+
+                return (
+                  <Button
+                    key={lang}
+                    variant={isSelected ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => toggleLanguage(lang)}
+                    disabled={isPrimary || loadingLanguages}
+                    className={`
+                    ${isPrimary ? 'opacity-100 cursor-default' : 'cursor-pointer'}
+                    ${isCurrent && !isPrimary ? 'ring-2 ring-sage-400' : ''}
+                  `}
+                  >
+                    {getLanguageName(lang)}
+                    {isPrimary && ' ✓'}
+                    {isCurrent && !isPrimary && ' ★'}
+                  </Button>
+                )
+              })}
+            </div>
+          </Card>
+        )}
+
+      {/* Main term display */}
+      {renderTermEntry(entry)}
+
+      {/* Additional language versions */}
+      {selectedLanguages.size > 1 && (
+        <div className="space-y-4">
+          {Array.from(selectedLanguages)
+            .filter(lang => lang !== entry.lang)
+            .map(lang => {
+              const langEntry =
+                additionalEntries[lang] || languageVersions?.languages[lang]
+              if (!langEntry) {
+                return (
+                  <Card key={lang} className="border-stone-200 bg-stone-50">
+                    <div className="text-center py-8 text-stone-500">
+                      {t('toolbox:dictionary.fetchingInLanguage', {
+                        lang: getLanguageName(lang),
+                      })}
+                    </div>
+                  </Card>
+                )
+              }
+              return renderTermEntry(langEntry, true)
+            })}
+        </div>
+      )}
 
       {/* References section */}
       {entry.references && (

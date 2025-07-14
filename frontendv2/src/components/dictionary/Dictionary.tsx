@@ -6,6 +6,7 @@ import {
   SearchOptions,
   SearchFilters,
   DictionaryState,
+  SupportedLanguage,
 } from '@/types/dictionary'
 import { Card } from '@/components/ui'
 import DictionarySearch from './DictionarySearch'
@@ -19,7 +20,7 @@ import DictionaryCategories from './DictionaryCategories'
  * Manages state and orchestrates dictionary functionality
  */
 const Dictionary: React.FC = () => {
-  const { t } = useTranslation(['toolbox'])
+  const { t, i18n } = useTranslation(['toolbox'])
 
   // Component state
   const [state, setState] = useState<DictionaryState>({
@@ -36,6 +37,13 @@ const Dictionary: React.FC = () => {
     totalPages: 1,
     totalResults: 0,
   })
+
+  // State for language options
+  const [searchAllLanguages, setSearchAllLanguages] = useState(true)
+  const [showLanguageComparison] = useState(false)
+
+  // Get current UI language
+  const currentLanguage = i18n.language as SupportedLanguage
 
   // Load popular terms and recent searches on mount
   useEffect(() => {
@@ -81,7 +89,7 @@ const Dictionary: React.FC = () => {
     })
   }, [])
 
-  // Handle search
+  // Handle search with language support
   const handleSearch = useCallback(
     async (query: string) => {
       if (!query.trim()) {
@@ -104,6 +112,8 @@ const Dictionary: React.FC = () => {
       try {
         const searchOptions: SearchOptions = {
           query,
+          lang: currentLanguage,
+          searchAllLanguages,
           filters: state.filters,
           page: 1,
           limit: 20,
@@ -139,10 +149,16 @@ const Dictionary: React.FC = () => {
         }))
       }
     },
-    [state.filters, t, saveToRecentSearches]
+    [
+      state.filters,
+      t,
+      saveToRecentSearches,
+      currentLanguage,
+      searchAllLanguages,
+    ]
   )
 
-  // Handle term selection
+  // Handle term selection with language support
   const handleTermSelect = useCallback(
     async (term: string | DictionaryEntry) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
@@ -151,8 +167,11 @@ const Dictionary: React.FC = () => {
         let entry: DictionaryEntry
 
         if (typeof term === 'string') {
-          // Fetch the term
-          entry = await dictionaryAPI.getTerm(term)
+          // Fetch the term with language preference
+          entry = await dictionaryAPI.getTerm(term, {
+            lang: currentLanguage,
+            searchAllLanguages: true,
+          })
         } else {
           entry = term
         }
@@ -162,6 +181,20 @@ const Dictionary: React.FC = () => {
           selectedTerm: entry,
           isLoading: false,
         }))
+
+        // If showing language comparison, fetch other languages
+        if (showLanguageComparison && entry) {
+          try {
+            const multiLangData = await dictionaryAPI.getTermInLanguages(
+              entry.normalized_term,
+              ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']
+            )
+            // Store multi-language data in state if needed
+            console.log('Multi-language data:', multiLangData)
+          } catch (error) {
+            console.error('Failed to fetch multi-language data:', error)
+          }
+        }
       } catch (error) {
         setState(prev => ({
           ...prev,
@@ -173,7 +206,7 @@ const Dictionary: React.FC = () => {
         }))
       }
     },
-    [t]
+    [t, currentLanguage, showLanguageComparison]
   )
 
   // Handle filter changes
@@ -188,7 +221,7 @@ const Dictionary: React.FC = () => {
     [state.searchQuery, handleSearch]
   )
 
-  // Handle page change
+  // Handle page change with language support
   const handlePageChange = useCallback(
     async (page: number) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
@@ -196,6 +229,8 @@ const Dictionary: React.FC = () => {
       try {
         const searchOptions: SearchOptions = {
           query: state.searchQuery,
+          lang: currentLanguage,
+          searchAllLanguages,
           filters: state.filters,
           page,
           limit: 20,
@@ -220,7 +255,7 @@ const Dictionary: React.FC = () => {
         }))
       }
     },
-    [state.searchQuery, state.filters, t]
+    [state.searchQuery, state.filters, t, currentLanguage, searchAllLanguages]
   )
 
   // Handle back to results
@@ -243,6 +278,24 @@ const Dictionary: React.FC = () => {
           onSearch={handleSearch}
           placeholder={t('toolbox:dictionary.searchPlaceholder')}
         />
+
+        {/* Language options */}
+        <div className="mt-3 flex items-center gap-4 text-sm">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={searchAllLanguages}
+              onChange={e => setSearchAllLanguages(e.target.checked)}
+              className="mr-2"
+            />
+            {t('toolbox:dictionary.searchAllLanguages')}
+          </label>
+          <span className="text-stone-500">
+            {t('toolbox:dictionary.currentLanguage', {
+              lang: currentLanguage.toUpperCase(),
+            })}
+          </span>
+        </div>
       </div>
 
       {/* Error display */}
@@ -267,6 +320,27 @@ const Dictionary: React.FC = () => {
             {t('toolbox:dictionary.backToResults')}
           </button>
           <DictionaryTerm entry={state.selectedTerm} />
+
+          {/* Language indicator for the term */}
+          {state.selectedTerm.lang &&
+            state.selectedTerm.lang !== currentLanguage && (
+              <Card className="mt-4 p-3 bg-blue-50 border-blue-200">
+                <p className="text-sm text-blue-800">
+                  {t('toolbox:dictionary.termInLanguage', {
+                    lang: state.selectedTerm.lang.toUpperCase(),
+                  })}
+                  {state.selectedTerm.source_lang && (
+                    <span className="ml-2">
+                      (
+                      {t('toolbox:dictionary.originalLanguage', {
+                        lang: state.selectedTerm.source_lang,
+                      })}
+                      )
+                    </span>
+                  )}
+                </p>
+              </Card>
+            )}
         </div>
       ) : state.searchResults.length > 0 ? (
         // Show search results
@@ -285,6 +359,11 @@ const Dictionary: React.FC = () => {
           <p className="text-stone-600">
             {t('toolbox:dictionary.noResults', { query: state.searchQuery })}
           </p>
+          {searchAllLanguages && (
+            <p className="text-sm text-stone-500 mt-2">
+              {t('toolbox:dictionary.searchedAllLanguages')}
+            </p>
+          )}
         </Card>
       ) : (
         // Default view - popular terms and categories
