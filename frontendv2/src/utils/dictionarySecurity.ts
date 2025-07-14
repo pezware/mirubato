@@ -76,17 +76,22 @@ export const sanitizeOutput = (text: string | undefined | null): string => {
   // Create a temporary element to decode HTML entities safely
   const temp = document.createElement('div')
   temp.textContent = text
-  const decoded = temp.innerHTML
+  let sanitized = temp.innerHTML
+  let previousSanitized = ''
 
-  // Remove any potential XSS vectors
-  return decoded
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/(javascript|data|vbscript|about|file):/gi, '') // Remove dangerous protocols
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
-    .replace(/style\s*=/gi, '') // Remove style attributes
-    .replace(/expression\s*\(/gi, '') // Remove CSS expressions
-    .replace(/import\s+/gi, '') // Remove import statements
-    .trim()
+  // Apply sanitization iteratively until no more changes occur
+  while (sanitized !== previousSanitized) {
+    previousSanitized = sanitized
+    sanitized = sanitized
+      .replace(/[<>]/g, '') // Remove angle brackets
+      .replace(/(javascript|data|vbscript|about|file):/gi, '') // Remove dangerous protocols
+      .replace(/on\w+\s*=/gi, '') // Remove event handlers
+      .replace(/style\s*=/gi, '') // Remove style attributes
+      .replace(/expression\s*\(/gi, '') // Remove CSS expressions
+      .replace(/import\s+/gi, '') // Remove import statements
+  }
+
+  return sanitized.trim()
 }
 
 /**
