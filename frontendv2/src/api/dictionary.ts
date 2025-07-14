@@ -150,6 +150,18 @@ export class DictionaryAPIClient {
         searchData = response.data.data
       }
 
+      // Map dictionary API response format to expected format
+      // Dictionary API returns 'results' but frontend expects 'entries'
+      if (searchData.results && !searchData.entries) {
+        searchData.entries = searchData.results
+        delete searchData.results
+      }
+
+      // Ensure required fields are present
+      searchData.page = searchData.page || 1
+      searchData.limit = searchData.limit || 20
+      searchData.total = searchData.total || 0
+
       // Validate and return search results
       try {
         return SearchResultSchema.parse(searchData)
