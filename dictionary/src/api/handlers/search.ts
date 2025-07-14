@@ -125,7 +125,7 @@ searchHandler.get(
       await cacheService.cacheSearchResults(
         query.q,
         query.filters || {},
-        searchResult.results,
+        searchResult.entries,
         searchResult.total
       )
 

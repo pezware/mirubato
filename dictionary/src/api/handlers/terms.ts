@@ -19,6 +19,7 @@ import {
   TermType,
   SearchAnalytics,
   UserFeedback,
+  SupportedLanguage,
 } from '../../types/dictionary'
 
 export const termsHandler = new Hono<{ Bindings: Env }>()
@@ -134,7 +135,7 @@ termsHandler.get(
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
         search_source: 'api_direct',
-        search_lang: requestLang,
+        search_lang: requestLang as SupportedLanguage,
         result_lang: entry?.lang,
       }
 

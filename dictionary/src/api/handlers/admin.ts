@@ -164,6 +164,7 @@ adminHandler.put(
         term,
         normalized_term: term.toLowerCase(),
         type: 'general', // Default type, can be updated
+        lang: 'en', // Default language
         definition: {
           concise: updates.definition?.concise || '',
           detailed: updates.definition?.detailed || '',
@@ -279,6 +280,7 @@ adminHandler.post('/bulk', zValidator('json', bulkOperationSchema), async c => {
             term: entryData.term,
             normalized_term: entryData.term.toLowerCase(),
             type: entryData.type as any,
+            lang: 'en', // Default language for imports
             definition: entryData.definition,
             references: {},
             metadata: {
@@ -530,7 +532,8 @@ adminHandler.post(
                 // Generate new entry
                 const entry = await generator.generateEntry({
                   term: item.term,
-                  lang: lang as any,
+                  type: 'general', // Default type for seed queue items
+                  lang: lang,
                   context: {
                     requested_by: 'seed_queue',
                     generation_reason: 'batch_seed',

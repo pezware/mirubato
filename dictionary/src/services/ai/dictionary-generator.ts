@@ -20,6 +20,7 @@ import { normalizeTerm } from '../../utils/validation'
 export interface GenerationOptions {
   term: string
   type: TermType
+  lang?: string
   context?: {
     instruments?: string[]
     difficulty_level?: string
@@ -79,6 +80,7 @@ export class DictionaryGenerator {
           term: options.term,
           normalized_term: normalizeTerm(options.term),
           type: options.type,
+          lang: (options.lang || 'en') as DictionaryEntry['lang'],
           definition,
           references,
           metadata,

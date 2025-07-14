@@ -13,6 +13,8 @@ import {
   TermType,
   MultiLanguageTermResponse,
   SeedQueueEntry,
+  SupportedLanguage,
+  ExtendedLanguage,
 } from '../../types/dictionary'
 import { NotFoundError } from '../../utils/errors'
 import { normalizeTerm } from '../../utils/validation'
@@ -269,7 +271,7 @@ export class DictionaryDatabase {
       .all()
 
     // Get suggested languages if cross-language search
-    let suggestedLanguages: string[] | undefined
+    let suggestedLanguages: SupportedLanguage[] | undefined
     if (query.searchAllLanguages && results.results.length > 0) {
       const langResult = await this.db
         .prepare(
@@ -284,7 +286,9 @@ export class DictionaryDatabase {
         .bind(normalizedQuery, uiLang)
         .all()
 
-      suggestedLanguages = langResult.results.map(r => r.lang as string)
+      suggestedLanguages = langResult.results.map(
+        r => r.lang as string
+      ) as SupportedLanguage[]
     }
 
     return {
@@ -652,8 +656,8 @@ export class DictionaryDatabase {
       id: row.id as string,
       term: row.term as string,
       normalized_term: row.normalized_term as string,
-      lang: (row.lang as string) || 'en',
-      source_lang: (row.source_lang as string) || undefined,
+      lang: ((row.lang as string) || 'en') as SupportedLanguage,
+      source_lang: row.source_lang as string as ExtendedLanguage | undefined,
       lang_confidence: (row.lang_confidence as number) || 1.0,
       type: row.type as TermType,
       definition: JSON.parse(row.definition as string),
