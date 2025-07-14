@@ -22,6 +22,8 @@ export interface Env {
   CACHE_TTL: string
   ENVIRONMENT: string
   API_SERVICE_URL: string
+  CORS_ORIGIN?: string
+  LOG_LEVEL?: string
 
   // API Keys (secrets)
   JWT_SECRET?: string
@@ -52,6 +54,12 @@ export interface Variables {
   apiKeyName?: string
   apiKeyScopes?: string[]
   serviceName?: string
+  // Validation
+  validatedQuery?: any
+  validatedParams?: any
+  validatedBody?: any
+  // Request tracking
+  requestId?: string
 }
 
 export interface Context {

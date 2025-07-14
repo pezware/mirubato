@@ -8,8 +8,8 @@ import { swaggerUI } from '@hono/swagger-ui'
 
 export const docsHandler = new Hono<{ Bindings: Env }>()
 
-// OpenAPI specification
-const openAPISpec = {
+// Generate OpenAPI specification dynamically
+const generateOpenAPISpec = (baseUrl: string) => ({
   openapi: '3.0.0',
   info: {
     title: 'Mirubato Music Dictionary API',
@@ -46,6 +46,10 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
   },
   servers: [
     {
+      url: baseUrl,
+      description: 'Current server',
+    },
+    {
       url: 'https://dictionary.mirubato.com',
       description: 'Production server',
     },
@@ -60,6 +64,10 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
   ],
   tags: [
     {
+      name: 'Health',
+      description: 'Service health and monitoring',
+    },
+    {
       name: 'Terms',
       description: 'Dictionary term operations',
     },
@@ -72,8 +80,16 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
       description: 'Batch query operations',
     },
     {
-      name: 'Health',
-      description: 'Service health and monitoring',
+      name: 'Enhance',
+      description: 'AI-powered term enhancement',
+    },
+    {
+      name: 'Analytics',
+      description: 'Usage analytics and statistics',
+    },
+    {
+      name: 'Export',
+      description: 'Data export operations',
     },
   ],
   paths: {
@@ -99,6 +115,95 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
               'application/json': {
                 schema: {
                   $ref: '#/components/schemas/HealthCheck',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/livez': {
+      get: {
+        tags: ['Health'],
+        summary: 'Liveness probe',
+        description: 'Simple check that service is running',
+        responses: {
+          '200': {
+            description: 'Service is alive',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['ok'] },
+                    timestamp: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/readyz': {
+      get: {
+        tags: ['Health'],
+        summary: 'Readiness probe',
+        description: 'Check if service can handle requests',
+        responses: {
+          '200': {
+            description: 'Service is ready',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['ready'] },
+                    checks: {
+                      type: 'object',
+                      properties: {
+                        database: { type: 'boolean' },
+                        cache: { type: 'boolean' },
+                      },
+                    },
+                    timestamp: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+          '503': {
+            description: 'Service is not ready',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['not_ready'] },
+                    checks: { type: 'object' },
+                    timestamp: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/metrics': {
+      get: {
+        tags: ['Health'],
+        summary: 'Prometheus metrics',
+        description: 'Metrics endpoint in Prometheus format',
+        responses: {
+          '200': {
+            description: 'Metrics in Prometheus format',
+            content: {
+              'text/plain': {
+                schema: {
+                  type: 'string',
+                  example:
+                    '# HELP http_requests_total Total HTTP requests\n# TYPE http_requests_total counter\nhttp_requests_total{method="GET",path="/api/v1/terms",status="200"} 42',
                 },
               },
             },
@@ -334,6 +439,317 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
         },
       },
     },
+    '/api/v1/search/semantic': {
+      post: {
+        tags: ['Search'],
+        summary: 'Semantic search',
+        description: 'AI-powered semantic search for related terms',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  query: {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 500,
+                  },
+                  limit: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 50,
+                    default: 10,
+                  },
+                  threshold: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 1,
+                    default: 0.7,
+                  },
+                },
+                required: ['query'],
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Semantic search results',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        results: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              entry: {
+                                $ref: '#/components/schemas/DictionaryEntry',
+                              },
+                              score: { type: 'number' },
+                              explanation: { type: 'string' },
+                            },
+                          },
+                        },
+                        query_interpretation: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/v1/batch/query': {
+      post: {
+        tags: ['Batch'],
+        summary: 'Batch query multiple terms',
+        description: 'Query multiple dictionary terms in a single request',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  terms: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    minItems: 1,
+                    maxItems: 50,
+                  },
+                  type: {
+                    type: 'string',
+                    enum: [
+                      'instrument',
+                      'genre',
+                      'technique',
+                      'composer',
+                      'theory',
+                      'general',
+                    ],
+                  },
+                  generate_missing: { type: 'boolean', default: false },
+                  include_related: { type: 'boolean', default: false },
+                },
+                required: ['terms'],
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Batch query results',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        entries: {
+                          type: 'array',
+                          items: {
+                            $ref: '#/components/schemas/DictionaryEntry',
+                          },
+                        },
+                        missing: {
+                          type: 'array',
+                          items: { type: 'string' },
+                        },
+                        total: { type: 'integer' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/v1/enhance': {
+      post: {
+        tags: ['Enhance'],
+        summary: 'Enhance dictionary entry with AI',
+        description:
+          'Request AI enhancement for low-quality dictionary entries',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  providers: {
+                    type: 'array',
+                    items: {
+                      type: 'string',
+                      enum: ['claude', 'openai', 'gemini', 'cloudflare'],
+                    },
+                  },
+                  force: { type: 'boolean', default: false },
+                },
+                required: ['id'],
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Enhancement successful',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        entry: { $ref: '#/components/schemas/DictionaryEntry' },
+                        enhanced: { type: 'boolean' },
+                        quality_improvement: { type: 'number' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/v1/analytics/summary': {
+      get: {
+        tags: ['Analytics'],
+        summary: 'Get analytics summary',
+        description: 'Retrieve analytics summary for dictionary usage',
+        responses: {
+          '200': {
+            description: 'Analytics summary',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        total_entries: { type: 'integer' },
+                        quality_distribution: {
+                          type: 'object',
+                          properties: {
+                            high: { type: 'integer' },
+                            medium: { type: 'integer' },
+                            low: { type: 'integer' },
+                          },
+                        },
+                        type_distribution: {
+                          type: 'object',
+                          additionalProperties: { type: 'integer' },
+                        },
+                        popular_terms: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              term: { type: 'string' },
+                              search_count: { type: 'integer' },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/v1/export/{format}': {
+      get: {
+        tags: ['Export'],
+        summary: 'Export dictionary data',
+        description: 'Export dictionary entries in various formats',
+        parameters: [
+          {
+            name: 'format',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              enum: ['json', 'csv', 'pdf'],
+            },
+          },
+          {
+            name: 'type',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: [
+                'instrument',
+                'genre',
+                'technique',
+                'composer',
+                'theory',
+                'general',
+              ],
+            },
+          },
+          {
+            name: 'quality_min',
+            in: 'query',
+            schema: {
+              type: 'number',
+              minimum: 0,
+              maximum: 1,
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Export successful',
+            content: {
+              'application/json': {
+                schema: { type: 'object' },
+              },
+              'text/csv': {
+                schema: { type: 'string' },
+              },
+              'application/pdf': {
+                schema: { type: 'string', format: 'binary' },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -474,11 +890,13 @@ Most endpoints are public. Protected endpoints require a JWT bearer token obtain
       },
     },
   },
-}
+})
 
 // Serve OpenAPI spec as JSON
 docsHandler.get('/openapi.json', c => {
-  return c.json(openAPISpec)
+  const url = new URL(c.req.url)
+  const baseUrl = `${url.protocol}//${url.host}`
+  return c.json(generateOpenAPISpec(baseUrl))
 })
 
 // Serve Swagger UI
