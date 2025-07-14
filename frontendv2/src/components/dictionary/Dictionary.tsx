@@ -15,6 +15,14 @@ import DictionaryTerm from './DictionaryTerm'
 import DictionaryPopular from './DictionaryPopular'
 import DictionaryCategories from './DictionaryCategories'
 
+// Error type for dictionary errors
+interface DictionaryError extends Error {
+  code?: string
+  suggestions?: string[]
+  jobId?: string
+  estimatedCompletion?: string
+}
+
 /**
  * Main Dictionary component container
  * Manages state and orchestrates dictionary functionality
@@ -146,14 +154,14 @@ const Dictionary: React.FC = () => {
         if (results.entries.length === 1) {
           setState(prev => ({ ...prev, selectedTerm: results.entries[0] }))
         }
-      } catch (error: any) {
+      } catch (error) {
         // Handle different error types for search
         let errorMessage = t('toolbox:dictionary.errors.searchFailed')
         let errorDetails: { code?: string } = {}
 
         if (error instanceof Error) {
           errorMessage = error.message
-          errorDetails = { code: (error as any).code }
+          errorDetails = { code: (error as DictionaryError).code }
         }
 
         setState(prev => ({
@@ -211,7 +219,7 @@ const Dictionary: React.FC = () => {
             console.error('Failed to fetch multi-language data:', error)
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         // Handle different error types
         let errorMessage = t('toolbox:dictionary.errors.loadFailed')
         let errorDetails: {
@@ -222,12 +230,13 @@ const Dictionary: React.FC = () => {
         } = {}
 
         if (error instanceof Error) {
+          const dictError = error as DictionaryError
           errorMessage = error.message
           errorDetails = {
-            code: (error as any).code,
-            suggestions: (error as any).suggestions,
-            jobId: (error as any).jobId,
-            estimatedCompletion: (error as any).estimatedCompletion,
+            code: dictError.code,
+            suggestions: dictError.suggestions,
+            jobId: dictError.jobId,
+            estimatedCompletion: dictError.estimatedCompletion,
           }
         }
 

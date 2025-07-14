@@ -23,6 +23,14 @@ import {
   MultiLanguageTermResponseSchema,
 } from '@/types/dictionary'
 
+// Custom error types for dictionary API
+interface DictionaryError extends Error {
+  code?: string
+  suggestions?: string[]
+  jobId?: string
+  estimatedCompletion?: string
+}
+
 /**
  * Dictionary API client with built-in security, validation, and rate limiting
  */
@@ -236,9 +244,11 @@ export class DictionaryAPIClient {
         }
 
         // Create a custom error with more information
-        const error = new Error(notFoundData.error || 'Term not found')
-        ;(error as any).code = 'TERM_NOT_FOUND'
-        ;(error as any).suggestions = notFoundData.data?.suggestions || []
+        const error = new Error(
+          notFoundData.error || 'Term not found'
+        ) as DictionaryError
+        error.code = 'TERM_NOT_FOUND'
+        error.suggestions = notFoundData.data?.suggestions || []
         throw error
       }
 
@@ -255,11 +265,10 @@ export class DictionaryAPIClient {
 
         const error = new Error(
           pendingData.message || 'AI generation in progress'
-        )
-        ;(error as any).code = 'AI_GENERATION_PENDING'
-        ;(error as any).jobId = pendingData.data?.job_id
-        ;(error as any).estimatedCompletion =
-          pendingData.data?.estimated_completion
+        ) as DictionaryError
+        error.code = 'AI_GENERATION_PENDING'
+        error.jobId = pendingData.data?.job_id
+        error.estimatedCompletion = pendingData.data?.estimated_completion
         throw error
       }
 
@@ -282,7 +291,9 @@ export class DictionaryAPIClient {
       // Add generation info to the result
       const result = validated.data
       if (wasGenerated) {
-        ;(result as any).wasAIGenerated = true
+        ;(
+          result as DictionaryEntry & { wasAIGenerated?: boolean }
+        ).wasAIGenerated = true
       }
 
       return result
@@ -290,21 +301,24 @@ export class DictionaryAPIClient {
       if (error instanceof AxiosError) {
         // Handle 404 specifically
         if (error.response?.status === 404) {
-          const notFoundError = new Error('Term not found in dictionary')
-          ;(notFoundError as any).code = 'TERM_NOT_FOUND'
+          const notFoundError = new Error(
+            'Term not found in dictionary'
+          ) as DictionaryError
+          notFoundError.code = 'TERM_NOT_FOUND'
 
           // Extract suggestions if available
           if (error.response.data?.data?.suggestions) {
-            ;(notFoundError as any).suggestions =
-              error.response.data.data.suggestions
+            notFoundError.suggestions = error.response.data.data.suggestions
           }
           throw notFoundError
         }
 
         // Handle 503 (AI service unavailable)
         if (error.response?.status === 503) {
-          const serviceError = new Error('AI service temporarily unavailable')
-          ;(serviceError as any).code = 'AI_SERVICE_UNAVAILABLE'
+          const serviceError = new Error(
+            'AI service temporarily unavailable'
+          ) as DictionaryError
+          serviceError.code = 'AI_SERVICE_UNAVAILABLE'
           throw serviceError
         }
 

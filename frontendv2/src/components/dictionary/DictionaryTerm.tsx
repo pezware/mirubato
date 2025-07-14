@@ -34,14 +34,10 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
   >({})
 
   const currentLanguage = i18n.language as SupportedLanguage
-  const availableLanguages: SupportedLanguage[] = [
-    'en',
-    'es',
-    'fr',
-    'de',
-    'zh-CN',
-    'zh-TW',
-  ]
+  const availableLanguages = React.useMemo<SupportedLanguage[]>(
+    () => ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'],
+    []
+  )
 
   const fetchLanguageVersions = useCallback(async () => {
     try {
@@ -182,7 +178,8 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             <span className="px-3 py-1 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
               {getLanguageName(termEntry.lang)}
             </span>
-            {(termEntry as any).wasAIGenerated && (
+            {(termEntry as DictionaryEntry & { wasAIGenerated?: boolean })
+              .wasAIGenerated && (
               <span
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
                 title={t('toolbox:dictionary.aiGeneratedTooltip')}
