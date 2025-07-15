@@ -134,9 +134,9 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     }
   }
 
-  // Format quality score as percentage
+  // Format quality score as percentage (already in 0-100 scale)
   const qualityPercentage = entry.quality_score
-    ? Math.round(entry.quality_score.overall * 100)
+    ? Math.round(entry.quality_score.overall)
     : 0
 
   // Get quality color based on score
