@@ -16,7 +16,6 @@ import {
   SEED_TERMS,
   getSeedTermsByPriority,
   seedTermsToQueueEntries,
-  getHighPrioritySeedTerms,
 } from '../../data/seed-terms'
 
 export const adminHandler = new Hono<{ Bindings: Env; Variables: Variables }>()

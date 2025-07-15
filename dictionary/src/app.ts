@@ -4,7 +4,6 @@
 
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
 import { timing } from 'hono/timing'
 import { swaggerUI } from '@hono/swagger-ui'
 import { Env, Variables } from './types/env'
