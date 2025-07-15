@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        workspace: [frontendv2, api, scores]
+        workspace: [frontendv2, api, scores, dictionary]
     steps:
       - uses: actions/checkout@v4
 
@@ -84,7 +84,7 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        workspace: [frontendv2, api, scores]
+        workspace: [frontendv2, api, scores, dictionary]
     steps:
       - uses: actions/checkout@v4
 

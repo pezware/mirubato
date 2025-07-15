@@ -13,7 +13,7 @@
   - **PR/Branch pushes**: Automatically deploy to staging environment
   - **Main branch**: Automatically deploy to production
   - Cloudflare handles deployments via GitHub integration
-- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`, `scores/wrangler.toml`
+- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`, `scores/wrangler.toml`, `dictionary/wrangler.toml`
 
 ### Essential Commands
 
@@ -23,9 +23,10 @@ npm install                    # Install all dependencies
 ./start-scorebook.sh           # Start all services with proper domains
 
 # Individual services (for debugging)
-cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
-cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
-cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
+cd api && wrangler dev --port 9797 --env local --local-protocol http        # http://api-mirubato.localhost:9797
+cd scores && wrangler dev --port 9788 --env local --local-protocol http     # http://scores-mirubato.localhost:9788
+cd dictionary && wrangler dev --port 9799 --env local --local-protocol http # http://dictionary-mirubato.localhost:9799
+cd frontendv2 && npm run dev                                                # http://www-mirubato.localhost:4000
 
 # API Development
 cd api && npm run dev          # Full dev workflow (build + server)
@@ -44,6 +45,10 @@ cd api && wrangler deploy --env staging    # Deploy to staging
 ./start-scorebook.sh
 cd scores && wrangler deploy               # Deploy to production (default)
 cd scores && wrangler deploy --env staging # Deploy to staging
+
+# Dictionary
+cd dictionary && wrangler deploy               # Deploy to production (default)
+cd dictionary && wrangler deploy --env staging # Deploy to staging
 ```
 
 - You run in an environment where `ast-grep` is available; whenever a search requires syntax-aware or structural matching, default to `ast-grep --lang typescript -p '<pattern>'` (or set `--lang` appropriately) and avoid falling back to text-only tools like `rg` or `grep` unless I explicitly request a plain-text search.
@@ -58,6 +63,8 @@ mirubato/
 │   └── wrangler.toml  # All environments defined here
 ├── scores/            # Scores service → Cloudflare Worker
 │   └── wrangler.toml  # All environments defined here
+├── dictionary/        # Dictionary service → Cloudflare Worker
+│   └── wrangler.toml  # All environments defined here
 ├── service-template/  # Template for new microservices
 │   ├── README.md      # Quick start guide
 │   ├── scripts/       # Setup automation
@@ -71,6 +78,7 @@ We use explicit localhost domains with ports to properly simulate production env
 - **Frontend**: `http://www-mirubato.localhost:4000` (Vite dev server)
 - **API**: `http://api-mirubato.localhost:9797` (Wrangler dev)
 - **Scores**: `http://scores-mirubato.localhost:9788` (Wrangler dev)
+- **Dictionary**: `http://dictionary-mirubato.localhost:9799` (Wrangler dev)
 
 This approach:
 
@@ -91,6 +99,8 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 - **Production Frontend**: `https://mirubato.com`
 - **Production API Health Check**: `https://api.mirubato.com/health`
 - **API Documentation**: `https://api.mirubato.com/docs`
+- **Dictionary Health Check**: `https://dictionary.mirubato.com/health`
+- **Dictionary Documentation**: `https://dictionary.mirubato.com/docs`
 
 ### Common Issues
 
