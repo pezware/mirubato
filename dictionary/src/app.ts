@@ -17,6 +17,7 @@ import { healthRoutes } from './routes/health'
 import { docsRoutes } from './routes/docs'
 import { dictionaryRoutes } from './routes/dictionary'
 import { adminPortal } from './routes/admin-portal'
+import adminAuthRoutes from './routes/admin-auth'
 
 /**
  * Create and configure Hono app
@@ -99,8 +100,9 @@ app.get('/swagger', swaggerUI({ url: '/docs/openapi.json' }))
 // Dictionary API routes
 app.route('/', dictionaryRoutes)
 
-// Admin portal (must be before root endpoint to take precedence)
+// Admin portal and auth routes (must be before root endpoint to take precedence)
 app.route('/fredericchopin', adminPortal)
+app.route('/fredericchopin/auth', adminAuthRoutes)
 
 // Root endpoint - Landing page
 app.get('/', c => {

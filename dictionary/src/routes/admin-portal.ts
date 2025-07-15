@@ -5,14 +5,8 @@
 
 import { Hono } from 'hono'
 import { Env, Variables } from '../types/env'
-import { auth } from '../middleware/auth'
-import { adminEmailAuth } from '../middleware/admin-email'
 
 export const adminPortal = new Hono<{ Bindings: Env; Variables: Variables }>()
-
-// Apply authentication middleware
-adminPortal.use('*', auth())
-adminPortal.use('*', adminEmailAuth())
 
 // Serve admin portal HTML
 adminPortal.get('/', c => {
@@ -466,37 +460,93 @@ adminPortal.get('/', c => {
         function getAuthToken() {
             authToken = localStorage.getItem('auth-token');
             if (!authToken) {
-                const alertHtml = \`
-                    <div>
-                        <strong>Authentication Required</strong><br>
-                        <p style="margin-top: 8px;">The admin portal requires authentication. Since the dictionary service is on a different subdomain, you need to:</p>
-                        <ol style="margin-top: 8px; margin-left: 20px;">
-                            <li>Log in at <a href="${isProduction ? 'https://mirubato.com' : 'https://staging.mirubato.com'}" target="_blank" style="color: var(--morandi-sage-600); text-decoration: underline;">${isProduction ? 'mirubato.com' : 'staging.mirubato.com'}</a></li>
-                            <li>Open the browser console (F12)</li>
-                            <li>Run: <code style="background: var(--morandi-sand-100); padding: 2px 4px; border-radius: 3px;">localStorage.getItem('auth-token')</code></li>
-                            <li>Copy the token (including quotes)</li>
-                            <li>Come back here and run in console: <code style="background: var(--morandi-sand-100); padding: 2px 4px; border-radius: 3px;">localStorage.setItem('auth-token', YOUR_TOKEN)</code></li>
-                            <li>Refresh this page</li>
-                        </ol>
-                        <p style="margin-top: 12px; font-size: 14px; color: var(--morandi-stone-600);">This is a temporary solution. We're working on a better cross-domain authentication system.</p>
-                    </div>
-                \`;
-                showAlert('info', alertHtml);
-                
-                // Also show a simplified version in the content area
+                // Show magic link login form
                 document.getElementById('content').innerHTML = \`
                     <div class="card rose">
                         <h2 class="card-title">
-                            <i data-lucide="alert-circle"></i>
-                            Authentication Required
+                            <i data-lucide="lock"></i>
+                            Admin Authentication Required
                         </h2>
-                        <p>Please follow the instructions in the blue notification above to authenticate.</p>
+                        <p style="margin-bottom: 24px;">Please enter your @mirubato.com email address to receive a magic link.</p>
+                        
+                        <form onsubmit="requestMagicLink(event)">
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    class="form-input" 
+                                    id="adminEmail" 
+                                    placeholder="admin@mirubato.com"
+                                    pattern="[^@]+@mirubato\\.com"
+                                    title="Must be a @mirubato.com email address"
+                                    required
+                                >
+                            </div>
+                            <button type="submit" class="button primary" id="magicLinkBtn">
+                                <i data-lucide="mail"></i>
+                                Send Magic Link
+                            </button>
+                        </form>
+                        
+                        <div id="magicLinkMessage" style="margin-top: 24px;"></div>
                     </div>
                 \`;
                 lucide.createIcons();
                 return false;
             }
             return true;
+        }
+
+        // Request magic link
+        async function requestMagicLink(event) {
+            event.preventDefault();
+            
+            const emailInput = document.getElementById('adminEmail');
+            const email = emailInput.value;
+            const button = document.getElementById('magicLinkBtn');
+            const messageDiv = document.getElementById('magicLinkMessage');
+            
+            // Disable form
+            emailInput.disabled = true;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Sending...';
+            
+            try {
+                const response = await fetch('${apiBaseUrl}/fredericchopin/auth/magic-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error?.message || 'Failed to send magic link');
+                }
+                
+                // For demo purposes, show the magic link (in production, this would be emailed)
+                messageDiv.innerHTML = \`
+                    <div class="alert success">
+                        <strong>Magic link generated!</strong><br>
+                        <p style="margin-top: 8px;">In production, this would be sent to your email. For now, click the link below:</p>
+                        <a href="\${result.data.magicLink}" style="color: var(--morandi-sage-600); word-break: break-all;">Open Magic Link</a>
+                    </div>
+                \`;
+            } catch (error) {
+                messageDiv.innerHTML = \`
+                    <div class="alert error">
+                        <strong>Error:</strong> \${error.message}
+                    </div>
+                \`;
+            } finally {
+                // Re-enable form
+                emailInput.disabled = false;
+                button.disabled = false;
+                button.innerHTML = '<i data-lucide="mail"></i> Send Magic Link';
+                lucide.createIcons();
+            }
         }
 
         // API helper
