@@ -15,17 +15,6 @@ export const adminAuthRoutes = new Hono<{
   Variables: Variables
 }>()
 
-// Test endpoint
-adminAuthRoutes.get('/test', c => {
-  return c.json({
-    status: 'ok',
-    message: 'Admin auth routes are working',
-    hasJwtSecret: !!c.env.JWT_SECRET,
-    hasResendKey: !!c.env.RESEND_API_KEY,
-    environment: c.env.ENVIRONMENT,
-  })
-})
-
 // Request magic link schema
 const magicLinkRequestSchema = z.object({
   email: z.string().email(),
@@ -209,7 +198,7 @@ adminAuthRoutes.get('/verify', async c => {
         
         // Redirect after 2 seconds
         setTimeout(() => {
-          window.location.href = '/fredericchopin/';
+          window.location.href = '/fredericchopin';
         }, 2000);
       </script>
     </body>
