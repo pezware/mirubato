@@ -236,17 +236,30 @@ export const createSlug = (term: string): string => {
 export const isValidApiResponse = (data: unknown): boolean => {
   if (!data || typeof data !== 'object') return false
 
-  // Check for expected response structure
-  const response = data as { status?: string; error?: string; data?: unknown }
+  // Check for expected response structure - supports both formats
+  const response = data as {
+    status?: string
+    success?: boolean
+    error?: string
+    data?: unknown
+  }
 
-  // Must have status field
-  if (!response.status || typeof response.status !== 'string') return false
+  // Check for either 'status' field (old format) or 'success' field (dictionary format)
+  const hasStatusField = response.status && typeof response.status === 'string'
+  const hasSuccessField = typeof response.success === 'boolean'
 
-  // If error, must have error message
-  if (response.status === 'error' && !response.error) return false
+  if (!hasStatusField && !hasSuccessField) return false
 
-  // If success, must have data field
-  if (response.status === 'success' && !response.data) return false
+  // Validate based on which format is used
+  if (hasStatusField) {
+    // Old format validation
+    if (response.status === 'error' && !response.error) return false
+    if (response.status === 'success' && !response.data) return false
+  } else if (hasSuccessField) {
+    // Dictionary format validation
+    if (response.success === false && !response.error) return false
+    if (response.success === true && !response.data) return false
+  }
 
   return true
 }
