@@ -101,8 +101,8 @@ app.get('/swagger', swaggerUI({ url: '/docs/openapi.json' }))
 app.route('/fredericchopin', adminPortal)
 app.route('/fredericchopin/auth', adminAuthRoutes)
 
-// Dictionary API routes - mount under /api to avoid conflicts
-app.route('/api', dictionaryRoutes)
+// Dictionary API routes
+app.route('/', dictionaryRoutes)
 
 // Root endpoint - Landing page
 app.get('/', c => {
