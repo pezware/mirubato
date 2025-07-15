@@ -417,6 +417,154 @@ Storage:
 Total: ~$57/month
 ```
 
+## Automatic Pre-Seeding System (December 2025)
+
+### Overview
+
+The dictionary service now includes an automatic pre-seeding system that generates high-quality musical term definitions while respecting Cloudflare AI free tier limits. The system prioritizes quality over quantity, using 50% of daily tokens for seeding while reserving 50% for user queries.
+
+### Token Budget Management
+
+**Daily Allocation:**
+
+- Total Free Tier: 10,000 neurons/day
+- User Queries: 5,000 neurons (50%)
+- Auto-Seeding: 5,000 neurons (50%)
+- Using Llama 3.1 8B: ~595 high-quality terms/day
+
+**Budget Manager Features:**
+
+- Hard limit at 4,500 tokens (90% of allocation)
+- Circuit breaker protection
+- Real-time usage tracking
+- Automatic suspension on overrun
+
+### Seeding Strategy
+
+**Phase 1 - Core Terms (Month 1):**
+
+- Priority 10 terms: tempo, dynamics, articulation
+- Priority 9 terms: theory, notation
+- ~50 essential sight-reading terms
+
+**Phase 2 - Extended Terms (Months 2-3):**
+
+- Priority 8 terms: instruments, form, technique
+- Priority 7 terms: genre, period
+- Wikipedia relationship extraction
+- ~500 total terms by month 3
+
+### Quality Controls
+
+- **Minimum Quality Score**: 85%
+- **Batch Size**: 5 terms (quality over speed)
+- **Manual Review Queue**: For scores 85-87%
+- **Auto-Approval**: Only for scores >87%
+- **Daily Quality Reports**: Track average scores
+
+### Configuration
+
+**Staging Environment:**
+
+```javascript
+SEED_ENABLED = true
+SEED_DAILY_LIMIT = 10 // Only 10 terms/day
+SEED_PRIORITY_THRESHOLD = 10 // Highest priority only
+SEED_BATCH_SIZE = 2
+QUALITY_MIN_THRESHOLD = 90
+```
+
+**Production Environment:**
+
+```javascript
+SEED_ENABLED = true
+SEED_DAILY_TOKEN_BUDGET = 5000
+SEED_PRIORITY_THRESHOLD = 8
+SEED_BATCH_SIZE = 5
+QUALITY_MIN_THRESHOLD = 85
+```
+
+### Scheduled Processing
+
+**Production Schedule (UTC):**
+
+- 02:00 - Process batch (low traffic)
+- 08:00 - Process batch (before work)
+- 14:00 - Process batch (lunch)
+- 20:00 - Process batch (evening)
+
+**Staging Schedule:**
+
+- 12:00 - Single daily test run
+
+### Implementation Components
+
+1. **TokenBudgetManager**: Tracks and enforces daily limits
+2. **SeedProcessor**: Quality-first term generation
+3. **Scheduled Handler**: Cron job processing
+4. **Quality Validator**: Ensures high standards
+5. **Monitoring Service**: Tracks metrics and alerts
+
+### Database Schema Updates
+
+```sql
+-- Token usage tracking
+CREATE TABLE ai_token_usage (
+  id TEXT PRIMARY KEY,
+  date TEXT NOT NULL,
+  model TEXT NOT NULL,
+  tokens_used INTEGER NOT NULL,
+  terms_processed INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Manual review queue
+CREATE TABLE manual_review_queue (
+  id TEXT PRIMARY KEY,
+  term TEXT NOT NULL,
+  generated_content TEXT NOT NULL,
+  quality_score REAL NOT NULL,
+  status TEXT DEFAULT 'pending',
+  reviewed_at TEXT,
+  reviewer_notes TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+```
+
+### Monitoring & Metrics
+
+**Key Metrics:**
+
+- Average quality score (target: >87%)
+- Token usage vs budget (target: <90%)
+- Terms processed per day
+- Manual review queue size
+- User query token availability
+
+**Alerts:**
+
+- Token budget >80% used
+- Quality score <85% average
+- Failed generation attempts >10%
+- Manual review queue >50 items
+
+### Future Enhancements
+
+1. **Wikipedia Relationship Parser** (Month 2)
+   - Extract term relationships
+   - Build knowledge graph
+   - Enhance cross-references
+
+2. **Progressive Enhancement** (Month 3)
+   - Re-process low-quality terms
+   - Add pronunciation audio
+   - Expand examples
+
+3. **Multi-Model Strategy** (Month 4)
+   - Test smaller models for specific tasks
+   - Optimize token usage further
+   - A/B test quality differences
+
 ## Summary
 
 The Music Dictionary Service is **production-ready** with:
@@ -427,11 +575,12 @@ The Music Dictionary Service is **production-ready** with:
 - ✅ Performance optimization with caching
 - ✅ Complete frontend integration
 - ✅ All critical bugs fixed
+- 🚀 **NEW**: Automatic pre-seeding system (December 2025)
 
 The service provides a robust foundation for musical education with AI-powered content generation, making it a valuable addition to the Mirubato platform.
 
 ---
 
-_Last Updated: July 2025_  
-_Version: 1.0.0_  
-_Status: Production Ready_
+_Last Updated: December 2025_  
+_Version: 1.1.0_  
+_Status: Production Ready with Auto-Seeding_

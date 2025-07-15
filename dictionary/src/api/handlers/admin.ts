@@ -678,3 +678,217 @@ adminHandler.delete(
     }
   }
 )
+
+/**
+ * Get auto-seeding system status
+ * GET /api/v1/admin/seed/system-status
+ */
+adminHandler.get('/seed/system-status', async c => {
+  try {
+    // Import services
+    const { TokenBudgetManager } = await import(
+      '../../services/token-budget-manager'
+    )
+    const { SeedProcessor } = await import('../../services/seed-processor')
+
+    const budgetManager = new TokenBudgetManager(c.env.DB, c.env)
+    const processor = new SeedProcessor(c.env)
+
+    // Get current configuration
+    const config = budgetManager.getConfiguration()
+
+    // Get token usage
+    const tokensUsed = await budgetManager.getTokensUsedToday()
+    const availableTokens = await budgetManager.getAvailableTokens()
+    const usagePercentage = await budgetManager.getUsagePercentage()
+
+    // Get usage stats
+    const usageStats = await budgetManager.getUsageStats(7)
+
+    // Get processing stats
+    const processingStats = await processor.getProcessingStats(7)
+
+    // Get manual review queue count
+    const reviewCount = await c.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = 'pending'`
+    ).first()
+
+    return c.json(
+      createApiResponse({
+        enabled: c.env.SEED_ENABLED === 'true',
+        environment: c.env.ENVIRONMENT,
+        configuration: config,
+        token_usage: {
+          used_today: tokensUsed,
+          available_today: availableTokens,
+          usage_percentage: usagePercentage,
+          daily_stats: usageStats.daily,
+          weekly_total: usageStats.total_tokens,
+          average_per_term: usageStats.average_efficiency,
+        },
+        processing: {
+          terms_processed_week: processingStats.terms_processed,
+          average_quality_score: processingStats.average_quality,
+          success_rate: processingStats.success_rate,
+          manual_review_pending: reviewCount?.count || 0,
+          token_efficiency: processingStats.token_efficiency,
+        },
+        schedule: {
+          production: '02:00, 08:00, 14:00, 20:00 UTC',
+          staging: '12:00 UTC',
+          cleanup: '00:00 UTC daily',
+        },
+      })
+    )
+  } catch (error) {
+    console.error('System status error:', error)
+    throw new ValidationError('Failed to get system status')
+  }
+})
+
+/**
+ * Get manual review queue
+ * GET /api/v1/admin/seed/review-queue
+ */
+adminHandler.get('/seed/review-queue', async c => {
+  try {
+    const query = c.req.query()
+    const status = query.status || 'pending'
+    const limit = parseInt(query.limit || '20')
+    const offset = parseInt(query.offset || '0')
+
+    const items = await c.env.DB.prepare(
+      `SELECT * FROM manual_review_queue 
+         WHERE status = ? 
+         ORDER BY created_at DESC 
+         LIMIT ? OFFSET ?`
+    )
+      .bind(status, limit, offset)
+      .all()
+
+    const total = await c.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = ?`
+    )
+      .bind(status)
+      .first()
+
+    return c.json(
+      createApiResponse({
+        items: items.results.map(item => ({
+          id: item.id,
+          term: item.term,
+          quality_score: item.quality_score,
+          reason: item.reason,
+          status: item.status,
+          created_at: item.created_at,
+          generated_content: JSON.parse(item.generated_content as string),
+        })),
+        pagination: {
+          total: total?.count || 0,
+          limit,
+          offset,
+        },
+      })
+    )
+  } catch (error) {
+    console.error('Review queue error:', error)
+    throw new ValidationError('Failed to get review queue')
+  }
+})
+
+/**
+ * Approve/reject manual review item
+ * PUT /api/v1/admin/seed/review/:id
+ */
+adminHandler.put(
+  '/seed/review/:id',
+  zValidator(
+    'json',
+    z.object({
+      action: z.enum(['approve', 'reject']),
+      notes: z.string().optional(),
+      modifications: z.any().optional(), // Modified entry data
+    })
+  ),
+  async c => {
+    const id = c.req.param('id')
+    const { action, notes, modifications } = c.req.valid('json')
+    const userId = c.get('userId')
+
+    try {
+      // Get the review item
+      const item = await c.env.DB.prepare(
+        `SELECT * FROM manual_review_queue WHERE id = ?`
+      )
+        .bind(id)
+        .first()
+
+      if (!item) {
+        throw new ValidationError('Review item not found')
+      }
+
+      if (action === 'approve') {
+        // Parse the generated content
+        let entry = JSON.parse(item.generated_content as string)
+
+        // Apply modifications if provided
+        if (modifications) {
+          entry = { ...entry, ...modifications }
+        }
+
+        // Save to dictionary
+        const db = new DictionaryDatabase(c.env.DB)
+        const existing = await db.findByTerm(entry.term, entry.lang)
+
+        if (existing) {
+          await db.update(entry)
+        } else {
+          await db.create(entry)
+        }
+
+        // Update review status
+        await c.env.DB.prepare(
+          `UPDATE manual_review_queue 
+             SET status = 'approved', 
+                 reviewer_notes = ?, 
+                 reviewed_at = ?, 
+                 reviewed_by = ?
+             WHERE id = ?`
+        )
+          .bind(notes || '', new Date().toISOString(), userId || 'admin', id)
+          .run()
+
+        return c.json(
+          createApiResponse({
+            action: 'approved',
+            term: entry.term,
+            message: 'Entry approved and saved to dictionary',
+          })
+        )
+      } else {
+        // Reject the item
+        await c.env.DB.prepare(
+          `UPDATE manual_review_queue 
+             SET status = 'rejected', 
+                 reviewer_notes = ?, 
+                 reviewed_at = ?, 
+                 reviewed_by = ?
+             WHERE id = ?`
+        )
+          .bind(notes || '', new Date().toISOString(), userId || 'admin', id)
+          .run()
+
+        return c.json(
+          createApiResponse({
+            action: 'rejected',
+            term: item.term,
+            message: 'Entry rejected',
+          })
+        )
+      }
+    } catch (error) {
+      console.error('Review action error:', error)
+      throw new ValidationError('Failed to process review action')
+    }
+  }
+)
