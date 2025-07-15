@@ -138,6 +138,31 @@ const Dictionary: React.FC = () => {
 
         const results = await dictionaryAPI.searchTerms(searchOptions)
 
+        // If no results found, try to get the exact term with AI generation
+        if (results.entries.length === 0) {
+          try {
+            const entry = await dictionaryAPI.getTerm(query, {
+              generateIfMissing: true,
+              lang: currentLanguage,
+              searchAllLanguages: true,
+            })
+
+            setState(prev => ({
+              ...prev,
+              selectedTerm: entry,
+              searchResults: [],
+              isLoading: false,
+            }))
+
+            // Save successful search
+            saveToRecentSearches(query)
+            return
+          } catch (termError) {
+            // If term fetch also fails, continue with normal error handling
+            console.log('Term fetch failed:', termError)
+          }
+        }
+
         setState(prev => ({
           ...prev,
           searchResults: results.entries,
@@ -191,8 +216,9 @@ const Dictionary: React.FC = () => {
         let entry: DictionaryEntry
 
         if (typeof term === 'string') {
-          // Fetch the term with language preference
+          // Fetch the term with language preference and AI generation enabled
           entry = await dictionaryAPI.getTerm(term, {
+            generateIfMissing: true, // Enable AI generation if term not found
             lang: currentLanguage,
             searchAllLanguages: true,
           })
