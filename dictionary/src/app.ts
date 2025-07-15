@@ -94,6 +94,11 @@ app.use(
 app.route('/fredericchopin', adminPortal)
 app.route('/fredericchopin/auth', adminAuthRoutes)
 
+// Debug endpoint to test routing
+app.get('/fredericchopin-test', c => {
+  return c.json({ message: 'Admin portal route test successful!' })
+})
+
 // Health check endpoints
 app.route('/', healthRoutes)
 
