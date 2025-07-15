@@ -17,6 +17,7 @@ import {
   SearchQuery,
   DictionaryEntry,
   SearchAnalytics,
+  SearchFilters,
 } from '../../types/dictionary'
 
 export const searchHandler = new Hono<{ Bindings: Env }>()
@@ -97,10 +98,13 @@ searchHandler.get(
     const cacheService = new CacheService(c.env.CACHE, c.env)
 
     try {
+      // Build filters object from individual query parameters
+      const filters: SearchFilters = {}
+
       // Try cache first
       const cached = await cacheService.getCachedSearchResults(
         query.q,
-        query.filters || {}
+        filters as Record<string, unknown>
       )
 
       if (cached) {
@@ -118,13 +122,18 @@ searchHandler.get(
         })
       }
 
-      // Execute search
-      const searchResult = await db.search(query as SearchQuery)
+      // Execute search with properly structured query
+      const searchQuery: SearchQuery = {
+        ...query,
+        filters,
+        type: query.type, // type is part of SearchQuery, not filters
+      }
+      const searchResult = await db.search(searchQuery)
 
       // Cache results
       await cacheService.cacheSearchResults(
         query.q,
-        query.filters || {},
+        filters as Record<string, unknown>,
         searchResult.entries,
         searchResult.total
       )

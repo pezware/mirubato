@@ -4,7 +4,6 @@ import { dictionaryAPI } from '@/api/dictionary'
 import {
   DictionaryEntry,
   SearchOptions,
-  SearchFilters,
   DictionaryState,
   SupportedLanguage,
 } from '@/types/dictionary'
@@ -125,6 +124,8 @@ const Dictionary: React.FC = () => {
         isLoading: true,
         error: null,
         searchQuery: query,
+        // Clear filters when performing a new search
+        filters: {},
       }))
 
       try {
@@ -132,7 +133,8 @@ const Dictionary: React.FC = () => {
           query,
           lang: currentLanguage,
           searchAllLanguages: searchAllLanguages,
-          filters: state.filters,
+          // Don't use state.filters here since we just cleared them
+          filters: {},
           page: 1,
           limit: 20,
         }
@@ -183,12 +185,27 @@ const Dictionary: React.FC = () => {
       } catch (error) {
         // Handle different error types for search
         let errorMessage = t('toolbox:dictionary.errors.searchFailed')
-        let errorDetails: { code?: string } = {}
+        let errorDetails: { code?: string; suggestions?: string[] } = {}
 
         if (error instanceof Error) {
           errorMessage = error.message
-          errorDetails = { code: (error as DictionaryError).code }
+          const dictError = error as DictionaryError
+          errorDetails = {
+            code: dictError.code,
+            suggestions: dictError.suggestions,
+          }
+        } else if (typeof error === 'object' && error !== null) {
+          // Handle non-Error objects
+          errorMessage =
+            ((error as Record<string, unknown>).message as string) ||
+            ((error as Record<string, unknown>).error as string) ||
+            String(error)
+        } else {
+          // Handle other types
+          errorMessage = String(error)
         }
+
+        console.error('Dictionary search error:', error)
 
         setState(prev => ({
           ...prev,
@@ -199,13 +216,7 @@ const Dictionary: React.FC = () => {
         }))
       }
     },
-    [
-      state.filters,
-      t,
-      saveToRecentSearches,
-      currentLanguage,
-      searchAllLanguages,
-    ]
+    [t, saveToRecentSearches, currentLanguage, searchAllLanguages]
   )
 
   // Handle term selection with language support
@@ -297,18 +308,6 @@ const Dictionary: React.FC = () => {
       }
     },
     [t, currentLanguage, showLanguageComparison]
-  )
-
-  // Handle filter changes
-  const handleFilterChange = useCallback(
-    (filters: SearchFilters) => {
-      setState(prev => ({ ...prev, filters }))
-      // Re-search with new filters if there's a query
-      if (state.searchQuery) {
-        handleSearch(state.searchQuery)
-      }
-    },
-    [state.searchQuery, handleSearch]
   )
 
   // Handle page change with language support
@@ -506,7 +505,15 @@ const Dictionary: React.FC = () => {
           <div>
             <DictionaryCategories
               onCategorySelect={category => {
-                handleFilterChange({ type: [category] })
+                // Clear current search and apply category filter
+                setState(prev => ({
+                  ...prev,
+                  searchQuery: '',
+                  selectedTerm: null,
+                  filters: { type: [category] },
+                }))
+                // Optionally, you could trigger a search for all terms in that category
+                // For now, just set the filter for when user searches
               }}
             />
           </div>
