@@ -448,13 +448,17 @@ adminPortal.get('/', c => {
     </div>
 
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-
         // Global variables
         const API_BASE = '${apiBaseUrl}/api/v1';
         let authToken = null;
         let currentTab = 'status';
+        
+        // Initialize Lucide icons when ready
+        function initializeLucide() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
 
         // Get auth token from localStorage
         function getAuthToken() {
@@ -491,7 +495,7 @@ adminPortal.get('/', c => {
                         <div id="magicLinkMessage" style="margin-top: 24px;"></div>
                     </div>
                 \`;
-                lucide.createIcons();
+                setTimeout(initializeLucide, 100);
                 return false;
             }
             return true;
@@ -545,7 +549,7 @@ adminPortal.get('/', c => {
                 emailInput.disabled = false;
                 button.disabled = false;
                 button.innerHTML = '<i data-lucide="mail"></i> Send Magic Link';
-                lucide.createIcons();
+                initializeLucide();
             }
         }
 
@@ -629,7 +633,7 @@ adminPortal.get('/', c => {
                         await loadReviewQueue();
                         break;
                 }
-                lucide.createIcons();
+                initializeLucide();
             } catch (error) {
                 contentDiv.innerHTML = '<div class="alert error">Error loading content: ' + error.message + '</div>';
             }
@@ -1014,15 +1018,26 @@ adminPortal.get('/', c => {
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
-            if (getAuthToken()) {
-                // Show user info
-                const userEmail = localStorage.getItem('user-email');
-                if (userEmail) {
-                    document.getElementById('userInfo').innerHTML = 'Logged in as: ' + userEmail;
-                }
+            try {
+                // Initialize icons first
+                initializeLucide();
                 
-                // Load initial content
-                loadContent();
+                if (getAuthToken()) {
+                    // Show user info
+                    const userEmail = localStorage.getItem('user-email');
+                    if (userEmail) {
+                        document.getElementById('userInfo').innerHTML = 'Logged in as: ' + userEmail;
+                    }
+                    
+                    // Load initial content
+                    loadContent();
+                } else {
+                    // Make sure the login form is shown
+                    console.log('No auth token found, showing login form');
+                }
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                document.getElementById('content').innerHTML = '<div class="alert error">Error initializing: ' + error.message + '</div>';
             }
         });
     </script>
