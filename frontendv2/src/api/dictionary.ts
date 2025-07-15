@@ -179,9 +179,14 @@ export class DictionaryAPIClient {
         delete searchData.results
       }
 
+      // Calculate page from offset if not provided
+      const limit = searchData.limit || options.limit || 20
+      const offset = searchData.offset || 0
+      const page = Math.floor(offset / limit) + 1
+
       // Ensure required fields are present
-      searchData.page = searchData.page || 1
-      searchData.limit = searchData.limit || 20
+      searchData.page = searchData.page || page
+      searchData.limit = limit
       searchData.total = searchData.total || 0
 
       // Validate and return search results
