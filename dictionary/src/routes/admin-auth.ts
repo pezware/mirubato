@@ -44,6 +44,11 @@ adminAuthRoutes.post(
     // 2. Store it in KV with expiration
     // 3. Send email via service like Resend
 
+    // Check if JWT_SECRET is configured
+    if (!c.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET not configured')
+    }
+
     // For now, we'll create a JWT directly
     const token = await sign(
       {
@@ -51,7 +56,7 @@ adminAuthRoutes.post(
         isAdmin: true,
         exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
       },
-      c.env.JWT_SECRET as string
+      c.env.JWT_SECRET
     )
 
     // In production, you would send an email here using a service like Resend:
@@ -62,8 +67,12 @@ adminAuthRoutes.post(
     // })
 
     // For demo/staging, we'll return the link directly
-    const url = new URL(c.req.url)
-    const magicLink = `${url.origin}/fredericchopin/auth/verify?token=${token}`
+    // c.req.url is already a string URL in Hono
+    const origin =
+      c.env.ENVIRONMENT === 'production'
+        ? 'https://dictionary.mirubato.com'
+        : 'https://dictionary-staging.mirubato.com'
+    const magicLink = `${origin}/fredericchopin/auth/verify?token=${token}`
 
     return c.json(
       createApiResponse({
