@@ -157,11 +157,15 @@ healthHandler.get('/health/detailed', async c => {
 healthHandler.get('/health/ai', async c => {
   const startTime = Date.now()
 
-  // Run AI tests and smoke tests in parallel
-  const [models, smokeTests] = await Promise.all([
-    testAllAIModels(c.env),
-    runSmokeTests(c.env),
-  ])
+  // Run AI provider checks, model tests, and smoke tests in parallel
+  const [cloudflareAI, openAI, anthropic, models, smokeTests] =
+    await Promise.all([
+      checkCloudflareAI(c.env),
+      checkOpenAI(c.env.OPENAI_API_KEY),
+      checkAnthropic(c.env.ANTHROPIC_API_KEY),
+      testAllAIModels(c.env),
+      runSmokeTests(c.env),
+    ])
 
   const operational = models.some(m => m.status === 'healthy')
   const smokeTestsPassed = smokeTests.status === 'healthy'
@@ -170,6 +174,11 @@ healthHandler.get('/health/ai', async c => {
     status: operational && smokeTestsPassed ? 'operational' : 'degraded',
     timestamp: new Date().toISOString(),
     latency: Date.now() - startTime,
+    providers: {
+      cloudflare: cloudflareAI,
+      openai: openAI,
+      anthropic: anthropic,
+    },
     models,
     smokeTests,
   })

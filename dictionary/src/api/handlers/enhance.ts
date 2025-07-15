@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../../types/env'
+import type { DictionaryEntry } from '../../types/dictionary'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import { CacheService } from '../../services/storage/cache-service'
@@ -7,6 +8,25 @@ import { createApiResponse, ValidationError } from '../../utils/errors'
 import { auth } from '../../middleware/auth'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
+
+interface EnhancementJob {
+  job_id: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  started_at: string
+  completed_at?: string
+  cancelled_at?: string
+  terms_total: number
+  terms_completed: number
+  terms_enhanced: number
+  terms_failed: number
+  improvements: Array<{
+    term: string
+    before_score: number
+    after_score: number
+    improvements: string[]
+  }>
+  error?: string
+}
 
 export const enhanceHandler = new Hono<{ Bindings: Env }>()
 
@@ -151,7 +171,10 @@ enhanceHandler.get('/:jobId', async c => {
   const jobId = c.req.param('jobId')
 
   // Check job status in KV
-  const jobData = (await c.env.CACHE.get(`job:${jobId}`, 'json')) as any
+  const jobData = (await c.env.CACHE.get(
+    `job:${jobId}`,
+    'json'
+  )) as EnhancementJob | null
 
   if (!jobData) {
     return c.json(
@@ -167,7 +190,7 @@ enhanceHandler.get('/:jobId', async c => {
       job_id: jobId,
       status: jobData.status,
       started_at: jobData.started_at,
-      completed_at: (jobData as any).completed_at,
+      completed_at: jobData.completed_at,
       terms_total: jobData.terms_total,
       terms_completed: jobData.terms_completed,
       terms_failed: jobData.terms_failed,
@@ -180,21 +203,22 @@ enhanceHandler.get('/:jobId', async c => {
  * Process enhancement batch
  */
 async function processEnhancementBatch(
-  entries: any[],
+  entries: DictionaryEntry[],
   generator: DictionaryGenerator,
   db: DictionaryDatabase,
   cache: CacheService,
   jobId: string,
   env: Env
 ): Promise<void> {
-  const jobData = {
+  const jobData: EnhancementJob = {
     job_id: jobId,
-    status: 'processing',
+    status: 'running',
     started_at: new Date().toISOString(),
     terms_total: entries.length,
     terms_completed: 0,
+    terms_enhanced: 0,
     terms_failed: 0,
-    improvements: [] as any[],
+    improvements: [],
   }
 
   // Store initial job status
@@ -221,11 +245,12 @@ async function processEnhancementBatch(
       await cache.invalidateTerm(entry.normalized_term)
 
       jobData.terms_completed++
+      jobData.terms_enhanced++
       jobData.improvements.push({
         term: entry.term,
-        score_before: scoreBefore,
-        score_after: scoreAfter,
-        changes_made: [
+        before_score: scoreBefore,
+        after_score: scoreAfter,
+        improvements: [
           scoreAfter - scoreBefore > 20
             ? 'Major improvements'
             : 'Minor improvements',
@@ -240,7 +265,7 @@ async function processEnhancementBatch(
           Object.keys(entry.references).length
             ? 'Added references'
             : null,
-        ].filter(Boolean),
+        ].filter(Boolean) as string[],
       })
 
       // Update job status periodically
@@ -257,7 +282,7 @@ async function processEnhancementBatch(
 
   // Final job update
   jobData.status = 'completed'
-  ;(jobData as any).completed_at = new Date().toISOString()
+  jobData.completed_at = new Date().toISOString()
 
   await env.CACHE.put(`job:${jobId}`, JSON.stringify(jobData), {
     expirationTtl: 86400, // Keep for 24 hours
@@ -272,7 +297,10 @@ enhanceHandler.delete('/:jobId', async c => {
   const jobId = c.req.param('jobId')
 
   // Check if job exists
-  const jobData = (await c.env.CACHE.get(`job:${jobId}`, 'json')) as any
+  const jobData = (await c.env.CACHE.get(
+    `job:${jobId}`,
+    'json'
+  )) as EnhancementJob | null
 
   if (!jobData) {
     return c.json(

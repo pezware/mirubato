@@ -210,7 +210,8 @@ export class DictionaryGenerator {
     const prompt = PROMPT_TEMPLATES.definition(
       options.term,
       options.type,
-      options.context
+      options.context,
+      options.lang || 'en'
     )
 
     const model = selectModel('definition')

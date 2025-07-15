@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { Env } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { createApiResponse } from '../../utils/errors'
+import type { DictionaryEntry } from '../../types/dictionary'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 
@@ -128,7 +129,16 @@ exportHandler.get('/:exportId', async c => {
   // Check if export exists in R2
   const formats = ['csv', 'db']
   let found = false
-  let exportInfo: any = null
+  interface ExportInfo {
+    export_id: string
+    status: string
+    download_url: string
+    expires_at: string
+    size_bytes: number
+    format: string
+    created_at: string
+  }
+  let exportInfo: ExportInfo | null = null
 
   for (const ext of formats) {
     const key = `exports/${exportId}.${ext}`
@@ -170,7 +180,7 @@ exportHandler.get('/:exportId', async c => {
 /**
  * Generate CSV from dictionary entries
  */
-async function generateCSV(entries: any[]): Promise<string> {
+async function generateCSV(entries: DictionaryEntry[]): Promise<string> {
   const headers = [
     'ID',
     'Term',
@@ -221,7 +231,9 @@ function escapeCSV(value: string): string {
 /**
  * Generate SQLite database file
  */
-async function generateSQLite(entries: any[]): Promise<ArrayBuffer> {
+async function generateSQLite(
+  entries: DictionaryEntry[]
+): Promise<ArrayBuffer> {
   // For a real implementation, you would use a SQLite library
   // This is a placeholder that creates a simple SQL dump
   const sqlStatements = [

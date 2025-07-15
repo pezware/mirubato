@@ -4,7 +4,7 @@
 
 import { app } from './app'
 import type { Env } from './types/env'
-import type { MessageBatch, ScheduledEvent } from '@cloudflare/workers-types'
+import type { MessageBatch } from '@cloudflare/workers-types'
 
 /**
  * Cloudflare Worker entry point
@@ -26,10 +26,10 @@ export default {
    */
   async queue(
     batch: MessageBatch,
-    env: Env,
-    ctx: ExecutionContext
+    _env: Env,
+    _ctx: ExecutionContext
   ): Promise<void> {
-    console.log(`Processing ${batch.messages.length} messages from queue`)
+    // Processing messages from queue
 
     for (const message of batch.messages) {
       try {

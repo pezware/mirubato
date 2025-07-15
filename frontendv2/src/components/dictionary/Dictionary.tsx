@@ -8,12 +8,13 @@ import {
   DictionaryState,
   SupportedLanguage,
 } from '@/types/dictionary'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import DictionarySearch from './DictionarySearch'
 import DictionaryResults from './DictionaryResults'
 import DictionaryTerm from './DictionaryTerm'
 import DictionaryPopular from './DictionaryPopular'
 import DictionaryCategories from './DictionaryCategories'
+import { Clock, AlertCircle } from 'lucide-react'
 
 // Error type for dictionary errors
 interface DictionaryError extends Error {
@@ -130,13 +131,38 @@ const Dictionary: React.FC = () => {
         const searchOptions: SearchOptions = {
           query,
           lang: currentLanguage,
-          searchAllLanguages,
+          searchAllLanguages: searchAllLanguages,
           filters: state.filters,
           page: 1,
           limit: 20,
         }
 
         const results = await dictionaryAPI.searchTerms(searchOptions)
+
+        // If no results found, try to get the exact term with AI generation
+        if (results.entries.length === 0) {
+          try {
+            const entry = await dictionaryAPI.getTerm(query, {
+              generateIfMissing: true,
+              lang: currentLanguage,
+              searchAllLanguages: false, // Only generate for the current UI language
+            })
+
+            setState(prev => ({
+              ...prev,
+              selectedTerm: entry,
+              searchResults: [],
+              isLoading: false,
+            }))
+
+            // Save successful search
+            saveToRecentSearches(query)
+            return
+          } catch (termError) {
+            // If term fetch also fails, continue with normal error handling
+            console.log('Term fetch failed:', termError)
+          }
+        }
 
         setState(prev => ({
           ...prev,
@@ -191,10 +217,11 @@ const Dictionary: React.FC = () => {
         let entry: DictionaryEntry
 
         if (typeof term === 'string') {
-          // Fetch the term with language preference
+          // Fetch the term with language preference and AI generation enabled
           entry = await dictionaryAPI.getTerm(term, {
+            generateIfMissing: true, // Enable AI generation if term not found
             lang: currentLanguage,
-            searchAllLanguages: true,
+            searchAllLanguages: searchAllLanguages, // Respect the user's language preference
           })
         } else {
           entry = term
@@ -363,14 +390,16 @@ const Dictionary: React.FC = () => {
 
       {/* Error display */}
       {state.error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
+        <div className="mb-6 bg-white rounded-lg p-4 border-l-4 border-red-300">
           <div className="space-y-3">
             <div className="flex items-center text-red-800">
-              <span className="text-xl mr-2">
-                {state.errorDetails?.code === 'AI_GENERATION_PENDING'
-                  ? '⏳'
-                  : '⚠️'}
-              </span>
+              <div className="mr-3">
+                {state.errorDetails?.code === 'AI_GENERATION_PENDING' ? (
+                  <Clock className="w-5 h-5 text-red-600" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                )}
+              </div>
               <div className="flex-1">
                 <p className="font-medium">{state.error}</p>
                 {state.errorDetails?.code === 'TERM_NOT_FOUND' && (
@@ -404,7 +433,7 @@ const Dictionary: React.FC = () => {
                 </div>
               )}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Main content area */}
@@ -423,7 +452,7 @@ const Dictionary: React.FC = () => {
           {/* Language indicator for the term */}
           {state.selectedTerm.lang &&
             state.selectedTerm.lang !== currentLanguage && (
-              <Card className="mt-4 p-3 bg-blue-50 border-blue-200">
+              <div className="mt-4 bg-white rounded-lg p-3 border-l-4 border-morandi-sky-300">
                 <p className="text-sm text-blue-800">
                   {t('toolbox:dictionary.termInLanguage', {
                     lang: state.selectedTerm.lang.toUpperCase(),
@@ -438,7 +467,7 @@ const Dictionary: React.FC = () => {
                     </span>
                   )}
                 </p>
-              </Card>
+              </div>
             )}
         </div>
       ) : state.searchResults.length > 0 ? (
@@ -454,7 +483,7 @@ const Dictionary: React.FC = () => {
         />
       ) : state.searchQuery && !state.isLoading ? (
         // No results
-        <Card className="text-center py-8">
+        <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-stone-300 text-center">
           <p className="text-stone-600">
             {t('toolbox:dictionary.noResults', { query: state.searchQuery })}
           </p>
@@ -463,7 +492,7 @@ const Dictionary: React.FC = () => {
               {t('toolbox:dictionary.searchedAllLanguages')}
             </p>
           )}
-        </Card>
+        </div>
       ) : (
         // Default view - popular terms and categories
         <div className="grid md:grid-cols-2 gap-6">
@@ -487,12 +516,12 @@ const Dictionary: React.FC = () => {
       {/* Loading indicator */}
       {state.isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
-          <Card className="p-6">
+          <div className="bg-white rounded-lg p-6 shadow-lg">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sage-600 mr-3"></div>
               <p>{t('toolbox:dictionary.loading')}</p>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>

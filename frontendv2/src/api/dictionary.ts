@@ -14,7 +14,6 @@ import {
   EnhancementJob,
   SearchOptions,
   MultiLanguageTermResponse,
-  validateApiResponse,
   DictionaryEntrySchema,
   SearchResultSchema,
   BatchQueryResponseSchema,
@@ -280,16 +279,19 @@ export class DictionaryAPIClient {
       // Check if this was AI-generated (look for header)
       const wasGenerated = response.headers?.['x-generated'] === 'true'
 
-      const validated = validateApiResponse(
-        response.data,
-        DictionaryEntrySchema
-      )
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      // Dictionary API returns data in a different format
+      // Extract the entry from the nested response
+      let entryData = response.data
+      if (response.data.success && response.data.data?.entry) {
+        entryData = response.data.data.entry
+      } else if (response.data.data?.entry) {
+        entryData = response.data.data.entry
       }
 
+      // Validate the dictionary entry directly
+      const result = DictionaryEntrySchema.parse(entryData)
+
       // Add generation info to the result
-      const result = validated.data
       if (wasGenerated) {
         ;(
           result as DictionaryEntry & { wasAIGenerated?: boolean }
@@ -357,6 +359,8 @@ export class DictionaryAPIClient {
       let termData = response.data
       if (response.data.success && response.data.data) {
         termData = response.data.data
+      } else if (response.data.data) {
+        termData = response.data.data
       }
 
       return MultiLanguageTermResponseSchema.parse(termData)
@@ -382,15 +386,17 @@ export class DictionaryAPIClient {
         throw new Error('Invalid response from server')
       }
 
-      const validated = validateApiResponse(
-        response.data,
-        DictionaryEntrySchema
-      )
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      // Dictionary API returns data in a different format
+      let entryData = response.data
+      if (response.data.success && response.data.data?.entry) {
+        entryData = response.data.data.entry
+      } else if (response.data.data?.entry) {
+        entryData = response.data.data.entry
+      } else if (response.data.data) {
+        entryData = response.data.data
       }
 
-      return validated.data
+      return DictionaryEntrySchema.parse(entryData)
     } catch (error) {
       if (error instanceof AxiosError) {
         throw new Error(error.response?.data?.error || 'Failed to get term')
@@ -629,15 +635,15 @@ export class DictionaryAPIClient {
         throw new Error('Invalid response from server')
       }
 
-      const validated = validateApiResponse(
-        response.data,
-        BatchQueryResponseSchema
-      )
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      // Dictionary API returns data in a different format
+      let batchData = response.data
+      if (response.data.success && response.data.data) {
+        batchData = response.data.data
+      } else if (response.data.data) {
+        batchData = response.data.data
       }
 
-      return validated.data
+      return BatchQueryResponseSchema.parse(batchData)
     } catch (error) {
       if (error instanceof AxiosError) {
         throw new Error(
@@ -687,12 +693,15 @@ export class DictionaryAPIClient {
         throw new Error('Invalid response from server')
       }
 
-      const validated = validateApiResponse(response.data, EnhancementJobSchema)
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      // Dictionary API returns data in a different format
+      let jobData = response.data
+      if (response.data.success && response.data.data) {
+        jobData = response.data.data
+      } else if (response.data.data) {
+        jobData = response.data.data
       }
 
-      return validated.data
+      return EnhancementJobSchema.parse(jobData)
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 403) {
@@ -717,12 +726,15 @@ export class DictionaryAPIClient {
         throw new Error('Invalid response from server')
       }
 
-      const validated = validateApiResponse(response.data, EnhancementJobSchema)
-      if (validated.status === 'error') {
-        throw new Error(validated.error)
+      // Dictionary API returns data in a different format
+      let jobData = response.data
+      if (response.data.success && response.data.data) {
+        jobData = response.data.data
+      } else if (response.data.data) {
+        jobData = response.data.data
       }
 
-      return validated.data
+      return EnhancementJobSchema.parse(jobData)
     } catch (error) {
       if (error instanceof AxiosError) {
         throw new Error(

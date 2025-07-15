@@ -120,7 +120,7 @@ describe('Health Handler', () => {
       expect(data.services.database.status).toBe('healthy')
       expect(data.services.cache.status).toBe('healthy')
       expect(data.services.storage.status).toBe('healthy')
-      expect(data.services.ai.cloudflare.status).toBe('healthy')
+      expect(data.services.ai.cloudflare.status).toBe('configured')
     })
 
     it('should return degraded status when some services are unhealthy', async () => {

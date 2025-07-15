@@ -3,7 +3,8 @@ import { vi } from 'vitest'
 // Mock console methods to avoid noise in tests
 global.console = {
   ...console,
-  log: console.log, // Keep log for debugging
+  // log: console.log, // Keep log for debugging
+  log: vi.fn(), // Mock to avoid lint warnings
   error: console.error, // Keep error for debugging
   warn: vi.fn(),
   info: vi.fn(),

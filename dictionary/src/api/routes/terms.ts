@@ -13,9 +13,7 @@ import {
   DictionaryEntrySchema,
   PaginationSchema,
 } from '../openapi'
-import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
-import { generateId } from '../../utils/id'
 import { TermType } from '../../types/dictionary'
 
 const app = new OpenAPIHono<{ Bindings: Env }>()

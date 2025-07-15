@@ -145,13 +145,17 @@ export const PROMPT_TEMPLATES = {
   definition: (
     term: string,
     type: string,
-    context?: any
+    context?: any,
+    lang: string = 'en'
   ) => `You are a professional music dictionary editor with deep knowledge of music theory, instruments, and musical terminology.
 
 Create a comprehensive dictionary entry for the music term: "${term}"
 Term type: ${type}
+Language: ${lang === 'es' ? 'Spanish (Español)' : lang === 'fr' ? 'French (Français)' : lang === 'de' ? 'German (Deutsch)' : lang === 'zh-CN' ? 'Simplified Chinese (简体中文)' : lang === 'zh-TW' ? 'Traditional Chinese (繁體中文)' : 'English'}
 ${context?.instruments ? `Relevant instruments: ${context.instruments.join(', ')}` : ''}
 ${context?.difficulty_level ? `Difficulty level: ${context.difficulty_level}` : ''}
+
+IMPORTANT: Generate ALL content in ${lang === 'es' ? 'Spanish' : lang === 'fr' ? 'French' : lang === 'de' ? 'German' : lang === 'zh-CN' ? 'Simplified Chinese' : lang === 'zh-TW' ? 'Traditional Chinese' : 'English'}. This includes the definition, etymology, usage examples, and all text fields.
 
 Provide a response in the following JSON format:
 {

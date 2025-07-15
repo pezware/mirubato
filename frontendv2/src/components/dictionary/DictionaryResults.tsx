@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
 import { DictionaryResultsProps, SupportedLanguage } from '@/types/dictionary'
 
@@ -19,11 +19,11 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
   const { t, i18n } = useTranslation(['toolbox'])
   const currentLanguage = i18n.language as SupportedLanguage
 
-  // Get quality color based on score
+  // Get quality color based on score (0-100 scale)
   const getQualityColor = (score?: number) => {
     if (!score) return 'bg-stone-100'
-    if (score >= 0.8) return 'bg-green-100 text-green-700'
-    if (score >= 0.6) return 'bg-yellow-100 text-yellow-700'
+    if (score >= 80) return 'bg-green-100 text-green-700'
+    if (score >= 60) return 'bg-yellow-100 text-yellow-700'
     return 'bg-red-100 text-red-700'
   }
 
@@ -159,12 +159,12 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
       {/* Results list */}
       <div className="space-y-3">
         {results.map(entry => (
-          <Card
+          <div
             key={entry.id}
-            className="cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg p-4 border-l-4 border-morandi-sage-300 cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => onTermSelect(entry)}
           >
-            <div className="p-4">
+            <div>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -208,7 +208,7 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
                       entry.quality_score.overall
                     )}`}
                   >
-                    {Math.round(entry.quality_score.overall * 100)}%
+                    {Math.round(entry.quality_score.overall)}%
                   </span>
                 )}
               </div>
@@ -256,7 +256,7 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 

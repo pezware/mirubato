@@ -135,13 +135,19 @@ searchHandler.get(
         term: query.q,
         normalized_term: query.q.toLowerCase().trim(),
         found: searchResult.total > 0,
-        entry_id: searchResult.entries[0]?.id,
+        entry_id:
+          searchResult.entries && searchResult.entries.length > 0
+            ? searchResult.entries[0].id
+            : undefined,
         response_time_ms: Date.now() - startTime,
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
         search_source: 'api_search',
         search_lang: query.lang,
-        result_lang: searchResult.entries[0]?.lang,
+        result_lang:
+          searchResult.entries && searchResult.entries.length > 0
+            ? searchResult.entries[0].lang
+            : undefined,
       }
 
       c.executionCtx.waitUntil(db.logSearch(analytics))

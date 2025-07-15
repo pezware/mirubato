@@ -350,7 +350,6 @@ export interface SearchOptions {
 export interface DictionaryTermProps {
   entry: DictionaryEntry
   onFeedback?: (feedback: Feedback) => void
-  onReport?: (issue: string) => void
 }
 
 export interface DictionarySearchProps {

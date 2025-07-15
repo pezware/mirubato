@@ -6,7 +6,8 @@
   "workspaces": [
     "frontendv2",
     "api",
-    "scores"
+    "scores",
+    "dictionary"
   ],
   "scripts": {
     "dev": "npm run dev -w @mirubato/frontendv2",

@@ -137,6 +137,7 @@
     "wikipedia": "Wikipedia",
     "readOnWikipedia": "Read about {{term}} on Wikipedia",
     "youtubeVideos": "YouTube Videos",
+    "educationalVideos": "Educational Videos",
     "watchVideo": "Watch video {{number}}",
     "byChannel": "by {{channel}}",
     "spotify": "Spotify",

@@ -107,6 +107,7 @@ termsHandler.get(
         entry = await generator.generateEntry({
           term,
           type: (type as TermType) || 'general',
+          lang: requestLang, // Pass the requested language to AI generator
           context: {
             requested_by: userInfo.userId || 'anonymous',
             generation_reason: 'user_request',

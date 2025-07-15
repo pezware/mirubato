@@ -1,8 +1,9 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
 import { DictionaryPopularProps } from '@/types/dictionary'
+import { Clock, TrendingUp } from 'lucide-react'
 
 /**
  * Display popular terms and recent searches
@@ -19,14 +20,14 @@ const DictionaryPopular: React.FC<DictionaryPopularProps> = ({
 
   if (!hasContent) {
     return (
-      <Card>
+      <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-sage-300">
         <h3 className="text-lg font-semibold mb-4 text-stone-800">
           {t('toolbox:dictionary.explore')}
         </h3>
         <p className="text-stone-600 text-center py-8">
           {t('toolbox:dictionary.startSearching')}
         </p>
-      </Card>
+      </div>
     )
   }
 
@@ -34,9 +35,9 @@ const DictionaryPopular: React.FC<DictionaryPopularProps> = ({
     <div className="space-y-6">
       {/* Recent Searches */}
       {recentSearches.length > 0 && (
-        <Card>
+        <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-sage-300">
           <h3 className="text-lg font-semibold mb-4 text-stone-800 flex items-center">
-            <span className="mr-2">🕒</span>
+            <Clock className="w-5 h-5 mr-2 text-morandi-sage-500" />
             {t('toolbox:dictionary.recentSearches')}
           </h3>
           <div className="space-y-2">
@@ -57,14 +58,14 @@ const DictionaryPopular: React.FC<DictionaryPopularProps> = ({
               {t('toolbox:dictionary.showingRecentSearches', { count: 5 })}
             </p>
           )}
-        </Card>
+        </div>
       )}
 
       {/* Popular Terms */}
       {terms.length > 0 && (
-        <Card>
+        <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-rose-300">
           <h3 className="text-lg font-semibold mb-4 text-stone-800 flex items-center">
-            <span className="mr-2">🔥</span>
+            <TrendingUp className="w-5 h-5 mr-2 text-morandi-rose-500" />
             {t('toolbox:dictionary.popularTerms')}
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -85,12 +86,12 @@ const DictionaryPopular: React.FC<DictionaryPopularProps> = ({
               {t('toolbox:dictionary.popularTermsNote')}
             </p>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Suggestion to start exploring */}
       {terms.length === 0 && recentSearches.length > 0 && (
-        <Card className="bg-sage-50 border-sage-200">
+        <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-peach-300">
           <div className="text-center py-4">
             <p className="text-sage-700 mb-3">
               {t('toolbox:dictionary.discoverMore')}
@@ -110,7 +111,7 @@ const DictionaryPopular: React.FC<DictionaryPopularProps> = ({
               ))}
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   )

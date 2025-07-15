@@ -1,7 +1,22 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { DictionaryCategoriesProps, TermType } from '@/types/dictionary'
+import {
+  Clock,
+  Volume2,
+  Music2,
+  Layout,
+  Theater,
+  Piano,
+  Guitar,
+  BookOpen,
+  User,
+  Calendar,
+  FileText,
+  Book,
+  FolderOpen,
+} from 'lucide-react'
 
 /**
  * Display dictionary categories for browsing
@@ -14,75 +29,75 @@ const DictionaryCategories: React.FC<DictionaryCategoriesProps> = ({
   // Define categories with icons and descriptions
   const categories: Array<{
     type: TermType
-    icon: string
+    icon: React.ReactNode
     description: string
   }> = [
     {
       type: 'tempo',
-      icon: '🎵',
+      icon: <Clock className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.tempo'),
     },
     {
       type: 'dynamics',
-      icon: '🔊',
+      icon: <Volume2 className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.dynamics'),
     },
     {
       type: 'articulation',
-      icon: '🎼',
+      icon: <Music2 className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.articulation'),
     },
     {
       type: 'form',
-      icon: '🏗️',
+      icon: <Layout className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.form'),
     },
     {
       type: 'genre',
-      icon: '🎭',
+      icon: <Theater className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.genre'),
     },
     {
       type: 'instrument',
-      icon: '🎹',
+      icon: <Piano className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.instrument'),
     },
     {
       type: 'technique',
-      icon: '🎸',
+      icon: <Guitar className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.technique'),
     },
     {
       type: 'theory',
-      icon: '📚',
+      icon: <BookOpen className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.theory'),
     },
     {
       type: 'composer',
-      icon: '👨‍🎼',
+      icon: <User className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.composer'),
     },
     {
       type: 'period',
-      icon: '🏰',
+      icon: <Calendar className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.period'),
     },
     {
       type: 'notation',
-      icon: '🎶',
+      icon: <FileText className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.notation'),
     },
     {
       type: 'general',
-      icon: '📖',
+      icon: <Book className="w-6 h-6" />,
       description: t('toolbox:dictionary.categoryDescriptions.general'),
     },
   ]
 
   return (
-    <Card>
+    <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-sage-300">
       <h3 className="text-lg font-semibold mb-4 text-stone-800 flex items-center">
-        <span className="mr-2">🗂️</span>
+        <FolderOpen className="w-5 h-5 mr-2 text-morandi-sage-500" />
         {t('toolbox:dictionary.browseByCategory')}
       </h3>
 
@@ -94,7 +109,7 @@ const DictionaryCategories: React.FC<DictionaryCategoriesProps> = ({
             className="h-auto p-3 flex flex-col items-center text-center hover:bg-sage-50 hover:border-sage-200 border border-transparent transition-colors"
             onClick={() => onCategorySelect(category.type)}
           >
-            <span className="text-2xl mb-1">{category.icon}</span>
+            <div className="text-morandi-sage-500 mb-2">{category.icon}</div>
             <span className="font-medium text-stone-800">
               {t(`toolbox:dictionary.types.${category.type}`)}
             </span>
@@ -110,7 +125,7 @@ const DictionaryCategories: React.FC<DictionaryCategoriesProps> = ({
           {t('toolbox:dictionary.categoryBrowseNote')}
         </p>
       </div>
-    </Card>
+    </div>
   )
 }
 
