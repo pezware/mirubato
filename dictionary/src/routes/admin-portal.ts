@@ -466,7 +466,34 @@ adminPortal.get('/', c => {
         function getAuthToken() {
             authToken = localStorage.getItem('auth-token');
             if (!authToken) {
-                showAlert('error', 'Authentication required. Please log in to the main application first.');
+                const alertHtml = \`
+                    <div>
+                        <strong>Authentication Required</strong><br>
+                        <p style="margin-top: 8px;">The admin portal requires authentication. Since the dictionary service is on a different subdomain, you need to:</p>
+                        <ol style="margin-top: 8px; margin-left: 20px;">
+                            <li>Log in at <a href="${isProduction ? 'https://mirubato.com' : 'https://staging.mirubato.com'}" target="_blank" style="color: var(--morandi-sage-600); text-decoration: underline;">${isProduction ? 'mirubato.com' : 'staging.mirubato.com'}</a></li>
+                            <li>Open the browser console (F12)</li>
+                            <li>Run: <code style="background: var(--morandi-sand-100); padding: 2px 4px; border-radius: 3px;">localStorage.getItem('auth-token')</code></li>
+                            <li>Copy the token (including quotes)</li>
+                            <li>Come back here and run in console: <code style="background: var(--morandi-sand-100); padding: 2px 4px; border-radius: 3px;">localStorage.setItem('auth-token', YOUR_TOKEN)</code></li>
+                            <li>Refresh this page</li>
+                        </ol>
+                        <p style="margin-top: 12px; font-size: 14px; color: var(--morandi-stone-600);">This is a temporary solution. We're working on a better cross-domain authentication system.</p>
+                    </div>
+                \`;
+                showAlert('info', alertHtml);
+                
+                // Also show a simplified version in the content area
+                document.getElementById('content').innerHTML = \`
+                    <div class="card rose">
+                        <h2 class="card-title">
+                            <i data-lucide="alert-circle"></i>
+                            Authentication Required
+                        </h2>
+                        <p>Please follow the instructions in the blue notification above to authenticate.</p>
+                    </div>
+                \`;
+                lucide.createIcons();
                 return false;
             }
             return true;
@@ -496,16 +523,21 @@ adminPortal.get('/', c => {
         }
 
         // Show alert
-        function showAlert(type, message) {
+        function showAlert(type, message, duration = 5000) {
             const alertsDiv = document.getElementById('alerts');
             const alert = document.createElement('div');
             alert.className = 'alert ' + type;
             alert.innerHTML = message;
             alertsDiv.appendChild(alert);
 
+            // Don't auto-remove auth instructions
+            if (message.includes('Authentication Required') || duration === 0) {
+                return;
+            }
+
             setTimeout(() => {
                 alert.remove();
-            }, 5000);
+            }, duration);
         }
 
         // Tab switching
