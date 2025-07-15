@@ -130,7 +130,7 @@ const Dictionary: React.FC = () => {
         const searchOptions: SearchOptions = {
           query,
           lang: currentLanguage,
-          searchAllLanguages,
+          searchAllLanguages: searchAllLanguages,
           filters: state.filters,
           page: 1,
           limit: 20,
@@ -144,7 +144,7 @@ const Dictionary: React.FC = () => {
             const entry = await dictionaryAPI.getTerm(query, {
               generateIfMissing: true,
               lang: currentLanguage,
-              searchAllLanguages: true,
+              searchAllLanguages: false, // Only generate for the current UI language
             })
 
             setState(prev => ({
@@ -220,7 +220,7 @@ const Dictionary: React.FC = () => {
           entry = await dictionaryAPI.getTerm(term, {
             generateIfMissing: true, // Enable AI generation if term not found
             lang: currentLanguage,
-            searchAllLanguages: true,
+            searchAllLanguages: searchAllLanguages, // Respect the user's language preference
           })
         } else {
           entry = term

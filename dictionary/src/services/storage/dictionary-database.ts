@@ -261,7 +261,7 @@ export class DictionaryDatabase {
     const results = await this.db
       .prepare(
         `
-        SELECT * FROM dictionary_entries 
+        SELECT DISTINCT * FROM dictionary_entries 
         ${whereClause}
         ${orderBy}
         LIMIT ? OFFSET ?
