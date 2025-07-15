@@ -97,12 +97,12 @@ app.route('/', healthRoutes)
 app.route('/docs', docsRoutes)
 app.get('/swagger', swaggerUI({ url: '/docs/openapi.json' }))
 
-// Dictionary API routes
-app.route('/', dictionaryRoutes)
-
-// Admin portal and auth routes (must be before root endpoint to take precedence)
+// Admin portal and auth routes (must be before API routes)
 app.route('/fredericchopin', adminPortal)
 app.route('/fredericchopin/auth', adminAuthRoutes)
+
+// Dictionary API routes - mount under /api to avoid conflicts
+app.route('/api', dictionaryRoutes)
 
 // Root endpoint - Landing page
 app.get('/', c => {
