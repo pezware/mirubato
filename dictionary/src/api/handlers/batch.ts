@@ -132,7 +132,15 @@ batchHandler.post(
       }
 
       // Prepare response
-      const response: Record<string, any> = {}
+      interface BatchQueryResult {
+        found: boolean
+        entry?: DictionaryEntry
+        normalized_term?: string
+        message?: string
+        related_terms?: unknown[]
+      }
+
+      const response: Record<string, BatchQueryResult> = {}
 
       for (const originalTerm of terms) {
         const normalized = normalizeTerm(originalTerm)
@@ -165,7 +173,8 @@ batchHandler.post(
             not_found: Object.values(response).filter(r => !r.found).length,
             generated: generate_missing
               ? Object.values(response).filter(
-                  r => r.entry?.metadata?.created_by === 'ai_generation'
+                  r =>
+                    r.found && r.entry?.metadata?.created_by === 'ai_generation'
                 ).length
               : 0,
           },
@@ -235,7 +244,7 @@ batchHandler.post(
 
         try {
           const enhanced = await generator.enhanceEntry(entry, {
-            focus_areas: focus_areas as any,
+            focus_areas: focus_areas,
             target_quality: 80,
           })
 

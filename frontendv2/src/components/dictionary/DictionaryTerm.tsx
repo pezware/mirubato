@@ -18,12 +18,9 @@ import { Volume2 } from 'lucide-react'
 const DictionaryTerm: React.FC<DictionaryTermProps> = ({
   entry,
   onFeedback,
-  onReport,
 }) => {
   const { t, i18n } = useTranslation(['toolbox'])
   const [feedbackSent, setFeedbackSent] = useState(false)
-  const [isReporting, setIsReporting] = useState(false)
-  const [reportText, setReportText] = useState('')
   const [languageVersions, setLanguageVersions] =
     useState<MultiLanguageTermResponse | null>(null)
   const [loadingLanguages, setLoadingLanguages] = useState(false)
@@ -114,24 +111,6 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
       setTimeout(() => setFeedbackSent(false), 3000)
     } catch (error) {
       console.error('Failed to submit feedback:', error)
-    }
-  }
-
-  // Handle issue reporting
-  const handleReport = async () => {
-    if (!reportText.trim()) return
-
-    try {
-      await dictionaryAPI.reportIssue(entry.id, reportText)
-      onReport?.(reportText)
-      setIsReporting(false)
-      setReportText('')
-
-      // Show success message
-      setFeedbackSent(true)
-      setTimeout(() => setFeedbackSent(false), 3000)
-    } catch (error) {
-      console.error('Failed to report issue:', error)
     }
   }
 
@@ -463,48 +442,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
               >
                 👎 {t('toolbox:dictionary.notHelpful')}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsReporting(true)}
-              >
-                🚩 {t('toolbox:dictionary.reportIssue')}
-              </Button>
             </div>
-
-            {/* Report form */}
-            {isReporting && (
-              <div className="mt-4 space-y-3">
-                <textarea
-                  value={reportText}
-                  onChange={e => setReportText(e.target.value)}
-                  placeholder={t('toolbox:dictionary.reportPlaceholder')}
-                  className="w-full p-3 border border-stone-300 rounded-md resize-none"
-                  rows={3}
-                  maxLength={500}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleReport}
-                    disabled={!reportText.trim()}
-                  >
-                    {t('toolbox:dictionary.submitReport')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsReporting(false)
-                      setReportText('')
-                    }}
-                  >
-                    {t('toolbox:dictionary.cancel')}
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <p className="text-green-600 font-medium">

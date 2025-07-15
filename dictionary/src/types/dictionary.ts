@@ -278,6 +278,7 @@ export interface EntryMetadata {
   antonyms?: string[]
   language?: string // Primary language of the term
   disambiguation?: string // For terms with multiple meanings
+  created_by?: string // e.g., 'ai_generation' or user ID
 }
 
 // Request/Response types

@@ -165,6 +165,17 @@ analyticsHandler.get('/content-gaps', async c => {
   // getContentGaps not implemented in DictionaryDatabase
   const gaps = await db.getContentGaps()
 
+  // Create a proper ContentGaps object for recommendations
+  const contentGaps: ContentGaps = {
+    missing_references: [],
+    low_quality_entries: [],
+    incomplete_entries: [],
+    missing_pronunciations: [],
+    missing_etymology: [],
+    missing_examples: [],
+    low_quality_by_type: {},
+  }
+
   return c.json(
     createApiResponse({
       missing_references: 0, // Not implemented in DB yet
@@ -172,7 +183,7 @@ analyticsHandler.get('/content-gaps', async c => {
       missing_etymology: 0, // Not implemented in DB yet
       missing_examples: 0, // Not implemented in DB yet
       low_quality_by_type: {}, // Not implemented in DB yet
-      recommendations: generateRecommendations(gaps),
+      recommendations: generateRecommendations(contentGaps),
     })
   )
 })
@@ -248,7 +259,7 @@ analyticsHandler.get(
       'ai_usage',
       'quality_trends',
     ]
-    const data: Record<string, any> = {}
+    const data: Record<string, unknown> = {}
 
     for (const section of sections) {
       switch (section) {
@@ -296,7 +307,17 @@ analyticsHandler.get(
 /**
  * Helper functions
  */
-function generateRecommendations(gaps: any): string[] {
+interface ContentGaps {
+  missing_references: unknown[]
+  low_quality_entries: unknown[]
+  incomplete_entries: unknown[]
+  missing_pronunciations: unknown[]
+  missing_etymology: unknown[]
+  missing_examples: unknown[]
+  low_quality_by_type: Record<string, number>
+}
+
+function generateRecommendations(gaps: ContentGaps): string[] {
   const recommendations: string[] = []
 
   if (gaps.missing_references.length > 50) {
@@ -326,7 +347,19 @@ function generateRecommendations(gaps: any): string[] {
   return recommendations
 }
 
-async function getAnalyticsSummary(db: DictionaryDatabase): Promise<any> {
+interface AnalyticsSummary {
+  total_terms: number
+  avg_quality_score: number
+  total_searches: number
+  total_feedback: number
+  quality_distribution: unknown
+  type_distribution: unknown
+  top_searches: unknown
+}
+
+async function getAnalyticsSummary(
+  db: DictionaryDatabase
+): Promise<AnalyticsSummary> {
   const [summary, qualityStats, typeDistribution, popularSearches] =
     await Promise.all([
       db.getAnalyticsSummary(),
@@ -347,21 +380,22 @@ async function getAnalyticsSummary(db: DictionaryDatabase): Promise<any> {
 }
 
 async function convertAnalyticsToCSV(
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): Promise<string> {
   const rows: string[] = []
 
   // Summary section
   if (data.summary) {
+    const summary = data.summary as AnalyticsSummary
     rows.push('ANALYTICS SUMMARY')
     rows.push('Metric,Value')
-    rows.push(`Total Terms,${data.summary.total_terms}`)
+    rows.push(`Total Terms,${summary.total_terms}`)
     rows.push('')
 
     rows.push('Quality Distribution')
     rows.push('Level,Count')
     for (const [level, count] of Object.entries(
-      data.summary.quality_distribution
+      summary.quality_distribution as Record<string, unknown>
     )) {
       rows.push(`${level},${count}`)
     }

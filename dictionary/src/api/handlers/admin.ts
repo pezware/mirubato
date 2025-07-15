@@ -11,7 +11,7 @@ import {
 import { auth } from '../../middleware/auth'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import type { DictionaryEntry } from '../../types/dictionary'
+import type { DictionaryEntry, TermType } from '../../types/dictionary'
 import {
   SEED_TERMS,
   getSeedTermsByPriority,
@@ -25,7 +25,7 @@ adminHandler.use('*', auth())
 
 // Check admin privileges
 adminHandler.use('*', async (c, next) => {
-  const userRoles = c.get('userRoles' as any) || []
+  const userRoles = c.get('userRoles') || []
 
   // Check if user has admin role
   const isAdmin = userRoles.includes('admin')
@@ -200,7 +200,7 @@ adminHandler.put(
           message: 'Entry created successfully',
           entry: newEntry,
         }),
-        201 as any
+        201
       )
     }
   }
@@ -278,7 +278,7 @@ adminHandler.post('/bulk', zValidator('json', bulkOperationSchema), async c => {
             id: `dict_${entryData.term.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
             term: entryData.term,
             normalized_term: entryData.term.toLowerCase(),
-            type: entryData.type as any,
+            type: entryData.type as TermType,
             lang: 'en', // Default language for imports
             definition: entryData.definition,
             references: {},
