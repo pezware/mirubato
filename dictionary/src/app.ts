@@ -90,14 +90,221 @@ app.use(
 /**
  * Routes
  */
-// Admin portal and auth routes (must be FIRST to avoid conflicts)
-app.route('/fredericchopin', adminPortal)
-app.route('/fredericchopin/auth', adminAuthRoutes)
+// Direct admin portal route (avoiding sub-router issues)
+app.get('/fredericchopin', c => {
+  const environment = c.env.ENVIRONMENT || 'production'
+  const isProduction = environment === 'production'
+  const apiBaseUrl = isProduction
+    ? 'https://dictionary.mirubato.com'
+    : 'https://dictionary-staging.mirubato.com'
 
-// Debug endpoint to test routing
-app.get('/fredericchopin-test', c => {
-  return c.json({ message: 'Admin portal route test successful!' })
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary Admin Portal - Mirubato</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f4;
+            color: #3d3d3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #3d3d3a;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b6b66;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e0d8cb;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #7a8a6f;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #7a8a6f;
+            color: white;
+        }
+        
+        .button:hover {
+            background: #687a5c;
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .alert.error {
+            background: #fbe8e8;
+            color: #a94442;
+            border-left: 4px solid #e89595;
+        }
+        
+        .alert.success {
+            background: #e8ebe6;
+            color: #687a5c;
+            border-left: 4px solid #7a8a6f;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dictionary Admin Portal</h1>
+        <p style="margin-bottom: 24px;">Please enter your @mirubato.com email address to receive a magic link.</p>
+        
+        <form onsubmit="requestMagicLink(event)">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    id="adminEmail" 
+                    placeholder="admin@mirubato.com"
+                    pattern="[^@]+@mirubato\\.com"
+                    title="Must be a @mirubato.com email address"
+                    required
+                >
+            </div>
+            <button type="submit" class="button" id="magicLinkBtn">
+                Send Magic Link
+            </button>
+        </form>
+        
+        <div id="magicLinkMessage"></div>
+    </div>
+    
+    <script>
+        async function requestMagicLink(event) {
+            event.preventDefault();
+            
+            const emailInput = document.getElementById('adminEmail');
+            const email = emailInput.value;
+            const button = document.getElementById('magicLinkBtn');
+            const messageDiv = document.getElementById('magicLinkMessage');
+            
+            // Disable form
+            emailInput.disabled = true;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Sending...';
+            
+            try {
+                const response = await fetch('${apiBaseUrl}/fredericchopin/auth/magic-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error?.message || 'Failed to send magic link');
+                }
+                
+                // For demo purposes, show the magic link
+                messageDiv.innerHTML = \`
+                    <div class="alert success">
+                        <strong>Magic link generated!</strong><br>
+                        <p style="margin-top: 8px;">In production, this would be sent to your email. For now, click the link below:</p>
+                        <a href="\${result.data.magicLink}" style="color: #687a5c; word-break: break-all;">Open Magic Link</a>
+                    </div>
+                \`;
+            } catch (error) {
+                messageDiv.innerHTML = \`
+                    <div class="alert error">
+                        <strong>Error:</strong> \${error.message}
+                    </div>
+                \`;
+            } finally {
+                // Re-enable form
+                emailInput.disabled = false;
+                button.disabled = false;
+                button.innerHTML = 'Send Magic Link';
+            }
+        }
+    </script>
+</body>
+</html>
+  `
+
+  return c.html(html)
 })
+
+// Admin auth routes
+app.route('/fredericchopin/auth', adminAuthRoutes)
 
 // Health check endpoints
 app.route('/', healthRoutes)
