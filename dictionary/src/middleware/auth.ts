@@ -35,11 +35,8 @@ export function auth(options: AuthOptions = {}) {
     const token = authHeader.substring(7)
 
     try {
-      // Verify JWT token
-      if (!c.env.JWT_SECRET) {
-        throw new HTTPException(500, { message: 'JWT secret not configured' })
-      }
-      const payload = (await verify(token, c.env.JWT_SECRET)) as any
+      // Verify JWT token - let it fail naturally if JWT_SECRET is undefined
+      const payload = (await verify(token, c.env.JWT_SECRET as string)) as any
 
       // Check if token is expired
       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
@@ -84,19 +81,19 @@ export function auth(options: AuthOptions = {}) {
 
       await next()
     } catch (error) {
-      if (error instanceof HTTPException) {
-        throw error
-      }
-
-      console.error('JWT verification error:', error)
-
+      // If auth is optional and verification fails, just continue without auth
       if (options.optional) {
         return await next()
       }
 
+      if (error instanceof HTTPException) {
+        throw error
+      }
+
+      // For required auth, return proper error
+      console.error('JWT verification failed:', error)
       throw new HTTPException(401, {
         message: 'Invalid or expired token',
-        cause: error,
       })
     }
   }

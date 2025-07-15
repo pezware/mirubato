@@ -174,31 +174,47 @@ export class DictionaryAPIClient {
 
       // Map dictionary API response format to expected format
       // Dictionary API returns 'results' but frontend expects 'entries'
-      if (searchData.results && !searchData.entries) {
-        searchData.entries = searchData.results
-        delete searchData.results
+      const transformedData: Partial<SearchResult> = {
+        entries: searchData.results || [],
+        total: searchData.total || 0,
       }
 
-      // Calculate page from offset if not provided
-      const limit = searchData.limit || options.limit || 20
-      const offset = searchData.offset || 0
-      const page = Math.floor(offset / limit) + 1
-
-      // Ensure required fields are present
-      searchData.page = searchData.page || page
-      searchData.limit = limit
-      searchData.total = searchData.total || 0
+      // Extract pagination from query object if present
+      if (searchData.query) {
+        transformedData.limit = searchData.query.limit || options.limit || 20
+        transformedData.page = searchData.query.page || options.page || 1
+      } else {
+        // Fallback pagination calculation
+        const limit = options.limit || 20
+        const offset = searchData.offset || 0
+        transformedData.limit = limit
+        transformedData.page = Math.floor(offset / limit) + 1
+      }
 
       // Validate and return search results
       try {
-        return SearchResultSchema.parse(searchData)
+        return SearchResultSchema.parse(transformedData)
       } catch (validationError) {
         console.error('Search validation error:', validationError)
         throw new Error('Invalid search results format')
       }
     } catch (error) {
       if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to search terms')
+        // Extract error message from the API response
+        const errorData = error.response?.data
+        let errorMessage = 'Failed to search terms'
+
+        if (errorData) {
+          if (typeof errorData === 'string') {
+            errorMessage = errorData
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          } else if (errorData.message) {
+            errorMessage = errorData.message
+          }
+        }
+
+        throw new Error(errorMessage)
       }
       throw error
     }
