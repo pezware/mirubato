@@ -443,7 +443,9 @@ adminPortal.get('/', c => {
         <div id="alerts"></div>
 
         <div id="content">
-            <!-- Content will be dynamically loaded here -->
+            <div class="card">
+                <p>Initializing...</p>
+            </div>
         </div>
     </div>
 
@@ -462,43 +464,56 @@ adminPortal.get('/', c => {
 
         // Get auth token from localStorage
         function getAuthToken() {
-            authToken = localStorage.getItem('auth-token');
-            if (!authToken) {
-                // Show magic link login form
-                document.getElementById('content').innerHTML = \`
-                    <div class="card rose">
-                        <h2 class="card-title">
-                            <i data-lucide="lock"></i>
-                            Admin Authentication Required
-                        </h2>
-                        <p style="margin-bottom: 24px;">Please enter your @mirubato.com email address to receive a magic link.</p>
-                        
-                        <form onsubmit="requestMagicLink(event)">
-                            <div class="form-group">
-                                <label class="form-label">Email Address</label>
-                                <input 
-                                    type="email" 
-                                    class="form-input" 
-                                    id="adminEmail" 
-                                    placeholder="admin@mirubato.com"
-                                    pattern="[^@]+@mirubato\\.com"
-                                    title="Must be a @mirubato.com email address"
-                                    required
-                                >
+            try {
+                authToken = localStorage.getItem('auth-token');
+                if (!authToken) {
+                    // Show magic link login form
+                    const contentEl = document.getElementById('content');
+                    if (contentEl) {
+                        contentEl.innerHTML = \`
+                            <div class="card rose">
+                                <h2 class="card-title">
+                                    Admin Authentication Required
+                                </h2>
+                                <p style="margin-bottom: 24px;">Please enter your @mirubato.com email address to receive a magic link.</p>
+                                
+                                <form onsubmit="requestMagicLink(event)">
+                                    <div class="form-group">
+                                        <label class="form-label">Email Address</label>
+                                        <input 
+                                            type="email" 
+                                            class="form-input" 
+                                            id="adminEmail" 
+                                            placeholder="admin@mirubato.com"
+                                            pattern="[^@]+@mirubato\\.com"
+                                            title="Must be a @mirubato.com email address"
+                                            required
+                                        >
+                                    </div>
+                                    <button type="submit" class="button primary" id="magicLinkBtn">
+                                        Send Magic Link
+                                    </button>
+                                </form>
+                                
+                                <div id="magicLinkMessage" style="margin-top: 24px;"></div>
                             </div>
-                            <button type="submit" class="button primary" id="magicLinkBtn">
-                                <i data-lucide="mail"></i>
-                                Send Magic Link
-                            </button>
-                        </form>
-                        
-                        <div id="magicLinkMessage" style="margin-top: 24px;"></div>
-                    </div>
-                \`;
-                setTimeout(initializeLucide, 100);
+                        \`;
+                        // Icons are optional - don't fail if they don't load
+                        setTimeout(() => {
+                            try {
+                                initializeLucide();
+                            } catch (e) {
+                                console.log('Lucide icons not available');
+                            }
+                        }, 100);
+                    }
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Error in getAuthToken:', error);
                 return false;
             }
-            return true;
         }
 
         // Request magic link
