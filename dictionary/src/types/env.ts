@@ -25,6 +25,14 @@ export interface Env {
   CORS_ORIGIN?: string
   LOG_LEVEL?: string
 
+  // Seed processing configuration
+  SEED_ENABLED?: string
+  SEED_DAILY_TOKEN_BUDGET?: string
+  SEED_DAILY_LIMIT?: string // For staging environment
+  SEED_PRIORITY_THRESHOLD?: string
+  SEED_BATCH_SIZE?: string
+  QUALITY_MIN_THRESHOLD?: string
+
   // API Keys (secrets)
   JWT_SECRET?: string
   OPENAI_API_KEY?: string
