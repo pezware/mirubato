@@ -4,7 +4,6 @@ import { dictionaryAPI } from '@/api/dictionary'
 import {
   DictionaryEntry,
   SearchOptions,
-  SearchFilters,
   DictionaryState,
   SupportedLanguage,
 } from '@/types/dictionary'
@@ -300,18 +299,6 @@ const Dictionary: React.FC = () => {
       }
     },
     [t, currentLanguage, showLanguageComparison]
-  )
-
-  // Handle filter changes
-  const handleFilterChange = useCallback(
-    (filters: SearchFilters) => {
-      setState(prev => ({ ...prev, filters }))
-      // Re-search with new filters if there's a query
-      if (state.searchQuery) {
-        handleSearch(state.searchQuery)
-      }
-    },
-    [state.searchQuery, handleSearch]
   )
 
   // Handle page change with language support
