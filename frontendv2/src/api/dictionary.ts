@@ -14,7 +14,6 @@ import {
   EnhancementJob,
   SearchOptions,
   MultiLanguageTermResponse,
-  validateApiResponse,
   DictionaryEntrySchema,
   SearchResultSchema,
   BatchQueryResponseSchema,
