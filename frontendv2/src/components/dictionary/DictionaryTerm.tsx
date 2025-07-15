@@ -382,9 +382,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
           {Array.from(selectedLanguages)
             .filter(lang => lang !== entry.lang)
             .map(lang => {
-              const langEntry =
-                additionalEntries[lang] ||
-                languageVersions?.languages[lang as SupportedLanguage]
+              const langEntry = additionalEntries[lang]
               if (!langEntry) {
                 return (
                   <div

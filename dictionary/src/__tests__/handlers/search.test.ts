@@ -233,7 +233,7 @@ describe('Search Handler', () => {
       // Set up mocks
       mockCacheMethods.getCachedSearchResults.mockResolvedValue(null)
       mockDbMethods.search.mockResolvedValue({
-        results: mockSearchResults,
+        entries: mockSearchResults,
         total: 2,
       })
 
@@ -262,7 +262,7 @@ describe('Search Handler', () => {
       ).DictionaryDatabase
       const mockDb = new DictionaryDatabase(mockEnv.DB)
       ;(mockDb.search as any).mockResolvedValue({
-        results: mockSearchResults.slice(0, 1),
+        entries: mockSearchResults.slice(0, 1),
         total: 2,
       })
 
@@ -282,7 +282,7 @@ describe('Search Handler', () => {
 
     it('should filter by type', async () => {
       mockDbMethods.search.mockResolvedValue({
-        results: mockSearchResults,
+        entries: mockSearchResults,
         total: 2,
       })
 
