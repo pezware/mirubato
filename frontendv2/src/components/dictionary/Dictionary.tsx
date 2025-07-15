@@ -125,6 +125,8 @@ const Dictionary: React.FC = () => {
         isLoading: true,
         error: null,
         searchQuery: query,
+        // Clear filters when performing a new search
+        filters: {},
       }))
 
       try {
@@ -132,7 +134,8 @@ const Dictionary: React.FC = () => {
           query,
           lang: currentLanguage,
           searchAllLanguages: searchAllLanguages,
-          filters: state.filters,
+          // Don't use state.filters here since we just cleared them
+          filters: {},
           page: 1,
           limit: 20,
         }
@@ -506,7 +509,15 @@ const Dictionary: React.FC = () => {
           <div>
             <DictionaryCategories
               onCategorySelect={category => {
-                handleFilterChange({ type: [category] })
+                // Clear current search and apply category filter
+                setState(prev => ({
+                  ...prev,
+                  searchQuery: '',
+                  selectedTerm: null,
+                  filters: { type: [category] },
+                }))
+                // Optionally, you could trigger a search for all terms in that category
+                // For now, just set the filter for when user searches
               }}
             />
           </div>

@@ -60,7 +60,11 @@ CREATE INDEX idx_relationships_term_id ON term_relationships(term_id);
 CREATE INDEX idx_relationships_related_id ON term_relationships(related_term_id);
 CREATE INDEX idx_relationships_type ON term_relationships(relationship_type);
 
--- Step 5: Update AI metadata structure in dictionary_entries to track seed source
+-- Step 5: Add ai_metadata column if it doesn't exist
+-- This column stores AI generation metadata as JSON
+ALTER TABLE dictionary_entries ADD COLUMN ai_metadata TEXT DEFAULT '{}';
+
+-- Step 6: Update AI metadata structure in dictionary_entries to track seed source
 -- This is done at the application level, but we'll add an index for efficient queries
 CREATE INDEX idx_dictionary_ai_source ON dictionary_entries(
   json_extract(ai_metadata, '$.generation_context.requested_by')
