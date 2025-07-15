@@ -62,6 +62,7 @@ export interface Variables {
   apiKeyName?: string
   apiKeyScopes?: string[]
   serviceName?: string
+  isAdmin?: boolean
   // Validation
   validatedQuery?: any
   validatedParams?: any
