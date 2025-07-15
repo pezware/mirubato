@@ -498,7 +498,7 @@ adminPortal.get('/', c => {
         }
 
         // Request magic link
-        async function requestMagicLink(event) {
+        window.requestMagicLink = async function requestMagicLink(event) {
             event.preventDefault();
             
             const emailInput = document.getElementById('adminEmail');
@@ -593,6 +593,10 @@ adminPortal.get('/', c => {
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
+                if (!authToken) {
+                    showAlert('error', 'Please authenticate first');
+                    return;
+                }
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 currentTab = tab.dataset.tab;
@@ -602,6 +606,11 @@ adminPortal.get('/', c => {
 
         // Load content based on current tab
         async function loadContent() {
+            if (!authToken) {
+                // Don't try to load content if not authenticated
+                return;
+            }
+            
             const contentDiv = document.getElementById('content');
             contentDiv.innerHTML = '<div class="loading"></div>';
 
