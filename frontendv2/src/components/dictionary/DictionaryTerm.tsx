@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
 import {
   DictionaryTermProps,
@@ -10,6 +10,7 @@ import {
 } from '@/types/dictionary'
 import DictionaryReferences from './DictionaryReferences'
 import { dictionaryAPI } from '@/api/dictionary'
+import { Volume2 } from 'lucide-react'
 
 /**
  * Display a dictionary term with full details, references, and multi-language support
@@ -166,7 +167,10 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     termEntry: DictionaryEntry,
     isAdditional = false
   ) => (
-    <Card key={termEntry.id} className={isAdditional ? 'border-sage-200' : ''}>
+    <div
+      key={termEntry.id}
+      className={`bg-white rounded-lg p-6 border-l-4 ${isAdditional ? 'border-morandi-stone-300' : 'border-morandi-sage-300'}`}
+    >
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-3">
@@ -223,7 +227,8 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             }}
             aria-label={t('toolbox:dictionary.playPronunciation')}
           >
-            🔊 {t('toolbox:dictionary.hear')}
+            <Volume2 className="w-4 h-4 mr-1" />
+            {t('toolbox:dictionary.hear')}
           </Button>
         )}
       </div>
@@ -317,7 +322,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
           </div>
         </div>
       )}
-    </Card>
+    </div>
   )
 
   return (
@@ -325,7 +330,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
       {/* Language selection badges */}
       {languageVersions &&
         Object.keys(languageVersions.languages).length > 1 && (
-          <Card className="bg-stone-50">
+          <div className="bg-white rounded-lg p-4 border-l-4 border-morandi-rose-300">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-stone-700">
                 {t('toolbox:dictionary.availableInLanguages')}
@@ -365,7 +370,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
                 )
               })}
             </div>
-          </Card>
+          </div>
         )}
 
       {/* Main term display */}
@@ -382,13 +387,16 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
                 languageVersions?.languages[lang as SupportedLanguage]
               if (!langEntry) {
                 return (
-                  <Card key={lang} className="border-stone-200 bg-stone-50">
+                  <div
+                    key={lang}
+                    className="bg-white rounded-lg p-4 border-l-4 border-morandi-stone-300"
+                  >
                     <div className="text-center py-8 text-stone-500">
                       {t('toolbox:dictionary.fetchingInLanguage', {
                         lang: getLanguageName(lang),
                       })}
                     </div>
-                  </Card>
+                  </div>
                 )
               }
               return renderTermEntry(langEntry, true)
@@ -398,7 +406,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
 
       {/* References section */}
       {entry.references && (
-        <Card>
+        <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-peach-300">
           <h2 className="text-xl font-semibold mb-4 text-stone-800">
             {t('toolbox:dictionary.learnMore')}
           </h2>
@@ -406,13 +414,13 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             references={entry.references}
             term={entry.term}
           />
-        </Card>
+        </div>
       )}
 
       {/* Related terms */}
       {entry.metadata?.related_terms &&
         entry.metadata.related_terms.length > 0 && (
-          <Card>
+          <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-peach-300">
             <h2 className="text-xl font-semibold mb-4 text-stone-800">
               {t('toolbox:dictionary.relatedTerms')}
             </h2>
@@ -432,11 +440,11 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
                 </Button>
               ))}
             </div>
-          </Card>
+          </div>
         )}
 
       {/* Feedback section */}
-      <Card className="bg-stone-50">
+      <div className="bg-white rounded-lg p-4 border-l-4 border-morandi-rose-300">
         {!feedbackSent ? (
           <div>
             <p className="text-stone-700 mb-3">
@@ -505,7 +513,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             ✓ {t('toolbox:dictionary.thanksFeedback')}
           </p>
         )}
-      </Card>
+      </div>
     </div>
   )
 }

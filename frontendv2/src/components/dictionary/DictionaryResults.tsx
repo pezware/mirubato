@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
 import { DictionaryResultsProps, SupportedLanguage } from '@/types/dictionary'
 
@@ -159,12 +159,12 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
       {/* Results list */}
       <div className="space-y-3">
         {results.map(entry => (
-          <Card
+          <div
             key={entry.id}
-            className="cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg p-4 border-l-4 border-morandi-sage-300 cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => onTermSelect(entry)}
           >
-            <div className="p-4">
+            <div>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -256,7 +256,7 @@ const DictionaryResults: React.FC<DictionaryResultsProps> = ({
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 

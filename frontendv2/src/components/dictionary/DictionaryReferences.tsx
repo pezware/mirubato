@@ -3,6 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { sanitizeOutput } from '@/utils/dictionarySecurity'
 import { DictionaryReferencesProps } from '@/types/dictionary'
 import SafeExternalLink from './SafeExternalLink'
+import {
+  BookOpen,
+  Youtube,
+  Theater,
+  Music,
+  Book,
+  FlaskConical,
+  Guitar,
+  Music2,
+  Star,
+} from 'lucide-react'
 
 /**
  * Display dictionary term references with secure external links
@@ -48,7 +59,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
       {references?.wikipedia?.url && (
         <div>
           <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-            <span className="mr-2">📚</span>
+            <BookOpen className="w-5 h-5 mr-2 text-morandi-sage-500" />
             {t('toolbox:dictionary.wikipedia')}
           </h3>
           <SafeExternalLink url={references.wikipedia.url}>
@@ -69,7 +80,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
         references.media.youtube.educational_videos.length > 0 && (
           <div>
             <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-              <span className="mr-2">📺</span>
+              <Youtube className="w-5 h-5 mr-2 text-morandi-sage-500" />
               {t('toolbox:dictionary.educationalVideos')}
             </h3>
             <div className="space-y-2">
@@ -98,7 +109,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
         references.media.youtube.performances.length > 0 && (
           <div>
             <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-              <span className="mr-2">🎭</span>
+              <Theater className="w-5 h-5 mr-2 text-morandi-sage-500" />
               {t('toolbox:dictionary.performances')}
             </h3>
             <div className="space-y-2">
@@ -127,7 +138,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
           references.media.spotify.playlist_url) && (
           <div>
             <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-              <span className="mr-2">🎵</span>
+              <Music className="w-5 h-5 mr-2 text-morandi-sage-500" />
               {t('toolbox:dictionary.spotify')}
             </h3>
             <div className="space-y-2">
@@ -166,7 +177,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
       {references?.books && references.books.length > 0 && (
         <div>
           <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-            <span className="mr-2">📖</span>
+            <Book className="w-5 h-5 mr-2 text-morandi-sage-500" />
             {t('toolbox:dictionary.books')}
           </h3>
           <div className="space-y-2">
@@ -197,7 +208,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
       {references?.research_papers && references.research_papers.length > 0 && (
         <div>
           <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-            <span className="mr-2">🔬</span>
+            <FlaskConical className="w-5 h-5 mr-2 text-morandi-sage-500" />
             {t('toolbox:dictionary.researchPapers')}
           </h3>
           <div className="space-y-2">
@@ -232,7 +243,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
         references.shopping.instruments.length > 0 && (
           <div>
             <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-              <span className="mr-2">🎸</span>
+              <Guitar className="w-5 h-5 mr-2 text-morandi-sage-500" />
               {t('toolbox:dictionary.instruments')}
             </h3>
             <div className="space-y-2">
@@ -250,7 +261,8 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
                   )}
                   {item.rating && (
                     <span className="text-sm text-stone-600 ml-2">
-                      ⭐ {item.rating}/5
+                      <Star className="w-3 h-3 inline-block fill-current" />{' '}
+                      {item.rating}/5
                     </span>
                   )}
                 </div>
@@ -264,7 +276,7 @@ const DictionaryReferences: React.FC<DictionaryReferencesProps> = ({
         references.shopping.sheet_music.length > 0 && (
           <div>
             <h3 className="font-semibold text-stone-700 mb-2 flex items-center">
-              <span className="mr-2">🎼</span>
+              <Music2 className="w-5 h-5 mr-2 text-morandi-sage-500" />
               {t('toolbox:dictionary.sheetMusic')}
             </h3>
             <div className="space-y-2">
