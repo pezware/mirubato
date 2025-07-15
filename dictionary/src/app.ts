@@ -90,16 +90,16 @@ app.use(
 /**
  * Routes
  */
+// Admin portal and auth routes (must be FIRST to avoid conflicts)
+app.route('/fredericchopin', adminPortal)
+app.route('/fredericchopin/auth', adminAuthRoutes)
+
 // Health check endpoints
 app.route('/', healthRoutes)
 
 // Documentation endpoints
 app.route('/docs', docsRoutes)
 app.get('/swagger', swaggerUI({ url: '/docs/openapi.json' }))
-
-// Admin portal and auth routes (must be before API routes)
-app.route('/fredericchopin', adminPortal)
-app.route('/fredericchopin/auth', adminAuthRoutes)
 
 // Dictionary API routes
 app.route('/', dictionaryRoutes)
