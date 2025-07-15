@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../../types/env'
+import type { DictionaryEntry } from '../../types/dictionary'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
 import { CacheService } from '../../services/storage/cache-service'
@@ -202,7 +203,7 @@ enhanceHandler.get('/:jobId', async c => {
  * Process enhancement batch
  */
 async function processEnhancementBatch(
-  entries: any[],
+  entries: DictionaryEntry[],
   generator: DictionaryGenerator,
   db: DictionaryDatabase,
   cache: CacheService,

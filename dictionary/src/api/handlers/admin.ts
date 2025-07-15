@@ -655,7 +655,7 @@ adminHandler.delete(
 
     try {
       let query = 'DELETE FROM seed_queue'
-      const params: any[] = []
+      const params: string[] = []
 
       if (status !== 'all') {
         query += ' WHERE status = ?'
