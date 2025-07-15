@@ -16,7 +16,6 @@ import { structuredLogger, accessLogger } from './middleware/logging'
 import { healthRoutes } from './routes/health'
 import { docsRoutes } from './routes/docs'
 import { dictionaryRoutes } from './routes/dictionary'
-import { adminPortal } from './routes/admin-portal'
 import adminAuthRoutes from './routes/admin-auth'
 
 /**
