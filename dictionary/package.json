@@ -32,6 +32,7 @@
     "drizzle-orm": "^0.44.2",
     "hono": "^4.6.13",
     "jose": "^5.2.0",
+    "nanoid": "^5.1.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
