@@ -53,9 +53,13 @@ export async function generateAccessToken(
   email: string,
   secret: string
 ): Promise<string> {
+  // Check if user has @mirubato.com email for admin role
+  const isMirubatoEmail = email.endsWith('@mirubato.com')
+
   const jwt = await new SignJWT({
     email,
-    isAdmin: true,
+    isAdmin: isMirubatoEmail,
+    roles: isMirubatoEmail ? ['admin'] : ['user'],
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
