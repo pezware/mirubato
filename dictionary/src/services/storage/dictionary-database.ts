@@ -1384,12 +1384,18 @@ export class DictionaryDatabase {
   /**
    * Get manual review queue count
    */
-  async getManualReviewQueueCount(status: string = 'pending'): Promise<number> {
+  async getManualReviewQueueCount(status?: string): Promise<number> {
+    let query = 'SELECT COUNT(*) as count FROM manual_review_queue'
+    const params: any[] = []
+
+    if (status) {
+      query += ' WHERE status = ?'
+      params.push(status)
+    }
+
     const result = await this.db
-      .prepare(
-        `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = ?`
-      )
-      .bind(status)
+      .prepare(query)
+      .bind(...params)
       .first()
 
     return Number(result?.count) || 0
@@ -1406,39 +1412,42 @@ export class DictionaryDatabase {
     items: Array<{
       id: string
       term: string
+      generated_content: any
       quality_score: number
       reason: string
       status: string
       created_at: string
-      generated_content: any
+      reviewed_at?: string
+      reviewer_notes?: string
     }>
     total: number
   }> {
-    const status = options.status || 'pending'
-    const limit = options.limit || 20
-    const offset = options.offset || 0
+    const { status = 'pending', limit = 20, offset = 0 } = options
 
-    const items = await this.db
-      .prepare(
-        `SELECT * FROM manual_review_queue 
-         WHERE status = ? 
-         ORDER BY created_at DESC 
-         LIMIT ? OFFSET ?`
-      )
-      .bind(status, limit, offset)
-      .all()
-
+    // Get total count
     const total = await this.getManualReviewQueueCount(status)
 
+    // Get items
+    const itemsQuery = status
+      ? `SELECT * FROM manual_review_queue WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      : `SELECT * FROM manual_review_queue ORDER BY created_at DESC LIMIT ? OFFSET ?`
+
+    const itemsResult = await this.db
+      .prepare(itemsQuery)
+      .bind(...(status ? [status, limit, offset] : [limit, offset]))
+      .all()
+
     return {
-      items: items.results.map(item => ({
-        id: item.id as string,
-        term: item.term as string,
-        quality_score: item.quality_score as number,
-        reason: item.reason as string,
-        status: item.status as string,
-        created_at: item.created_at as string,
-        generated_content: JSON.parse(item.generated_content as string),
+      items: itemsResult.results.map(row => ({
+        id: row.id as string,
+        term: row.term as string,
+        generated_content: JSON.parse(row.generated_content as string),
+        quality_score: row.quality_score as number,
+        reason: row.reason as string,
+        status: row.status as string,
+        created_at: row.created_at as string,
+        reviewed_at: row.reviewed_at as string | undefined,
+        reviewer_notes: row.reviewer_notes as string | undefined,
       })),
       total,
     }

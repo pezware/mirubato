@@ -415,10 +415,10 @@ export class SeedProcessor {
       .bind(startDate.toISOString())
       .first()
 
-    // Get quality scores
+    // Get quality scores - using 'dictionary' table which is the actual table name
     const qualityStats = await this.env.DB.prepare(
-      `SELECT AVG(overall_score) as avg_quality
-         FROM dictionary_entries
+      `SELECT AVG(json_extract(ai_metadata, '$.quality_score.overall')) as avg_quality
+         FROM dictionary
          WHERE created_at >= ?
          AND json_extract(ai_metadata, '$.generation_context.requested_by') = 'seed_processor'`
     )
