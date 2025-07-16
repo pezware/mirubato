@@ -15,6 +15,7 @@ import {
 import { CloudflareAIService } from './cloudflare-ai-service'
 import { PROMPT_TEMPLATES, selectModel } from '../../config/ai-models'
 import { normalizeTerm } from '../../utils/validation'
+import { TermClassifier } from './term-classifier'
 // import { AIServiceError } from '../../utils/errors'
 
 export interface GenerationOptions {
@@ -39,9 +40,11 @@ export interface EnhancementOptions {
 
 export class DictionaryGenerator {
   private aiService: CloudflareAIService
+  private termClassifier: TermClassifier
 
   constructor(private env: Env) {
     this.aiService = new CloudflareAIService(env)
+    this.termClassifier = new TermClassifier(env)
   }
 
   /**
@@ -52,6 +55,33 @@ export class DictionaryGenerator {
   ): Promise<DictionaryEntry | null> {
     const maxRetries = 3
     const qualityThreshold = parseInt(this.env.QUALITY_THRESHOLD || '70')
+
+    // If type is 'general' or not specified, classify the term
+    if (!options.type || options.type === 'general') {
+      // Try AI classification first, but use pattern-based fallback if it fails
+      let classifiedType: TermType = 'general'
+
+      try {
+        classifiedType = await this.termClassifier.classifyTerm(options.term)
+        console.log(
+          `AI classified term "${options.term}" as type: ${classifiedType}`
+        )
+      } catch (classificationError) {
+        console.error(
+          `AI classification failed for "${options.term}":`,
+          classificationError
+        )
+        // Use pattern-based classification as fallback
+        classifiedType = this.termClassifier.fallbackClassification(
+          options.term
+        )
+        console.log(
+          `Pattern-based classification for "${options.term}": ${classifiedType}`
+        )
+      }
+
+      options.type = classifiedType
+    }
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {

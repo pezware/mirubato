@@ -169,21 +169,39 @@ export class SeedProcessor {
               }
 
               // Save high-quality entry
-              if (existing) {
-                await this.db.update(entry)
-              } else {
-                await this.db.create(entry)
+              try {
+                if (existing) {
+                  await this.db.update(entry)
+                } else {
+                  await this.db.create(entry)
+                }
+
+                // Invalidate cache for the term
+                await this.cache.invalidateTerm(entry.normalized_term)
+
+                processedLanguages.push(lang)
+                languageScores.push(entry.quality_score.overall)
+
+                console.log(
+                  `Successfully generated "${item.term}" in ${lang} with quality score ${entry.quality_score.overall}`
+                )
+              } catch (saveError: unknown) {
+                // Handle UNIQUE constraint violation gracefully
+                if (
+                  saveError instanceof Error &&
+                  saveError.message?.includes('UNIQUE constraint failed')
+                ) {
+                  console.log(
+                    `Entry for "${item.term}" in ${lang} already exists (created elsewhere), skipping`
+                  )
+                  // Still count as processed since the entry exists
+                  processedLanguages.push(lang)
+                  result.skipped++
+                } else {
+                  // Re-throw other errors
+                  throw saveError
+                }
               }
-
-              // Invalidate cache for the term
-              await this.cache.invalidateTerm(entry.normalized_term)
-
-              processedLanguages.push(lang)
-              languageScores.push(entry.quality_score.overall)
-
-              console.log(
-                `Successfully generated "${item.term}" in ${lang} with quality score ${entry.quality_score.overall}`
-              )
             } catch (langError) {
               console.error(
                 `Error processing "${item.term}" in ${lang}:`,
