@@ -46,6 +46,19 @@ export function auth(options: AuthOptions = {}) {
       // Check roles if specified
       if (options.roles && options.roles.length > 0) {
         const userRoles = payload.roles || []
+
+        // For compatibility with main API tokens, check email domain for admin role
+        const email = payload.email || payload.user?.email
+        if (options.roles.includes('admin') && email) {
+          // Allow @mirubato.com emails or specific test email
+          const isAdminEmail =
+            email.endsWith('@mirubato.com') ||
+            email === 'andyxiang.work@gmail.com'
+          if (isAdminEmail) {
+            userRoles.push('admin')
+          }
+        }
+
         const hasRole = options.roles.some((role: string) =>
           userRoles.includes(role)
         )

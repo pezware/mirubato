@@ -58,6 +58,12 @@ export class AIServiceError extends DictionaryError {
   }
 }
 
+export class InternalError extends DictionaryError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super('INTERNAL_ERROR', message, 500, details)
+  }
+}
+
 // Alias for consistency with handlers
 export class APIError extends DictionaryError {
   constructor(

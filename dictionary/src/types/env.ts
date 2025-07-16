@@ -35,6 +35,8 @@ export interface Env {
 
   // API Keys (secrets)
   JWT_SECRET?: string
+  MAGIC_LINK_SECRET?: string
+  RESEND_API_KEY?: string
   OPENAI_API_KEY?: string
   ANTHROPIC_API_KEY?: string
   GOOGLE_API_KEY?: string
@@ -62,6 +64,7 @@ export interface Variables {
   apiKeyName?: string
   apiKeyScopes?: string[]
   serviceName?: string
+  isAdmin?: boolean
   // Validation
   validatedQuery?: any
   validatedParams?: any

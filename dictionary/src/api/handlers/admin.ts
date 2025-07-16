@@ -3,12 +3,7 @@ import type { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
 import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
-import {
-  createApiResponse,
-  ValidationError,
-  AuthorizationError,
-} from '../../utils/errors'
-import { auth } from '../../middleware/auth'
+import { createApiResponse, ValidationError } from '../../utils/errors'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import type { DictionaryEntry, TermType } from '../../types/dictionary'
@@ -20,22 +15,8 @@ import {
 
 export const adminHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// Apply auth middleware to all routes
-adminHandler.use('*', auth())
-
-// Check admin privileges
-adminHandler.use('*', async (c, next) => {
-  const userRoles = c.get('userRoles') || []
-
-  // Check if user has admin role
-  const isAdmin = userRoles.includes('admin')
-
-  if (!isAdmin) {
-    throw new AuthorizationError('Admin access required')
-  }
-
-  await next()
-})
+// Note: Auth middleware with admin role check is already applied in dictionary.ts
+// No need to apply it again here
 
 // Admin entry update schema
 const entryUpdateSchema = z.object({
@@ -445,9 +426,7 @@ adminHandler.post(
     try {
       // Clear existing queue if requested
       if (clear_existing) {
-        await c.env.DB.prepare('DELETE FROM seed_queue WHERE status = ?')
-          .bind('pending')
-          .run()
+        await db.clearSeedQueueByStatus('pending')
       }
 
       // Get terms by priority threshold
@@ -528,6 +507,15 @@ adminHandler.post(
               const existing = await db.findByTerm(item.term, lang)
 
               if (!existing) {
+                // Double-check with normalized term to be sure
+                const normalizedTerm = item.term.toLowerCase().trim()
+                const doubleCheck = await db.findByTerm(normalizedTerm, lang)
+
+                if (doubleCheck) {
+                  // Entry found on double-check, skip
+                  continue
+                }
+
                 // Generate new entry
                 const entry = await generator.generateEntry({
                   term: item.term,
@@ -540,8 +528,24 @@ adminHandler.post(
                 })
 
                 if (entry) {
-                  await db.create(entry)
+                  try {
+                    await db.create(entry)
+                    // Successfully created entry
+                  } catch (createError: unknown) {
+                    // If it's a unique constraint error, the entry was created elsewhere
+                    if (
+                      createError instanceof Error &&
+                      createError.message?.includes('UNIQUE constraint failed')
+                    ) {
+                      // Entry already exists (constraint violation), skip
+                    } else {
+                      // Re-throw other errors
+                      throw createError
+                    }
+                  }
                 }
+              } else {
+                // Entry already exists, skip
               }
             }
 
@@ -594,33 +598,12 @@ adminHandler.get('/seed/status', async c => {
     const stats = await db.getSeedQueueStats()
 
     // Get recent items
-    const recentItems = await c.env.DB.prepare(
-      `
-      SELECT term, languages, priority, status, last_attempt_at, error_message
-      FROM seed_queue
-      ORDER BY 
-        CASE status
-          WHEN 'processing' THEN 0
-          WHEN 'failed' THEN 1
-          WHEN 'pending' THEN 2
-          ELSE 3
-        END,
-        created_at DESC
-      LIMIT 20
-    `
-    ).all()
+    const recentItems = await db.getRecentSeedQueueItems(20)
 
     return c.json(
       createApiResponse({
         stats,
-        recent_items: recentItems.results.map(row => ({
-          term: row.term,
-          languages: JSON.parse(row.languages as string),
-          priority: row.priority,
-          status: row.status,
-          last_attempt_at: row.last_attempt_at,
-          error_message: row.error_message,
-        })),
+        recent_items: recentItems,
         seed_terms_available: SEED_TERMS.length,
         priority_distribution: Array.from(
           getSeedTermsByPriority().entries()
@@ -652,23 +635,16 @@ adminHandler.delete(
   ),
   async c => {
     const { status } = c.req.valid('json')
+    const db = new DictionaryDatabase(c.env.DB)
 
     try {
-      let query = 'DELETE FROM seed_queue'
-      const params: string[] = []
-
-      if (status !== 'all') {
-        query += ' WHERE status = ?'
-        params.push(status)
-      }
-
-      const result = await c.env.DB.prepare(query)
-        .bind(...params)
-        .run()
+      const deleted = await db.clearSeedQueueByStatus(
+        status === 'all' ? undefined : status
+      )
 
       return c.json(
         createApiResponse({
-          deleted: result.meta.changes || 0,
+          deleted,
           status_cleared: status,
         })
       )
@@ -684,6 +660,8 @@ adminHandler.delete(
  * GET /api/v1/admin/seed/system-status
  */
 adminHandler.get('/seed/system-status', async c => {
+  const db = new DictionaryDatabase(c.env.DB)
+
   try {
     // Import services
     const { TokenBudgetManager } = await import(
@@ -709,9 +687,7 @@ adminHandler.get('/seed/system-status', async c => {
     const processingStats = await processor.getProcessingStats(7)
 
     // Get manual review queue count
-    const reviewCount = await c.env.DB.prepare(
-      `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = 'pending'`
-    ).first()
+    const reviewCount = await db.getManualReviewQueueCount('pending')
 
     return c.json(
       createApiResponse({
@@ -730,7 +706,7 @@ adminHandler.get('/seed/system-status', async c => {
           terms_processed_week: processingStats.terms_processed,
           average_quality_score: processingStats.average_quality,
           success_rate: processingStats.success_rate,
-          manual_review_pending: reviewCount?.count || 0,
+          manual_review_pending: reviewCount,
           token_efficiency: processingStats.token_efficiency,
         },
         schedule: {
@@ -751,40 +727,21 @@ adminHandler.get('/seed/system-status', async c => {
  * GET /api/v1/admin/seed/review-queue
  */
 adminHandler.get('/seed/review-queue', async c => {
+  const db = new DictionaryDatabase(c.env.DB)
+
   try {
     const query = c.req.query()
     const status = query.status || 'pending'
     const limit = parseInt(query.limit || '20')
     const offset = parseInt(query.offset || '0')
 
-    const items = await c.env.DB.prepare(
-      `SELECT * FROM manual_review_queue 
-         WHERE status = ? 
-         ORDER BY created_at DESC 
-         LIMIT ? OFFSET ?`
-    )
-      .bind(status, limit, offset)
-      .all()
-
-    const total = await c.env.DB.prepare(
-      `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = ?`
-    )
-      .bind(status)
-      .first()
+    const result = await db.getManualReviewQueue({ status, limit, offset })
 
     return c.json(
       createApiResponse({
-        items: items.results.map(item => ({
-          id: item.id,
-          term: item.term,
-          quality_score: item.quality_score,
-          reason: item.reason,
-          status: item.status,
-          created_at: item.created_at,
-          generated_content: JSON.parse(item.generated_content as string),
-        })),
+        items: result.items,
         pagination: {
-          total: total?.count || 0,
+          total: result.total,
           limit,
           offset,
         },
@@ -814,14 +771,11 @@ adminHandler.put(
     const id = c.req.param('id')
     const { action, notes, modifications } = c.req.valid('json')
     const userId = c.get('userId')
+    const db = new DictionaryDatabase(c.env.DB)
 
     try {
       // Get the review item
-      const item = await c.env.DB.prepare(
-        `SELECT * FROM manual_review_queue WHERE id = ?`
-      )
-        .bind(id)
-        .first()
+      const item = await db.getManualReviewItem(id)
 
       if (!item) {
         throw new ValidationError('Review item not found')
@@ -829,7 +783,7 @@ adminHandler.put(
 
       if (action === 'approve') {
         // Parse the generated content
-        let entry = JSON.parse(item.generated_content as string)
+        let entry = item.generated_content
 
         // Apply modifications if provided
         if (modifications) {
@@ -837,7 +791,6 @@ adminHandler.put(
         }
 
         // Save to dictionary
-        const db = new DictionaryDatabase(c.env.DB)
         const existing = await db.findByTerm(entry.term, entry.lang)
 
         if (existing) {
@@ -847,16 +800,12 @@ adminHandler.put(
         }
 
         // Update review status
-        await c.env.DB.prepare(
-          `UPDATE manual_review_queue 
-             SET status = 'approved', 
-                 reviewer_notes = ?, 
-                 reviewed_at = ?, 
-                 reviewed_by = ?
-             WHERE id = ?`
+        await db.updateManualReviewStatus(
+          id,
+          'approved',
+          notes || '',
+          userId || 'admin'
         )
-          .bind(notes || '', new Date().toISOString(), userId || 'admin', id)
-          .run()
 
         return c.json(
           createApiResponse({
@@ -867,16 +816,12 @@ adminHandler.put(
         )
       } else {
         // Reject the item
-        await c.env.DB.prepare(
-          `UPDATE manual_review_queue 
-             SET status = 'rejected', 
-                 reviewer_notes = ?, 
-                 reviewed_at = ?, 
-                 reviewed_by = ?
-             WHERE id = ?`
+        await db.updateManualReviewStatus(
+          id,
+          'rejected',
+          notes || '',
+          userId || 'admin'
         )
-          .bind(notes || '', new Date().toISOString(), userId || 'admin', id)
-          .run()
 
         return c.json(
           createApiResponse({

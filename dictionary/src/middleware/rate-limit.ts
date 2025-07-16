@@ -96,7 +96,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
       }
 
       // Update count in KV
-      const ttl = Math.ceil((resetTime - now) / 1000)
+      const ttl = Math.max(60, Math.ceil((resetTime - now) / 1000)) // Ensure minimum 60 seconds
       await c.env.CACHE.put(
         rateLimitKey,
         JSON.stringify({ count, resetTime } as RateLimitRecord),
@@ -210,7 +210,7 @@ export function slidingWindowRateLimit(options: RateLimitOptions = {}) {
       // Add current request
       const requestKey = `${baseKey}:${now}`
       await c.env.CACHE.put(requestKey, '1', {
-        expirationTtl: Math.ceil(windowMs / 1000),
+        expirationTtl: Math.max(60, Math.ceil(windowMs / 1000)), // Ensure minimum 60 seconds
       })
 
       if (headers) {
@@ -318,7 +318,7 @@ export function progressiveRateLimit(
           }
 
           await c.env.CACHE.put(violationKey, JSON.stringify(newViolation), {
-            expirationTtl: Math.ceil(newBackoff / 1000),
+            expirationTtl: Math.max(60, Math.ceil(newBackoff / 1000)), // Ensure minimum 60 seconds
           })
 
           c.header('X-RateLimit-Violation-Count', newViolation.count.toString())
