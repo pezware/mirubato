@@ -202,7 +202,7 @@ adminAuthRoutes.get('/verify', async c => {
           <h2 class="success">Authentication Successful!</h2>
           <p>Welcome, ${email}</p>
           <p>Setting up your admin session...</p>
-          <button onclick="window.location.href='/fredericchopin'">Go to Admin Portal</button>
+          <button onclick="window.location.href='/fredericchopin/dashboard'">Go to Admin Portal</button>
         </div>
         <script>
           // Store the session token in localStorage
@@ -212,7 +212,7 @@ adminAuthRoutes.get('/verify', async c => {
           
           // Redirect after 2 seconds
           setTimeout(() => {
-            window.location.href = '/fredericchopin';
+            window.location.href = '/fredericchopin/dashboard';
           }, 2000);
         </script>
       </body>
