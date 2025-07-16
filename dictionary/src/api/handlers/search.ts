@@ -151,7 +151,7 @@ searchHandler.get(
         response_time_ms: Date.now() - startTime,
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
-        search_source: 'api_search',
+        search_source: 'api',
         search_lang: query.lang,
         result_lang:
           searchResult.entries && searchResult.entries.length > 0

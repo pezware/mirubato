@@ -23,6 +23,7 @@ adminPortal.get('/', c => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dictionary Admin Portal - Mirubato</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         * {
@@ -573,22 +574,40 @@ adminPortal.get('/', c => {
             if (!authToken) {
                 throw new Error('No auth token');
             }
-
-            const response = await fetch(API_BASE + endpoint, {
-                ...options,
-                headers: {
-                    'Authorization': 'Bearer ' + authToken,
-                    'Content-Type': 'application/json',
-                    ...options.headers
+            
+            try {
+                const response = await axios({
+                    method: options.method || 'GET',
+                    url: API_BASE + endpoint,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    data: options.body,
+                    timeout: 30000, // 30 second timeout
+                });
+                
+                // Unwrap the response if it has the standard format
+                if (response.data && response.data.status === 'success' && response.data.data) {
+                    return response.data.data;
                 }
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || error.message || 'API request failed');
+                
+                // Otherwise return as-is
+                return response.data;
+            } catch (error) {
+                if (error.response) {
+                    // Server responded with error
+                    const errorData = error.response.data;
+                    throw new Error(errorData.error?.message || errorData.message || 'API request failed');
+                } else if (error.request) {
+                    // Request made but no response
+                    throw new Error('No response from server');
+                } else {
+                    // Request setup error
+                    throw new Error(error.message || 'Request failed');
+                }
             }
-
-            return response.json();
         }
 
         // Show alert
@@ -754,7 +773,7 @@ adminPortal.get('/', c => {
                         </div>
                         <div class="metric">
                             <div class="metric-label">Allocation %</div>
-                            <div class="metric-value small">\${(data.configuration.seed_allocation_percent * 100).toFixed(0)}%</div>
+                            <div class="metric-value small">\${data.configuration.seed_allocation_percent ? (data.configuration.seed_allocation_percent * 100).toFixed(0) + '%' : 'N/A'}</div>
                         </div>
                     </div>
                 </div>
@@ -927,7 +946,7 @@ adminPortal.get('/', c => {
                     })
                 });
                 
-                showAlert('success', 'Seed queue initialized with ' + result.data.added + ' terms');
+                showAlert('success', 'Seed queue initialized with ' + (result.added || 0) + ' terms');
                 loadSeedQueue();
             } catch (error) {
                 showAlert('error', 'Failed to initialize queue: ' + error.message);
@@ -955,11 +974,11 @@ adminPortal.get('/', c => {
                     resultsDiv.innerHTML = \`
                         <div class="card sky">
                             <h3 class="card-title">Dry Run Results</h3>
-                            <p>Would process \${result.data.queue_items.length} terms:</p>
+                            <p>Would process \${result.queue_items ? result.queue_items.length : 0} terms:</p>
                             <ul>
-                                \${result.data.queue_items.map(item => 
+                                \${result.queue_items ? result.queue_items.map(item => 
                                     '<li>' + item.term + ' (Priority: ' + item.priority + ')</li>'
-                                ).join('')}
+                                ).join('') : ''}
                             </ul>
                         </div>
                     \`;
@@ -970,19 +989,19 @@ adminPortal.get('/', c => {
                             <div class="metric-grid">
                                 <div class="metric">
                                     <div class="metric-label">Processed</div>
-                                    <div class="metric-value">\${result.data.results.processed}</div>
+                                    <div class="metric-value">\${result.results ? result.results.processed : 0}</div>
                                 </div>
                                 <div class="metric">
                                     <div class="metric-label">Succeeded</div>
-                                    <div class="metric-value">\${result.data.results.succeeded}</div>
+                                    <div class="metric-value">\${result.results ? result.results.succeeded : 0}</div>
                                 </div>
                                 <div class="metric">
                                     <div class="metric-label">Failed</div>
-                                    <div class="metric-value">\${result.data.results.failed}</div>
+                                    <div class="metric-value">\${result.results ? result.results.failed : 0}</div>
                                 </div>
                             </div>
-                            \${result.data.results.errors.length > 0 ? 
-                                '<div class="alert error">Errors: ' + result.data.results.errors.join(', ') + '</div>' : 
+                            \${result.results && result.results.errors && result.results.errors.length > 0 ? 
+                                '<div class="alert error">Errors: ' + result.results.errors.join(', ') + '</div>' : 
                                 ''
                             }
                         </div>

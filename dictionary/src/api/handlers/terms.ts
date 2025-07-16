@@ -135,7 +135,7 @@ termsHandler.get(
         response_time_ms: Date.now() - startTime,
         searched_at: new Date().toISOString(),
         user_id: userInfo.userId,
-        search_source: 'api_direct',
+        search_source: 'api',
         search_lang: requestLang as SupportedLanguage,
         result_lang: entry?.lang,
       }

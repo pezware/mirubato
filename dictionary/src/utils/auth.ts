@@ -54,7 +54,9 @@ export async function generateAccessToken(
   secret: string
 ): Promise<string> {
   // Check if user has @mirubato.com email for admin role
-  const isMirubatoEmail = email.endsWith('@mirubato.com')
+  // Also allow specific test email for development
+  const isMirubatoEmail =
+    email.endsWith('@mirubato.com') || email === 'andyxiang.work@gmail.com'
 
   const jwt = await new SignJWT({
     email,

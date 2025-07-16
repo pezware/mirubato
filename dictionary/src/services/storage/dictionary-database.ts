@@ -1320,6 +1320,185 @@ export class DictionaryDatabase {
   }
 
   /**
+   * Clear seed queue items by status
+   */
+  async clearSeedQueueByStatus(status?: string): Promise<number> {
+    let query = 'DELETE FROM seed_queue'
+    const params: any[] = []
+
+    if (status && status !== 'all') {
+      query += ' WHERE status = ?'
+      params.push(status)
+    }
+
+    const result = await this.db
+      .prepare(query)
+      .bind(...params)
+      .run()
+
+    return result.meta.changes || 0
+  }
+
+  /**
+   * Get recent seed queue items with details
+   */
+  async getRecentSeedQueueItems(limit: number = 20): Promise<
+    Array<{
+      term: string
+      languages: string[]
+      priority: number
+      status: string
+      last_attempt_at?: string
+      error_message?: string
+    }>
+  > {
+    const results = await this.db
+      .prepare(
+        `
+        SELECT term, languages, priority, status, last_attempt_at, error_message
+        FROM seed_queue
+        ORDER BY 
+          CASE status
+            WHEN 'processing' THEN 0
+            WHEN 'failed' THEN 1
+            WHEN 'pending' THEN 2
+            ELSE 3
+          END,
+          created_at DESC
+        LIMIT ?
+      `
+      )
+      .bind(limit)
+      .all()
+
+    return results.results.map(row => ({
+      term: row.term as string,
+      languages: JSON.parse(row.languages as string),
+      priority: row.priority as number,
+      status: row.status as string,
+      last_attempt_at: row.last_attempt_at as string | undefined,
+      error_message: row.error_message as string | undefined,
+    }))
+  }
+
+  /**
+   * Get manual review queue count
+   */
+  async getManualReviewQueueCount(status: string = 'pending'): Promise<number> {
+    const result = await this.db
+      .prepare(
+        `SELECT COUNT(*) as count FROM manual_review_queue WHERE status = ?`
+      )
+      .bind(status)
+      .first()
+
+    return Number(result?.count) || 0
+  }
+
+  /**
+   * Get manual review queue items
+   */
+  async getManualReviewQueue(options: {
+    status?: string
+    limit?: number
+    offset?: number
+  }): Promise<{
+    items: Array<{
+      id: string
+      term: string
+      quality_score: number
+      reason: string
+      status: string
+      created_at: string
+      generated_content: any
+    }>
+    total: number
+  }> {
+    const status = options.status || 'pending'
+    const limit = options.limit || 20
+    const offset = options.offset || 0
+
+    const items = await this.db
+      .prepare(
+        `SELECT * FROM manual_review_queue 
+         WHERE status = ? 
+         ORDER BY created_at DESC 
+         LIMIT ? OFFSET ?`
+      )
+      .bind(status, limit, offset)
+      .all()
+
+    const total = await this.getManualReviewQueueCount(status)
+
+    return {
+      items: items.results.map(item => ({
+        id: item.id as string,
+        term: item.term as string,
+        quality_score: item.quality_score as number,
+        reason: item.reason as string,
+        status: item.status as string,
+        created_at: item.created_at as string,
+        generated_content: JSON.parse(item.generated_content as string),
+      })),
+      total,
+    }
+  }
+
+  /**
+   * Get specific manual review item
+   */
+  async getManualReviewItem(id: string): Promise<{
+    id: string
+    term: string
+    quality_score: number
+    reason: string
+    status: string
+    created_at: string
+    generated_content: any
+  } | null> {
+    const item = await this.db
+      .prepare(`SELECT * FROM manual_review_queue WHERE id = ?`)
+      .bind(id)
+      .first()
+
+    if (!item) {
+      return null
+    }
+
+    return {
+      id: item.id as string,
+      term: item.term as string,
+      quality_score: item.quality_score as number,
+      reason: item.reason as string,
+      status: item.status as string,
+      created_at: item.created_at as string,
+      generated_content: JSON.parse(item.generated_content as string),
+    }
+  }
+
+  /**
+   * Update manual review item status
+   */
+  async updateManualReviewStatus(
+    id: string,
+    status: 'approved' | 'rejected',
+    notes: string,
+    reviewedBy: string
+  ): Promise<void> {
+    await this.db
+      .prepare(
+        `UPDATE manual_review_queue 
+         SET status = ?, 
+             reviewer_notes = ?, 
+             reviewed_at = ?, 
+             reviewed_by = ?
+         WHERE id = ?`
+      )
+      .bind(status, notes, new Date().toISOString(), reviewedBy, id)
+      .run()
+  }
+
+  /**
    * Get performance metrics
    */
   async getPerformanceMetrics(_period?: string): Promise<{
