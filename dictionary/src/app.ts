@@ -97,7 +97,242 @@ app.get('/fredericchopin', c => {
     ? 'https://dictionary.mirubato.com'
     : 'https://dictionary-staging.mirubato.com'
 
-  const html = `
+  // Admin portal page (shown when authenticated)
+  const adminPortalHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary Admin Portal - Mirubato</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f4;
+            color: #3d3d3a;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0d8cb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            color: #3d3d3a;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #6b6b66;
+            font-size: 14px;
+        }
+        
+        .sign-out {
+            color: #7a8a6f;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .sign-out:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid #7a8a6f;
+        }
+        
+        .admin-card h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #3d3d3a;
+        }
+        
+        .admin-card p {
+            color: #6b6b66;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            background: #7a8a6f;
+            color: white;
+        }
+        
+        .button:hover {
+            background: #687a5c;
+        }
+        
+        .button.secondary {
+            background: #e0d8cb;
+            color: #3d3d3a;
+        }
+        
+        .button.secondary:hover {
+            background: #d3c8b4;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e8ebe6;
+            color: #687a5c;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #7a8a6f;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Dictionary Admin Portal</h1>
+        <div class="user-info">
+            <span id="userEmail">Loading...</span>
+            <a href="#" class="sign-out" onclick="signOut(event)">Sign Out</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="status">
+            <span class="status-dot"></span>
+            <span id="connectionStatus">Connected</span>
+        </div>
+        
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h2>🌱 Auto-Seeding System</h2>
+                <p>Manage the automatic dictionary term generation system.</p>
+                <a href="/api/v1/admin/seed/status" class="button" target="_blank">View Status</a>
+                <button class="button secondary" onclick="initializeSeed()">Initialize Queue</button>
+            </div>
+            
+            <div class="admin-card">
+                <h2>📊 Analytics</h2>
+                <p>View search analytics and usage statistics.</p>
+                <a href="/api/v1/admin/analytics/dashboard" class="button" target="_blank">View Dashboard</a>
+            </div>
+            
+            <div class="admin-card">
+                <h2>🔍 Term Management</h2>
+                <p>Search, edit, and manage dictionary terms.</p>
+                <a href="/api/v1/admin/terms" class="button" target="_blank">Manage Terms</a>
+            </div>
+            
+            <div class="admin-card">
+                <h2>📚 API Documentation</h2>
+                <p>Explore the dictionary API endpoints.</p>
+                <a href="/docs" class="button secondary" target="_blank">View Docs</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user is authenticated
+        const authToken = localStorage.getItem('auth-token');
+        const userEmail = localStorage.getItem('user-email');
+        const isAdmin = localStorage.getItem('isAdmin');
+        
+        if (!authToken || isAdmin !== 'true') {
+            // Not authenticated, show login page
+            window.location.href = '/fredericchopin';
+        } else {
+            // Update user email display
+            document.getElementById('userEmail').textContent = userEmail || 'Admin';
+        }
+        
+        function signOut(event) {
+            event.preventDefault();
+            localStorage.removeItem('auth-token');
+            localStorage.removeItem('user-email');
+            localStorage.removeItem('isAdmin');
+            window.location.href = '/fredericchopin';
+        }
+        
+        async function initializeSeed() {
+            if (!confirm('Initialize the auto-seeding queue with high-priority terms?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/v1/admin/seed/initialize', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        priority_threshold: 10,
+                        clear_existing: false
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Seed queue initialized successfully!');
+                } else {
+                    alert('Error: ' + (result.error?.message || 'Failed to initialize'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
+  `
+
+  // Login page HTML
+  const loginHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -273,12 +508,11 @@ app.get('/fredericchopin', c => {
                     throw new Error(result.error?.message || 'Failed to send magic link');
                 }
                 
-                // For demo purposes, show the magic link
+                // Show success message
                 messageDiv.innerHTML = \`
                     <div class="alert success">
-                        <strong>Magic link generated!</strong><br>
-                        <p style="margin-top: 8px;">In production, this would be sent to your email. For now, click the link below:</p>
-                        <a href="\${result.data.magicLink}" style="color: #687a5c; word-break: break-all;">Open Magic Link</a>
+                        <strong>Success!</strong><br>
+                        <p style="margin-top: 8px;">A magic link has been sent to your email. Please check your inbox and click the link to sign in.</p>
                     </div>
                 \`;
             } catch (error) {
@@ -299,7 +533,10 @@ app.get('/fredericchopin', c => {
 </html>
   `
 
-  return c.html(html)
+  // For now, always show the login page
+  // In a full implementation, we would check the Authorization header here
+  // and return adminPortalHtml if the user is authenticated
+  return c.html(loginHtml)
 })
 
 // Admin auth routes

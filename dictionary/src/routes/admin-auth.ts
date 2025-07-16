@@ -65,31 +65,15 @@ adminAuthRoutes.post(
       const magicLink = `${origin}/fredericchopin/auth/verify?token=${token}`
 
       // Send email
-      try {
-        await emailService.sendMagicLink(email, magicLink)
+      await emailService.sendMagicLink(email, magicLink)
 
-        return c.json(
-          createApiResponse({
-            success: true,
-            message: 'Magic link sent to your email',
-            email,
-          })
-        )
-      } catch (emailError: any) {
-        // In staging, return magic link in response if email fails
-        if (c.env.ENVIRONMENT === 'staging') {
-          console.error('Email send failed in staging:', emailError)
-          return c.json(
-            createApiResponse({
-              success: true,
-              message: emailError.message || 'Email service error (check logs)',
-              email,
-              debugLink: magicLink, // Only for staging
-            })
-          )
-        }
-        throw emailError
-      }
+      return c.json(
+        createApiResponse({
+          success: true,
+          message: 'Magic link sent to your email',
+          email,
+        })
+      )
     } catch (error: any) {
       console.error('Error generating magic link:', error)
       throw new InternalError(
@@ -137,7 +121,7 @@ adminAuthRoutes.get('/verify', async c => {
       <div class="message">
         <h2 class="error">Invalid Link</h2>
         <p>This magic link is invalid or has expired.</p>
-        <a href="/fredericchopin/">Back to Admin Portal</a>
+        <a href="/fredericchopin">Back to Admin Portal</a>
       </div>
     </body>
     </html>
@@ -218,7 +202,7 @@ adminAuthRoutes.get('/verify', async c => {
           <h2 class="success">Authentication Successful!</h2>
           <p>Welcome, ${email}</p>
           <p>Setting up your admin session...</p>
-          <button onclick="window.location.href='/fredericchopin/'">Go to Admin Portal</button>
+          <button onclick="window.location.href='/fredericchopin'">Go to Admin Portal</button>
         </div>
         <script>
           // Store the session token in localStorage
@@ -228,7 +212,7 @@ adminAuthRoutes.get('/verify', async c => {
           
           // Redirect after 2 seconds
           setTimeout(() => {
-            window.location.href = '/fredericchopin/';
+            window.location.href = '/fredericchopin';
           }, 2000);
         </script>
       </body>
