@@ -223,5 +223,35 @@
     "didYouMean": "¿Quisiste decir uno de estos?",
     "aiGenerated": "Generado por IA",
     "aiGeneratedTooltip": "Esta definición fue generada por IA"
+  },
+  "circleOfFifths": {
+    "controls": {
+      "enableAudio": "Habilitar audio",
+      "disableAudio": "Deshabilitar audio",
+      "audio": "Audio",
+      "on": "Encendido",
+      "off": "Apagado",
+      "volume": "Volumen",
+      "play": "Reproducir",
+      "stop": "Detener",
+      "playbackMode": "Modo de reproducción",
+      "tempo": "Tempo"
+    },
+    "keyDetails": {
+      "noSharpsOrFlats": "Sin sostenidos o bemoles",
+      "sharp": "sostenido",
+      "flat": "bemol",
+      "keySignature": "{{count}} {{type}}",
+      "keyRelationships": "Relaciones de tonalidad",
+      "relativeMinor": "Relativo menor",
+      "dominant": "Dominante (V)",
+      "subdominant": "Subdominante (IV)",
+      "enharmonic": "Enarmónico",
+      "scaleNotes": "Notas de la escala",
+      "primaryChords": "Acordes principales (I, IV, V)",
+      "commonProgressions": "Progresiones comunes",
+      "characteristics": "Características",
+      "famousWorks": "Obras famosas"
+    }
   }
 }

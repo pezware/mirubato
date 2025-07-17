@@ -504,16 +504,46 @@ const Dictionary: React.FC = () => {
           </div>
           <div>
             <DictionaryCategories
-              onCategorySelect={category => {
+              onCategorySelect={async category => {
                 // Clear current search and apply category filter
                 setState(prev => ({
                   ...prev,
                   searchQuery: '',
                   selectedTerm: null,
                   filters: { type: [category] },
+                  isLoading: true,
+                  error: null,
                 }))
-                // Optionally, you could trigger a search for all terms in that category
-                // For now, just set the filter for when user searches
+
+                // Search for all terms in the selected category
+                try {
+                  const searchOptions: SearchOptions = {
+                    query: '', // Empty query to get all terms
+                    filters: { type: [category] },
+                    lang: currentLanguage,
+                    searchAllLanguages: false, // Category browsing is language-specific
+                    page: 1,
+                    limit: 20,
+                  }
+
+                  const results = await dictionaryAPI.searchTerms(searchOptions)
+
+                  setState(prev => ({
+                    ...prev,
+                    searchResults: results.entries,
+                    totalResults: results.total,
+                    totalPages: results.pages,
+                    currentPage: 1,
+                    isLoading: false,
+                  }))
+                } catch (error) {
+                  console.error('Failed to browse category:', error)
+                  setState(prev => ({
+                    ...prev,
+                    error: t('toolbox:dictionary.searchFailed'),
+                    isLoading: false,
+                  }))
+                }
               }}
             />
           </div>

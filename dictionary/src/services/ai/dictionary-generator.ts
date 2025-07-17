@@ -310,8 +310,15 @@ export class DictionaryGenerator {
 
       // Generate placeholder references based on AI suggestions
       if (parsed.wikipedia_search) {
+        // Remove duplicate "Wikipedia" from the search term if present
+        const cleanedSearch = parsed.wikipedia_search
+          .replace(/^Wikipedia[:\s]+/i, '')
+          .replace(/[:\s]+Wikipedia$/i, '')
+          .replace(/\s+Wikipedia\s+/i, ' ')
+          .trim()
+
         references.wikipedia = {
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(parsed.wikipedia_search)}`,
+          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(cleanedSearch)}`,
           extract: 'Search Wikipedia for more information',
           last_verified: new Date().toISOString(),
         }

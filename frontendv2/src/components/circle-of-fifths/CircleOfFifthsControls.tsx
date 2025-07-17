@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Volume2, VolumeX, Play, Square } from 'lucide-react'
 import Button from '../ui/Button'
 import { PlaybackMode } from './types'
@@ -28,6 +29,8 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
   isPlaying,
   onPlay,
 }) => {
+  const { t } = useTranslation(['toolbox'])
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -38,7 +41,11 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             size="sm"
             onClick={() => onAudioToggle(!isAudioEnabled)}
             className="p-2"
-            aria-label={isAudioEnabled ? 'Disable audio' : 'Enable audio'}
+            aria-label={
+              isAudioEnabled
+                ? t('toolbox:circleOfFifths.controls.disableAudio')
+                : t('toolbox:circleOfFifths.controls.enableAudio')
+            }
           >
             {isAudioEnabled ? (
               <Volume2 className="w-5 h-5 text-morandi-sage-600" />
@@ -47,7 +54,10 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             )}
           </Button>
           <span className="text-sm text-gray-600">
-            Audio {isAudioEnabled ? 'On' : 'Off'}
+            {t('toolbox:circleOfFifths.controls.audio')}{' '}
+            {isAudioEnabled
+              ? t('toolbox:circleOfFifths.controls.on')
+              : t('toolbox:circleOfFifths.controls.off')}
           </span>
         </div>
 
@@ -55,7 +65,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
         {isAudioEnabled && (
           <div className="flex items-center gap-3">
             <label htmlFor="volume" className="text-sm text-gray-600">
-              Volume:
+              {t('toolbox:circleOfFifths.controls.volume')}:
             </label>
             <input
               id="volume"
@@ -81,12 +91,12 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
             {isPlaying ? (
               <>
                 <Square className="w-4 h-4" />
-                Stop
+                {t('toolbox:circleOfFifths.controls.stop')}
               </>
             ) : (
               <>
                 <Play className="w-4 h-4" />
-                Play
+                {t('toolbox:circleOfFifths.controls.play')}
               </>
             )}
           </Button>
@@ -96,7 +106,9 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
       {/* Playback Mode Selection */}
       {isAudioEnabled && (
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm text-gray-600">Playback Mode:</span>
+          <span className="text-sm text-gray-600">
+            {t('toolbox:circleOfFifths.controls.playbackMode')}:
+          </span>
           <div className="flex gap-2">
             {(['chord', 'scale', 'arpeggio'] as PlaybackMode[]).map(mode => (
               <Button
@@ -117,7 +129,7 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
       {isAudioEnabled && playbackMode !== 'chord' && (
         <div className="flex items-center gap-3">
           <label htmlFor="tempo" className="text-sm text-gray-600">
-            Tempo:
+            {t('toolbox:circleOfFifths.controls.tempo')}:
           </label>
           <input
             id="tempo"

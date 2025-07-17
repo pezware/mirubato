@@ -165,9 +165,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
           {/* White Keys */}
           <div className="absolute bottom-0 left-0 flex gap-0.5">
             {whiteKeys.map((note, index) => {
-              const isInScale = isNoteInScale(note)
-              const isChordNote = chordNotes.has(note)
-              const isRootNote = rootNoteWithEnharmonic.has(note)
+              // Only color notes in the first octave (indices 0-6)
+              const isFirstOctave = index < 7
+              const isInScale = isFirstOctave && isNoteInScale(note)
+              const isChordNote = isFirstOctave && chordNotes.has(note)
+              const isRootNote =
+                isFirstOctave && rootNoteWithEnharmonic.has(note)
               const isActive = isPlaying && isRootNote
 
               return (
@@ -218,13 +221,18 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
+              // Only color notes in the first octave (indices 0-4)
+              const isFirstOctave = index < 5
               const isInScale =
-                isNoteInScale(note) || isNoteInScale(displayNote)
+                isFirstOctave &&
+                (isNoteInScale(note) || isNoteInScale(displayNote))
               const isChordNote =
-                chordNotes.has(note) || chordNotes.has(displayNote)
+                isFirstOctave &&
+                (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                rootNoteWithEnharmonic.has(note) ||
-                rootNoteWithEnharmonic.has(displayNote)
+                isFirstOctave &&
+                (rootNoteWithEnharmonic.has(note) ||
+                  rootNoteWithEnharmonic.has(displayNote))
               const isActive = isPlaying && isRootNote
 
               return (
@@ -279,13 +287,18 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
+              // Only color notes in the first octave (indices 0-4)
+              const isFirstOctave = index < 5
               const isInScale =
-                isNoteInScale(note) || isNoteInScale(displayNote)
+                isFirstOctave &&
+                (isNoteInScale(note) || isNoteInScale(displayNote))
               const isChordNote =
-                chordNotes.has(note) || chordNotes.has(displayNote)
+                isFirstOctave &&
+                (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                rootNoteWithEnharmonic.has(note) ||
-                rootNoteWithEnharmonic.has(displayNote)
+                isFirstOctave &&
+                (rootNoteWithEnharmonic.has(note) ||
+                  rootNoteWithEnharmonic.has(displayNote))
               const isActive = isPlaying && isRootNote
 
               return (
@@ -350,10 +363,6 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-orange-500 border-t border-l border-gray-300"></div>
           <span className="text-gray-600">Scale Notes</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-white rounded border border-gray-300"></div>
-          <span className="text-gray-600">Other Notes</span>
         </div>
       </div>
     </div>

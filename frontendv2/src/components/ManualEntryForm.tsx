@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
@@ -67,7 +67,7 @@ export default function ManualEntryForm({
     )
   })
 
-  // Time state - default to current time or existing entry time
+  // Time state - default to current time minus duration or existing entry time
   const [practiceTime, setPracticeTime] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to HH:MM format in local timezone
@@ -78,14 +78,29 @@ export default function ManualEntryForm({
         String(date.getMinutes()).padStart(2, '0')
       )
     }
-    // Default to current time in local timezone
+    // Default to current time minus duration in local timezone
     const now = new Date()
+    const adjustedTime = new Date(now.getTime() - duration * 60 * 1000) // Subtract duration in milliseconds
     return (
-      String(now.getHours()).padStart(2, '0') +
+      String(adjustedTime.getHours()).padStart(2, '0') +
       ':' +
-      String(now.getMinutes()).padStart(2, '0')
+      String(adjustedTime.getMinutes()).padStart(2, '0')
     )
   })
+
+  // Auto-adjust practice time when duration changes (only for new entries)
+  useEffect(() => {
+    if (!entry) {
+      // Only auto-adjust for new entries, not when editing existing ones
+      const now = new Date()
+      const adjustedTime = new Date(now.getTime() - duration * 60 * 1000)
+      const newTime =
+        String(adjustedTime.getHours()).padStart(2, '0') +
+        ':' +
+        String(adjustedTime.getMinutes()).padStart(2, '0')
+      setPracticeTime(newTime)
+    }
+  }, [duration, entry])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

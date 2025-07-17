@@ -223,5 +223,35 @@
     "didYouMean": "您是指以下其中一個嗎？",
     "aiGenerated": "AI生成",
     "aiGeneratedTooltip": "此定義由AI生成"
+  },
+  "circleOfFifths": {
+    "controls": {
+      "enableAudio": "啟用音訊",
+      "disableAudio": "停用音訊",
+      "audio": "音訊",
+      "on": "開",
+      "off": "關",
+      "volume": "音量",
+      "play": "播放",
+      "stop": "停止",
+      "playbackMode": "播放模式",
+      "tempo": "速度"
+    },
+    "keyDetails": {
+      "noSharpsOrFlats": "無升降號",
+      "sharp": "升",
+      "flat": "降",
+      "keySignature": "{{count}}個{{type}}號",
+      "keyRelationships": "調性關係",
+      "relativeMinor": "關係小調",
+      "dominant": "屬調 (V)",
+      "subdominant": "下屬調 (IV)",
+      "enharmonic": "等音",
+      "scaleNotes": "音階音符",
+      "primaryChords": "主要和弦 (I, IV, V)",
+      "commonProgressions": "常見進行",
+      "characteristics": "特徵",
+      "famousWorks": "著名作品"
+    }
   }
 }
