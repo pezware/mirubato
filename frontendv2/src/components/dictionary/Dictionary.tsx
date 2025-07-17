@@ -532,7 +532,7 @@ const Dictionary: React.FC = () => {
                     ...prev,
                     searchResults: results.entries,
                     totalResults: results.total,
-                    totalPages: results.pages,
+                    totalPages: results.page,
                     currentPage: 1,
                     isLoading: false,
                   }))

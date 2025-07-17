@@ -213,7 +213,6 @@ export default function ManualEntryForm({
                   value={practiceTime}
                   onChange={setPracticeTime}
                   className="w-full sm:w-auto"
-                  required
                 />
               </div>
             </div>
