@@ -33,6 +33,7 @@ The Music Dictionary Service is a comprehensive, AI-powered microservice that pr
 - ✅ Fixed quality score display (was showing 7000% instead of 70%)
 - ✅ Updated UI to match Circle of Fifths styling with Morandi color scheme
 - ✅ Replaced all emoji icons with Lucide React icons for consistency
+- ✅ Fixed metadata.language field to correctly match the entry's language (July 2025)
 
 ### 🔧 Placeholder Features (Not Critical for MVP)
 
@@ -139,6 +140,7 @@ interface DictionaryEntry {
     historical_period?: string
     cultural_origin?: string
     related_terms?: string[]
+    language?: string // DEPRECATED: Use top-level 'lang' field instead
   }
   references: References
   ai_metadata: AIMetadata
@@ -381,6 +383,15 @@ Recent migrations added:
 2. Seed queue table for batch term generation
 3. Proper indexes for performance
 4. Updated CHECK constraints for new term types
+
+#### Language Field Clarification
+
+The dictionary uses two language fields that serve different purposes:
+
+- **`lang`** (top-level): The actual language of the entry content (e.g., 'es' for Spanish definition)
+- **`metadata.language`** (legacy): Should match `lang` but may have historical mismatches
+
+Always use the top-level `lang` field to determine the entry's language. The `metadata.language` field is deprecated and maintained only for backward compatibility.
 
 ## Future Enhancements
 
