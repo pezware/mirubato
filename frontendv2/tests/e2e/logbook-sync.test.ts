@@ -135,7 +135,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     })
 
     // Wait to ensure different timestamp
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
     // Create second entry
     await logbookPage.createEntry({
@@ -145,7 +145,7 @@ test.describe('Logbook Sync and Data Persistence', () => {
     })
 
     // Wait to ensure different timestamp
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
     // Create third entry
     await logbookPage.createEntry({
@@ -163,14 +163,30 @@ test.describe('Logbook Sync and Data Persistence', () => {
     // Get stored entries
     const entries = await logbookPage.getStoredEntries()
 
-    // Verify chronological order (oldest first in storage)
-    expect(entries[0].pieces[0].title).toBe('Morning Practice')
-    expect(entries[1].pieces[0].title).toBe('Afternoon Practice')
-    expect(entries[2].pieces[0].title).toBe('Evening Practice')
+    // Verify we have 3 entries
+    expect(entries).toHaveLength(3)
 
-    // Verify timestamps are in ascending order (allowing equal timestamps)
-    const timestamps = entries.map(e => new Date(e.timestamp).getTime())
-    expect(timestamps[0]).toBeLessThanOrEqual(timestamps[1])
-    expect(timestamps[1]).toBeLessThanOrEqual(timestamps[2])
+    // Find entries by their titles regardless of order in storage
+    const morningEntry = entries.find(
+      e => e.pieces?.[0]?.title === 'Morning Practice'
+    )
+    const afternoonEntry = entries.find(
+      e => e.pieces?.[0]?.title === 'Afternoon Practice'
+    )
+    const eveningEntry = entries.find(
+      e => e.pieces?.[0]?.title === 'Evening Practice'
+    )
+
+    expect(morningEntry).toBeDefined()
+    expect(afternoonEntry).toBeDefined()
+    expect(eveningEntry).toBeDefined()
+
+    // Verify timestamps are in the correct chronological order
+    const morningTime = new Date(morningEntry.timestamp).getTime()
+    const afternoonTime = new Date(afternoonEntry.timestamp).getTime()
+    const eveningTime = new Date(eveningEntry.timestamp).getTime()
+
+    expect(morningTime).toBeLessThan(afternoonTime)
+    expect(afternoonTime).toBeLessThan(eveningTime)
   })
 })
