@@ -532,7 +532,7 @@ const Dictionary: React.FC = () => {
                     ...prev,
                     searchResults: results.entries,
                     totalResults: results.total,
-                    totalPages: results.page,
+                    totalPages: Math.ceil(results.total / results.limit),
                     currentPage: 1,
                     isLoading: false,
                   }))
@@ -540,7 +540,7 @@ const Dictionary: React.FC = () => {
                   console.error('Failed to browse category:', error)
                   setState(prev => ({
                     ...prev,
-                    error: t('toolbox:dictionary.searchFailed'),
+                    error: t('toolbox:dictionary.errors.searchFailed'),
                     isLoading: false,
                   }))
                 }

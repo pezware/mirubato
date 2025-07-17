@@ -118,8 +118,10 @@ export class DictionaryAPIClient {
       )
     }
 
-    // Validate and sanitize query
-    const safeQuery = this.validateAndSanitize(options.query)
+    // Validate and sanitize query - allow empty query for category browsing
+    const safeQuery = options.query
+      ? this.validateAndSanitize(options.query)
+      : ''
 
     try {
       const params = new URLSearchParams({
