@@ -221,7 +221,11 @@ describe('Terms Handler', () => {
       expect(data.data.entry).toEqual(mockEntry)
 
       // Should cache the result
-      expect(mockCacheTerm).toHaveBeenCalledWith('piano', mockEntry)
+      expect(mockCacheTerm).toHaveBeenCalledWith(
+        'piano',
+        mockEntry,
+        mockEntry.lang
+      )
     })
 
     it('should generate term if not found', async () => {
@@ -251,7 +255,11 @@ describe('Terms Handler', () => {
       // Should insert into database
       expect(mockDbMethods.create).toHaveBeenCalledWith(mockEntry)
       // Should cache the result
-      expect(mockCacheTerm).toHaveBeenCalledWith('piano', mockEntry)
+      expect(mockCacheTerm).toHaveBeenCalledWith(
+        'piano',
+        mockEntry,
+        mockEntry.lang
+      )
     })
 
     it('should handle generation failures', async () => {

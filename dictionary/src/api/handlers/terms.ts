@@ -85,7 +85,7 @@ termsHandler.get(
       const normalizedTerm = normalizeTerm(term)
 
       // Try cache first
-      let entry = await cacheService.getCachedTerm(normalizedTerm)
+      let entry = await cacheService.getCachedTerm(normalizedTerm, requestLang)
 
       // Try database if not in cache
       if (!entry) {
@@ -95,7 +95,7 @@ termsHandler.get(
 
         if (entry) {
           // Cache the found entry
-          await cacheService.cacheTerm(normalizedTerm, entry)
+          await cacheService.cacheTerm(normalizedTerm, entry, entry.lang)
         }
       }
 
@@ -119,7 +119,7 @@ termsHandler.get(
           await db.create(entry)
 
           // Cache the new entry
-          await cacheService.cacheTerm(normalizedTerm, entry)
+          await cacheService.cacheTerm(normalizedTerm, entry, entry.lang)
 
           wasGenerated = true
         }
@@ -279,7 +279,7 @@ termsHandler.get(
 
         if (entry) {
           // Cache by ID and term
-          await cacheService.cacheTerm(entry.normalized_term, entry)
+          await cacheService.cacheTerm(entry.normalized_term, entry, entry.lang)
         }
       }
 
@@ -442,7 +442,7 @@ async function enhanceEntryInBackground(
       await db.update(enhanced)
 
       const cache = new CacheService(env.CACHE, env)
-      await cache.cacheTerm(enhanced.normalized_term, enhanced)
+      await cache.cacheTerm(enhanced.normalized_term, enhanced, enhanced.lang)
     }
   } catch (error) {
     console.error('Background enhancement failed:', error)
