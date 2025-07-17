@@ -23,8 +23,12 @@ export class CacheService {
   /**
    * Cache a dictionary entry
    */
-  async cacheTerm(term: string, entry: DictionaryEntry): Promise<void> {
-    const key = this.getTermKey(term)
+  async cacheTerm(
+    term: string,
+    entry: DictionaryEntry,
+    lang?: string
+  ): Promise<void> {
+    const key = this.getTermKey(term, lang || entry.lang)
     await this.kv.put(key, JSON.stringify(entry), {
       expirationTtl: this.getTTL(),
     })
@@ -39,8 +43,11 @@ export class CacheService {
   /**
    * Get cached dictionary entry by term
    */
-  async getCachedTerm(term: string): Promise<DictionaryEntry | null> {
-    const key = this.getTermKey(term)
+  async getCachedTerm(
+    term: string,
+    lang: string = 'en'
+  ): Promise<DictionaryEntry | null> {
+    const key = this.getTermKey(term, lang)
     const cached = await this.kv.get(key, 'json')
     return cached as DictionaryEntry | null
   }
@@ -106,7 +113,7 @@ export class CacheService {
     const promises: Promise<void>[] = []
 
     for (const [normalizedTerm, entry] of entries) {
-      promises.push(this.cacheTerm(normalizedTerm, entry))
+      promises.push(this.cacheTerm(normalizedTerm, entry, entry.lang))
     }
 
     await Promise.all(promises)
@@ -152,9 +159,21 @@ export class CacheService {
   /**
    * Invalidate cache for a term
    */
-  async invalidateTerm(term: string): Promise<void> {
-    const key = this.getTermKey(term)
-    await this.kv.delete(key)
+  async invalidateTerm(term: string, lang?: string): Promise<void> {
+    if (lang) {
+      // Invalidate specific language version
+      const key = this.getTermKey(term, lang)
+      await this.kv.delete(key)
+    } else {
+      // Invalidate all language versions
+      // Since we can't list keys in KV, we'll invalidate common languages
+      const languages = ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW', 'it', 'la']
+      const promises = languages.map(async l => {
+        const key = this.getTermKey(term, l)
+        await this.kv.delete(key)
+      })
+      await Promise.all(promises)
+    }
   }
 
   /**
@@ -212,8 +231,8 @@ export class CacheService {
   /**
    * Generate cache keys
    */
-  private getTermKey(term: string): string {
-    return `term:${term.toLowerCase().trim()}`
+  private getTermKey(term: string, lang: string): string {
+    return `term:${term.toLowerCase().trim()}:${lang}`
   }
 
   private getIdKey(id: string): string {

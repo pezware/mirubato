@@ -420,6 +420,27 @@ adminPortal.get('/', c => {
             background: var(--morandi-sage-500);
             transition: width 0.3s;
         }
+        
+        .progress-fill.bg-rose {
+            background: var(--morandi-rose-500);
+        }
+        
+        .progress-fill.bg-peach {
+            background: var(--morandi-peach-500);
+        }
+        
+        .text-rose {
+            color: var(--morandi-rose-500);
+        }
+        
+        .alert-warning {
+            background: var(--morandi-peach-100);
+            color: var(--morandi-peach-600);
+            border-left: 4px solid var(--morandi-peach-500);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -439,6 +460,7 @@ adminPortal.get('/', c => {
             <button class="tab" data-tab="queue">Seed Queue</button>
             <button class="tab" data-tab="process">Process Seeds</button>
             <button class="tab" data-tab="review">Review Queue</button>
+            <button class="tab" data-tab="recovery">Error Recovery</button>
         </div>
 
         <div id="alerts"></div>
@@ -666,6 +688,9 @@ adminPortal.get('/', c => {
                     case 'review':
                         await loadReviewQueue();
                         break;
+                    case 'recovery':
+                        await loadErrorRecovery();
+                        break;
                 }
                 initializeLucide();
             } catch (error) {
@@ -708,23 +733,37 @@ adminPortal.get('/', c => {
                             <i data-lucide="zap"></i>
                             Token Usage Today
                         </h2>
+                        <div id="refreshTime" style="font-size: 12px; color: var(--morandi-stone-600);">
+                            Last updated: ${new Date().toLocaleTimeString()}
+                        </div>
                     </div>
                     <div class="metric-grid">
                         <div class="metric">
-                            <div class="metric-label">Used / Available</div>
-                            <div class="metric-value">\${data.token_usage.used_today} / \${data.token_usage.available_today}</div>
+                            <div class="metric-label">Used / Budget</div>
+                            <div class="metric-value">\${data.token_usage.used_today} / \${data.configuration.daily_seed_budget}</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-label">Usage Percentage</div>
-                            <div class="metric-value">\${data.token_usage.usage_percentage}%</div>
-                            <div class="progress-bar" style="margin-top: 8px;">
-                                <div class="progress-fill" style="width: \${data.token_usage.usage_percentage}%"></div>
-                            </div>
+                            <div class="metric-label">Available Now</div>
+                            <div class="metric-value \${data.token_usage.available_today < 100 ? 'text-rose' : ''}">\${data.token_usage.available_today}</div>
                         </div>
                         <div class="metric">
                             <div class="metric-label">Avg per Term</div>
-                            <div class="metric-value">\${data.token_usage.average_per_term}</div>
+                            <div class="metric-value">\${data.token_usage.average_per_term || 0}</div>
                         </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <div class="metric-label">Daily Progress</div>
+                        <div class="progress-bar" style="margin-top: 8px; height: 20px; position: relative;">
+                            <div class="progress-fill \${data.token_usage.usage_percentage > 90 ? 'bg-rose' : data.token_usage.usage_percentage > 75 ? 'bg-peach' : ''}" 
+                                 style="width: \${Math.min(100, data.token_usage.usage_percentage)}%">
+                            </div>
+                            <div style="position: absolute; width: 100%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600;">
+                                \${data.token_usage.usage_percentage}% Used
+                            </div>
+                        </div>
+                        \${data.token_usage.usage_percentage > 90 ? 
+                            '<div class="alert alert-warning" style="margin-top: 8px;">⚠️ Token budget nearly exhausted</div>' : 
+                            ''}
                     </div>
                 </div>
 
@@ -999,9 +1038,41 @@ adminPortal.get('/', c => {
                                     <div class="metric-label">Failed</div>
                                     <div class="metric-value">\${result.results ? result.results.failed : 0}</div>
                                 </div>
+                                <div class="metric">
+                                    <div class="metric-label">Average Quality</div>
+                                    <div class="metric-value">\${result.results ? Math.round(result.results.average_quality || 0) : 0}%</div>
+                                </div>
                             </div>
+                            \${result.token_status ? 
+                                \`<div class="card sky" style="margin-top: 16px;">
+                                    <h4 class="card-title">Token Usage Update</h4>
+                                    <div class="metric-grid">
+                                        <div class="metric">
+                                            <div class="metric-label">Used This Batch</div>
+                                            <div class="metric-value">\${result.token_status.usage_this_batch || 0}</div>
+                                        </div>
+                                        <div class="metric">
+                                            <div class="metric-label">Total Used Today</div>
+                                            <div class="metric-value">\${result.token_status.used_today}</div>
+                                        </div>
+                                        <div class="metric">
+                                            <div class="metric-label">Available</div>
+                                            <div class="metric-value \${result.token_status.available < 100 ? 'text-rose' : ''}">\${result.token_status.available}</div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        <div class="progress-bar" style="height: 16px; position: relative;">
+                                            <div class="progress-fill \${(result.token_status.used_today / result.token_status.budget * 100) > 90 ? 'bg-rose' : ''}" 
+                                                 style="width: \${Math.min(100, (result.token_status.used_today / result.token_status.budget * 100))}%">
+                                            </div>
+                                            <div style="position: absolute; width: 100%; text-align: center; line-height: 16px; font-size: 11px;">
+                                                \${Math.round(result.token_status.used_today / result.token_status.budget * 100)}% of daily budget
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>\` : ''}
                             \${result.results && result.results.errors && result.results.errors.length > 0 ? 
-                                '<div class="alert error">Errors: ' + result.results.errors.join(', ') + '</div>' : 
+                                '<div class="alert error" style="margin-top: 16px;">Errors: ' + result.results.errors.join(', ') + '</div>' : 
                                 ''
                             }
                         </div>
@@ -1032,6 +1103,130 @@ adminPortal.get('/', c => {
             }
         }
 
+        // Load error recovery interface
+        async function loadErrorRecovery() {
+            const [stats, dlq] = await Promise.all([
+                apiCall('/admin/seed/recovery-stats'),
+                apiCall('/admin/seed/dlq')
+            ]);
+            const contentDiv = document.getElementById('content');
+
+            contentDiv.innerHTML = \`
+                <div class="card rose">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i data-lucide="alert-triangle"></i>
+                            Error Recovery Statistics
+                        </h2>
+                        <button class="button primary" onclick="runRecovery()">
+                            <i data-lucide="refresh-cw"></i>
+                            Run Recovery
+                        </button>
+                    </div>
+                    <div class="metric-grid">
+                        <div class="metric">
+                            <div class="metric-label">Failed Items</div>
+                            <div class="metric-value">\${stats.stats.failed_items}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Dead Letter Queue</div>
+                            <div class="metric-value">\${stats.stats.dlq_items}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Recovery Rate</div>
+                            <div class="metric-value">\${stats.stats.recovery_rate}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">
+                        <i data-lucide="x-circle"></i>
+                        Common Failure Types
+                    </h3>
+                    <div id="failureTypes">
+                        \${stats.stats.common_failures.length === 0 ? 
+                            '<div class="empty-state"><p>No failure patterns identified</p></div>' :
+                            stats.stats.common_failures.map(failure => \`
+                                <div class="queue-item">
+                                    <div class="queue-item-info">
+                                        <div class="queue-item-term">\${failure.error_type}</div>
+                                        <div class="queue-item-meta">Count: \${failure.count}</div>
+                                    </div>
+                                </div>
+                            \`).join('')
+                        }
+                    </div>
+                </div>
+
+                <div class="card peach">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i data-lucide="archive"></i>
+                            Dead Letter Queue
+                        </h2>
+                    </div>
+                    <div id="dlqItems">
+                        \${dlq.items.length === 0 ? 
+                            '<div class="empty-state"><i data-lucide="check-circle"></i><p>No items in dead letter queue</p></div>' :
+                            dlq.items.map(item => \`
+                                <div class="queue-item">
+                                    <div class="queue-item-info">
+                                        <div class="queue-item-term">\${item.term}</div>
+                                        <div class="queue-item-meta">
+                                            Languages: \${item.languages.join(', ')} | 
+                                            Attempts: \${item.attempts} |
+                                            Failure: \${item.failure_analysis.error_type}
+                                            <br>Reason: \${item.failure_reason}
+                                        </div>
+                                    </div>
+                                    <button class="button secondary" onclick="retryDlqItem('\${item.id}')">
+                                        <i data-lucide="refresh-cw"></i>
+                                        Retry
+                                    </button>
+                                </div>
+                            \`).join('')
+                        }
+                    </div>
+                    \${dlq.pagination && dlq.pagination.total > dlq.items.length ? 
+                        \`<div style="text-align: center; margin-top: 16px;">
+                            <p>Showing \${dlq.items.length} of \${dlq.pagination.total} items</p>
+                        </div>\` : ''
+                    }
+                </div>
+            \`;
+        }
+
+        // Run recovery process
+        async function runRecovery() {
+            try {
+                const result = await apiCall('/admin/seed/recover', {
+                    method: 'POST',
+                    body: JSON.stringify({ limit: 50 })
+                });
+                
+                showAlert('success', \`Recovery completed: \${result.result.retry_scheduled} scheduled for retry, \${result.result.moved_to_dlq} moved to DLQ\`);
+                loadErrorRecovery();
+            } catch (error) {
+                showAlert('error', 'Failed to run recovery: ' + error.message);
+            }
+        }
+
+        // Retry item from DLQ
+        async function retryDlqItem(dlqId) {
+            try {
+                const result = await apiCall('/admin/seed/dlq/retry', {
+                    method: 'POST',
+                    body: JSON.stringify({ dlq_ids: [dlqId] })
+                });
+                
+                showAlert('success', result.message || 'Item requeued for processing');
+                loadErrorRecovery();
+            } catch (error) {
+                showAlert('error', 'Failed to retry item: ' + error.message);
+            }
+        }
+
         // Review item
         async function reviewItem(id, action) {
             try {
@@ -1050,6 +1245,28 @@ adminPortal.get('/', c => {
             }
         }
 
+        // Auto-refresh interval
+        let autoRefreshInterval = null;
+        
+        // Enable auto-refresh for system status
+        function enableAutoRefresh() {
+            // Refresh every 30 seconds when on system status tab
+            autoRefreshInterval = setInterval(() => {
+                const activeTab = document.querySelector('.tab.active');
+                if (activeTab && activeTab.dataset.tab === 'status') {
+                    loadSystemStatus();
+                }
+            }, 30000);
+        }
+        
+        // Disable auto-refresh
+        function disableAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             try {
@@ -1065,6 +1282,9 @@ adminPortal.get('/', c => {
                     
                     // Load initial content
                     loadContent();
+                    
+                    // Enable auto-refresh
+                    enableAutoRefresh();
                 } else {
                     // Make sure the login form is shown
                     console.log('No auth token found, showing login form');
@@ -1073,6 +1293,11 @@ adminPortal.get('/', c => {
                 console.error('Error during initialization:', error);
                 document.getElementById('content').innerHTML = '<div class="alert error">Error initializing: ' + error.message + '</div>';
             }
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            disableAutoRefresh();
         });
     </script>
 </body>

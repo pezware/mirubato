@@ -91,9 +91,28 @@ export default {
 
         // Import dynamically to avoid loading in non-scheduled contexts
         const { SeedProcessor } = await import('./services/seed-processor')
-        const processor = new SeedProcessor(env)
+        const { ErrorRecoveryService } = await import(
+          './services/error-recovery'
+        )
 
-        // Run processing in background
+        const processor = new SeedProcessor(env)
+        const recovery = new ErrorRecoveryService(env)
+
+        // First, attempt to recover failed items
+        ctx.waitUntil(
+          recovery
+            .recoverFailedItems(20) // Recover up to 20 failed items
+            .then(recoveryResult => {
+              console.log(
+                `Recovery completed: ${recoveryResult.retry_scheduled} scheduled for retry, ${recoveryResult.moved_to_dlq} moved to DLQ`
+              )
+            })
+            .catch(error => {
+              console.error('Error recovery failed:', error)
+            })
+        )
+
+        // Then run normal processing
         ctx.waitUntil(
           processor
             .processSeedQueue()

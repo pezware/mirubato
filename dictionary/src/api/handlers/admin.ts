@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import type { Env, Variables } from '../../types/env'
 import { DictionaryDatabase } from '../../services/storage/dictionary-database'
 import { CacheService } from '../../services/storage/cache-service'
-import { DictionaryGenerator } from '../../services/ai/dictionary-generator'
+import { SeedProcessor } from '../../services/seed-processor'
+import { TokenBudgetManager } from '../../services/token-budget-manager'
 import { createApiResponse, ValidationError } from '../../utils/errors'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
@@ -465,124 +466,122 @@ adminHandler.post(
   zValidator(
     'json',
     z.object({
-      batch_size: z.number().min(1).max(50).default(10),
+      batch_size: z.number().min(1).max(50).optional(),
       dry_run: z.boolean().default(false),
     })
   ),
   async c => {
     const { batch_size, dry_run } = c.req.valid('json')
+    const seedProcessor = new SeedProcessor(c.env)
+    const budgetManager = new TokenBudgetManager(c.env.DB, c.env)
     const db = new DictionaryDatabase(c.env.DB)
-    const generator = new DictionaryGenerator(c.env)
 
     try {
-      // Get next items to process
-      const queueItems = await db.getNextSeedQueueItems(batch_size)
-
-      if (queueItems.length === 0) {
+      // Check if seeding is enabled
+      if (c.env.SEED_ENABLED !== 'true') {
         return c.json(
           createApiResponse({
-            message: 'No pending items in queue',
-            processed: 0,
+            success: false,
+            message: 'Seed processing is disabled',
+            enabled: false,
           })
         )
       }
 
-      const results = {
-        processed: 0,
-        succeeded: 0,
-        failed: 0,
-        errors: [] as string[],
+      // For dry run, just show what would be processed
+      if (dry_run) {
+        const queueItems = await db.getNextSeedQueueItems(batch_size || 10)
+        const tokenStatus = await budgetManager.getTokensUsedToday()
+        const available = await budgetManager.getAvailableTokens()
+
+        return c.json(
+          createApiResponse({
+            success: true,
+            message: `Dry run: Would process ${queueItems.length} items`,
+            dry_run: true,
+            queue_items: queueItems.map(item => ({
+              term: item.term,
+              languages: item.languages,
+              priority: item.priority,
+            })),
+            token_status: {
+              used_today: tokenStatus,
+              available: available,
+              budget:
+                c.env.ENVIRONMENT === 'staging'
+                  ? parseInt(c.env.SEED_DAILY_LIMIT || '10')
+                  : 5000, // 50% of 10k free tier
+            },
+          })
+        )
       }
 
-      if (!dry_run) {
-        // Process each item
-        for (const item of queueItems) {
-          try {
-            // Update status to processing
-            await db.updateSeedQueueStatus(item.id, 'processing')
+      // Check token budget before processing
+      if (!(await budgetManager.canProcessTerms())) {
+        const used = await budgetManager.getTokensUsedToday()
+        const budget =
+          c.env.ENVIRONMENT === 'staging'
+            ? parseInt(c.env.SEED_DAILY_LIMIT || '10')
+            : 5000
 
-            // Generate entry for each language
-            for (const lang of item.languages) {
-              // Check if entry already exists
-              const existing = await db.findByTerm(item.term, lang)
-
-              if (!existing) {
-                // Double-check with normalized term to be sure
-                const normalizedTerm = item.term.toLowerCase().trim()
-                const doubleCheck = await db.findByTerm(normalizedTerm, lang)
-
-                if (doubleCheck) {
-                  // Entry found on double-check, skip
-                  continue
-                }
-
-                // Generate new entry
-                const entry = await generator.generateEntry({
-                  term: item.term,
-                  type: 'general', // Default type for seed queue items
-                  lang: lang,
-                  context: {
-                    requested_by: 'seed_queue',
-                    generation_reason: 'batch_seed',
-                  },
-                })
-
-                if (entry) {
-                  try {
-                    await db.create(entry)
-                    // Successfully created entry
-                  } catch (createError: unknown) {
-                    // If it's a unique constraint error, the entry was created elsewhere
-                    if (
-                      createError instanceof Error &&
-                      createError.message?.includes('UNIQUE constraint failed')
-                    ) {
-                      // Entry already exists (constraint violation), skip
-                    } else {
-                      // Re-throw other errors
-                      throw createError
-                    }
-                  }
-                }
-              } else {
-                // Entry already exists, skip
-              }
-            }
-
-            // Mark as completed
-            await db.updateSeedQueueStatus(item.id, 'completed')
-            results.succeeded++
-          } catch (error) {
-            // Mark as failed
-            await db.updateSeedQueueStatus(
-              item.id,
-              'failed',
-              error instanceof Error ? error.message : 'Unknown error'
-            )
-            results.failed++
-            results.errors.push(`${item.term}: ${error}`)
-          }
-
-          results.processed++
-        }
+        return c.json(
+          createApiResponse({
+            success: false,
+            message: 'Daily token budget exhausted',
+            token_status: {
+              used_today: used,
+              available: 0,
+              budget: budget,
+            },
+          })
+        )
       }
+
+      // Process using the SeedProcessor service
+      const result = await seedProcessor.processSeedQueue()
+
+      // Get updated token status
+      const tokenStatus = await budgetManager.getTokensUsedToday()
+      const available = await budgetManager.getAvailableTokens()
 
       return c.json(
         createApiResponse({
-          dry_run,
-          queue_items: queueItems.map(item => ({
-            term: item.term,
-            languages: item.languages,
-            priority: item.priority,
-          })),
-          results: dry_run
-            ? { message: 'Dry run - no processing performed' }
-            : results,
+          success: result.processed > 0,
+          message: `Processed ${result.processed} items`,
+          results: {
+            processed: result.processed,
+            succeeded: result.succeeded,
+            failed: result.failed,
+            skipped: result.skipped,
+            quality_scores: result.quality_scores,
+            errors: result.errors,
+            average_quality:
+              result.quality_scores.length > 0
+                ? result.quality_scores.reduce((a, b) => a + b, 0) /
+                  result.quality_scores.length
+                : 0,
+          },
+          token_status: {
+            used_today: tokenStatus,
+            available: available,
+            budget:
+              c.env.ENVIRONMENT === 'staging'
+                ? parseInt(c.env.SEED_DAILY_LIMIT || '10')
+                : 5000,
+            usage_this_batch: result.token_usage,
+          },
         })
       )
     } catch (error) {
-      console.error('Seed processing error:', error)
-      throw new ValidationError('Failed to process seed queue')
+      console.error('Error processing seed queue:', error)
+      return c.json(
+        createApiResponse({
+          success: false,
+          message: error instanceof Error ? error.message : 'Processing failed',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }),
+        500
+      )
     }
   }
 )
@@ -752,6 +751,159 @@ adminHandler.get('/seed/review-queue', async c => {
     throw new ValidationError('Failed to get review queue')
   }
 })
+
+/**
+ * Run error recovery for failed items
+ * POST /api/v1/admin/seed/recover
+ */
+adminHandler.post(
+  '/seed/recover',
+  zValidator(
+    'json',
+    z.object({
+      limit: z.number().min(1).max(100).default(50),
+    })
+  ),
+  async c => {
+    const { limit } = c.req.valid('json')
+
+    try {
+      const { ErrorRecoveryService } = await import(
+        '../../services/error-recovery'
+      )
+      const recovery = new ErrorRecoveryService(c.env)
+
+      const result = await recovery.recoverFailedItems(limit)
+
+      return c.json(
+        createApiResponse({
+          success: true,
+          message: 'Recovery process completed',
+          result: {
+            recovered: result.recovered,
+            failed_permanently: result.failed_permanently,
+            moved_to_dlq: result.moved_to_dlq,
+            retry_scheduled: result.retry_scheduled,
+          },
+        })
+      )
+    } catch (error) {
+      console.error('Recovery error:', error)
+      throw new ValidationError('Failed to run recovery process')
+    }
+  }
+)
+
+/**
+ * Get recovery statistics
+ * GET /api/v1/admin/seed/recovery-stats
+ */
+adminHandler.get('/seed/recovery-stats', async c => {
+  try {
+    const { ErrorRecoveryService } = await import(
+      '../../services/error-recovery'
+    )
+    const recovery = new ErrorRecoveryService(c.env)
+
+    const stats = await recovery.getRecoveryStats()
+
+    return c.json(
+      createApiResponse({
+        stats,
+      })
+    )
+  } catch (error) {
+    console.error('Recovery stats error:', error)
+    throw new ValidationError('Failed to get recovery statistics')
+  }
+})
+
+/**
+ * Get dead letter queue items
+ * GET /api/v1/admin/seed/dlq
+ */
+adminHandler.get('/seed/dlq', async c => {
+  const query = c.req.query()
+  const limit = parseInt(query.limit || '20')
+  const offset = parseInt(query.offset || '0')
+
+  try {
+    const results = await c.env.DB.prepare(
+      `SELECT * FROM dead_letter_queue
+       ORDER BY moved_to_dlq_at DESC
+       LIMIT ? OFFSET ?`
+    )
+      .bind(limit, offset)
+      .all()
+
+    const countResult = await c.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM dead_letter_queue`
+    ).first()
+
+    return c.json(
+      createApiResponse({
+        items: results.results.map(row => ({
+          id: row.id,
+          term: row.term,
+          languages: JSON.parse(row.languages as string),
+          priority: row.priority,
+          failure_reason: row.failure_reason,
+          failure_analysis: JSON.parse(row.failure_analysis as string),
+          attempts: row.attempts,
+          moved_to_dlq_at: row.moved_to_dlq_at,
+        })),
+        pagination: {
+          total: (countResult?.count as number) || 0,
+          limit,
+          offset,
+        },
+      })
+    )
+  } catch (error) {
+    console.error('DLQ fetch error:', error)
+    throw new ValidationError('Failed to get dead letter queue items')
+  }
+})
+
+/**
+ * Retry items from dead letter queue
+ * POST /api/v1/admin/seed/dlq/retry
+ */
+adminHandler.post(
+  '/seed/dlq/retry',
+  zValidator(
+    'json',
+    z.object({
+      dlq_ids: z.array(z.string()).min(1).max(50),
+    })
+  ),
+  async c => {
+    const { dlq_ids } = c.req.valid('json')
+
+    try {
+      const { ErrorRecoveryService } = await import(
+        '../../services/error-recovery'
+      )
+      const recovery = new ErrorRecoveryService(c.env)
+
+      const result = await recovery.retryFromDeadLetterQueue(dlq_ids)
+
+      return c.json(
+        createApiResponse({
+          success: result.requeued > 0,
+          message: `Requeued ${result.requeued} items from dead letter queue`,
+          result: {
+            requeued: result.requeued,
+            errors: result.errors,
+          },
+        })
+      )
+    } catch (error) {
+      console.error('DLQ retry error:', error)
+      throw new ValidationError('Failed to retry items from dead letter queue')
+    }
+  }
+)
 
 /**
  * Approve/reject manual review item
