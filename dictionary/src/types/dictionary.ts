@@ -401,3 +401,33 @@ export interface SeedQueueEntry {
   error_message?: string
   created_at: string
 }
+
+// Bulk import request/response types
+export interface BulkImportRequest {
+  terms: string // Newline-separated list of terms
+  priority?: number // 1-10, default 5
+  languages?: SupportedLanguage[] // Languages to generate, default all
+  type?: TermType // Optional term type for all terms
+}
+
+export interface BulkImportResponse {
+  success: boolean
+  summary: {
+    total_submitted: number
+    successfully_queued: number
+    skipped_duplicates: number
+    errors: number
+  }
+  details: {
+    queued: string[] // Terms successfully added to queue
+    duplicates: Array<{
+      term: string
+      reason: string // e.g., "Already exists in dictionary", "Already in queue"
+    }>
+    errors: Array<{
+      term: string
+      error: string
+    }>
+  }
+  message?: string
+}

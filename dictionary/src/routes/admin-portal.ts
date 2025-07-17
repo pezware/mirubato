@@ -458,6 +458,7 @@ adminPortal.get('/', c => {
         <div class="tabs">
             <button class="tab active" data-tab="status">System Status</button>
             <button class="tab" data-tab="queue">Seed Queue</button>
+            <button class="tab" data-tab="bulk">Bulk Import</button>
             <button class="tab" data-tab="process">Process Seeds</button>
             <button class="tab" data-tab="review">Review Queue</button>
             <button class="tab" data-tab="recovery">Error Recovery</button>
@@ -590,6 +591,10 @@ adminPortal.get('/', c => {
                 initializeLucide();
             }
         }
+        
+        // Make bulk import functions globally accessible
+        window.submitBulkImport = submitBulkImport;
+        window.clearBulkImportForm = clearBulkImportForm;
 
         // API helper
         async function apiCall(endpoint, options = {}) {
@@ -681,6 +686,9 @@ adminPortal.get('/', c => {
                         break;
                     case 'queue':
                         await loadSeedQueue();
+                        break;
+                    case 'bulk':
+                        await loadBulkImport();
                         break;
                     case 'process':
                         await loadProcessSeeds();
@@ -895,6 +903,241 @@ adminPortal.get('/', c => {
             \`;
         }
 
+        // Load bulk import interface
+        async function loadBulkImport() {
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = \`
+                <div class="card sage">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i data-lucide="upload"></i>
+                            Bulk Import Terms
+                        </h2>
+                    </div>
+                    <p style="margin-bottom: 24px;">Import multiple terms at once by pasting them below (one term per line).</p>
+                    
+                    <form onsubmit="submitBulkImport(event)">
+                        <div class="form-group">
+                            <label class="form-label">Terms to Import</label>
+                            <textarea 
+                                class="form-input" 
+                                id="bulkTerms" 
+                                rows="10" 
+                                placeholder="Allegro\nAndante\nAdagio\nPresto\nLargo"
+                                required
+                            ></textarea>
+                            <small class="form-helper">Enter one term per line. Maximum 500 terms per import.</small>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select class="form-input" id="bulkPriority">
+                                    <option value="10">10 - Highest</option>
+                                    <option value="9">9</option>
+                                    <option value="8">8</option>
+                                    <option value="7">7</option>
+                                    <option value="6">6</option>
+                                    <option value="5" selected>5 - Medium</option>
+                                    <option value="4">4</option>
+                                    <option value="3">3</option>
+                                    <option value="2">2</option>
+                                    <option value="1">1 - Lowest</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Term Type (Optional)</label>
+                                <select class="form-input" id="bulkType">
+                                    <option value="">Auto-detect</option>
+                                    <option value="tempo">Tempo</option>
+                                    <option value="dynamics">Dynamics</option>
+                                    <option value="articulation">Articulation</option>
+                                    <option value="theory">Theory</option>
+                                    <option value="notation">Notation</option>
+                                    <option value="form">Form</option>
+                                    <option value="technique">Technique</option>
+                                    <option value="instrument">Instrument</option>
+                                    <option value="genre">Genre</option>
+                                    <option value="period">Period</option>
+                                    <option value="composer">Composer</option>
+                                    <option value="general">General</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Languages to Generate</label>
+                            <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                <label class="checkbox">
+                                    <input type="checkbox" value="en" checked> English
+                                </label>
+                                <label class="checkbox">
+                                    <input type="checkbox" value="es" checked> Spanish
+                                </label>
+                                <label class="checkbox">
+                                    <input type="checkbox" value="fr" checked> French
+                                </label>
+                                <label class="checkbox">
+                                    <input type="checkbox" value="de" checked> German
+                                </label>
+                                <label class="checkbox">
+                                    <input type="checkbox" value="zh-CN" checked> Chinese (Simplified)
+                                </label>
+                                <label class="checkbox">
+                                    <input type="checkbox" value="zh-TW" checked> Chinese (Traditional)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="button primary" id="bulkImportBtn">
+                            <i data-lucide="upload"></i>
+                            Import to Queue
+                        </button>
+                    </form>
+                </div>
+                
+                <div id="bulkImportResults"></div>
+            \`;
+        }
+        
+        // Submit bulk import
+        async function submitBulkImport(event) {
+            event.preventDefault();
+            
+            const termsTextarea = document.getElementById('bulkTerms');
+            const terms = termsTextarea.value;
+            const priority = parseInt(document.getElementById('bulkPriority').value);
+            const type = document.getElementById('bulkType').value || undefined;
+            
+            // Get selected languages
+            const languageCheckboxes = document.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
+            const languages = Array.from(languageCheckboxes).map(cb => cb.value);
+            
+            if (languages.length === 0) {
+                showAlert('error', 'Please select at least one language');
+                return;
+            }
+            
+            const button = document.getElementById('bulkImportBtn');
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Importing...';
+            
+            try {
+                const result = await apiCall('/admin/seed/bulk-import', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        terms,
+                        priority,
+                        languages,
+                        type
+                    })
+                });
+                
+                // Display results
+                const resultsDiv = document.getElementById('bulkImportResults');
+                
+                const duplicatesList = result.details.duplicates.length > 0 
+                    ? \`<div class="card peach" style="margin-top: 16px;">
+                        <h3 class="card-title">
+                            <i data-lucide="alert-circle"></i>
+                            Skipped Duplicates (\${result.details.duplicates.length})
+                        </h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            \${result.details.duplicates.map(d => 
+                                '<li><strong>' + d.term + '</strong>: ' + d.reason + '</li>'
+                            ).join('')}
+                        </ul>
+                    </div>\`
+                    : '';
+                
+                const errorsList = result.details.errors && result.details.errors.length > 0
+                    ? \`<div class="card rose" style="margin-top: 16px;">
+                        <h3 class="card-title">
+                            <i data-lucide="x-circle"></i>
+                            Errors (\${result.details.errors.length})
+                        </h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            \${result.details.errors.map(e => 
+                                '<li><strong>' + e.term + '</strong>: ' + e.error + '</li>'
+                            ).join('')}
+                        </ul>
+                    </div>\`
+                    : '';
+                
+                resultsDiv.innerHTML = \`
+                    <div class="card sage" style="margin-top: 16px;">
+                        <h3 class="card-title">
+                            <i data-lucide="check-circle"></i>
+                            Import Results
+                        </h3>
+                        <div class="metric-grid">
+                            <div class="metric">
+                                <div class="metric-label">Total Submitted</div>
+                                <div class="metric-value">\${result.summary.total_submitted}</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Successfully Queued</div>
+                                <div class="metric-value text-sage">\${result.summary.successfully_queued}</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Skipped (Duplicates)</div>
+                                <div class="metric-value text-peach">\${result.summary.skipped_duplicates}</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Errors</div>
+                                <div class="metric-value text-rose">\${result.summary.errors}</div>
+                            </div>
+                        </div>
+                        
+                        \${result.details.queued.length > 0 
+                            ? '<div style="margin-top: 16px;"><strong>Successfully queued terms:</strong> ' + 
+                              result.details.queued.join(', ') + '</div>'
+                            : ''
+                        }
+                    </div>
+                    
+                    \${duplicatesList}
+                    \${errorsList}
+                    
+                    <div style="margin-top: 16px;">
+                        <button class="button secondary" onclick="loadSeedQueue()">
+                            <i data-lucide="list"></i>
+                            View Queue Status
+                        </button>
+                        <button class="button primary" onclick="clearBulkImportForm()">
+                            <i data-lucide="plus"></i>
+                            Import More Terms
+                        </button>
+                    </div>
+                \`;
+                
+                showAlert('success', result.message || 'Import completed successfully');
+                
+                // Clear form if all successful
+                if (result.summary.successfully_queued > 0 && result.summary.errors === 0) {
+                    termsTextarea.value = '';
+                }
+                
+            } catch (error) {
+                showAlert('error', 'Failed to import terms: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i data-lucide="upload"></i> Import to Queue';
+                initializeLucide();
+            }
+        }
+        
+        // Clear bulk import form
+        function clearBulkImportForm() {
+            document.getElementById('bulkTerms').value = '';
+            document.getElementById('bulkImportResults').innerHTML = '';
+            document.getElementById('bulkPriority').value = '5';
+            document.getElementById('bulkType').value = '';
+            // Reset all checkboxes to checked
+            document.querySelectorAll('.checkbox-grid input[type="checkbox"]').forEach(cb => cb.checked = true);
+        }
+        
         // Load process seeds interface
         async function loadProcessSeeds() {
             const contentDiv = document.getElementById('content');

@@ -619,6 +619,147 @@ adminHandler.get('/seed/status', async c => {
 })
 
 /**
+ * Bulk import terms to seed queue
+ * POST /api/v1/admin/seed/bulk-import
+ */
+adminHandler.post(
+  '/seed/bulk-import',
+  zValidator(
+    'json',
+    z.object({
+      terms: z.string().min(1).max(50000), // Newline-separated terms, max ~50KB
+      priority: z.number().min(1).max(10).default(5),
+      languages: z.array(z.string()).optional(),
+      type: z.string().optional(),
+    })
+  ),
+  async c => {
+    const { terms, priority, languages, type: _type } = c.req.valid('json')
+    const db = new DictionaryDatabase(c.env.DB)
+
+    try {
+      // Parse terms (one per line, trim whitespace)
+      const termList = terms
+        .split('\n')
+        .map(term => term.trim())
+        .filter(term => term.length > 0 && term.length <= 100)
+
+      // Remove duplicates from input
+      const uniqueTerms = Array.from(new Set(termList))
+
+      if (uniqueTerms.length === 0) {
+        throw new ValidationError('No valid terms provided')
+      }
+
+      if (uniqueTerms.length > 500) {
+        throw new ValidationError('Maximum 500 terms allowed per import')
+      }
+
+      // Use all supported languages if not specified
+      const targetLanguages = languages || [
+        'en',
+        'es',
+        'fr',
+        'de',
+        'zh-CN',
+        'zh-TW',
+      ]
+
+      // Check for duplicates
+      const duplicateCheck = await db.checkBulkDuplicates(
+        uniqueTerms,
+        targetLanguages
+      )
+
+      // Prepare response tracking
+      const response: {
+        queued: string[]
+        duplicates: Array<{ term: string; reason: string }>
+        errors: Array<{ term: string; error: string }>
+      } = {
+        queued: [],
+        duplicates: [],
+        errors: [],
+      }
+
+      // Process each term
+      const termsToQueue: Array<{
+        term: string
+        languages: string[]
+        priority: number
+      }> = []
+
+      for (const term of uniqueTerms) {
+        const normalizedTerm = term.toLowerCase()
+
+        // Check if already in dictionary
+        const existingLangs =
+          duplicateCheck.existingInDictionary.get(normalizedTerm)
+        if (existingLangs && existingLangs.length === targetLanguages.length) {
+          // All requested languages already exist
+          response.duplicates.push({
+            term,
+            reason: `Already exists in dictionary for all requested languages`,
+          })
+          continue
+        }
+
+        // Check if already in queue
+        if (duplicateCheck.pendingInQueue.has(term)) {
+          response.duplicates.push({
+            term,
+            reason: 'Already in queue (pending or processing)',
+          })
+          continue
+        }
+
+        // Determine which languages need generation
+        const languagesToGenerate = existingLangs
+          ? targetLanguages.filter(lang => !existingLangs.includes(lang))
+          : targetLanguages
+
+        if (languagesToGenerate.length > 0) {
+          termsToQueue.push({
+            term,
+            languages: languagesToGenerate,
+            priority,
+          })
+          response.queued.push(term)
+        }
+      }
+
+      // Add valid terms to queue
+      if (termsToQueue.length > 0) {
+        await db.addToSeedQueue(termsToQueue)
+      }
+
+      // Get updated queue stats
+      const stats = await db.getSeedQueueStats()
+
+      return c.json(
+        createApiResponse({
+          success: true,
+          summary: {
+            total_submitted: uniqueTerms.length,
+            successfully_queued: response.queued.length,
+            skipped_duplicates: response.duplicates.length,
+            errors: response.errors.length,
+          },
+          details: response,
+          queue_stats: stats,
+          message: `Successfully queued ${response.queued.length} terms for generation`,
+        })
+      )
+    } catch (error) {
+      console.error('Bulk import error:', error)
+      throw new ValidationError(
+        error instanceof Error ? error.message : 'Failed to import terms'
+      )
+    }
+  }
+)
+
+/**
  * Clear seed queue
  * DELETE /api/v1/admin/seed/clear
  */

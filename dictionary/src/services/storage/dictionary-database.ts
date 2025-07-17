@@ -1211,6 +1211,70 @@ export class DictionaryDatabase {
   }
 
   /**
+   * Check for duplicates in both dictionary entries and seed queue
+   * Returns information about which terms already exist
+   */
+  async checkBulkDuplicates(
+    terms: string[],
+    languages: string[]
+  ): Promise<{
+    existingInDictionary: Map<string, string[]> // term -> languages that exist
+    pendingInQueue: Set<string> // terms already in queue
+  }> {
+    const existingInDictionary = new Map<string, string[]>()
+    const pendingInQueue = new Set<string>()
+
+    if (terms.length === 0) {
+      return { existingInDictionary, pendingInQueue }
+    }
+
+    // Normalize terms for comparison
+    const normalizedTerms = terms.map(term => normalizeTerm(term))
+
+    // Check dictionary entries
+    const placeholders = normalizedTerms.map(() => '?').join(', ')
+    const langPlaceholders = languages.map(() => '?').join(', ')
+
+    const dictResults = await this.db
+      .prepare(
+        `SELECT normalized_term, lang 
+         FROM dictionary_entries 
+         WHERE normalized_term IN (${placeholders})
+         AND lang IN (${langPlaceholders})`
+      )
+      .bind(...normalizedTerms, ...languages)
+      .all()
+
+    // Group by term and collect languages
+    for (const row of dictResults.results) {
+      const term = row.normalized_term as string
+      const lang = row.lang as string
+
+      if (!existingInDictionary.has(term)) {
+        existingInDictionary.set(term, [])
+      }
+      existingInDictionary.get(term)!.push(lang)
+    }
+
+    // Check seed queue for pending items
+    const queueResults = await this.db
+      .prepare(
+        `SELECT DISTINCT term 
+         FROM seed_queue 
+         WHERE term IN (${placeholders})
+         AND status IN ('pending', 'processing')`
+      )
+      .bind(...terms)
+      .all()
+
+    for (const row of queueResults.results) {
+      pendingInQueue.add(row.term as string)
+    }
+
+    return { existingInDictionary, pendingInQueue }
+  }
+
+  /**
    * Get next seed queue items to process
    */
   async getNextSeedQueueItems(limit: number = 10): Promise<SeedQueueEntry[]> {
