@@ -406,7 +406,7 @@ export class DictionaryGenerator {
       difficulty_level: options.context
         ?.difficulty_level as EntryMetadata['difficulty_level'],
       instruments: options.context?.instruments,
-      language: 'en',
+      language: options.lang || 'en',
     }
   }
 
