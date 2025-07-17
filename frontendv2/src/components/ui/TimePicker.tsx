@@ -6,14 +6,12 @@ interface TimePickerProps {
   value: string // HH:MM format
   onChange: (value: string) => void
   className?: string
-  required?: boolean
 }
 
 export default function TimePicker({
   value,
   onChange,
   className = '',
-  required = false,
 }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [tempTime, setTempTime] = useState(value)
