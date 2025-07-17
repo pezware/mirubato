@@ -5,7 +5,7 @@ import { CircleOfFifths } from './index'
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: Record<string, any>) => {
+    t: (key: string, values?: Record<string, string | number>) => {
       const translations: Record<string, string> = {
         'toolbox:circleOfFifths.controls.audio': 'Audio',
         'toolbox:circleOfFifths.controls.on': 'On',
