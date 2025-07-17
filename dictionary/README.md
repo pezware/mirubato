@@ -66,6 +66,10 @@ npm run db:migrate:production
 - `POST /api/v1/search/semantic` - Semantic search using embeddings
 - `POST /api/v1/batch/query` - Query multiple terms
 
+### Admin Operations
+
+- `POST /api/v1/admin/seed/bulk-import` - Bulk import terms to seed queue (see [BULK-IMPORT.md](docs/BULK-IMPORT.md))
+
 ### Authentication
 
 Most endpoints are public. Protected endpoints require a JWT bearer token from the Mirubato authentication service.
