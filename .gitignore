@@ -361,3 +361,6 @@ scores/music-library/**/*.pdf
 mirubato-db-backup/
 backup/
 backups/
+
+# kiro
+mirubato.code-workspace
