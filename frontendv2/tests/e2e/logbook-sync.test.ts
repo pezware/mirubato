@@ -126,18 +126,21 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await logbookPage.navigate()
 
     // Create entries with specific timestamps
+    // Important: Due to auto-time adjustment, entries with longer durations
+    // get earlier timestamps. So we need to create them in reverse duration order
+    // to ensure proper chronological order.
 
-    // Create first entry
+    // Create first entry (longest duration = earliest timestamp)
     await logbookPage.createEntry({
-      duration: 15,
+      duration: 45,
       title: 'Morning Practice',
       notes: 'Early session',
     })
 
     // Wait to ensure different timestamp
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(2000)
 
-    // Create second entry
+    // Create second entry (medium duration = middle timestamp)
     await logbookPage.createEntry({
       duration: 30,
       title: 'Afternoon Practice',
@@ -145,11 +148,11 @@ test.describe('Logbook Sync and Data Persistence', () => {
     })
 
     // Wait to ensure different timestamp
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(2000)
 
-    // Create third entry
+    // Create third entry (shortest duration = latest timestamp)
     await logbookPage.createEntry({
-      duration: 45,
+      duration: 15,
       title: 'Evening Practice',
       notes: 'Final session',
     })
