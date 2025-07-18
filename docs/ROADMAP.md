@@ -1,6 +1,18 @@
 # Mirubato Development Roadmap
 
-## Current Status - Version 1.3.0 (July 2025)
+## Current Status - Version 1.6.0 (July 2025)
+
+### 🔒 Security & Infrastructure Update
+
+✅ **Version 1.6.0 Released**: Major security and dependency updates
+
+- Fixed critical security vulnerabilities across all services
+- Updated tar-fs to address high severity path traversal vulnerabilities
+- Resolved ws package DoS vulnerability affecting HTTP header handling
+- Fixed esbuild development server security issues
+- All services now unified at version 1.6.0
+- Dictionary service promoted from v1.0.0 to align with platform versioning
+- Comprehensive dependency updates to latest secure versions
 
 ### 🎉 Frontend Polish & Component Library Complete
 
@@ -595,4 +607,4 @@ Based on the success of the MVP, Mirubato will continue to prioritize:
 ---
 
 **Next Review**: October 2025
-**Last Updated**: July 4, 2025 (v1.3.0)
+**Last Updated**: July 18, 2025 (v1.6.0)

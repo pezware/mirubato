@@ -4,7 +4,14 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.4.1 (July 2025)
+## Current Architecture - Version 1.6.0 (July 2025)
+
+### Version 1.6.0 Highlights
+
+- **Security Hardening**: Comprehensive vulnerability remediation across all services
+- **Unified Versioning**: All services now at v1.6.0 for consistency
+- **Dependency Updates**: Latest secure versions of all critical dependencies
+- **Puppeteer Downgrade**: @cloudflare/puppeteer to 0.0.11 for security compliance
 
 ### Version 1.4.1 Highlights
 

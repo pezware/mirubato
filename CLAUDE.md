@@ -1,5 +1,21 @@
 # CLAUDE.md - AI Agent Quick Reference
 
+## 📦 Version 1.6.0 Release (July 2025)
+
+### Security Updates
+
+- Fixed critical vulnerabilities in tar-fs (high severity)
+- Fixed DoS vulnerability in ws package (high severity)
+- Fixed esbuild development server vulnerability (medium severity)
+- Updated all dependencies to latest secure versions
+
+### Architecture Changes
+
+- All services unified at version 1.6.0
+- Dictionary service promoted from v1.0.0 to v1.6.0
+- Enhanced security posture across all microservices
+- @cloudflare/puppeteer downgraded to 0.0.11 for security fix
+
 ## 🚨 CRITICAL: Start Here
 
 ### Deployment Architecture (2025)
