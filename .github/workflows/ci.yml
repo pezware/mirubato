@@ -34,7 +34,7 @@ jobs:
         run: pnpm run lint
 
       - name: Check formatting with Prettier
-        run: npx prettier --check .
+        run: pnpm exec prettier --check .
 
   type-check:
     name: Type Check
@@ -146,7 +146,6 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: |
-          cd frontendv2
           PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
 
@@ -159,19 +158,19 @@ jobs:
           restore-keys: |
             playwright-browsers-${{ runner.os }}-
 
-      - name: Install dependencies for frontendv2 only
-        run: pnpm install --frozen-lockfile --workspace @mirubato/frontendv2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: pnpm --filter @mirubato/frontendv2 exec playwright install --with-deps chromium
 
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: pnpm --filter @mirubato/frontendv2 exec playwright install-deps chromium
 
       - name: Run E2E tests for frontendv2 (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-        run: pnpm --filter @mirubato/frontendv2 run test:e2e -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: pnpm --filter @mirubato/frontendv2 exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           CI: true
 
@@ -206,11 +205,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium
-        working-directory: frontendv2
+        run: pnpm --filter @mirubato/frontendv2 exec playwright install chromium
 
       - name: Run smoke tests
-        run: pnpm --filter @mirubato/frontendv2 run test:e2e -- --grep "@smoke" --project=chromium
+        run: pnpm --filter @mirubato/frontendv2 exec playwright test --grep "@smoke" --project=chromium
 
       - name: Upload smoke test report
         uses: actions/upload-artifact@v4
