@@ -251,13 +251,17 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     keyOrder.forEach(key => {
       const isRoot =
         key.type === 'white'
-          ? key.note === actualRootNote ||
-            (keyData.enharmonic && key.note === keyData.enharmonic)
-          : key.note === actualRootNote ||
-            key.displayNote === actualRootNote ||
-            (keyData.enharmonic &&
-              (key.note === keyData.enharmonic ||
-                key.displayNote === keyData.enharmonic))
+          ? !!(
+              key.note === actualRootNote ||
+              (keyData.enharmonic && key.note === keyData.enharmonic)
+            )
+          : !!(
+              key.note === actualRootNote ||
+              key.displayNote === actualRootNote ||
+              (keyData.enharmonic &&
+                (key.note === keyData.enharmonic ||
+                  key.displayNote === keyData.enharmonic))
+            )
 
       if (isRoot && !foundFirstRoot) {
         foundFirstRoot = true
@@ -266,7 +270,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       }
 
       // Highlight if we're between the first and second root (inclusive)
-      const shouldHighlight = foundFirstRoot && (!foundSecondRoot || isRoot)
+      const shouldHighlight = !!(foundFirstRoot && (!foundSecondRoot || isRoot))
       highlights.set(`${key.type}-${key.index}`, shouldHighlight)
     })
 
