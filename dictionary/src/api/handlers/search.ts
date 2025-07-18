@@ -26,9 +26,27 @@ export const searchHandler = new Hono<{ Bindings: Env }>()
 const searchQuerySchema = z.object({
   q: z.string().min(0).max(200).default(''), // Allow empty string for category browsing
   lang: z
-    .enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'])
+    .string()
     .optional()
-    .default('en'),
+    .transform(val => {
+      // Handle browser locale formats (e.g., en-US -> en)
+      if (val && val.includes('-')) {
+        const [lang] = val.split('-')
+        // Map to supported languages
+        if (['en', 'es', 'fr', 'de', 'zh'].includes(lang)) {
+          // Special case for Chinese
+          if (lang === 'zh') {
+            return val.toLowerCase() as 'zh-CN' | 'zh-TW'
+          }
+          return lang as 'en' | 'es' | 'fr' | 'de'
+        }
+      }
+      // Check if it's already a supported language
+      if (val && ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(val)) {
+        return val as 'en' | 'es' | 'fr' | 'de' | 'zh-CN' | 'zh-TW'
+      }
+      return 'en' // Default to English
+    }),
   searchAllLanguages: z.coerce.boolean().optional().default(false),
   preferredLangs: z
     .array(z.enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']))

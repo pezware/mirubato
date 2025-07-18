@@ -214,6 +214,17 @@ export class DictionaryDatabase {
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
+    // Debug logging
+    console.log('Search query:', {
+      query: query.q,
+      type: query.type,
+      lang: query.lang,
+      searchAllLanguages: query.searchAllLanguages,
+      conditions: conditions,
+      params: params,
+      whereClause: whereClause,
+    })
+
     // Get total count
     const countResult = await this.db
       .prepare(
@@ -226,11 +237,12 @@ export class DictionaryDatabase {
 
     // Get results with sorting
     let orderBy = 'ORDER BY '
+    const sortParams: any[] = []
 
     // Always prioritize language match first when doing cross-language search
     if (query.searchAllLanguages) {
       orderBy += `CASE WHEN lang = ? THEN 0 ELSE 1 END, `
-      params.push(uiLang)
+      sortParams.push(uiLang)
     }
 
     switch (query.sort_by) {
@@ -256,13 +268,27 @@ export class DictionaryDatabase {
           overall_score DESC,
           json_extract(metadata, "$.search_frequency") DESC
         `
-        params.push(
+        sortParams.push(
           normalizedQuery,
           `${normalizedQuery}%`,
           `%${normalizedQuery}%`
         )
         break
     }
+
+    // Combine all parameters in the correct order
+    const allParams = [...params, ...sortParams, limit, offset]
+
+    console.log(
+      'SQL query:',
+      `
+        SELECT * FROM dictionary_entries 
+        ${whereClause}
+        ${orderBy}
+        LIMIT ? OFFSET ?
+      `
+    )
+    console.log('All params:', allParams)
 
     const results = await this.db
       .prepare(
@@ -273,7 +299,7 @@ export class DictionaryDatabase {
         LIMIT ? OFFSET ?
       `
       )
-      .bind(...params, limit, offset)
+      .bind(...allParams)
       .all()
 
     // Get suggested languages if cross-language search
