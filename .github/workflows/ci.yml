@@ -146,7 +146,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: |
-          PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('./frontendv2/package.json').devDependencies['@playwright/test'])")
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
@@ -162,11 +162,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: cd frontendv2 && pnpm exec playwright install --with-deps chromium
+        run: cd frontendv2 && pnpm exec playwright install chromium
 
       - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: cd frontendv2 && pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests for frontendv2 (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
@@ -206,6 +204,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: cd frontendv2 && pnpm exec playwright install chromium
+
+      - name: Install Playwright system dependencies
+        run: cd frontendv2 && pnpm exec playwright install-deps chromium
 
       - name: Run smoke tests
         run: cd frontendv2 && pnpm exec playwright test --grep "@smoke" --project=chromium
