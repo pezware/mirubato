@@ -133,6 +133,7 @@ export default function ClockTimePicker({
   }
 
   const toggleAmPm = (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation() // Prevent event bubbling that might close the picker
     setTempHours(tempHours >= 12 ? tempHours - 12 : tempHours + 12)
   }
@@ -235,6 +236,10 @@ export default function ClockTimePicker({
             )}
             <button
               onClick={toggleAmPm}
+              onMouseDown={e => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
               className="px-3 py-1 text-xl bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
             >
               {ampm}
