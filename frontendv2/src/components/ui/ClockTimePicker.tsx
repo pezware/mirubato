@@ -14,9 +14,12 @@ export default function ClockTimePicker({
 }: ClockTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isDragging, setIsDragging] = useState<'hour' | 'minute' | null>(null)
+  const [isEditingTime, setIsEditingTime] = useState(false)
+  const [editingValue, setEditingValue] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  const timeInputRef = useRef<HTMLInputElement>(null)
 
   // Parse time value
   const [hours, minutes] = value.split(':').map(Number)
@@ -129,8 +132,49 @@ export default function ClockTimePicker({
     setIsOpen(false)
   }
 
-  const toggleAmPm = () => {
+  const toggleAmPm = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent event bubbling that might close the picker
     setTempHours(tempHours >= 12 ? tempHours - 12 : tempHours + 12)
+  }
+
+  const handleTimeClick = () => {
+    setIsEditingTime(true)
+    setEditingValue(
+      `${tempHours.toString().padStart(2, '0')}:${tempMinutes.toString().padStart(2, '0')}`
+    )
+    setTimeout(() => {
+      timeInputRef.current?.focus()
+      timeInputRef.current?.select()
+    }, 0)
+  }
+
+  const handleTimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    // Allow only numbers and colon
+    if (/^[0-9:]*$/.test(value)) {
+      setEditingValue(value)
+    }
+  }
+
+  const handleTimeInputBlur = () => {
+    const match = editingValue.match(/^(\d{1,2}):(\d{1,2})$/)
+    if (match) {
+      const h = parseInt(match[1], 10)
+      const m = parseInt(match[2], 10)
+      if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+        setTempHours(h)
+        setTempMinutes(m)
+      }
+    }
+    setIsEditingTime(false)
+  }
+
+  const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTimeInputBlur()
+    } else if (e.key === 'Escape') {
+      setIsEditingTime(false)
+    }
   }
 
   // Calculate hand positions
@@ -167,10 +211,34 @@ export default function ClockTimePicker({
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          {/* Digital display */}
-          <div className="text-center mb-4 text-3xl font-light">
-            {tempHours.toString().padStart(2, '0')}:
-            {tempMinutes.toString().padStart(2, '0')}
+          {/* Digital display with AM/PM */}
+          <div className="flex items-center justify-center mb-4 gap-2">
+            {isEditingTime ? (
+              <input
+                ref={timeInputRef}
+                type="text"
+                value={editingValue}
+                onChange={handleTimeInputChange}
+                onBlur={handleTimeInputBlur}
+                onKeyDown={handleTimeInputKeyDown}
+                className="text-3xl font-light bg-gray-700 text-white text-center rounded px-2 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="HH:MM"
+              />
+            ) : (
+              <div
+                onClick={handleTimeClick}
+                className="text-3xl font-light cursor-text hover:bg-gray-700 rounded px-2 py-1 transition-colors"
+              >
+                {tempHours.toString().padStart(2, '0')}:
+                {tempMinutes.toString().padStart(2, '0')}
+              </div>
+            )}
+            <button
+              onClick={toggleAmPm}
+              className="px-3 py-1 text-xl bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              {ampm}
+            </button>
           </div>
 
           {/* Clock face */}
@@ -264,16 +332,6 @@ export default function ClockTimePicker({
                 onPointerDown={e => handlePointerDown(e, 'minute')}
               />
             </svg>
-          </div>
-
-          {/* AM/PM toggle */}
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={toggleAmPm}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-            >
-              {ampm}
-            </button>
           </div>
 
           {/* Action buttons */}
