@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/dictionary",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "description": "Music Dictionary Service - AI-powered music terminology definitions",
   "main": "dist/index.js",
   "scripts": {

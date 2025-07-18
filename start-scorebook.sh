@@ -31,12 +31,12 @@ sleep 5
 
 # Seed test PDFs into Miniflare R2
 echo "📄 Uploading real test PDFs..."
-cd scores && npm run upload:real-pdfs
+cd scores && pnpm run upload:real-pdfs
 cd ..
 
 # Start frontend
 echo "🎨 Starting Frontend at http://www-mirubato.localhost:4000..."
-cd frontendv2 && npm run dev &
+cd frontendv2 && pnpm run dev &
 FRONTEND_PID=$!
 
 # Wait a moment for services to start

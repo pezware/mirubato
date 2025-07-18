@@ -11,6 +11,7 @@ import { errorHandler } from './utils/errors'
 import { tieredRateLimit } from './middleware/rate-limit'
 import { requestId } from './middleware/request-id'
 import { structuredLogger, accessLogger } from './middleware/logging'
+import { SERVICE_VERSION } from './utils/version'
 
 // Import routes
 import { healthRoutes } from './routes/health'
@@ -518,7 +519,7 @@ app.get('/', c => {
     <div class="container">
         <h1>
             📖 Mirubato Music Dictionary Service
-            <span class="version-badge">v1.0.0</span>
+            <span class="version-badge">v${SERVICE_VERSION}</span>
         </h1>
         <p class="subtitle">AI-powered music terminology dictionary</p>
         

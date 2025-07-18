@@ -1,7 +1,7 @@
 {
   "name": "mirubato",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.6.0",
   "type": "module",
   "workspaces": [
     "frontendv2",
@@ -10,17 +10,17 @@
     "dictionary"
   ],
   "scripts": {
-    "dev": "npm run dev -w @mirubato/frontendv2",
-    "dev:api": "npm run dev -w @mirubato/api",
-    "build": "npm run build --workspaces",
-    "build:frontend": "npm run build -w @mirubato/frontendv2",
-    "build:api": "npm run build -w @mirubato/api",
-    "lint": "npm run lint --workspaces",
-    "type-check": "npm run type-check --workspaces",
-    "test": "npm run test --workspaces",
-    "test:unit": "npm run test:unit --workspaces",
-    "test:integration": "npm run test:integration --workspaces",
-    "test:coverage": "npm run test:coverage --workspaces",
+    "dev": "pnpm --filter @mirubato/frontendv2 run dev",
+    "dev:api": "pnpm --filter @mirubato/api run dev",
+    "build": "pnpm -r run build",
+    "build:frontend": "pnpm --filter @mirubato/frontendv2 run build",
+    "build:api": "pnpm --filter @mirubato/api run build",
+    "lint": "pnpm -r run lint",
+    "type-check": "pnpm -r run type-check",
+    "test": "pnpm -r run test",
+    "test:unit": "pnpm -r run test:unit",
+    "test:integration": "pnpm -r run test:integration",
+    "test:coverage": "pnpm -r run test:coverage",
     "docs:generate": "echo 'Documentation generation not implemented yet'",
     "format": "prettier --write .",
     "prepare": "node -e \"try { require.resolve('husky'); require('child_process').execSync('husky install', {stdio: 'inherit'}); } catch (e) { console.log('Skipping husky install'); }\""
@@ -40,5 +40,17 @@
   "dependencies": {
     "@types/uuid": "^10.0.0",
     "uuid": "^11.1.0"
+  },
+  "pnpm": {
+    "supportedArchitectures": {
+      "os": [
+        "darwin",
+        "linux"
+      ],
+      "cpu": [
+        "x64",
+        "arm64"
+      ]
+    }
   }
 }

@@ -2,6 +2,9 @@ name = "mirubato-frontendv2"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
+[build]
+command = "pnpm run build"
+
 # Production environment (default)
 workers_dev = false
 

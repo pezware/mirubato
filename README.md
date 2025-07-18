@@ -10,13 +10,15 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 
 ## Quick Start
 
+**Prerequisites**: Install pnpm globally first: `npm install -g pnpm`
+
 ```bash
 git clone https://github.com/pezware/mirubato.git
 cd mirubato
-npm install
-npm run dev                    # Frontend: www-mirubato.localhost:4000
-cd api && npm run dev          # API: api-mirubato.localhost:9797
-cd ../scores && npm run dev    # Scores: scores-mirubato.localhost:9788
+pnpm install
+pnpm run dev                    # Frontend: www-mirubato.localhost:4000
+cd api && pnpm run dev          # API: api-mirubato.localhost:9797
+cd ../scores && pnpm run dev    # Scores: scores-mirubato.localhost:9788
 ```
 
 ## Documentation
@@ -60,3 +62,5 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 ---
 
 Built with ❤️ for the open-source music education community
+
+# Test comment

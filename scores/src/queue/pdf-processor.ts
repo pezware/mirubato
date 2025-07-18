@@ -221,8 +221,22 @@ async function renderAndStorePage(
         // Performing AI visual analysis on first page
 
         // Convert webp to base64 for AI analysis
+        let screenshotBuffer: ArrayBuffer
+        if (screenshot instanceof Buffer) {
+          screenshotBuffer = screenshot.buffer.slice(
+            screenshot.byteOffset,
+            screenshot.byteOffset + screenshot.byteLength
+          )
+        } else if (typeof screenshot === 'string') {
+          // If it's a string, convert to ArrayBuffer
+          const encoder = new TextEncoder()
+          screenshotBuffer = encoder.encode(screenshot).buffer
+        } else {
+          screenshotBuffer = screenshot as ArrayBuffer
+        }
+
         const base64Image = btoa(
-          String.fromCharCode(...new Uint8Array(screenshot))
+          String.fromCharCode(...new Uint8Array(screenshotBuffer))
         )
 
         const aiExtractor = new CloudflareAiExtractor(env.AI as any)

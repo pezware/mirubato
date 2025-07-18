@@ -1,5 +1,6 @@
 import { OpenAPIHono, z } from '@hono/zod-openapi'
 import { Env } from '../types/env'
+import { SERVICE_VERSION } from '../utils/version'
 
 // Create OpenAPI app instance
 export const createOpenAPIApp = () => {
@@ -23,7 +24,7 @@ export const createOpenAPIApp = () => {
     openapi: '3.1.0',
     info: {
       title: 'Mirubato Dictionary API',
-      version: '1.0.0',
+      version: SERVICE_VERSION,
       description: 'AI-powered music terminology dictionary service',
     },
     servers: [

@@ -25,23 +25,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
         working-directory: frontendv2
 
       - name: Validate translations
-        run: npm run validate:i18n
+        run: pnpm run validate:i18n
         working-directory: frontendv2
 
       - name: Export validation results
         if: failure()
-        run: npm run validate:i18n -- --json
+        run: pnpm run validate:i18n -- --json
         working-directory: frontendv2
         continue-on-error: true
 
@@ -89,8 +94,8 @@ jobs:
               comment += '\n### How to fix:\n';
               comment += '```bash\n';
               comment += 'cd frontendv2\n';
-              comment += 'npm run sync:i18n           # Add missing keys\n';
-              comment += 'npm run validate:i18n       # Verify fixes\n';
+              comment += 'pnpm run sync:i18n           # Add missing keys\n';
+              comment += 'pnpm run validate:i18n       # Verify fixes\n';
               comment += '```\n';
               comment += '\nKeys will be marked with `[NEEDS TRANSLATION]` and need to be translated.';
 
