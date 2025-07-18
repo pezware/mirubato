@@ -202,7 +202,9 @@
       "invalidTerm": "Por favor ingresa un término musical válido",
       "emptySearch": "Por favor ingresa un término de búsqueda",
       "searchFailed": "La búsqueda falló. Por favor intenta de nuevo.",
-      "loadFailed": "Error al cargar el término. Por favor intenta de nuevo."
+      "loadFailed": "Error al cargar el término. Por favor intenta de nuevo.",
+      "rateLimitExceeded": "Demasiadas solicitudes. Por favor, inténtelo de nuevo después de un tiempo.",
+      "tryAgainIn": "Inténtelo de nuevo en {{time}}."
     },
     "searchAllLanguages": "Buscar en todos los idiomas",
     "currentLanguage": "Idioma actual: {{lang}}",

@@ -202,7 +202,9 @@
       "invalidTerm": "請輸入有效的音樂相關術語",
       "emptySearch": "請輸入搜尋詞",
       "searchFailed": "搜尋失敗。請重試。",
-      "loadFailed": "載入術語失敗。請重試。"
+      "loadFailed": "載入術語失敗。請重試。",
+      "rateLimitExceeded": "請求過多。請稍後再試。",
+      "tryAgainIn": "請在{{time}}後重試。"
     },
     "searchAllLanguages": "搜尋所有語言",
     "currentLanguage": "目前語言：{{lang}}",

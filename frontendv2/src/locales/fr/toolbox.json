@@ -202,7 +202,9 @@
       "invalidTerm": "Veuillez entrer un terme musical valide",
       "emptySearch": "Veuillez entrer un terme de recherche",
       "searchFailed": "La recherche a échoué. Veuillez réessayer.",
-      "loadFailed": "Échec du chargement du terme. Veuillez réessayer."
+      "loadFailed": "Échec du chargement du terme. Veuillez réessayer.",
+      "rateLimitExceeded": "Trop de requêtes. Veuillez réessayer dans un moment.",
+      "tryAgainIn": "Réessayez dans {{time}}."
     },
     "searchAllLanguages": "Rechercher dans toutes les langues",
     "currentLanguage": "Langue actuelle : {{lang}}",

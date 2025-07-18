@@ -202,6 +202,28 @@ export class DictionaryAPIClient {
       }
     } catch (error) {
       if (error instanceof AxiosError) {
+        // Handle rate limiting specifically
+        if (error.response?.status === 429) {
+          const rateLimitInfo = error.response.headers
+          const retryAfter =
+            rateLimitInfo?.['retry-after'] ||
+            rateLimitInfo?.['x-ratelimit-reset']
+
+          // Create a specific error for rate limiting
+          const rateLimitError = new Error(
+            'RATE_LIMIT_EXCEEDED'
+          ) as DictionaryError
+          rateLimitError.code = 'RATE_LIMIT_EXCEEDED'
+
+          // Add retry information if available
+          if (retryAfter) {
+            const waitTime = parseInt(retryAfter) || 60
+            rateLimitError.estimatedCompletion = `${waitTime} seconds`
+          }
+
+          throw rateLimitError
+        }
+
         // Extract error message from the API response
         const errorData = error.response?.data
         let errorMessage = 'Failed to search terms'

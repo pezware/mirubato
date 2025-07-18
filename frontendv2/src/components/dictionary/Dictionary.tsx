@@ -185,14 +185,32 @@ const Dictionary: React.FC = () => {
       } catch (error) {
         // Handle different error types for search
         let errorMessage = t('toolbox:dictionary.errors.searchFailed')
-        let errorDetails: { code?: string; suggestions?: string[] } = {}
+        let errorDetails: {
+          code?: string
+          suggestions?: string[]
+          estimatedCompletion?: string
+        } = {}
 
         if (error instanceof Error) {
-          errorMessage = error.message
           const dictError = error as DictionaryError
           errorDetails = {
             code: dictError.code,
             suggestions: dictError.suggestions,
+            estimatedCompletion: dictError.estimatedCompletion,
+          }
+
+          // Check for specific error codes
+          if (dictError.code === 'RATE_LIMIT_EXCEEDED') {
+            errorMessage = t('toolbox:dictionary.errors.rateLimitExceeded')
+            if (dictError.estimatedCompletion) {
+              errorMessage +=
+                ' ' +
+                t('toolbox:dictionary.errors.tryAgainIn', {
+                  time: dictError.estimatedCompletion,
+                })
+            }
+          } else {
+            errorMessage = error.message
           }
         } else if (typeof error === 'object' && error !== null) {
           // Handle non-Error objects
@@ -297,6 +315,15 @@ const Dictionary: React.FC = () => {
           }
         } else if (errorDetails.code === 'AI_SERVICE_UNAVAILABLE') {
           errorMessage = t('toolbox:dictionary.aiServiceUnavailable')
+        } else if (errorDetails.code === 'RATE_LIMIT_EXCEEDED') {
+          errorMessage = t('toolbox:dictionary.errors.rateLimitExceeded')
+          if (errorDetails.estimatedCompletion) {
+            errorMessage +=
+              ' ' +
+              t('toolbox:dictionary.errors.tryAgainIn', {
+                time: errorDetails.estimatedCompletion,
+              })
+          }
         }
 
         setState(prev => ({
@@ -393,7 +420,8 @@ const Dictionary: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center text-red-800">
               <div className="mr-3">
-                {state.errorDetails?.code === 'AI_GENERATION_PENDING' ? (
+                {state.errorDetails?.code === 'AI_GENERATION_PENDING' ||
+                state.errorDetails?.code === 'RATE_LIMIT_EXCEEDED' ? (
                   <Clock className="w-5 h-5 text-red-600" />
                 ) : (
                   <AlertCircle className="w-5 h-5 text-red-600" />
@@ -538,9 +566,39 @@ const Dictionary: React.FC = () => {
                   }))
                 } catch (error) {
                   console.error('Failed to browse category:', error)
+
+                  let errorMessage = t('toolbox:dictionary.errors.searchFailed')
+                  let errorDetails: {
+                    code?: string
+                    estimatedCompletion?: string
+                  } = {}
+
+                  if (error instanceof Error) {
+                    const dictError = error as DictionaryError
+                    errorDetails = {
+                      code: dictError.code,
+                      estimatedCompletion: dictError.estimatedCompletion,
+                    }
+
+                    // Check for rate limit error
+                    if (dictError.code === 'RATE_LIMIT_EXCEEDED') {
+                      errorMessage = t(
+                        'toolbox:dictionary.errors.rateLimitExceeded'
+                      )
+                      if (dictError.estimatedCompletion) {
+                        errorMessage +=
+                          ' ' +
+                          t('toolbox:dictionary.errors.tryAgainIn', {
+                            time: dictError.estimatedCompletion,
+                          })
+                      }
+                    }
+                  }
+
                   setState(prev => ({
                     ...prev,
-                    error: t('toolbox:dictionary.errors.searchFailed'),
+                    error: errorMessage,
+                    errorDetails,
                     isLoading: false,
                   }))
                 }

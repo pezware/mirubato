@@ -202,7 +202,9 @@
       "invalidTerm": "请输入有效的音乐相关术语",
       "emptySearch": "请输入搜索词",
       "searchFailed": "搜索失败。请重试。",
-      "loadFailed": "加载术语失败。请重试。"
+      "loadFailed": "加载术语失败。请重试。",
+      "rateLimitExceeded": "请求过多。请稍后再试。",
+      "tryAgainIn": "请在{{time}}后重试。"
     },
     "searchAllLanguages": "搜索所有语言",
     "currentLanguage": "当前语言：{{lang}}",
