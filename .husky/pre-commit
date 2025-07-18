@@ -13,7 +13,7 @@ fi
 
 # Run unit tests before commit
 echo "🧪 Running unit tests..."
-npm run test:unit -- --passWithNoTests --watchAll=false
+pnpm run test:unit -- --watchAll=false
 if [ $? -ne 0 ]; then
   echo "❌ Unit tests failed. Please fix the failing tests and try again."
   exit 1
@@ -21,7 +21,7 @@ fi
 
 # Check TypeScript types
 echo "🔍 Checking TypeScript types..."
-npm run type-check
+pnpm run type-check
 if [ $? -ne 0 ]; then
   echo "❌ TypeScript type check failed. Please fix the type errors and try again."
   exit 1

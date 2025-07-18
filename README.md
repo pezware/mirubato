@@ -62,3 +62,5 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 ---
 
 Built with ❤️ for the open-source music education community
+
+# Test comment
