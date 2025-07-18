@@ -10,7 +10,7 @@ import {
 } from '@/types/dictionary'
 import DictionaryReferences from './DictionaryReferences'
 import { dictionaryAPI } from '@/api/dictionary'
-import { Volume2 } from 'lucide-react'
+import { Volume2, ArrowLeft } from 'lucide-react'
 
 /**
  * Display a dictionary term with full details, references, and multi-language support
@@ -18,6 +18,7 @@ import { Volume2 } from 'lucide-react'
 const DictionaryTerm: React.FC<DictionaryTermProps> = ({
   entry,
   onFeedback,
+  onBack,
 }) => {
   const { t, i18n } = useTranslation(['toolbox'])
   const [feedbackSent, setFeedbackSent] = useState(false)
@@ -306,6 +307,18 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Back to Dictionary button */}
+      {onBack && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          {t('toolbox:dictionary.backToDictionary')}
+        </Button>
+      )}
       {/* Language selection badges */}
       {languageVersions &&
         Object.keys(languageVersions.languages).length > 1 && (

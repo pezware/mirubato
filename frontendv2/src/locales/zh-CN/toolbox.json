@@ -105,6 +105,7 @@
     "loading": "加载中...",
     "noResults": "没有找到\"{{query}}\"的结果",
     "backToResults": "返回结果",
+    "backToDictionary": "返回字典",
     "showingResults": "显示{{total}}个结果中的{{start}}-{{end}}个",
     "definitionPending": "正在生成定义...",
     "definitionGenerating": "正在生成定义...",

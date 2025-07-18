@@ -105,6 +105,7 @@
     "loading": "Chargement...",
     "noResults": "Aucun résultat trouvé pour \"{{query}}\"",
     "backToResults": "Retour aux résultats",
+    "backToDictionary": "Retour au Dictionnaire",
     "showingResults": "Affichage {{start}}-{{end}} sur {{total}} résultats",
     "definitionPending": "Définition en cours de génération...",
     "definitionGenerating": "Génération de la définition...",
