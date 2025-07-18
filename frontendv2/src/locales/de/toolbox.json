@@ -202,7 +202,9 @@
       "invalidTerm": "Bitte geben Sie einen gültigen Musikbegriff ein",
       "emptySearch": "Bitte geben Sie einen Suchbegriff ein",
       "searchFailed": "Suche fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "loadFailed": "Fehler beim Laden des Begriffs. Bitte versuchen Sie es erneut."
+      "loadFailed": "Fehler beim Laden des Begriffs. Bitte versuchen Sie es erneut.",
+      "rateLimitExceeded": "Zu viele Anfragen. Bitte versuchen Sie es später noch einmal.",
+      "tryAgainIn": "Versuchen Sie es in {{time}} erneut."
     },
     "searchAllLanguages": "In allen Sprachen suchen",
     "currentLanguage": "Aktuelle Sprache: {{lang}}",
@@ -223,5 +225,35 @@
     "didYouMean": "Meinten Sie einen von diesen?",
     "aiGenerated": "KI-generiert",
     "aiGeneratedTooltip": "Diese Definition wurde von KI generiert"
+  },
+  "circleOfFifths": {
+    "controls": {
+      "enableAudio": "Audio aktivieren",
+      "disableAudio": "Audio deaktivieren",
+      "audio": "Audio",
+      "on": "Ein",
+      "off": "Aus",
+      "volume": "Lautstärke",
+      "play": "Abspielen",
+      "stop": "Stoppen",
+      "playbackMode": "Wiedergabemodus",
+      "tempo": "Tempo"
+    },
+    "keyDetails": {
+      "noSharpsOrFlats": "Keine Kreuze oder Bs",
+      "sharp": "Kreuz",
+      "flat": "B",
+      "keySignature": "{{count}} {{type}}",
+      "keyRelationships": "Tonartbeziehungen",
+      "relativeMinor": "Parallele Molltonart",
+      "dominant": "Dominante (V)",
+      "subdominant": "Subdominante (IV)",
+      "enharmonic": "Enharmonisch",
+      "scaleNotes": "Tonleiternoten",
+      "primaryChords": "Hauptakkorde (I, IV, V)",
+      "commonProgressions": "Gängige Progressionen",
+      "characteristics": "Eigenschaften",
+      "famousWorks": "Berühmte Werke"
+    }
   }
 }

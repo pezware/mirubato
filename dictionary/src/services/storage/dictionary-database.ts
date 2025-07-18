@@ -155,20 +155,26 @@ export class DictionaryDatabase {
    * Search dictionary entries with language support
    */
   async search(query: SearchQuery): Promise<SearchResult> {
-    const normalizedQuery = normalizeTerm(query.q)
+    const normalizedQuery = query.q ? normalizeTerm(query.q) : ''
     const limit = query.limit || 20
     const offset = query.offset || 0
     const uiLang = query.lang || 'en'
 
     // Build WHERE conditions
-    const conditions: string[] = [
-      '(normalized_term LIKE ? OR term LIKE ? OR json_extract(metadata, "$.synonyms") LIKE ?)',
-    ]
-    const params: any[] = [
-      `%${normalizedQuery}%`,
-      `%${query.q}%`,
-      `%${normalizedQuery}%`,
-    ]
+    const conditions: string[] = []
+    const params: any[] = []
+
+    // Only add search condition if query is not empty
+    if (query.q && query.q.trim() !== '') {
+      conditions.push(
+        '(normalized_term LIKE ? OR term LIKE ? OR json_extract(metadata, "$.synonyms") LIKE ?)'
+      )
+      params.push(
+        `%${normalizedQuery}%`,
+        `%${query.q}%`,
+        `%${normalizedQuery}%`
+      )
+    }
 
     // Language filtering
     if (!query.searchAllLanguages && !query.filters?.languages?.length) {
@@ -208,6 +214,17 @@ export class DictionaryDatabase {
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
+    // Debug logging
+    console.log('Search query:', {
+      query: query.q,
+      type: query.type,
+      lang: query.lang,
+      searchAllLanguages: query.searchAllLanguages,
+      conditions: conditions,
+      params: params,
+      whereClause: whereClause,
+    })
+
     // Get total count
     const countResult = await this.db
       .prepare(
@@ -220,11 +237,12 @@ export class DictionaryDatabase {
 
     // Get results with sorting
     let orderBy = 'ORDER BY '
+    const sortParams: any[] = []
 
     // Always prioritize language match first when doing cross-language search
     if (query.searchAllLanguages) {
       orderBy += `CASE WHEN lang = ? THEN 0 ELSE 1 END, `
-      params.push(uiLang)
+      sortParams.push(uiLang)
     }
 
     switch (query.sort_by) {
@@ -240,23 +258,44 @@ export class DictionaryDatabase {
         break
       case 'relevance':
       default:
-        orderBy += `
-          CASE 
-            WHEN normalized_term = ? THEN 0
-            WHEN normalized_term LIKE ? THEN 1
-            WHEN normalized_term LIKE ? THEN 2
-            ELSE 3
-          END,
-          overall_score DESC,
-          json_extract(metadata, "$.search_frequency") DESC
-        `
-        params.push(
-          normalizedQuery,
-          `${normalizedQuery}%`,
-          `%${normalizedQuery}%`
-        )
+        // Only add relevance sorting if there's an actual query
+        if (query.q && query.q.trim() !== '') {
+          orderBy += `
+            CASE 
+              WHEN normalized_term = ? THEN 0
+              WHEN normalized_term LIKE ? THEN 1
+              WHEN normalized_term LIKE ? THEN 2
+              ELSE 3
+            END,
+            overall_score DESC,
+            json_extract(metadata, "$.search_frequency") DESC
+          `
+          sortParams.push(
+            normalizedQuery,
+            `${normalizedQuery}%`,
+            `%${normalizedQuery}%`
+          )
+        } else {
+          // For empty queries (category browsing), just sort by quality and popularity
+          orderBy +=
+            'overall_score DESC, json_extract(metadata, "$.search_frequency") DESC'
+        }
         break
     }
+
+    // Combine all parameters in the correct order
+    const allParams = [...params, ...sortParams, limit, offset]
+
+    console.log(
+      'SQL query:',
+      `
+        SELECT * FROM dictionary_entries 
+        ${whereClause}
+        ${orderBy}
+        LIMIT ? OFFSET ?
+      `
+    )
+    console.log('All params:', allParams)
 
     const results = await this.db
       .prepare(
@@ -267,7 +306,7 @@ export class DictionaryDatabase {
         LIMIT ? OFFSET ?
       `
       )
-      .bind(...params, limit, offset)
+      .bind(...allParams)
       .all()
 
     // Get suggested languages if cross-language search

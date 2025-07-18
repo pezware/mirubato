@@ -24,32 +24,60 @@ export const searchHandler = new Hono<{ Bindings: Env }>()
 
 // Search query schema
 const searchQuerySchema = z.object({
-  q: z.string().min(1).max(200),
+  q: z.string().min(0).max(200).default(''), // Allow empty string for category browsing
   lang: z
-    .enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'])
+    .string()
     .optional()
-    .default('en'),
+    .transform(val => {
+      // Handle browser locale formats (e.g., en-US -> en)
+      if (val && val.includes('-')) {
+        const [lang] = val.split('-')
+        // Map to supported languages
+        if (['en', 'es', 'fr', 'de', 'zh'].includes(lang)) {
+          // Special case for Chinese
+          if (lang === 'zh') {
+            return val.toLowerCase() as 'zh-CN' | 'zh-TW'
+          }
+          return lang as 'en' | 'es' | 'fr' | 'de'
+        }
+      }
+      // Check if it's already a supported language
+      if (val && ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(val)) {
+        return val as 'en' | 'es' | 'fr' | 'de' | 'zh-CN' | 'zh-TW'
+      }
+      return 'en' // Default to English
+    }),
   searchAllLanguages: z.coerce.boolean().optional().default(false),
   preferredLangs: z
     .array(z.enum(['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']))
     .optional(),
   includeTranslations: z.coerce.boolean().optional().default(false),
   type: z
-    .enum([
-      'tempo',
-      'dynamics',
-      'articulation',
-      'form',
-      'genre',
-      'instrument',
-      'technique',
-      'theory',
-      'composer',
-      'period',
-      'notation',
-      'general',
+    .union([
+      z.enum([
+        'tempo',
+        'dynamics',
+        'articulation',
+        'form',
+        'genre',
+        'instrument',
+        'technique',
+        'theory',
+        'composer',
+        'period',
+        'notation',
+        'general',
+      ]),
+      z.string(), // Allow comma-separated list
     ])
-    .optional(),
+    .optional()
+    .transform(val => {
+      // If it's a comma-separated string, take the first value
+      if (val && typeof val === 'string' && val.includes(',')) {
+        return val.split(',')[0] as any
+      }
+      return val
+    }),
   limit: z.coerce.number().min(1).max(100).default(20),
   offset: z.coerce.number().min(0).default(0),
   sort_by: z
@@ -98,13 +126,24 @@ searchHandler.get(
     const cacheService = new CacheService(c.env.CACHE, c.env)
 
     try {
-      // Build filters object from individual query parameters
-      const filters: SearchFilters = {}
+      // Use filters from the validated query or create empty object
+      const filters: SearchFilters = query.filters || {}
 
       // Try cache first
+      // Include all search parameters in the filters for cache key generation
+      const cacheFilters = {
+        ...filters,
+        ...(query.type && { type: query.type }),
+        lang: query.lang,
+        searchAllLanguages: query.searchAllLanguages,
+        includeTranslations: query.includeTranslations,
+        sort_by: query.sort_by,
+        limit: query.limit,
+        offset: query.offset,
+      }
       const cached = await cacheService.getCachedSearchResults(
         query.q,
-        filters as Record<string, unknown>
+        cacheFilters as Record<string, unknown>
       )
 
       if (cached) {
@@ -133,7 +172,7 @@ searchHandler.get(
       // Cache results
       await cacheService.cacheSearchResults(
         query.q,
-        filters as Record<string, unknown>,
+        cacheFilters as Record<string, unknown>,
         searchResult.entries,
         searchResult.total
       )

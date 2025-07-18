@@ -2,6 +2,55 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { CircleOfFifths } from './index'
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, values?: Record<string, string | number>) => {
+      const translations: Record<string, string> = {
+        'toolbox:circleOfFifths.controls.audio': 'Audio',
+        'toolbox:circleOfFifths.controls.on': 'On',
+        'toolbox:circleOfFifths.controls.off': 'Off',
+        'toolbox:circleOfFifths.controls.enableAudio': 'Enable audio',
+        'toolbox:circleOfFifths.controls.disableAudio': 'Disable audio',
+        'toolbox:circleOfFifths.controls.volume': 'Volume',
+        'toolbox:circleOfFifths.controls.play': 'Play',
+        'toolbox:circleOfFifths.controls.stop': 'Stop',
+        'toolbox:circleOfFifths.controls.playbackMode': 'Playback Mode',
+        'toolbox:circleOfFifths.controls.tempo': 'Tempo',
+        'toolbox:circleOfFifths.keyDetails.noSharpsOrFlats':
+          'No sharps or flats',
+        'toolbox:circleOfFifths.keyDetails.sharp': 'sharp',
+        'toolbox:circleOfFifths.keyDetails.flat': 'flat',
+        'toolbox:circleOfFifths.keyDetails.keySignature': '{{count}} {{type}}',
+        'toolbox:circleOfFifths.keyDetails.keyRelationships':
+          'Key Relationships',
+        'toolbox:circleOfFifths.keyDetails.relativeMinor': 'Relative Minor',
+        'toolbox:circleOfFifths.keyDetails.dominant': 'Dominant (V)',
+        'toolbox:circleOfFifths.keyDetails.subdominant': 'Subdominant (IV)',
+        'toolbox:circleOfFifths.keyDetails.enharmonic': 'Enharmonic',
+        'toolbox:circleOfFifths.keyDetails.scaleNotes': 'Scale Notes',
+        'toolbox:circleOfFifths.keyDetails.primaryChords':
+          'Primary Chords (I, IV, V)',
+        'toolbox:circleOfFifths.keyDetails.commonProgressions':
+          'Common Progressions',
+        'toolbox:circleOfFifths.keyDetails.characteristics': 'Characteristics',
+        'toolbox:circleOfFifths.keyDetails.famousWorks': 'Famous Works',
+      }
+
+      let result = translations[key] || key.split('.').pop() || key
+
+      // Handle template replacements
+      if (values) {
+        Object.entries(values).forEach(([k, v]) => {
+          result = result.replace(`{{${k}}}`, String(v))
+        })
+      }
+
+      return result
+    },
+  }),
+}))
+
 // Mock the audio service
 vi.mock('../../services/musicalAudioService', () => ({
   musicalAudioService: {
@@ -17,7 +66,7 @@ describe('CircleOfFifths', () => {
   it('renders the main component with all sections', () => {
     render(<CircleOfFifths />)
 
-    // Check for audio controls (by checking Audio Off text)
+    // Check for audio controls - they appear as combined text
     expect(screen.getByText('Audio Off')).toBeInTheDocument()
 
     // Check for key details panel (default is C Major)
@@ -59,7 +108,7 @@ describe('CircleOfFifths', () => {
     const audioToggle = screen.getByRole('button', { name: /enable audio/i })
     fireEvent.click(audioToggle)
 
-    // Check for playback modes
+    // Check for playback modes - includes colon in the text
     expect(screen.getByText('Playback Mode:')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'chord' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'scale' })).toBeInTheDocument()

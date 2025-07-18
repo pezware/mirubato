@@ -202,7 +202,9 @@
       "invalidTerm": "Veuillez entrer un terme musical valide",
       "emptySearch": "Veuillez entrer un terme de recherche",
       "searchFailed": "La recherche a échoué. Veuillez réessayer.",
-      "loadFailed": "Échec du chargement du terme. Veuillez réessayer."
+      "loadFailed": "Échec du chargement du terme. Veuillez réessayer.",
+      "rateLimitExceeded": "Trop de requêtes. Veuillez réessayer dans un moment.",
+      "tryAgainIn": "Réessayez dans {{time}}."
     },
     "searchAllLanguages": "Rechercher dans toutes les langues",
     "currentLanguage": "Langue actuelle : {{lang}}",
@@ -223,5 +225,35 @@
     "didYouMean": "Vouliez-vous dire l'un de ceux-ci ?",
     "aiGenerated": "Généré par IA",
     "aiGeneratedTooltip": "Cette définition a été générée par IA"
+  },
+  "circleOfFifths": {
+    "controls": {
+      "enableAudio": "Activer l'audio",
+      "disableAudio": "Désactiver l'audio",
+      "audio": "Audio",
+      "on": "Activé",
+      "off": "Désactivé",
+      "volume": "Volume",
+      "play": "Jouer",
+      "stop": "Arrêter",
+      "playbackMode": "Mode de lecture",
+      "tempo": "Tempo"
+    },
+    "keyDetails": {
+      "noSharpsOrFlats": "Pas de dièses ou de bémols",
+      "sharp": "dièse",
+      "flat": "bémol",
+      "keySignature": "{{count}} {{type}}",
+      "keyRelationships": "Relations de tonalité",
+      "relativeMinor": "Relatif mineur",
+      "dominant": "Dominante (V)",
+      "subdominant": "Sous-dominante (IV)",
+      "enharmonic": "Enharmonique",
+      "scaleNotes": "Notes de la gamme",
+      "primaryChords": "Accords principaux (I, IV, V)",
+      "commonProgressions": "Progressions courantes",
+      "characteristics": "Caractéristiques",
+      "famousWorks": "Œuvres célèbres"
+    }
   }
 }

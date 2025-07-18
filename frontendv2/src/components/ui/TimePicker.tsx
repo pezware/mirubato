@@ -6,14 +6,12 @@ interface TimePickerProps {
   value: string // HH:MM format
   onChange: (value: string) => void
   className?: string
-  required?: boolean
 }
 
 export default function TimePicker({
   value,
   onChange,
   className = '',
-  required = false,
 }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [tempTime, setTempTime] = useState(value)
@@ -63,24 +61,7 @@ export default function TimePicker({
     setIsOpen(false)
   }
 
-  // Use native input on mobile, custom on desktop
-  const isMobile =
-    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
-
-  if (isMobile) {
-    return (
-      <input
-        ref={inputRef}
-        type="time"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 ${className}`}
-        required={required}
-      />
-    )
-  }
+  // Always use custom time picker on all screen sizes
 
   return (
     <div className="relative">

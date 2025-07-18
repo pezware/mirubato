@@ -118,8 +118,10 @@ export class DictionaryAPIClient {
       )
     }
 
-    // Validate and sanitize query
-    const safeQuery = this.validateAndSanitize(options.query)
+    // Validate and sanitize query - allow empty query for category browsing
+    const safeQuery = options.query
+      ? this.validateAndSanitize(options.query)
+      : ''
 
     try {
       const params = new URLSearchParams({
@@ -155,7 +157,9 @@ export class DictionaryAPIClient {
         }),
         ...(options.sort_by && { sort_by: options.sort_by }),
         ...(options.sort_order && { sort_order: options.sort_order }),
-        ...(options.page && { page: options.page.toString() }),
+        ...(options.page && {
+          offset: ((options.page - 1) * (options.limit || 20)).toString(),
+        }),
         ...(options.limit && { limit: options.limit.toString() }),
       })
 
@@ -181,14 +185,14 @@ export class DictionaryAPIClient {
 
       // Extract pagination from query object if present
       if (searchData.query) {
-        transformedData.limit = searchData.query.limit || options.limit || 20
-        transformedData.page = searchData.query.page || options.page || 1
-      } else {
-        // Fallback pagination calculation
-        const limit = options.limit || 20
-        const offset = searchData.offset || 0
+        const limit = searchData.query.limit || options.limit || 20
+        const offset = searchData.query.offset || 0
         transformedData.limit = limit
         transformedData.page = Math.floor(offset / limit) + 1
+      } else {
+        // Fallback to options
+        transformedData.limit = options.limit || 20
+        transformedData.page = options.page || 1
       }
 
       // Validate and return search results
@@ -200,6 +204,28 @@ export class DictionaryAPIClient {
       }
     } catch (error) {
       if (error instanceof AxiosError) {
+        // Handle rate limiting specifically
+        if (error.response?.status === 429) {
+          const rateLimitInfo = error.response.headers
+          const retryAfter =
+            rateLimitInfo?.['retry-after'] ||
+            rateLimitInfo?.['x-ratelimit-reset']
+
+          // Create a specific error for rate limiting
+          const rateLimitError = new Error(
+            'RATE_LIMIT_EXCEEDED'
+          ) as DictionaryError
+          rateLimitError.code = 'RATE_LIMIT_EXCEEDED'
+
+          // Add retry information if available
+          if (retryAfter) {
+            const waitTime = parseInt(retryAfter) || 60
+            rateLimitError.estimatedCompletion = `${waitTime} seconds`
+          }
+
+          throw rateLimitError
+        }
+
         // Extract error message from the API response
         const errorData = error.response?.data
         let errorMessage = 'Failed to search terms'
