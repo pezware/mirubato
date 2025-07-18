@@ -258,21 +258,28 @@ export class DictionaryDatabase {
         break
       case 'relevance':
       default:
-        orderBy += `
-          CASE 
-            WHEN normalized_term = ? THEN 0
-            WHEN normalized_term LIKE ? THEN 1
-            WHEN normalized_term LIKE ? THEN 2
-            ELSE 3
-          END,
-          overall_score DESC,
-          json_extract(metadata, "$.search_frequency") DESC
-        `
-        sortParams.push(
-          normalizedQuery,
-          `${normalizedQuery}%`,
-          `%${normalizedQuery}%`
-        )
+        // Only add relevance sorting if there's an actual query
+        if (query.q && query.q.trim() !== '') {
+          orderBy += `
+            CASE 
+              WHEN normalized_term = ? THEN 0
+              WHEN normalized_term LIKE ? THEN 1
+              WHEN normalized_term LIKE ? THEN 2
+              ELSE 3
+            END,
+            overall_score DESC,
+            json_extract(metadata, "$.search_frequency") DESC
+          `
+          sortParams.push(
+            normalizedQuery,
+            `${normalizedQuery}%`,
+            `%${normalizedQuery}%`
+          )
+        } else {
+          // For empty queries (category browsing), just sort by quality and popularity
+          orderBy +=
+            'overall_score DESC, json_extract(metadata, "$.search_frequency") DESC'
+        }
         break
     }
 
