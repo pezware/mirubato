@@ -130,9 +130,20 @@ searchHandler.get(
       const filters: SearchFilters = query.filters || {}
 
       // Try cache first
+      // Include all search parameters in the filters for cache key generation
+      const cacheFilters = {
+        ...filters,
+        ...(query.type && { type: query.type }),
+        lang: query.lang,
+        searchAllLanguages: query.searchAllLanguages,
+        includeTranslations: query.includeTranslations,
+        sort_by: query.sort_by,
+        limit: query.limit,
+        offset: query.offset,
+      }
       const cached = await cacheService.getCachedSearchResults(
         query.q,
-        filters as Record<string, unknown>
+        cacheFilters as Record<string, unknown>
       )
 
       if (cached) {
@@ -161,7 +172,7 @@ searchHandler.get(
       // Cache results
       await cacheService.cacheSearchResults(
         query.q,
-        filters as Record<string, unknown>,
+        cacheFilters as Record<string, unknown>,
         searchResult.entries,
         searchResult.total
       )

@@ -157,7 +157,9 @@ export class DictionaryAPIClient {
         }),
         ...(options.sort_by && { sort_by: options.sort_by }),
         ...(options.sort_order && { sort_order: options.sort_order }),
-        ...(options.page && { page: options.page.toString() }),
+        ...(options.page && {
+          offset: ((options.page - 1) * (options.limit || 20)).toString(),
+        }),
         ...(options.limit && { limit: options.limit.toString() }),
       })
 
@@ -183,14 +185,14 @@ export class DictionaryAPIClient {
 
       // Extract pagination from query object if present
       if (searchData.query) {
-        transformedData.limit = searchData.query.limit || options.limit || 20
-        transformedData.page = searchData.query.page || options.page || 1
-      } else {
-        // Fallback pagination calculation
-        const limit = options.limit || 20
-        const offset = searchData.offset || 0
+        const limit = searchData.query.limit || options.limit || 20
+        const offset = searchData.query.offset || 0
         transformedData.limit = limit
         transformedData.page = Math.floor(offset / limit) + 1
+      } else {
+        // Fallback to options
+        transformedData.limit = options.limit || 20
+        transformedData.page = options.page || 1
       }
 
       // Validate and return search results
