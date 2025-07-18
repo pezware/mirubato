@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import GoogleSignInButton from '../GoogleSignInButton'
 import { Modal } from '../ui/Modal'
@@ -13,6 +14,7 @@ interface SignInModalProps {
 
 const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation(['auth', 'common'])
+  const navigate = useNavigate()
   const { login, isLoading: authLoading, error: authError } = useAuthStore()
 
   const [email, setEmail] = useState('')
@@ -50,6 +52,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
           onSuccess={() => {
             setLoginSuccess(false)
             onClose()
+            navigate('/logbook')
           }}
           onError={error => {
             console.error('Google Sign-In error:', error)

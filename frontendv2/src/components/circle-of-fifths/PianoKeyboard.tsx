@@ -160,10 +160,10 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-gray-100 rounded-lg p-2 md:p-4 overflow-x-auto">
-        <div className="relative h-32 md:h-36 min-w-[450px] md:min-w-[600px]">
+      <div className="relative bg-gray-100 rounded-lg p-1 md:p-4 overflow-x-auto">
+        <div className="relative h-24 md:h-36 min-w-[320px] md:min-w-[600px]">
           {/* White Keys */}
-          <div className="absolute bottom-0 left-0 flex gap-0.5">
+          <div className="absolute bottom-0 left-0 flex gap-0.25">
             {whiteKeys.map((note, index) => {
               // Only color notes in the first octave (indices 0-6)
               const isFirstOctave = index < 7
@@ -177,7 +177,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`white-${index}`}
                   className={`
-                    relative w-8 md:w-10 h-32 md:h-36 bg-white rounded-b
+                    relative w-6 md:w-10 h-24 md:h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
@@ -239,13 +239,13 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-mobile-${index}`}
                   className={`
-                    absolute w-5 h-16 bg-gray-900 rounded-b shadow-md
+                    absolute w-3 h-12 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 32.5 + 14.5}px`,
+                    left: `${position * 24.25 + 10.5}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote

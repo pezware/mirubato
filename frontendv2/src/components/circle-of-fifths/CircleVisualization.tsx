@@ -25,13 +25,13 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Responsive sizing
-  const svgSize = isMobile ? 600 : 500
+  // Responsive sizing - maximize on mobile
+  const svgSize = isMobile ? 800 : 500
   const centerX = svgSize / 2
   const centerY = svgSize / 2
-  const outerRadius = isMobile ? 220 : 180
-  const innerRadius = isMobile ? 160 : 120
-  const innerCircleRadius = isMobile ? 80 : 60
+  const outerRadius = isMobile ? 280 : 180
+  const innerRadius = isMobile ? 200 : 120
+  const innerCircleRadius = isMobile ? 100 : 60
 
   // Calculate path for each segment
   const createSegmentPath = (
@@ -74,18 +74,18 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
   }
 
   return (
-    <div className="flex justify-center items-center p-1 md:p-4">
+    <div className="flex justify-center items-center p-0.5 md:p-4">
       <svg
         width={svgSize}
         height={svgSize}
         viewBox={`0 0 ${svgSize} ${svgSize}`}
-        className={`w-full h-full ${isMobile ? 'max-w-[100vw] max-h-[80vh]' : 'max-w-[500px] max-h-[500px]'}`}
+        className={`w-full h-full ${isMobile ? 'max-w-[95vw] max-h-[95vw]' : 'max-w-[500px] max-h-[500px]'}`}
       >
         {/* Background circle */}
         <circle
           cx={centerX}
           cy={centerY}
-          r={outerRadius + (isMobile ? 30 : 20)}
+          r={outerRadius + (isMobile ? 40 : 20)}
           fill="#FAF8F5"
           stroke="#E8E6E1"
           strokeWidth="2"
@@ -113,7 +113,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 dominantBaseline="middle"
                 className="pointer-events-none select-none font-medium"
                 fill={isSelected ? '#1A202C' : '#4A4A4A'}
-                fontSize={isMobile ? '18' : '16'}
+                fontSize={isMobile ? '20' : '16'}
               >
                 {key}
               </text>
@@ -147,7 +147,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                   dominantBaseline="middle"
                   className="pointer-events-none select-none"
                   fill={isSelected ? '#1A202C' : '#6B6B6B'}
-                  fontSize={isMobile ? '14' : '12'}
+                  fontSize={isMobile ? '16' : '12'}
                 >
                   <tspan
                     x={
@@ -182,7 +182,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                   dominantBaseline="middle"
                   className="pointer-events-none select-none"
                   fill={isSelected ? '#1A202C' : '#6B6B6B'}
-                  fontSize={isMobile ? '15' : '13'}
+                  fontSize={isMobile ? '17' : '13'}
                 >
                   {key}
                 </text>
@@ -209,7 +209,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
 
           const { x, y } = getTextPosition(
             index,
-            outerRadius + (isMobile ? 40 : 35)
+            outerRadius + (isMobile ? 50 : 35)
           )
 
           return (
@@ -220,7 +220,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className="text-gray-500"
-              fontSize={isMobile ? '14' : '12'}
+              fontSize={isMobile ? '16' : '12'}
             >
               {sigDisplay}
             </text>

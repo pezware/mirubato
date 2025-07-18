@@ -474,7 +474,10 @@ const Dictionary: React.FC = () => {
             <span className="mr-1">←</span>
             {t('toolbox:dictionary.backToResults')}
           </button>
-          <DictionaryTerm entry={state.selectedTerm} />
+          <DictionaryTerm
+            entry={state.selectedTerm}
+            onBack={handleBackToResults}
+          />
 
           {/* Language indicator for the term */}
           {state.selectedTerm.lang &&
