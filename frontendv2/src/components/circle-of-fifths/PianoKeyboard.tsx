@@ -158,6 +158,130 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   const chordNotes = getChordNotes()
 
+  // Extract the actual root note (without 'm' for minor keys)
+  const actualRootNote = rootNote.includes('m')
+    ? rootNote.replace(/m$/, '')
+    : rootNote
+
+  // Track octave highlighting state
+  const octaveHighlighting = (() => {
+    let foundFirstRoot = false
+    let foundSecondRoot = false
+    const highlights = new Map<string, boolean>()
+
+    // Process keys in chromatic order (C, C#, D, D#, E, F, F#, G, G#, A, A#, B, C...)
+    const keyOrder = [
+      { type: 'white', index: 0, note: whiteKeys[0] }, // C
+      {
+        type: 'black',
+        index: 0,
+        note: blackKeyNotes[0],
+        displayNote: getBlackKeyLabel(0),
+      }, // C#/Db
+      { type: 'white', index: 1, note: whiteKeys[1] }, // D
+      {
+        type: 'black',
+        index: 1,
+        note: blackKeyNotes[1],
+        displayNote: getBlackKeyLabel(1),
+      }, // D#/Eb
+      { type: 'white', index: 2, note: whiteKeys[2] }, // E
+      { type: 'white', index: 3, note: whiteKeys[3] }, // F
+      {
+        type: 'black',
+        index: 2,
+        note: blackKeyNotes[2],
+        displayNote: getBlackKeyLabel(2),
+      }, // F#/Gb
+      { type: 'white', index: 4, note: whiteKeys[4] }, // G
+      {
+        type: 'black',
+        index: 3,
+        note: blackKeyNotes[3],
+        displayNote: getBlackKeyLabel(3),
+      }, // G#/Ab
+      { type: 'white', index: 5, note: whiteKeys[5] }, // A
+      {
+        type: 'black',
+        index: 4,
+        note: blackKeyNotes[4],
+        displayNote: getBlackKeyLabel(4),
+      }, // A#/Bb
+      { type: 'white', index: 6, note: whiteKeys[6] }, // B
+      // Second octave
+      { type: 'white', index: 7, note: whiteKeys[7] }, // C
+      {
+        type: 'black',
+        index: 5,
+        note: blackKeyNotes[5],
+        displayNote: getBlackKeyLabel(5),
+      }, // C#/Db
+      { type: 'white', index: 8, note: whiteKeys[8] }, // D
+      {
+        type: 'black',
+        index: 6,
+        note: blackKeyNotes[6],
+        displayNote: getBlackKeyLabel(6),
+      }, // D#/Eb
+      { type: 'white', index: 9, note: whiteKeys[9] }, // E
+      { type: 'white', index: 10, note: whiteKeys[10] }, // F
+      {
+        type: 'black',
+        index: 7,
+        note: blackKeyNotes[7],
+        displayNote: getBlackKeyLabel(7),
+      }, // F#/Gb
+      { type: 'white', index: 11, note: whiteKeys[11] }, // G
+      {
+        type: 'black',
+        index: 8,
+        note: blackKeyNotes[8],
+        displayNote: getBlackKeyLabel(8),
+      }, // G#/Ab
+      { type: 'white', index: 12, note: whiteKeys[12] }, // A
+      {
+        type: 'black',
+        index: 9,
+        note: blackKeyNotes[9],
+        displayNote: getBlackKeyLabel(9),
+      }, // A#/Bb
+      { type: 'white', index: 13, note: whiteKeys[13] }, // B
+    ]
+
+    keyOrder.forEach(key => {
+      const isRoot =
+        key.type === 'white'
+          ? key.note === actualRootNote ||
+            (keyData.enharmonic && key.note === keyData.enharmonic)
+          : key.note === actualRootNote ||
+            key.displayNote === actualRootNote ||
+            (keyData.enharmonic &&
+              (key.note === keyData.enharmonic ||
+                key.displayNote === keyData.enharmonic))
+
+      if (isRoot && !foundFirstRoot) {
+        foundFirstRoot = true
+      } else if (isRoot && foundFirstRoot && !foundSecondRoot) {
+        foundSecondRoot = true
+      }
+
+      // Highlight if we're between the first and second root (inclusive)
+      const shouldHighlight = foundFirstRoot && (!foundSecondRoot || isRoot)
+      highlights.set(`${key.type}-${key.index}`, shouldHighlight)
+    })
+
+    return highlights
+  })()
+
+  // Simple helper functions
+  const isNoteInOctaveRange = (noteIndex: number) => {
+    return octaveHighlighting.get(`white-${noteIndex}`) || false
+  }
+
+  const isBlackKeyInOctaveRange = (blackKeyIndex: number) => {
+    return octaveHighlighting.get(`black-${blackKeyIndex}`) || false
+  }
+
   return (
     <div className="w-full">
       <div className="relative bg-gray-100 rounded-lg p-1 md:p-4 overflow-x-auto">
@@ -165,12 +289,11 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
           {/* White Keys */}
           <div className="absolute bottom-0 left-0 flex gap-0.25">
             {whiteKeys.map((note, index) => {
-              // Only color notes in the first octave (indices 0-6)
-              const isFirstOctave = index < 7
-              const isInScale = isFirstOctave && isNoteInScale(note)
-              const isChordNote = isFirstOctave && chordNotes.has(note)
-              const isRootNote =
-                isFirstOctave && rootNoteWithEnharmonic.has(note)
+              // Check if this note is within the octave range starting from the root note
+              const isInOctave = isNoteInOctaveRange(index)
+              const isInScale = isInOctave && isNoteInScale(note)
+              const isChordNote = isInOctave && chordNotes.has(note)
+              const isRootNote = isInOctave && rootNoteWithEnharmonic.has(note)
               const isActive = isPlaying && isRootNote
 
               return (
@@ -221,16 +344,16 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
-              // Only color notes in the first octave (indices 0-4)
-              const isFirstOctave = index < 5
+              // Check if this black key is within the octave range
+              const isInOctave = isBlackKeyInOctaveRange(index)
               const isInScale =
-                isFirstOctave &&
+                isInOctave &&
                 (isNoteInScale(note) || isNoteInScale(displayNote))
               const isChordNote =
-                isFirstOctave &&
+                isInOctave &&
                 (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                isFirstOctave &&
+                isInOctave &&
                 (rootNoteWithEnharmonic.has(note) ||
                   rootNoteWithEnharmonic.has(displayNote))
               const isActive = isPlaying && isRootNote
@@ -287,16 +410,16 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
-              // Only color notes in the first octave (indices 0-4)
-              const isFirstOctave = index < 5
+              // Check if this black key is within the octave range
+              const isInOctave = isBlackKeyInOctaveRange(index)
               const isInScale =
-                isFirstOctave &&
+                isInOctave &&
                 (isNoteInScale(note) || isNoteInScale(displayNote))
               const isChordNote =
-                isFirstOctave &&
+                isInOctave &&
                 (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                isFirstOctave &&
+                isInOctave &&
                 (rootNoteWithEnharmonic.has(note) ||
                   rootNoteWithEnharmonic.has(displayNote))
               const isActive = isPlaying && isRootNote
