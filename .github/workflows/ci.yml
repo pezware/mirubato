@@ -163,14 +163,14 @@ jobs:
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @mirubato/frontendv2 exec playwright install --with-deps chromium
+        run: cd frontendv2 && pnpm exec playwright install --with-deps chromium
 
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm --filter @mirubato/frontendv2 exec playwright install-deps chromium
+        run: cd frontendv2 && pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests for frontendv2 (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-        run: pnpm --filter @mirubato/frontendv2 exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: cd frontendv2 && pnpm exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           CI: true
 
@@ -205,10 +205,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm --filter @mirubato/frontendv2 exec playwright install chromium
+        run: cd frontendv2 && pnpm exec playwright install chromium
 
       - name: Run smoke tests
-        run: pnpm --filter @mirubato/frontendv2 exec playwright test --grep "@smoke" --project=chromium
+        run: cd frontendv2 && pnpm exec playwright test --grep "@smoke" --project=chromium
 
       - name: Upload smoke test report
         uses: actions/upload-artifact@v4
