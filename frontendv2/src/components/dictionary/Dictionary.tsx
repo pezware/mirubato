@@ -379,6 +379,21 @@ const Dictionary: React.FC = () => {
     setState(prev => ({ ...prev, selectedTerm: null }))
   }
 
+  // Handle back to dictionary (clear filters and search)
+  const handleBackToDictionary = () => {
+    setState(prev => ({
+      ...prev,
+      searchQuery: '',
+      searchResults: [],
+      selectedTerm: null,
+      filters: {},
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      error: null,
+    }))
+  }
+
   return (
     <div className="w-full max-w-6xl mx-auto">
       <div className="mb-6">
@@ -467,13 +482,6 @@ const Dictionary: React.FC = () => {
       {state.selectedTerm ? (
         // Show selected term
         <div>
-          <button
-            onClick={handleBackToResults}
-            className="mb-4 text-sage-600 hover:text-sage-700 flex items-center"
-          >
-            <span className="mr-1">←</span>
-            {t('toolbox:dictionary.backToResults')}
-          </button>
           <DictionaryTerm
             entry={state.selectedTerm}
             onBack={handleBackToResults}
@@ -502,15 +510,29 @@ const Dictionary: React.FC = () => {
         </div>
       ) : state.searchResults.length > 0 ? (
         // Show search results
-        <DictionaryResults
-          results={state.searchResults}
-          totalResults={state.totalResults}
-          currentPage={state.currentPage}
-          totalPages={state.totalPages}
-          onTermSelect={handleTermSelect}
-          onPageChange={handlePageChange}
-          isLoading={state.isLoading}
-        />
+        <div>
+          {/* Show back button when browsing by category */}
+          {state.filters.type && state.filters.type.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToDictionary}
+              className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800 flex items-center"
+            >
+              <span className="mr-1">←</span>
+              {t('toolbox:dictionary.backToDictionary')}
+            </Button>
+          )}
+          <DictionaryResults
+            results={state.searchResults}
+            totalResults={state.totalResults}
+            currentPage={state.currentPage}
+            totalPages={state.totalPages}
+            onTermSelect={handleTermSelect}
+            onPageChange={handlePageChange}
+            isLoading={state.isLoading}
+          />
+        </div>
       ) : state.searchQuery && !state.isLoading ? (
         // No results
         <div className="bg-white rounded-lg p-6 border-l-4 border-morandi-stone-300 text-center">
