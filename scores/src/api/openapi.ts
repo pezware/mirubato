@@ -2,11 +2,13 @@
  * OpenAPI Specification for Scores Service
  */
 
+import { SERVICE_VERSION } from '../utils/version'
+
 export const openAPISpec = {
   openapi: '3.1.0',
   info: {
     title: 'Mirubato Scores API',
-    version: '1.1.0',
+    version: SERVICE_VERSION,
     description: `
 The Mirubato Scores Service provides a comprehensive API for managing sheet music scores, including storage, processing, and delivery.
 

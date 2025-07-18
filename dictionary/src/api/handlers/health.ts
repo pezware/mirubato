@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Env } from '../../types/env'
 import { CloudflareAIService } from '../../services/ai/cloudflare-ai-service'
+import { SERVICE_VERSION } from '../../utils/version'
 import {
   HealthCheckResponse,
   ServiceHealth,
@@ -83,7 +84,7 @@ healthHandler.get('/health', async c => {
   const response: HealthCheckResponse = {
     status: allHealthy ? 'healthy' : 'degraded',
     service: 'mirubato-dictionary',
-    version: '1.0.0',
+    version: SERVICE_VERSION,
     environment: c.env.ENVIRONMENT || 'production',
     timestamp: new Date().toISOString(),
     totalLatency: Date.now() - startTime,
@@ -120,7 +121,7 @@ healthHandler.get('/health/detailed', async c => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT,
     service: 'mirubato-dictionary',
-    version: '1.0.0',
+    version: SERVICE_VERSION,
     latency: Date.now() - startTime,
     system: systemInfo,
     database: {
@@ -245,7 +246,7 @@ dictionary_ai_cost_24h_usd ${aiMetrics?.total_cost || 0}
 
 # HELP dictionary_service_info Service information
 # TYPE dictionary_service_info gauge
-dictionary_service_info{version="1.0.0",environment="${c.env.ENVIRONMENT}"} 1
+dictionary_service_info{version="${SERVICE_VERSION}",environment="${c.env.ENVIRONMENT}"} 1
 `.trim()
 
     return c.text(prometheusMetrics, 200, {

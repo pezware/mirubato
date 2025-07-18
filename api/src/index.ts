@@ -6,6 +6,7 @@ import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
 import { apiCacheMiddleware } from './utils/cache'
+import { SERVICE_VERSION } from './utils/version'
 import type { RateLimit } from '@cloudflare/workers-types'
 
 // Define environment bindings
@@ -180,7 +181,7 @@ app.get('/', c => {
 <body>
   <div class="container">
     <h1>🔐 Mirubato API Service</h1>
-    <div class="version">Version 1.0.0</div>
+    <div class="version">Version ${SERVICE_VERSION}</div>
     <div class="status">Service Operational</div>
     
     <p>Welcome to the Mirubato API. This service handles authentication and data synchronization for Mirubato users.</p>

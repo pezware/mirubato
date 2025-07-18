@@ -1,8 +1,10 @@
+import { SERVICE_VERSION } from '../utils/version'
+
 export const openAPISpec = {
   openapi: '3.0.0',
   info: {
     title: 'Mirubato API',
-    version: '1.1.0',
+    version: SERVICE_VERSION,
     description:
       'REST API for Mirubato cloud sync and authentication. This API serves authenticated users only for data synchronization.',
     contact: {
