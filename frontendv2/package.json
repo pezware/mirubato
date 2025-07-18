@@ -19,8 +19,8 @@
     "deploy:production": "wrangler deploy --env production",
     "validate:i18n": "node scripts/validate-translations.cjs",
     "sync:i18n": "node scripts/sync-translations.cjs",
-    "i18n:check": "npm run validate:i18n",
-    "i18n:fix": "npm run sync:i18n -- --sort-keys",
+    "i18n:check": "pnpm run validate:i18n",
+    "i18n:fix": "pnpm run sync:i18n -- --sort-keys",
     "translate:missing": "node scripts/translate-missing.cjs"
   },
   "dependencies": {
@@ -37,8 +37,10 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
     "immer": "^10.1.1",
+    "lodash": "4.17.21",
     "lucide-react": "^0.525.0",
     "nanoid": "^5.1.5",
+    "pdfjs-dist": "^5.3.93",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
@@ -61,6 +63,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/lodash": "^4.17.20",
+    "@types/node": "^20.19.8",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.4.1",
@@ -89,6 +92,7 @@
     "vite": "^6.3.5",
     "vite-node": "^1.6.1",
     "vitest": "^3.2.4",
-    "wrangler": "^4.20.5"
+    "wrangler": "^4.20.5",
+    "zod": "4.0.5"
   }
 }

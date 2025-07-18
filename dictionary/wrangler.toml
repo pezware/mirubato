@@ -3,6 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+[build]
+command = "pnpm run build"
+
 # Production configuration (default - no env flag needed)
 vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", CORS_ORIGIN = "https://mirubato.com,https://www.mirubato.com", SEED_ENABLED = "true", SEED_DAILY_TOKEN_BUDGET = "5000", SEED_PRIORITY_THRESHOLD = "8", SEED_BATCH_SIZE = "5", QUALITY_MIN_THRESHOLD = "85" }
 routes = [

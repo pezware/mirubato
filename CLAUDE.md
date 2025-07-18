@@ -16,6 +16,13 @@
 - Enhanced security posture across all microservices
 - @cloudflare/puppeteer downgraded to 0.0.11 for security fix
 
+### Package Manager Migration
+
+- **Migrated from npm to pnpm** for better performance and disk space efficiency
+- All build commands updated in `wrangler.toml` files to use `pnpm run build`
+- CI/CD workflows updated to use pnpm with proper caching
+- Developers must install pnpm globally: `npm install -g pnpm`
+
 ## 🚨 CRITICAL: Start Here
 
 ### Deployment Architecture (2025)
@@ -35,18 +42,18 @@
 
 ```bash
 # Local Development
-npm install                    # Install all dependencies
+pnpm install                    # Install all dependencies
 ./start-scorebook.sh           # Start all services with proper domains
 
 # Individual services (for debugging)
 cd api && wrangler dev --port 9797 --env local --local-protocol http        # http://api-mirubato.localhost:9797
 cd scores && wrangler dev --port 9788 --env local --local-protocol http     # http://scores-mirubato.localhost:9788
 cd dictionary && wrangler dev --port 9799 --env local --local-protocol http # http://dictionary-mirubato.localhost:9799
-cd frontendv2 && npm run dev                                                # http://www-mirubato.localhost:4000
+cd frontendv2 && pnpm run dev                                                # http://www-mirubato.localhost:4000
 
 # API Development
-cd api && npm run dev          # Full dev workflow (build + server)
-cd api && npm run build        # Production build
+cd api && pnpm run dev          # Full dev workflow (build + server)
+cd api && pnpm run build        # Production build
 
 # Deployment (from respective directories)
 # Frontend (now frontendv2)
@@ -134,7 +141,7 @@ For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)*
 ### Before Starting Work
 
 - [ ] Pull latest from main
-- [ ] Run `npm install` if package.json changed
+- [ ] Run `pnpm install` if package.json changed
 - [ ] Generate configs for your environment
 - [ ] Check `/health` endpoint if working with production
 
@@ -247,10 +254,10 @@ When implementing any new module, **ALWAYS** follow these steps:
 2. **Add TypeDoc Documentation**
    - Document all public interfaces with JSDoc comments
    - Include examples in documentation
-   - Run `npm run docs:generate` to verify
+   - Run `pnpm run docs:generate` to verify
 
 3. **Verify Test Coverage**
-   - Run `npm test -- --coverage` for the module
+   - Run `pnpm test -- --coverage` for the module
    - Ensure coverage meets requirements
    - No module is complete without proper tests
 
@@ -264,10 +271,10 @@ touch src/modules/newModule/NewModule.test.ts
 # 3. Implement module to make tests pass
 # 4. Add JSDoc comments
 # 5. Generate and verify documentation
-npm run docs:generate
+pnpm run docs:generate
 
 # 6. Check coverage
-npm test -- src/modules/newModule --coverage
+pnpm test -- src/modules/newModule --coverage
 ```
 
 ### Auto-Logging Module (July 2025)
@@ -447,9 +454,9 @@ datasets.push({
 
 ```bash
 # API Development:
-cd api && npm run dev          # Start local API server
-cd api && npm run test         # Run API tests
-cd api && npm run type-check   # Verify TypeScript types
+cd api && pnpm run dev          # Start local API server
+cd api && pnpm run test         # Run API tests
+cd api && pnpm run type-check   # Verify TypeScript types
 
 # Frontend API Integration:
 # Types are defined directly in frontendv2/src/api/ files
@@ -558,10 +565,10 @@ cd api/scripts
 
 # Direct migrations (only for development)
 cd backend
-npm run db:migrate                  # Local only
-npm run db:migrate:dev              # Development environment
-npm run db:migrate:staging          # Staging environment
-npm run db:migrate:production       # Production environment
+pnpm run db:migrate                  # Local only
+pnpm run db:migrate:dev              # Development environment
+pnpm run db:migrate:staging          # Staging environment
+pnpm run db:migrate:production       # Production environment
 ```
 
 **Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
@@ -588,18 +595,18 @@ npm run db:migrate:production       # Production environment
 
 ```bash
 # Check translation completeness
-npm run validate:i18n
+pnpm run validate:i18n
 
 # Sync missing keys from English reference
-npm run sync:i18n
+pnpm run sync:i18n
 
 # Sync with alphabetical sorting
-npm run i18n:fix
+pnpm run i18n:fix
 
 # Advanced options
-npm run sync:i18n -- --dry-run         # Preview changes
-npm run sync:i18n -- --remove-extra    # Remove non-reference keys
-npm run sync:i18n -- --namespace auth  # Target specific namespace
+pnpm run sync:i18n -- --dry-run         # Preview changes
+pnpm run sync:i18n -- --remove-extra    # Remove non-reference keys
+pnpm run sync:i18n -- --namespace auth  # Target specific namespace
 ```
 
 ### Translation Workflow
@@ -619,10 +626,10 @@ npm run sync:i18n -- --namespace auth  # Target specific namespace
    ```bash
    # Add to English file first
    # Then sync to other languages
-   npm run sync:i18n
+   pnpm run sync:i18n
 
    # Check completeness
-   npm run validate:i18n
+   pnpm run validate:i18n
    ```
 
 3. **Translation Structure**:
@@ -710,17 +717,17 @@ See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
 
 ```bash
 # Run all tests with coverage
-npm run test:coverage
+pnpm run test:coverage
 
 # Run specific workspace tests
-npm test -w @mirubato/frontend
-npm test -w @mirubato/backend
+pnpm test -w @mirubato/frontend
+pnpm test -w @mirubato/backend
 
 # Run specific test file
-npm test -- src/utils/audioManager.test.ts
+pnpm test -- src/utils/audioManager.test.ts
 
 # Watch mode for development
-npm test -- --watch
+pnpm test -- --watch
 ```
 
 ### Current Test Status (as of July 2025)

@@ -293,7 +293,7 @@ export const ErrorResponseSchema = z.object({
   status: z.literal('error'),
   error: z.string(),
   code: z.string().optional(),
-  details: z.record(z.any()).optional(),
+  details: z.record(z.string(), z.any()).optional(),
 })
 
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
