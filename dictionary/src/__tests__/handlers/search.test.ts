@@ -299,7 +299,7 @@ describe('Search Handler', () => {
       expect(mockDbMethods.search).toHaveBeenCalled()
     })
 
-    it('should validate query parameter', async () => {
+    it('should allow empty query for category browsing', async () => {
       const request = createTestRequest('/')
       const response = await testHandler(
         searchHandler,
@@ -308,10 +308,11 @@ describe('Search Handler', () => {
         mockExecutionContext
       )
 
-      expect(response.status).toBe(400)
+      expect(response.status).toBe(200)
       const data = (await response.json()) as any
-      expect(data.error).toBeDefined()
-      expect(data.error.issues).toBeDefined()
+      expect(data.success).toBe(true)
+      // Empty query should return all entries (category browsing)
+      expect(data.data).toBeDefined()
     })
 
     it('should handle minimum query length', async () => {

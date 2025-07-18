@@ -155,20 +155,26 @@ export class DictionaryDatabase {
    * Search dictionary entries with language support
    */
   async search(query: SearchQuery): Promise<SearchResult> {
-    const normalizedQuery = normalizeTerm(query.q)
+    const normalizedQuery = query.q ? normalizeTerm(query.q) : ''
     const limit = query.limit || 20
     const offset = query.offset || 0
     const uiLang = query.lang || 'en'
 
     // Build WHERE conditions
-    const conditions: string[] = [
-      '(normalized_term LIKE ? OR term LIKE ? OR json_extract(metadata, "$.synonyms") LIKE ?)',
-    ]
-    const params: any[] = [
-      `%${normalizedQuery}%`,
-      `%${query.q}%`,
-      `%${normalizedQuery}%`,
-    ]
+    const conditions: string[] = []
+    const params: any[] = []
+
+    // Only add search condition if query is not empty
+    if (query.q && query.q.trim() !== '') {
+      conditions.push(
+        '(normalized_term LIKE ? OR term LIKE ? OR json_extract(metadata, "$.synonyms") LIKE ?)'
+      )
+      params.push(
+        `%${normalizedQuery}%`,
+        `%${query.q}%`,
+        `%${normalizedQuery}%`
+      )
+    }
 
     // Language filtering
     if (!query.searchAllLanguages && !query.filters?.languages?.length) {
