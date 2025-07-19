@@ -41,19 +41,21 @@ export function CreateGoalModal({
   scoreId,
 }: CreateGoalModalProps) {
   const { t } = useTranslation(['repertoire', 'common'])
-  const { createGoal } = useRepertoireStore()
+  const { createGoal, initializeGoalWithHistory } = useRepertoireStore()
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<GoalType>('repertoire')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [targetValue, setTargetValue] = useState<number | ''>('')
   const [targetDate, setTargetDate] = useState('')
   const [dailyMinutes, setDailyMinutes] = useState<number | ''>('')
   const [focusMeasures, setFocusMeasures] = useState('')
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [practiceNotes, setPracticeNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [historicalPractice, setHistoricalPractice] = useState<number>(0)
 
   // Load scores if not already loaded
   useEffect(() => {
@@ -62,6 +64,21 @@ export function CreateGoalModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
+
+  // Calculate historical practice when modal opens
+  useEffect(() => {
+    const loadHistoricalData = async () => {
+      if (isOpen && scoreId && selectedTemplate === 'practice_time') {
+        const historical = await initializeGoalWithHistory(
+          scoreId,
+          selectedTemplate
+        )
+        setHistoricalPractice(historical)
+      }
+    }
+    loadHistoricalData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, scoreId, selectedTemplate])
 
   // Get score info if scoreId provided
   const score = scores.find(s => s.id === scoreId)
@@ -180,6 +197,7 @@ export function CreateGoalModal({
         title,
         description: description || undefined,
         type: selectedTemplate,
+        targetValue: targetValue ? Number(targetValue) : undefined,
         targetDate: targetDate || undefined,
         scoreId,
         measures: focusMeasures
@@ -197,6 +215,7 @@ export function CreateGoalModal({
             : undefined,
       }
 
+      // Create the goal - the store will handle initializing with historical data
       await createGoal(goalData)
       onClose()
     } catch (_error) {
@@ -292,6 +311,41 @@ export function CreateGoalModal({
             placeholder={t('repertoire:goal.enterDescription')}
             className="w-full"
           />
+        </div>
+
+        {/* Target Value */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">
+            {t('repertoire:targetValue')} ({t('common:optional')})
+          </label>
+          <Input
+            type="number"
+            value={targetValue}
+            onChange={e =>
+              setTargetValue(
+                e.target.value === '' ? '' : Number(e.target.value)
+              )
+            }
+            placeholder={t('repertoire:targetValuePlaceholder')}
+            className="w-full"
+          />
+          <p className="mt-1 text-xs text-stone-500">
+            {selectedTemplate === 'practice_time' &&
+              t('repertoire:targetValueHelp.practiceTime')}
+            {selectedTemplate === 'accuracy' &&
+              t('repertoire:targetValueHelp.accuracy')}
+            {selectedTemplate === 'repertoire' &&
+              t('repertoire:targetValueHelp.repertoire')}
+            {selectedTemplate === 'custom' &&
+              t('repertoire:targetValueHelp.custom')}
+          </p>
+          {selectedTemplate === 'practice_time' && historicalPractice > 0 && (
+            <p className="mt-1 text-xs text-green-600">
+              {t('repertoire:alreadyPracticed', {
+                minutes: historicalPractice,
+              })}
+            </p>
+          )}
         </div>
 
         {/* Milestones */}

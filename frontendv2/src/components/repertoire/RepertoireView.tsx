@@ -107,12 +107,18 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         }
       }
 
+      // Count sessions linked to goals
+      const relatedSessions = scoreGoals.reduce((count, goal) => {
+        return count + (goal.relatedSessions || 0)
+      }, 0)
+
       return {
         ...item,
         scoreTitle,
         scoreComposer,
         isLogbookPiece,
         activeGoals: scoreGoals,
+        relatedSessions,
         recentPractice: practiceSessions.slice(0, 5).map(session => ({
           id: session.id,
           timestamp: new Date(session.timestamp).getTime(),

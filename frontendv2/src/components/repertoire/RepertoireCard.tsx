@@ -34,6 +34,7 @@ interface EnrichedRepertoireItem extends RepertoireItem {
   activeGoals: Goal[]
   recentPractice: PracticeSession[]
   isLogbookPiece?: boolean
+  relatedSessions?: number // Number of practice sessions linked to goals
 }
 
 interface RepertoireCardProps {
@@ -180,6 +181,14 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
                   <span>
                     {t('repertoire:sessionCount', {
                       count: item.practiceCount,
+                    })}
+                  </span>
+                )}
+                {item.relatedSessions && item.relatedSessions > 0 && (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <Target className="w-3 h-3" />
+                    {t('repertoire:linkedSessions', {
+                      count: item.relatedSessions,
                     })}
                   </span>
                 )}

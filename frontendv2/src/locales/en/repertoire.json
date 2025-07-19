@@ -102,5 +102,15 @@
   "goalType.practiceTime": "Practice Time",
   "goalType.accuracy": "Accuracy",
   "goalType.repertoire": "Repertoire",
-  "goalType.custom": "Custom"
+  "goalType.custom": "Custom",
+
+  "linkedSessions": "{{count}} linked sessions",
+  "alreadyPracticed": "You've already practiced {{minutes}} minutes on this piece",
+
+  "targetValueHelp": {
+    "practiceTime": "Enter total minutes to practice (e.g., 300 for 5 hours)",
+    "accuracy": "Enter target accuracy percentage (e.g., 95 for 95%)",
+    "repertoire": "Enter number of performances or mastery level",
+    "custom": "Enter your custom metric value"
+  }
 }

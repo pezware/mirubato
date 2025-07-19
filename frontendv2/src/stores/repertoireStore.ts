@@ -6,7 +6,13 @@ import {
   type RepertoireStatus,
   type RepertoireStats,
 } from '@/api/repertoire'
-import { goalsApi, type Goal, type CreateGoalInput } from '@/api/goals'
+import {
+  goalsApi,
+  type Goal,
+  type CreateGoalInput,
+  type GoalType,
+} from '@/api/goals'
+import { type LogbookEntry } from '@/api/logbook'
 import { useAuthStore } from './authStore'
 import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
@@ -72,6 +78,14 @@ interface RepertoireStore {
   getFilteredRepertoire: () => RepertoireItem[]
   getGoalsByScore: (scoreId: string) => Goal[]
   getActiveGoalsByScore: (scoreId: string) => Goal[]
+
+  // Goal-Practice Linking
+  linkPracticeToGoals: (entry: LogbookEntry) => Promise<void>
+  calculateGoalProgress: (goalId: string) => Promise<number>
+  initializeGoalWithHistory: (
+    scoreId: string,
+    goalType: GoalType
+  ) => Promise<number>
 }
 
 export const useRepertoireStore = create<RepertoireStore>()(
@@ -433,14 +447,23 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Create goal
       createGoal: async (goalInput: CreateGoalInput) => {
         try {
-          const { isLocalMode, goals } = get()
+          const { isLocalMode, goals, initializeGoalWithHistory } = get()
+
+          // Calculate initial value from historical practice
+          let initialValue = 0
+          if (goalInput.scoreId && goalInput.type === 'practice_time') {
+            initialValue = await initializeGoalWithHistory(
+              goalInput.scoreId,
+              goalInput.type
+            )
+          }
 
           if (isLocalMode) {
             // Create locally
             const newGoal: Goal = {
               ...goalInput,
               id: nanoid(),
-              currentValue: 0,
+              currentValue: initialValue,
               status: 'active',
               relatedSessions: 0,
               createdAt: Date.now(),
@@ -581,6 +604,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
             const updatedGoal = {
               ...goal,
               currentValue: newValue,
+              relatedSessions: (goal.relatedSessions || 0) + 1,
               status: completed ? ('completed' as const) : goal.status,
               updatedAt: Date.now(),
             }
@@ -689,6 +713,118 @@ export const useRepertoireStore = create<RepertoireStore>()(
         return Array.from(goals.values()).filter(
           goal => goal.scoreId === scoreId && goal.status === 'active'
         )
+      },
+
+      // Link practice session to goals
+      linkPracticeToGoals: async (entry: LogbookEntry) => {
+        const { goals, trackGoalProgress } = get()
+
+        // For each piece in the practice session
+        for (const piece of entry.pieces) {
+          // Find matching goals by scoreId or by title/composer
+          const matchingGoals = Array.from(goals.values()).filter(goal => {
+            // Match by scoreId if available
+            if (goal.scoreId && entry.scoreId) {
+              return goal.scoreId === entry.scoreId
+            }
+
+            // Match by title and composer for logbook pieces
+            if (goal.scoreId && piece.title) {
+              // The scoreId for logbook pieces is "title-composer"
+              const expectedScoreId = piece.composer
+                ? `${piece.title}-${piece.composer}`
+                : piece.title
+              return goal.scoreId === expectedScoreId
+            }
+
+            return false
+          })
+
+          // Update progress for each matching goal
+          for (const goal of matchingGoals) {
+            if (goal.status === 'active' && goal.type === 'practice_time') {
+              // For practice time goals, add the duration in minutes
+              await trackGoalProgress(
+                goal.id,
+                entry.duration,
+                entry.notes || undefined
+              )
+            }
+            // Future: Handle other goal types (accuracy, repertoire, etc.)
+          }
+        }
+      },
+
+      // Calculate total progress for a goal from all linked practice sessions
+      calculateGoalProgress: async (goalId: string) => {
+        const { goals } = get()
+        const goal = goals.get(goalId)
+        if (!goal) return 0
+
+        // Get logbook entries
+        const { useLogbookStore } = await import('./logbookStore')
+        const entries = useLogbookStore.getState().entries
+
+        let totalProgress = 0
+
+        // Calculate based on goal type
+        if (goal.type === 'practice_time') {
+          // Sum all practice time for matching pieces
+          for (const entry of entries) {
+            for (const piece of entry.pieces) {
+              // Check if this piece matches the goal
+              const matchesGoal =
+                goal.scoreId &&
+                ((entry.scoreId && goal.scoreId === entry.scoreId) ||
+                  (piece.title &&
+                    goal.scoreId ===
+                      (piece.composer
+                        ? `${piece.title}-${piece.composer}`
+                        : piece.title)))
+
+              if (matchesGoal) {
+                totalProgress += entry.duration
+              }
+            }
+          }
+        }
+
+        return totalProgress
+      },
+
+      // Initialize goal with historical practice data
+      initializeGoalWithHistory: async (
+        scoreId: string,
+        goalType: GoalType
+      ) => {
+        // Get logbook entries
+        const { useLogbookStore } = await import('./logbookStore')
+        const entries = useLogbookStore.getState().entries
+
+        let historicalValue = 0
+
+        if (goalType === 'practice_time') {
+          // Sum all historical practice time
+          for (const entry of entries) {
+            for (const piece of entry.pieces) {
+              // Check if this piece matches the scoreId
+              const matchesScore =
+                (entry.scoreId && scoreId === entry.scoreId) ||
+                (piece.title &&
+                  scoreId ===
+                    (piece.composer
+                      ? `${piece.title}-${piece.composer}`
+                      : piece.title))
+
+              if (matchesScore) {
+                historicalValue += entry.duration
+              }
+            }
+          }
+        }
+        // Future: Calculate historical data for other goal types
+
+        return historicalValue
       },
     }),
     {

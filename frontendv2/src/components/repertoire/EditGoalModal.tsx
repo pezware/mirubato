@@ -148,6 +148,14 @@ export function EditGoalModal({
             placeholder={t('repertoire:targetValuePlaceholder')}
             className="w-full"
           />
+          <p className="mt-1 text-xs text-stone-500">
+            {type === 'practice_time' &&
+              t('repertoire:targetValueHelp.practiceTime')}
+            {type === 'accuracy' && t('repertoire:targetValueHelp.accuracy')}
+            {type === 'repertoire' &&
+              t('repertoire:targetValueHelp.repertoire')}
+            {type === 'custom' && t('repertoire:targetValueHelp.custom')}
+          </p>
         </div>
 
         {/* Target Date */}
