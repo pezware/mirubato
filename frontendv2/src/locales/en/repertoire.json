@@ -100,14 +100,7 @@
   "confirmDeleteGoal": "Are you sure you want to delete this goal?",
 
   "goalType.practiceTime": "Practice Time",
-  "goalType.practiceFrequency": "Practice Frequency",
-  "goalType.memorization": "Memorization",
-  "goalType.technique": "Technique",
-  "goalType.performance": "Performance",
-  "goalType.custom": "Custom",
-
-  "goalUnit.minutes": "minutes",
-  "goalUnit.hours": "hours",
-  "goalUnit.times": "times",
-  "goalUnit.percentage": "percentage"
+  "goalType.accuracy": "Accuracy",
+  "goalType.repertoire": "Repertoire",
+  "goalType.custom": "Custom"
 }

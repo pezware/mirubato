@@ -6,7 +6,7 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Card } from '@/components/ui/Card'
 import { showToast } from '@/utils/toastManager'
-import { Goal, GoalType, GoalUnit } from '@/api/goals'
+import { Goal, GoalType, GoalStatus } from '@/api/goals'
 
 interface EditGoalModalProps {
   isOpen: boolean
@@ -30,29 +30,18 @@ export function EditGoalModal({
   const [targetValue, setTargetValue] = useState(
     goal.targetValue?.toString() || ''
   )
-  const [unit, setUnit] = useState(goal.unit || 'times')
   const [targetDate, setTargetDate] = useState(
-    goal.targetDate ? new Date(goal.targetDate).toISOString().split('T')[0] : ''
+    goal.targetDate
+      ? new Date(parseInt(goal.targetDate)).toISOString().split('T')[0]
+      : ''
   )
   const [isLoading, setIsLoading] = useState(false)
 
   const typeOptions: Array<{ value: GoalType; label: string }> = [
     { value: 'practice_time', label: t('repertoire:goalType.practiceTime') },
-    {
-      value: 'practice_frequency',
-      label: t('repertoire:goalType.practiceFrequency'),
-    },
-    { value: 'memorization', label: t('repertoire:goalType.memorization') },
-    { value: 'technique', label: t('repertoire:goalType.technique') },
-    { value: 'performance', label: t('repertoire:goalType.performance') },
+    { value: 'accuracy', label: t('repertoire:goalType.accuracy') },
+    { value: 'repertoire', label: t('repertoire:goalType.repertoire') },
     { value: 'custom', label: t('repertoire:goalType.custom') },
-  ]
-
-  const unitOptions: Array<{ value: GoalUnit; label: string }> = [
-    { value: 'minutes', label: t('repertoire:goalUnit.minutes') },
-    { value: 'hours', label: t('repertoire:goalUnit.hours') },
-    { value: 'times', label: t('repertoire:goalUnit.times') },
-    { value: 'percentage', label: t('repertoire:goalUnit.percentage') },
   ]
 
   const handleSave = async () => {
@@ -68,8 +57,9 @@ export function EditGoalModal({
         description: description || undefined,
         type,
         targetValue: targetValue ? parseFloat(targetValue) : undefined,
-        unit: targetValue ? unit : undefined,
-        targetDate: targetDate ? new Date(targetDate).getTime() : undefined,
+        targetDate: targetDate
+          ? new Date(targetDate).getTime().toString()
+          : undefined,
       }
 
       await onSave(updates)
@@ -83,7 +73,7 @@ export function EditGoalModal({
 
   const handleDelete = () => {
     if (confirm(t('repertoire:confirmDeleteGoal'))) {
-      onSave({ status: 'cancelled' })
+      onSave({ status: 'abandoned' as GoalStatus })
       onClose()
     }
   }
@@ -144,34 +134,20 @@ export function EditGoalModal({
           />
         </div>
 
-        {/* Target Value and Unit */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">
-              {t('repertoire:targetValue')}
-            </label>
-            <Input
-              type="number"
-              value={targetValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setTargetValue(e.target.value)
-              }
-              placeholder={t('repertoire:targetValuePlaceholder')}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">
-              {t('repertoire:unit')}
-            </label>
-            <Select
-              value={unit}
-              onChange={value => setUnit(value as GoalUnit)}
-              options={unitOptions}
-              className="w-full"
-              disabled={!targetValue}
-            />
-          </div>
+        {/* Target Value */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">
+            {t('repertoire:targetValue')}
+          </label>
+          <Input
+            type="number"
+            value={targetValue}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setTargetValue(e.target.value)
+            }
+            placeholder={t('repertoire:targetValuePlaceholder')}
+            className="w-full"
+          />
         </div>
 
         {/* Target Date */}
@@ -197,7 +173,7 @@ export function EditGoalModal({
                 {t('repertoire:currentProgress')}
               </span>
               <span className="text-sm text-stone-600">
-                {goal.currentValue} / {goal.targetValue} {goal.unit}
+                {goal.currentValue} / {goal.targetValue}
               </span>
             </div>
             <div className="w-full bg-stone-200 rounded-full h-2">
