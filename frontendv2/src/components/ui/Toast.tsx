@@ -150,7 +150,5 @@ export interface UseToastReturn {
   clearToasts: () => void
 }
 
-// This would typically be implemented in a store or context
-// Example usage:
-// const { showToast } = useToast()
-// showToast({ type: 'success', message: 'Changes saved!' })
+// Export the showToast function from toastManager for convenience
+export { showToast } from '@/utils/toastManager'

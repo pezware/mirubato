@@ -30,6 +30,7 @@ const Toolbox = lazy(() => import('./pages/Toolbox'))
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
+import { ToastProvider } from './components/ui/ToastProvider'
 
 // Loading component
 const PageLoader = () => (
@@ -59,6 +60,7 @@ function App() {
     <AutoLoggingProvider>
       <Router>
         <div className="min-h-screen bg-morandi-stone-100">
+          <ToastProvider />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}

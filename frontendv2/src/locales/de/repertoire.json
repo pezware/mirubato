@@ -1,0 +1,13 @@
+{
+  "title": "Repertoire",
+  "description": "Verwalten Sie Ihr musikalisches Repertoire und verfolgen Sie Ihren Fortschritt",
+  "empty": "Noch keine Stücke in Ihrem Repertoire",
+  "addFirst": "Fügen Sie Ihr erstes Stück hinzu",
+  "status": {
+    "planned": "Geplant",
+    "learning": "Lernen",
+    "working": "In Arbeit",
+    "polished": "Poliert",
+    "performance_ready": "Aufführungsbereit"
+  }
+}

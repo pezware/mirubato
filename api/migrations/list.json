@@ -27,6 +27,10 @@
     {
       "name": "0007_migrate_data_to_lowercase.sql",
       "version": 7
+    },
+    {
+      "name": "0008_repertoire_and_annotations.sql",
+      "version": 8
     }
   ]
 }

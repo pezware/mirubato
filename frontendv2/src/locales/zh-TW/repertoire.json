@@ -1,0 +1,13 @@
+{
+  "title": "曲目庫",
+  "description": "管理您的音樂曲目並追蹤進度",
+  "empty": "您的曲目庫中還沒有樂曲",
+  "addFirst": "添加您的第一首樂曲",
+  "status": {
+    "planned": "計劃中",
+    "learning": "學習中",
+    "working": "練習中",
+    "polished": "精煉",
+    "performance_ready": "演出就緒"
+  }
+}

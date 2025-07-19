@@ -1,0 +1,13 @@
+{
+  "title": "Repertoire",
+  "description": "Manage your musical repertoire and track your progress",
+  "empty": "No pieces in your repertoire yet",
+  "addFirst": "Add your first piece",
+  "status": {
+    "planned": "Planned",
+    "learning": "Learning",
+    "working": "Working",
+    "polished": "Polished",
+    "performance_ready": "Performance Ready"
+  }
+}

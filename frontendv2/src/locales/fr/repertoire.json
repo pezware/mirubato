@@ -1,0 +1,13 @@
+{
+  "title": "Répertoire",
+  "description": "Gérez votre répertoire musical et suivez vos progrès",
+  "empty": "Aucune pièce dans votre répertoire pour le moment",
+  "addFirst": "Ajoutez votre première pièce",
+  "status": {
+    "planned": "Planifié",
+    "learning": "En apprentissage",
+    "working": "En travail",
+    "polished": "Poli",
+    "performance_ready": "Prêt pour la performance"
+  }
+}

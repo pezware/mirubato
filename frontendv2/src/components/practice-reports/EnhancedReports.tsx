@@ -11,7 +11,7 @@ import { LogbookEntry } from '../../api/logbook'
 const OverviewView = lazy(() => import('./views/OverviewView'))
 const AnalyticsView = lazy(() => import('./views/AnalyticsView'))
 const DataTableView = lazy(() => import('./views/DataTableView'))
-const PiecesView = lazy(() => import('./views/PiecesView'))
+const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
 
 export default function EnhancedReports() {
@@ -92,8 +92,8 @@ export default function EnhancedReports() {
     switch (reportView) {
       case 'overview':
         return <OverviewView analytics={analytics} />
-      case 'pieces':
-        return <PiecesView analytics={analytics} />
+      case 'repertoire':
+        return <RepertoireView analytics={analytics} />
       case 'analytics':
         return <AnalyticsView analytics={analytics} />
       case 'data':
