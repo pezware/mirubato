@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
-import { Textarea } from '@/components/ui/Textarea'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { showToast } from '@/utils/toastManager'
 import { Link, Plus, X } from 'lucide-react'
@@ -35,7 +34,12 @@ export function EditNotesModal({
     if (newLink.trim()) {
       // Basic URL validation
       try {
-        new URL(newLink)
+        const url = new URL(newLink.trim())
+        // Only allow http and https protocols for security
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          showToast(t('repertoire:invalidUrl'), 'error')
+          return
+        }
         setLinks([...links, newLink.trim()])
         setNewLink('')
       } catch {
@@ -79,7 +83,9 @@ export function EditNotesModal({
           </label>
           <Textarea
             value={notes}
-            onChange={e => setNotes(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setNotes(e.target.value)
+            }
             placeholder={t('repertoire:notesPlaceholder')}
             rows={6}
             className="w-full"
@@ -103,6 +109,7 @@ export function EditNotesModal({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Link className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                      {/* Safe: URLs are validated in handleAddLink to only allow http/https protocols */}
                       <a
                         href={link}
                         target="_blank"
@@ -129,9 +136,13 @@ export function EditNotesModal({
             <Input
               type="url"
               value={newLink}
-              onChange={e => setNewLink(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewLink(e.target.value)
+              }
               placeholder={t('repertoire:linkPlaceholder')}
-              onKeyPress={e => e.key === 'Enter' && handleAddLink()}
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                e.key === 'Enter' && handleAddLink()
+              }
               className="flex-1"
             />
             <Button
