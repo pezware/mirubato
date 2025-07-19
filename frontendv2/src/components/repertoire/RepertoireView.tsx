@@ -99,7 +99,12 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         scoreTitle: score?.title || 'Unknown Score',
         scoreComposer: score?.composer || '',
         activeGoals: scoreGoals,
-        recentPractice: practiceSessions.slice(0, 5),
+        recentPractice: practiceSessions.slice(0, 5).map(session => ({
+          id: session.id,
+          timestamp: new Date(session.timestamp).getTime(),
+          duration: session.duration,
+          notes: session.notes || undefined,
+        })),
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
