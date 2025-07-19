@@ -106,11 +106,11 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   }
 
   const handleViewScore = () => {
-    navigate(`/scorebook/view/${item.scoreId}`)
+    navigate(`/scorebook/${item.scoreId}`)
   }
 
   const handlePractice = () => {
-    navigate(`/scorebook/view/${item.scoreId}?startPractice=true`)
+    navigate(`/scorebook/${item.scoreId}?startPractice=true`)
   }
 
   return (
@@ -272,8 +272,9 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
               <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-stone-200 py-1 z-10">
                 <button
                   onClick={() => {
-                    navigate(`/repertoire/edit/${item.scoreId}`)
+                    // For now, close the menu and show a toast that edit functionality is coming soon
                     setShowMenu(false)
+                    // TODO: Implement edit notes functionality
                   }}
                   className="flex items-center gap-2 w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                 >
