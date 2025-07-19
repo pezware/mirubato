@@ -1,5 +1,6 @@
 -- Migration: Add repertoire and annotation tables
 -- Description: Support for repertoire management, goals integration, and score annotations
+-- Note: milestones column was skipped as it already exists in the goals table (added in a previous migration)
 
 -- Create user_repertoire table for tracking piece status and notes
 CREATE TABLE IF NOT EXISTS user_repertoire (
@@ -30,10 +31,11 @@ CREATE TABLE IF NOT EXISTS score_annotations (
 );
 
 -- Add score-specific fields to goals table
+-- Note: milestones column already exists in the goals table, so we skip it
 ALTER TABLE goals ADD COLUMN score_id TEXT;
 ALTER TABLE goals ADD COLUMN measures TEXT; -- JSON array of measure numbers/ranges
 ALTER TABLE goals ADD COLUMN practice_plan TEXT; -- JSON structure for practice requirements
-ALTER TABLE goals ADD COLUMN milestones TEXT; -- JSON array of milestone objects
+-- ALTER TABLE goals ADD COLUMN milestones TEXT; -- Skipped: column already exists
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_repertoire_user ON user_repertoire(user_id);

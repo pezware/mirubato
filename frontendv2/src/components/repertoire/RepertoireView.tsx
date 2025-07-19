@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
+import { useScoreStore } from '@/stores/scoreStore'
 import type { RepertoireStatus } from '@/api/repertoire'
 import { EnhancedAnalyticsData } from '@/types/reporting'
 import Button from '@/components/ui/Button'
@@ -39,21 +40,17 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     getActiveGoalsByScore,
   } = useRepertoireStore()
 
-  // TODO: Implement score fetching when scoreStore has scores functionality
-  interface Score {
-    id: string
-    title: string
-    composer?: string
-    difficulty?: string
-  }
-  const scores: Score[] = []
-  const loadScores = () => {}
+  const {
+    userLibrary: scores,
+    loadUserLibrary,
+    isLoading: scoresLoading,
+  } = useScoreStore()
 
   // Load data on mount
   useEffect(() => {
     loadRepertoire()
     loadGoals()
-    loadScores()
+    loadUserLibrary()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -110,7 +107,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics])
 
-  if (repertoireLoading) {
+  if (repertoireLoading || scoresLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loading />

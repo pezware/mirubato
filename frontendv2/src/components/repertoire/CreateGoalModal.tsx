@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
+import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -41,14 +42,7 @@ export function CreateGoalModal({
 }: CreateGoalModalProps) {
   const { t } = useTranslation(['repertoire', 'common'])
   const { createGoal } = useRepertoireStore()
-  // TODO: Implement score fetching when scoreStore has scores functionality
-  interface Score {
-    id: string
-    title: string
-    composer?: string
-    difficulty?: string
-  }
-  const scores: Score[] = []
+  const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<GoalType>('repertoire')
@@ -60,6 +54,14 @@ export function CreateGoalModal({
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [practiceNotes, setPracticeNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load scores if not already loaded
+  useEffect(() => {
+    if (isOpen && scores.length === 0) {
+      loadUserLibrary()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   // Get score info if scoreId provided
   const score = scores.find(s => s.id === scoreId)

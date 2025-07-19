@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
+import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -28,20 +29,15 @@ export function AddToRepertoireModal({
   const [isLoading, setIsLoading] = useState(false)
 
   const { addToRepertoire, repertoire } = useRepertoireStore()
-  // TODO: Implement score fetching when scoreStore has scores functionality
-  interface Score {
-    id: string
-    title: string
-    composer?: string
-    difficulty?: string
-  }
-  const scores: Score[] = []
-  const scoresLoading = false
-  const loadScores = () => {}
+  const {
+    userLibrary: scores,
+    loadUserLibrary,
+    isLoading: scoresLoading,
+  } = useScoreStore()
 
   useEffect(() => {
     if (isOpen && scores.length === 0) {
-      loadScores()
+      loadUserLibrary()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
