@@ -91,10 +91,27 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         entry => entry.scoreId === item.scoreId
       )
 
+      // For logbook pieces, the scoreId is in format "title-composer"
+      // We need to extract the title and composer from the scoreId
+      let scoreTitle = score?.title || 'Unknown Score'
+      let scoreComposer = score?.composer || ''
+      let isLogbookPiece = false
+
+      if (!score && item.scoreId.includes('-')) {
+        // This is likely a logbook piece
+        const parts = item.scoreId.split('-')
+        if (parts.length >= 2) {
+          scoreTitle = parts[0]
+          scoreComposer = parts.slice(1).join('-') // Handle composers with hyphens
+          isLogbookPiece = true
+        }
+      }
+
       return {
         ...item,
-        scoreTitle: score?.title || 'Unknown Score',
-        scoreComposer: score?.composer || '',
+        scoreTitle,
+        scoreComposer,
+        isLogbookPiece,
         activeGoals: scoreGoals,
         recentPractice: practiceSessions.slice(0, 5).map(session => ({
           id: session.id,

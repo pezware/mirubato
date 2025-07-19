@@ -31,6 +31,7 @@ interface EnrichedRepertoireItem extends RepertoireItem {
   scoreComposer: string
   activeGoals: Goal[]
   recentPractice: PracticeSession[]
+  isLogbookPiece?: boolean
 }
 
 interface RepertoireCardProps {
@@ -113,11 +114,26 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   }
 
   const handleViewScore = () => {
-    navigate(`/scorebook/${item.scoreId}`)
+    if (!item.isLogbookPiece) {
+      navigate(`/scorebook/${item.scoreId}`)
+    }
   }
 
   const handlePractice = () => {
-    navigate(`/scorebook/${item.scoreId}?startPractice=true`)
+    if (item.isLogbookPiece) {
+      // For logbook pieces, navigate to the logbook with the piece pre-filled
+      navigate('/logbook', {
+        state: {
+          prefillPiece: {
+            title: item.scoreTitle,
+            composer:
+              item.scoreComposer === 'Unknown' ? undefined : item.scoreComposer,
+          },
+        },
+      })
+    } else {
+      navigate(`/scorebook/${item.scoreId}?startPractice=true`)
+    }
   }
 
   return (
@@ -136,6 +152,12 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
                   : item.scoreTitle}
                 {isPracticedToday && (
                   <span className="w-4 h-4 text-orange-500">🔥</span>
+                )}
+                {item.isLogbookPiece && (
+                  <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                    <Clock className="w-3 h-3" />
+                    {t('repertoire:fromLogbook')}
+                  </span>
                 )}
               </h3>
               <div className="flex items-center gap-4 mt-1 text-sm text-stone-600">
@@ -287,9 +309,11 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
             </Button>
           )}
 
-          <Button variant="ghost" size="sm" onClick={handleViewScore}>
-            {t('repertoire:viewScore')}
-          </Button>
+          {!item.isLogbookPiece && (
+            <Button variant="ghost" size="sm" onClick={handleViewScore}>
+              {t('repertoire:viewScore')}
+            </Button>
+          )}
 
           {item.activeGoals.length === 0 && (
             <Button variant="ghost" size="sm" onClick={onCreateGoal}>
