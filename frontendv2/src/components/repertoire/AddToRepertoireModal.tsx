@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
+import { useLogbookStore } from '@/stores/logbookStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -10,7 +11,7 @@ import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
 import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'
-import { Search, Music, Plus } from 'lucide-react'
+import { Search, Music, Plus, Clock } from 'lucide-react'
 
 interface AddToRepertoireModalProps {
   isOpen: boolean
@@ -22,7 +23,10 @@ export function AddToRepertoireModal({
   onClose,
 }: AddToRepertoireModalProps) {
   const { t } = useTranslation(['repertoire', 'common'])
-  const [selectedScoreId, setSelectedScoreId] = useState<string>('')
+  const [selectedItem, setSelectedItem] = useState<{
+    id: string
+    type: 'score' | 'logbook'
+  } | null>(null)
   const [selectedStatus, setSelectedStatus] =
     useState<keyof RepertoireStatus>('planned')
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,6 +38,7 @@ export function AddToRepertoireModal({
     loadUserLibrary,
     isLoading: scoresLoading,
   } = useScoreStore()
+  const { entries } = useLogbookStore()
 
   useEffect(() => {
     if (isOpen && scores.length === 0) {
@@ -42,25 +47,116 @@ export function AddToRepertoireModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
-  // Filter scores that are not already in repertoire
-  const availableScores = scores.filter(
-    score =>
-      !repertoire.has(score.id) &&
-      (searchQuery === '' ||
-        score.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (score.composer &&
-          score.composer.toLowerCase().includes(searchQuery.toLowerCase())))
-  )
+  // Extract unique pieces from logbook entries
+  const logbookPieces = useMemo(() => {
+    const piecesMap = new Map<
+      string,
+      {
+        title: string
+        composer?: string
+        practiceCount: number
+        lastPracticed: string
+        totalDuration: number
+      }
+    >()
+
+    entries.forEach(entry => {
+      entry.pieces.forEach(piece => {
+        const key = `${piece.title}-${piece.composer || 'Unknown'}`
+        const existing = piecesMap.get(key)
+
+        if (existing) {
+          existing.practiceCount++
+          existing.totalDuration += entry.duration
+          if (new Date(entry.timestamp) > new Date(existing.lastPracticed)) {
+            existing.lastPracticed = entry.timestamp
+          }
+        } else {
+          piecesMap.set(key, {
+            title: piece.title,
+            composer: piece.composer || undefined,
+            practiceCount: 1,
+            lastPracticed: entry.timestamp,
+            totalDuration: entry.duration,
+          })
+        }
+      })
+    })
+
+    return Array.from(piecesMap.entries())
+      .map(([key, data]) => ({
+        id: key, // Use title-composer as ID for logbook pieces
+        ...data,
+      }))
+      .sort((a, b) => b.practiceCount - a.practiceCount) // Sort by most practiced
+  }, [entries])
+
+  // Combine and filter available items
+  const availableItems = useMemo(() => {
+    const items: Array<{
+      id: string
+      title: string
+      composer?: string
+      type: 'score' | 'logbook'
+      practiceCount?: number
+      lastPracticed?: string
+      difficulty?: string
+    }> = []
+
+    // Add scores from scorebook
+    scores.forEach(score => {
+      if (!repertoire.has(score.id)) {
+        items.push({
+          id: score.id,
+          title: score.title,
+          composer: score.composer,
+          type: 'score',
+          difficulty: score.difficulty,
+        })
+      }
+    })
+
+    // Add pieces from logbook that aren't already in repertoire as scores
+    logbookPieces.forEach(piece => {
+      // Check if this piece already exists in repertoire (by title/composer)
+      const alreadyInRepertoire = Array.from(repertoire.values()).some(item => {
+        const score = scores.find(s => s.id === item.scoreId)
+        return (
+          score &&
+          score.title === piece.title &&
+          score.composer === piece.composer
+        )
+      })
+
+      if (!alreadyInRepertoire) {
+        items.push({
+          ...piece,
+          type: 'logbook',
+        })
+      }
+    })
+
+    // Filter by search query
+    return items.filter(
+      item =>
+        searchQuery === '' ||
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.composer &&
+          item.composer.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+  }, [scores, logbookPieces, repertoire, searchQuery])
 
   const handleAdd = async () => {
-    if (!selectedScoreId) {
+    if (!selectedItem) {
       showToast(t('repertoire:selectScore'), 'error')
       return
     }
 
     setIsLoading(true)
     try {
-      await addToRepertoire(selectedScoreId, selectedStatus)
+      // For logbook pieces, we'll use the piece identifier as the scoreId
+      // This allows tracking even without a formal score entry
+      await addToRepertoire(selectedItem.id, selectedStatus)
       onClose()
     } catch (_error) {
       // Error handled in store
@@ -111,7 +207,7 @@ export function AddToRepertoireModal({
             <div className="flex justify-center py-8">
               <Loading />
             </div>
-          ) : availableScores.length === 0 ? (
+          ) : availableItems.length === 0 ? (
             <Card className="p-8 text-center">
               <Music className="w-12 h-12 text-stone-300 mx-auto mb-4" />
               <p className="text-stone-600">
@@ -122,31 +218,48 @@ export function AddToRepertoireModal({
             </Card>
           ) : (
             <div className="max-h-64 overflow-y-auto space-y-2">
-              {availableScores.map(score => (
+              {availableItems.map(item => (
                 <Card
-                  key={score.id}
-                  variant={selectedScoreId === score.id ? 'bordered' : 'ghost'}
+                  key={item.id}
+                  variant={selectedItem?.id === item.id ? 'bordered' : 'ghost'}
                   className={`p-3 cursor-pointer transition-colors ${
-                    selectedScoreId === score.id
+                    selectedItem?.id === item.id
                       ? 'border-sage-500 bg-sage-50'
                       : 'hover:bg-stone-50'
                   }`}
-                  onClick={() => setSelectedScoreId(score.id)}
+                  onClick={() =>
+                    setSelectedItem({ id: item.id, type: item.type })
+                  }
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-stone-800">
-                        {score.title}
-                      </h4>
-                      {score.composer && (
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-stone-800">
+                          {item.title}
+                        </h4>
+                        {item.type === 'logbook' && (
+                          <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                            <Clock className="w-3 h-3" />
+                            {t('repertoire:fromLogbook')}
+                          </span>
+                        )}
+                      </div>
+                      {item.composer && (
                         <p className="text-sm text-stone-600">
-                          {score.composer}
+                          {item.composer}
+                        </p>
+                      )}
+                      {item.type === 'logbook' && item.practiceCount && (
+                        <p className="text-xs text-stone-500 mt-1">
+                          {t('repertoire:practicedTimes', {
+                            count: item.practiceCount,
+                          })}
                         </p>
                       )}
                     </div>
-                    {score.difficulty && (
+                    {item.difficulty && (
                       <span className="text-sm text-stone-500">
-                        {t(`common:difficulty.${score.difficulty}`)}
+                        {t(`common:difficulty.${item.difficulty}`)}
                       </span>
                     )}
                   </div>
@@ -179,7 +292,7 @@ export function AddToRepertoireModal({
           <Button
             variant="primary"
             onClick={handleAdd}
-            disabled={!selectedScoreId || isLoading}
+            disabled={!selectedItem || isLoading}
           >
             {isLoading ? (
               <Loading />

@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
+import { EditNotesModal } from './EditNotesModal'
 import {
   Clock,
   Target,
@@ -15,6 +16,7 @@ import {
   MoreVertical,
   Edit,
   Trash,
+  StickyNote,
 } from 'lucide-react'
 
 interface PracticeSession {
@@ -41,7 +43,12 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditingStatus, setIsEditingStatus] = useState(false)
-  const { updateRepertoireStatus, removeFromRepertoire } = useRepertoireStore()
+  const [showEditNotesModal, setShowEditNotesModal] = useState(false)
+  const {
+    updateRepertoireStatus,
+    removeFromRepertoire,
+    updateRepertoireNotes,
+  } = useRepertoireStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -205,12 +212,44 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
             </div>
           )}
 
-          {/* Personal Notes Preview */}
-          {item.personalNotes && (
-            <div className="mt-3 text-sm text-stone-600 italic line-clamp-2">
-              "{item.personalNotes}"
-            </div>
-          )}
+          {/* Personal Notes Section - More Prominent */}
+          <div className="mt-4">
+            {item.personalNotes ? (
+              <Card variant="ghost" className="p-3 bg-sage-50">
+                <div className="flex items-start gap-2">
+                  <StickyNote className="w-4 h-4 text-sage-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-stone-700 whitespace-pre-wrap">
+                      {item.personalNotes}
+                    </p>
+                    {item.referenceLinks && item.referenceLinks.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {item.referenceLinks.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline block"
+                          >
+                            📎 {link}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <button
+                onClick={() => setShowEditNotesModal(true)}
+                className="w-full p-3 border-2 border-dashed border-stone-300 rounded-lg text-sm text-stone-500 hover:border-sage-400 hover:text-sage-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <StickyNote className="w-4 h-4" />
+                {t('repertoire:addNotesPrompt')}
+              </button>
+            )}
+          </div>
 
           {/* Difficulty Rating */}
           {item.difficultyRating && (
@@ -272,9 +311,8 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
               <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-stone-200 py-1 z-10">
                 <button
                   onClick={() => {
-                    // For now, close the menu and show a toast that edit functionality is coming soon
                     setShowMenu(false)
-                    // TODO: Implement edit notes functionality
+                    setShowEditNotesModal(true)
                   }}
                   className="flex items-center gap-2 w-full px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                 >
@@ -306,6 +344,20 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
             })}
           </div>
         </div>
+      )}
+
+      {/* Edit Notes Modal */}
+      {showEditNotesModal && (
+        <EditNotesModal
+          isOpen={showEditNotesModal}
+          onClose={() => setShowEditNotesModal(false)}
+          onSave={async (notes, links) => {
+            await updateRepertoireNotes(item.scoreId, notes, links)
+          }}
+          currentNotes={item.personalNotes}
+          currentLinks={item.referenceLinks}
+          pieceTitle={item.scoreTitle}
+        />
       )}
     </Card>
   )
