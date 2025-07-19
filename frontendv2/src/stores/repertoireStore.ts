@@ -9,6 +9,11 @@ import {
 import { goalsApi, type Goal, type CreateGoalInput } from '@/api/goals'
 import { useAuthStore } from './authStore'
 import { showToast } from '@/utils/toastManager'
+import { nanoid } from 'nanoid'
+
+// Local storage keys
+const REPERTOIRE_KEY = 'mirubato:repertoire:items'
+const GOALS_KEY = 'mirubato:repertoire:goals'
 
 interface RepertoireStore {
   // Repertoire state
@@ -20,6 +25,9 @@ interface RepertoireStore {
   goals: Map<string, Goal>
   goalsLoading: boolean
   goalsError: string | null
+
+  // Local Storage Management (for anonymous users)
+  isLocalMode: boolean
 
   // Filters
   statusFilter: keyof RepertoireStatus | 'all'
@@ -76,27 +84,64 @@ export const useRepertoireStore = create<RepertoireStore>()(
       goals: new Map(),
       goalsLoading: false,
       goalsError: null,
+      isLocalMode: true, // Always start in local mode
       statusFilter: 'all',
       goalFilter: 'all',
       searchQuery: '',
 
       // Load repertoire
       loadRepertoire: async () => {
-        const { isAuthenticated } = useAuthStore.getState()
-        if (!isAuthenticated) return
-
         set({ repertoireLoading: true, repertoireError: null })
+
         try {
-          const { items } = await repertoireApi.list()
+          // Always load from localStorage first
+          const stored = localStorage.getItem(REPERTOIRE_KEY)
+          const items: RepertoireItem[] = stored ? JSON.parse(stored) : []
+
+          // Convert array to Map
           const repertoireMap = new Map<string, RepertoireItem>()
           items.forEach(item => {
             repertoireMap.set(item.scoreId, item)
           })
-          set({ repertoire: repertoireMap, repertoireLoading: false })
+          set({
+            repertoire: repertoireMap,
+            repertoireLoading: false,
+            isLocalMode: true,
+          })
+
+          // If user is authenticated and online, sync in background
+          const { isAuthenticated } = useAuthStore.getState()
+          const token = localStorage.getItem('auth-token')
+          if (token && isAuthenticated) {
+            // Try to sync with server in background
+            repertoireApi
+              .list()
+              .then(({ items: serverItems }) => {
+                const newRepertoireMap = new Map<string, RepertoireItem>()
+                serverItems.forEach(item => {
+                  newRepertoireMap.set(item.scoreId, item)
+                })
+                set({
+                  repertoire: newRepertoireMap,
+                  isLocalMode: false,
+                })
+
+                // Update localStorage
+                localStorage.setItem(
+                  REPERTOIRE_KEY,
+                  JSON.stringify(serverItems)
+                )
+              })
+              .catch(err => {
+                console.warn('Background repertoire sync failed:', err)
+                // Keep using local data
+              })
+          }
         } catch (error) {
           console.error('Error loading repertoire:', error)
           set({
-            repertoireError: (error as Error).message,
+            repertoire: new Map(),
+            repertoireError: 'Failed to load repertoire',
             repertoireLoading: false,
           })
         }
@@ -108,13 +153,48 @@ export const useRepertoireStore = create<RepertoireStore>()(
         status?: keyof RepertoireStatus
       ) => {
         try {
-          const newItem = await repertoireApi.add({ scoreId, status })
-          set(state => {
-            const newRepertoire = new Map(state.repertoire)
+          const { isLocalMode, repertoire } = get()
+
+          if (isLocalMode) {
+            // Create locally
+            const newItem: RepertoireItem = {
+              id: nanoid(),
+              scoreId,
+              status: status || 'planned',
+              difficultyRating: null,
+              personalNotes: null,
+              referenceLinks: [],
+              practiceCount: 0,
+              totalPracticeTime: 0,
+              lastPracticed: null,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            }
+
+            const newRepertoire = new Map(repertoire)
             newRepertoire.set(scoreId, newItem)
-            return { repertoire: newRepertoire }
-          })
-          showToast('Added to repertoire', 'success')
+            set({ repertoire: newRepertoire })
+
+            // Update localStorage
+            const items = Array.from(newRepertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+            showToast('Added to repertoire', 'success')
+          } else {
+            // Use API
+            const newItem = await repertoireApi.add({ scoreId, status })
+            set(state => {
+              const newRepertoire = new Map(state.repertoire)
+              newRepertoire.set(scoreId, newItem)
+              return { repertoire: newRepertoire }
+            })
+
+            // Update localStorage for offline access
+            const items = Array.from(get().repertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+            showToast('Added to repertoire', 'success')
+          }
         } catch (error) {
           console.error('Error adding to repertoire:', error)
           showToast(
@@ -131,15 +211,36 @@ export const useRepertoireStore = create<RepertoireStore>()(
         status: keyof RepertoireStatus
       ) => {
         try {
-          await repertoireApi.update(scoreId, { status })
-          set(state => {
-            const newRepertoire = new Map(state.repertoire)
-            const item = newRepertoire.get(scoreId)
-            if (item) {
-              newRepertoire.set(scoreId, { ...item, status })
-            }
-            return { repertoire: newRepertoire }
-          })
+          const { isLocalMode, repertoire } = get()
+          const item = repertoire.get(scoreId)
+          if (!item) throw new Error('Item not found')
+
+          if (isLocalMode) {
+            // Update locally
+            const updatedItem = { ...item, status, updatedAt: Date.now() }
+            const newRepertoire = new Map(repertoire)
+            newRepertoire.set(scoreId, updatedItem)
+            set({ repertoire: newRepertoire })
+
+            // Update localStorage
+            const items = Array.from(newRepertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          } else {
+            // Use API
+            await repertoireApi.update(scoreId, { status })
+            set(state => {
+              const newRepertoire = new Map(state.repertoire)
+              const item = newRepertoire.get(scoreId)
+              if (item) {
+                newRepertoire.set(scoreId, { ...item, status })
+              }
+              return { repertoire: newRepertoire }
+            })
+
+            // Update localStorage
+            const items = Array.from(get().repertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          }
           showToast('Status updated', 'success')
         } catch (error) {
           console.error('Error updating status:', error)
@@ -188,12 +289,30 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Remove from repertoire
       removeFromRepertoire: async (scoreId: string) => {
         try {
-          await repertoireApi.remove(scoreId)
-          set(state => {
-            const newRepertoire = new Map(state.repertoire)
+          const { isLocalMode, repertoire } = get()
+
+          if (isLocalMode) {
+            // Remove locally
+            const newRepertoire = new Map(repertoire)
             newRepertoire.delete(scoreId)
-            return { repertoire: newRepertoire }
-          })
+            set({ repertoire: newRepertoire })
+
+            // Update localStorage
+            const items = Array.from(newRepertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          } else {
+            // Use API
+            await repertoireApi.remove(scoreId)
+            set(state => {
+              const newRepertoire = new Map(state.repertoire)
+              newRepertoire.delete(scoreId)
+              return { repertoire: newRepertoire }
+            })
+
+            // Update localStorage
+            const items = Array.from(get().repertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          }
           showToast('Removed from repertoire', 'success')
         } catch (error) {
           console.error('Error removing from repertoire:', error)
@@ -208,7 +327,31 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Get stats
       getRepertoireStats: async (scoreId: string) => {
         try {
-          return await repertoireApi.getStats(scoreId)
+          const { isLocalMode } = get()
+
+          if (isLocalMode) {
+            // Return local stats
+            const item = get().repertoire.get(scoreId)
+            if (!item) return null
+
+            return {
+              repertoire: item,
+              stats: {
+                practiceCount: item.practiceCount || 0,
+                totalPracticeTime: item.totalPracticeTime || 0,
+                avgSessionDuration:
+                  item.totalPracticeTime && item.practiceCount
+                    ? Math.round(item.totalPracticeTime / item.practiceCount)
+                    : 0,
+                lastPracticed: item.lastPracticed,
+                firstPracticed: null,
+                recentSessions: [],
+              },
+            }
+          } else {
+            // Use API
+            return await repertoireApi.getStats(scoreId)
+          }
         } catch (error) {
           console.error('Error getting repertoire stats:', error)
           return null
@@ -217,33 +360,91 @@ export const useRepertoireStore = create<RepertoireStore>()(
 
       // Load goals
       loadGoals: async () => {
-        const { isAuthenticated } = useAuthStore.getState()
-        if (!isAuthenticated) return
-
         set({ goalsLoading: true, goalsError: null })
         try {
-          const { goals } = await goalsApi.list()
+          // Always load from localStorage first
+          const stored = localStorage.getItem(GOALS_KEY)
+          const goals: Goal[] = stored ? JSON.parse(stored) : []
+
+          // Convert array to Map
           const goalsMap = new Map<string, Goal>()
           goals.forEach(goal => {
             goalsMap.set(goal.id, goal)
           })
           set({ goals: goalsMap, goalsLoading: false })
+
+          // If user is authenticated, sync in background
+          const { isAuthenticated } = useAuthStore.getState()
+          const token = localStorage.getItem('auth-token')
+          if (token && isAuthenticated) {
+            goalsApi
+              .list()
+              .then(({ goals: serverGoals }) => {
+                const newGoalsMap = new Map<string, Goal>()
+                serverGoals.forEach(goal => {
+                  newGoalsMap.set(goal.id, goal)
+                })
+                set({ goals: newGoalsMap })
+
+                // Update localStorage
+                localStorage.setItem(GOALS_KEY, JSON.stringify(serverGoals))
+              })
+              .catch(err => {
+                console.warn('Background goals sync failed:', err)
+                // Keep using local data
+              })
+          }
         } catch (error) {
           console.error('Error loading goals:', error)
-          set({ goalsError: (error as Error).message, goalsLoading: false })
+          set({
+            goals: new Map(),
+            goalsError: 'Failed to load goals',
+            goalsLoading: false,
+          })
         }
       },
 
       // Create goal
-      createGoal: async (goal: CreateGoalInput) => {
+      createGoal: async (goalInput: CreateGoalInput) => {
         try {
-          const newGoal = await goalsApi.create(goal)
-          set(state => {
-            const newGoals = new Map(state.goals)
+          const { isLocalMode, goals } = get()
+
+          if (isLocalMode) {
+            // Create locally
+            const newGoal: Goal = {
+              ...goalInput,
+              id: nanoid(),
+              currentValue: 0,
+              status: 'active',
+              relatedSessions: 0,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            }
+
+            const newGoals = new Map(goals)
             newGoals.set(newGoal.id, newGoal)
-            return { goals: newGoals }
-          })
-          showToast('Goal created', 'success')
+            set({ goals: newGoals })
+
+            // Update localStorage
+            const goalsArray = Array.from(newGoals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+
+            showToast('Goal created', 'success')
+          } else {
+            // Use API
+            const newGoal = await goalsApi.create(goalInput)
+            set(state => {
+              const newGoals = new Map(state.goals)
+              newGoals.set(newGoal.id, newGoal)
+              return { goals: newGoals }
+            })
+
+            // Update localStorage
+            const goalsArray = Array.from(get().goals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+
+            showToast('Goal created', 'success')
+          }
         } catch (error) {
           console.error('Error creating goal:', error)
           showToast(

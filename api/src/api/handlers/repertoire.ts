@@ -50,14 +50,13 @@ repertoireHandler.get('/', async c => {
       `
         SELECT 
           r.*,
-          COUNT(DISTINCT le.id) as practice_count,
-          SUM(le.duration) as total_practice_time,
-          MAX(le.timestamp) as last_practiced
+          COUNT(DISTINCT json_extract(sd.data, '$.id')) as practice_count,
+          SUM(json_extract(sd.data, '$.duration')) as total_practice_time,
+          MAX(json_extract(sd.data, '$.timestamp')) as last_practiced
         FROM user_repertoire r
         LEFT JOIN sync_data sd ON sd.user_id = r.user_id
           AND json_extract(sd.data, '$.scoreId') = r.score_id
           AND sd.type = 'logbook_entry'
-        LEFT JOIN logbook_entries le ON le.id = json_extract(sd.data, '$.id')
         WHERE r.user_id = ?
         GROUP BY r.id
         ORDER BY r.updated_at DESC
@@ -103,16 +102,15 @@ repertoireHandler.get('/:scoreId/stats', async c => {
       `
         SELECT 
           r.*,
-          COUNT(DISTINCT le.id) as practice_count,
-          SUM(le.duration) as total_practice_time,
-          MAX(le.timestamp) as last_practiced,
-          MIN(le.timestamp) as first_practiced,
-          AVG(le.duration) as avg_session_duration
+          COUNT(DISTINCT json_extract(sd.data, '$.id')) as practice_count,
+          SUM(json_extract(sd.data, '$.duration')) as total_practice_time,
+          MAX(json_extract(sd.data, '$.timestamp')) as last_practiced,
+          MIN(json_extract(sd.data, '$.timestamp')) as first_practiced,
+          AVG(json_extract(sd.data, '$.duration')) as avg_session_duration
         FROM user_repertoire r
         LEFT JOIN sync_data sd ON sd.user_id = r.user_id
           AND json_extract(sd.data, '$.scoreId') = r.score_id
           AND sd.type = 'logbook_entry'
-        LEFT JOIN logbook_entries le ON le.id = json_extract(sd.data, '$.id')
         WHERE r.user_id = ? AND r.score_id = ?
         GROUP BY r.id
       `
@@ -128,15 +126,14 @@ repertoireHandler.get('/:scoreId/stats', async c => {
     const sessions = await c.env.DB.prepare(
       `
         SELECT 
-          le.timestamp,
-          le.duration,
-          le.notes
+          json_extract(sd.data, '$.timestamp') as timestamp,
+          json_extract(sd.data, '$.duration') as duration,
+          json_extract(sd.data, '$.notes') as notes
         FROM sync_data sd
-        JOIN logbook_entries le ON le.id = json_extract(sd.data, '$.id')
         WHERE sd.user_id = ? 
           AND json_extract(sd.data, '$.scoreId') = ?
           AND sd.type = 'logbook_entry'
-        ORDER BY le.timestamp DESC
+        ORDER BY json_extract(sd.data, '$.timestamp') DESC
         LIMIT 50
       `
     )

@@ -50,9 +50,16 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('auth-token')
       localStorage.removeItem('refresh-token')
 
-      // Redirect to login if not on public pages
+      // Redirect to login if not on public pages or allowed paths
       const publicPaths = ['/', '/auth/verify']
-      if (!publicPaths.includes(window.location.pathname)) {
+      const allowedPaths = ['/logbook', '/repertoire'] // These pages work offline
+      const currentPath = window.location.pathname
+
+      // Don't redirect if on public paths or allowed offline paths
+      if (
+        !publicPaths.includes(currentPath) &&
+        !allowedPaths.some(path => currentPath.startsWith(path))
+      ) {
         window.location.href = '/'
       }
     }

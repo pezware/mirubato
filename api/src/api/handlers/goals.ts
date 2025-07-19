@@ -97,9 +97,11 @@ goalsHandler.get('/', async c => {
     let query = `
       SELECT 
         g.*,
-        COUNT(DISTINCT le.id) as related_sessions
+        COUNT(DISTINCT json_extract(sd.data, '$.id')) as related_sessions
       FROM goals g
-      LEFT JOIN logbook_entries le ON le.goal_ids LIKE '%' || g.id || '%'
+      LEFT JOIN sync_data sd ON sd.user_id = g.user_id
+        AND sd.type = 'logbook_entry'
+        AND json_extract(sd.data, '$.goalIds') LIKE '%' || g.id || '%'
       WHERE g.user_id = ?
     `
     const params: (string | number)[] = [userId]
@@ -165,10 +167,12 @@ goalsHandler.get('/:id', async c => {
       `
         SELECT 
           g.*,
-          COUNT(DISTINCT le.id) as related_sessions,
-          SUM(le.duration) as total_practice_time
+          COUNT(DISTINCT json_extract(sd.data, '$.id')) as related_sessions,
+          SUM(json_extract(sd.data, '$.duration')) as total_practice_time
         FROM goals g
-        LEFT JOIN logbook_entries le ON le.goal_ids LIKE '%' || g.id || '%'
+        LEFT JOIN sync_data sd ON sd.user_id = g.user_id
+          AND sd.type = 'logbook_entry'
+          AND json_extract(sd.data, '$.goalIds') LIKE '%' || g.id || '%'
         WHERE g.id = ? AND g.user_id = ?
         GROUP BY g.id
       `
@@ -184,14 +188,15 @@ goalsHandler.get('/:id', async c => {
     const sessions = await c.env.DB.prepare(
       `
         SELECT 
-          le.id,
-          le.timestamp,
-          le.duration,
-          le.notes
-        FROM logbook_entries le
-        WHERE le.user_id = ? 
-          AND le.goal_ids LIKE '%' || ? || '%'
-        ORDER BY le.timestamp DESC
+          json_extract(sd.data, '$.id') as id,
+          json_extract(sd.data, '$.timestamp') as timestamp,
+          json_extract(sd.data, '$.duration') as duration,
+          json_extract(sd.data, '$.notes') as notes
+        FROM sync_data sd
+        WHERE sd.user_id = ? 
+          AND sd.type = 'logbook_entry'
+          AND json_extract(sd.data, '$.goalIds') LIKE '%' || ? || '%'
+        ORDER BY json_extract(sd.data, '$.timestamp') DESC
         LIMIT 10
       `
     )
