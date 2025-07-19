@@ -259,22 +259,48 @@ export const useRepertoireStore = create<RepertoireStore>()(
         links?: string[]
       ) => {
         try {
-          await repertoireApi.update(scoreId, {
-            personalNotes: notes,
-            referenceLinks: links,
-          })
-          set(state => {
-            const newRepertoire = new Map(state.repertoire)
-            const item = newRepertoire.get(scoreId)
-            if (item) {
-              newRepertoire.set(scoreId, {
-                ...item,
-                personalNotes: notes,
-                referenceLinks: links,
-              })
+          const { isLocalMode, repertoire } = get()
+          const item = repertoire.get(scoreId)
+          if (!item) throw new Error('Item not found')
+
+          if (isLocalMode) {
+            // Update locally
+            const updatedItem = {
+              ...item,
+              personalNotes: notes,
+              referenceLinks: links || [],
+              updatedAt: Date.now(),
             }
-            return { repertoire: newRepertoire }
-          })
+            const newRepertoire = new Map(repertoire)
+            newRepertoire.set(scoreId, updatedItem)
+            set({ repertoire: newRepertoire })
+
+            // Update localStorage
+            const items = Array.from(newRepertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          } else {
+            // Use API
+            await repertoireApi.update(scoreId, {
+              personalNotes: notes,
+              referenceLinks: links,
+            })
+            set(state => {
+              const newRepertoire = new Map(state.repertoire)
+              const item = newRepertoire.get(scoreId)
+              if (item) {
+                newRepertoire.set(scoreId, {
+                  ...item,
+                  personalNotes: notes,
+                  referenceLinks: links,
+                })
+              }
+              return { repertoire: newRepertoire }
+            })
+
+            // Update localStorage
+            const items = Array.from(get().repertoire.values())
+            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+          }
           showToast('Notes updated', 'success')
         } catch (error) {
           console.error('Error updating notes:', error)
@@ -458,15 +484,40 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Update goal
       updateGoal: async (id: string, updates: Partial<Goal>) => {
         try {
-          await goalsApi.update(id, updates)
-          set(state => {
-            const newGoals = new Map(state.goals)
-            const goal = newGoals.get(id)
-            if (goal) {
-              newGoals.set(id, { ...goal, ...updates })
+          const { isLocalMode, goals } = get()
+          const goal = goals.get(id)
+          if (!goal) throw new Error('Goal not found')
+
+          if (isLocalMode) {
+            // Update locally
+            const updatedGoal = {
+              ...goal,
+              ...updates,
+              updatedAt: Date.now(),
             }
-            return { goals: newGoals }
-          })
+            const newGoals = new Map(goals)
+            newGoals.set(id, updatedGoal)
+            set({ goals: newGoals })
+
+            // Update localStorage
+            const goalsArray = Array.from(newGoals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+          } else {
+            // Use API
+            await goalsApi.update(id, updates)
+            set(state => {
+              const newGoals = new Map(state.goals)
+              const goal = newGoals.get(id)
+              if (goal) {
+                newGoals.set(id, { ...goal, ...updates })
+              }
+              return { goals: newGoals }
+            })
+
+            // Update localStorage
+            const goalsArray = Array.from(get().goals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+          }
           showToast('Goal updated', 'success')
         } catch (error) {
           console.error('Error updating goal:', error)
@@ -481,12 +532,30 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Delete goal
       deleteGoal: async (id: string) => {
         try {
-          await goalsApi.delete(id)
-          set(state => {
-            const newGoals = new Map(state.goals)
+          const { isLocalMode, goals } = get()
+
+          if (isLocalMode) {
+            // Delete locally
+            const newGoals = new Map(goals)
             newGoals.delete(id)
-            return { goals: newGoals }
-          })
+            set({ goals: newGoals })
+
+            // Update localStorage
+            const goalsArray = Array.from(newGoals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+          } else {
+            // Use API
+            await goalsApi.delete(id)
+            set(state => {
+              const newGoals = new Map(state.goals)
+              newGoals.delete(id)
+              return { goals: newGoals }
+            })
+
+            // Update localStorage
+            const goalsArray = Array.from(get().goals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+          }
           showToast('Goal deleted', 'success')
         } catch (error) {
           console.error('Error deleting goal:', error)
@@ -501,24 +570,58 @@ export const useRepertoireStore = create<RepertoireStore>()(
       // Track progress
       trackGoalProgress: async (id: string, value: number, notes?: string) => {
         try {
-          const result = await goalsApi.trackProgress(id, { value, notes })
-          set(state => {
-            const newGoals = new Map(state.goals)
-            const goal = newGoals.get(id)
-            if (goal) {
-              newGoals.set(id, {
-                ...goal,
-                currentValue: result.currentValue,
-                status: result.status,
-              })
-            }
-            return { goals: newGoals }
-          })
+          const { isLocalMode, goals } = get()
+          const goal = goals.get(id)
+          if (!goal) throw new Error('Goal not found')
 
-          if (result.completed) {
-            showToast('🎉 Goal completed!', 'success')
+          if (isLocalMode) {
+            // Update locally
+            const newValue = (goal.currentValue || 0) + value
+            const completed = goal.targetValue && newValue >= goal.targetValue
+            const updatedGoal = {
+              ...goal,
+              currentValue: newValue,
+              status: completed ? ('completed' as const) : goal.status,
+              updatedAt: Date.now(),
+            }
+            const newGoals = new Map(goals)
+            newGoals.set(id, updatedGoal)
+            set({ goals: newGoals })
+
+            // Update localStorage
+            const goalsArray = Array.from(newGoals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+
+            if (completed) {
+              showToast('🎉 Goal completed!', 'success')
+            } else {
+              showToast('Progress tracked', 'success')
+            }
           } else {
-            showToast('Progress tracked', 'success')
+            // Use API
+            const result = await goalsApi.trackProgress(id, { value, notes })
+            set(state => {
+              const newGoals = new Map(state.goals)
+              const goal = newGoals.get(id)
+              if (goal) {
+                newGoals.set(id, {
+                  ...goal,
+                  currentValue: result.currentValue,
+                  status: result.status,
+                })
+              }
+              return { goals: newGoals }
+            })
+
+            // Update localStorage
+            const goalsArray = Array.from(get().goals.values())
+            localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
+
+            if (result.completed) {
+              showToast('🎉 Goal completed!', 'success')
+            } else {
+              showToast('Progress tracked', 'success')
+            }
           }
         } catch (error) {
           console.error('Error tracking progress:', error)
