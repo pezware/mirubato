@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../../index'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
-import { DatabaseHelpers } from '../../utils/database'
 import { Errors } from '../../utils/errors'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
@@ -44,7 +43,6 @@ repertoireHandler.use('/*', authMiddleware)
  */
 repertoireHandler.get('/', async c => {
   const userId = c.get('userId') as string
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     // Get all repertoire items for the user
@@ -69,7 +67,7 @@ repertoireHandler.get('/', async c => {
       .all()
 
     return c.json({
-      items: repertoire.results.map((item: any) => ({
+      items: repertoire.results.map((item: Record<string, unknown>) => ({
         id: item.id,
         scoreId: item.score_id,
         status: item.status,
@@ -98,7 +96,6 @@ repertoireHandler.get('/', async c => {
 repertoireHandler.get('/:scoreId/stats', async c => {
   const userId = c.get('userId') as string
   const scoreId = c.req.param('scoreId')
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     // Get repertoire item with detailed stats
@@ -181,7 +178,6 @@ repertoireHandler.get('/:scoreId/stats', async c => {
 repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
   const userId = c.get('userId') as string
   const body = c.get('validatedBody') as z.infer<typeof createRepertoireSchema>
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     const now = Date.now()
@@ -221,8 +217,11 @@ repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
       },
       201
     )
-  } catch (error: any) {
-    if (error?.message?.includes('UNIQUE constraint failed')) {
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message?.includes('UNIQUE constraint failed')
+    ) {
       throw Errors.InvalidInput('This piece is already in your repertoire')
     }
     console.error('Error adding to repertoire:', error)
@@ -243,7 +242,6 @@ repertoireHandler.put(
     const body = c.get('validatedBody') as z.infer<
       typeof updateRepertoireSchema
     >
-    const db = new DatabaseHelpers(c.env.DB)
 
     try {
       // First check if the item exists
@@ -259,7 +257,7 @@ repertoireHandler.put(
 
       // Update the item
       const updateFields: string[] = []
-      const updateValues: any[] = []
+      const updateValues: (string | number | null)[] = []
 
       if (body.status !== undefined) {
         updateFields.push('status = ?')
@@ -310,7 +308,6 @@ repertoireHandler.put(
 repertoireHandler.delete('/:scoreId', async c => {
   const userId = c.get('userId') as string
   const scoreId = c.req.param('scoreId')
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     const result = await c.env.DB.prepare(

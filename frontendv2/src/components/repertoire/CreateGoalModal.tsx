@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Card } from '@/components/ui/Card'
@@ -42,7 +42,8 @@ export function CreateGoalModal({
 }: CreateGoalModalProps) {
   const { t } = useTranslation(['repertoire', 'common'])
   const { createGoal } = useRepertoireStore()
-  const { scores } = useScoreStore()
+  // TODO: Implement score fetching when scoreStore has scores functionality
+  const scores: any[] = []
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<GoalType>('repertoire')
@@ -202,7 +203,7 @@ export function CreateGoalModal({
       isOpen={isOpen}
       onClose={onClose}
       title={t('repertoire:goal.createGoal')}
-      size="large"
+      size="lg"
     >
       <div className="space-y-6">
         {/* Score Info */}
@@ -360,25 +361,30 @@ export function CreateGoalModal({
             </label>
             <Select
               value={dailyMinutes}
-              onChange={e =>
-                setDailyMinutes(e.target.value ? Number(e.target.value) : '')
+              onChange={value =>
+                setDailyMinutes(value === '' ? '' : Number(value))
               }
+              options={[
+                {
+                  value: '',
+                  label: t('repertoire:goal.noSpecificRequirement'),
+                },
+                {
+                  value: 15,
+                  label: t('repertoire:goal.minutes', { count: 15 }),
+                },
+                {
+                  value: 30,
+                  label: t('repertoire:goal.minutes', { count: 30 }),
+                },
+                {
+                  value: 45,
+                  label: t('repertoire:goal.minutes', { count: 45 }),
+                },
+                { value: 60, label: t('repertoire:goal.hour') },
+              ]}
               className="w-full"
-            >
-              <option value="">
-                {t('repertoire:goal.noSpecificRequirement')}
-              </option>
-              <option value="15">
-                {t('repertoire:goal.minutes', { count: 15 })}
-              </option>
-              <option value="30">
-                {t('repertoire:goal.minutes', { count: 30 })}
-              </option>
-              <option value="45">
-                {t('repertoire:goal.minutes', { count: 45 })}
-              </option>
-              <option value="60">{t('repertoire:goal.hour')}</option>
-            </Select>
+            />
           </div>
         </div>
 

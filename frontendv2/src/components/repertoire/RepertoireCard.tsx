@@ -4,17 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
 import {
   Clock,
   Target,
-  TrendingUp,
-  Music,
   Calendar,
-  Fire,
   MoreVertical,
   Edit,
   Trash,
@@ -153,19 +150,15 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
             {isEditingStatus ? (
               <Select
                 value={item.status}
-                onChange={e =>
-                  handleStatusChange(e.target.value as keyof RepertoireStatus)
+                onChange={value =>
+                  handleStatusChange(value as keyof RepertoireStatus)
                 }
-                onBlur={() => setIsEditingStatus(false)}
+                options={Object.entries(statusConfig).map(([key, config]) => ({
+                  value: key,
+                  label: config.label,
+                }))}
                 className="w-40"
-                autoFocus
-              >
-                {Object.entries(statusConfig).map(([key, config]) => (
-                  <option key={key} value={key}>
-                    {config.label}
-                  </option>
-                ))}
-              </Select>
+              />
             ) : (
               <button
                 onClick={() => setIsEditingStatus(true)}

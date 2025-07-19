@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../../index'
 import { authMiddleware, validateBody, type Variables } from '../middleware'
-import { DatabaseHelpers } from '../../utils/database'
 import { Errors } from '../../utils/errors'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
@@ -88,7 +87,6 @@ goalsHandler.use('/*', authMiddleware)
  */
 goalsHandler.get('/', async c => {
   const userId = c.get('userId') as string
-  const db = new DatabaseHelpers(c.env.DB)
 
   // Query parameters
   const status = c.req.query('status') as string | undefined
@@ -104,7 +102,7 @@ goalsHandler.get('/', async c => {
       LEFT JOIN logbook_entries le ON le.goal_ids LIKE '%' || g.id || '%'
       WHERE g.user_id = ?
     `
-    const params: any[] = [userId]
+    const params: (string | number)[] = [userId]
 
     if (status) {
       query += ' AND g.status = ?'
@@ -161,7 +159,6 @@ goalsHandler.get('/', async c => {
 goalsHandler.get('/:id', async c => {
   const userId = c.get('userId') as string
   const goalId = c.req.param('id')
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     const goal = await c.env.DB.prepare(
@@ -241,7 +238,6 @@ goalsHandler.get('/:id', async c => {
 goalsHandler.post('/', validateBody(createGoalSchema), async c => {
   const userId = c.get('userId') as string
   const body = c.get('validatedBody') as z.infer<typeof createGoalSchema>
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     const now = Date.now()
@@ -328,7 +324,6 @@ goalsHandler.put('/:id', validateBody(updateGoalSchema), async c => {
   const userId = c.get('userId') as string
   const goalId = c.req.param('id')
   const body = c.get('validatedBody') as z.infer<typeof updateGoalSchema>
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     // Check if goal exists
@@ -344,7 +339,7 @@ goalsHandler.put('/:id', validateBody(updateGoalSchema), async c => {
 
     // Build update query
     const updateFields: string[] = []
-    const updateValues: any[] = []
+    const updateValues: (string | number | null)[] = []
 
     if (body.title !== undefined) {
       updateFields.push('title = ?')
@@ -418,7 +413,6 @@ goalsHandler.post(
     const userId = c.get('userId') as string
     const goalId = c.req.param('id')
     const body = c.get('validatedBody') as z.infer<typeof trackProgressSchema>
-    const db = new DatabaseHelpers(c.env.DB)
 
     try {
       // Get current goal
@@ -478,7 +472,6 @@ goalsHandler.post(
 goalsHandler.delete('/:id', async c => {
   const userId = c.get('userId') as string
   const goalId = c.req.param('id')
-  const db = new DatabaseHelpers(c.env.DB)
 
   try {
     const result = await c.env.DB.prepare(

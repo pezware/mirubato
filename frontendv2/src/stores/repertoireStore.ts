@@ -6,12 +6,7 @@ import {
   type RepertoireStatus,
   type RepertoireStats,
 } from '@/api/repertoire'
-import {
-  goalsApi,
-  type Goal,
-  type GoalStatus,
-  type CreateGoalInput,
-} from '@/api/goals'
+import { goalsApi, type Goal, type CreateGoalInput } from '@/api/goals'
 import { useAuthStore } from './authStore'
 import { showToast } from '@/components/ui/Toast'
 
@@ -314,8 +309,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
 
       // Get filtered repertoire
       getFilteredRepertoire: () => {
-        const { repertoire, statusFilter, goalFilter, searchQuery, goals } =
-          get()
+        const { repertoire, statusFilter, goalFilter, goals } = get()
         let items = Array.from(repertoire.values())
 
         // Filter by status

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
@@ -29,7 +29,10 @@ export function AddToRepertoireModal({
   const [isLoading, setIsLoading] = useState(false)
 
   const { addToRepertoire, repertoire } = useRepertoireStore()
-  const { scores, loadScores, scoresLoading } = useScoreStore()
+  // TODO: Implement score fetching when scoreStore has scores functionality
+  const scores: any[] = []
+  const scoresLoading = false
+  const loadScores = () => {}
 
   useEffect(() => {
     if (isOpen && scores.length === 0) {
@@ -81,7 +84,7 @@ export function AddToRepertoireModal({
       isOpen={isOpen}
       onClose={onClose}
       title={t('repertoire:addToRepertoire')}
-      size="medium"
+      size="md"
     >
       <div className="space-y-4">
         {/* Search */}
@@ -104,7 +107,7 @@ export function AddToRepertoireModal({
 
           {scoresLoading ? (
             <div className="flex justify-center py-8">
-              <Loading type="spinner" />
+              <Loading />
             </div>
           ) : availableScores.length === 0 ? (
             <Card className="p-8 text-center">
@@ -158,17 +161,12 @@ export function AddToRepertoireModal({
           </label>
           <Select
             value={selectedStatus}
-            onChange={e =>
-              setSelectedStatus(e.target.value as keyof RepertoireStatus)
+            onChange={value =>
+              setSelectedStatus(value as keyof RepertoireStatus)
             }
+            options={statusOptions}
             className="w-full"
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
 
         {/* Actions */}
@@ -182,7 +180,7 @@ export function AddToRepertoireModal({
             disabled={!selectedScoreId || isLoading}
           >
             {isLoading ? (
-              <Loading type="spinner" size="sm" />
+              <Loading />
             ) : (
               <>
                 <Plus className="w-4 h-4 mr-2" />

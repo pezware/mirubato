@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { EnhancedAnalyticsData } from '@/types/reporting'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
@@ -11,7 +11,7 @@ import { Loading } from '@/components/ui/Loading'
 import { RepertoireCard } from './RepertoireCard'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
-import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
+import { formatDuration } from '@/utils/dateUtils'
 import { Search, Music, Target, TrendingUp, Clock } from 'lucide-react'
 
 interface RepertoireViewProps {
@@ -40,7 +40,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     getActiveGoalsByScore,
   } = useRepertoireStore()
 
-  const { scores, loadScores } = useScoreStore()
+  // TODO: Implement score fetching when scoreStore has scores functionality
+  const scores: any[] = []
+  const loadScores = () => {}
 
   // Load data on mount
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   if (repertoireLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loading type="spinner" size="lg" />
+        <Loading />
       </div>
     )
   }
@@ -138,35 +140,32 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           <div className="flex flex-col sm:flex-row gap-2">
             <Select
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as any)}
+              onChange={value => setStatusFilter(value as any)}
+              options={[
+                { value: 'all', label: t('repertoire:allPieces') },
+                { value: 'planned', label: t('repertoire:status.planned') },
+                { value: 'learning', label: t('repertoire:status.learning') },
+                { value: 'working', label: t('repertoire:status.working') },
+                { value: 'polished', label: t('repertoire:status.polished') },
+                {
+                  value: 'performance_ready',
+                  label: t('repertoire:status.performance_ready'),
+                },
+              ]}
               className="flex-1"
-            >
-              <option value="all">{t('repertoire:allPieces')}</option>
-              <option value="planned">{t('repertoire:status.planned')}</option>
-              <option value="learning">
-                {t('repertoire:status.learning')}
-              </option>
-              <option value="working">{t('repertoire:status.working')}</option>
-              <option value="polished">
-                {t('repertoire:status.polished')}
-              </option>
-              <option value="performance_ready">
-                {t('repertoire:status.performance_ready')}
-              </option>
-            </Select>
+            />
 
             <Select
               value={goalFilter}
-              onChange={e => setGoalFilter(e.target.value as any)}
+              onChange={value => setGoalFilter(value as any)}
+              options={[
+                { value: 'all', label: t('repertoire:allGoals') },
+                { value: 'active', label: t('repertoire:activeGoals') },
+                { value: 'completed', label: t('repertoire:completedGoals') },
+                { value: 'no-goals', label: t('repertoire:noGoals') },
+              ]}
               className="flex-1"
-            >
-              <option value="all">{t('repertoire:allGoals')}</option>
-              <option value="active">{t('repertoire:activeGoals')}</option>
-              <option value="completed">
-                {t('repertoire:completedGoals')}
-              </option>
-              <option value="no-goals">{t('repertoire:noGoals')}</option>
-            </Select>
+            />
           </div>
         </div>
       </Card>
