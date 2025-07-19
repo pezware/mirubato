@@ -161,12 +161,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
               id: nanoid(),
               scoreId,
               status: status || 'planned',
-              difficultyRating: null,
-              personalNotes: null,
+              difficultyRating: undefined,
+              personalNotes: undefined,
               referenceLinks: [],
               practiceCount: 0,
               totalPracticeTime: 0,
-              lastPracticed: null,
+              lastPracticed: undefined,
               createdAt: Date.now(),
               updatedAt: Date.now(),
             }
@@ -344,7 +344,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
                     ? Math.round(item.totalPracticeTime / item.practiceCount)
                     : 0,
                 lastPracticed: item.lastPracticed,
-                firstPracticed: null,
+                firstPracticed: undefined,
                 recentSessions: [],
               },
             }
