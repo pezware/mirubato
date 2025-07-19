@@ -80,9 +80,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     }
   }, [filteredItems, goals, analytics])
 
-  // Merge repertoire data with score metadata
+  // Merge repertoire data with score metadata and apply search filter
   const enrichedRepertoire = useMemo(() => {
-    return filteredItems.map(item => {
+    const enriched = filteredItems.map(item => {
       const score = scores.find(s => s.id === item.scoreId)
       const scoreGoals = getActiveGoalsByScore(item.scoreId)
 
@@ -121,8 +121,23 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         })),
       }
     })
+
+    // Apply search filter after enrichment
+    if (searchQuery) {
+      const search = searchQuery.toLowerCase()
+      return enriched.filter(item => {
+        const titleMatch = item.scoreTitle.toLowerCase().includes(search)
+        const composerMatch = item.scoreComposer.toLowerCase().includes(search)
+        const notesMatch =
+          item.personalNotes?.toLowerCase().includes(search) || false
+
+        return titleMatch || composerMatch || notesMatch
+      })
+    }
+
+    return enriched
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredItems, scores, analytics])
+  }, [filteredItems, scores, analytics, searchQuery])
 
   if (repertoireLoading || scoresLoading) {
     return (

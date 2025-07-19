@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
 import { EditNotesModal } from './EditNotesModal'
+import { EditGoalModal } from './EditGoalModal'
 import {
   Clock,
   Target,
@@ -17,6 +18,7 @@ import {
   Edit,
   Trash,
   StickyNote,
+  Pencil,
 } from 'lucide-react'
 
 interface PracticeSession {
@@ -45,10 +47,12 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [showEditNotesModal, setShowEditNotesModal] = useState(false)
+  const [showEditGoalModal, setShowEditGoalModal] = useState(false)
   const {
     updateRepertoireStatus,
     removeFromRepertoire,
     updateRepertoireNotes,
+    updateGoal,
   } = useRepertoireStore()
 
   // Status colors and labels
@@ -213,9 +217,18 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
                   <Target className="w-4 h-4" />
                   {primaryGoal.title}
                 </span>
-                <span className="text-sm text-blue-600">
-                  {Math.round(goalProgress)}%
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-blue-600">
+                    {Math.round(goalProgress)}%
+                  </span>
+                  <button
+                    onClick={() => setShowEditGoalModal(true)}
+                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                    title={t('repertoire:editGoal')}
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
               <div className="w-full bg-blue-200 rounded-full h-2">
                 <div
@@ -380,6 +393,19 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
           }}
           currentNotes={item.personalNotes}
           currentLinks={item.referenceLinks}
+          pieceTitle={item.scoreTitle}
+        />
+      )}
+
+      {/* Edit Goal Modal */}
+      {showEditGoalModal && primaryGoal && (
+        <EditGoalModal
+          isOpen={showEditGoalModal}
+          onClose={() => setShowEditGoalModal(false)}
+          onSave={async updates => {
+            await updateGoal(primaryGoal.id, updates)
+          }}
+          goal={primaryGoal}
           pieceTitle={item.scoreTitle}
         />
       )}

@@ -70,5 +70,44 @@
     "considerAdding": "Consider adding {{suggestion}} to your warm-up routine",
     "saveAsDraft": "Save as Draft",
     "goalCompleted": "🎉 Goal completed!"
-  }
+  },
+
+  "fromLogbook": "from logbook",
+  "practicedTimes": "Practiced {{count}} times",
+  "addNotesPrompt": "Add notes or practice instructions",
+  "personalNotes": "Personal Notes",
+  "notesPlaceholder": "Add your practice notes, technical challenges, interpretive ideas...",
+  "notesHelpText": "These notes are private and help you track your progress and insights",
+  "referenceLinks": "Reference Links",
+  "linkPlaceholder": "https://example.com",
+  "linksHelpText": "Add links to recordings, tutorials, or other helpful resources",
+  "invalidUrl": "Please enter a valid URL",
+  "editingNotesFor": "Editing notes for {{piece}}",
+
+  "editGoal": "Edit Goal",
+  "editingGoalFor": "Editing goal for {{piece}}",
+  "goalTitle": "Goal Title",
+  "goalTitlePlaceholder": "e.g., Master the first movement",
+  "goalTitleRequired": "Goal title is required",
+  "goalDescription": "Description",
+  "goalDescriptionPlaceholder": "Describe what you want to achieve and how you'll work on it",
+  "goalType": "Type",
+  "targetValue": "Target Value",
+  "targetValuePlaceholder": "e.g., 30",
+  "unit": "Unit",
+  "currentProgress": "Current Progress",
+  "deleteGoal": "Delete Goal",
+  "confirmDeleteGoal": "Are you sure you want to delete this goal?",
+
+  "goalType.practiceTime": "Practice Time",
+  "goalType.practiceFrequency": "Practice Frequency",
+  "goalType.memorization": "Memorization",
+  "goalType.technique": "Technique",
+  "goalType.performance": "Performance",
+  "goalType.custom": "Custom",
+
+  "goalUnit.minutes": "minutes",
+  "goalUnit.hours": "hours",
+  "goalUnit.times": "times",
+  "goalUnit.percentage": "percentage"
 }

@@ -671,8 +671,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
           })
         }
 
-        // Search filter - will need score metadata from scores service
-        // For now, just return filtered by status and goals
+        // Don't filter by search in store - that happens in the view after enrichment
         return items
       },
 
