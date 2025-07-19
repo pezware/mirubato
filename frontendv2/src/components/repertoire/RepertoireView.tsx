@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { useScoreStore } from '@/stores/scoreStore'
+import type { RepertoireStatus } from '@/api/repertoire'
 import { EnhancedAnalyticsData } from '@/types/reporting'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -25,7 +25,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
 
   const {
-    repertoire,
     goals,
     repertoireLoading,
     statusFilter,
@@ -41,7 +40,13 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   } = useRepertoireStore()
 
   // TODO: Implement score fetching when scoreStore has scores functionality
-  const scores: any[] = []
+  interface Score {
+    id: string
+    title: string
+    composer?: string
+    difficulty?: string
+  }
+  const scores: Score[] = []
   const loadScores = () => {}
 
   // Load data on mount
@@ -49,6 +54,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     loadRepertoire()
     loadGoals()
     loadScores()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Get filtered repertoire items
@@ -58,10 +64,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const stats = useMemo(() => {
     const activeGoals = Array.from(goals.values()).filter(
       g => g.status === 'active'
-    )
-    const totalPracticeTime = filteredItems.reduce(
-      (sum, item) => sum + item.totalPracticeTime,
-      0
     )
     const performanceReady = filteredItems.filter(
       item => item.status === 'performance_ready'
@@ -100,6 +102,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         recentPractice: practiceSessions.slice(0, 5),
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics])
 
   if (repertoireLoading) {
@@ -140,7 +143,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           <div className="flex flex-col sm:flex-row gap-2">
             <Select
               value={statusFilter}
-              onChange={value => setStatusFilter(value as any)}
+              onChange={value =>
+                setStatusFilter(value as keyof RepertoireStatus | 'all')
+              }
               options={[
                 { value: 'all', label: t('repertoire:allPieces') },
                 { value: 'planned', label: t('repertoire:status.planned') },
@@ -157,7 +162,11 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
             <Select
               value={goalFilter}
-              onChange={value => setGoalFilter(value as any)}
+              onChange={value =>
+                setGoalFilter(
+                  value as 'all' | 'active' | 'completed' | 'no-goals'
+                )
+              }
               options={[
                 { value: 'all', label: t('repertoire:allGoals') },
                 { value: 'active', label: t('repertoire:activeGoals') },

@@ -39,6 +39,7 @@ export default function CollectionsManager({
   // Load collections on mount
   useEffect(() => {
     loadCollections()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadCollections = async () => {

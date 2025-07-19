@@ -17,11 +17,18 @@ import {
   Trash,
 } from 'lucide-react'
 
+interface PracticeSession {
+  id: string
+  timestamp: number
+  duration: number
+  notes?: string
+}
+
 interface EnrichedRepertoireItem extends RepertoireItem {
   scoreTitle: string
   scoreComposer: string
   activeGoals: Goal[]
-  recentPractice: any[]
+  recentPractice: PracticeSession[]
 }
 
 interface RepertoireCardProps {
@@ -121,7 +128,7 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
                   ? `${item.scoreComposer} - ${item.scoreTitle}`
                   : item.scoreTitle}
                 {isPracticedToday && (
-                  <Fire className="w-4 h-4 text-orange-500" />
+                  <span className="w-4 h-4 text-orange-500">🔥</span>
                 )}
               </h3>
               <div className="flex items-center gap-4 mt-1 text-sm text-stone-600">

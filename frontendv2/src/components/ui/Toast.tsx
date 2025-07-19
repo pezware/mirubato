@@ -149,6 +149,3 @@ export interface UseToastReturn {
   hideToast: (id: string) => void
   clearToasts: () => void
 }
-
-// Export the showToast function from toastManager for convenience
-export { showToast } from '@/utils/toastManager'

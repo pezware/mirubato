@@ -28,6 +28,7 @@ export default function CollectionViewPage() {
     if (slug || id) {
       loadCollection()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, id])
 
   const loadCollection = async () => {

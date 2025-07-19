@@ -176,11 +176,13 @@ const Toolbox: React.FC = () => {
         averageTempo: settings.bpm,
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.bpm, isTracking, updateTracking])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.volume])
 
   // Update tracking when pattern changes
@@ -219,6 +221,7 @@ const Toolbox: React.FC = () => {
       }
       metronome.setPatterns(trimmedPatterns)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator

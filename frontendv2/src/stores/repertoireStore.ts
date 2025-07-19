@@ -8,7 +8,7 @@ import {
 } from '@/api/repertoire'
 import { goalsApi, type Goal, type CreateGoalInput } from '@/api/goals'
 import { useAuthStore } from './authStore'
-import { showToast } from '@/components/ui/Toast'
+import { showToast } from '@/utils/toastManager'
 
 interface RepertoireStore {
   // Repertoire state
@@ -93,9 +93,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             repertoireMap.set(item.scoreId, item)
           })
           set({ repertoire: repertoireMap, repertoireLoading: false })
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error loading repertoire:', error)
-          set({ repertoireError: error.message, repertoireLoading: false })
+          set({
+            repertoireError: (error as Error).message,
+            repertoireLoading: false,
+          })
         }
       },
 
@@ -112,9 +115,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { repertoire: newRepertoire }
           })
           showToast('Added to repertoire', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error adding to repertoire:', error)
-          showToast(error.message || 'Failed to add to repertoire', 'error')
+          showToast(
+            (error as Error).message || 'Failed to add to repertoire',
+            'error'
+          )
           throw error
         }
       },
@@ -135,9 +141,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { repertoire: newRepertoire }
           })
           showToast('Status updated', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error updating status:', error)
-          showToast('Failed to update status', 'error')
+          showToast(
+            (error as Error).message || 'Failed to update status',
+            'error'
+          )
           throw error
         }
       },
@@ -166,9 +175,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { repertoire: newRepertoire }
           })
           showToast('Notes updated', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error updating notes:', error)
-          showToast('Failed to update notes', 'error')
+          showToast(
+            (error as Error).message || 'Failed to update notes',
+            'error'
+          )
           throw error
         }
       },
@@ -183,9 +195,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { repertoire: newRepertoire }
           })
           showToast('Removed from repertoire', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error removing from repertoire:', error)
-          showToast('Failed to remove from repertoire', 'error')
+          showToast(
+            (error as Error).message || 'Failed to remove from repertoire',
+            'error'
+          )
           throw error
         }
       },
@@ -194,7 +209,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
       getRepertoireStats: async (scoreId: string) => {
         try {
           return await repertoireApi.getStats(scoreId)
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error getting repertoire stats:', error)
           return null
         }
@@ -213,9 +228,9 @@ export const useRepertoireStore = create<RepertoireStore>()(
             goalsMap.set(goal.id, goal)
           })
           set({ goals: goalsMap, goalsLoading: false })
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error loading goals:', error)
-          set({ goalsError: error.message, goalsLoading: false })
+          set({ goalsError: (error as Error).message, goalsLoading: false })
         }
       },
 
@@ -229,9 +244,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { goals: newGoals }
           })
           showToast('Goal created', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error creating goal:', error)
-          showToast('Failed to create goal', 'error')
+          showToast(
+            (error as Error).message || 'Failed to create goal',
+            'error'
+          )
           throw error
         }
       },
@@ -249,9 +267,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { goals: newGoals }
           })
           showToast('Goal updated', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error updating goal:', error)
-          showToast('Failed to update goal', 'error')
+          showToast(
+            (error as Error).message || 'Failed to update goal',
+            'error'
+          )
           throw error
         }
       },
@@ -266,9 +287,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
             return { goals: newGoals }
           })
           showToast('Goal deleted', 'success')
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error deleting goal:', error)
-          showToast('Failed to delete goal', 'error')
+          showToast(
+            (error as Error).message || 'Failed to delete goal',
+            'error'
+          )
           throw error
         }
       },
@@ -295,9 +319,12 @@ export const useRepertoireStore = create<RepertoireStore>()(
           } else {
             showToast('Progress tracked', 'success')
           }
-        } catch (error: any) {
+        } catch (error) {
           console.error('Error tracking progress:', error)
-          showToast('Failed to track progress', 'error')
+          showToast(
+            (error as Error).message || 'Failed to track progress',
+            'error'
+          )
           throw error
         }
       },

@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Card } from '@/components/ui/Card'
-import { showToast } from '@/components/ui/Toast'
+import { showToast } from '@/utils/toastManager'
 import { CreateGoalInput, GoalType, Milestone } from '@/api/goals'
 import {
   Target,
@@ -43,7 +42,13 @@ export function CreateGoalModal({
   const { t } = useTranslation(['repertoire', 'common'])
   const { createGoal } = useRepertoireStore()
   // TODO: Implement score fetching when scoreStore has scores functionality
-  const scores: any[] = []
+  interface Score {
+    id: string
+    title: string
+    composer?: string
+    difficulty?: string
+  }
+  const scores: Score[] = []
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<GoalType>('repertoire')
@@ -133,6 +138,7 @@ export function CreateGoalModal({
         }))
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTemplate])
 
   const handleAddMilestone = () => {
@@ -149,7 +155,7 @@ export function CreateGoalModal({
   const handleUpdateMilestone = (
     id: string,
     field: keyof Milestone,
-    value: any
+    value: string | boolean | undefined
   ) => {
     setMilestones(
       milestones.map(m => (m.id === id ? { ...m, [field]: value } : m))
@@ -191,7 +197,7 @@ export function CreateGoalModal({
 
       await createGoal(goalData)
       onClose()
-    } catch (error) {
+    } catch (_error) {
       // Error handled in store
     } finally {
       setIsSubmitting(false)

@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { useScoreStore } from '@/stores/scoreStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
-import { showToast } from '@/components/ui/Toast'
+import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'
 import { Search, Music, Plus } from 'lucide-react'
 
@@ -30,7 +29,13 @@ export function AddToRepertoireModal({
 
   const { addToRepertoire, repertoire } = useRepertoireStore()
   // TODO: Implement score fetching when scoreStore has scores functionality
-  const scores: any[] = []
+  interface Score {
+    id: string
+    title: string
+    composer?: string
+    difficulty?: string
+  }
+  const scores: Score[] = []
   const scoresLoading = false
   const loadScores = () => {}
 
@@ -38,6 +43,7 @@ export function AddToRepertoireModal({
     if (isOpen && scores.length === 0) {
       loadScores()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   // Filter scores that are not already in repertoire
@@ -60,7 +66,7 @@ export function AddToRepertoireModal({
     try {
       await addToRepertoire(selectedScoreId, selectedStatus)
       onClose()
-    } catch (error) {
+    } catch (_error) {
       // Error handled in store
     } finally {
       setIsLoading(false)

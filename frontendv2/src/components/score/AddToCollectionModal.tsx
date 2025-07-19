@@ -34,6 +34,7 @@ export default function AddToCollectionModal({
   useEffect(() => {
     loadCollections()
     loadScoreCollections()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadCollections = async () => {
