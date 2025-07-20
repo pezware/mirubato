@@ -385,6 +385,46 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
         </div>
       </div>
 
+      {/* Recent Practice Sessions */}
+      {item.recentPractice && item.recentPractice.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-stone-200">
+          <h4 className="text-sm font-medium text-stone-700 mb-2">
+            {t('repertoire:recentPractice')}
+          </h4>
+          <div className="space-y-2">
+            {item.recentPractice.map(session => (
+              <div
+                key={session.id}
+                className="flex items-start justify-between text-sm"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 text-stone-600">
+                    <Clock className="w-3 h-3" />
+                    <span>
+                      {new Date(session.timestamp).toLocaleDateString()}
+                    </span>
+                    <span className="text-stone-400">•</span>
+                    <span>{formatDuration(session.duration)}</span>
+                  </div>
+                  {session.notes && (
+                    <p className="mt-1 text-stone-500 text-xs">
+                      {session.notes}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {item.practiceCount > 5 && (
+            <button className="mt-2 text-xs text-sage-600 hover:text-sage-700">
+              {t('repertoire:viewAllSessions', {
+                count: item.practiceCount,
+              })}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Additional Goals */}
       {item.activeGoals.length > 1 && (
         <div className="mt-4 pt-4 border-t border-stone-200">

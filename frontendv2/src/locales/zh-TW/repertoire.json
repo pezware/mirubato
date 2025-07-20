@@ -106,6 +106,8 @@
 
   "linkedSessions": "{{count}} 個相關練習",
   "alreadyPracticed": "您已經在這首樂曲上練習了 {{minutes}} 分鐘",
+  "recentPractice": "最近的練習記錄",
+  "viewAllSessions": "查看所有 {{count}} 次練習",
 
   "targetValueHelp": {
     "practiceTime": "輸入總練習分鐘數（例如：300 表示 5 小時）",

@@ -106,6 +106,8 @@
 
   "linkedSessions": "{{count}} linked sessions",
   "alreadyPracticed": "You've already practiced {{minutes}} minutes on this piece",
+  "recentPractice": "Recent Practice Sessions",
+  "viewAllSessions": "View all {{count}} sessions",
 
   "targetValueHelp": {
     "practiceTime": "Enter total minutes to practice (e.g., 300 for 5 hours)",

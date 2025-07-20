@@ -106,6 +106,8 @@
 
   "linkedSessions": "{{count}} verknüpfte Sitzungen",
   "alreadyPracticed": "Sie haben bereits {{minutes}} Minuten an diesem Stück geübt",
+  "recentPractice": "Letzte Übungssitzungen",
+  "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
 
   "targetValueHelp": {
     "practiceTime": "Geben Sie die Gesamtminuten zum Üben ein (z.B. 300 für 5 Stunden)",

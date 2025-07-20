@@ -142,6 +142,17 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         return count + (goal.relatedSessions || 0)
       }, 0)
 
+      // Calculate total practice time and count from matched sessions
+      const totalPracticeTime = practiceSessions.reduce(
+        (total, session) => total + session.duration,
+        0
+      )
+      const practiceCount = practiceSessions.length
+      const lastPracticed =
+        practiceSessions.length > 0
+          ? new Date(practiceSessions[0].timestamp).getTime()
+          : item.lastPracticed
+
       return {
         ...item,
         scoreTitle,
@@ -149,6 +160,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         isLogbookPiece,
         activeGoals: scoreGoals,
         relatedSessions,
+        totalPracticeTime,
+        practiceCount,
+        lastPracticed,
         recentPractice: practiceSessions.slice(0, 5).map(session => ({
           id: session.id,
           timestamp: new Date(session.timestamp).getTime(),
