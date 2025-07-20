@@ -249,7 +249,11 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
                 <div className="mt-2 text-sm text-blue-700 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {t('repertoire:targetDate', {
-                    date: new Date(primaryGoal.targetDate).toLocaleDateString(),
+                    date: new Date(
+                      isNaN(Number(primaryGoal.targetDate))
+                        ? primaryGoal.targetDate
+                        : parseInt(primaryGoal.targetDate)
+                    ).toLocaleDateString(),
                   })}
                 </div>
               )}
