@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { Toast } from '@/components/ui/Toast'
+import { showToast } from '@/utils/toastManager'
 import Button from '@/components/ui/Button'
 import { Music, X } from 'lucide-react'
 
@@ -32,19 +32,16 @@ export function AddToRepertoirePrompt({
 
       await addToRepertoire(scoreId, 'learning')
 
-      Toast.show({
-        type: 'success',
-        message: t('repertoire:addedToRepertoire', { piece: pieceTitle }),
-      })
+      showToast(
+        t('repertoire:addedToRepertoire', { piece: pieceTitle }),
+        'success'
+      )
 
       onAdded?.()
       onClose()
     } catch (error) {
       console.error('Failed to add to repertoire:', error)
-      Toast.show({
-        type: 'error',
-        message: t('repertoire:failedToAdd'),
-      })
+      showToast(t('repertoire:failedToAdd'), 'error')
     } finally {
       setIsAdding(false)
     }
