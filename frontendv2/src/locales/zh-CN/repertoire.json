@@ -12,7 +12,6 @@
   "performanceReady": "演出就绪",
   "emptyRepertoire": "您的曲目库是空的。开始添加您想学习或精通的乐曲吧。",
   "addFirstPiece": "添加您的第一首乐曲",
-
   "status": {
     "planned": "计划中",
     "learning": "学习中",
@@ -20,7 +19,6 @@
     "polished": "精炼",
     "performance_ready": "演出就绪"
   },
-
   "lastPracticed": "上次练习 {{time}}",
   "sessionCount": "{{count}} 次练习",
   "difficulty": "难度",
@@ -33,14 +31,12 @@
   "remove": "移除",
   "confirmRemove": "您确定要从曲目库中移除这首乐曲吗？",
   "additionalGoals": "+{{count}} 个更多目标",
-
   "selectScore": "请选择乐谱",
   "searchScores": "搜索乐谱...",
   "selectPiece": "选择乐曲",
   "noScoresMatchSearch": "没有符合您搜索的乐谱",
   "allScoresInRepertoire": "所有可用的乐谱都已在您的曲目库中",
   "initialStatus": "初始状态",
-
   "goal": {
     "createGoal": "创建目标",
     "editGoal": "编辑目标",
@@ -71,7 +67,6 @@
     "saveAsDraft": "保存为草稿",
     "goalCompleted": "🎉 目标达成！"
   },
-
   "fromLogbook": "来自练习日志",
   "practicedTimes": "已练习 {{count}} 次",
   "addNotesPrompt": "添加笔记或练习指示",
@@ -83,7 +78,6 @@
   "linksHelpText": "添加录音、教学或其他有用资源的链接",
   "invalidUrl": "请输入有效的网址",
   "editingNotesFor": "正在编辑 {{piece}} 的笔记",
-
   "editGoal": "编辑目标",
   "editingGoalFor": "正在编辑 {{piece}} 的目标",
   "goalTitle": "目标标题",
@@ -98,21 +92,26 @@
   "currentProgress": "当前进度",
   "deleteGoal": "删除目标",
   "confirmDeleteGoal": "您确定要删除这个目标吗？",
-
   "goalType.practiceTime": "练习时间",
   "goalType.accuracy": "准确度",
   "goalType.repertoire": "曲目",
   "goalType.custom": "自定义",
-
   "linkedSessions": "{{count}} 个相关练习",
   "alreadyPracticed": "您已经在这首乐曲上练习了 {{minutes}} 分钟",
   "recentPractice": "最近的练习记录",
   "viewAllSessions": "查看所有 {{count}} 次练习",
-
   "targetValueHelp": {
     "practiceTime": "输入总练习分钟数（例如：300 表示 5 小时）",
     "accuracy": "输入目标准确度百分比（例如：95 表示 95%）",
     "repertoire": "输入演出次数或精通程度",
     "custom": "输入您的自定义指标值"
-  }
+  },
+  "totalSessions": "总计",
+  "showLess": "显示较少",
+  "showAll": "显示全部",
+  "addToRepertoireQuestion": "添加到您的曲目库？",
+  "justPracticed": "您刚刚练习了 {{piece}}",
+  "justPracticedWithComposer": "您刚刚练习了 {{composer}} 的 {{piece}}",
+  "addedToRepertoire": "{{piece}} 已添加到您的曲目库",
+  "failedToAdd": "添加到曲目库失败"
 }

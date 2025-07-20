@@ -132,7 +132,7 @@ repertoireHandler.get('/:scoreId/stats', async c => {
         FROM sync_data sd
         WHERE sd.user_id = ? 
           AND json_extract(sd.data, '$.scoreId') = ?
-          AND sd.type = 'logbook_entry'
+          AND sd.entity_type = 'logbook_entry'
         ORDER BY json_extract(sd.data, '$.timestamp') DESC
         LIMIT 50
       `
@@ -177,7 +177,7 @@ repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
   const body = c.get('validatedBody') as z.infer<typeof createRepertoireSchema>
 
   try {
-    const now = new Date().toISOString()
+    const now = Math.floor(Date.now() / 1000) // Unix timestamp
     const id = nanoid()
 
     await c.env.DB.prepare(
@@ -278,7 +278,7 @@ repertoireHandler.put(
       }
 
       updateFields.push('updated_at = ?')
-      updateValues.push(new Date().toISOString())
+      updateValues.push(Math.floor(Date.now() / 1000))
 
       await c.env.DB.prepare(
         `

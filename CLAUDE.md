@@ -448,6 +448,45 @@ datasets.push({
 - **Type Safety**: Fully typed without any `any` assertions
 - **State Management**: Centralized `reportingStore` using Zustand
 
+### Repertoire & Goals System (July 2025)
+
+The repertoire system transforms the Pieces tab into a comprehensive musical progress tracking system integrated with goals.
+
+**Key Features:**
+
+- **Repertoire Management**: Track piece status (Planned, Learning, Working, Polished, Performance Ready)
+- **Goals Integration**: Create and track goals linked to specific pieces
+- **Auto-Prompt**: After logging practice, prompts to add pieces to repertoire
+- **Practice History**: View all practice sessions linked to repertoire items
+- **Score ID Normalization**: Prevents duplicates with normalized IDs (title-composer format)
+
+**Components:**
+
+```typescript
+// Main repertoire components
+import RepertoireView from '@/components/repertoire/RepertoireView'
+import { RepertoireCard } from '@/components/repertoire/RepertoireCard'
+import { AddToRepertoirePrompt } from '@/components/repertoire/AddToRepertoirePrompt'
+import { CreateGoalModal } from '@/components/repertoire/CreateGoalModal'
+import { EditGoalModal } from '@/components/repertoire/EditGoalModal'
+
+// Store
+import { useRepertoireStore } from '@/stores/repertoireStore'
+```
+
+**Database Tables** (Migration 0010):
+
+- `user_repertoire`: Tracks piece status and personal notes
+- `goals`: Extended with score_id, measures, practice_plan fields
+- `goal_progress`: Historical progress tracking
+- `score_annotations`: Future PDF annotation support
+
+**API Endpoints:**
+
+- `/api/repertoire` - CRUD operations for repertoire items
+- `/api/goals` - Goal creation and progress tracking
+- Auto-adds pieces to repertoire when creating repertoire goals
+
 ### API Development Workflow
 
 **IMPORTANT**: The API uses REST endpoints with TypeScript interfaces for type safety.

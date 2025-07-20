@@ -245,7 +245,7 @@ goalsHandler.post('/', validateBody(createGoalSchema), async c => {
   const body = c.get('validatedBody') as z.infer<typeof createGoalSchema>
 
   try {
-    const now = new Date().toISOString()
+    const now = Math.floor(Date.now() / 1000) // Unix timestamp
     const id = nanoid()
 
     // If it's a repertoire goal with a scoreId, ensure the piece is in repertoire
@@ -388,7 +388,7 @@ goalsHandler.put('/:id', validateBody(updateGoalSchema), async c => {
     }
 
     updateFields.push('updated_at = ?')
-    updateValues.push(new Date().toISOString())
+    updateValues.push(Math.floor(Date.now() / 1000))
 
     await c.env.DB.prepare(
       `
@@ -447,13 +447,30 @@ goalsHandler.post(
         WHERE id = ? AND user_id = ?
       `
       )
-        .bind(newValue, status, Date.now(), goalId, userId)
+        .bind(newValue, status, Math.floor(Date.now() / 1000), goalId, userId)
         .run()
 
-      // If sessionId provided, link this goal to the practice session
-      if (body.sessionId) {
-        // This would update the logbook entry to include this goal
-        // Implementation depends on how logbook entries are stored
+      // Record progress history
+      try {
+        await c.env.DB.prepare(
+          `
+            INSERT INTO goal_progress (
+              id, goal_id, value, notes, session_id, recorded_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+          `
+        )
+          .bind(
+            nanoid(),
+            goalId,
+            body.value,
+            body.notes || null,
+            body.sessionId || null,
+            Math.floor(Date.now() / 1000)
+          )
+          .run()
+      } catch (err) {
+        console.warn('Failed to record progress history:', err)
+        // Don't fail the request if progress history fails
       }
 
       return c.json({

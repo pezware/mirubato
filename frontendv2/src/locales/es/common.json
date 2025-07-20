@@ -219,5 +219,7 @@
   "upload": "Subir",
   "username": "Nombre de usuario",
   "version": "Versión",
-  "view": "Ver"
+  "view": "Ver",
+  "notNow": "[NEEDS TRANSLATION] Not Now",
+  "adding": "[NEEDS TRANSLATION] Adding..."
 }

@@ -12,7 +12,6 @@
   "performanceReady": "Listo para Presentación",
   "emptyRepertoire": "Tu repertorio está vacío. Comienza añadiendo piezas que quieras aprender o dominar.",
   "addFirstPiece": "Añade tu Primera Pieza",
-
   "status": {
     "planned": "Planeado",
     "learning": "Aprendiendo",
@@ -20,7 +19,6 @@
     "polished": "Pulido",
     "performance_ready": "Listo para Presentación"
   },
-
   "lastPracticed": "Practicado por última vez {{time}}",
   "sessionCount": "{{count}} sesiones",
   "difficulty": "Dificultad",
@@ -33,14 +31,12 @@
   "remove": "Eliminar",
   "confirmRemove": "¿Estás seguro de que quieres eliminar esta pieza de tu repertorio?",
   "additionalGoals": "+{{count}} objetivos más",
-
   "selectScore": "Por favor selecciona una partitura",
   "searchScores": "Buscar partituras...",
   "selectPiece": "Seleccionar una Pieza",
   "noScoresMatchSearch": "No hay partituras que coincidan con tu búsqueda",
   "allScoresInRepertoire": "Todas las partituras disponibles ya están en tu repertorio",
   "initialStatus": "Estado Inicial",
-
   "goal": {
     "createGoal": "Crear Objetivo",
     "editGoal": "Editar Objetivo",
@@ -71,7 +67,6 @@
     "saveAsDraft": "Guardar como Borrador",
     "goalCompleted": "🎉 ¡Objetivo completado!"
   },
-
   "fromLogbook": "del diario de práctica",
   "practicedTimes": "Practicado {{count}} veces",
   "addNotesPrompt": "Añadir notas o instrucciones de práctica",
@@ -83,7 +78,6 @@
   "linksHelpText": "Añade enlaces a grabaciones, tutoriales u otros recursos útiles",
   "invalidUrl": "Por favor ingresa una URL válida",
   "editingNotesFor": "Editando notas para {{piece}}",
-
   "editGoal": "Editar Objetivo",
   "editingGoalFor": "Editando objetivo para {{piece}}",
   "goalTitle": "Título del Objetivo",
@@ -98,21 +92,26 @@
   "currentProgress": "Progreso Actual",
   "deleteGoal": "Eliminar Objetivo",
   "confirmDeleteGoal": "¿Estás seguro de que quieres eliminar este objetivo?",
-
   "goalType.practiceTime": "Tiempo de Práctica",
   "goalType.accuracy": "Precisión",
   "goalType.repertoire": "Repertorio",
   "goalType.custom": "Personalizado",
-
   "linkedSessions": "{{count}} sesiones vinculadas",
   "alreadyPracticed": "Ya has practicado {{minutes}} minutos en esta pieza",
   "recentPractice": "Sesiones de Práctica Recientes",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
-
   "targetValueHelp": {
     "practiceTime": "Ingresa los minutos totales para practicar (ej. 300 para 5 horas)",
     "accuracy": "Ingresa el porcentaje de precisión objetivo (ej. 95 para 95%)",
     "repertoire": "Ingresa el número de presentaciones o nivel de dominio",
     "custom": "Ingresa tu valor de métrica personalizado"
-  }
+  },
+  "totalSessions": "total",
+  "showLess": "Mostrar menos",
+  "showAll": "Mostrar todo",
+  "addToRepertoireQuestion": "¿Añadir a Tu Repertorio?",
+  "justPracticed": "Acabas de practicar {{piece}}",
+  "justPracticedWithComposer": "Acabas de practicar {{piece}} de {{composer}}",
+  "addedToRepertoire": "{{piece}} añadido a tu repertorio",
+  "failedToAdd": "Error al añadir al repertorio"
 }

@@ -219,5 +219,7 @@
   "version": "版本",
   "view": "查看",
   "warning": "警告",
-  "yes": "是"
+  "yes": "是",
+  "notNow": "[NEEDS TRANSLATION] Not Now",
+  "adding": "[NEEDS TRANSLATION] Adding..."
 }

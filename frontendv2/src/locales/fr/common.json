@@ -219,5 +219,7 @@
   "upload": "Télécharger",
   "username": "Nom d'utilisateur",
   "version": "Version",
-  "view": "Voir"
+  "view": "Voir",
+  "notNow": "[NEEDS TRANSLATION] Not Now",
+  "adding": "[NEEDS TRANSLATION] Adding..."
 }

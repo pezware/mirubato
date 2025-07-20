@@ -31,6 +31,10 @@
     {
       "name": "0008_repertoire_and_annotations.sql",
       "version": 8
+    },
+    {
+      "name": "0009_add_goal_progress.sql",
+      "version": 9
     }
   ]
 }

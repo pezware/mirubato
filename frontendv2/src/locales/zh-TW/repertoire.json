@@ -12,7 +12,6 @@
   "performanceReady": "演出就緒",
   "emptyRepertoire": "您的曲目庫是空的。開始添加您想學習或精通的樂曲吧。",
   "addFirstPiece": "添加您的第一首樂曲",
-
   "status": {
     "planned": "計劃中",
     "learning": "學習中",
@@ -20,7 +19,6 @@
     "polished": "精煉",
     "performance_ready": "演出就緒"
   },
-
   "lastPracticed": "上次練習 {{time}}",
   "sessionCount": "{{count}} 次練習",
   "difficulty": "難度",
@@ -33,14 +31,12 @@
   "remove": "移除",
   "confirmRemove": "您確定要從曲目庫中移除這首樂曲嗎？",
   "additionalGoals": "+{{count}} 個更多目標",
-
   "selectScore": "請選擇樂譜",
   "searchScores": "搜尋樂譜...",
   "selectPiece": "選擇樂曲",
   "noScoresMatchSearch": "沒有符合您搜尋的樂譜",
   "allScoresInRepertoire": "所有可用的樂譜都已在您的曲目庫中",
   "initialStatus": "初始狀態",
-
   "goal": {
     "createGoal": "建立目標",
     "editGoal": "編輯目標",
@@ -71,7 +67,6 @@
     "saveAsDraft": "儲存為草稿",
     "goalCompleted": "🎉 目標達成！"
   },
-
   "fromLogbook": "來自練習日誌",
   "practicedTimes": "已練習 {{count}} 次",
   "addNotesPrompt": "添加筆記或練習指示",
@@ -83,7 +78,6 @@
   "linksHelpText": "添加錄音、教學或其他有用資源的連結",
   "invalidUrl": "請輸入有效的網址",
   "editingNotesFor": "正在編輯 {{piece}} 的筆記",
-
   "editGoal": "編輯目標",
   "editingGoalFor": "正在編輯 {{piece}} 的目標",
   "goalTitle": "目標標題",
@@ -98,21 +92,26 @@
   "currentProgress": "目前進度",
   "deleteGoal": "刪除目標",
   "confirmDeleteGoal": "您確定要刪除這個目標嗎？",
-
   "goalType.practiceTime": "練習時間",
   "goalType.accuracy": "準確度",
   "goalType.repertoire": "曲目",
   "goalType.custom": "自訂",
-
   "linkedSessions": "{{count}} 個相關練習",
   "alreadyPracticed": "您已經在這首樂曲上練習了 {{minutes}} 分鐘",
   "recentPractice": "最近的練習記錄",
   "viewAllSessions": "查看所有 {{count}} 次練習",
-
   "targetValueHelp": {
     "practiceTime": "輸入總練習分鐘數（例如：300 表示 5 小時）",
     "accuracy": "輸入目標準確度百分比（例如：95 表示 95%）",
     "repertoire": "輸入演出次數或精通程度",
     "custom": "輸入您的自訂指標值"
-  }
+  },
+  "totalSessions": "總計",
+  "showLess": "顯示較少",
+  "showAll": "顯示全部",
+  "addToRepertoireQuestion": "添加到您的曲目庫？",
+  "justPracticed": "您剛剛練習了 {{piece}}",
+  "justPracticedWithComposer": "您剛剛練習了 {{composer}} 的 {{piece}}",
+  "addedToRepertoire": "{{piece}} 已添加到您的曲目庫",
+  "failedToAdd": "添加到曲目庫失敗"
 }

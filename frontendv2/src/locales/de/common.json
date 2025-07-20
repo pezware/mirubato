@@ -219,5 +219,7 @@
   "version": "Version",
   "view": "Ansehen",
   "warning": "Warnung",
-  "yes": "Ja"
+  "yes": "Ja",
+  "notNow": "[NEEDS TRANSLATION] Not Now",
+  "adding": "[NEEDS TRANSLATION] Adding..."
 }
