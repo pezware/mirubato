@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { Goal, RepertoireItem, CreateGoalInput } from '@/types'
-import { repertoireApi } from '@/api/repertoire'
+import { repertoireApi, RepertoireStats } from '@/api/repertoire'
 import { goalsApi } from '@/api/goals'
-import { logbookApi } from '@/api/logbook'
+import { logbookApi, LogbookEntry } from '@/api/logbook'
 import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
@@ -56,9 +56,7 @@ interface RepertoireStore {
     updates: Partial<RepertoireItem>
   ) => Promise<void>
   removeFromRepertoire: (scoreId: string) => Promise<void>
-  getRepertoireStats: (
-    scoreId: string
-  ) => Promise<{ repertoire: RepertoireItem; stats: any } | null>
+  getRepertoireStats: (scoreId: string) => Promise<RepertoireStats | null>
 
   // Goal actions
   createGoal: (goal: CreateGoalInput) => Promise<void>
@@ -91,7 +89,7 @@ interface RepertoireStore {
   syncLocalData: () => Promise<void>
 
   // Link practice session to goals
-  linkPracticeToGoals: (entry: any) => Promise<void>
+  linkPracticeToGoals: (entry: LogbookEntry) => Promise<void>
 }
 
 const REPERTOIRE_KEY = 'mirubato:repertoire:items'
@@ -779,7 +777,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   },
 
   // Link practice session to goals
-  linkPracticeToGoals: async (entry: any) => {
+  linkPracticeToGoals: async (entry: LogbookEntry) => {
     const { goals } = get()
 
     // Check if entry has a scoreId
