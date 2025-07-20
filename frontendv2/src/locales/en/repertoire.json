@@ -108,11 +108,20 @@
   "alreadyPracticed": "You've already practiced {{minutes}} minutes on this piece",
   "recentPractice": "Recent Practice Sessions",
   "viewAllSessions": "View all {{count}} sessions",
+  "totalSessions": "total",
+  "showLess": "Show less",
+  "showAll": "Show all",
 
   "targetValueHelp": {
     "practiceTime": "Enter total minutes to practice (e.g., 300 for 5 hours)",
     "accuracy": "Enter target accuracy percentage (e.g., 95 for 95%)",
     "repertoire": "Enter number of performances or mastery level",
     "custom": "Enter your custom metric value"
-  }
+  },
+
+  "addToRepertoireQuestion": "Add to Your Repertoire?",
+  "justPracticed": "You just practiced {{piece}}",
+  "justPracticedWithComposer": "You just practiced {{piece}} by {{composer}}",
+  "addedToRepertoire": "{{piece}} added to your repertoire",
+  "failedToAdd": "Failed to add to repertoire"
 }

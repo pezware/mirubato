@@ -100,7 +100,7 @@ goalsHandler.get('/', async c => {
         COUNT(DISTINCT json_extract(sd.data, '$.id')) as related_sessions
       FROM goals g
       LEFT JOIN sync_data sd ON sd.user_id = g.user_id
-        AND sd.type = 'logbook_entry'
+        AND sd.entity_type = 'logbook_entry'
         AND json_extract(sd.data, '$.goalIds') LIKE '%' || g.id || '%'
       WHERE g.user_id = ?
     `
@@ -171,7 +171,7 @@ goalsHandler.get('/:id', async c => {
           SUM(json_extract(sd.data, '$.duration')) as total_practice_time
         FROM goals g
         LEFT JOIN sync_data sd ON sd.user_id = g.user_id
-          AND sd.type = 'logbook_entry'
+          AND sd.entity_type = 'logbook_entry'
           AND json_extract(sd.data, '$.goalIds') LIKE '%' || g.id || '%'
         WHERE g.id = ? AND g.user_id = ?
         GROUP BY g.id
@@ -194,7 +194,7 @@ goalsHandler.get('/:id', async c => {
           json_extract(sd.data, '$.notes') as notes
         FROM sync_data sd
         WHERE sd.user_id = ? 
-          AND sd.type = 'logbook_entry'
+          AND sd.entity_type = 'logbook_entry'
           AND json_extract(sd.data, '$.goalIds') LIKE '%' || ? || '%'
         ORDER BY json_extract(sd.data, '$.timestamp') DESC
         LIMIT 10
@@ -245,7 +245,7 @@ goalsHandler.post('/', validateBody(createGoalSchema), async c => {
   const body = c.get('validatedBody') as z.infer<typeof createGoalSchema>
 
   try {
-    const now = Date.now()
+    const now = new Date().toISOString()
     const id = nanoid()
 
     // If it's a repertoire goal with a scoreId, ensure the piece is in repertoire
@@ -388,7 +388,7 @@ goalsHandler.put('/:id', validateBody(updateGoalSchema), async c => {
     }
 
     updateFields.push('updated_at = ?')
-    updateValues.push(Date.now())
+    updateValues.push(new Date().toISOString())
 
     await c.env.DB.prepare(
       `

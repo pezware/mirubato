@@ -19,6 +19,8 @@ import {
   Trash,
   StickyNote,
   Pencil,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 
 interface PracticeSession {
@@ -49,6 +51,7 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [showEditNotesModal, setShowEditNotesModal] = useState(false)
   const [showEditGoalModal, setShowEditGoalModal] = useState(false)
+  const [showAllSessions, setShowAllSessions] = useState(false)
   const {
     updateRepertoireStatus,
     removeFromRepertoire,
@@ -388,11 +391,36 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
       {/* Recent Practice Sessions */}
       {item.recentPractice && item.recentPractice.length > 0 && (
         <div className="mt-4 pt-4 border-t border-stone-200">
-          <h4 className="text-sm font-medium text-stone-700 mb-2">
-            {t('repertoire:recentPractice')}
-          </h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-stone-700">
+              {t('repertoire:recentPractice')}
+              {item.practiceCount > 3 && (
+                <span className="ml-2 text-xs text-stone-500">
+                  ({item.practiceCount} {t('repertoire:totalSessions')})
+                </span>
+              )}
+            </h4>
+            {item.recentPractice.length > 3 && (
+              <button
+                onClick={() => setShowAllSessions(!showAllSessions)}
+                className="flex items-center gap-1 text-xs text-sage-600 hover:text-sage-700"
+              >
+                {showAllSessions
+                  ? t('repertoire:showLess')
+                  : t('repertoire:showAll')}
+                {showAllSessions ? (
+                  <ChevronUp className="w-3 h-3" />
+                ) : (
+                  <ChevronDown className="w-3 h-3" />
+                )}
+              </button>
+            )}
+          </div>
           <div className="space-y-2">
-            {item.recentPractice.map(session => (
+            {(showAllSessions
+              ? item.recentPractice
+              : item.recentPractice.slice(0, 3)
+            ).map(session => (
               <div
                 key={session.id}
                 className="flex items-start justify-between text-sm"
@@ -415,13 +443,6 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
               </div>
             ))}
           </div>
-          {item.practiceCount > 5 && (
-            <button className="mt-2 text-xs text-sage-600 hover:text-sage-700">
-              {t('repertoire:viewAllSessions', {
-                count: item.practiceCount,
-              })}
-            </button>
-          )}
         </div>
       )}
 

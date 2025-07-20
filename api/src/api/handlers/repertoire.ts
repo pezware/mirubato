@@ -56,7 +56,7 @@ repertoireHandler.get('/', async c => {
         FROM user_repertoire r
         LEFT JOIN sync_data sd ON sd.user_id = r.user_id
           AND json_extract(sd.data, '$.scoreId') = r.score_id
-          AND sd.type = 'logbook_entry'
+          AND sd.entity_type = 'logbook_entry'
         WHERE r.user_id = ?
         GROUP BY r.id
         ORDER BY r.updated_at DESC
@@ -110,7 +110,7 @@ repertoireHandler.get('/:scoreId/stats', async c => {
         FROM user_repertoire r
         LEFT JOIN sync_data sd ON sd.user_id = r.user_id
           AND json_extract(sd.data, '$.scoreId') = r.score_id
-          AND sd.type = 'logbook_entry'
+          AND sd.entity_type = 'logbook_entry'
         WHERE r.user_id = ? AND r.score_id = ?
         GROUP BY r.id
       `
@@ -177,7 +177,7 @@ repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
   const body = c.get('validatedBody') as z.infer<typeof createRepertoireSchema>
 
   try {
-    const now = Date.now()
+    const now = new Date().toISOString()
     const id = nanoid()
 
     await c.env.DB.prepare(
@@ -278,7 +278,7 @@ repertoireHandler.put(
       }
 
       updateFields.push('updated_at = ?')
-      updateValues.push(Date.now())
+      updateValues.push(new Date().toISOString())
 
       await c.env.DB.prepare(
         `
