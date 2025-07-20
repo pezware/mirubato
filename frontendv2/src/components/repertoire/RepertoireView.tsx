@@ -271,14 +271,14 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               value={goalFilter}
               onChange={value =>
                 setGoalFilter(
-                  value as 'all' | 'active' | 'completed' | 'no-goals'
+                  value as 'all' | 'active' | 'completed' | 'no_goals'
                 )
               }
               options={[
                 { value: 'all', label: t('repertoire:allGoals') },
                 { value: 'active', label: t('repertoire:activeGoals') },
                 { value: 'completed', label: t('repertoire:completedGoals') },
-                { value: 'no-goals', label: t('repertoire:noGoals') },
+                { value: 'no_goals', label: t('repertoire:noGoals') },
               ]}
               className="flex-1"
             />

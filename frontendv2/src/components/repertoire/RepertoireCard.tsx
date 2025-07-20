@@ -55,7 +55,7 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
   const {
     updateRepertoireStatus,
     removeFromRepertoire,
-    updateRepertoireNotes,
+    updateRepertoire,
     updateGoal,
   } = useRepertoireStore()
 
@@ -463,7 +463,10 @@ export function RepertoireCard({ item, onCreateGoal }: RepertoireCardProps) {
           isOpen={showEditNotesModal}
           onClose={() => setShowEditNotesModal(false)}
           onSave={async (notes, links) => {
-            await updateRepertoireNotes(item.scoreId, notes, links)
+            await updateRepertoire(item.scoreId, {
+              personalNotes: notes,
+              referenceLinks: links,
+            })
           }}
           currentNotes={item.personalNotes}
           currentLinks={item.referenceLinks}

@@ -1,7 +1,10 @@
 import { create } from 'zustand'
-import { Goal, RepertoireItem, CreateGoalInput } from '@/types'
-import { repertoireApi, RepertoireStats } from '@/api/repertoire'
-import { goalsApi } from '@/api/goals'
+import {
+  repertoireApi,
+  RepertoireStats,
+  RepertoireItem,
+} from '@/api/repertoire'
+import { goalsApi, Goal, CreateGoalInput } from '@/api/goals'
 import { logbookApi, LogbookEntry } from '@/api/logbook'
 import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
@@ -55,6 +58,11 @@ interface RepertoireStore {
     scoreId: string,
     updates: Partial<RepertoireItem>
   ) => Promise<void>
+  updateRepertoireStatus: (
+    scoreId: string,
+    status: RepertoireItem['status']
+  ) => Promise<void>
+  updateRepertoireNotes: (scoreId: string, notes: string) => Promise<void>
   removeFromRepertoire: (scoreId: string) => Promise<void>
   getRepertoireStats: (scoreId: string) => Promise<RepertoireStats | null>
 
@@ -263,7 +271,15 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
       } else {
         // Use API
-        const updatedItem = await repertoireApi.update(scoreId, updates)
+        await repertoireApi.update(scoreId, updates)
+
+        // Update local state with merged data
+        const updatedItem = {
+          ...existing,
+          ...updates,
+          updatedAt: Date.now(),
+        }
+
         set(state => {
           const newRepertoire = new Map(state.repertoire)
           newRepertoire.set(scoreId, updatedItem)
@@ -283,6 +299,17 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       )
       throw error
     }
+  },
+
+  updateRepertoireStatus: async (
+    scoreId: string,
+    status: RepertoireItem['status']
+  ) => {
+    return get().updateRepertoire(scoreId, { status })
+  },
+
+  updateRepertoireNotes: async (scoreId: string, notes: string) => {
+    return get().updateRepertoire(scoreId, { personalNotes: notes })
   },
 
   // Remove from repertoire
@@ -483,7 +510,15 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         localStorage.setItem(GOALS_KEY, JSON.stringify(goalsArray))
       } else {
         // Use API
-        const updatedGoal = await goalsApi.update(id, updates)
+        await goalsApi.update(id, updates)
+
+        // Update local state with merged data
+        const updatedGoal = {
+          ...existing,
+          ...updates,
+          updatedAt: Date.now(),
+        }
+
         set(state => {
           const newGoals = new Map(state.goals)
           newGoals.set(id, updatedGoal)
@@ -743,13 +778,16 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
     try {
       // Try to get practice history from logbook
-      const response = await logbookApi.getEntriesByScore(scoreId)
-      const entries = response.entries || []
+      const allEntries = await logbookApi.getEntries()
+      const entries = allEntries.filter(entry => entry.scoreId === scoreId)
 
       // Calculate total practice time
-      const totalMinutes = entries.reduce((sum, entry) => {
-        return sum + (entry.duration || 0)
-      }, 0)
+      const totalMinutes = entries.reduce(
+        (sum: number, entry: LogbookEntry) => {
+          return sum + (entry.duration || 0)
+        },
+        0
+      )
 
       return totalMinutes
     } catch (error) {
@@ -792,7 +830,11 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     for (const goal of scoreGoals) {
       if (goal.type === 'practice_time' && entry.duration) {
         try {
-          await get().trackGoalProgress(goal.id, entry.duration, entry.notes)
+          await get().trackGoalProgress(
+            goal.id,
+            entry.duration,
+            entry.notes || undefined
+          )
         } catch (error) {
           console.warn('Failed to update goal progress:', error)
         }
