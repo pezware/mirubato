@@ -15,6 +15,8 @@ import {
 import { type LogbookEntry } from '@/api/logbook'
 import { useAuthStore } from './authStore'
 import { showToast } from '@/utils/toastManager'
+import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
+import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
 import { nanoid } from 'nanoid'
 
 // Local storage keys
@@ -108,6 +110,9 @@ export const useRepertoireStore = create<RepertoireStore>()(
         set({ repertoireLoading: true, repertoireError: null })
 
         try {
+          // Run migration to normalize existing repertoire IDs
+          normalizeRepertoireIds()
+
           // Always load from localStorage first
           const stored = localStorage.getItem(REPERTOIRE_KEY)
           const items: RepertoireItem[] = stored ? JSON.parse(stored) : []
@@ -730,10 +735,11 @@ export const useRepertoireStore = create<RepertoireStore>()(
 
             // Match by title and composer for logbook pieces
             if (goal.scoreId && piece.title) {
-              // The scoreId for logbook pieces is "title-composer"
-              const expectedScoreId = piece.composer
-                ? `${piece.title}-${piece.composer}`
-                : piece.title
+              // Generate normalized scoreId for comparison
+              const expectedScoreId = generateNormalizedScoreId(
+                piece.title,
+                piece.composer
+              )
               return goal.scoreId === expectedScoreId
             }
 
@@ -778,9 +784,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
                 ((entry.scoreId && goal.scoreId === entry.scoreId) ||
                   (piece.title &&
                     goal.scoreId ===
-                      (piece.composer
-                        ? `${piece.title}-${piece.composer}`
-                        : piece.title)))
+                      generateNormalizedScoreId(piece.title, piece.composer)))
 
               if (matchesGoal) {
                 totalProgress += entry.duration
@@ -812,9 +816,7 @@ export const useRepertoireStore = create<RepertoireStore>()(
                 (entry.scoreId && scoreId === entry.scoreId) ||
                 (piece.title &&
                   scoreId ===
-                    (piece.composer
-                      ? `${piece.title}-${piece.composer}`
-                      : piece.title))
+                    generateNormalizedScoreId(piece.title, piece.composer))
 
               if (matchesScore) {
                 historicalValue += entry.duration

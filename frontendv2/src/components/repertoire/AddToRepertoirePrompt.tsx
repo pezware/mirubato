@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { showToast } from '@/utils/toastManager'
+import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 import Button from '@/components/ui/Button'
 import { Music, X } from 'lucide-react'
 
@@ -25,10 +26,8 @@ export function AddToRepertoirePrompt({
   const handleAdd = async () => {
     setIsAdding(true)
     try {
-      // Create a scoreId from the piece info (for logbook pieces)
-      const scoreId = composer
-        ? `${pieceTitle.toLowerCase()}-${composer.toLowerCase()}`
-        : pieceTitle.toLowerCase()
+      // Create a normalized scoreId from the piece info
+      const scoreId = generateNormalizedScoreId(pieceTitle, composer)
 
       await addToRepertoire(scoreId, 'learning')
 

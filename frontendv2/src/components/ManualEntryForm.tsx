@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import type { LogbookEntry } from '../api/logbook'
+import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
@@ -154,9 +155,7 @@ export default function ManualEntryForm({
 
         // Check if any piece should be added to repertoire
         for (const piece of entryData.pieces) {
-          const scoreId = piece.composer
-            ? `${piece.title.toLowerCase()}-${piece.composer.toLowerCase()}`
-            : piece.title.toLowerCase()
+          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
 
           // Check if this piece is already in repertoire
           const isInRepertoire = Array.from(repertoire.values()).some(
