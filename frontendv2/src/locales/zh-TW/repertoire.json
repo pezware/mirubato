@@ -65,7 +65,13 @@
     "similarPieces": "類似的樂曲平均花費您 {{weeks}} 週來精通",
     "considerAdding": "考慮將 {{suggestion}} 加入您的熱身程序",
     "saveAsDraft": "儲存為草稿",
-    "goalCompleted": "🎉 目標達成！"
+    "goalCompleted": "🎉 目標達成！",
+    "enterTitle": "目標標題為必填",
+    "goalFor": "目標對象",
+    "enterGoalTitle": "例如：精通第一樂章",
+    "enterDescription": "描述您想達成的目標以及如何進行",
+    "measureHint": "例如：1-8, 15-20, 32",
+    "practiceNotesPlaceholder": "添加特定技巧、挑戰或練習策略..."
   },
   "fromLogbook": "來自練習日誌",
   "practicedTimes": "已練習 {{count}} 次",

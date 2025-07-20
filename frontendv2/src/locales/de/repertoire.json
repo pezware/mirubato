@@ -65,7 +65,13 @@
     "similarPieces": "Ähnliche Stücke dauerten durchschnittlich {{weeks}} Wochen bis zur Meisterschaft",
     "considerAdding": "Erwägen Sie, {{suggestion}} zu Ihrer Aufwärmroutine hinzuzufügen",
     "saveAsDraft": "Als Entwurf speichern",
-    "goalCompleted": "🎉 Ziel erreicht!"
+    "goalCompleted": "🎉 Ziel erreicht!",
+    "enterTitle": "Zieltitel ist erforderlich",
+    "goalFor": "Ziel für",
+    "enterGoalTitle": "z.B. Den ersten Satz meistern",
+    "enterDescription": "Beschreiben Sie, was Sie erreichen möchten und wie Sie daran arbeiten werden",
+    "measureHint": "z.B. 1-8, 15-20, 32",
+    "practiceNotesPlaceholder": "Fügen Sie spezifische Techniken, Herausforderungen oder Übungsstrategien hinzu..."
   },
   "fromLogbook": "aus Logbuch",
   "practicedTimes": "{{count}} Mal geübt",

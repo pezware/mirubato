@@ -65,7 +65,13 @@
     "similarPieces": "Piezas similares te tomaron un promedio de {{weeks}} semanas para dominar",
     "considerAdding": "Considera añadir {{suggestion}} a tu rutina de calentamiento",
     "saveAsDraft": "Guardar como Borrador",
-    "goalCompleted": "🎉 ¡Objetivo completado!"
+    "goalCompleted": "🎉 ¡Objetivo completado!",
+    "enterTitle": "El título del objetivo es obligatorio",
+    "goalFor": "Objetivo para",
+    "enterGoalTitle": "ej. Dominar el primer movimiento",
+    "enterDescription": "Describe qué quieres lograr y cómo trabajarás en ello",
+    "measureHint": "ej. 1-8, 15-20, 32",
+    "practiceNotesPlaceholder": "Añade técnicas específicas, desafíos o estrategias de práctica..."
   },
   "fromLogbook": "del diario de práctica",
   "practicedTimes": "Practicado {{count}} veces",

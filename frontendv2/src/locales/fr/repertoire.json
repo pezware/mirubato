@@ -65,7 +65,13 @@
     "similarPieces": "Des pièces similaires vous ont pris en moyenne {{weeks}} semaines à maîtriser",
     "considerAdding": "Envisagez d'ajouter {{suggestion}} à votre routine d'échauffement",
     "saveAsDraft": "Enregistrer comme Brouillon",
-    "goalCompleted": "🎉 Objectif atteint !"
+    "goalCompleted": "🎉 Objectif atteint !",
+    "enterTitle": "Le titre de l'objectif est requis",
+    "goalFor": "Objectif pour",
+    "enterGoalTitle": "ex. Maîtriser le premier mouvement",
+    "enterDescription": "Décrivez ce que vous voulez accomplir et comment vous allez y travailler",
+    "measureHint": "ex. 1-8, 15-20, 32",
+    "practiceNotesPlaceholder": "Ajoutez des techniques spécifiques, défis ou stratégies de pratique..."
   },
   "fromLogbook": "du journal de pratique",
   "practicedTimes": "Pratiqué {{count}} fois",
