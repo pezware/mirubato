@@ -87,9 +87,39 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       const scoreGoals = getActiveGoalsByScore(item.scoreId)
 
       // Get practice data from analytics
-      const practiceSessions = analytics.filteredEntries.filter(
-        entry => entry.scoreId === item.scoreId
-      )
+      // First try to match by scoreId, then fall back to matching by piece title/composer
+      const practiceSessions = analytics.filteredEntries.filter(entry => {
+        // Direct scoreId match (for scorebook items)
+        if (entry.scoreId === item.scoreId) {
+          return true
+        }
+
+        // For logbook pieces, match by title and composer from pieces array
+        if (!score && entry.pieces && entry.pieces.length > 0) {
+          // Extract title and composer from the repertoire scoreId
+          let repTitle = ''
+          let repComposer = ''
+
+          if (item.scoreId.includes('-')) {
+            const parts = item.scoreId.split('-')
+            if (parts.length >= 2) {
+              repTitle = parts[0].toLowerCase()
+              repComposer = parts.slice(1).join('-').toLowerCase()
+            }
+          }
+
+          // Check if any piece in the entry matches
+          return entry.pieces.some(piece => {
+            const pieceTitle = (piece.title || '').toLowerCase()
+            const pieceComposer = (piece.composer || '').toLowerCase()
+
+            // Match if both title and composer match
+            return pieceTitle === repTitle && pieceComposer === repComposer
+          })
+        }
+
+        return false
+      })
 
       // For logbook pieces, the scoreId is in format "title-composer"
       // We need to extract the title and composer from the scoreId
