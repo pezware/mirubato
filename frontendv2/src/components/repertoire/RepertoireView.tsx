@@ -37,7 +37,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     setGoalFilter,
     setSearchQuery,
     getFilteredRepertoire,
-    getActiveGoalsByScore,
+    getGoalsForScore,
+    cacheScoreMetadata,
+    getScoreMetadata,
   } = useRepertoireStore()
 
   const {
@@ -84,7 +86,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const enrichedRepertoire = useMemo(() => {
     const enriched = filteredItems.map(item => {
       const score = scores.find(s => s.id === item.scoreId)
-      const scoreGoals = getActiveGoalsByScore(item.scoreId)
+      const scoreGoals = getGoalsForScore(item.scoreId).filter(
+        g => g.status === 'active'
+      )
 
       // Get practice data from analytics
       // First try to match by scoreId, then fall back to matching by piece title/composer
@@ -127,14 +131,33 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       let scoreComposer = score?.composer || ''
       let isLogbookPiece = false
 
-      if (!score && item.scoreId.includes('-')) {
+      // First try to get from cache
+      const cachedMetadata = getScoreMetadata(item.scoreId)
+      if (cachedMetadata) {
+        scoreTitle = cachedMetadata.title
+        scoreComposer = cachedMetadata.composer
+      } else if (!score && item.scoreId.includes('-')) {
         // This is likely a logbook piece
         const parts = item.scoreId.split('-')
         if (parts.length >= 2) {
           scoreTitle = parts[0]
           scoreComposer = parts.slice(1).join('-') // Handle composers with hyphens
           isLogbookPiece = true
+
+          // Cache this metadata for future use
+          cacheScoreMetadata(item.scoreId, {
+            id: item.scoreId,
+            title: scoreTitle,
+            composer: scoreComposer,
+          })
         }
+      } else if (score) {
+        // Cache the score metadata from scoreStore
+        cacheScoreMetadata(item.scoreId, {
+          id: item.scoreId,
+          title: score.title,
+          composer: score.composer,
+        })
       }
 
       // Count sessions linked to goals

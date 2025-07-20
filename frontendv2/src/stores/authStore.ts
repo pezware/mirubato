@@ -50,10 +50,20 @@ export const useAuthStore = create<AuthState>(set => ({
 
       // Set to online mode and trigger sync after successful authentication
       const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+      const { syncLocalData } = await import('./repertoireStore').then(m =>
+        m.useRepertoireStore.getState()
+      )
       setLocalMode(false) // Switch to online mode when authenticated
-      syncWithServer().catch((error: unknown) => {
-        console.warn('Initial sync failed:', error)
-      })
+
+      // Sync both logbook and repertoire data
+      Promise.all([
+        syncWithServer().catch((error: unknown) => {
+          console.warn('Initial logbook sync failed:', error)
+        }),
+        syncLocalData().catch((error: unknown) => {
+          console.warn('Initial repertoire sync failed:', error)
+        }),
+      ])
     } catch (error: unknown) {
       const err = error as Error & { response?: { data?: { error?: string } } }
       set({
@@ -76,8 +86,13 @@ export const useAuthStore = create<AuthState>(set => ({
 
       // Set to online mode and sync logbook after successful Google login
       const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+      const { syncLocalData } = await import('./repertoireStore').then(m =>
+        m.useRepertoireStore.getState()
+      )
       setLocalMode(false) // Switch to online mode when authenticated
-      await syncWithServer()
+
+      // Sync both logbook and repertoire data
+      await Promise.all([syncWithServer(), syncLocalData()])
     } catch (error: unknown) {
       let errorMessage = 'Google login failed'
       const err = error as Error & {
@@ -134,6 +149,37 @@ export const useAuthStore = create<AuthState>(set => ({
         )
       }
 
+      // Save repertoire data before logout
+      const {
+        repertoire,
+        goals: repertoireGoals,
+        scoreMetadataCache,
+      } = await import('./repertoireStore').then(m =>
+        m.useRepertoireStore.getState()
+      )
+      const repertoireItems = Array.from(repertoire.values())
+      const repertoireGoalsArray = Array.from(repertoireGoals.values())
+      const scoreMetadataArray = Array.from(scoreMetadataCache.values())
+
+      if (repertoireItems.length > 0) {
+        localStorage.setItem(
+          'mirubato:repertoire:items',
+          JSON.stringify(repertoireItems)
+        )
+      }
+      if (repertoireGoalsArray.length > 0) {
+        localStorage.setItem(
+          'mirubato:repertoire:goals',
+          JSON.stringify(repertoireGoalsArray)
+        )
+      }
+      if (scoreMetadataArray.length > 0) {
+        localStorage.setItem(
+          'mirubato:repertoire:scoreMetadata',
+          JSON.stringify(scoreMetadataArray)
+        )
+      }
+
       await authApi.logout()
     } finally {
       set({
@@ -166,8 +212,21 @@ export const useAuthStore = create<AuthState>(set => ({
       })
 
       // Set to online mode when authenticated
-      const { setLocalMode } = useLogbookStore.getState()
+      const { setLocalMode, syncWithServer } = useLogbookStore.getState()
+      const { syncLocalData } = await import('./repertoireStore').then(m =>
+        m.useRepertoireStore.getState()
+      )
       setLocalMode(false)
+
+      // Sync both logbook and repertoire data in background
+      Promise.all([
+        syncWithServer().catch((error: unknown) => {
+          console.warn('Background logbook sync failed:', error)
+        }),
+        syncLocalData().catch((error: unknown) => {
+          console.warn('Background repertoire sync failed:', error)
+        }),
+      ])
     } catch {
       // Token is invalid, clear auth state
       localStorage.removeItem('auth-token')
