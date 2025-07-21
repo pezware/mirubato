@@ -29,26 +29,26 @@
     "saveEntry": "儲存記錄",
     "successAdded": "練習記錄新增成功！",
     "successUpdated": "練習記錄更新成功！",
+    "techniqueOptions": {
+      "addCustom": "新增自訂技巧",
+      "arpeggio": "琴音",
+      "custom": "自訂",
+      "customPlaceholder": "輸入自訂技巧名稱",
+      "octave": "八度",
+      "rhythm": "節奏",
+      "scale": "音階",
+      "selectTechniques": "選擇練習的技巧"
+    },
     "techniques": "技巧",
     "type": "類型",
-    "updateEntry": "更新記錄",
     "typeOptions": {
-      "practice": "練習",
       "lesson": "課程",
       "performance": "演出",
+      "practice": "練習",
       "rehearsal": "排練",
       "technique": "技巧"
     },
-    "techniqueOptions": {
-      "scale": "音階",
-      "arpeggio": "琴音",
-      "octave": "八度",
-      "rhythm": "節奏",
-      "custom": "自訂",
-      "selectTechniques": "選擇練習的技巧",
-      "addCustom": "新增自訂技巧",
-      "customPlaceholder": "輸入自訂技巧名稱"
-    }
+    "updateEntry": "更新記錄"
   },
   "filters": {
     "allTime": "全部時間",
@@ -76,6 +76,18 @@
     "month": "{{month}}",
     "week": "第 {{number}} 週",
     "year": "{{year}}"
+  },
+  "timer": {
+    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
+    "pause": "[NEEDS TRANSLATION] Pause",
+    "reset": "[NEEDS TRANSLATION] Reset",
+    "resume": "[NEEDS TRANSLATION] Resume",
+    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
+    "start": "[NEEDS TRANSLATION] Start Timer",
+    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
+    "stop": "[NEEDS TRANSLATION] Stop & Log",
+    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration",
+    "title": "[NEEDS TRANSLATION] Practice Timer"
   },
   "title": "練習日誌",
   "viewScore": "查看樂譜"

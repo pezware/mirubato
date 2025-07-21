@@ -1,6 +1,13 @@
 {
   "allComposers": "Alle Komponisten",
   "allPieces": "Alle Stücke",
+  "analytics": {
+    "instrumentDistribution": "Instrumentenverteilung",
+    "practiceTrend": "Übungstrend",
+    "topComposers": "Top-Komponisten",
+    "topPieces": "Top-Stücke",
+    "typeDistribution": "Typverteilung"
+  },
   "applyGroupingToSeeData": "Gruppierung anwenden, um Daten in Tabellenform anzuzeigen",
   "average": "durchschnitt",
   "averageSessionDuration": "Durchschnittliche Sitzungsdauer",
@@ -12,9 +19,13 @@
   "charts": {
     "averageDuration": "Durchschnittliche Dauer",
     "change": "Änderung",
+    "changes": "Änderungen",
+    "comparison": "Vergleich",
     "current": "Aktuell",
     "date": "Datum",
     "distribution": "Verteilung",
+    "duration": "Dauer (Minuten)",
+    "goal": "Ziel",
     "less": "Weniger",
     "month": {
       "0": "Jan",
@@ -31,6 +42,7 @@
       "11": "Dez"
     },
     "more": "Mehr",
+    "movingAverage": "7-Tage-Durchschnitt",
     "noDataAvailable": "Keine Daten für den ausgewählten Zeitraum verfügbar",
     "other": "Sonstige",
     "practiceHeatmap": "Übungs-Heatmap",
@@ -38,6 +50,7 @@
     "practiceTrend": "Übungstrend",
     "previous": "Vorherig",
     "sessions": "Sitzungen",
+    "target": "Ziel",
     "totalDuration": "Gesamtdauer",
     "weekday": {
       "0": "So",
@@ -47,13 +60,7 @@
       "4": "Do",
       "5": "Fr",
       "6": "Sa"
-    },
-    "changes": "Änderungen",
-    "comparison": "Vergleich",
-    "duration": "Dauer (Minuten)",
-    "target": "Ziel",
-    "goal": "Ziel",
-    "movingAverage": "7-Tage-Durchschnitt"
+    }
   },
   "clear": "Löschen",
   "comparativeAnalysis": "Vergleichsanalyse",
@@ -96,8 +103,10 @@
     "addFilter": "Filter hinzufügen",
     "addFirstFilter": "Ersten Filter hinzufügen",
     "allTime": "Gesamte Zeit",
+    "and": "UND",
     "clearAll": "Alle löschen",
     "deletePreset": "Voreinstellung löschen",
+    "enterTechnique": "Technik eingeben",
     "fields": {
       "autoTracked": "Automatisch erfasst",
       "composer": "Komponist",
@@ -113,6 +122,8 @@
     "last30Days": "Letzte 30 Tage",
     "last7Days": "Letzte 7 Tage",
     "lastMonth": "Letzten Monat",
+    "minutes": "Minuten",
+    "no": "Nein",
     "noFilters": "Keine Filter angewendet",
     "noPreset": "Keine Voreinstellung ausgewählt",
     "operators": {
@@ -128,13 +139,14 @@
       "isNot": "ist nicht",
       "isNotEmpty": "ist nicht leer",
       "lessThan": "kleiner als",
+      "linked": "mit Partitur verknüpft",
       "notContains": "enthält nicht",
       "notEquals": "ist nicht gleich",
       "notIn": "ist keiner von",
-      "on": "Ein",
-      "linked": "mit Partitur verknüpft",
-      "notLinked": "nicht mit Partitur verknüpft"
+      "notLinked": "nicht mit Partitur verknüpft",
+      "on": "Ein"
     },
+    "or": "ODER",
     "savePreset": "Voreinstellung speichern",
     "savePresetModal": {
       "description": "Beschreibung",
@@ -143,13 +155,6 @@
       "namePlaceholder": "Name der Voreinstellung eingeben",
       "title": "Filtervoreinstellung speichern"
     },
-    "thisMonth": "Diesen Monat",
-    "title": "Filter",
-    "and": "UND",
-    "enterTechnique": "Technik eingeben",
-    "minutes": "Minuten",
-    "no": "Nein",
-    "or": "ODER",
     "select": "Auswählen",
     "selectComposer": "Komponist auswählen",
     "selectComposers": "Komponisten auswählen",
@@ -161,6 +166,8 @@
     "selectPieces": "Stücke auswählen",
     "selectType": "Typ auswählen",
     "selectTypes": "Typen auswählen",
+    "thisMonth": "Diesen Monat",
+    "title": "Filter",
     "to": "bis",
     "yes": "Ja"
   },
@@ -239,6 +246,10 @@
   "sorting": {
     "addField": "Sortierfeld hinzufügen",
     "addFirstField": "Erstes Sortierfeld hinzufügen",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend",
+    "direction": "Richtung",
+    "field": "Feld",
     "fields": {
       "composer": "Komponist",
       "date": "Datum",
@@ -250,14 +261,10 @@
     },
     "helpText": "Die Sortierreihenfolge wird der Reihe nach von oben nach unten angewendet.",
     "noSorting": "Keine Sortierung angewendet",
-    "title": "Sortierung",
-    "ascending": "Aufsteigend",
-    "descending": "Absteigend",
-    "direction": "Richtung",
-    "field": "Feld",
-    "sortBy": "Sortieren nach",
     "primary": "Primär",
-    "secondary": "Sekundär"
+    "secondary": "Sekundär",
+    "sortBy": "Sortieren nach",
+    "title": "Sortierung"
   },
   "stats": {
     "avgPerDay": "Durchschnitt pro Tag",
@@ -294,11 +301,11 @@
     "analytics": "Analytik",
     "comparative": "Vergleichende Analyse",
     "data": "Datentabelle",
+    "new": "Neu",
     "newEntry": "Eintrag hinzufügen",
     "overview": "Übersicht",
     "pieces": "Stücke",
     "progress": "Fortschritt",
-    "new": "Neu",
     "repertoire": "[NEEDS TRANSLATION] Repertoire"
   },
   "techniqueFocus": "Technik-Fokus",
@@ -322,12 +329,5 @@
   "unknown": "Unbekannt",
   "viewReports": "Berichte anzeigen",
   "weekOverWeek": "Woche über Woche",
-  "weekOverview": "Wochenübersicht",
-  "analytics": {
-    "instrumentDistribution": "Instrumentenverteilung",
-    "typeDistribution": "Typverteilung",
-    "practiceTrend": "Übungstrend",
-    "topPieces": "Top-Stücke",
-    "topComposers": "Top-Komponisten"
-  }
+  "weekOverview": "Wochenübersicht"
 }

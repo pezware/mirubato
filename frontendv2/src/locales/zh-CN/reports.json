@@ -1,6 +1,13 @@
 {
   "allComposers": "所有作曲家",
   "allPieces": "所有曲目",
+  "analytics": {
+    "instrumentDistribution": "乐器分布",
+    "practiceTrend": "练习趋势",
+    "topComposers": "热门作曲家",
+    "topPieces": "热门曲目",
+    "typeDistribution": "类型分布"
+  },
   "applyGroupingToSeeData": "应用分组以表格格式查看数据",
   "average": "平均",
   "averageSessionDuration": "平均练习时长",
@@ -12,9 +19,13 @@
   "charts": {
     "averageDuration": "平均时长",
     "change": "变化",
+    "changes": "变化",
+    "comparison": "比较",
     "current": "当前",
     "date": "日期",
     "distribution": "分布",
+    "duration": "时长（分钟）",
+    "goal": "目标",
     "less": "较少",
     "month": {
       "0": "一月",
@@ -31,6 +42,7 @@
       "11": "十二月"
     },
     "more": "较多",
+    "movingAverage": "7日平均",
     "noDataAvailable": "所选时期无数据",
     "other": "其他",
     "practiceHeatmap": "练习热力图",
@@ -38,6 +50,7 @@
     "practiceTrend": "练习趋势",
     "previous": "之前",
     "sessions": "练习次数",
+    "target": "目标",
     "totalDuration": "总时长",
     "weekday": {
       "0": "周日",
@@ -47,13 +60,7 @@
       "4": "周四",
       "5": "周五",
       "6": "周六"
-    },
-    "changes": "变化",
-    "comparison": "比较",
-    "duration": "时长（分钟）",
-    "target": "目标",
-    "goal": "目标",
-    "movingAverage": "7日平均"
+    }
   },
   "clear": "清除",
   "comparativeAnalysis": "对比分析",
@@ -96,8 +103,10 @@
     "addFilter": "添加筛选",
     "addFirstFilter": "添加第一个筛选",
     "allTime": "全部时间",
+    "and": "与",
     "clearAll": "清除全部",
     "deletePreset": "删除预设",
+    "enterTechnique": "输入技巧",
     "fields": {
       "autoTracked": "自动跟踪",
       "composer": "作曲家",
@@ -113,6 +122,8 @@
     "last30Days": "最近30天",
     "last7Days": "最近7天",
     "lastMonth": "上个月",
+    "minutes": "分钟",
+    "no": "否",
     "noFilters": "未应用任何筛选",
     "noPreset": "未选择预设",
     "operators": {
@@ -128,13 +139,14 @@
       "isNot": "不是",
       "isNotEmpty": "不为空",
       "lessThan": "小于",
+      "linked": "已关联乐谱",
       "notContains": "不包含",
       "notEquals": "不等于",
       "notIn": "不是其中之一",
-      "on": "开",
-      "linked": "已关联乐谱",
-      "notLinked": "未关联乐谱"
+      "notLinked": "未关联乐谱",
+      "on": "开"
     },
+    "or": "或",
     "savePreset": "保存预设",
     "savePresetModal": {
       "description": "描述",
@@ -143,13 +155,6 @@
       "namePlaceholder": "输入预设名称",
       "title": "保存筛选预设"
     },
-    "thisMonth": "本月",
-    "title": "筛选器",
-    "and": "与",
-    "enterTechnique": "输入技巧",
-    "minutes": "分钟",
-    "no": "否",
-    "or": "或",
     "select": "选择",
     "selectComposer": "选择作曲家",
     "selectComposers": "选择作曲家",
@@ -161,6 +166,8 @@
     "selectPieces": "选择曲目",
     "selectType": "选择类型",
     "selectTypes": "选择类型",
+    "thisMonth": "本月",
+    "title": "筛选器",
     "to": "至",
     "yes": "是"
   },
@@ -254,10 +261,10 @@
     },
     "helpText": "按多个字段排序您的练习数据，以更好地组织信息。",
     "noSorting": "无排序",
-    "sortBy": "排序依据",
-    "title": "排序",
     "primary": "主要",
-    "secondary": "次要"
+    "secondary": "次要",
+    "sortBy": "排序依据",
+    "title": "排序"
   },
   "stats": {
     "avgPerDay": "每日平均",
@@ -294,11 +301,11 @@
     "analytics": "分析",
     "comparative": "对比分析",
     "data": "数据表",
+    "new": "新增",
     "newEntry": "添加记录",
     "overview": "概览",
     "pieces": "曲目",
     "progress": "进度",
-    "new": "新增",
     "repertoire": "[NEEDS TRANSLATION] Repertoire"
   },
   "techniqueFocus": "技巧重点",
@@ -322,12 +329,5 @@
   "unknown": "未知",
   "viewReports": "查看报告",
   "weekOverWeek": "周对比",
-  "weekOverview": "周概览",
-  "analytics": {
-    "instrumentDistribution": "乐器分布",
-    "typeDistribution": "类型分布",
-    "practiceTrend": "练习趋势",
-    "topPieces": "热门曲目",
-    "topComposers": "热门作曲家"
-  }
+  "weekOverview": "周概览"
 }

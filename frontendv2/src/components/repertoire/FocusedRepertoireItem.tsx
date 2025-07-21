@@ -1,6 +1,7 @@
 import React from 'react'
 import { Play } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/dateUtils'
 import { RepertoireItem } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
@@ -26,6 +27,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   item,
   onPlay,
 }) => {
+  const { t } = useTranslation(['repertoire', 'common'])
   // Calculate progress percentage from active goals
   const activeGoal = item.activeGoals?.[0]
   const progress =
@@ -52,9 +54,9 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   // Format last practice time
   const lastPracticeText = lastPractice
     ? daysSinceLastPractice === 0
-      ? 'Practiced today'
+      ? t('repertoire:practicedToday')
       : formatDistanceToNow(new Date(lastPractice), { addSuffix: true })
-    : 'Not practiced yet'
+    : t('repertoire:notPracticedYet')
 
   // Calculate total practice time
   const totalPracticeTime = item.totalPracticeTime || 0
@@ -91,11 +93,16 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                   </>
                 )}
                 <span>•</span>
-                <span>{formatDuration(totalPracticeTime)} total</span>
+                <span>
+                  {formatDuration(totalPracticeTime)}{' '}
+                  {t('common:statistics.total')}
+                </span>
                 {activeGoal && (
                   <>
                     <span>•</span>
-                    <span>Goal: {activeGoal.title}</span>
+                    <span>
+                      {t('common:goal')}: {activeGoal.title}
+                    </span>
                   </>
                 )}
               </div>
@@ -141,7 +148,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                   onPlay?.()
                 }}
                 className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
-                title="Start practice"
+                title={t('repertoire:startPractice')}
               >
                 <Play className="w-4 h-4 text-stone-600" />
               </button>

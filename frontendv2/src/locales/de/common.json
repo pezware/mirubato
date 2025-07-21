@@ -1,6 +1,11 @@
 {
+  "actions": {
+    "addEntry": "[NEEDS TRANSLATION] Add Entry",
+    "timer": "[NEEDS TRANSLATION] Timer"
+  },
   "active": "Aktiv",
   "add": "Hinzufügen",
+  "adding": "Wird hinzugefügt...",
   "analytics": "Analysen",
   "appName": "mirubato",
   "back": "Zurück",
@@ -43,9 +48,9 @@
   "deselectAll": "Alle abwählen",
   "details": "Details",
   "difficulty": {
+    "advanced": "Fortgeschritten",
     "beginner": "Anfänger",
-    "intermediate": "Mittelstufe",
-    "advanced": "Fortgeschritten"
+    "intermediate": "Mittelstufe"
   },
   "disable": "Deaktivieren",
   "discard": "Verwerfen",
@@ -128,20 +133,33 @@
   },
   "name": "Name",
   "navigation": {
+    "add": "[NEEDS TRANSLATION] Add",
     "closeMenu": "Menü schließen",
+    "goals": "[NEEDS TRANSLATION] Goals",
     "home": "Startseite",
     "logbook": "Übungsbuch",
     "menu": "Menü",
+    "music": "[NEEDS TRANSLATION] Music",
+    "overview": "[NEEDS TRANSLATION] Overview",
+    "pieces": "[NEEDS TRANSLATION] Pieces",
+    "preferences": "[NEEDS TRANSLATION] Preferences",
+    "profile": "[NEEDS TRANSLATION] Profile",
+    "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
+    "repertoire": "[NEEDS TRANSLATION] Repertoire",
     "reports": "Berichte",
-    "settings": "Einstellungen"
+    "scores": "[NEEDS TRANSLATION] Scores",
+    "settings": "Einstellungen",
+    "toolbox": "[NEEDS TRANSLATION] Toolbox"
   },
   "next": "Weiter",
   "no": "Nein",
   "noResults": "Keine Ergebnisse gefunden",
+  "notNow": "Später",
   "notifications": "Benachrichtigungen",
   "off": "Aus",
   "ok": "OK",
   "on": "Ein",
+  "optional": "Optional",
   "overview": "Übersicht",
   "password": "Passwort",
   "paste": "Einfügen",
@@ -169,7 +187,15 @@
   "retry": "Erneut versuchen",
   "save": "Speichern",
   "saveToLogbook": "Im Übungsbuch Speichern",
-  "search": "Suchen",
+  "search": {
+    "0": "S",
+    "1": "u",
+    "2": "c",
+    "3": "h",
+    "4": "e",
+    "5": "n",
+    "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
+  },
   "searchScoresAndLogs": "Noten und Übungsprotokolle durchsuchen...",
   "select": "Auswählen",
   "selectAll": "Alle auswählen",
@@ -180,7 +206,20 @@
   "skip": "Überspringen",
   "sort": "Sortieren",
   "start": "Starten",
-  "statistics": "Statistiken",
+  "statistics": {
+    "0": "S",
+    "1": "t",
+    "2": "a",
+    "3": "t",
+    "4": "i",
+    "5": "s",
+    "6": "t",
+    "7": "i",
+    "8": "k",
+    "9": "e",
+    "10": "n",
+    "streak": "[NEEDS TRANSLATION] Streak"
+  },
   "status": "Status",
   "stop": "Stoppen",
   "success": "Erfolg",
@@ -223,10 +262,20 @@
   "upload": "Hochladen",
   "username": "Benutzername",
   "version": "Version",
-  "view": "Ansehen",
+  "view": {
+    "0": "A",
+    "1": "n",
+    "2": "s",
+    "3": "e",
+    "4": "h",
+    "5": "e",
+    "6": "n",
+    "calendar": "[NEEDS TRANSLATION] Calendar",
+    "default": "[NEEDS TRANSLATION] View",
+    "grid": "[NEEDS TRANSLATION] Grid",
+    "list": "[NEEDS TRANSLATION] List"
+  },
   "warning": "Warnung",
   "yes": "Ja",
-  "notNow": "Später",
-  "adding": "Wird hinzugefügt...",
-  "optional": "Optional"
+  "goal": "[NEEDS TRANSLATION] Goal"
 }

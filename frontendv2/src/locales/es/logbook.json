@@ -29,26 +29,26 @@
     "saveEntry": "Guardar entrada",
     "successAdded": "¡Entrada de práctica agregada exitosamente!",
     "successUpdated": "¡Entrada de práctica actualizada exitosamente!",
+    "techniqueOptions": {
+      "addCustom": "Agregar técnica personalizada",
+      "arpeggio": "Arpegio",
+      "custom": "Personalizado",
+      "customPlaceholder": "Ingrese el nombre de la técnica personalizada",
+      "octave": "Octava",
+      "rhythm": "Ritmo",
+      "scale": "Escala",
+      "selectTechniques": "Seleccionar técnicas practicadas"
+    },
     "techniques": "Técnicas",
     "type": "Tipo",
-    "updateEntry": "Actualizar entrada",
     "typeOptions": {
-      "practice": "Práctica",
       "lesson": "Lección",
       "performance": "Actuación",
+      "practice": "Práctica",
       "rehearsal": "Ensayo",
       "technique": "Técnica"
     },
-    "techniqueOptions": {
-      "scale": "Escala",
-      "arpeggio": "Arpegio",
-      "octave": "Octava",
-      "rhythm": "Ritmo",
-      "custom": "Personalizado",
-      "selectTechniques": "Seleccionar técnicas practicadas",
-      "addCustom": "Agregar técnica personalizada",
-      "customPlaceholder": "Ingrese el nombre de la técnica personalizada"
-    }
+    "updateEntry": "Actualizar entrada"
   },
   "filters": {
     "allTime": "Todo el tiempo",
@@ -76,6 +76,18 @@
     "month": "{{month}}",
     "week": "Semana {{number}}",
     "year": "{{year}}"
+  },
+  "timer": {
+    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
+    "pause": "[NEEDS TRANSLATION] Pause",
+    "reset": "[NEEDS TRANSLATION] Reset",
+    "resume": "[NEEDS TRANSLATION] Resume",
+    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
+    "start": "[NEEDS TRANSLATION] Start Timer",
+    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
+    "stop": "[NEEDS TRANSLATION] Stop & Log",
+    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration",
+    "title": "[NEEDS TRANSLATION] Practice Timer"
   },
   "title": "Diario",
   "viewScore": "Ver partitura"

@@ -1,0 +1,24 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "No results found"
+    },
+    "select": {
+      "placeholder": "Select an option"
+    },
+    "multiSelect": {
+      "placeholder": "Select options"
+    },
+    "timePicker": {
+      "placeholder": "HH:MM",
+      "am": "AM",
+      "pm": "PM"
+    },
+    "tabs": {
+      "ariaLabel": "Tabs"
+    },
+    "imageLoading": {
+      "loading": "Loading image..."
+    }
+  }
+}

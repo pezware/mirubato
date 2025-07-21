@@ -1,0 +1,24 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "未找到结果"
+    },
+    "select": {
+      "placeholder": "选择选项"
+    },
+    "multiSelect": {
+      "placeholder": "选择多个选项"
+    },
+    "timePicker": {
+      "placeholder": "HH:MM",
+      "am": "上午",
+      "pm": "下午"
+    },
+    "tabs": {
+      "ariaLabel": "标签页"
+    },
+    "imageLoading": {
+      "loading": "正在加载图片..."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "No se encontraron resultados"
+    },
+    "select": {
+      "placeholder": "Seleccionar una opción"
+    },
+    "multiSelect": {
+      "placeholder": "Seleccionar opciones"
+    },
+    "timePicker": {
+      "placeholder": "HH:MM",
+      "am": "AM",
+      "pm": "PM"
+    },
+    "tabs": {
+      "ariaLabel": "Pestañas"
+    },
+    "imageLoading": {
+      "loading": "Cargando imagen..."
+    }
+  }
+}

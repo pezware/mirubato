@@ -134,5 +134,7 @@
   "logPractice": "Log Practice",
   "noPracticeSessions": "No practice sessions yet",
   "startTrackingPrompt": "Start tracking your progress with this piece",
-  "logFirstSession": "Log First Session"
+  "logFirstSession": "Log First Session",
+  "practicedToday": "Practiced today",
+  "notPracticedYet": "Not practiced yet"
 }

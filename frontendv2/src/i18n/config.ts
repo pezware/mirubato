@@ -11,6 +11,7 @@ import enErrors from '../locales/en/errors.json'
 import enScorebook from '../locales/en/scorebook.json'
 import enToolbox from '../locales/en/toolbox.json'
 import enRepertoire from '../locales/en/repertoire.json'
+import enUI from '../locales/en/ui.json'
 
 import esCommon from '../locales/es/common.json'
 import esAuth from '../locales/es/auth.json'
@@ -20,6 +21,7 @@ import esErrors from '../locales/es/errors.json'
 import esScorebook from '../locales/es/scorebook.json'
 import esToolbox from '../locales/es/toolbox.json'
 import esRepertoire from '../locales/es/repertoire.json'
+import esUI from '../locales/es/ui.json'
 
 import frCommon from '../locales/fr/common.json'
 import frAuth from '../locales/fr/auth.json'
@@ -29,6 +31,7 @@ import frErrors from '../locales/fr/errors.json'
 import frScorebook from '../locales/fr/scorebook.json'
 import frToolbox from '../locales/fr/toolbox.json'
 import frRepertoire from '../locales/fr/repertoire.json'
+import frUI from '../locales/fr/ui.json'
 
 import zhTWCommon from '../locales/zh-TW/common.json'
 import zhTWAuth from '../locales/zh-TW/auth.json'
@@ -38,6 +41,7 @@ import zhTWErrors from '../locales/zh-TW/errors.json'
 import zhTWScorebook from '../locales/zh-TW/scorebook.json'
 import zhTWToolbox from '../locales/zh-TW/toolbox.json'
 import zhTWRepertoire from '../locales/zh-TW/repertoire.json'
+import zhTWUI from '../locales/zh-TW/ui.json'
 
 import deCommon from '../locales/de/common.json'
 import deAuth from '../locales/de/auth.json'
@@ -47,6 +51,7 @@ import deErrors from '../locales/de/errors.json'
 import deScorebook from '../locales/de/scorebook.json'
 import deToolbox from '../locales/de/toolbox.json'
 import deRepertoire from '../locales/de/repertoire.json'
+import deUI from '../locales/de/ui.json'
 
 import zhCNCommon from '../locales/zh-CN/common.json'
 import zhCNAuth from '../locales/zh-CN/auth.json'
@@ -56,6 +61,7 @@ import zhCNErrors from '../locales/zh-CN/errors.json'
 import zhCNScorebook from '../locales/zh-CN/scorebook.json'
 import zhCNToolbox from '../locales/zh-CN/toolbox.json'
 import zhCNRepertoire from '../locales/zh-CN/repertoire.json'
+import zhCNUI from '../locales/zh-CN/ui.json'
 
 export const defaultNS = 'common'
 export const resources = {
@@ -68,6 +74,7 @@ export const resources = {
     scorebook: enScorebook,
     toolbox: enToolbox,
     repertoire: enRepertoire,
+    ui: enUI,
   },
   es: {
     common: esCommon,
@@ -78,6 +85,7 @@ export const resources = {
     scorebook: esScorebook,
     toolbox: esToolbox,
     repertoire: esRepertoire,
+    ui: esUI,
   },
   fr: {
     common: frCommon,
@@ -88,6 +96,7 @@ export const resources = {
     scorebook: frScorebook,
     toolbox: frToolbox,
     repertoire: frRepertoire,
+    ui: frUI,
   },
   'zh-TW': {
     common: zhTWCommon,
@@ -98,6 +107,7 @@ export const resources = {
     scorebook: zhTWScorebook,
     toolbox: zhTWToolbox,
     repertoire: zhTWRepertoire,
+    ui: zhTWUI,
   },
   de: {
     common: deCommon,
@@ -108,6 +118,7 @@ export const resources = {
     scorebook: deScorebook,
     toolbox: deToolbox,
     repertoire: deRepertoire,
+    ui: deUI,
   },
   'zh-CN': {
     common: zhCNCommon,
@@ -118,6 +129,7 @@ export const resources = {
     scorebook: zhCNScorebook,
     toolbox: zhCNToolbox,
     repertoire: zhCNRepertoire,
+    ui: zhCNUI,
   },
 } as const
 
