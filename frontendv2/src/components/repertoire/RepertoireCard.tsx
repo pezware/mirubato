@@ -140,12 +140,15 @@ export function RepertoireCard({
   }
 
   const primaryGoal = item.activeGoals[0]
-  const goalProgress = primaryGoal
-    ? Math.min(
-        100,
-        Math.round((primaryGoal.currentValue / primaryGoal.targetValue) * 100)
-      )
-    : 0
+  const goalProgress =
+    primaryGoal &&
+    primaryGoal.currentValue !== undefined &&
+    primaryGoal.targetValue !== undefined
+      ? Math.min(
+          100,
+          Math.round((primaryGoal.currentValue / primaryGoal.targetValue) * 100)
+        )
+      : 0
 
   // Format practice summary
   const practiceSummary = {
@@ -401,10 +404,9 @@ export function RepertoireCard({
         <EditNotesModal
           isOpen={showEditNotesModal}
           onClose={() => setShowEditNotesModal(false)}
-          scoreId={item.scoreId}
-          scoreTitle={item.scoreTitle}
+          pieceTitle={item.scoreTitle}
           currentNotes={item.personalNotes || ''}
-          referenceLinks={item.referenceLinks || []}
+          currentLinks={item.referenceLinks || []}
           onSave={async (notes, links) => {
             await updateRepertoire(item.scoreId, {
               personalNotes: notes,
@@ -420,6 +422,7 @@ export function RepertoireCard({
           isOpen={showEditGoalModal}
           onClose={() => setShowEditGoalModal(false)}
           goal={primaryGoal}
+          pieceTitle={item.scoreTitle}
           onSave={async updates => {
             await updateGoal(primaryGoal.id, updates)
             setShowEditGoalModal(false)
