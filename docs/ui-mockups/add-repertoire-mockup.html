@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirubato - Add to Repertoire Modal</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        background: #fafafa;
+        color: #1a1a1a;
+        line-height: 1.6;
+        padding: 20px;
+      }
+
+      /* Modal Overlay */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      /* Modal Container */
+      .modal {
+        background: white;
+        border-radius: 16px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Modal Header */
+      .modal-header {
+        padding: 24px;
+        border-bottom: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+      }
+
+      .close-btn:hover {
+        background: #f5f5f5;
+      }
+
+      /* Modal Body */
+      .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        max-height: calc(90vh - 140px);
+      }
+
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #444;
+        margin-bottom: 8px;
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 10px 16px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.15s;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+      }
+
+      .form-textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      /* Search Results */
+      .search-results {
+        margin-top: 8px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        max-height: 160px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .search-results.show {
+        display: block;
+      }
+
+      .search-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: background 0.15s;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .search-item:last-child {
+        border-bottom: none;
+      }
+
+      .search-item:hover {
+        background: #f5f5f5;
+      }
+
+      .search-item-title {
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .search-item-composer {
+        font-size: 13px;
+        color: #666;
+      }
+
+      /* Status Pills */
+      .status-pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .status-pill {
+        padding: 8px 16px;
+        border: 2px solid #e5e5e5;
+        border-radius: 24px;
+        background: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .status-pill:hover {
+        background: #f5f5f5;
+      }
+
+      .status-pill.active {
+        border-color: #22c55e;
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      /* Difficulty Stars */
+      .difficulty-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .star {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+
+      .star:hover {
+        transform: scale(1.1);
+      }
+
+      .star.filled {
+        fill: #fbbf24;
+      }
+
+      .star.empty {
+        fill: #e5e5e5;
+      }
+
+      /* Modal Footer */
+      .modal-footer {
+        padding: 20px 24px;
+        border-top: 1px solid #e5e5e5;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .btn-primary {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2a2a2a;
+      }
+
+      .btn-secondary {
+        background: white;
+        color: #444;
+        border: 1px solid #e5e5e5;
+      }
+
+      .btn-secondary:hover {
+        background: #f5f5f5;
+      }
+
+      /* Background Content (for context) */
+      .background-content {
+        filter: blur(2px);
+        opacity: 0.5;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+      }
+
+      .page-header {
+        background: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
+
+      .repertoire-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+      }
+
+      .repertoire-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e5e5e5;
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .modal {
+          width: 95%;
+          margin: 20px;
+        }
+
+        .modal-body {
+          padding: 16px;
+        }
+
+        .status-pills {
+          gap: 6px;
+        }
+
+        .status-pill {
+          padding: 6px 12px;
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Content -->
+    <div class="background-content">
+      <div class="page-header">
+        <h1>My Repertoire</h1>
+      </div>
+      <div class="repertoire-grid">
+        <div class="repertoire-card">Bach - Invention No.1</div>
+        <div class="repertoire-card">Mozart - Sonata K.331</div>
+        <div class="repertoire-card">Chopin - Nocturne Op.9 No.2</div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Add to Repertoire</h2>
+          <button class="close-btn" onclick="closeModal()">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form>
+            <!-- Piece Title -->
+            <div class="form-group">
+              <label class="form-label">Piece Title *</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Search or enter piece title..."
+                oninput="searchPieces(this.value)"
+              />
+              <div class="search-results" id="searchResults">
+                <div class="search-item" onclick="selectPiece(this)">
+                  <div class="search-item-title">Prelude in C Major</div>
+                  <div class="search-item-composer">J.S. Bach - BWV 846</div>
+                </div>
+                <div class="search-item" onclick="selectPiece(this)">
+                  <div class="search-item-title">Prelude in D Minor</div>
+                  <div class="search-item-composer">J.S. Bach - BWV 847</div>
+                </div>
+                <div class="search-item" onclick="selectPiece(this)">
+                  <div class="search-item-title">Prelude Op. 28 No. 4</div>
+                  <div class="search-item-composer">Frédéric Chopin</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Composer -->
+            <div class="form-group">
+              <label class="form-label">Composer *</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Enter composer name..."
+              />
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <div class="status-pills">
+                <button
+                  type="button"
+                  class="status-pill"
+                  onclick="selectStatus(this)"
+                >
+                  Planned
+                </button>
+                <button
+                  type="button"
+                  class="status-pill active"
+                  onclick="selectStatus(this)"
+                >
+                  Learning
+                </button>
+                <button
+                  type="button"
+                  class="status-pill"
+                  onclick="selectStatus(this)"
+                >
+                  Working
+                </button>
+                <button
+                  type="button"
+                  class="status-pill"
+                  onclick="selectStatus(this)"
+                >
+                  Polished
+                </button>
+                <button
+                  type="button"
+                  class="status-pill"
+                  onclick="selectStatus(this)"
+                >
+                  Performance Ready
+                </button>
+              </div>
+            </div>
+
+            <!-- Difficulty -->
+            <div class="form-group">
+              <label class="form-label">Difficulty</label>
+              <div class="difficulty-group">
+                <svg
+                  class="star filled"
+                  viewBox="0 0 24 24"
+                  onclick="setDifficulty(1)"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
+                </svg>
+                <svg
+                  class="star filled"
+                  viewBox="0 0 24 24"
+                  onclick="setDifficulty(2)"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
+                </svg>
+                <svg
+                  class="star filled"
+                  viewBox="0 0 24 24"
+                  onclick="setDifficulty(3)"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
+                </svg>
+                <svg
+                  class="star empty"
+                  viewBox="0 0 24 24"
+                  onclick="setDifficulty(4)"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
+                </svg>
+                <svg
+                  class="star empty"
+                  viewBox="0 0 24 24"
+                  onclick="setDifficulty(5)"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  ></path>
+                </svg>
+                <span style="margin-left: 8px; color: #666; font-size: 14px"
+                  >3/5</span
+                >
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+              <label class="form-label">Personal Notes</label>
+              <textarea
+                class="form-textarea"
+                placeholder="Add any notes about this piece..."
+              ></textarea>
+            </div>
+
+            <!-- Link to Score -->
+            <div class="form-group">
+              <label class="form-label">Link to Score (Optional)</label>
+              <select class="form-select">
+                <option value="">Select from your scores...</option>
+                <option value="1">Bach - Well-Tempered Clavier I</option>
+                <option value="2">Mozart - Complete Sonatas</option>
+                <option value="3">Chopin - Nocturnes</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="addToRepertoire()">
+            Add to Repertoire
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentDifficulty = 3
+
+      function searchPieces(query) {
+        const results = document.getElementById('searchResults')
+        if (query.length > 2) {
+          results.classList.add('show')
+        } else {
+          results.classList.remove('show')
+        }
+      }
+
+      function selectPiece(element) {
+        const title = element.querySelector('.search-item-title').textContent
+        const composer = element
+          .querySelector('.search-item-composer')
+          .textContent.split(' - ')[0]
+
+        document.querySelector('.form-input').value = title
+        document.querySelectorAll('.form-input')[1].value = composer
+        document.getElementById('searchResults').classList.remove('show')
+      }
+
+      function selectStatus(element) {
+        document
+          .querySelectorAll('.status-pill')
+          .forEach(pill => pill.classList.remove('active'))
+        element.classList.add('active')
+      }
+
+      function setDifficulty(level) {
+        currentDifficulty = level
+        const stars = document.querySelectorAll('.star')
+        stars.forEach((star, index) => {
+          if (index < level) {
+            star.classList.add('filled')
+            star.classList.remove('empty')
+          } else {
+            star.classList.remove('filled')
+            star.classList.add('empty')
+          }
+        })
+        document.querySelector('.difficulty-group span').textContent =
+          `${level}/5`
+      }
+
+      function closeModal() {
+        document.querySelector('.modal-overlay').style.display = 'none'
+      }
+
+      function addToRepertoire() {
+        // In a real app, this would save the data
+        alert('Added to repertoire!')
+        closeModal()
+      }
+
+      // Close modal on overlay click
+      document.querySelector('.modal-overlay').addEventListener('click', e => {
+        if (e.target.classList.contains('modal-overlay')) {
+          closeModal()
+        }
+      })
+    </script>
+  </body>
+</html>
