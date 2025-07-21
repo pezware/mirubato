@@ -45,11 +45,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     getScoreMetadata,
   } = useRepertoireStore()
 
-  const {
-    userLibrary: scores,
-    loadUserLibrary,
-    isLoading: scoresLoading,
-  } = useScoreStore()
+  const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
   const { entries, loadEntries } = useLogbookStore()
 
