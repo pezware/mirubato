@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirubato Card-Based UI Mockup</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #16a34a;
+        --text-primary: #1c1917;
+        --text-secondary: #57534e;
+        --text-muted: #a8a29e;
+        --bg-main: #fafaf9;
+        --bg-card: #ffffff;
+        --border: #e7e5e4;
+        --border-light: #f5f5f4;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        background: var(--bg-main);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      /* Simplified Header */
+      .header {
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      /* Tab Pills */
+      .tab-pills {
+        display: flex;
+        background: var(--border-light);
+        padding: 4px;
+        border-radius: 10px;
+        gap: 2px;
+      }
+
+      .tab-pill {
+        padding: 8px 20px;
+        border-radius: 8px;
+        background: transparent;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .tab-pill.active {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* User Avatar */
+      .user-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .add-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .add-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      /* Main Layout */
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+
+      /* Stats Cards */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+
+      .stat-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .stat-content {
+        flex: 1;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .stat-change {
+        font-size: 13px;
+        color: var(--primary);
+      }
+
+      /* Section Header */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .filter-chips {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chip {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .chip.active {
+        background: var(--text-primary);
+        color: white;
+        border-color: var(--text-primary);
+      }
+
+      /* Practice Cards Grid */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+      }
+
+      .practice-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .practice-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .card-header {
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+
+      .status-dot.active {
+        background: var(--primary);
+      }
+      .status-dot.warning {
+        background: #f59e0b;
+      }
+
+      .card-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .card-body {
+        padding: 16px 20px;
+      }
+
+      .progress-bar {
+        background: var(--border-light);
+        height: 6px;
+        border-radius: 3px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 3px;
+        transition: width 0.3s;
+      }
+
+      .card-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .card-footer {
+        padding: 16px 20px;
+        background: var(--bg-main);
+        border-top: 1px solid var(--border-light);
+        display: flex;
+        gap: 8px;
+      }
+
+      .card-btn {
+        flex: 1;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .card-btn.primary {
+        background: var(--text-primary);
+        color: white;
+      }
+
+      .card-btn.secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .header-inner {
+          padding: 0 16px;
+        }
+
+        .tab-pills {
+          display: none;
+        }
+
+        .user-section {
+          gap: 8px;
+        }
+
+        .container {
+          padding: 16px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .stat-card {
+          padding: 16px;
+        }
+
+        .cards-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .filter-chips {
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        /* Mobile Bottom Nav */
+        .mobile-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: var(--bg-card);
+          border-top: 1px solid var(--border);
+          display: flex;
+          justify-content: space-around;
+          padding: 8px 0;
+          z-index: 100;
+        }
+
+        .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 12px;
+          color: var(--text-secondary);
+          text-decoration: none;
+          font-size: 11px;
+        }
+
+        .nav-item.active {
+          color: var(--primary);
+        }
+
+        .container {
+          padding-bottom: 70px;
+        }
+      }
+
+      /* Focus states for accessibility */
+      button:focus-visible,
+      .chip:focus-visible,
+      .card-btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      /* Loading skeleton */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          var(--border-light) 25%,
+          var(--border) 50%,
+          var(--border-light) 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Clean Header -->
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="logo">Mirubato</h1>
+
+        <nav class="tab-pills">
+          <button class="tab-pill active">Practice</button>
+          <button class="tab-pill">Repertoire</button>
+          <button class="tab-pill">Analytics</button>
+          <button class="tab-pill">Goals</button>
+        </nav>
+
+        <div class="user-section">
+          <button class="add-btn" title="Add new entry">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <div class="user-avatar">JD</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+      <!-- Stats Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Today's Practice</div>
+            <div class="stat-value">2h 45m</div>
+            <div class="stat-change">↑ 15% from yesterday</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Weekly Goal</div>
+            <div class="stat-value">18/20h</div>
+            <div class="stat-change">90% complete</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Current Streak</div>
+            <div class="stat-value">14 days</div>
+            <div class="stat-change">Personal best!</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Pieces Mastered</div>
+            <div class="stat-value">3/12</div>
+            <div class="stat-change">1 close to completion</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Repertoire Section -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Active Repertoire</h2>
+          <div class="filter-chips">
+            <button class="chip active">All</button>
+            <button class="chip">In Progress</button>
+            <button class="chip">Need Practice</button>
+            <button class="chip">Ready</button>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Active Practice Card -->
+          <article class="practice-card">
+            <div class="card-header">
+              <div class="card-title">
+                Bach - Invention No.1 in C Major
+                <span class="status-dot active"></span>
+              </div>
+              <div class="card-subtitle">Practiced today • Working</div>
+            </div>
+            <div class="card-body">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%"></div>
+              </div>
+              <div class="card-stats">
+                <span>18h 30m total</span>
+                <span>65% to goal</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="card-btn primary">Continue</button>
+              <button class="card-btn secondary">Details</button>
+            </div>
+          </article>
+
+          <!-- Needs Attention Card -->
+          <article class="practice-card">
+            <div class="card-header">
+              <div class="card-title">
+                Mozart - Sonata K.331
+                <span class="status-dot warning"></span>
+              </div>
+              <div class="card-subtitle">5 days ago • Learning</div>
+            </div>
+            <div class="card-body">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%"></div>
+              </div>
+              <div class="card-stats">
+                <span>5h 15m total</span>
+                <span>Needs attention</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="card-btn primary">Practice</button>
+              <button class="card-btn secondary">Review</button>
+            </div>
+          </article>
+
+          <!-- Performance Ready Card -->
+          <article class="practice-card">
+            <div class="card-header">
+              <div class="card-title">
+                Chopin - Nocturne Op.9 No.2
+                <span class="status-dot active"></span>
+              </div>
+              <div class="card-subtitle">2 days ago • Performance Ready</div>
+            </div>
+            <div class="card-body">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 90%"></div>
+              </div>
+              <div class="card-stats">
+                <span>42h total</span>
+                <span>90% polished</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="card-btn primary">Perform</button>
+              <button class="card-btn secondary">Polish</button>
+            </div>
+          </article>
+
+          <!-- New Piece Card -->
+          <article class="practice-card">
+            <div class="card-header">
+              <div class="card-title">
+                Debussy - Clair de Lune
+                <span class="status-dot"></span>
+              </div>
+              <div class="card-subtitle">Not started • Planned</div>
+            </div>
+            <div class="card-body">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+              </div>
+              <div class="card-stats">
+                <span>0h total</span>
+                <span>Ready to begin</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="card-btn primary">Start</button>
+              <button class="card-btn secondary">Plan</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" style="display: none">
+      <a href="#" class="nav-item active">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          ></path>
+        </svg>
+        Home
+      </a>
+      <a href="#" class="nav-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path
+            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+          ></path>
+        </svg>
+        Logbook
+      </a>
+      <a href="#" class="nav-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+        Music
+      </a>
+      <a href="#" class="nav-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"></path>
+        </svg>
+        Goals
+      </a>
+    </nav>
+
+    <script>
+      // Mobile nav visibility
+      function checkMobileNav() {
+        const mobileNav = document.querySelector('.mobile-nav')
+        if (window.innerWidth <= 768) {
+          mobileNav.style.display = 'flex'
+        } else {
+          mobileNav.style.display = 'none'
+        }
+      }
+
+      window.addEventListener('resize', checkMobileNav)
+      checkMobileNav()
+
+      // Tab interaction
+      document.querySelectorAll('.tab-pill').forEach(pill => {
+        pill.addEventListener('click', function () {
+          document
+            .querySelectorAll('.tab-pill')
+            .forEach(p => p.classList.remove('active'))
+          this.classList.add('active')
+        })
+      })
+
+      // Filter chips
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', function () {
+          document
+            .querySelectorAll('.chip')
+            .forEach(c => c.classList.remove('active'))
+          this.classList.add('active')
+        })
+      })
+    </script>
+  </body>
+</html>
