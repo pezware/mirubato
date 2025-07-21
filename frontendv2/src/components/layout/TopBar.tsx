@@ -45,12 +45,10 @@ const TopBar: React.FC<TopBarProps> = ({
 
   const getUserInitials = () => {
     if (!user) return '?'
-    const names = (user.displayName || user.email || '').split(' ')
-    return names
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
+    // Get only the first name initial
+    const firstNameOrEmail = user.displayName || user.email || ''
+    const firstName = firstNameOrEmail.split(' ')[0]
+    return firstName[0]?.toUpperCase() || '?'
   }
 
   return (
@@ -98,7 +96,7 @@ const TopBar: React.FC<TopBarProps> = ({
             <>
               <button
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold hover:bg-green-600 transition-colors"
+                className="w-9 h-9 rounded-full bg-morandi-sage-500 text-white flex items-center justify-center text-sm font-semibold hover:bg-morandi-sage-600 transition-colors"
               >
                 {getUserInitials()}
               </button>
