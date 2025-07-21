@@ -146,15 +146,21 @@ test.describe('Enhanced Reports', () => {
       })
 
       await test.step('Verify repertoire view is loaded', async () => {
-        // Check that repertoire view shows the expected UI
-        await expect(page.locator('text=My Repertoire')).toBeVisible()
+        // Check that the pieces view tab is active
+        await expect(
+          page.locator(
+            '[data-testid="repertoire-tab"].active, [data-testid="repertoire-tab"][aria-selected="true"]'
+          )
+        ).toBeVisible()
 
-        // Since we just practiced pieces, they're not automatically in repertoire
-        // The view should show empty repertoire state
-        const pageContent = await page.textContent('body')
-        expect(pageContent).toContain('repertoire')
+        // The view shows pieces statistics, not repertoire items
+        // Look for the search box which is always present in PiecesView
+        await expect(
+          page.locator('input[placeholder*="Search pieces"]')
+        ).toBeVisible()
 
         // Verify the practice stats are shown
+        const pageContent = await page.textContent('body')
         expect(pageContent).toContain('Practice This Week')
       })
     })

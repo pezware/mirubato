@@ -403,18 +403,21 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
       })
 
       await test.step('Verify repertoire view loaded', async () => {
-        // Should show the repertoire view content
-        await expect(page.locator('text=My Repertoire')).toBeVisible({
+        // Should show the pieces view content
+        // The tab shows "Pieces" but the view shows piece statistics
+        await expect(
+          page.locator(
+            '[data-testid="repertoire-tab"].active, [data-testid="repertoire-tab"][aria-selected="true"]'
+          )
+        ).toBeVisible({
           timeout: 15000,
         })
 
-        // Check for repertoire stats
-        await expect(page.locator('text=Total Repertoire')).toBeVisible()
+        // Check for pieces stats - look for the search box which is always present
+        await expect(
+          page.locator('input[placeholder*="Search pieces"]')
+        ).toBeVisible()
         await expect(page.locator('text=Practice This Week')).toBeVisible()
-
-        // The view shows empty repertoire state since no pieces are in repertoire
-        const pageContent = await page.textContent('body')
-        expect(pageContent).toContain('Your repertoire is empty')
       })
     })
   })
