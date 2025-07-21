@@ -357,8 +357,8 @@
         font-weight: 600;
       }
 
-      /* Mobile Responsive */
-      @media (max-width: 768px) {
+      /* Mobile Responsive - phones only */
+      @media (max-width: 767px) {
         .sidebar {
           display: none; /* Hide sidebar completely on mobile */
         }
@@ -369,15 +369,43 @@
 
         .top-bar {
           padding: 12px 16px;
+          gap: 12px; /* Reduce gap on mobile */
         }
 
         .search-box {
           flex: 1;
           max-width: none;
+          margin-right: 0; /* Remove any extra margin */
         }
 
         .search-input {
           font-size: 16px; /* Prevent zoom on iOS */
+          padding: 8px 16px 8px 36px; /* Adjust for smaller screens */
+        }
+
+        .user-section {
+          gap: 8px; /* Smaller gap on mobile */
+          margin-left: 0; /* Remove auto margin on mobile */
+        }
+
+        .user-avatar {
+          width: 32px; /* Smaller on mobile */
+          height: 32px;
+          font-size: 12px;
+        }
+
+        .sign-in-btn {
+          padding: 6px 12px; /* Smaller button on mobile */
+          font-size: 13px;
+        }
+
+        .user-dropdown {
+          right: -16px; /* Adjust position to align with viewport edge */
+          min-width: 180px; /* Smaller dropdown on mobile */
+        }
+
+        .quick-actions {
+          display: none; /* Already hidden via desktop-only class */
         }
 
         .summary-bar {
@@ -409,19 +437,25 @@
           border-top: 1px solid #e5e5e5;
           display: flex;
           justify-content: space-around;
+          align-items: center; /* Ensure vertical alignment */
           padding: 8px 0;
           z-index: 100;
+          box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow */
         }
 
         .tab-item {
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: center; /* Center content vertically */
           gap: 2px;
-          padding: 4px 16px;
+          padding: 4px 12px; /* Adjust horizontal padding */
           color: #666;
           text-decoration: none;
           font-size: 11px;
+          flex: 1; /* Equal width for all tabs */
+          max-width: 80px; /* Prevent tabs from getting too wide */
+          min-height: 48px; /* Ensure good touch target */
         }
 
         .tab-item.active {
@@ -451,7 +485,7 @@
         display: none;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         .desktop-only {
           display: none;
         }
@@ -955,6 +989,19 @@
           e.currentTarget.classList.add('active')
         })
       })
+
+      // Ensure proper layout on resize
+      function checkViewport() {
+        const bottomTabs = document.querySelector('.bottom-tabs')
+        if (window.innerWidth <= 767) {
+          bottomTabs.style.display = 'flex'
+        } else {
+          bottomTabs.style.display = 'none'
+        }
+      }
+
+      window.addEventListener('resize', checkViewport)
+      checkViewport()
     </script>
   </body>
 </html>

@@ -217,8 +217,10 @@ Based on the focused UI design approach, this document outlines how to implement
 
 ```css
 /* Mobile First Approach */
+/* Phones: 0-767px */
+/* Tablets/iPads: 768px+ (show desktop layout) */
 @media (min-width: 768px) {
-  /* Tablet styles */
+  /* Tablet/iPad and desktop styles */
 }
 
 @media (min-width: 1024px) {
@@ -227,6 +229,11 @@ Based on the focused UI design approach, this document outlines how to implement
 
 @media (min-width: 1440px) {
   /* Large desktop styles */
+}
+
+/* For hiding desktop elements on mobile */
+@media (max-width: 767px) {
+  /* Phone-only styles */
 }
 ```
 
