@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
@@ -21,7 +21,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   showQuickActions = true,
 }) => {
   const [showSignInModal, setShowSignInModal] = useState(false)
+
+  // Initialize sidebar state from localStorage
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('mirubato:sidebarCollapsed')
+    return saved === 'true'
+  })
+
   const location = useLocation()
+
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(
+      'mirubato:sidebarCollapsed',
+      isSidebarCollapsed.toString()
+    )
+  }, [isSidebarCollapsed])
 
   // Determine if we should show quick actions based on current page
   const shouldShowQuickActions =
@@ -39,10 +54,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     <>
       <div className="min-h-screen bg-[#fafafa]">
         {/* Desktop Sidebar */}
-        <Sidebar className="hidden sm:block" />
+        <Sidebar
+          className="hidden sm:block"
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
 
         {/* Main Content Area */}
-        <div className="sm:ml-60 min-h-screen">
+        <div
+          className={`transition-all duration-300 min-h-screen ${
+            isSidebarCollapsed ? 'sm:ml-16' : 'sm:ml-60'
+          }`}
+        >
           {/* Top Bar */}
           <TopBar
             onSearchChange={onSearchChange}
