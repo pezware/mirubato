@@ -12,8 +12,24 @@ import { formatDuration } from '@/utils/dateUtils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
+interface RecentPractice {
+  timestamp: number
+  duration: number
+}
+
+interface EnrichedRepertoireItem {
+  scoreId: string
+  scoreTitle: string
+  scoreComposer: string
+  status: string
+  totalPracticeTime: number
+  practiceCount: number
+  lastPracticed?: number
+  recentPractice?: RecentPractice[]
+}
+
 interface RepertoireCalendarViewProps {
-  enrichedRepertoire: any[]
+  enrichedRepertoire: EnrichedRepertoireItem[]
   currentMonth: Date
   onMonthChange: (date: Date) => void
 }
@@ -39,7 +55,7 @@ export const RepertoireCalendarView: React.FC<RepertoireCalendarViewProps> = ({
 
     enrichedRepertoire.forEach(item => {
       // Use recentPractice which contains the practice session data
-      item.recentPractice?.forEach((session: any) => {
+      item.recentPractice?.forEach((session: RecentPractice) => {
         const dateStr = format(new Date(session.timestamp), 'yyyy-MM-dd')
         const existing = practiceByDay.get(dateStr) || {
           minutes: 0,

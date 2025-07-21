@@ -17,6 +17,38 @@ import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
 import { Music } from 'lucide-react'
 
+interface Goal {
+  title: string
+  currentValue: number
+  targetValue: number
+  status: string
+  relatedSessions?: number
+}
+
+interface RecentPractice {
+  id: string
+  timestamp: number
+  duration: number
+  notes?: string
+}
+
+interface EnrichedRepertoireItem {
+  scoreId: string
+  scoreTitle: string
+  scoreComposer: string
+  status: string
+  totalPracticeTime: number
+  practiceCount: number
+  lastPracticed?: number
+  personalNotes?: string
+  referenceLinks?: string[]
+  catalogNumber?: string
+  activeGoals?: Goal[]
+  recentPractice?: RecentPractice[]
+  relatedSessions?: number
+  isLogbookPiece?: boolean
+}
+
 interface RepertoireViewProps {
   analytics: EnhancedAnalyticsData
 }
@@ -29,7 +61,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedPiece, setSelectedPiece] = useState<any | null>(null)
+  const [selectedPiece, setSelectedPiece] =
+    useState<EnrichedRepertoireItem | null>(null)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [searchQuery] = useState('') // TODO: Add search input
 

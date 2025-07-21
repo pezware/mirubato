@@ -3,8 +3,31 @@ import { Play } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { formatDuration } from '@/utils/dateUtils'
 
+interface Goal {
+  title: string
+  currentValue: number
+  targetValue: number
+}
+
+interface RecentPractice {
+  timestamp: number
+  duration: number
+}
+
+interface EnrichedRepertoireItem {
+  scoreId: string
+  scoreTitle: string
+  scoreComposer: string
+  status: string
+  totalPracticeTime: number
+  practiceCount: number
+  lastPracticed?: number
+  activeGoals?: Goal[]
+  recentPractice?: RecentPractice[]
+}
+
 interface FocusedRepertoireItemProps {
-  item: any // Type will be defined based on enrichedRepertoire
+  item: EnrichedRepertoireItem
   onPlay?: () => void
 }
 

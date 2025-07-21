@@ -255,7 +255,7 @@ class PatternMetronomeService {
     try {
       // Use Transport's BPM for smooth tempo changes
       Tone.Transport.bpm.rampTo(tempo, 0.1)
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors if audio context not started - tempo will be set when playback starts
       console.debug('Tempo will be set when audio context starts')
     }
@@ -266,7 +266,7 @@ class PatternMetronomeService {
       // Convert 0-1 range to decibels (-60 to 0)
       const db = volume === 0 ? -Infinity : -60 + volume * 60
       this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors if audio context not started - will be set when playback starts
       console.debug('Volume will be set when audio context starts')
     }
