@@ -57,6 +57,11 @@ function getAllKeys(obj, prefix = '') {
 
 // Helper to get value by dot notation key
 function getValueByKey(obj, key) {
+  // First try direct access for flat keys with dots
+  if (obj.hasOwnProperty(key)) {
+    return obj[key]
+  }
+  // Then try nested access for actual nested objects
   return key.split('.').reduce((acc, part) => acc && acc[part], obj)
 }
 

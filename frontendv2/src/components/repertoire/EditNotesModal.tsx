@@ -6,6 +6,7 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { showToast } from '@/utils/toastManager'
 import { Link, Plus, X } from 'lucide-react'
+import DOMPurify from 'dompurify'
 
 interface EditNotesModalProps {
   isOpen: boolean
@@ -40,7 +41,9 @@ export function EditNotesModal({
           showToast(t('repertoire:invalidUrl'), 'error')
           return
         }
-        setLinks([...links, newLink.trim()])
+        // Sanitize the URL before storing
+        const sanitizedUrl = DOMPurify.sanitize(newLink.trim())
+        setLinks([...links, sanitizedUrl])
         setNewLink('')
       } catch {
         showToast(t('repertoire:invalidUrl'), 'error')
@@ -109,7 +112,7 @@ export function EditNotesModal({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Link className="w-4 h-4 text-stone-500 flex-shrink-0" />
-                      {/* Safe: URLs are validated in handleAddLink to only allow http/https protocols */}
+                      {/* Safe: URLs are validated and sanitized in handleAddLink */}
                       <a
                         href={link}
                         target="_blank"
