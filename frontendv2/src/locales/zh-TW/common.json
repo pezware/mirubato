@@ -158,6 +158,11 @@
   "description": "描述",
   "deselectAll": "取消全選",
   "details": "詳情",
+  "difficulty": {
+    "beginner": "初級",
+    "intermediate": "中級",
+    "advanced": "高級"
+  },
   "disable": "停用",
   "documents": "文件",
   "download": "下載",

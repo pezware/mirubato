@@ -42,6 +42,11 @@
   "description": "Beschreibung",
   "deselectAll": "Alle abwählen",
   "details": "Details",
+  "difficulty": {
+    "beginner": "Anfänger",
+    "intermediate": "Mittelstufe",
+    "advanced": "Fortgeschritten"
+  },
   "disable": "Deaktivieren",
   "discard": "Verwerfen",
   "documents": "Dokumente",

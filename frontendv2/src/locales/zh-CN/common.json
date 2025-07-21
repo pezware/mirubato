@@ -42,6 +42,11 @@
   "description": "描述",
   "deselectAll": "取消全选",
   "details": "详情",
+  "difficulty": {
+    "beginner": "初级",
+    "intermediate": "中级",
+    "advanced": "高级"
+  },
   "disable": "禁用",
   "discard": "放弃",
   "documents": "文档",

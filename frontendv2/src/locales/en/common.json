@@ -42,6 +42,11 @@
   "description": "Description",
   "deselectAll": "Deselect all",
   "details": "Details",
+  "difficulty": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
   "disable": "Disable",
   "discard": "Discard",
   "documents": "Documents",

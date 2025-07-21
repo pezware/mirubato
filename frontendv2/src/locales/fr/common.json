@@ -158,6 +158,11 @@
   "description": "Description",
   "deselectAll": "Tout désélectionner",
   "details": "Détails",
+  "difficulty": {
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé"
+  },
   "disable": "Désactiver",
   "documents": "Documents",
   "download": "Télécharger",
