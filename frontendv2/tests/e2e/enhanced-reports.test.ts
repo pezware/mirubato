@@ -75,11 +75,11 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Navigate to pieces view', async () => {
         await logbookPage.switchToPiecesTab()
-        // Verify pieces view loaded - check for active state
-        const piecesTabClasses = await page
-          .locator('[data-testid="pieces-tab"]')
+        // Verify repertoire tab is active
+        const repertoireTabClasses = await page
+          .locator('[data-testid="repertoire-tab"]')
           .getAttribute('class')
-        expect(piecesTabClasses).toContain('border-morandi-purple-400')
+        expect(repertoireTabClasses).toContain('border-morandi-purple-400')
       })
 
       await test.step('Navigate to analytics view', async () => {
@@ -328,10 +328,10 @@ test.describe('Enhanced Reports', () => {
 
       await test.step('Navigate tabs on mobile', async () => {
         // Should be able to switch tabs
-        await page.click('[data-testid="pieces-tab"]')
-        await expect(page.locator('[data-testid="pieces-tab"]')).toHaveClass(
-          /border-morandi-purple-400/
-        )
+        await page.click('[data-testid="repertoire-tab"]')
+        await expect(
+          page.locator('[data-testid="repertoire-tab"]')
+        ).toHaveClass(/border-morandi-purple-400/)
       })
     })
   })

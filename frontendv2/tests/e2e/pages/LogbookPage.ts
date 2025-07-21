@@ -123,7 +123,18 @@ export class LogbookPage {
   }
 
   async switchToPiecesTab() {
-    await waitForTabContent(this.page, 'pieces-tab', 'pieces-statistics')
+    // Click the repertoire tab
+    await this.page.click('[data-testid="repertoire-tab"]')
+
+    // Wait for tab to be active
+    await this.page.waitForSelector(
+      '[data-testid="repertoire-tab"][class*="border-morandi-purple-400"]',
+      { state: 'visible', timeout: 5000 }
+    )
+
+    // Wait for content to load
+    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForTimeout(500)
   }
 
   // Entry creation
