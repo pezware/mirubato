@@ -4,6 +4,8 @@ import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { EnhancedAnalyticsData } from '@/types/reporting'
+import { RepertoireItem } from '@/api/repertoire'
+import { Goal } from '@/api/goals'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
@@ -17,14 +19,6 @@ import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
 import { Music } from 'lucide-react'
 
-interface Goal {
-  title: string
-  currentValue: number
-  targetValue: number
-  status: string
-  relatedSessions?: number
-}
-
 interface RecentPractice {
   id: string
   timestamp: number
@@ -32,16 +26,9 @@ interface RecentPractice {
   notes?: string
 }
 
-interface EnrichedRepertoireItem {
-  scoreId: string
+interface EnrichedRepertoireItem extends RepertoireItem {
   scoreTitle: string
   scoreComposer: string
-  status: string
-  totalPracticeTime: number
-  practiceCount: number
-  lastPracticed?: number
-  personalNotes?: string
-  referenceLinks?: string[]
   catalogNumber?: string
   activeGoals?: Goal[]
   recentPractice?: RecentPractice[]

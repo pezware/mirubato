@@ -2,26 +2,17 @@ import React from 'react'
 import { Play } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { formatDuration } from '@/utils/dateUtils'
-
-interface Goal {
-  title: string
-  currentValue: number
-  targetValue: number
-}
+import { RepertoireItem } from '@/api/repertoire'
+import { Goal } from '@/api/goals'
 
 interface RecentPractice {
   timestamp: number
   duration: number
 }
 
-interface EnrichedRepertoireItem {
-  scoreId: string
+interface EnrichedRepertoireItem extends RepertoireItem {
   scoreTitle: string
   scoreComposer: string
-  status: string
-  totalPracticeTime: number
-  practiceCount: number
-  lastPracticed?: number
   activeGoals?: Goal[]
   recentPractice?: RecentPractice[]
 }
@@ -37,9 +28,10 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 }) => {
   // Calculate progress percentage from active goals
   const activeGoal = item.activeGoals?.[0]
-  const progress = activeGoal
-    ? Math.round((activeGoal.currentValue / activeGoal.targetValue) * 100)
-    : 0
+  const progress =
+    activeGoal && activeGoal.currentValue && activeGoal.targetValue
+      ? Math.round((activeGoal.currentValue / activeGoal.targetValue) * 100)
+      : 0
 
   // Determine if needs attention (not practiced in 5+ days)
   const lastPractice = item.lastPracticed || item.recentPractice?.[0]?.timestamp

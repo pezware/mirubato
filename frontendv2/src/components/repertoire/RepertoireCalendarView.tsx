@@ -11,20 +11,16 @@ import {
 import { formatDuration } from '@/utils/dateUtils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import { RepertoireItem } from '@/api/repertoire'
 
 interface RecentPractice {
   timestamp: number
   duration: number
 }
 
-interface EnrichedRepertoireItem {
-  scoreId: string
+interface EnrichedRepertoireItem extends RepertoireItem {
   scoreTitle: string
   scoreComposer: string
-  status: string
-  totalPracticeTime: number
-  practiceCount: number
-  lastPracticed?: number
   recentPractice?: RecentPractice[]
 }
 
