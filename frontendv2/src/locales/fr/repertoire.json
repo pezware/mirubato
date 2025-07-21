@@ -119,5 +119,7 @@
   "justPracticed": "Vous venez de pratiquer {{piece}}",
   "justPracticedWithComposer": "Vous venez de pratiquer {{piece}} de {{composer}}",
   "addedToRepertoire": "{{piece}} ajouté à votre répertoire",
-  "failedToAdd": "Échec de l'ajout au répertoire"
+  "failedToAdd": "Échec de l'ajout au répertoire",
+  "sessions": "[NEEDS TRANSLATION] sessions",
+  "recentPracticeSessions": "[NEEDS TRANSLATION] Recent Practice Sessions"
 }

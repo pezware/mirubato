@@ -81,7 +81,8 @@
     },
     "performance": "Actuación",
     "practice": "Práctica",
-    "rehearsal": "Ensayo"
+    "rehearsal": "Ensayo",
+    "technique": "[NEEDS TRANSLATION] Technique"
   },
   "navigation": {
     "closeMenu": "Cerrar menú",
@@ -221,5 +222,6 @@
   "version": "Versión",
   "view": "Ver",
   "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding..."
+  "adding": "[NEEDS TRANSLATION] Adding...",
+  "optional": "[NEEDS TRANSLATION] Optional"
 }

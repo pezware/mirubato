@@ -118,7 +118,8 @@
     },
     "performance": "Performance",
     "practice": "Practice",
-    "rehearsal": "Rehearsal"
+    "rehearsal": "Rehearsal",
+    "technique": "Technique"
   },
   "name": "Name",
   "navigation": {
@@ -138,6 +139,7 @@
   "off": "Off",
   "ok": "OK",
   "on": "On",
+  "optional": "Optional",
   "overview": "Overview",
   "password": "Password",
   "paste": "Paste",

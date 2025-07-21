@@ -119,5 +119,7 @@
   "justPracticed": "您剛剛練習了 {{piece}}",
   "justPracticedWithComposer": "您剛剛練習了 {{composer}} 的 {{piece}}",
   "addedToRepertoire": "{{piece}} 已添加到您的曲目庫",
-  "failedToAdd": "添加到曲目庫失敗"
+  "failedToAdd": "添加到曲目庫失敗",
+  "sessions": "[NEEDS TRANSLATION] sessions",
+  "recentPracticeSessions": "[NEEDS TRANSLATION] Recent Practice Sessions"
 }

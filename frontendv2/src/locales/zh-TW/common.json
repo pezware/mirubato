@@ -81,7 +81,8 @@
     },
     "performance": "演出",
     "practice": "練習",
-    "rehearsal": "排練"
+    "rehearsal": "排練",
+    "technique": "[NEEDS TRANSLATION] Technique"
   },
   "navigation": {
     "closeMenu": "關閉選單",
@@ -221,5 +222,6 @@
   "version": "版本",
   "view": "檢視",
   "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding..."
+  "adding": "[NEEDS TRANSLATION] Adding...",
+  "optional": "[NEEDS TRANSLATION] Optional"
 }

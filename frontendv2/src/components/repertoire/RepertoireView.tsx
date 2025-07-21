@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
+import { useLogbookStore } from '@/stores/logbookStore'
 import type { RepertoireStatus } from '@/api/repertoire'
 import { EnhancedAnalyticsData } from '@/types/reporting'
 import Button from '@/components/ui/Button'
@@ -12,8 +13,9 @@ import { Loading } from '@/components/ui/Loading'
 import { RepertoireCard } from './RepertoireCard'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
+import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
-import { Search, Music, Target, TrendingUp, Clock } from 'lucide-react'
+import { Search, Music } from 'lucide-react'
 
 interface RepertoireViewProps {
   analytics: EnhancedAnalyticsData
@@ -24,6 +26,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
 
   const {
     goals,
@@ -48,11 +51,18 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     isLoading: scoresLoading,
   } = useScoreStore()
 
+  const { entries, loadEntries } = useLogbookStore()
+
   // Load data on mount
   useEffect(() => {
     loadRepertoire()
     loadGoals()
-    loadUserLibrary()
+    loadEntries()
+    // Try to load user library but don't block if it fails
+    loadUserLibrary().catch(() => {
+      // Ignore errors from scores service - not critical for repertoire
+      console.log('Scores service not available, continuing without scores')
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -212,7 +222,26 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics, searchQuery])
 
-  if (repertoireLoading || scoresLoading) {
+  // Find the entry being edited
+  const editingEntry = editingSessionId
+    ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
+    : null
+
+  // If editing an entry, show the ManualEntryForm
+  if (editingEntry) {
+    return (
+      <ManualEntryForm
+        entry={editingEntry}
+        onClose={() => setEditingSessionId(null)}
+        onSave={() => {
+          setEditingSessionId(null)
+          loadEntries() // Refresh the entries
+        }}
+      />
+    )
+  }
+
+  if (repertoireLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loading />
@@ -287,60 +316,40 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       </Card>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card variant="elevated" className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-stone-600">
-                {t('repertoire:totalRepertoire')}
-              </div>
-              <div className="text-2xl font-bold text-sage-700">
-                {stats.totalPieces}
-              </div>
-            </div>
-            <Music className="w-8 h-8 text-sage-200" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <div className="text-3xl font-bold text-stone-800">
+            {stats.totalPieces}
+          </div>
+          <div className="text-sm text-stone-600 mt-1">
+            {t('repertoire:totalRepertoire')}
           </div>
         </Card>
 
-        <Card variant="elevated" className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-stone-600">
-                {t('repertoire:activeGoals')}
-              </div>
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.activeGoals}
-              </div>
-            </div>
-            <Target className="w-8 h-8 text-blue-200" />
+        <Card className="p-4">
+          <div className="text-3xl font-bold text-stone-800">
+            {stats.activeGoals}
+          </div>
+          <div className="text-sm text-stone-600 mt-1">
+            {t('repertoire:activeGoals')}
           </div>
         </Card>
 
-        <Card variant="elevated" className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-stone-600">
-                {t('repertoire:practiceThisWeek')}
-              </div>
-              <div className="text-2xl font-bold text-green-600">
-                {formatDuration(stats.practiceThisWeek)}
-              </div>
-            </div>
-            <Clock className="w-8 h-8 text-green-200" />
+        <Card className="p-4">
+          <div className="text-3xl font-bold text-stone-800">
+            {formatDuration(stats.practiceThisWeek)}
+          </div>
+          <div className="text-sm text-stone-600 mt-1">
+            {t('repertoire:practiceThisWeek')}
           </div>
         </Card>
 
-        <Card variant="elevated" className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-stone-600">
-                {t('repertoire:performanceReady')}
-              </div>
-              <div className="text-2xl font-bold text-purple-600">
-                {stats.performanceReady}
-              </div>
-            </div>
-            <TrendingUp className="w-8 h-8 text-purple-200" />
+        <Card className="p-4">
+          <div className="text-3xl font-bold text-stone-800">
+            {stats.performanceReady}
+          </div>
+          <div className="text-sm text-stone-600 mt-1">
+            {t('repertoire:performanceReady')}
           </div>
         </Card>
       </div>
@@ -365,6 +374,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               onCreateGoal={() => {
                 setSelectedScoreId(item.scoreId)
                 setShowGoalModal(true)
+              }}
+              onEditSession={sessionId => {
+                setEditingSessionId(sessionId)
               }}
             />
           ))

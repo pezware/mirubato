@@ -118,7 +118,8 @@
     },
     "performance": "Aufführung",
     "practice": "Üben",
-    "rehearsal": "Probe"
+    "rehearsal": "Probe",
+    "technique": "[NEEDS TRANSLATION] Technique"
   },
   "name": "Name",
   "navigation": {
@@ -221,5 +222,6 @@
   "warning": "Warnung",
   "yes": "Ja",
   "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding..."
+  "adding": "[NEEDS TRANSLATION] Adding...",
+  "optional": "[NEEDS TRANSLATION] Optional"
 }

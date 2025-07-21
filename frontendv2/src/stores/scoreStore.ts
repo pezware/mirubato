@@ -324,6 +324,18 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       }))
       set({ userLibrary: normalizedScores })
     } catch (error) {
+      // Check if this is a network error (scores service not running)
+      if (
+        error instanceof Error &&
+        (error.message.includes('Network Error') ||
+          error.message.includes('ERR_CONNECTION_REFUSED'))
+      ) {
+        // Silently handle - scores service is not running
+        console.log('Scores service not available, continuing without scores')
+        set({ userLibrary: [] })
+        return
+      }
+
       // If getUserScores fails (likely due to authentication), fall back to public scores
       if (
         error instanceof Error &&
@@ -338,7 +350,18 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
           }))
           set({ userLibrary: normalizedPublicScores })
         } catch (publicError) {
-          console.error('Failed to load public library:', publicError)
+          // Also check for network errors in public fallback
+          if (
+            publicError instanceof Error &&
+            (publicError.message.includes('Network Error') ||
+              publicError.message.includes('ERR_CONNECTION_REFUSED'))
+          ) {
+            console.log(
+              'Scores service not available, continuing without scores'
+            )
+          } else {
+            console.error('Failed to load public library:', publicError)
+          }
           set({ userLibrary: [] })
         }
       } else {
