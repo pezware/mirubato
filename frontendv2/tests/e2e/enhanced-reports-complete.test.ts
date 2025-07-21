@@ -121,7 +121,7 @@ test.describe('Enhanced Reports - Complete Test Suite', () => {
               await valueSelect.selectOption({ index: 1 })
             }
           }
-        } catch (e) {
+        } catch (_e) {
           // If select doesn't appear, there might be an input field instead
           const valueInput = newFilterRow.locator('input[type="text"]').last()
           if (await valueInput.isVisible()) {
