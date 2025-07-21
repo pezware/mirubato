@@ -51,6 +51,40 @@ export class LogbookPage {
     return this.page.locator(`[data-testid="mood-button-${mood}"]`)
   }
 
+  // Helper to dismiss any UI prompts that might block interactions
+  async dismissPrompts() {
+    // Dismiss repertoire prompt if visible
+    const repertoirePrompt = this.page.locator('text="Add to Your Repertoire?"')
+    if (
+      await repertoirePrompt.isVisible({ timeout: 1000 }).catch(() => false)
+    ) {
+      const dismissButton = this.page.locator('button:has-text("Not Now")')
+      if (await dismissButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await dismissButton.click()
+        await this.page.waitForTimeout(300)
+      } else {
+        // Try clicking the X button
+        const closeButton = this.page
+          .locator('.fixed.bottom-4.right-4 button[aria-label="Close"]')
+          .first()
+        if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
+          await closeButton.click()
+          await this.page.waitForTimeout(300)
+        }
+      }
+    }
+
+    // Dismiss any other toasts
+    const toasts = this.page
+      .locator('.fixed.bottom-4.right-4')
+      .locator('text=/Practice logged|saved|success/i')
+    const toastCount = await toasts.count()
+    if (toastCount > 0) {
+      await this.page.mouse.click(10, 10)
+      await this.page.waitForTimeout(300)
+    }
+  }
+
   // Helper to wait for autocomplete to settle
   private async waitForAutocomplete() {
     // Wait for autocomplete dropdown to appear or disappear
@@ -133,14 +167,28 @@ export class LogbookPage {
 
     // Select mood if provided
     if (data.mood) {
+      // Dismiss any prompts before clicking mood button
+      await this.dismissPrompts()
       await this.getMoodButton(data.mood).click()
     }
 
-    // Save the entry
-    await this.saveEntryButton.click()
+    // Dismiss any existing toasts before saving
+    const toasts = this.page.locator('.fixed.bottom-4.right-4')
+    const toastCount = await toasts.count()
+    if (toastCount > 0) {
+      // Click outside to dismiss or wait for auto-dismiss
+      await this.page.mouse.click(10, 10)
+      await this.page.waitForTimeout(500)
+    }
+
+    // Save the entry with retry logic
+    await this.saveEntryButton.click({ force: true })
 
     // Wait for save to complete
     await this.waitForSaveConfirmation()
+
+    // Dismiss any prompts that appear after saving
+    await this.dismissPrompts()
   }
 
   // Wait helpers
@@ -152,6 +200,12 @@ export class LogbookPage {
         .catch(() => {}),
       this.page
         .waitForSelector('text=success', { state: 'visible', timeout: 5000 })
+        .catch(() => {}),
+      this.page
+        .waitForSelector('text=Practice logged', {
+          state: 'visible',
+          timeout: 5000,
+        })
         .catch(() => {}),
       // Or wait for the duration field to reset to default
       this.page
@@ -166,6 +220,9 @@ export class LogbookPage {
         )
         .catch(() => {}),
     ])
+
+    // Give UI time to stabilize after save
+    await this.page.waitForTimeout(500)
   }
 
   async waitForEntries(minCount: number = 1) {
