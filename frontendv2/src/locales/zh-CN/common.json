@@ -124,7 +124,7 @@
     "performance": "演出",
     "practice": "练习",
     "rehearsal": "排练",
-    "technique": "[NEEDS TRANSLATION] Technique"
+    "technique": "技巧"
   },
   "name": "名称",
   "navigation": {
@@ -226,7 +226,7 @@
   "view": "查看",
   "warning": "警告",
   "yes": "是",
-  "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding...",
-  "optional": "[NEEDS TRANSLATION] Optional"
+  "notNow": "稍后",
+  "adding": "添加中...",
+  "optional": "可选"
 }

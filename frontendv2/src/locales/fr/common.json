@@ -82,7 +82,7 @@
     "performance": "Performance",
     "practice": "Pratique",
     "rehearsal": "Répétition",
-    "technique": "[NEEDS TRANSLATION] Technique"
+    "technique": "Technique"
   },
   "navigation": {
     "closeMenu": "Fermer le menu",
@@ -226,7 +226,7 @@
   "username": "Nom d'utilisateur",
   "version": "Version",
   "view": "Voir",
-  "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding...",
-  "optional": "[NEEDS TRANSLATION] Optional"
+  "notNow": "Plus tard",
+  "adding": "Ajout en cours...",
+  "optional": "Optionnel"
 }

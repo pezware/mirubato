@@ -82,7 +82,7 @@
     "performance": "演出",
     "practice": "練習",
     "rehearsal": "排練",
-    "technique": "[NEEDS TRANSLATION] Technique"
+    "technique": "技巧"
   },
   "navigation": {
     "closeMenu": "關閉選單",
@@ -226,7 +226,7 @@
   "username": "使用者名稱",
   "version": "版本",
   "view": "檢視",
-  "notNow": "[NEEDS TRANSLATION] Not Now",
-  "adding": "[NEEDS TRANSLATION] Adding...",
-  "optional": "[NEEDS TRANSLATION] Optional"
+  "notNow": "稍後",
+  "adding": "新增中...",
+  "optional": "可選"
 }
