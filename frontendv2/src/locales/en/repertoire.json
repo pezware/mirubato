@@ -10,6 +10,9 @@
   "totalRepertoire": "Total Repertoire",
   "practiceThisWeek": "Practice This Week",
   "performanceReady": "Performance Ready",
+  "activePieces": "Active Pieces",
+  "activeRepertoire": "Active Repertoire",
+  "needAttention": "Need Attention",
   "emptyRepertoire": "Your repertoire is empty. Start by adding pieces you want to learn or master.",
   "addFirstPiece": "Add Your First Piece",
   "status": {
@@ -17,7 +20,8 @@
     "learning": "Learning",
     "working": "Working",
     "polished": "Polished",
-    "performance_ready": "Performance Ready"
+    "performance_ready": "Performance Ready",
+    "current": "Current Status"
   },
   "lastPracticed": "Last practiced {{time}}",
   "sessionCount": "{{count}} sessions",
@@ -121,5 +125,14 @@
   "justPracticed": "You just practiced {{piece}}",
   "justPracticedWithComposer": "You just practiced {{piece}} by {{composer}}",
   "addedToRepertoire": "{{piece}} added to your repertoire",
-  "failedToAdd": "Failed to add to repertoire"
+  "failedToAdd": "Failed to add to repertoire",
+  "totalPractice": "Total Practice",
+  "avgSession": "Average Session",
+  "viewDetails": "View Details",
+  "last3Months": "Last 3 Months",
+  "allTypes": "All Types",
+  "logPractice": "Log Practice",
+  "noPracticeSessions": "No practice sessions yet",
+  "startTrackingPrompt": "Start tracking your progress with this piece",
+  "logFirstSession": "Log First Session"
 }

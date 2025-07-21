@@ -78,5 +78,17 @@
   },
   "viewScore": "View Score",
   "linkedScore": "Linked Score",
-  "autoTracked": "Auto-tracked from score practice"
+  "autoTracked": "Auto-tracked from score practice",
+  "timer": {
+    "title": "Practice Timer",
+    "start": "Start Timer",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop & Log",
+    "reset": "Reset",
+    "confirmClose": "Timer is running. Are you sure you want to close?",
+    "startHint": "Click Start to begin timing your practice session",
+    "runningHint": "Timer is running. Click Pause to take a break or Stop to finish.",
+    "stopHint": "Click Stop & Log to create a practice entry with this duration"
+  }
 }

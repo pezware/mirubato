@@ -7,8 +7,7 @@ import {
   type ScoreSearchParams,
 } from '../services/scoreService'
 import type { Collection } from '../types/collections'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionsManager from '../components/score/CollectionsManager'
@@ -31,7 +30,6 @@ export default function ScoreBrowserPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [showCollectionsManager, setShowCollectionsManager] = useState(false)
@@ -208,7 +206,7 @@ export default function ScoreBrowserPage() {
   const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      setShowSignInModal(true)
+      // The AppLayout will handle showing sign in modal
       return
     }
     setSelectedScoreForCollection(score)
@@ -382,13 +380,8 @@ export default function ScoreBrowserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-stone-50">
-      <UnifiedHeader
-        currentPage="scorebook"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
-
-      <div className="max-w-6xl mx-auto px-4 py-6">
+    <AppLayout>
+      <div className="p-8">
         {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
         <Tabs
           tabs={[
@@ -583,46 +576,40 @@ export default function ScoreBrowserPage() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-      />
+        {/* Add to Collection Modal */}
+        {showCollectionModal && selectedScoreForCollection && (
+          <AddToCollectionModal
+            scoreId={selectedScoreForCollection.id}
+            scoreTitle={selectedScoreForCollection.title}
+            onClose={handleCollectionModalClose}
+            onSave={handleCollectionModalSave}
+          />
+        )}
 
-      {/* Add to Collection Modal */}
-      {showCollectionModal && selectedScoreForCollection && (
-        <AddToCollectionModal
-          scoreId={selectedScoreForCollection.id}
-          scoreTitle={selectedScoreForCollection.title}
-          onClose={handleCollectionModalClose}
-          onSave={handleCollectionModalSave}
+        {/* Import Score Modal */}
+        <ImportScoreModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
         />
-      )}
 
-      {/* Import Score Modal */}
-      <ImportScoreModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onSuccess={handleImportSuccess}
-      />
-
-      {/* Collections Manager Modal */}
-      {showCollectionsManager && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <CollectionsManager
-              onClose={() => {
-                setShowCollectionsManager(false)
-                // Reload user collections after closing
-                loadData()
-              }}
-              className="h-full"
-            />
+        {/* Collections Manager Modal */}
+        {showCollectionsManager && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+              <CollectionsManager
+                onClose={() => {
+                  setShowCollectionsManager(false)
+                  // Reload user collections after closing
+                  loadData()
+                }}
+                className="h-full"
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </AppLayout>
   )
 }

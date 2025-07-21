@@ -362,6 +362,93 @@
         margin-bottom: 24px;
       }
 
+      /* Repertoire Notes Section */
+      .repertoire-notes {
+        background: white;
+        border-top: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 24px 32px;
+      }
+
+      .notes-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .notes-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .edit-notes-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .edit-notes-btn:hover {
+        background: #f5f5f5;
+        color: #1a1a1a;
+      }
+
+      .notes-content {
+        color: #444;
+        line-height: 1.8;
+      }
+
+      .notes-content p {
+        margin-bottom: 12px;
+      }
+
+      .notes-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .notes-content strong {
+        color: #1a1a1a;
+        font-weight: 600;
+      }
+
+      .notes-edit {
+        display: none;
+      }
+
+      .notes-textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 16px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        font-size: 15px;
+        line-height: 1.6;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      .notes-textarea:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+      }
+
+      .notes-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 16px;
+      }
+
       /* Mobile Responsive - phones only */
       @media (max-width: 767px) {
         .sidebar {
@@ -548,6 +635,72 @@
           <div class="stat-item">
             <span class="stat-label">Average Session</span>
             <span class="stat-value">26 min</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repertoire Notes Section -->
+      <div class="repertoire-notes">
+        <div class="notes-header">
+          <h3 class="notes-title">Repertoire Notes</h3>
+          <button
+            class="edit-notes-btn"
+            onclick="toggleEditNotes()"
+            id="editNotesBtn"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+              ></path>
+              <path
+                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+              ></path>
+            </svg>
+            Edit
+          </button>
+        </div>
+        <div class="notes-content" id="notesContent">
+          <p>
+            This piece requires careful attention to hand independence. The main
+            theme appears in different voices throughout.
+          </p>
+          <p>
+            <strong>Technical focus:</strong> Fingering consistency in
+            sequential passages, especially measures 16-24.
+          </p>
+          <p>
+            <strong>Musical goals:</strong> Maintain clear articulation while
+            bringing out the melodic line in each voice.
+          </p>
+          <p>
+            <strong>Performance notes:</strong> Tempo should be steady around
+            120-140 BPM. No pedal needed for baroque style.
+          </p>
+        </div>
+        <div class="notes-edit" id="notesEdit" style="display: none">
+          <textarea class="notes-textarea" id="notesTextarea">
+This piece requires careful attention to hand independence. The main theme appears in different voices throughout.
+
+Technical focus: Fingering consistency in sequential passages, especially measures 16-24.
+
+Musical goals: Maintain clear articulation while bringing out the melodic line in each voice.
+
+Performance notes: Tempo should be steady around 120-140 BPM. No pedal needed for baroque style.</textarea
+          >
+          <div class="notes-actions">
+            <button class="btn btn-secondary" onclick="cancelEditNotes()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" onclick="saveNotes()">
+              Save Changes
+            </button>
           </div>
         </div>
       </div>
@@ -864,7 +1017,7 @@
       // Check for mobile view
       function checkMobileNav() {
         const mobileNav = document.querySelector('.bottom-tabs')
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 767) {
           mobileNav.style.display = 'flex'
         } else {
           mobileNav.style.display = 'none'
@@ -873,6 +1026,70 @@
 
       window.addEventListener('resize', checkMobileNav)
       checkMobileNav()
+
+      // Notes editing functionality
+      function toggleEditNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+
+        if (notesEdit.style.display === 'none') {
+          // Enter edit mode
+          notesContent.style.display = 'none'
+          notesEdit.style.display = 'block'
+          editBtn.style.display = 'none'
+          document.getElementById('notesTextarea').focus()
+        }
+      }
+
+      function cancelEditNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+        const textarea = document.getElementById('notesTextarea')
+
+        // Restore original content
+        const originalContent = notesContent.innerHTML
+
+        // Exit edit mode without saving
+        notesContent.style.display = 'block'
+        notesEdit.style.display = 'none'
+        editBtn.style.display = 'flex'
+      }
+
+      function saveNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+        const textarea = document.getElementById('notesTextarea')
+
+        // Convert textarea content to HTML paragraphs
+        const lines = textarea.value.split('\n\n')
+        let htmlContent = ''
+
+        lines.forEach(line => {
+          if (line.trim()) {
+            // Check if line starts with a label pattern
+            if (line.includes(':') && line.indexOf(':') < 30) {
+              const [label, ...rest] = line.split(':')
+              htmlContent += `<p><strong>${label}:</strong>${rest.join(':')}</p>`
+            } else {
+              htmlContent += `<p>${line}</p>`
+            }
+          }
+        })
+
+        // Update content
+        notesContent.innerHTML = htmlContent
+
+        // Exit edit mode
+        notesContent.style.display = 'block'
+        notesEdit.style.display = 'none'
+        editBtn.style.display = 'flex'
+
+        // In a real app, this would save to the backend
+        console.log('Notes saved!')
+      }
     </script>
   </body>
 </html>

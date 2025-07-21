@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ScoreListItem from '../components/score/ScoreListItem'
 import ErrorBoundary from '../components/ErrorBoundary'
@@ -19,7 +18,6 @@ export default function CollectionViewPage() {
   const [scores, setScores] = useState<Score[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
@@ -151,7 +149,7 @@ export default function CollectionViewPage() {
   const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      setShowSignInModal(true)
+      // The AppLayout will handle showing sign in modal
       return
     }
     setSelectedScoreForCollection(score)
@@ -169,13 +167,8 @@ export default function CollectionViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100">
-      <UnifiedHeader
-        currentPage="scorebook"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
-
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <AppLayout>
+      <div className="p-8">
         {/* Back button */}
         <button
           onClick={() => navigate('/scorebook')}
@@ -271,12 +264,6 @@ export default function CollectionViewPage() {
         </div>
       </div>
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-      />
-
       {/* Add to Collection Modal */}
       {showCollectionModal && selectedScoreForCollection && (
         <AddToCollectionModal
@@ -286,6 +273,6 @@ export default function CollectionViewPage() {
           onSave={handleCollectionModalSave}
         />
       )}
-    </div>
+    </AppLayout>
   )
 }

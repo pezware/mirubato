@@ -3,19 +3,19 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
-import type { RepertoireStatus } from '@/api/repertoire'
 import { EnhancedAnalyticsData } from '@/types/reporting'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
-import { Input } from '@/components/ui/Input'
 import { Loading } from '@/components/ui/Loading'
 import { RepertoireCard } from './RepertoireCard'
+import { FocusedRepertoireItem } from './FocusedRepertoireItem'
+import { RepertoireCalendarView } from './RepertoireCalendarView'
+import { PieceDetailView } from './PieceDetailView'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
-import { Search, Music } from 'lucide-react'
+import { Music } from 'lucide-react'
 
 interface RepertoireViewProps {
   analytics: EnhancedAnalyticsData
@@ -27,18 +27,16 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list')
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedPiece, setSelectedPiece] = useState<any | null>(null)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [searchQuery] = useState('') // TODO: Add search input
 
   const {
-    goals,
     repertoireLoading,
-    statusFilter,
-    goalFilter,
-    searchQuery,
     loadRepertoire,
     loadGoals,
-    setStatusFilter,
-    setGoalFilter,
-    setSearchQuery,
     getFilteredRepertoire,
     getGoalsForScore,
     cacheScoreMetadata,
@@ -67,12 +65,13 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   // Calculate stats
   const stats = useMemo(() => {
-    const activeGoals = Array.from(goals.values()).filter(
-      g => g.status === 'active'
-    )
-    const performanceReady = filteredItems.filter(
-      item => item.status === 'performance_ready'
-    ).length
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Practice today
+    const practiceToday = analytics.filteredEntries
+      .filter(entry => new Date(entry.timestamp).getTime() >= today.getTime())
+      .reduce((sum, entry) => sum + entry.duration, 0)
 
     // Practice this week
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -80,13 +79,21 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       .filter(entry => new Date(entry.timestamp).getTime() > oneWeekAgo)
       .reduce((sum, entry) => sum + entry.duration, 0)
 
+    // Active pieces count
+    const activePieces = filteredItems.filter(
+      item => item.status === 'learning' || item.status === 'working'
+    ).length
+
+    // Calculate current streak
+    const streak = analytics.currentStreak || 0
+
     return {
-      totalPieces: filteredItems.length,
-      activeGoals: activeGoals.length,
+      practiceToday,
       practiceThisWeek,
-      performanceReady,
+      activePieces,
+      streak,
     }
-  }, [filteredItems, goals, analytics])
+  }, [filteredItems, analytics])
 
   // Merge repertoire data with score metadata and apply search filter
   const enrichedRepertoire = useMemo(() => {
@@ -218,6 +225,16 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics, searchQuery])
 
+  // Calculate needs attention after enrichment
+  const needsAttention = useMemo(() => {
+    const fiveDaysAgo = Date.now() - 5 * 24 * 60 * 60 * 1000
+    return enrichedRepertoire.filter(item => {
+      // Use lastPracticed from the enriched item
+      if (!item.lastPracticed) return false
+      return item.lastPracticed < fiveDaysAgo
+    }).length
+  }, [enrichedRepertoire])
+
   // Find the entry being edited
   const editingEntry = editingSessionId
     ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
@@ -237,6 +254,63 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     )
   }
 
+  // If viewing a piece detail
+  if (selectedPiece) {
+    // Get all practice sessions for this piece
+    const pieceEntries = analytics.filteredEntries.filter(entry => {
+      // Direct scoreId match
+      if (entry.scoreId === selectedPiece.scoreId) {
+        return true
+      }
+
+      // For logbook pieces, match by title and composer
+      if (!entry.scoreId && entry.pieces && entry.pieces.length > 0) {
+        const pieceTitle = selectedPiece.scoreTitle.toLowerCase()
+        const pieceComposer = selectedPiece.scoreComposer.toLowerCase()
+
+        return entry.pieces.some(piece => {
+          const entryTitle = (piece.title || '').toLowerCase()
+          const entryComposer = (piece.composer || '').toLowerCase()
+          return entryTitle === pieceTitle && entryComposer === pieceComposer
+        })
+      }
+
+      return false
+    })
+
+    // Convert LogbookEntry to PracticeSession format
+    const practiceSessions = pieceEntries.map(entry => ({
+      id: entry.id,
+      timestamp: entry.timestamp,
+      duration: entry.duration,
+      type: entry.type,
+      notes: entry.notes || undefined,
+      mood: entry.mood || undefined,
+      tempo: undefined, // Not available in LogbookEntry
+      instrument: entry.instrument,
+    }))
+
+    return (
+      <PieceDetailView
+        item={selectedPiece}
+        sessions={practiceSessions}
+        onBack={() => setSelectedPiece(null)}
+        onLogPractice={() => {
+          setSelectedPiece(null)
+          setShowManualEntry(true)
+        }}
+        onEditNotes={() => {
+          // TODO: Implement notes editing
+          console.log('Edit notes for', selectedPiece.scoreTitle)
+        }}
+        onEditSession={sessionId => {
+          setSelectedPiece(null)
+          setEditingSessionId(sessionId)
+        }}
+      />
+    )
+  }
+
   if (repertoireLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -247,107 +321,98 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-stone-800">
-          {t('repertoire:myRepertoire')}
-        </h2>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
-          <Music className="w-4 h-4 mr-2" />
-          {t('repertoire:addToRepertoire')}
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 w-4 h-4" />
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={t('repertoire:searchPieces')}
-              className="pl-10"
-            />
+      {/* Summary Bar */}
+      <div className="bg-white rounded-lg border border-stone-200 p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {formatDuration(stats.practiceToday)}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:time.today')}
+            </div>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select
-              value={statusFilter}
-              onChange={value =>
-                setStatusFilter(value as keyof RepertoireStatus | 'all')
-              }
-              options={[
-                { value: 'all', label: t('repertoire:allPieces') },
-                { value: 'planned', label: t('repertoire:status.planned') },
-                { value: 'learning', label: t('repertoire:status.learning') },
-                { value: 'working', label: t('repertoire:status.working') },
-                { value: 'polished', label: t('repertoire:status.polished') },
-                {
-                  value: 'performance_ready',
-                  label: t('repertoire:status.performance_ready'),
-                },
-              ]}
-              className="flex-1"
-            />
-
-            <Select
-              value={goalFilter}
-              onChange={value =>
-                setGoalFilter(
-                  value as 'all' | 'active' | 'completed' | 'no_goals'
-                )
-              }
-              options={[
-                { value: 'all', label: t('repertoire:allGoals') },
-                { value: 'active', label: t('repertoire:activeGoals') },
-                { value: 'completed', label: t('repertoire:completedGoals') },
-                { value: 'no_goals', label: t('repertoire:noGoals') },
-              ]}
-              className="flex-1"
-            />
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {formatDuration(stats.practiceThisWeek)}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:time.thisWeek')}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {stats.activePieces}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('repertoire:activePieces')}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {stats.streak} {t('common:time.day_plural')}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:statistics.streak')}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-orange-600">
+              {needsAttention}
+            </div>
+            <div className="text-sm text-orange-600">
+              {t('repertoire:needAttention')}
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.totalPieces}
+      {/* List Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-lg font-semibold text-stone-800">
+          {t('repertoire:activePieces')}
+        </h2>
+        <div className="flex items-center gap-2">
+          <div className="bg-stone-100 rounded-lg p-1 flex">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.list')}
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.grid')}
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.calendar')}
+            </button>
           </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:totalRepertoire')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.activeGoals}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:activeGoals')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {formatDuration(stats.practiceThisWeek)}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:practiceThisWeek')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.performanceReady}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:performanceReady')}
-          </div>
-        </Card>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Music className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Repertoire Items */}
@@ -362,20 +427,46 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               {t('repertoire:addFirstPiece')}
             </Button>
           </Card>
-        ) : (
+        ) : viewMode === 'list' ? (
           enrichedRepertoire.map(item => (
-            <RepertoireCard
+            <div
               key={item.scoreId}
-              item={item}
-              onCreateGoal={() => {
-                setSelectedScoreId(item.scoreId)
-                setShowGoalModal(true)
-              }}
-              onEditSession={sessionId => {
-                setEditingSessionId(sessionId)
-              }}
-            />
+              onClick={() => setSelectedPiece(item)}
+              className="cursor-pointer"
+            >
+              <FocusedRepertoireItem
+                item={item}
+                onPlay={() => {
+                  // TODO: Implement practice start functionality
+                  console.log('Start practice for', item.scoreTitle)
+                }}
+              />
+            </div>
           ))
+        ) : viewMode === 'grid' ? (
+          // Grid view - use existing RepertoireCard
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {enrichedRepertoire.map(item => (
+              <RepertoireCard
+                key={item.scoreId}
+                item={item}
+                onCreateGoal={() => {
+                  setSelectedScoreId(item.scoreId)
+                  setShowGoalModal(true)
+                }}
+                onEditSession={sessionId => {
+                  setEditingSessionId(sessionId)
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          // Calendar view
+          <RepertoireCalendarView
+            enrichedRepertoire={enrichedRepertoire}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+          />
         )}
       </div>
 
@@ -395,6 +486,17 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             setSelectedScoreId(null)
           }}
           scoreId={selectedScoreId}
+        />
+      )}
+
+      {/* Manual Entry Modal */}
+      {showManualEntry && (
+        <ManualEntryForm
+          onClose={() => setShowManualEntry(false)}
+          onSave={() => {
+            setShowManualEntry(false)
+            loadEntries() // Refresh the entries
+          }}
         />
       )}
     </div>

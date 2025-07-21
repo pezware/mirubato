@@ -6,8 +6,7 @@ import { usePracticeStore } from '../stores/practiceStore'
 import ScoreViewer from '../components/score/ScoreViewer'
 import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import { Modal } from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 
@@ -25,7 +24,6 @@ export default function ScorebookPage() {
     loadCollections,
   } = useScoreStore()
 
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [showPracticeWarning, setShowPracticeWarning] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
     null
@@ -98,12 +96,7 @@ export default function ScorebookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-stone-50 flex flex-col">
-      <UnifiedHeader
-        currentPage="scorebook"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
-
+    <AppLayout showQuickActions={false}>
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Score Info Bar */}
@@ -170,12 +163,6 @@ export default function ScorebookPage() {
       {/* Score Management Panel */}
       {showManagement && <ScoreManagement />}
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-      />
-
       {/* Practice Warning Modal */}
       <Modal
         isOpen={showPracticeWarning}
@@ -215,6 +202,6 @@ export default function ScorebookPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </AppLayout>
   )
 }
