@@ -4,7 +4,7 @@ import { TrendingUp, Music, BarChart3, Table, Plus } from 'lucide-react'
 
 export type ReportView =
   | 'overview'
-  | 'pieces'
+  | 'repertoire'
   | 'analytics'
   | 'data'
   | 'newEntry'
@@ -36,10 +36,10 @@ export function ReportsTabs({
       shortLabel: t('reports:tabs.new', 'New'),
     },
     {
-      id: 'pieces',
-      label: t('reports:tabs.pieces'),
+      id: 'repertoire',
+      label: t('reports:tabs.repertoire'),
       icon: <Music size={20} />,
-      shortLabel: t('reports:tabs.pieces'),
+      shortLabel: t('reports:tabs.repertoire'),
     },
     {
       id: 'data',

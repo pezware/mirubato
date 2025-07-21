@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
+import { useRepertoireStore } from '../stores/repertoireStore'
 import type { LogbookEntry } from '../api/logbook'
+import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
+import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -21,7 +24,17 @@ export default function ManualEntryForm({
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
+  const { repertoire, loadRepertoire } = useRepertoireStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
+    piece: { title: string; composer?: string | null }
+    scoreId: string
+  } | null>(null)
+
+  // Load repertoire on mount
+  useEffect(() => {
+    loadRepertoire()
+  }, [loadRepertoire])
 
   // Form state
   const [duration, setDuration] = useState<number>(entry?.duration || 30)
@@ -139,6 +152,23 @@ export default function ManualEntryForm({
         await updateEntry(entry.id, entryData)
       } else {
         await createEntry(entryData)
+
+        // Check if any piece should be added to repertoire
+        for (const piece of entryData.pieces) {
+          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
+
+          // Check if this piece is already in repertoire
+          const isInRepertoire = Array.from(repertoire.values()).some(
+            item => item.scoreId === scoreId
+          )
+
+          if (!isInRepertoire) {
+            // Show prompt for this piece
+            setShowRepertoirePrompt({ piece, scoreId })
+            // Exit after showing prompt for first piece not in repertoire
+            return
+          }
+        }
       }
 
       onSave()
@@ -454,6 +484,22 @@ export default function ManualEntryForm({
           </Button>
         </div>
       </form>
+
+      {/* Add to Repertoire Prompt */}
+      {showRepertoirePrompt && (
+        <AddToRepertoirePrompt
+          pieceTitle={showRepertoirePrompt.piece.title}
+          composer={showRepertoirePrompt.piece.composer}
+          onClose={() => {
+            setShowRepertoirePrompt(null)
+            onSave()
+          }}
+          onAdded={() => {
+            setShowRepertoirePrompt(null)
+            onSave()
+          }}
+        />
+      )}
     </div>
   )
 }

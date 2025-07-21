@@ -11,7 +11,7 @@ import { LogbookEntry } from '../../api/logbook'
 const OverviewView = lazy(() => import('./views/OverviewView'))
 const AnalyticsView = lazy(() => import('./views/AnalyticsView'))
 const DataTableView = lazy(() => import('./views/DataTableView'))
-const PiecesView = lazy(() => import('./views/PiecesView'))
+const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
 
 export default function EnhancedReports() {
@@ -45,6 +45,12 @@ export default function EnhancedReports() {
       else if (location.state && 'editEntry' in location.state) {
         setEditEntry(location.state.editEntry as LogbookEntry)
       }
+    } else if (tab === 'repertoire') {
+      setReportView('repertoire')
+    } else if (tab === 'analytics') {
+      setReportView('analytics')
+    } else if (tab === 'data') {
+      setReportView('data')
     } else if (!tab) {
       // Reset to overview if no tab parameter
       setReportView('overview')
@@ -62,10 +68,14 @@ export default function EnhancedReports() {
       } else {
         setSearchParams({ tab: 'newEntry' })
       }
-    } else {
+    } else if (view === 'overview') {
+      // Clear URL params for overview (default view)
       setSearchParams({})
       // Clear navigation state when switching away
       window.history.replaceState({}, document.title)
+    } else {
+      // Set tab parameter for other views (repertoire, analytics, data)
+      setSearchParams({ tab: view })
     }
     // Clear edit entry when switching away from newEntry
     if (view !== 'newEntry') {
@@ -92,8 +102,8 @@ export default function EnhancedReports() {
     switch (reportView) {
       case 'overview':
         return <OverviewView analytics={analytics} />
-      case 'pieces':
-        return <PiecesView analytics={analytics} />
+      case 'repertoire':
+        return <RepertoireView analytics={analytics} />
       case 'analytics':
         return <AnalyticsView analytics={analytics} />
       case 'data':

@@ -81,7 +81,8 @@
     },
     "performance": "Actuación",
     "practice": "Práctica",
-    "rehearsal": "Ensayo"
+    "rehearsal": "Ensayo",
+    "technique": "Técnica"
   },
   "navigation": {
     "closeMenu": "Cerrar menú",
@@ -157,6 +158,11 @@
   "description": "Descripción",
   "deselectAll": "Deseleccionar todo",
   "details": "Detalles",
+  "difficulty": {
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado"
+  },
   "disable": "Desactivar",
   "documents": "Documentos",
   "download": "Descargar",
@@ -219,5 +225,8 @@
   "upload": "Subir",
   "username": "Nombre de usuario",
   "version": "Versión",
-  "view": "Ver"
+  "view": "Ver",
+  "notNow": "Ahora no",
+  "adding": "Añadiendo...",
+  "optional": "Opcional"
 }

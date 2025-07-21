@@ -207,6 +207,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         JSON.stringify(Array.from(newEntriesMap.values()))
       )
 
+      // Link to goals after creating entry
+      const { useRepertoireStore } = await import('./repertoireStore')
+      await useRepertoireStore.getState().linkPracticeToGoals(entry)
+
       // If authenticated and online, sync to server in background
       const token = localStorage.getItem('auth-token')
       if (token && !get().isLocalMode) {

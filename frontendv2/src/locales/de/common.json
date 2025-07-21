@@ -42,6 +42,11 @@
   "description": "Beschreibung",
   "deselectAll": "Alle abwählen",
   "details": "Details",
+  "difficulty": {
+    "beginner": "Anfänger",
+    "intermediate": "Mittelstufe",
+    "advanced": "Fortgeschritten"
+  },
   "disable": "Deaktivieren",
   "discard": "Verwerfen",
   "documents": "Dokumente",
@@ -118,7 +123,8 @@
     },
     "performance": "Aufführung",
     "practice": "Üben",
-    "rehearsal": "Probe"
+    "rehearsal": "Probe",
+    "technique": "Technik"
   },
   "name": "Name",
   "navigation": {
@@ -219,5 +225,8 @@
   "version": "Version",
   "view": "Ansehen",
   "warning": "Warnung",
-  "yes": "Ja"
+  "yes": "Ja",
+  "notNow": "Später",
+  "adding": "Wird hinzugefügt...",
+  "optional": "Optional"
 }

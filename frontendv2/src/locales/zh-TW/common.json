@@ -81,7 +81,8 @@
     },
     "performance": "演出",
     "practice": "練習",
-    "rehearsal": "排練"
+    "rehearsal": "排練",
+    "technique": "技巧"
   },
   "navigation": {
     "closeMenu": "關閉選單",
@@ -157,6 +158,11 @@
   "description": "描述",
   "deselectAll": "取消全選",
   "details": "詳情",
+  "difficulty": {
+    "beginner": "初級",
+    "intermediate": "中級",
+    "advanced": "高級"
+  },
   "disable": "停用",
   "documents": "文件",
   "download": "下載",
@@ -219,5 +225,8 @@
   "upload": "上傳",
   "username": "使用者名稱",
   "version": "版本",
-  "view": "檢視"
+  "view": "檢視",
+  "notNow": "稍後",
+  "adding": "新增中...",
+  "optional": "可選"
 }

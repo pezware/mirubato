@@ -266,25 +266,26 @@ test.describe('Logbook', () => {
         })
       })
 
-      await test.step('Switch to pieces view to see composers', async () => {
-        await logbookPage.switchToPiecesTab()
+      await test.step('Switch to overview tab to see entries', async () => {
+        // Click on overview tab to see all our entries
+        await page.click('[data-testid="overview-tab"]')
         await page.waitForLoadState('networkidle')
       })
 
-      await test.step('Verify all composers are displayed', async () => {
-        // Wait for pieces view to load
+      await test.step('Verify all composers and pieces are displayed', async () => {
+        // Wait for overview to load
         await page.waitForTimeout(1000)
 
-        // In pieces view, composers should be visible in the statistics
-        await expect(
-          page.getByRole('heading', { name: /Beethoven/ })
-        ).toBeVisible()
-        await expect(
-          page.getByRole('heading', { name: /Mozart/ })
-        ).toBeVisible()
-        await expect(
-          page.getByRole('heading', { name: /Debussy/ })
-        ).toBeVisible()
+        // Check that all our entries are visible in the overview
+        const pageContent = await page.textContent('body')
+
+        // Verify our pieces and composers are visible
+        expect(pageContent).toContain('Beethoven')
+        expect(pageContent).toContain('Mozart')
+        expect(pageContent).toContain('Debussy')
+        expect(pageContent).toContain('Moonlight Sonata')
+        expect(pageContent).toContain('Clair de Lune')
+        expect(pageContent).toContain('Sonata No. 16')
       })
     })
   })

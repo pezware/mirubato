@@ -204,7 +204,7 @@ describe('authStore', () => {
       expect(useAuthStore.getState().user).toEqual(mockUser)
       expect(useAuthStore.getState().isAuthenticated).toBe(true)
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Initial sync failed:',
+        'Initial logbook sync failed:',
         expect.any(Error)
       )
 

@@ -42,6 +42,11 @@
   "description": "Description",
   "deselectAll": "Deselect all",
   "details": "Details",
+  "difficulty": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
   "disable": "Disable",
   "discard": "Discard",
   "documents": "Documents",
@@ -118,7 +123,8 @@
     },
     "performance": "Performance",
     "practice": "Practice",
-    "rehearsal": "Rehearsal"
+    "rehearsal": "Rehearsal",
+    "technique": "Technique"
   },
   "name": "Name",
   "navigation": {
@@ -133,9 +139,12 @@
   "no": "No",
   "noResults": "No results found",
   "notifications": "Notifications",
+  "notNow": "Not Now",
+  "adding": "Adding...",
   "off": "Off",
   "ok": "OK",
   "on": "On",
+  "optional": "Optional",
   "overview": "Overview",
   "password": "Password",
   "paste": "Paste",

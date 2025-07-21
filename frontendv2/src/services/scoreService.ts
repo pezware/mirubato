@@ -107,7 +107,7 @@ scoresApiClient.interceptors.response.use(
       localStorage.removeItem('refresh-token')
 
       // Redirect to login if not on public pages
-      const publicPaths = ['/', '/auth/verify', '/scorebook']
+      const publicPaths = ['/', '/auth/verify', '/scorebook', '/logbook']
       if (!publicPaths.includes(window.location.pathname)) {
         window.location.href = '/'
       }

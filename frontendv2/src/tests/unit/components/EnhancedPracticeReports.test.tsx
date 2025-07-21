@@ -132,8 +132,35 @@ vi.mock('../../../components/practice-reports/views/DataTableView', () => ({
   },
 }))
 
-vi.mock('../../../components/practice-reports/views/PiecesView', () => ({
-  default: () => <div data-testid="pieces-statistics">Pieces Statistics</div>,
+// Mock the repertoire store
+vi.mock('../../../stores/repertoireStore', () => ({
+  useRepertoireStore: () => ({
+    repertoire: new Map(),
+    goals: new Map(),
+    repertoireLoading: false,
+    statusFilter: 'all',
+    goalFilter: 'all',
+    searchQuery: '',
+    loadRepertoire: vi.fn(),
+    loadGoals: vi.fn(),
+    setStatusFilter: vi.fn(),
+    setGoalFilter: vi.fn(),
+    setSearchQuery: vi.fn(),
+    getFilteredRepertoire: vi.fn(() => []),
+    getActiveGoalsByScore: vi.fn(() => []),
+  }),
+}))
+
+// Mock the score store
+vi.mock('../../../stores/scoreStore', () => ({
+  useScoreStore: () => ({
+    scores: [],
+    loadScores: vi.fn(),
+  }),
+}))
+
+vi.mock('../../../components/repertoire/RepertoireView', () => ({
+  default: () => <div data-testid="repertoire-view">Repertoire View</div>,
 }))
 
 // Mock the lazy loaded report components
@@ -177,17 +204,9 @@ vi.mock('../../../components/practice-reports/SummaryStats', () => ({
   },
 }))
 
-vi.mock('../../../components/practice-reports/PiecesStatistics', () => ({
-  PiecesStatistics: () => (
-    <div data-testid="pieces-statistics">Pieces Statistics</div>
-  ),
-}))
+// PiecesStatistics mock removed - no longer used
 
-vi.mock('../../../components/practice-reports/PieceComposerStats', () => ({
-  PieceComposerStats: () => (
-    <div data-testid="piece-composer-stats">Piece Composer Stats</div>
-  ),
-}))
+// PieceComposerStats mock removed - no longer used
 
 // Mock the chart.js components
 vi.mock('react-chartjs-2', () => ({
@@ -287,7 +306,9 @@ describe('EnhancedReports', () => {
     expect(screen.getAllByText('reports:tabs.overview').length).toBeGreaterThan(
       0
     )
-    expect(screen.getAllByText('reports:tabs.pieces').length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText('reports:tabs.repertoire').length
+    ).toBeGreaterThan(0)
     expect(screen.getAllByText('reports:tabs.newEntry').length).toBeGreaterThan(
       0
     )
@@ -348,18 +369,18 @@ describe('EnhancedReports', () => {
     const overviewTab = screen.getByTestId('overview-tab')
     expect(overviewTab).toHaveClass('border-morandi-purple-400')
 
-    // Click on pieces tab
-    const piecesTab = screen.getByTestId('pieces-tab')
-    fireEvent.click(piecesTab)
+    // Click on repertoire tab
+    const repertoireTab = screen.getByTestId('repertoire-tab')
+    fireEvent.click(repertoireTab)
 
-    // Wait for pieces view to load
+    // Wait for repertoire view to load
     await waitFor(() => {
-      expect(piecesTab).toHaveClass('border-morandi-purple-400')
+      expect(repertoireTab).toHaveClass('border-morandi-purple-400')
       expect(overviewTab).not.toHaveClass('border-morandi-purple-400')
     })
   })
 
-  it('should switch to pieces tab', async () => {
+  it('should switch to repertoire tab', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <EnhancedReports />
@@ -367,29 +388,29 @@ describe('EnhancedReports', () => {
     )
 
     // Use getByTestId which is unique
-    const piecesTab = screen.getByTestId('pieces-tab')
-    fireEvent.click(piecesTab)
+    const repertoireTab = screen.getByTestId('repertoire-tab')
+    fireEvent.click(repertoireTab)
 
-    // Wait for the pieces view to load
+    // Wait for the repertoire view to load
     await waitFor(() => {
-      // Check that pieces statistics component is rendered
-      expect(screen.getByTestId('pieces-statistics')).toBeInTheDocument()
+      // Check that repertoire view component is rendered
+      expect(screen.getByTestId('repertoire-view')).toBeInTheDocument()
     })
   })
 
-  it('should display piece statistics in pieces tab', async () => {
+  it('should display repertoire view content', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <EnhancedReports />
       </MemoryRouter>
     )
 
-    const piecesTab = screen.getByTestId('pieces-tab')
-    fireEvent.click(piecesTab)
+    const repertoireTab = screen.getByTestId('repertoire-tab')
+    fireEvent.click(repertoireTab)
 
     // Wait for lazy loaded component
     await waitFor(() => {
-      expect(screen.getByTestId('pieces-statistics')).toBeInTheDocument()
+      expect(screen.getByTestId('repertoire-view')).toBeInTheDocument()
     })
   })
 
@@ -649,14 +670,14 @@ describe('EnhancedReports', () => {
     )
 
     const overviewTab = screen.getByTestId('overview-tab')
-    const piecesTab = screen.getByTestId('pieces-tab')
+    const repertoireTab = screen.getByTestId('repertoire-tab')
 
     // Overview tab should be active by default
     expect(overviewTab).toHaveClass('border-morandi-purple-400')
 
-    // Click pieces tab
-    fireEvent.click(piecesTab)
-    expect(piecesTab).toHaveClass('border-morandi-purple-400')
+    // Click repertoire tab
+    fireEvent.click(repertoireTab)
+    expect(repertoireTab).toHaveClass('border-morandi-purple-400')
   })
 
   it('should render all navigation tabs', () => {
@@ -668,7 +689,7 @@ describe('EnhancedReports', () => {
 
     // Check all tabs are present
     expect(screen.getByTestId('overview-tab')).toBeInTheDocument()
-    expect(screen.getByTestId('pieces-tab')).toBeInTheDocument()
+    expect(screen.getByTestId('repertoire-tab')).toBeInTheDocument()
     expect(screen.getByTestId('analytics-tab')).toBeInTheDocument()
     expect(screen.getByTestId('data-tab')).toBeInTheDocument()
     expect(screen.getByTestId('newEntry-tab')).toBeInTheDocument()

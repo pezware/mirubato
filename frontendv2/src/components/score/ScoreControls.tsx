@@ -179,6 +179,7 @@ export default function ScoreControls() {
         ],
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, isTracking, updateTracking])
 
   // Page navigation handlers

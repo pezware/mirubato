@@ -30,6 +30,7 @@
 - See @docs/ROADMAP.md for general roadmap.
 - See @docs/DESIGN.md for general design and spcs.
 - See @docs/DEBUG.md for known issues and how did we resolved them.
+- See @docs/USER_FLOWS.md for comprehensive user journey documentation.
 - **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
 - **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
 - **Deployment**:
@@ -196,6 +197,45 @@ When creating or updating UI components:
    - **Toast**: Notification system
 
 4. **Documentation**: See `frontendv2/docs/COMPONENT-LIBRARY.md`
+
+### Repertoire & Goals System (July 2025)
+
+The repertoire system transforms the Pieces tab into a comprehensive musical progress tracking system integrated with goals.
+
+**Key Features:**
+
+- **Repertoire Management**: Track piece status (Planned, Learning, Working, Polished, Performance Ready)
+- **Goals Integration**: Create and track goals linked to specific pieces
+- **Auto-Prompt**: After logging practice, prompts to add pieces to repertoire
+- **Practice History**: View all practice sessions linked to repertoire items
+- **Score ID Normalization**: Prevents duplicates with normalized IDs (title-composer format)
+
+**Components:**
+
+```typescript
+// Main repertoire components
+import RepertoireView from '@/components/repertoire/RepertoireView'
+import { RepertoireCard } from '@/components/repertoire/RepertoireCard'
+import { AddToRepertoirePrompt } from '@/components/repertoire/AddToRepertoirePrompt'
+import { CreateGoalModal } from '@/components/repertoire/CreateGoalModal'
+import { EditGoalModal } from '@/components/repertoire/EditGoalModal'
+
+// Store
+import { useRepertoireStore } from '@/stores/repertoireStore'
+```
+
+**Database Tables** (Migrations 0008, 0009, 0010):
+
+- `user_repertoire`: Tracks piece status and personal notes
+- `goals`: Extended with score_id, measures, practice_plan fields
+- `goal_progress`: Historical progress tracking
+- `score_annotations`: Future PDF annotation support
+
+**API Endpoints:**
+
+- `/api/repertoire` - CRUD operations for repertoire items
+- `/api/goals` - Goal creation and progress tracking
+- Auto-adds pieces to repertoire when creating repertoire goals
 
 ## 🎯 Current Focus Areas
 
@@ -447,6 +487,45 @@ datasets.push({
 - **Performance**: Caching system with `reportsCacheManager`
 - **Type Safety**: Fully typed without any `any` assertions
 - **State Management**: Centralized `reportingStore` using Zustand
+
+### Repertoire & Goals System (July 2025)
+
+The repertoire system transforms the Pieces tab into a comprehensive musical progress tracking system integrated with goals.
+
+**Key Features:**
+
+- **Repertoire Management**: Track piece status (Planned, Learning, Working, Polished, Performance Ready)
+- **Goals Integration**: Create and track goals linked to specific pieces
+- **Auto-Prompt**: After logging practice, prompts to add pieces to repertoire
+- **Practice History**: View all practice sessions linked to repertoire items
+- **Score ID Normalization**: Prevents duplicates with normalized IDs (title-composer format)
+
+**Components:**
+
+```typescript
+// Main repertoire components
+import RepertoireView from '@/components/repertoire/RepertoireView'
+import { RepertoireCard } from '@/components/repertoire/RepertoireCard'
+import { AddToRepertoirePrompt } from '@/components/repertoire/AddToRepertoirePrompt'
+import { CreateGoalModal } from '@/components/repertoire/CreateGoalModal'
+import { EditGoalModal } from '@/components/repertoire/EditGoalModal'
+
+// Store
+import { useRepertoireStore } from '@/stores/repertoireStore'
+```
+
+**Database Tables** (Migrations 0008, 0009, 0010):
+
+- `user_repertoire`: Tracks piece status and personal notes
+- `goals`: Extended with score_id, measures, practice_plan fields
+- `goal_progress`: Historical progress tracking
+- `score_annotations`: Future PDF annotation support
+
+**API Endpoints:**
+
+- `/api/repertoire` - CRUD operations for repertoire items
+- `/api/goals` - Goal creation and progress tracking
+- Auto-adds pieces to repertoire when creating repertoire goals
 
 ### API Development Workflow
 
@@ -738,17 +817,22 @@ pnpm test -- --watch
   - ✅ audioManager: 91.54%
   - ✅ Practice page: 91.66%
   - ✅ Auto-logging module: 100%
+  - ✅ Repertoire components: Tests added and passing
   - ✅ All tests passing: 270+ unit tests, 65 E2E tests (including smoke tests)
 - **Backend Coverage**: ~43% (Target: 80%)
   - ✅ practice resolver: 100%
   - ✅ sheetMusic resolver: 100%
   - ✅ auth service: 100%
+  - ✅ repertoire endpoints: Full test coverage
+  - ✅ goals endpoints: Full test coverage
 
 ## 📚 Key Documentation
 
 - **Development**: `docs/DEVELOPMENT.md` (setup, development, deployment)
 - **Infrastructure**: `docs/DESIGN.md`
 - **Roadmap**: `docs/ROADMAP.md` (includes detailed test coverage status)
+- **User Flows**: `docs/USER_FLOWS.md` (comprehensive user journey documentation)
+- **Repertoire**: `docs/REPERTOIRE_GOALS_PLAN.md` (feature implementation details)
 
 ## 🎓 Educational Context
 

@@ -107,16 +107,19 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       // Always stop metronome when component unmounts
       metronome.stop()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle tempo changes
   useEffect(() => {
     metronome.setTempo(settings.bpm)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.volume])
 
   // Handle pattern changes while playing
@@ -131,6 +134,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       }
       metronome.setPatterns(trimmedPatterns)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator

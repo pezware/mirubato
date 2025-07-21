@@ -6,7 +6,7 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 
 ## Features
 
-🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 🌐 Open source (MIT)
+🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 📚 Repertoire & goals tracking • 🎼 Sheet music library • 🌐 Open source (MIT)
 
 ## Quick Start
 
@@ -23,13 +23,15 @@ cd ../scores && pnpm run dev    # Scores: scores-mirubato.localhost:9788
 
 ## Documentation
 
-| Type            | Link                                                         | Description                       |
-| --------------- | ------------------------------------------------------------ | --------------------------------- |
-| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**   |
-| 📖 Development  | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                 | Setup and deployment instructions |
-| 🏗️ Architecture | [Design Docs](docs/DESIGN.md)                                | System design and architecture    |
-| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting     |
-| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API       |
+| Type            | Link                                                         | Description                         |
+| --------------- | ------------------------------------------------------------ | ----------------------------------- |
+| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**     |
+| 📖 Development  | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                 | Setup and deployment instructions   |
+| 🏗️ Architecture | [Design Docs](docs/DESIGN.md)                                | System design and architecture      |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting       |
+| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API         |
+| 🔄 User Flows   | [User Flow Diagrams](docs/USER_FLOWS.md)                     | Complete user journey documentation |
+| 🎯 Repertoire   | [Repertoire & Goals](docs/REPERTOIRE_GOALS_PLAN.md)          | Feature implementation details      |
 
 ## Technology Stack
 
@@ -57,10 +59,8 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 | **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
 | **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
 | **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
-| **🚧 Status**     | v1.4.0 Released - Logbook MVP Complete (290+ tests passing)        |
+| **🚧 Status**     | v1.6.0 Released - Repertoire & Goals Complete (290+ tests passing) |
 
 ---
 
 Built with ❤️ for the open-source music education community
-
-# Test comment
