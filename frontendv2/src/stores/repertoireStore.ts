@@ -12,10 +12,10 @@ import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireId
 import { useAuthStore } from './authStore'
 
 interface RepertoireStatus {
-  planned: 'Planned'
-  learning: 'Learning'
-  polished: 'Polished'
-  dropped: 'Dropped'
+  planned: 'planned'
+  learning: 'learning'
+  polished: 'polished'
+  dropped: 'dropped'
 }
 
 interface ScoreMetadata {

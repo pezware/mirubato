@@ -77,8 +77,8 @@ export function RepertoireCard({
       label: t('repertoire:status.polished'),
     },
     dropped: {
-      color: 'text-grey-700',
-      bg: 'bg-grey-100',
+      color: 'text-gray-700',
+      bg: 'bg-gray-100',
       label: t('repertoire:status.dropped'),
     },
   }
