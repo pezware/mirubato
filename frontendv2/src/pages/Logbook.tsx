@@ -9,15 +9,29 @@ export default function LogbookPage() {
   const { error, loadEntries, clearError } = useLogbookStore()
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [showTimer, setShowTimer] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
 
+  const handleTimerComplete = (duration: number) => {
+    setShowTimer(false)
+    setTimerDuration(duration)
+    setShowManualEntry(true)
+  }
+
+  const handleManualEntryClose = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+  }
+
   return (
     <AppLayout
       onNewEntry={() => setShowManualEntry(true)}
       onTimerClick={() => setShowTimer(true)}
+      onSearchChange={setSearchQuery}
     >
       <div className="p-8">
         {/* Error Display */}
@@ -39,13 +53,14 @@ export default function LogbookPage() {
         )}
 
         {/* Reports Section */}
-        <EnhancedReports />
+        <EnhancedReports searchQuery={searchQuery} />
 
         {/* Manual Entry Modal */}
         {showManualEntry && (
           <ManualEntryForm
-            onClose={() => setShowManualEntry(false)}
-            onSave={() => setShowManualEntry(false)}
+            onClose={handleManualEntryClose}
+            onSave={handleManualEntryClose}
+            initialDuration={timerDuration}
           />
         )}
 
@@ -54,11 +69,7 @@ export default function LogbookPage() {
           <TimerEntry
             isOpen={showTimer}
             onClose={() => setShowTimer(false)}
-            onComplete={() => {
-              setShowTimer(false)
-              // Open manual entry form
-              setShowManualEntry(true)
-            }}
+            onComplete={handleTimerComplete}
           />
         )}
       </div>

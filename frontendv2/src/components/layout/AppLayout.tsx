@@ -44,8 +44,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const handleAddClick = () => {
     // Determine action based on current page
-    if (location.pathname.includes('/logbook')) {
+    if (
+      location.pathname === '/logbook' ||
+      location.pathname.startsWith('/logbook')
+    ) {
       onNewEntry?.()
+    } else if (
+      location.pathname === '/scorebook/browse' ||
+      location.pathname.startsWith('/scorebook')
+    ) {
+      // Could add score import functionality here in the future
+      console.log('Add score functionality not implemented yet')
     }
     // Add other page-specific actions here
   }

@@ -15,12 +15,14 @@ interface ManualEntryFormProps {
   onClose: () => void
   onSave: () => void
   entry?: LogbookEntry
+  initialDuration?: number
 }
 
 export default function ManualEntryForm({
   onClose,
   onSave,
   entry,
+  initialDuration,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
@@ -37,7 +39,9 @@ export default function ManualEntryForm({
   }, [loadRepertoire])
 
   // Form state
-  const [duration, setDuration] = useState<number>(entry?.duration || 30)
+  const [duration, setDuration] = useState<number>(
+    entry?.duration || initialDuration || 30
+  )
   const [type, setType] = useState<LogbookEntry['type']>(
     entry?.type || 'practice'
   )
