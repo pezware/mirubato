@@ -116,7 +116,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
     // Active pieces count
     const activePieces = filteredItems.filter(
-      item => item.status === 'learning' || item.status === 'working'
+      item => item.status === 'learning'
     ).length
 
     // Calculate current streak
