@@ -95,7 +95,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                 <span>•</span>
                 <span>
                   {formatDuration(totalPracticeTime)}{' '}
-                  {t('common:statistics.total')}
+                  {t('repertoire:totalSessions')}
                 </span>
                 {activeGoal && (
                   <>
