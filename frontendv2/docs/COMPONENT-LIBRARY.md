@@ -120,7 +120,6 @@ Accessible modal dialog using @headlessui/react.
 
 ```tsx
 import { Modal } from '@/components/ui/modal'
-
 ;<Modal
   isOpen={isOpen}
   onClose={() => setIsOpen(false)}
@@ -335,7 +334,6 @@ Custom time picker with brand-consistent styling (desktop) and native fallback (
 
 ```tsx
 import { TimePicker } from '@/components/ui/time-picker'
-
 ;<TimePicker
   value={duration} // in seconds
   onChange={setDuration}
