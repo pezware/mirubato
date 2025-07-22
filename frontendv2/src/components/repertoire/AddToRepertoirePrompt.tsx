@@ -47,7 +47,7 @@ export function AddToRepertoirePrompt({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 max-w-sm bg-white rounded-lg shadow-lg border border-stone-200 p-4 animate-slide-up z-40">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto max-w-sm bg-white rounded-lg shadow-lg border border-stone-200 p-3 sm:p-4 animate-slide-up z-40">
       <button
         onClick={onClose}
         className="absolute top-2 right-2 text-stone-400 hover:text-stone-600"
@@ -79,7 +79,7 @@ export function AddToRepertoirePrompt({
               onClick={handleAdd}
               disabled={isAdding}
             >
-              {isAdding ? t('common:adding') : t('repertoire:addToRepertoire')}
+              {isAdding ? t('common:adding') : t('repertoire:addToEntries')}
             </Button>
             <Button variant="ghost" size="sm" onClick={onClose}>
               {t('common:notNow')}

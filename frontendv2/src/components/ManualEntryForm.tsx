@@ -10,6 +10,7 @@ import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
+import { Modal } from './ui/Modal'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -206,13 +207,16 @@ export default function ManualEntryForm({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-4 sm:p-6">
-      <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
-        {entry
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={
+        entry
           ? `📝 ${t('logbook:entry.editEntry')}`
-          : `✨ ${t('logbook:entry.addEntry')}`}
-      </h2>
-
+          : `✨ ${t('logbook:entry.addEntry')}`
+      }
+      size="lg"
+    >
       <form
         onSubmit={handleSubmit}
         className="space-y-4"
@@ -504,6 +508,6 @@ export default function ManualEntryForm({
           }}
         />
       )}
-    </div>
+    </Modal>
   )
 }

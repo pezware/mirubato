@@ -342,7 +342,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   return (
     <div className="space-y-6">
       {/* Summary Bar */}
-      <div className="bg-white rounded-lg border border-stone-200 p-4">
+      <div className="bg-white rounded-lg border border-stone-200 p-3 sm:p-4">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <div className="text-center">
             <div className="text-2xl font-semibold text-stone-800">

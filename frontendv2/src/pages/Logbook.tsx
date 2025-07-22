@@ -33,7 +33,7 @@ export default function LogbookPage() {
       onTimerClick={() => setShowTimer(true)}
       onSearchChange={setSearchQuery}
     >
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {/* Error Display */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">

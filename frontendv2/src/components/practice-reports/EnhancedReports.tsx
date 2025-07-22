@@ -178,7 +178,7 @@ export default function EnhancedReports({
       {reportView === 'newEntry' ? (
         <Suspense
           fallback={
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <LoadingSkeleton className="h-96" />
             </div>
           }
@@ -200,7 +200,7 @@ export default function EnhancedReports({
       ) : (
         <Suspense
           fallback={
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <LoadingSkeleton className="h-96" />
             </div>
           }

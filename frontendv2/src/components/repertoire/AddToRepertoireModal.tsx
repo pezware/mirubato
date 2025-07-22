@@ -11,7 +11,8 @@ import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
 import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'
-import { Search, Music, Plus, Clock } from 'lucide-react'
+import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
+import { Search, Music, Plus, Clock, PlusCircle } from 'lucide-react'
 
 interface AddToRepertoireModalProps {
   isOpen: boolean
@@ -31,6 +32,9 @@ export function AddToRepertoireModal({
     useState<keyof RepertoireStatus>('planned')
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showCustomEntry, setShowCustomEntry] = useState(false)
+  const [customTitle, setCustomTitle] = useState('')
+  const [customComposer, setCustomComposer] = useState('')
 
   const { addToRepertoire, repertoire } = useRepertoireStore()
   const {
@@ -147,17 +151,36 @@ export function AddToRepertoireModal({
   }, [scores, logbookPieces, repertoire, searchQuery])
 
   const handleAdd = async () => {
-    if (!selectedItem) {
+    if (!selectedItem && !showCustomEntry) {
       showToast(t('repertoire:selectScore'), 'error')
+      return
+    }
+
+    if (showCustomEntry && !customTitle.trim()) {
+      showToast(t('repertoire:titleRequired'), 'error')
       return
     }
 
     setIsLoading(true)
     try {
-      // For logbook pieces, we'll use the piece identifier as the scoreId
-      // This allows tracking even without a formal score entry
-      await addToRepertoire(selectedItem.id, selectedStatus)
+      if (showCustomEntry) {
+        // For custom entries, generate a normalized ID
+        const customId = generateNormalizedScoreId(
+          customTitle,
+          customComposer || null
+        )
+        await addToRepertoire(customId, selectedStatus)
+      } else if (selectedItem) {
+        // For logbook pieces, we'll use the piece identifier as the scoreId
+        // This allows tracking even without a formal score entry
+        await addToRepertoire(selectedItem.id, selectedStatus)
+      }
       onClose()
+
+      // Reset custom entry fields
+      setCustomTitle('')
+      setCustomComposer('')
+      setShowCustomEntry(false)
     } catch (_error) {
       // Error handled in store
     } finally {
@@ -217,54 +240,116 @@ export function AddToRepertoireModal({
               </p>
             </Card>
           ) : (
-            <div className="max-h-64 overflow-y-auto space-y-2">
-              {availableItems.map(item => (
-                <Card
-                  key={item.id}
-                  variant={selectedItem?.id === item.id ? 'bordered' : 'ghost'}
-                  className={`p-3 cursor-pointer transition-colors ${
-                    selectedItem?.id === item.id
-                      ? 'border-sage-500 bg-sage-50'
-                      : 'hover:bg-stone-50'
-                  }`}
-                  onClick={() =>
-                    setSelectedItem({ id: item.id, type: item.type })
-                  }
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-stone-800">
-                          {item.title}
-                        </h4>
-                        {item.type === 'logbook' && (
-                          <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
-                            <Clock className="w-3 h-3" />
-                            {t('repertoire:fromLogbook')}
-                          </span>
-                        )}
-                      </div>
-                      {item.composer && (
-                        <p className="text-sm text-stone-600">
-                          {item.composer}
-                        </p>
-                      )}
-                      {item.type === 'logbook' && item.practiceCount && (
-                        <p className="text-xs text-stone-500 mt-1">
-                          {t('repertoire:practicedTimes', {
-                            count: item.practiceCount,
-                          })}
-                        </p>
-                      )}
-                    </div>
-                    {item.difficulty && (
-                      <span className="text-sm text-stone-500">
-                        {t(`common:difficulty.${item.difficulty}`)}
-                      </span>
-                    )}
+            <div className="space-y-2">
+              {/* Custom entry option */}
+              <Card
+                variant={showCustomEntry ? 'bordered' : 'ghost'}
+                className={`p-3 cursor-pointer transition-colors ${
+                  showCustomEntry
+                    ? 'border-sage-500 bg-sage-50'
+                    : 'hover:bg-stone-50'
+                }`}
+                onClick={() => {
+                  setShowCustomEntry(!showCustomEntry)
+                  setSelectedItem(null)
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <PlusCircle className="w-5 h-5 text-sage-600" />
+                  <div>
+                    <h4 className="font-medium text-stone-800">
+                      {t('repertoire:addCustomPiece')}
+                    </h4>
+                    <p className="text-sm text-stone-600">
+                      {t('repertoire:addCustomPieceDescription')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Custom entry form */}
+              {showCustomEntry && (
+                <Card className="p-3 sm:p-4 space-y-3 bg-sage-50 border-sage-200">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {t('repertoire:pieceTitle')} *
+                    </label>
+                    <Input
+                      type="text"
+                      value={customTitle}
+                      onChange={e => setCustomTitle(e.target.value)}
+                      placeholder={t('repertoire:pieceTitlePlaceholder')}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {t('repertoire:composer')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={customComposer}
+                      onChange={e => setCustomComposer(e.target.value)}
+                      placeholder={t('repertoire:composerPlaceholder')}
+                      className="w-full"
+                    />
                   </div>
                 </Card>
-              ))}
+              )}
+
+              {/* Existing items list */}
+              <div className="max-h-48 overflow-y-auto space-y-2">
+                {availableItems.map(item => (
+                  <Card
+                    key={item.id}
+                    variant={
+                      selectedItem?.id === item.id ? 'bordered' : 'ghost'
+                    }
+                    className={`p-3 cursor-pointer transition-colors ${
+                      selectedItem?.id === item.id
+                        ? 'border-sage-500 bg-sage-50'
+                        : 'hover:bg-stone-50'
+                    }`}
+                    onClick={() => {
+                      setSelectedItem({ id: item.id, type: item.type })
+                      setShowCustomEntry(false)
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-stone-800">
+                            {item.title}
+                          </h4>
+                          {item.type === 'logbook' && (
+                            <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                              <Clock className="w-3 h-3" />
+                              {t('repertoire:fromLogbook')}
+                            </span>
+                          )}
+                        </div>
+                        {item.composer && (
+                          <p className="text-sm text-stone-600">
+                            {item.composer}
+                          </p>
+                        )}
+                        {item.type === 'logbook' && item.practiceCount && (
+                          <p className="text-xs text-stone-500 mt-1">
+                            {t('repertoire:practicedTimes', {
+                              count: item.practiceCount,
+                            })}
+                          </p>
+                        )}
+                      </div>
+                      {item.difficulty && (
+                        <span className="text-sm text-stone-500">
+                          {t(`common:difficulty.${item.difficulty}`)}
+                        </span>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -292,7 +377,11 @@ export function AddToRepertoireModal({
           <Button
             variant="primary"
             onClick={handleAdd}
-            disabled={!selectedItem || isLoading}
+            disabled={
+              (!selectedItem && !showCustomEntry) ||
+              isLoading ||
+              (showCustomEntry && !customTitle.trim())
+            }
           >
             {isLoading ? (
               <Loading />

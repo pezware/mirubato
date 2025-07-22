@@ -101,7 +101,7 @@ export default function ScorebookPage() {
       <div className="flex-1 flex flex-col">
         {/* Score Info Bar */}
         {currentScore && (
-          <div className="bg-white border-b border-morandi-stone-200 px-4 py-3">
+          <div className="bg-white border-b border-morandi-stone-200 px-3 sm:px-4 py-2 sm:py-3">
             <div className="container mx-auto max-w-6xl flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <h2 className="text-lg font-medium text-morandi-stone-800">
@@ -132,8 +132,8 @@ export default function ScorebookPage() {
 
         {/* Error State */}
         {error && (
-          <div className="flex-1 flex items-center justify-center p-8">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 max-w-md">
               <h3 className="text-red-800 font-medium mb-2">
                 {t('scorebook:error', 'Error loading score')}
               </h3>

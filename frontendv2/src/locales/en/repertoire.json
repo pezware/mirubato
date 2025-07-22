@@ -1,6 +1,7 @@
 {
-  "myRepertoire": "My Repertoire",
+  "myRepertoire": "My Pieces",
   "addToRepertoire": "Add to Repertoire",
+  "addToEntries": "Add to Entries",
   "searchPieces": "Search pieces...",
   "allPieces": "All Pieces",
   "allGoals": "All Goals",
@@ -136,5 +137,12 @@
   "startTrackingPrompt": "Start tracking your progress with this piece",
   "logFirstSession": "Log First Session",
   "practicedToday": "Practiced today",
-  "notPracticedYet": "Not practiced yet"
+  "notPracticedYet": "Not practiced yet",
+  "addCustomPiece": "Add Custom Piece",
+  "addCustomPieceDescription": "Add a piece that's not in the library",
+  "pieceTitle": "Piece Title",
+  "pieceTitlePlaceholder": "e.g. Nocturne in E-flat Major",
+  "composer": "Composer",
+  "composerPlaceholder": "e.g. Chopin",
+  "titleRequired": "Piece title is required"
 }

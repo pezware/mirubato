@@ -71,7 +71,7 @@ const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
   return (
     <>
       <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-morandi-stone-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <Link
