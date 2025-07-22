@@ -59,6 +59,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [manualEntryPiece, setManualEntryPiece] = useState<{
     title: string
     composer: string
+    scoreId?: string
   } | null>(null)
   const [searchQuery] = useState('') // TODO: Add search input
   const [editingPieceNotes, setEditingPieceNotes] =
@@ -322,6 +323,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           setManualEntryPiece({
             title: selectedPiece.scoreTitle,
             composer: selectedPiece.scoreComposer,
+            scoreId: selectedPiece.scoreId,
           })
           setSelectedPiece(null)
           setShowManualEntry(true)

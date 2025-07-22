@@ -20,7 +20,7 @@ interface ManualEntryFormProps {
   onSave: () => void
   entry?: LogbookEntry
   initialDuration?: number
-  initialPieces?: Array<{ title: string; composer?: string }>
+  initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
 }
 
 export default function ManualEntryForm({
@@ -154,6 +154,9 @@ export default function ManualEntryForm({
         metadata: {
           source: 'manual',
         },
+        // If we have a scoreId from initialPieces (from piece detail page), include it
+        ...(initialPieces &&
+          initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
       }
 
       if (entry) {
