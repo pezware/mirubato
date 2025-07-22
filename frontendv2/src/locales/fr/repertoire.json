@@ -136,5 +136,13 @@
   "viewDetails": "[NEEDS TRANSLATION] View Details",
   "viewScore": "Voir la Partition",
   "practicedToday": "[NEEDS TRANSLATION] Practiced today",
-  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet"
+  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet",
+  "addToEntries": "Ajouter aux Entrées",
+  "addCustomPiece": "Ajouter une Pièce Personnalisée",
+  "addCustomPieceDescription": "Ajouter une pièce qui n'est pas dans la bibliothèque",
+  "pieceTitle": "Titre de la Pièce",
+  "pieceTitlePlaceholder": "ex. Nocturne en Mi bémol Majeur",
+  "composer": "Compositeur",
+  "composerPlaceholder": "ex. Chopin",
+  "titleRequired": "Le titre de la pièce est obligatoire"
 }

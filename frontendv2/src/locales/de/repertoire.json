@@ -136,5 +136,13 @@
   "viewDetails": "[NEEDS TRANSLATION] View Details",
   "viewScore": "Noten ansehen",
   "practicedToday": "[NEEDS TRANSLATION] Practiced today",
-  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet"
+  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet",
+  "addToEntries": "Zu Einträgen hinzufügen",
+  "addCustomPiece": "Eigenes Stück hinzufügen",
+  "addCustomPieceDescription": "Ein Stück hinzufügen, das nicht in der Bibliothek ist",
+  "pieceTitle": "Titel des Stücks",
+  "pieceTitlePlaceholder": "z.B. Nocturne in Es-Dur",
+  "composer": "Komponist",
+  "composerPlaceholder": "z.B. Chopin",
+  "titleRequired": "Der Titel des Stücks ist erforderlich"
 }

@@ -136,5 +136,13 @@
   "viewDetails": "[NEEDS TRANSLATION] View Details",
   "viewScore": "查看樂譜",
   "practicedToday": "[NEEDS TRANSLATION] Practiced today",
-  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet"
+  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet",
+  "addToEntries": "加入練習記錄",
+  "addCustomPiece": "新增自訂曲目",
+  "addCustomPieceDescription": "新增不在曲庫中的曲目",
+  "pieceTitle": "曲目名稱",
+  "pieceTitlePlaceholder": "例如：降E大調夜曲",
+  "composer": "作曲家",
+  "composerPlaceholder": "例如：蕭邦",
+  "titleRequired": "曲目名稱為必填"
 }

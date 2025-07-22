@@ -136,5 +136,13 @@
   "viewDetails": "[NEEDS TRANSLATION] View Details",
   "viewScore": "查看乐谱",
   "practicedToday": "[NEEDS TRANSLATION] Practiced today",
-  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet"
+  "notPracticedYet": "[NEEDS TRANSLATION] Not practiced yet",
+  "addToEntries": "加入练习记录",
+  "addCustomPiece": "添加自定义曲目",
+  "addCustomPieceDescription": "添加不在曲库中的曲目",
+  "pieceTitle": "曲目名称",
+  "pieceTitlePlaceholder": "例如：降E大调夜曲",
+  "composer": "作曲家",
+  "composerPlaceholder": "例如：肖邦",
+  "titleRequired": "曲目名称为必填"
 }
