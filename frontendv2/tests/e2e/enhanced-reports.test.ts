@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
-import { waitForTabContent } from './helpers/wait-helpers'
 
 test.describe('Enhanced Reports', () => {
   let logbookPage: LogbookPage
@@ -110,7 +109,7 @@ test.describe('Enhanced Reports', () => {
 
         // Check for practice time display - look for any time-related content
         const hasTimeDisplay = await page
-          .locator('text=/[0-9]+\s*(hours?|hrs?|minutes?|mins?|h|m)|0:00/i')
+          .locator('text=/[0-9]+\\s*(hours?|hrs?|minutes?|mins?|h|m)|0:00/i')
           .first()
           .isVisible()
           .catch(() => false)
