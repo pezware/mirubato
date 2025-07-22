@@ -1,11 +1,10 @@
 {
+  "active": "Activo",
+  "add": "Añadir",
   "actions": {
     "addEntry": "[NEEDS TRANSLATION] Add Entry",
     "timer": "[NEEDS TRANSLATION] Timer"
   },
-  "active": "Activo",
-  "add": "Añadir",
-  "adding": "Añadiendo...",
   "analytics": "Análisis",
   "appName": "mirubato",
   "back": "Atrás",
@@ -48,9 +47,9 @@
   "deselectAll": "Deseleccionar todo",
   "details": "Detalles",
   "difficulty": {
-    "advanced": "Avanzado",
     "beginner": "Principiante",
-    "intermediate": "Intermedio"
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado"
   },
   "disable": "Desactivar",
   "discard": "Descartar",
@@ -76,6 +75,7 @@
   "filter": "Filtrar",
   "finish": "Finalizar",
   "goBack": "Volver",
+  "goal": "[NEEDS TRANSLATION] Goal",
   "help": "Ayuda",
   "hide": "Ocultar",
   "history": "Historial",
@@ -133,29 +133,30 @@
   },
   "name": "Nombre",
   "navigation": {
-    "add": "[NEEDS TRANSLATION] Add",
     "closeMenu": "Cerrar menú",
-    "goals": "[NEEDS TRANSLATION] Goals",
     "home": "Inicio",
     "logbook": "Diario",
     "menu": "Menú",
-    "music": "[NEEDS TRANSLATION] Music",
+    "reports": "Informes",
+    "settings": "Configuración",
     "overview": "[NEEDS TRANSLATION] Overview",
+    "repertoire": "[NEEDS TRANSLATION] Repertoire",
     "pieces": "[NEEDS TRANSLATION] Pieces",
-    "preferences": "[NEEDS TRANSLATION] Preferences",
+    "goals": "[NEEDS TRANSLATION] Goals",
+    "add": "[NEEDS TRANSLATION] Add",
+    "music": "[NEEDS TRANSLATION] Music",
+    "scores": "[NEEDS TRANSLATION] Scores",
+    "toolbox": "[NEEDS TRANSLATION] Toolbox",
     "profile": "[NEEDS TRANSLATION] Profile",
     "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "reports": "Informes",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "settings": "Configuración",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox"
+    "preferences": "[NEEDS TRANSLATION] Preferences"
   },
   "next": "Siguiente",
   "no": "No",
   "noResults": "No se encontraron resultados",
-  "notNow": "Ahora no",
   "notifications": "Notificaciones",
+  "notNow": "Ahora no",
+  "adding": "Añadiendo...",
   "off": "Apagado",
   "ok": "OK",
   "on": "Encendido",
@@ -188,12 +189,6 @@
   "save": "Guardar",
   "saveToLogbook": "Guardar en Registro",
   "search": {
-    "0": "B",
-    "1": "u",
-    "2": "s",
-    "3": "c",
-    "4": "a",
-    "5": "r",
     "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
   },
   "searchScoresAndLogs": "Buscar partituras y registros de práctica...",
@@ -207,18 +202,6 @@
   "sort": "Ordenar",
   "start": "Iniciar",
   "statistics": {
-    "0": "E",
-    "1": "s",
-    "2": "t",
-    "3": "a",
-    "4": "d",
-    "5": "í",
-    "6": "s",
-    "7": "t",
-    "8": "i",
-    "9": "c",
-    "10": "a",
-    "11": "s",
     "streak": "[NEEDS TRANSLATION] Streak"
   },
   "status": "Estado",
@@ -264,15 +247,11 @@
   "username": "Nombre de usuario",
   "version": "Versión",
   "view": {
-    "0": "V",
-    "1": "e",
-    "2": "r",
-    "calendar": "[NEEDS TRANSLATION] Calendar",
     "default": "[NEEDS TRANSLATION] View",
+    "list": "[NEEDS TRANSLATION] List",
     "grid": "[NEEDS TRANSLATION] Grid",
-    "list": "[NEEDS TRANSLATION] List"
+    "calendar": "[NEEDS TRANSLATION] Calendar"
   },
   "warning": "Advertencia",
-  "yes": "Sí",
-  "goal": "[NEEDS TRANSLATION] Goal"
+  "yes": "Sí"
 }

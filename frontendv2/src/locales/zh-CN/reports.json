@@ -3,10 +3,10 @@
   "allPieces": "所有曲目",
   "analytics": {
     "instrumentDistribution": "乐器分布",
+    "typeDistribution": "类型分布",
     "practiceTrend": "练习趋势",
-    "topComposers": "热门作曲家",
     "topPieces": "热门曲目",
-    "typeDistribution": "类型分布"
+    "topComposers": "热门作曲家"
   },
   "applyGroupingToSeeData": "应用分组以表格格式查看数据",
   "average": "平均",
@@ -205,6 +205,7 @@
   "lastWeek": "上周",
   "longestStreak": "最长连续天数",
   "monthOverMonth": "月对比",
+  "recentEntries": "最近记录",
   "monthlyHistory": "月度历史",
   "mostPracticedPieces": "练习最多的曲目",
   "mostPracticedTechniques": "最常练习的技巧",
@@ -224,7 +225,6 @@
   "practiceTimeTrends": "练习时间趋势",
   "practiced": "已练习",
   "practicedTimes": "练习了 {{count}} 次",
-  "recentEntries": "最近记录",
   "recentSessions": "最近练习",
   "repertoireByComposer": "按作曲家分类的曲目",
   "searchComposers": "搜索作曲家...",

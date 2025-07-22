@@ -36,7 +36,8 @@ export function AddToRepertoireModal({
   const [customTitle, setCustomTitle] = useState('')
   const [customComposer, setCustomComposer] = useState('')
 
-  const { addToRepertoire, repertoire } = useRepertoireStore()
+  const { addToRepertoire, repertoire, cacheScoreMetadata } =
+    useRepertoireStore()
   const {
     userLibrary: scores,
     loadUserLibrary,
@@ -169,6 +170,14 @@ export function AddToRepertoireModal({
           customTitle,
           customComposer || null
         )
+
+        // Cache the metadata for the custom piece
+        cacheScoreMetadata(customId, {
+          id: customId,
+          title: customTitle,
+          composer: customComposer || '',
+        })
+
         await addToRepertoire(customId, selectedStatus)
       } else if (selectedItem) {
         // For logbook pieces, we'll use the piece identifier as the scoreId

@@ -3,10 +3,10 @@
   "allPieces": "Toutes les pièces",
   "analytics": {
     "instrumentDistribution": "Répartition par instrument",
+    "typeDistribution": "Répartition par type",
     "practiceTrend": "Tendance de pratique",
-    "topComposers": "Compositeurs principaux",
     "topPieces": "Pièces principales",
-    "typeDistribution": "Répartition par type"
+    "topComposers": "Compositeurs principaux"
   },
   "applyGroupingToSeeData": "Appliquez un regroupement pour voir les données en format tableau",
   "average": "moyenne",
@@ -205,6 +205,7 @@
   "lastWeek": "Semaine dernière",
   "longestStreak": "Plus longue série",
   "monthOverMonth": "Mois après mois",
+  "recentEntries": "Entrées récentes",
   "monthlyHistory": "Historique mensuel",
   "mostPracticedPieces": "Pièces les plus pratiquées",
   "mostPracticedTechniques": "Techniques les plus pratiquées",
@@ -224,7 +225,6 @@
   "practiceTimeTrends": "Tendances du temps de pratique",
   "practiced": "Pratiqué",
   "practicedTimes": "Pratiqué {{count}} fois",
-  "recentEntries": "Entrées récentes",
   "recentSessions": "Sessions récentes",
   "repertoireByComposer": "Répertoire par compositeur",
   "searchComposers": "Rechercher des compositeurs...",

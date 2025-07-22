@@ -3,10 +3,10 @@
   "allPieces": "Alle Stücke",
   "analytics": {
     "instrumentDistribution": "Instrumentenverteilung",
+    "typeDistribution": "Typverteilung",
     "practiceTrend": "Übungstrend",
-    "topComposers": "Top-Komponisten",
     "topPieces": "Top-Stücke",
-    "typeDistribution": "Typverteilung"
+    "topComposers": "Top-Komponisten"
   },
   "applyGroupingToSeeData": "Gruppierung anwenden, um Daten in Tabellenform anzuzeigen",
   "average": "durchschnitt",
@@ -205,6 +205,7 @@
   "lastWeek": "Letzte Woche",
   "longestStreak": "Längste Serie",
   "monthOverMonth": "Monat über Monat",
+  "recentEntries": "Letzte Einträge",
   "monthlyHistory": "Monatshistorie",
   "mostPracticedPieces": "Meistgeübte Stücke",
   "mostPracticedTechniques": "Meistgeübte Techniken",
@@ -224,7 +225,6 @@
   "practiceTimeTrends": "Übungszeit-Trends",
   "practiced": "Geübt",
   "practicedTimes": "{{count}} mal geübt",
-  "recentEntries": "Letzte Einträge",
   "recentSessions": "Aktuelle Sitzungen",
   "repertoireByComposer": "Repertoire nach Komponist",
   "searchComposers": "Komponisten suchen...",

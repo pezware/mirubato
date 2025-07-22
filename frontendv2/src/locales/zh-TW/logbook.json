@@ -1,94 +1,94 @@
 {
-  "autoTracked": "從樂譜練習自動追蹤",
-  "autocomplete": {
-    "offline": "離線模式 - 顯示您的歷史記錄"
-  },
+  "title": "練習日誌",
+  "openLogbook": "開啟練習日誌",
   "continueToLogbook": "繼續至練習日誌",
+  "loading": "正在載入您的練習記錄...",
   "empty": "尚無練習記錄。開始記錄您的音樂旅程吧！",
+  "noResults": "沒有符合搜尋條件的記錄。",
+  "searchPlaceholder": "搜尋記錄...",
+  "syncStatus": {
+    "synced": "已同步",
+    "localOnly": "本地儲存"
+  },
   "entry": {
     "addEntry": "新增記錄",
     "addFirstEntry": "新增您的第一筆記錄",
-    "addPiece": "新增曲目",
-    "composer": "作曲家",
-    "confirmDelete": "您確定要刪除這筆記錄嗎？",
+    "saveEntry": "儲存記錄",
+    "updateEntry": "更新記錄",
     "deleteEntry": "刪除記錄",
+    "editEntry": "編輯記錄",
     "duration": "時長（分鐘）",
     "durationPlaceholder": "30",
-    "editEntry": "編輯記錄",
-    "entry_one": "{{count}} 筆記錄",
-    "entry_other": "{{count}} 筆記錄",
-    "foundEntries": "找到 {{count}} 筆記錄",
-    "maxPiecesReached": "每筆記錄最多3個曲目",
-    "mood": "練習感受如何？",
-    "notes": "筆記",
-    "notesPlaceholder": "您練習了什麼？有什麼觀察？",
-    "pieceTitle": "曲目名稱",
-    "pieces": "曲目",
-    "piecesNote": "練習時間將平均分配給各曲目",
-    "practiceDate": "練習日期",
-    "saveEntry": "儲存記錄",
-    "successAdded": "練習記錄新增成功！",
-    "successUpdated": "練習記錄更新成功！",
-    "techniqueOptions": {
-      "addCustom": "新增自訂技巧",
-      "arpeggio": "琴音",
-      "custom": "自訂",
-      "customPlaceholder": "輸入自訂技巧名稱",
-      "octave": "八度",
-      "rhythm": "節奏",
-      "scale": "音階",
-      "selectTechniques": "選擇練習的技巧"
-    },
-    "techniques": "技巧",
     "type": "類型",
     "typeOptions": {
+      "practice": "練習",
       "lesson": "課程",
       "performance": "演出",
-      "practice": "練習",
       "rehearsal": "排練",
       "technique": "技巧"
     },
-    "updateEntry": "更新記錄"
+    "pieces": "曲目",
+    "notes": "筆記",
+    "notesPlaceholder": "您練習了什麼？有什麼觀察？",
+    "addPiece": "新增曲目",
+    "pieceTitle": "曲目名稱",
+    "composer": "作曲家",
+    "entry_one": "{{count}} 筆記錄",
+    "entry_other": "{{count}} 筆記錄",
+    "mood": "練習感受如何？",
+    "confirmDelete": "您確定要刪除這筆記錄嗎？",
+    "foundEntries": "找到 {{count}} 筆記錄",
+    "techniques": "技巧",
+    "techniqueOptions": {
+      "scale": "音階",
+      "arpeggio": "琴音",
+      "octave": "八度",
+      "rhythm": "節奏",
+      "custom": "自訂",
+      "selectTechniques": "選擇練習的技巧",
+      "addCustom": "新增自訂技巧",
+      "customPlaceholder": "輸入自訂技巧名稱"
+    },
+    "practiceDate": "練習日期",
+    "successAdded": "練習記錄新增成功！",
+    "successUpdated": "練習記錄更新成功！",
+    "piecesNote": "練習時間將平均分配給各曲目",
+    "maxPiecesReached": "每筆記錄最多3個曲目"
   },
   "filters": {
-    "allTime": "全部時間",
-    "last30Days": "最近 30 天",
     "last7Days": "最近 7 天",
+    "last30Days": "最近 30 天",
+    "thisMonth": "本月",
     "lastMonth": "上個月",
-    "thisMonth": "本月"
-  },
-  "linkedScore": "關聯的樂譜",
-  "loading": "正在載入您的練習記錄...",
-  "mood": {
-    "excited": "興奮",
-    "frustrated": "沮喪",
-    "neutral": "一般",
-    "satisfied": "滿意"
-  },
-  "noResults": "沒有符合搜尋條件的記錄。",
-  "openLogbook": "開啟練習日誌",
-  "searchPlaceholder": "搜尋記錄...",
-  "syncStatus": {
-    "localOnly": "本地儲存",
-    "synced": "已同步"
+    "allTime": "全部時間"
   },
   "timeline": {
-    "month": "{{month}}",
     "week": "第 {{number}} 週",
+    "month": "{{month}}",
     "year": "{{year}}"
   },
-  "timer": {
-    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
-    "pause": "[NEEDS TRANSLATION] Pause",
-    "reset": "[NEEDS TRANSLATION] Reset",
-    "resume": "[NEEDS TRANSLATION] Resume",
-    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
-    "start": "[NEEDS TRANSLATION] Start Timer",
-    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
-    "stop": "[NEEDS TRANSLATION] Stop & Log",
-    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration",
-    "title": "[NEEDS TRANSLATION] Practice Timer"
+  "mood": {
+    "frustrated": "沮喪",
+    "neutral": "一般",
+    "satisfied": "滿意",
+    "excited": "興奮"
   },
-  "title": "練習日誌",
-  "viewScore": "查看樂譜"
+  "autocomplete": {
+    "offline": "離線模式 - 顯示您的歷史記錄"
+  },
+  "viewScore": "查看樂譜",
+  "linkedScore": "關聯的樂譜",
+  "autoTracked": "從樂譜練習自動追蹤",
+  "timer": {
+    "title": "[NEEDS TRANSLATION] Practice Timer",
+    "start": "[NEEDS TRANSLATION] Start Timer",
+    "pause": "[NEEDS TRANSLATION] Pause",
+    "resume": "[NEEDS TRANSLATION] Resume",
+    "stop": "[NEEDS TRANSLATION] Stop & Log",
+    "reset": "[NEEDS TRANSLATION] Reset",
+    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
+    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
+    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
+    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+  }
 }

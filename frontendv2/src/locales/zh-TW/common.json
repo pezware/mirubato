@@ -1,11 +1,10 @@
 {
+  "active": "活躍",
+  "add": "新增",
   "actions": {
     "addEntry": "[NEEDS TRANSLATION] Add Entry",
     "timer": "[NEEDS TRANSLATION] Timer"
   },
-  "active": "活躍",
-  "add": "新增",
-  "adding": "新增中...",
   "analytics": "分析",
   "appName": "mirubato",
   "back": "返回",
@@ -48,9 +47,9 @@
   "deselectAll": "取消全選",
   "details": "詳情",
   "difficulty": {
-    "advanced": "高級",
     "beginner": "初級",
-    "intermediate": "中級"
+    "intermediate": "中級",
+    "advanced": "高級"
   },
   "disable": "停用",
   "discard": "捨棄",
@@ -76,6 +75,7 @@
   "filter": "篩選",
   "finish": "完成",
   "goBack": "返回",
+  "goal": "[NEEDS TRANSLATION] Goal",
   "help": "幫助",
   "hide": "隱藏",
   "history": "歷史",
@@ -133,29 +133,30 @@
   },
   "name": "名稱",
   "navigation": {
-    "add": "[NEEDS TRANSLATION] Add",
     "closeMenu": "關閉選單",
-    "goals": "[NEEDS TRANSLATION] Goals",
     "home": "首頁",
     "logbook": "練習日誌",
     "menu": "選單",
-    "music": "[NEEDS TRANSLATION] Music",
+    "reports": "報表",
+    "settings": "設定",
     "overview": "[NEEDS TRANSLATION] Overview",
+    "repertoire": "[NEEDS TRANSLATION] Repertoire",
     "pieces": "[NEEDS TRANSLATION] Pieces",
-    "preferences": "[NEEDS TRANSLATION] Preferences",
+    "goals": "[NEEDS TRANSLATION] Goals",
+    "add": "[NEEDS TRANSLATION] Add",
+    "music": "[NEEDS TRANSLATION] Music",
+    "scores": "[NEEDS TRANSLATION] Scores",
+    "toolbox": "[NEEDS TRANSLATION] Toolbox",
     "profile": "[NEEDS TRANSLATION] Profile",
     "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "reports": "報表",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "settings": "設定",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox"
+    "preferences": "[NEEDS TRANSLATION] Preferences"
   },
   "next": "下一頁",
   "no": "否",
   "noResults": "沒有找到結果",
-  "notNow": "稍後",
   "notifications": "通知",
+  "notNow": "稍後",
+  "adding": "新增中...",
   "off": "關閉",
   "ok": "確定",
   "on": "開啟",
@@ -188,8 +189,6 @@
   "save": "儲存",
   "saveToLogbook": "儲存至練習記錄",
   "search": {
-    "0": "搜",
-    "1": "尋",
     "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
   },
   "searchScoresAndLogs": "搜尋樂譜和練習日誌...",
@@ -203,8 +202,6 @@
   "sort": "排序",
   "start": "開始",
   "statistics": {
-    "0": "統",
-    "1": "計",
     "streak": "[NEEDS TRANSLATION] Streak"
   },
   "status": "狀態",
@@ -250,14 +247,11 @@
   "username": "使用者名稱",
   "version": "版本",
   "view": {
-    "0": "檢",
-    "1": "視",
-    "calendar": "[NEEDS TRANSLATION] Calendar",
     "default": "[NEEDS TRANSLATION] View",
+    "list": "[NEEDS TRANSLATION] List",
     "grid": "[NEEDS TRANSLATION] Grid",
-    "list": "[NEEDS TRANSLATION] List"
+    "calendar": "[NEEDS TRANSLATION] Calendar"
   },
   "warning": "警告",
-  "yes": "是",
-  "goal": "[NEEDS TRANSLATION] Goal"
+  "yes": "是"
 }

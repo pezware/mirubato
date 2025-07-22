@@ -1,11 +1,10 @@
 {
+  "active": "活跃",
+  "add": "添加",
   "actions": {
     "addEntry": "[NEEDS TRANSLATION] Add Entry",
     "timer": "[NEEDS TRANSLATION] Timer"
   },
-  "active": "活跃",
-  "add": "添加",
-  "adding": "添加中...",
   "analytics": "分析",
   "appName": "mirubato",
   "back": "返回",
@@ -48,9 +47,9 @@
   "deselectAll": "取消全选",
   "details": "详情",
   "difficulty": {
-    "advanced": "高级",
     "beginner": "初级",
-    "intermediate": "中级"
+    "intermediate": "中级",
+    "advanced": "高级"
   },
   "disable": "禁用",
   "discard": "放弃",
@@ -76,6 +75,7 @@
   "filter": "筛选",
   "finish": "完成",
   "goBack": "返回",
+  "goal": "[NEEDS TRANSLATION] Goal",
   "help": "帮助",
   "hide": "隐藏",
   "history": "历史",
@@ -133,29 +133,30 @@
   },
   "name": "名称",
   "navigation": {
-    "add": "[NEEDS TRANSLATION] Add",
     "closeMenu": "关闭菜单",
-    "goals": "[NEEDS TRANSLATION] Goals",
     "home": "首页",
     "logbook": "练习日志",
     "menu": "菜单",
-    "music": "[NEEDS TRANSLATION] Music",
+    "reports": "报告",
+    "settings": "设置",
     "overview": "[NEEDS TRANSLATION] Overview",
+    "repertoire": "[NEEDS TRANSLATION] Repertoire",
     "pieces": "[NEEDS TRANSLATION] Pieces",
-    "preferences": "[NEEDS TRANSLATION] Preferences",
+    "goals": "[NEEDS TRANSLATION] Goals",
+    "add": "[NEEDS TRANSLATION] Add",
+    "music": "[NEEDS TRANSLATION] Music",
+    "scores": "[NEEDS TRANSLATION] Scores",
+    "toolbox": "[NEEDS TRANSLATION] Toolbox",
     "profile": "[NEEDS TRANSLATION] Profile",
     "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "reports": "报告",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "settings": "设置",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox"
+    "preferences": "[NEEDS TRANSLATION] Preferences"
   },
   "next": "下一个",
   "no": "否",
   "noResults": "没有找到结果",
-  "notNow": "稍后",
   "notifications": "通知",
+  "notNow": "稍后",
+  "adding": "添加中...",
   "off": "关",
   "ok": "确定",
   "on": "开",
@@ -188,8 +189,6 @@
   "save": "保存",
   "saveToLogbook": "保存至练习记录",
   "search": {
-    "0": "搜",
-    "1": "索",
     "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
   },
   "searchScoresAndLogs": "搜索乐谱和练习日志...",
@@ -203,8 +202,6 @@
   "sort": "排序",
   "start": "开始",
   "statistics": {
-    "0": "统",
-    "1": "计",
     "streak": "[NEEDS TRANSLATION] Streak"
   },
   "status": "状态",
@@ -250,14 +247,11 @@
   "username": "用户名",
   "version": "版本",
   "view": {
-    "0": "查",
-    "1": "看",
-    "calendar": "[NEEDS TRANSLATION] Calendar",
     "default": "[NEEDS TRANSLATION] View",
+    "list": "[NEEDS TRANSLATION] List",
     "grid": "[NEEDS TRANSLATION] Grid",
-    "list": "[NEEDS TRANSLATION] List"
+    "calendar": "[NEEDS TRANSLATION] Calendar"
   },
   "warning": "警告",
-  "yes": "是",
-  "goal": "[NEEDS TRANSLATION] Goal"
+  "yes": "是"
 }

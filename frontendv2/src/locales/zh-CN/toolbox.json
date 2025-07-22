@@ -1,260 +1,260 @@
 {
-  "backToLogbook": "返回日志",
-  "circleOfFifths": {
-    "controls": {
-      "audio": "音频",
-      "disableAudio": "禁用音频",
-      "enableAudio": "启用音频",
-      "off": "关",
-      "on": "开",
-      "play": "播放",
-      "playbackMode": "播放模式",
-      "stop": "停止",
-      "tempo": "速度",
-      "volume": "音量"
-    },
-    "keyDetails": {
-      "characteristics": "特征",
-      "commonProgressions": "常见进行",
-      "dominant": "属调 (V)",
-      "enharmonic": "等音",
-      "famousWorks": "著名作品",
-      "flat": "降",
-      "keyRelationships": "调性关系",
-      "keySignature": "{{count}}个{{type}}号",
-      "noSharpsOrFlats": "无升降号",
-      "primaryChords": "主要和弦 (I, IV, V)",
-      "relativeMinor": "关系小调",
-      "scaleNotes": "音阶音符",
-      "sharp": "升",
-      "subdominant": "下属调 (IV)"
-    }
-  },
-  "counter": {
-    "button": {
-      "finish": "完成",
-      "save_to_log": "保存到日志",
-      "start": "开始",
-      "start_new": "重新开始"
-    },
-    "log_summary": "使用计数器练习：{{time}}内完成{{reps}}次重复",
-    "mode": {
-      "down": "递减计数",
-      "up": "递增计数"
-    },
-    "practice_title": "重复练习",
-    "save_failed": "保存练习记录失败",
-    "saved_to_log": "练习记录已保存到日志",
-    "start_at": {
-      "placeholder": "起始值"
-    },
-    "summary": {
-      "duration_column": "时长",
-      "rep_column": "次数",
-      "title": "练习总结",
-      "total_reps": "总重复次数",
-      "total_time": "总时间"
-    },
-    "title": "练习计数器"
-  },
-  "dictionary": {
-    "aiGenerated": "AI生成",
-    "aiGeneratedTooltip": "此定义由AI生成",
-    "aiGenerating": "AI正在为此术语生成定义...",
-    "aiServiceUnavailable": "AI服务暂时无法使用。请稍后再试。",
-    "aiWillGenerate": "AI正在为此术语生成定义。请稍后再试。",
-    "album": "专辑",
-    "amazonBooks": "亚马逊图书",
-    "availableInLanguages": "也可使用以下语言：",
-    "backToDictionary": "返回字典",
-    "backToResults": "返回结果",
-    "browseByCategory": "按分类浏览",
-    "byAuthor": "作者：{{author}}",
-    "byChannel": "来自{{channel}}",
-    "cancel": "取消",
-    "categoryBrowseNote": "点击分类以探索相关术语",
-    "categoryDescriptions": {
-      "articulation": "音符表现",
-      "composer": "音乐创作者",
-      "dynamics": "音量和强度",
-      "form": "音乐结构",
-      "general": "其他术语",
-      "genre": "音乐风格",
-      "instrument": "乐器",
-      "notation": "书写符号",
-      "period": "历史时期",
-      "technique": "演奏方法",
-      "tempo": "速度标记",
-      "theory": "音乐概念"
-    },
-    "compareLanguages": "比较语言",
-    "confirmExternalLink": "这将在新标签页中打开{{domain}}。继续吗？",
-    "currentLanguage": "当前语言：{{lang}}",
-    "definitionGenerating": "正在生成定义...",
-    "definitionPending": "正在生成定义...",
-    "description": "学习音乐术语、作曲家和概念",
-    "didYouMean": "您是指以下其中一个吗？",
-    "difficulty": {
-      "advanced": "高级",
-      "beginner": "初学者",
-      "intermediate": "中级",
-      "professional": "专业"
-    },
-    "discoverMore": "发现更多术语：",
-    "educationalVideos": "教学视频",
-    "errors": {
-      "emptySearch": "请输入搜索词",
-      "invalidTerm": "请输入有效的音乐相关术语",
-      "loadFailed": "加载术语失败。请重试。",
-      "rateLimitExceeded": "请求过多。请稍后再试。",
-      "searchFailed": "搜索失败。请重试。",
-      "tryAgainIn": "请在{{time}}后重试。"
-    },
-    "estimatedTime": "预计完成时间：{{time}}",
-    "etymology": "词源",
-    "example": "示例",
-    "explore": "探索",
-    "externalLinkNote": "外部链接将在新标签页中打开。Mirubato不对外部内容负责。",
-    "fetchingInLanguage": "正在获取{{lang}}版本...",
-    "hasReferences": "有参考资料",
-    "hear": "试听",
-    "helpful": "有帮助",
-    "imslp": "IMSLP乐谱",
-    "languageNotAvailable": "{{lang}}版本不可用",
-    "languageVersions": "语言版本",
-    "learnMore": "了解更多",
-    "linkUnavailable": "链接不可用",
-    "listenToAlbum": "收听{{name}}",
-    "listenToArtist": "在Spotify上收听{{name}}",
-    "listenToPlaylist": "收听{{name}}播放列表",
-    "listenToTrack": "收听{{name}}",
-    "loading": "加载中...",
-    "musicBrainz": "MusicBrainz",
-    "noReferencesYet": "暂无可用的参考资料。",
-    "noResults": "没有找到\"{{query}}\"的结果",
-    "notHelpful": "没有帮助",
-    "opensInNewTab": "在新标签页中打开{{domain}}",
-    "originalLanguage": "原始语言为{{lang}}",
-    "otherResources": "其他资源",
-    "playPronunciation": "播放发音",
-    "playlist": "播放列表",
-    "popularTerms": "热门术语",
-    "popularTermsNote": "社区经常搜索的音乐术语",
-    "pronunciation": "发音",
-    "qualityScore": "质量",
-    "readMore": "阅读更多",
-    "readOnWikipedia": "在维基百科上阅读{{term}}",
-    "recentSearches": "最近搜索",
-    "referencesComingSoon": "\"{{term}}\"的参考资料正在收集中，很快就会提供。",
-    "relatedTerms": "相关术语",
-    "reportIssue": "报告问题",
-    "reportPlaceholder": "描述这个定义的问题...",
-    "search": "搜索",
-    "searchAllLanguages": "搜索所有语言",
-    "searchButton": "搜索",
-    "searchLabel": "搜索音乐术语",
-    "searchPlaceholder": "搜索音乐术语...",
-    "searchedAllLanguages": "已搜索所有可用语言",
-    "showInLanguage": "以{{lang}}显示",
-    "showingRecentSearches": "显示最近{{count}}次搜索",
-    "showingResults": "显示{{total}}个结果中的{{start}}-{{end}}个",
-    "spotify": "Spotify",
-    "startSearching": "开始搜索以发现音乐术语！",
-    "submitReport": "提交报告",
-    "suggestions": "建议",
-    "termInLanguage": "此术语使用{{lang}}",
-    "termNotFound": "字典中找不到「{{term}}」",
-    "thanksFeedback": "感谢您的反馈！",
-    "title": "音乐词典",
-    "track": "曲目",
-    "types": {
-      "articulation": "表现法",
-      "composer": "作曲家",
-      "dynamics": "力度",
-      "form": "曲式",
-      "general": "一般",
-      "genre": "流派",
-      "instrument": "乐器",
-      "notation": "记谱法",
-      "period": "时期",
-      "technique": "技巧",
-      "tempo": "速度",
-      "theory": "理论"
-    },
-    "viewBook": "查看图书{{number}}",
-    "viewOnIMSLP": "在IMSLP上查看乐谱",
-    "viewOnMusicBrainz": "在MusicBrainz上查看",
-    "viewResource": "查看资源{{number}}",
-    "wasHelpful": "这有帮助吗？",
-    "watchVideo": "观看视频{{number}}",
-    "wikipedia": "维基百科",
-    "youtubeVideos": "YouTube视频"
-  },
+  "title": "工具箱",
   "metronome": {
-    "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",
-    "patterns": {
-      "backbeat": {
-        "description": "第2、4拍重音",
-        "name": "Backbeat (2 & 4)"
-      },
-      "basic": {
-        "description": "标准4/4拍，第1拍重音",
-        "name": "Basic Beat"
-      },
-      "bossa": {
-        "description": "巴西节奏模式",
-        "name": "Bossa Nova"
-      },
-      "clave32": {
-        "description": "拉丁克拉维模式",
-        "name": "3-2 Clave"
-      },
-      "offbeat": {
-        "description": "仅在反拍点击",
-        "name": "Off-beat Practice"
-      },
-      "progressive": {
-        "description": "移动重音模式",
-        "name": "Progressive Accent"
-      },
-      "shuffle": {
-        "description": "三连音感觉，中间音符静音",
-        "name": "Shuffle/Swing"
-      },
-      "sixeight": {
-        "description": "两个附点四分音符感觉",
-        "name": "6/8 Time"
-      },
-      "subdivisions": {
-        "description": "八分音符和十六分音符练习",
-        "name": "Subdivisions"
-      },
-      "waltz": {
-        "description": "强-弱-弱模式",
-        "name": "Waltz (3/4)"
-      }
-    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "拍号",
+    "volume": "音量",
     "presetPatterns": "预设模式",
+    "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",
     "sounds": {
       "accent": "重音",
       "click": "点击",
+      "woodblock": "wood block",
       "shaker": "shaker",
-      "triangle": "三角铁",
-      "woodblock": "wood block"
+      "triangle": "三角铁"
     },
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "拍号",
-    "volume": "音量"
+    "patterns": {
+      "basic": {
+        "name": "Basic Beat",
+        "description": "标准4/4拍，第1拍重音"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "第2、4拍重音"
+      },
+      "waltz": {
+        "name": "Waltz (3/4)",
+        "description": "强-弱-弱模式"
+      },
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "拉丁克拉维模式"
+      },
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "三连音感觉，中间音符静音"
+      },
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "两个附点四分音符感觉"
+      },
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "巴西节奏模式"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "八分音符和十六分音符练习"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "仅在反拍点击"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "移动重音模式"
+      }
+    }
   },
-  "syncStatus": {
-    "localOnly": "本地存储",
-    "synced": "已同步"
+  "counter": {
+    "title": "练习计数器",
+    "mode": {
+      "up": "递增计数",
+      "down": "递减计数"
+    },
+    "start_at": {
+      "placeholder": "起始值"
+    },
+    "button": {
+      "start": "开始",
+      "finish": "完成",
+      "save_to_log": "保存到日志",
+      "start_new": "重新开始"
+    },
+    "summary": {
+      "title": "练习总结",
+      "total_reps": "总重复次数",
+      "total_time": "总时间",
+      "rep_column": "次数",
+      "duration_column": "时长"
+    },
+    "log_summary": "使用计数器练习：{{time}}内完成{{reps}}次重复",
+    "practice_title": "重复练习",
+    "saved_to_log": "练习记录已保存到日志",
+    "save_failed": "保存练习记录失败"
   },
   "tabs": {
-    "circleOfFifths": "Circle of Fifths",
+    "metronome": "节拍器",
     "counter": "练习计数器",
-    "dictionary": "音乐词典",
-    "metronome": "节拍器"
+    "circleOfFifths": "Circle of Fifths",
+    "dictionary": "音乐词典"
   },
-  "title": "工具箱"
+  "syncStatus": {
+    "synced": "已同步",
+    "localOnly": "本地存储"
+  },
+  "backToLogbook": "返回日志",
+  "dictionary": {
+    "title": "音乐词典",
+    "description": "学习音乐术语、作曲家和概念",
+    "search": "搜索",
+    "searchLabel": "搜索音乐术语",
+    "searchButton": "搜索",
+    "searchPlaceholder": "搜索音乐术语...",
+    "suggestions": "建议",
+    "loading": "加载中...",
+    "noResults": "没有找到\"{{query}}\"的结果",
+    "backToResults": "返回结果",
+    "backToDictionary": "返回字典",
+    "showingResults": "显示{{total}}个结果中的{{start}}-{{end}}个",
+    "definitionPending": "正在生成定义...",
+    "definitionGenerating": "正在生成定义...",
+    "hasReferences": "有参考资料",
+    "pronunciation": "发音",
+    "etymology": "词源",
+    "readMore": "阅读更多",
+    "example": "示例",
+    "difficulty": {
+      "beginner": "初学者",
+      "intermediate": "中级",
+      "advanced": "高级",
+      "professional": "专业"
+    },
+    "types": {
+      "tempo": "速度",
+      "dynamics": "力度",
+      "articulation": "表现法",
+      "form": "曲式",
+      "genre": "流派",
+      "instrument": "乐器",
+      "technique": "技巧",
+      "theory": "理论",
+      "composer": "作曲家",
+      "period": "时期",
+      "notation": "记谱法",
+      "general": "一般"
+    },
+    "learnMore": "了解更多",
+    "wikipedia": "维基百科",
+    "readOnWikipedia": "在维基百科上阅读{{term}}",
+    "youtubeVideos": "YouTube视频",
+    "educationalVideos": "教学视频",
+    "watchVideo": "观看视频{{number}}",
+    "byChannel": "来自{{channel}}",
+    "spotify": "Spotify",
+    "listenToArtist": "在Spotify上收听{{name}}",
+    "listenToAlbum": "收听{{name}}",
+    "listenToTrack": "收听{{name}}",
+    "listenToPlaylist": "收听{{name}}播放列表",
+    "album": "专辑",
+    "track": "曲目",
+    "playlist": "播放列表",
+    "amazonBooks": "亚马逊图书",
+    "viewBook": "查看图书{{number}}",
+    "byAuthor": "作者：{{author}}",
+    "musicBrainz": "MusicBrainz",
+    "viewOnMusicBrainz": "在MusicBrainz上查看",
+    "imslp": "IMSLP乐谱",
+    "viewOnIMSLP": "在IMSLP上查看乐谱",
+    "otherResources": "其他资源",
+    "viewResource": "查看资源{{number}}",
+    "externalLinkNote": "外部链接将在新标签页中打开。Mirubato不对外部内容负责。",
+    "linkUnavailable": "链接不可用",
+    "confirmExternalLink": "这将在新标签页中打开{{domain}}。继续吗？",
+    "opensInNewTab": "在新标签页中打开{{domain}}",
+    "qualityScore": "质量",
+    "hear": "试听",
+    "playPronunciation": "播放发音",
+    "relatedTerms": "相关术语",
+    "wasHelpful": "这有帮助吗？",
+    "helpful": "有帮助",
+    "notHelpful": "没有帮助",
+    "reportIssue": "报告问题",
+    "reportPlaceholder": "描述这个定义的问题...",
+    "submitReport": "提交报告",
+    "cancel": "取消",
+    "thanksFeedback": "感谢您的反馈！",
+    "noReferencesYet": "暂无可用的参考资料。",
+    "referencesComingSoon": "\"{{term}}\"的参考资料正在收集中，很快就会提供。",
+    "explore": "探索",
+    "startSearching": "开始搜索以发现音乐术语！",
+    "recentSearches": "最近搜索",
+    "showingRecentSearches": "显示最近{{count}}次搜索",
+    "popularTerms": "热门术语",
+    "popularTermsNote": "社区经常搜索的音乐术语",
+    "discoverMore": "发现更多术语：",
+    "browseByCategory": "按分类浏览",
+    "categoryBrowseNote": "点击分类以探索相关术语",
+    "categoryDescriptions": {
+      "tempo": "速度标记",
+      "dynamics": "音量和强度",
+      "articulation": "音符表现",
+      "form": "音乐结构",
+      "genre": "音乐风格",
+      "instrument": "乐器",
+      "technique": "演奏方法",
+      "theory": "音乐概念",
+      "composer": "音乐创作者",
+      "period": "历史时期",
+      "notation": "书写符号",
+      "general": "其他术语"
+    },
+    "errors": {
+      "invalidTerm": "请输入有效的音乐相关术语",
+      "emptySearch": "请输入搜索词",
+      "searchFailed": "搜索失败。请重试。",
+      "loadFailed": "加载术语失败。请重试。",
+      "rateLimitExceeded": "请求过多。请稍后再试。",
+      "tryAgainIn": "请在{{time}}后重试。"
+    },
+    "searchAllLanguages": "搜索所有语言",
+    "currentLanguage": "当前语言：{{lang}}",
+    "termInLanguage": "此术语使用{{lang}}",
+    "originalLanguage": "原始语言为{{lang}}",
+    "searchedAllLanguages": "已搜索所有可用语言",
+    "availableInLanguages": "也可使用以下语言：",
+    "compareLanguages": "比较语言",
+    "showInLanguage": "以{{lang}}显示",
+    "languageVersions": "语言版本",
+    "fetchingInLanguage": "正在获取{{lang}}版本...",
+    "languageNotAvailable": "{{lang}}版本不可用",
+    "termNotFound": "字典中找不到「{{term}}」",
+    "aiWillGenerate": "AI正在为此术语生成定义。请稍后再试。",
+    "aiGenerating": "AI正在为此术语生成定义...",
+    "estimatedTime": "预计完成时间：{{time}}",
+    "aiServiceUnavailable": "AI服务暂时无法使用。请稍后再试。",
+    "didYouMean": "您是指以下其中一个吗？",
+    "aiGenerated": "AI生成",
+    "aiGeneratedTooltip": "此定义由AI生成"
+  },
+  "circleOfFifths": {
+    "controls": {
+      "enableAudio": "启用音频",
+      "disableAudio": "禁用音频",
+      "audio": "音频",
+      "on": "开",
+      "off": "关",
+      "volume": "音量",
+      "play": "播放",
+      "stop": "停止",
+      "playbackMode": "播放模式",
+      "tempo": "速度"
+    },
+    "keyDetails": {
+      "noSharpsOrFlats": "无升降号",
+      "sharp": "升",
+      "flat": "降",
+      "keySignature": "{{count}}个{{type}}号",
+      "keyRelationships": "调性关系",
+      "relativeMinor": "关系小调",
+      "dominant": "属调 (V)",
+      "subdominant": "下属调 (IV)",
+      "enharmonic": "等音",
+      "scaleNotes": "音阶音符",
+      "primaryChords": "主要和弦 (I, IV, V)",
+      "commonProgressions": "常见进行",
+      "characteristics": "特征",
+      "famousWorks": "著名作品"
+    }
+  }
 }
