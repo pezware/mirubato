@@ -1,5 +1,4 @@
 import { EnhancedAnalyticsData } from '../../types/reporting'
-import { ChevronRight } from 'lucide-react'
 
 interface PiecesStatisticsProps {
   analytics: EnhancedAnalyticsData
@@ -74,7 +73,6 @@ export function PiecesStatistics({
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-morandi-stone-400" />
               </div>
             </div>
           )
