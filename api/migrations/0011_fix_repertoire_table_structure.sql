@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS user_repertoire_fixed (
   UNIQUE(user_id, score_id)
 );
 
--- Copy data from the current table, converting timestamps back to integers
+-- Copy data from the current table (timestamps are already integers)
 INSERT INTO user_repertoire_fixed (id, user_id, score_id, status, difficulty_rating, personal_notes, reference_links, created_at, updated_at)
 SELECT 
   id, 
@@ -26,8 +26,8 @@ SELECT
   difficulty_rating, 
   personal_notes, 
   reference_links,
-  CAST(strftime('%s', created_at) AS INTEGER),
-  CAST(strftime('%s', updated_at) AS INTEGER)
+  created_at,
+  updated_at
 FROM user_repertoire;
 
 -- Drop the incorrect table
