@@ -80,15 +80,15 @@
   "linkedScore": "Partition liée",
   "autoTracked": "Suivi automatique depuis la pratique de partition",
   "timer": {
-    "title": "[NEEDS TRANSLATION] Practice Timer",
-    "start": "[NEEDS TRANSLATION] Start Timer",
-    "pause": "[NEEDS TRANSLATION] Pause",
-    "resume": "[NEEDS TRANSLATION] Resume",
-    "stop": "[NEEDS TRANSLATION] Stop & Log",
-    "reset": "[NEEDS TRANSLATION] Reset",
-    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
-    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
-    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
-    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+    "title": "Chronomètre de pratique",
+    "start": "Démarrer le chronomètre",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "stop": "Arrêter et enregistrer",
+    "reset": "Réinitialiser",
+    "confirmClose": "Le chronomètre est en cours. Êtes-vous sûr de vouloir fermer ?",
+    "startHint": "Cliquez sur Démarrer pour commencer à chronométrer votre session de pratique",
+    "runningHint": "Le chronomètre est en cours. Cliquez sur Pause pour faire une pause ou Arrêter pour terminer.",
+    "stopHint": "Cliquez sur Arrêter et enregistrer pour créer une entrée de pratique avec cette durée"
   }
 }

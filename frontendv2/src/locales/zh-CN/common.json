@@ -2,8 +2,8 @@
   "active": "活跃",
   "add": "添加",
   "actions": {
-    "addEntry": "[NEEDS TRANSLATION] Add Entry",
-    "timer": "[NEEDS TRANSLATION] Timer"
+    "addEntry": "添加记录",
+    "timer": "计时器"
   },
   "analytics": "分析",
   "appName": "mirubato",
@@ -75,7 +75,7 @@
   "filter": "筛选",
   "finish": "完成",
   "goBack": "返回",
-  "goal": "[NEEDS TRANSLATION] Goal",
+  "goal": "目标",
   "help": "帮助",
   "hide": "隐藏",
   "history": "历史",
@@ -139,17 +139,17 @@
     "menu": "菜单",
     "reports": "报告",
     "settings": "设置",
-    "overview": "[NEEDS TRANSLATION] Overview",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "pieces": "[NEEDS TRANSLATION] Pieces",
-    "goals": "[NEEDS TRANSLATION] Goals",
-    "add": "[NEEDS TRANSLATION] Add",
-    "music": "[NEEDS TRANSLATION] Music",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox",
-    "profile": "[NEEDS TRANSLATION] Profile",
-    "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "preferences": "[NEEDS TRANSLATION] Preferences"
+    "overview": "总览",
+    "repertoire": "曲目库",
+    "pieces": "曲目",
+    "goals": "目标",
+    "add": "添加",
+    "music": "音乐",
+    "scores": "乐谱",
+    "toolbox": "工具箱",
+    "profile": "个人资料",
+    "profileSettings": "个人设置",
+    "preferences": "偏好设置"
   },
   "next": "下一个",
   "no": "否",
@@ -189,7 +189,7 @@
   "save": "保存",
   "saveToLogbook": "保存至练习记录",
   "search": {
-    "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
+    "placeholder": "搜索练习时段..."
   },
   "searchScoresAndLogs": "搜索乐谱和练习日志...",
   "select": "选择",
@@ -202,7 +202,7 @@
   "sort": "排序",
   "start": "开始",
   "statistics": {
-    "streak": "[NEEDS TRANSLATION] Streak"
+    "streak": "连续天数"
   },
   "status": "状态",
   "stop": "停止",
@@ -247,10 +247,10 @@
   "username": "用户名",
   "version": "版本",
   "view": {
-    "default": "[NEEDS TRANSLATION] View",
-    "list": "[NEEDS TRANSLATION] List",
-    "grid": "[NEEDS TRANSLATION] Grid",
-    "calendar": "[NEEDS TRANSLATION] Calendar"
+    "default": "查看",
+    "list": "列表",
+    "grid": "网格",
+    "calendar": "日历"
   },
   "warning": "警告",
   "yes": "是"

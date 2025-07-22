@@ -1,6 +1,6 @@
 # Mirubato Development Roadmap
 
-## Current Status - Version 1.6.0 (July 2025)
+## Current Status - Version 1.7.0 (July 2025)
 
 ### 🔒 Security & Infrastructure Update
 
@@ -14,17 +14,17 @@
 - Dictionary service promoted from v1.0.0 to align with platform versioning
 - Comprehensive dependency updates to latest secure versions
 
-### 🎉 Frontend Polish & Component Library Complete
+### 🎉 Focused UI Design System (PR #261)
 
-✅ **Version 1.3.0 Released**: Comprehensive UI component library and design system
+✅ **Version 1.7.0 Released**: Major UI overhaul with focused design system
 
-- Unified UI component library with 8+ reusable components
-- Design system with consistent spacing, typography, and colors
-- Refactored 43+ components to use new Button component
-- Mobile navigation improvements (preserved from PR #201)
-- Accessibility improvements with @headlessui/react
-- Component documentation and unified styling guide
-- Deleted obsolete LogbookReports.tsx (11KB)
+- **New Layout Architecture**: Desktop sidebar + mobile bottom tabs
+- **Simplified Navigation**: Reduced from 6 to 4 main sections (Logbook, Pieces, Scores, Tools)
+- **Enhanced Components**: AppLayout, Sidebar, TopBar, BottomTabs
+- **Practice Timer**: New timer feature with start/pause/stop functionality
+- **Repertoire Improvements**: Timeline visualization, status updates, practice history
+- **UI Polish**: Morandi color palette, consistent spacing and typography
+- **Component Library**: 8+ reusable components with accessibility
 
 ### 🎉 Scorebook Phase 5.5 Complete - Image Upload Support
 
@@ -102,22 +102,22 @@
 - Created MissingScorePrompt for scores without files
 - All features work offline with local storage
 
-## Immediate Priority: E2E Test Fixes & Localization (1-2 days)
+## ✅ COMPLETE: E2E Test Fixes & Localization
 
 ### Goal: Fix failing smoke tests and complete internationalization
 
 **Test Fixes**
 
-- [ ] Fix logbook search test waiting for composer filter
-- [ ] Update test selectors for new unified search
-- [ ] Ensure all smoke tests pass consistently
+- [✓] Fix logbook search test waiting for composer filter
+- [✓] Update test selectors for new unified search
+- [✓] Ensure all smoke tests pass consistently (297 unit tests, 65+ E2E tests passing)
 
 **Localization**
 
-- [ ] Complete translations for all 6 languages (de, es, fr, zh-CN, zh-TW)
-- [ ] Add new keys: searchScoresAndLogs, viewScore, linkedScore, autoTracked
-- [ ] Add missing score and upload translations
-- [ ] Verify all languages have complete coverage
+- [✓] Complete translations for all 6 languages (de, es, fr, zh-CN, zh-TW)
+- [✓] Add new keys: searchScoresAndLogs, viewScore, linkedScore, autoTracked
+- [✓] Add missing score and upload translations
+- [✓] Verify all languages have complete coverage (200 translations added)
 
 ## Next Phase: Analytics Dashboard (2 weeks)
 

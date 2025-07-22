@@ -80,15 +80,15 @@
   "linkedScore": "關聯的樂譜",
   "autoTracked": "從樂譜練習自動追蹤",
   "timer": {
-    "title": "[NEEDS TRANSLATION] Practice Timer",
-    "start": "[NEEDS TRANSLATION] Start Timer",
-    "pause": "[NEEDS TRANSLATION] Pause",
-    "resume": "[NEEDS TRANSLATION] Resume",
-    "stop": "[NEEDS TRANSLATION] Stop & Log",
-    "reset": "[NEEDS TRANSLATION] Reset",
-    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
-    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
-    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
-    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+    "title": "練習計時器",
+    "start": "開始計時",
+    "pause": "暫停",
+    "resume": "繼續",
+    "stop": "停止並記錄",
+    "reset": "重設",
+    "confirmClose": "計時器正在運行。您確定要關閉嗎？",
+    "startHint": "點擊開始以計時您的練習時段",
+    "runningHint": "計時器正在運行。點擊暫停以休息或停止以結束。",
+    "stopHint": "點擊停止並記錄以建立此時長的練習記錄"
   }
 }

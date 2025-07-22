@@ -80,15 +80,15 @@
   "linkedScore": "Partitura vinculada",
   "autoTracked": "Rastreado automáticamente desde la práctica de partituras",
   "timer": {
-    "title": "[NEEDS TRANSLATION] Practice Timer",
-    "start": "[NEEDS TRANSLATION] Start Timer",
-    "pause": "[NEEDS TRANSLATION] Pause",
-    "resume": "[NEEDS TRANSLATION] Resume",
-    "stop": "[NEEDS TRANSLATION] Stop & Log",
-    "reset": "[NEEDS TRANSLATION] Reset",
-    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
-    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
-    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
-    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+    "title": "Temporizador de Práctica",
+    "start": "Iniciar Temporizador",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "stop": "Detener y Registrar",
+    "reset": "Reiniciar",
+    "confirmClose": "El temporizador está en marcha. ¿Estás seguro de que quieres cerrar?",
+    "startHint": "Haz clic en Iniciar para comenzar a cronometrar tu sesión de práctica",
+    "runningHint": "El temporizador está en marcha. Haz clic en Pausar para tomar un descanso o Detener para finalizar.",
+    "stopHint": "Haz clic en Detener y Registrar para crear una entrada de práctica con esta duración"
   }
 }

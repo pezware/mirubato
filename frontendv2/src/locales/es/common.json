@@ -2,8 +2,8 @@
   "active": "Activo",
   "add": "Añadir",
   "actions": {
-    "addEntry": "[NEEDS TRANSLATION] Add Entry",
-    "timer": "[NEEDS TRANSLATION] Timer"
+    "addEntry": "Añadir Entrada",
+    "timer": "Temporizador"
   },
   "analytics": "Análisis",
   "appName": "mirubato",
@@ -75,7 +75,7 @@
   "filter": "Filtrar",
   "finish": "Finalizar",
   "goBack": "Volver",
-  "goal": "[NEEDS TRANSLATION] Goal",
+  "goal": "Meta",
   "help": "Ayuda",
   "hide": "Ocultar",
   "history": "Historial",
@@ -139,17 +139,17 @@
     "menu": "Menú",
     "reports": "Informes",
     "settings": "Configuración",
-    "overview": "[NEEDS TRANSLATION] Overview",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "pieces": "[NEEDS TRANSLATION] Pieces",
-    "goals": "[NEEDS TRANSLATION] Goals",
-    "add": "[NEEDS TRANSLATION] Add",
-    "music": "[NEEDS TRANSLATION] Music",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox",
-    "profile": "[NEEDS TRANSLATION] Profile",
-    "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "preferences": "[NEEDS TRANSLATION] Preferences"
+    "overview": "Resumen",
+    "repertoire": "Repertorio",
+    "pieces": "Piezas",
+    "goals": "Metas",
+    "add": "Añadir",
+    "music": "Música",
+    "scores": "Partituras",
+    "toolbox": "Herramientas",
+    "profile": "Perfil",
+    "profileSettings": "Configuración del Perfil",
+    "preferences": "Preferencias"
   },
   "next": "Siguiente",
   "no": "No",
@@ -189,7 +189,7 @@
   "save": "Guardar",
   "saveToLogbook": "Guardar en Registro",
   "search": {
-    "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
+    "placeholder": "Buscar sesiones de práctica..."
   },
   "searchScoresAndLogs": "Buscar partituras y registros de práctica...",
   "select": "Seleccionar",
@@ -202,7 +202,7 @@
   "sort": "Ordenar",
   "start": "Iniciar",
   "statistics": {
-    "streak": "[NEEDS TRANSLATION] Streak"
+    "streak": "Racha"
   },
   "status": "Estado",
   "stop": "Detener",
@@ -247,10 +247,10 @@
   "username": "Nombre de usuario",
   "version": "Versión",
   "view": {
-    "default": "[NEEDS TRANSLATION] View",
-    "list": "[NEEDS TRANSLATION] List",
-    "grid": "[NEEDS TRANSLATION] Grid",
-    "calendar": "[NEEDS TRANSLATION] Calendar"
+    "default": "Vista",
+    "list": "Lista",
+    "grid": "Cuadrícula",
+    "calendar": "Calendario"
   },
   "warning": "Advertencia",
   "yes": "Sí"
