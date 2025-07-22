@@ -53,24 +53,43 @@ export class LogbookPage {
 
   // Helper to dismiss any UI prompts that might block interactions
   async dismissPrompts() {
-    // Dismiss repertoire prompt if visible
-    const repertoirePrompt = this.page.locator('text="Add to Your Repertoire?"')
-    if (
-      await repertoirePrompt.isVisible({ timeout: 1000 }).catch(() => false)
-    ) {
-      const dismissButton = this.page.locator('button:has-text("Not Now")')
-      if (await dismissButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await dismissButton.click()
-        await this.page.waitForTimeout(300)
-      } else {
-        // Try clicking the X button
-        const closeButton = this.page
-          .locator('.fixed.bottom-4.right-4 button[aria-label="Close"]')
-          .first()
-        if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
-          await closeButton.click()
+    // Check for multiple variations of the repertoire prompt
+    const repertoirePromptVariations = [
+      'text="Add to Your Pieces?"',
+      'text="Add to Your Repertoire?"',
+      'text="You just practiced"', // Common part of the repertoire prompt
+    ]
+
+    for (const selector of repertoirePromptVariations) {
+      const prompt = this.page.locator(selector)
+      if (await prompt.isVisible({ timeout: 1000 }).catch(() => false)) {
+        // Try to find and click the dismiss button
+        const dismissButtons = [
+          'button:has-text("Not Now")',
+          'button:has-text("Skip")',
+          'button:has-text("Later")',
+          'button[aria-label="Close"]',
+        ]
+
+        let dismissed = false
+        for (const buttonSelector of dismissButtons) {
+          const button = this.page.locator(buttonSelector).first()
+          if (await button.isVisible({ timeout: 500 }).catch(() => false)) {
+            await button.click({ force: true })
+            await this.page.waitForTimeout(300)
+            dismissed = true
+            break
+          }
+        }
+
+        // If no button found, try clicking outside the modal
+        if (!dismissed) {
+          await this.page.mouse.click(10, 10)
           await this.page.waitForTimeout(300)
         }
+
+        // Wait for the prompt to disappear
+        await prompt.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {})
       }
     }
 
@@ -234,6 +253,9 @@ export class LogbookPage {
 
     // Give UI time to stabilize after save
     await this.page.waitForTimeout(500)
+
+    // Immediately check for and dismiss any repertoire prompts
+    await this.dismissPrompts()
   }
 
   async waitForEntries(minCount: number = 1) {

@@ -122,11 +122,7 @@ test.describe('Enhanced Reports', () => {
         await expect(sessionCountElement).toContainText('3')
       })
 
-      await test.step('Verify practice streak info', async () => {
-        await expect(page.getByText('Current Streak').first()).toBeVisible()
-        await expect(page.getByText('Longest Streak').first()).toBeVisible()
-        await expect(page.getByText('Total Days').first()).toBeVisible()
-      })
+      // Practice streak info has been removed from the UI
 
       await test.step('Verify key sections are present', async () => {
         // Verify the heatmap calendar is present by its test id
