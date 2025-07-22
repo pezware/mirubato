@@ -319,59 +319,61 @@ export function AddToRepertoireModal({
                   </Card>
                 )}
 
-                {/* Existing items list */}
-                <div className="max-h-48 overflow-y-auto space-y-2">
-                  {availableItems.map(item => (
-                    <Card
-                      key={item.id}
-                      variant={
-                        selectedItem?.id === item.id ? 'bordered' : 'ghost'
-                      }
-                      className={`p-3 cursor-pointer transition-colors ${
-                        selectedItem?.id === item.id
-                          ? 'border-sage-500 bg-sage-50'
-                          : 'hover:bg-stone-50'
-                      }`}
-                      onClick={() => {
-                        setSelectedItem({ id: item.id, type: item.type })
-                        setShowCustomEntry(false)
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-stone-800">
-                              {item.title}
-                            </h4>
-                            {item.type === 'logbook' && (
-                              <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
-                                <Clock className="w-3 h-3" />
-                                {t('repertoire:fromLogbook')}
-                              </span>
+                {/* Existing items list - hide when custom entry is selected */}
+                {!showCustomEntry && (
+                  <div className="max-h-48 overflow-y-auto space-y-2">
+                    {availableItems.map(item => (
+                      <Card
+                        key={item.id}
+                        variant={
+                          selectedItem?.id === item.id ? 'bordered' : 'ghost'
+                        }
+                        className={`p-3 cursor-pointer transition-colors ${
+                          selectedItem?.id === item.id
+                            ? 'border-sage-500 bg-sage-50'
+                            : 'hover:bg-stone-50'
+                        }`}
+                        onClick={() => {
+                          setSelectedItem({ id: item.id, type: item.type })
+                          setShowCustomEntry(false)
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium text-stone-800">
+                                {item.title}
+                              </h4>
+                              {item.type === 'logbook' && (
+                                <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                                  <Clock className="w-3 h-3" />
+                                  {t('repertoire:fromLogbook')}
+                                </span>
+                              )}
+                            </div>
+                            {item.composer && (
+                              <p className="text-sm text-stone-600">
+                                {item.composer}
+                              </p>
+                            )}
+                            {item.type === 'logbook' && item.practiceCount && (
+                              <p className="text-xs text-stone-500 mt-1">
+                                {t('repertoire:practicedTimes', {
+                                  count: item.practiceCount,
+                                })}
+                              </p>
                             )}
                           </div>
-                          {item.composer && (
-                            <p className="text-sm text-stone-600">
-                              {item.composer}
-                            </p>
-                          )}
-                          {item.type === 'logbook' && item.practiceCount && (
-                            <p className="text-xs text-stone-500 mt-1">
-                              {t('repertoire:practicedTimes', {
-                                count: item.practiceCount,
-                              })}
-                            </p>
+                          {item.difficulty && (
+                            <span className="text-sm text-stone-500">
+                              {t(`common:difficulty.${item.difficulty}`)}
+                            </span>
                           )}
                         </div>
-                        {item.difficulty && (
-                          <span className="text-sm text-stone-500">
-                            {t(`common:difficulty.${item.difficulty}`)}
-                          </span>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

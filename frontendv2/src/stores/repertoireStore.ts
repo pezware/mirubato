@@ -219,7 +219,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast('Added to repertoire', 'success')
+        showToast('Added to pieces', 'success')
       } else {
         // Use API
         const newItem = await repertoireApi.add({
@@ -236,7 +236,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(get().repertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast('Added to repertoire', 'success')
+        showToast('Added to pieces', 'success')
       }
     } catch (error) {
       console.error('Error adding to repertoire:', error)
