@@ -15,6 +15,7 @@ import { RepertoireCalendarView } from './RepertoireCalendarView'
 import { PieceDetailView } from './PieceDetailView'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
+import { EditNotesModal } from './EditNotesModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
 import { Music } from 'lucide-react'
@@ -56,6 +57,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     composer: string
   } | null>(null)
   const [searchQuery] = useState('') // TODO: Add search input
+  const [editingPieceNotes, setEditingPieceNotes] =
+    useState<EnrichedRepertoireItem | null>(null)
 
   const {
     repertoireLoading,
@@ -66,6 +69,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     cacheScoreMetadata,
     getScoreMetadata,
     updateRepertoireStatus,
+    updateRepertoire,
     repertoire,
   } = useRepertoireStore()
 
@@ -330,8 +334,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           setShowManualEntry(true)
         }}
         onEditNotes={() => {
-          // TODO: Implement notes editing
-          console.log('Edit notes for', selectedPiece.scoreTitle)
+          setEditingPieceNotes(selectedPiece)
         }}
         onEditSession={sessionId => {
           setSelectedPiece(null)
@@ -544,6 +547,31 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             loadEntries() // Refresh the entries
           }}
           initialPieces={manualEntryPiece ? [manualEntryPiece] : undefined}
+        />
+      )}
+      {/* Edit Notes Modal */}
+      {editingPieceNotes && (
+        <EditNotesModal
+          isOpen={!!editingPieceNotes}
+          onClose={() => setEditingPieceNotes(null)}
+          pieceTitle={editingPieceNotes.scoreTitle}
+          currentNotes={editingPieceNotes.personalNotes || ''}
+          currentLinks={editingPieceNotes.referenceLinks || []}
+          onSave={async (notes, links) => {
+            await updateRepertoire(editingPieceNotes.scoreId, {
+              personalNotes: notes,
+              referenceLinks: links,
+            })
+            // Update the selected piece if it's the same one
+            if (selectedPiece?.scoreId === editingPieceNotes.scoreId) {
+              setSelectedPiece({
+                ...selectedPiece,
+                personalNotes: notes,
+                referenceLinks: links,
+              })
+            }
+            setEditingPieceNotes(null)
+          }}
         />
       )}
     </div>

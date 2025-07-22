@@ -6,7 +6,7 @@ import { useLogbookStore } from '@/stores/logbookStore'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
-import { Input } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
 import { showToast } from '@/utils/toastManager'
@@ -35,8 +35,9 @@ export function AddToRepertoireModal({
   const [showCustomEntry, setShowCustomEntry] = useState(false)
   const [customTitle, setCustomTitle] = useState('')
   const [customComposer, setCustomComposer] = useState('')
+  const [notes, setNotes] = useState('')
 
-  const { addToRepertoire, repertoire, cacheScoreMetadata } =
+  const { addToRepertoire, repertoire, cacheScoreMetadata, updateRepertoire } =
     useRepertoireStore()
   const {
     userLibrary: scores,
@@ -179,10 +180,20 @@ export function AddToRepertoireModal({
         })
 
         await addToRepertoire(customId, selectedStatus)
+
+        // Add notes if provided
+        if (notes.trim()) {
+          await updateRepertoire(customId, { personalNotes: notes })
+        }
       } else if (selectedItem) {
         // For logbook pieces, we'll use the piece identifier as the scoreId
         // This allows tracking even without a formal score entry
         await addToRepertoire(selectedItem.id, selectedStatus)
+
+        // Add notes if provided
+        if (notes.trim()) {
+          await updateRepertoire(selectedItem.id, { personalNotes: notes })
+        }
       }
       onClose()
 
@@ -190,6 +201,7 @@ export function AddToRepertoireModal({
       setCustomTitle('')
       setCustomComposer('')
       setShowCustomEntry(false)
+      setNotes('')
     } catch (_error) {
       // Error handled in store
     } finally {
@@ -377,6 +389,23 @@ export function AddToRepertoireModal({
               options={statusOptions}
               className="w-full"
             />
+          </div>
+
+          {/* Notes */}
+          <div className="pb-2">
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              {t('repertoire:personalNotes')}
+            </label>
+            <Textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder={t('repertoire:notesPlaceholder')}
+              rows={3}
+              className="w-full"
+            />
+            <p className="mt-1 text-xs text-stone-500">
+              {t('repertoire:notesHelpText')}
+            </p>
           </div>
         </div>
 
