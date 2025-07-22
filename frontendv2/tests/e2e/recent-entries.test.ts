@@ -69,29 +69,42 @@ test.describe('Recent Entries', () => {
         timeout: 5000,
       })
 
-      // Get all entry titles
-      const entryTitles = await page
-        .locator('.bg-white.rounded-lg')
-        .locator('text=/First Entry|Second Entry|Third Entry/')
-        .allTextContents()
+      // Get all entry containers in the Recent Entries section
+      const entryContainers = page.locator(
+        '.bg-white.rounded-lg, [class*="entry"], [class*="card"]'
+      )
+      const entryCount = await entryContainers.count()
 
-      // Recent entries should show newest first
-      expect(entryTitles.length).toBeGreaterThanOrEqual(3)
+      // Collect all entry texts
+      const allEntryTexts: string[] = []
+      for (let i = 0; i < entryCount; i++) {
+        const text = await entryContainers.nth(i).textContent()
+        if (text) {
+          allEntryTexts.push(text)
+        }
+      }
 
-      // Find the indices of our entries
-      const thirdIndex = entryTitles.findIndex(title =>
-        title.includes('Third Entry')
+      // Find which entries contain our test titles
+      const firstEntryPosition = allEntryTexts.findIndex(text =>
+        text.includes('First Entry')
       )
-      const secondIndex = entryTitles.findIndex(title =>
-        title.includes('Second Entry')
+      const secondEntryPosition = allEntryTexts.findIndex(text =>
+        text.includes('Second Entry')
       )
-      const firstIndex = entryTitles.findIndex(title =>
-        title.includes('First Entry')
+      const thirdEntryPosition = allEntryTexts.findIndex(text =>
+        text.includes('Third Entry')
       )
+
+      // Verify all entries were found
+      expect(firstEntryPosition).toBeGreaterThanOrEqual(0)
+      expect(secondEntryPosition).toBeGreaterThanOrEqual(0)
+      expect(thirdEntryPosition).toBeGreaterThanOrEqual(0)
 
       // Verify they appear in reverse order (newest first)
-      expect(thirdIndex).toBeLessThan(secondIndex)
-      expect(secondIndex).toBeLessThan(firstIndex)
+      // Third Entry should appear before Second Entry
+      // Second Entry should appear before First Entry
+      expect(thirdEntryPosition).toBeLessThan(secondEntryPosition)
+      expect(secondEntryPosition).toBeLessThan(firstEntryPosition)
     })
   })
 })
