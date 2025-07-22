@@ -4,9 +4,7 @@ import { apiClient } from './client'
 export interface RepertoireStatus {
   planned: 'planned'
   learning: 'learning'
-  working: 'working'
   polished: 'polished'
-  performance_ready: 'performance_ready'
 }
 
 export interface RepertoireItem {

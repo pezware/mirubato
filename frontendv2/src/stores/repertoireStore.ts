@@ -14,9 +14,7 @@ import { useAuthStore } from './authStore'
 interface RepertoireStatus {
   planned: 'Planned'
   learning: 'Learning'
-  working: 'Working'
   polished: 'Polished'
-  performance_ready: 'Performance Ready'
 }
 
 interface ScoreMetadata {

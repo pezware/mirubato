@@ -213,12 +213,7 @@ export function AddToRepertoireModal({
     [
       { value: 'planned', label: t('repertoire:status.planned') },
       { value: 'learning', label: t('repertoire:status.learning') },
-      { value: 'working', label: t('repertoire:status.working') },
       { value: 'polished', label: t('repertoire:status.polished') },
-      {
-        value: 'performance_ready',
-        label: t('repertoire:status.performance_ready'),
-      },
     ]
 
   return (

@@ -3,7 +3,7 @@ import { Play } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/dateUtils'
-import { RepertoireItem } from '@/api/repertoire'
+import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
 
 interface RecentPractice {
@@ -28,12 +28,31 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   onPlay,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
-  // Calculate progress percentage from active goals
+
+  // Status configuration
+  const statusConfig: Record<
+    keyof RepertoireStatus,
+    { color: string; bg: string; label: string }
+  > = {
+    planned: {
+      color: 'text-stone-600',
+      bg: 'bg-stone-100',
+      label: t('repertoire:status.planned'),
+    },
+    learning: {
+      color: 'text-green-700',
+      bg: 'bg-green-100',
+      label: t('repertoire:status.learning'),
+    },
+    polished: {
+      color: 'text-blue-700',
+      bg: 'bg-blue-100',
+      label: t('repertoire:status.polished'),
+    },
+  }
+
+  const status = statusConfig[item.status]
   const activeGoal = item.activeGoals?.[0]
-  const progress =
-    activeGoal && activeGoal.currentValue && activeGoal.targetValue
-      ? Math.round((activeGoal.currentValue / activeGoal.targetValue) * 100)
-      : 0
 
   // Determine if needs attention (not practiced in 5+ days)
   const lastPractice = item.lastPracticed || item.recentPractice?.[0]?.timestamp
@@ -62,9 +81,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   const totalPracticeTime = item.totalPracticeTime || 0
   const recentSessionDuration = item.recentPractice?.[0]?.duration || 0
 
-  // Determine progress ring color
-  const progressColor = needsAttention ? '#f59e0b' : '#22c55e'
-
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-shadow">
       <div className="flex items-center gap-4">
@@ -74,10 +90,18 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
         {/* Main Content */}
         <div className="flex-1">
           <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-base font-medium text-stone-900">
-                {item.scoreComposer} - {item.scoreTitle}
-              </h3>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-base font-medium text-stone-900">
+                  {item.scoreComposer} - {item.scoreTitle}
+                </h3>
+                {/* Status Badge */}
+                <span
+                  className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium`}
+                >
+                  {status.label}
+                </span>
+              </div>
               <div className="flex items-center gap-3 mt-1 text-sm text-stone-600">
                 <span
                   className={
@@ -108,51 +132,17 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Progress Ring */}
-              <div className="relative w-10 h-10">
-                <svg
-                  className="transform -rotate-90 w-10 h-10"
-                  viewBox="0 0 40 40"
-                >
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke="#e5e5e5"
-                    strokeWidth="3"
-                    fill="none"
-                  />
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke={progressColor}
-                    strokeWidth="3"
-                    fill="none"
-                    strokeDasharray="100"
-                    strokeDashoffset={100 - progress}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-stone-700">
-                  {progress}%
-                </div>
-              </div>
-
-              {/* Play Button */}
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  onPlay?.()
-                }}
-                className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
-                title={t('repertoire:startPractice')}
-              >
-                <Play className="w-4 h-4 text-stone-600" />
-              </button>
-            </div>
+            {/* Play Button */}
+            <button
+              onClick={e => {
+                e.stopPropagation()
+                onPlay?.()
+              }}
+              className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+              title={t('repertoire:startPractice')}
+            >
+              <Play className="w-4 h-4 text-stone-600" />
+            </button>
           </div>
         </div>
       </div>

@@ -71,20 +71,10 @@ export function RepertoireCard({
       bg: 'bg-green-100',
       label: t('repertoire:status.learning'),
     },
-    working: {
-      color: 'text-orange-700',
-      bg: 'bg-orange-100',
-      label: t('repertoire:status.working'),
-    },
     polished: {
       color: 'text-blue-700',
       bg: 'bg-blue-100',
       label: t('repertoire:status.polished'),
-    },
-    performance_ready: {
-      color: 'text-purple-700',
-      bg: 'bg-purple-100',
-      label: t('repertoire:status.performance_ready'),
     },
   }
 
