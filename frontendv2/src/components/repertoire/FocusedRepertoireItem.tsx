@@ -49,6 +49,11 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
       bg: 'bg-blue-100',
       label: t('repertoire:status.polished'),
     },
+    dropped: {
+      color: 'text-grey-700',
+      bg: 'bg-grey-100',
+      label: t('repertoire:status.dropped'),
+    },
   }
 
   const status = statusConfig[item.status]

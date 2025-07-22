@@ -22,6 +22,7 @@
     "working": "Working",
     "polished": "Polished",
     "performance_ready": "Performance Ready",
+    "dropped": "Dropped",
     "current": "Current Status"
   },
   "lastPracticed": "Last practiced {{time}}",

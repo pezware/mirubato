@@ -5,6 +5,7 @@ export interface RepertoireStatus {
   planned: 'planned'
   learning: 'learning'
   polished: 'polished'
+  dropped: 'dropped'
 }
 
 export interface RepertoireItem {

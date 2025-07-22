@@ -214,6 +214,7 @@ export function AddToRepertoireModal({
       { value: 'planned', label: t('repertoire:status.planned') },
       { value: 'learning', label: t('repertoire:status.learning') },
       { value: 'polished', label: t('repertoire:status.polished') },
+      { value: 'dropped', label: t('repertoire:status.dropped') },
     ]
 
   return (

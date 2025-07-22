@@ -15,6 +15,7 @@ interface RepertoireStatus {
   planned: 'Planned'
   learning: 'Learning'
   polished: 'Polished'
+  dropped: 'Dropped'
 }
 
 interface ScoreMetadata {
