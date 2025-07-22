@@ -51,6 +51,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [selectedPiece, setSelectedPiece] =
     useState<EnrichedRepertoireItem | null>(null)
   const [showManualEntry, setShowManualEntry] = useState(false)
+  const [manualEntryPiece, setManualEntryPiece] = useState<{
+    title: string
+    composer: string
+  } | null>(null)
   const [searchQuery] = useState('') // TODO: Add search input
 
   const {
@@ -316,6 +320,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         sessions={practiceSessions}
         onBack={() => setSelectedPiece(null)}
         onLogPractice={() => {
+          setManualEntryPiece({
+            title: selectedPiece.scoreTitle,
+            composer: selectedPiece.scoreComposer,
+          })
           setSelectedPiece(null)
           setShowManualEntry(true)
         }}
@@ -512,11 +520,16 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       {/* Manual Entry Modal */}
       {showManualEntry && (
         <ManualEntryForm
-          onClose={() => setShowManualEntry(false)}
+          onClose={() => {
+            setShowManualEntry(false)
+            setManualEntryPiece(null)
+          }}
           onSave={() => {
             setShowManualEntry(false)
+            setManualEntryPiece(null)
             loadEntries() // Refresh the entries
           }}
+          initialPieces={manualEntryPiece ? [manualEntryPiece] : undefined}
         />
       )}
     </div>

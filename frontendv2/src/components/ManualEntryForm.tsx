@@ -17,6 +17,7 @@ interface ManualEntryFormProps {
   onSave: () => void
   entry?: LogbookEntry
   initialDuration?: number
+  initialPieces?: Array<{ title: string; composer?: string }>
 }
 
 export default function ManualEntryForm({
@@ -24,6 +25,7 @@ export default function ManualEntryForm({
   onSave,
   entry,
   initialDuration,
+  initialPieces,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
@@ -54,7 +56,7 @@ export default function ManualEntryForm({
     entry?.mood
   )
   const [pieces, setPieces] = useState(
-    entry?.pieces || [{ title: '', composer: '' }]
+    entry?.pieces || initialPieces || [{ title: '', composer: '' }]
   )
   const [techniques, setTechniques] = useState<string[]>(
     entry?.techniques || []
