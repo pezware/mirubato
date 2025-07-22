@@ -51,7 +51,7 @@ export default function HomePage() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="p-6 flex justify-between items-center">
+        <header className="p-4 sm:p-6 flex justify-between items-center">
           <div className="text-white/90">{/* Logo placeholder */}</div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
@@ -94,7 +94,7 @@ export default function HomePage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center px-6">
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6">
           <div className="text-center">
             {/* Title */}
             <h1 className="text-7xl font-thin text-white mb-4 tracking-wide animate-fade-in">
@@ -129,7 +129,7 @@ export default function HomePage() {
         </main>
 
         {/* Footer */}
-        <footer className="p-6 text-center">
+        <footer className="p-4 sm:p-6 text-center">
           <p className="text-white/70 text-sm">
             Open-source practice journal for musicians
           </p>
@@ -138,8 +138,8 @@ export default function HomePage() {
 
       {/* Login Modal */}
       {showLoginForm && !isAuthenticated && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 sm:p-6 z-50">
+          <div className="glass-panel p-6 sm:p-8 w-full max-w-md animate-slide-up">
             <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
               {t('auth:signIn')}
             </h2>
@@ -207,8 +207,8 @@ export default function HomePage() {
 
       {/* Login Success Message */}
       {loginSuccess && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 sm:p-6 z-50">
+          <div className="glass-panel p-6 sm:p-8 w-full max-w-md animate-slide-up">
             <div className="text-center">
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-xl font-light text-morandi-stone-700 mb-2">

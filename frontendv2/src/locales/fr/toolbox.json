@@ -1,99 +1,99 @@
 {
-  "backToLogbook": "Retour au journal",
-  "counter": {
-    "button": {
-      "finish": "Terminer",
-      "save_to_log": "Sauvegarder dans le journal",
-      "start": "Démarrer",
-      "start_new": "Recommencer"
-    },
-    "log_summary": "Pratiqué avec le compteur : {{reps}} répétitions en {{time}}",
-    "mode": {
-      "down": "Compter vers le bas",
-      "up": "Compter vers le haut"
-    },
-    "practice_title": "Pratique de répétitions",
-    "save_failed": "Échec de la sauvegarde de la session d'entraînement",
-    "saved_to_log": "Session d'entraînement sauvegardée dans le journal",
-    "start_at": {
-      "placeholder": "Commencer à"
-    },
-    "summary": {
-      "duration_column": "Durée",
-      "rep_column": "Rép",
-      "title": "Résumé de la session",
-      "total_reps": "Répétitions totales",
-      "total_time": "Temps total"
-    },
-    "title": "Compteur d'entraînement"
-  },
+  "title": "Boîte à outils",
   "metronome": {
-    "clickToCreate": "Cliquez sur la grille pour créer votre propre motif rythmique. Chaque ligne représente une couche sonore différente.",
-    "patterns": {
-      "backbeat": {
-        "description": "Accent sur les temps 2 et 4",
-        "name": "Backbeat (2 & 4)"
-      },
-      "basic": {
-        "description": "4/4 standard avec accent sur 1",
-        "name": "Basic Beat"
-      },
-      "bossa": {
-        "description": "Motif rythmique brésilien",
-        "name": "Bossa Nova"
-      },
-      "clave32": {
-        "description": "Motif de clave latine",
-        "name": "3-2 Clave"
-      },
-      "offbeat": {
-        "description": "Clic sur les contretemps seulement",
-        "name": "Off-beat Practice"
-      },
-      "progressive": {
-        "description": "Motif d'accent mobile",
-        "name": "Progressive Accent"
-      },
-      "shuffle": {
-        "description": "Sensation de triolet avec note du milieu silencieuse",
-        "name": "Shuffle/Swing"
-      },
-      "sixeight": {
-        "description": "Sensation de deux noires pointées",
-        "name": "6/8 Time"
-      },
-      "subdivisions": {
-        "description": "Pratique des croches et double-croches",
-        "name": "Subdivisions"
-      },
-      "waltz": {
-        "description": "Motif fort-faible-faible",
-        "name": "Waltz (3/4)"
-      }
-    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Signature rythmique",
+    "volume": "Volume",
     "presetPatterns": "Modèles prédéfinis",
+    "clickToCreate": "Cliquez sur la grille pour créer votre propre motif rythmique. Chaque ligne représente une couche sonore différente.",
     "sounds": {
       "accent": "accent",
       "click": "clic",
+      "woodblock": "wood block",
       "shaker": "shaker",
-      "triangle": "triangle",
-      "woodblock": "wood block"
+      "triangle": "triangle"
     },
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "Signature rythmique",
-    "volume": "Volume"
+    "patterns": {
+      "basic": {
+        "name": "Basic Beat",
+        "description": "4/4 standard avec accent sur 1"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "Accent sur les temps 2 et 4"
+      },
+      "waltz": {
+        "name": "Waltz (3/4)",
+        "description": "Motif fort-faible-faible"
+      },
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "Motif de clave latine"
+      },
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "Sensation de triolet avec note du milieu silencieuse"
+      },
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "Sensation de deux noires pointées"
+      },
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "Motif rythmique brésilien"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "Pratique des croches et double-croches"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "Clic sur les contretemps seulement"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "Motif d'accent mobile"
+      }
+    }
   },
-  "syncStatus": {
-    "localOnly": "Stockage local",
-    "synced": "Synchronisé"
+  "counter": {
+    "title": "Compteur d'entraînement",
+    "mode": {
+      "up": "Compter vers le haut",
+      "down": "Compter vers le bas"
+    },
+    "start_at": {
+      "placeholder": "Commencer à"
+    },
+    "button": {
+      "start": "Démarrer",
+      "finish": "Terminer",
+      "save_to_log": "Sauvegarder dans le journal",
+      "start_new": "Recommencer"
+    },
+    "summary": {
+      "title": "Résumé de la session",
+      "total_reps": "Répétitions totales",
+      "total_time": "Temps total",
+      "rep_column": "Rép",
+      "duration_column": "Durée"
+    },
+    "log_summary": "Pratiqué avec le compteur : {{reps}} répétitions en {{time}}",
+    "practice_title": "Pratique de répétitions",
+    "saved_to_log": "Session d'entraînement sauvegardée dans le journal",
+    "save_failed": "Échec de la sauvegarde de la session d'entraînement"
   },
   "tabs": {
-    "counter": "Compteur d'entraînement",
     "metronome": "Métronome",
+    "counter": "Compteur d'entraînement",
     "circleOfFifths": "Circle of Fifths",
     "dictionary": "Dictionnaire Musical"
   },
-  "title": "Boîte à outils",
+  "syncStatus": {
+    "synced": "Synchronisé",
+    "localOnly": "Stockage local"
+  },
+  "backToLogbook": "Retour au journal",
   "dictionary": {
     "title": "Dictionnaire Musical",
     "description": "Apprenez les termes musicaux, compositeurs et concepts",

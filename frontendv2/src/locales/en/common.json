@@ -1,6 +1,10 @@
 {
   "active": "Active",
   "add": "Add",
+  "actions": {
+    "addEntry": "Add Entry",
+    "timer": "Timer"
+  },
   "analytics": "Analytics",
   "appName": "mirubato",
   "back": "Back",
@@ -71,6 +75,7 @@
   "filter": "Filter",
   "finish": "Finish",
   "goBack": "Go Back",
+  "goal": "Goal",
   "help": "Help",
   "hide": "Hide",
   "history": "History",
@@ -133,7 +138,18 @@
     "logbook": "Logbook",
     "menu": "Menu",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "overview": "Overview",
+    "repertoire": "Repertoire",
+    "pieces": "Pieces",
+    "goals": "Goals",
+    "add": "Add",
+    "music": "Music",
+    "scores": "Scores",
+    "toolbox": "Toolbox",
+    "profile": "Profile",
+    "profileSettings": "Profile Settings",
+    "preferences": "Preferences"
   },
   "next": "Next",
   "no": "No",
@@ -172,7 +188,9 @@
   "retry": "Retry",
   "save": "Save",
   "saveToLogbook": "Save to Logbook",
-  "search": "Search",
+  "search": {
+    "placeholder": "Search practice sessions..."
+  },
   "searchScoresAndLogs": "Search scores and practice logs...",
   "select": "Select",
   "selectAll": "Select all",
@@ -226,7 +244,15 @@
   "upload": "Upload",
   "username": "Username",
   "version": "Version",
-  "view": "View",
+  "view": {
+    "default": "View",
+    "list": "List",
+    "grid": "Grid",
+    "calendar": "Calendar"
+  },
+  "statistics": {
+    "streak": "Streak"
+  },
   "warning": "Warning",
   "yes": "Yes"
 }

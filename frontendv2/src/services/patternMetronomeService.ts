@@ -113,10 +113,8 @@ class PatternMetronomeService {
     config: PatternConfig,
     visualCallback?: VisualCallback
   ): Promise<void> {
-    // Ensure audio context is started
-    if (Tone.context.state !== 'running') {
-      await Tone.start()
-    }
+    // Don't try to start audio context here - it should be started by user gesture in UI
+    // The component should ensure Tone.start() is called before calling this method
 
     // Stop any existing playback
     this.stop()
@@ -254,14 +252,24 @@ class PatternMetronomeService {
 
   setTempo(tempo: number): void {
     this.tempo = tempo
-    // Use Transport's BPM for smooth tempo changes
-    Tone.Transport.bpm.rampTo(tempo, 0.1)
+    try {
+      // Use Transport's BPM for smooth tempo changes
+      Tone.Transport.bpm.rampTo(tempo, 0.1)
+    } catch (_error) {
+      // Ignore errors if audio context not started - tempo will be set when playback starts
+      console.debug('Tempo will be set when audio context starts')
+    }
   }
 
   setVolume(volume: number): void {
-    // Convert 0-1 range to decibels (-60 to 0)
-    const db = volume === 0 ? -Infinity : -60 + volume * 60
-    this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
+    try {
+      // Convert 0-1 range to decibels (-60 to 0)
+      const db = volume === 0 ? -Infinity : -60 + volume * 60
+      this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
+    } catch (_error) {
+      // Ignore errors if audio context not started - will be set when playback starts
+      console.debug('Volume will be set when audio context starts')
+    }
   }
 
   setPatterns(patterns: PatternConfig['patterns']): void {

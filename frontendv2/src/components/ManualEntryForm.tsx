@@ -3,24 +3,32 @@ import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import type { LogbookEntry } from '../api/logbook'
-import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
+import { Modal } from './ui/Modal'
 
 interface ManualEntryFormProps {
   onClose: () => void
   onSave: () => void
   entry?: LogbookEntry
+  initialDuration?: number
+  initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
 }
 
 export default function ManualEntryForm({
   onClose,
   onSave,
   entry,
+  initialDuration,
+  initialPieces,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
@@ -37,7 +45,9 @@ export default function ManualEntryForm({
   }, [loadRepertoire])
 
   // Form state
-  const [duration, setDuration] = useState<number>(entry?.duration || 30)
+  const [duration, setDuration] = useState<number>(
+    entry?.duration || initialDuration || 30
+  )
   const [type, setType] = useState<LogbookEntry['type']>(
     entry?.type || 'practice'
   )
@@ -49,7 +59,7 @@ export default function ManualEntryForm({
     entry?.mood
   )
   const [pieces, setPieces] = useState(
-    entry?.pieces || [{ title: '', composer: '' }]
+    entry?.pieces || initialPieces || [{ title: '', composer: '' }]
   )
   const [techniques, setTechniques] = useState<string[]>(
     entry?.techniques || []
@@ -144,6 +154,9 @@ export default function ManualEntryForm({
         metadata: {
           source: 'manual',
         },
+        // If we have a scoreId from initialPieces (from piece detail page), include it
+        ...(initialPieces &&
+          initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
       }
 
       if (entry) {
@@ -154,19 +167,25 @@ export default function ManualEntryForm({
         await createEntry(entryData)
 
         // Check if any piece should be added to repertoire
-        for (const piece of entryData.pieces) {
-          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
+        // Skip the prompt if we have initialPieces (coming from piece detail page)
+        if (!initialPieces) {
+          for (const piece of entryData.pieces) {
+            const scoreId = generateNormalizedScoreId(
+              piece.title,
+              piece.composer
+            )
 
-          // Check if this piece is already in repertoire
-          const isInRepertoire = Array.from(repertoire.values()).some(
-            item => item.scoreId === scoreId
-          )
+            // Check if this piece is already in repertoire
+            const isInRepertoire = Array.from(repertoire.values()).some(item =>
+              isSameScore(item.scoreId, scoreId)
+            )
 
-          if (!isInRepertoire) {
-            // Show prompt for this piece
-            setShowRepertoirePrompt({ piece, scoreId })
-            // Exit after showing prompt for first piece not in repertoire
-            return
+            if (!isInRepertoire) {
+              // Show prompt for this piece
+              setShowRepertoirePrompt({ piece, scoreId })
+              // Exit after showing prompt for first piece not in repertoire
+              return
+            }
           }
         }
       }
@@ -202,13 +221,16 @@ export default function ManualEntryForm({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 p-4 sm:p-6">
-      <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
-        {entry
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={
+        entry
           ? `📝 ${t('logbook:entry.editEntry')}`
-          : `✨ ${t('logbook:entry.addEntry')}`}
-      </h2>
-
+          : `✨ ${t('logbook:entry.addEntry')}`
+      }
+      size="lg"
+    >
       <form
         onSubmit={handleSubmit}
         className="space-y-4"
@@ -500,6 +522,6 @@ export default function ManualEntryForm({
           }}
         />
       )}
-    </div>
+    </Modal>
   )
 }

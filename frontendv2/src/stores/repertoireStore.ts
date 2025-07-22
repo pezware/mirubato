@@ -12,11 +12,10 @@ import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireId
 import { useAuthStore } from './authStore'
 
 interface RepertoireStatus {
-  planned: 'Planned'
-  learning: 'Learning'
-  working: 'Working'
-  polished: 'Polished'
-  performance_ready: 'Performance Ready'
+  planned: 'planned'
+  learning: 'learning'
+  polished: 'polished'
+  dropped: 'dropped'
 }
 
 interface ScoreMetadata {
@@ -92,6 +91,9 @@ interface RepertoireStore {
   // Score metadata functions
   cacheScoreMetadata: (scoreId: string, metadata: ScoreMetadata) => void
   getScoreMetadata: (scoreId: string) => ScoreMetadata | undefined
+
+  // Cleanup duplicates
+  cleanupDuplicates: () => Promise<void>
 
   // Sync function
   syncLocalData: () => Promise<void>
@@ -216,7 +218,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast('Added to repertoire', 'success')
+        showToast('Added to pieces', 'success')
       } else {
         // Use API
         const newItem = await repertoireApi.add({
@@ -233,7 +235,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(get().repertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast('Added to repertoire', 'success')
+        showToast('Added to pieces', 'success')
       }
     } catch (error) {
       console.error('Error adding to repertoire:', error)
@@ -812,6 +814,53 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   getScoreMetadata: (scoreId: string) => {
     const { scoreMetadataCache } = get()
     return scoreMetadataCache.get(scoreId)
+  },
+
+  // Cleanup duplicate repertoire entries
+  cleanupDuplicates: async () => {
+    const { repertoire, isLocalMode } = get()
+
+    // Import the cleanup utility
+    const { cleanupDuplicateRepertoire } = await import(
+      '@/utils/cleanupDuplicateRepertoire'
+    )
+
+    const { cleaned, duplicates } = cleanupDuplicateRepertoire(repertoire)
+
+    if (duplicates.length === 0) {
+      showToast('No duplicate pieces found', 'info')
+      return
+    }
+
+    // Update the repertoire
+    set({ repertoire: cleaned })
+
+    // Save to localStorage
+    const items = Array.from(cleaned.values())
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+    // If not in local mode, update on server
+    if (!isLocalMode) {
+      try {
+        // Delete duplicates from server
+        for (const dup of duplicates) {
+          for (const removed of dup.removed) {
+            await repertoireApi.remove(removed.id)
+          }
+          // Update the kept item with the normalized scoreId
+          // Note: totalPracticeTime, practiceCount, and lastPracticed are
+          // calculated server-side from practice sessions, so we don't update them
+        }
+      } catch (error) {
+        console.error('Error cleaning up duplicates on server:', error)
+      }
+    }
+
+    const totalRemoved = duplicates.reduce(
+      (sum, d) => sum + d.removed.length,
+      0
+    )
+    showToast(`Cleaned up ${totalRemoved} duplicate pieces`, 'success')
   },
 
   // Link practice session to goals

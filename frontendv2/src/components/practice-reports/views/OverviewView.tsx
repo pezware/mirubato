@@ -44,64 +44,6 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
     return map
   }, [analytics.timeSeriesData])
 
-  // Calculate streak data
-  const streakData = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    let currentStreak = 0
-    let maxStreak = 0
-    let tempStreak = 0
-    const dates = new Set<string>()
-
-    // Sort entries by date (newest first)
-    const sortedEntries = [...analytics.filteredEntries].sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )
-
-    // Track unique practice days
-    sortedEntries.forEach(entry => {
-      const date = new Date(entry.timestamp).toDateString()
-      dates.add(date)
-    })
-
-    // Calculate current streak (consecutive days ending today)
-    const sortedDates = Array.from(dates)
-      .map(d => new Date(d))
-      .sort((a, b) => b.getTime() - a.getTime())
-
-    for (let i = 0; i < sortedDates.length; i++) {
-      const date = sortedDates[i]
-      const expectedDate = new Date(today)
-      expectedDate.setDate(today.getDate() - i)
-
-      if (date.toDateString() === expectedDate.toDateString()) {
-        currentStreak++
-      } else {
-        break
-      }
-    }
-
-    // Calculate max streak
-    for (let i = 0; i < sortedDates.length; i++) {
-      if (i === 0) {
-        tempStreak = 1
-      } else {
-        const diff = sortedDates[i - 1].getTime() - sortedDates[i].getTime()
-        const daysDiff = Math.floor(diff / (1000 * 60 * 60 * 24))
-        if (daysDiff === 1) {
-          tempStreak++
-        } else {
-          maxStreak = Math.max(maxStreak, tempStreak)
-          tempStreak = 1
-        }
-      }
-    }
-    maxStreak = Math.max(maxStreak, tempStreak)
-
-    return { currentStreak, maxStreak, totalDays: dates.size }
-  }, [analytics.filteredEntries])
-
   // Recent entries calculation removed - handled by RecentEntries component
 
   return (
@@ -123,42 +65,9 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
           />
         </div>
 
-        {/* Streak Information */}
-        <div className="bg-morandi-sand-50 rounded-lg p-4">
-          <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3">
-            {t('reports:practiceStreak')}
-          </h3>
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-morandi-purple-600">
-                {streakData.currentStreak}
-              </div>
-              <div className="text-xs sm:text-sm text-morandi-stone-600">
-                {t('reports:currentStreak')}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-morandi-sage-600">
-                {streakData.maxStreak}
-              </div>
-              <div className="text-xs sm:text-sm text-morandi-stone-600">
-                {t('reports:longestStreak')}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-morandi-rust-600">
-                {streakData.totalDays}
-              </div>
-              <div className="text-xs sm:text-sm text-morandi-stone-600">
-                {t('reports:totalDays')}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Practice Calendar Heatmap - No label */}
         <div className="w-full overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-          <div className="min-w-[600px]" data-testid="heatmap-calendar">
+          <div className="min-w-[600px]">
             <HeatmapCalendar data={heatmapData} />
           </div>
         </div>

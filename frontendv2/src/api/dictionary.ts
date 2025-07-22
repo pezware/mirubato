@@ -404,10 +404,16 @@ export class DictionaryAPIClient {
 
       // Extract data from dictionary API response
       let termData = response.data
-      if (response.data.success && response.data.data) {
-        termData = response.data.data
-      } else if (response.data.data) {
-        termData = response.data.data
+
+      // Handle wrapped API response
+      if (typeof response.data === 'object' && 'success' in response.data) {
+        if (response.data.success && response.data.data) {
+          termData = response.data.data
+        } else if (!response.data.success) {
+          throw new Error(
+            response.data.error || 'Failed to get term in multiple languages'
+          )
+        }
       }
 
       return MultiLanguageTermResponseSchema.parse(termData)

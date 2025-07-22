@@ -14,7 +14,13 @@ const DataTableView = lazy(() => import('./views/DataTableView'))
 const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
 
-export default function EnhancedReports() {
+interface EnhancedReportsProps {
+  searchQuery?: string
+}
+
+export default function EnhancedReports({
+  searchQuery = '',
+}: EnhancedReportsProps) {
   const { entries } = useLogbookStore()
   const { filters, groupBy, sortBy, clearFilters } = useReportingStore()
   const location = useLocation()
@@ -83,14 +89,41 @@ export default function EnhancedReports() {
     }
   }
 
+  // Filter entries based on search query
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return entries
+
+    const query = searchQuery.toLowerCase()
+    return entries.filter(entry => {
+      // Search in pieces
+      const piecesMatch = entry.pieces?.some(
+        piece =>
+          piece.title?.toLowerCase().includes(query) ||
+          piece.composer?.toLowerCase().includes(query)
+      )
+
+      // Search in notes
+      const notesMatch = entry.notes?.toLowerCase().includes(query)
+
+      // Search in techniques
+      const techniquesMatch = entry.techniques?.some(technique =>
+        technique.toLowerCase().includes(query)
+      )
+
+      return piecesMatch || notesMatch || techniquesMatch
+    })
+  }, [entries, searchQuery])
+
   // Generate entries hash for caching
   const entriesHash = useMemo(() => {
-    return entries.map(e => `${e.id}_${e.timestamp}_${e.duration}`).join('_')
-  }, [entries])
+    return filteredEntries
+      .map(e => `${e.id}_${e.timestamp}_${e.duration}`)
+      .join('_')
+  }, [filteredEntries])
 
   // Enhanced analytics with filtering, grouping, and sorting
   const analytics = useEnhancedAnalytics({
-    entries,
+    entries: filteredEntries,
     filters,
     groupBy,
     sortBy,
@@ -145,7 +178,7 @@ export default function EnhancedReports() {
       {reportView === 'newEntry' ? (
         <Suspense
           fallback={
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <LoadingSkeleton className="h-96" />
             </div>
           }
@@ -167,7 +200,7 @@ export default function EnhancedReports() {
       ) : (
         <Suspense
           fallback={
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <LoadingSkeleton className="h-96" />
             </div>
           }

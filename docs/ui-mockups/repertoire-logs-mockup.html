@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirubato - Repertoire Practice Logs</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        background: #fafafa;
+        color: #1a1a1a;
+        line-height: 1.6;
+      }
+
+      /* Reusing focused UI layout */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 240px;
+        background: #fafafa;
+        border-right: 1px solid #e5e5e5;
+        padding: 24px 16px;
+      }
+
+      .sidebar-logo {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 32px;
+        padding: 0 12px;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        color: #666;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s;
+      }
+
+      .sidebar-link:hover {
+        background: #f0f0f0;
+        color: #1a1a1a;
+      }
+
+      .sidebar-link.active {
+        background: #e8e8e8;
+        color: #1a1a1a;
+        font-weight: 500;
+      }
+
+      /* Main Content */
+      .main-content {
+        margin-left: 240px;
+        min-height: 100vh;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        background: white;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .breadcrumb a {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+
+      .breadcrumb a:hover {
+        color: #1a1a1a;
+      }
+
+      .breadcrumb .separator {
+        color: #ccc;
+      }
+
+      .breadcrumb .current {
+        color: #1a1a1a;
+        font-weight: 500;
+      }
+
+      /* Piece Header */
+      .piece-header {
+        padding: 32px;
+        background: white;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .piece-title {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .piece-composer {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 24px;
+      }
+
+      .piece-stats {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      /* Action Bar */
+      .action-bar {
+        padding: 16px 32px;
+        background: #f5f5f5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .filter-select {
+        padding: 8px 16px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .btn-primary {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2a2a2a;
+      }
+
+      /* Timeline View */
+      .timeline-container {
+        padding: 32px;
+      }
+
+      .timeline {
+        position: relative;
+        padding-left: 40px;
+      }
+
+      .timeline::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e5e5;
+      }
+
+      /* Practice Entry */
+      .practice-entry {
+        position: relative;
+        margin-bottom: 32px;
+        opacity: 0;
+        animation: fadeIn 0.3s forwards;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+
+      .entry-dot {
+        position: absolute;
+        left: -28px;
+        top: 8px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #22c55e;
+      }
+
+      .entry-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e5e5;
+        padding: 20px;
+        transition: all 0.2s;
+      }
+
+      .entry-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .entry-date {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .entry-time {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .entry-duration {
+        font-size: 18px;
+        font-weight: 600;
+        color: #22c55e;
+      }
+
+      .entry-details {
+        display: flex;
+        gap: 24px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px;
+      }
+
+      .entry-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .entry-notes {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #444;
+        padding: 12px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+
+      .entry-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .action-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        border: 1px solid #e5e5e5;
+        background: white;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .action-btn:hover {
+        background: #f5f5f5;
+      }
+
+      /* Month Separator */
+      .month-separator {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 40px 0 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #666;
+      }
+
+      .month-separator::before,
+      .month-separator::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e5e5;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        color: #ccc;
+      }
+
+      .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .empty-text {
+        color: #666;
+        margin-bottom: 24px;
+      }
+
+      /* Repertoire Notes Section */
+      .repertoire-notes {
+        background: white;
+        border-top: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 24px 32px;
+      }
+
+      .notes-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .notes-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .edit-notes-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .edit-notes-btn:hover {
+        background: #f5f5f5;
+        color: #1a1a1a;
+      }
+
+      .notes-content {
+        color: #444;
+        line-height: 1.8;
+      }
+
+      .notes-content p {
+        margin-bottom: 12px;
+      }
+
+      .notes-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .notes-content strong {
+        color: #1a1a1a;
+        font-weight: 600;
+      }
+
+      .notes-edit {
+        display: none;
+      }
+
+      .notes-textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 16px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        font-size: 15px;
+        line-height: 1.6;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      .notes-textarea:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+      }
+
+      .notes-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 16px;
+      }
+
+      /* Mobile Responsive - phones only */
+      @media (max-width: 767px) {
+        .sidebar {
+          display: none;
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .piece-header {
+          padding: 20px;
+        }
+
+        .piece-title {
+          font-size: 24px;
+        }
+
+        .piece-stats {
+          gap: 20px;
+        }
+
+        .timeline-container {
+          padding: 20px;
+        }
+
+        .timeline {
+          padding-left: 28px;
+        }
+
+        .entry-card {
+          padding: 16px;
+        }
+
+        .entry-details {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .action-bar {
+          flex-direction: column;
+          gap: 12px;
+          padding: 16px 20px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-tabs {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-top: 1px solid #e5e5e5;
+          display: flex;
+          justify-content: space-around;
+          padding: 8px 0;
+          z-index: 100;
+        }
+
+        .tab-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          padding: 4px 16px;
+          color: #666;
+          text-decoration: none;
+          font-size: 11px;
+        }
+
+        .tab-item.active {
+          color: #1a1a1a;
+          font-weight: 500;
+        }
+
+        .main-content {
+          padding-bottom: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">Mirubato</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            ></path>
+          </svg>
+          Overview
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path
+              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+            ></path>
+          </svg>
+          Logbook
+        </a>
+        <a href="#" class="sidebar-link active">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          Repertoire
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          Scores
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar with Breadcrumb -->
+      <div class="top-bar">
+        <nav class="breadcrumb">
+          <a href="#">Repertoire</a>
+          <span class="separator">›</span>
+          <span class="current">Bach - Invention No.1</span>
+        </nav>
+      </div>
+
+      <!-- Piece Header -->
+      <div class="piece-header">
+        <h1 class="piece-title">Invention No.1 in C Major</h1>
+        <div class="piece-composer">Johann Sebastian Bach • BWV 772</div>
+        <div class="piece-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Practice</span>
+            <span class="stat-value">18h 30m</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Sessions</span>
+            <span class="stat-value">42</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Last Practiced</span>
+            <span class="stat-value">Today</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current Status</span>
+            <span class="stat-value" style="color: #f59e0b">Working</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Average Session</span>
+            <span class="stat-value">26 min</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repertoire Notes Section -->
+      <div class="repertoire-notes">
+        <div class="notes-header">
+          <h3 class="notes-title">Repertoire Notes</h3>
+          <button
+            class="edit-notes-btn"
+            onclick="toggleEditNotes()"
+            id="editNotesBtn"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+              ></path>
+              <path
+                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+              ></path>
+            </svg>
+            Edit
+          </button>
+        </div>
+        <div class="notes-content" id="notesContent">
+          <p>
+            This piece requires careful attention to hand independence. The main
+            theme appears in different voices throughout.
+          </p>
+          <p>
+            <strong>Technical focus:</strong> Fingering consistency in
+            sequential passages, especially measures 16-24.
+          </p>
+          <p>
+            <strong>Musical goals:</strong> Maintain clear articulation while
+            bringing out the melodic line in each voice.
+          </p>
+          <p>
+            <strong>Performance notes:</strong> Tempo should be steady around
+            120-140 BPM. No pedal needed for baroque style.
+          </p>
+        </div>
+        <div class="notes-edit" id="notesEdit" style="display: none">
+          <textarea class="notes-textarea" id="notesTextarea">
+This piece requires careful attention to hand independence. The main theme appears in different voices throughout.
+
+Technical focus: Fingering consistency in sequential passages, especially measures 16-24.
+
+Musical goals: Maintain clear articulation while bringing out the melodic line in each voice.
+
+Performance notes: Tempo should be steady around 120-140 BPM. No pedal needed for baroque style.</textarea
+          >
+          <div class="notes-actions">
+            <button class="btn btn-secondary" onclick="cancelEditNotes()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" onclick="saveNotes()">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <div class="filter-group">
+          <select class="filter-select">
+            <option>All Sessions</option>
+            <option>Last 7 Days</option>
+            <option>Last 30 Days</option>
+            <option>Last 3 Months</option>
+          </select>
+          <select class="filter-select">
+            <option>All Types</option>
+            <option>Practice</option>
+            <option>Performance</option>
+            <option>Lesson</option>
+          </select>
+        </div>
+        <button class="btn btn-primary">
+          <span style="margin-right: 6px">+</span> Log Practice
+        </button>
+      </div>
+
+      <!-- Timeline View -->
+      <div class="timeline-container">
+        <div class="timeline">
+          <!-- Today's Entry -->
+          <div class="practice-entry" style="animation-delay: 0.1s">
+            <div class="entry-dot"></div>
+            <div class="entry-card">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-date">Today</div>
+                  <div class="entry-time">2:30 PM - 3:15 PM</div>
+                </div>
+                <div class="entry-duration">45 min</div>
+              </div>
+              <div class="entry-details">
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"></path>
+                  </svg>
+                  Practice
+                </div>
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8m0 0V3m0 5h-5"
+                    ></path>
+                  </svg>
+                  120 BPM
+                </div>
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="8" r="7"></circle>
+                    <polyline
+                      points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+                    ></polyline>
+                  </svg>
+                  Satisfied
+                </div>
+              </div>
+              <div class="entry-notes">
+                Focused on measures 16-24. Finally getting the fingering right
+                for the ascending passages. Need to work on maintaining even
+                tempo during the sequential patterns.
+              </div>
+              <div class="entry-actions">
+                <button class="action-btn">Edit</button>
+                <button class="action-btn">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yesterday's Entries -->
+          <div class="practice-entry" style="animation-delay: 0.2s">
+            <div class="entry-dot"></div>
+            <div class="entry-card">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-date">Yesterday</div>
+                  <div class="entry-time">7:00 PM - 7:30 PM</div>
+                </div>
+                <div class="entry-duration">30 min</div>
+              </div>
+              <div class="entry-details">
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"></path>
+                  </svg>
+                  Practice
+                </div>
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8m0 0V3m0 5h-5"
+                    ></path>
+                  </svg>
+                  100 BPM
+                </div>
+              </div>
+              <div class="entry-notes">
+                Slow practice focusing on articulation. Working through each
+                hand separately before combining.
+              </div>
+            </div>
+          </div>
+
+          <!-- Month Separator -->
+          <div class="month-separator">January 2025</div>
+
+          <!-- Older Entry -->
+          <div class="practice-entry" style="animation-delay: 0.3s">
+            <div class="entry-dot"></div>
+            <div class="entry-card">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-date">January 15</div>
+                  <div class="entry-time">4:00 PM - 4:40 PM</div>
+                </div>
+                <div class="entry-duration">40 min</div>
+              </div>
+              <div class="entry-details">
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Lesson
+                </div>
+                <div class="entry-detail">Teacher: Ms. Johnson</div>
+              </div>
+              <div class="entry-notes">
+                Teacher suggested focusing on the interplay between hands.
+                Assigned specific fingering for measures 8-12. Goal: bring up to
+                140 BPM by next lesson.
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Entry -->
+          <div class="practice-entry" style="animation-delay: 0.4s">
+            <div class="entry-dot" style="border-color: #22c55e"></div>
+            <div class="entry-card">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-date">January 10</div>
+                  <div class="entry-time">3:00 PM</div>
+                </div>
+                <div
+                  class="entry-duration"
+                  style="color: #22c55e; font-size: 16px"
+                >
+                  Performance
+                </div>
+              </div>
+              <div class="entry-details">
+                <div class="entry-detail">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  Studio Recital
+                </div>
+                <div class="entry-detail" style="color: #22c55e">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="8" r="7"></circle>
+                    <polyline
+                      points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+                    ></polyline>
+                  </svg>
+                  Excited
+                </div>
+              </div>
+              <div class="entry-notes">
+                First full performance! A few small slips but maintained
+                musicality throughout. Audience responded well. Ready to move to
+                the next piece while maintaining this one.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-tabs mobile-only" style="display: none">
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          ></path>
+        </svg>
+        Home
+      </a>
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path
+            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+          ></path>
+        </svg>
+        Logbook
+      </a>
+      <a href="#" class="tab-item active">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+        Music
+      </a>
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Profile
+      </a>
+    </nav>
+
+    <script>
+      // Check for mobile view
+      function checkMobileNav() {
+        const mobileNav = document.querySelector('.bottom-tabs')
+        if (window.innerWidth <= 767) {
+          mobileNav.style.display = 'flex'
+        } else {
+          mobileNav.style.display = 'none'
+        }
+      }
+
+      window.addEventListener('resize', checkMobileNav)
+      checkMobileNav()
+
+      // Notes editing functionality
+      function toggleEditNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+
+        if (notesEdit.style.display === 'none') {
+          // Enter edit mode
+          notesContent.style.display = 'none'
+          notesEdit.style.display = 'block'
+          editBtn.style.display = 'none'
+          document.getElementById('notesTextarea').focus()
+        }
+      }
+
+      function cancelEditNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+        const textarea = document.getElementById('notesTextarea')
+
+        // Restore original content
+        const originalContent = notesContent.innerHTML
+
+        // Exit edit mode without saving
+        notesContent.style.display = 'block'
+        notesEdit.style.display = 'none'
+        editBtn.style.display = 'flex'
+      }
+
+      function saveNotes() {
+        const notesContent = document.getElementById('notesContent')
+        const notesEdit = document.getElementById('notesEdit')
+        const editBtn = document.getElementById('editNotesBtn')
+        const textarea = document.getElementById('notesTextarea')
+
+        // Convert textarea content to HTML paragraphs
+        const lines = textarea.value.split('\n\n')
+        let htmlContent = ''
+
+        lines.forEach(line => {
+          if (line.trim()) {
+            // Check if line starts with a label pattern
+            if (line.includes(':') && line.indexOf(':') < 30) {
+              const [label, ...rest] = line.split(':')
+              htmlContent += `<p><strong>${label}:</strong>${rest.join(':')}</p>`
+            } else {
+              htmlContent += `<p>${line}</p>`
+            }
+          }
+        })
+
+        // Update content
+        notesContent.innerHTML = htmlContent
+
+        // Exit edit mode
+        notesContent.style.display = 'block'
+        notesEdit.style.display = 'none'
+        editBtn.style.display = 'flex'
+
+        // In a real app, this would save to the backend
+        console.log('Notes saved!')
+      }
+    </script>
+  </body>
+</html>

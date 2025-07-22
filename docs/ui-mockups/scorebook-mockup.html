@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirubato - Scorebook Unified Layout</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        background: #fafafa;
+        color: #1a1a1a;
+        line-height: 1.5;
+      }
+
+      /* Sidebar Navigation - Desktop */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 240px;
+        background: #fafafa;
+        border-right: 1px solid #e5e5e5;
+        padding: 24px 16px;
+      }
+
+      .sidebar-logo {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 32px;
+        padding: 0 12px;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        color: #666;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s;
+      }
+
+      .sidebar-link:hover {
+        background: #f0f0f0;
+        color: #1a1a1a;
+      }
+
+      .sidebar-link.active {
+        background: #e8e8e8;
+        color: #1a1a1a;
+        font-weight: 500;
+      }
+
+      /* Main Content Area */
+      .main-content {
+        margin-left: 240px;
+        min-height: 100vh;
+      }
+
+      /* Top Bar with Search */
+      .top-bar {
+        background: white;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .search-box {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 8px 16px 8px 40px;
+        border: 1px solid #e5e5e5;
+        border-radius: 24px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s;
+      }
+
+      .search-input:focus {
+        border-color: #999;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+      }
+
+      /* Quick Actions */
+      .quick-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid #e5e5e5;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .icon-btn:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+      }
+
+      /* User Authentication */
+      .user-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: auto;
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+        display: none;
+        z-index: 1000;
+      }
+
+      .user-dropdown.open {
+        display: block;
+      }
+
+      .dropdown-item {
+        padding: 10px 16px;
+        border-bottom: 1px solid #e5e5e5;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      .dropdown-item:hover {
+        background: #f5f5f5;
+      }
+
+      /* Content Layout */
+      .content {
+        padding: 24px;
+      }
+
+      /* Tab Navigation */
+      .tabs {
+        display: flex;
+        gap: 24px;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 24px;
+      }
+
+      .tab {
+        padding: 12px 0;
+        font-size: 14px;
+        color: #666;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+
+      .tab:hover {
+        color: #1a1a1a;
+      }
+
+      .tab.active {
+        color: #1a1a1a;
+        font-weight: 500;
+        border-bottom-color: #22c55e;
+      }
+
+      /* Filter Bar */
+      .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        gap: 16px;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 8px;
+        flex: 1;
+        flex-wrap: wrap;
+      }
+
+      .filter-chip {
+        padding: 6px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 16px;
+        background: white;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .filter-chip:hover {
+        background: #f5f5f5;
+      }
+
+      .filter-chip.active {
+        background: #e8f5e9;
+        border-color: #22c55e;
+        color: #166534;
+      }
+
+      .view-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .view-toggle {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+
+      .view-btn {
+        padding: 4px 12px;
+        border: none;
+        background: transparent;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.15s;
+      }
+
+      .view-btn.active {
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .btn-primary {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2a2a2a;
+      }
+
+      /* Score List - matching repertoire style */
+      .score-list-container {
+        padding: 32px;
+      }
+
+      .score-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .score-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        background: white;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .score-item:hover {
+        border-color: #ccc;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .score-indicator {
+        width: 4px;
+        height: 40px;
+        background: #e5e5e5;
+        border-radius: 2px;
+        margin-right: 16px;
+      }
+
+      .score-indicator.piano {
+        background: #3b82f6;
+      }
+
+      .score-indicator.guitar {
+        background: #f59e0b;
+      }
+
+      .score-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .score-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .score-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a1a;
+      }
+
+      .score-meta {
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        gap: 16px;
+      }
+
+      .score-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .score-difficulty {
+        display: flex;
+        gap: 2px;
+      }
+
+      .star {
+        width: 14px;
+        height: 14px;
+        fill: #fbbf24;
+      }
+
+      .star.empty {
+        fill: #e5e5e5;
+      }
+
+      .score-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .badge-collection {
+        background: #f3e8ff;
+        color: #6b21a8;
+      }
+
+      .badge-favorite {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      .action-icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid #e5e5e5;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .action-icon-btn:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        color: #ccc;
+      }
+
+      .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .empty-text {
+        color: #666;
+        margin-bottom: 24px;
+      }
+
+      /* Floating Action Button */
+      .fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #1a1a1a;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+
+      .fab:hover {
+        transform: scale(1.05);
+        background: #2a2a2a;
+      }
+
+      /* Mobile Responsive - phones only */
+      @media (max-width: 767px) {
+        .sidebar {
+          display: none;
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .top-bar {
+          padding: 12px 16px;
+          gap: 12px;
+        }
+
+        .search-box {
+          flex: 1;
+          max-width: none;
+        }
+
+        .quick-actions {
+          display: none;
+        }
+
+        .content {
+          padding: 16px;
+          padding-bottom: 80px;
+        }
+
+        .score-list-container {
+          padding: 20px;
+        }
+
+        .tabs {
+          overflow-x: auto;
+          gap: 16px;
+        }
+
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filter-group {
+          overflow-x: auto;
+          flex-wrap: nowrap;
+        }
+
+        .view-actions {
+          justify-content: space-between;
+        }
+
+        .score-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .score-card {
+          display: flex;
+        }
+
+        .score-thumbnail {
+          width: 100px;
+          height: 100px;
+          flex-shrink: 0;
+        }
+
+        .fab {
+          bottom: 70px;
+          right: 16px;
+        }
+
+        /* Bottom Tab Bar */
+        .bottom-tabs {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-top: 1px solid #e5e5e5;
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          padding: 8px 0;
+          z-index: 100;
+          box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          padding: 4px 12px;
+          color: #666;
+          text-decoration: none;
+          font-size: 11px;
+          flex: 1;
+          max-width: 80px;
+          min-height: 48px;
+        }
+
+        .tab-item.active {
+          color: #1a1a1a;
+          font-weight: 500;
+        }
+      }
+
+      /* Utility classes */
+      .desktop-only {
+        display: block;
+      }
+      .mobile-only {
+        display: none;
+      }
+
+      @media (max-width: 767px) {
+        .desktop-only {
+          display: none;
+        }
+        .mobile-only {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">Mirubato</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            ></path>
+          </svg>
+          Overview
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path
+              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+            ></path>
+          </svg>
+          Logbook
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          Repertoire
+        </a>
+        <a href="#" class="sidebar-link active">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          Scores
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"></path>
+          </svg>
+          Goals
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+            ></path>
+          </svg>
+          Tools
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="search-box">
+          <svg
+            class="search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search scores, composers, or collections..."
+          />
+        </div>
+
+        <div class="quick-actions desktop-only">
+          <button class="icon-btn" title="Import Score">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Collections">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- User Section -->
+        <div class="user-section">
+          <div
+            class="user-avatar"
+            onclick="toggleUserDropdown()"
+            id="userAvatar"
+          >
+            JD
+            <div class="user-dropdown" id="userDropdown">
+              <div class="dropdown-item">
+                <strong>John Doe</strong><br />
+                <span style="font-size: 12px; color: #666"
+                  >john.doe@example.com</span
+                >
+              </div>
+              <div class="dropdown-item">Profile Settings</div>
+              <div class="dropdown-item">Preferences</div>
+              <div class="dropdown-item" style="color: #dc2626">Sign Out</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Tab Navigation -->
+        <nav class="tabs">
+          <a href="#" class="tab active">All Scores</a>
+          <a href="#" class="tab">My Library</a>
+          <a href="#" class="tab">Public Collections</a>
+          <a href="#" class="tab">My Collections</a>
+          <a href="#" class="tab">Favorites</a>
+        </nav>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <button class="filter-chip active">All</button>
+            <button class="filter-chip">Piano</button>
+            <button class="filter-chip">Guitar</button>
+            <button class="filter-chip">Beginner</button>
+            <button class="filter-chip">Intermediate</button>
+            <button class="filter-chip">Advanced</button>
+            <button class="filter-chip">Classical</button>
+            <button class="filter-chip">Jazz</button>
+            <button class="filter-chip">Pop</button>
+          </div>
+          <div class="view-actions">
+            <div class="view-toggle desktop-only">
+              <button class="view-btn active">Grid</button>
+              <button class="view-btn">List</button>
+            </div>
+            <button class="btn btn-primary desktop-only">Import Score</button>
+          </div>
+        </div>
+
+        <!-- Score List Container -->
+        <div class="score-list-container">
+          <div class="score-list">
+            <!-- Score Item 1 -->
+            <div class="score-item">
+              <div class="score-indicator piano"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Invention No.1 in C Major</div>
+                  <div class="score-meta">
+                    <span>J.S. Bach</span>
+                    <span>•</span>
+                    <span>BWV 772</span>
+                    <span>•</span>
+                    <span>Piano</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Item 2 -->
+            <div class="score-item">
+              <div class="score-indicator piano"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Nocturne Op.9 No.2</div>
+                  <div class="score-meta">
+                    <span>Frédéric Chopin</span>
+                    <span>•</span>
+                    <span>Piano</span>
+                    <span>•</span>
+                    <span class="score-badge badge-favorite">Favorite</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Item 3 -->
+            <div class="score-item">
+              <div class="score-indicator guitar"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Asturias (Leyenda)</div>
+                  <div class="score-meta">
+                    <span>Isaac Albéniz</span>
+                    <span>•</span>
+                    <span>Guitar</span>
+                    <span>•</span>
+                    <span>Advanced</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Item 4 -->
+            <div class="score-item">
+              <div class="score-indicator piano"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Sonata No.16 in C Major, K.545</div>
+                  <div class="score-meta">
+                    <span>W.A. Mozart</span>
+                    <span>•</span>
+                    <span>Piano</span>
+                    <span>•</span>
+                    <span>Beginner</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Item 5 -->
+            <div class="score-item">
+              <div class="score-indicator piano"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Clair de Lune</div>
+                  <div class="score-meta">
+                    <span>Claude Debussy</span>
+                    <span>•</span>
+                    <span>Piano</span>
+                    <span>•</span>
+                    <span class="score-badge badge-collection">Romantic</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Item 6 -->
+            <div class="score-item">
+              <div class="score-indicator guitar"></div>
+              <div class="score-content">
+                <div class="score-main">
+                  <div class="score-title">Cavatina</div>
+                  <div class="score-meta">
+                    <span>Stanley Myers</span>
+                    <span>•</span>
+                    <span>Guitar</span>
+                    <span>•</span>
+                    <span>Intermediate</span>
+                  </div>
+                </div>
+                <div class="score-actions">
+                  <div class="score-difficulty">
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                    <svg class="star empty" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <button class="action-icon-btn" title="View Score">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab" title="Import Score">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+    </button>
+
+    <!-- Mobile Bottom Tabs -->
+    <nav class="bottom-tabs mobile-only">
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          ></path>
+        </svg>
+        Home
+      </a>
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path
+            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+          ></path>
+        </svg>
+        Logbook
+      </a>
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="12" y1="12" x2="8" y2="12"></line>
+          <line x1="12" y1="12" x2="16" y2="12"></line>
+        </svg>
+        Add
+      </a>
+      <a href="#" class="tab-item active">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+        Music
+      </a>
+      <a href="#" class="tab-item">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Profile
+      </a>
+    </nav>
+
+    <script>
+      function toggleUserDropdown() {
+        const dropdown = document.getElementById('userDropdown')
+        dropdown.classList.toggle('open')
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', e => {
+        const userAvatar = document.getElementById('userAvatar')
+        const dropdown = document.getElementById('userDropdown')
+        if (!userAvatar.contains(e.target)) {
+          dropdown.classList.remove('open')
+        }
+      })
+
+      // Filter chip interactions
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          // For instrument filters, make exclusive
+          if (['Piano', 'Guitar'].includes(chip.textContent)) {
+            document.querySelectorAll('.filter-chip').forEach(c => {
+              if (['Piano', 'Guitar'].includes(c.textContent)) {
+                c.classList.remove('active')
+              }
+            })
+          }
+          // For difficulty filters, make exclusive
+          if (
+            ['Beginner', 'Intermediate', 'Advanced'].includes(chip.textContent)
+          ) {
+            document.querySelectorAll('.filter-chip').forEach(c => {
+              if (
+                ['Beginner', 'Intermediate', 'Advanced'].includes(c.textContent)
+              ) {
+                c.classList.remove('active')
+              }
+            })
+          }
+          chip.classList.toggle('active')
+        })
+      })
+
+      // View toggle
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document
+            .querySelectorAll('.view-btn')
+            .forEach(b => b.classList.remove('active'))
+          btn.classList.add('active')
+        })
+      })
+
+      // Mobile tab navigation
+      document.querySelectorAll('.tab-item').forEach(tab => {
+        tab.addEventListener('click', e => {
+          e.preventDefault()
+          document
+            .querySelectorAll('.tab-item')
+            .forEach(t => t.classList.remove('active'))
+          e.currentTarget.classList.add('active')
+        })
+      })
+    </script>
+  </body>
+</html>

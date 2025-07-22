@@ -1,99 +1,99 @@
 {
-  "backToLogbook": "Zurück zum Tagebuch",
-  "counter": {
-    "button": {
-      "finish": "Beenden",
-      "save_to_log": "Im Tagebuch speichern",
-      "start": "Start",
-      "start_new": "Neu beginnen"
-    },
-    "log_summary": "Mit dem Zähler geübt: {{reps}} Wiederholungen in {{time}}",
-    "mode": {
-      "down": "Abwärts zählen",
-      "up": "Aufwärts zählen"
-    },
-    "practice_title": "Wiederholungsübung",
-    "save_failed": "Fehler beim Speichern der Übungseinheit",
-    "saved_to_log": "Übungseinheit im Tagebuch gespeichert",
-    "start_at": {
-      "placeholder": "Startwert"
-    },
-    "summary": {
-      "duration_column": "Dauer",
-      "rep_column": "Wdh.",
-      "title": "Übungszusammenfassung",
-      "total_reps": "Wiederholungen gesamt",
-      "total_time": "Gesamtzeit"
-    },
-    "title": "Übungszähler"
-  },
+  "title": "Werkzeugkasten",
   "metronome": {
-    "clickToCreate": "Klicken Sie auf das Raster, um Ihr eigenes Rhythmusmuster zu erstellen. Jede Zeile stellt eine andere Klangschicht dar.",
-    "patterns": {
-      "backbeat": {
-        "description": "Betonung auf Schlägen 2 und 4",
-        "name": "Backbeat (2 & 4)"
-      },
-      "basic": {
-        "description": "Standard 4/4 mit Betonung auf 1",
-        "name": "Basic Beat"
-      },
-      "bossa": {
-        "description": "Brasilianisches Rhythmusmuster",
-        "name": "Bossa Nova"
-      },
-      "clave32": {
-        "description": "Lateinamerikanisches Clave-Muster",
-        "name": "3-2 Clave"
-      },
-      "offbeat": {
-        "description": "Klick nur auf Offbeats",
-        "name": "Off-beat Practice"
-      },
-      "progressive": {
-        "description": "Wanderndes Betonungsmuster",
-        "name": "Progressive Accent"
-      },
-      "shuffle": {
-        "description": "Triolen-Gefühl mit stummer mittlerer Note",
-        "name": "Shuffle/Swing"
-      },
-      "sixeight": {
-        "description": "Zwei punktierte Viertel-Gefühl",
-        "name": "6/8 Time"
-      },
-      "subdivisions": {
-        "description": "Übung für Achtel- & Sechzehntelnoten",
-        "name": "Subdivisions"
-      },
-      "waltz": {
-        "description": "Stark-schwach-schwach Muster",
-        "name": "Waltz (3/4)"
-      }
-    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Taktart",
+    "volume": "Lautstärke",
     "presetPatterns": "Voreingestellte Muster",
+    "clickToCreate": "Klicken Sie auf das Raster, um Ihr eigenes Rhythmusmuster zu erstellen. Jede Zeile stellt eine andere Klangschicht dar.",
     "sounds": {
       "accent": "akzent",
       "click": "klick",
+      "woodblock": "wood block",
       "shaker": "shaker",
-      "triangle": "triangel",
-      "woodblock": "wood block"
+      "triangle": "triangel"
     },
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "Taktart",
-    "volume": "Lautstärke"
+    "patterns": {
+      "basic": {
+        "name": "Basic Beat",
+        "description": "Standard 4/4 mit Betonung auf 1"
+      },
+      "backbeat": {
+        "name": "Backbeat (2 & 4)",
+        "description": "Betonung auf Schlägen 2 und 4"
+      },
+      "waltz": {
+        "name": "Waltz (3/4)",
+        "description": "Stark-schwach-schwach Muster"
+      },
+      "clave32": {
+        "name": "3-2 Clave",
+        "description": "Lateinamerikanisches Clave-Muster"
+      },
+      "shuffle": {
+        "name": "Shuffle/Swing",
+        "description": "Triolen-Gefühl mit stummer mittlerer Note"
+      },
+      "sixeight": {
+        "name": "6/8 Time",
+        "description": "Zwei punktierte Viertel-Gefühl"
+      },
+      "bossa": {
+        "name": "Bossa Nova",
+        "description": "Brasilianisches Rhythmusmuster"
+      },
+      "subdivisions": {
+        "name": "Subdivisions",
+        "description": "Übung für Achtel- & Sechzehntelnoten"
+      },
+      "offbeat": {
+        "name": "Off-beat Practice",
+        "description": "Klick nur auf Offbeats"
+      },
+      "progressive": {
+        "name": "Progressive Accent",
+        "description": "Wanderndes Betonungsmuster"
+      }
+    }
   },
-  "syncStatus": {
-    "localOnly": "Lokaler Speicher",
-    "synced": "Synchronisiert"
+  "counter": {
+    "title": "Übungszähler",
+    "mode": {
+      "up": "Aufwärts zählen",
+      "down": "Abwärts zählen"
+    },
+    "start_at": {
+      "placeholder": "Startwert"
+    },
+    "button": {
+      "start": "Start",
+      "finish": "Beenden",
+      "save_to_log": "Im Tagebuch speichern",
+      "start_new": "Neu beginnen"
+    },
+    "summary": {
+      "title": "Übungszusammenfassung",
+      "total_reps": "Wiederholungen gesamt",
+      "total_time": "Gesamtzeit",
+      "rep_column": "Wdh.",
+      "duration_column": "Dauer"
+    },
+    "log_summary": "Mit dem Zähler geübt: {{reps}} Wiederholungen in {{time}}",
+    "practice_title": "Wiederholungsübung",
+    "saved_to_log": "Übungseinheit im Tagebuch gespeichert",
+    "save_failed": "Fehler beim Speichern der Übungseinheit"
   },
   "tabs": {
-    "counter": "Übungszähler",
     "metronome": "Metronom",
+    "counter": "Übungszähler",
     "circleOfFifths": "Circle of Fifths",
     "dictionary": "Musikwörterbuch"
   },
-  "title": "Werkzeugkasten",
+  "syncStatus": {
+    "synced": "Synchronisiert",
+    "localOnly": "Lokaler Speicher"
+  },
+  "backToLogbook": "Zurück zum Tagebuch",
   "dictionary": {
     "title": "Musikwörterbuch",
     "description": "Lernen Sie musikalische Begriffe, Komponisten und Konzepte kennen",

@@ -1,37 +1,25 @@
 {
-  "autoTracked": "Automatisch von Notenübung erfasst",
-  "autocomplete": {
-    "offline": "Offline - zeigt Ihre Historie"
-  },
+  "title": "Übungstagebuch",
+  "openLogbook": "Übungstagebuch öffnen",
   "continueToLogbook": "Zum Übungstagebuch",
+  "loading": "Lade deine Übungssitzungen...",
   "empty": "Noch keine Übungseinträge. Beginne deine musikalische Reise zu dokumentieren!",
+  "noResults": "Keine Einträge entsprechen deiner Suche.",
+  "searchPlaceholder": "Einträge durchsuchen...",
+  "syncStatus": {
+    "synced": "Synchronisiert",
+    "localOnly": "Lokaler Speicher"
+  },
   "entry": {
     "addEntry": "Eintrag hinzufügen",
     "addFirstEntry": "Deinen ersten Eintrag hinzufügen",
-    "addPiece": "Stück hinzufügen",
-    "composer": "Komponist",
-    "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
+    "saveEntry": "Eintrag speichern",
+    "updateEntry": "Eintrag aktualisieren",
     "deleteEntry": "Eintrag löschen",
+    "editEntry": "Eintrag bearbeiten",
     "duration": "Dauer (Minuten)",
     "durationPlaceholder": "30",
-    "editEntry": "Eintrag bearbeiten",
-    "entry_one": "{{count}} Eintrag",
-    "entry_other": "{{count}} Einträge",
-    "foundEntries": "{{count}} Einträge gefunden",
-    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag",
-    "mood": "Wie lief es?",
-    "notes": "Notizen",
-    "notesPlaceholder": "Woran hast du gearbeitet? Irgendwelche Beobachtungen?",
-    "pieceTitle": "Titel des Stücks",
-    "pieces": "Stücke",
-    "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
-    "practiceDate": "Übungsdatum",
-    "saveEntry": "Eintrag speichern",
-    "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
-    "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
-    "techniques": "Techniken",
     "type": "Art",
-    "updateEntry": "Eintrag aktualisieren",
     "typeOptions": {
       "practice": "Üben",
       "lesson": "Unterricht",
@@ -39,6 +27,18 @@
       "rehearsal": "Probe",
       "technique": "Technik"
     },
+    "pieces": "Stücke",
+    "notes": "Notizen",
+    "notesPlaceholder": "Woran hast du gearbeitet? Irgendwelche Beobachtungen?",
+    "addPiece": "Stück hinzufügen",
+    "pieceTitle": "Titel des Stücks",
+    "composer": "Komponist",
+    "entry_one": "{{count}} Eintrag",
+    "entry_other": "{{count}} Einträge",
+    "mood": "Wie lief es?",
+    "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
+    "foundEntries": "{{count}} Einträge gefunden",
+    "techniques": "Techniken",
     "techniqueOptions": {
       "scale": "Tonleiter",
       "arpeggio": "Arpeggio",
@@ -48,35 +48,47 @@
       "selectTechniques": "Geübte Techniken auswählen",
       "addCustom": "Benutzerdefinierte Technik hinzufügen",
       "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben"
-    }
+    },
+    "practiceDate": "Übungsdatum",
+    "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
+    "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
+    "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
+    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag"
   },
   "filters": {
-    "allTime": "Gesamte Zeit",
-    "last30Days": "Letzte 30 Tage",
     "last7Days": "Letzte 7 Tage",
+    "last30Days": "Letzte 30 Tage",
+    "thisMonth": "Dieser Monat",
     "lastMonth": "Letzter Monat",
-    "thisMonth": "Dieser Monat"
-  },
-  "linkedScore": "Verknüpfte Noten",
-  "loading": "Lade deine Übungssitzungen...",
-  "mood": {
-    "excited": "Begeistert",
-    "frustrated": "Frustriert",
-    "neutral": "Neutral",
-    "satisfied": "Zufrieden"
-  },
-  "noResults": "Keine Einträge entsprechen deiner Suche.",
-  "openLogbook": "Übungstagebuch öffnen",
-  "searchPlaceholder": "Einträge durchsuchen...",
-  "syncStatus": {
-    "localOnly": "Lokaler Speicher",
-    "synced": "Synchronisiert"
+    "allTime": "Gesamte Zeit"
   },
   "timeline": {
-    "month": "{{month}}",
     "week": "Woche {{number}}",
+    "month": "{{month}}",
     "year": "{{year}}"
   },
-  "title": "Übungstagebuch",
-  "viewScore": "Noten ansehen"
+  "mood": {
+    "frustrated": "Frustriert",
+    "neutral": "Neutral",
+    "satisfied": "Zufrieden",
+    "excited": "Begeistert"
+  },
+  "autocomplete": {
+    "offline": "Offline - zeigt Ihre Historie"
+  },
+  "viewScore": "Noten ansehen",
+  "linkedScore": "Verknüpfte Noten",
+  "autoTracked": "Automatisch von Notenübung erfasst",
+  "timer": {
+    "title": "[NEEDS TRANSLATION] Practice Timer",
+    "start": "[NEEDS TRANSLATION] Start Timer",
+    "pause": "[NEEDS TRANSLATION] Pause",
+    "resume": "[NEEDS TRANSLATION] Resume",
+    "stop": "[NEEDS TRANSLATION] Stop & Log",
+    "reset": "[NEEDS TRANSLATION] Reset",
+    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
+    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
+    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
+    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+  }
 }

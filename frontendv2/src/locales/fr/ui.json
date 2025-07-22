@@ -1,0 +1,24 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "Aucun résultat trouvé"
+    },
+    "select": {
+      "placeholder": "Sélectionner une option"
+    },
+    "multiSelect": {
+      "placeholder": "Sélectionner des options"
+    },
+    "timePicker": {
+      "placeholder": "HH:MM",
+      "am": "AM",
+      "pm": "PM"
+    },
+    "tabs": {
+      "ariaLabel": "Onglets"
+    },
+    "imageLoading": {
+      "loading": "Chargement de l'image..."
+    }
+  }
+}

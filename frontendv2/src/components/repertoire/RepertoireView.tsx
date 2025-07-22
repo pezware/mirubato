@@ -3,19 +3,43 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
-import type { RepertoireStatus } from '@/api/repertoire'
 import { EnhancedAnalyticsData } from '@/types/reporting'
+import { RepertoireItem } from '@/api/repertoire'
+import { Goal } from '@/api/goals'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
-import { Input } from '@/components/ui/Input'
 import { Loading } from '@/components/ui/Loading'
 import { RepertoireCard } from './RepertoireCard'
+import { FocusedRepertoireItem } from './FocusedRepertoireItem'
+import { RepertoireCalendarView } from './RepertoireCalendarView'
+import { PieceDetailView } from './PieceDetailView'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
+import { EditNotesModal } from './EditNotesModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
-import { Search, Music } from 'lucide-react'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '@/utils/scoreIdNormalizer'
+import { Music } from 'lucide-react'
+
+interface RecentPractice {
+  id: string
+  timestamp: number
+  duration: number
+  notes?: string
+}
+
+interface EnrichedRepertoireItem extends RepertoireItem {
+  scoreTitle: string
+  scoreComposer: string
+  catalogNumber?: string
+  activeGoals?: Goal[]
+  recentPractice?: RecentPractice[]
+  relatedSessions?: number
+  isLogbookPiece?: boolean
+}
 
 interface RepertoireViewProps {
   analytics: EnhancedAnalyticsData
@@ -27,22 +51,31 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list')
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedPiece, setSelectedPiece] =
+    useState<EnrichedRepertoireItem | null>(null)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [manualEntryPiece, setManualEntryPiece] = useState<{
+    title: string
+    composer: string
+    scoreId?: string
+  } | null>(null)
+  const [searchQuery] = useState('') // TODO: Add search input
+  const [editingPieceNotes, setEditingPieceNotes] =
+    useState<EnrichedRepertoireItem | null>(null)
 
   const {
-    goals,
     repertoireLoading,
-    statusFilter,
-    goalFilter,
-    searchQuery,
     loadRepertoire,
     loadGoals,
-    setStatusFilter,
-    setGoalFilter,
-    setSearchQuery,
     getFilteredRepertoire,
     getGoalsForScore,
     cacheScoreMetadata,
     getScoreMetadata,
+    updateRepertoireStatus,
+    updateRepertoire,
+    repertoire,
   } = useRepertoireStore()
 
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
@@ -67,12 +100,13 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   // Calculate stats
   const stats = useMemo(() => {
-    const activeGoals = Array.from(goals.values()).filter(
-      g => g.status === 'active'
-    )
-    const performanceReady = filteredItems.filter(
-      item => item.status === 'performance_ready'
-    ).length
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Practice today
+    const practiceToday = analytics.filteredEntries
+      .filter(entry => new Date(entry.timestamp).getTime() >= today.getTime())
+      .reduce((sum, entry) => sum + entry.duration, 0)
 
     // Practice this week
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -80,13 +114,21 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       .filter(entry => new Date(entry.timestamp).getTime() > oneWeekAgo)
       .reduce((sum, entry) => sum + entry.duration, 0)
 
+    // Active pieces count - exclude dropped pieces
+    const activePieces = filteredItems.filter(
+      item => item.status !== 'dropped'
+    ).length
+
+    // Calculate current streak
+    const streak = analytics.currentStreak || 0
+
     return {
-      totalPieces: filteredItems.length,
-      activeGoals: activeGoals.length,
+      practiceToday,
       practiceThisWeek,
-      performanceReady,
+      activePieces,
+      streak,
     }
-  }, [filteredItems, goals, analytics])
+  }, [filteredItems, analytics])
 
   // Merge repertoire data with score metadata and apply search filter
   const enrichedRepertoire = useMemo(() => {
@@ -99,32 +141,21 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       // Get practice data from analytics
       // First try to match by scoreId, then fall back to matching by piece title/composer
       const practiceSessions = analytics.filteredEntries.filter(entry => {
-        // Direct scoreId match (for scorebook items)
-        if (entry.scoreId === item.scoreId) {
+        // Direct scoreId match using normalized comparison
+        if (entry.scoreId && isSameScore(entry.scoreId, item.scoreId)) {
           return true
         }
 
-        // For logbook pieces, match by title and composer from pieces array
-        if (!score && entry.pieces && entry.pieces.length > 0) {
-          // Extract title and composer from the repertoire scoreId
-          let repTitle = ''
-          let repComposer = ''
-
-          if (item.scoreId.includes('-')) {
-            const parts = item.scoreId.split('-')
-            if (parts.length >= 2) {
-              repTitle = parts[0].toLowerCase()
-              repComposer = parts.slice(1).join('-').toLowerCase()
-            }
-          }
-
+        // For logbook pieces without scoreId, match by title and composer from pieces array
+        if (!entry.scoreId && entry.pieces && entry.pieces.length > 0) {
           // Check if any piece in the entry matches
           return entry.pieces.some(piece => {
-            const pieceTitle = (piece.title || '').toLowerCase()
-            const pieceComposer = (piece.composer || '').toLowerCase()
-
-            // Match if both title and composer match
-            return pieceTitle === repTitle && pieceComposer === repComposer
+            // Generate normalized scoreId for the piece and compare
+            const pieceScoreId = generateNormalizedScoreId(
+              piece.title || '',
+              piece.composer || ''
+            )
+            return isSameScore(pieceScoreId, item.scoreId)
           })
         }
 
@@ -237,6 +268,80 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     )
   }
 
+  // If viewing a piece detail
+  if (selectedPiece) {
+    // Get all practice sessions for this piece
+    const pieceEntries = analytics.filteredEntries.filter(entry => {
+      // Direct scoreId match using normalized comparison
+      if (entry.scoreId && isSameScore(entry.scoreId, selectedPiece.scoreId)) {
+        return true
+      }
+
+      // For logbook pieces without scoreId, match by title and composer
+      if (!entry.scoreId && entry.pieces && entry.pieces.length > 0) {
+        return entry.pieces.some(piece => {
+          // Generate normalized scoreId for the piece and compare
+          const pieceScoreId = generateNormalizedScoreId(
+            piece.title || '',
+            piece.composer || ''
+          )
+          return isSameScore(pieceScoreId, selectedPiece.scoreId)
+        })
+      }
+
+      return false
+    })
+
+    // Convert LogbookEntry to PracticeSession format
+    const practiceSessions = pieceEntries.map(entry => ({
+      id: entry.id,
+      timestamp: entry.timestamp,
+      duration: entry.duration,
+      type: entry.type,
+      notes: entry.notes || undefined,
+      mood: entry.mood || undefined,
+      tempo: undefined, // Not available in LogbookEntry
+      instrument: entry.instrument,
+    }))
+
+    return (
+      <PieceDetailView
+        item={selectedPiece}
+        sessions={practiceSessions}
+        onBack={() => setSelectedPiece(null)}
+        onLogPractice={() => {
+          setManualEntryPiece({
+            title: selectedPiece.scoreTitle,
+            composer: selectedPiece.scoreComposer,
+            scoreId: selectedPiece.scoreId,
+          })
+          setSelectedPiece(null)
+          setShowManualEntry(true)
+        }}
+        onEditNotes={() => {
+          setEditingPieceNotes(selectedPiece)
+          setSelectedPiece(null)
+        }}
+        onEditSession={sessionId => {
+          setSelectedPiece(null)
+          setEditingSessionId(sessionId)
+        }}
+        onStatusChange={async newStatus => {
+          await updateRepertoireStatus(selectedPiece.scoreId, newStatus)
+          // Refresh the selected piece data
+          const updatedItem = repertoire.get(selectedPiece.scoreId)
+          if (updatedItem) {
+            setSelectedPiece({
+              ...selectedPiece,
+              ...updatedItem,
+              status: newStatus,
+            })
+          }
+        }}
+      />
+    )
+  }
+
   if (repertoireLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -247,107 +352,90 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-stone-800">
-          {t('repertoire:myRepertoire')}
-        </h2>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
-          <Music className="w-4 h-4 mr-2" />
-          {t('repertoire:addToRepertoire')}
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 w-4 h-4" />
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={t('repertoire:searchPieces')}
-              className="pl-10"
-            />
+      {/* Summary Bar */}
+      <div className="bg-white rounded-lg border border-stone-200 p-3 sm:p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {formatDuration(stats.practiceToday)}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:time.today')}
+            </div>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select
-              value={statusFilter}
-              onChange={value =>
-                setStatusFilter(value as keyof RepertoireStatus | 'all')
-              }
-              options={[
-                { value: 'all', label: t('repertoire:allPieces') },
-                { value: 'planned', label: t('repertoire:status.planned') },
-                { value: 'learning', label: t('repertoire:status.learning') },
-                { value: 'working', label: t('repertoire:status.working') },
-                { value: 'polished', label: t('repertoire:status.polished') },
-                {
-                  value: 'performance_ready',
-                  label: t('repertoire:status.performance_ready'),
-                },
-              ]}
-              className="flex-1"
-            />
-
-            <Select
-              value={goalFilter}
-              onChange={value =>
-                setGoalFilter(
-                  value as 'all' | 'active' | 'completed' | 'no_goals'
-                )
-              }
-              options={[
-                { value: 'all', label: t('repertoire:allGoals') },
-                { value: 'active', label: t('repertoire:activeGoals') },
-                { value: 'completed', label: t('repertoire:completedGoals') },
-                { value: 'no_goals', label: t('repertoire:noGoals') },
-              ]}
-              className="flex-1"
-            />
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {formatDuration(stats.practiceThisWeek)}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:time.thisWeek')}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {stats.activePieces}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('repertoire:activePieces')}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-stone-800">
+              {stats.streak} {t('common:time.day_plural')}
+            </div>
+            <div className="text-sm text-stone-500">
+              {t('common:statistics.streak')}
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.totalPieces}
+      {/* List Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-lg font-semibold text-stone-800">
+          {t('repertoire:activePieces')}
+        </h2>
+        <div className="flex items-center gap-2">
+          <div className="bg-stone-100 rounded-lg p-1 flex">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.list')}
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.grid')}
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-stone-900 shadow-sm'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              {t('common:view.calendar')}
+            </button>
           </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:totalRepertoire')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.activeGoals}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:activeGoals')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {formatDuration(stats.practiceThisWeek)}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:practiceThisWeek')}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="text-3xl font-bold text-stone-800">
-            {stats.performanceReady}
-          </div>
-          <div className="text-sm text-stone-600 mt-1">
-            {t('repertoire:performanceReady')}
-          </div>
-        </Card>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Music className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Repertoire Items */}
@@ -362,20 +450,46 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               {t('repertoire:addFirstPiece')}
             </Button>
           </Card>
-        ) : (
+        ) : viewMode === 'list' ? (
           enrichedRepertoire.map(item => (
-            <RepertoireCard
+            <div
               key={item.scoreId}
-              item={item}
-              onCreateGoal={() => {
-                setSelectedScoreId(item.scoreId)
-                setShowGoalModal(true)
-              }}
-              onEditSession={sessionId => {
-                setEditingSessionId(sessionId)
-              }}
-            />
+              onClick={() => setSelectedPiece(item)}
+              className="cursor-pointer"
+            >
+              <FocusedRepertoireItem
+                item={item}
+                onPlay={() => {
+                  // TODO: Implement practice start functionality
+                  console.log('Start practice for', item.scoreTitle)
+                }}
+              />
+            </div>
           ))
+        ) : viewMode === 'grid' ? (
+          // Grid view - use existing RepertoireCard
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {enrichedRepertoire.map(item => (
+              <RepertoireCard
+                key={item.scoreId}
+                item={item}
+                onCreateGoal={() => {
+                  setSelectedScoreId(item.scoreId)
+                  setShowGoalModal(true)
+                }}
+                onEditSession={sessionId => {
+                  setEditingSessionId(sessionId)
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          // Calendar view
+          <RepertoireCalendarView
+            enrichedRepertoire={enrichedRepertoire}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+          />
         )}
       </div>
 
@@ -397,6 +511,45 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           scoreId={selectedScoreId}
         />
       )}
+
+      {/* Manual Entry Modal */}
+      {showManualEntry && (
+        <ManualEntryForm
+          onClose={() => {
+            setShowManualEntry(false)
+            setManualEntryPiece(null)
+          }}
+          onSave={() => {
+            setShowManualEntry(false)
+            setManualEntryPiece(null)
+            loadEntries() // Refresh the entries
+          }}
+          initialPieces={manualEntryPiece ? [manualEntryPiece] : undefined}
+        />
+      )}
+      {/* Edit Notes Modal */}
+      {editingPieceNotes &&
+        (() => {
+          // Capture the values to avoid TypeScript narrowing issues
+          const currentPiece = editingPieceNotes
+          return (
+            <EditNotesModal
+              isOpen={true}
+              onClose={() => setEditingPieceNotes(null)}
+              pieceTitle={currentPiece.scoreTitle}
+              currentNotes={currentPiece.personalNotes || ''}
+              currentLinks={currentPiece.referenceLinks || []}
+              onSave={async (notes, links) => {
+                await updateRepertoire(currentPiece.scoreId, {
+                  personalNotes: notes,
+                  referenceLinks: links,
+                })
+                setEditingPieceNotes(null)
+                // The repertoire will be refreshed from the store automatically
+              }}
+            />
+          )
+        })()}
     </div>
   )
 }

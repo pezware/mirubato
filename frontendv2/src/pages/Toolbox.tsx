@@ -11,12 +11,12 @@ import {
   Book,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import * as Tone from 'tone'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
@@ -42,7 +42,6 @@ const Toolbox: React.FC = () => {
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [activeTab, setActiveTab] = useState('metronome')
 
   // Get current pattern data from JSON file
@@ -273,6 +272,11 @@ const Toolbox: React.FC = () => {
       }
     } else {
       try {
+        // Ensure Tone.js audio context is started (required for user gesture)
+        if (Tone.context.state !== 'running') {
+          await Tone.start()
+        }
+
         // Only use the beats that are within the current beats per measure
         const trimmedPatterns = {
           accent: patterns.accent.slice(0, settings.beatsPerMeasure),
@@ -299,7 +303,12 @@ const Toolbox: React.FC = () => {
     }
   }
 
-  const handleTapTempo = () => {
+  const handleTapTempo = async () => {
+    // Ensure audio context is started for tap tempo sound (if any)
+    if (Tone.context.state !== 'running') {
+      await Tone.start()
+    }
+
     const now = Date.now()
     const recentTaps = [...tapTimes, now].filter(t => now - t < 3000)
 
@@ -366,14 +375,9 @@ const Toolbox: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-morandi-stone-50">
-      <UnifiedHeader
-        currentPage="toolbox"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
-
+    <AppLayout showQuickActions={false}>
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="p-4 sm:p-8">
         {/* Tabs */}
         <Tabs
           tabs={[
@@ -408,7 +412,7 @@ const Toolbox: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Control Panel */}
             <div className="lg:w-1/3">
-              <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
                   {/* Practice time display */}
@@ -583,7 +587,7 @@ const Toolbox: React.FC = () => {
 
             {/* Beat Pattern Grid */}
             <div className="lg:w-2/3">
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                 <div className="overflow-x-auto">
                   <div className="min-w-[600px]">
                     {/* Grid with beat numbers and layers */}
@@ -656,12 +660,6 @@ const Toolbox: React.FC = () => {
         {activeTab === 'dictionary' && <Dictionary />}
       </div>
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-      />
-
       {/* Practice Summary Modal */}
       <PracticeSummaryModal
         isOpen={showSummary}
@@ -672,7 +670,7 @@ const Toolbox: React.FC = () => {
         metadata={pendingSession?.metadata || {}}
         title={t('common:practice.practiceSummary')}
       />
-    </div>
+    </AppLayout>
   )
 }
 

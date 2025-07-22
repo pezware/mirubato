@@ -1,6 +1,13 @@
 {
   "allComposers": "所有作曲家",
   "allPieces": "所有曲目",
+  "analytics": {
+    "instrumentDistribution": "樂器分佈",
+    "typeDistribution": "類型分佈",
+    "practiceTrend": "練習趨勢",
+    "topPieces": "熱門曲目",
+    "topComposers": "熱門作曲家"
+  },
   "applyGroupingToSeeData": "套用分組以表格格式查看資料",
   "average": "平均",
   "averageSessionDuration": "平均練習時長",
@@ -12,9 +19,13 @@
   "charts": {
     "averageDuration": "平均時長",
     "change": "變化",
+    "changes": "變化",
+    "comparison": "比較",
     "current": "當前",
     "date": "日期",
     "distribution": "分佈",
+    "duration": "時長（分鐘）",
+    "goal": "目標",
     "less": "較少",
     "month": {
       "0": "一月",
@@ -31,6 +42,7 @@
       "11": "十二月"
     },
     "more": "較多",
+    "movingAverage": "7日平均",
     "noDataAvailable": "所選時期無資料",
     "other": "其他",
     "practiceHeatmap": "練習熱力圖",
@@ -38,6 +50,7 @@
     "practiceTrend": "練習趨勢",
     "previous": "之前",
     "sessions": "練習次數",
+    "target": "目標",
     "totalDuration": "總時長",
     "weekday": {
       "0": "週日",
@@ -47,13 +60,7 @@
       "4": "週四",
       "5": "週五",
       "6": "週六"
-    },
-    "changes": "變化",
-    "comparison": "比較",
-    "duration": "時長（分鐘）",
-    "target": "目標",
-    "goal": "目標",
-    "movingAverage": "7日平均"
+    }
   },
   "clear": "清除",
   "comparativeAnalysis": "比較分析",
@@ -96,8 +103,10 @@
     "addFilter": "新增篩選",
     "addFirstFilter": "新增第一個篩選",
     "allTime": "全部時間",
+    "and": "與",
     "clearAll": "清除全部",
     "deletePreset": "刪除預設",
+    "enterTechnique": "輸入技巧",
     "fields": {
       "autoTracked": "自動追蹤",
       "composer": "作曲家",
@@ -113,6 +122,8 @@
     "last30Days": "最近30天",
     "last7Days": "最近7天",
     "lastMonth": "上個月",
+    "minutes": "分鐘",
+    "no": "否",
     "noFilters": "未套用任何篩選",
     "noPreset": "未選擇預設",
     "operators": {
@@ -128,13 +139,14 @@
       "isNot": "不是",
       "isNotEmpty": "不為空",
       "lessThan": "小於",
+      "linked": "已關聯樂譜",
       "notContains": "不包含",
       "notEquals": "不等於",
       "notIn": "不是其中之一",
-      "on": "開",
-      "linked": "已關聯樂譜",
-      "notLinked": "未關聯樂譜"
+      "notLinked": "未關聯樂譜",
+      "on": "開"
     },
+    "or": "或",
     "savePreset": "儲存預設",
     "savePresetModal": {
       "description": "描述",
@@ -143,13 +155,6 @@
       "namePlaceholder": "輸入預設名稱",
       "title": "儲存篩選預設"
     },
-    "thisMonth": "本月",
-    "title": "篩選器",
-    "and": "與",
-    "enterTechnique": "輸入技巧",
-    "minutes": "分鐘",
-    "no": "否",
-    "or": "或",
     "select": "選擇",
     "selectComposer": "選擇作曲家",
     "selectComposers": "選擇作曲家",
@@ -161,6 +166,8 @@
     "selectPieces": "選擇曲目",
     "selectType": "選擇類型",
     "selectTypes": "選擇類型",
+    "thisMonth": "本月",
+    "title": "篩選器",
     "to": "至",
     "yes": "是"
   },
@@ -198,6 +205,7 @@
   "lastWeek": "上週",
   "longestStreak": "最長連續天數",
   "monthOverMonth": "月對比",
+  "recentEntries": "最近記錄",
   "monthlyHistory": "月度歷史",
   "mostPracticedPieces": "最常練習的曲目",
   "mostPracticedTechniques": "最常練習的技巧",
@@ -217,7 +225,6 @@
   "practiceTimeTrends": "練習時間趨勢",
   "practiced": "已練習",
   "practicedTimes": "練習了 {{count}} 次",
-  "recentEntries": "最近記錄",
   "recentSessions": "最近練習",
   "repertoireByComposer": "按作曲家分類的曲目",
   "searchComposers": "搜尋作曲家...",
@@ -254,10 +261,10 @@
     },
     "helpText": "按多個欄位排序您的練習資料，以更好地組織資訊。",
     "noSorting": "無排序",
-    "sortBy": "排序依據",
-    "title": "排序",
     "primary": "主要",
-    "secondary": "次要"
+    "secondary": "次要",
+    "sortBy": "排序依據",
+    "title": "排序"
   },
   "stats": {
     "avgPerDay": "每日平均",
@@ -294,11 +301,11 @@
     "analytics": "分析",
     "comparative": "比較分析",
     "data": "數據表",
+    "new": "新增",
     "newEntry": "新增記錄",
     "overview": "總覽",
     "pieces": "曲目",
     "progress": "進度",
-    "new": "新增",
     "repertoire": "[NEEDS TRANSLATION] Repertoire"
   },
   "techniqueFocus": "技巧重點",
@@ -322,12 +329,5 @@
   "unknown": "未知",
   "viewReports": "查看報表",
   "weekOverWeek": "週對比",
-  "weekOverview": "週概覽",
-  "analytics": {
-    "instrumentDistribution": "樂器分佈",
-    "typeDistribution": "類型分佈",
-    "practiceTrend": "練習趨勢",
-    "topPieces": "熱門曲目",
-    "topComposers": "熱門作曲家"
-  }
+  "weekOverview": "週概覽"
 }

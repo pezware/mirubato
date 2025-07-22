@@ -9,9 +9,8 @@ import { nanoid } from 'nanoid'
 const repertoireStatusSchema = z.enum([
   'planned',
   'learning',
-  'working',
   'polished',
-  'performance_ready',
+  'dropped',
 ])
 
 const createRepertoireSchema = z.object({
