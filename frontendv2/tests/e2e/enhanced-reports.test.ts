@@ -52,6 +52,8 @@ test.describe('Enhanced Reports', () => {
 
     // Switch to overview tab with a simpler approach
     await page.click('[data-testid="overview-tab"]')
+    // Wait a bit for lazy loading
+    await page.waitForTimeout(2000)
     // Wait for the summary stats to be visible which indicates the tab is loaded
     await page.waitForSelector('[data-testid="summary-stats"]', {
       state: 'visible',
@@ -102,10 +104,13 @@ test.describe('Enhanced Reports', () => {
     })
 
     test('overview view displays statistics @smoke', async ({ page }) => {
+      // Wait a bit longer for lazy-loaded views to render
+      await page.waitForTimeout(2000)
+
       await test.step('Verify summary statistics', async () => {
-        // Wait for stats to be visible
+        // Wait for stats to be visible with increased timeout
         const summaryStats = page.locator('[data-testid="summary-stats"]')
-        await expect(summaryStats).toBeVisible()
+        await expect(summaryStats).toBeVisible({ timeout: 10000 })
 
         // Check total practice time using specific testid
         const totalTimeElement = page.locator(
@@ -125,9 +130,6 @@ test.describe('Enhanced Reports', () => {
       // Practice streak info has been removed from the UI
 
       await test.step('Verify key sections are present', async () => {
-        // Wait a bit for lazy-loaded components to render
-        await page.waitForTimeout(1000)
-
         // Verify the heatmap calendar is present by its test id
         await expect(
           page.locator('[data-testid="heatmap-calendar"]')
