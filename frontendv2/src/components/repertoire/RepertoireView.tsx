@@ -65,6 +65,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     getGoalsForScore,
     cacheScoreMetadata,
     getScoreMetadata,
+    updateRepertoireStatus,
+    repertoire,
   } = useRepertoireStore()
 
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
@@ -334,6 +336,18 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         onEditSession={sessionId => {
           setSelectedPiece(null)
           setEditingSessionId(sessionId)
+        }}
+        onStatusChange={async newStatus => {
+          await updateRepertoireStatus(selectedPiece.scoreId, newStatus)
+          // Refresh the selected piece data
+          const updatedItem = repertoire.get(selectedPiece.scoreId)
+          if (updatedItem) {
+            setSelectedPiece({
+              ...selectedPiece,
+              ...updatedItem,
+              status: newStatus,
+            })
+          }
         }}
       />
     )

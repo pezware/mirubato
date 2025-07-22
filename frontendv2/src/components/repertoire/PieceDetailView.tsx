@@ -4,7 +4,9 @@ import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { ChevronLeft, Edit2, Clock, Target, Music, Smile } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Select } from '@/components/ui/Select'
 import { formatDuration } from '@/utils/dateUtils'
+import { RepertoireStatus } from '@/api/repertoire'
 
 interface PracticeSession {
   id: string
@@ -21,7 +23,7 @@ interface EnrichedRepertoireItem {
   scoreId: string
   scoreTitle: string
   scoreComposer: string
-  status: string
+  status: keyof RepertoireStatus
   personalNotes?: string
   referenceLinks?: string[]
   catalogNumber?: string
@@ -34,6 +36,7 @@ interface PieceDetailViewProps {
   onLogPractice: () => void
   onEditNotes: () => void
   onEditSession?: (sessionId: string) => void
+  onStatusChange?: (newStatus: keyof RepertoireStatus) => void
 }
 
 export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
@@ -43,10 +46,49 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onLogPractice,
   onEditNotes,
   onEditSession,
+  onStatusChange,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [isEditingStatus, setIsEditingStatus] = useState(false)
+
+  // Status colors and labels
+  const statusConfig: Record<
+    keyof RepertoireStatus,
+    { color: string; bg: string; label: string }
+  > = {
+    planned: {
+      color: 'text-stone-600',
+      bg: 'bg-stone-100',
+      label: t('repertoire:status.planned'),
+    },
+    learning: {
+      color: 'text-green-700',
+      bg: 'bg-green-100',
+      label: t('repertoire:status.learning'),
+    },
+    working: {
+      color: 'text-orange-700',
+      bg: 'bg-orange-100',
+      label: t('repertoire:status.working'),
+    },
+    polished: {
+      color: 'text-blue-700',
+      bg: 'bg-blue-100',
+      label: t('repertoire:status.polished'),
+    },
+    performance_ready: {
+      color: 'text-purple-700',
+      bg: 'bg-purple-100',
+      label: t('repertoire:status.performance_ready'),
+    },
+  }
+
+  const handleStatusChange = (newStatus: keyof RepertoireStatus) => {
+    onStatusChange?.(newStatus)
+    setIsEditingStatus(false)
+  }
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -233,9 +275,27 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:status.current')}
             </div>
-            <div className="text-lg sm:text-2xl font-semibold text-orange-600">
-              {t(`repertoire:status.${item.status}`)}
-            </div>
+            {isEditingStatus ? (
+              <Select
+                value={item.status}
+                onChange={value =>
+                  handleStatusChange(value as keyof RepertoireStatus)
+                }
+                options={Object.entries(statusConfig).map(([key, config]) => ({
+                  value: key,
+                  label: config.label,
+                }))}
+                className="w-44"
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingStatus(true)}
+                className={`text-lg sm:text-2xl font-semibold ${statusConfig[item.status].color} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1`}
+              >
+                {t(`repertoire:status.${item.status}`)}
+                <Edit2 className="w-4 h-4 mt-1 opacity-60" />
+              </button>
+            )}
           </div>
           <div>
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
