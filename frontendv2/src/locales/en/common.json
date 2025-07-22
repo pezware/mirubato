@@ -140,7 +140,7 @@
     "reports": "Reports",
     "settings": "Settings",
     "overview": "Overview",
-    "repertoire": "Repertoire",
+    "repertoire": "Pieces",
     "pieces": "Pieces",
     "goals": "Goals",
     "add": "Add",
@@ -170,7 +170,7 @@
     "discardSession": "Discard Session",
     "duration": "Practice Duration",
     "practiceSummary": "Practice Summary",
-    "repetitions": "Repetitions",
+    "repetitions": "Pieces",
     "saveToLogbook": "Save to Logbook",
     "startPractice": "Start Practice",
     "stopPractice": "Stop Practice"
