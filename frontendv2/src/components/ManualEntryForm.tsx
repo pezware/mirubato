@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import type { LogbookEntry } from '../api/logbook'
-import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
@@ -161,19 +164,25 @@ export default function ManualEntryForm({
         await createEntry(entryData)
 
         // Check if any piece should be added to repertoire
-        for (const piece of entryData.pieces) {
-          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
+        // Skip the prompt if we have initialPieces (coming from piece detail page)
+        if (!initialPieces) {
+          for (const piece of entryData.pieces) {
+            const scoreId = generateNormalizedScoreId(
+              piece.title,
+              piece.composer
+            )
 
-          // Check if this piece is already in repertoire
-          const isInRepertoire = Array.from(repertoire.values()).some(
-            item => item.scoreId === scoreId
-          )
+            // Check if this piece is already in repertoire
+            const isInRepertoire = Array.from(repertoire.values()).some(item =>
+              isSameScore(item.scoreId, scoreId)
+            )
 
-          if (!isInRepertoire) {
-            // Show prompt for this piece
-            setShowRepertoirePrompt({ piece, scoreId })
-            // Exit after showing prompt for first piece not in repertoire
-            return
+            if (!isInRepertoire) {
+              // Show prompt for this piece
+              setShowRepertoirePrompt({ piece, scoreId })
+              // Exit after showing prompt for first piece not in repertoire
+              return
+            }
           }
         }
       }

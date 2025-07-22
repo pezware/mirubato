@@ -58,5 +58,46 @@ export function isSameScore(scoreId1: string, scoreId2: string): boolean {
   const normalized1 = scoreId1.toLowerCase().trim()
   const normalized2 = scoreId2.toLowerCase().trim()
 
-  return normalized1 === normalized2
+  // Direct match
+  if (normalized1 === normalized2) {
+    return true
+  }
+
+  // Check if they might be the same piece with reversed order
+  const parts1 = normalized1.split(' - ')
+  const parts2 = normalized2.split(' - ')
+
+  if (parts1.length === 2 && parts2.length === 2) {
+    // Check if it's the same piece with reversed composer/title order
+    return parts1[0] === parts2[1] && parts1[1] === parts2[0]
+  }
+
+  return false
+}
+
+/**
+ * Normalizes an existing score ID to ensure consistent format
+ * This helps fix legacy IDs that might have "composer - title" format
+ * @param scoreId - The score ID to normalize
+ * @returns Normalized score ID in "title - composer" format
+ */
+export function normalizeExistingScoreId(scoreId: string): string {
+  const parts = scoreId.split(' - ')
+
+  // If it's already a compound ID, ensure it's in the right order
+  if (parts.length === 2) {
+    const [part1, part2] = parts
+
+    // Simple heuristic: composers often have fewer words than titles
+    // and are often single names or "Firstname Lastname"
+    const words1 = part1.trim().split(' ').length
+    const words2 = part2.trim().split(' ').length
+
+    // If part1 looks like a composer name (1-2 words) and part2 is longer, flip them
+    if (words1 <= 2 && words2 > words1) {
+      return `${part2.trim()} - ${part1.trim()}`.toLowerCase()
+    }
+  }
+
+  return scoreId.toLowerCase().trim()
 }

@@ -335,6 +335,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         }}
         onEditNotes={() => {
           setEditingPieceNotes(selectedPiece)
+          setSelectedPiece(null)
         }}
         onEditSession={sessionId => {
           setSelectedPiece(null)

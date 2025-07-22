@@ -306,37 +306,34 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Repertoire Notes Section */}
-      {(item.personalNotes ||
-        (item.referenceLinks && item.referenceLinks.length > 0)) && (
-        <Card className="mx-4 sm:mx-8 mt-6 p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-stone-900">
+        {/* Notes Section */}
+        <div className="mt-6 pt-6 border-t border-stone-200">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm uppercase tracking-wider text-stone-500">
               {t('repertoire:personalNotes')}
             </h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={onEditNotes}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 -mt-1"
             >
-              <Edit2 className="w-4 h-4" />
+              <Edit2 className="w-3 h-3" />
               {t('common:edit')}
             </Button>
           </div>
-          <div className="prose prose-sm max-w-none text-stone-700">
+          <div className="text-stone-700">
             {item.personalNotes ? (
-              <div dangerouslySetInnerHTML={{ __html: item.personalNotes }} />
+              <p className="whitespace-pre-wrap">{item.personalNotes}</p>
             ) : (
-              <p className="text-stone-500 italic">
+              <p className="text-stone-500 italic text-sm">
                 {t('repertoire:addNotesPrompt')}
               </p>
             )}
           </div>
-        </Card>
-      )}
+        </div>
+      </div>
 
       {/* Action Bar */}
       <div className="bg-stone-100 px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
