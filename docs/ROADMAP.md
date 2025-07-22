@@ -4,13 +4,13 @@
 
 ### 🔒 Security & Infrastructure Update
 
-✅ **Version 1.6.0 Released**: Major security and dependency updates
+✅ **Version 1.7.0 Released**: Major security and dependency updates
 
 - Fixed critical security vulnerabilities across all services
 - Updated tar-fs to address high severity path traversal vulnerabilities
 - Resolved ws package DoS vulnerability affecting HTTP header handling
 - Fixed esbuild development server security issues
-- All services now unified at version 1.6.0
+- All services now unified at version 1.7.0
 - Dictionary service promoted from v1.0.0 to align with platform versioning
 - Comprehensive dependency updates to latest secure versions
 
@@ -607,4 +607,4 @@ Based on the success of the MVP, Mirubato will continue to prioritize:
 ---
 
 **Next Review**: October 2025
-**Last Updated**: July 18, 2025 (v1.6.0)
+**Last Updated**: July 18, 2025 (v1.7.0)

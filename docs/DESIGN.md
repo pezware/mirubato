@@ -14,10 +14,10 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Enhanced Repertoire**: Timeline visualization and practice history
 - **Complete Localization**: All 200+ missing translations fixed
 
-### Version 1.6.0 Highlights
+### Version 1.7.0 Highlights
 
 - **Security Hardening**: Comprehensive vulnerability remediation across all services
-- **Unified Versioning**: All services now at v1.6.0 for consistency
+- **Unified Versioning**: All services now at v1.7.0 for consistency
 - **Dependency Updates**: Latest secure versions of all critical dependencies
 - **Puppeteer Downgrade**: @cloudflare/puppeteer to 0.0.11 for security compliance
 

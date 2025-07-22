@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Agent Quick Reference
 
-## 📦 Version 1.6.0 Release (July 2025)
+## 📦 Version 1.7.0 Release (July 2025)
 
 ### Security Updates
 
@@ -11,8 +11,8 @@
 
 ### Architecture Changes
 
-- All services unified at version 1.6.0
-- Dictionary service promoted from v1.0.0 to v1.6.0
+- All services unified at version 1.7.0
+- Dictionary service promoted from v1.0.0 to v1.7.0
 - Enhanced security posture across all microservices
 - @cloudflare/puppeteer downgraded to 0.0.11 for security fix
 
