@@ -45,60 +45,70 @@ test.describe('Recent Entries', () => {
 
   test('shows multiple recent entries in order', async ({ page }) => {
     await test.step('Create multiple entries with unique timestamps', async () => {
-      // Create entries with different data to ensure they're distinguishable
+      // Create entries with DECREASING durations so that when the form
+      // calculates "current time - duration", the later entries will have newer timestamps
+      // This is because the form sets practice time to "now - duration minutes"
       const entries = [
-        { duration: 20, title: 'First Entry', notes: 'Created first' },
+        { duration: 40, title: 'First Entry', notes: 'Created first' },
         { duration: 30, title: 'Second Entry', notes: 'Created second' },
-        { duration: 40, title: 'Third Entry', notes: 'Created third' },
+        { duration: 20, title: 'Third Entry', notes: 'Created third' },
       ]
 
-      for (const entry of entries) {
-        await logbookPage.createEntry(entry)
+      for (let i = 0; i < entries.length; i++) {
+        await logbookPage.createEntry(entries[i])
         // Wait for entry to be saved and UI to update
-        await page.waitForSelector(`text="${entry.title}"`, {
+        await page.waitForSelector(`text="${entries[i].title}"`, {
           state: 'visible',
           timeout: 5000,
         })
+        // Add a small delay between entries to ensure different timestamps
+        if (i < entries.length - 1) {
+          await page.waitForTimeout(1000)
+        }
       }
     })
 
     await test.step('Verify entries appear in reverse chronological order', async () => {
+      // Switch to overview tab to see recent entries
+      await page.click('[data-testid="overview-tab"]')
+
+      // Wait for the overview content to load
+      await page.waitForSelector('text=Recent Entries', {
+        state: 'visible',
+        timeout: 5000,
+      })
+
       // Wait for all entries to be visible
       await page.waitForSelector('text=Third Entry', {
         state: 'visible',
         timeout: 5000,
       })
 
-      // Get all entry containers in the Recent Entries section
-      const entryContainers = page.locator(
-        '.bg-white.rounded-lg, [class*="entry"], [class*="card"]'
-      )
-      const entryCount = await entryContainers.count()
+      // Get all entry containers using the specific data-testid
+      const entryContainers = page.locator('[data-testid="logbook-entry"]')
+      await expect(entryContainers).toHaveCount(3, { timeout: 5000 })
 
-      // Collect all entry texts
-      const allEntryTexts: string[] = []
-      for (let i = 0; i < entryCount; i++) {
-        const text = await entryContainers.nth(i).textContent()
-        if (text) {
-          allEntryTexts.push(text)
+      // Get the entry titles in order
+      const entryTitles: string[] = []
+      const count = await entryContainers.count()
+
+      for (let i = 0; i < count; i++) {
+        const titleElement = entryContainers.nth(i).locator('h3').first()
+        const title = await titleElement.textContent()
+        if (title) {
+          entryTitles.push(title.trim())
         }
       }
 
-      // Find which entries contain our test titles
-      const firstEntryPosition = allEntryTexts.findIndex(text =>
-        text.includes('First Entry')
-      )
-      const secondEntryPosition = allEntryTexts.findIndex(text =>
-        text.includes('Second Entry')
-      )
-      const thirdEntryPosition = allEntryTexts.findIndex(text =>
-        text.includes('Third Entry')
-      )
+      // Verify we found all entries
+      expect(entryTitles).toContain('First Entry')
+      expect(entryTitles).toContain('Second Entry')
+      expect(entryTitles).toContain('Third Entry')
 
-      // Verify all entries were found
-      expect(firstEntryPosition).toBeGreaterThanOrEqual(0)
-      expect(secondEntryPosition).toBeGreaterThanOrEqual(0)
-      expect(thirdEntryPosition).toBeGreaterThanOrEqual(0)
+      // Get positions
+      const firstEntryPosition = entryTitles.indexOf('First Entry')
+      const secondEntryPosition = entryTitles.indexOf('Second Entry')
+      const thirdEntryPosition = entryTitles.indexOf('Third Entry')
 
       // Verify they appear in reverse order (newest first)
       // Third Entry should appear before Second Entry
