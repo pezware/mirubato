@@ -550,30 +550,28 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         />
       )}
       {/* Edit Notes Modal */}
-      {editingPieceNotes && (
-        <EditNotesModal
-          isOpen={!!editingPieceNotes}
-          onClose={() => setEditingPieceNotes(null)}
-          pieceTitle={editingPieceNotes.scoreTitle}
-          currentNotes={editingPieceNotes.personalNotes || ''}
-          currentLinks={editingPieceNotes.referenceLinks || []}
-          onSave={async (notes, links) => {
-            await updateRepertoire(editingPieceNotes.scoreId, {
-              personalNotes: notes,
-              referenceLinks: links,
-            })
-            // Update the selected piece if it's the same one
-            if (selectedPiece?.scoreId === editingPieceNotes.scoreId) {
-              setSelectedPiece({
-                ...selectedPiece,
-                personalNotes: notes,
-                referenceLinks: links,
-              })
-            }
-            setEditingPieceNotes(null)
-          }}
-        />
-      )}
+      {editingPieceNotes &&
+        (() => {
+          // Capture the values to avoid TypeScript narrowing issues
+          const currentPiece = editingPieceNotes
+          return (
+            <EditNotesModal
+              isOpen={true}
+              onClose={() => setEditingPieceNotes(null)}
+              pieceTitle={currentPiece.scoreTitle}
+              currentNotes={currentPiece.personalNotes || ''}
+              currentLinks={currentPiece.referenceLinks || []}
+              onSave={async (notes, links) => {
+                await updateRepertoire(currentPiece.scoreId, {
+                  personalNotes: notes,
+                  referenceLinks: links,
+                })
+                setEditingPieceNotes(null)
+                // The repertoire will be refreshed from the store automatically
+              }}
+            />
+          )
+        })()}
     </div>
   )
 }
