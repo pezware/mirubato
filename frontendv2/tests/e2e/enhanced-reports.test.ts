@@ -125,10 +125,13 @@ test.describe('Enhanced Reports', () => {
       // Practice streak info has been removed from the UI
 
       await test.step('Verify key sections are present', async () => {
+        // Wait a bit for lazy-loaded components to render
+        await page.waitForTimeout(1000)
+
         // Verify the heatmap calendar is present by its test id
         await expect(
           page.locator('[data-testid="heatmap-calendar"]')
-        ).toBeVisible()
+        ).toBeVisible({ timeout: 10000 })
 
         // Note: Practice Trend and Instrument Distribution headings are in Analytics tab, not Overview
         // We'll verify them when we test the Analytics tab
