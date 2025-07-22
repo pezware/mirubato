@@ -1,7 +1,15 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import { ChevronLeft, Edit2, Clock, Target, Music, Smile } from 'lucide-react'
+import {
+  ChevronLeft,
+  Edit2,
+  Clock,
+  Target,
+  Music,
+  Smile,
+  Link,
+} from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
@@ -322,6 +330,29 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               </p>
             )}
           </div>
+
+          {/* Reference Links */}
+          {item.referenceLinks && item.referenceLinks.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-stone-600 mb-2">
+                {t('repertoire:referenceLinks')}
+              </h4>
+              <div className="space-y-2">
+                {item.referenceLinks.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-2"
+                  >
+                    <Link className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{link}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
