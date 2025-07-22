@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS user_repertoire_new (
 );
 
 -- Copy data from the old table to the new table
-INSERT INTO user_repertoire_new SELECT * FROM user_repertoire;
+-- Note: last_practiced will be NULL for existing records
+INSERT INTO user_repertoire_new (id, user_id, score_id, status, difficulty_rating, personal_notes, reference_links, created_at, updated_at)
+SELECT id, user_id, score_id, status, difficulty_rating, personal_notes, reference_links, created_at, updated_at FROM user_repertoire;
 
 -- Drop the old table
 DROP TABLE user_repertoire;
