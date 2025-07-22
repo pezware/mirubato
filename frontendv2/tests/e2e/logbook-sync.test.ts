@@ -21,7 +21,7 @@ test.describe('Logbook Sync', () => {
     })
   })
 
-  test('entries sync when user logs in', async ({ page }) => {
+  test('entries sync when user logs in', async () => {
     // Step 1: Create entries while not logged in
     await logbookPage.createEntry({
       duration: 10,
@@ -55,7 +55,7 @@ test.describe('Logbook Sync', () => {
     expect(allEntries.length).toBe(3)
   })
 
-  test('local data structure is correct', async ({ page }) => {
+  test('local data structure is correct', async () => {
     // Create entries with different data
     await logbookPage.createEntry({
       duration: 30,
@@ -77,7 +77,9 @@ test.describe('Logbook Sync', () => {
     expect(entries.length).toBe(2)
 
     // Check first entry structure
-    const firstEntry = entries.find((e: any) => e.title === 'Structure Test 1')
+    const firstEntry = entries.find(
+      (e: { title: string }) => e.title === 'Structure Test 1'
+    )
     expect(firstEntry).toBeDefined()
     expect(firstEntry.duration).toBe(30)
     expect(firstEntry.composer).toBe('Test Composer')
