@@ -18,6 +18,10 @@ import { CreateGoalModal } from './CreateGoalModal'
 import { EditNotesModal } from './EditNotesModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '@/utils/scoreIdNormalizer'
 import { Music } from 'lucide-react'
 
 interface RecentPractice {
@@ -136,32 +140,21 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       // Get practice data from analytics
       // First try to match by scoreId, then fall back to matching by piece title/composer
       const practiceSessions = analytics.filteredEntries.filter(entry => {
-        // Direct scoreId match (for scorebook items)
-        if (entry.scoreId === item.scoreId) {
+        // Direct scoreId match using normalized comparison
+        if (entry.scoreId && isSameScore(entry.scoreId, item.scoreId)) {
           return true
         }
 
-        // For logbook pieces, match by title and composer from pieces array
-        if (!score && entry.pieces && entry.pieces.length > 0) {
-          // Extract title and composer from the repertoire scoreId
-          let repTitle = ''
-          let repComposer = ''
-
-          if (item.scoreId.includes('-')) {
-            const parts = item.scoreId.split('-')
-            if (parts.length >= 2) {
-              repTitle = parts[0].toLowerCase()
-              repComposer = parts.slice(1).join('-').toLowerCase()
-            }
-          }
-
+        // For logbook pieces without scoreId, match by title and composer from pieces array
+        if (!entry.scoreId && entry.pieces && entry.pieces.length > 0) {
           // Check if any piece in the entry matches
           return entry.pieces.some(piece => {
-            const pieceTitle = (piece.title || '').toLowerCase()
-            const pieceComposer = (piece.composer || '').toLowerCase()
-
-            // Match if both title and composer match
-            return pieceTitle === repTitle && pieceComposer === repComposer
+            // Generate normalized scoreId for the piece and compare
+            const pieceScoreId = generateNormalizedScoreId(
+              piece.title || '',
+              piece.composer || ''
+            )
+            return isSameScore(pieceScoreId, item.scoreId)
           })
         }
 
@@ -288,20 +281,20 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   if (selectedPiece) {
     // Get all practice sessions for this piece
     const pieceEntries = analytics.filteredEntries.filter(entry => {
-      // Direct scoreId match
-      if (entry.scoreId === selectedPiece.scoreId) {
+      // Direct scoreId match using normalized comparison
+      if (entry.scoreId && isSameScore(entry.scoreId, selectedPiece.scoreId)) {
         return true
       }
 
-      // For logbook pieces, match by title and composer
+      // For logbook pieces without scoreId, match by title and composer
       if (!entry.scoreId && entry.pieces && entry.pieces.length > 0) {
-        const pieceTitle = selectedPiece.scoreTitle.toLowerCase()
-        const pieceComposer = selectedPiece.scoreComposer.toLowerCase()
-
         return entry.pieces.some(piece => {
-          const entryTitle = (piece.title || '').toLowerCase()
-          const entryComposer = (piece.composer || '').toLowerCase()
-          return entryTitle === pieceTitle && entryComposer === pieceComposer
+          // Generate normalized scoreId for the piece and compare
+          const pieceScoreId = generateNormalizedScoreId(
+            piece.title || '',
+            piece.composer || ''
+          )
+          return isSameScore(pieceScoreId, selectedPiece.scoreId)
         })
       }
 
