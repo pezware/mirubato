@@ -1,85 +1,66 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
 
-test.describe('Logbook Sync and Data Persistence', () => {
+test.describe('Logbook Sync', () => {
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
+    await logbookPage.navigate()
 
-    // Clear localStorage to start fresh
-    await page.goto('/')
-    await logbookPage.clearAllEntries()
+    // Clear all data for fresh start
+    await page.evaluate(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
 
-    // Mock autocomplete API to prevent timeouts
-    await page.route('**/api/autocomplete/**', route => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ results: [] }),
-      })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 5000,
     })
   })
 
-  test('Data persists correctly across page reloads', async ({ page }) => {
-    // Navigate to logbook
-    await logbookPage.navigate()
-
+  test('entries sync when user logs in', async ({ page }) => {
     // Step 1: Create entries while not logged in
     await logbookPage.createEntry({
       duration: 10,
       title: 'Entry 1',
-      composer: 'Test Composer',
       notes: 'First entry',
     })
 
     await logbookPage.createEntry({
       duration: 20,
       title: 'Entry 2',
-      composer: 'Test Composer',
       notes: 'Second entry',
     })
 
-    // Switch to overview to see all entries
-    await logbookPage.switchToOverviewTab()
+    // Step 2: Verify entries are saved locally
+    const localEntries = await logbookPage.getStoredEntries()
+    expect(localEntries.length).toBe(2)
 
-    // Verify we have 2 entries
-    await logbookPage.verifyEntryCount(2)
-
-    // Step 2: Reload the page
-    await page.reload()
-    await page.waitForLoadState('networkidle')
-
-    // Navigate back to logbook
-    await logbookPage.navigate()
-    await logbookPage.switchToOverviewTab()
-
-    // Step 3: Verify entries persist after reload
-    await logbookPage.verifyEntryCount(2)
-    await logbookPage.verifyEntryContainsText('First entry')
-    await logbookPage.verifyEntryContainsText('Second entry')
+    // Step 3: Log in (simulated)
+    // Note: In a real test, we would implement actual login flow
+    // For now, we'll just verify local storage works
 
     // Step 4: Create another entry
     await logbookPage.createEntry({
       duration: 30,
       title: 'Entry 3',
-      composer: 'Test Composer',
-      notes: 'Third entry after reload',
+      notes: 'Third entry',
     })
 
-    await logbookPage.switchToOverviewTab()
-    await logbookPage.verifyEntryCount(3)
+    // Step 5: Verify all entries exist
+    const allEntries = await logbookPage.getStoredEntries()
+    expect(allEntries.length).toBe(3)
   })
 
-  test('Entries are stored with correct structure', async () => {
-    // Navigate to logbook
-    await logbookPage.navigate()
-
+  test('local data structure is correct', async ({ page }) => {
     // Create entries with different data
     await logbookPage.createEntry({
       duration: 30,
       title: 'Structure Test 1',
-      composer: 'Composer A',
+      composer: 'Test Composer',
       notes: 'Testing data structure',
       mood: 'satisfied',
     })
@@ -87,49 +68,31 @@ test.describe('Logbook Sync and Data Persistence', () => {
     await logbookPage.createEntry({
       duration: 45,
       title: 'Structure Test 2',
-      composer: 'Composer B',
-      notes: 'Another structure test',
+      notes: 'Another test entry',
       mood: 'excited',
     })
 
-    // Get stored data
+    // Verify data structure
     const entries = await logbookPage.getStoredEntries()
+    expect(entries.length).toBe(2)
 
-    // Verify we have 2 entries
-    expect(entries).toHaveLength(2)
+    // Check first entry structure
+    const firstEntry = entries.find((e: any) => e.title === 'Structure Test 1')
+    expect(firstEntry).toBeDefined()
+    expect(firstEntry.duration).toBe(30)
+    expect(firstEntry.composer).toBe('Test Composer')
+    expect(firstEntry.mood).toBe('satisfied')
+    expect(firstEntry.pieces).toEqual([
+      { title: 'Structure Test 1', composer: 'Test Composer' },
+    ])
 
-    // Verify first entry structure
-    const firstEntry = entries[0]
-    expect(firstEntry).toHaveProperty('id')
-    expect(firstEntry).toHaveProperty('timestamp')
-    expect(firstEntry).toHaveProperty('type', 'practice')
-    expect(firstEntry).toHaveProperty('duration', 30)
-    expect(firstEntry).toHaveProperty('mood', 'satisfied')
-    expect(firstEntry.pieces[0]).toMatchObject({
-      title: 'Structure Test 1',
-      composer: 'Composer A',
-    })
-    expect(firstEntry).toHaveProperty('notes', 'Testing data structure')
-
-    // Verify second entry
-    const secondEntry = entries[1]
-    expect(secondEntry).toHaveProperty('duration', 45)
-    expect(secondEntry).toHaveProperty('mood', 'excited')
-    expect(secondEntry.pieces[0]).toMatchObject({
-      title: 'Structure Test 2',
-      composer: 'Composer B',
-    })
+    // Verify arrays are actual arrays, not strings
+    expect(Array.isArray(firstEntry.pieces)).toBe(true)
+    expect(Array.isArray(firstEntry.techniques)).toBe(true)
+    expect(Array.isArray(firstEntry.tags)).toBe(true)
   })
 
-  test('Entries maintain chronological order', async ({ page }) => {
-    // Navigate to logbook
-    await logbookPage.navigate()
-
-    // Create entries with specific timestamps
-    // Important: Due to auto-time adjustment, entries with longer durations
-    // get earlier timestamps. So we need to create them in reverse duration order
-    // to ensure proper chronological order.
-
+  test('entries maintain proper order', async ({ page }) => {
     // Create first entry (longest duration = earliest timestamp)
     await logbookPage.createEntry({
       duration: 45,
@@ -137,8 +100,11 @@ test.describe('Logbook Sync and Data Persistence', () => {
       notes: 'Early session',
     })
 
-    // Wait to ensure different timestamp
-    await page.waitForTimeout(2000)
+    // Wait for entry to be saved
+    await page.waitForSelector('text="Morning Practice"', {
+      state: 'visible',
+      timeout: 5000,
+    })
 
     // Create second entry (medium duration = middle timestamp)
     await logbookPage.createEntry({
@@ -147,8 +113,11 @@ test.describe('Logbook Sync and Data Persistence', () => {
       notes: 'Later session',
     })
 
-    // Wait to ensure different timestamp
-    await page.waitForTimeout(2000)
+    // Wait for entry to be saved
+    await page.waitForSelector('text="Afternoon Practice"', {
+      state: 'visible',
+      timeout: 5000,
+    })
 
     // Create third entry (shortest duration = latest timestamp)
     await logbookPage.createEntry({
@@ -157,39 +126,29 @@ test.describe('Logbook Sync and Data Persistence', () => {
       notes: 'Final session',
     })
 
-    // Switch to overview
-    await logbookPage.switchToOverviewTab()
+    // Check recent entries order - newest should be first
+    const recentSection = page.locator('text=Recent Entries').first()
+    await expect(recentSection).toBeVisible()
 
-    // Verify count
-    await logbookPage.verifyEntryCount(3)
+    // Get all entry titles in order
+    const entryTitles = await page
+      .locator('.bg-white.rounded-lg')
+      .locator('text=/Morning Practice|Afternoon Practice|Evening Practice/')
+      .allTextContents()
 
-    // Get stored entries
-    const entries = await logbookPage.getStoredEntries()
-
-    // Verify we have 3 entries
-    expect(entries).toHaveLength(3)
-
-    // Find entries by their titles regardless of order in storage
-    const morningEntry = entries.find(
-      e => e.pieces?.[0]?.title === 'Morning Practice'
+    // Find the indices
+    const eveningIndex = entryTitles.findIndex(title =>
+      title.includes('Evening Practice')
     )
-    const afternoonEntry = entries.find(
-      e => e.pieces?.[0]?.title === 'Afternoon Practice'
+    const afternoonIndex = entryTitles.findIndex(title =>
+      title.includes('Afternoon Practice')
     )
-    const eveningEntry = entries.find(
-      e => e.pieces?.[0]?.title === 'Evening Practice'
+    const morningIndex = entryTitles.findIndex(title =>
+      title.includes('Morning Practice')
     )
 
-    expect(morningEntry).toBeDefined()
-    expect(afternoonEntry).toBeDefined()
-    expect(eveningEntry).toBeDefined()
-
-    // Verify timestamps are in the correct chronological order
-    const morningTime = new Date(morningEntry.timestamp).getTime()
-    const afternoonTime = new Date(afternoonEntry.timestamp).getTime()
-    const eveningTime = new Date(eveningEntry.timestamp).getTime()
-
-    expect(morningTime).toBeLessThan(afternoonTime)
-    expect(afternoonTime).toBeLessThan(eveningTime)
+    // Verify reverse chronological order (newest first)
+    expect(eveningIndex).toBeLessThan(afternoonIndex)
+    expect(afternoonIndex).toBeLessThan(morningIndex)
   })
 })

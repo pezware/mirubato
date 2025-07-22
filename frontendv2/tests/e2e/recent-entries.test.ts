@@ -1,18 +1,23 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
 
-test.describe('Recent Entries Display', () => {
+test.describe('Recent Entries', () => {
   let logbookPage: LogbookPage
 
   test.beforeEach(async ({ page }) => {
     logbookPage = new LogbookPage(page)
+    await logbookPage.navigate()
 
-    // Navigate first
-    await page.goto('/logbook')
-
-    // Clear any existing data after navigation
+    // Clear data for fresh start
     await page.evaluate(() => {
-      localStorage.removeItem('mirubato:logbook:entries')
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 5000,
     })
   })
 
@@ -21,21 +26,17 @@ test.describe('Recent Entries Display', () => {
       await logbookPage.createEntry({
         duration: 30,
         title: 'Test Piece',
+        composer: 'Test Composer',
         notes: 'Test notes for recent entry',
-        mood: 'satisfied',
       })
     })
 
-    await test.step('Verify entry appears in recent entries section', async () => {
-      // The overview tab should be active by default
-      await page.waitForLoadState('networkidle')
-
-      // Check for the recent entries section
-      await expect(page.locator('text=Recent Entries')).toBeVisible()
-
-      // Check that our entry is visible
-      await expect(page.locator('[data-testid="logbook-entry"]')).toBeVisible()
+    await test.step('Verify entry appears in Recent Entries section', async () => {
+      await expect(page.locator('text=Recent Entries')).toBeVisible({
+        timeout: 5000,
+      })
       await expect(page.locator('text=Test Piece')).toBeVisible()
+      await expect(page.locator('text=Test Composer')).toBeVisible()
       await expect(
         page.locator('text=Test notes for recent entry')
       ).toBeVisible()
@@ -43,69 +44,54 @@ test.describe('Recent Entries Display', () => {
   })
 
   test('shows multiple recent entries in order', async ({ page }) => {
-    await test.step('Create multiple entries', async () => {
-      await logbookPage.createEntry({
-        duration: 20,
-        title: 'First Entry',
-        notes: 'Created first',
-      })
+    await test.step('Create multiple entries with unique timestamps', async () => {
+      // Create entries with different data to ensure they're distinguishable
+      const entries = [
+        { duration: 20, title: 'First Entry', notes: 'Created first' },
+        { duration: 30, title: 'Second Entry', notes: 'Created second' },
+        { duration: 40, title: 'Third Entry', notes: 'Created third' },
+      ]
 
-      // Add significant delay to ensure different timestamps
-      await page.waitForTimeout(2000)
-
-      await logbookPage.createEntry({
-        duration: 30,
-        title: 'Second Entry',
-        notes: 'Created second',
-      })
-
-      // Add significant delay to ensure different timestamps
-      await page.waitForTimeout(2000)
-
-      await logbookPage.createEntry({
-        duration: 40,
-        title: 'Third Entry',
-        notes: 'Created third',
-      })
+      for (const entry of entries) {
+        await logbookPage.createEntry(entry)
+        // Wait for entry to be saved and UI to update
+        await page.waitForSelector(`text="${entry.title}"`, {
+          state: 'visible',
+          timeout: 5000,
+        })
+      }
     })
 
     await test.step('Verify entries appear in reverse chronological order', async () => {
-      await page.waitForLoadState('networkidle')
+      // Wait for all entries to be visible
+      await page.waitForSelector('text=Third Entry', {
+        state: 'visible',
+        timeout: 5000,
+      })
 
-      // Wait for entries to be properly sorted
-      await page.waitForTimeout(2000)
+      // Get all entry titles
+      const entryTitles = await page
+        .locator('.bg-white.rounded-lg')
+        .locator('text=/First Entry|Second Entry|Third Entry/')
+        .allTextContents()
 
-      const entries = page.locator('[data-testid="logbook-entry"]')
-      await expect(entries).toHaveCount(3)
+      // Recent entries should show newest first
+      expect(entryTitles.length).toBeGreaterThanOrEqual(3)
 
-      // Debug: Check actual order of entries
-      const entryTexts = await entries.allTextContents()
-      console.log('Entry order:', entryTexts)
+      // Find the indices of our entries
+      const thirdIndex = entryTitles.findIndex(title =>
+        title.includes('Third Entry')
+      )
+      const secondIndex = entryTitles.findIndex(title =>
+        title.includes('Second Entry')
+      )
+      const firstIndex = entryTitles.findIndex(title =>
+        title.includes('First Entry')
+      )
 
-      // Check if entries are in correct order with some flexibility
-      const firstEntryText = await entries.first().textContent()
-      const secondEntryText = await entries.nth(1).textContent()
-      const lastEntryText = await entries.last().textContent()
-
-      console.log('First entry:', firstEntryText)
-      console.log('Second entry:', secondEntryText)
-      console.log('Last entry:', lastEntryText)
-
-      // Most recent entry should be first (reverse chronological order)
-      // Allow for some flexibility in case sorting is not perfect
-      if (firstEntryText?.includes('Third Entry')) {
-        await expect(entries.first()).toContainText('Third Entry')
-        await expect(entries.nth(1)).toContainText('Second Entry')
-        await expect(entries.last()).toContainText('First Entry')
-      } else {
-        console.log(
-          'Entries not in expected order, but this may be acceptable due to timing'
-        )
-        // Just verify all entries are present
-        await expect(page.locator('text=First Entry')).toBeVisible()
-        await expect(page.locator('text=Second Entry')).toBeVisible()
-        await expect(page.locator('text=Third Entry')).toBeVisible()
-      }
+      // Verify they appear in reverse order (newest first)
+      expect(thirdIndex).toBeLessThan(secondIndex)
+      expect(secondIndex).toBeLessThan(firstIndex)
     })
   })
 })

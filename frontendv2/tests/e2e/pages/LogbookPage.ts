@@ -76,7 +76,10 @@ export class LogbookPage {
           const button = this.page.locator(buttonSelector).first()
           if (await button.isVisible({ timeout: 500 }).catch(() => false)) {
             await button.click({ force: true })
-            await this.page.waitForTimeout(300)
+            // Wait for prompt to start disappearing
+            await prompt
+              .waitFor({ state: 'hidden', timeout: 2000 })
+              .catch(() => {})
             dismissed = true
             break
           }
@@ -85,11 +88,11 @@ export class LogbookPage {
         // If no button found, try clicking outside the modal
         if (!dismissed) {
           await this.page.mouse.click(10, 10)
-          await this.page.waitForTimeout(300)
+          // Wait for the prompt to disappear
+          await prompt
+            .waitFor({ state: 'hidden', timeout: 2000 })
+            .catch(() => {})
         }
-
-        // Wait for the prompt to disappear
-        await prompt.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {})
       }
     }
 
@@ -100,7 +103,11 @@ export class LogbookPage {
     const toastCount = await toasts.count()
     if (toastCount > 0) {
       await this.page.mouse.click(10, 10)
-      await this.page.waitForTimeout(300)
+      // Wait for toasts to disappear
+      await toasts
+        .first()
+        .waitFor({ state: 'hidden', timeout: 2000 })
+        .catch(() => {})
     }
   }
 
@@ -153,7 +160,6 @@ export class LogbookPage {
 
     // Wait for content to load
     await this.page.waitForLoadState('networkidle')
-    await this.page.waitForTimeout(500)
   }
 
   // Entry creation
@@ -206,9 +212,12 @@ export class LogbookPage {
     const toasts = this.page.locator('.fixed.bottom-4.right-4')
     const toastCount = await toasts.count()
     if (toastCount > 0) {
-      // Click outside to dismiss or wait for auto-dismiss
+      // Click outside to dismiss and wait for toasts to disappear
       await this.page.mouse.click(10, 10)
-      await this.page.waitForTimeout(500)
+      await toasts
+        .first()
+        .waitFor({ state: 'hidden', timeout: 2000 })
+        .catch(() => {})
     }
 
     // Save the entry with retry logic
@@ -250,9 +259,6 @@ export class LogbookPage {
         )
         .catch(() => {}),
     ])
-
-    // Give UI time to stabilize after save
-    await this.page.waitForTimeout(500)
 
     // Immediately check for and dismiss any repertoire prompts
     await this.dismissPrompts()
