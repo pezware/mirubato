@@ -10,20 +10,17 @@ CREATE TABLE IF NOT EXISTS user_repertoire_new (
   user_id TEXT NOT NULL,
   score_id TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'learning', 'polished', 'dropped')),
-  difficulty_rating INTEGER CHECK (difficulty_rating >= 1 AND difficulty_rating <= 5),
+  difficulty_rating INTEGER CHECK (difficulty_rating BETWEEN 1 AND 5),
   personal_notes TEXT,
-  reference_links TEXT DEFAULT '[]', -- JSON array of URLs
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_practiced TIMESTAMP,
+  reference_links TEXT, -- JSON array of links
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   UNIQUE(user_id, score_id)
 );
 
 -- Copy data from the old table to the new table
--- Note: last_practiced will be NULL for existing records
-INSERT INTO user_repertoire_new (id, user_id, score_id, status, difficulty_rating, personal_notes, reference_links, created_at, updated_at)
-SELECT id, user_id, score_id, status, difficulty_rating, personal_notes, reference_links, created_at, updated_at FROM user_repertoire;
+INSERT INTO user_repertoire_new SELECT * FROM user_repertoire;
 
 -- Drop the old table
 DROP TABLE user_repertoire;
@@ -31,7 +28,7 @@ DROP TABLE user_repertoire;
 -- Rename the new table to the original name
 ALTER TABLE user_repertoire_new RENAME TO user_repertoire;
 
--- Recreate the index
+-- Recreate the indexes
 CREATE INDEX IF NOT EXISTS idx_repertoire_user ON user_repertoire(user_id);
 CREATE INDEX IF NOT EXISTS idx_repertoire_score ON user_repertoire(score_id);
 CREATE INDEX IF NOT EXISTS idx_repertoire_status ON user_repertoire(status);
