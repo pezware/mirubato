@@ -244,7 +244,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <div>
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:totalPractice')}
@@ -259,14 +259,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
             <div className="text-lg sm:text-2xl font-semibold text-stone-900">
               {stats.sessionCount}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
-              {t('repertoire:lastPracticed', { time: '' })}
-            </div>
-            <div className="text-lg sm:text-2xl font-semibold text-stone-900">
-              {stats.lastPracticed}
             </div>
           </div>
           <div>

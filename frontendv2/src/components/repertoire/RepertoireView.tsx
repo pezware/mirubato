@@ -249,16 +249,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics, searchQuery])
 
-  // Calculate needs attention after enrichment
-  const needsAttention = useMemo(() => {
-    const fiveDaysAgo = Date.now() - 5 * 24 * 60 * 60 * 1000
-    return enrichedRepertoire.filter(item => {
-      // Use lastPracticed from the enriched item
-      if (!item.lastPracticed) return false
-      return item.lastPracticed < fiveDaysAgo
-    }).length
-  }, [enrichedRepertoire])
-
   // Find the entry being edited
   const editingEntry = editingSessionId
     ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
@@ -364,7 +354,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     <div className="space-y-6">
       {/* Summary Bar */}
       <div className="bg-white rounded-lg border border-stone-200 p-3 sm:p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-semibold text-stone-800">
               {formatDuration(stats.practiceToday)}
@@ -395,14 +385,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             </div>
             <div className="text-sm text-stone-500">
               {t('common:statistics.streak')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-orange-600">
-              {needsAttention}
-            </div>
-            <div className="text-sm text-orange-600">
-              {t('repertoire:needAttention')}
             </div>
           </div>
         </div>
