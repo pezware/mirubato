@@ -47,7 +47,8 @@
       "custom": "Custom",
       "selectTechniques": "Select techniques practiced",
       "addCustom": "Add custom technique",
-      "customPlaceholder": "Enter custom technique name"
+      "customPlaceholder": "Enter custom technique name",
+      "customTechniques": "Custom Techniques"
     },
     "practiceDate": "Practice Date",
     "successAdded": "Practice entry successfully added!",

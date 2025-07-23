@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next'
 import Button from '../ui/Button'
 import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
+import { useCustomTechniques } from '../../hooks/useCustomTechniques'
+
+// Helper function to capitalize first letter for display
+const capitalizeFirst = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 
 interface TechniqueSelectorProps {
   selectedTechniques: string[]
@@ -18,6 +24,7 @@ export function TechniqueSelector({
   const { t } = useTranslation()
   const [customTechnique, setCustomTechnique] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
+  const { customTechniques, addCustomTechnique } = useCustomTechniques()
 
   const handleToggleTechnique = (technique: string) => {
     if (selectedTechniques.includes(technique)) {
@@ -28,11 +35,12 @@ export function TechniqueSelector({
   }
 
   const handleAddCustom = () => {
-    if (
-      customTechnique.trim() &&
-      !selectedTechniques.includes(customTechnique.trim())
-    ) {
-      onTechniquesChange([...selectedTechniques, customTechnique.trim()])
+    const normalized = customTechnique.trim().toLowerCase()
+    if (normalized && !selectedTechniques.includes(normalized)) {
+      // Add to selected techniques (normalized)
+      onTechniquesChange([...selectedTechniques, normalized])
+      // Save to custom techniques for future use
+      addCustomTechnique(customTechnique.trim()) // Pass original for normalization in hook
       setCustomTechnique('')
       setShowCustomInput(false)
     }
@@ -67,6 +75,31 @@ export function TechniqueSelector({
           </label>
         ))}
       </div>
+
+      {/* Custom Techniques (if any) */}
+      {customTechniques.length > 0 && (
+        <div className="space-y-2 mb-4">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">
+            {t('logbook:entry.techniqueOptions.customTechniques')}
+          </p>
+          {customTechniques.map(technique => (
+            <label
+              key={technique}
+              className="flex items-center space-x-2 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedTechniques.includes(technique)}
+                onChange={() => handleToggleTechnique(technique)}
+                className="rounded border-gray-300 text-sage-600 focus:ring-sage-500"
+              />
+              <span className="text-sm text-gray-700">
+                {capitalizeFirst(technique)}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
 
       {/* Custom Technique Input */}
       {showCustomInput ? (
@@ -119,7 +152,7 @@ export function TechniqueSelector({
                   technique as (typeof DEFAULT_TECHNIQUES)[number]
                 )
                   ? t(`logbook:entry.techniqueOptions.${technique}`)
-                  : technique}
+                  : capitalizeFirst(technique)}
                 <button
                   onClick={() => handleRemoveTechnique(technique)}
                   className="ml-1 text-sand-600 hover:text-sand-800"

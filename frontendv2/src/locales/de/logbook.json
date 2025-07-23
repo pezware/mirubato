@@ -47,7 +47,8 @@
       "custom": "Benutzerdefiniert",
       "selectTechniques": "Geübte Techniken auswählen",
       "addCustom": "Benutzerdefinierte Technik hinzufügen",
-      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben"
+      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben",
+      "customTechniques": "Benutzerdefinierte Techniken"
     },
     "practiceDate": "Übungsdatum",
     "successAdded": "Übungseintrag erfolgreich hinzugefügt!",

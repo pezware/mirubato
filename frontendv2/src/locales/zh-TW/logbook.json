@@ -47,7 +47,8 @@
       "custom": "自訂",
       "selectTechniques": "選擇練習的技巧",
       "addCustom": "新增自訂技巧",
-      "customPlaceholder": "輸入自訂技巧名稱"
+      "customPlaceholder": "輸入自訂技巧名稱",
+      "customTechniques": "自訂技巧"
     },
     "practiceDate": "練習日期",
     "successAdded": "練習記錄新增成功！",
