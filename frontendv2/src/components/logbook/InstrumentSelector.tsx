@@ -6,7 +6,6 @@ import {
   IconGuitarPick,
   IconMusic,
   IconMicrophone,
-  IconVinyl,
   IconCircle,
   IconLayoutGrid,
 } from '@tabler/icons-react'
