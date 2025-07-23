@@ -1,15 +1,21 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, Plus, FileText, Wrench } from 'lucide-react'
+import { BookOpen, Plus, FileText, Wrench, Clock } from 'lucide-react'
 
 interface BottomTabsProps {
   onAddClick?: () => void
+  onTimerClick?: () => void
 }
 
-const BottomTabs: React.FC<BottomTabsProps> = ({ onAddClick }) => {
+const BottomTabs: React.FC<BottomTabsProps> = ({
+  onAddClick,
+  onTimerClick,
+}) => {
   const { t } = useTranslation(['common'])
   const location = useLocation()
+
+  const isLogbookPage = location.pathname.includes('/logbook')
 
   const tabs = [
     {
@@ -30,11 +36,24 @@ const BottomTabs: React.FC<BottomTabsProps> = ({ onAddClick }) => {
       path: '/scorebook/browse',
       icon: FileText,
     },
+    // Add timer button only on logbook pages
+    ...(isLogbookPage && onTimerClick
+      ? [
+          {
+            id: 'timer',
+            label: '', // No label for the timer button
+            path: null, // Special case - triggers action instead of navigation
+            icon: Clock,
+            action: onTimerClick,
+          },
+        ]
+      : []),
     {
       id: 'add',
       label: '', // No label for the add button
       path: null, // Special case - triggers action instead of navigation
       icon: Plus,
+      action: onAddClick,
     },
   ]
 
@@ -53,11 +72,11 @@ const BottomTabs: React.FC<BottomTabsProps> = ({ onAddClick }) => {
           const Icon = tab.icon
           const active = isActive(tab.path)
 
-          if (tab.id === 'add') {
+          if (tab.id === 'add' || tab.id === 'timer') {
             return (
               <button
                 key={tab.id}
-                onClick={onAddClick}
+                onClick={tab.action}
                 className="flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">

@@ -55,16 +55,18 @@ const TopBar: React.FC<TopBarProps> = ({
     <div className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center gap-6">
         {/* Search Box */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder={t('common:search.placeholder')}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-gray-400 transition-colors"
-          />
-        </div>
+        {onSearchChange && (
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder={t('common:search.placeholder')}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-gray-400 transition-colors"
+            />
+          </div>
+        )}
 
         {/* Quick Actions - Desktop Only */}
         <div className="hidden sm:flex items-center gap-2">
