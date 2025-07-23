@@ -1,8 +1,22 @@
-# Mirubato Debug Guide - Version 1.1.0
+# Mirubato Debug Guide - Version 1.7.0
 
 ## Overview
 
 This document contains known issues, their solutions, and debugging tools for the Mirubato platform. Use this guide when encountering problems during development or in production.
+
+## Recent Fixes
+
+### ✅ Missing Translations Fixed (v1.7.0)
+
+- **Issue**: 200+ strings marked with [NEEDS TRANSLATION] across 5 languages
+- **Fix**: Complete translations for Spanish, French, German, Traditional and Simplified Chinese
+- **Files Updated**: All locale JSON files in `src/locales/`
+
+### ✅ UI Navigation Improvements (v1.7.0)
+
+- **Issue**: Complex navigation with 6 sections was overwhelming
+- **Fix**: Simplified to 4 main sections with focused design
+- **Components**: New AppLayout, Sidebar, TopBar, BottomTabs
 
 ## Recent Fixes in v1.1.0
 
@@ -34,6 +48,10 @@ This document contains known issues, their solutions, and debugging tools for th
 3. **Scores API Health**: `https://scores.mirubato.com/health`
    - Check scores service status
    - View scores API documentation at `https://scores.mirubato.com/docs`
+
+4. **Dictionary API Health**: `https://dictionary.mirubato.com/health`
+   - Check dictionary service status
+   - View dictionary API documentation at `https://dictionary.mirubato.com/docs`
 
 ## Known Issues & Solutions
 

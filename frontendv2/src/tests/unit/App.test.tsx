@@ -8,11 +8,6 @@ import { useAuthStore } from '../../stores/authStore'
 vi.mock('../../stores/authStore')
 
 // Mock utils
-vi.mock('../../utils/fixLocalStorageData', () => ({
-  fixLocalStorageData: vi.fn(),
-  recoverFromBackup: vi.fn(),
-}))
-
 vi.mock('../../utils/migrations/lowercaseMigration', () => ({
   runLowercaseMigration: vi.fn(),
 }))
@@ -76,14 +71,9 @@ describe('App', () => {
   })
 
   it('should call initialization functions on mount', async () => {
-    const { fixLocalStorageData } = await import(
-      '../../utils/fixLocalStorageData'
-    )
-
     render(<App />)
 
     await waitFor(() => {
-      expect(fixLocalStorageData).toHaveBeenCalledTimes(1)
       expect(mockRefreshAuth).toHaveBeenCalledTimes(1)
     })
   })
@@ -146,15 +136,15 @@ describe('App', () => {
   })
 
   it('should call initialization in correct order', async () => {
-    const { fixLocalStorageData } = await import(
-      '../../utils/fixLocalStorageData'
+    const { runLowercaseMigration } = await import(
+      '../../utils/migrations/lowercaseMigration'
     )
 
     const callOrder: string[] = []
 
-    ;(fixLocalStorageData as ReturnType<typeof vi.fn>).mockImplementation(
+    ;(runLowercaseMigration as ReturnType<typeof vi.fn>).mockImplementation(
       () => {
-        callOrder.push('fixLocalStorageData')
+        callOrder.push('runLowercaseMigration')
       }
     )
 
@@ -165,7 +155,7 @@ describe('App', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(callOrder).toEqual(['fixLocalStorageData', 'refreshAuth'])
+      expect(callOrder).toEqual(['runLowercaseMigration', 'refreshAuth'])
     })
   })
 })

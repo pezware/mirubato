@@ -51,15 +51,15 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 
 ## Project Info
 
-|                   |                                                                    |
-| ----------------- | ------------------------------------------------------------------ |
-| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
-| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
-| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
-| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
-| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
-| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
-| **🚧 Status**     | v1.6.0 Released - Repertoire & Goals Complete (290+ tests passing) |
+|                   |                                                                         |
+| ----------------- | ----------------------------------------------------------------------- |
+| **🌐 Website**    | [mirubato.com](https://mirubato.com)                                    |
+| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)                  |
+| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato)      |
+| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)             |
+| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                                 |
+| **📄 License**    | MIT ([details](docs/LICENSE.md))                                        |
+| **🚧 Status**     | v1.7.0 Released - Focused UI Design & Complete i18n (297 tests passing) |
 
 ---
 

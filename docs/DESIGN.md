@@ -4,12 +4,20 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.6.0 (July 2025)
+## Current Architecture - Version 1.7.0 (July 2025)
 
-### Version 1.6.0 Highlights
+### Version 1.7.0 Highlights - Focused UI Design (PR #261)
+
+- **New Layout System**: Desktop sidebar navigation + mobile bottom tabs
+- **Simplified Navigation**: Reduced from 6 to 4 main sections
+- **Practice Timer**: New timer feature integrated with logbook
+- **Enhanced Repertoire**: Timeline visualization and practice history
+- **Complete Localization**: All 200+ missing translations fixed
+
+### Version 1.7.0 Highlights
 
 - **Security Hardening**: Comprehensive vulnerability remediation across all services
-- **Unified Versioning**: All services now at v1.6.0 for consistency
+- **Unified Versioning**: All services now at v1.7.0 for consistency
 - **Dependency Updates**: Latest secure versions of all critical dependencies
 - **Puppeteer Downgrade**: @cloudflare/puppeteer to 0.0.11 for security compliance
 
@@ -25,7 +33,7 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
   - Pieces View: Piece and composer-specific analytics
 - **Export Capabilities**: Robust CSV/JSON export functionality
 - **Mobile Optimization**: Responsive design improvements and touch interactions
-- **Test Coverage**: 270+ unit tests plus 65 E2E tests (all passing, including smoke tests)
+- **Test Coverage**: 297 unit tests plus 65 E2E tests (all passing, including smoke tests)
 - **Code Quality**: Eliminated technical debt and improved maintainability
 - **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
 - **Practice Counter**: New toolbox feature for visual practice tracking
@@ -41,6 +49,7 @@ All services run as Cloudflare Workers with the following domains:
 | Frontend       | mirubato.com, www.mirubato.com | staging.mirubato.com, www-staging.mirubato.com |
 | API            | api.mirubato.com               | api-staging.mirubato.com                       |
 | Scores Service | scores.mirubato.com            | scores-staging.mirubato.com                    |
+| Dictionary     | dictionary.mirubato.com        | dictionary-staging.mirubato.com                |
 
 ### Services Architecture
 

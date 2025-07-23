@@ -6,10 +6,6 @@ import {
   Navigate,
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
-import {
-  fixLocalStorageData,
-  recoverFromBackup,
-} from './utils/fixLocalStorageData'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
@@ -43,12 +39,6 @@ function App() {
   const { refreshAuth } = useAuthStore()
 
   useEffect(() => {
-    // Check for backup recovery first
-    recoverFromBackup()
-
-    // Fix any corrupted localStorage data first
-    fixLocalStorageData()
-
     // Run lowercase migration for enum values
     runLowercaseMigration()
 

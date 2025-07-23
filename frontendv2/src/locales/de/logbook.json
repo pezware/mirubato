@@ -80,15 +80,15 @@
   "linkedScore": "Verknüpfte Noten",
   "autoTracked": "Automatisch von Notenübung erfasst",
   "timer": {
-    "title": "[NEEDS TRANSLATION] Practice Timer",
-    "start": "[NEEDS TRANSLATION] Start Timer",
-    "pause": "[NEEDS TRANSLATION] Pause",
-    "resume": "[NEEDS TRANSLATION] Resume",
-    "stop": "[NEEDS TRANSLATION] Stop & Log",
-    "reset": "[NEEDS TRANSLATION] Reset",
-    "confirmClose": "[NEEDS TRANSLATION] Timer is running. Are you sure you want to close?",
-    "startHint": "[NEEDS TRANSLATION] Click Start to begin timing your practice session",
-    "runningHint": "[NEEDS TRANSLATION] Timer is running. Click Pause to take a break or Stop to finish.",
-    "stopHint": "[NEEDS TRANSLATION] Click Stop & Log to create a practice entry with this duration"
+    "title": "Übungstimer",
+    "start": "Timer starten",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "stop": "Stoppen & Speichern",
+    "reset": "Zurücksetzen",
+    "confirmClose": "Timer läuft. Bist du sicher, dass du schließen möchtest?",
+    "startHint": "Klicke auf Start, um deine Übungszeit zu messen",
+    "runningHint": "Timer läuft. Klicke auf Pausieren für eine Pause oder Stoppen zum Beenden.",
+    "stopHint": "Klicke auf Stoppen & Speichern, um einen Übungseintrag mit dieser Dauer zu erstellen"
   }
 }

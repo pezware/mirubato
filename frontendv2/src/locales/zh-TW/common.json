@@ -2,8 +2,8 @@
   "active": "活躍",
   "add": "新增",
   "actions": {
-    "addEntry": "[NEEDS TRANSLATION] Add Entry",
-    "timer": "[NEEDS TRANSLATION] Timer"
+    "addEntry": "新增記錄",
+    "timer": "計時器"
   },
   "analytics": "分析",
   "appName": "mirubato",
@@ -75,7 +75,7 @@
   "filter": "篩選",
   "finish": "完成",
   "goBack": "返回",
-  "goal": "[NEEDS TRANSLATION] Goal",
+  "goal": "目標",
   "help": "幫助",
   "hide": "隱藏",
   "history": "歷史",
@@ -139,17 +139,17 @@
     "menu": "選單",
     "reports": "報表",
     "settings": "設定",
-    "overview": "[NEEDS TRANSLATION] Overview",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "pieces": "[NEEDS TRANSLATION] Pieces",
-    "goals": "[NEEDS TRANSLATION] Goals",
-    "add": "[NEEDS TRANSLATION] Add",
-    "music": "[NEEDS TRANSLATION] Music",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox",
-    "profile": "[NEEDS TRANSLATION] Profile",
-    "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "preferences": "[NEEDS TRANSLATION] Preferences"
+    "overview": "總覽",
+    "repertoire": "曲目庫",
+    "pieces": "曲目",
+    "goals": "目標",
+    "add": "新增",
+    "music": "音樂",
+    "scores": "樂譜",
+    "toolbox": "工具箱",
+    "profile": "個人資料",
+    "profileSettings": "個人設定",
+    "preferences": "偏好設定"
   },
   "next": "下一頁",
   "no": "否",
@@ -189,7 +189,7 @@
   "save": "儲存",
   "saveToLogbook": "儲存至練習記錄",
   "search": {
-    "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
+    "placeholder": "搜尋練習時段..."
   },
   "searchScoresAndLogs": "搜尋樂譜和練習日誌...",
   "select": "選擇",
@@ -202,7 +202,7 @@
   "sort": "排序",
   "start": "開始",
   "statistics": {
-    "streak": "[NEEDS TRANSLATION] Streak"
+    "streak": "連續天數"
   },
   "status": "狀態",
   "stop": "停止",
@@ -247,10 +247,10 @@
   "username": "使用者名稱",
   "version": "版本",
   "view": {
-    "default": "[NEEDS TRANSLATION] View",
-    "list": "[NEEDS TRANSLATION] List",
-    "grid": "[NEEDS TRANSLATION] Grid",
-    "calendar": "[NEEDS TRANSLATION] Calendar"
+    "default": "檢視",
+    "list": "清單",
+    "grid": "網格",
+    "calendar": "日曆"
   },
   "warning": "警告",
   "yes": "是"

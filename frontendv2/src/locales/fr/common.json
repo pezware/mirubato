@@ -2,8 +2,8 @@
   "active": "Actif",
   "add": "Ajouter",
   "actions": {
-    "addEntry": "[NEEDS TRANSLATION] Add Entry",
-    "timer": "[NEEDS TRANSLATION] Timer"
+    "addEntry": "Ajouter une entrée",
+    "timer": "Chronomètre"
   },
   "analytics": "Analytique",
   "appName": "mirubato",
@@ -75,7 +75,7 @@
   "filter": "Filtrer",
   "finish": "Terminer",
   "goBack": "Retour",
-  "goal": "[NEEDS TRANSLATION] Goal",
+  "goal": "Objectif",
   "help": "Aide",
   "hide": "Masquer",
   "history": "Historique",
@@ -139,17 +139,17 @@
     "menu": "Menu",
     "reports": "Rapports",
     "settings": "Paramètres",
-    "overview": "[NEEDS TRANSLATION] Overview",
-    "repertoire": "[NEEDS TRANSLATION] Repertoire",
-    "pieces": "[NEEDS TRANSLATION] Pieces",
-    "goals": "[NEEDS TRANSLATION] Goals",
-    "add": "[NEEDS TRANSLATION] Add",
-    "music": "[NEEDS TRANSLATION] Music",
-    "scores": "[NEEDS TRANSLATION] Scores",
-    "toolbox": "[NEEDS TRANSLATION] Toolbox",
-    "profile": "[NEEDS TRANSLATION] Profile",
-    "profileSettings": "[NEEDS TRANSLATION] Profile Settings",
-    "preferences": "[NEEDS TRANSLATION] Preferences"
+    "overview": "Vue d'ensemble",
+    "repertoire": "Répertoire",
+    "pieces": "Pièces",
+    "goals": "Objectifs",
+    "add": "Ajouter",
+    "music": "Musique",
+    "scores": "Partitions",
+    "toolbox": "Boîte à outils",
+    "profile": "Profil",
+    "profileSettings": "Paramètres du profil",
+    "preferences": "Préférences"
   },
   "next": "Suivant",
   "no": "Non",
@@ -189,7 +189,7 @@
   "save": "Enregistrer",
   "saveToLogbook": "Sauvegarder dans le Journal",
   "search": {
-    "placeholder": "[NEEDS TRANSLATION] Search practice sessions..."
+    "placeholder": "Rechercher des sessions de pratique..."
   },
   "searchScoresAndLogs": "Rechercher partitions et journaux de pratique...",
   "select": "Sélectionner",
@@ -202,7 +202,7 @@
   "sort": "Trier",
   "start": "Démarrer",
   "statistics": {
-    "streak": "[NEEDS TRANSLATION] Streak"
+    "streak": "Série"
   },
   "status": "Statut",
   "stop": "Arrêter",
@@ -247,10 +247,10 @@
   "username": "Nom d'utilisateur",
   "version": "Version",
   "view": {
-    "default": "[NEEDS TRANSLATION] View",
-    "list": "[NEEDS TRANSLATION] List",
-    "grid": "[NEEDS TRANSLATION] Grid",
-    "calendar": "[NEEDS TRANSLATION] Calendar"
+    "default": "Vue",
+    "list": "Liste",
+    "grid": "Grille",
+    "calendar": "Calendrier"
   },
   "warning": "Avertissement",
   "yes": "Oui"

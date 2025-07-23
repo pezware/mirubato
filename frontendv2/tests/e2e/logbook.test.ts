@@ -273,8 +273,11 @@ test.describe('Logbook', () => {
       })
 
       await test.step('Verify all composers and pieces are displayed', async () => {
-        // Wait for overview to load
-        await page.waitForTimeout(1000)
+        // Wait for recent entries to load
+        await page.waitForSelector('text=Recent Entries', {
+          state: 'visible',
+          timeout: 5000,
+        })
 
         // Check that all our entries are visible in the overview
         const pageContent = await page.textContent('body')
