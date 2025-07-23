@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, ChevronDown, Download, Edit, Trash2 } from 'lucide-react'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
 import { GroupedData } from '../../../../types/reporting'
@@ -349,17 +355,31 @@ function EntryRow({
                   {entry.mood && (
                     <>
                       <span className="text-morandi-stone-500">•</span>
-                      <span className="text-base">
-                        {entry.mood === 'frustrated'
-                          ? '😣'
-                          : entry.mood === 'neutral'
-                            ? '😐'
-                            : entry.mood === 'satisfied'
-                              ? '😊'
-                              : entry.mood === 'excited'
-                                ? '🤩'
-                                : ''}
-                      </span>
+                      {entry.mood === 'frustrated' ? (
+                        <IconMoodAngry
+                          size={16}
+                          className="text-morandi-stone-600"
+                          stroke={1.5}
+                        />
+                      ) : entry.mood === 'neutral' ? (
+                        <IconMoodNeutral
+                          size={16}
+                          className="text-morandi-stone-600"
+                          stroke={1.5}
+                        />
+                      ) : entry.mood === 'satisfied' ? (
+                        <IconMoodSmile
+                          size={16}
+                          className="text-morandi-stone-600"
+                          stroke={1.5}
+                        />
+                      ) : entry.mood === 'excited' ? (
+                        <IconMoodHappy
+                          size={16}
+                          className="text-morandi-stone-600"
+                          stroke={1.5}
+                        />
+                      ) : null}
                     </>
                   )}
                 </div>

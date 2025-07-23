@@ -1,6 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
@@ -63,18 +69,24 @@ export default function LogbookEntryList({
     })
   }
 
-  const getMoodEmoji = (mood?: LogbookEntry['mood']) => {
+  const getMoodIcon = (mood?: LogbookEntry['mood']) => {
+    const iconProps = {
+      size: 18,
+      className: 'text-morandi-stone-600',
+      stroke: 1.5,
+    }
+
     switch (mood) {
       case 'frustrated':
-        return '😤'
+        return <IconMoodAngry {...iconProps} />
       case 'neutral':
-        return '😐'
+        return <IconMoodNeutral {...iconProps} />
       case 'satisfied':
-        return '😊'
+        return <IconMoodSmile {...iconProps} />
       case 'excited':
-        return '🎉'
+        return <IconMoodHappy {...iconProps} />
       default:
-        return ''
+        return null
     }
   }
 
@@ -413,11 +425,7 @@ export default function LogbookEntryList({
                       <span className="text-morandi-stone-700">
                         {t('common:time.minute', { count: entry.duration })}
                       </span>
-                      {entry.mood && (
-                        <span className="text-lg">
-                          {getMoodEmoji(entry.mood)}
-                        </span>
-                      )}
+                      {entry.mood && getMoodIcon(entry.mood)}
                       {entry.scoreId && (
                         <button
                           onClick={e => {

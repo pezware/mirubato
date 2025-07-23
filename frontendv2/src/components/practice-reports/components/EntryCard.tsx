@@ -46,11 +46,11 @@ export function EntryCard({
         <div className="mb-2">
           {entry.pieces && entry.pieces.length > 0 ? (
             <>
-              <h3 className="text-lg font-medium text-gray-900 truncate">
+              <h3 className="text-lg font-medium text-gray-900 line-clamp-2 sm:line-clamp-1">
                 {entry.pieces[0].title}
               </h3>
               {entry.pieces[0].composer && (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 line-clamp-1">
                   {entry.pieces[0].composer}
                 </p>
               )}

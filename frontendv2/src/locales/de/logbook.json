@@ -54,7 +54,8 @@
     "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
     "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
     "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
-    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag"
+    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag",
+    "instrument": "Instrument"
   },
   "filters": {
     "last7Days": "Letzte 7 Tage",

@@ -11,7 +11,7 @@ interface PieceInputProps {
   }
   index: number
   onUpdate: (index: number, field: 'title' | 'composer', value: string) => void
-  onRemove: (index: number) => void
+  onRemove?: (index: number) => void
 }
 
 export default function PieceInput({
@@ -109,14 +109,16 @@ export default function PieceInput({
           data-testid="composer-input"
         />
 
-        <Button
-          type="button"
-          onClick={() => onRemove(index)}
-          variant="secondary"
-          size="sm"
-        >
-          {t('common:remove')}
-        </Button>
+        {onRemove && (
+          <Button
+            type="button"
+            onClick={() => onRemove(index)}
+            variant="secondary"
+            size="sm"
+          >
+            {t('common:remove')}
+          </Button>
+        )}
       </div>
     </div>
   )

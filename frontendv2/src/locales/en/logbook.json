@@ -28,6 +28,7 @@
       "technique": "Technique"
     },
     "pieces": "Pieces",
+    "instrument": "Instrument",
     "notes": "Notes",
     "notesPlaceholder": "What did you work on? Any observations?",
     "addPiece": "Add Piece",

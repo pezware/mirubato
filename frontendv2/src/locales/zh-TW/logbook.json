@@ -54,7 +54,8 @@
     "successAdded": "練習記錄新增成功！",
     "successUpdated": "練習記錄更新成功！",
     "piecesNote": "練習時間將平均分配給各曲目",
-    "maxPiecesReached": "每筆記錄最多3個曲目"
+    "maxPiecesReached": "每筆記錄最多3個曲目",
+    "instrument": "樂器"
   },
   "filters": {
     "last7Days": "最近 7 天",

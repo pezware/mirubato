@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
+import { useUserPreferences } from '../hooks/useUserPreferences'
 import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
   isSameScore,
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
-import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
+import { InstrumentSelector } from './logbook/InstrumentSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
 import { Modal } from './ui/Modal'
 
@@ -33,6 +40,7 @@ export default function ManualEntryForm({
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
   const { repertoire, loadRepertoire } = useRepertoireStore()
+  const { getPrimaryInstrument } = useUserPreferences()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
     piece: { title: string; composer?: string | null }
@@ -52,7 +60,9 @@ export default function ManualEntryForm({
     entry?.type || 'practice'
   )
   const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
-    entry?.instrument || 'piano'
+    entry?.instrument ||
+      (getPrimaryInstrument() as LogbookEntry['instrument']) ||
+      'piano'
   )
   const [notes, setNotes] = useState(entry?.notes || '')
   const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
@@ -198,11 +208,12 @@ export default function ManualEntryForm({
     }
   }
 
-  const addPiece = () => {
-    if (pieces.length < 3) {
-      setPieces([...pieces, { title: '', composer: '' }])
-    }
-  }
+  // addPiece and removePiece functions kept for backward compatibility but not used in UI
+  // const addPiece = () => {
+  //   if (pieces.length < 3) {
+  //     setPieces([...pieces, { title: '', composer: '' }])
+  //   }
+  // }
 
   const updatePiece = (
     index: number,
@@ -216,9 +227,9 @@ export default function ManualEntryForm({
     })
   }
 
-  const removePiece = (index: number) => {
-    setPieces(pieces.filter((_, i) => i !== index))
-  }
+  // const removePiece = (index: number) => {
+  //   setPieces(pieces.filter((_, i) => i !== index))
+  // }
 
   return (
     <Modal
@@ -234,37 +245,39 @@ export default function ManualEntryForm({
       >
         {/* Basic Info */}
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-                {t('logbook:entry.practiceDate', 'Practice Date')}
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="date"
-                  value={practiceDate}
-                  onChange={e => setPracticeDate(e.target.value)}
-                  max={(() => {
-                    const today = new Date()
-                    return (
-                      today.getFullYear() +
-                      '-' +
-                      String(today.getMonth() + 1).padStart(2, '0') +
-                      '-' +
-                      String(today.getDate()).padStart(2, '0')
-                    )
-                  })()} // Don't allow future dates
-                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  required
-                />
-                <TimePicker
-                  value={practiceTime}
-                  onChange={setPracticeTime}
-                  className="flex-1"
-                />
-              </div>
+          {/* Date and Time - Full width on mobile */}
+          <div>
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+              {t('logbook:entry.practiceDate', 'Practice Date')}
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="date"
+                value={practiceDate}
+                onChange={e => setPracticeDate(e.target.value)}
+                max={(() => {
+                  const today = new Date()
+                  return (
+                    today.getFullYear() +
+                    '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') +
+                    '-' +
+                    String(today.getDate()).padStart(2, '0')
+                  )
+                })()} // Don't allow future dates
+                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                required
+              />
+              <TimePicker
+                value={practiceTime}
+                onChange={setPracticeTime}
+                className="flex-1"
+              />
             </div>
+          </div>
 
+          {/* Duration and Instrument - Side by side on mobile, combined with date/time on desktop */}
+          <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.duration')}
@@ -295,21 +308,17 @@ export default function ManualEntryForm({
               />
             </div>
 
-            <div className="flex gap-4">
-              <SplitButton<LogbookEntry['instrument']>
-                options={[
-                  {
-                    value: 'piano',
-                    label: `🎹 ${t('common:instruments.piano')}`,
-                  },
-                  {
-                    value: 'guitar',
-                    label: `🎸 ${t('common:instruments.guitar')}`,
-                  },
-                ]}
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                {t('logbook:entry.instrument')}
+              </label>
+              <InstrumentSelector
                 value={instrument}
-                onChange={value => value && setInstrument(value)}
-                orientation="horizontal"
+                onChange={value =>
+                  setInstrument(
+                    (value as LogbookEntry['instrument']) || 'piano'
+                  )
+                }
               />
             </div>
           </div>
@@ -354,44 +363,17 @@ export default function ManualEntryForm({
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             {t('logbook:entry.pieces')}
-            {pieces.length > 1 && (
-              <span className="text-xs text-morandi-stone-500 ml-2">
-                {t(
-                  'logbook:entry.piecesNote',
-                  'Practice time will be divided equally among pieces'
-                )}
-              </span>
-            )}
           </label>
-          {pieces.map((piece, index) => (
+          {/* Only show the first piece for new UI, but support multiple pieces for existing entries */}
+          {pieces.slice(0, 1).map((piece, index) => (
             <PieceInput
               key={index}
               piece={piece}
               index={index}
               onUpdate={updatePiece}
-              onRemove={removePiece}
+              onRemove={undefined} // No remove button for single piece
             />
           ))}
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              onClick={addPiece}
-              variant="ghost"
-              size="sm"
-              leftIcon={<span>+</span>}
-              disabled={pieces.length >= 3}
-            >
-              {t('logbook:entry.addPiece')}
-            </Button>
-            {pieces.length >= 3 && (
-              <span className="text-xs text-morandi-stone-500">
-                {t(
-                  'logbook:entry.maxPiecesReached',
-                  'Maximum 3 pieces per entry'
-                )}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Technique Selection - Only show when type is technique */}
@@ -427,22 +409,22 @@ export default function ManualEntryForm({
             {[
               {
                 value: 'frustrated',
-                label: '😤',
+                icon: <IconMoodAngry size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.frustrated'),
               },
               {
                 value: 'neutral',
-                label: '😐',
+                icon: <IconMoodNeutral size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.neutral'),
               },
               {
                 value: 'satisfied',
-                label: '😊',
+                icon: <IconMoodSmile size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.satisfied'),
               },
               {
                 value: 'excited',
-                label: '🎉',
+                icon: <IconMoodHappy size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.excited'),
               },
             ].map((option, index) => {
@@ -476,7 +458,13 @@ export default function ManualEntryForm({
                     ${!isFirst ? 'sm:border-l-0' : ''}
                   `}
                 >
-                  <span>{option.label}</span>
+                  <span
+                    className={
+                      isActive ? 'text-white' : 'text-morandi-stone-600'
+                    }
+                  >
+                    {option.icon}
+                  </span>
                   <span className="hidden sm:inline">{option.fullLabel}</span>
                 </button>
               )
