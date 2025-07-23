@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Button from '../ui/Button'
 import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
+import { useCustomTechniques } from '../../hooks/useCustomTechniques'
 
 interface TechniqueSelectorProps {
   selectedTechniques: string[]
@@ -18,6 +19,7 @@ export function TechniqueSelector({
   const { t } = useTranslation()
   const [customTechnique, setCustomTechnique] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
+  const { customTechniques, addCustomTechnique } = useCustomTechniques()
 
   const handleToggleTechnique = (technique: string) => {
     if (selectedTechniques.includes(technique)) {
@@ -32,7 +34,11 @@ export function TechniqueSelector({
       customTechnique.trim() &&
       !selectedTechniques.includes(customTechnique.trim())
     ) {
-      onTechniquesChange([...selectedTechniques, customTechnique.trim()])
+      const trimmed = customTechnique.trim()
+      // Add to selected techniques
+      onTechniquesChange([...selectedTechniques, trimmed])
+      // Save to custom techniques for future use
+      addCustomTechnique(trimmed)
       setCustomTechnique('')
       setShowCustomInput(false)
     }
@@ -67,6 +73,29 @@ export function TechniqueSelector({
           </label>
         ))}
       </div>
+
+      {/* Custom Techniques (if any) */}
+      {customTechniques.length > 0 && (
+        <div className="space-y-2 mb-4">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">
+            {t('logbook:entry.techniqueOptions.customTechniques')}
+          </p>
+          {customTechniques.map(technique => (
+            <label
+              key={technique}
+              className="flex items-center space-x-2 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedTechniques.includes(technique)}
+                onChange={() => handleToggleTechnique(technique)}
+                className="rounded border-gray-300 text-sage-600 focus:ring-sage-500"
+              />
+              <span className="text-sm text-gray-700">{technique}</span>
+            </label>
+          ))}
+        </div>
+      )}
 
       {/* Custom Technique Input */}
       {showCustomInput ? (
