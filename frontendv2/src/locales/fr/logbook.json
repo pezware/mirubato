@@ -54,7 +54,8 @@
     "successAdded": "Entrée de pratique ajoutée avec succès !",
     "successUpdated": "Entrée de pratique mise à jour avec succès !",
     "piecesNote": "Le temps de pratique sera divisé également entre les pièces",
-    "maxPiecesReached": "Maximum 3 pièces par entrée"
+    "maxPiecesReached": "Maximum 3 pièces par entrée",
+    "instrument": "Instrument"
   },
   "filters": {
     "last7Days": "7 derniers jours",
