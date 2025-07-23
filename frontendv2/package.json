@@ -28,7 +28,7 @@
     "@types/dompurify": "^3.0.5",
     "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^10.0.0",
-    "axios": "^1.6.0",
+    "axios": "^1.11.0",
     "chart.js": "^4.4.9",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
