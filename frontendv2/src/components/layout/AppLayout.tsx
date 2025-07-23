@@ -77,7 +77,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         >
           {/* Top Bar */}
           <TopBar
-            onSearchChange={onSearchChange}
+            onSearchChange={shouldShowQuickActions ? onSearchChange : undefined}
             onNewEntry={shouldShowQuickActions ? onNewEntry : undefined}
             onTimerClick={shouldShowQuickActions ? onTimerClick : undefined}
             onSignInClick={() => setShowSignInModal(true)}
@@ -88,7 +88,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </div>
 
         {/* Mobile Bottom Tabs */}
-        <BottomTabs onAddClick={handleAddClick} />
+        <BottomTabs onAddClick={handleAddClick} onTimerClick={onTimerClick} />
       </div>
 
       {/* Sign In Modal */}

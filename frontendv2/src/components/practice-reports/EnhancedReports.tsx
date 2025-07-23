@@ -110,7 +110,19 @@ export default function EnhancedReports({
         technique.toLowerCase().includes(query)
       )
 
-      return piecesMatch || notesMatch || techniquesMatch
+      // Search in type (e.g., "lesson", "practice", etc.)
+      const typeMatch = entry.type?.toLowerCase().includes(query)
+
+      // Search in instrument
+      const instrumentMatch = entry.instrument?.toLowerCase().includes(query)
+
+      return (
+        piecesMatch ||
+        notesMatch ||
+        techniquesMatch ||
+        typeMatch ||
+        instrumentMatch
+      )
     })
   }, [entries, searchQuery])
 
