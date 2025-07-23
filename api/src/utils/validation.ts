@@ -52,6 +52,7 @@ export const schemas = {
   userPreferences: z.object({
     theme: z.enum(['light', 'dark', 'auto']).optional(),
     notificationSettings: z.record(z.any()).optional(),
+    primaryInstrument: z.string().optional(),
   }),
 }
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { authApi, type User } from '../api/auth'
 import { useLogbookStore } from './logbookStore'
+import { userApi } from '../api/user'
 
 interface AuthState {
   user: User | null
@@ -15,6 +16,7 @@ interface AuthState {
   logout: () => Promise<void>
   refreshAuth: () => Promise<void>
   clearError: () => void
+  syncUserPreferences: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -64,6 +66,12 @@ export const useAuthStore = create<AuthState>(set => ({
           syncLocalData().catch((error: unknown) => {
             console.warn('Initial repertoire sync failed:', error)
           }),
+          useAuthStore
+            .getState()
+            .syncUserPreferences()
+            .catch((error: unknown) => {
+              console.warn('Initial preferences sync failed:', error)
+            }),
         ])
       } catch (syncError) {
         console.warn(
@@ -101,7 +109,11 @@ export const useAuthStore = create<AuthState>(set => ({
         setLocalMode(false) // Switch to online mode when authenticated
 
         // Sync both logbook and repertoire data
-        await Promise.all([syncWithServer(), syncLocalData()])
+        await Promise.all([
+          syncWithServer(),
+          syncLocalData(),
+          useAuthStore.getState().syncUserPreferences(),
+        ])
       } catch (syncError) {
         console.warn('Store sync error after Google login:', syncError)
         // Continue - login was successful even if sync failed
@@ -252,6 +264,12 @@ export const useAuthStore = create<AuthState>(set => ({
           syncLocalData().catch((error: unknown) => {
             console.warn('Background repertoire sync failed:', error)
           }),
+          useAuthStore
+            .getState()
+            .syncUserPreferences()
+            .catch((error: unknown) => {
+              console.warn('Background preferences sync failed:', error)
+            }),
         ])
       } catch (syncError) {
         console.warn('Store sync error after refresh auth:', syncError)
@@ -278,4 +296,36 @@ export const useAuthStore = create<AuthState>(set => ({
   },
 
   clearError: () => set({ error: null }),
+
+  syncUserPreferences: async () => {
+    try {
+      // Get server preferences
+      const serverPreferences = await userApi.getPreferences()
+
+      // Get local preferences
+      const localStorageKey = 'mirubato:user-preferences'
+      const localPreferencesStr = localStorage.getItem(localStorageKey)
+      let localPreferences = {}
+
+      if (localPreferencesStr) {
+        try {
+          localPreferences = JSON.parse(localPreferencesStr)
+        } catch (e) {
+          console.warn('Failed to parse local preferences:', e)
+        }
+      }
+
+      // Merge preferences (server takes precedence)
+      const mergedPreferences = {
+        ...localPreferences,
+        ...serverPreferences,
+      }
+
+      // Save merged preferences to localStorage
+      localStorage.setItem(localStorageKey, JSON.stringify(mergedPreferences))
+    } catch (error) {
+      console.warn('Failed to sync user preferences:', error)
+      // Don't throw - preference sync failure shouldn't break auth flow
+    }
+  },
 }))

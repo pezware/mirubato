@@ -2,16 +2,17 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
+import { useUserPreferences } from '../hooks/useUserPreferences'
 import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
   isSameScore,
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
-import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
+import { InstrumentSelector } from './logbook/InstrumentSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
 import { Modal } from './ui/Modal'
 
@@ -33,6 +34,7 @@ export default function ManualEntryForm({
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
   const { repertoire, loadRepertoire } = useRepertoireStore()
+  const { getPrimaryInstrument } = useUserPreferences()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
     piece: { title: string; composer?: string | null }
@@ -52,7 +54,9 @@ export default function ManualEntryForm({
     entry?.type || 'practice'
   )
   const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
-    entry?.instrument || 'piano'
+    entry?.instrument ||
+      (getPrimaryInstrument() as LogbookEntry['instrument']) ||
+      'piano'
   )
   const [notes, setNotes] = useState(entry?.notes || '')
   const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
@@ -198,11 +202,12 @@ export default function ManualEntryForm({
     }
   }
 
-  const addPiece = () => {
-    if (pieces.length < 3) {
-      setPieces([...pieces, { title: '', composer: '' }])
-    }
-  }
+  // addPiece and removePiece functions kept for backward compatibility but not used in UI
+  // const addPiece = () => {
+  //   if (pieces.length < 3) {
+  //     setPieces([...pieces, { title: '', composer: '' }])
+  //   }
+  // }
 
   const updatePiece = (
     index: number,
@@ -216,9 +221,9 @@ export default function ManualEntryForm({
     })
   }
 
-  const removePiece = (index: number) => {
-    setPieces(pieces.filter((_, i) => i !== index))
-  }
+  // const removePiece = (index: number) => {
+  //   setPieces(pieces.filter((_, i) => i !== index))
+  // }
 
   return (
     <Modal
@@ -295,21 +300,17 @@ export default function ManualEntryForm({
               />
             </div>
 
-            <div className="flex gap-4">
-              <SplitButton<LogbookEntry['instrument']>
-                options={[
-                  {
-                    value: 'piano',
-                    label: `🎹 ${t('common:instruments.piano')}`,
-                  },
-                  {
-                    value: 'guitar',
-                    label: `🎸 ${t('common:instruments.guitar')}`,
-                  },
-                ]}
+            <div className="w-48">
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                {t('logbook:entry.instrument')}
+              </label>
+              <InstrumentSelector
                 value={instrument}
-                onChange={value => value && setInstrument(value)}
-                orientation="horizontal"
+                onChange={value =>
+                  setInstrument(
+                    (value as LogbookEntry['instrument']) || 'piano'
+                  )
+                }
               />
             </div>
           </div>
@@ -354,44 +355,17 @@ export default function ManualEntryForm({
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             {t('logbook:entry.pieces')}
-            {pieces.length > 1 && (
-              <span className="text-xs text-morandi-stone-500 ml-2">
-                {t(
-                  'logbook:entry.piecesNote',
-                  'Practice time will be divided equally among pieces'
-                )}
-              </span>
-            )}
           </label>
-          {pieces.map((piece, index) => (
+          {/* Only show the first piece for new UI, but support multiple pieces for existing entries */}
+          {pieces.slice(0, 1).map((piece, index) => (
             <PieceInput
               key={index}
               piece={piece}
               index={index}
               onUpdate={updatePiece}
-              onRemove={removePiece}
+              onRemove={undefined} // No remove button for single piece
             />
           ))}
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              onClick={addPiece}
-              variant="ghost"
-              size="sm"
-              leftIcon={<span>+</span>}
-              disabled={pieces.length >= 3}
-            >
-              {t('logbook:entry.addPiece')}
-            </Button>
-            {pieces.length >= 3 && (
-              <span className="text-xs text-morandi-stone-500">
-                {t(
-                  'logbook:entry.maxPiecesReached',
-                  'Maximum 3 pieces per entry'
-                )}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Technique Selection - Only show when type is technique */}
