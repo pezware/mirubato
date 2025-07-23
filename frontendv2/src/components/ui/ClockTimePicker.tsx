@@ -237,7 +237,7 @@ export default function ClockTimePicker({
                 stroke="#e0e0e0"
                 strokeWidth="3"
                 onPointerDown={handlePointerDown}
-                style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                style={{ cursor: 'pointer' }}
               />
 
               {/* Hour numbers (inner ring) */}
