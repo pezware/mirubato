@@ -47,7 +47,8 @@
       "custom": "Personnalisé",
       "selectTechniques": "Sélectionner les techniques pratiquées",
       "addCustom": "Ajouter une technique personnalisée",
-      "customPlaceholder": "Entrez le nom de la technique personnalisée"
+      "customPlaceholder": "Entrez le nom de la technique personnalisée",
+      "customTechniques": "Techniques Personnalisées"
     },
     "practiceDate": "Date de pratique",
     "successAdded": "Entrée de pratique ajoutée avec succès !",
