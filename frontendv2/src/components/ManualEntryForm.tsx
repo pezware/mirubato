@@ -245,38 +245,40 @@ export default function ManualEntryForm({
       >
         {/* Basic Info */}
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-[2] min-w-0">
-              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-                {t('logbook:entry.practiceDate', 'Practice Date')}
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="date"
-                  value={practiceDate}
-                  onChange={e => setPracticeDate(e.target.value)}
-                  max={(() => {
-                    const today = new Date()
-                    return (
-                      today.getFullYear() +
-                      '-' +
-                      String(today.getMonth() + 1).padStart(2, '0') +
-                      '-' +
-                      String(today.getDate()).padStart(2, '0')
-                    )
-                  })()} // Don't allow future dates
-                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  required
-                />
-                <TimePicker
-                  value={practiceTime}
-                  onChange={setPracticeTime}
-                  className="flex-1"
-                />
-              </div>
+          {/* Date and Time - Full width on mobile */}
+          <div>
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+              {t('logbook:entry.practiceDate', 'Practice Date')}
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="date"
+                value={practiceDate}
+                onChange={e => setPracticeDate(e.target.value)}
+                max={(() => {
+                  const today = new Date()
+                  return (
+                    today.getFullYear() +
+                    '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') +
+                    '-' +
+                    String(today.getDate()).padStart(2, '0')
+                  )
+                })()} // Don't allow future dates
+                className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                required
+              />
+              <TimePicker
+                value={practiceTime}
+                onChange={setPracticeTime}
+                className="flex-1"
+              />
             </div>
+          </div>
 
-            <div className="w-24 sm:w-32">
+          {/* Duration and Instrument - Side by side on mobile, combined with date/time on desktop */}
+          <div className="flex gap-4">
+            <div className="flex-1">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.duration')}
               </label>
@@ -306,7 +308,7 @@ export default function ManualEntryForm({
               />
             </div>
 
-            <div className="w-36 sm:w-40">
+            <div className="flex-1">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.instrument')}
               </label>
