@@ -79,6 +79,39 @@ describe('useCustomTechniques', () => {
     expect(result.current.customTechniques).toEqual(['staccato'])
   })
 
+  it('should normalize techniques to lowercase', () => {
+    const { result } = renderHook(() => useCustomTechniques())
+
+    act(() => {
+      result.current.addCustomTechnique('Tremolo')
+      result.current.addCustomTechnique('GLISSANDO')
+      result.current.addCustomTechnique('VibraTO')
+    })
+
+    expect(result.current.customTechniques).toEqual([
+      'tremolo',
+      'glissando',
+      'vibrato',
+    ])
+  })
+
+  it('should prevent case-insensitive duplicates', () => {
+    const { result } = renderHook(() => useCustomTechniques())
+
+    act(() => {
+      result.current.addCustomTechnique('tremolo')
+      result.current.addCustomTechnique('Tremolo')
+      result.current.addCustomTechnique('TREMOLO')
+      result.current.addCustomTechnique('TrEmOlO')
+    })
+
+    // Should only have one entry
+    expect(result.current.customTechniques).toEqual(['tremolo'])
+    expect(localStorage.getItem('mirubato:custom-techniques')).toBe(
+      JSON.stringify(['tremolo'])
+    )
+  })
+
   it('should trim whitespace from techniques', () => {
     const { result } = renderHook(() => useCustomTechniques())
 

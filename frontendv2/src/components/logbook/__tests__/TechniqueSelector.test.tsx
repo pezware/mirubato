@@ -109,21 +109,21 @@ describe('TechniqueSelector', () => {
     const addButton = screen.getByText('Add')
     fireEvent.click(addButton)
 
-    // Check that the technique was added
-    expect(mockOnTechniquesChange).toHaveBeenCalledWith(['Tremolo'])
+    // Check that the technique was added (normalized to lowercase)
+    expect(mockOnTechniquesChange).toHaveBeenCalledWith(['tremolo'])
 
-    // Check that it was saved to localStorage
+    // Check that it was saved to localStorage (normalized to lowercase)
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'mirubato:custom-techniques',
-      '["Tremolo"]'
+      '["tremolo"]'
     )
   })
 
   it('should display previously saved custom techniques', () => {
-    // Pre-populate localStorage with custom techniques
+    // Pre-populate localStorage with custom techniques (lowercase)
     localStorageMock.setItem(
       'mirubato:custom-techniques',
-      JSON.stringify(['Vibrato', 'Glissando'])
+      JSON.stringify(['vibrato', 'glissando'])
     )
 
     render(
@@ -135,6 +135,7 @@ describe('TechniqueSelector', () => {
 
     // Check that custom techniques section appears
     expect(screen.getByText('Custom Techniques')).toBeInTheDocument()
+    // Check that they are displayed with capitalized first letter
     expect(screen.getByText('Vibrato')).toBeInTheDocument()
     expect(screen.getByText('Glissando')).toBeInTheDocument()
   })
@@ -143,7 +144,7 @@ describe('TechniqueSelector', () => {
     // Pre-populate localStorage with custom techniques
     localStorageMock.setItem(
       'mirubato:custom-techniques',
-      JSON.stringify(['Legato'])
+      JSON.stringify(['legato'])
     )
 
     render(
@@ -156,7 +157,7 @@ describe('TechniqueSelector', () => {
     const legatoCheckbox = screen.getByLabelText('Legato')
     fireEvent.click(legatoCheckbox)
 
-    expect(mockOnTechniquesChange).toHaveBeenCalledWith(['Legato'])
+    expect(mockOnTechniquesChange).toHaveBeenCalledWith(['legato'])
   })
 
   it('should display selected techniques as tags', () => {

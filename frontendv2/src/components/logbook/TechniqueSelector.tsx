@@ -5,6 +5,11 @@ import { DEFAULT_TECHNIQUES } from '../../constants/techniques'
 import { X } from 'lucide-react'
 import { useCustomTechniques } from '../../hooks/useCustomTechniques'
 
+// Helper function to capitalize first letter for display
+const capitalizeFirst = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 interface TechniqueSelectorProps {
   selectedTechniques: string[]
   onTechniquesChange: (techniques: string[]) => void
@@ -30,15 +35,12 @@ export function TechniqueSelector({
   }
 
   const handleAddCustom = () => {
-    if (
-      customTechnique.trim() &&
-      !selectedTechniques.includes(customTechnique.trim())
-    ) {
-      const trimmed = customTechnique.trim()
-      // Add to selected techniques
-      onTechniquesChange([...selectedTechniques, trimmed])
+    const normalized = customTechnique.trim().toLowerCase()
+    if (normalized && !selectedTechniques.includes(normalized)) {
+      // Add to selected techniques (normalized)
+      onTechniquesChange([...selectedTechniques, normalized])
       // Save to custom techniques for future use
-      addCustomTechnique(trimmed)
+      addCustomTechnique(customTechnique.trim()) // Pass original for normalization in hook
       setCustomTechnique('')
       setShowCustomInput(false)
     }
@@ -91,7 +93,9 @@ export function TechniqueSelector({
                 onChange={() => handleToggleTechnique(technique)}
                 className="rounded border-gray-300 text-sage-600 focus:ring-sage-500"
               />
-              <span className="text-sm text-gray-700">{technique}</span>
+              <span className="text-sm text-gray-700">
+                {capitalizeFirst(technique)}
+              </span>
             </label>
           ))}
         </div>
@@ -148,7 +152,7 @@ export function TechniqueSelector({
                   technique as (typeof DEFAULT_TECHNIQUES)[number]
                 )
                   ? t(`logbook:entry.techniqueOptions.${technique}`)
-                  : technique}
+                  : capitalizeFirst(technique)}
                 <button
                   onClick={() => handleRemoveTechnique(technique)}
                   className="ml-1 text-sand-600 hover:text-sand-800"

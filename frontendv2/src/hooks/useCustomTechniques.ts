@@ -24,11 +24,13 @@ export function useCustomTechniques() {
   )
 
   const addCustomTechnique = useCallback((technique: string) => {
-    const trimmed = technique.trim()
-    if (trimmed) {
+    const normalized = technique.trim().toLowerCase()
+    if (normalized) {
       setCustomTechniques(prev => {
-        if (!prev.includes(trimmed)) {
-          const newTechniques = [...prev, trimmed]
+        // Case-insensitive duplicate check
+        const alreadyExists = prev.some(t => t.toLowerCase() === normalized)
+        if (!alreadyExists) {
+          const newTechniques = [...prev, normalized]
           try {
             localStorage.setItem(
               CUSTOM_TECHNIQUES_KEY,
