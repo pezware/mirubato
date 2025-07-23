@@ -136,18 +136,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                 )}
               </div>
             </div>
-
-            {/* Play Button */}
-            <button
-              onClick={e => {
-                e.stopPropagation()
-                onPlay?.()
-              }}
-              className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
-              title={t('repertoire:startPractice')}
-            >
-              <Play className="w-4 h-4 text-stone-600" />
-            </button>
           </div>
         </div>
       </div>

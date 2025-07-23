@@ -12,6 +12,7 @@ import { Loading } from '@/components/ui/Loading'
 import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
+import { toTitleCase } from '@/utils/textFormatting'
 import { Search, Music, Plus, Clock, PlusCircle } from 'lucide-react'
 
 interface AddToRepertoireModalProps {
@@ -308,6 +309,14 @@ export function AddToRepertoireModal({
                         type="text"
                         value={customComposer}
                         onChange={e => setCustomComposer(e.target.value)}
+                        onBlur={() => {
+                          if (customComposer && customComposer.trim()) {
+                            const formatted = toTitleCase(customComposer.trim())
+                            if (formatted !== customComposer) {
+                              setCustomComposer(formatted)
+                            }
+                          }
+                        }}
                         placeholder={t('repertoire:composerPlaceholder')}
                         className="w-full"
                       />

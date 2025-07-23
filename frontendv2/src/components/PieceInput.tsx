@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import Autocomplete from './ui/Autocomplete'
 import Button from './ui/Button'
 import { useAutocomplete } from '../hooks/useAutocomplete'
+import { formatComposerName } from '../utils/textFormatting'
 
 interface PieceInputProps {
   piece: {
@@ -87,6 +88,16 @@ export default function PieceInput({
           onChange={value => {
             onUpdate(index, 'composer', value)
             composerAutocomplete.setQuery(value)
+          }}
+          onBlur={() => {
+            // Auto-capitalize composer name on blur
+            const currentValue = piece.composer || ''
+            if (currentValue && currentValue.trim()) {
+              const formatted = formatComposerName(currentValue.trim())
+              if (formatted !== currentValue) {
+                onUpdate(index, 'composer', formatted)
+              }
+            }
           }}
           onSelect={() => {
             // Selection is already handled by onChange in Autocomplete component
