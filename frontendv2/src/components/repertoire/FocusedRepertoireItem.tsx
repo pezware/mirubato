@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, isToday } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/dateUtils'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
@@ -58,6 +58,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
   // Determine if needs attention (not practiced in 5+ days)
   const lastPractice = item.lastPracticed || item.recentPractice?.[0]?.timestamp
+  const lastPracticeDate = lastPractice ? new Date(lastPractice) : null
   const daysSinceLastPractice = lastPractice
     ? Math.floor((Date.now() - lastPractice) / (1000 * 60 * 60 * 24))
     : null
@@ -65,7 +66,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   const needsAttention = daysSinceLastPractice && daysSinceLastPractice >= 5
 
   // Determine status indicator color
-  const isActive = daysSinceLastPractice === 0
+  const isActive = lastPracticeDate ? isToday(lastPracticeDate) : false
   const indicatorClass = isActive
     ? 'bg-green-500'
     : needsAttention
@@ -73,10 +74,10 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
       : 'bg-gray-300'
 
   // Format last practice time
-  const lastPracticeText = lastPractice
-    ? daysSinceLastPractice === 0
+  const lastPracticeText = lastPracticeDate
+    ? isToday(lastPracticeDate)
       ? t('repertoire:practicedToday')
-      : formatDistanceToNow(new Date(lastPractice), { addSuffix: true })
+      : formatDistanceToNow(lastPracticeDate, { addSuffix: true })
     : t('repertoire:notPracticedYet')
 
   // Calculate total practice time
@@ -112,7 +113,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                 >
                   {lastPracticeText}
                 </span>
-                {daysSinceLastPractice === 0 && recentSessionDuration > 0 && (
+                {isActive && recentSessionDuration > 0 && (
                   <>
                     <span>•</span>
                     <span>{formatDuration(recentSessionDuration)}</span>
