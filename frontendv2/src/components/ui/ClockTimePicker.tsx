@@ -105,7 +105,8 @@ export default function ClockTimePicker({
   }
 
   // Handle minute click
-  const handleMinuteClick = (minute: number) => {
+  const handleMinuteClick = (minute: number, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent triggering the drag handler
     setTempMinutes(minute)
   }
 
@@ -228,10 +229,8 @@ export default function ClockTimePicker({
               height="240"
               viewBox="0 0 240 240"
               className="select-none"
-              onPointerDown={handlePointerDown}
-              style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
             >
-              {/* Clock circle */}
+              {/* Clock circle - draggable background */}
               <circle
                 cx="120"
                 cy="120"
@@ -239,6 +238,8 @@ export default function ClockTimePicker({
                 fill="#f9f9f9"
                 stroke="#e0e0e0"
                 strokeWidth="3"
+                onPointerDown={handlePointerDown}
+                style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
               />
 
               {/* Hour numbers (inner ring) */}
@@ -274,7 +275,8 @@ export default function ClockTimePicker({
                 return (
                   <g
                     key={`minute-${minute}`}
-                    onClick={() => handleMinuteClick(minute)}
+                    onClick={e => handleMinuteClick(minute, e)}
+                    onPointerDown={e => e.stopPropagation()}
                     style={{ cursor: 'pointer' }}
                   >
                     <circle
