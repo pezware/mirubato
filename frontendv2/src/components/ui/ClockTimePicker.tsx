@@ -246,8 +246,8 @@ export default function ClockTimePicker({
               {Array.from({ length: 12 }, (_, i) => {
                 const hour = i === 0 ? 12 : i
                 const angle = i * 30 - 90
-                const x = 120 + 65 * Math.cos((angle * Math.PI) / 180)
-                const y = 120 + 65 * Math.sin((angle * Math.PI) / 180)
+                const x = 120 + 58 * Math.cos((angle * Math.PI) / 180)
+                const y = 120 + 58 * Math.sin((angle * Math.PI) / 180)
                 return (
                   <text
                     key={hour}
@@ -309,8 +309,8 @@ export default function ClockTimePicker({
               <line
                 x1="120"
                 y1="120"
-                x2={120 + 50 * Math.cos(((hourAngle - 90) * Math.PI) / 180)}
-                y2={120 + 50 * Math.sin(((hourAngle - 90) * Math.PI) / 180)}
+                x2={120 + 45 * Math.cos(((hourAngle - 90) * Math.PI) / 180)}
+                y2={120 + 45 * Math.sin(((hourAngle - 90) * Math.PI) / 180)}
                 stroke="#4A5568"
                 strokeWidth="6"
                 strokeLinecap="round"
