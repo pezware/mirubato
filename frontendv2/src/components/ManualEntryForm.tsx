@@ -246,7 +246,7 @@ export default function ManualEntryForm({
         {/* Basic Info */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-[2] min-w-0">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.practiceDate', 'Practice Date')}
               </label>
@@ -276,7 +276,7 @@ export default function ManualEntryForm({
               </div>
             </div>
 
-            <div className="flex-1">
+            <div className="w-24 sm:w-32">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.duration')}
               </label>
@@ -306,7 +306,7 @@ export default function ManualEntryForm({
               />
             </div>
 
-            <div className="w-48">
+            <div className="w-36 sm:w-40">
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.instrument')}
               </label>
