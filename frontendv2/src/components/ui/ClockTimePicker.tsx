@@ -33,6 +33,16 @@ export default function ClockTimePicker({
     setTempMinutes(m)
   }, [value])
 
+  // Round minutes to nearest 5 when opening
+  useEffect(() => {
+    if (isOpen) {
+      const roundedMinutes = Math.round(tempMinutes / 5) * 5
+      if (roundedMinutes !== tempMinutes) {
+        setTempMinutes(roundedMinutes === 60 ? 0 : roundedMinutes)
+      }
+    }
+  }, [isOpen, tempMinutes])
+
   // Format display
   const hour12 =
     tempHours === 0 ? 12 : tempHours > 12 ? tempHours - 12 : tempHours
@@ -202,21 +212,9 @@ export default function ClockTimePicker({
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <h3 className="text-center text-lg font-medium text-gray-800 mb-3">
+          <h3 className="text-center text-lg font-medium text-gray-800 mb-4">
             Select Practice Time
           </h3>
-
-          {/* Instructions */}
-          <div className="text-center text-sm text-gray-600 mb-4">
-            <p>
-              <strong className="text-gray-700">Drag the hour hand</strong> to
-              set hours
-            </p>
-            <p>
-              <strong className="text-gray-700">Click minute numbers</strong>{' '}
-              (outer ring) to set minutes
-            </p>
-          </div>
 
           {/* Clock face */}
           <div
@@ -319,18 +317,6 @@ export default function ClockTimePicker({
             </svg>
           </div>
 
-          {/* Legend */}
-          <div className="flex justify-center gap-6 mb-4 text-xs text-gray-600">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gray-800"></div>
-              <span>Hours (inner)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-              <span>Minutes (outer, clickable)</span>
-            </div>
-          </div>
-
           {/* Digital display with AM/PM */}
           <div className="flex items-center justify-center mb-4 gap-2 bg-gray-50 rounded-lg p-3">
             {isEditingTime ? (
@@ -348,7 +334,7 @@ export default function ClockTimePicker({
               <div
                 onClick={handleTimeClick}
                 className="text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-3 py-1 transition-colors"
-                title="Click to type exact time"
+                title="Click to type time"
               >
                 {tempHours.toString().padStart(2, '0')}:
                 {tempMinutes.toString().padStart(2, '0')}
@@ -364,10 +350,6 @@ export default function ClockTimePicker({
             >
               {ampm}
             </button>
-          </div>
-
-          <div className="text-center text-xs text-gray-500 mb-4">
-            Click time display to type exact time
           </div>
 
           {/* Action buttons */}

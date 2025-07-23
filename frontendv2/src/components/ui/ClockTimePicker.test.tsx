@@ -18,7 +18,7 @@ describe('ClockTimePicker', () => {
     fireEvent.click(trigger!)
 
     expect(screen.getByText('Select Practice Time')).toBeInTheDocument()
-    expect(screen.getByText('Drag the hour hand')).toBeInTheDocument()
+    expect(screen.getByText('Confirm Time')).toBeInTheDocument()
   })
 
   it('allows clicking minute numbers to set minutes', async () => {
@@ -118,11 +118,26 @@ describe('ClockTimePicker', () => {
 
     // Check that key elements are present
     expect(screen.getByText('Select Practice Time')).toBeInTheDocument()
-    expect(screen.getByText('Drag the hour hand')).toBeInTheDocument()
-    expect(screen.getByText('Click minute numbers')).toBeInTheDocument()
 
     // Verify buttons are accessible
     expect(screen.getByText('Cancel')).toBeInTheDocument()
     expect(screen.getByText('Confirm Time')).toBeInTheDocument()
+  })
+
+  it('rounds minutes to nearest 5 when opening', () => {
+    const onChange = vi.fn()
+    render(<ClockTimePicker value="09:17" onChange={onChange} />)
+
+    // Open dropdown
+    const trigger = screen.getByText('9:17 AM').parentElement
+    fireEvent.click(trigger!)
+
+    // Check that 15 minutes is selected (17 rounded to nearest 5)
+    const minute15 = screen.getByText('15')
+    const minute15Parent = minute15.parentElement
+    const circle = minute15Parent?.querySelector('circle')
+
+    // The selected minute should have a filled background
+    expect(circle).toHaveAttribute('fill', '#4A5568')
   })
 })
