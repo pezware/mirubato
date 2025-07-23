@@ -224,11 +224,7 @@ export default function ManualEntryForm({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={
-        entry
-          ? `📝 ${t('logbook:entry.editEntry')}`
-          : `✨ ${t('logbook:entry.addEntry')}`
-      }
+      title={entry ? t('logbook:entry.editEntry') : t('logbook:entry.addEntry')}
       size="lg"
     >
       <form
@@ -264,7 +260,7 @@ export default function ManualEntryForm({
                 <TimePicker
                   value={practiceTime}
                   onChange={setPracticeTime}
-                  className="w-full sm:w-auto"
+                  className="flex-1"
                 />
               </div>
             </div>

@@ -16,6 +16,7 @@ interface AutocompleteProps {
   value: string
   onChange: (value: string) => void
   onSelect?: (option: AutocompleteOption) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   options: AutocompleteOption[]
   placeholder?: string
   isLoading?: boolean
@@ -31,6 +32,7 @@ export default function Autocomplete({
   value,
   onChange,
   onSelect,
+  onBlur,
   options,
   placeholder,
   isLoading = false,
@@ -146,6 +148,11 @@ export default function Autocomplete({
           setIsOpen(true)
         }}
         onFocus={() => setIsOpen(true)}
+        onBlur={e => {
+          // Delay closing to allow click events on options
+          setTimeout(() => setIsOpen(false), 200)
+          onBlur?.(e)
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}

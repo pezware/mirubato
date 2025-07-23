@@ -1,5 +1,4 @@
 import React from 'react'
-import { Play } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/dateUtils'
@@ -20,12 +19,10 @@ interface EnrichedRepertoireItem extends RepertoireItem {
 
 interface FocusedRepertoireItemProps {
   item: EnrichedRepertoireItem
-  onPlay?: () => void
 }
 
 export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   item,
-  onPlay,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
 
@@ -136,18 +133,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                 )}
               </div>
             </div>
-
-            {/* Play Button */}
-            <button
-              onClick={e => {
-                e.stopPropagation()
-                onPlay?.()
-              }}
-              className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
-              title={t('repertoire:startPractice')}
-            >
-              <Play className="w-4 h-4 text-stone-600" />
-            </button>
           </div>
         </div>
       </div>
