@@ -51,7 +51,7 @@ interface LogbookState {
   updatePieceName: (
     oldPiece: { title: string; composer?: string },
     newPiece: { title: string; composer?: string }
-  ) => Promise<void>
+  ) => Promise<number>
 }
 
 // Local storage keys

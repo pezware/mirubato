@@ -84,7 +84,7 @@ export function PiecesStatistics({
       const updatedCount = await updatePieceName(oldPiece, newPiece)
       toast.success(`Updated ${updatedCount} entries`)
       setEditingPiece(null)
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update piece name')
     }
   }

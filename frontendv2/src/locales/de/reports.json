@@ -214,6 +214,17 @@
   "perWeek": "pro Woche",
   "periodComparison": "Periodenvergleich",
   "pieceDetails": "Stückdetails",
+  "pieceEdit": {
+    "title": "Stück bearbeiten",
+    "warningTitle": "Dies wird alle Einträge aktualisieren",
+    "warningMessage": "Diese Änderung betrifft {{count}} Übungseinträge.",
+    "pieceTitle": "Stücktitel",
+    "pieceTitlePlaceholder": "z.B., Mondscheinsonate",
+    "composer": "Komponist",
+    "composerPlaceholder": "z.B., Beethoven",
+    "titleRequired": "Der Stücktitel ist erforderlich",
+    "duplicatePiece": "Ein Stück mit diesem Namen und Komponisten existiert bereits"
+  },
   "pieces": "Stücke",
   "piecesByComposer": "Stücke von {{composer}}",
   "practiceCalendar": "Übungskalender",

@@ -6,7 +6,7 @@ import { useLogbookStore } from '../../../stores/logbookStore'
 // Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: any) => {
+    t: (key: string, params?: Record<string, unknown>) => {
       if (params) {
         return key + ' ' + JSON.stringify(params)
       }
@@ -36,7 +36,7 @@ describe('EditPieceModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    ;(useLogbookStore as any).mockReturnValue({
+    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
       entries: [
         {
           id: '1',
@@ -100,7 +100,7 @@ describe('EditPieceModal', () => {
   })
 
   it('detects duplicate pieces', async () => {
-    ;(useLogbookStore as any).mockReturnValue({
+    ;(useLogbookStore as ReturnType<typeof vi.fn>).mockReturnValue({
       entries: [
         {
           id: '1',
