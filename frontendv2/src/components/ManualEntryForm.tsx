@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import { useUserPreferences } from '../hooks/useUserPreferences'
@@ -401,22 +407,22 @@ export default function ManualEntryForm({
             {[
               {
                 value: 'frustrated',
-                label: '😤',
+                icon: <IconMoodAngry size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.frustrated'),
               },
               {
                 value: 'neutral',
-                label: '😐',
+                icon: <IconMoodNeutral size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.neutral'),
               },
               {
                 value: 'satisfied',
-                label: '😊',
+                icon: <IconMoodSmile size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.satisfied'),
               },
               {
                 value: 'excited',
-                label: '🎉',
+                icon: <IconMoodHappy size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.excited'),
               },
             ].map((option, index) => {
@@ -450,7 +456,13 @@ export default function ManualEntryForm({
                     ${!isFirst ? 'sm:border-l-0' : ''}
                   `}
                 >
-                  <span>{option.label}</span>
+                  <span
+                    className={
+                      isActive ? 'text-white' : 'text-morandi-stone-600'
+                    }
+                  >
+                    {option.icon}
+                  </span>
                   <span className="hidden sm:inline">{option.fullLabel}</span>
                 </button>
               )

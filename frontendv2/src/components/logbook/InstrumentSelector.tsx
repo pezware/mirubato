@@ -1,6 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus, Check, X } from 'lucide-react'
+import {
+  IconPiano,
+  IconGuitarPick,
+  IconViolin,
+  IconTrumpet,
+  IconDrums,
+  IconMusic,
+  IconMicrophone,
+  IconVinyl,
+  IconFlute,
+  IconSaxophone,
+  IconAccordion,
+} from '@tabler/icons-react'
 import { useUserPreferences } from '../../hooks/useUserPreferences'
 import Button from '../ui/Button'
 
@@ -98,34 +111,40 @@ export function InstrumentSelector({
     }
   }
 
-  const getInstrumentEmoji = (instrument: string): string => {
-    const emojiMap: Record<string, string> = {
-      piano: '🎹',
-      guitar: '🎸',
-      violin: '🎻',
-      viola: '🎻',
-      cello: '🎻',
-      'double-bass': '🎻',
-      flute: '🎶',
-      oboe: '🎶',
-      clarinet: '🎶',
-      bassoon: '🎶',
-      'french-horn': '🎺',
-      trumpet: '🎺',
-      trombone: '🎺',
-      tuba: '🎺',
-      percussion: '🥁',
-      harp: '🎵',
-      saxophone: '🎷',
-      voice: '🎤',
-      organ: '🎹',
-      accordion: '🪗',
+  const getInstrumentIcon = (instrument: string): React.ReactNode => {
+    const iconProps = {
+      size: 18,
+      className: 'text-morandi-stone-600',
+      stroke: 1.5,
     }
-    return emojiMap[instrument] || '🎵'
+
+    const iconMap: Record<string, React.ReactNode> = {
+      piano: <IconPiano {...iconProps} />,
+      guitar: <IconGuitarPick {...iconProps} />,
+      violin: <IconViolin {...iconProps} />,
+      viola: <IconViolin {...iconProps} />,
+      cello: <IconViolin {...iconProps} />,
+      'double-bass': <IconViolin {...iconProps} />,
+      flute: <IconFlute {...iconProps} />,
+      oboe: <IconMusic {...iconProps} />,
+      clarinet: <IconMusic {...iconProps} />,
+      bassoon: <IconMusic {...iconProps} />,
+      'french-horn': <IconTrumpet {...iconProps} />,
+      trumpet: <IconTrumpet {...iconProps} />,
+      trombone: <IconTrumpet {...iconProps} />,
+      tuba: <IconTrumpet {...iconProps} />,
+      percussion: <IconDrums {...iconProps} />,
+      harp: <IconMusic {...iconProps} />,
+      saxophone: <IconSaxophone {...iconProps} />,
+      voice: <IconMicrophone {...iconProps} />,
+      organ: <IconPiano {...iconProps} />,
+      accordion: <IconAccordion {...iconProps} />,
+    }
+    return iconMap[instrument] || <IconMusic {...iconProps} />
   }
 
   const displayValue = value
-    ? `${getInstrumentEmoji(value)} ${t(`instruments.${value}`, { defaultValue: value })}`
+    ? t(`instruments.${value}`, { defaultValue: value })
     : t('instruments.none', 'No instrument')
 
   return (
@@ -136,7 +155,10 @@ export function InstrumentSelector({
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-3 py-2 text-left bg-white border border-stone-300 rounded-lg hover:border-stone-400 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-transparent flex items-center justify-between"
       >
-        <span className={value ? 'text-stone-900' : 'text-stone-500'}>
+        <span
+          className={`flex items-center gap-2 ${value ? 'text-stone-900' : 'text-stone-500'}`}
+        >
+          {value && getInstrumentIcon(value)}
           {displayValue}
         </span>
         <ChevronRight
@@ -159,8 +181,8 @@ export function InstrumentSelector({
                 value === instrument ? 'bg-sage-50' : ''
               }`}
             >
-              <span>
-                {getInstrumentEmoji(instrument)}{' '}
+              <span className="flex items-center gap-2">
+                {getInstrumentIcon(instrument)}
                 {t(`instruments.${instrument}`, { defaultValue: instrument })}
               </span>
               {value === instrument && (
@@ -187,8 +209,8 @@ export function InstrumentSelector({
                 value === instrument ? 'bg-sage-50' : ''
               }`}
             >
-              <span>
-                {getInstrumentEmoji(instrument)}{' '}
+              <span className="flex items-center gap-2">
+                {getInstrumentIcon(instrument)}
                 {t(`instruments.${instrument}`, { defaultValue: instrument })}
               </span>
               {value === instrument && (

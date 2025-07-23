@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
+    "@tabler/icons-react": "3.34.1",
     "@types/dompurify": "^3.0.5",
     "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^10.0.0",
