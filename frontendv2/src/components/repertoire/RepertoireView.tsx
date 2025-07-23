@@ -457,13 +457,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               onClick={() => setSelectedPiece(item)}
               className="cursor-pointer"
             >
-              <FocusedRepertoireItem
-                item={item}
-                onPlay={() => {
-                  // TODO: Implement practice start functionality
-                  console.log('Start practice for', item.scoreTitle)
-                }}
-              />
+              <FocusedRepertoireItem item={item} />
             </div>
           ))
         ) : viewMode === 'grid' ? (
