@@ -13,7 +13,7 @@ export default function ClockTimePicker({
   className = '',
 }: ClockTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isDragging, setIsDragging] = useState<'hour' | 'minute' | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const [isEditingTime, setIsEditingTime] = useState(false)
   const [editingValue, setEditingValue] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -68,55 +68,45 @@ export default function ClockTimePicker({
     return angle
   }
 
-  // Handle mouse/touch events
-  const handlePointerDown = (
-    e: React.PointerEvent,
-    type: 'hour' | 'minute'
-  ) => {
+  // Handle mouse/touch events for hour dragging
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault()
-    setIsDragging(type)
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const distance = Math.sqrt(
+      Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+    )
+
+    // Only start dragging if clicking near the clock face (not too close to center)
+    if (distance > 30) {
+      setIsDragging(true)
+      handleDrag(e.clientX, e.clientY)
+    }
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return
-
-    const angle = calculateAngle(e.clientX, e.clientY)
-
-    if (isDragging === 'hour') {
-      const hour = Math.round(angle / 30) % 12
-      const newHour =
-        tempHours >= 12 ? (hour === 0 ? 12 : hour + 12) : hour === 0 ? 0 : hour
-      setTempHours(newHour)
-    } else if (isDragging === 'minute') {
-      const minute = Math.round(angle / 6) % 60
-      setTempMinutes(minute)
-    }
+    handleDrag(e.clientX, e.clientY)
   }
 
   const handlePointerUp = () => {
-    setIsDragging(null)
+    setIsDragging(false)
   }
 
-  // Handle clock face click
-  const handleClockClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    const angle = calculateAngle(e.clientX, e.clientY)
+  const handleDrag = (clientX: number, clientY: number) => {
+    const angle = calculateAngle(clientX, clientY)
+    const hour = Math.round(angle / 30) % 12
+    const newHour =
+      tempHours >= 12 ? (hour === 0 ? 12 : hour + 12) : hour === 0 ? 0 : hour
+    setTempHours(newHour)
+  }
 
-    // Determine if click is closer to hour or minute hand
-    const hourAngle = (hour12 * 30 - 90) % 360
-    const minuteAngle = (tempMinutes * 6 - 90) % 360
-
-    const hourDiff = Math.abs(angle - hourAngle)
-    const minuteDiff = Math.abs(angle - minuteAngle)
-
-    if (hourDiff < minuteDiff) {
-      const hour = Math.round(angle / 30) % 12
-      const newHour =
-        tempHours >= 12 ? (hour === 0 ? 12 : hour + 12) : hour === 0 ? 0 : hour
-      setTempHours(newHour)
-    } else {
-      const minute = Math.round(angle / 6) % 60
-      setTempMinutes(minute)
-    }
+  // Handle minute click
+  const handleMinuteClick = (minute: number) => {
+    setTempMinutes(minute)
   }
 
   const handleSet = () => {
@@ -134,7 +124,7 @@ export default function ClockTimePicker({
 
   const toggleAmPm = (e: React.MouseEvent) => {
     e.preventDefault()
-    e.stopPropagation() // Prevent event bubbling that might close the picker
+    e.stopPropagation()
     setTempHours(tempHours >= 12 ? tempHours - 12 : tempHours + 12)
   }
 
@@ -178,9 +168,8 @@ export default function ClockTimePicker({
     }
   }
 
-  // Calculate hand positions
+  // Calculate hour hand position
   const hourAngle = (hour12 * 30 + tempMinutes * 0.5) % 360
-  const minuteAngle = (tempMinutes * 6) % 360
 
   return (
     <div className="relative">
@@ -206,14 +195,142 @@ export default function ClockTimePicker({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 mt-1 bg-gray-800 text-white rounded-lg shadow-2xl z-50 p-4"
+          className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-2xl z-50 p-4 border border-gray-200"
           style={{ minWidth: '320px' }}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
+          <h3 className="text-center text-lg font-medium text-gray-800 mb-3">
+            Select Practice Time
+          </h3>
+
+          {/* Instructions */}
+          <div className="text-center text-sm text-gray-600 mb-4">
+            <p>
+              <strong className="text-gray-700">Drag the hour hand</strong> to
+              set hours
+            </p>
+            <p>
+              <strong className="text-gray-700">Click minute numbers</strong>{' '}
+              (outer ring) to set minutes
+            </p>
+          </div>
+
+          {/* Clock face */}
+          <div
+            className="relative mx-auto mb-4"
+            style={{ width: '240px', height: '240px' }}
+          >
+            <svg
+              ref={svgRef}
+              width="240"
+              height="240"
+              viewBox="0 0 240 240"
+              className="select-none"
+              onPointerDown={handlePointerDown}
+              style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+            >
+              {/* Clock circle */}
+              <circle
+                cx="120"
+                cy="120"
+                r="110"
+                fill="#f9f9f9"
+                stroke="#e0e0e0"
+                strokeWidth="3"
+              />
+
+              {/* Hour numbers (inner ring) */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const hour = i === 0 ? 12 : i
+                const angle = i * 30 - 90
+                const x = 120 + 65 * Math.cos((angle * Math.PI) / 180)
+                const y = 120 + 65 * Math.sin((angle * Math.PI) / 180)
+                return (
+                  <text
+                    key={hour}
+                    x={x}
+                    y={y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#333"
+                    fontSize="16"
+                    fontWeight="600"
+                    className="select-none pointer-events-none"
+                  >
+                    {hour}
+                  </text>
+                )
+              })}
+
+              {/* Minute numbers (outer ring - clickable) */}
+              {Array.from({ length: 12 }, (_, i) => {
+                const minute = i * 5
+                const angle = i * 30 - 90
+                const x = 120 + 95 * Math.cos((angle * Math.PI) / 180)
+                const y = 120 + 95 * Math.sin((angle * Math.PI) / 180)
+                const isActive = minute === tempMinutes
+                return (
+                  <g
+                    key={`minute-${minute}`}
+                    onClick={() => handleMinuteClick(minute)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="18"
+                      fill={isActive ? '#4A5568' : 'transparent'}
+                      className="transition-colors hover:fill-gray-200"
+                    />
+                    <text
+                      x={x}
+                      y={y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill={isActive ? 'white' : '#666'}
+                      fontSize="14"
+                      fontWeight={isActive ? '600' : '400'}
+                      className="select-none pointer-events-none"
+                    >
+                      {minute.toString().padStart(2, '0')}
+                    </text>
+                  </g>
+                )
+              })}
+
+              {/* Center dot */}
+              <circle cx="120" cy="120" r="7" fill="#2D3748" />
+
+              {/* Hour hand (only hand shown) */}
+              <line
+                x1="120"
+                y1="120"
+                x2={120 + 50 * Math.cos(((hourAngle - 90) * Math.PI) / 180)}
+                y2={120 + 50 * Math.sin(((hourAngle - 90) * Math.PI) / 180)}
+                stroke="#4A5568"
+                strokeWidth="6"
+                strokeLinecap="round"
+                style={{ pointerEvents: 'none' }}
+              />
+            </svg>
+          </div>
+
+          {/* Legend */}
+          <div className="flex justify-center gap-6 mb-4 text-xs text-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gray-800"></div>
+              <span>Hours (inner)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+              <span>Minutes (outer, clickable)</span>
+            </div>
+          </div>
+
           {/* Digital display with AM/PM */}
-          <div className="flex items-center justify-center mb-4 gap-2">
+          <div className="flex items-center justify-center mb-4 gap-2 bg-gray-50 rounded-lg p-3">
             {isEditingTime ? (
               <input
                 ref={timeInputRef}
@@ -222,13 +339,14 @@ export default function ClockTimePicker({
                 onChange={handleTimeInputChange}
                 onBlur={handleTimeInputBlur}
                 onKeyDown={handleTimeInputKeyDown}
-                className="text-3xl font-light bg-gray-700 text-white text-center rounded px-2 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-2xl font-light bg-white text-gray-800 text-center rounded px-2 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 border border-gray-300"
                 placeholder="HH:MM"
               />
             ) : (
               <div
                 onClick={handleTimeClick}
-                className="text-3xl font-light cursor-text hover:bg-gray-700 rounded px-2 py-1 transition-colors"
+                className="text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-3 py-1 transition-colors"
+                title="Click to type exact time"
               >
                 {tempHours.toString().padStart(2, '0')}:
                 {tempMinutes.toString().padStart(2, '0')}
@@ -240,116 +358,27 @@ export default function ClockTimePicker({
                 e.preventDefault()
                 e.stopPropagation()
               }}
-              className="px-3 py-1 text-xl bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              className="px-3 py-1 text-lg bg-white hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
             >
               {ampm}
             </button>
           </div>
 
-          {/* Clock face */}
-          <div
-            className="relative mx-auto"
-            style={{ width: '240px', height: '240px' }}
-          >
-            <svg
-              ref={svgRef}
-              width="240"
-              height="240"
-              viewBox="0 0 240 240"
-              className="cursor-pointer select-none"
-              onClick={handleClockClick}
-            >
-              {/* Clock circle */}
-              <circle
-                cx="120"
-                cy="120"
-                r="110"
-                fill="#374151"
-                stroke="#4B5563"
-                strokeWidth="2"
-              />
-
-              {/* Hour numbers */}
-              {Array.from({ length: 12 }, (_, i) => {
-                const hour = i === 0 ? 12 : i
-                const angle = i * 30 - 90
-                const x = 120 + 85 * Math.cos((angle * Math.PI) / 180)
-                const y = 120 + 85 * Math.sin((angle * Math.PI) / 180)
-                return (
-                  <text
-                    key={hour}
-                    x={x}
-                    y={y}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#9CA3AF"
-                    fontSize="18"
-                    className="select-none"
-                  >
-                    {hour}
-                  </text>
-                )
-              })}
-
-              {/* Minute dots */}
-              {Array.from({ length: 60 }, (_, i) => {
-                if (i % 5 === 0) return null // Skip hour positions
-                const angle = i * 6 - 90
-                const x = 120 + 95 * Math.cos((angle * Math.PI) / 180)
-                const y = 120 + 95 * Math.sin((angle * Math.PI) / 180)
-                return (
-                  <circle
-                    key={`minute-${i}`}
-                    cx={x}
-                    cy={y}
-                    r="2"
-                    fill="#6B7280"
-                  />
-                )
-              })}
-
-              {/* Current selection indicator */}
-              <circle cx="120" cy="120" r="6" fill="#60A5FA" />
-
-              {/* Hour hand */}
-              <line
-                x1="120"
-                y1="120"
-                x2={120 + 50 * Math.cos(((hourAngle - 90) * Math.PI) / 180)}
-                y2={120 + 50 * Math.sin(((hourAngle - 90) * Math.PI) / 180)}
-                stroke="#60A5FA"
-                strokeWidth="6"
-                strokeLinecap="round"
-                className="cursor-pointer"
-                onPointerDown={e => handlePointerDown(e, 'hour')}
-              />
-
-              {/* Minute hand */}
-              <line
-                x1="120"
-                y1="120"
-                x2={120 + 80 * Math.cos(((minuteAngle - 90) * Math.PI) / 180)}
-                y2={120 + 80 * Math.sin(((minuteAngle - 90) * Math.PI) / 180)}
-                stroke="#93C5FD"
-                strokeWidth="4"
-                strokeLinecap="round"
-                className="cursor-pointer"
-                onPointerDown={e => handlePointerDown(e, 'minute')}
-              />
-            </svg>
+          <div className="text-center text-xs text-gray-500 mb-4">
+            Click time display to type exact time
           </div>
 
           {/* Action buttons */}
-          <div className="mt-4 flex gap-2 justify-end">
+          <div className="flex gap-2">
             <Button
               onClick={handleCancel}
-              variant="ghost"
-              className="text-gray-300 hover:text-white"
+              variant="secondary"
+              className="flex-1"
             >
               Cancel
             </Button>
-            <Button onClick={handleSet} variant="primary">
-              Set
+            <Button onClick={handleSet} variant="primary" className="flex-1">
+              Confirm Time
             </Button>
           </div>
         </div>

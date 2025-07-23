@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clock Interface Mockup - Issue #272 (Updated)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+        padding: 24px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 12px;
+        font-size: 24px;
+      }
+
+      .info-box {
+        background: #e8f4ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .info-box h3 {
+        color: #0066cc;
+        margin-bottom: 8px;
+      }
+
+      .info-box p {
+        color: #333;
+        line-height: 1.5;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .instructions {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .instructions p {
+        font-size: 14px;
+        color: #666;
+        margin: 4px 0;
+      }
+
+      .instructions p strong {
+        color: #333;
+      }
+
+      .clock-container {
+        position: relative;
+        width: 280px;
+        height: 280px;
+        margin: 0 auto 24px;
+        background: #f9f9f9;
+        border-radius: 50%;
+        border: 3px solid #e0e0e0;
+        cursor: grab;
+      }
+
+      .clock-container.dragging {
+        cursor: grabbing;
+      }
+
+      .clock-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Hour numbers (inner ring) */
+      .hour-number {
+        position: absolute;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+      }
+
+      /* Minute numbers (outer ring) */
+      .minute-number {
+        position: absolute;
+        font-size: 14px;
+        font-weight: 400;
+        color: #666;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+        user-select: none;
+      }
+
+      .minute-number:hover {
+        background: #e0e0e0;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .minute-number.active {
+        background: #4a5568;
+        color: white;
+        font-weight: 600;
+      }
+
+      /* Clock hands */
+      .hand {
+        position: absolute;
+        bottom: 50%;
+        left: 50%;
+        transform-origin: bottom center;
+        transform: translateX(-50%) rotate(0deg);
+        transition: transform 0.3s;
+      }
+
+      .hour-hand {
+        width: 6px;
+        height: 70px;
+        background: #4a5568;
+        border-radius: 3px;
+        z-index: 2;
+      }
+
+      .center-dot {
+        width: 14px;
+        height: 14px;
+        background: #2d3748;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }
+
+      .time-display {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .time-input {
+        font-size: 32px;
+        font-weight: 300;
+        color: #333;
+        background: #f0f0f0;
+        border: 2px solid #e0e0e0;
+        padding: 8px 20px;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+      }
+
+      .time-input:hover {
+        background: #e8e8e8;
+        border-color: #4a5568;
+      }
+
+      .edit-hint {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+      }
+
+      .confirm-button {
+        width: 100%;
+        padding: 16px;
+        background: #4a5568;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .confirm-button:hover {
+        background: #3a4558;
+      }
+
+      .legend {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #666;
+      }
+
+      .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="info-box">
+        <h3>Issue #272 - Updated Clock Interface</h3>
+        <p>✅ Combined hour/minute selection on one page</p>
+        <p>✅ Drag hour hand + Click minute numbers</p>
+        <p>✅ Preset with current time for quick adjustments</p>
+        <p>✅ Click time display for manual input</p>
+      </div>
+
+      <h1>Select Practice Time</h1>
+
+      <div class="instructions">
+        <p><strong>Drag the hour hand</strong> to set hours</p>
+        <p><strong>Click minute numbers</strong> (outer ring) to set minutes</p>
+      </div>
+
+      <div class="clock-container" id="clockContainer">
+        <div class="clock-face" id="clockFace">
+          <!-- Hour and minute numbers will be generated by JavaScript -->
+        </div>
+        <div class="hand hour-hand" id="hourHand"></div>
+        <div class="center-dot"></div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #333"></div>
+          <span>Hours (inner)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #666"></div>
+          <span>Minutes (outer, clickable)</span>
+        </div>
+      </div>
+
+      <div class="time-display">
+        <input
+          type="text"
+          class="time-input"
+          id="timeDisplay"
+          value="09:30 AM"
+          readonly
+          onclick="showManualInput()"
+        />
+        <div class="edit-hint">Click to type exact time</div>
+      </div>
+
+      <button class="confirm-button" onclick="confirmTime()">
+        Confirm Time
+      </button>
+    </div>
+
+    <script>
+      // Initialize with current time minus 30 minutes (typical practice session)
+      const now = new Date()
+      now.setMinutes(now.getMinutes() - 30)
+      let selectedHour = now.getHours()
+      let selectedMinute = Math.round(now.getMinutes() / 5) * 5 // Round to nearest 5
+      let isDragging = false
+
+      function initClock() {
+        const clockFace = document.getElementById('clockFace')
+
+        // Add hour numbers (inner ring)
+        for (let i = 1; i <= 12; i++) {
+          const number = document.createElement('div')
+          number.className = 'hour-number'
+          number.textContent = i
+
+          const angle = (i - 3) * 30
+          const radius = 75
+          const x = 140 + radius * Math.cos((angle * Math.PI) / 180)
+          const y = 140 + radius * Math.sin((angle * Math.PI) / 180)
+
+          number.style.left = x - 15 + 'px'
+          number.style.top = y - 15 + 'px'
+
+          clockFace.appendChild(number)
+        }
+
+        // Add minute numbers (outer ring - every 5 minutes)
+        for (let i = 0; i < 12; i++) {
+          const minute = i * 5
+          const number = document.createElement('div')
+          number.className = 'minute-number'
+          number.textContent = minute.toString().padStart(2, '0')
+          number.dataset.minute = minute
+
+          const angle = (i - 3) * 30
+          const radius = 110
+          const x = 140 + radius * Math.cos((angle * Math.PI) / 180)
+          const y = 140 + radius * Math.sin((angle * Math.PI) / 180)
+
+          number.style.left = x - 18 + 'px'
+          number.style.top = y - 18 + 'px'
+
+          if (minute === selectedMinute) {
+            number.classList.add('active')
+          }
+
+          number.onclick = function () {
+            selectMinute(parseInt(this.dataset.minute))
+          }
+
+          clockFace.appendChild(number)
+        }
+
+        updateHands()
+        updateDisplay()
+        setupDragging()
+      }
+
+      function setupDragging() {
+        const clockContainer = document.getElementById('clockContainer')
+        const hourHand = document.getElementById('hourHand')
+
+        clockContainer.addEventListener('mousedown', startDrag)
+        document.addEventListener('mousemove', drag)
+        document.addEventListener('mouseup', endDrag)
+
+        // Touch support
+        clockContainer.addEventListener('touchstart', startDrag)
+        document.addEventListener('touchmove', drag)
+        document.addEventListener('touchend', endDrag)
+      }
+
+      function startDrag(e) {
+        const rect = document
+          .getElementById('clockContainer')
+          .getBoundingClientRect()
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX)
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY)
+
+        const angle = Math.atan2(clientY - centerY, clientX - centerX)
+        const distance = Math.sqrt(
+          Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2)
+        )
+
+        // Only start dragging if clicking near the clock face (not too close to center)
+        if (distance > 40) {
+          isDragging = true
+          document.getElementById('clockContainer').classList.add('dragging')
+          drag(e)
+        }
+      }
+
+      function drag(e) {
+        if (!isDragging) return
+
+        e.preventDefault()
+
+        const rect = document
+          .getElementById('clockContainer')
+          .getBoundingClientRect()
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX)
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY)
+
+        let angle = Math.atan2(clientY - centerY, clientX - centerX)
+        angle = angle * (180 / Math.PI) + 90
+        if (angle < 0) angle += 360
+
+        const hour = Math.round(angle / 30) % 12
+        selectedHour = hour === 0 ? 12 : hour
+
+        updateHands()
+        updateDisplay()
+      }
+
+      function endDrag() {
+        isDragging = false
+        document.getElementById('clockContainer').classList.remove('dragging')
+      }
+
+      function selectMinute(minute) {
+        selectedMinute = minute
+
+        // Update active state
+        document.querySelectorAll('.minute-number').forEach(el => {
+          el.classList.toggle('active', parseInt(el.dataset.minute) === minute)
+        })
+
+        updateHands()
+        updateDisplay()
+      }
+
+      function updateHands() {
+        const hourAngle = selectedHour * 30 - 90 + selectedMinute * 0.5
+        document.getElementById('hourHand').style.transform =
+          `translateX(-50%) rotate(${hourAngle}deg)`
+      }
+
+      function updateDisplay() {
+        const displayHour = selectedHour === 0 ? 12 : selectedHour
+        const displayMinute = selectedMinute.toString().padStart(2, '0')
+        const period = selectedHour >= 12 ? 'PM' : 'AM'
+        document.getElementById('timeDisplay').value =
+          `${displayHour}:${displayMinute} ${period}`
+      }
+
+      function showManualInput() {
+        const currentTime = document.getElementById('timeDisplay').value
+        const newTime = prompt(
+          'Enter time (e.g., 9:30 AM or 21:30):',
+          currentTime
+        )
+
+        if (newTime) {
+          // Parse the entered time
+          const match = newTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i)
+          if (match) {
+            let hour = parseInt(match[1])
+            const minute = parseInt(match[2])
+            const period = match[3]
+
+            if (period) {
+              if (period.toUpperCase() === 'PM' && hour !== 12) hour += 12
+              if (period.toUpperCase() === 'AM' && hour === 12) hour = 0
+            }
+
+            selectedHour = hour % 24
+            selectedMinute = minute
+
+            // Update active minute
+            document.querySelectorAll('.minute-number').forEach(el => {
+              el.classList.toggle(
+                'active',
+                parseInt(el.dataset.minute) === selectedMinute
+              )
+            })
+
+            updateHands()
+            updateDisplay()
+          }
+        }
+      }
+
+      function confirmTime() {
+        const time = document.getElementById('timeDisplay').value
+        alert(
+          `Selected practice time: ${time}\n\nThis represents when you started practicing.\n\nIn the real app, this would save the practice session.`
+        )
+      }
+
+      initClock()
+    </script>
+  </body>
+</html>
