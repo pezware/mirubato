@@ -6,6 +6,7 @@ import { debugHandler } from './handlers/debug'
 import { autocompleteHandler } from './handlers/autocomplete'
 import { repertoireHandler } from './handlers/repertoire'
 import { goalsHandler } from './handlers/goals'
+import { piecesHandler } from './handlers/pieces'
 import type { Env } from '../index'
 
 export const api = new Hono<{ Bindings: Env }>()
@@ -56,6 +57,9 @@ api.get('/', c => {
         'POST /api/goals/:id/progress': 'Track progress on a goal',
         'DELETE /api/goals/:id': 'Delete goal',
       },
+      pieces: {
+        'PUT /api/pieces/update-name': 'Update piece name across all entries',
+      },
     },
   })
 })
@@ -68,3 +72,4 @@ api.route('/debug', debugHandler)
 api.route('/autocomplete', autocompleteHandler)
 api.route('/repertoire', repertoireHandler)
 api.route('/goals', goalsHandler)
+api.route('/pieces', piecesHandler)

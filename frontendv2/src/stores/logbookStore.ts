@@ -46,6 +46,12 @@ interface LogbookState {
 
   // Actions - Sync
   syncWithServer: () => Promise<void>
+
+  // Actions - Piece Management
+  updatePieceName: (
+    oldPiece: { title: string; composer?: string },
+    newPiece: { title: string; composer?: string }
+  ) => Promise<void>
 }
 
 // Local storage keys
@@ -630,6 +636,76 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         isLoading: false,
       })
       console.error('Sync failed:', error)
+    }
+  },
+
+  updatePieceName: async (oldPiece, newPiece) => {
+    set({ error: null })
+
+    try {
+      // Update all entries locally first
+      const updatedEntriesMap = new Map(get().entriesMap)
+      const affectedEntryIds: string[] = []
+
+      updatedEntriesMap.forEach((entry, id) => {
+        let wasUpdated = false
+        const updatedPieces = entry.pieces.map(piece => {
+          if (
+            piece.title === oldPiece.title &&
+            (piece.composer || '') === (oldPiece.composer || '')
+          ) {
+            wasUpdated = true
+            return {
+              ...piece,
+              title: newPiece.title,
+              composer: newPiece.composer || null,
+            }
+          }
+          return piece
+        })
+
+        if (wasUpdated) {
+          affectedEntryIds.push(id)
+          updatedEntriesMap.set(id, {
+            ...entry,
+            pieces: updatedPieces,
+            updatedAt: new Date().toISOString(),
+          })
+        }
+      })
+
+      // Update state
+      set({
+        entriesMap: updatedEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(updatedEntriesMap.values())),
+      })
+
+      // Save to localStorage immediately
+      immediateLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(updatedEntriesMap.values()))
+      )
+
+      // If online, update on server
+      if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+        try {
+          // Call API to update pieces
+          await logbookApi.updatePieceName(oldPiece, newPiece)
+        } catch (apiError) {
+          // If API fails, we still keep local changes
+          console.error('Failed to update piece name on server:', apiError)
+          set({
+            error: 'Piece name updated locally. Will sync when online.',
+          })
+        }
+      }
+
+      // Return the number of affected entries
+      return affectedEntryIds.length
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to update piece name' })
+      throw error
     }
   },
 }))

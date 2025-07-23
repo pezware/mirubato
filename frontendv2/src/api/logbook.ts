@@ -234,4 +234,19 @@ export const logbookApi = {
     })
     return response.data
   },
+
+  // Piece Management
+  updatePieceName: async (
+    oldPiece: { title: string; composer?: string },
+    newPiece: { title: string; composer?: string }
+  ) => {
+    const response = await apiClient.put<{ updatedCount: number }>(
+      '/api/pieces/update-name',
+      {
+        oldPiece,
+        newPiece,
+      }
+    )
+    return response.data.updatedCount
+  },
 }
