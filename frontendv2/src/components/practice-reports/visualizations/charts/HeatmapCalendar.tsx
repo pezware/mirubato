@@ -130,16 +130,42 @@ export function HeatmapCalendar({
       <div className="p-6">
         <div className="overflow-x-auto">
           <div className="inline-block">
+            {/* Month labels row */}
+            <div className="flex mb-1">
+              {/* Empty space for day labels column */}
+              <div className="w-8 mr-2"></div>
+
+              {/* Month blocks */}
+              <div className="flex gap-1">
+                {calendarData.weeks.map((_, weekIndex) => {
+                  const monthLabel = monthLabels.find(
+                    label => label.columnIndex === weekIndex
+                  )
+                  return (
+                    <div
+                      key={weekIndex}
+                      className="w-3 h-4 flex items-center justify-center"
+                    >
+                      {monthLabel && (
+                        <span className="text-xs text-morandi-stone-600">
+                          {monthLabel.month}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Calendar grid with day labels */}
             <div className="flex">
               {/* Day labels */}
               <div className="flex flex-col mr-2">
-                {/* Empty space for month row */}
-                <div className="h-3" style={{ marginBottom: '2px' }}></div>
                 {/* Day labels */}
                 {dayLabels.map((day, i) => (
                   <div
                     key={i}
-                    className="text-xs text-morandi-stone-600 h-3 flex items-center justify-end pr-1"
+                    className="text-xs text-morandi-stone-600 h-3 flex items-center justify-end pr-1 w-8"
                     style={{ marginBottom: '2px' }}
                   >
                     {i % 2 === 1 ? day : ''}
@@ -151,24 +177,6 @@ export function HeatmapCalendar({
               <div className="flex gap-1">
                 {calendarData.weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
-                    {/* Month label cell */}
-                    <div
-                      className="h-3 flex items-center justify-center"
-                      style={{ marginBottom: '2px' }}
-                    >
-                      {monthLabels.find(
-                        label => label.columnIndex === weekIndex
-                      ) && (
-                        <span className="text-xs text-morandi-stone-600">
-                          {
-                            monthLabels.find(
-                              label => label.columnIndex === weekIndex
-                            )?.month
-                          }
-                        </span>
-                      )}
-                    </div>
-
                     {/* Day cells */}
                     {week.map((dayData, dayIndex) => {
                       // Check if this is a placeholder (date year is 1970)

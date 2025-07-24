@@ -68,19 +68,28 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
   // Determine status indicator color
   const isActive = lastPracticeDate ? isToday(lastPracticeDate) : false
-  const indicatorClass = isActive
-    ? 'bg-green-500'
-    : needsAttention
-      ? 'bg-orange-500'
-      : 'bg-gray-300'
+  const indicatorClass =
+    item.status === 'polished'
+      ? 'bg-morandi-navy-500' // Dark morandi blue for polished pieces
+      : isActive
+        ? 'bg-green-500'
+        : needsAttention
+          ? 'bg-orange-500'
+          : 'bg-gray-300'
 
   // Format last practice time
   const lastPracticeText = lastPracticeDate
     ? isToday(lastPracticeDate)
       ? t('repertoire:practicedToday')
-      : capitalizeTimeString(
-          formatDistanceToNow(lastPracticeDate, { addSuffix: true })
-        )
+      : item.status === 'polished'
+        ? lastPracticeDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : capitalizeTimeString(
+            formatDistanceToNow(lastPracticeDate, { addSuffix: true })
+          )
     : t('repertoire:notPracticedYet')
 
   // Calculate total practice time
