@@ -462,6 +462,7 @@ adminPortal.get('/', c => {
             <button class="tab" data-tab="process">Process Seeds</button>
             <button class="tab" data-tab="review">Review Queue</button>
             <button class="tab" data-tab="recovery">Error Recovery</button>
+            <button class="tab" data-tab="wikipedia">Wikipedia URLs</button>
         </div>
 
         <div id="alerts"></div>
@@ -595,6 +596,9 @@ adminPortal.get('/', c => {
         // Make bulk import functions globally accessible
         window.submitBulkImport = submitBulkImport;
         window.clearBulkImportForm = clearBulkImportForm;
+        window.scanWikipediaUrls = scanWikipediaUrls;
+        window.fixSingleWikipediaUrl = fixSingleWikipediaUrl;
+        window.fixAllWikipediaUrls = fixAllWikipediaUrls;
 
         // API helper
         async function apiCall(endpoint, options = {}) {
@@ -698,6 +702,9 @@ adminPortal.get('/', c => {
                         break;
                     case 'recovery':
                         await loadErrorRecovery();
+                        break;
+                    case 'wikipedia':
+                        await loadWikipediaCleanup();
                         break;
                 }
                 initializeLucide();
@@ -1485,6 +1492,128 @@ adminPortal.get('/', c => {
                 loadReviewQueue();
             } catch (error) {
                 showAlert('error', 'Failed to review item: ' + error.message);
+            }
+        }
+
+        // Wikipedia URL cleanup functionality
+        async function loadWikipediaCleanup() {
+            const contentDiv = document.getElementById('content');
+            
+            // Initial load with scan button
+            contentDiv.innerHTML = \`
+                <div class="card sky">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i data-lucide="globe"></i>
+                            Wikipedia URL Cleanup
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 16px;">
+                            This tool scans dictionary entries for potentially incorrect Wikipedia URLs 
+                            (e.g., "The_Magic_Flute_Mozart" instead of "The_Magic_Flute") and fixes them automatically.
+                        </p>
+                        <button class="button primary" onclick="scanWikipediaUrls()">
+                            <i data-lucide="search"></i>
+                            Scan for Issues
+                        </button>
+                    </div>
+                </div>
+                <div id="wikipediaResults"></div>
+            \`;
+        }
+
+        async function scanWikipediaUrls() {
+            const resultsDiv = document.getElementById('wikipediaResults');
+            resultsDiv.innerHTML = '<div class="card"><div class="loading"></div> Scanning entries...</div>';
+            
+            try {
+                const result = await apiCall('/admin/wikipedia/scan');
+                
+                if (result.entries.length === 0) {
+                    resultsDiv.innerHTML = \`
+                        <div class="card sage">
+                            <div class="empty-state">
+                                <i data-lucide="check-circle"></i>
+                                <p>All Wikipedia URLs look correct!</p>
+                            </div>
+                        </div>
+                    \`;
+                } else {
+                    resultsDiv.innerHTML = \`
+                        <div class="card peach">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i data-lucide="alert-circle"></i>
+                                    Found \${result.entries.length} entries with potential URL issues
+                                </h3>
+                                <button class="button danger" onclick="fixAllWikipediaUrls()">
+                                    <i data-lucide="wrench"></i>
+                                    Fix All
+                                </button>
+                            </div>
+                            <div id="urlFixList">
+                                \${result.entries.map(entry => \`
+                                    <div class="queue-item">
+                                        <div class="queue-item-info" style="flex: 1;">
+                                            <div class="queue-item-term">\${entry.term} (\${entry.type})</div>
+                                            <div class="queue-item-meta">
+                                                Current: <code>\${entry.current_url}</code><br>
+                                                Suggested: <code>\${entry.suggested_url}</code>
+                                            </div>
+                                        </div>
+                                        <button class="button secondary" onclick="fixSingleWikipediaUrl('\${entry.id}')">
+                                            <i data-lucide="wrench"></i>
+                                            Fix
+                                        </button>
+                                    </div>
+                                \`).join('')}
+                            </div>
+                        </div>
+                    \`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = \`
+                    <div class="alert error">
+                        Failed to scan entries: \${error.message}
+                    </div>
+                \`;
+            }
+        }
+
+        async function fixSingleWikipediaUrl(entryId) {
+            try {
+                const result = await apiCall('/admin/wikipedia/fix', {
+                    method: 'POST',
+                    body: JSON.stringify({ entry_ids: [entryId] })
+                });
+                
+                showAlert('success', result.message || 'URL fixed successfully');
+                scanWikipediaUrls(); // Refresh the list
+            } catch (error) {
+                showAlert('error', 'Failed to fix URL: ' + error.message);
+            }
+        }
+
+        async function fixAllWikipediaUrls() {
+            if (!confirm('This will update all entries with incorrect Wikipedia URLs. Continue?')) {
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('wikipediaResults');
+            const originalContent = resultsDiv.innerHTML;
+            resultsDiv.innerHTML = '<div class="card"><div class="loading"></div> Fixing all URLs...</div>';
+            
+            try {
+                const result = await apiCall('/admin/wikipedia/fix-all', {
+                    method: 'POST'
+                });
+                
+                showAlert('success', result.message || 'All URLs fixed successfully');
+                loadWikipediaCleanup(); // Reload the entire tab
+            } catch (error) {
+                resultsDiv.innerHTML = originalContent;
+                showAlert('error', 'Failed to fix URLs: ' + error.message);
             }
         }
 
