@@ -126,7 +126,7 @@ const keysData: Record<string, KeyInfo> = {
     theoryNotes: {
       keyCharacteristics: 'Bright, cheerful, and pastoral',
       famousWorks: [
-        'Air on the G String - Bach',
+        'Brandenburg Concerto No. 3 - Bach',
         'Eine kleine Nachtmusik - Mozart',
       ],
       relatedKeys: ['D', 'C', 'Em', 'Bm', 'Am'],
@@ -239,7 +239,7 @@ const keysData: Record<string, KeyInfo> = {
       keyCharacteristics: 'Brilliant, energetic, and powerful',
       famousWorks: [
         'Spring from The Four Seasons - Vivaldi',
-        'Symphony No. 9 - Dvorak',
+        'Violin Concerto in E Major - Bach',
       ],
       relatedKeys: ['B', 'A', 'C#m', 'G#m', 'F#m'],
     },
@@ -274,7 +274,7 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(5),
     theoryNotes: {
       keyCharacteristics: 'Harsh, strong, and wild',
-      famousWorks: ['Mass in B minor - Bach', 'Piano Trio - Brahms'],
+      famousWorks: ['Piano Sonata No. 4 - Chopin', 'Piano Trio - Brahms'],
       relatedKeys: ['F#', 'E', 'G#m', 'D#m', 'C#m'],
     },
   },
@@ -410,10 +410,7 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(8),
     theoryNotes: {
       keyCharacteristics: 'Grave, death, judgment, eternity',
-      famousWorks: [
-        'Sonata Pathétique - Beethoven',
-        'Polonaise in Ab - Chopin',
-      ],
+      famousWorks: ['Impromptu No. 1 - Schubert', 'Polonaise in Ab - Chopin'],
       relatedKeys: ['Eb', 'Db', 'Fm', 'Cm', 'Bbm'],
     },
   },
@@ -597,7 +594,7 @@ const keysData: Record<string, KeyInfo> = {
     theoryNotes: {
       keyCharacteristics: 'Effusive, lively, and restless',
       famousWorks: [
-        'Symphony No. 25 - Mozart',
+        'Symphony No. 9 "From the New World" - Dvorak',
         'Violin Sonata in E minor - Bach',
       ],
       relatedKeys: ['G', 'Bm', 'Am', 'C', 'D'],
@@ -635,7 +632,7 @@ const keysData: Record<string, KeyInfo> = {
       keyCharacteristics: 'Patient, calm, and accepting',
       famousWorks: [
         'Mass in B minor - Bach',
-        'Symphony No. 7 "Unfinished" - Schubert',
+        'Symphony No. 8 "Unfinished" - Schubert',
       ],
       relatedKeys: ['D', 'F#m', 'Em', 'G', 'A'],
     },
@@ -670,7 +667,10 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(3, 12, 90),
     theoryNotes: {
       keyCharacteristics: 'Private grief, anguish of the soul',
-      famousWorks: ['Piano Concerto No. 23 - Mozart', 'Ballade No. 2 - Chopin'],
+      famousWorks: [
+        'Barcarolle Op. 60 - Chopin',
+        'Piano Sonata Op. 78 - Beethoven',
+      ],
       relatedKeys: ['A', 'C#m', 'Bm', 'D', 'E'],
     },
   },
@@ -705,7 +705,7 @@ const keysData: Record<string, KeyInfo> = {
     theoryNotes: {
       keyCharacteristics: 'Despair, wailing, loud grief',
       famousWorks: [
-        'Moonlight Sonata - Beethoven',
+        'Moonlight Sonata (1st movement) - Beethoven',
         'Etude Op. 25 No. 7 - Chopin',
       ],
       relatedKeys: ['E', 'G#m', 'F#m', 'A', 'B'],
@@ -742,7 +742,7 @@ const keysData: Record<string, KeyInfo> = {
     theoryNotes: {
       keyCharacteristics: 'Heart-rending, lonely, desperate struggle',
       famousWorks: [
-        'Piano Sonata No. 14 - Beethoven',
+        'Rachmaninoff Prelude Op. 32 No. 12 - Rachmaninoff',
         'Etude Op. 25 No. 6 - Chopin',
       ],
       relatedKeys: ['B', 'D#m', 'C#m', 'E', 'F#'],
@@ -779,8 +779,8 @@ const keysData: Record<string, KeyInfo> = {
     theoryNotes: {
       keyCharacteristics: 'Deep distress, existential angst',
       famousWorks: [
-        'Prelude Op. 28 No. 8 - Chopin',
-        'String Quartet No. 11 - Shostakovich',
+        'Nocturne Op. 9 No. 3 - Chopin',
+        'Piano Sonata No. 2 - Prokofiev',
       ],
       relatedKeys: ['F#', 'A#m', 'G#m', 'B', 'C#'],
     },
@@ -817,7 +817,7 @@ const keysData: Record<string, KeyInfo> = {
       keyCharacteristics: 'Anxiety, soul anguish, deep despair',
       famousWorks: [
         'Prelude Op. 28 No. 14 - Chopin',
-        'String Quartet No. 8 - Shostakovich',
+        'Piano Trio Op. 67 - Shostakovich',
       ],
       relatedKeys: ['Gb', 'Bbm', 'Abm', 'Cb', 'Db'],
     },
@@ -854,7 +854,7 @@ const keysData: Record<string, KeyInfo> = {
       keyCharacteristics: 'Gloomy, mocking, uneasiness',
       famousWorks: [
         'Waltz Op. 69 No. 2 - Chopin',
-        'Piano Sonata No. 1 - Chopin',
+        'Nocturne Op. 9 No. 1 - Chopin',
       ],
       relatedKeys: ['Db', 'Fm', 'Ebm', 'Gb', 'Ab'],
     },
@@ -889,7 +889,7 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(8, 12, 90),
     theoryNotes: {
       keyCharacteristics: 'Deep depression, funereal lament, groans of misery',
-      famousWorks: ['Piano Concerto No. 2 - Chopin', 'Symphony No. 4 - Brahms'],
+      famousWorks: ['Piano Concerto No. 2 - Chopin', 'Ballade No. 4 - Chopin'],
       relatedKeys: ['Ab', 'Cm', 'Bbm', 'Db', 'Eb'],
     },
   },
@@ -960,7 +960,7 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(10, 12, 90),
     theoryNotes: {
       keyCharacteristics: 'Discontent, uneasiness, worry',
-      famousWorks: ['Symphony No. 40 - Mozart', 'Violin Sonata No. 1 - Bach'],
+      famousWorks: ['Symphony No. 40 - Mozart', 'Symphony No. 25 - Mozart'],
       relatedKeys: ['Bb', 'Dm', 'Cm', 'Eb', 'F'],
     },
   },
