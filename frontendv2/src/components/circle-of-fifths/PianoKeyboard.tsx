@@ -288,7 +288,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-gray-100 rounded-lg p-1 md:p-4 overflow-x-auto">
+      <div className="relative bg-white rounded-lg p-1 md:p-4 overflow-x-auto">
         <div className="relative h-24 md:h-36 min-w-[320px] md:min-w-[600px]">
           {/* White Keys */}
           <div className="absolute bottom-0 left-0 flex gap-0.25">
