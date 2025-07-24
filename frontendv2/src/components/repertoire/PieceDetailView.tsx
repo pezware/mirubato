@@ -17,6 +17,7 @@ import { formatDuration } from '@/utils/dateUtils'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
+import { useRepertoireStore } from '@/stores/repertoireStore'
 import { toast } from '@/utils/toast'
 
 interface PracticeSession {
@@ -65,6 +66,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [isEditingPiece, setIsEditingPiece] = useState(false)
   const { updatePieceName } = useLogbookStore()
+  const { cacheScoreMetadata, loadRepertoire } = useRepertoireStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -522,6 +524,14 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               // Update the local item data
               item.scoreTitle = newPiece.title
               item.scoreComposer = newPiece.composer || ''
+              // Update the score metadata cache
+              cacheScoreMetadata(item.scoreId, {
+                id: item.scoreId,
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+              // Reload repertoire to reflect changes
+              await loadRepertoire()
             } catch (_error) {
               toast.error(t('reports:pieceEdit.errorMessage'))
             }
