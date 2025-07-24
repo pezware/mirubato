@@ -654,7 +654,11 @@ const Toolbox: React.FC = () => {
         {activeTab === 'counter' && <PracticeCounter />}
 
         {/* Circle of Fifths Tab */}
-        {activeTab === 'circle-of-fifths' && <CircleOfFifths />}
+        {activeTab === 'circle-of-fifths' && (
+          <div className="overflow-x-auto">
+            <CircleOfFifths />
+          </div>
+        )}
 
         {/* Dictionary Tab */}
         {activeTab === 'dictionary' && <Dictionary />}

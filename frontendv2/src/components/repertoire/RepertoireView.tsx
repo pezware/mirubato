@@ -392,10 +392,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       </div>
 
       {/* List Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-lg font-semibold text-stone-800">
-          {t('repertoire:activePieces')}
-        </h2>
+      <div className="flex justify-end">
         <div className="flex items-center gap-2">
           <div className="bg-stone-100 rounded-lg p-1 flex">
             <button
@@ -468,10 +465,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               <RepertoireCard
                 key={item.scoreId}
                 item={item}
-                onCreateGoal={() => {
-                  setSelectedScoreId(item.scoreId)
-                  setShowGoalModal(true)
-                }}
                 onEditSession={sessionId => {
                   setEditingSessionId(sessionId)
                 }}
