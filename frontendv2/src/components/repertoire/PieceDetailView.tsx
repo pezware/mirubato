@@ -15,6 +15,9 @@ import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration } from '@/utils/dateUtils'
 import { RepertoireStatus } from '@/api/repertoire'
+import { EditPieceModal } from '../practice-reports/EditPieceModal'
+import { useLogbookStore } from '@/stores/logbookStore'
+import { toast } from '@/utils/toast'
 
 interface PracticeSession {
   id: string
@@ -60,6 +63,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
+  const [isEditingPiece, setIsEditingPiece] = useState(false)
+  const { updatePieceName } = useLogbookStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -241,11 +246,25 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
       {/* Piece Header */}
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
-        <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
-          {item.scoreTitle}
-        </h1>
-        <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
-          {item.scoreComposer} {item.catalogNumber && `• ${item.catalogNumber}`}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
+              {item.scoreTitle}
+            </h1>
+            <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
+              {item.scoreComposer}{' '}
+              {item.catalogNumber && `• ${item.catalogNumber}`}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditingPiece(true)}
+            className="flex items-center gap-2 ml-4"
+          >
+            <Edit2 className="w-4 h-4" />
+            {t('common:edit')}
+          </Button>
         </div>
 
         {/* Stats Grid */}
@@ -486,6 +505,29 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Edit Piece Modal */}
+      {isEditingPiece && (
+        <EditPieceModal
+          isOpen={isEditingPiece}
+          onClose={() => setIsEditingPiece(false)}
+          piece={{ title: item.scoreTitle, composer: item.scoreComposer }}
+          onSave={async (oldPiece, newPiece) => {
+            try {
+              const updatedCount = await updatePieceName(oldPiece, newPiece)
+              toast.success(
+                t('reports:pieceEdit.successMessage', { count: updatedCount })
+              )
+              setIsEditingPiece(false)
+              // Update the local item data
+              item.scoreTitle = newPiece.title
+              item.scoreComposer = newPiece.composer || ''
+            } catch (_error) {
+              toast.error(t('reports:pieceEdit.errorMessage'))
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
