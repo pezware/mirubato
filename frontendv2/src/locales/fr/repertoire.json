@@ -145,5 +145,9 @@
   "pieceTitlePlaceholder": "ex. Nocturne en Mi bémol Majeur",
   "composer": "Compositeur",
   "composerPlaceholder": "ex. Chopin",
-  "titleRequired": "Le titre de la pièce est obligatoire"
+  "titleRequired": "Le titre de la pièce est obligatoire",
+  "delete": "Supprimer du répertoire",
+  "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette pièce?",
+  "cannotDelete": "Impossible de supprimer les pièces avec un historique de pratique",
+  "deleteSuccess": "Supprimé du répertoire"
 }

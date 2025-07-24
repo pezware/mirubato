@@ -145,5 +145,9 @@
   "pieceTitlePlaceholder": "例如：降E大調夜曲",
   "composer": "作曲家",
   "composerPlaceholder": "例如：蕭邦",
-  "titleRequired": "曲目名稱為必填"
+  "titleRequired": "曲目名稱為必填",
+  "delete": "從曲目庫中刪除",
+  "confirmDelete": "您確定要刪除這首曲目嗎？",
+  "cannotDelete": "無法刪除有練習記錄的曲目",
+  "deleteSuccess": "已從曲目庫中移除"
 }

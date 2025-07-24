@@ -66,7 +66,9 @@ export const repertoireApi = {
 
   // Get repertoire stats for a specific score
   getStats: async (scoreId: string): Promise<RepertoireStats> => {
-    const response = await apiClient.get(`/api/repertoire/${scoreId}/stats`)
+    const response = await apiClient.get(
+      `/api/repertoire/${encodeURIComponent(scoreId)}/stats`
+    )
     return response.data
   },
 
@@ -81,13 +83,18 @@ export const repertoireApi = {
     scoreId: string,
     data: UpdateRepertoireInput
   ): Promise<{ message: string }> => {
-    const response = await apiClient.put(`/api/repertoire/${scoreId}`, data)
+    const response = await apiClient.put(
+      `/api/repertoire/${encodeURIComponent(scoreId)}`,
+      data
+    )
     return response.data
   },
 
   // Remove from repertoire
   remove: async (scoreId: string): Promise<{ message: string }> => {
-    const response = await apiClient.delete(`/api/repertoire/${scoreId}`)
+    const response = await apiClient.delete(
+      `/api/repertoire/${encodeURIComponent(scoreId)}`
+    )
     return response.data
   },
 }

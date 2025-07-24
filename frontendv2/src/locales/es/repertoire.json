@@ -145,5 +145,9 @@
   "pieceTitlePlaceholder": "ej. Nocturno en Mi bemol Mayor",
   "composer": "Compositor",
   "composerPlaceholder": "ej. Chopin",
-  "titleRequired": "El título de la pieza es obligatorio"
+  "titleRequired": "El título de la pieza es obligatorio",
+  "delete": "Eliminar del repertorio",
+  "confirmDelete": "¿Estás seguro de que quieres eliminar esta pieza?",
+  "cannotDelete": "No se pueden eliminar piezas con historial de práctica",
+  "deleteSuccess": "Eliminado del repertorio"
 }
