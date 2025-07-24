@@ -252,10 +252,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
 
         {/* Detailed definition */}
         {termEntry.definition?.detailed && (
-          <details className="mt-4">
-            <summary className="cursor-pointer text-sage-600 hover:text-sage-700 font-medium">
-              {t('toolbox:dictionary.readMore')}
-            </summary>
+          <div className="mt-4">
             <div className="mt-2 text-stone-700 space-y-2">
               <p>{sanitizeOutput(termEntry.definition.detailed)}</p>
 
@@ -271,7 +268,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
                 </div>
               )}
             </div>
-          </details>
+          </div>
         )}
       </div>
 
