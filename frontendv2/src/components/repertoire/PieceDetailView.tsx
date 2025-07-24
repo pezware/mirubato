@@ -65,7 +65,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [isEditingPiece, setIsEditingPiece] = useState(false)
-  const { updatePieceName } = useLogbookStore()
+  const { updatePieceName, loadEntries } = useLogbookStore()
   const { cacheScoreMetadata, loadRepertoire } = useRepertoireStore()
 
   // Status colors and labels
@@ -532,6 +532,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               })
               // Reload repertoire to reflect changes
               await loadRepertoire()
+              // Reload logbook entries to reflect the composer name changes
+              await loadEntries()
             } catch (_error) {
               toast.error(t('reports:pieceEdit.errorMessage'))
             }
