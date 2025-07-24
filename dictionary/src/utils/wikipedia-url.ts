@@ -134,7 +134,7 @@ export function cleanWikipediaTerm(term: string): string {
 /**
  * Determine if a term needs disambiguation based on context
  */
-export function needsDisambiguation(term: string, termType: string): boolean {
+export function needsDisambiguation(term: string, _termType: string): boolean {
   // Check if term is in the no-disambiguation list
   if (NO_DISAMBIGUATION_NEEDED.has(term.toLowerCase())) {
     return false
