@@ -1130,3 +1130,204 @@ adminHandler.put(
     }
   }
 )
+
+// Wikipedia URL cleanup endpoints
+adminHandler.get('/wikipedia/scan', async c => {
+  const db = new DictionaryDatabase(c.env.DB)
+
+  try {
+    // Get all entries with Wikipedia references
+    const entries = await db.search({ q: '', limit: 1000, offset: 0 })
+    const entriesWithIssues = []
+
+    for (const entry of entries.entries) {
+      if (entry.references?.wikipedia?.url) {
+        const currentUrl = entry.references.wikipedia.url
+
+        // Import our URL generation utilities
+        const { generateWikipediaUrl } = await import(
+          '../../utils/wikipedia-url'
+        )
+
+        // Generate the suggested URL using the entry's language
+        const suggestedUrl = generateWikipediaUrl(
+          entry.term,
+          entry.type,
+          undefined,
+          entry.lang || 'en'
+        )
+
+        // Check if URLs differ (potential issue)
+        if (currentUrl !== suggestedUrl) {
+          // Check for common problematic patterns
+          const urlPath = currentUrl.split('/wiki/')[1]
+          const hasComposerSuffix =
+            entry.type === 'genre' &&
+            (urlPath?.includes('_Mozart') ||
+              urlPath?.includes('_Beethoven') ||
+              urlPath?.includes('_Wagner') ||
+              urlPath?.includes('_Verdi'))
+
+          if (
+            hasComposerSuffix ||
+            currentUrl.includes('_Wikipedia') ||
+            currentUrl.includes('search_for') ||
+            currentUrl.includes('_(music)_')
+          ) {
+            entriesWithIssues.push({
+              id: entry.id,
+              term: entry.term,
+              type: entry.type,
+              current_url: currentUrl,
+              suggested_url: suggestedUrl,
+            })
+          }
+        }
+      }
+    }
+
+    return c.json(
+      createApiResponse({
+        entries: entriesWithIssues,
+        total_scanned: entries.entries.length,
+        issues_found: entriesWithIssues.length,
+      })
+    )
+  } catch (error) {
+    console.error('Wikipedia scan error:', error)
+    throw new ValidationError('Failed to scan Wikipedia URLs')
+  }
+})
+
+adminHandler.post(
+  '/wikipedia/fix',
+  zValidator(
+    'json',
+    z.object({
+      entry_ids: z.array(z.string()),
+    })
+  ),
+  async c => {
+    const { entry_ids } = c.req.valid('json')
+    const db = new DictionaryDatabase(c.env.DB)
+    const _userId = c.get('userId') || 'admin'
+
+    try {
+      const { generateWikipediaUrl, validateWikipediaUrl } = await import(
+        '../../utils/wikipedia-url'
+      )
+      let fixedCount = 0
+      let failedCount = 0
+
+      for (const entryId of entry_ids) {
+        try {
+          const entry = await db.findById(entryId)
+          if (!entry || !entry.references?.wikipedia?.url) continue
+
+          // Generate the correct URL using the entry's language
+          const newUrl = generateWikipediaUrl(
+            entry.term,
+            entry.type,
+            undefined,
+            entry.lang || 'en'
+          )
+
+          // Validate the new URL
+          const isValid = await validateWikipediaUrl(newUrl)
+          if (!isValid) {
+            failedCount++
+            continue
+          }
+
+          // Update the entry
+          entry.references.wikipedia.url = newUrl
+          entry.references.wikipedia.last_verified = new Date().toISOString()
+
+          // Update the entry using the update method
+          entry.updated_at = new Date().toISOString()
+          await db.update(entry)
+
+          fixedCount++
+        } catch (error) {
+          console.error(`Failed to fix entry ${entryId}:`, error)
+          failedCount++
+        }
+      }
+
+      return c.json(
+        createApiResponse({
+          message: `Fixed ${fixedCount} URLs${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
+          fixed: fixedCount,
+          failed: failedCount,
+        })
+      )
+    } catch (error) {
+      console.error('Wikipedia fix error:', error)
+      throw new ValidationError('Failed to fix Wikipedia URLs')
+    }
+  }
+)
+
+adminHandler.post('/wikipedia/fix-all', async c => {
+  const db = new DictionaryDatabase(c.env.DB)
+  const _userId = c.get('userId') || 'admin'
+
+  try {
+    // First, scan for all issues
+    const entries = await db.search({ q: '', limit: 1000, offset: 0 })
+    const { generateWikipediaUrl, validateWikipediaUrl } = await import(
+      '../../utils/wikipedia-url'
+    )
+
+    let fixedCount = 0
+    let failedCount = 0
+
+    for (const entry of entries.entries) {
+      if (entry.references?.wikipedia?.url) {
+        const currentUrl = entry.references.wikipedia.url
+        const suggestedUrl = generateWikipediaUrl(
+          entry.term,
+          entry.type,
+          undefined,
+          entry.lang || 'en'
+        )
+
+        if (currentUrl !== suggestedUrl) {
+          try {
+            // Validate the new URL
+            const isValid = await validateWikipediaUrl(suggestedUrl)
+            if (!isValid) {
+              failedCount++
+              continue
+            }
+
+            // Update the entry
+            entry.references.wikipedia.url = suggestedUrl
+            entry.references.wikipedia.last_verified = new Date().toISOString()
+
+            // Update the entry using the update method
+            entry.updated_at = new Date().toISOString()
+            await db.update(entry)
+
+            fixedCount++
+          } catch (error) {
+            console.error(`Failed to fix entry ${entry.id}:`, error)
+            failedCount++
+          }
+        }
+      }
+    }
+
+    return c.json(
+      createApiResponse({
+        message: `Fixed ${fixedCount} Wikipedia URLs${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
+        fixed: fixedCount,
+        failed: failedCount,
+        total_scanned: entries.entries.length,
+      })
+    )
+  } catch (error) {
+    console.error('Wikipedia fix-all error:', error)
+    throw new ValidationError('Failed to fix all Wikipedia URLs')
+  }
+})

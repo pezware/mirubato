@@ -257,13 +257,33 @@ Format as JSON:
 
 Suggest appropriate resources in JSON format:
 {
-  "wikipedia_search": "best search query for Wikipedia",
+  "wikipedia_search": "exact term as it would appear in Wikipedia article title",
   "book_keywords": ["keywords", "for", "book", "search"],
-  "youtube_search": "search query for educational videos",
+  "youtube_search": "just the term itself without extra words",
   "academic_keywords": ["keywords", "for", "research", "papers"]
 }
 
-Focus on educational and authoritative sources.`,
+IMPORTANT Wikipedia Guidelines:
+- For operas: Use just the title WITHOUT composer name (e.g., "The Magic Flute" NOT "The Magic Flute Mozart")
+- For composers: Use full name as is (e.g., "Wolfgang Amadeus Mozart")
+- For music theory terms: Add (music) ONLY if ambiguous (e.g., "Scale (music)" but just "Allegro")
+- For instruments: Usually no disambiguation needed unless ambiguous
+- Do NOT include "Wikipedia", "search", "article", etc.
+
+Examples:
+- Opera: "La traviata" (lowercase 't' is correct)
+- Composer: "Johann Sebastian Bach"
+- Theory term needing disambiguation: "Dynamics (music)"
+- Theory term NOT needing disambiguation: "Crescendo"
+- Instrument: "Piano"
+
+Example for term "Allegro":
+{
+  "wikipedia_search": "Allegro",
+  "book_keywords": ["allegro", "tempo", "musical terms"],
+  "youtube_search": "Allegro",
+  "academic_keywords": ["allegro", "tempo markings", "performance practice"]
+}`,
 
   qualityCheck: (
     entry: any

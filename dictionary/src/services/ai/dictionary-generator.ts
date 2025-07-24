@@ -16,6 +16,10 @@ import { CloudflareAIService } from './cloudflare-ai-service'
 import { PROMPT_TEMPLATES, selectModel } from '../../config/ai-models'
 import { normalizeTerm } from '../../utils/validation'
 import { TermClassifier } from './term-classifier'
+import {
+  generateWikipediaUrl,
+  getWikipediaSuggestions,
+} from '../../utils/wikipedia-url'
 // import { AIServiceError } from '../../utils/errors'
 
 export interface GenerationOptions {
@@ -92,7 +96,8 @@ export class DictionaryGenerator {
         // Step 2: Generate references
         const references = await this.generateReferences(
           options.term,
-          options.type
+          options.type,
+          options.lang || 'en'
         )
 
         // Step 3: Calculate initial quality score
@@ -280,7 +285,8 @@ export class DictionaryGenerator {
    */
   private async generateReferences(
     term: string,
-    type: TermType
+    type: TermType,
+    lang: string = 'en'
   ): Promise<References> {
     const prompt = PROMPT_TEMPLATES.referenceExtraction(term, type)
 
@@ -308,31 +314,103 @@ export class DictionaryGenerator {
     try {
       const parsed = this.aiService.parseJSONResponse(response.response) as any
 
-      // Generate placeholder references based on AI suggestions
+      // Generate Wikipedia reference using improved URL generation
       if (parsed.wikipedia_search) {
-        // Remove duplicate "Wikipedia" from the search term if present
-        const cleanedSearch = parsed.wikipedia_search
-          .replace(/^Wikipedia[:\s]+/i, '')
-          .replace(/[:\s]+Wikipedia$/i, '')
-          .replace(/\s+Wikipedia\s+/i, ' ')
-          .trim()
+        // Generate the Wikipedia URL using our utility
+        const wikipediaUrl = generateWikipediaUrl(
+          term,
+          type,
+          parsed.wikipedia_search,
+          lang
+        )
 
-        references.wikipedia = {
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(cleanedSearch)}`,
-          extract: 'Search Wikipedia for more information',
-          last_verified: new Date().toISOString(),
+        // Try to get suggestions from Wikipedia API for better accuracy
+        try {
+          const suggestions = await getWikipediaSuggestions(term, 5, lang)
+
+          if (suggestions.length > 0) {
+            let selectedUrl: string
+
+            if (suggestions.length === 1) {
+              // Only one result, use it
+              selectedUrl = suggestions[0].url
+            } else {
+              // Multiple results - use AI to select the best one
+              selectedUrl = await this.selectBestWikipediaMatch(
+                term,
+                type,
+                suggestions
+              )
+            }
+
+            references.wikipedia = {
+              url: selectedUrl,
+              extract: 'Search Wikipedia for more information',
+              last_verified: new Date().toISOString(),
+            }
+          } else {
+            // No results from API, fall back to generated URL
+            references.wikipedia = {
+              url: wikipediaUrl,
+              extract: 'Search Wikipedia for more information',
+              last_verified: new Date().toISOString(),
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching Wikipedia suggestions:', error)
+          // Wikipedia API failed, fall back to AI-generated URL
+          references.wikipedia = {
+            url: wikipediaUrl,
+            extract: 'Search Wikipedia for more information',
+            last_verified: new Date().toISOString(),
+          }
         }
       }
 
       if (parsed.youtube_search) {
+        // Clean and improve the YouTube search query
+        const cleanedYouTubeSearch = parsed.youtube_search
+          // Remove overly generic terms
+          .replace(
+            /\b(music\s+lessons?|educational\s+videos?|definition|tutorial)\b/gi,
+            ''
+          )
+          // Remove standalone "music" that might interfere with contextual additions
+          .replace(/\bmusic\b/gi, '')
+          // Clean up multiple spaces
+          .replace(/\s+/g, ' ')
+          .trim()
+
+        // Add appropriate context based on the term type
+        let contextualSearch = cleanedYouTubeSearch
+        switch (type) {
+          case 'tempo':
+            contextualSearch = `${cleanedYouTubeSearch} music theory`
+            break
+          case 'composer':
+            contextualSearch = `${cleanedYouTubeSearch} composer biography`
+            break
+          case 'technique':
+            contextualSearch = `${cleanedYouTubeSearch} music technique explained`
+            break
+          case 'theory':
+            contextualSearch = `${cleanedYouTubeSearch} music theory`
+            break
+          case 'notation':
+            contextualSearch = `${cleanedYouTubeSearch} music notation`
+            break
+          default:
+            contextualSearch = `${cleanedYouTubeSearch} music`
+        }
+
         references.media = {
           youtube: {
             educational_videos: [
               {
-                title: `Search results for ${parsed.youtube_search}`,
+                title: `Search results for ${cleanedYouTubeSearch}`,
                 channel: 'YouTube Search',
                 channel_id: 'search',
-                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(parsed.youtube_search)}`,
+                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(contextualSearch)}`,
                 video_id: 'search',
                 duration: 0,
                 view_count: 0,
@@ -415,6 +493,56 @@ export class DictionaryGenerator {
       instruments: options.context?.instruments,
       language: options.lang || 'en',
     }
+  }
+
+  /**
+   * Use AI to select the best Wikipedia match from multiple results
+   */
+  private async selectBestWikipediaMatch(
+    term: string,
+    type: TermType,
+    suggestions: { title: string; url: string }[]
+  ): Promise<string> {
+    try {
+      const prompt = `You are selecting the most appropriate Wikipedia article for the music term "${term}" (type: ${type}).
+
+Available Wikipedia articles:
+${suggestions.map((s, i) => `${i + 1}. ${s.title}`).join('\n')}
+
+Select the number (1-${suggestions.length}) of the most appropriate article based on:
+- Relevance to music/musical context
+- Match with the term type (${type})
+- Avoiding disambiguation pages when a direct article exists
+- Preferring the main article over specific instances (e.g., prefer "The Magic Flute" over "The Magic Flute (2006 film)")
+
+Respond with ONLY the number (e.g., "1" or "2"), nothing else.`
+
+      const model = selectModel('definition', true) // Use fast model
+      const response = await this.aiService.generateStructuredContent(
+        prompt,
+        model,
+        {
+          max_tokens: 10,
+          temperature: 0.1,
+        }
+      )
+
+      if (response.response) {
+        const selection = parseInt(response.response.trim())
+        if (
+          !isNaN(selection) &&
+          selection >= 1 &&
+          selection <= suggestions.length
+        ) {
+          return suggestions[selection - 1].url
+        }
+      }
+    } catch (error) {
+      console.error('Error in AI Wikipedia selection:', error)
+    }
+
+    // Default to first result if AI selection fails
+    return suggestions[0].url
   }
 
   /**
