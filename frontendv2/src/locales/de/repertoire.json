@@ -145,5 +145,9 @@
   "pieceTitlePlaceholder": "z.B. Nocturne in Es-Dur",
   "composer": "Komponist",
   "composerPlaceholder": "z.B. Chopin",
-  "titleRequired": "Der Titel des Stücks ist erforderlich"
+  "titleRequired": "Der Titel des Stücks ist erforderlich",
+  "delete": "Aus Repertoire löschen",
+  "confirmDelete": "Sind Sie sicher, dass Sie dieses Stück löschen möchten?",
+  "cannotDelete": "Stücke mit Übungsverlauf können nicht gelöscht werden",
+  "deleteSuccess": "Aus Repertoire entfernt"
 }

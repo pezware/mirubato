@@ -145,5 +145,9 @@
   "pieceTitlePlaceholder": "例如：降E大调夜曲",
   "composer": "作曲家",
   "composerPlaceholder": "例如：肖邦",
-  "titleRequired": "曲目名称为必填"
+  "titleRequired": "曲目名称为必填",
+  "delete": "从曲目库中删除",
+  "confirmDelete": "您确定要删除这首曲目吗？",
+  "cannotDelete": "无法删除有练习记录的曲目",
+  "deleteSuccess": "已从曲目库中移除"
 }
