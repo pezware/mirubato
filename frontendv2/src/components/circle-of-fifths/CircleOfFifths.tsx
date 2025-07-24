@@ -22,10 +22,6 @@ const CircleOfFifths: React.FC = () => {
     if (isAudioEnabled) {
       musicalAudioService.initialize()
       musicalAudioService.setVolume(volume)
-
-      // Optional: Upgrade to real piano samples for better sound quality
-      // Uncomment the line below to enable piano samples (will load ~1MB of samples)
-      // musicalAudioService.upgradeToSampledPiano()
     }
 
     // Cleanup on unmount

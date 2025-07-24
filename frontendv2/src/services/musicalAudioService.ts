@@ -1,45 +1,6 @@
 import * as Tone from 'tone'
 import { PlaybackMode } from '../components/circle-of-fifths/types'
 
-type SoundQuality = 'synth' | 'piano'
-
-// Note frequency mapping (A4 = 440Hz)
-// Kept for potential future use with frequency-based synthesis
-// const noteFrequencies: Record<string, number> = {
-//   C: 261.63,
-//   'C#': 277.18,
-//   Db: 277.18,
-//   D: 293.66,
-//   'D#': 311.13,
-//   Eb: 311.13,
-//   E: 329.63,
-//   F: 349.23,
-//   'F#': 369.99,
-//   Gb: 369.99,
-//   G: 392.0,
-//   'G#': 415.3,
-//   Ab: 415.3,
-//   A: 440.0,
-//   'A#': 466.16,
-//   Bb: 466.16,
-//   B: 493.88,
-//   Cb: 493.88,
-//   'B#': 261.63,
-//   'E#': 349.23,
-//   Fb: 329.63,
-// }
-
-// Convert note name to frequency with octave
-// Note: This function is kept for potential future use with frequency-based synthesis
-// const getNoteFrequency = (note: string, octave: number = 4): number => {
-//   const baseFreq = noteFrequencies[note]
-//   if (!baseFreq) return 440 // Default to A4 if note not found
-//
-//   // Adjust for octave (C4 is middle C)
-//   const octaveOffset = octave - 4
-//   return baseFreq * Math.pow(2, octaveOffset)
-// }
-
 // Convert note names to Tone.js format (e.g., "C#4")
 const toToneNote = (note: string, octave: number = 4): string => {
   // Handle enharmonic slash notation (e.g., "F#/Gb" -> "F#")
@@ -62,14 +23,12 @@ const toToneNote = (note: string, octave: number = 4): string => {
 }
 
 class MusicalAudioService {
-  private synth: Tone.PolySynth | Tone.Sampler | null = null
+  private sampler: Tone.Sampler | null = null
   private volume: Tone.Volume | null = null
   private reverb: Tone.Reverb | null = null
   private initialized = false
   private currentSequence: Tone.Sequence | null = null
   private playbackTimeout: NodeJS.Timeout | null = null
-  private soundQuality: SoundQuality = 'synth'
-  private samplerLoading = false
 
   async initialize(): Promise<void> {
     if (this.initialized) return
@@ -78,29 +37,31 @@ class MusicalAudioService {
       // Start Tone.js audio context
       await Tone.start()
 
-      // Create FM synthesis electric piano sound
-      this.synth = new Tone.PolySynth(Tone.FMSynth, {
-        volume: -8,
-        harmonicity: 2.8,
-        modulationIndex: 12,
-        oscillator: {
-          type: 'fmsine',
+      // Create sampler with selective piano samples for lightweight loading
+      this.sampler = new Tone.Sampler({
+        urls: {
+          A1: 'A1.mp3',
+          A2: 'A2.mp3',
+          A3: 'A3.mp3',
+          A4: 'A4.mp3',
+          A5: 'A5.mp3',
+          A6: 'A6.mp3',
+          C2: 'C2.mp3',
+          C3: 'C3.mp3',
+          C4: 'C4.mp3',
+          C5: 'C5.mp3',
+          C6: 'C6.mp3',
+          'D#2': 'Ds2.mp3',
+          'D#3': 'Ds3.mp3',
+          'D#4': 'Ds4.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#2': 'Fs2.mp3',
+          'F#3': 'Fs3.mp3',
+          'F#4': 'Fs4.mp3',
+          'F#5': 'Fs5.mp3',
         },
-        envelope: {
-          attack: 0.001,
-          decay: 0.3,
-          sustain: 0.1,
-          release: 1.2,
-        },
-        modulation: {
-          type: 'square',
-        },
-        modulationEnvelope: {
-          attack: 0.002,
-          decay: 0.2,
-          sustain: 0.3,
-          release: 0.8,
-        },
+        release: 1,
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
       })
 
       // Create reverb effect
@@ -112,13 +73,16 @@ class MusicalAudioService {
       // Create volume control
       this.volume = new Tone.Volume(-6) // Adjust volume
 
-      // Connect synth -> reverb -> volume -> destination
-      this.synth.connect(this.reverb)
+      // Wait for samples to load
+      await Tone.loaded()
+
+      // Connect sampler -> reverb -> volume -> destination
+      this.sampler.connect(this.reverb)
       this.reverb.connect(this.volume)
       this.volume.toDestination()
 
-      // Lazy load reverb impulse response
-      this.reverb.generate()
+      // Generate reverb impulse response
+      await this.reverb.generate()
 
       this.initialized = true
     } catch (error) {
@@ -137,7 +101,7 @@ class MusicalAudioService {
 
   async playChord(notes: string[], duration: number = 1): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
@@ -146,7 +110,7 @@ class MusicalAudioService {
     const toneNotes = notes.map(note => toToneNote(note))
 
     // Play chord
-    this.synth.triggerAttackRelease(toneNotes, duration)
+    this.sampler.triggerAttackRelease(toneNotes, duration)
 
     // Wait for the chord to finish playing
     return new Promise(resolve => {
@@ -163,7 +127,7 @@ class MusicalAudioService {
     tempo: number = 120
   ): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
@@ -264,8 +228,8 @@ class MusicalAudioService {
     // Create and start sequence
     this.currentSequence = new Tone.Sequence(
       (time, note) => {
-        if (this.synth) {
-          this.synth.triggerAttackRelease(note, noteDuration * 0.8, time)
+        if (this.sampler) {
+          this.sampler.triggerAttackRelease(note, noteDuration * 0.8, time)
         }
       },
       sequence,
@@ -291,7 +255,7 @@ class MusicalAudioService {
     tempo: number = 120
   ): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
@@ -355,8 +319,8 @@ class MusicalAudioService {
     // Create and start sequence
     this.currentSequence = new Tone.Sequence(
       (time, note) => {
-        if (this.synth) {
-          this.synth.triggerAttackRelease(note, noteDuration * 0.8, time)
+        if (this.sampler) {
+          this.sampler.triggerAttackRelease(note, noteDuration * 0.8, time)
         }
       },
       arpeggioNotes,
@@ -438,8 +402,8 @@ class MusicalAudioService {
 
   private stopCurrentSequence(): void {
     // Stop any currently playing notes
-    if (this.synth) {
-      this.synth.releaseAll()
+    if (this.sampler) {
+      this.sampler.releaseAll()
     }
 
     if (this.currentSequence) {
@@ -464,70 +428,12 @@ class MusicalAudioService {
     this.stopCurrentSequence()
   }
 
-  async upgradeToSampledPiano(): Promise<boolean> {
-    if (this.samplerLoading || this.soundQuality === 'piano') return false
-
-    this.samplerLoading = true
-
-    try {
-      // Create sampler with selective piano samples for lightweight loading
-      const sampler = new Tone.Sampler({
-        urls: {
-          A1: 'A1.mp3',
-          A2: 'A2.mp3',
-          A3: 'A3.mp3',
-          A4: 'A4.mp3',
-          A5: 'A5.mp3',
-          A6: 'A6.mp3',
-          C2: 'C2.mp3',
-          C3: 'C3.mp3',
-          C4: 'C4.mp3',
-          C5: 'C5.mp3',
-          C6: 'C6.mp3',
-          'D#2': 'Ds2.mp3',
-          'D#3': 'Ds3.mp3',
-          'D#4': 'Ds4.mp3',
-          'D#5': 'Ds5.mp3',
-          'F#2': 'Fs2.mp3',
-          'F#3': 'Fs3.mp3',
-          'F#4': 'Fs4.mp3',
-          'F#5': 'Fs5.mp3',
-        },
-        release: 1,
-        baseUrl: 'https://tonejs.github.io/audio/salamander/',
-        onload: () => {
-          // Dispose old synth
-          if (this.synth) {
-            this.synth.disconnect()
-            this.synth.dispose()
-          }
-
-          // Connect new sampler
-          this.synth = sampler
-          this.synth.connect(this.reverb!)
-          this.soundQuality = 'piano'
-          this.samplerLoading = false
-        },
-      })
-
-      return true
-    } catch (error) {
-      console.error('Failed to load piano samples:', error)
-      this.samplerLoading = false
-      return false
-    }
-  }
-
-  getCurrentSoundQuality(): SoundQuality {
-    return this.soundQuality
-  }
-
   dispose(): void {
     this.stopCurrentSequence()
 
-    if (this.synth) {
-      this.synth.dispose()
-      this.synth = null
+    if (this.sampler) {
+      this.sampler.dispose()
+      this.sampler = null
     }
 
     if (this.reverb) {
@@ -541,8 +447,6 @@ class MusicalAudioService {
     }
 
     this.initialized = false
-    this.soundQuality = 'synth'
-    this.samplerLoading = false
   }
 }
 
