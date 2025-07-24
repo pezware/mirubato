@@ -4,6 +4,7 @@ name = "mirubato-template"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "1362434665780520e89f9f06b1057d24"
 
 # KV Namespaces for caching
 [[kv_namespaces]]
@@ -28,7 +29,7 @@ database_id = "YOUR_DB_ID_PROD"
 
 # Production Configuration (default)
 [env.production]
-vars = { 
+vars = {
   ENVIRONMENT = "production",
   CORS_ORIGIN = "https://mirubato.com",
   LOG_LEVEL = "info"
@@ -40,7 +41,7 @@ routes = [
 # Staging Environment
 [env.staging]
 name = "mirubato-template-staging"
-vars = { 
+vars = {
   ENVIRONMENT = "staging",
   CORS_ORIGIN = "https://staging.mirubato.com",
   LOG_LEVEL = "debug"
@@ -61,7 +62,7 @@ database_id = "YOUR_DB_ID_STAGING"
 # Development Environment
 [env.development]
 name = "mirubato-template-dev"
-vars = { 
+vars = {
   ENVIRONMENT = "development",
   CORS_ORIGIN = "*",
   LOG_LEVEL = "debug"
@@ -78,7 +79,7 @@ database_id = "YOUR_DB_ID_DEV"
 
 # Local Development
 [env.local]
-vars = { 
+vars = {
   ENVIRONMENT = "local",
   CORS_ORIGIN = "http://www-mirubato.localhost:4000",
   LOG_LEVEL = "debug",
