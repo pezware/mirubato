@@ -85,15 +85,26 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
       headers.join(','),
       ...rows.map(row =>
         row
-          .map(cell =>
-            typeof cell === 'string' &&
-            (cell.includes(',') || cell.includes('"'))
-              ? `"${cell.replace(/"/g, '""')}"`
-              : cell
-          )
+          .map(cell => {
+            if (typeof cell === 'string') {
+              // Check if cell needs to be quoted (contains comma, quote, or newline)
+              if (
+                cell.includes(',') ||
+                cell.includes('"') ||
+                cell.includes('\n') ||
+                cell.includes('\r')
+              ) {
+                // Escape quotes by doubling them
+                const escapedCell = cell.replace(/"/g, '""')
+                // Return quoted cell with newlines preserved
+                return `"${escapedCell}"`
+              }
+            }
+            return cell
+          })
           .join(',')
       ),
-    ].join('\n')
+    ].join('\r\n') // Use Windows-style line endings for better compatibility
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
