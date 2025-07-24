@@ -7,9 +7,31 @@ import type {
   // References,
 } from '../../../types/dictionary'
 import { CloudflareAIService } from '../../../services/ai/cloudflare-ai-service'
+import { getWikipediaSuggestions } from '../../../utils/wikipedia-url'
 
 // Mock CloudflareAIService
 vi.mock('../../../services/ai/cloudflare-ai-service')
+
+// Mock Wikipedia URL utilities
+vi.mock('../../../utils/wikipedia-url', () => ({
+  generateWikipediaUrl: vi.fn((term, type, suggestion) => {
+    // Mock implementation that returns clean URLs
+    if (term === 'piano') return 'https://en.wikipedia.org/wiki/Piano'
+    if (term === 'The Magic Flute')
+      return 'https://en.wikipedia.org/wiki/The_Magic_Flute'
+    if (term === 'Allegro' && suggestion === 'Allegro (music)')
+      return 'https://en.wikipedia.org/wiki/Allegro_(music)'
+    return `https://en.wikipedia.org/wiki/${encodeURIComponent(term)}`
+  }),
+  getWikipediaSuggestions: vi.fn(async term => {
+    // Mock suggestions
+    if (term === 'piano') {
+      return [{ title: 'Piano', url: 'https://en.wikipedia.org/wiki/Piano' }]
+    }
+    return []
+  }),
+  validateWikipediaUrl: vi.fn(async () => true),
+}))
 
 describe('DictionaryGenerator', () => {
   let generator: DictionaryGenerator
@@ -96,6 +118,47 @@ describe('DictionaryGenerator', () => {
       expect(result.quality_score.overall).toBeGreaterThanOrEqual(70)
       expect(result.id).toBeDefined()
       expect(result.id).toHaveLength(36) // UUID length
+    })
+
+    it('should fix Wikipedia URLs for operas by removing composer names', async () => {
+      const mockDefinition: Definition = {
+        concise: 'A famous opera by Mozart.',
+        detailed:
+          'The Magic Flute is a two-act opera composed by Wolfgang Amadeus Mozart...',
+      }
+
+      // Mock AI responses with problematic Wikipedia search term
+      mockAIService.generateStructuredContent
+        .mockResolvedValueOnce({ response: JSON.stringify(mockDefinition) })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            wikipedia_search: 'The Magic Flute Mozart', // AI adds composer name
+            youtube_search: 'The Magic Flute',
+          }),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            score: 85,
+            issues: [],
+            suggestions: [],
+          }),
+        })
+
+      mockAIService.parseJSONResponse.mockImplementation((response: string) =>
+        JSON.parse(response)
+      )
+
+      const result = await generator.generateEntry({
+        term: 'The Magic Flute',
+        type: 'opera',
+      })
+
+      expect(result).toBeDefined()
+      expect(result.references.wikipedia).toBeDefined()
+      // Should have cleaned URL without Mozart
+      expect(result.references.wikipedia?.url).toBe(
+        'https://en.wikipedia.org/wiki/The_Magic_Flute'
+      )
     })
 
     it('should retry on low quality score', async () => {
@@ -371,8 +434,10 @@ describe('DictionaryGenerator', () => {
       })
 
       expect(result).toBeDefined()
+      // Our improved logic correctly identifies Allegro as a unique music term
+      // that doesn't need disambiguation
       expect(result?.references.wikipedia?.url).toBe(
-        'https://en.wikipedia.org/wiki/Allegro_(music)'
+        'https://en.wikipedia.org/wiki/Allegro'
       )
       expect(
         result?.references.media?.youtube?.educational_videos?.[0].url
@@ -429,6 +494,124 @@ describe('DictionaryGenerator', () => {
       expect(
         result?.references.media?.youtube?.educational_videos?.[0].url
       ).not.toContain('music%20lessons')
+    })
+
+    it('should use Wikipedia API and AI selection for multiple results', async () => {
+      const mockDefinition: Definition = {
+        concise: 'An opera by Mozart.',
+        detailed:
+          'The Magic Flute is a two-act opera by Wolfgang Amadeus Mozart.',
+      }
+
+      // Mock Wikipedia API suggestions
+      vi.mocked(getWikipediaSuggestions).mockResolvedValueOnce([
+        {
+          title: 'The Magic Flute',
+          url: 'https://en.wikipedia.org/wiki/The_Magic_Flute',
+        },
+        {
+          title: 'The Magic Flute (2006 film)',
+          url: 'https://en.wikipedia.org/wiki/The_Magic_Flute_(2006_film)',
+        },
+        {
+          title: 'The Magic Flute (1975 film)',
+          url: 'https://en.wikipedia.org/wiki/The_Magic_Flute_(1975_film)',
+        },
+      ])
+
+      // Set up mocks
+      mockAIService.generateStructuredContent
+        .mockResolvedValueOnce({
+          response: JSON.stringify(mockDefinition),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            wikipedia_search: 'The Magic Flute Mozart',
+            youtube_search: 'The Magic Flute opera',
+          }),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            score: 80,
+            issues: [],
+            suggestions: [],
+          }),
+        })
+        // Mock AI selection response
+        .mockResolvedValueOnce({
+          response: '1', // Select the first option (main article)
+        })
+
+      mockAIService.parseJSONResponse
+        .mockReturnValueOnce(mockDefinition)
+        .mockReturnValueOnce({
+          wikipedia_search: 'The Magic Flute Mozart',
+          youtube_search: 'The Magic Flute opera',
+        })
+        .mockReturnValueOnce({ score: 80, issues: [], suggestions: [] })
+
+      const result = await generator.generateEntry({
+        term: 'The Magic Flute',
+        type: 'opera',
+      })
+
+      expect(result).toBeDefined()
+      // Should use the Wikipedia API result, not the AI-generated one
+      expect(result?.references.wikipedia?.url).toBe(
+        'https://en.wikipedia.org/wiki/The_Magic_Flute'
+      )
+      // Verify Wikipedia API was called
+      expect(getWikipediaSuggestions).toHaveBeenCalledWith('The Magic Flute', 5)
+    })
+
+    it('should fall back to AI-generated URL when Wikipedia API fails', async () => {
+      const mockDefinition: Definition = {
+        concise: 'A tempo marking.',
+        detailed: 'Allegro is a tempo marking indicating a fast pace.',
+      }
+
+      // Mock Wikipedia API failure
+      vi.mocked(getWikipediaSuggestions).mockRejectedValueOnce(
+        new Error('Network error')
+      )
+
+      // Set up mocks
+      mockAIService.generateStructuredContent
+        .mockResolvedValueOnce({
+          response: JSON.stringify(mockDefinition),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            wikipedia_search: 'Allegro (music)',
+            youtube_search: 'Allegro',
+          }),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            score: 75,
+            issues: [],
+            suggestions: [],
+          }),
+        })
+
+      mockAIService.parseJSONResponse
+        .mockReturnValueOnce(mockDefinition)
+        .mockReturnValueOnce({
+          wikipedia_search: 'Allegro (music)',
+          youtube_search: 'Allegro',
+        })
+        .mockReturnValueOnce({ score: 75, issues: [], suggestions: [] })
+
+      const result = await generator.generateEntry({
+        term: 'Allegro',
+        type: 'tempo',
+      })
+
+      expect(result).toBeDefined()
+      // Should fall back to AI-generated URL
+      expect(result?.references.wikipedia?.url).toBe(
+        'https://en.wikipedia.org/wiki/Allegro_(music)'
+      )
     })
   })
 
