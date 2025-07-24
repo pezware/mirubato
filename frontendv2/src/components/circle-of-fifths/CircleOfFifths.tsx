@@ -35,9 +35,24 @@ const CircleOfFifths: React.FC = () => {
     musicalAudioService.setVolume(volume)
   }, [volume])
 
+  // Stop playback when playback mode changes
+  useEffect(() => {
+    if (isPlaying) {
+      musicalAudioService.stop()
+      setIsPlaying(false)
+    }
+  }, [playbackMode, isPlaying])
+
   const handleKeySelect = async (keyId: string) => {
+    // Stop any currently playing audio before changing key
+    if (isPlaying) {
+      musicalAudioService.stop()
+      setIsPlaying(false)
+    }
+
     setSelectedKey(keyId)
-    if (isAudioEnabled && !isPlaying) {
+
+    if (isAudioEnabled) {
       // Play the key's chord/scale based on current mode
       const keyInfo = getKeyData(keyId)
       setIsPlaying(true)

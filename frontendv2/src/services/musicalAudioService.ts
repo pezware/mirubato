@@ -1,43 +1,6 @@
 import * as Tone from 'tone'
 import { PlaybackMode } from '../components/circle-of-fifths/types'
 
-// Note frequency mapping (A4 = 440Hz)
-// Kept for potential future use with frequency-based synthesis
-// const noteFrequencies: Record<string, number> = {
-//   C: 261.63,
-//   'C#': 277.18,
-//   Db: 277.18,
-//   D: 293.66,
-//   'D#': 311.13,
-//   Eb: 311.13,
-//   E: 329.63,
-//   F: 349.23,
-//   'F#': 369.99,
-//   Gb: 369.99,
-//   G: 392.0,
-//   'G#': 415.3,
-//   Ab: 415.3,
-//   A: 440.0,
-//   'A#': 466.16,
-//   Bb: 466.16,
-//   B: 493.88,
-//   Cb: 493.88,
-//   'B#': 261.63,
-//   'E#': 349.23,
-//   Fb: 329.63,
-// }
-
-// Convert note name to frequency with octave
-// Note: This function is kept for potential future use with frequency-based synthesis
-// const getNoteFrequency = (note: string, octave: number = 4): number => {
-//   const baseFreq = noteFrequencies[note]
-//   if (!baseFreq) return 440 // Default to A4 if note not found
-//
-//   // Adjust for octave (C4 is middle C)
-//   const octaveOffset = octave - 4
-//   return baseFreq * Math.pow(2, octaveOffset)
-// }
-
 // Convert note names to Tone.js format (e.g., "C#4")
 const toToneNote = (note: string, octave: number = 4): string => {
   // Handle enharmonic slash notation (e.g., "F#/Gb" -> "F#")
@@ -60,8 +23,9 @@ const toToneNote = (note: string, octave: number = 4): string => {
 }
 
 class MusicalAudioService {
-  private synth: Tone.PolySynth | null = null
+  private sampler: Tone.Sampler | null = null
   private volume: Tone.Volume | null = null
+  private reverb: Tone.Reverb | null = null
   private initialized = false
   private currentSequence: Tone.Sequence | null = null
   private playbackTimeout: NodeJS.Timeout | null = null
@@ -73,25 +37,52 @@ class MusicalAudioService {
       // Start Tone.js audio context
       await Tone.start()
 
-      // Create synth with a nice piano-like sound
-      this.synth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: {
-          type: 'triangle',
+      // Create sampler with selective piano samples for lightweight loading
+      this.sampler = new Tone.Sampler({
+        urls: {
+          A1: 'A1.mp3',
+          A2: 'A2.mp3',
+          A3: 'A3.mp3',
+          A4: 'A4.mp3',
+          A5: 'A5.mp3',
+          A6: 'A6.mp3',
+          C2: 'C2.mp3',
+          C3: 'C3.mp3',
+          C4: 'C4.mp3',
+          C5: 'C5.mp3',
+          C6: 'C6.mp3',
+          'D#2': 'Ds2.mp3',
+          'D#3': 'Ds3.mp3',
+          'D#4': 'Ds4.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#2': 'Fs2.mp3',
+          'F#3': 'Fs3.mp3',
+          'F#4': 'Fs4.mp3',
+          'F#5': 'Fs5.mp3',
         },
-        envelope: {
-          attack: 0.02,
-          decay: 0.3,
-          sustain: 0.3,
-          release: 1,
-        },
+        release: 1,
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+      })
+
+      // Create reverb effect
+      this.reverb = new Tone.Reverb({
+        decay: 2.5,
+        wet: 0.3,
       })
 
       // Create volume control
-      this.volume = new Tone.Volume(0)
+      this.volume = new Tone.Volume(-6) // Adjust volume
 
-      // Connect synth -> volume -> destination
-      this.synth.connect(this.volume)
+      // Wait for samples to load
+      await Tone.loaded()
+
+      // Connect sampler -> reverb -> volume -> destination
+      this.sampler.connect(this.reverb)
+      this.reverb.connect(this.volume)
       this.volume.toDestination()
+
+      // Generate reverb impulse response
+      await this.reverb.generate()
 
       this.initialized = true
     } catch (error) {
@@ -110,7 +101,7 @@ class MusicalAudioService {
 
   async playChord(notes: string[], duration: number = 1): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
@@ -119,7 +110,7 @@ class MusicalAudioService {
     const toneNotes = notes.map(note => toToneNote(note))
 
     // Play chord
-    this.synth.triggerAttackRelease(toneNotes, duration)
+    this.sampler.triggerAttackRelease(toneNotes, duration)
 
     // Wait for the chord to finish playing
     return new Promise(resolve => {
@@ -136,26 +127,99 @@ class MusicalAudioService {
     tempo: number = 120
   ): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
 
-    // Prepare note sequence
+    // Helper to get note order value for octave calculation
+    const getNoteOrder = (note: string): number => {
+      const noteOrder: Record<string, number> = {
+        C: 0,
+        'C#': 1,
+        Db: 1,
+        D: 2,
+        'D#': 3,
+        Eb: 3,
+        E: 4,
+        F: 5,
+        'F#': 6,
+        Gb: 6,
+        G: 7,
+        'G#': 8,
+        Ab: 8,
+        A: 9,
+        'A#': 10,
+        Bb: 10,
+        B: 11,
+      }
+      // Handle enharmonic slash notation
+      const cleanNote = note.includes('/') ? note.split('/')[0] : note
+      return noteOrder[cleanNote] ?? 0
+    }
+
+    // Prepare note sequence with proper octaves
     let sequence: string[] = []
+    const baseOctave = 4
 
     if (mode === 'ascending' || mode === 'both') {
-      sequence = [...notes.map(note => toToneNote(note))]
+      let currentOctave = baseOctave
+      let lastNoteOrder = -1
+
+      sequence = notes.map(note => {
+        const noteOrder = getNoteOrder(note)
+
+        // If the note order decreased, we've crossed into a new octave
+        if (lastNoteOrder !== -1 && noteOrder < lastNoteOrder) {
+          currentOctave++
+        }
+
+        lastNoteOrder = noteOrder
+        return toToneNote(note, currentOctave)
+      })
     }
 
     if (mode === 'descending') {
-      sequence = [...notes.map(note => toToneNote(note))].reverse()
+      // For descending, start from the octave where the scale would end
+      let currentOctave = baseOctave
+      let lastNoteOrder = -1
+
+      // First, calculate the ending octave
+      notes.forEach(note => {
+        const noteOrder = getNoteOrder(note)
+        if (lastNoteOrder !== -1 && noteOrder < lastNoteOrder) {
+          currentOctave++
+        }
+        lastNoteOrder = noteOrder
+      })
+
+      // Then create the descending sequence
+      sequence = notes.map(note => toToneNote(note, currentOctave)).reverse()
     }
 
     if (mode === 'both') {
-      const ascending = notes.map(note => toToneNote(note))
-      const descending = [...ascending].reverse().slice(1) // Avoid repeating the top note
-      sequence = [...ascending, ...descending]
+      // Create ascending sequence
+      let currentOctave = baseOctave
+      let lastNoteOrder = -1
+
+      const ascending = notes.map(note => {
+        const noteOrder = getNoteOrder(note)
+
+        if (lastNoteOrder !== -1 && noteOrder < lastNoteOrder) {
+          currentOctave++
+        }
+
+        lastNoteOrder = noteOrder
+        return toToneNote(note, currentOctave)
+      })
+
+      // Add the tonic an octave higher
+      const tonicOctave = currentOctave + 1
+      const topNote = toToneNote(notes[0], tonicOctave)
+
+      // Create descending sequence (excluding the repeated top note)
+      const descending = [...ascending, topNote].reverse().slice(1)
+      sequence = [...ascending, topNote, ...descending]
     }
 
     // Calculate note duration based on tempo
@@ -164,8 +228,8 @@ class MusicalAudioService {
     // Create and start sequence
     this.currentSequence = new Tone.Sequence(
       (time, note) => {
-        if (this.synth) {
-          this.synth.triggerAttackRelease(note, noteDuration * 0.8, time)
+        if (this.sampler) {
+          this.sampler.triggerAttackRelease(note, noteDuration * 0.8, time)
         }
       },
       sequence,
@@ -191,18 +255,49 @@ class MusicalAudioService {
     tempo: number = 120
   ): Promise<void> {
     await this.initialize()
-    if (!this.synth) return
+    if (!this.sampler) return
 
     // Stop any currently playing sequence
     this.stopCurrentSequence()
 
-    // Create arpeggio pattern
-    const arpeggioNotes: string[] = []
+    // Helper to get note order value for octave calculation
+    const getNoteOrder = (note: string): number => {
+      const noteOrder: Record<string, number> = {
+        C: 0,
+        'C#': 1,
+        Db: 1,
+        D: 2,
+        'D#': 3,
+        Eb: 3,
+        E: 4,
+        F: 5,
+        'F#': 6,
+        Gb: 6,
+        G: 7,
+        'G#': 8,
+        Ab: 8,
+        A: 9,
+        'A#': 10,
+        Bb: 10,
+        B: 11,
+      }
+      const cleanNote = note.includes('/') ? note.split('/')[0] : note
+      return noteOrder[cleanNote] ?? 0
+    }
 
-    // Build arpeggio based on pattern (up and down)
+    // Create arpeggio pattern with proper octaves
+    const arpeggioNotes: string[] = []
+    const baseOctave = 4
+
+    // Build ascending arpeggio
     for (const index of pattern) {
       if (index < notes.length) {
-        arpeggioNotes.push(toToneNote(notes[index]))
+        const note = notes[index]
+        // Calculate octave based on position in scale
+        const rootOrder = getNoteOrder(notes[0])
+        const noteOrder = getNoteOrder(note)
+        const octaveOffset = noteOrder < rootOrder ? 1 : 0
+        arpeggioNotes.push(toToneNote(note, baseOctave + octaveOffset))
       }
     }
 
@@ -210,7 +305,11 @@ class MusicalAudioService {
     for (let i = pattern.length - 2; i > 0; i--) {
       const index = pattern[i]
       if (index < notes.length) {
-        arpeggioNotes.push(toToneNote(notes[index]))
+        const note = notes[index]
+        const rootOrder = getNoteOrder(notes[0])
+        const noteOrder = getNoteOrder(note)
+        const octaveOffset = noteOrder < rootOrder ? 1 : 0
+        arpeggioNotes.push(toToneNote(note, baseOctave + octaveOffset))
       }
     }
 
@@ -220,8 +319,8 @@ class MusicalAudioService {
     // Create and start sequence
     this.currentSequence = new Tone.Sequence(
       (time, note) => {
-        if (this.synth) {
-          this.synth.triggerAttackRelease(note, noteDuration * 0.8, time)
+        if (this.sampler) {
+          this.sampler.triggerAttackRelease(note, noteDuration * 0.8, time)
         }
       },
       arpeggioNotes,
@@ -270,11 +369,23 @@ class MusicalAudioService {
 
   private buildChord(root: string, scale: string[]): string[] {
     // Handle enharmonic slash notation in root (e.g., "F#/Gb" -> "F#")
-    const cleanRoot = root.includes('/') ? root.split('/')[0] : root
+    let cleanRoot = root.includes('/') ? root.split('/')[0] : root
 
-    // Build a simple triad using the scale
-    const rootIndex = scale.findIndex(note => note === cleanRoot)
-    if (rootIndex === -1) return [cleanRoot] // Fallback to just root
+    // Remove 'm' from minor key names (e.g., "Am" -> "A", "F#m" -> "F#")
+    if (cleanRoot.endsWith('m')) {
+      cleanRoot = cleanRoot.slice(0, -1)
+    }
+
+    // Find the root in the scale
+    const rootIndex = scale.findIndex(note => {
+      const cleanNote = note.includes('/') ? note.split('/')[0] : note
+      return cleanNote === cleanRoot
+    })
+
+    if (rootIndex === -1) {
+      // If still not found, try to find just the root note
+      return [cleanRoot] // Fallback to just root
+    }
 
     const chord: string[] = [cleanRoot]
 
@@ -290,17 +401,26 @@ class MusicalAudioService {
   }
 
   private stopCurrentSequence(): void {
+    // Stop any currently playing notes
+    if (this.sampler) {
+      this.sampler.releaseAll()
+    }
+
     if (this.currentSequence) {
       this.currentSequence.stop()
       this.currentSequence.dispose()
       this.currentSequence = null
     }
+
     if (this.playbackTimeout) {
       clearTimeout(this.playbackTimeout)
       this.playbackTimeout = null
     }
+
+    // Stop and clear transport
     Tone.Transport.stop()
     Tone.Transport.cancel()
+    Tone.Transport.position = 0
   }
 
   // Public method to stop playback
@@ -311,9 +431,14 @@ class MusicalAudioService {
   dispose(): void {
     this.stopCurrentSequence()
 
-    if (this.synth) {
-      this.synth.dispose()
-      this.synth = null
+    if (this.sampler) {
+      this.sampler.dispose()
+      this.sampler = null
+    }
+
+    if (this.reverb) {
+      this.reverb.dispose()
+      this.reverb = null
     }
 
     if (this.volume) {
