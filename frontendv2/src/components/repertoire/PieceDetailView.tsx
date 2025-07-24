@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration } from '@/utils/dateUtils'
+import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
@@ -241,7 +242,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </button>
           <span className="text-stone-400">›</span>
           <span className="text-stone-900 font-medium truncate">
-            {item.scoreComposer} - {item.scoreTitle}
+            {toTitleCase(item.scoreComposer)} - {toTitleCase(item.scoreTitle)}
           </span>
         </nav>
       </div>
@@ -251,10 +252,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
-              {item.scoreTitle}
+              {toTitleCase(item.scoreTitle)}
             </h1>
             <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
-              {item.scoreComposer}{' '}
+              {toTitleCase(item.scoreComposer)}{' '}
               {item.catalogNumber && `• ${item.catalogNumber}`}
             </div>
           </div>

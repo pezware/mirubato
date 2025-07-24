@@ -18,6 +18,7 @@ import { CreateGoalModal } from './CreateGoalModal'
 import { EditNotesModal } from './EditNotesModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
 import { formatDuration } from '@/utils/dateUtils'
+import { toTitleCase } from '@/utils/textFormatting'
 import {
   generateNormalizedScoreId,
   isSameScore,
@@ -177,8 +178,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         // This is likely a logbook piece
         const parts = item.scoreId.split('-')
         if (parts.length >= 2) {
-          scoreTitle = parts[0]
-          scoreComposer = parts.slice(1).join('-') // Handle composers with hyphens
+          scoreTitle = toTitleCase(parts[0])
+          scoreComposer = toTitleCase(parts.slice(1).join('-')) // Handle composers with hyphens
           isLogbookPiece = true
 
           // Cache this metadata for future use

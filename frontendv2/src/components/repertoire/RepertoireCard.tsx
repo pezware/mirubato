@@ -7,6 +7,7 @@ import { Goal } from '@/api/goals'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
+import { toTitleCase } from '@/utils/textFormatting'
 import { EditNotesModal } from './EditNotesModal'
 import { EditGoalModal } from './EditGoalModal'
 import { MoreVertical, ChevronDown } from 'lucide-react'
@@ -169,7 +170,8 @@ export function RepertoireCard({
               className="flex-1 text-left group cursor-pointer"
             >
               <h3 className="text-lg font-semibold text-stone-900 group-hover:text-stone-700 transition-colors duration-200">
-                {item.scoreTitle} - {item.scoreComposer}
+                {toTitleCase(item.scoreTitle)} -{' '}
+                {toTitleCase(item.scoreComposer)}
               </h3>
             </button>
 
