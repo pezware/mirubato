@@ -115,9 +115,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       .filter(entry => new Date(entry.timestamp).getTime() > oneWeekAgo)
       .reduce((sum, entry) => sum + entry.duration, 0)
 
-    // Active pieces count - exclude dropped pieces
+    // Active pieces count - only count pieces with 'learning' status
     const activePieces = filteredItems.filter(
-      item => item.status !== 'dropped'
+      item => item.status === 'learning'
     ).length
 
     // Calculate current streak
