@@ -1,7 +1,7 @@
 import React from 'react'
 import { formatDistanceToNow, isToday } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import { formatDuration } from '@/utils/dateUtils'
+import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
@@ -78,7 +78,9 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   const lastPracticeText = lastPracticeDate
     ? isToday(lastPracticeDate)
       ? t('repertoire:practicedToday')
-      : formatDistanceToNow(lastPracticeDate, { addSuffix: true })
+      : capitalizeTimeString(
+          formatDistanceToNow(lastPracticeDate, { addSuffix: true })
+        )
     : t('repertoire:notPracticedYet')
 
   // Calculate total practice time

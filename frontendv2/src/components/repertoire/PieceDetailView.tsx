@@ -13,7 +13,7 @@ import {
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
-import { formatDuration } from '@/utils/dateUtils'
+import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
@@ -116,7 +116,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       } else if (isYesterday(date)) {
         lastPracticed = 'Yesterday'
       } else {
-        lastPracticed = formatDistanceToNow(date, { addSuffix: true })
+        lastPracticed = capitalizeTimeString(
+          formatDistanceToNow(date, { addSuffix: true })
+        )
       }
     }
 

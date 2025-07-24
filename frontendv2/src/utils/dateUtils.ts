@@ -40,8 +40,45 @@ export function formatRelativeTime(timestamp: number | Date | string): string {
 
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
-  return `${Math.floor(diffDays / 365)} years ago`
+  if (diffDays < 7) return `${diffDays} Days Ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} Weeks Ago`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} Months Ago`
+  return `${Math.floor(diffDays / 365)} Years Ago`
+}
+
+/**
+ * Capitalizes time-related words in a string
+ * Used to fix date-fns formatDistanceToNow output
+ * Example: "about 1 week ago" → "About 1 Week Ago"
+ */
+export function capitalizeTimeString(str: string): string {
+  const wordsToCapitalize = [
+    'about',
+    'less',
+    'over',
+    'almost',
+    'second',
+    'seconds',
+    'minute',
+    'minutes',
+    'hour',
+    'hours',
+    'day',
+    'days',
+    'week',
+    'weeks',
+    'month',
+    'months',
+    'year',
+    'years',
+    'ago',
+  ]
+
+  let result = str
+  wordsToCapitalize.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi')
+    result = result.replace(regex, word.charAt(0).toUpperCase() + word.slice(1))
+  })
+
+  return result
 }
