@@ -288,7 +288,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-gray-100 rounded-lg p-1 md:p-4 overflow-x-auto">
+      <div className="relative bg-white rounded-lg p-1 md:p-4 overflow-x-auto">
         <div className="relative h-24 md:h-36 min-w-[320px] md:min-w-[600px]">
           {/* White Keys */}
           <div className="absolute bottom-0 left-0 flex gap-0.25">
@@ -313,18 +313,14 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     border: '1px solid #E5E7EB',
                     borderBottom: isRootNote
                       ? '4px solid #DC2626'
-                      : isChordNote
-                        ? '4px solid #F87171'
-                        : isInScale
-                          ? '4px solid #FB923C'
-                          : '1px solid #E5E7EB',
+                      : isInScale
+                        ? '4px solid #FB923C'
+                        : '1px solid #E5E7EB',
                     borderRight: isRootNote
                       ? '3px solid #DC2626'
-                      : isChordNote
-                        ? '3px solid #F87171'
-                        : isInScale
-                          ? '3px solid #FB923C'
-                          : '1px solid #E5E7EB',
+                      : isInScale
+                        ? '3px solid #FB923C'
+                        : '1px solid #E5E7EB',
                     boxShadow: isActive
                       ? 'inset 0 2px 4px rgba(0,0,0,0.2)'
                       : '0 2px 4px rgba(0,0,0,0.1)',
@@ -377,18 +373,14 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     border: '1px solid #374151',
                     borderBottom: isRootNote
                       ? '3px solid #DC2626'
-                      : isChordNote
-                        ? '3px solid #F87171'
-                        : isInScale
-                          ? '3px solid #FB923C'
-                          : '1px solid #374151',
+                      : isInScale
+                        ? '3px solid #FB923C'
+                        : '1px solid #374151',
                     borderRight: isRootNote
                       ? '2px solid #DC2626'
-                      : isChordNote
-                        ? '2px solid #F87171'
-                        : isInScale
-                          ? '2px solid #FB923C'
-                          : '1px solid #374151',
+                      : isInScale
+                        ? '2px solid #FB923C'
+                        : '1px solid #374151',
                     boxShadow: isActive
                       ? 'inset 0 2px 4px rgba(0,0,0,0.3)'
                       : '0 2px 6px rgba(0,0,0,0.3)',
@@ -443,18 +435,14 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     border: '1px solid #374151',
                     borderBottom: isRootNote
                       ? '3px solid #DC2626'
-                      : isChordNote
-                        ? '3px solid #F87171'
-                        : isInScale
-                          ? '3px solid #FB923C'
-                          : '1px solid #374151',
+                      : isInScale
+                        ? '3px solid #FB923C'
+                        : '1px solid #374151',
                     borderRight: isRootNote
                       ? '2px solid #DC2626'
-                      : isChordNote
-                        ? '2px solid #F87171'
-                        : isInScale
-                          ? '2px solid #FB923C'
-                          : '1px solid #374151',
+                      : isInScale
+                        ? '2px solid #FB923C'
+                        : '1px solid #374151',
                     boxShadow: isActive
                       ? 'inset 0 2px 4px rgba(0,0,0,0.3)'
                       : '0 2px 6px rgba(0,0,0,0.3)',
@@ -482,10 +470,6 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-red-600 border-t border-l border-gray-300"></div>
           <span className="text-gray-600">Root Note</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-red-400 border-t border-l border-gray-300"></div>
-          <span className="text-gray-600">Chord Notes</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white rounded border-b-4 border-r-2 border-orange-500 border-t border-l border-gray-300"></div>

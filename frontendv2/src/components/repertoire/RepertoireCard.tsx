@@ -32,15 +32,10 @@ interface EnrichedRepertoireItem extends RepertoireItem {
 
 interface RepertoireCardProps {
   item: EnrichedRepertoireItem
-  onCreateGoal: () => void
   onEditSession?: (sessionId: string) => void
 }
 
-export function RepertoireCard({
-  item,
-  onCreateGoal,
-  onEditSession,
-}: RepertoireCardProps) {
+export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
   const { t } = useTranslation(['repertoire', 'common'])
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
@@ -227,15 +222,6 @@ export function RepertoireCard({
                         {t('repertoire:viewScore')}
                       </button>
                     )}
-                    <button
-                      onClick={() => {
-                        onCreateGoal()
-                        setShowMenu(false)
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
-                    >
-                      {t('repertoire:setGoal')}
-                    </button>
                     <button
                       onClick={() => {
                         setShowEditNotesModal(true)
