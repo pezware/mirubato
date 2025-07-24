@@ -85,6 +85,10 @@ export function InstrumentSelector({
       onChange(undefined)
     } else {
       onChange(instrument)
+      // Auto-set as primary instrument when selecting
+      if (instrument !== preferences.primaryInstrument) {
+        setPrimaryInstrument(instrument)
+      }
     }
     setIsExpanded(false)
   }
@@ -195,7 +199,7 @@ export function InstrumentSelector({
               {t('instruments.allInstruments', 'All Instruments')}
             </span>
           </div>
-          {allInstruments.map(instrument => (
+          {allInstruments.sort().map(instrument => (
             <button
               key={instrument}
               type="button"
