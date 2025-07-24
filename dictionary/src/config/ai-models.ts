@@ -257,13 +257,24 @@ Format as JSON:
 
 Suggest appropriate resources in JSON format:
 {
-  "wikipedia_search": "best search query for Wikipedia",
+  "wikipedia_search": "exact term as it would appear in Wikipedia (e.g., 'Allegro (music)' or 'Johann Sebastian Bach')",
   "book_keywords": ["keywords", "for", "book", "search"],
-  "youtube_search": "search query for educational videos",
+  "youtube_search": "just the term itself without extra words like 'music lessons' or 'educational'",
   "academic_keywords": ["keywords", "for", "research", "papers"]
 }
 
-Focus on educational and authoritative sources.`,
+IMPORTANT:
+- For wikipedia_search: provide ONLY the term as it would appear in a Wikipedia article title
+- For youtube_search: provide ONLY the term itself, no extra descriptive words
+- Do NOT include words like "Wikipedia", "YouTube", "search", "educational", "lessons", etc.
+
+Example for term "Allegro":
+{
+  "wikipedia_search": "Allegro (music)",
+  "book_keywords": ["allegro", "tempo", "musical terms"],
+  "youtube_search": "Allegro",
+  "academic_keywords": ["allegro", "tempo markings", "performance practice"]
+}`,
 
   qualityCheck: (
     entry: any

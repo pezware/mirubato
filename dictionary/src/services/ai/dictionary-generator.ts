@@ -310,12 +310,23 @@ export class DictionaryGenerator {
 
       // Generate placeholder references based on AI suggestions
       if (parsed.wikipedia_search) {
-        // Remove duplicate "Wikipedia" from the search term if present
-        const cleanedSearch = parsed.wikipedia_search
-          .replace(/^Wikipedia[:\s]+/i, '')
-          .replace(/[:\s]+Wikipedia$/i, '')
-          .replace(/\s+Wikipedia\s+/i, ' ')
+        // Clean the search term more thoroughly
+        let cleanedSearch = parsed.wikipedia_search
+          // Remove all variations of "Wikipedia" from anywhere in the string
+          .replace(/\bwikipedia\b/gi, '')
+          // Remove common filler words
+          .replace(/\b(search|for|on|article|page)\b/gi, '')
+          // Clean up multiple spaces
+          .replace(/\s+/g, ' ')
+          // Remove leading/trailing spaces and punctuation
+          .replace(/^[\s:,\-]+|[\s:,\-]+$/g, '')
           .trim()
+
+        // Handle parentheses properly for music terms
+        // Convert common patterns like "term (music)" to proper Wikipedia format
+        cleanedSearch = cleanedSearch
+          .replace(/\s*\(\s*/, '_(')
+          .replace(/\s*\)\s*/, ')')
 
         references.wikipedia = {
           url: `https://en.wikipedia.org/wiki/${encodeURIComponent(cleanedSearch)}`,
@@ -325,14 +336,49 @@ export class DictionaryGenerator {
       }
 
       if (parsed.youtube_search) {
+        // Clean and improve the YouTube search query
+        let cleanedYouTubeSearch = parsed.youtube_search
+          // Remove overly generic terms
+          .replace(
+            /\b(music\s+lessons?|educational\s+videos?|definition|tutorial)\b/gi,
+            ''
+          )
+          // Remove standalone "music" that might interfere with contextual additions
+          .replace(/\bmusic\b/gi, '')
+          // Clean up multiple spaces
+          .replace(/\s+/g, ' ')
+          .trim()
+
+        // Add appropriate context based on the term type
+        let contextualSearch = cleanedYouTubeSearch
+        switch (type) {
+          case 'tempo':
+            contextualSearch = `${cleanedYouTubeSearch} music theory`
+            break
+          case 'composer':
+            contextualSearch = `${cleanedYouTubeSearch} composer biography`
+            break
+          case 'technique':
+            contextualSearch = `${cleanedYouTubeSearch} music technique explained`
+            break
+          case 'theory':
+            contextualSearch = `${cleanedYouTubeSearch} music theory`
+            break
+          case 'notation':
+            contextualSearch = `${cleanedYouTubeSearch} music notation`
+            break
+          default:
+            contextualSearch = `${cleanedYouTubeSearch} music`
+        }
+
         references.media = {
           youtube: {
             educational_videos: [
               {
-                title: `Search results for ${parsed.youtube_search}`,
+                title: `Search results for ${cleanedYouTubeSearch}`,
                 channel: 'YouTube Search',
                 channel_id: 'search',
-                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(parsed.youtube_search)}`,
+                url: `https://www.youtube.com/results?search_query=${encodeURIComponent(contextualSearch)}`,
                 video_id: 'search',
                 duration: 0,
                 view_count: 0,

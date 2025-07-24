@@ -331,6 +331,105 @@ describe('DictionaryGenerator', () => {
         highQualityEntry.references.wikipedia
       )
     })
+
+    it('should properly clean Wikipedia search terms', async () => {
+      const mockDefinition: Definition = {
+        concise: 'A moderate tempo marking.',
+        detailed: 'Allegro is a tempo marking indicating a fast, lively pace.',
+      }
+
+      // Set up mocks with problematic Wikipedia search term
+      mockAIService.generateStructuredContent
+        .mockResolvedValueOnce({
+          response: JSON.stringify(mockDefinition),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            wikipedia_search: 'Allegro (music) Wikipedia',
+            youtube_search: 'tempo music definition educational video',
+          }),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            score: 75,
+            issues: [],
+            suggestions: [],
+          }),
+        })
+
+      mockAIService.parseJSONResponse
+        .mockReturnValueOnce(mockDefinition)
+        .mockReturnValueOnce({
+          wikipedia_search: 'Allegro (music) Wikipedia',
+          youtube_search: 'tempo music definition educational video',
+        })
+        .mockReturnValueOnce({ score: 75, issues: [], suggestions: [] })
+
+      const result = await generator.generateEntry({
+        term: 'Allegro',
+        type: 'tempo',
+      })
+
+      expect(result).toBeDefined()
+      expect(result?.references.wikipedia?.url).toBe(
+        'https://en.wikipedia.org/wiki/Allegro_(music)'
+      )
+      expect(
+        result?.references.media?.youtube?.educational_videos?.[0].url
+      ).toContain('search_query=tempo%20music%20theory')
+    })
+
+    it('should generate focused YouTube search queries', async () => {
+      const mockDefinition: Definition = {
+        concise: 'A famous composer.',
+        detailed:
+          'Johann Sebastian Bach was a German composer of the Baroque period.',
+      }
+
+      // Set up mocks with overly broad YouTube search
+      mockAIService.generateStructuredContent
+        .mockResolvedValueOnce({
+          response: JSON.stringify(mockDefinition),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            wikipedia_search: 'Johann Sebastian Bach',
+            youtube_search: 'Johann Sebastian Bach music lessons',
+          }),
+        })
+        .mockResolvedValueOnce({
+          response: JSON.stringify({
+            score: 80,
+            issues: [],
+            suggestions: [],
+          }),
+        })
+
+      mockAIService.parseJSONResponse
+        .mockReturnValueOnce(mockDefinition)
+        .mockReturnValueOnce({
+          wikipedia_search: 'Johann Sebastian Bach',
+          youtube_search: 'Johann Sebastian Bach music lessons',
+        })
+        .mockReturnValueOnce({ score: 80, issues: [], suggestions: [] })
+
+      const result = await generator.generateEntry({
+        term: 'Johann Sebastian Bach',
+        type: 'composer',
+      })
+
+      expect(result).toBeDefined()
+      expect(result?.references.wikipedia?.url).toBe(
+        'https://en.wikipedia.org/wiki/Johann%20Sebastian%20Bach'
+      )
+      // Should have cleaned up the search query and added appropriate context
+      expect(
+        result?.references.media?.youtube?.educational_videos?.[0].url
+      ).toContain('Johann%20Sebastian%20Bach%20composer%20biography')
+      expect(
+        result?.references.media?.youtube?.educational_videos?.[0].url
+      ).not.toContain('music%20lessons')
+    })
   })
 
   describe('validateQuality', () => {
