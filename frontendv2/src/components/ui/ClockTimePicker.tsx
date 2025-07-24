@@ -16,6 +16,9 @@ export default function ClockTimePicker({
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTime, setIsEditingTime] = useState(false)
   const [editingValue, setEditingValue] = useState('')
+  const [dropdownPosition, setDropdownPosition] = useState<
+    'center' | 'left' | 'right'
+  >('center')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
@@ -48,6 +51,28 @@ export default function ClockTimePicker({
     tempHours === 0 ? 12 : tempHours > 12 ? tempHours - 12 : tempHours
   const ampm = tempHours >= 12 ? 'PM' : 'AM'
   const displayTime = `${hour12}:${tempMinutes.toString().padStart(2, '0')} ${ampm}`
+
+  // Adjust dropdown position when opened
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const dropdownWidth = Math.min(320, viewportWidth - 32) // 32px for margins
+
+      // Check if dropdown would overflow on either side
+      const centerPosition = rect.left + rect.width / 2
+      const leftEdge = centerPosition - dropdownWidth / 2
+      const rightEdge = centerPosition + dropdownWidth / 2
+
+      if (leftEdge < 16) {
+        setDropdownPosition('left')
+      } else if (rightEdge > viewportWidth - 16) {
+        setDropdownPosition('right')
+      } else {
+        setDropdownPosition('center')
+      }
+    }
+  }, [isOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -206,27 +231,33 @@ export default function ClockTimePicker({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-2xl z-50 p-4 border border-gray-200"
-          style={{ minWidth: '320px' }}
+          className={`absolute top-full mt-1 bg-white rounded-lg shadow-2xl z-50 p-3 sm:p-4 border border-gray-200 max-w-[calc(100vw-2rem)] overflow-hidden ${
+            dropdownPosition === 'center'
+              ? 'left-1/2 transform -translate-x-1/2'
+              : dropdownPosition === 'left'
+                ? 'left-0'
+                : 'right-0'
+          }`}
+          style={{ width: 'min(320px, calc(100vw - 2rem))' }}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <h3 className="text-center text-lg font-medium text-gray-800 mb-4">
+          <h3 className="text-center text-base sm:text-lg font-medium text-gray-800 mb-3 sm:mb-4">
             Select Practice Time
           </h3>
 
           {/* Clock face */}
           <div
-            className="relative mx-auto mb-4"
-            style={{ width: '240px', height: '240px' }}
+            className="relative mx-auto mb-4 w-full max-w-[240px]"
+            style={{ aspectRatio: '1/1' }}
           >
             <svg
               ref={svgRef}
-              width="240"
-              height="240"
+              width="100%"
+              height="100%"
               viewBox="0 0 240 240"
-              className="select-none"
+              className="select-none w-full h-full"
             >
               {/* Clock circle - draggable background */}
               <circle
@@ -318,7 +349,7 @@ export default function ClockTimePicker({
           </div>
 
           {/* Digital display with AM/PM */}
-          <div className="flex items-center justify-center mb-4 gap-2 bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center justify-center mb-3 sm:mb-4 gap-2 bg-gray-50 rounded-lg p-2 sm:p-3">
             {isEditingTime ? (
               <input
                 ref={timeInputRef}
@@ -327,13 +358,13 @@ export default function ClockTimePicker({
                 onChange={handleTimeInputChange}
                 onBlur={handleTimeInputBlur}
                 onKeyDown={handleTimeInputKeyDown}
-                className="text-2xl font-light bg-white text-gray-800 text-center rounded px-2 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 border border-gray-300"
+                className="text-xl sm:text-2xl font-light bg-white text-gray-800 text-center rounded px-2 py-1 w-24 sm:w-28 focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 border border-gray-300"
                 placeholder="HH:MM"
               />
             ) : (
               <div
                 onClick={handleTimeClick}
-                className="text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-3 py-1 transition-colors"
+                className="text-xl sm:text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-2 sm:px-3 py-1 transition-colors"
                 title="Click to type time"
               >
                 {tempHours.toString().padStart(2, '0')}:
@@ -346,7 +377,7 @@ export default function ClockTimePicker({
                 e.preventDefault()
                 e.stopPropagation()
               }}
-              className="px-3 py-1 text-lg bg-white hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+              className="px-2 sm:px-3 py-1 text-base sm:text-lg bg-white hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
             >
               {ampm}
             </button>
