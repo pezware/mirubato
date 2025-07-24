@@ -96,7 +96,8 @@ export class DictionaryGenerator {
         // Step 2: Generate references
         const references = await this.generateReferences(
           options.term,
-          options.type
+          options.type,
+          options.lang || 'en'
         )
 
         // Step 3: Calculate initial quality score
@@ -284,7 +285,8 @@ export class DictionaryGenerator {
    */
   private async generateReferences(
     term: string,
-    type: TermType
+    type: TermType,
+    lang: string = 'en'
   ): Promise<References> {
     const prompt = PROMPT_TEMPLATES.referenceExtraction(term, type)
 
@@ -318,12 +320,13 @@ export class DictionaryGenerator {
         const wikipediaUrl = generateWikipediaUrl(
           term,
           type,
-          parsed.wikipedia_search
+          parsed.wikipedia_search,
+          lang
         )
 
         // Try to get suggestions from Wikipedia API for better accuracy
         try {
-          const suggestions = await getWikipediaSuggestions(term, 5)
+          const suggestions = await getWikipediaSuggestions(term, 5, lang)
 
           if (suggestions.length > 0) {
             let selectedUrl: string

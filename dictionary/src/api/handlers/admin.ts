@@ -1149,8 +1149,13 @@ adminHandler.get('/wikipedia/scan', async c => {
           '../../utils/wikipedia-url'
         )
 
-        // Generate the suggested URL
-        const suggestedUrl = generateWikipediaUrl(entry.term, entry.type)
+        // Generate the suggested URL using the entry's language
+        const suggestedUrl = generateWikipediaUrl(
+          entry.term,
+          entry.type,
+          undefined,
+          entry.lang || 'en'
+        )
 
         // Check if URLs differ (potential issue)
         if (currentUrl !== suggestedUrl) {
@@ -1219,8 +1224,13 @@ adminHandler.post(
           const entry = await db.findById(entryId)
           if (!entry || !entry.references?.wikipedia?.url) continue
 
-          // Generate the correct URL
-          const newUrl = generateWikipediaUrl(entry.term, entry.type)
+          // Generate the correct URL using the entry's language
+          const newUrl = generateWikipediaUrl(
+            entry.term,
+            entry.type,
+            undefined,
+            entry.lang || 'en'
+          )
 
           // Validate the new URL
           const isValid = await validateWikipediaUrl(newUrl)
@@ -1275,7 +1285,12 @@ adminHandler.post('/wikipedia/fix-all', async c => {
     for (const entry of entries.entries) {
       if (entry.references?.wikipedia?.url) {
         const currentUrl = entry.references.wikipedia.url
-        const suggestedUrl = generateWikipediaUrl(entry.term, entry.type)
+        const suggestedUrl = generateWikipediaUrl(
+          entry.term,
+          entry.type,
+          undefined,
+          entry.lang || 'en'
+        )
 
         if (currentUrl !== suggestedUrl) {
           try {

@@ -168,7 +168,8 @@ export function needsDisambiguation(term: string, _termType: string): boolean {
 export function generateWikipediaUrl(
   term: string,
   termType: string,
-  aiSuggestion?: string
+  aiSuggestion?: string,
+  language: string = 'en'
 ): string {
   // Clean the term
   let wikiTitle = cleanWikipediaTerm(term)
@@ -182,7 +183,11 @@ export function generateWikipediaUrl(
 
     // Remove redundant composer names from opera titles
     // e.g., "The Magic Flute Mozart" -> "The Magic Flute"
-    if (termType === 'composition' || termType === 'opera') {
+    if (
+      termType === 'composition' ||
+      termType === 'opera' ||
+      termType === 'genre'
+    ) {
       wikiTitle = wikiTitle.replace(
         /\s+(Mozart|Beethoven|Bach|Wagner|Verdi|Puccini|Handel|Haydn|Brahms|Schubert)$/i,
         ''
@@ -202,7 +207,7 @@ export function generateWikipediaUrl(
   // Encode for URL
   const encoded = encodeURIComponent(wikiTitle.replace(/ /g, '_'))
 
-  return `https://en.wikipedia.org/wiki/${encoded}`
+  return `https://${language}.wikipedia.org/wiki/${encoded}`
 }
 
 /**
@@ -210,7 +215,8 @@ export function generateWikipediaUrl(
  */
 export function generateWikipediaSearchUrl(
   term: string,
-  limit: number = 5
+  limit: number = 5,
+  language: string = 'en'
 ): string {
   const params = new URLSearchParams({
     action: 'opensearch',
@@ -221,7 +227,7 @@ export function generateWikipediaSearchUrl(
     origin: '*', // Enable CORS
   })
 
-  return `https://en.wikipedia.org/w/api.php?${params.toString()}`
+  return `https://${language}.wikipedia.org/w/api.php?${params.toString()}`
 }
 
 /**
@@ -255,14 +261,17 @@ export function parseBestMatch(
  */
 export async function validateWikipediaUrl(url: string): Promise<boolean> {
   try {
-    // Extract title from URL
-    const match = url.match(/wiki\/(.+)$/)
-    if (!match) return false
+    // Extract language and title from URL
+    const urlMatch = url.match(
+      /https:\/\/([a-z-]+)\.wikipedia\.org\/wiki\/(.+)$/
+    )
+    if (!urlMatch) return false
 
-    const title = decodeURIComponent(match[1].replace(/_/g, ' '))
+    const language = urlMatch[1]
+    const title = decodeURIComponent(urlMatch[2].replace(/_/g, ' '))
 
     // Use Wikipedia API to check if page exists
-    const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&format=json&origin=*`
+    const apiUrl = `https://${language}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&format=json&origin=*`
 
     const response = await fetch(apiUrl)
     const data = (await response.json()) as {
@@ -285,10 +294,11 @@ export async function validateWikipediaUrl(url: string): Promise<boolean> {
  */
 export async function getWikipediaSuggestions(
   term: string,
-  limit: number = 5
+  limit: number = 5,
+  language: string = 'en'
 ): Promise<{ title: string; url: string }[]> {
   try {
-    const searchUrl = generateWikipediaSearchUrl(term, limit)
+    const searchUrl = generateWikipediaSearchUrl(term, limit, language)
     const response = await fetch(searchUrl)
     const results = (await response.json()) as [
       string,

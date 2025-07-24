@@ -14,19 +14,41 @@ vi.mock('../../../services/ai/cloudflare-ai-service')
 
 // Mock Wikipedia URL utilities
 vi.mock('../../../utils/wikipedia-url', () => ({
-  generateWikipediaUrl: vi.fn((term, type, suggestion) => {
+  generateWikipediaUrl: vi.fn((term, type, suggestion, language = 'en') => {
     // Mock implementation that returns clean URLs
-    if (term === 'piano') return 'https://en.wikipedia.org/wiki/Piano'
+    const lang = language || 'en'
+    if (term === 'piano') return `https://${lang}.wikipedia.org/wiki/Piano`
     if (term === 'The Magic Flute')
-      return 'https://en.wikipedia.org/wiki/The_Magic_Flute'
+      return `https://${lang}.wikipedia.org/wiki/The_Magic_Flute`
     if (term === 'Allegro' && suggestion === 'Allegro (music)')
-      return 'https://en.wikipedia.org/wiki/Allegro_(music)'
-    return `https://en.wikipedia.org/wiki/${encodeURIComponent(term)}`
+      return `https://${lang}.wikipedia.org/wiki/Allegro_(music)`
+    if (term === 'Johann Sebastian Bach')
+      return `https://${lang}.wikipedia.org/wiki/Johann%20Sebastian%20Bach`
+    return `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(term)}`
   }),
-  getWikipediaSuggestions: vi.fn(async term => {
+  getWikipediaSuggestions: vi.fn(async (term, limit, language) => {
     // Mock suggestions
+    const lang = language || 'en'
     if (term === 'piano') {
-      return [{ title: 'Piano', url: 'https://en.wikipedia.org/wiki/Piano' }]
+      return [
+        { title: 'Piano', url: `https://${lang}.wikipedia.org/wiki/Piano` },
+      ]
+    }
+    if (term === 'The Magic Flute') {
+      return [
+        {
+          title: 'The Magic Flute',
+          url: `https://${lang}.wikipedia.org/wiki/The_Magic_Flute`,
+        },
+        {
+          title: 'The Magic Flute (2006 film)',
+          url: `https://${lang}.wikipedia.org/wiki/The_Magic_Flute_(2006_film)`,
+        },
+        {
+          title: 'The Magic Flute (1975 film)',
+          url: `https://${lang}.wikipedia.org/wiki/The_Magic_Flute_(1975_film)`,
+        },
+      ]
     }
     return []
   }),
@@ -137,6 +159,9 @@ describe('DictionaryGenerator', () => {
           }),
         })
         .mockResolvedValueOnce({
+          response: '1', // AI selection of Wikipedia result
+        })
+        .mockResolvedValueOnce({
           response: JSON.stringify({
             score: 85,
             issues: [],
@@ -150,7 +175,7 @@ describe('DictionaryGenerator', () => {
 
       const result = await generator.generateEntry({
         term: 'The Magic Flute',
-        type: 'opera',
+        type: 'genre',
       })
 
       expect(result).toBeDefined()
@@ -552,7 +577,7 @@ describe('DictionaryGenerator', () => {
 
       const result = await generator.generateEntry({
         term: 'The Magic Flute',
-        type: 'opera',
+        type: 'genre',
       })
 
       expect(result).toBeDefined()
@@ -560,8 +585,12 @@ describe('DictionaryGenerator', () => {
       expect(result?.references.wikipedia?.url).toBe(
         'https://en.wikipedia.org/wiki/The_Magic_Flute'
       )
-      // Verify Wikipedia API was called
-      expect(getWikipediaSuggestions).toHaveBeenCalledWith('The Magic Flute', 5)
+      // Verify Wikipedia API was called with language parameter
+      expect(getWikipediaSuggestions).toHaveBeenCalledWith(
+        'The Magic Flute',
+        5,
+        'en'
+      )
     })
 
     it('should fall back to AI-generated URL when Wikipedia API fails', async () => {
