@@ -214,6 +214,17 @@
   "perWeek": "par semaine",
   "periodComparison": "Comparaison de périodes",
   "pieceDetails": "Détails de la pièce",
+  "pieceEdit": {
+    "title": "Éditer la pièce",
+    "warningTitle": "Cela mettra à jour toutes les entrées",
+    "warningMessage": "Ce changement affectera {{count}} entrées de pratique.",
+    "pieceTitle": "Titre de la pièce",
+    "pieceTitlePlaceholder": "ex., Sonate au clair de lune",
+    "composer": "Compositeur",
+    "composerPlaceholder": "ex., Beethoven",
+    "titleRequired": "Le titre de la pièce est requis",
+    "duplicatePiece": "Une pièce avec ce nom et ce compositeur existe déjà"
+  },
   "pieces": "Pièces",
   "piecesByComposer": "Pièces de {{composer}}",
   "practiceCalendar": "Calendrier de pratique",

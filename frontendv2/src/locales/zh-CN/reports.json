@@ -214,6 +214,17 @@
   "perWeek": "每周",
   "periodComparison": "时期对比",
   "pieceDetails": "作品详情",
+  "pieceEdit": {
+    "title": "编辑曲目",
+    "warningTitle": "这将更新所有记录",
+    "warningMessage": "此更改将影响 {{count}} 条练习记录。",
+    "pieceTitle": "曲目标题",
+    "pieceTitlePlaceholder": "例如：月光奏鸣曲",
+    "composer": "作曲家",
+    "composerPlaceholder": "例如：贝多芬",
+    "titleRequired": "曲目标题是必填的",
+    "duplicatePiece": "已存在相同名称和作曲家的曲目"
+  },
   "pieces": "曲目",
   "piecesByComposer": "{{composer}}的作品",
   "practiceCalendar": "练习日历",

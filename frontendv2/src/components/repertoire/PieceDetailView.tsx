@@ -14,7 +14,12 @@ import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { formatDuration } from '@/utils/dateUtils'
+import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
+import { EditPieceModal } from '../practice-reports/EditPieceModal'
+import { useLogbookStore } from '@/stores/logbookStore'
+import { useRepertoireStore } from '@/stores/repertoireStore'
+import { toast } from '@/utils/toast'
 
 interface PracticeSession {
   id: string
@@ -60,6 +65,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
+  const [isEditingPiece, setIsEditingPiece] = useState(false)
+  const { updatePieceName, loadEntries } = useLogbookStore()
+  const { cacheScoreMetadata, loadRepertoire } = useRepertoireStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -234,18 +242,32 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </button>
           <span className="text-stone-400">›</span>
           <span className="text-stone-900 font-medium truncate">
-            {item.scoreComposer} - {item.scoreTitle}
+            {toTitleCase(item.scoreComposer)} - {toTitleCase(item.scoreTitle)}
           </span>
         </nav>
       </div>
 
       {/* Piece Header */}
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
-        <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
-          {item.scoreTitle}
-        </h1>
-        <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
-          {item.scoreComposer} {item.catalogNumber && `• ${item.catalogNumber}`}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
+              {toTitleCase(item.scoreTitle)}
+            </h1>
+            <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
+              {toTitleCase(item.scoreComposer)}{' '}
+              {item.catalogNumber && `• ${item.catalogNumber}`}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditingPiece(true)}
+            className="flex items-center gap-2 ml-4"
+          >
+            <Edit2 className="w-4 h-4" />
+            {t('common:edit')}
+          </Button>
         </div>
 
         {/* Stats Grid */}
@@ -486,6 +508,39 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Edit Piece Modal */}
+      {isEditingPiece && (
+        <EditPieceModal
+          isOpen={isEditingPiece}
+          onClose={() => setIsEditingPiece(false)}
+          piece={{ title: item.scoreTitle, composer: item.scoreComposer }}
+          onSave={async (oldPiece, newPiece) => {
+            try {
+              const updatedCount = await updatePieceName(oldPiece, newPiece)
+              toast.success(
+                t('reports:pieceEdit.successMessage', { count: updatedCount })
+              )
+              setIsEditingPiece(false)
+              // Update the local item data
+              item.scoreTitle = newPiece.title
+              item.scoreComposer = newPiece.composer || ''
+              // Update the score metadata cache
+              cacheScoreMetadata(item.scoreId, {
+                id: item.scoreId,
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+              // Reload repertoire to reflect changes
+              await loadRepertoire()
+              // Reload logbook entries to reflect the composer name changes
+              await loadEntries()
+            } catch (_error) {
+              toast.error(t('reports:pieceEdit.errorMessage'))
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

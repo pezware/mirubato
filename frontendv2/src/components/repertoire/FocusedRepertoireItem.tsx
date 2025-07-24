@@ -2,6 +2,7 @@ import React from 'react'
 import { formatDistanceToNow, isToday } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/dateUtils'
+import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
 
@@ -96,7 +97,8 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
                 <h3 className="text-base font-medium text-stone-900">
-                  {item.scoreComposer} - {item.scoreTitle}
+                  {toTitleCase(item.scoreComposer)} -{' '}
+                  {toTitleCase(item.scoreTitle)}
                 </h3>
                 {/* Status Badge */}
                 <span

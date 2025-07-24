@@ -214,6 +214,17 @@
   "perWeek": "per week",
   "periodComparison": "Period Comparison",
   "pieceDetails": "Piece Details",
+  "pieceEdit": {
+    "title": "Edit Piece",
+    "warningTitle": "This will update all entries",
+    "warningMessage": "This change will affect {{count}} practice entries.",
+    "pieceTitle": "Piece Title",
+    "pieceTitlePlaceholder": "e.g., Moonlight Sonata",
+    "composer": "Composer",
+    "composerPlaceholder": "e.g., Beethoven",
+    "titleRequired": "Piece title is required",
+    "duplicatePiece": "A piece with this name and composer already exists"
+  },
   "pieces": "Pieces",
   "piecesByComposer": "Pieces by {{composer}}",
   "practiceCalendar": "Practice Calendar",
