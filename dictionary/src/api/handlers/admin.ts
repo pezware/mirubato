@@ -1205,7 +1205,7 @@ adminHandler.post(
   async c => {
     const { entry_ids } = c.req.valid('json')
     const db = new DictionaryDatabase(c.env.DB)
-    const userId = c.get('userId') || 'admin'
+    const _userId = c.get('userId') || 'admin'
 
     try {
       const { generateWikipediaUrl, validateWikipediaUrl } = await import(
@@ -1260,7 +1260,7 @@ adminHandler.post(
 
 adminHandler.post('/wikipedia/fix-all', async c => {
   const db = new DictionaryDatabase(c.env.DB)
-  const userId = c.get('userId') || 'admin'
+  const _userId = c.get('userId') || 'admin'
 
   try {
     // First, scan for all issues

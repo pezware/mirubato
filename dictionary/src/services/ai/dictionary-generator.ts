@@ -19,7 +19,6 @@ import { TermClassifier } from './term-classifier'
 import {
   generateWikipediaUrl,
   getWikipediaSuggestions,
-  validateWikipediaUrl,
 } from '../../utils/wikipedia-url'
 // import { AIServiceError } from '../../utils/errors'
 
@@ -367,7 +366,7 @@ export class DictionaryGenerator {
 
       if (parsed.youtube_search) {
         // Clean and improve the YouTube search query
-        let cleanedYouTubeSearch = parsed.youtube_search
+        const cleanedYouTubeSearch = parsed.youtube_search
           // Remove overly generic terms
           .replace(
             /\b(music\s+lessons?|educational\s+videos?|definition|tutorial)\b/gi,
