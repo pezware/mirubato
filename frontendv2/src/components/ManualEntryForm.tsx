@@ -69,7 +69,9 @@ export default function ManualEntryForm({
     entry?.mood
   )
   const [pieces, setPieces] = useState(
-    entry?.pieces || initialPieces || [{ title: '', composer: '' }]
+    entry?.pieces && entry.pieces.length > 0
+      ? entry.pieces
+      : initialPieces || [{ title: '', composer: '' }]
   )
   const [techniques, setTechniques] = useState<string[]>(
     entry?.techniques || []
