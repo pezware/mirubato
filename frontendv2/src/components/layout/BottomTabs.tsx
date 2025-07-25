@@ -41,7 +41,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       ? [
           {
             id: 'timer',
-            label: '', // No label for the timer button
+            label: t('common:navigation.timer'),
             path: null, // Special case - triggers action instead of navigation
             icon: Clock,
             action: onTimerClick,
@@ -50,7 +50,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       : []),
     {
       id: 'add',
-      label: '', // No label for the add button
+      label: t('common:navigation.add'),
       path: null, // Special case - triggers action instead of navigation
       icon: Plus,
       action: onAddClick,
@@ -80,7 +80,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                 className="flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <Icon className="w-5 h-5" />
-                {tab.label && <span className="text-[11px]">{tab.label}</span>}
+                <span className="text-[11px]">{tab.label}</span>
               </button>
             )
           }
