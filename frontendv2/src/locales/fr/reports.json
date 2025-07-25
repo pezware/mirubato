@@ -3,10 +3,10 @@
   "allPieces": "Toutes les pièces",
   "analytics": {
     "instrumentDistribution": "Répartition par instrument",
-    "typeDistribution": "Répartition par type",
     "practiceTrend": "Tendance de pratique",
+    "topComposers": "Compositeurs principaux",
     "topPieces": "Pièces principales",
-    "topComposers": "Compositeurs principaux"
+    "typeDistribution": "Répartition par type"
   },
   "applyGroupingToSeeData": "Appliquez un regroupement pour voir les données en format tableau",
   "average": "moyenne",
@@ -205,7 +205,6 @@
   "lastWeek": "Semaine dernière",
   "longestStreak": "Plus longue série",
   "monthOverMonth": "Mois après mois",
-  "recentEntries": "Entrées récentes",
   "monthlyHistory": "Historique mensuel",
   "mostPracticedPieces": "Pièces les plus pratiquées",
   "mostPracticedTechniques": "Techniques les plus pratiquées",
@@ -215,15 +214,15 @@
   "periodComparison": "Comparaison de périodes",
   "pieceDetails": "Détails de la pièce",
   "pieceEdit": {
-    "title": "Éditer la pièce",
-    "warningTitle": "Cela mettra à jour toutes les entrées",
-    "warningMessage": "Ce changement affectera {{count}} entrées de pratique.",
-    "pieceTitle": "Titre de la pièce",
-    "pieceTitlePlaceholder": "ex., Sonate au clair de lune",
     "composer": "Compositeur",
     "composerPlaceholder": "ex., Beethoven",
+    "duplicatePiece": "Une pièce avec ce nom et ce compositeur existe déjà",
+    "pieceTitle": "Titre de la pièce",
+    "pieceTitlePlaceholder": "ex., Sonate au clair de lune",
+    "title": "Éditer la pièce",
     "titleRequired": "Le titre de la pièce est requis",
-    "duplicatePiece": "Une pièce avec ce nom et ce compositeur existe déjà"
+    "warningMessage": "Ce changement affectera {{count}} entrées de pratique.",
+    "warningTitle": "Cela mettra à jour toutes les entrées"
   },
   "pieces": "Pièces",
   "piecesByComposer": "Pièces de {{composer}}",
@@ -236,6 +235,7 @@
   "practiceTimeTrends": "Tendances du temps de pratique",
   "practiced": "Pratiqué",
   "practicedTimes": "Pratiqué {{count}} fois",
+  "recentEntries": "Entrées récentes",
   "recentSessions": "Sessions récentes",
   "repertoireByComposer": "Répertoire par compositeur",
   "searchComposers": "Rechercher des compositeurs...",

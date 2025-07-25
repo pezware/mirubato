@@ -1,96 +1,96 @@
 {
-  "title": "Journal",
-  "openLogbook": "Ouvrir le journal",
-  "continueToLogbook": "Continuer vers le journal",
-  "loading": "Chargement de vos sessions de pratique...",
-  "empty": "Aucune entrée de pratique. Commencez à suivre votre parcours musical !",
-  "noResults": "Aucune entrée ne correspond à votre recherche.",
-  "searchPlaceholder": "Rechercher des entrées...",
-  "syncStatus": {
-    "synced": "Synchronisé",
-    "localOnly": "Stockage local"
-  },
-  "entry": {
-    "addEntry": "Ajouter une entrée",
-    "addFirstEntry": "Ajouter votre première entrée",
-    "saveEntry": "Enregistrer l'entrée",
-    "updateEntry": "Mettre à jour l'entrée",
-    "deleteEntry": "Supprimer l'entrée",
-    "editEntry": "Modifier l'entrée",
-    "duration": "Durée (minutes)",
-    "durationPlaceholder": "30",
-    "type": "Type",
-    "typeOptions": {
-      "practice": "Pratique",
-      "lesson": "Cours",
-      "performance": "Représentation",
-      "rehearsal": "Répétition",
-      "technique": "Technique"
-    },
-    "pieces": "Pièces",
-    "notes": "Notes",
-    "notesPlaceholder": "Sur quoi avez-vous travaillé ? Des observations ?",
-    "addPiece": "Ajouter une pièce",
-    "pieceTitle": "Titre de la pièce",
-    "composer": "Compositeur",
-    "entry_one": "{{count}} entrée",
-    "entry_other": "{{count}} entrées",
-    "mood": "Comment ça s'est passé ?",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
-    "foundEntries": "{{count}} entrées trouvées",
-    "techniques": "Techniques",
-    "techniqueOptions": {
-      "scale": "Gamme",
-      "arpeggio": "Arpège",
-      "octave": "Octave",
-      "rhythm": "Rythme",
-      "custom": "Personnalisé",
-      "selectTechniques": "Sélectionner les techniques pratiquées",
-      "addCustom": "Ajouter une technique personnalisée",
-      "customPlaceholder": "Entrez le nom de la technique personnalisée",
-      "customTechniques": "Techniques Personnalisées"
-    },
-    "practiceDate": "Date de pratique",
-    "successAdded": "Entrée de pratique ajoutée avec succès !",
-    "successUpdated": "Entrée de pratique mise à jour avec succès !",
-    "piecesNote": "Le temps de pratique sera divisé également entre les pièces",
-    "maxPiecesReached": "Maximum 3 pièces par entrée",
-    "instrument": "Instrument"
-  },
-  "filters": {
-    "last7Days": "7 derniers jours",
-    "last30Days": "30 derniers jours",
-    "thisMonth": "Ce mois-ci",
-    "lastMonth": "Mois dernier",
-    "allTime": "Tout le temps"
-  },
-  "timeline": {
-    "week": "Semaine {{number}}",
-    "month": "{{month}}",
-    "year": "{{year}}"
-  },
-  "mood": {
-    "frustrated": "Frustré",
-    "neutral": "Neutre",
-    "satisfied": "Satisfait",
-    "excited": "Enthousiaste"
-  },
+  "autoTracked": "Suivi automatique depuis la pratique de partition",
   "autocomplete": {
     "offline": "Hors ligne - affichage de votre historique"
   },
-  "viewScore": "Voir la partition",
+  "continueToLogbook": "Continuer vers le journal",
+  "empty": "Aucune entrée de pratique. Commencez à suivre votre parcours musical !",
+  "entry": {
+    "addEntry": "Ajouter une entrée",
+    "addFirstEntry": "Ajouter votre première entrée",
+    "addPiece": "Ajouter une pièce",
+    "composer": "Compositeur",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette entrée ?",
+    "deleteEntry": "Supprimer l'entrée",
+    "duration": "Durée (minutes)",
+    "durationPlaceholder": "30",
+    "editEntry": "Modifier l'entrée",
+    "entry_one": "{{count}} entrée",
+    "entry_other": "{{count}} entrées",
+    "foundEntries": "{{count}} entrées trouvées",
+    "instrument": "Instrument",
+    "maxPiecesReached": "Maximum 3 pièces par entrée",
+    "mood": "Comment ça s'est passé ?",
+    "notes": "Notes",
+    "notesPlaceholder": "Sur quoi avez-vous travaillé ? Des observations ?",
+    "pieceTitle": "Titre de la pièce",
+    "pieces": "Pièces",
+    "piecesNote": "Le temps de pratique sera divisé également entre les pièces",
+    "practiceDate": "Date de pratique",
+    "saveEntry": "Enregistrer l'entrée",
+    "successAdded": "Entrée de pratique ajoutée avec succès !",
+    "successUpdated": "Entrée de pratique mise à jour avec succès !",
+    "techniqueOptions": {
+      "addCustom": "Ajouter une technique personnalisée",
+      "arpeggio": "Arpège",
+      "custom": "Personnalisé",
+      "customPlaceholder": "Entrez le nom de la technique personnalisée",
+      "customTechniques": "Techniques Personnalisées",
+      "octave": "Octave",
+      "rhythm": "Rythme",
+      "scale": "Gamme",
+      "selectTechniques": "Sélectionner les techniques pratiquées"
+    },
+    "techniques": "Techniques",
+    "type": "Type",
+    "typeOptions": {
+      "lesson": "Cours",
+      "performance": "Représentation",
+      "practice": "Pratique",
+      "rehearsal": "Répétition",
+      "technique": "Technique"
+    },
+    "updateEntry": "Mettre à jour l'entrée"
+  },
+  "filters": {
+    "allTime": "Tout le temps",
+    "last30Days": "30 derniers jours",
+    "last7Days": "7 derniers jours",
+    "lastMonth": "Mois dernier",
+    "thisMonth": "Ce mois-ci"
+  },
   "linkedScore": "Partition liée",
-  "autoTracked": "Suivi automatique depuis la pratique de partition",
+  "loading": "Chargement de vos sessions de pratique...",
+  "mood": {
+    "excited": "Enthousiaste",
+    "frustrated": "Frustré",
+    "neutral": "Neutre",
+    "satisfied": "Satisfait"
+  },
+  "noResults": "Aucune entrée ne correspond à votre recherche.",
+  "openLogbook": "Ouvrir le journal",
+  "searchPlaceholder": "Rechercher des entrées...",
+  "syncStatus": {
+    "localOnly": "Stockage local",
+    "synced": "Synchronisé"
+  },
+  "timeline": {
+    "month": "{{month}}",
+    "week": "Semaine {{number}}",
+    "year": "{{year}}"
+  },
   "timer": {
-    "title": "Chronomètre de pratique",
-    "start": "Démarrer le chronomètre",
-    "pause": "Pause",
-    "resume": "Reprendre",
-    "stop": "Arrêter et enregistrer",
-    "reset": "Réinitialiser",
     "confirmClose": "Le chronomètre est en cours. Êtes-vous sûr de vouloir fermer ?",
-    "startHint": "Cliquez sur Démarrer pour commencer à chronométrer votre session de pratique",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "resume": "Reprendre",
     "runningHint": "Le chronomètre est en cours. Cliquez sur Pause pour faire une pause ou Arrêter pour terminer.",
-    "stopHint": "Cliquez sur Arrêter et enregistrer pour créer une entrée de pratique avec cette durée"
-  }
+    "start": "Démarrer le chronomètre",
+    "startHint": "Cliquez sur Démarrer pour commencer à chronométrer votre session de pratique",
+    "stop": "Arrêter et enregistrer",
+    "stopHint": "Cliquez sur Arrêter et enregistrer pour créer une entrée de pratique avec cette durée",
+    "title": "Chronomètre de pratique"
+  },
+  "title": "Journal",
+  "viewScore": "Voir la partition"
 }

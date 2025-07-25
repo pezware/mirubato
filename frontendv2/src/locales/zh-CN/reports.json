@@ -3,10 +3,10 @@
   "allPieces": "所有曲目",
   "analytics": {
     "instrumentDistribution": "乐器分布",
-    "typeDistribution": "类型分布",
     "practiceTrend": "练习趋势",
+    "topComposers": "热门作曲家",
     "topPieces": "热门曲目",
-    "topComposers": "热门作曲家"
+    "typeDistribution": "类型分布"
   },
   "applyGroupingToSeeData": "应用分组以表格格式查看数据",
   "average": "平均",
@@ -205,7 +205,6 @@
   "lastWeek": "上周",
   "longestStreak": "最长连续天数",
   "monthOverMonth": "月对比",
-  "recentEntries": "最近记录",
   "monthlyHistory": "月度历史",
   "mostPracticedPieces": "练习最多的曲目",
   "mostPracticedTechniques": "最常练习的技巧",
@@ -215,15 +214,15 @@
   "periodComparison": "时期对比",
   "pieceDetails": "作品详情",
   "pieceEdit": {
-    "title": "编辑曲目",
-    "warningTitle": "这将更新所有记录",
-    "warningMessage": "此更改将影响 {{count}} 条练习记录。",
-    "pieceTitle": "曲目标题",
-    "pieceTitlePlaceholder": "例如：月光奏鸣曲",
     "composer": "作曲家",
     "composerPlaceholder": "例如：贝多芬",
+    "duplicatePiece": "已存在相同名称和作曲家的曲目",
+    "pieceTitle": "曲目标题",
+    "pieceTitlePlaceholder": "例如：月光奏鸣曲",
+    "title": "编辑曲目",
     "titleRequired": "曲目标题是必填的",
-    "duplicatePiece": "已存在相同名称和作曲家的曲目"
+    "warningMessage": "此更改将影响 {{count}} 条练习记录。",
+    "warningTitle": "这将更新所有记录"
   },
   "pieces": "曲目",
   "piecesByComposer": "{{composer}}的作品",
@@ -236,6 +235,7 @@
   "practiceTimeTrends": "练习时间趋势",
   "practiced": "已练习",
   "practicedTimes": "练习了 {{count}} 次",
+  "recentEntries": "最近记录",
   "recentSessions": "最近练习",
   "repertoireByComposer": "按作曲家分类的曲目",
   "searchComposers": "搜索作曲家...",

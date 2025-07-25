@@ -1,96 +1,96 @@
 {
-  "title": "Übungstagebuch",
-  "openLogbook": "Übungstagebuch öffnen",
-  "continueToLogbook": "Zum Übungstagebuch",
-  "loading": "Lade deine Übungssitzungen...",
-  "empty": "Noch keine Übungseinträge. Beginne deine musikalische Reise zu dokumentieren!",
-  "noResults": "Keine Einträge entsprechen deiner Suche.",
-  "searchPlaceholder": "Einträge durchsuchen...",
-  "syncStatus": {
-    "synced": "Synchronisiert",
-    "localOnly": "Lokaler Speicher"
-  },
-  "entry": {
-    "addEntry": "Eintrag hinzufügen",
-    "addFirstEntry": "Deinen ersten Eintrag hinzufügen",
-    "saveEntry": "Eintrag speichern",
-    "updateEntry": "Eintrag aktualisieren",
-    "deleteEntry": "Eintrag löschen",
-    "editEntry": "Eintrag bearbeiten",
-    "duration": "Dauer (Minuten)",
-    "durationPlaceholder": "30",
-    "type": "Art",
-    "typeOptions": {
-      "practice": "Üben",
-      "lesson": "Unterricht",
-      "performance": "Aufführung",
-      "rehearsal": "Probe",
-      "technique": "Technik"
-    },
-    "pieces": "Stücke",
-    "notes": "Notizen",
-    "notesPlaceholder": "Woran hast du gearbeitet? Irgendwelche Beobachtungen?",
-    "addPiece": "Stück hinzufügen",
-    "pieceTitle": "Titel des Stücks",
-    "composer": "Komponist",
-    "entry_one": "{{count}} Eintrag",
-    "entry_other": "{{count}} Einträge",
-    "mood": "Wie lief es?",
-    "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
-    "foundEntries": "{{count}} Einträge gefunden",
-    "techniques": "Techniken",
-    "techniqueOptions": {
-      "scale": "Tonleiter",
-      "arpeggio": "Arpeggio",
-      "octave": "Oktave",
-      "rhythm": "Rhythmus",
-      "custom": "Benutzerdefiniert",
-      "selectTechniques": "Geübte Techniken auswählen",
-      "addCustom": "Benutzerdefinierte Technik hinzufügen",
-      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben",
-      "customTechniques": "Benutzerdefinierte Techniken"
-    },
-    "practiceDate": "Übungsdatum",
-    "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
-    "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
-    "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
-    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag",
-    "instrument": "Instrument"
-  },
-  "filters": {
-    "last7Days": "Letzte 7 Tage",
-    "last30Days": "Letzte 30 Tage",
-    "thisMonth": "Dieser Monat",
-    "lastMonth": "Letzter Monat",
-    "allTime": "Gesamte Zeit"
-  },
-  "timeline": {
-    "week": "Woche {{number}}",
-    "month": "{{month}}",
-    "year": "{{year}}"
-  },
-  "mood": {
-    "frustrated": "Frustriert",
-    "neutral": "Neutral",
-    "satisfied": "Zufrieden",
-    "excited": "Begeistert"
-  },
+  "autoTracked": "Automatisch von Notenübung erfasst",
   "autocomplete": {
     "offline": "Offline - zeigt Ihre Historie"
   },
-  "viewScore": "Noten ansehen",
+  "continueToLogbook": "Zum Übungstagebuch",
+  "empty": "Noch keine Übungseinträge. Beginne deine musikalische Reise zu dokumentieren!",
+  "entry": {
+    "addEntry": "Eintrag hinzufügen",
+    "addFirstEntry": "Deinen ersten Eintrag hinzufügen",
+    "addPiece": "Stück hinzufügen",
+    "composer": "Komponist",
+    "confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
+    "deleteEntry": "Eintrag löschen",
+    "duration": "Dauer (Minuten)",
+    "durationPlaceholder": "30",
+    "editEntry": "Eintrag bearbeiten",
+    "entry_one": "{{count}} Eintrag",
+    "entry_other": "{{count}} Einträge",
+    "foundEntries": "{{count}} Einträge gefunden",
+    "instrument": "Instrument",
+    "maxPiecesReached": "Maximal 3 Stücke pro Eintrag",
+    "mood": "Wie lief es?",
+    "notes": "Notizen",
+    "notesPlaceholder": "Woran hast du gearbeitet? Irgendwelche Beobachtungen?",
+    "pieceTitle": "Titel des Stücks",
+    "pieces": "Stücke",
+    "piecesNote": "Die Übungszeit wird gleichmäßig auf die Stücke aufgeteilt",
+    "practiceDate": "Übungsdatum",
+    "saveEntry": "Eintrag speichern",
+    "successAdded": "Übungseintrag erfolgreich hinzugefügt!",
+    "successUpdated": "Übungseintrag erfolgreich aktualisiert!",
+    "techniqueOptions": {
+      "addCustom": "Benutzerdefinierte Technik hinzufügen",
+      "arpeggio": "Arpeggio",
+      "custom": "Benutzerdefiniert",
+      "customPlaceholder": "Namen der benutzerdefinierten Technik eingeben",
+      "customTechniques": "Benutzerdefinierte Techniken",
+      "octave": "Oktave",
+      "rhythm": "Rhythmus",
+      "scale": "Tonleiter",
+      "selectTechniques": "Geübte Techniken auswählen"
+    },
+    "techniques": "Techniken",
+    "type": "Art",
+    "typeOptions": {
+      "lesson": "Unterricht",
+      "performance": "Aufführung",
+      "practice": "Üben",
+      "rehearsal": "Probe",
+      "technique": "Technik"
+    },
+    "updateEntry": "Eintrag aktualisieren"
+  },
+  "filters": {
+    "allTime": "Gesamte Zeit",
+    "last30Days": "Letzte 30 Tage",
+    "last7Days": "Letzte 7 Tage",
+    "lastMonth": "Letzter Monat",
+    "thisMonth": "Dieser Monat"
+  },
   "linkedScore": "Verknüpfte Noten",
-  "autoTracked": "Automatisch von Notenübung erfasst",
+  "loading": "Lade deine Übungssitzungen...",
+  "mood": {
+    "excited": "Begeistert",
+    "frustrated": "Frustriert",
+    "neutral": "Neutral",
+    "satisfied": "Zufrieden"
+  },
+  "noResults": "Keine Einträge entsprechen deiner Suche.",
+  "openLogbook": "Übungstagebuch öffnen",
+  "searchPlaceholder": "Einträge durchsuchen...",
+  "syncStatus": {
+    "localOnly": "Lokaler Speicher",
+    "synced": "Synchronisiert"
+  },
+  "timeline": {
+    "month": "{{month}}",
+    "week": "Woche {{number}}",
+    "year": "{{year}}"
+  },
   "timer": {
-    "title": "Übungstimer",
-    "start": "Timer starten",
-    "pause": "Pausieren",
-    "resume": "Fortsetzen",
-    "stop": "Stoppen & Speichern",
-    "reset": "Zurücksetzen",
     "confirmClose": "Timer läuft. Bist du sicher, dass du schließen möchtest?",
-    "startHint": "Klicke auf Start, um deine Übungszeit zu messen",
+    "pause": "Pausieren",
+    "reset": "Zurücksetzen",
+    "resume": "Fortsetzen",
     "runningHint": "Timer läuft. Klicke auf Pausieren für eine Pause oder Stoppen zum Beenden.",
-    "stopHint": "Klicke auf Stoppen & Speichern, um einen Übungseintrag mit dieser Dauer zu erstellen"
-  }
+    "start": "Timer starten",
+    "startHint": "Klicke auf Start, um deine Übungszeit zu messen",
+    "stop": "Stoppen & Speichern",
+    "stopHint": "Klicke auf Stoppen & Speichern, um einen Übungseintrag mit dieser Dauer zu erstellen",
+    "title": "Übungstimer"
+  },
+  "title": "Übungstagebuch",
+  "viewScore": "Noten ansehen"
 }

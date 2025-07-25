@@ -85,9 +85,9 @@
   },
   "tabs": {
     "metronome": "Metronome",
-    "counter": "Practice Counter",
-    "circleOfFifths": "Circle of Fifths",
-    "dictionary": "Music Dictionary"
+    "counter": "Counter",
+    "circleOfFifths": "Circle",
+    "dictionary": "Dictionary"
   },
   "syncStatus": {
     "synced": "Synced",
