@@ -306,38 +306,69 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     }))
 
     return (
-      <PieceDetailView
-        item={selectedPiece}
-        sessions={practiceSessions}
-        onBack={() => setSelectedPiece(null)}
-        onLogPractice={() => {
-          setManualEntryPiece({
-            title: selectedPiece.scoreTitle,
-            composer: selectedPiece.scoreComposer,
-            scoreId: selectedPiece.scoreId,
-          })
-          setSelectedPiece(null)
-          setShowManualEntry(true)
-        }}
-        onEditNotes={() => {
-          setEditingPieceNotes(selectedPiece)
-        }}
-        onEditSession={sessionId => {
-          setEditingSessionId(sessionId)
-        }}
-        onStatusChange={async newStatus => {
-          await updateRepertoireStatus(selectedPiece.scoreId, newStatus)
-          // Refresh the selected piece data
-          const updatedItem = repertoire.get(selectedPiece.scoreId)
-          if (updatedItem) {
-            setSelectedPiece({
-              ...selectedPiece,
-              ...updatedItem,
-              status: newStatus,
+      <>
+        <PieceDetailView
+          item={selectedPiece}
+          sessions={practiceSessions}
+          onBack={() => setSelectedPiece(null)}
+          onLogPractice={() => {
+            setManualEntryPiece({
+              title: selectedPiece.scoreTitle,
+              composer: selectedPiece.scoreComposer,
+              scoreId: selectedPiece.scoreId,
             })
-          }
-        }}
-      />
+            setSelectedPiece(null)
+            setShowManualEntry(true)
+          }}
+          onEditNotes={() => {
+            setEditingPieceNotes(selectedPiece)
+          }}
+          onEditSession={sessionId => {
+            setEditingSessionId(sessionId)
+          }}
+          onStatusChange={async newStatus => {
+            await updateRepertoireStatus(selectedPiece.scoreId, newStatus)
+            // Refresh the selected piece data
+            const updatedItem = repertoire.get(selectedPiece.scoreId)
+            if (updatedItem) {
+              setSelectedPiece({
+                ...selectedPiece,
+                ...updatedItem,
+                status: newStatus,
+              })
+            }
+          }}
+        />
+
+        {/* Edit Notes Modal - Available in piece detail view */}
+        {editingPieceNotes && (
+          <EditNotesModal
+            isOpen={true}
+            onClose={() => setEditingPieceNotes(null)}
+            pieceTitle={editingPieceNotes.scoreTitle}
+            currentNotes={editingPieceNotes.personalNotes || ''}
+            currentLinks={editingPieceNotes.referenceLinks || []}
+            onSave={async (notes, links) => {
+              await updateRepertoire(editingPieceNotes.scoreId, {
+                personalNotes: notes,
+                referenceLinks: links,
+              })
+              setEditingPieceNotes(null)
+              // Update the selected piece with new notes
+              if (
+                selectedPiece &&
+                selectedPiece.scoreId === editingPieceNotes.scoreId
+              ) {
+                setSelectedPiece({
+                  ...selectedPiece,
+                  personalNotes: notes,
+                  referenceLinks: links,
+                })
+              }
+            }}
+          />
+        )}
+      </>
     )
   }
 
