@@ -17,7 +17,7 @@ import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
 import AppLayout from '../components/layout/AppLayout'
-import { Tabs } from '../components/ui'
+import { Tabs, Modal, Button } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
@@ -46,6 +46,7 @@ const Toolbox: React.FC = () => {
   const [activeTab, setActiveTab] = useState('metronome')
   const [showTimer, setShowTimer] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [showAddModal, setShowAddModal] = useState(false)
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -384,9 +385,28 @@ const Toolbox: React.FC = () => {
   }
 
   const handleToolboxAdd = () => {
-    // For now, we could switch to a specific tab or open a modal
-    // This is a placeholder for future functionality
-    setActiveTab('metronome')
+    setShowAddModal(true)
+  }
+
+  const handleAddAction = (action: string) => {
+    setShowAddModal(false)
+
+    switch (action) {
+      case 'practice':
+        // Start a new practice session with timer
+        setShowTimer(true)
+        break
+      case 'metronome':
+        // Switch to metronome tab to create custom pattern
+        setActiveTab('metronome')
+        break
+      case 'counter':
+        // Switch to practice counter
+        setActiveTab('counter')
+        break
+      default:
+        break
+    }
   }
 
   return (
@@ -699,6 +719,43 @@ const Toolbox: React.FC = () => {
         onClose={() => setShowTimer(false)}
         onComplete={handleTimerComplete}
       />
+
+      {/* Add Action Modal */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title={t('toolbox:addAction.title', 'What would you like to do?')}
+        size="sm"
+      >
+        <div className="space-y-3">
+          <Button
+            onClick={() => handleAddAction('practice')}
+            variant="secondary"
+            className="w-full justify-start"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            {t('toolbox:addAction.startPractice', 'Start Practice Session')}
+          </Button>
+
+          <Button
+            onClick={() => handleAddAction('metronome')}
+            variant="secondary"
+            className="w-full justify-start"
+          >
+            <Music className="w-4 h-4 mr-2" />
+            {t('toolbox:addAction.customPattern', 'Create Metronome Pattern')}
+          </Button>
+
+          <Button
+            onClick={() => handleAddAction('counter')}
+            variant="secondary"
+            className="w-full justify-start"
+          >
+            <ListChecks className="w-4 h-4 mr-2" />
+            {t('toolbox:addAction.practiceCounter', 'Use Practice Counter')}
+          </Button>
+        </div>
+      </Modal>
     </AppLayout>
   )
 }
