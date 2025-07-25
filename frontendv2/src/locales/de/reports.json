@@ -3,10 +3,10 @@
   "allPieces": "Alle Stücke",
   "analytics": {
     "instrumentDistribution": "Instrumentenverteilung",
-    "typeDistribution": "Typverteilung",
     "practiceTrend": "Übungstrend",
+    "topComposers": "Top-Komponisten",
     "topPieces": "Top-Stücke",
-    "topComposers": "Top-Komponisten"
+    "typeDistribution": "Typverteilung"
   },
   "applyGroupingToSeeData": "Gruppierung anwenden, um Daten in Tabellenform anzuzeigen",
   "average": "durchschnitt",
@@ -205,7 +205,6 @@
   "lastWeek": "Letzte Woche",
   "longestStreak": "Längste Serie",
   "monthOverMonth": "Monat über Monat",
-  "recentEntries": "Letzte Einträge",
   "monthlyHistory": "Monatshistorie",
   "mostPracticedPieces": "Meistgeübte Stücke",
   "mostPracticedTechniques": "Meistgeübte Techniken",
@@ -215,15 +214,15 @@
   "periodComparison": "Periodenvergleich",
   "pieceDetails": "Stückdetails",
   "pieceEdit": {
-    "title": "Stück bearbeiten",
-    "warningTitle": "Dies wird alle Einträge aktualisieren",
-    "warningMessage": "Diese Änderung betrifft {{count}} Übungseinträge.",
-    "pieceTitle": "Stücktitel",
-    "pieceTitlePlaceholder": "z.B., Mondscheinsonate",
     "composer": "Komponist",
     "composerPlaceholder": "z.B., Beethoven",
+    "duplicatePiece": "Ein Stück mit diesem Namen und Komponisten existiert bereits",
+    "pieceTitle": "Stücktitel",
+    "pieceTitlePlaceholder": "z.B., Mondscheinsonate",
+    "title": "Stück bearbeiten",
     "titleRequired": "Der Stücktitel ist erforderlich",
-    "duplicatePiece": "Ein Stück mit diesem Namen und Komponisten existiert bereits"
+    "warningMessage": "Diese Änderung betrifft {{count}} Übungseinträge.",
+    "warningTitle": "Dies wird alle Einträge aktualisieren"
   },
   "pieces": "Stücke",
   "piecesByComposer": "Stücke von {{composer}}",
@@ -236,6 +235,7 @@
   "practiceTimeTrends": "Übungszeit-Trends",
   "practiced": "Geübt",
   "practicedTimes": "{{count}} mal geübt",
+  "recentEntries": "Letzte Einträge",
   "recentSessions": "Aktuelle Sitzungen",
   "repertoireByComposer": "Repertoire nach Komponist",
   "searchComposers": "Komponisten suchen...",

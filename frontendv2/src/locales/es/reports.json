@@ -3,10 +3,10 @@
   "allPieces": "Todas las piezas",
   "analytics": {
     "instrumentDistribution": "Distribución por instrumento",
-    "typeDistribution": "Distribución por tipo",
     "practiceTrend": "Tendencia de práctica",
+    "topComposers": "Compositores principales",
     "topPieces": "Piezas principales",
-    "topComposers": "Compositores principales"
+    "typeDistribution": "Distribución por tipo"
   },
   "applyGroupingToSeeData": "Aplique agrupación para ver los datos en formato de tabla",
   "average": "promedio",
@@ -205,7 +205,6 @@
   "lastWeek": "Semana pasada",
   "longestStreak": "Racha más larga",
   "monthOverMonth": "Mes a mes",
-  "recentEntries": "Entradas recientes",
   "monthlyHistory": "Historial mensual",
   "mostPracticedPieces": "Piezas más practicadas",
   "mostPracticedTechniques": "Técnicas más practicadas",
@@ -215,15 +214,15 @@
   "periodComparison": "Comparación de períodos",
   "pieceDetails": "Detalles de la pieza",
   "pieceEdit": {
-    "title": "Editar pieza",
-    "warningTitle": "Esto actualizará todas las entradas",
-    "warningMessage": "Este cambio afectará a {{count}} entradas de práctica.",
-    "pieceTitle": "Título de la pieza",
-    "pieceTitlePlaceholder": "ej., Claro de luna",
     "composer": "Compositor",
     "composerPlaceholder": "ej., Beethoven",
+    "duplicatePiece": "Ya existe una pieza con este nombre y compositor",
+    "pieceTitle": "Título de la pieza",
+    "pieceTitlePlaceholder": "ej., Claro de luna",
+    "title": "Editar pieza",
     "titleRequired": "El título de la pieza es obligatorio",
-    "duplicatePiece": "Ya existe una pieza con este nombre y compositor"
+    "warningMessage": "Este cambio afectará a {{count}} entradas de práctica.",
+    "warningTitle": "Esto actualizará todas las entradas"
   },
   "pieces": "Piezas",
   "piecesByComposer": "Piezas de {{composer}}",
@@ -236,6 +235,7 @@
   "practiceTimeTrends": "Tendencias de tiempo de práctica",
   "practiced": "Practicado",
   "practicedTimes": "Practicado {{count}} veces",
+  "recentEntries": "Entradas recientes",
   "recentSessions": "Sesiones recientes",
   "repertoireByComposer": "Repertorio por compositor",
   "searchComposers": "Buscar compositores...",

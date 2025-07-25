@@ -3,10 +3,10 @@
   "allPieces": "所有曲目",
   "analytics": {
     "instrumentDistribution": "樂器分佈",
-    "typeDistribution": "類型分佈",
     "practiceTrend": "練習趨勢",
+    "topComposers": "熱門作曲家",
     "topPieces": "熱門曲目",
-    "topComposers": "熱門作曲家"
+    "typeDistribution": "類型分佈"
   },
   "applyGroupingToSeeData": "套用分組以表格格式查看資料",
   "average": "平均",
@@ -205,7 +205,6 @@
   "lastWeek": "上週",
   "longestStreak": "最長連續天數",
   "monthOverMonth": "月對比",
-  "recentEntries": "最近記錄",
   "monthlyHistory": "月度歷史",
   "mostPracticedPieces": "最常練習的曲目",
   "mostPracticedTechniques": "最常練習的技巧",
@@ -215,15 +214,15 @@
   "periodComparison": "時期比較",
   "pieceDetails": "作品詳情",
   "pieceEdit": {
-    "title": "編輯曲目",
-    "warningTitle": "這將更新所有記錄",
-    "warningMessage": "此更改將影響 {{count}} 項練習記錄。",
-    "pieceTitle": "曲目標題",
-    "pieceTitlePlaceholder": "例如：月光奏鳴曲",
     "composer": "作曲家",
     "composerPlaceholder": "例如：貝多芬",
+    "duplicatePiece": "已存在相同名稱和作曲家的曲目",
+    "pieceTitle": "曲目標題",
+    "pieceTitlePlaceholder": "例如：月光奏鳴曲",
+    "title": "編輯曲目",
     "titleRequired": "曲目標題是必填的",
-    "duplicatePiece": "已存在相同名稱和作曲家的曲目"
+    "warningMessage": "此更改將影響 {{count}} 項練習記錄。",
+    "warningTitle": "這將更新所有記錄"
   },
   "pieces": "曲目",
   "piecesByComposer": "{{composer}}的作品",
@@ -236,6 +235,7 @@
   "practiceTimeTrends": "練習時間趨勢",
   "practiced": "已練習",
   "practicedTimes": "練習了 {{count}} 次",
+  "recentEntries": "最近記錄",
   "recentSessions": "最近練習",
   "repertoireByComposer": "按作曲家分類的曲目",
   "searchComposers": "搜尋作曲家...",
