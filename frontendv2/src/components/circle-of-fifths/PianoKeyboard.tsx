@@ -28,6 +28,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     'G',
     'A',
     'B',
+    'C', // C5 - completing the 2 octaves
   ]
 
   // Black key positions - between C-D, D-E, F-G, G-A, A-B (no black key between E-F or B-C)
@@ -246,6 +247,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         displayNote: getBlackKeyLabel(9),
       }, // A#/Bb
       { type: 'white', index: 13, note: whiteKeys[13] }, // B
+      { type: 'white', index: 14, note: whiteKeys[14] }, // C (C5)
     ]
 
     keyOrder.forEach(key => {
@@ -288,11 +290,11 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-white rounded-lg p-1 sm:p-2 md:p-4 overflow-x-auto scrollbar-hide sm:scrollbar-thin-auto">
-        <div className="relative h-24 md:h-36 inline-block">
+      <div className="relative bg-white rounded-lg p-1 sm:p-2 md:p-4 overflow-hidden">
+        <div className="relative h-24 md:h-36 w-full">
           {/* White Keys */}
-          <div className="relative h-full">
-            <div className="absolute bottom-0 left-0 flex gap-0">
+          <div className="relative h-full flex">
+            <div className="relative h-full flex gap-0">
               {whiteKeys.map((note, index) => {
                 // Check if this note is within the octave range starting from the root note
                 const isInOctave = isNoteInOctaveRange(index)
@@ -306,7 +308,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <div
                     key={`white-${index}`}
                     className={`
-                    relative w-6 sm:w-7 md:w-10 h-24 md:h-36 bg-white rounded-b
+                    relative flex-shrink-0 w-[19px] sm:w-7 md:w-10 h-24 md:h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
@@ -343,7 +345,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
           </div>
 
           {/* Black Keys - Mobile */}
-          <div className="absolute top-0 left-0 md:hidden">
+          <div className="absolute top-0 left-0 sm:hidden">
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
@@ -365,13 +367,13 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-mobile-${index}`}
                   className={`
-                    absolute w-4 h-12 bg-gray-900 rounded-b shadow-md
+                    absolute w-[14px] h-12 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 24 + 10}px`,
+                    left: `${Math.ceil(position) * 19 - 7}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
@@ -404,8 +406,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             })}
           </div>
 
-          {/* Black Keys - Desktop */}
-          <div className="absolute top-0 left-0 hidden md:block">
+          {/* Black Keys - Tablet and Desktop */}
+          <div className="absolute top-0 left-0 hidden sm:block">
             {blackKeyPositions.map((position, index) => {
               const note = blackKeyNotes[index]
               const displayNote = getBlackKeyLabel(index)
@@ -427,13 +429,13 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-desktop-${index}`}
                   className={`
-                    absolute w-7 h-20 bg-gray-900 rounded-b shadow-md
+                    absolute w-5 sm:w-6 md:w-7 h-16 sm:h-18 md:h-20 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 40 + 16.5}px`,
+                    left: `${Math.ceil(position) * 40 - 14}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote

@@ -177,26 +177,28 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
             {canDelete && (
               <div className="ml-4">
                 {showDeleteConfirm ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-stone-600 mr-2">
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                    <span className="text-sm text-stone-600 sm:mr-2">
                       {t('repertoire:confirmDelete')}
                     </span>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                    >
-                      {t('common:yes')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setShowDeleteConfirm(false)}
-                      disabled={isDeleting}
-                    >
-                      {t('common:cancel')}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                      >
+                        {t('common:yes')}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={isDeleting}
+                      >
+                        {t('common:cancel')}
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <Button

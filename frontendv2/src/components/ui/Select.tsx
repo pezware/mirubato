@@ -85,7 +85,7 @@ export function Select({
                   key={option.value}
                   className={({ active }: { active: boolean }) =>
                     cn(
-                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                      'relative cursor-default select-none py-2 pl-6 sm:pl-10 pr-4',
                       active
                         ? 'bg-morandi-sage-100 dark:bg-morandi-sage-900'
                         : '',
@@ -114,7 +114,7 @@ export function Select({
                       {selected && (
                         <span
                           className={cn(
-                            'absolute inset-y-0 left-0 flex items-center pl-3',
+                            'absolute inset-y-0 left-0 flex items-center pl-1 sm:pl-3',
                             active
                               ? 'text-morandi-sage-600'
                               : 'text-morandi-sage-600'
@@ -220,7 +220,7 @@ export function MultiSelect({
                   key={option.value}
                   className={({ active }: { active: boolean }) =>
                     cn(
-                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                      'relative cursor-default select-none py-2 pl-6 sm:pl-10 pr-4',
                       active
                         ? 'bg-morandi-sage-100 dark:bg-morandi-sage-900'
                         : '',
@@ -244,7 +244,7 @@ export function MultiSelect({
                           {option.label}
                         </span>
                         {isSelected && (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-morandi-sage-600">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-1 sm:pl-3 text-morandi-sage-600">
                             <Check className="h-5 w-5" aria-hidden="true" />
                           </span>
                         )}

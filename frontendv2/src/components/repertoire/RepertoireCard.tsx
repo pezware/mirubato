@@ -185,7 +185,7 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
                       label: config.label,
                     })
                   )}
-                  className="w-36"
+                  className="w-32 sm:w-36"
                 />
               ) : (
                 <button
