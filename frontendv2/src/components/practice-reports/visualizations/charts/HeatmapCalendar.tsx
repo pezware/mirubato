@@ -206,7 +206,7 @@ export function HeatmapCalendar({
               <div className={isMobile ? '' : 'w-8 mr-2'}></div>
 
               {/* Month blocks */}
-              <div className="flex gap-1">
+              <div className={`flex ${isMobile ? 'gap-0.5' : 'gap-1'}`}>
                 {calendarData.weeks.map((_, weekIndex) => {
                   const monthLabel = monthLabels.find(
                     label => label.columnIndex === weekIndex
@@ -214,7 +214,7 @@ export function HeatmapCalendar({
                   return (
                     <div
                       key={weekIndex}
-                      className="w-3 h-4 flex items-center justify-center"
+                      className={`${isMobile ? 'w-2.5 h-3' : 'w-3 h-4'} flex items-center justify-center`}
                     >
                       {monthLabel && (
                         <span className="text-xs text-morandi-stone-600">
@@ -246,14 +246,22 @@ export function HeatmapCalendar({
               )}
 
               {/* Calendar grid */}
-              <div className="flex gap-1">
+              <div className={`flex ${isMobile ? 'gap-0.5' : 'gap-1'}`}>
                 {calendarData.weeks.map((week, weekIndex) => (
-                  <div key={weekIndex} className="flex flex-col gap-1">
+                  <div
+                    key={weekIndex}
+                    className={`flex flex-col ${isMobile ? 'gap-0.5' : 'gap-1'}`}
+                  >
                     {/* Day cells */}
                     {week.map((dayData, dayIndex) => {
                       // Check if this is a placeholder (date year is 1970)
                       if (dayData.date.getFullYear() === 1970) {
-                        return <div key={dayIndex} className="w-3 h-3" />
+                        return (
+                          <div
+                            key={dayIndex}
+                            className={isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'}
+                          />
+                        )
                       }
 
                       const dateStr = format(dayData.date, 'yyyy-MM-dd')
@@ -263,7 +271,7 @@ export function HeatmapCalendar({
                         <button
                           key={dayIndex}
                           className={`
-                            w-3 h-3 rounded-sm transition-all
+                            ${isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} rounded-sm transition-all
                             ${getIntensityColor(dayData.intensity)}
                             ${isToday ? 'ring-2 ring-morandi-stone-800 ring-offset-1' : ''}
                             ${dayData.value > 0 ? 'hover:ring-2 hover:ring-morandi-stone-400' : ''}
@@ -286,7 +294,7 @@ export function HeatmapCalendar({
               {[0, 1, 2, 3, 4].map(intensity => (
                 <div
                   key={intensity}
-                  className={`w-3 h-3 rounded-sm ${getIntensityColor(intensity)}`}
+                  className={`${isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} rounded-sm ${getIntensityColor(intensity)}`}
                 />
               ))}
               <span>{t('reports:charts.more')}</span>
