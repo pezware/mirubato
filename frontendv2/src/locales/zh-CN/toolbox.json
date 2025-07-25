@@ -255,11 +255,5 @@
     "dictionary": "词典",
     "metronome": "节拍器"
   },
-  "title": "工具箱",
-  "addAction": {
-    "title": "您想要做什么？",
-    "startPractice": "开始练习时段",
-    "customPattern": "创建节拍器模式",
-    "practiceCounter": "使用练习计数器"
-  }
+  "title": "工具箱"
 }

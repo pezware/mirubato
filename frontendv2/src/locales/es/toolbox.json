@@ -255,11 +255,5 @@
     "dictionary": "Diccionario",
     "metronome": "Metrónomo"
   },
-  "title": "Caja de herramientas",
-  "addAction": {
-    "title": "¿Qué te gustaría hacer?",
-    "startPractice": "Iniciar Sesión de Práctica",
-    "customPattern": "Crear Patrón de Metrónomo",
-    "practiceCounter": "Usar Contador de Práctica"
-  }
+  "title": "Caja de herramientas"
 }

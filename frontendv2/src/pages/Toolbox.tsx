@@ -9,7 +9,6 @@ import {
   ListChecks,
   Circle,
   Book,
-  Clock,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import * as Tone from 'tone'
@@ -18,11 +17,12 @@ import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
 import AppLayout from '../components/layout/AppLayout'
-import { Tabs, Modal, Button } from '../components/ui'
+import { Tabs, Button } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
 import TimerEntry from '../components/TimerEntry'
+import ManualEntryForm from '../components/ManualEntryForm'
 import {
   usePracticeTracking,
   PracticeSummaryModal,
@@ -46,7 +46,8 @@ const Toolbox: React.FC = () => {
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
   const [showTimer, setShowTimer] = useState(false)
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -378,34 +379,24 @@ const Toolbox: React.FC = () => {
     }
   }
 
-  const handleTimerComplete = (_duration: number) => {
+  const handleTimerComplete = (duration: number) => {
     setShowTimer(false)
-    // Could add practice session logging here if needed
+    setTimerDuration(duration)
+    setShowManualEntry(true)
   }
 
   const handleToolboxAdd = () => {
-    setShowAddModal(true)
+    setShowManualEntry(true)
   }
 
-  const handleAddAction = (action: string) => {
-    setShowAddModal(false)
+  const handleManualEntryClose = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+  }
 
-    switch (action) {
-      case 'practice':
-        // Start a new practice session with timer
-        setShowTimer(true)
-        break
-      case 'metronome':
-        // Switch to metronome tab to create custom pattern
-        setActiveTab('metronome')
-        break
-      case 'counter':
-        // Switch to practice counter
-        setActiveTab('counter')
-        break
-      default:
-        break
-    }
+  const handleManualEntrySave = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
   }
 
   return (
@@ -719,42 +710,14 @@ const Toolbox: React.FC = () => {
         onComplete={handleTimerComplete}
       />
 
-      {/* Add Action Modal */}
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title={t('toolbox:addAction.title', 'What would you like to do?')}
-        size="sm"
-      >
-        <div className="space-y-3">
-          <Button
-            onClick={() => handleAddAction('practice')}
-            variant="secondary"
-            className="w-full justify-start"
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            {t('toolbox:addAction.startPractice', 'Start Practice Session')}
-          </Button>
-
-          <Button
-            onClick={() => handleAddAction('metronome')}
-            variant="secondary"
-            className="w-full justify-start"
-          >
-            <Music className="w-4 h-4 mr-2" />
-            {t('toolbox:addAction.customPattern', 'Create Metronome Pattern')}
-          </Button>
-
-          <Button
-            onClick={() => handleAddAction('counter')}
-            variant="secondary"
-            className="w-full justify-start"
-          >
-            <ListChecks className="w-4 h-4 mr-2" />
-            {t('toolbox:addAction.practiceCounter', 'Use Practice Counter')}
-          </Button>
-        </div>
-      </Modal>
+      {/* Manual Entry Form */}
+      {showManualEntry && (
+        <ManualEntryForm
+          onClose={handleManualEntryClose}
+          onSave={handleManualEntrySave}
+          initialDuration={timerDuration}
+        />
+      )}
     </AppLayout>
   )
 }
