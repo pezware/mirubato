@@ -304,7 +304,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                   value: key,
                   label: config.label,
                 }))}
-                className="w-44"
+                className="w-32 sm:w-44"
               />
             ) : (
               <button
