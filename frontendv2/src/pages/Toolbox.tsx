@@ -9,6 +9,7 @@ import {
   ListChecks,
   Circle,
   Book,
+  Clock,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import * as Tone from 'tone'
