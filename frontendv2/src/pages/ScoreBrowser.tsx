@@ -45,7 +45,6 @@ export default function ScoreBrowserPage() {
     Record<string, Collection[]>
   >({})
   const [showTimer, setShowTimer] = useState(false)
-  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   useEffect(() => {
     loadData()
@@ -382,8 +381,7 @@ export default function ScoreBrowserPage() {
     )
   }
 
-  const handleTimerComplete = (duration: number) => {
-    setTimerDuration(duration)
+  const handleTimerComplete = (_duration: number) => {
     setShowTimer(false)
     // Could add practice session logging here if needed
   }

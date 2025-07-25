@@ -46,7 +46,6 @@ const Toolbox: React.FC = () => {
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
   const [showTimer, setShowTimer] = useState(false)
-  const [timerDuration, setTimerDuration] = useState<number | undefined>()
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Get current pattern data from JSON file
@@ -379,8 +378,7 @@ const Toolbox: React.FC = () => {
     }
   }
 
-  const handleTimerComplete = (duration: number) => {
-    setTimerDuration(duration)
+  const handleTimerComplete = (_duration: number) => {
     setShowTimer(false)
     // Could add practice session logging here if needed
   }

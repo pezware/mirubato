@@ -31,7 +31,6 @@ export default function ScorebookPage() {
   )
   const currentSession = usePracticeStore(state => state.currentSession)
   const [showTimer, setShowTimer] = useState(false)
-  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   // Load score if scoreId is provided
   useEffect(() => {
@@ -92,8 +91,7 @@ export default function ScorebookPage() {
     }
   }
 
-  const handleTimerComplete = (duration: number) => {
-    setTimerDuration(duration)
+  const handleTimerComplete = (_duration: number) => {
     setShowTimer(false)
     // Could add practice session logging here if needed
   }
