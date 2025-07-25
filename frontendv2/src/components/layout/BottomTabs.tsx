@@ -79,9 +79,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                 onClick={tab.action}
                 className="flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] text-gray-600 hover:text-gray-900 transition-colors"
               >
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Icon className="w-5 h-5" />
-                </div>
+                <Icon className="w-5 h-5" />
                 {tab.label && <span className="text-[11px]">{tab.label}</span>}
               </button>
             )

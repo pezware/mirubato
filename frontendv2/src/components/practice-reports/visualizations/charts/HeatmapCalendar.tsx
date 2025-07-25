@@ -134,7 +134,7 @@ export function HeatmapCalendar({
 
   return (
     <Card className={className} data-testid="heatmap-calendar">
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <div className="overflow-x-auto">
           <div className="inline-block">
             {/* Month labels row */}
