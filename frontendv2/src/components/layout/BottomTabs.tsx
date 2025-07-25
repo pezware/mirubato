@@ -15,8 +15,6 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
   const { t } = useTranslation(['common'])
   const location = useLocation()
 
-  const isLogbookPage = location.pathname.includes('/logbook')
-
   const tabs = [
     {
       id: 'logbook',
@@ -36,18 +34,13 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       path: '/scorebook/browse',
       icon: FileText,
     },
-    // Add timer button only on logbook pages
-    ...(isLogbookPage && onTimerClick
-      ? [
-          {
-            id: 'timer',
-            label: t('common:navigation.timer'),
-            path: null, // Special case - triggers action instead of navigation
-            icon: Clock,
-            action: onTimerClick,
-          },
-        ]
-      : []),
+    {
+      id: 'timer',
+      label: t('common:navigation.timer'),
+      path: null, // Special case - triggers action instead of navigation
+      icon: Clock,
+      action: onTimerClick,
+    },
     {
       id: 'add',
       label: t('common:navigation.add'),

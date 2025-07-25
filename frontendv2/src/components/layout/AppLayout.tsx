@@ -10,6 +10,8 @@ interface AppLayoutProps {
   onSearchChange?: (query: string) => void
   onNewEntry?: () => void
   onTimerClick?: () => void
+  onImportScore?: () => void
+  onToolboxAdd?: () => void
   showQuickActions?: boolean
 }
 
@@ -18,6 +20,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   onSearchChange,
   onNewEntry,
   onTimerClick,
+  onImportScore,
+  onToolboxAdd,
   showQuickActions = true,
 }) => {
   const [showSignInModal, setShowSignInModal] = useState(false)
@@ -53,10 +57,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       location.pathname === '/scorebook/browse' ||
       location.pathname.startsWith('/scorebook')
     ) {
-      // Could add score import functionality here in the future
-      console.log('Add score functionality not implemented yet')
+      onImportScore?.()
+    } else if (
+      location.pathname === '/toolbox' ||
+      location.pathname.startsWith('/toolbox')
+    ) {
+      onToolboxAdd?.()
     }
-    // Add other page-specific actions here
   }
 
   return (

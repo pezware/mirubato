@@ -21,6 +21,7 @@ import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
+import TimerEntry from '../components/TimerEntry'
 import {
   usePracticeTracking,
   PracticeSummaryModal,
@@ -43,6 +44,8 @@ const Toolbox: React.FC = () => {
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
+  const [showTimer, setShowTimer] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -374,8 +377,23 @@ const Toolbox: React.FC = () => {
     }
   }
 
+  const handleTimerComplete = (duration: number) => {
+    setTimerDuration(duration)
+    setShowTimer(false)
+    // Could add practice session logging here if needed
+  }
+
+  const handleToolboxAdd = () => {
+    // For now, we could switch to a specific tab or open a modal
+    // This is a placeholder for future functionality
+    setActiveTab('metronome')
+  }
+
   return (
-    <AppLayout showQuickActions={false}>
+    <AppLayout
+      onTimerClick={() => setShowTimer(true)}
+      onToolboxAdd={handleToolboxAdd}
+    >
       {/* Main Content */}
       <div className="p-4 sm:p-8">
         {/* Tabs */}
@@ -673,6 +691,13 @@ const Toolbox: React.FC = () => {
         duration={pendingSession?.duration || 0}
         metadata={pendingSession?.metadata || {}}
         title={t('common:practice.practiceSummary')}
+      />
+
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
       />
     </AppLayout>
   )

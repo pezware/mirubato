@@ -12,6 +12,7 @@ import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionsManager from '../components/score/CollectionsManager'
 import ScoreListItem from '../components/score/ScoreListItem'
+import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
 import Button from '../components/ui/Button'
 import { Tabs } from '../components/ui'
@@ -43,6 +44,8 @@ export default function ScoreBrowserPage() {
   const [scoreCollections, setScoreCollections] = useState<
     Record<string, Collection[]>
   >({})
+  const [showTimer, setShowTimer] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   useEffect(() => {
     loadData()
@@ -379,8 +382,17 @@ export default function ScoreBrowserPage() {
     )
   }
 
+  const handleTimerComplete = (duration: number) => {
+    setTimerDuration(duration)
+    setShowTimer(false)
+    // Could add practice session logging here if needed
+  }
+
   return (
-    <AppLayout>
+    <AppLayout
+      onTimerClick={() => setShowTimer(true)}
+      onImportScore={() => setShowImportModal(true)}
+    >
       <div className="p-8">
         {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
         <Tabs
@@ -610,6 +622,13 @@ export default function ScoreBrowserPage() {
           </div>
         )}
       </div>
+
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
+      />
     </AppLayout>
   )
 }
