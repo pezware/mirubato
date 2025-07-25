@@ -102,13 +102,13 @@ export default function TimerEntry({
         </div>
 
         {/* Control Buttons */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
           {!isRunning ? (
             <Button
               onClick={handleStart}
               variant="primary"
               size="lg"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Play className="w-5 h-5" />
               {seconds > 0
@@ -120,7 +120,7 @@ export default function TimerEntry({
               onClick={handlePause}
               variant="secondary"
               size="lg"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Pause className="w-5 h-5" />
               {t('logbook:timer.pause')}
@@ -133,7 +133,7 @@ export default function TimerEntry({
                 onClick={handleStop}
                 variant="primary"
                 size="lg"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <Square className="w-5 h-5" />
                 {t('logbook:timer.stop')}
@@ -143,7 +143,7 @@ export default function TimerEntry({
                 onClick={handleReset}
                 variant="ghost"
                 size="lg"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <RotateCcw className="w-5 h-5" />
                 {t('logbook:timer.reset')}
