@@ -112,14 +112,29 @@ export default function InteractivePiano() {
         <div className="absolute top-4 left-0 flex pointer-events-none">
           {blackKeys.map(key => {
             // Calculate position based on note
-            const position =
+            // White key width: 40px (w-10), gap: 4px (gap-1)
+            // Black key width: 28px (w-7)
+            // Black keys should be centered between white keys
+            const whiteKeyWidth = 40
+            const gap = 4
+            const blackKeyWidth = 28
+
+            // Position index for each black key (which gap it sits in)
+            const positionIndex =
               {
-                'C#4': 30,
-                'D#4': 80,
-                'F#4': 180,
-                'G#4': 230,
-                'A#4': 280,
+                'C#4': 0.5, // Between C and D
+                'D#4': 1.5, // Between D and E
+                'F#4': 3.5, // Between F and G
+                'G#4': 4.5, // Between G and A
+                'A#4': 5.5, // Between A and B
               }[key.note] || 0
+
+            // Calculate left position: padding + (white key width + gap) * position - half black key width
+            const position =
+              16 +
+              Math.ceil(positionIndex) * (whiteKeyWidth + gap) -
+              blackKeyWidth / 2 -
+              gap
 
             return (
               <button
