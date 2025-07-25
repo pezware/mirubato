@@ -588,8 +588,8 @@ const Toolbox: React.FC = () => {
             {/* Beat Pattern Grid */}
             <div className="lg:w-2/3">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                <div className="overflow-x-auto">
-                  <div className="min-w-[600px]">
+                <div className="overflow-x-auto overflow-y-hidden scrollbar-hide sm:scrollbar-thin-auto">
+                  <div className="inline-block min-w-fit">
                     {/* Grid with beat numbers and layers */}
                     <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
                       {/* Header row with beat numbers */}
@@ -655,7 +655,7 @@ const Toolbox: React.FC = () => {
 
         {/* Circle of Fifths Tab */}
         {activeTab === 'circle-of-fifths' && (
-          <div className="overflow-x-auto">
+          <div>
             <CircleOfFifths />
           </div>
         )}

@@ -197,4 +197,28 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+
+  /* Thin scrollbar with auto-hide behavior */
+  .scrollbar-thin-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin-auto::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin-auto:hover::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+  }
 }

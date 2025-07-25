@@ -288,55 +288,58 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="w-full">
-      <div className="relative bg-white rounded-lg p-1 md:p-4 overflow-x-auto">
-        <div className="relative h-24 md:h-36 min-w-[320px] md:min-w-[600px]">
+      <div className="relative bg-white rounded-lg p-1 sm:p-2 md:p-4 overflow-x-auto scrollbar-hide sm:scrollbar-thin-auto">
+        <div className="relative h-24 md:h-36 inline-block">
           {/* White Keys */}
-          <div className="absolute bottom-0 left-0 flex gap-0.25">
-            {whiteKeys.map((note, index) => {
-              // Check if this note is within the octave range starting from the root note
-              const isInOctave = isNoteInOctaveRange(index)
-              const isInScale = isInOctave && isNoteInScale(note)
-              const isChordNote = isInOctave && chordNotes.has(note)
-              const isRootNote = isInOctave && rootNoteWithEnharmonic.has(note)
-              const isActive = isPlaying && isRootNote
+          <div className="relative h-full">
+            <div className="absolute bottom-0 left-0 flex gap-0">
+              {whiteKeys.map((note, index) => {
+                // Check if this note is within the octave range starting from the root note
+                const isInOctave = isNoteInOctaveRange(index)
+                const isInScale = isInOctave && isNoteInScale(note)
+                const isChordNote = isInOctave && chordNotes.has(note)
+                const isRootNote =
+                  isInOctave && rootNoteWithEnharmonic.has(note)
+                const isActive = isPlaying && isRootNote
 
-              return (
-                <div
-                  key={`white-${index}`}
-                  className={`
-                    relative w-6 md:w-10 h-24 md:h-36 bg-white rounded-b
+                return (
+                  <div
+                    key={`white-${index}`}
+                    className={`
+                    relative w-6 sm:w-7 md:w-10 h-24 md:h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
                   `}
-                  style={{
-                    border: '1px solid #E5E7EB',
-                    borderBottom: isRootNote
-                      ? '4px solid #DC2626'
-                      : isInScale
-                        ? '4px solid #FB923C'
-                        : '1px solid #E5E7EB',
-                    borderRight: isRootNote
-                      ? '3px solid #DC2626'
-                      : isInScale
-                        ? '3px solid #FB923C'
-                        : '1px solid #E5E7EB',
-                    boxShadow: isActive
-                      ? 'inset 0 2px 4px rgba(0,0,0,0.2)'
-                      : '0 2px 4px rgba(0,0,0,0.1)',
-                  }}
-                >
-                  <span
-                    className={`
+                    style={{
+                      border: '1px solid #E5E7EB',
+                      borderBottom: isRootNote
+                        ? '4px solid #DC2626'
+                        : isInScale
+                          ? '4px solid #FB923C'
+                          : '1px solid #E5E7EB',
+                      borderRight: isRootNote
+                        ? '3px solid #DC2626'
+                        : isInScale
+                          ? '3px solid #FB923C'
+                          : '1px solid #E5E7EB',
+                      boxShadow: isActive
+                        ? 'inset 0 2px 4px rgba(0,0,0,0.2)'
+                        : '0 2px 4px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <span
+                      className={`
                     absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs
                     ${isRootNote ? 'font-bold text-red-600' : isChordNote ? 'font-semibold text-red-400' : isInScale ? 'text-orange-500 font-medium' : 'text-gray-400'}
                   `}
-                  >
-                    {note}
-                  </span>
-                </div>
-              )
-            })}
+                    >
+                      {note}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
           {/* Black Keys - Mobile */}
@@ -362,13 +365,13 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-mobile-${index}`}
                   className={`
-                    absolute w-3 h-12 bg-gray-900 rounded-b shadow-md
+                    absolute w-4 h-12 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 24.25 + 10.5}px`,
+                    left: `${position * 24 + 10}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
@@ -430,7 +433,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${position * 40.5 + 18.5}px`,
+                    left: `${position * 40 + 16.5}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
