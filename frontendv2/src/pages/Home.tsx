@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../stores/authStore'
@@ -17,6 +17,7 @@ const PianoLoader = () => (
 
 export default function HomePage() {
   const { t } = useTranslation(['common', 'auth', 'logbook'])
+  const navigate = useNavigate()
   const { user, isAuthenticated, login, logout, isLoading, error } =
     useAuthStore()
   const [email, setEmail] = useState('')
@@ -150,6 +151,7 @@ export default function HomePage() {
                 onSuccess={() => {
                   setShowLoginForm(false)
                   setLoginSuccess(false)
+                  navigate('/logbook')
                 }}
                 onError={error => {
                   // Error is already handled in the store, but we can add extra handling here if needed
