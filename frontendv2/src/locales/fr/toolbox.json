@@ -255,5 +255,11 @@
     "dictionary": "Dictionnaire",
     "metronome": "Métronome"
   },
-  "title": "Boîte à outils"
+  "title": "Boîte à outils",
+  "addAction": {
+    "title": "Que souhaitez-vous faire ?",
+    "startPractice": "Démarrer une session de pratique",
+    "customPattern": "Créer un motif de métronome",
+    "practiceCounter": "Utiliser le compteur de pratique"
+  }
 }

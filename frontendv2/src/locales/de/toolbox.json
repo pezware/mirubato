@@ -255,5 +255,11 @@
     "dictionary": "Wörterbuch",
     "metronome": "Metronom"
   },
-  "title": "Werkzeugkasten"
+  "title": "Werkzeugkasten",
+  "addAction": {
+    "title": "Was möchten Sie tun?",
+    "startPractice": "Übungssitzung starten",
+    "customPattern": "Metronom-Muster erstellen",
+    "practiceCounter": "Übungszähler verwenden"
+  }
 }
