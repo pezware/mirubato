@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '../../../ui/Card'
 import {
@@ -8,6 +8,9 @@ import {
   eachDayOfInterval,
   getDay,
   isSameDay,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
 } from 'date-fns'
 
 interface HeatmapCalendarProps {
@@ -25,9 +28,27 @@ export function HeatmapCalendar({
 }: HeatmapCalendarProps) {
   const { t } = useTranslation(['reports'])
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640) // sm breakpoint
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const calendarData = useMemo(() => {
-    const startDate = startOfYear(new Date(year, 0, 1))
-    const endDate = endOfYear(new Date(year, 0, 1))
+    const now = new Date()
+    const startDate = isMobile
+      ? startOfMonth(subMonths(now, 2)) // Start 3 months ago for mobile
+      : startOfYear(new Date(year, 0, 1))
+    const endDate = isMobile
+      ? endOfMonth(now) // End at current month for mobile
+      : endOfYear(new Date(year, 0, 1))
     const days = eachDayOfInterval({ start: startDate, end: endDate })
 
     // Find max value for intensity calculation
@@ -67,50 +88,92 @@ export function HeatmapCalendar({
     }
 
     return { weeks, maxValue }
-  }, [data, year])
+  }, [data, year, isMobile])
 
   // Month labels - find which column each month starts in (first visible day)
   const monthLabels = useMemo(() => {
     const labels: { month: string; columnIndex: number }[] = []
 
-    // For each month, find the column containing the first day of the month
-    for (let i = 0; i < 12; i++) {
-      let found = false
+    if (isMobile) {
+      // For mobile, we only show the last 3 months
+      const now = new Date()
+      const months = [subMonths(now, 2), subMonths(now, 1), now]
 
-      // Look through each column to find where this month starts
-      for (
-        let colIndex = 0;
-        colIndex < calendarData.weeks.length && !found;
-        colIndex++
-      ) {
-        const week = calendarData.weeks[colIndex]
+      months.forEach(monthDate => {
+        const monthNum = monthDate.getMonth()
+        const monthYear = monthDate.getFullYear()
+        let found = false
 
-        // Check if this column contains the first day of the month
-        const hasFirstDay = week.some(
-          d =>
-            d.date.getFullYear() === year &&
-            d.date.getMonth() === i &&
-            d.date.getDate() === 1 &&
-            d.date.getFullYear() !== 1970 // Not a placeholder
-        )
+        // Look through each column to find where this month starts
+        for (
+          let colIndex = 0;
+          colIndex < calendarData.weeks.length && !found;
+          colIndex++
+        ) {
+          const week = calendarData.weeks[colIndex]
 
-        if (hasFirstDay) {
-          // For better visual alignment, place the label 2 columns after where the month actually starts
-          // This accounts for the visual spacing and makes the labels appear more centered over their month
-          const adjustedIndex = Math.min(
-            colIndex + 2,
-            calendarData.weeks.length - 1
+          // Check if this column contains the first day of the month
+          const hasFirstDay = week.some(
+            d =>
+              d.date.getFullYear() === monthYear &&
+              d.date.getMonth() === monthNum &&
+              d.date.getDate() === 1 &&
+              d.date.getFullYear() !== 1970 // Not a placeholder
           )
-          labels.push({
-            month: format(new Date(year, i, 1), 'MMM'),
-            columnIndex: adjustedIndex,
-          })
-          found = true
+
+          if (hasFirstDay) {
+            // For better visual alignment, place the label 2 columns after where the month actually starts
+            const adjustedIndex = Math.min(
+              colIndex + 2,
+              calendarData.weeks.length - 1
+            )
+            labels.push({
+              month: format(monthDate, 'MMM'),
+              columnIndex: adjustedIndex,
+            })
+            found = true
+          }
+        }
+      })
+    } else {
+      // For desktop, show all months of the year
+      for (let i = 0; i < 12; i++) {
+        let found = false
+
+        // Look through each column to find where this month starts
+        for (
+          let colIndex = 0;
+          colIndex < calendarData.weeks.length && !found;
+          colIndex++
+        ) {
+          const week = calendarData.weeks[colIndex]
+
+          // Check if this column contains the first day of the month
+          const hasFirstDay = week.some(
+            d =>
+              d.date.getFullYear() === year &&
+              d.date.getMonth() === i &&
+              d.date.getDate() === 1 &&
+              d.date.getFullYear() !== 1970 // Not a placeholder
+          )
+
+          if (hasFirstDay) {
+            // For better visual alignment, place the label 2 columns after where the month actually starts
+            const adjustedIndex = Math.min(
+              colIndex + 2,
+              calendarData.weeks.length - 1
+            )
+            labels.push({
+              month: format(new Date(year, i, 1), 'MMM'),
+              columnIndex: adjustedIndex,
+            })
+            found = true
+          }
         }
       }
     }
     return labels
-  }, [year, calendarData.weeks])
+  }, [year, calendarData.weeks, isMobile])
 
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -135,7 +198,7 @@ export function HeatmapCalendar({
   return (
     <Card className={className} data-testid="heatmap-calendar">
       <div className="p-3 sm:p-6">
-        <div className="overflow-x-auto">
+        <div className={isMobile ? 'flex justify-center' : 'overflow-x-auto'}>
           <div className="inline-block">
             {/* Month labels row */}
             <div className="flex mb-1">
