@@ -52,6 +52,7 @@
       "customTechniques": "Custom Techniques"
     },
     "practiceDate": "Practice Date",
+    "time": "Time",
     "successAdded": "Practice entry successfully added!",
     "successUpdated": "Practice entry successfully updated!",
     "piecesNote": "Practice time will be divided equally among pieces",

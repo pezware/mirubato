@@ -50,7 +50,8 @@
       "rehearsal": "Ensayo",
       "technique": "Técnica"
     },
-    "updateEntry": "Actualizar entrada"
+    "updateEntry": "Actualizar entrada",
+    "time": "Hora"
   },
   "filters": {
     "allTime": "Todo el tiempo",
