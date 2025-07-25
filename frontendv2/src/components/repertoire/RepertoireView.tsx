@@ -323,7 +323,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           setEditingPieceNotes(selectedPiece)
         }}
         onEditSession={sessionId => {
-          setSelectedPiece(null)
           setEditingSessionId(sessionId)
         }}
         onStatusChange={async newStatus => {
@@ -537,6 +536,20 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             />
           )
         })()}
+
+      {/* Edit Session Modal */}
+      {editingSessionId && (
+        <ManualEntryForm
+          entry={entries.find(e => e.id === editingSessionId)}
+          onClose={() => {
+            setEditingSessionId(null)
+          }}
+          onSave={() => {
+            setEditingSessionId(null)
+            loadEntries() // Refresh the entries
+          }}
+        />
+      )}
     </div>
   )
 }
