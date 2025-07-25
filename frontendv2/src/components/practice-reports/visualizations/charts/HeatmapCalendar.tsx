@@ -198,12 +198,12 @@ export function HeatmapCalendar({
   return (
     <Card className={className} data-testid="heatmap-calendar">
       <div className="p-3 sm:p-6">
-        <div className={isMobile ? 'flex justify-center' : 'overflow-x-auto'}>
+        <div className={isMobile ? '' : 'overflow-x-auto'}>
           <div className="inline-block">
             {/* Month labels row */}
             <div className="flex mb-1">
               {/* Empty space for day labels column */}
-              <div className="w-8 mr-2"></div>
+              <div className={isMobile ? '' : 'w-8 mr-2'}></div>
 
               {/* Month blocks */}
               <div className="flex gap-1">
@@ -230,18 +230,20 @@ export function HeatmapCalendar({
             {/* Calendar grid with day labels */}
             <div className="flex">
               {/* Day labels */}
-              <div className="flex flex-col mr-2">
-                {/* Day labels */}
-                {dayLabels.map((day, i) => (
-                  <div
-                    key={i}
-                    className="text-xs text-morandi-stone-600 h-3 flex items-center justify-end pr-1 w-8"
-                    style={{ marginBottom: '2px' }}
-                  >
-                    {i % 2 === 1 ? day : ''}
-                  </div>
-                ))}
-              </div>
+              {!isMobile && (
+                <div className="flex flex-col mr-2">
+                  {/* Day labels */}
+                  {dayLabels.map((day, i) => (
+                    <div
+                      key={i}
+                      className="text-xs text-morandi-stone-600 h-3 flex items-center justify-end pr-1 w-8"
+                      style={{ marginBottom: '2px' }}
+                    >
+                      {i % 2 === 1 ? day : ''}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Calendar grid */}
               <div className="flex gap-1">
