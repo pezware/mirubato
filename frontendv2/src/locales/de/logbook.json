@@ -50,7 +50,8 @@
       "rehearsal": "Probe",
       "technique": "Technik"
     },
-    "updateEntry": "Eintrag aktualisieren"
+    "updateEntry": "Eintrag aktualisieren",
+    "time": "Zeit"
   },
   "filters": {
     "allTime": "Gesamte Zeit",

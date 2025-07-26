@@ -113,9 +113,9 @@ test.describe('Logbook Sync', () => {
   })
 
   test('entries maintain proper order', async ({ page }) => {
-    // Create first entry (longest duration = earliest timestamp)
+    // Create first entry (shortest duration = newest timestamp when created)
     await logbookPage.createEntry({
-      duration: 45,
+      duration: 15,
       title: 'Morning Practice',
       notes: 'Early session',
     })
@@ -139,9 +139,9 @@ test.describe('Logbook Sync', () => {
       timeout: 5000,
     })
 
-    // Create third entry (shortest duration = latest timestamp)
+    // Create third entry (longest duration = oldest timestamp when created)
     await logbookPage.createEntry({
-      duration: 15,
+      duration: 45,
       title: 'Evening Practice',
       notes: 'Final session',
     })
@@ -167,8 +167,9 @@ test.describe('Logbook Sync', () => {
       title.includes('Morning Practice')
     )
 
-    // Verify reverse chronological order (newest first)
-    expect(eveningIndex).toBeLessThan(afternoonIndex)
-    expect(afternoonIndex).toBeLessThan(morningIndex)
+    // Verify reverse chronological order (newest timestamp first)
+    // Since durations are increasing, Morning has newest timestamp
+    expect(morningIndex).toBeLessThan(afternoonIndex)
+    expect(afternoonIndex).toBeLessThan(eveningIndex)
   })
 })

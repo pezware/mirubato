@@ -21,6 +21,8 @@ import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
+import TimerEntry from '../components/TimerEntry'
+import ManualEntryForm from '../components/ManualEntryForm'
 import {
   usePracticeTracking,
   PracticeSummaryModal,
@@ -43,6 +45,9 @@ const Toolbox: React.FC = () => {
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
+  const [showTimer, setShowTimer] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -374,8 +379,31 @@ const Toolbox: React.FC = () => {
     }
   }
 
+  const handleTimerComplete = (duration: number) => {
+    setShowTimer(false)
+    setTimerDuration(duration)
+    setShowManualEntry(true)
+  }
+
+  const handleToolboxAdd = () => {
+    setShowManualEntry(true)
+  }
+
+  const handleManualEntryClose = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+  }
+
+  const handleManualEntrySave = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+  }
+
   return (
-    <AppLayout showQuickActions={false}>
+    <AppLayout
+      onTimerClick={() => setShowTimer(true)}
+      onToolboxAdd={handleToolboxAdd}
+    >
       {/* Main Content */}
       <div className="p-4 sm:p-8">
         {/* Tabs */}
@@ -674,6 +702,22 @@ const Toolbox: React.FC = () => {
         metadata={pendingSession?.metadata || {}}
         title={t('common:practice.practiceSummary')}
       />
+
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
+      />
+
+      {/* Manual Entry Form */}
+      {showManualEntry && (
+        <ManualEntryForm
+          onClose={handleManualEntryClose}
+          onSave={handleManualEntrySave}
+          initialDuration={timerDuration}
+        />
+      )}
     </AppLayout>
   )
 }

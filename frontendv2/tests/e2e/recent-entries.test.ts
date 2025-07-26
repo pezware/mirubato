@@ -45,13 +45,14 @@ test.describe('Recent Entries', () => {
 
   test('shows multiple recent entries in order', async ({ page }) => {
     await test.step('Create multiple entries with unique timestamps', async () => {
-      // Create entries with DECREASING durations so that when the form
-      // calculates "current time - duration", the later entries will have newer timestamps
+      // Create entries with INCREASING durations so that when the form
+      // calculates "current time - duration", entries created later will have older timestamps
       // This is because the form sets practice time to "now - duration minutes"
+      // Entry created last with longest duration will have the oldest timestamp
       const entries = [
-        { duration: 40, title: 'First Entry', notes: 'Created first' },
+        { duration: 20, title: 'First Entry', notes: 'Created first' },
         { duration: 30, title: 'Second Entry', notes: 'Created second' },
-        { duration: 20, title: 'Third Entry', notes: 'Created third' },
+        { duration: 40, title: 'Third Entry', notes: 'Created third' },
       ]
 
       for (let i = 0; i < entries.length; i++) {
@@ -110,11 +111,12 @@ test.describe('Recent Entries', () => {
       const secondEntryPosition = entryTitles.indexOf('Second Entry')
       const thirdEntryPosition = entryTitles.indexOf('Third Entry')
 
-      // Verify they appear in reverse order (newest first)
-      // Third Entry should appear before Second Entry
-      // Second Entry should appear before First Entry
-      expect(thirdEntryPosition).toBeLessThan(secondEntryPosition)
-      expect(secondEntryPosition).toBeLessThan(firstEntryPosition)
+      // Verify they appear in reverse chronological order (newest timestamp first)
+      // Since durations are increasing, First Entry has newest timestamp
+      // First Entry should appear before Second Entry
+      // Second Entry should appear before Third Entry
+      expect(firstEntryPosition).toBeLessThan(secondEntryPosition)
+      expect(secondEntryPosition).toBeLessThan(thirdEntryPosition)
     })
   })
 })

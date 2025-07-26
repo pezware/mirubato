@@ -7,6 +7,7 @@ import ScoreViewer from '../components/score/ScoreViewer'
 import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
 import AppLayout from '../components/layout/AppLayout'
+import TimerEntry from '../components/TimerEntry'
 import { Modal } from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 
@@ -29,6 +30,7 @@ export default function ScorebookPage() {
     null
   )
   const currentSession = usePracticeStore(state => state.currentSession)
+  const [showTimer, setShowTimer] = useState(false)
 
   // Load score if scoreId is provided
   useEffect(() => {
@@ -89,6 +91,16 @@ export default function ScorebookPage() {
     }
   }
 
+  const handleTimerComplete = (_duration: number) => {
+    setShowTimer(false)
+    // Could add practice session logging here if needed
+  }
+
+  const handleImportScore = () => {
+    // Navigate to score browser for import
+    navigate('/scorebook/browse')
+  }
+
   // If no scoreId, show the score browser
   if (!scoreId) {
     navigate('/scorebook/browse')
@@ -96,7 +108,10 @@ export default function ScorebookPage() {
   }
 
   return (
-    <AppLayout showQuickActions={false}>
+    <AppLayout
+      onTimerClick={() => setShowTimer(true)}
+      onImportScore={handleImportScore}
+    >
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Score Info Bar */}
@@ -202,6 +217,13 @@ export default function ScorebookPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
+      />
     </AppLayout>
   )
 }

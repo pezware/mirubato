@@ -50,7 +50,8 @@
       "rehearsal": "排練",
       "technique": "技巧"
     },
-    "updateEntry": "更新記錄"
+    "updateEntry": "更新記錄",
+    "time": "時間"
   },
   "filters": {
     "allTime": "全部時間",
