@@ -3,13 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Github, Lock, BookOpen, Mail, Home } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import UnifiedHeader from '../components/layout/UnifiedHeader'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 
 export default function About() {
   const { t } = useTranslation(['about', 'common'])
