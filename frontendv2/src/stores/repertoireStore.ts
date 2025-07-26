@@ -24,6 +24,13 @@ interface ScoreMetadata {
   composer: string
 }
 
+type RepertoireSortOption =
+  | 'status-learning-first'
+  | 'last-practiced'
+  | 'most-practiced'
+  | 'title-asc'
+  | 'composer-asc'
+
 interface RepertoireStore {
   // Repertoire state
   repertoire: Map<string, RepertoireItem>
@@ -45,6 +52,9 @@ interface RepertoireStore {
   statusFilter: 'all' | keyof RepertoireStatus
   goalFilter: 'all' | 'active' | 'completed' | 'no_goals'
   searchQuery: string
+
+  // Sort
+  sortBy: RepertoireSortOption
 
   // Actions
   loadRepertoire: () => Promise<void>
@@ -79,6 +89,7 @@ interface RepertoireStore {
   setStatusFilter: (status: 'all' | keyof RepertoireStatus) => void
   setGoalFilter: (filter: 'all' | 'active' | 'completed' | 'no_goals') => void
   setSearchQuery: (query: string) => void
+  setSortBy: (sort: RepertoireSortOption) => void
 
   // Helper functions
   getFilteredRepertoire: () => RepertoireItem[]
@@ -105,6 +116,7 @@ interface RepertoireStore {
 const REPERTOIRE_KEY = 'mirubato:repertoire:items'
 const GOALS_KEY = 'mirubato:repertoire:goals'
 const SCORE_METADATA_KEY = 'mirubato:repertoire:scoreMetadata'
+const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
 
 export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   // Initial state
@@ -119,6 +131,9 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   statusFilter: 'all',
   goalFilter: 'all',
   searchQuery: '',
+  sortBy:
+    (localStorage.getItem(SORT_PREFERENCE_KEY) as RepertoireSortOption) ||
+    'status-learning-first', // Default to showing learning pieces first
 
   // Load repertoire
   loadRepertoire: async () => {
@@ -729,6 +744,10 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   setStatusFilter: status => set({ statusFilter: status }),
   setGoalFilter: filter => set({ goalFilter: filter }),
   setSearchQuery: query => set({ searchQuery: query }),
+  setSortBy: sort => {
+    localStorage.setItem(SORT_PREFERENCE_KEY, sort)
+    set({ sortBy: sort })
+  },
 
   // Get filtered repertoire
   getFilteredRepertoire: () => {
@@ -765,6 +784,8 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       }
     }
 
+    // Don't sort here - sorting will be done in RepertoireView
+    // where we have access to enriched data (scoreTitle, scoreComposer)
     return items
   },
 

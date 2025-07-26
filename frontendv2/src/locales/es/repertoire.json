@@ -153,5 +153,12 @@
   "unit": "Unidad",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
   "viewDetails": "Ver Detalles",
-  "viewScore": "Ver Partitura"
+  "viewScore": "Ver Partitura",
+  "sort": {
+    "statusLearningFirst": "Estado (Aprendiendo primero)",
+    "lastPracticed": "Practicado recientemente",
+    "mostPracticed": "Más practicado",
+    "titleAsc": "Título (A-Z)",
+    "composerAsc": "Compositor (A-Z)"
+  }
 }

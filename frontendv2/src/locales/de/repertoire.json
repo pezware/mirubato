@@ -153,5 +153,12 @@
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen"
+  "viewScore": "Noten ansehen",
+  "sort": {
+    "statusLearningFirst": "Status (Lernend zuerst)",
+    "lastPracticed": "Kürzlich geübt",
+    "mostPracticed": "Meistgeübt",
+    "titleAsc": "Titel (A-Z)",
+    "composerAsc": "Komponist (A-Z)"
+  }
 }
