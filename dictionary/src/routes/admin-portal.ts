@@ -570,12 +570,11 @@ adminPortal.get('/', c => {
                     throw new Error(result.error?.message || 'Failed to send magic link');
                 }
                 
-                // For demo purposes, show the magic link (in production, this would be emailed)
+                // Show success message
                 messageDiv.innerHTML = \`
                     <div class="alert success">
-                        <strong>Magic link generated!</strong><br>
-                        <p style="margin-top: 8px;">In production, this would be sent to your email. For now, click the link below:</p>
-                        <a href="\${result.data.magicLink}" style="color: var(--morandi-sage-600); word-break: break-all;">Open Magic Link</a>
+                        <strong>Magic link sent!</strong><br>
+                        <p style="margin-top: 8px;">Please check your email for the sign-in link.</p>
                     </div>
                 \`;
             } catch (error) {
