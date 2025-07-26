@@ -1,0 +1,40 @@
+{
+  "tagline": "Tu diario privado de práctica musical, creado por y para músicos",
+  "backToHome": "Volver al inicio",
+  "sections": {
+    "about": {
+      "title": "Acerca de Mirubato",
+      "what": "Mirubato te ayuda a aprovechar al máximo tu práctica. Ya sea que estés trabajando en lectura a primera vista o perfeccionando una pieza, te proporcionamos las herramientas para seguir tu progreso y mantenerte motivado.",
+      "why": "Creemos que la práctica constante y consciente es la clave del crecimiento musical. Mirubato está diseñado para ser un compañero simple y alentador en tu viaje musical.",
+      "how": "Mirubato es de código abierto y está construido con un enfoque local primero. Esto significa que tus datos permanecen contigo, en tu dispositivo, por defecto. Sin rastreo, sin análisis, solo tú y tu música."
+    },
+    "openSource": {
+      "title": "Código Abierto",
+      "description": "Mirubato es orgullosamente de código abierto. Damos la bienvenida a las contribuciones de la comunidad y creemos en construir grandes cosas juntos, de forma transparente.",
+      "viewOnGithub": "Ver en GitHub"
+    },
+    "privacy": {
+      "title": "Tu Privacidad, Tus Datos",
+      "dataOwnership": "Siempre eres dueño de tus datos de práctica",
+      "localFirst": "Funciona sin conexión, con tus datos guardados localmente en tu dispositivo",
+      "noTracking": "No usamos rastreo ni análisis. Nunca",
+      "optionalSync": "Sincronización en la nube opcional para respaldo o acceso entre dispositivos"
+    },
+    "credits": {
+      "title": "Créditos y Atribuciones",
+      "educationalContent": "Contenido Educativo",
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" por Chelsea Green, licenciado bajo CC BY 4.0",
+      "viewSource": "Ver fuente original",
+      "musicalContent": "Contenido Musical",
+      "imslp": "Las composiciones clásicas de IMSLP son de dominio público",
+      "openSourceLibraries": "Bibliotecas de Código Abierto",
+      "librariesDescription": "Construido con amor usando React, TypeScript y muchos otros maravillosos proyectos de código abierto"
+    },
+    "contact": {
+      "title": "Ponte en Contacto",
+      "github": "¿Encontraste un error o tienes una idea?",
+      "reportIssue": "Issues de GitHub",
+      "twitter": "Síguenos para actualizaciones"
+    }
+  }
+}

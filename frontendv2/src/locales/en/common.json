@@ -74,6 +74,10 @@
   "files": "Files",
   "filter": "Filter",
   "finish": "Finish",
+  "footer": {
+    "about": "About",
+    "license": "License"
+  },
   "goBack": "Go Back",
   "goal": "Goal",
   "help": "Help",

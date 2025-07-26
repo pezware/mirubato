@@ -1,0 +1,40 @@
+{
+  "tagline": "Dein privates Musikübungstagebuch, von und für Musiker entwickelt",
+  "backToHome": "Zurück zur Startseite",
+  "sections": {
+    "about": {
+      "title": "Über Mirubato",
+      "what": "Mirubato hilft dir, das Beste aus deiner Übungszeit herauszuholen. Egal ob du am Blattspiel arbeitest oder ein Stück perfektionierst, wir bieten dir die Werkzeuge, um deinen Fortschritt zu verfolgen und motiviert zu bleiben.",
+      "why": "Wir glauben, dass beständiges, bewusstes Üben der Schlüssel zum musikalischen Wachstum ist. Mirubato ist als einfacher, ermutigender Begleiter auf deiner musikalischen Reise konzipiert.",
+      "how": "Mirubato ist Open Source und mit einem lokalen Ansatz entwickelt. Das bedeutet, deine Daten bleiben standardmäßig bei dir, auf deinem Gerät. Kein Tracking, keine Analysen – nur du und deine Musik."
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Mirubato ist stolz darauf, Open Source zu sein. Wir begrüßen Beiträge aus der Community und glauben daran, gemeinsam und transparent großartige Dinge zu schaffen.",
+      "viewOnGithub": "Auf GitHub ansehen"
+    },
+    "privacy": {
+      "title": "Deine Privatsphäre, Deine Daten",
+      "dataOwnership": "Du besitzt deine Übungsdaten, immer",
+      "localFirst": "Funktioniert offline, mit lokal auf deinem Gerät gespeicherten Daten",
+      "noTracking": "Wir verwenden kein Tracking oder Analysen. Niemals",
+      "optionalSync": "Optionale Cloud-Synchronisierung für Backup oder geräteübergreifenden Zugriff"
+    },
+    "credits": {
+      "title": "Credits & Quellenangaben",
+      "educationalContent": "Bildungsinhalte",
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" von Chelsea Green, lizenziert unter CC BY 4.0",
+      "viewSource": "Originalquelle ansehen",
+      "musicalContent": "Musikalische Inhalte",
+      "imslp": "Klassische Kompositionen von IMSLP sind gemeinfrei",
+      "openSourceLibraries": "Open Source Bibliotheken",
+      "librariesDescription": "Mit Liebe erstellt unter Verwendung von React, TypeScript und vielen anderen wunderbaren Open-Source-Projekten"
+    },
+    "contact": {
+      "title": "Kontakt",
+      "github": "Fehler gefunden oder eine Idee?",
+      "reportIssue": "GitHub Issues",
+      "twitter": "Folge uns für Updates"
+    }
+  }
+}

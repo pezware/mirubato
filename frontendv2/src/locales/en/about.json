@@ -1,0 +1,40 @@
+{
+  "tagline": "Your private music practice journal, built for and by musicians",
+  "backToHome": "Back to Home",
+  "sections": {
+    "about": {
+      "title": "About Mirubato",
+      "what": "Mirubato helps you get the most out of your practice. Whether you're working on sight-reading or perfecting a piece, we provide the tools to track your progress and stay motivated.",
+      "why": "We believe consistent, mindful practice is the key to musical growth. Mirubato is designed to be a simple, encouraging companion on your musical journey.",
+      "how": "Mirubato is open-source and built with a local-first approach. This means your data stays with you, on your device, by default. No tracking, no analytics—just you and your music."
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Mirubato is proudly open-source. We welcome contributions from the community and believe in building great things together, transparently.",
+      "viewOnGithub": "View on GitHub"
+    },
+    "privacy": {
+      "title": "Your Privacy, Your Data",
+      "dataOwnership": "You own your practice data, always",
+      "localFirst": "Works offline, with your data saved locally on your device",
+      "noTracking": "We don't use tracking or analytics. Ever",
+      "optionalSync": "Optional cloud sync for backup or access across devices"
+    },
+    "credits": {
+      "title": "Credits & Attribution",
+      "educationalContent": "Educational Content",
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" by Chelsea Green, licensed under CC BY 4.0",
+      "viewSource": "View original source",
+      "musicalContent": "Musical Content",
+      "imslp": "Classical compositions from IMSLP are in the public domain",
+      "openSourceLibraries": "Open Source Libraries",
+      "librariesDescription": "Lovingly built with React, TypeScript, and many other wonderful open-source projects"
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "github": "Found a bug or have an idea?",
+      "reportIssue": "GitHub Issues",
+      "twitter": "Follow us for updates"
+    }
+  }
+}

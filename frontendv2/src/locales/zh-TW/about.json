@@ -1,0 +1,40 @@
+{
+  "tagline": "您的私人音樂練習日誌，由音樂家為音樂家打造",
+  "backToHome": "返回首頁",
+  "sections": {
+    "about": {
+      "title": "關於 Mirubato",
+      "what": "Mirubato 幫助您充分利用練習時間。無論您是在練習視譜還是完善演奏，我們都提供工具來追蹤您的進步並保持動力。",
+      "why": "我們相信持續、有意識的練習是音樂成長的關鍵。Mirubato 旨在成為您音樂旅程中簡單而鼓舞人心的夥伴。",
+      "how": "Mirubato 是開源的，採用本地優先的方式構建。這意味著您的資料預設會保存在您的裝置上。沒有追蹤，沒有分析——只有您和您的音樂。"
+    },
+    "openSource": {
+      "title": "開放原始碼",
+      "description": "Mirubato 自豪地採用開源。我們歡迎社群的貢獻，並相信透明地共同建造偉大的事物。",
+      "viewOnGithub": "在 GitHub 上查看"
+    },
+    "privacy": {
+      "title": "您的隱私，您的資料",
+      "dataOwnership": "您永遠擁有您的練習資料",
+      "localFirst": "離線工作，資料儲存在您的裝置上",
+      "noTracking": "我們不使用追蹤或分析。永遠不會",
+      "optionalSync": "可選的雲端同步，用於備份或跨裝置存取"
+    },
+    "credits": {
+      "title": "致謝與歸屬",
+      "educationalContent": "教育內容",
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" 作者 Chelsea Green，採用 CC BY 4.0 授權",
+      "viewSource": "查看原始來源",
+      "musicalContent": "音樂內容",
+      "imslp": "來自 IMSLP 的古典作品屬於公有領域",
+      "openSourceLibraries": "開源程式庫",
+      "librariesDescription": "用愛打造，使用 React、TypeScript 和許多其他優秀的開源專案"
+    },
+    "contact": {
+      "title": "聯絡我們",
+      "github": "發現錯誤或有想法？",
+      "reportIssue": "GitHub Issues",
+      "twitter": "關注我們獲取更新"
+    }
+  }
+}

@@ -131,9 +131,32 @@ export default function HomePage() {
 
         {/* Footer */}
         <footer className="p-4 sm:p-6 text-center">
-          <p className="text-white/70 text-sm">
+          <p className="text-white/70 text-sm mb-2">
             Open-source practice journal for musicians
           </p>
+          <div className="flex items-center justify-center gap-4 text-white/70 text-sm">
+            <Link to="/about" className="hover:text-white/90 transition-colors">
+              {t('common:footer.about')}
+            </Link>
+            <span className="text-white/40">•</span>
+            <a
+              href="https://github.com/pezware/mirubato"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/90 transition-colors"
+            >
+              GitHub
+            </a>
+            <span className="text-white/40">•</span>
+            <a
+              href="https://github.com/pezware/mirubato/blob/main/LICENSE.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/90 transition-colors"
+            >
+              {t('common:footer.license')}
+            </a>
+          </div>
         </footer>
       </div>
 

@@ -278,5 +278,9 @@
     "list": "列表"
   },
   "warning": "警告",
-  "yes": "是"
+  "yes": "是",
+  "footer": {
+    "about": "关于",
+    "license": "许可证"
+  }
 }

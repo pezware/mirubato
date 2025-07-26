@@ -278,5 +278,9 @@
     "list": "Liste"
   },
   "warning": "Warnung",
-  "yes": "Ja"
+  "yes": "Ja",
+  "footer": {
+    "about": "Über",
+    "license": "Lizenz"
+  }
 }
