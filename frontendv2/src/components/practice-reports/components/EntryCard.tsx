@@ -90,11 +90,6 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
         </div>
       )}
 
-      {/* Notes preview */}
-      {entry.notes && (
-        <p className="text-sm text-gray-600 line-clamp-2 mb-3">{entry.notes}</p>
-      )}
-
       {/* Actions Row - Bottom with border */}
       <div className="flex justify-between items-center pt-3 mt-auto border-t border-gray-100">
         <div className="flex gap-2">
