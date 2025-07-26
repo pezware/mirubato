@@ -9,6 +9,7 @@ import { Goal } from '@/api/goals'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
+import { Select } from '@/components/ui/Select'
 import { RepertoireCard } from './RepertoireCard'
 import { FocusedRepertoireItem } from './FocusedRepertoireItem'
 import { RepertoireCalendarView } from './RepertoireCalendarView'
@@ -77,6 +78,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     updateRepertoireStatus,
     updateRepertoire,
     repertoire,
+    sortBy,
+    setSortBy,
   } = useRepertoireStore()
 
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
@@ -421,8 +424,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       </div>
 
       {/* List Header */}
-      <div className="flex justify-end">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
+        <div className="flex items-center justify-between sm:justify-end gap-2">
           <div className="bg-stone-100 rounded-lg p-1 flex">
             <button
               onClick={() => setViewMode('list')}
@@ -459,9 +462,41 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             variant="primary"
             size="sm"
             onClick={() => setShowAddModal(true)}
+            className="sm:ml-0"
           >
             <Music className="w-4 h-4" />
           </Button>
+        </div>
+        <div className="flex justify-start sm:justify-end">
+          <Select
+            value={sortBy}
+            onChange={value =>
+              setSortBy(value as Parameters<typeof setSortBy>[0])
+            }
+            options={[
+              {
+                value: 'status-learning-first',
+                label: t('repertoire:sort.statusLearningFirst'),
+              },
+              {
+                value: 'last-practiced',
+                label: t('repertoire:sort.lastPracticed'),
+              },
+              {
+                value: 'most-practiced',
+                label: t('repertoire:sort.mostPracticed'),
+              },
+              {
+                value: 'title-asc',
+                label: t('repertoire:sort.titleAsc'),
+              },
+              {
+                value: 'composer-asc',
+                label: t('repertoire:sort.composerAsc'),
+              },
+            ]}
+            className="w-full sm:w-auto"
+          />
         </div>
       </div>
 

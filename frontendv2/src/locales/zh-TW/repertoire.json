@@ -153,5 +153,12 @@
   "unit": "單位",
   "viewAllSessions": "查看所有 {{count}} 次練習",
   "viewDetails": "查看詳情",
-  "viewScore": "查看樂譜"
+  "viewScore": "查看樂譜",
+  "sort": {
+    "statusLearningFirst": "狀態（學習中優先）",
+    "lastPracticed": "最近練習",
+    "mostPracticed": "練習最多",
+    "titleAsc": "標題（A-Z）",
+    "composerAsc": "作曲家（A-Z）"
+  }
 }

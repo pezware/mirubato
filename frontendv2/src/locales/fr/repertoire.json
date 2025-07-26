@@ -153,5 +153,12 @@
   "unit": "Unité",
   "viewAllSessions": "Voir toutes les {{count}} sessions",
   "viewDetails": "Voir les détails",
-  "viewScore": "Voir la Partition"
+  "viewScore": "Voir la Partition",
+  "sort": {
+    "statusLearningFirst": "Statut (En apprentissage d'abord)",
+    "lastPracticed": "Pratiqué récemment",
+    "mostPracticed": "Le plus pratiqué",
+    "titleAsc": "Titre (A-Z)",
+    "composerAsc": "Compositeur (A-Z)"
+  }
 }

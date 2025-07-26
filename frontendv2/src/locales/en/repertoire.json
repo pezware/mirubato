@@ -153,5 +153,12 @@
   "noComposersFound": "No composers found",
   "autocomplete": {
     "offline": "Offline - showing your history"
+  },
+  "sort": {
+    "statusLearningFirst": "Status (Learning first)",
+    "lastPracticed": "Recently practiced",
+    "mostPracticed": "Most practiced",
+    "titleAsc": "Title (A-Z)",
+    "composerAsc": "Composer (A-Z)"
   }
 }
