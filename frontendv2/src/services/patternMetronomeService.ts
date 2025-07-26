@@ -18,7 +18,7 @@ interface VisualCallback {
 }
 
 class PatternMetronomeService {
-  private synths: Record<
+  private synths?: Record<
     string,
     Tone.Synth | Tone.MembraneSynth | Tone.MetalSynth | Tone.NoiseSynth
   >
@@ -26,7 +26,7 @@ class PatternMetronomeService {
   private beatsPerMeasure: number = 4
   private beatValue: number = 4
   private isPlaying: boolean = false
-  private volume: Tone.Volume
+  private volume?: Tone.Volume
   private visualCallback?: VisualCallback
   private lookaheadTime: number = 0.1
   private scheduleInterval: number = 25
@@ -40,8 +40,18 @@ class PatternMetronomeService {
     shaker: [false, false, false, false],
     triangle: [false, false, false, false],
   }
+  private isInitialized: boolean = false
+  private pendingTempo?: number
+  private pendingVolume?: number
 
   constructor() {
+    // Don't create Tone.js objects here - wait for user gesture
+    // Store any pending settings to apply after initialization
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.isInitialized) return
+
     // Create volume control
     this.volume = new Tone.Volume(-6).toDestination()
 
@@ -107,6 +117,20 @@ class PatternMetronomeService {
         volume: -6, // Slightly quieter to balance with other sounds
       }).connect(this.volume),
     }
+
+    this.isInitialized = true
+
+    // Apply any pending settings
+    if (this.pendingTempo !== undefined) {
+      Tone.Transport.bpm.value = this.pendingTempo
+      this.pendingTempo = undefined
+    }
+    if (this.pendingVolume !== undefined) {
+      const db =
+        this.pendingVolume === 0 ? -Infinity : -60 + this.pendingVolume * 60
+      this.volume.volume.value = db
+      this.pendingVolume = undefined
+    }
   }
 
   async start(
@@ -115,6 +139,9 @@ class PatternMetronomeService {
   ): Promise<void> {
     // Don't try to start audio context here - it should be started by user gesture in UI
     // The component should ensure Tone.start() is called before calling this method
+
+    // Ensure Tone.js objects are initialized
+    await this.ensureInitialized()
 
     // Stop any existing playback
     this.stop()
@@ -163,6 +190,8 @@ class PatternMetronomeService {
   }
 
   private scheduleNote(time: number): void {
+    if (!this.synths) return // Safety check
+
     const layersToPlay: Record<string, boolean> = {}
 
     // Check each layer's pattern for this beat
@@ -252,22 +281,37 @@ class PatternMetronomeService {
 
   setTempo(tempo: number): void {
     this.tempo = tempo
+
+    if (!this.isInitialized) {
+      // Store for later application
+      this.pendingTempo = tempo
+      return
+    }
+
     try {
       // Use Transport's BPM for smooth tempo changes
       Tone.Transport.bpm.rampTo(tempo, 0.1)
     } catch (_error) {
-      // Ignore errors if audio context not started - tempo will be set when playback starts
+      // If error occurs, store as pending
+      this.pendingTempo = tempo
       console.debug('Tempo will be set when audio context starts')
     }
   }
 
   setVolume(volume: number): void {
+    if (!this.isInitialized || !this.volume) {
+      // Store for later application
+      this.pendingVolume = volume
+      return
+    }
+
     try {
       // Convert 0-1 range to decibels (-60 to 0)
       const db = volume === 0 ? -Infinity : -60 + volume * 60
       this.volume.volume.rampTo(db, 0.05) // Smooth volume changes
     } catch (_error) {
-      // Ignore errors if audio context not started - will be set when playback starts
+      // If error occurs, store as pending
+      this.pendingVolume = volume
       console.debug('Volume will be set when audio context starts')
     }
   }
@@ -283,8 +327,13 @@ class PatternMetronomeService {
 
   dispose(): void {
     this.stop()
-    Object.values(this.synths).forEach(synth => synth.dispose())
-    this.volume.dispose()
+    if (this.synths) {
+      Object.values(this.synths).forEach(synth => synth.dispose())
+    }
+    if (this.volume) {
+      this.volume.dispose()
+    }
+    this.isInitialized = false
   }
 }
 

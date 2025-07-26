@@ -156,10 +156,10 @@ const Toolbox: React.FC = () => {
     },
   })
 
-  // Initialize metronome
+  // Cleanup metronome on unmount
   useEffect(() => {
-    metronome.setTempo(settings.bpm)
-    metronome.setVolume(settings.volume / 100)
+    // Don't set tempo/volume here - wait for user interaction
+    // The settings will be applied when the user starts the metronome
     return () => {
       // Always stop metronome when leaving the page
       metronome.stop()
@@ -466,7 +466,7 @@ const Toolbox: React.FC = () => {
                         <button
                           onClick={() =>
                             updateSettings({
-                              bpm: Math.max(40, settings.bpm - 5),
+                              bpm: Math.max(40, settings.bpm - 1),
                             })
                           }
                           className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
@@ -484,7 +484,7 @@ const Toolbox: React.FC = () => {
                         <button
                           onClick={() =>
                             updateSettings({
-                              bpm: Math.min(240, settings.bpm + 5),
+                              bpm: Math.min(240, settings.bpm + 1),
                             })
                           }
                           className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
