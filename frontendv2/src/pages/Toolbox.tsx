@@ -616,56 +616,131 @@ const Toolbox: React.FC = () => {
             {/* Beat Pattern Grid */}
             <div className="lg:w-2/3">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                <div className="overflow-x-auto overflow-y-hidden scrollbar-hide sm:scrollbar-thin-auto">
-                  <div className="inline-block min-w-fit">
-                    {/* Grid with beat numbers and layers */}
-                    <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
-                      {/* Header row with beat numbers */}
-                      <div></div>
-                      {Array.from(
-                        { length: settings.beatsPerMeasure },
-                        (_, i) => (
-                          <div
-                            key={i}
-                            className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
-                          >
-                            {i + 1}
+                <div className="w-full">
+                  <div
+                    className={`${
+                      settings.beatsPerMeasure <= 16
+                        ? 'w-full'
+                        : 'overflow-x-auto overflow-y-hidden'
+                    }`}
+                  >
+                    <div
+                      className={`${
+                        settings.beatsPerMeasure <= 16
+                          ? 'w-full'
+                          : 'inline-block min-w-fit'
+                      }`}
+                    >
+                      {/* Grid with beat numbers and layers */}
+                      <div
+                        className={`grid gap-1 ${
+                          settings.beatsPerMeasure <= 16
+                            ? 'grid-cols-[96px_1fr]'
+                            : 'grid-cols-[96px_repeat(36,40px)]'
+                        }`}
+                      >
+                        {/* Header row with beat numbers */}
+                        <div></div>
+                        {settings.beatsPerMeasure <= 16 ? (
+                          <div className="grid grid-cols-subgrid col-span-1">
+                            <div className="flex justify-around">
+                              {Array.from(
+                                { length: settings.beatsPerMeasure },
+                                (_, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex-1 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
+                                  >
+                                    {i + 1}
+                                  </div>
+                                )
+                              )}
+                            </div>
                           </div>
-                        )
-                      )}
-                      {/* Fill remaining columns */}
-                      {Array.from(
-                        { length: 36 - settings.beatsPerMeasure },
-                        (_, i) => (
-                          <div key={`empty-${i}`}></div>
-                        )
-                      )}
+                        ) : (
+                          <>
+                            {Array.from(
+                              { length: settings.beatsPerMeasure },
+                              (_, i) => (
+                                <div
+                                  key={i}
+                                  className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
+                                >
+                                  {i + 1}
+                                </div>
+                              )
+                            )}
+                            {/* Fill remaining columns */}
+                            {Array.from(
+                              { length: 36 - settings.beatsPerMeasure },
+                              (_, i) => (
+                                <div key={`empty-${i}`}></div>
+                              )
+                            )}
+                          </>
+                        )}
 
-                      {/* Sound Layers */}
-                      {soundLayers.map(layer => (
-                        <React.Fragment key={layer.id}>
-                          <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
-                            {t(`toolbox:metronome.sounds.${layer.id}`)}
-                          </div>
-                          {Array.from({ length: 36 }, (_, i) => (
-                            <button
-                              key={i}
-                              onClick={() =>
-                                i < settings.beatsPerMeasure &&
-                                toggleBeat(layer.id as keyof PatternState, i)
-                              }
-                              disabled={i >= settings.beatsPerMeasure}
-                              className={`w-10 h-10 rounded transition-all ${
-                                i < settings.beatsPerMeasure
-                                  ? patterns[layer.id as keyof PatternState][i]
-                                    ? layer.color + ' text-white'
-                                    : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
-                                  : 'bg-transparent cursor-default'
-                              }`}
-                            />
-                          ))}
-                        </React.Fragment>
-                      ))}
+                        {/* Sound Layers */}
+                        {soundLayers.map(layer => (
+                          <React.Fragment key={layer.id}>
+                            <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
+                              {t(`toolbox:metronome.sounds.${layer.id}`)}
+                            </div>
+                            {settings.beatsPerMeasure <= 16 ? (
+                              <div className="grid grid-cols-subgrid col-span-1">
+                                <div className="flex justify-around gap-1">
+                                  {Array.from(
+                                    { length: settings.beatsPerMeasure },
+                                    (_, i) => (
+                                      <button
+                                        key={i}
+                                        onClick={() =>
+                                          toggleBeat(
+                                            layer.id as keyof PatternState,
+                                            i
+                                          )
+                                        }
+                                        className={`flex-1 h-10 rounded transition-all ${
+                                          patterns[
+                                            layer.id as keyof PatternState
+                                          ][i]
+                                            ? layer.color + ' text-white'
+                                            : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                        }`}
+                                      />
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {Array.from({ length: 36 }, (_, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() =>
+                                      i < settings.beatsPerMeasure &&
+                                      toggleBeat(
+                                        layer.id as keyof PatternState,
+                                        i
+                                      )
+                                    }
+                                    disabled={i >= settings.beatsPerMeasure}
+                                    className={`w-10 h-10 rounded transition-all ${
+                                      i < settings.beatsPerMeasure
+                                        ? patterns[
+                                            layer.id as keyof PatternState
+                                          ][i]
+                                          ? layer.color + ' text-white'
+                                          : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                        : 'bg-transparent cursor-default'
+                                    }`}
+                                  />
+                                ))}
+                              </>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
