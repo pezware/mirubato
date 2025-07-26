@@ -36,9 +36,8 @@ test.describe('Logbook', () => {
       await test.step('Verify entry appears', async () => {
         await logbookPage.switchToOverviewTab()
         await logbookPage.verifyEntryCount(1)
-        await logbookPage.verifyEntryContainsText(
-          'Worked on first movement dynamics'
-        )
+        // Verify the piece title is visible (notes are only shown when expanded)
+        await logbookPage.verifyEntryContainsText('Moonlight Sonata')
       })
 
       await test.step('Verify data saved correctly', async () => {
@@ -114,9 +113,13 @@ test.describe('Logbook', () => {
         // Verify either the composer is visible OR the expanded notes are visible
         expect(mozartVisible || hasExpandedContent).toBeTruthy()
 
-        // Verify the entry is actually expanded by checking for notes
+        // Verify the entry is actually expanded by checking for notes in the expanded view
+        // Target the whitespace-pre-wrap class which is used in the expanded details
         await expect(
-          page.locator('text=Focused on the famous Rondo Alla Turca')
+          page
+            .locator('.whitespace-pre-wrap')
+            .filter({ hasText: 'Focused on the famous Rondo Alla Turca' })
+            .first()
         ).toBeVisible({
           timeout: 10000,
         })

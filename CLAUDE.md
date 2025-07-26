@@ -326,6 +326,30 @@ import { Button } from '@/components/ui'
 | Toast     | success, error, warning, info           | Notifications      |
 | Loading   | spinner, dots, pulse, skeleton          | Loading states     |
 
+### Typography Design System
+
+Based on extensive research using Gemini AI for multilingual font selection, Mirubato uses:
+
+**Font Families**:
+
+- **Noto Serif**: Music piece titles and composers (excellent multilingual support for Latin, CJK characters)
+- **Inter**: UI elements, metadata, body text
+- **Lexend**: Headers and section titles
+
+**Typography Hierarchy**:
+
+1. **Title**: Noto Serif, 18-20px, font-medium to font-semibold
+2. **Composer**: Noto Serif, 16px, font-normal, slightly muted color
+3. **Metadata**: Inter, 12-14px, text-gray-600
+4. **Actions**: Inter, 14px
+
+**Design Rationale**:
+
+- Noto Serif provides academic/classical feel appropriate for music education
+- Creates visual contrast between content (serif) and UI (sans-serif)
+- Aligns with Morandi aesthetic - sophisticated without being flashy
+- Ensures readability across all supported languages
+
 ### Chart.js Integration
 
 ```typescript
@@ -501,6 +525,15 @@ pnpm install
 - Practice timer feature
 - Enhanced repertoire timeline
 - Complete i18n (200+ translations fixed)
+
+#### Mobile UI Improvements (PR #357)
+
+- **Typography Enhancement**: Added Noto Serif font for better multilingual support
+- **Vertical Layout**: Optimized for small screens (iPhone SE and up)
+- **Expandable Details**: View-only mode with Eye icon for full entry details
+- **Day Separators**: Clear visual distinction between practice days
+- **Icon Consistency**: Replaced emojis with Tabler Icons throughout
+- **Touch Targets**: Improved to 44x44px for better accessibility
 
 #### Security & Infrastructure
 

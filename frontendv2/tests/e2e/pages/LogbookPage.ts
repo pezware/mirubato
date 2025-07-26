@@ -290,8 +290,30 @@ export class LogbookPage {
       .isVisible()
       .catch(() => false)
     if (overviewTabVisible) {
-      // We're in enhanced reports, just check if the text is visible somewhere on the page
-      await expect(this.page.locator(`text="${text}"`)).toBeVisible()
+      // We're in enhanced reports view
+      // Since notes preview is removed, we need to expand the entry to see notes
+      // For now, just check if the entry exists (by title/composer)
+      const entryExists = await this.page
+        .locator('[data-testid="logbook-entry"]')
+        .filter({ hasText: text })
+        .first()
+        .isVisible()
+        .catch(() => false)
+
+      if (!entryExists) {
+        // If text is not found in the collapsed view, it might be notes
+        // We would need to expand entries to check notes content
+        throw new Error(
+          `Text "${text}" not found in collapsed entries. Notes are only visible when expanded.`
+        )
+      }
+
+      await expect(
+        this.page
+          .locator('[data-testid="logbook-entry"]')
+          .filter({ hasText: text })
+          .first()
+      ).toBeVisible()
     } else {
       // Legacy view - check for entries
       const entry = this.entries.filter({ hasText: text })

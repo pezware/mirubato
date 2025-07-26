@@ -164,7 +164,7 @@ export function MonthlySummaries({
                             {formatDuration(entry.duration)}
                           </span>
                           <span className="text-xs text-morandi-stone-500">
-                            {entry.instrument === 'piano' ? '🎹' : '🎸'}
+                            {entry.instrument}
                           </span>
                         </div>
                         {entry.pieces.length > 0 && (

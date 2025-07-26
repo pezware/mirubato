@@ -39,9 +39,21 @@ export default function HomePage() {
     await logout()
   }
 
+  // Extract initials from email
+  const getUserInitials = (email: string) => {
+    const [localPart] = email.split('@')
+    const parts = localPart.split(/[._-]/)
+    if (parts.length >= 2) {
+      // Take first letter of first two parts
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    // Single part - take first letter
+    return localPart[0].toUpperCase()
+  }
+
   return (
     <div
-      className="min-h-screen bg-cover bg-center relative"
+      className="min-h-screen bg-cover bg-center relative overflow-x-hidden"
       style={{
         backgroundImage: 'url(/mirubato-cover.jpeg)',
       }}
@@ -54,23 +66,13 @@ export default function HomePage() {
         {/* Header */}
         <header className="p-4 sm:p-6 flex justify-between items-center">
           <div className="text-white/90">{/* Logo placeholder */}</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSwitcher />
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-white/90 text-sm">{user.email}</span>
-                <Link
-                  to="/logbook"
-                  className="text-white/90 hover:text-white text-sm transition-colors"
-                >
-                  {t('common:navigation.logbook')}
-                </Link>
-                <Link
-                  to="/toolbox"
-                  className="text-white/90 hover:text-white text-sm transition-colors"
-                >
-                  Toolbox
-                </Link>
+              <div className="flex items-center gap-2 sm:gap-4">
+                <span className="text-white/90 text-sm font-medium">
+                  {getUserInitials(user.email)}
+                </span>
                 <button
                   onClick={handleLogout}
                   className="text-white/90 hover:text-white text-sm transition-colors"

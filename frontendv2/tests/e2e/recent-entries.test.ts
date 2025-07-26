@@ -37,9 +37,7 @@ test.describe('Recent Entries', () => {
       })
       await expect(page.locator('text=Test Piece')).toBeVisible()
       await expect(page.locator('text=Test Composer')).toBeVisible()
-      await expect(
-        page.locator('text=Test notes for recent entry')
-      ).toBeVisible()
+      // Notes are no longer shown in preview - only visible when expanded
     })
   })
 

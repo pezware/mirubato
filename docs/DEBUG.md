@@ -665,6 +665,97 @@ useEffect(() => {
 5. Try a clean install
 6. Check production logs in Cloudflare dashboard
 
+### 9. React StrictMode Memory Leak with Authentication
+
+**Problem**: Repeated connection failures causing memory leak due to multiple concurrent auth refresh attempts.
+
+**Root Causes Identified** (July 2025):
+
+1. **React StrictMode double-mounting**: In development, components mount twice causing duplicate API calls
+2. **Missing request deduplication**: `authStore.refreshAuth()` created new promises without checking for existing ones
+3. **Missing i18n context**: Hard-coded locale in components causing potential re-renders
+4. **No cleanup for async operations**: useEffect didn't clean up when component unmounted
+
+**Symptoms**:
+
+- Network tab shows repeated failed auth requests
+- Multiple concurrent requests to same endpoint
+- Memory usage increases over time
+- Browser becomes unresponsive
+
+**Solution Applied**:
+
+1. **Add request deduplication to authStore** (commit hash TBD):
+
+   ```typescript
+   interface AuthState {
+     refreshPromise: Promise<void> | null
+     // ... other state
+   }
+
+   refreshAuth: async () => {
+     // Check for existing promise
+     const existingPromise = get().refreshPromise
+     if (existingPromise) {
+       return existingPromise
+     }
+
+     // Create new promise and store it
+     const refreshPromise = (async () => {
+       // ... refresh logic
+     })()
+
+     set({ refreshPromise })
+     return refreshPromise
+   }
+   ```
+
+2. **Add proper cleanup in App.tsx**:
+
+   ```typescript
+   useEffect(() => {
+     let isMounted = true
+
+     const initializeApp = async () => {
+       runLowercaseMigration()
+       if (isMounted) {
+         await refreshAuth()
+       }
+     }
+
+     initializeApp()
+
+     return () => {
+       isMounted = false
+     }
+   }, [refreshAuth])
+   ```
+
+3. **Fix missing i18n context**:
+   ```typescript
+   // Replace hardcoded 'en' with i18n.language
+   const { t, i18n } = useTranslation()
+   const formattedDate = date.toLocaleDateString(i18n.language, {
+     month: 'short',
+     day: '2-digit',
+   })
+   ```
+
+**Prevention Guidelines**:
+
+1. **Always implement request deduplication** for auth operations
+2. **Use cleanup patterns** in useEffect for async operations
+3. **Never hardcode locales** - always use i18n context
+4. **Be aware of StrictMode** double-mounting in development
+5. **Track in-flight requests** to prevent duplicates
+
+**Debugging Steps**:
+
+- Check Network tab for duplicate requests
+- Look for missing cleanup in useEffect
+- Verify request deduplication is implemented
+- Check for hardcoded values that should use context
+
 ---
 
 _This document should be updated whenever new issues are discovered and resolved._

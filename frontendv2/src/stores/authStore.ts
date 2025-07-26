@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  refreshPromise: Promise<void> | null
 
   // Actions
   login: (email: string) => Promise<void>
@@ -19,11 +20,12 @@ interface AuthState {
   syncUserPreferences: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>(set => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  refreshPromise: null,
 
   login: async (email: string) => {
     set({ isLoading: true, error: null })
@@ -233,66 +235,80 @@ export const useAuthStore = create<AuthState>(set => ({
   },
 
   refreshAuth: async () => {
+    // If there's already a refresh in progress, return the existing promise
+    const existingPromise = get().refreshPromise
+    if (existingPromise) {
+      return existingPromise
+    }
+
     const token = localStorage.getItem('auth-token')
     if (!token) {
       set({ isAuthenticated: false, user: null })
       return
     }
 
-    set({ isLoading: true })
-    try {
-      const user = await authApi.getCurrentUser()
-      set({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      })
-
-      // Set to online mode when authenticated
+    // Create a new refresh promise
+    const refreshPromise = (async () => {
+      set({ isLoading: true })
       try {
-        const { setLocalMode, syncWithServer } = useLogbookStore.getState()
-        const { syncLocalData } = await import('./repertoireStore').then(m =>
-          m.useRepertoireStore.getState()
-        )
-        setLocalMode(false)
+        const user = await authApi.getCurrentUser()
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          refreshPromise: null,
+        })
 
-        // Sync both logbook and repertoire data in background
-        Promise.all([
-          syncWithServer().catch((error: unknown) => {
-            console.warn('Background logbook sync failed:', error)
-          }),
-          syncLocalData().catch((error: unknown) => {
-            console.warn('Background repertoire sync failed:', error)
-          }),
-          useAuthStore
-            .getState()
-            .syncUserPreferences()
-            .catch((error: unknown) => {
-              console.warn('Background preferences sync failed:', error)
+        // Set to online mode when authenticated
+        try {
+          const { setLocalMode, syncWithServer } = useLogbookStore.getState()
+          const { syncLocalData } = await import('./repertoireStore').then(m =>
+            m.useRepertoireStore.getState()
+          )
+          setLocalMode(false)
+
+          // Sync both logbook and repertoire data in background
+          Promise.all([
+            syncWithServer().catch((error: unknown) => {
+              console.warn('Background logbook sync failed:', error)
             }),
-        ])
-      } catch (syncError) {
-        console.warn('Store sync error after refresh auth:', syncError)
-        // Continue - auth refresh was successful even if sync failed
-      }
-    } catch {
-      // Token is invalid, clear auth state
-      localStorage.removeItem('auth-token')
-      localStorage.removeItem('refresh-token')
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      })
+            syncLocalData().catch((error: unknown) => {
+              console.warn('Background repertoire sync failed:', error)
+            }),
+            useAuthStore
+              .getState()
+              .syncUserPreferences()
+              .catch((error: unknown) => {
+                console.warn('Background preferences sync failed:', error)
+              }),
+          ])
+        } catch (syncError) {
+          console.warn('Store sync error after refresh auth:', syncError)
+          // Continue - auth refresh was successful even if sync failed
+        }
+      } catch {
+        // Token is invalid, clear auth state
+        localStorage.removeItem('auth-token')
+        localStorage.removeItem('refresh-token')
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          refreshPromise: null,
+        })
 
-      // Set back to local mode when auth fails
-      try {
-        const { setLocalMode } = useLogbookStore.getState()
-        setLocalMode(true)
-      } catch (error) {
-        console.warn('Could not set local mode:', error)
+        // Set back to local mode when auth fails
+        try {
+          const { setLocalMode } = useLogbookStore.getState()
+          setLocalMode(true)
+        } catch (error) {
+          console.warn('Could not set local mode:', error)
+        }
       }
-    }
+    })()
+
+    set({ refreshPromise })
+    return refreshPromise
   },
 
   clearError: () => set({ error: null }),

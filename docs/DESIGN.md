@@ -14,6 +14,15 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Enhanced Repertoire**: Timeline visualization and practice history
 - **Complete Localization**: All 200+ missing translations fixed
 
+### Version 1.7.0 - Mobile UI Enhancements (PR #357)
+
+- **Typography System**: Implemented Noto Serif for multilingual music titles
+- **Mobile-First Layout**: Vertical card design optimized for small screens
+- **Expandable Details**: In-place expansion with Eye icon for viewing full entry information
+- **Day Separators**: Visual timeline with bold date headers between practice days
+- **Consistent Iconography**: Migrated from emojis to Tabler Icons for professional appearance
+- **Accessibility**: Enhanced touch targets (44x44px) meeting WCAG guidelines
+
 ### Version 1.7.0 Highlights
 
 - **Security Hardening**: Comprehensive vulnerability remediation across all services
@@ -424,6 +433,39 @@ A comprehensive set of reusable components following consistent design patterns 
 - **Design System**: Constants for spacing, typography, shadows, animations
 
 All components follow accessibility standards (WCAG 2.1 AA) and support dark mode preparation. The component library has been extensively refactored to eliminate native HTML usage in favor of consistent, branded components.
+
+**Typography Design System (July 2025)**
+
+Mirubato's typography system was carefully researched using Gemini AI for optimal multilingual support:
+
+**Font Selection**:
+
+- **Noto Serif**: Primary font for musical content (titles, composers)
+  - Chosen for excellent CJK (Chinese, Japanese, Korean) character support
+  - Provides academic/classical aesthetic appropriate for music education
+  - "Noto" = "No Tofu", ensuring no missing character boxes across languages
+- **Inter**: UI elements, metadata, body text
+  - Clean, modern sans-serif for interface elements
+  - Excellent readability at small sizes
+- **Lexend**: Headers and section titles
+  - Designed specifically for reading proficiency
+  - Complements the overall design system
+
+**Typography Hierarchy**:
+
+1. **Music Titles**: Noto Serif, 18-20px (mobile/desktop), font-medium to font-semibold
+2. **Composers**: Noto Serif, 16px, font-normal, slightly muted color (text-gray-700)
+3. **Metadata**: Inter, 12-14px, text-gray-600 (time, duration, type)
+4. **UI Actions**: Inter, 14px
+5. **Section Headers**: Lexend, various sizes based on hierarchy
+
+**Design Principles**:
+
+- **Contrast**: Serif fonts for content, sans-serif for UI creates clear hierarchy
+- **Multilingual**: Full support for English, Spanish, French, German, Chinese (Traditional & Simplified)
+- **Readability**: Larger font sizes on mobile for better touch interaction
+- **Consistency**: Unified type scale across all components
+- **Aesthetics**: Aligns with Morandi color palette - sophisticated without being flashy
 
 **Theme Management (July 2025)**
 

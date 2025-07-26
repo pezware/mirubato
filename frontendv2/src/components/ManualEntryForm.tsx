@@ -240,6 +240,7 @@ export default function ManualEntryForm({
       onClose={onClose}
       title={entry ? t('logbook:entry.editEntry') : t('logbook:entry.addEntry')}
       size="lg"
+      className="sm:max-w-3xl"
     >
       <form
         onSubmit={handleSubmit}
@@ -249,7 +250,7 @@ export default function ManualEntryForm({
         {/* Basic Info */}
         <div className="space-y-4">
           {/* Date, Time, Duration, and Instrument - One line on desktop, stacked on mobile */}
-          <div className="grid grid-cols-2 sm:grid-cols-[1.3fr_0.9fr_1fr_1.3fr] gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-[1.2fr_1fr_1fr_1.2fr] gap-2 sm:gap-4">
             {/* Date */}
             <div>
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
