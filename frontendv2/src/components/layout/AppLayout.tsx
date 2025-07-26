@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import TopBar from './TopBar'
 import BottomTabs from './BottomTabs'
 import SignInModal from '../auth/SignInModal'
 
 interface AppLayoutProps {
   children: React.ReactNode
-  onSearchChange?: (query: string) => void
   onNewEntry?: () => void
   onTimerClick?: () => void
   onImportScore?: () => void
@@ -17,7 +15,6 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({
   children,
-  onSearchChange,
   onNewEntry,
   onTimerClick,
   onImportScore,
@@ -42,9 +39,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     )
   }, [isSidebarCollapsed])
 
-  // Determine if we should show quick actions based on current page
-  const shouldShowQuickActions =
-    showQuickActions && location.pathname.includes('/logbook')
+  // Show quick actions on all pages
+  const shouldShowQuickActions = showQuickActions
 
   const handleAddClick = () => {
     // Determine action based on current page
@@ -69,32 +65,27 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   return (
     <>
       <div className="min-h-screen bg-[#fafafa]">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar with all functionality */}
         <Sidebar
           className="hidden sm:block"
           isCollapsed={isSidebarCollapsed}
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onNewEntry={shouldShowQuickActions ? onNewEntry : undefined}
+          onTimerClick={shouldShowQuickActions ? onTimerClick : undefined}
+          onSignInClick={() => setShowSignInModal(true)}
         />
 
-        {/* Main Content Area */}
+        {/* Main Content Area - No TopBar */}
         <div
           className={`transition-all duration-300 min-h-screen ${
             isSidebarCollapsed ? 'sm:ml-16' : 'sm:ml-60'
           }`}
         >
-          {/* Top Bar */}
-          <TopBar
-            onSearchChange={shouldShowQuickActions ? onSearchChange : undefined}
-            onNewEntry={shouldShowQuickActions ? onNewEntry : undefined}
-            onTimerClick={shouldShowQuickActions ? onTimerClick : undefined}
-            onSignInClick={() => setShowSignInModal(true)}
-          />
-
           {/* Page Content */}
           <main className="pb-16 sm:pb-0">{children}</main>
         </div>
 
-        {/* Mobile Bottom Tabs */}
+        {/* Mobile Bottom Tabs - Unchanged */}
         <BottomTabs onAddClick={handleAddClick} onTimerClick={onTimerClick} />
       </div>
 

@@ -1,21 +1,60 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, Music, FileText, Wrench, ChevronLeft } from 'lucide-react'
+import {
+  BookOpen,
+  Music,
+  FileText,
+  Wrench,
+  ChevronLeft,
+  Plus,
+  Clock,
+} from 'lucide-react'
+import { useAuthStore } from '../../stores/authStore'
+import Button from '../ui/Button'
 
 interface SidebarProps {
   className?: string
   isCollapsed: boolean
   onToggle: () => void
+  onNewEntry?: () => void
+  onTimerClick?: () => void
+  onSignInClick?: () => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   className = '',
   isCollapsed,
   onToggle,
+  onNewEntry,
+  onTimerClick,
+  onSignInClick,
 }) => {
-  const { t } = useTranslation(['common', 'logbook', 'toolbox', 'scorebook'])
+  const { t } = useTranslation([
+    'common',
+    'logbook',
+    'toolbox',
+    'scorebook',
+    'auth',
+  ])
   const location = useLocation()
+  const { user, isAuthenticated, logout } = useAuthStore()
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowUserDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const navItems = [
     {
@@ -44,6 +83,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
   ]
 
+  const getUserInitials = () => {
+    if (!user) return '?'
+    const firstNameOrEmail = user.displayName || user.email || ''
+    const firstName = firstNameOrEmail.split(' ')[0]
+    return firstName[0]?.toUpperCase() || '?'
+  }
+
   const isActive = (path: string) => {
     // For paths with query params, check exact match including query
     if (path.includes('?')) {
@@ -60,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 bg-gray-50 border-r border-gray-200 transition-all duration-300 ${
+      className={`fixed left-0 top-0 bottom-0 bg-gray-50 border-r border-gray-200 transition-all duration-300 flex flex-col ${
         isCollapsed ? 'w-16' : 'w-60'
       } ${className}`}
     >
@@ -93,7 +139,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      <nav className={`${isCollapsed ? 'px-2' : 'px-4'}`}>
+      <nav
+        className={`flex-1 flex flex-col ${isCollapsed ? 'px-2' : 'px-4'} overflow-y-auto`}
+      >
+        {/* Main Navigation */}
         <div className="space-y-1">
           {navItems.map(item => {
             const Icon = item.icon
@@ -121,7 +170,123 @@ const Sidebar: React.FC<SidebarProps> = ({
             )
           })}
         </div>
+
+        {/* Divider */}
+        <div className="my-4 border-t border-gray-200" />
+
+        {/* Action Buttons */}
+        <div className="space-y-1">
+          {onNewEntry && (
+            <button
+              onClick={onNewEntry}
+              className={`
+                w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
+                  isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
+                } rounded-lg text-sm font-medium transition-all
+                text-gray-600 hover:bg-gray-100 hover:text-gray-900
+              `}
+              title={isCollapsed ? t('common:actions.addEntry') : undefined}
+            >
+              <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+              {!isCollapsed && t('common:actions.addEntry')}
+            </button>
+          )}
+          {onTimerClick && (
+            <button
+              onClick={onTimerClick}
+              className={`
+                w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
+                  isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
+                } rounded-lg text-sm font-medium transition-all
+                text-gray-600 hover:bg-gray-100 hover:text-gray-900
+              `}
+              title={isCollapsed ? t('common:actions.timer') : undefined}
+            >
+              <Clock className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+              {!isCollapsed && t('common:actions.timer')}
+            </button>
+          )}
+        </div>
+
+        {/* Spacer to push user section to bottom */}
+        <div className="flex-1 min-h-[60px]" />
       </nav>
+
+      {/* User Section - Outside nav, at the very bottom */}
+      <div
+        className={`${isCollapsed ? 'px-2' : 'px-4'} pb-4 pt-4 border-t border-gray-200`}
+      >
+        {isAuthenticated ? (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowUserDropdown(!showUserDropdown)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
+                isCollapsed ? 'p-2' : 'p-2'
+              } rounded-lg hover:bg-gray-100 transition-colors`}
+            >
+              <div className="w-8 h-8 rounded-full bg-morandi-sage-500 text-white flex items-center justify-center text-sm font-semibold">
+                {getUserInitials()}
+              </div>
+              {!isCollapsed && (
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    {user?.displayName || user?.email?.split('@')[0]}
+                  </div>
+                </div>
+              )}
+            </button>
+
+            {/* User Dropdown */}
+            {showUserDropdown && (
+              <div
+                className={`absolute ${isCollapsed ? 'left-full ml-2' : 'left-0'} bottom-full mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50`}
+              >
+                <div className="p-4 border-b border-gray-100">
+                  <div className="font-medium text-gray-900">
+                    {user?.displayName || user?.email}
+                  </div>
+                  {user?.email && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      {user.email}
+                    </div>
+                  )}
+                </div>
+                <div className="p-1">
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
+                    {t('common:navigation.profileSettings')}
+                  </button>
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors">
+                    {t('common:navigation.preferences')}
+                  </button>
+                  <div className="border-t border-gray-100 my-1" />
+                  <button
+                    onClick={async () => {
+                      await logout()
+                      setShowUserDropdown(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                  >
+                    {t('auth:signOut')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Button
+            onClick={onSignInClick}
+            variant="primary"
+            size="sm"
+            className={`w-full ${isCollapsed ? 'px-2' : ''}`}
+          >
+            {isCollapsed ? (
+              <span className="text-xs">IN</span>
+            ) : (
+              t('auth:signIn')
+            )}
+          </Button>
+        )}
+      </div>
     </aside>
   )
 }
