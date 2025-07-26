@@ -8,48 +8,8 @@ account_id = "1362434665780520e89f9f06b1057d24"
 [build]
 command = "pnpm run build"
 
-# Production configuration (default - no env flag needed)
-vars = { QUALITY_THRESHOLD = "80", CACHE_TTL = "86400", ENVIRONMENT = "production", API_SERVICE_URL = "https://api.mirubato.com", FRONTEND_URL = "https://mirubato.com", CORS_ORIGIN = "https://mirubato.com,https://www.mirubato.com", SEED_ENABLED = "true", SEED_DAILY_TOKEN_BUDGET = "5000", SEED_PRIORITY_THRESHOLD = "8", SEED_BATCH_SIZE = "5", QUALITY_MIN_THRESHOLD = "85" }
-routes = [
-  { pattern = "dictionary.mirubato.com", custom_domain = true }
-]
-
-# Scheduled triggers for production
-[triggers]
-crons = ["0 2,8,14,20 * * *", "0 0 * * *"]  # Seed processing at 2,8,14,20 UTC; Daily cleanup at midnight
-
-# Observability
-[observability.logs]
-enabled = true
-
-# AI binding for Cloudflare Workers AI
-[ai]
-binding = "AI"
-
-# Queue for batch processing
-[[queues.consumers]]
-queue = "dictionary-processing"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 3
-dead_letter_queue = "dictionary-processing-dlq"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "mirubato-dictionary-production"
-database_id = "1cc0df2f-aac5-41a9-b6d5-405f7d40b740"
-
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "mirubato-dictionary-production"
-
-[[kv_namespaces]]
-binding = "CACHE"
-id = "598693e0de544dd9858a724ecbc556ba"
-
-[[queues.producers]]
-binding = "BATCH_QUEUE"
-queue = "dictionary-processing"
+# Note: Production configuration is in [env.production] section below
+# Default deployment without --env flag is not recommended
 
 # Staging configuration
 [env.staging]

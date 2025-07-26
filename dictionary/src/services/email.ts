@@ -61,14 +61,12 @@ export class EmailService {
 
     // Check if RESEND_API_KEY is configured
     if (!this.env.RESEND_API_KEY) {
-      // In staging, log the magic link for testing
+      // In staging, log that email service is not configured
       if (this.env.ENVIRONMENT === 'staging') {
         console.log(
-          `[STAGING] No RESEND_API_KEY configured. Magic link for ${email}: ${magicLink}`
+          `[STAGING] No RESEND_API_KEY configured. Cannot send email to ${email}.`
         )
-        throw new Error(
-          'Email service not configured. Check server logs for magic link.'
-        )
+        throw new Error('Email service not configured. Please contact support.')
       }
       throw new Error('Email service not configured')
     }
@@ -85,12 +83,12 @@ export class EmailService {
     } catch (error) {
       console.error('Failed to send email via Resend:', error)
 
-      // In staging, provide the magic link in error message
+      // In staging, log the error but don't expose the magic link
       if (this.env.ENVIRONMENT === 'staging') {
         console.log(
-          `[STAGING] Email failed. Magic link for ${email}: ${magicLink}`
+          `[STAGING] Email failed for ${email}. Check server logs for details.`
         )
-        throw new Error(`Email service error. Magic link: ${magicLink}`)
+        throw new Error(`Email service error. Please contact support.`)
       }
       throw error
     }
