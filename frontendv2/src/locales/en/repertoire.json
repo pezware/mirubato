@@ -146,8 +146,12 @@
   "composer": "Composer",
   "composerPlaceholder": "e.g. Chopin",
   "titleRequired": "Piece title is required",
-  "delete": "Delete from repertoire",
+  "delete": "Delete from pieces",
   "confirmDelete": "Are you sure you want to delete this piece?",
   "cannotDelete": "Cannot delete pieces with practice history",
-  "deleteSuccess": "Removed from repertoire"
+  "deleteSuccess": "Removed from pieces",
+  "noComposersFound": "No composers found",
+  "autocomplete": {
+    "offline": "Offline - showing your history"
+  }
 }

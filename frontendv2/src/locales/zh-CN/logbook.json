@@ -42,6 +42,7 @@
       "selectTechniques": "选择练习的技巧"
     },
     "techniques": "技巧",
+    "time": "时间",
     "type": "类型",
     "typeOptions": {
       "lesson": "课程",
@@ -50,8 +51,7 @@
       "rehearsal": "排练",
       "technique": "技巧"
     },
-    "updateEntry": "更新记录",
-    "time": "时间"
+    "updateEntry": "更新记录"
   },
   "filters": {
     "allTime": "全部时间",

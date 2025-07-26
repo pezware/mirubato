@@ -42,6 +42,7 @@
       "selectTechniques": "Geübte Techniken auswählen"
     },
     "techniques": "Techniken",
+    "time": "Zeit",
     "type": "Art",
     "typeOptions": {
       "lesson": "Unterricht",
@@ -50,8 +51,7 @@
       "rehearsal": "Probe",
       "technique": "Technik"
     },
-    "updateEntry": "Eintrag aktualisieren",
-    "time": "Zeit"
+    "updateEntry": "Eintrag aktualisieren"
   },
   "filters": {
     "allTime": "Gesamte Zeit",

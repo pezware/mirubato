@@ -16,6 +16,9 @@
   "allScoresInRepertoire": "Toutes les partitions disponibles sont déjà dans votre répertoire",
   "allTypes": "Tous les types",
   "alreadyPracticed": "Vous avez déjà pratiqué {{minutes}} minutes sur cette pièce",
+  "autocomplete": {
+    "offline": "Hors ligne - affichage de votre historique"
+  },
   "avgSession": "Session moyenne",
   "cannotDelete": "Impossible de supprimer les pièces avec un historique de pratique",
   "completedGoals": "Objectifs Complétés",
@@ -96,6 +99,7 @@
   "logPractice": "Enregistrer la pratique",
   "myRepertoire": "Mon Répertoire",
   "needAttention": "Nécessitent une attention",
+  "noComposersFound": "Aucun compositeur trouvé",
   "noGoals": "Aucun Objectif",
   "noPracticeSessions": "Aucune session de pratique pour le moment",
   "noScoresMatchSearch": "Aucune partition ne correspond à votre recherche",
