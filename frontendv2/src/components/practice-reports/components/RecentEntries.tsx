@@ -18,7 +18,7 @@ export function RecentEntries({
   onDelete,
   className = '',
 }: RecentEntriesProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   // Sort entries by timestamp (newest first) and limit
   const recentEntries = [...entries]
@@ -56,7 +56,7 @@ export function RecentEntries({
           }
 
           // Format date for separator
-          const formattedDate = date.toLocaleDateString('en', {
+          const formattedDate = date.toLocaleDateString(i18n.language, {
             month: 'short',
             day: '2-digit',
           })

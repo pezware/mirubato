@@ -40,11 +40,23 @@ function App() {
   const { refreshAuth } = useAuthStore()
 
   useEffect(() => {
-    // Run lowercase migration for enum values
-    runLowercaseMigration()
+    let isMounted = true
 
-    // Check if user is authenticated on app load
-    refreshAuth()
+    const initializeApp = async () => {
+      // Run lowercase migration for enum values
+      runLowercaseMigration()
+
+      // Check if user is authenticated on app load
+      if (isMounted) {
+        await refreshAuth()
+      }
+    }
+
+    initializeApp()
+
+    return () => {
+      isMounted = false
+    }
   }, [refreshAuth])
 
   return (
