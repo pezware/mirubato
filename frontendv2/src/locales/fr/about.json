@@ -1,0 +1,40 @@
+{
+  "tagline": "Votre journal privé de pratique musicale, créé par et pour les musiciens",
+  "backToHome": "Retour à l'accueil",
+  "sections": {
+    "about": {
+      "title": "À propos de Mirubato",
+      "what": "Mirubato vous aide à tirer le meilleur parti de votre pratique. Que vous travailliez le déchiffrage ou perfectionniez une pièce, nous fournissons les outils pour suivre vos progrès et rester motivé.",
+      "why": "Nous croyons qu'une pratique constante et réfléchie est la clé de la croissance musicale. Mirubato est conçu pour être un compagnon simple et encourageant dans votre parcours musical.",
+      "how": "Mirubato est open source et construit avec une approche locale d'abord. Cela signifie que vos données restent avec vous, sur votre appareil, par défaut. Pas de suivi, pas d'analyse, juste vous et votre musique."
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Mirubato est fièrement open source. Nous accueillons les contributions de la communauté et croyons en la construction de grandes choses ensemble, en toute transparence.",
+      "viewOnGithub": "Voir sur GitHub"
+    },
+    "privacy": {
+      "title": "Votre Vie Privée, Vos Données",
+      "dataOwnership": "Vous êtes toujours propriétaire de vos données de pratique",
+      "localFirst": "Fonctionne hors ligne, avec vos données sauvegardées localement sur votre appareil",
+      "noTracking": "Nous n'utilisons jamais de suivi ou d'analyse. Jamais",
+      "optionalSync": "Synchronisation cloud optionnelle pour la sauvegarde ou l'accès entre appareils"
+    },
+    "credits": {
+      "title": "Crédits et Attribution",
+      "educationalContent": "Contenu Éducatif",
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" par Chelsea Green, sous licence CC BY 4.0",
+      "viewSource": "Voir la source originale",
+      "musicalContent": "Contenu Musical",
+      "imslp": "Les compositions classiques d'IMSLP sont dans le domaine public",
+      "openSourceLibraries": "Bibliothèques Open Source",
+      "librariesDescription": "Construit avec amour en utilisant React, TypeScript et de nombreux autres merveilleux projets open source"
+    },
+    "contact": {
+      "title": "Contactez-nous",
+      "github": "Trouvé un bug ou une idée ?",
+      "reportIssue": "Issues GitHub",
+      "twitter": "Suivez-nous pour les mises à jour"
+    }
+  }
+}
