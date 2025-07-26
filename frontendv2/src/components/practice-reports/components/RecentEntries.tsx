@@ -47,21 +47,40 @@ export function RecentEntries({
         {t('reports:recentEntries')}
       </h2>
       <div className="space-y-3">
-        {recentEntries.map(entry => {
-          const entryDate = new Date(entry.timestamp).toDateString()
+        {recentEntries.map((entry, index) => {
+          const date = new Date(entry.timestamp)
+          const entryDate = date.toDateString()
           const isFirstOfDay = !shownDates.has(entryDate)
           if (isFirstOfDay) {
             shownDates.add(entryDate)
           }
 
+          // Format date for separator
+          const formattedDate = date.toLocaleDateString('en', {
+            month: 'short',
+            day: '2-digit',
+          })
+
           return (
-            <EntryCard
-              key={entry.id}
-              entry={entry}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              showDateHeader={isFirstOfDay}
-            />
+            <div key={entry.id}>
+              {/* Date Separator */}
+              {isFirstOfDay && (
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
+                    {formattedDate}
+                  </span>
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                </div>
+              )}
+
+              {/* Entry Card */}
+              <EntryCard
+                entry={entry}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                showDateHeader={false}
+              />
+            </div>
           )
         })}
       </div>

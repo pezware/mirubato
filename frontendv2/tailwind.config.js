@@ -7,6 +7,7 @@ export default {
       fontFamily: {
         inter: ['Inter', 'system-ui', 'sans-serif'],
         lexend: ['Lexend', 'system-ui', 'sans-serif'],
+        serif: ['Noto Serif', 'Georgia', 'serif'],
       },
       colors: {
         'circle-border': '#262a2a',
