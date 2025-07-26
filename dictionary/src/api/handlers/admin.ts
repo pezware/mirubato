@@ -1136,6 +1136,12 @@ adminHandler.get('/wikipedia/scan', async c => {
   const db = new DictionaryDatabase(c.env.DB)
 
   try {
+    const {
+      validateWikipediaUrl,
+      getWikipediaSuggestions,
+      generateWikipediaUrl,
+    } = await import('../../utils/wikipedia-url')
+
     // Get all entries with Wikipedia references
     const entries = await db.search({ q: '', limit: 1000, offset: 0 })
     const entriesWithIssues = []
@@ -1144,44 +1150,38 @@ adminHandler.get('/wikipedia/scan', async c => {
       if (entry.references?.wikipedia?.url) {
         const currentUrl = entry.references.wikipedia.url
 
-        // Import our URL generation utilities
-        const { generateWikipediaUrl } = await import(
-          '../../utils/wikipedia-url'
-        )
+        // Check if the current URL is valid (not 404)
+        const isValid = await validateWikipediaUrl(currentUrl)
 
-        // Generate the suggested URL using the entry's language
-        const suggestedUrl = generateWikipediaUrl(
-          entry.term,
-          entry.type,
-          undefined,
-          entry.lang || 'en'
-        )
+        if (!isValid) {
+          // URL returns 404, try to find the correct one
+          const suggestions = await getWikipediaSuggestions(
+            entry.term,
+            3,
+            entry.lang || 'en'
+          )
 
-        // Check if URLs differ (potential issue)
-        if (currentUrl !== suggestedUrl) {
-          // Check for common problematic patterns
-          const urlPath = currentUrl.split('/wiki/')[1]
-          const hasComposerSuffix =
-            entry.type === 'genre' &&
-            (urlPath?.includes('_Mozart') ||
-              urlPath?.includes('_Beethoven') ||
-              urlPath?.includes('_Wagner') ||
-              urlPath?.includes('_Verdi'))
+          // Get the best suggestion or generate a URL
+          const suggestedUrl =
+            suggestions.length > 0
+              ? suggestions[0].url
+              : generateWikipediaUrl(
+                  entry.term,
+                  entry.type,
+                  undefined,
+                  entry.lang || 'en'
+                )
 
-          if (
-            hasComposerSuffix ||
-            currentUrl.includes('_Wikipedia') ||
-            currentUrl.includes('search_for') ||
-            currentUrl.includes('_(music)_')
-          ) {
-            entriesWithIssues.push({
-              id: entry.id,
-              term: entry.term,
-              type: entry.type,
-              current_url: currentUrl,
-              suggested_url: suggestedUrl,
-            })
-          }
+          entriesWithIssues.push({
+            id: entry.id,
+            term: entry.term,
+            type: entry.type,
+            lang: entry.lang,
+            current_url: currentUrl,
+            suggested_url: suggestedUrl,
+            reason: 'URL returns 404',
+            suggestions: suggestions.slice(0, 3), // Include top 3 suggestions
+          })
         }
       }
     }
@@ -1213,9 +1213,11 @@ adminHandler.post(
     const _userId = c.get('userId') || 'admin'
 
     try {
-      const { generateWikipediaUrl, validateWikipediaUrl } = await import(
-        '../../utils/wikipedia-url'
-      )
+      const {
+        generateWikipediaUrl,
+        validateWikipediaUrl,
+        getWikipediaSuggestions,
+      } = await import('../../utils/wikipedia-url')
       let fixedCount = 0
       let failedCount = 0
 
@@ -1225,7 +1227,7 @@ adminHandler.post(
           if (!entry || !entry.references?.wikipedia?.url) continue
 
           // Generate the correct URL using the entry's language
-          const newUrl = generateWikipediaUrl(
+          let newUrl = generateWikipediaUrl(
             entry.term,
             entry.type,
             undefined,
@@ -1233,10 +1235,27 @@ adminHandler.post(
           )
 
           // Validate the new URL
-          const isValid = await validateWikipediaUrl(newUrl)
+          let isValid = await validateWikipediaUrl(newUrl)
           if (!isValid) {
-            failedCount++
-            continue
+            // If suggested URL is also invalid, try to get suggestions
+            const suggestions = await getWikipediaSuggestions(
+              entry.term,
+              3,
+              entry.lang || 'en'
+            )
+
+            if (suggestions.length > 0) {
+              newUrl = suggestions[0].url
+              // Validate again
+              isValid = await validateWikipediaUrl(newUrl)
+              if (!isValid) {
+                failedCount++
+                continue
+              }
+            } else {
+              failedCount++
+              continue
+            }
           }
 
           // Update the entry
@@ -1275,9 +1294,11 @@ adminHandler.post('/wikipedia/fix-all', async c => {
   try {
     // First, scan for all issues
     const entries = await db.search({ q: '', limit: 1000, offset: 0 })
-    const { generateWikipediaUrl, validateWikipediaUrl } = await import(
-      '../../utils/wikipedia-url'
-    )
+    const {
+      generateWikipediaUrl,
+      validateWikipediaUrl,
+      getWikipediaSuggestions,
+    } = await import('../../utils/wikipedia-url')
 
     let fixedCount = 0
     let failedCount = 0
@@ -1285,24 +1306,46 @@ adminHandler.post('/wikipedia/fix-all', async c => {
     for (const entry of entries.entries) {
       if (entry.references?.wikipedia?.url) {
         const currentUrl = entry.references.wikipedia.url
-        const suggestedUrl = generateWikipediaUrl(
-          entry.term,
-          entry.type,
-          undefined,
-          entry.lang || 'en'
-        )
 
-        if (currentUrl !== suggestedUrl) {
+        // Check if the current URL is valid (not 404)
+        const isCurrentValid = await validateWikipediaUrl(currentUrl)
+
+        if (!isCurrentValid) {
           try {
-            // Validate the new URL
-            const isValid = await validateWikipediaUrl(suggestedUrl)
+            // URL returns 404, try to find the correct one
+            const suggestions = await getWikipediaSuggestions(
+              entry.term,
+              3,
+              entry.lang || 'en'
+            )
+
+            let newUrl: string
+            let isValid = false
+
+            if (suggestions.length > 0) {
+              // Try the first suggestion
+              newUrl = suggestions[0].url
+              isValid = await validateWikipediaUrl(newUrl)
+            }
+
+            // If no valid suggestion, try generating a URL
+            if (!isValid) {
+              newUrl = generateWikipediaUrl(
+                entry.term,
+                entry.type,
+                undefined,
+                entry.lang || 'en'
+              )
+              isValid = await validateWikipediaUrl(newUrl)
+            }
+
             if (!isValid) {
               failedCount++
               continue
             }
 
             // Update the entry
-            entry.references.wikipedia.url = suggestedUrl
+            entry.references.wikipedia.url = newUrl!
             entry.references.wikipedia.last_verified = new Date().toISOString()
 
             // Update the entry using the update method

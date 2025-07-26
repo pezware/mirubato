@@ -1558,7 +1558,13 @@ adminPortal.get('/', c => {
                                             <div class="queue-item-term">\${entry.term} (\${entry.type})</div>
                                             <div class="queue-item-meta">
                                                 Current: <code>\${entry.current_url}</code><br>
-                                                Suggested: <code>\${entry.suggested_url}</code>
+                                                Suggested: <code>\${entry.suggested_url}</code><br>
+                                                Reason: <span class="text-rose">\${entry.reason || 'URL mismatch'}</span>
+                                                \${entry.suggestions && entry.suggestions.length > 1 ? 
+                                                    '<br>Other suggestions: ' + entry.suggestions.slice(1, 3).map(s => 
+                                                        '<code>' + s.title + '</code>'
+                                                    ).join(', ') : ''
+                                                }
                                             </div>
                                         </div>
                                         <button class="button secondary" onclick="fixSingleWikipediaUrl('\${entry.id}')">
