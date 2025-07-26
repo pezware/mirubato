@@ -633,6 +633,7 @@ const keysData: Record<string, KeyInfo> = {
       famousWorks: [
         'Mass in B minor - Bach',
         'Symphony No. 8 "Unfinished" - Schubert',
+        'Waltz Op. 69 No. 2 - Chopin',
       ],
       relatedKeys: ['D', 'F#m', 'Em', 'G', 'A'],
     },
@@ -852,10 +853,7 @@ const keysData: Record<string, KeyInfo> = {
     position: calculatePosition(7, 12, 90),
     theoryNotes: {
       keyCharacteristics: 'Gloomy, mocking, uneasiness',
-      famousWorks: [
-        'Waltz Op. 69 No. 2 - Chopin',
-        'Nocturne Op. 9 No. 1 - Chopin',
-      ],
+      famousWorks: ['Nocturne Op. 9 No. 1 - Chopin'],
       relatedKeys: ['Db', 'Fm', 'Ebm', 'Gb', 'Ab'],
     },
   },

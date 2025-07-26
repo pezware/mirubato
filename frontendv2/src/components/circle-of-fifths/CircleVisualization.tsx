@@ -104,8 +104,8 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 fill={keyData.color}
                 fillOpacity={0.7}
                 stroke={isSelected ? '#FB923C' : '#FFFFFF'}
-                strokeWidth={isSelected ? '4' : '2'}
-                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
+                strokeWidth={isSelected ? (isMobile ? '8' : '4') : '2'}
+                className={`cursor-pointer transition-all duration-300 ${!isMobile ? 'hover:stroke-gray-400' : ''}`}
                 onClick={() => onKeySelect(key)}
               />
               <text
@@ -134,8 +134,8 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 fill={minorKeyData.color}
                 fillOpacity={0.5}
                 stroke={isSelected ? '#FB923C' : '#FFFFFF'}
-                strokeWidth={isSelected ? '3' : '2'}
-                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
+                strokeWidth={isSelected ? (isMobile ? '6' : '3') : '2'}
+                className={`cursor-pointer transition-all duration-300 ${!isMobile ? 'hover:stroke-gray-400' : ''}`}
                 onClick={() => onKeySelect(key)}
               />
               {key === 'D#m/Ebm' ? (
