@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LogbookEntry } from '../../../api/logbook'
-import Button from '../../ui/Button'
 import { formatDuration } from '../../../utils/dateUtils'
 import { Clock, Eye, ChevronDown } from 'lucide-react'
 import {
@@ -18,12 +17,7 @@ interface EntryCardProps {
   showDateHeader?: boolean
 }
 
-export function EntryCard({
-  entry,
-  onEdit,
-  onDelete,
-  showDateHeader = true,
-}: EntryCardProps) {
+export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
   const date = new Date(entry.timestamp)

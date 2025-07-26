@@ -47,7 +47,7 @@ export function RecentEntries({
         {t('reports:recentEntries')}
       </h2>
       <div className="space-y-3">
-        {recentEntries.map((entry, index) => {
+        {recentEntries.map(entry => {
           const date = new Date(entry.timestamp)
           const entryDate = date.toDateString()
           const isFirstOfDay = !shownDates.has(entryDate)
