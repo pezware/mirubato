@@ -104,8 +104,8 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 fill={keyData.color}
                 fillOpacity={0.7}
                 stroke={isSelected ? '#FB923C' : '#FFFFFF'}
-                strokeWidth={isSelected ? '4' : '2'}
-                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
+                strokeWidth={isSelected ? (isMobile ? '8' : '4') : '2'}
+                className={`cursor-pointer transition-all duration-300 ${!isMobile ? 'hover:stroke-gray-400' : ''}`}
                 onClick={() => onKeySelect(key)}
               />
               <text
@@ -114,7 +114,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 dominantBaseline="middle"
                 className="pointer-events-none select-none font-medium"
                 fill={isSelected ? '#1A202C' : '#4A4A4A'}
-                fontSize={isMobile ? '28' : '16'}
+                fontSize={isMobile ? '36' : '16'}
               >
                 {key}
               </text>
@@ -134,8 +134,8 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                 fill={minorKeyData.color}
                 fillOpacity={0.5}
                 stroke={isSelected ? '#FB923C' : '#FFFFFF'}
-                strokeWidth={isSelected ? '3' : '2'}
-                className="cursor-pointer transition-all duration-300 hover:stroke-gray-400"
+                strokeWidth={isSelected ? (isMobile ? '6' : '3') : '2'}
+                className={`cursor-pointer transition-all duration-300 ${!isMobile ? 'hover:stroke-gray-400' : ''}`}
                 onClick={() => onKeySelect(key)}
               />
               {key === 'D#m/Ebm' ? (
@@ -148,7 +148,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                   dominantBaseline="middle"
                   className="pointer-events-none select-none"
                   fill={isSelected ? '#1A202C' : '#6B6B6B'}
-                  fontSize={isMobile ? '24' : '12'}
+                  fontSize={isMobile ? '32' : '12'}
                 >
                   <tspan
                     x={
@@ -157,7 +157,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                         (innerRadius + innerCircleRadius) / 2
                       ).x
                     }
-                    dy="-6"
+                    dy="-8"
                   >
                     D#m
                   </tspan>
@@ -168,7 +168,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                         (innerRadius + innerCircleRadius) / 2
                       ).x
                     }
-                    dy="12"
+                    dy="26"
                   >
                     Ebm
                   </tspan>
@@ -183,7 +183,7 @@ const CircleVisualization: React.FC<CircleVisualizationProps> = ({
                   dominantBaseline="middle"
                   className="pointer-events-none select-none"
                   fill={isSelected ? '#1A202C' : '#6B6B6B'}
-                  fontSize={isMobile ? '24' : '13'}
+                  fontSize={isMobile ? '32' : '13'}
                 >
                   {key}
                 </text>

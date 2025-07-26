@@ -28,7 +28,6 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     'G',
     'A',
     'B',
-    'C', // C5 - completing the 2 octaves
   ]
 
   // Black key positions - between C-D, D-E, F-G, G-A, A-B (no black key between E-F or B-C)
@@ -247,7 +246,6 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         displayNote: getBlackKeyLabel(9),
       }, // A#/Bb
       { type: 'white', index: 13, note: whiteKeys[13] }, // B
-      { type: 'white', index: 14, note: whiteKeys[14] }, // C (C5)
     ]
 
     keyOrder.forEach(key => {
@@ -298,7 +296,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
               {whiteKeys.map((note, index) => {
                 // Check if this note is within the octave range starting from the root note
                 const isInOctave = isNoteInOctaveRange(index)
-                const isInScale = isInOctave && isNoteInScale(note)
+                // Check if this note is in scale, considering E# = F and B# = C
+                const isInScale =
+                  isInOctave &&
+                  (isNoteInScale(note) ||
+                    (note === 'F' && keyData.scale.includes('E#')) ||
+                    (note === 'C' && keyData.scale.includes('B#')))
                 const isChordNote = isInOctave && chordNotes.has(note)
                 const isRootNote =
                   isInOctave && rootNoteWithEnharmonic.has(note)
@@ -336,7 +339,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     ${isRootNote ? 'font-bold text-red-600' : isChordNote ? 'font-semibold text-red-400' : isInScale ? 'text-orange-500 font-medium' : 'text-gray-400'}
                   `}
                     >
-                      {note}
+                      {/* Show enharmonic equivalents when appropriate */}
+                      {note === 'F' && keyData.scale.includes('E#')
+                        ? 'E#'
+                        : note === 'C' && keyData.scale.includes('B#')
+                          ? 'B#'
+                          : note}
                     </span>
                   </div>
                 )
