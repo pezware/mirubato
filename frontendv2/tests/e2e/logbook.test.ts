@@ -36,9 +36,8 @@ test.describe('Logbook', () => {
       await test.step('Verify entry appears', async () => {
         await logbookPage.switchToOverviewTab()
         await logbookPage.verifyEntryCount(1)
-        await logbookPage.verifyEntryContainsText(
-          'Worked on first movement dynamics'
-        )
+        // Verify the piece title is visible (notes are only shown when expanded)
+        await logbookPage.verifyEntryContainsText('Moonlight Sonata')
       })
 
       await test.step('Verify data saved correctly', async () => {
