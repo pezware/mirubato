@@ -37,8 +37,12 @@ test.describe('Recent Entries', () => {
       })
       await expect(page.locator('text=Test Piece')).toBeVisible()
       await expect(page.locator('text=Test Composer')).toBeVisible()
+      // Target the preview text specifically to avoid duplicates
       await expect(
-        page.locator('text=Test notes for recent entry')
+        page
+          .locator('.line-clamp-2')
+          .filter({ hasText: 'Test notes for recent entry' })
+          .first()
       ).toBeVisible()
     })
   })

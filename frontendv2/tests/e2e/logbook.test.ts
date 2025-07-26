@@ -114,9 +114,13 @@ test.describe('Logbook', () => {
         // Verify either the composer is visible OR the expanded notes are visible
         expect(mozartVisible || hasExpandedContent).toBeTruthy()
 
-        // Verify the entry is actually expanded by checking for notes
+        // Verify the entry is actually expanded by checking for notes in the expanded view
+        // Target the whitespace-pre-wrap class which is used in the expanded details
         await expect(
-          page.locator('text=Focused on the famous Rondo Alla Turca')
+          page
+            .locator('.whitespace-pre-wrap')
+            .filter({ hasText: 'Focused on the famous Rondo Alla Turca' })
+            .first()
         ).toBeVisible({
           timeout: 10000,
         })

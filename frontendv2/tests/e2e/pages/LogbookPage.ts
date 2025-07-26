@@ -290,8 +290,12 @@ export class LogbookPage {
       .isVisible()
       .catch(() => false)
     if (overviewTabVisible) {
-      // We're in enhanced reports, just check if the text is visible somewhere on the page
-      await expect(this.page.locator(`text="${text}"`)).toBeVisible()
+      // We're in enhanced reports, check for the text in the preview (not expanded) section
+      // Use the line-clamp-2 class to target the preview text specifically
+      const previewText = this.page
+        .locator('.line-clamp-2')
+        .filter({ hasText: text })
+      await expect(previewText.first()).toBeVisible()
     } else {
       // Legacy view - check for entries
       const entry = this.entries.filter({ hasText: text })
