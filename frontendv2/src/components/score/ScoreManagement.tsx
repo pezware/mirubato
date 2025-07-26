@@ -9,6 +9,7 @@ import { useScoreSearch } from '../../hooks/useScoreSearch'
 import ImageEditor from './ImageEditor'
 import Button from '../ui/Button'
 import { X, Upload, Trash2, Edit } from 'lucide-react'
+import { sanitizeImageUrl, getFallbackImageUrl } from '../../utils/urlSanitizer'
 
 export default function ScoreManagement() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -608,9 +609,15 @@ export default function ScoreManagement() {
                               className="relative group aspect-[3/4]"
                             >
                               <img
-                                src={img.preview}
+                                src={
+                                  sanitizeImageUrl(img.preview) ||
+                                  getFallbackImageUrl()
+                                }
                                 alt={`Page ${index + 1}`}
                                 className="w-full h-full object-cover rounded-lg border border-morandi-stone-200"
+                                onError={e => {
+                                  e.currentTarget.src = getFallbackImageUrl()
+                                }}
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 p-2">
                                 <Button

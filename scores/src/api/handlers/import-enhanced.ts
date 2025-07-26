@@ -267,8 +267,25 @@ enhancedImportHandler.post('/batch', async c => {
 
     for (const url of urls) {
       try {
-        // Determine if URL is IMSLP
-        if (url.includes('imslp.org')) {
+        // Parse and validate URL
+        let parsedUrl: URL
+        try {
+          parsedUrl = new URL(url)
+        } catch (e) {
+          results.push({
+            url,
+            error: 'Invalid URL format',
+          })
+          continue
+        }
+
+        // Determine if URL is IMSLP (check hostname properly)
+        const isImslp =
+          parsedUrl.hostname === 'imslp.org' ||
+          parsedUrl.hostname === 'www.imslp.org' ||
+          parsedUrl.hostname.endsWith('.imslp.org')
+
+        if (isImslp) {
           const scoreId = nanoid()
 
           // Queue for processing
