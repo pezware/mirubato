@@ -9,6 +9,8 @@ import { Select } from '@/components/ui/Select'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Loading } from '@/components/ui/Loading'
+import Autocomplete from '@/components/ui/Autocomplete'
+import { useAutocomplete } from '@/hooks/useAutocomplete'
 import { showToast } from '@/utils/toastManager'
 import { RepertoireStatus } from '@/api/repertoire'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
@@ -46,6 +48,12 @@ export function AddToRepertoireModal({
     isLoading: scoresLoading,
   } = useScoreStore()
   const { entries } = useLogbookStore()
+
+  // Autocomplete for composer
+  const composerAutocomplete = useAutocomplete({
+    type: 'composer',
+    minLength: 2,
+  })
 
   useEffect(() => {
     if (isOpen && scores.length === 0) {
@@ -289,6 +297,30 @@ export function AddToRepertoireModal({
                 {/* Custom entry form */}
                 {showCustomEntry && (
                   <Card className="p-3 sm:p-4 space-y-3 bg-sage-50 border-sage-200">
+                    {/* Offline indicator - only show when offline */}
+                    {composerAutocomplete.isOffline && (
+                      <div className="text-xs text-amber-600 flex items-center gap-1 mb-2">
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"
+                          />
+                        </svg>
+                        <span>
+                          {t(
+                            'repertoire:autocomplete.offline',
+                            'Offline - showing your history'
+                          )}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-stone-700 mb-1">
                         {t('repertoire:pieceTitle')} *
@@ -305,11 +337,17 @@ export function AddToRepertoireModal({
                       <label className="block text-sm font-medium text-stone-700 mb-1">
                         {t('repertoire:composer')}
                       </label>
-                      <Input
-                        type="text"
+                      <Autocomplete
                         value={customComposer}
-                        onChange={e => setCustomComposer(e.target.value)}
+                        onChange={value => {
+                          setCustomComposer(value)
+                          composerAutocomplete.setQuery(value)
+                        }}
+                        onSelect={() => {
+                          // Selection is already handled by onChange in Autocomplete component
+                        }}
                         onBlur={() => {
+                          // Auto-capitalize composer name on blur
                           if (customComposer && customComposer.trim()) {
                             const formatted = toTitleCase(customComposer.trim())
                             if (formatted !== customComposer) {
@@ -317,8 +355,14 @@ export function AddToRepertoireModal({
                             }
                           }
                         }}
+                        options={composerAutocomplete.suggestions}
                         placeholder={t('repertoire:composerPlaceholder')}
+                        isLoading={composerAutocomplete.isLoading}
                         className="w-full"
+                        emptyMessage={t(
+                          'repertoire:noComposersFound',
+                          'No composers found'
+                        )}
                       />
                     </div>
                   </Card>

@@ -16,6 +16,9 @@
   "allScoresInRepertoire": "所有可用的樂譜都已在您的曲目庫中",
   "allTypes": "所有類型",
   "alreadyPracticed": "您已經在這首樂曲上練習了 {{minutes}} 分鐘",
+  "autocomplete": {
+    "offline": "離線 - 顯示您的歷史記錄"
+  },
   "avgSession": "平均練習時長",
   "cannotDelete": "無法刪除有練習記錄的曲目",
   "completedGoals": "已完成的目標",
@@ -96,6 +99,7 @@
   "logPractice": "記錄練習",
   "myRepertoire": "我的曲目庫",
   "needAttention": "需要關注",
+  "noComposersFound": "找不到作曲家",
   "noGoals": "無目標",
   "noPracticeSessions": "尚無練習記錄",
   "noScoresMatchSearch": "沒有符合您搜尋的樂譜",

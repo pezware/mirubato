@@ -16,6 +16,9 @@
   "allScoresInRepertoire": "Alle verfügbaren Partituren sind bereits in Ihrem Repertoire",
   "allTypes": "Alle Typen",
   "alreadyPracticed": "Sie haben bereits {{minutes}} Minuten an diesem Stück geübt",
+  "autocomplete": {
+    "offline": "Offline - zeige deinen Verlauf"
+  },
   "avgSession": "Durchschnittliche Sitzung",
   "cannotDelete": "Stücke mit Übungsverlauf können nicht gelöscht werden",
   "completedGoals": "Abgeschlossene Ziele",
@@ -96,6 +99,7 @@
   "logPractice": "Übung protokollieren",
   "myRepertoire": "Mein Repertoire",
   "needAttention": "Benötigen Aufmerksamkeit",
+  "noComposersFound": "Keine Komponisten gefunden",
   "noGoals": "Keine Ziele",
   "noPracticeSessions": "Noch keine Übungssitzungen",
   "noScoresMatchSearch": "Keine Partituren entsprechen Ihrer Suche",

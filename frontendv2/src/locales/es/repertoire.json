@@ -16,6 +16,9 @@
   "allScoresInRepertoire": "Todas las partituras disponibles ya están en tu repertorio",
   "allTypes": "Todos los Tipos",
   "alreadyPracticed": "Ya has practicado {{minutes}} minutos en esta pieza",
+  "autocomplete": {
+    "offline": "Sin conexión - mostrando tu historial"
+  },
   "avgSession": "Sesión Promedio",
   "cannotDelete": "No se pueden eliminar piezas con historial de práctica",
   "completedGoals": "Objetivos Completados",
@@ -96,6 +99,7 @@
   "logPractice": "Registrar Práctica",
   "myRepertoire": "Mi Repertorio",
   "needAttention": "Necesitan Atención",
+  "noComposersFound": "No se encontraron compositores",
   "noGoals": "Sin Objetivos",
   "noPracticeSessions": "Aún no hay sesiones de práctica",
   "noScoresMatchSearch": "No hay partituras que coincidan con tu búsqueda",

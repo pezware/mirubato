@@ -42,6 +42,7 @@
       "selectTechniques": "Seleccionar técnicas practicadas"
     },
     "techniques": "Técnicas",
+    "time": "Hora",
     "type": "Tipo",
     "typeOptions": {
       "lesson": "Lección",
@@ -50,8 +51,7 @@
       "rehearsal": "Ensayo",
       "technique": "Técnica"
     },
-    "updateEntry": "Actualizar entrada",
-    "time": "Hora"
+    "updateEntry": "Actualizar entrada"
   },
   "filters": {
     "allTime": "Todo el tiempo",

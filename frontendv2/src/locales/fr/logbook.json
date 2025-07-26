@@ -42,6 +42,7 @@
       "selectTechniques": "Sélectionner les techniques pratiquées"
     },
     "techniques": "Techniques",
+    "time": "Heure",
     "type": "Type",
     "typeOptions": {
       "lesson": "Cours",
@@ -50,8 +51,7 @@
       "rehearsal": "Répétition",
       "technique": "Technique"
     },
-    "updateEntry": "Mettre à jour l'entrée",
-    "time": "Heure"
+    "updateEntry": "Mettre à jour l'entrée"
   },
   "filters": {
     "allTime": "Tout le temps",
