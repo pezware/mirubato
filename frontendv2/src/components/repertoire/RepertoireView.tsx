@@ -253,6 +253,58 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, scores, analytics, searchQuery])
 
+  // Apply sorting to the enriched repertoire
+  const sortedRepertoire = useMemo(() => {
+    const items = [...enrichedRepertoire]
+
+    items.sort((a, b) => {
+      switch (sortBy) {
+        case 'status-learning-first': {
+          // Define status order: learning first, then planned, polished, dropped
+          const statusOrder = {
+            learning: 0,
+            planned: 1,
+            working: 2,
+            polished: 3,
+            'performance-ready': 4,
+            dropped: 5,
+          }
+          const orderA = statusOrder[a.status] ?? 999
+          const orderB = statusOrder[b.status] ?? 999
+          if (orderA !== orderB) return orderA - orderB
+          // If same status, sort by title
+          return a.scoreTitle.localeCompare(b.scoreTitle)
+        }
+
+        case 'last-practiced': {
+          // Most recent first
+          const dateA = a.lastPracticed || 0
+          const dateB = b.lastPracticed || 0
+          return dateB - dateA
+        }
+
+        case 'most-practiced':
+          // Most practiced first
+          return (b.practiceCount || 0) - (a.practiceCount || 0)
+
+        case 'title-asc':
+          return a.scoreTitle.localeCompare(b.scoreTitle)
+
+        case 'composer-asc': {
+          // Sort by composer, then by title
+          const composerCompare = a.scoreComposer.localeCompare(b.scoreComposer)
+          if (composerCompare !== 0) return composerCompare
+          return a.scoreTitle.localeCompare(b.scoreTitle)
+        }
+
+        default:
+          return 0
+      }
+    })
+
+    return items
+  }, [enrichedRepertoire, sortBy])
+
   // Find the entry being edited
   const editingEntry = editingSessionId
     ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
@@ -502,7 +554,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
       {/* Repertoire Items */}
       <div className="space-y-4">
-        {enrichedRepertoire.length === 0 ? (
+        {sortedRepertoire.length === 0 ? (
           <Card className="p-8 text-center">
             <Music className="w-12 h-12 text-stone-300 mx-auto mb-4" />
             <p className="text-stone-600 mb-4">
@@ -513,7 +565,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             </Button>
           </Card>
         ) : viewMode === 'list' ? (
-          enrichedRepertoire.map(item => (
+          sortedRepertoire.map(item => (
             <div
               key={item.scoreId}
               onClick={() => setSelectedPiece(item)}
@@ -538,7 +590,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         ) : (
           // Calendar view
           <RepertoireCalendarView
-            enrichedRepertoire={enrichedRepertoire}
+            enrichedRepertoire={sortedRepertoire}
             currentMonth={currentMonth}
             onMonthChange={setCurrentMonth}
           />

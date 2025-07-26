@@ -751,7 +751,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
   // Get filtered repertoire
   getFilteredRepertoire: () => {
-    const { repertoire, statusFilter, goalFilter, goals, sortBy } = get()
+    const { repertoire, statusFilter, goalFilter, goals } = get()
     let items = Array.from(repertoire.values())
 
     // Filter by status
@@ -784,54 +784,8 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       }
     }
 
-    // Apply sorting
-    items.sort((a, b) => {
-      switch (sortBy) {
-        case 'status-learning-first': {
-          // Define status order: learning first, then planned, polished, dropped
-          const statusOrder = {
-            learning: 0,
-            planned: 1,
-            working: 2,
-            polished: 3,
-            'performance-ready': 4,
-            dropped: 5,
-          }
-          const orderA = statusOrder[a.status] ?? 999
-          const orderB = statusOrder[b.status] ?? 999
-          if (orderA !== orderB) return orderA - orderB
-          // If same status, sort by title
-          return (a.scoreId || '').localeCompare(b.scoreId || '')
-        }
-
-        case 'last-practiced': {
-          // Most recent first
-          const dateA = a.lastPracticed || 0
-          const dateB = b.lastPracticed || 0
-          return dateB - dateA
-        }
-
-        case 'most-practiced':
-          // Most practiced first
-          return (b.practiceCount || 0) - (a.practiceCount || 0)
-
-        case 'title-asc':
-          return (a.scoreId || '').localeCompare(b.scoreId || '')
-
-        case 'composer-asc': {
-          // Extract composer from scoreId (format is usually "title-composer")
-          const getComposer = (scoreId: string) => {
-            const parts = scoreId.split('-')
-            return parts.length > 1 ? parts.slice(1).join('-') : ''
-          }
-          return getComposer(a.scoreId).localeCompare(getComposer(b.scoreId))
-        }
-
-        default:
-          return 0
-      }
-    })
-
+    // Don't sort here - sorting will be done in RepertoireView
+    // where we have access to enriched data (scoreTitle, scoreComposer)
     return items
   },
 
