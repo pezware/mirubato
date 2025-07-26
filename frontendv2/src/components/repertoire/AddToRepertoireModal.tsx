@@ -438,7 +438,7 @@ export function AddToRepertoireModal({
                 setSelectedStatus(value as keyof RepertoireStatus)
               }
               options={statusOptions}
-              className="w-full max-w-xs sm:max-w-none"
+              className="w-32 sm:w-full"
             />
           </div>
 
