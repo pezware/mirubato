@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
@@ -37,7 +36,6 @@ interface RepertoireCardProps {
 
 export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
   const { t } = useTranslation(['repertoire', 'common'])
-  const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [showEditNotesModal, setShowEditNotesModal] = useState(false)
@@ -103,29 +101,6 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
   const handleRemove = async () => {
     if (confirm(t('repertoire:confirmRemove'))) {
       await removeFromRepertoire(item.scoreId)
-    }
-    setShowMenu(false)
-  }
-
-  const handleStartPractice = () => {
-    if (item.isLogbookPiece) {
-      navigate('/toolbox', {
-        state: {
-          activeTool: 'counter',
-          scoreId: item.scoreId,
-          scoreTitle: item.scoreTitle,
-          scoreComposer: item.scoreComposer,
-        },
-      })
-    } else {
-      navigate(`/scorebook/${item.scoreId}`)
-    }
-    setShowMenu(false)
-  }
-
-  const handleViewScore = () => {
-    if (!item.isLogbookPiece) {
-      navigate(`/scorebook/${item.scoreId}`)
     }
     setShowMenu(false)
   }
@@ -208,20 +183,6 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
                 {/* Dropdown Menu */}
                 {showMenu && (
                   <div className="absolute right-0 top-10 w-48 bg-white border border-stone-200 rounded-lg shadow-lg py-1 z-10 animate-in fade-in slide-in-from-top-1 duration-200">
-                    <button
-                      onClick={handleStartPractice}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
-                    >
-                      {t('repertoire:startPractice')}
-                    </button>
-                    {!item.isLogbookPiece && (
-                      <button
-                        onClick={handleViewScore}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-stone-50 transition-colors"
-                      >
-                        {t('repertoire:viewScore')}
-                      </button>
-                    )}
                     <button
                       onClick={() => {
                         setShowEditNotesModal(true)

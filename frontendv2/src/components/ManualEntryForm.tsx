@@ -124,18 +124,19 @@ export default function ManualEntryForm({
   })
 
   // Auto-adjust practice time when duration changes (only for new entries)
-  useEffect(() => {
-    if (!entry) {
-      // Only auto-adjust for new entries, not when editing existing ones
-      const now = new Date()
-      const adjustedTime = new Date(now.getTime() - duration * 60 * 1000)
-      const newTime =
-        String(adjustedTime.getHours()).padStart(2, '0') +
-        ':' +
-        String(adjustedTime.getMinutes()).padStart(2, '0')
-      setPracticeTime(newTime)
-    }
-  }, [duration, entry])
+  // Commented out per issue #330 - users don't want time to auto-adjust
+  // useEffect(() => {
+  //   if (!entry) {
+  //     // Only auto-adjust for new entries, not when editing existing ones
+  //     const now = new Date()
+  //     const adjustedTime = new Date(now.getTime() - duration * 60 * 1000)
+  //     const newTime =
+  //       String(adjustedTime.getHours()).padStart(2, '0') +
+  //       ':' +
+  //       String(adjustedTime.getMinutes()).padStart(2, '0')
+  //     setPracticeTime(newTime)
+  //   }
+  // }, [duration, entry])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

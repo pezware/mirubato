@@ -10,7 +10,6 @@ export default function LogbookPage() {
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [showTimer, setShowTimer] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
-  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     loadEntries()
@@ -31,7 +30,6 @@ export default function LogbookPage() {
     <AppLayout
       onNewEntry={() => setShowManualEntry(true)}
       onTimerClick={() => setShowTimer(true)}
-      onSearchChange={setSearchQuery}
     >
       <div className="p-4 sm:p-8">
         {/* Error Display */}
@@ -53,7 +51,7 @@ export default function LogbookPage() {
         )}
 
         {/* Reports Section */}
-        <EnhancedReports searchQuery={searchQuery} />
+        <EnhancedReports />
 
         {/* Manual Entry Modal */}
         {showManualEntry && (
