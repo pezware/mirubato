@@ -396,7 +396,7 @@ export default function LogbookEntryList({
             !prevDate || entryDate.toDateString() !== prevDate.toDateString()
 
           // Format date for separator
-          const formattedDate = entryDate.toLocaleDateString('en', {
+          const formattedDate = entryDate.toLocaleDateString(i18n.language, {
             month: 'short',
             day: '2-digit',
           })
@@ -441,7 +441,6 @@ export default function LogbookEntryList({
                           {entry.type}
                         </span>
                         <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                          {entry.instrument === 'piano' ? '🎹' : '🎸'}{' '}
                           {entry.instrument}
                         </span>
                       </div>

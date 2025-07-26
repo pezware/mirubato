@@ -18,7 +18,7 @@ interface EntryCardProps {
 }
 
 export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
   const date = new Date(entry.timestamp)
 
@@ -58,7 +58,7 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 mb-3">
         <span className="flex items-center gap-1">
           <Clock className="w-4 h-4" />
-          {date.toLocaleTimeString('en', {
+          {date.toLocaleTimeString(i18n.language, {
             hour: '2-digit',
             minute: '2-digit',
           })}
@@ -204,21 +204,16 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
             </div>
           )}
 
-          {/* Instruments */}
-          {entry.instruments && entry.instruments.length > 0 && (
+          {/* Instrument */}
+          {entry.instrument && (
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-1">
                 {t('logbook:entry.instrument')}
               </h4>
               <div className="flex flex-wrap gap-2">
-                {entry.instruments.map((instrument, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-600"
-                  >
-                    {instrument}
-                  </span>
-                ))}
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-morandi-sage-100 text-morandi-sage-600">
+                  {entry.instrument}
+                </span>
               </div>
             </div>
           )}
@@ -229,14 +224,14 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
               {t('logbook:entry.practiceDate')}
             </h4>
             <p className="text-sm text-gray-600">
-              {date.toLocaleDateString('en', {
+              {date.toLocaleDateString(i18n.language, {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
               })}
               {' at '}
-              {date.toLocaleTimeString('en', {
+              {date.toLocaleTimeString(i18n.language, {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
