@@ -656,6 +656,58 @@ useEffect(() => {
 }, [dataId]) // Only depend on data that changes
 ```
 
+### 10. Date Picker Timezone Jump Issue
+
+**Problem**: When selecting a date in date picker inputs, the selected date jumps back by one day (e.g., selecting July 23 shows July 22).
+
+**Root Cause**: JavaScript's `new Date(dateString)` constructor interprets date strings in ISO 8601 format (YYYY-MM-DD) as UTC midnight, which then gets converted to local timezone, causing the date to shift.
+
+**Example**:
+
+```javascript
+// ❌ WRONG: Creates date in UTC, converts to local
+new Date('2024-07-23')
+// In Pacific Time (UTC-7): Shows as July 22 at 17:00
+
+// ✅ CORRECT: Creates date in local timezone
+const [year, month, day] = '2024-07-23'.split('-').map(Number)
+new Date(year, month - 1, day) // July 23 at 00:00 local time
+```
+
+**Solution Applied** (July 2025):
+
+```typescript
+// Parse date components manually to avoid timezone conversion
+onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+  const [year, month, day] = e.target.value.split('-').map(Number)
+  const localDate = new Date(year, month - 1, day)
+  handleDateChange(localDate)
+}}
+```
+
+**Files Fixed**:
+
+- `src/components/practice-reports/advanced/FilterCriteriaRow.tsx`
+
+**Prevention**:
+
+1. **Always parse date strings manually** when creating Date objects from form inputs
+2. **Use the numeric Date constructor** `new Date(year, month - 1, day)` for local dates
+3. **Be consistent** - if displaying in local time, create in local time
+4. **Document the pattern** in component comments when handling dates
+
+**Testing**:
+
+```javascript
+// Quick test to verify the fix
+const testDate = '2024-07-23'
+const wrongWay = new Date(testDate)
+const [y, m, d] = testDate.split('-').map(Number)
+const rightWay = new Date(y, m - 1, d)
+console.log('UTC way:', wrongWay.toLocaleDateString()) // Might show July 22
+console.log('Local way:', rightWay.toLocaleDateString()) // Shows July 23
+```
+
 ## When All Else Fails
 
 1. Clear all caches (browser, service worker, CDN)

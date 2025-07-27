@@ -83,23 +83,12 @@ export default function ManualEntryForm({
     if (entry?.timestamp) {
       // Convert existing timestamp to YYYY-MM-DD format in local timezone
       const date = new Date(entry.timestamp)
-      return (
-        date.getFullYear() +
-        '-' +
-        String(date.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(date.getDate()).padStart(2, '0')
-      )
+      // Use local date components to avoid timezone conversion issues
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     }
     // Default to today in local timezone
     const today = new Date()
-    return (
-      today.getFullYear() +
-      '-' +
-      String(today.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(today.getDate()).padStart(2, '0')
-    )
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
 
   // Time state - default to current time minus duration or existing entry time
@@ -107,20 +96,12 @@ export default function ManualEntryForm({
     if (entry?.timestamp) {
       // Convert existing timestamp to HH:MM format in local timezone
       const date = new Date(entry.timestamp)
-      return (
-        String(date.getHours()).padStart(2, '0') +
-        ':' +
-        String(date.getMinutes()).padStart(2, '0')
-      )
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     }
     // Default to current time minus duration in local timezone
     const now = new Date()
     const adjustedTime = new Date(now.getTime() - duration * 60 * 1000) // Subtract duration in milliseconds
-    return (
-      String(adjustedTime.getHours()).padStart(2, '0') +
-      ':' +
-      String(adjustedTime.getMinutes()).padStart(2, '0')
-    )
+    return `${String(adjustedTime.getHours()).padStart(2, '0')}:${String(adjustedTime.getMinutes()).padStart(2, '0')}`
   })
 
   // Auto-adjust practice time when duration changes (only for new entries)
@@ -146,6 +127,8 @@ export default function ManualEntryForm({
       // Create a date object from the selected date and time in local timezone
       const [year, month, day] = practiceDate.split('-').map(Number)
       const [hours, minutes] = practiceTime.split(':').map(Number)
+
+      // Create the date directly with the correct time to avoid timezone issues
       const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
 
       const entryData = {
@@ -262,13 +245,7 @@ export default function ManualEntryForm({
                 onChange={e => setPracticeDate(e.target.value)}
                 max={(() => {
                   const today = new Date()
-                  return (
-                    today.getFullYear() +
-                    '-' +
-                    String(today.getMonth() + 1).padStart(2, '0') +
-                    '-' +
-                    String(today.getDate()).padStart(2, '0')
-                  )
+                  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
                 })()} // Don't allow future dates
                 className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 required
