@@ -547,7 +547,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
                 label: t('repertoire:sort.composerAsc'),
               },
             ]}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-56"
           />
         </div>
       </div>

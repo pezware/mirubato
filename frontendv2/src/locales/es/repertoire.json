@@ -8,6 +8,8 @@
   "addNotesPrompt": "Añadir notas o instrucciones de práctica",
   "addToEntries": "Añadir a Entradas",
   "addToRepertoire": "Añadir a Piezas",
+  "fromLibrary": "De la Biblioteca",
+  "createCustom": "Crear Personalizado",
   "addToRepertoireQuestion": "¿Añadir a Tu Repertorio?",
   "addedToRepertoire": "{{piece}} añadido a tu repertorio",
   "additionalGoals": "+{{count}} objetivos más",

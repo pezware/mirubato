@@ -86,7 +86,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </div>
 
         {/* Mobile Bottom Tabs - Unchanged */}
-        <BottomTabs onAddClick={handleAddClick} onTimerClick={onTimerClick} />
+        <BottomTabs
+          onAddClick={handleAddClick}
+          onTimerClick={onTimerClick}
+          onSignInClick={() => setShowSignInModal(true)}
+        />
       </div>
 
       {/* Sign In Modal */}
