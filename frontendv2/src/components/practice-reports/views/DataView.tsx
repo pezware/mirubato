@@ -5,7 +5,6 @@ import { Table, BarChart3 } from 'lucide-react'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { SegmentedControl, LoadingSkeleton } from '../../ui'
 import type { SegmentOption } from '../../ui'
-import { cn } from '../../../utils/cn'
 
 // Lazy load the actual view components
 const DataTableView = lazy(() => import('./DataTableView'))
