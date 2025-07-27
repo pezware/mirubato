@@ -264,7 +264,15 @@
     "week_plural": "weeks",
     "year": "year",
     "year_plural": "years",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "timePicker": {
+    "selectPracticeTime": "Select Practice Time",
+    "hint": "Drag inner area for hours • Click outer ring for minutes",
+    "confirmTime": "Confirm Time",
+    "clickToTypeManually": "Click to type time manually"
   },
   "title": "Title",
   "toggle": "Toggle",

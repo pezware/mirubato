@@ -262,7 +262,15 @@
     "week_plural": "Wochen",
     "year": "Jahr",
     "year_plural": "Jahre",
-    "yesterday": "Gestern"
+    "yesterday": "Gestern",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "timePicker": {
+    "selectPracticeTime": "Übungszeit Auswählen",
+    "hint": "Inneren Bereich für Stunden ziehen • Äußeren Ring für Minuten anklicken",
+    "confirmTime": "Zeit Bestätigen",
+    "clickToTypeManually": "Klicken Sie, um die Zeit manuell einzugeben"
   },
   "title": "Titel",
   "toggle": "Umschalten",

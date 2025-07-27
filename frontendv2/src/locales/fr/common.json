@@ -262,7 +262,15 @@
     "week_plural": "semaines",
     "year": "an",
     "year_plural": "ans",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "timePicker": {
+    "selectPracticeTime": "Sélectionner l'Heure de Pratique",
+    "hint": "Faites glisser la zone intérieure pour les heures • Cliquez sur l'anneau extérieur pour les minutes",
+    "confirmTime": "Confirmer l'Heure",
+    "clickToTypeManually": "Cliquez pour saisir l'heure manuellement"
   },
   "title": "Titre",
   "toggle": "Basculer",

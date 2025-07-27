@@ -30,35 +30,35 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 - **Dependency Updates**: Latest secure versions of all critical dependencies
 - **Puppeteer Downgrade**: @cloudflare/puppeteer to 0.0.11 for security compliance
 
-### Version 1.4.1 Highlights
+### Recent Major Features (2025)
 
-- **Component Architecture**: Modular component system with comprehensive refactoring
-- **UI Component Library**: Complete custom component library with Morandi design system
-- **Enhanced Practice Logging**: Time picker, multi-piece support, and intelligent time division
-- **Advanced Reporting**: Fully modular reporting system with 4 specialized views
-  - Overview View: Practice streaks, calendar heatmap, trend charts
-  - Analytics View: Advanced filtering, grouping, sorting with visualizations
-  - Data Table View: Grouped data with export capabilities
-  - Pieces View: Piece and composer-specific analytics
-- **Export Capabilities**: Robust CSV/JSON export functionality
-- **Mobile Optimization**: Responsive design improvements and touch interactions
-- **Test Coverage**: 297 unit tests plus 65 E2E tests (all passing, including smoke tests)
-- **Code Quality**: Eliminated technical debt and improved maintainability
-- **Scorebook Collections**: Simplified collections system with lightweight tag-based approach
-- **Practice Counter**: New toolbox feature for visual practice tracking
-- **Auto-Logging Module**: Seamless practice session tracking across features
-- **Chart.js Global Registration**: Fixed production build issues with centralized chart component registration
+- **About Page**: Privacy-focused content with comprehensive privacy policy
+- **Repertoire System**: Enhanced repertoire management with:
+  - Sort functionality for repertoire view
+  - Composer search autocomplete
+  - Wikipedia URL cleanup integration
+  - Repertoire deletion capability
+  - Piece name editing functionality
+  - Status tracking: Planned → Learning → Working → Polished → Performance Ready
+  - Primary instrument preference
+- **Goals Integration**: Link goals to specific pieces with progress tracking
+- **Dictionary Service**: AI-powered music terminology definitions
+- **Circle of Fifths Tool**: Interactive music theory visualization
+- **Automated D1 Database Backup System**: Scheduled backups with R2 storage
+- **Database Migration**: Lowercase enums for consistency across all services
+- **Package Manager Migration**: Moved from npm to pnpm for better dependency management
+- **Security Hardening**: Fixed critical vulnerabilities in tar-fs, ws, and esbuild
 
 ### Infrastructure
 
 All services run as Cloudflare Workers with the following domains:
 
-| Service        | Production                     | Staging                                        |
-| -------------- | ------------------------------ | ---------------------------------------------- |
-| Frontend       | mirubato.com, www.mirubato.com | staging.mirubato.com, www-staging.mirubato.com |
-| API            | api.mirubato.com               | api-staging.mirubato.com                       |
-| Scores Service | scores.mirubato.com            | scores-staging.mirubato.com                    |
-| Dictionary     | dictionary.mirubato.com        | dictionary-staging.mirubato.com                |
+| Service        | Production                     | Staging                                        | Local Development                  |
+| -------------- | ------------------------------ | ---------------------------------------------- | ---------------------------------- |
+| Frontend       | mirubato.com, www.mirubato.com | staging.mirubato.com, www-staging.mirubato.com | www-mirubato.localhost:4000        |
+| API            | api.mirubato.com               | api-staging.mirubato.com                       | api-mirubato.localhost:9797        |
+| Scores Service | scores.mirubato.com            | scores-staging.mirubato.com                    | scores-mirubato.localhost:9788     |
+| Dictionary     | dictionary.mirubato.com        | dictionary-staging.mirubato.com                | dictionary-mirubato.localhost:9799 |
 
 ### Services Architecture
 
@@ -72,16 +72,17 @@ All services run as Cloudflare Workers with the following domains:
         ┌─────────────┼─────────────┬────────────┬────────────┐
         │             │             │            │            │
 ┌───────▼────────┐ ┌──▼──────────┐ ┌▼──────────┐ ┌──────────▼────────┐
-│     API        │ │Scores Service│ │Future Svc │ │ Future Service    │
-│    (REST)      │ │   (REST)    │ │  (REST)   │ │    (REST)         │
-│ mirubato-api   │ │mirubato-    │ │mirubato-  │ │ mirubato-*        │
-│                │ │scores       │ │*          │ │                   │
+│     API        │ │Scores Service│ │Dictionary │ │ Future Service    │
+│    (REST)      │ │   (REST)    │ │  Service  │ │    (REST)         │
+│ mirubato-api   │ │mirubato-    │ │ mirubato- │ │ mirubato-*        │
+│                │ │scores       │ │dictionary │ │                   │
 └───────┬────────┘ └──────┬──────┘ └─────┬─────┘ └────────┬──────────┘
         │                 │               │                │
 ┌───────▼────────┐ ┌──────▼──────┐ ┌─────▼─────┐ ┌────────▼──────────┐
 │  D1 Database   │ │D1 Database  │ │D1 Database│ │  D1 Database      │
-│(mirubato-prod) │ │(scores-prod)│ │(*-prod)   │ │  (*-prod)         │
-└────────────────┘ └─────────────┘ └───────────┘ └───────────────────┘
+│(mirubato-prod) │ │(scores-prod)│ │(dict-prod)│ │  (*-prod)         │
+└────────────────┘ │   + R2       │ └───────────┘ └───────────────────┘
+                   └─────────────┘
 
 Note: All services follow the same architecture patterns defined in service-template/
 ```
@@ -91,6 +92,7 @@ Note: All services follow the same architecture patterns defined in service-temp
 #### 1. Frontend Service
 
 - **Technology**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
+- **Package Manager**: pnpm (migrated from npm in 2025)
 - **Worker**: Serves static assets via Cloudflare Workers
 - **State Management**: Zustand stores for auth and logbook data
 - **Key Features**:
@@ -135,6 +137,19 @@ Note: All services follow the same architecture patterns defined in service-temp
   - Edge caching with conditional requests (ETags)
   - Health monitoring with smoke tests
   - Metrics endpoint for observability
+
+#### 4. Dictionary Service
+
+- **Technology**: Hono framework, TypeScript
+- **Database**: Separate D1 instance
+- **Purpose**: Music terminology definitions and educational content
+- **Features**:
+  - AI-powered definition generation
+  - Multi-language support (6 languages)
+  - Musical term categorization
+  - Caching for frequently accessed terms
+  - JWT authentication integration
+  - Health monitoring endpoints
 
 ### Database Architecture
 
@@ -318,14 +333,16 @@ The frontend uses a straightforward React architecture without the complex modul
 
 - **Home**: Landing page with feature overview
 - **Logbook**: Practice session tracking and reporting
+- **Repertoire**: Musical piece management with status tracking and goals
 - **Toolbox**: Practice tools including metronome with patterns, practice counter, and Circle of Fifths
-- **Scorebook**: Sheet music browser with collections support (July 2025 update)
+- **Scorebook**: Sheet music browser with collections support
+- **About**: Privacy policy and app information
 - **Auth**: Authentication pages (verify, callback)
 
 **Core Components**
 
-- **LogbookEntryList**: Main entry management component
-- **EnhancedReports**: Modular reporting system with specialized views (July 2025)
+- **LogbookEntryList**: Main entry management component with mobile-optimized vertical layout
+- **EnhancedReports**: Modular reporting system with specialized views
   - **View Components**:
     - **OverviewView**: Dashboard with practice streaks, calendar heatmap, and trend charts
     - **AnalyticsView**: Advanced analytics with filtering, grouping, and sorting
@@ -350,6 +367,15 @@ The frontend uses a straightforward React architecture without the complex modul
 - **ManualEntryForm**: Practice entry creation with custom time picker and multi-piece support
 - **InteractivePiano**: Simple piano widget (lazy loaded)
 - **usePracticeAnalytics**: Shared hook for practice data analytics and calculations
+
+**Repertoire Components**
+
+- **RepertoireTimeline**: Visual timeline of piece progress
+- **RepertoireCard**: Individual piece display with status tracking
+- **EditPieceModal**: Inline editing of piece names and details
+- **RepertoireSort**: Sorting options (newest, oldest, alphabetical, progress)
+- **StatusBadge**: Visual indicators for piece status
+- **PracticeHistoryModal**: View all practice sessions for a piece
 
 **Chart.js Integration**
 
@@ -514,14 +540,18 @@ The original design envisioned a complex module system with EventBus for loose c
 ## Key Technologies
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand, Axios
+- **Package Manager**: pnpm (performance and disk space optimization)
 - **Data Visualization**: Chart.js v4.4.9 with react-chartjs-2 v5.3.0
 - **UI Components**: Custom component library with @headlessui/react for accessibility
+- **Icons**: Tabler Icons (replaced emojis for consistency)
+- **Fonts**: Noto Serif (multilingual support), Inter (UI), Lexend (headers)
 - **Music Libraries**: VexFlow.js and Tone.js (present but minimally used)
-- **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching)
+- **Backend**: Cloudflare Workers, D1 (SQLite), KV (caching), R2 (storage)
 - **API Framework**: Hono with Zod validation
 - **Auth**: JWT tokens, magic links, Google OAuth
 - **i18n**: react-i18next (6 languages: en, es, fr, de, zh-TW, zh-CN)
 - **Testing**: Vitest, Playwright
+- **Database Backups**: Automated D1 backups to R2 storage
 
 ## Performance Considerations
 
@@ -605,17 +635,23 @@ All services expose comprehensive health monitoring:
 ./start-scorebook.sh     # Start all services with proper domains
 
 # Individual services (for debugging)
-cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
-cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
-cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
+cd api && pnpm run dev        # http://api-mirubato.localhost:9797
+cd scores && pnpm run dev     # http://scores-mirubato.localhost:9788
+cd dictionary && pnpm run dev # http://dictionary-mirubato.localhost:9799
+cd frontendv2 && pnpm run dev # http://www-mirubato.localhost:4000
 
 # Deployment (from respective directories)
 cd [service] && wrangler deploy               # Production
 cd [service] && wrangler deploy --env staging # Staging
 
 # Database migrations (from api directory)
-cd api && npm run db:migrate:production   # Production
-cd api && npm run db:migrate:staging      # Staging
+cd api && pnpm run db:migrate:production   # Production
+cd api && pnpm run db:migrate:staging      # Staging
+
+# Safe migration with backup (recommended)
+cd api/scripts
+./safe-migrate.sh                   # Staging
+./safe-migrate.sh --env production  # Production
 ```
 
 ## Internationalization (i18n) Architecture
@@ -745,7 +781,7 @@ The frontend implements aggressive code splitting:
 
 ## Architecture Phases
 
-### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.4.1)
+### Phase 1: MVP - Logbook Focus (✅ COMPLETE - v1.7.0)
 
 - ✅ Core functionality: Practice logging and reporting
 - ✅ Manual practice entry with timer and precise time selection
@@ -761,7 +797,7 @@ The frontend implements aggressive code splitting:
 - ✅ Mobile-optimized responsive design
 - ✅ Production deployment at mirubato.com
 
-**Recent Enhancements (July 2025):**
+**Phase 1 Achievements:**
 
 - **Enhanced Reporting UI** (Latest): Added comprehensive data visualization and filtering
   - Advanced filtering system with date ranges, duration, pieces, composers, instruments
@@ -816,6 +852,23 @@ The frontend implements aggressive code splitting:
 - **Search Fix**: Score search now properly queries by title and composer
 - **UI Consistency**: Fixed modal theming issues for consistent light theme
 - **My Collections Page**: Added collection creation button and management capabilities
+
+### Phase 1.5: Repertoire & Goals (✅ COMPLETE - v1.7.0)
+
+- **Repertoire Management**: Track pieces with status progression
+  - Status workflow: Planned → Learning → Working → Polished → Performance Ready
+  - Practice history integration
+  - Composer autocomplete with 1000+ composers
+  - Wikipedia URL validation
+  - Sort and filter capabilities
+- **Goals System**: Set and track musical goals
+  - Link goals to specific pieces
+  - Progress tracking and visualization
+  - Practice time allocation
+- **Dictionary Service**: Educational content for music terms
+  - AI-powered definitions
+  - Multi-language support
+  - Integrated help system
 
 ### Phase 2: Practice Mode (Future)
 
@@ -998,6 +1051,9 @@ New services integrate seamlessly with the existing architecture:
 5. **Module System**: Reconsider when app complexity justifies it
 6. **Database Migration**: Move from JSON blobs to structured tables for better performance
 7. **New Services**: Use the service template for consistency across all microservices
+8. **Theme System**: Implement proper light/dark/system theme switcher
+9. **PWA Features**: Add service worker for offline capabilities
+10. **Practice Mode**: Implement sheet music display with VexFlow.js integration
 
 ---
 
