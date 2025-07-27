@@ -145,7 +145,17 @@ export class LogbookPage {
   }
 
   async switchToOverviewTab() {
-    await waitForTabContent(this.page, 'overview-tab', 'summary-stats')
+    await this.overviewTab.click()
+    // Wait for tab to be active
+    await this.page.waitForSelector(
+      '[data-testid="overview-tab"][class*="border-morandi-purple-400"]',
+      { state: 'visible', timeout: 5000 }
+    )
+    // Wait for content to load
+    await this.page
+      .waitForLoadState('networkidle', { timeout: 5000 })
+      .catch(() => {})
+    await waitForAnimations(this.page)
   }
 
   async switchToPiecesTab() {
@@ -170,6 +180,12 @@ export class LogbookPage {
     notes?: string
     mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
   }) {
+    // Get initial entry count from localStorage
+    const initialCount = await this.page.evaluate(() => {
+      const stored = localStorage.getItem('mirubato:logbook:entries')
+      return stored ? JSON.parse(stored).length : 0
+    })
+
     // Switch to new entry tab if not already there
     const isFormVisible = await this.entryForm
       .isVisible({ timeout: 1000 })
@@ -228,6 +244,22 @@ export class LogbookPage {
 
     // Dismiss any prompts that appear after saving
     await this.dismissPrompts()
+
+    // Wait for localStorage to be updated with the new entry
+    await this.page.waitForFunction(
+      expectedCount => {
+        const stored = localStorage.getItem('mirubato:logbook:entries')
+        const entries = stored ? JSON.parse(stored) : []
+        return entries.length === expectedCount
+      },
+      initialCount + 1,
+      { timeout: 5000 }
+    )
+
+    // Force a re-render by triggering storage event
+    await this.page.evaluate(() => {
+      window.dispatchEvent(new Event('storage'))
+    })
   }
 
   // Wait helpers
