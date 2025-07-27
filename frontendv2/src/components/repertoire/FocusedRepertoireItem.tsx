@@ -132,7 +132,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-base font-medium text-stone-900">
+                <h3 className="font-serif text-base font-medium text-stone-900">
                   {toTitleCase(item.scoreComposer)} -{' '}
                   {toTitleCase(item.scoreTitle)}
                 </h3>
