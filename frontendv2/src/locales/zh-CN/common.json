@@ -262,7 +262,15 @@
     "week_plural": "周",
     "year": "年",
     "year_plural": "年",
-    "yesterday": "昨天"
+    "yesterday": "昨天",
+    "am": "上午",
+    "pm": "下午"
+  },
+  "timePicker": {
+    "selectPracticeTime": "选择练习时间",
+    "hint": "拖动内圈设置小时 • 点击外圈设置分钟",
+    "confirmTime": "确认时间",
+    "clickToTypeManually": "点击手动输入时间"
   },
   "title": "标题",
   "toggle": "切换",

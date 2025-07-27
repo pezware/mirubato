@@ -2,6 +2,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ClockTimePicker from './ClockTimePicker'
 
+// Mock the translation hook
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'time.am': 'AM',
+        'time.pm': 'PM',
+        'timePicker.selectPracticeTime': 'Select Practice Time',
+        'timePicker.hint':
+          'Drag inner area for hours • Click outer ring for minutes',
+        cancel: 'Cancel',
+        'timePicker.confirmTime': 'Confirm Time',
+        'timePicker.clickToTypeManually': 'Click to type time manually',
+      }
+      return translations[key] || key
+    },
+  }),
+}))
+
 describe('ClockTimePicker', () => {
   it('renders with initial time value', () => {
     const onChange = vi.fn()
@@ -124,7 +143,7 @@ describe('ClockTimePicker', () => {
     expect(screen.getByText('Confirm Time')).toBeInTheDocument()
   })
 
-  it('rounds minutes to nearest 5 when opening', () => {
+  it('preserves exact minute value when opening', () => {
     const onChange = vi.fn()
     render(<ClockTimePicker value="09:17" onChange={onChange} />)
 
@@ -132,12 +151,65 @@ describe('ClockTimePicker', () => {
     const trigger = screen.getByText('9:17 AM').parentElement
     fireEvent.click(trigger!)
 
-    // Check that 15 minutes is selected (17 rounded to nearest 5)
-    const minute15 = screen.getByText('15')
-    const minute15Parent = minute15.parentElement
-    const circle = minute15Parent?.querySelector('circle')
+    // Check that the time display shows the exact time (not rounded)
+    const timeDisplay = screen.getByText('09:17')
+    expect(timeDisplay).toBeInTheDocument()
+  })
 
-    // The selected minute should have a filled background
-    expect(circle).toHaveAttribute('fill', '#4A5568')
+  it('allows selecting precise minutes via manual input', async () => {
+    const onChange = vi.fn()
+    render(<ClockTimePicker value="09:00" onChange={onChange} />)
+
+    // Open dropdown
+    const trigger = screen.getByText('9:00 AM').parentElement
+    fireEvent.click(trigger!)
+
+    // Verify hint text is shown
+    expect(
+      screen.getByText(
+        'Drag inner area for hours • Click outer ring for minutes'
+      )
+    ).toBeInTheDocument()
+
+    // Click on time display to edit manually
+    const timeDisplay = screen.getByText('09:00')
+    fireEvent.click(timeDisplay)
+
+    // Type a precise time (not on 5-minute interval)
+    const input = screen.getByPlaceholderText('HH:MM')
+    fireEvent.change(input, { target: { value: '09:23' } })
+    fireEvent.blur(input)
+
+    // Confirm time
+    const confirmButton = screen.getByText('Confirm Time')
+    fireEvent.click(confirmButton)
+
+    await waitFor(() => {
+      // Should have called onChange with the precise time
+      expect(onChange).toHaveBeenCalledWith('09:23')
+    })
+  })
+
+  it('shows visual hint for manual time entry', () => {
+    const onChange = vi.fn()
+    render(<ClockTimePicker value="14:30" onChange={onChange} />)
+
+    // Open dropdown
+    const trigger = screen.getByText('2:30 PM').parentElement
+    fireEvent.click(trigger!)
+
+    // Check that we have the hint text visible
+    expect(
+      screen.getByText(
+        'Drag inner area for hours • Click outer ring for minutes'
+      )
+    ).toBeInTheDocument()
+
+    // Check that the pencil icon is shown next to the time
+    const timeContainer = screen.getByTitle('Click to type time manually')
+    expect(timeContainer).toBeInTheDocument()
+
+    // The time container should show both time and pencil icon
+    expect(timeContainer.textContent).toContain('14:30')
   })
 })

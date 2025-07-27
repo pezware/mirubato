@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 
 interface ClockTimePickerProps {
@@ -12,6 +13,7 @@ export default function ClockTimePicker({
   onChange,
   className = '',
 }: ClockTimePickerProps) {
+  const { t } = useTranslation('common')
   const [isOpen, setIsOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTime, setIsEditingTime] = useState(false)
@@ -36,20 +38,10 @@ export default function ClockTimePicker({
     setTempMinutes(m)
   }, [value])
 
-  // Round minutes to nearest 5 when opening
-  useEffect(() => {
-    if (isOpen) {
-      const roundedMinutes = Math.round(tempMinutes / 5) * 5
-      if (roundedMinutes !== tempMinutes) {
-        setTempMinutes(roundedMinutes === 60 ? 0 : roundedMinutes)
-      }
-    }
-  }, [isOpen, tempMinutes])
-
   // Format display
   const hour12 =
     tempHours === 0 ? 12 : tempHours > 12 ? tempHours - 12 : tempHours
-  const ampm = tempHours >= 12 ? 'PM' : 'AM'
+  const ampm = tempHours >= 12 ? t('time.pm') : t('time.am')
   const displayTime = `${hour12}:${tempMinutes.toString().padStart(2, '0')} ${ampm}`
 
   // Adjust dropdown position when opened
@@ -115,8 +107,9 @@ export default function ClockTimePicker({
       Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
     )
 
-    // Only start dragging if clicking near the clock face (not too close to center)
-    if (distance > 30) {
+    // Only start dragging if clicking in the inner area for hours
+    // Not too close to center (> 30) and not in the minute area (< 70)
+    if (distance > 30 && distance < 70) {
       setIsDragging(true)
       handleDrag(e.clientX, e.clientY)
     }
@@ -143,6 +136,32 @@ export default function ClockTimePicker({
   const handleMinuteClick = (minute: number, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering the drag handler
     setTempMinutes(minute)
+  }
+
+  // Handle clock face click for precise minute selection
+  const handleClockClick = (e: React.MouseEvent) => {
+    // Don't handle clicks if we're dragging
+    if (isDragging) return
+
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const dx = e.clientX - centerX
+    const dy = e.clientY - centerY
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    // Only handle clicks in the minute selection area (outer ring)
+    if (distance > 70 && distance < 115) {
+      let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90
+      if (angle < 0) angle += 360
+
+      // Convert angle to minutes (0-59)
+      const minute = Math.round((angle / 360) * 60) % 60
+      setTempMinutes(minute)
+      e.stopPropagation()
+    }
   }
 
   const handleSet = () => {
@@ -244,12 +263,12 @@ export default function ClockTimePicker({
           onPointerLeave={handlePointerUp}
         >
           <h3 className="text-center text-base sm:text-lg font-medium text-gray-800 mb-3 sm:mb-4">
-            Select Practice Time
+            {t('timePicker.selectPracticeTime')}
           </h3>
 
           {/* Clock face */}
           <div
-            className="relative mx-auto mb-4 w-full max-w-[240px]"
+            className="relative mx-auto mb-2 w-full max-w-[240px]"
             style={{ aspectRatio: '1/1' }}
           >
             <svg
@@ -268,8 +287,41 @@ export default function ClockTimePicker({
                 stroke="#e0e0e0"
                 strokeWidth="3"
                 onPointerDown={handlePointerDown}
+                onClick={handleClockClick}
                 style={{ cursor: 'pointer' }}
               />
+
+              {/* Visual guide rings */}
+              {/* Inner ring boundary (hour area) */}
+              <circle
+                cx="120"
+                cy="120"
+                r="70"
+                fill="none"
+                stroke="#e5e5e5"
+                strokeWidth="1"
+                strokeDasharray="2 2"
+                className="pointer-events-none"
+              />
+
+              {/* Minute dots (outer ring) - show all 60 for precise selection */}
+              {Array.from({ length: 60 }, (_, i) => {
+                const angle = i * 6 - 90
+                const x = 120 + 95 * Math.cos((angle * Math.PI) / 180)
+                const y = 120 + 95 * Math.sin((angle * Math.PI) / 180)
+                const isActive = i === tempMinutes
+                const isFiveMinute = i % 5 === 0
+                return (
+                  <circle
+                    key={`minute-dot-${i}`}
+                    cx={x}
+                    cy={y}
+                    r={isFiveMinute ? '2' : '1'}
+                    fill={isActive ? '#4A5568' : isFiveMinute ? '#666' : '#ccc'}
+                    className="pointer-events-none"
+                  />
+                )
+              })}
 
               {/* Hour numbers (inner ring) */}
               {Array.from({ length: 12 }, (_, i) => {
@@ -348,6 +400,11 @@ export default function ClockTimePicker({
             </svg>
           </div>
 
+          {/* Hint text */}
+          <p className="text-xs text-gray-500 text-center mb-3">
+            {t('timePicker.hint')}
+          </p>
+
           {/* Digital display with AM/PM */}
           <div className="flex items-center justify-center mb-3 sm:mb-4 gap-2 bg-gray-50 rounded-lg p-2 sm:p-3">
             {isEditingTime ? (
@@ -364,11 +421,24 @@ export default function ClockTimePicker({
             ) : (
               <div
                 onClick={handleTimeClick}
-                className="text-xl sm:text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-2 sm:px-3 py-1 transition-colors"
-                title="Click to type time"
+                className="text-xl sm:text-2xl font-light cursor-pointer hover:bg-gray-200 rounded px-2 sm:px-3 py-1 transition-colors flex items-center gap-1"
+                title={t('timePicker.clickToTypeManually')}
               >
                 {tempHours.toString().padStart(2, '0')}:
                 {tempMinutes.toString().padStart(2, '0')}
+                <svg
+                  className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
               </div>
             )}
             <button
@@ -390,10 +460,10 @@ export default function ClockTimePicker({
               variant="secondary"
               className="flex-1"
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button onClick={handleSet} variant="primary" className="flex-1">
-              Confirm Time
+              {t('timePicker.confirmTime')}
             </Button>
           </div>
         </div>
