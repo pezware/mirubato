@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookOpen, Plus, Wrench, Clock, User } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
@@ -17,7 +17,6 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
 }) => {
   const { t } = useTranslation(['common', 'auth'])
   const location = useLocation()
-  const navigate = useNavigate()
   const { user, isAuthenticated } = useAuthStore()
 
   const getUserInitials = () => {
