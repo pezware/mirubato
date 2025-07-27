@@ -312,13 +312,14 @@
   "tabs": {
     "analytics": "Analytics",
     "comparative": "Comparative Analysis",
-    "data": "Data Table",
+    "data": "Data",
     "new": "New",
     "newEntry": "Add Entry",
     "overview": "Overview",
     "pieces": "Pieces",
     "progress": "Progress Insights",
-    "repertoire": "Pieces"
+    "repertoire": "Pieces",
+    "table": "Table"
   },
   "techniqueFocus": "Technique Focus",
   "techniquesPracticed": "Techniques Practiced",

@@ -9,8 +9,7 @@ import { LogbookEntry } from '../../api/logbook'
 
 // Lazy load view components
 const OverviewView = lazy(() => import('./views/OverviewView'))
-const AnalyticsView = lazy(() => import('./views/AnalyticsView'))
-const DataTableView = lazy(() => import('./views/DataTableView'))
+const DataView = lazy(() => import('./views/DataView'))
 const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
 
@@ -53,8 +52,6 @@ export default function EnhancedReports({
       }
     } else if (tab === 'repertoire') {
       setReportView('repertoire')
-    } else if (tab === 'analytics') {
-      setReportView('analytics')
     } else if (tab === 'data') {
       setReportView('data')
     } else if (!tab) {
@@ -80,7 +77,7 @@ export default function EnhancedReports({
       // Clear navigation state when switching away
       window.history.replaceState({}, document.title)
     } else {
-      // Set tab parameter for other views (repertoire, analytics, data)
+      // Set tab parameter for other views (repertoire, data)
       setSearchParams({ tab: view })
     }
     // Clear edit entry when switching away from newEntry
@@ -149,10 +146,8 @@ export default function EnhancedReports({
         return <OverviewView analytics={analytics} />
       case 'repertoire':
         return <RepertoireView analytics={analytics} />
-      case 'analytics':
-        return <AnalyticsView analytics={analytics} />
       case 'data':
-        return <DataTableView analytics={analytics} />
+        return <DataView analytics={analytics} />
       case 'newEntry':
         return (
           <ManualEntryForm

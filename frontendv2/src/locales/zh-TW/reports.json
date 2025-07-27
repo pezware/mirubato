@@ -311,13 +311,14 @@
   "tabs": {
     "analytics": "分析",
     "comparative": "比較分析",
-    "data": "數據表",
+    "data": "數據",
     "new": "新增",
     "newEntry": "新增記錄",
     "overview": "總覽",
     "pieces": "曲目",
     "progress": "進度",
-    "repertoire": "曲目庫"
+    "repertoire": "曲目庫",
+    "table": "表格"
   },
   "techniqueFocus": "技巧重點",
   "techniquesPracticed": "練習的技巧",

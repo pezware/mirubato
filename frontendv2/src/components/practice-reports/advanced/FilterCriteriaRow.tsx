@@ -183,12 +183,16 @@ export function FilterCriteriaRow({
               <Input
                 type="date"
                 value={format(dateRange.start, 'yyyy-MM-dd')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  // Parse the date components to avoid timezone issues
+                  const [year, month, day] = e.target.value
+                    .split('-')
+                    .map(Number)
                   setDateRange({
                     ...dateRange,
-                    start: new Date(e.target.value),
+                    start: new Date(year, month - 1, day),
                   })
-                }
+                }}
                 className="w-32"
               />
               <span className="text-morandi-stone-500">
@@ -197,12 +201,16 @@ export function FilterCriteriaRow({
               <Input
                 type="date"
                 value={format(dateRange.end, 'yyyy-MM-dd')}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  // Parse the date components to avoid timezone issues
+                  const [year, month, day] = e.target.value
+                    .split('-')
+                    .map(Number)
                   setDateRange({
                     ...dateRange,
-                    end: new Date(e.target.value),
+                    end: new Date(year, month - 1, day),
                   })
-                }
+                }}
                 className="w-32"
               />
             </div>
@@ -216,7 +224,11 @@ export function FilterCriteriaRow({
                   ? format(new Date(filter.value as string), 'yyyy-MM-dd')
                   : ''
               }
-              onChange={e => handleValueChange(new Date(e.target.value))}
+              onChange={e => {
+                // Parse the date components to avoid timezone issues
+                const [year, month, day] = e.target.value.split('-').map(Number)
+                handleValueChange(new Date(year, month - 1, day))
+              }}
               className="w-40"
             />
           )

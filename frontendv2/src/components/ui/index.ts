@@ -36,3 +36,6 @@ export { default as SplitButton } from './SplitButton'
 export { default as TimelineNav } from './TimelineNav'
 
 export { Tabs } from './Tabs'
+
+export { SegmentedControl } from './SegmentedControl'
+export type { SegmentOption } from './SegmentedControl'

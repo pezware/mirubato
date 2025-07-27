@@ -96,6 +96,61 @@ vi.mock('../../../components/practice-reports/views/AnalyticsView', () => ({
   default: () => <div>Analytics View</div>,
 }))
 
+vi.mock('../../../components/practice-reports/views/DataView', () => ({
+  default: ({
+    analytics,
+  }: {
+    analytics: { filteredEntries: LogbookEntry[] }
+  }) => {
+    // Import the mock components we need
+    const _DataTableView = vi
+      .importActual('../../../components/practice-reports/views/DataTableView')
+      .then((mod: { default: unknown }) => mod.default)
+    const _AnalyticsView = vi
+      .importActual('../../../components/practice-reports/views/AnalyticsView')
+      .then((mod: { default: unknown }) => mod.default)
+
+    // Render the data table view mock directly since that's what the tests expect
+    const handleExportJSON = () => {
+      const jsonContent = JSON.stringify(
+        analytics.filteredEntries || [],
+        null,
+        2
+      )
+      const blob = new Blob([jsonContent], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `practice-data-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    }
+
+    const handleExportCSV = () => {
+      const csvContent = 'Date,Duration,Piece\ndata1,data2,data3'
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `practice-data-${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    }
+
+    return (
+      <div>
+        <button data-testid="export-csv-button" onClick={handleExportCSV}>
+          Export CSV
+        </button>
+        <button data-testid="export-json-button" onClick={handleExportJSON}>
+          Export JSON
+        </button>
+        Data Table View
+      </div>
+    )
+  },
+}))
+
 vi.mock('../../../components/practice-reports/views/DataTableView', () => ({
   default: () => {
     const handleExportCSV = () => {
@@ -502,12 +557,12 @@ describe('EnhancedReports', () => {
       </MemoryRouter>
     )
 
-    const analyticsTab = screen.getByTestId('analytics-tab')
-    fireEvent.click(analyticsTab)
+    const dataTab = screen.getByTestId('data-tab')
+    fireEvent.click(dataTab)
 
-    // Wait for analytics view to load
+    // Wait for data view to load
     await waitFor(() => {
-      expect(analyticsTab).toHaveClass('border-morandi-purple-400')
+      expect(dataTab).toHaveClass('border-morandi-purple-400')
     })
   })
 
@@ -687,10 +742,9 @@ describe('EnhancedReports', () => {
       </MemoryRouter>
     )
 
-    // Check all tabs are present
+    // Check all tabs are present (now 4 tabs instead of 5)
     expect(screen.getByTestId('overview-tab')).toBeInTheDocument()
     expect(screen.getByTestId('repertoire-tab')).toBeInTheDocument()
-    expect(screen.getByTestId('analytics-tab')).toBeInTheDocument()
     expect(screen.getByTestId('data-tab')).toBeInTheDocument()
     expect(screen.getByTestId('newEntry-tab')).toBeInTheDocument()
   })

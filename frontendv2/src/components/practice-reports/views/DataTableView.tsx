@@ -7,7 +7,7 @@ import { FilterBuilder } from '../advanced/FilterBuilder'
 import { GroupingPanel } from '../advanced/GroupingPanel'
 import { useReportingStore } from '../../../stores/reportingStore'
 import { useLogbookStore } from '../../../stores/logbookStore'
-import { Download, Filter, Layers } from 'lucide-react'
+import { Filter, Layers } from 'lucide-react'
 import Button from '../../ui/Button'
 import { LogbookEntry } from '../../../api/logbook'
 
@@ -42,19 +42,6 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     if (window.confirm(t('logbook:entry.confirmDelete'))) {
       await deleteEntry(entry.id)
     }
-  }
-
-  const handleExportData = () => {
-    // Export grouped data functionality
-    const data = analytics.groupedData || analytics.filteredEntries
-    const json = JSON.stringify(data, null, 2)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `practice-data-${new Date().toISOString().split('T')[0]}.json`
-    a.click()
-    URL.revokeObjectURL(url)
   }
 
   const exportToCSV = (data: typeof analytics.filteredEntries) => {
@@ -129,109 +116,94 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-      <div className="p-4 sm:p-6" data-testid="data-table">
-        {/* Entry count and Export - Always visible */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-4 border-b border-morandi-stone-200">
-          <div className="text-sm text-morandi-stone-600 opacity-0">
-            {analytics.filteredEntries.length} {t('reports:entries')}
-            {filters.length > 0 && ` (${t('reports:filtered')})`}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => exportToCSV(analytics.filteredEntries)}
-              disabled={analytics.filteredEntries.length === 0}
-              className="btn-secondary text-xs sm:text-sm px-2 sm:px-4 flex-1 sm:flex-initial"
-              data-testid="export-csv-button"
-            >
-              {t('reports:exportCSV')}
-            </button>
-            <button
-              onClick={() => exportToJSON(analytics.filteredEntries)}
-              disabled={analytics.filteredEntries.length === 0}
-              className="btn-secondary text-xs sm:text-sm px-2 sm:px-4 flex-1 sm:flex-initial"
-              data-testid="export-json-button"
-            >
-              {t('reports:exportJSON')}
-            </button>
-          </div>
-        </div>
-
-        {/* Controls - Stack on mobile */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <Filter className="w-4 h-4" />
-              <span>{t('reports:filters.title')}</span>
-              {filters.length > 0 && (
-                <span className="bg-morandi-purple-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
-                  {filters.length}
-                </span>
-              )}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowGrouping(!showGrouping)}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <Layers className="w-4 h-4" />
-              <span>{t('reports:grouping.title')}</span>
-              {groupBy.length > 0 && (
-                <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
-                  {groupBy.length}
-                </span>
-              )}
-            </Button>
-          </div>
+    <div data-testid="data-table">
+      {/* Controls - Stack on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleExportData}
+            onClick={() => setShowFilters(!showFilters)}
             className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
-            <Download className="w-4 h-4" />
-            <span>{t('reports:table.export')}</span>
+            <Filter className="w-4 h-4" />
+            <span>{t('reports:filters.title')}</span>
+            {filters.length > 0 && (
+              <span className="bg-morandi-purple-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                {filters.length}
+              </span>
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowGrouping(!showGrouping)}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            <Layers className="w-4 h-4" />
+            <span>{t('reports:grouping.title')}</span>
+            {groupBy.length > 0 && (
+              <span className="bg-morandi-sage-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                {groupBy.length}
+              </span>
+            )}
           </Button>
         </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="mb-4">
-            <FilterBuilder />
-          </div>
-        )}
-
-        {/* Grouping Panel */}
-        {showGrouping && (
-          <div className="mb-4">
-            <GroupingPanel />
-          </div>
-        )}
-
-        {/* Data Table */}
-        {analytics.groupedData && analytics.groupedData.length > 0 ? (
-          <GroupedDataTable
-            data={analytics.groupedData}
-            onEditEntry={handleEditEntry}
-            onDeleteEntry={handleDeleteEntry}
-          />
-        ) : (
-          <div className="p-8 text-center">
-            <p className="text-gray-500 mb-4">{t('reports:table.noData')}</p>
-            <p className="text-sm text-gray-400">
-              {analytics.filteredEntries.length > 0
-                ? t('reports:applyGroupingToSeeData')
-                : t('reports:noEntriesFound')}
-            </p>
-          </div>
-        )}
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportToCSV(analytics.filteredEntries)}
+            disabled={analytics.filteredEntries.length === 0}
+            className="flex-1 sm:flex-initial"
+            data-testid="export-csv-button"
+          >
+            {t('reports:exportCSV')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportToJSON(analytics.filteredEntries)}
+            disabled={analytics.filteredEntries.length === 0}
+            className="flex-1 sm:flex-initial"
+            data-testid="export-json-button"
+          >
+            {t('reports:exportJSON')}
+          </Button>
+        </div>
       </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="mb-4">
+          <FilterBuilder />
+        </div>
+      )}
+
+      {/* Grouping Panel */}
+      {showGrouping && (
+        <div className="mb-4">
+          <GroupingPanel />
+        </div>
+      )}
+
+      {/* Data Table */}
+      {analytics.groupedData && analytics.groupedData.length > 0 ? (
+        <GroupedDataTable
+          data={analytics.groupedData}
+          onEditEntry={handleEditEntry}
+          onDeleteEntry={handleDeleteEntry}
+        />
+      ) : (
+        <div className="p-8 text-center">
+          <p className="text-gray-500 mb-4">{t('reports:table.noData')}</p>
+          <p className="text-sm text-gray-400">
+            {analytics.filteredEntries.length > 0
+              ? t('reports:applyGroupingToSeeData')
+              : t('reports:noEntriesFound')}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
