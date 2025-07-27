@@ -2,6 +2,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ClockTimePicker from './ClockTimePicker'
 
+// Mock the translation hook
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'time.am': 'AM',
+        'time.pm': 'PM',
+        'timePicker.selectPracticeTime': 'Select Practice Time',
+        'timePicker.hint':
+          'Drag inner area for hours • Click outer ring for minutes',
+        cancel: 'Cancel',
+        'timePicker.confirmTime': 'Confirm Time',
+        'timePicker.clickToTypeManually': 'Click to type time manually',
+      }
+      return translations[key] || key
+    },
+  }),
+}))
+
 describe('ClockTimePicker', () => {
   it('renders with initial time value', () => {
     const onChange = vi.fn()
@@ -147,7 +166,9 @@ describe('ClockTimePicker', () => {
 
     // Verify hint text is shown
     expect(
-      screen.getByText('Click anywhere on the outer ring for precise minutes')
+      screen.getByText(
+        'Drag inner area for hours • Click outer ring for minutes'
+      )
     ).toBeInTheDocument()
 
     // Click on time display to edit manually
@@ -179,7 +200,9 @@ describe('ClockTimePicker', () => {
 
     // Check that we have the hint text visible
     expect(
-      screen.getByText('Click anywhere on the outer ring for precise minutes')
+      screen.getByText(
+        'Drag inner area for hours • Click outer ring for minutes'
+      )
     ).toBeInTheDocument()
 
     // Check that the pencil icon is shown next to the time
