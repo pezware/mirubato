@@ -99,13 +99,9 @@ test.describe('Enhanced Reports - Core Tests', () => {
       })
     })
 
-    test('view calendar heatmap', async ({ page, browserName }) => {
+    test('view calendar heatmap', async ({ page }) => {
       await test.step('Verify calendar heatmap', async () => {
         // The calendar heatmap should be visible on the overview tab
-        // On mobile, the calendar might have different sizing
-        const isMobile =
-          browserName === 'webkit' || page.viewportSize()?.width === 375
-
         // Check for calendar grid elements (the small squares)
         // Mobile might use different classes for responsive design
         const calendarSquares = page.locator(
