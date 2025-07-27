@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   format,
@@ -36,6 +36,19 @@ export const RepertoireCalendarView: React.FC<RepertoireCalendarViewProps> = ({
   onMonthChange,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
+
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640) // sm breakpoint
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Calculate practice data for the current month
   const calendarData = useMemo(() => {
@@ -215,7 +228,7 @@ export const RepertoireCalendarView: React.FC<RepertoireCalendarViewProps> = ({
                 <div className="text-sm font-medium text-stone-700">
                   {dayNumber}
                 </div>
-                {dayData.minutes > 0 && (
+                {dayData.minutes > 0 && !isMobile && (
                   <div className="text-xs text-stone-600">
                     {formatDuration(dayData.minutes)}
                   </div>

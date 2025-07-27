@@ -8,6 +8,8 @@
   "addNotesPrompt": "添加筆記或練習指示",
   "addToEntries": "加入練習記錄",
   "addToRepertoire": "加入曲目",
+  "fromLibrary": "從曲庫選擇",
+  "createCustom": "建立自訂",
   "addToRepertoireQuestion": "添加到您的曲目庫？",
   "addedToRepertoire": "{{piece}} 已添加到您的曲目庫",
   "additionalGoals": "+{{count}} 個更多目標",

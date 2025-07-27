@@ -1,19 +1,30 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, Plus, FileText, Wrench, Clock } from 'lucide-react'
+import { BookOpen, Plus, Wrench, Clock, User } from 'lucide-react'
+import { useAuthStore } from '../../stores/authStore'
 
 interface BottomTabsProps {
   onAddClick?: () => void
   onTimerClick?: () => void
+  onSignInClick?: () => void
 }
 
 const BottomTabs: React.FC<BottomTabsProps> = ({
   onAddClick,
   onTimerClick,
+  onSignInClick,
 }) => {
-  const { t } = useTranslation(['common'])
+  const { t } = useTranslation(['common', 'auth'])
   const location = useLocation()
+  const { user, isAuthenticated } = useAuthStore()
+
+  const getUserInitials = () => {
+    if (!user) return '?'
+    const firstNameOrEmail = user.displayName || user.email || ''
+    const firstName = firstNameOrEmail.split(' ')[0]
+    return firstName[0]?.toUpperCase() || '?'
+  }
 
   const tabs = [
     {
@@ -29,12 +40,6 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       icon: Wrench,
     },
     {
-      id: 'scores',
-      label: t('common:navigation.scores'),
-      path: '/scorebook/browse',
-      icon: FileText,
-    },
-    {
       id: 'timer',
       label: t('common:navigation.timer'),
       path: null, // Special case - triggers action instead of navigation
@@ -47,6 +52,18 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       path: null, // Special case - triggers action instead of navigation
       icon: Plus,
       action: onAddClick,
+    },
+    {
+      id: 'profile',
+      label: isAuthenticated
+        ? user?.displayName?.split(' ')[0] ||
+          user?.email?.split('@')[0] ||
+          'Profile'
+        : t('auth:signIn'),
+      path: isAuthenticated ? '/profile' : null,
+      icon: User,
+      isProfile: true,
+      action: !isAuthenticated ? onSignInClick : undefined,
     },
   ]
 
@@ -65,7 +82,11 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
           const Icon = tab.icon
           const active = isActive(tab.path)
 
-          if (tab.id === 'add' || tab.id === 'timer') {
+          if (
+            tab.id === 'add' ||
+            tab.id === 'timer' ||
+            (tab.id === 'profile' && !isAuthenticated)
+          ) {
             return (
               <button
                 key={tab.id}
@@ -75,6 +96,28 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                 <Icon className="w-5 h-5" />
                 <span className="text-[11px]">{tab.label}</span>
               </button>
+            )
+          }
+
+          if (tab.id === 'profile' && isAuthenticated) {
+            return (
+              <Link
+                key={tab.id}
+                to={tab.path!}
+                className={`
+                  flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] transition-colors
+                  ${
+                    active
+                      ? 'text-gray-900 font-medium'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }
+                `}
+              >
+                <div className="w-5 h-5 rounded-full bg-morandi-sage-500 text-white flex items-center justify-center text-xs font-semibold">
+                  {getUserInitials()}
+                </div>
+                <span className="text-[11px]">{tab.label}</span>
+              </Link>
             )
           }
 

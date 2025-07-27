@@ -304,20 +304,23 @@ export default function ClockTimePicker({
                 className="pointer-events-none"
               />
 
-              {/* Minute dots (outer ring) - show all 60 for precise selection */}
+              {/* Minute dots (outer ring) - skip where numbers are displayed */}
               {Array.from({ length: 60 }, (_, i) => {
+                const isFiveMinute = i % 5 === 0
+                // Skip dots where minute numbers are displayed
+                if (isFiveMinute) return null
+
                 const angle = i * 6 - 90
                 const x = 120 + 95 * Math.cos((angle * Math.PI) / 180)
                 const y = 120 + 95 * Math.sin((angle * Math.PI) / 180)
                 const isActive = i === tempMinutes
-                const isFiveMinute = i % 5 === 0
                 return (
                   <circle
                     key={`minute-dot-${i}`}
                     cx={x}
                     cy={y}
-                    r={isFiveMinute ? '2' : '1'}
-                    fill={isActive ? '#4A5568' : isFiveMinute ? '#666' : '#ccc'}
+                    r="1"
+                    fill={isActive ? '#4A5568' : '#ccc'}
                     className="pointer-events-none"
                   />
                 )
