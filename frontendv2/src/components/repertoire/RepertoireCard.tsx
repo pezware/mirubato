@@ -139,7 +139,7 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 text-left group cursor-pointer"
             >
-              <h3 className="text-lg font-semibold text-stone-900 group-hover:text-stone-700 transition-colors duration-200">
+              <h3 className="font-serif text-lg font-semibold text-stone-900 group-hover:text-stone-700 transition-colors duration-200">
                 {toTitleCase(item.scoreTitle)} -{' '}
                 {toTitleCase(item.scoreComposer)}
               </h3>
