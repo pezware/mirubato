@@ -71,19 +71,6 @@ test.describe('Enhanced Reports', () => {
         )
       })
 
-      await test.step('Navigate to analytics tab', async () => {
-        await page.click('[data-testid="analytics-tab"]')
-
-        // Wait for tab to become active
-        await page.waitForFunction(
-          () => {
-            const tab = document.querySelector('[data-testid="analytics-tab"]')
-            return tab?.classList.contains('border-morandi-purple-400')
-          },
-          { timeout: 5000 }
-        )
-      })
-
       await test.step('Navigate to data tab', async () => {
         await page.click('[data-testid="data-tab"]')
 
@@ -178,50 +165,6 @@ test.describe('Enhanced Reports', () => {
           .evaluate(el => el.classList.contains('border-morandi-purple-400'))
 
         expect(isTabActive).toBeTruthy()
-      })
-    })
-
-    test('analytics view allows filtering', async ({ page }) => {
-      await test.step('Navigate to analytics view', async () => {
-        await page.click('[data-testid="analytics-tab"]')
-
-        // Wait for tab to become active
-        await page.waitForFunction(
-          () => {
-            const tab = document.querySelector('[data-testid="analytics-tab"]')
-            return tab?.classList.contains('border-morandi-purple-400')
-          },
-          { timeout: 5000 }
-        )
-      })
-
-      await test.step('Verify filter UI is accessible', async () => {
-        // The Add Filter button should be visible
-        await expect(page.locator('text=Add Filter')).toBeVisible({
-          timeout: 5000,
-        })
-      })
-
-      await test.step('Add a simple filter', async () => {
-        await page.click('text=Add Filter')
-
-        // Wait for the filter section to update
-        await page.waitForTimeout(500)
-
-        // Check that we're no longer showing "No filters" message
-        await expect(page.locator('text=No filters applied')).not.toBeVisible()
-
-        // Verify filter controls are visible by checking for the field dropdown
-        // The filter builder creates dropdowns for field selection
-        const filterSection = page.locator('.space-y-2').first()
-        await expect(filterSection).toBeVisible({ timeout: 5000 })
-
-        // Verify we have at least one filter row with a remove button (X icon)
-        const removeButtons = page
-          .locator('button')
-          .filter({ has: page.locator('svg.w-4.h-4') })
-        const removeButtonCount = await removeButtons.count()
-        expect(removeButtonCount).toBeGreaterThan(0)
       })
     })
 

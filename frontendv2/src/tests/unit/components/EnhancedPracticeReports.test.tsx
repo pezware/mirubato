@@ -340,6 +340,7 @@ describe('EnhancedReports', () => {
     ;(useLogbookStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       entries: mockEntries,
       deleteEntry: mockDeleteEntry,
+      loadEntries: vi.fn().mockResolvedValue(undefined),
     })
 
     // Default mock implementation for useAutocomplete
@@ -508,6 +509,7 @@ describe('EnhancedReports', () => {
     ;(useLogbookStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       entries: [],
       deleteEntry: mockDeleteEntry,
+      loadEntries: vi.fn().mockResolvedValue(undefined),
     })
 
     render(
