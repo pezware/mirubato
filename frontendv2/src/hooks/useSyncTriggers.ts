@@ -16,7 +16,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     enableVisibility = true,
     enableRouteChange = true,
     enablePeriodic = true,
-    periodicInterval = 30000, // 30 seconds
+    periodicInterval = 300000, // 5 minutes
   } = options
 
   const location = useLocation()
@@ -25,10 +25,11 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
   const isLocalMode = useLogbookStore(state => state.isLocalMode)
   const syncRepertoireData = useRepertoireStore(state => state.syncLocalData)
 
-  // Initialize lastSync to 5 seconds ago to allow immediate first sync
-  const lastSyncRef = useRef<Date>(new Date(Date.now() - 5000))
+  // Initialize lastSync to 30 seconds ago to allow initial sync on first meaningful interaction
+  const lastSyncRef = useRef<Date>(new Date(Date.now() - 30000))
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const isSyncingRef = useRef(false)
+  const lastVisibilityChangeRef = useRef<Date>(new Date())
 
   // Helper to perform sync with debouncing
   const performSync = useCallback(
@@ -44,19 +45,21 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
         return
       }
 
-      // Debounce: Skip if synced within last 5 seconds
+      // Debounce: Skip if synced within last 30 seconds (except for manual sync)
       const now = new Date()
       const timeSinceLastSync = now.getTime() - lastSyncRef.current.getTime()
-      if (timeSinceLastSync < 5000) {
+      const minInterval = trigger === 'manual' ? 1000 : 30000 // 1s for manual, 30s for auto
+
+      if (timeSinceLastSync < minInterval) {
         console.log(
-          `[Sync] Skipping ${trigger} sync - too soon (${timeSinceLastSync}ms)`
+          `[Sync] Skipping ${trigger} sync - too soon (${Math.round(timeSinceLastSync / 1000)}s ago)`
         )
         return
       }
 
       try {
         isSyncingRef.current = true
-        console.log(`[Sync] Triggering sync from ${trigger}`)
+        console.log(`[Sync] 🔄 Starting sync from ${trigger}`)
 
         // Sync both logbook and repertoire data in parallel
         await Promise.all([
@@ -68,9 +71,10 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
         ])
 
         lastSyncRef.current = now
-        console.log(`[Sync] ${trigger} sync completed successfully`)
+        const duration = Date.now() - now.getTime()
+        console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
       } catch (error) {
-        console.error(`[Sync] ${trigger} sync failed:`, error)
+        console.error(`[Sync] ❌ ${trigger} sync failed:`, error)
       } finally {
         isSyncingRef.current = false
       }
@@ -78,20 +82,35 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     [isAuthenticated, isLocalMode, syncWithServer, syncRepertoireData]
   )
 
-  // 1. Visibility change sync (when tab becomes visible)
+  // 1. Visibility change sync (when tab becomes visible after being hidden)
   useEffect(() => {
     if (!enableVisibility) return
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        performSync('visibility')
+      if (document.visibilityState === 'hidden') {
+        // Track when we went hidden
+        lastVisibilityChangeRef.current = new Date()
+      } else if (document.visibilityState === 'visible') {
+        // Only sync if we were hidden for more than 1 minute
+        const hiddenDuration =
+          Date.now() - lastVisibilityChangeRef.current.getTime()
+        if (hiddenDuration > 60000) {
+          // 1 minute
+          performSync('visibility')
+        }
       }
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
-    // Also sync on focus
-    const handleFocus = () => performSync('focus')
+    // Also sync on focus (but only if we haven't synced recently)
+    const handleFocus = () => {
+      const timeSinceLastSync = Date.now() - lastSyncRef.current.getTime()
+      if (timeSinceLastSync > 120000) {
+        // 2 minutes
+        performSync('focus')
+      }
+    }
     window.addEventListener('focus', handleFocus)
 
     return () => {
@@ -100,12 +119,17 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     }
   }, [enableVisibility, isAuthenticated, isLocalMode, performSync])
 
-  // 2. Route change sync
+  // 2. Route change sync (only for important routes)
   useEffect(() => {
     if (!enableRouteChange) return
 
-    // Sync on route change (excluding initial mount)
-    if (location.pathname !== '/') {
+    // Only sync when navigating to logbook or repertoire pages (data-heavy pages)
+    const importantRoutes = ['/logbook', '/repertoire']
+    const isImportantRoute = importantRoutes.some(route =>
+      location.pathname.startsWith(route)
+    )
+
+    if (isImportantRoute) {
       performSync('route-change')
     }
   }, [

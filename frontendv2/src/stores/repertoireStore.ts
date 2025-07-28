@@ -733,7 +733,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       await get().loadGoals()
 
       set({ isLocalMode: false })
-      showToast('Repertoire synced successfully', 'success')
+      // Don't show success toast - sync should be silent when successful
     } catch (error) {
       console.error('Error syncing repertoire data:', error)
       // Keep local mode if sync fails

@@ -15,7 +15,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
     enableVisibility: true,
     enableRouteChange: true,
     enablePeriodic: true,
-    periodicInterval: 30000, // 30 seconds
+    periodicInterval: 300000, // 5 minutes (300,000 ms)
   })
 
   return <>{children}</>
