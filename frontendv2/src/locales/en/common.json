@@ -270,7 +270,7 @@
   },
   "timePicker": {
     "selectPracticeTime": "Select Practice Time",
-    "hint": "Drag inner area for hours • Click outer ring for minutes",
+    "hint": "Click inner circle for hour, outer circle for minute",
     "confirmTime": "Confirm Time",
     "clickToTypeManually": "Click to type time manually"
   },
