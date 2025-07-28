@@ -1342,7 +1342,23 @@ app.get('/health', async c => {
 
 ## 13. Version History {#version-history}
 
-### Current Version: 1.7.0 (July 2025)
+### Current Version: 1.7.1 (July 2025)
+
+#### Automatic Sync Implementation (PR #379)
+
+- **Fixed race condition**: Added `isAuthInitialized` flag to prevent sync before auth completes
+- **Automatic sync triggers**:
+  - On tab/window focus
+  - On route change
+  - Every 30 seconds when authenticated
+  - When coming back online
+- **Manual sync options**:
+  - Sync indicator button in sidebar
+  - Pull-to-refresh on mobile devices
+- **Visual feedback**: Real-time sync status indicator with icons and timing
+- **Debouncing**: 5-second debounce to prevent excessive sync calls
+
+### Previous Version: 1.7.0 (July 2025)
 
 #### Focused UI Design System (PR #261)
 

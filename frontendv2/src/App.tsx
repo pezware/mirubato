@@ -9,6 +9,7 @@ import { useAuthStore } from './stores/authStore'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
+import { useSyncTriggers } from './hooks'
 
 // Set up PDF worker before any components load
 setupPdfWorker()
@@ -37,7 +38,15 @@ const PageLoader = () => (
 )
 
 function App() {
-  const { refreshAuth } = useAuthStore()
+  const { refreshAuth, isAuthInitialized } = useAuthStore()
+
+  // Enable automatic sync triggers
+  useSyncTriggers({
+    enableVisibility: true,
+    enableRouteChange: true,
+    enablePeriodic: true,
+    periodicInterval: 30000, // 30 seconds
+  })
 
   useEffect(() => {
     let isMounted = true
@@ -58,6 +67,11 @@ function App() {
       isMounted = false
     }
   }, [refreshAuth])
+
+  // Show loading screen while auth is being determined
+  if (!isAuthInitialized) {
+    return <PageLoader />
+  }
 
   return (
     <AutoLoggingProvider>

@@ -4,6 +4,7 @@ import EnhancedReports from '../components/practice-reports/EnhancedReports'
 import AppLayout from '../components/layout/AppLayout'
 import ManualEntryForm from '../components/ManualEntryForm'
 import TimerEntry from '../components/TimerEntry'
+import { PullToRefresh } from '../components/PullToRefresh'
 
 export default function LogbookPage() {
   const { error, loadEntries, clearError } = useLogbookStore()
@@ -31,46 +32,48 @@ export default function LogbookPage() {
       onNewEntry={() => setShowManualEntry(true)}
       onTimerClick={() => setShowTimer(true)}
     >
-      <div className="p-4 sm:p-8">
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <p className="text-red-700 flex items-center gap-2">
-                <span>⚠️</span>
-                {error}
-              </p>
-              <button
-                onClick={clearError}
-                className="text-red-600 hover:text-red-800"
-              >
-                ✕
-              </button>
+      <PullToRefresh className="h-full">
+        <div className="p-4 sm:p-8">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
+              <div className="flex items-center justify-between">
+                <p className="text-red-700 flex items-center gap-2">
+                  <span>⚠️</span>
+                  {error}
+                </p>
+                <button
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Reports Section */}
-        <EnhancedReports />
+          {/* Reports Section */}
+          <EnhancedReports />
 
-        {/* Manual Entry Modal */}
-        {showManualEntry && (
-          <ManualEntryForm
-            onClose={handleManualEntryClose}
-            onSave={handleManualEntryClose}
-            initialDuration={timerDuration}
-          />
-        )}
+          {/* Manual Entry Modal */}
+          {showManualEntry && (
+            <ManualEntryForm
+              onClose={handleManualEntryClose}
+              onSave={handleManualEntryClose}
+              initialDuration={timerDuration}
+            />
+          )}
 
-        {/* Timer Modal */}
-        {showTimer && (
-          <TimerEntry
-            isOpen={showTimer}
-            onClose={() => setShowTimer(false)}
-            onComplete={handleTimerComplete}
-          />
-        )}
-      </div>
+          {/* Timer Modal */}
+          {showTimer && (
+            <TimerEntry
+              isOpen={showTimer}
+              onClose={() => setShowTimer(false)}
+              onComplete={handleTimerComplete}
+            />
+          )}
+        </div>
+      </PullToRefresh>
     </AppLayout>
   )
 }

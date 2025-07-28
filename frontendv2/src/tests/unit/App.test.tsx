@@ -7,6 +7,15 @@ import { useAuthStore } from '../../stores/authStore'
 // Mock the stores
 vi.mock('../../stores/authStore')
 
+// Mock hooks
+vi.mock('../../hooks', () => ({
+  useSyncTriggers: vi.fn(() => ({
+    lastSync: null,
+    isSyncing: false,
+    triggerSync: vi.fn(),
+  })),
+}))
+
 // Mock utils
 vi.mock('../../utils/migrations/lowercaseMigration', () => ({
   runLowercaseMigration: vi.fn(),
@@ -54,6 +63,7 @@ describe('App', () => {
       refreshAuth: mockRefreshAuth,
       user: null,
       isAuthenticated: false,
+      isAuthInitialized: true, // Set to true to avoid loading screen
       login: vi.fn(),
       logout: vi.fn(),
       isLoading: false,

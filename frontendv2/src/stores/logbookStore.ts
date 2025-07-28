@@ -132,29 +132,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         isLoading: false,
       })
 
-      // If user is authenticated and online, sync in background
+      // If user is authenticated, sync in background
       const token = localStorage.getItem('auth-token')
-      if (token && !get().isLocalMode) {
-        // Try to sync with server in background
-        logbookApi
-          .getEntries()
-          .then(serverEntries => {
-            const newEntriesMap = new Map(
-              serverEntries.map(entry => [entry.id, entry])
-            )
-            set({
-              entriesMap: newEntriesMap,
-              entries: sortEntriesByTimestamp(
-                Array.from(newEntriesMap.values())
-              ),
-            })
+      const { useAuthStore } = await import('./authStore')
+      const isAuthenticated = useAuthStore.getState().isAuthenticated
 
-            // Debounced write to localStorage
-            debouncedLocalStorageWrite(
-              ENTRIES_KEY,
-              JSON.stringify(serverEntries)
-            )
-          })
+      if (token && isAuthenticated) {
+        // Perform full sync with server
+        get()
+          .syncWithServer()
           .catch(err => {
             console.warn('Background sync failed:', err)
             // Keep using local data

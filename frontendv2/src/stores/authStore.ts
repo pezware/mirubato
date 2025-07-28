@@ -7,6 +7,7 @@ interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  isAuthInitialized: boolean // Track if auth check is complete
   error: string | null
   refreshPromise: Promise<void> | null
 
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isAuthInitialized: false,
   error: null,
   refreshPromise: null,
 
@@ -54,17 +56,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Set to online mode and trigger sync after successful authentication
       try {
-        const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+        const { setLocalMode } = useLogbookStore.getState()
         const { syncLocalData } = await import('./repertoireStore').then(m =>
           m.useRepertoireStore.getState()
         )
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Sync both logbook and repertoire data
-        Promise.all([
-          syncWithServer().catch((error: unknown) => {
-            console.warn('Initial logbook sync failed:', error)
-          }),
+        // Load entries which will trigger sync
+        const { loadEntries } = useLogbookStore.getState()
+
+        // Load data and sync in parallel
+        await Promise.all([
+          loadEntries(), // This will now properly sync
           syncLocalData().catch((error: unknown) => {
             console.warn('Initial repertoire sync failed:', error)
           }),
@@ -104,15 +107,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Set to online mode and sync logbook after successful Google login
       try {
-        const { syncWithServer, setLocalMode } = useLogbookStore.getState()
+        const { loadEntries, setLocalMode } = useLogbookStore.getState()
         const { syncLocalData } = await import('./repertoireStore').then(m =>
           m.useRepertoireStore.getState()
         )
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Sync both logbook and repertoire data
+        // Load entries which will trigger sync
         await Promise.all([
-          syncWithServer(),
+          loadEntries(), // This will now properly sync
           syncLocalData(),
           useAuthStore.getState().syncUserPreferences(),
         ])
@@ -221,6 +224,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: null,
         isAuthenticated: false,
         isLoading: false,
+        isAuthInitialized: true,
         error: null,
       })
 
@@ -243,7 +247,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const token = localStorage.getItem('auth-token')
     if (!token) {
-      set({ isAuthenticated: false, user: null })
+      set({ isAuthenticated: false, user: null, isAuthInitialized: true })
       return
     }
 
@@ -256,22 +260,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           user,
           isAuthenticated: true,
           isLoading: false,
+          isAuthInitialized: true,
           refreshPromise: null,
         })
 
         // Set to online mode when authenticated
         try {
-          const { setLocalMode, syncWithServer } = useLogbookStore.getState()
+          const { setLocalMode, loadEntries } = useLogbookStore.getState()
           const { syncLocalData } = await import('./repertoireStore').then(m =>
             m.useRepertoireStore.getState()
           )
           setLocalMode(false)
 
-          // Sync both logbook and repertoire data in background
-          Promise.all([
-            syncWithServer().catch((error: unknown) => {
-              console.warn('Background logbook sync failed:', error)
-            }),
+          // Load entries which will trigger sync
+          await Promise.all([
+            loadEntries(), // This will now properly sync
             syncLocalData().catch((error: unknown) => {
               console.warn('Background repertoire sync failed:', error)
             }),
@@ -294,6 +297,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           user: null,
           isAuthenticated: false,
           isLoading: false,
+          isAuthInitialized: true,
           refreshPromise: null,
         })
 
