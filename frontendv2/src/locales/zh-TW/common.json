@@ -268,7 +268,7 @@
   },
   "timePicker": {
     "selectPracticeTime": "選擇練習時間",
-    "hint": "拖曳內圈設定小時 • 點擊外圈設定分鐘",
+    "hint": "點擊內圈選擇小時，外圈選擇分鐘",
     "confirmTime": "確認時間",
     "clickToTypeManually": "點擊以手動輸入時間"
   },

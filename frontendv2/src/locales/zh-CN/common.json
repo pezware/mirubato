@@ -268,7 +268,7 @@
   },
   "timePicker": {
     "selectPracticeTime": "选择练习时间",
-    "hint": "拖动内圈设置小时 • 点击外圈设置分钟",
+    "hint": "点击内圈选择小时，外圈选择分钟",
     "confirmTime": "确认时间",
     "clickToTypeManually": "点击手动输入时间"
   },
