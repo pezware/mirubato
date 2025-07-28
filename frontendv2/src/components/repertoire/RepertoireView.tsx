@@ -227,7 +227,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         totalPracticeTime,
         practiceCount,
         lastPracticed,
-        recentPractice: practiceSessions.slice(0, 5).map(session => ({
+        recentPractice: practiceSessions.map(session => ({
           id: session.id,
           timestamp: new Date(session.timestamp).getTime(),
           duration: session.duration,
