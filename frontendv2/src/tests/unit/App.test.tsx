@@ -7,13 +7,11 @@ import { useAuthStore } from '../../stores/authStore'
 // Mock the stores
 vi.mock('../../stores/authStore')
 
-// Mock hooks
-vi.mock('../../hooks', () => ({
-  useSyncTriggers: vi.fn(() => ({
-    lastSync: null,
-    isSyncing: false,
-    triggerSync: vi.fn(),
-  })),
+// Mock SyncProvider component
+vi.mock('../../components/SyncProvider', () => ({
+  SyncProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 // Mock utils
