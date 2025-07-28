@@ -268,7 +268,7 @@
   },
   "timePicker": {
     "selectPracticeTime": "Übungszeit Auswählen",
-    "hint": "Inneren Bereich für Stunden ziehen • Äußeren Ring für Minuten anklicken",
+    "hint": "Inneren Kreis für Stunde, äußeren Kreis für Minute klicken",
     "confirmTime": "Zeit Bestätigen",
     "clickToTypeManually": "Klicken Sie, um die Zeit manuell einzugeben"
   },

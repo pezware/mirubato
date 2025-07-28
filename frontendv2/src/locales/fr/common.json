@@ -268,7 +268,7 @@
   },
   "timePicker": {
     "selectPracticeTime": "Sélectionner l'Heure de Pratique",
-    "hint": "Faites glisser la zone intérieure pour les heures • Cliquez sur l'anneau extérieur pour les minutes",
+    "hint": "Cliquez cercle intérieur pour heure, cercle extérieur pour minute",
     "confirmTime": "Confirmer l'Heure",
     "clickToTypeManually": "Cliquez pour saisir l'heure manuellement"
   },
