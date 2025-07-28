@@ -24,25 +24,29 @@ describe.skip('useSyncTriggers', () => {
     vi.useFakeTimers()
 
     // Setup default mock implementations
-    ;(useAuthStore as unknown as any).mockImplementation((selector: any) => {
-      const state = { isAuthenticated: true }
-      return selector(state)
-    })
-    ;(useLogbookStore as unknown as any).mockImplementation((selector: any) => {
+    ;(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector: (state: unknown) => unknown) => {
+        const state = { isAuthenticated: true }
+        return selector(state)
+      }
+    )
+    ;(
+      useLogbookStore as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation((selector: (state: unknown) => unknown) => {
       const state = {
         syncWithServer: mockSyncWithServer,
         isLocalMode: false,
       }
       return selector(state)
     })
-    ;(useRepertoireStore as unknown as any).mockImplementation(
-      (selector: any) => {
-        const state = {
-          syncLocalData: mockSyncRepertoireData,
-        }
-        return selector(state)
+    ;(
+      useRepertoireStore as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation((selector: (state: unknown) => unknown) => {
+      const state = {
+        syncLocalData: mockSyncRepertoireData,
       }
-    )
+      return selector(state)
+    })
 
     mockSyncWithServer.mockResolvedValue(undefined)
     mockSyncRepertoireData.mockResolvedValue(undefined)
@@ -54,10 +58,12 @@ describe.skip('useSyncTriggers', () => {
 
   it('should not sync when not authenticated', () => {
     // Mock unauthenticated state
-    ;(useAuthStore as unknown as any).mockImplementation((selector: any) => {
-      const state = { isAuthenticated: false }
-      return selector(state)
-    })
+    ;(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (selector: (state: unknown) => unknown) => {
+        const state = { isAuthenticated: false }
+        return selector(state)
+      }
+    )
 
     renderHook(() => useSyncTriggers())
 
@@ -76,7 +82,9 @@ describe.skip('useSyncTriggers', () => {
 
   it('should not sync when in local mode', () => {
     // Mock local mode
-    ;(useLogbookStore as unknown as any).mockImplementation((selector: any) => {
+    ;(
+      useLogbookStore as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation((selector: (state: unknown) => unknown) => {
       const state = {
         syncWithServer: mockSyncWithServer,
         isLocalMode: true,
@@ -100,7 +108,7 @@ describe.skip('useSyncTriggers', () => {
   })
 
   it('should sync on visibility change when authenticated', async () => {
-    const { result } = renderHook(() =>
+    const { result: _result } = renderHook(() =>
       useSyncTriggers({
         enablePeriodic: false,
         enableRouteChange: false,
@@ -128,7 +136,7 @@ describe.skip('useSyncTriggers', () => {
   })
 
   it('should sync on window focus', async () => {
-    const { result } = renderHook(() =>
+    const { result: _result } = renderHook(() =>
       useSyncTriggers({
         enablePeriodic: false,
         enableRouteChange: false,
@@ -190,7 +198,7 @@ describe.skip('useSyncTriggers', () => {
   })
 
   it('should sync when coming back online', async () => {
-    const { result } = renderHook(() =>
+    const { result: _result } = renderHook(() =>
       useSyncTriggers({
         enablePeriodic: false,
         enableRouteChange: false,
@@ -239,7 +247,7 @@ describe.skip('useSyncTriggers', () => {
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     mockSyncWithServer.mockRejectedValue(new Error('Sync failed'))
 
-    const { result } = renderHook(() =>
+    const { result: _result } = renderHook(() =>
       useSyncTriggers({
         enablePeriodic: false,
         enableRouteChange: false,

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { useLogbookStore } from '../stores/logbookStore'
@@ -31,49 +31,52 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
   const isSyncingRef = useRef(false)
 
   // Helper to perform sync with debouncing
-  const performSync = async (trigger: string) => {
-    // Skip if not authenticated or in local mode
-    if (!isAuthenticated || isLocalMode) {
-      return
-    }
+  const performSync = useCallback(
+    async (trigger: string) => {
+      // Skip if not authenticated or in local mode
+      if (!isAuthenticated || isLocalMode) {
+        return
+      }
 
-    // Skip if already syncing
-    if (isSyncingRef.current) {
-      console.log(`[Sync] Skipping ${trigger} sync - already in progress`)
-      return
-    }
+      // Skip if already syncing
+      if (isSyncingRef.current) {
+        console.log(`[Sync] Skipping ${trigger} sync - already in progress`)
+        return
+      }
 
-    // Debounce: Skip if synced within last 5 seconds
-    const now = new Date()
-    const timeSinceLastSync = now.getTime() - lastSyncRef.current.getTime()
-    if (timeSinceLastSync < 5000) {
-      console.log(
-        `[Sync] Skipping ${trigger} sync - too soon (${timeSinceLastSync}ms)`
-      )
-      return
-    }
+      // Debounce: Skip if synced within last 5 seconds
+      const now = new Date()
+      const timeSinceLastSync = now.getTime() - lastSyncRef.current.getTime()
+      if (timeSinceLastSync < 5000) {
+        console.log(
+          `[Sync] Skipping ${trigger} sync - too soon (${timeSinceLastSync}ms)`
+        )
+        return
+      }
 
-    try {
-      isSyncingRef.current = true
-      console.log(`[Sync] Triggering sync from ${trigger}`)
+      try {
+        isSyncingRef.current = true
+        console.log(`[Sync] Triggering sync from ${trigger}`)
 
-      // Sync both logbook and repertoire data in parallel
-      await Promise.all([
-        syncWithServer(),
-        syncRepertoireData().catch(err => {
-          console.error(`[Sync] Repertoire sync failed:`, err)
-          // Don't throw - continue even if repertoire sync fails
-        }),
-      ])
+        // Sync both logbook and repertoire data in parallel
+        await Promise.all([
+          syncWithServer(),
+          syncRepertoireData().catch(err => {
+            console.error(`[Sync] Repertoire sync failed:`, err)
+            // Don't throw - continue even if repertoire sync fails
+          }),
+        ])
 
-      lastSyncRef.current = now
-      console.log(`[Sync] ${trigger} sync completed successfully`)
-    } catch (error) {
-      console.error(`[Sync] ${trigger} sync failed:`, error)
-    } finally {
-      isSyncingRef.current = false
-    }
-  }
+        lastSyncRef.current = now
+        console.log(`[Sync] ${trigger} sync completed successfully`)
+      } catch (error) {
+        console.error(`[Sync] ${trigger} sync failed:`, error)
+      } finally {
+        isSyncingRef.current = false
+      }
+    },
+    [isAuthenticated, isLocalMode, syncWithServer, syncRepertoireData]
+  )
 
   // 1. Visibility change sync (when tab becomes visible)
   useEffect(() => {
@@ -95,7 +98,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleFocus)
     }
-  }, [enableVisibility, isAuthenticated, isLocalMode])
+  }, [enableVisibility, isAuthenticated, isLocalMode, performSync])
 
   // 2. Route change sync
   useEffect(() => {
@@ -105,7 +108,13 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     if (location.pathname !== '/') {
       performSync('route-change')
     }
-  }, [location.pathname, enableRouteChange, isAuthenticated, isLocalMode])
+  }, [
+    location.pathname,
+    enableRouteChange,
+    isAuthenticated,
+    isLocalMode,
+    performSync,
+  ])
 
   // 3. Periodic sync
   useEffect(() => {
@@ -129,7 +138,13 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
         syncIntervalRef.current = null
       }
     }
-  }, [enablePeriodic, periodicInterval, isAuthenticated, isLocalMode])
+  }, [
+    enablePeriodic,
+    periodicInterval,
+    isAuthenticated,
+    isLocalMode,
+    performSync,
+  ])
 
   // 4. Online/offline status
   useEffect(() => {
@@ -143,7 +158,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     return () => {
       window.removeEventListener('online', handleOnline)
     }
-  }, [isAuthenticated, isLocalMode])
+  }, [isAuthenticated, isLocalMode, performSync])
 
   return {
     lastSync: lastSyncRef.current,
