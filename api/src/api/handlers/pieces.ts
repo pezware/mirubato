@@ -30,56 +30,73 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
     const { oldPiece, newPiece } = updatePieceNameSchema.parse(body)
 
     // Query all sync_data for the user
+    // Use JSON extraction to properly search within the pieces array
     const stmt = c.env.DB.prepare(
       `
-      SELECT id, type, data, updated_at
+      SELECT id, entity_type, data, updated_at
       FROM sync_data
       WHERE user_id = ?
-      AND type = 'logbook_entry'
-      AND data LIKE ?
+      AND entity_type = 'logbook_entry'
+      AND json_extract(data, '$.pieces') IS NOT NULL
     `
-    ).bind(user.id, `%"title":"${oldPiece.title}"%`)
+    ).bind(user.id)
 
     const results = await stmt.all()
     let updatedCount = 0
+    console.log(
+      `[Pieces] Found ${results.results?.length || 0} logbook entries to check`
+    )
+    console.log(`[Pieces] Looking for pieces matching:`, oldPiece)
 
     // Update each matching entry
     for (const row of results.results || []) {
-      const data = JSON.parse(row.data as string)
-      let wasUpdated = false
+      try {
+        const data = JSON.parse(row.data as string)
+        let wasUpdated = false
 
-      // Update pieces array
-      if (data.pieces && Array.isArray(data.pieces)) {
-        data.pieces = data.pieces.map((piece: any) => {
-          if (
-            piece.title === oldPiece.title &&
-            (piece.composer || '') === (oldPiece.composer || '')
-          ) {
-            wasUpdated = true
-            return {
-              ...piece,
-              title: newPiece.title,
-              composer: newPiece.composer || null,
+        // Update pieces array
+        if (data.pieces && Array.isArray(data.pieces)) {
+          data.pieces = data.pieces.map((piece: any) => {
+            if (
+              piece.title === oldPiece.title &&
+              (piece.composer || '') === (oldPiece.composer || '')
+            ) {
+              wasUpdated = true
+              console.log(
+                `[Pieces] Updating piece in entry ${row.id}: "${oldPiece.title}" → "${newPiece.title}"`
+              )
+              return {
+                ...piece,
+                title: newPiece.title,
+                composer: newPiece.composer || null,
+              }
             }
-          }
-          return piece
-        })
-      }
+            return piece
+          })
+        }
 
-      // If the entry was updated, save it back
-      if (wasUpdated) {
-        data.updatedAt = new Date().toISOString()
+        // If the entry was updated, save it back
+        if (wasUpdated) {
+          data.updatedAt = new Date().toISOString()
 
-        const updateStmt = c.env.DB.prepare(
+          const updateStmt = c.env.DB.prepare(
+            `
+            UPDATE sync_data
+            SET data = ?, updated_at = ?
+            WHERE id = ? AND user_id = ?
           `
-          UPDATE sync_data
-          SET data = ?, updated_at = ?
-          WHERE id = ? AND user_id = ?
-        `
-        ).bind(JSON.stringify(data), new Date().toISOString(), row.id, user.id)
+          ).bind(
+            JSON.stringify(data),
+            new Date().toISOString(),
+            row.id,
+            user.id
+          )
 
-        await updateStmt.run()
-        updatedCount++
+          await updateStmt.run()
+          updatedCount++
+        }
+      } catch (error) {
+        console.error(`[Pieces] Error processing entry ${row.id}:`, error)
       }
     }
 

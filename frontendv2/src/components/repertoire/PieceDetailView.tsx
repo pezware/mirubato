@@ -531,6 +531,14 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               // Update piece names in logbook
               const updatedCount = await updatePieceName(oldPiece, newPiece)
 
+              // Force sync with server if authenticated
+              const { useAuthStore } = await import('@/stores/authStore')
+              const isAuthenticated = useAuthStore.getState().isAuthenticated
+              if (isAuthenticated) {
+                const { syncWithServer } = useLogbookStore.getState()
+                await syncWithServer()
+              }
+
               // Reload data
               await Promise.all([loadRepertoire(), loadEntries()])
 
