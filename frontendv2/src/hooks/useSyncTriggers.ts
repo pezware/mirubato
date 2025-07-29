@@ -86,14 +86,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
 
           // Sync both logbook and repertoire data in parallel
           await Promise.all([
-            syncWithServer().then(result => {
-              // Extract stats from result if available
-              if (result && typeof result === 'object' && 'stats' in result) {
-                const syncStats = (result as { stats: typeof stats }).stats
-                stats.entriesProcessed = syncStats.entriesProcessed || 0
-                stats.duplicatesPrevented = syncStats.duplicatesPrevented || 0
-              }
-            }),
+            syncWithServer(),
             syncRepertoireData().catch(err => {
               console.error(`[Sync] Repertoire sync failed:`, err)
               // Don't throw - continue even if repertoire sync fails

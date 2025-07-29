@@ -30,10 +30,11 @@ export class SyncEventQueue {
     ['online', 500], // Online events can wait a bit
     ['default', 1000], // Default coalescence window
   ])
+  private onProcessQueue: (event: SyncEvent) => Promise<void>
 
-  constructor(
-    private readonly onProcessQueue: (event: SyncEvent) => Promise<void>
-  ) {}
+  constructor(onProcessQueue: (event: SyncEvent) => Promise<void>) {
+    this.onProcessQueue = onProcessQueue
+  }
 
   /**
    * Add a sync event to the queue

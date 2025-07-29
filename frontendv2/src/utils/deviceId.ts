@@ -125,10 +125,12 @@ export function getDeviceInfo(): DeviceInfo {
   if ('connection' in navigator) {
     const conn = (navigator as Navigator & { connection?: NetworkInformation })
       .connection
-    info.connection = {
-      type: conn.effectiveType,
-      downlink: conn.downlink,
-      rtt: conn.rtt,
+    if (conn) {
+      info.connection = {
+        type: conn.effectiveType,
+        downlink: conn.downlink,
+        rtt: conn.rtt,
+      }
     }
   }
 

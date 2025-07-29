@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  Download,
-  RefreshCw,
-  X,
-} from 'tabler-icons-react'
+  IconActivity as Activity,
+  IconAlertCircle as AlertCircle,
+  IconCircleCheck as CheckCircle,
+  IconDownload as Download,
+  IconRefresh as RefreshCw,
+  IconX as X,
+} from '@tabler/icons-react'
 import { syncEventLogger, type SyncEvent } from '../../utils/syncEventLogger'
 import { syncMutex } from '../../utils/syncMutex'
 

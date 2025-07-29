@@ -1,4 +1,5 @@
-import type { LogbookEntry, Goal } from '../types'
+import type { LogbookEntry } from '../api/logbook'
+import type { Goal } from '../api/goals'
 
 /**
  * Enhanced content signature generation for deduplication
@@ -21,15 +22,20 @@ export async function createLogbookEntrySignature(
 
     // Sort pieces array for consistent ordering
     pieces: entry.pieces
-      .map(p => ({
+      .map((p: { title: string; composer?: string | null }) => ({
         title: p.title.trim(),
         composer: (p.composer || '').trim(),
       }))
-      .sort((a, b) => {
-        const titleCompare = a.title.localeCompare(b.title)
-        if (titleCompare !== 0) return titleCompare
-        return a.composer.localeCompare(b.composer)
-      }),
+      .sort(
+        (
+          a: { title: string; composer: string },
+          b: { title: string; composer: string }
+        ) => {
+          const titleCompare = a.title.localeCompare(b.title)
+          if (titleCompare !== 0) return titleCompare
+          return a.composer.localeCompare(b.composer)
+        }
+      ),
 
     // Sort techniques array
     techniques: [...(entry.techniques || [])].sort(),
@@ -59,12 +65,11 @@ export async function createGoalSignature(goal: Goal): Promise<string> {
     title: goal.title.trim(),
     description: (goal.description || '').trim(),
     targetDate: goal.targetDate,
-    category: goal.category,
+    type: goal.type,
     status: goal.status,
-    instrument: goal.instrument || '',
-    measurementType: goal.measurementType,
-    targetValue: goal.targetValue,
+    targetValue: goal.targetValue || 0,
     currentValue: goal.currentValue || 0,
+    scoreId: goal.scoreId || '',
   }
 
   // Create SHA-256 hash using Web Crypto API
@@ -85,7 +90,7 @@ export async function isDuplicateEntry(
     exactTimestamp?: boolean
     timeTolerance?: number // milliseconds
   } = {}
-): boolean {
+): Promise<boolean> {
   const { exactTimestamp = false, timeTolerance = 1000 } = options
 
   // Skip if same ID
@@ -117,7 +122,7 @@ export async function isDuplicateEntry(
 export async function findDuplicateEntries(
   entries: LogbookEntry[],
   options?: Parameters<typeof isDuplicateEntry>[2]
-): Map<string, LogbookEntry[]> {
+): Promise<Map<string, LogbookEntry[]>> {
   const duplicateGroups = new Map<string, LogbookEntry[]>()
   const processed = new Set<string>()
 
