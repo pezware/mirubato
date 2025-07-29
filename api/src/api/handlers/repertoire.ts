@@ -16,14 +16,26 @@ const repertoireStatusSchema = z.enum([
 const createRepertoireSchema = z.object({
   scoreId: z.string(),
   status: repertoireStatusSchema.optional(),
-  difficultyRating: z.number().min(1).max(5).optional(),
+  difficultyRating: z
+    .union([
+      z.number().min(1).max(5),
+      z.null().transform(() => undefined),
+      z.undefined(),
+    ])
+    .optional(),
   personalNotes: z.string().optional(),
   referenceLinks: z.array(z.string().url()).optional(),
 })
 
 const updateRepertoireSchema = z.object({
   status: repertoireStatusSchema.optional(),
-  difficultyRating: z.number().min(1).max(5).optional(),
+  difficultyRating: z
+    .union([
+      z.number().min(1).max(5),
+      z.null().transform(() => undefined),
+      z.undefined(),
+    ])
+    .optional(),
   personalNotes: z.string().optional(),
   referenceLinks: z.array(z.string().url()).optional(),
 })

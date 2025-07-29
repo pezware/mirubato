@@ -686,7 +686,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
               await repertoireApi.add({
                 scoreId: item.scoreId,
                 status: item.status,
-                difficultyRating: item.difficultyRating,
+                difficultyRating: item.difficultyRating ?? undefined,
                 personalNotes: item.personalNotes,
                 referenceLinks: item.referenceLinks,
               })
@@ -694,7 +694,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
               // Update on server
               await repertoireApi.update(item.scoreId, {
                 status: item.status,
-                difficultyRating: item.difficultyRating,
+                difficultyRating: item.difficultyRating ?? undefined,
                 personalNotes: item.personalNotes,
                 referenceLinks: item.referenceLinks,
               })
