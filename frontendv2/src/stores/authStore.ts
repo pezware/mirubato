@@ -3,8 +3,16 @@ import { authApi, type User } from '../api/auth'
 import { useLogbookStore } from './logbookStore'
 import { userApi } from '../api/user'
 
+// Type for repertoire store to avoid circular imports
+interface RepertoireStoreType {
+  repertoire: Map<string, unknown>
+  goals: Map<string, unknown>
+  scoreMetadataCache: Map<string, unknown>
+  syncLocalData: () => Promise<void>
+}
+
 // Safe dynamic import helper to avoid circular dependency issues
-const getRepertoireStore = async () => {
+const getRepertoireStore = async (): Promise<RepertoireStoreType | null> => {
   try {
     const storeModule = await Promise.race([
       import('./repertoireStore'),
@@ -17,7 +25,9 @@ const getRepertoireStore = async () => {
     ])
 
     const repertoireStore = (
-      storeModule as { useRepertoireStore?: { getState: () => unknown } }
+      storeModule as {
+        useRepertoireStore?: { getState: () => RepertoireStoreType }
+      }
     ).useRepertoireStore?.getState()
 
     if (!repertoireStore) {
