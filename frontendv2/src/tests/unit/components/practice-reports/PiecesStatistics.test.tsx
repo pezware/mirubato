@@ -6,7 +6,7 @@ import { EnhancedAnalyticsData } from '../../../../types/reporting'
 // Mock dependencies
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: any) => {
+    t: (key: string, params?: Record<string, unknown>) => {
       if (params) {
         return `${key} ${JSON.stringify(params)}`
       }
@@ -140,7 +140,7 @@ describe('PiecesStatistics', () => {
 
   it('does not update selectedPiece if a different piece is edited', async () => {
     // Set selectedPiece to Beethoven but we'll edit Mozart
-    const selectedPiece = 'Beethoven - Moonlight Sonata'
+    // const selectedPiece = 'Beethoven - Moonlight Sonata'
 
     render(
       <PiecesStatistics
