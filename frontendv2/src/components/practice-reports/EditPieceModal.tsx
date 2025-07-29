@@ -61,13 +61,19 @@ export const EditPieceModal: React.FC<EditPieceModalProps> = ({
 
     // Check for duplicates
     const isDuplicate = entries.some(entry =>
-      entry.pieces.some(
-        p =>
-          p.title === title.trim() &&
-          (p.composer || '') === composer.trim() &&
-          (p.title !== piece.title ||
-            (p.composer || '') !== (piece.composer || ''))
-      )
+      entry.pieces.some(p => {
+        // Skip if this is the same piece we're editing
+        if (
+          p.title === piece.title &&
+          (p.composer || '') === (piece.composer || '')
+        ) {
+          return false
+        }
+        // Check if another piece has the same title and composer
+        return (
+          p.title === title.trim() && (p.composer || '') === composer.trim()
+        )
+      })
     )
 
     if (isDuplicate) {

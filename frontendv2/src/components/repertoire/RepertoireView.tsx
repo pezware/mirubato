@@ -393,6 +393,15 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               })
             }
           }}
+          onPieceUpdated={updatedPiece => {
+            // Update the selected piece with new title and composer
+            setSelectedPiece({
+              ...selectedPiece,
+              scoreTitle: updatedPiece.title,
+              scoreComposer: updatedPiece.composer,
+            })
+            // The loadRepertoire() call in PieceDetailView will refresh the data
+          }}
         />
 
         {/* Edit Notes Modal - Available in piece detail view */}

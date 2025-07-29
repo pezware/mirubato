@@ -102,7 +102,9 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
       {/* Success Message */}
       {loginSuccess && (
         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-700 text-sm">{t('auth:magicLinkSent')}</p>
+          <p className="text-green-700 text-sm">
+            {t('auth:magicLinkSent', { email: email.toLowerCase().trim() })}
+          </p>
         </div>
       )}
 

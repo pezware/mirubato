@@ -8,6 +8,7 @@ import {
 } from '../../utils/database'
 import { schemas } from '../../utils/validation'
 import { Errors } from '../../utils/errors'
+import { withIdempotency } from '../../utils/idempotency'
 
 export const syncHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -95,10 +96,19 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   }
   const db = new DatabaseHelpers(c.env.DB)
 
+  // Get idempotency key and device ID from headers
+  const idempotencyKey = c.req.header('X-Idempotency-Key')
+  const deviceId = c.req.header('X-Device-ID')
+
   // Enhanced debug logging for staging
   if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'local') {
     console.log('[Sync Push] Starting sync for user:', userId)
     console.log('[Sync Push] Environment:', c.env.ENVIRONMENT)
+    console.log('[Sync Push] Device ID:', deviceId || 'not provided')
+    console.log(
+      '[Sync Push] Idempotency Key:',
+      idempotencyKey || 'not provided'
+    )
     console.log('[Sync Push] Received changes:', {
       entriesCount: changes.entries?.length || 0,
       goalsCount: changes.goals?.length || 0,
@@ -111,119 +121,190 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     }
   }
 
-  try {
-    // Process changes
-    const conflicts: Array<{
-      entityId: string
-      entityType: string
-      reason: string
-    }> = []
+  // Process with idempotency if key provided
+  const processSync = async () => {
+    try {
+      // Process changes
+      const conflicts: Array<{
+        entityId: string
+        entityType: string
+        reason: string
+      }> = []
 
-    // Process entries
-    if (changes.entries && changes.entries.length > 0) {
-      for (const entry of changes.entries as Array<{
-        id: string
-        instrument?: string
-        type?: string
-        mood?: string
-        [key: string]: unknown
-      }>) {
-        try {
-          // Normalize enum fields to lowercase for database compatibility
-          if (entry.instrument && typeof entry.instrument === 'string') {
-            entry.instrument = entry.instrument.toLowerCase()
-          }
-          if (entry.type && typeof entry.type === 'string') {
-            entry.type = entry.type.toLowerCase()
-          }
-          if (entry.mood && typeof entry.mood === 'string') {
-            entry.mood = entry.mood.toLowerCase()
-          }
+      // Track duplicate prevention stats
+      const stats = {
+        entriesProcessed: 0,
+        duplicatesPrevented: 0,
+        goalsProcessed: 0,
+      }
 
-          const checksum = await calculateChecksum(entry)
+      // Process entries
+      if (changes.entries && changes.entries.length > 0) {
+        for (const entry of changes.entries as Array<{
+          id: string
+          instrument?: string
+          type?: string
+          mood?: string
+          [key: string]: unknown
+        }>) {
+          try {
+            // Normalize enum fields to lowercase for database compatibility
+            if (entry.instrument && typeof entry.instrument === 'string') {
+              entry.instrument = entry.instrument.toLowerCase()
+            }
+            if (entry.type && typeof entry.type === 'string') {
+              entry.type = entry.type.toLowerCase()
+            }
+            if (entry.mood && typeof entry.mood === 'string') {
+              entry.mood = entry.mood.toLowerCase()
+            }
 
-          await db.upsertSyncData({
-            userId,
-            entityType: 'logbook_entry',
-            entityId: entry.id,
-            data: entry,
-            checksum,
-          })
+            const checksum = await calculateChecksum(entry)
 
-          if (c.env.ENVIRONMENT === 'staging') {
-            console.log('[Sync Push] Successfully upserted entry:', entry.id)
+            const result = await db.upsertSyncData({
+              userId,
+              entityType: 'logbook_entry',
+              entityId: entry.id,
+              data: entry,
+              checksum,
+              deviceId,
+            })
+
+            stats.entriesProcessed++
+            if (result.action === 'duplicate_prevented') {
+              stats.duplicatesPrevented++
+              console.log(
+                `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
+                  `using existing ${result.entity_id}`
+              )
+            }
+
+            if (c.env.ENVIRONMENT === 'staging') {
+              console.log('[Sync Push] Successfully upserted entry:', entry.id)
+            }
+          } catch (entryError) {
+            // Error: Failed to process entry
+            // Continue processing other entries but track the error
+            conflicts.push({
+              entityId: entry.id,
+              entityType: 'logbook_entry',
+              reason:
+                entryError instanceof Error
+                  ? entryError.message
+                  : 'Unknown error',
+            })
           }
-        } catch (entryError) {
-          // Error: Failed to process entry
-          // Continue processing other entries but track the error
-          conflicts.push({
-            entityId: entry.id,
-            entityType: 'logbook_entry',
-            reason:
-              entryError instanceof Error
-                ? entryError.message
-                : 'Unknown error',
-          })
         }
       }
-    }
 
-    // Process goals
-    if (changes.goals && changes.goals.length > 0) {
-      for (const goal of changes.goals as Array<{
-        id: string
-        [key: string]: unknown
-      }>) {
-        try {
-          const checksum = await calculateChecksum(goal)
+      // Process goals
+      if (changes.goals && changes.goals.length > 0) {
+        for (const goal of changes.goals as Array<{
+          id: string
+          [key: string]: unknown
+        }>) {
+          try {
+            const checksum = await calculateChecksum(goal)
 
-          await db.upsertSyncData({
-            userId,
-            entityType: 'goal',
-            entityId: goal.id,
-            data: goal,
-            checksum,
-          })
-        } catch (goalError) {
-          // Error: Failed to process goal
-          // Continue processing other goals but track the error
-          conflicts.push({
-            entityId: goal.id,
-            entityType: 'goal',
-            reason:
-              goalError instanceof Error ? goalError.message : 'Unknown error',
-          })
+            await db.upsertSyncData({
+              userId,
+              entityType: 'goal',
+              entityId: goal.id,
+              data: goal,
+              checksum,
+              deviceId,
+            })
+
+            stats.goalsProcessed++
+          } catch (goalError) {
+            // Error: Failed to process goal
+            // Continue processing other goals but track the error
+            conflicts.push({
+              entityId: goal.id,
+              entityType: 'goal',
+              reason:
+                goalError instanceof Error
+                  ? goalError.message
+                  : 'Unknown error',
+            })
+          }
         }
       }
+
+      // Update sync metadata with device info
+      const newSyncToken = generateId('sync')
+      await db.updateSyncMetadata(userId, newSyncToken)
+
+      // Log sync event if we have the tracking
+      if (deviceId && stats.entriesProcessed > 0) {
+        console.log('[Sync Push] Sync completed:', {
+          userId,
+          deviceId,
+          entriesProcessed: stats.entriesProcessed,
+          duplicatesPrevented: stats.duplicatesPrevented,
+          goalsProcessed: stats.goalsProcessed,
+        })
+      }
+
+      return {
+        success: true,
+        syncToken: newSyncToken,
+        conflicts,
+        stats: {
+          entriesProcessed: stats.entriesProcessed,
+          duplicatesPrevented: stats.duplicatesPrevented,
+          goalsProcessed: stats.goalsProcessed,
+        },
+      }
+    } catch (error) {
+      // Error: Sync push failed
+      console.error('[Sync Push] Error occurred:', error)
+      console.error('[Sync Push] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        entriesCount: changes.entries?.length || 0,
+        goalsCount: changes.goals?.length || 0,
+      })
+      throw error
     }
+  }
 
-    // Update sync metadata
-    const newSyncToken = generateId('sync')
-    // Debug: Updating sync metadata
-
-    await db.updateSyncMetadata(userId, newSyncToken)
-
-    return c.json({
-      success: true,
-      syncToken: newSyncToken,
-      conflicts,
-    })
-  } catch (error) {
-    // Error: Sync push failed
-    console.error('[Sync Push] Error occurred:', error)
-    console.error('[Sync Push] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
+  // Apply idempotency wrapper if key provided
+  if (idempotencyKey) {
+    const { response, wasReplayed } = await withIdempotency(
+      c.env.DB,
+      idempotencyKey,
       userId,
-      entriesCount: changes.entries?.length || 0,
-      goalsCount: changes.goals?.length || 0,
-    })
+      c.get('validatedBody'),
+      processSync
+    )
 
+    if (wasReplayed) {
+      console.log(
+        `[Sync Push] Returned cached response for idempotency key: ${idempotencyKey}`
+      )
+      return c.json(response, {
+        headers: {
+          'X-Idempotent-Replay': 'true',
+        },
+      })
+    }
+
+    return c.json(response)
+  }
+
+  // No idempotency key, process directly
+  try {
+    const result = await processSync()
+    return c.json(result)
+  } catch (error) {
     // Enhanced error details for all environments temporarily
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
     const errorDetails = {
       userId,
+      deviceId,
       entriesCount: changes.entries?.length || 0,
       goalsCount: changes.goals?.length || 0,
       // Add first entry details for debugging

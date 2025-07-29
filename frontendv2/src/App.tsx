@@ -28,6 +28,7 @@ const About = lazy(() => import('./pages/About'))
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './components/ui/ToastProvider'
+import { SyncProvider } from './components/SyncProvider'
 
 // Loading component
 const PageLoader = () => (
@@ -37,7 +38,7 @@ const PageLoader = () => (
 )
 
 function App() {
-  const { refreshAuth } = useAuthStore()
+  const { refreshAuth, isAuthInitialized } = useAuthStore()
 
   useEffect(() => {
     let isMounted = true
@@ -59,78 +60,85 @@ function App() {
     }
   }, [refreshAuth])
 
+  // Show loading screen while auth is being determined
+  if (!isAuthInitialized) {
+    return <PageLoader />
+  }
+
   return (
     <AutoLoggingProvider>
       <Router>
-        <div className="min-h-screen bg-morandi-stone-100">
-          <ToastProvider />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/auth/verify" element={<AuthVerifyPage />} />
-              <Route path="/toolbox" element={<Toolbox />} />
-              <Route path="/about" element={<About />} />
+        <SyncProvider>
+          <div className="min-h-screen bg-morandi-stone-100">
+            <ToastProvider />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/auth/verify" element={<AuthVerifyPage />} />
+                <Route path="/toolbox" element={<Toolbox />} />
+                <Route path="/about" element={<About />} />
 
-              {/* Protected routes (but work for anonymous users too) */}
-              <Route
-                path="/logbook"
-                element={
-                  <ProtectedRoute>
-                    <LogbookPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected routes (but work for anonymous users too) */}
+                <Route
+                  path="/logbook"
+                  element={
+                    <ProtectedRoute>
+                      <LogbookPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Scorebook routes (public access) */}
-              <Route path="/scorebook">
-                <Route
-                  index
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <ScoreBrowser />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="browse"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <ScoreBrowser />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="collection/user/:id"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <CollectionView />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="collection/:slug"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <CollectionView />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path=":scoreId"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <ScorebookPage />
-                    </Suspense>
-                  }
-                />
-              </Route>
+                {/* Scorebook routes (public access) */}
+                <Route path="/scorebook">
+                  <Route
+                    index
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <ScoreBrowser />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="browse"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <ScoreBrowser />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="collection/user/:id"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <CollectionView />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="collection/:slug"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <CollectionView />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path=":scoreId"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <ScorebookPage />
+                      </Suspense>
+                    }
+                  />
+                </Route>
 
-              {/* Redirect unknown routes to home */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </div>
+                {/* Redirect unknown routes to home */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </div>
+        </SyncProvider>
       </Router>
     </AutoLoggingProvider>
   )

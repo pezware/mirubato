@@ -7,6 +7,13 @@ import { useAuthStore } from '../../stores/authStore'
 // Mock the stores
 vi.mock('../../stores/authStore')
 
+// Mock SyncProvider component
+vi.mock('../../components/SyncProvider', () => ({
+  SyncProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}))
+
 // Mock utils
 vi.mock('../../utils/migrations/lowercaseMigration', () => ({
   runLowercaseMigration: vi.fn(),
@@ -54,6 +61,7 @@ describe('App', () => {
       refreshAuth: mockRefreshAuth,
       user: null,
       isAuthenticated: false,
+      isAuthInitialized: true, // Set to true to avoid loading screen
       login: vi.fn(),
       logout: vi.fn(),
       isLoading: false,

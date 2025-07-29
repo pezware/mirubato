@@ -290,5 +290,17 @@
   "footer": {
     "about": "关于",
     "license": "许可证"
+  },
+  "sync": {
+    "offline": "[NEEDS TRANSLATION] Offline mode",
+    "syncing": "[NEEDS TRANSLATION] Syncing...",
+    "synced": "[NEEDS TRANSLATION] Synced",
+    "error": "[NEEDS TRANSLATION] Sync error",
+    "justNow": "[NEEDS TRANSLATION] Just now",
+    "minutesAgo": "[NEEDS TRANSLATION] {{minutes}} min ago",
+    "hoursAgo": "[NEEDS TRANSLATION] {{hours}} hr ago",
+    "notSynced": "[NEEDS TRANSLATION] Not synced",
+    "offlineMode": "[NEEDS TRANSLATION] Offline mode - sync disabled",
+    "syncNow": "[NEEDS TRANSLATION] Sync now"
   }
 }

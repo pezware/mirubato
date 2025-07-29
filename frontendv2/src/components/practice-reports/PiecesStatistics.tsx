@@ -5,6 +5,7 @@ import { EditPieceModal } from './EditPieceModal'
 import Button from '../ui/Button'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { toast } from '../../utils/toast'
+import { reportsCache } from '../../utils/reportsCacheManager'
 
 interface PiecesStatisticsProps {
   analytics: EnhancedAnalyticsData
@@ -60,17 +61,44 @@ export function PiecesStatistics({
 
   const handleEditPiece = (key: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent row click
-    // Parse the key to extract composer and title
-    const parts = key.split(' - ')
-    if (parts.length > 1) {
-      setEditingPiece({
-        composer: parts[0],
-        title: parts.slice(1).join(' - '),
-      })
+
+    // Find the actual piece data from log entries
+    let actualPiece: { title: string; composer?: string } | null = null
+
+    // Search through all entries to find the first occurrence of this piece
+    for (const entry of analytics.filteredEntries) {
+      for (const piece of entry.pieces) {
+        const pieceKey = piece.composer
+          ? `${piece.composer} - ${piece.title}`
+          : piece.title
+
+        if (pieceKey === key) {
+          actualPiece = {
+            title: piece.title,
+            composer: piece.composer || undefined,
+          }
+          break
+        }
+      }
+      if (actualPiece) break
+    }
+
+    // If we found the actual piece data, use it; otherwise fall back to parsing the key
+    if (actualPiece) {
+      setEditingPiece(actualPiece)
     } else {
-      setEditingPiece({
-        title: key,
-      })
+      // Fallback: parse the key to extract composer and title
+      const parts = key.split(' - ')
+      if (parts.length > 1) {
+        setEditingPiece({
+          composer: parts[0],
+          title: parts.slice(1).join(' - '),
+        })
+      } else {
+        setEditingPiece({
+          title: key,
+        })
+      }
     }
   }
 
@@ -84,6 +112,21 @@ export function PiecesStatistics({
       const updatedCount = await updatePieceName(oldPiece, newPiece)
       toast.success(`Updated ${updatedCount} entries`)
       setEditingPiece(null)
+
+      // Clear the analytics cache to force recalculation
+      reportsCache.clear()
+
+      // Update selectedPiece if it was the edited piece
+      const oldKey = oldPiece.composer
+        ? `${oldPiece.composer} - ${oldPiece.title}`
+        : oldPiece.title
+      const newKey = newPiece.composer
+        ? `${newPiece.composer} - ${newPiece.title}`
+        : newPiece.title
+
+      if (selectedPiece === oldKey && setSelectedPiece) {
+        setSelectedPiece(newKey)
+      }
     } catch (_error) {
       toast.error('Failed to update piece name')
     }

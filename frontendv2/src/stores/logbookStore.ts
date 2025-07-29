@@ -132,29 +132,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         isLoading: false,
       })
 
-      // If user is authenticated and online, sync in background
+      // If user is authenticated, sync in background
       const token = localStorage.getItem('auth-token')
-      if (token && !get().isLocalMode) {
-        // Try to sync with server in background
-        logbookApi
-          .getEntries()
-          .then(serverEntries => {
-            const newEntriesMap = new Map(
-              serverEntries.map(entry => [entry.id, entry])
-            )
-            set({
-              entriesMap: newEntriesMap,
-              entries: sortEntriesByTimestamp(
-                Array.from(newEntriesMap.values())
-              ),
-            })
+      const { useAuthStore } = await import('./authStore')
+      const isAuthenticated = useAuthStore.getState().isAuthenticated
 
-            // Debounced write to localStorage
-            debouncedLocalStorageWrite(
-              ENTRIES_KEY,
-              JSON.stringify(serverEntries)
-            )
-          })
+      if (token && isAuthenticated) {
+        // Perform full sync with server
+        get()
+          .syncWithServer()
           .catch(err => {
             console.warn('Background sync failed:', err)
             // Keep using local data
@@ -643,6 +629,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     set({ error: null })
 
     try {
+      console.log('[updatePieceName] Starting update:', { oldPiece, newPiece })
+
       // Update all entries locally first
       const updatedEntriesMap = new Map(get().entriesMap)
       const affectedEntryIds: string[] = []
@@ -655,6 +643,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
             (piece.composer || '') === (oldPiece.composer || '')
           ) {
             wasUpdated = true
+            console.log(`[updatePieceName] Found matching piece in entry ${id}`)
             return {
               ...piece,
               title: newPiece.title,
@@ -674,6 +663,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         }
       })
 
+      console.log(
+        `[updatePieceName] Updated ${affectedEntryIds.length} entries locally`
+      )
+
       // Update state
       set({
         entriesMap: updatedEntriesMap,
@@ -689,8 +682,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // If online, update on server
       if (!get().isLocalMode && localStorage.getItem('auth-token')) {
         try {
+          console.log('[updatePieceName] Calling API to update server')
           // Call API to update pieces
-          await logbookApi.updatePieceName(oldPiece, newPiece)
+          const serverUpdateCount = await logbookApi.updatePieceName(
+            oldPiece,
+            newPiece
+          )
+          console.log(
+            `[updatePieceName] Server updated ${serverUpdateCount} entries`
+          )
         } catch (apiError) {
           // If API fails, we still keep local changes
           console.error('Failed to update piece name on server:', apiError)

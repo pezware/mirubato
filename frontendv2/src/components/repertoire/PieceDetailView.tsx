@@ -20,6 +20,7 @@ import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { toast } from '@/utils/toast'
+import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 
 interface PracticeSession {
   id: string
@@ -50,6 +51,7 @@ interface PieceDetailViewProps {
   onEditNotes: () => void
   onEditSession?: (sessionId: string) => void
   onStatusChange?: (newStatus: keyof RepertoireStatus) => void
+  onPieceUpdated?: (updatedPiece: { title: string; composer: string }) => void
 }
 
 export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
@@ -60,6 +62,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onEditNotes,
   onEditSession,
   onStatusChange,
+  onPieceUpdated,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
   const [timeFilter, setTimeFilter] = useState('all')
@@ -519,24 +522,50 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           piece={{ title: item.scoreTitle, composer: item.scoreComposer }}
           onSave={async (oldPiece, newPiece) => {
             try {
-              const updatedCount = await updatePieceName(oldPiece, newPiece)
-              toast.success(
-                t('reports:pieceEdit.successMessage', { count: updatedCount })
+              // Generate new scoreId based on updated title and composer
+              const newScoreId = generateNormalizedScoreId(
+                newPiece.title,
+                newPiece.composer || ''
               )
-              setIsEditingPiece(false)
-              // Update the local item data
-              item.scoreTitle = newPiece.title
-              item.scoreComposer = newPiece.composer || ''
-              // Update the score metadata cache
+
+              // Update the score metadata cache with NEW scoreId
+              cacheScoreMetadata(newScoreId, {
+                id: newScoreId,
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+
+              // Also keep the old scoreId in cache temporarily for matching
               cacheScoreMetadata(item.scoreId, {
                 id: item.scoreId,
                 title: newPiece.title,
                 composer: newPiece.composer || '',
               })
-              // Reload repertoire to reflect changes
-              await loadRepertoire()
-              // Reload logbook entries to reflect the composer name changes
-              await loadEntries()
+
+              // Update piece names in logbook
+              const updatedCount = await updatePieceName(oldPiece, newPiece)
+
+              // Force sync with server if authenticated
+              const { useAuthStore } = await import('@/stores/authStore')
+              const isAuthenticated = useAuthStore.getState().isAuthenticated
+              if (isAuthenticated) {
+                const { syncWithServer } = useLogbookStore.getState()
+                await syncWithServer()
+              }
+
+              // Reload data
+              await Promise.all([loadRepertoire(), loadEntries()])
+
+              // Notify parent component of the update
+              onPieceUpdated?.({
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+
+              toast.success(
+                t('reports:pieceEdit.successMessage', { count: updatedCount })
+              )
+              setIsEditingPiece(false)
             } catch (_error) {
               toast.error(t('reports:pieceEdit.errorMessage'))
             }

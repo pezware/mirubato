@@ -122,7 +122,7 @@ export class DatabaseHelpers {
   }
 
   /**
-   * Upsert sync data
+   * Upsert sync data with enhanced duplicate detection
    */
   async upsertSyncData(data: {
     userId: string
@@ -131,7 +131,12 @@ export class DatabaseHelpers {
     data: unknown
     checksum: string
     version?: number
-  }) {
+    deviceId?: string
+  }): Promise<{
+    id: string
+    entity_id: string
+    action: 'created' | 'updated' | 'duplicate_prevented'
+  }> {
     // Sanitize data to ensure D1 compatibility (no undefined values)
     const sanitizedData = sanitizeForD1(data.data)
     const jsonData = JSON.stringify(sanitizedData)
@@ -140,7 +145,32 @@ export class DatabaseHelpers {
       (sanitizedData as Record<string, unknown>).deletedAt || null
 
     try {
-      // First check if record exists
+      // First check for duplicate by checksum
+      const duplicate = await this.db
+        .prepare(
+          `SELECT id, entity_id FROM sync_data 
+           WHERE user_id = ? AND entity_type = ? AND checksum = ?
+           AND deleted_at IS NULL`
+        )
+        .bind(data.userId, data.entityType, data.checksum)
+        .first<{ id: string; entity_id: string }>()
+
+      if (duplicate && duplicate.entity_id !== data.entityId) {
+        console.warn(
+          `[Duplicate] Found duplicate content with different ID. ` +
+            `Existing: ${duplicate.entity_id}, New: ${data.entityId}, ` +
+            `Device: ${data.deviceId || 'unknown'}`
+        )
+
+        // Return existing entry instead of creating duplicate
+        return {
+          id: duplicate.id,
+          entity_id: duplicate.entity_id,
+          action: 'duplicate_prevented',
+        }
+      }
+
+      // Check if record exists by entity_id
       const existing = await this.db
         .prepare(
           'SELECT id, version FROM sync_data WHERE user_id = ? AND entity_type = ? AND entity_id = ?'
@@ -158,7 +188,8 @@ export class DatabaseHelpers {
                 checksum = ?, 
                 version = version + 1,
                 updated_at = CURRENT_TIMESTAMP,
-                deleted_at = ?
+                deleted_at = ?,
+                device_id = ?
             WHERE user_id = ? AND entity_type = ? AND entity_id = ?
           `
           )
@@ -166,19 +197,26 @@ export class DatabaseHelpers {
             jsonData,
             data.checksum,
             deletedAt,
+            data.deviceId || null,
             data.userId,
             data.entityType,
             data.entityId
           )
           .run()
+
+        return {
+          id: existing.id,
+          entity_id: data.entityId,
+          action: 'updated',
+        }
       } else {
         // Insert new record
         const id = generateId('sync')
         await this.db
           .prepare(
             `
-            INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO sync_data (id, user_id, entity_type, entity_id, data, checksum, version, deleted_at, device_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `
           )
           .bind(
@@ -189,11 +227,49 @@ export class DatabaseHelpers {
             jsonData,
             data.checksum,
             data.version || 1,
-            deletedAt
+            deletedAt,
+            data.deviceId || null
           )
           .run()
+
+        return {
+          id,
+          entity_id: data.entityId,
+          action: 'created',
+        }
       }
     } catch (error) {
+      // Handle unique constraint violation
+      if (
+        error instanceof Error &&
+        error.message.includes('UNIQUE constraint failed')
+      ) {
+        console.error('[Duplicate] Constraint violation:', {
+          userId: data.userId,
+          entityType: data.entityType,
+          entityId: data.entityId,
+          checksum: data.checksum,
+          deviceId: data.deviceId,
+        })
+
+        // Return existing entry
+        const existing = await this.db
+          .prepare(
+            `SELECT id, entity_id FROM sync_data 
+             WHERE user_id = ? AND entity_type = ? AND checksum = ?`
+          )
+          .bind(data.userId, data.entityType, data.checksum)
+          .first<{ id: string; entity_id: string }>()
+
+        if (existing) {
+          return {
+            id: existing.id,
+            entity_id: existing.entity_id,
+            action: 'duplicate_prevented',
+          }
+        }
+      }
+
       console.error('[Database] upsertSyncData error:', error)
       console.error('[Database] Query params:', {
         userId: data.userId,
@@ -203,6 +279,7 @@ export class DatabaseHelpers {
         checksum: data.checksum,
         version: data.version || 1,
         deletedAt,
+        deviceId: data.deviceId,
         dataKeys: Object.keys(data.data as any),
       })
       throw error

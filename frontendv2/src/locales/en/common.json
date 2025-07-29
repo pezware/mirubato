@@ -290,6 +290,18 @@
   "statistics": {
     "streak": "Streak"
   },
+  "sync": {
+    "offline": "Offline mode",
+    "syncing": "Syncing...",
+    "synced": "Synced",
+    "error": "Sync error",
+    "justNow": "Just now",
+    "minutesAgo": "{{minutes}} min ago",
+    "hoursAgo": "{{hours}} hr ago",
+    "notSynced": "Not synced",
+    "offlineMode": "Offline mode - sync disabled",
+    "syncNow": "Sync now"
+  },
   "warning": "Warning",
   "yes": "Yes"
 }

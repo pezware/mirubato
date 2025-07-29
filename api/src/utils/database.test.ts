@@ -173,7 +173,14 @@ describe('DatabaseHelpers', () => {
         version: 1,
       }
 
-      await dbHelpers.upsertSyncData(testData)
+      const result = await dbHelpers.upsertSyncData(testData)
+
+      // Check return value
+      expect(result).toEqual({
+        id: expect.stringMatching(/^sync_/),
+        entity_id: 'entry-456',
+        action: 'created',
+      })
 
       // Check SELECT was called first
       expect(mockFirst).toHaveBeenCalled()
@@ -187,7 +194,8 @@ describe('DatabaseHelpers', () => {
         JSON.stringify(testData.data),
         'checksum-789',
         1,
-        null // deleted_at
+        null, // deleted_at
+        null // device_id
       )
       expect(mockRun).toHaveBeenCalled()
     })
@@ -195,9 +203,17 @@ describe('DatabaseHelpers', () => {
     it('should handle upsert conflicts', async () => {
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
-      const mockFirst = vi
-        .fn()
-        .mockResolvedValue({ id: 'existing-id', version: 1 }) // Existing record
+      let selectCallCount = 0
+      const mockFirst = vi.fn(() => {
+        selectCallCount++
+        if (selectCallCount === 1) {
+          // First SELECT checks for duplicate by checksum - return null
+          return Promise.resolve(null)
+        } else {
+          // Second SELECT checks by entity_id - return existing record
+          return Promise.resolve({ id: 'existing-id', version: 1 })
+        }
+      })
 
       mockDb.prepare = vi.fn((sql: string) => {
         if (sql.includes('SELECT')) {
@@ -212,12 +228,19 @@ describe('DatabaseHelpers', () => {
         } as unknown as D1PreparedStatement
       })
 
-      await dbHelpers.upsertSyncData({
+      const result = await dbHelpers.upsertSyncData({
         userId: 'user-123',
         entityType: 'goal',
         entityId: 'goal-123',
         data: { id: 'goal-123', title: 'Test Goal' },
         checksum: 'new-checksum',
+      })
+
+      // Check return value for update
+      expect(result).toEqual({
+        id: 'existing-id',
+        entity_id: 'goal-123',
+        action: 'updated',
       })
 
       // Should call SELECT first, then UPDATE
