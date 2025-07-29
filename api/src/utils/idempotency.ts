@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 import type { D1Database } from '@cloudflare/workers-types'
 
 export interface IdempotencyRecord {
