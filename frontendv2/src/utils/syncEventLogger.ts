@@ -286,5 +286,6 @@ export const syncEventLogger = new SyncEventLogger()
 
 // Export to window for debugging
 if (typeof window !== 'undefined') {
-  ;(window as any).syncEventLogger = syncEventLogger
+  ;(window as Window & { syncEventLogger?: SyncEventLogger }).syncEventLogger =
+    syncEventLogger
 }

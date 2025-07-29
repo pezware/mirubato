@@ -206,7 +206,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           try {
             const checksum = await calculateChecksum(goal)
 
-            const result = await db.upsertSyncData({
+            await db.upsertSyncData({
               userId,
               entityType: 'goal',
               entityId: goal.id,

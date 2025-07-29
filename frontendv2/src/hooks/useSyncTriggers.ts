@@ -78,7 +78,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
 
         try {
           // Track stats
-          let stats = {
+          const stats = {
             entriesProcessed: 0,
             duplicatesPrevented: 0,
             goalsProcessed: 0,
@@ -89,7 +89,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
             syncWithServer().then(result => {
               // Extract stats from result if available
               if (result && typeof result === 'object' && 'stats' in result) {
-                const syncStats = (result as any).stats
+                const syncStats = (result as { stats: typeof stats }).stats
                 stats.entriesProcessed = syncStats.entriesProcessed || 0
                 stats.duplicatesPrevented = syncStats.duplicatesPrevented || 0
               }

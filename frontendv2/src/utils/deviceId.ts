@@ -3,6 +3,30 @@ import { v4 as uuidv4 } from 'uuid'
 const DEVICE_ID_KEY = 'mirubato_device_id'
 const DEVICE_NAME_KEY = 'mirubato_device_name'
 
+// Type definitions
+interface NetworkInformation {
+  effectiveType: string
+  downlink?: number
+  rtt?: number
+}
+
+interface DeviceInfo {
+  id: string
+  name: string
+  platform: string
+  userAgent: string
+  screen: {
+    width: number
+    height: number
+    pixelRatio: number
+  }
+  connection?: {
+    type: string
+    downlink?: number
+    rtt?: number
+  }
+}
+
 /**
  * Get or generate a persistent device ID for this browser/device
  */
@@ -84,23 +108,8 @@ function generateDeviceName(): string {
 /**
  * Get device information for debugging
  */
-export function getDeviceInfo(): {
-  id: string
-  name: string
-  platform: string
-  userAgent: string
-  screen: {
-    width: number
-    height: number
-    pixelRatio: number
-  }
-  connection?: {
-    type: string
-    downlink?: number
-    rtt?: number
-  }
-} {
-  const info: any = {
+export function getDeviceInfo(): DeviceInfo {
+  const info: DeviceInfo = {
     id: getDeviceId(),
     name: getDeviceName(),
     platform: detectPlatform(),
@@ -114,7 +123,8 @@ export function getDeviceInfo(): {
 
   // Add connection info if available
   if ('connection' in navigator) {
-    const conn = (navigator as any).connection
+    const conn = (navigator as Navigator & { connection?: NetworkInformation })
+      .connection
     info.connection = {
       type: conn.effectiveType,
       downlink: conn.downlink,

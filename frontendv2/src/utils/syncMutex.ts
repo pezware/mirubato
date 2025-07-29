@@ -28,7 +28,8 @@ export class SyncMutexManager {
   /**
    * Acquire global sync lock with timeout
    */
-  async acquireGlobalLock(timeoutMs: number = 30000): Promise<() => void> {
+  async acquireGlobalLock(_timeoutMs: number = 30000): Promise<() => void> {
+    // TODO: Implement timeout if needed
     return this.globalMutex.acquire()
   }
 
