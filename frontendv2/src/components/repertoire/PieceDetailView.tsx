@@ -50,6 +50,7 @@ interface PieceDetailViewProps {
   onEditNotes: () => void
   onEditSession?: (sessionId: string) => void
   onStatusChange?: (newStatus: keyof RepertoireStatus) => void
+  onPieceUpdated?: (updatedPiece: { title: string; composer: string }) => void
 }
 
 export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
@@ -60,6 +61,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onEditNotes,
   onEditSession,
   onStatusChange,
+  onPieceUpdated,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
   const [timeFilter, setTimeFilter] = useState('all')
@@ -519,24 +521,29 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           piece={{ title: item.scoreTitle, composer: item.scoreComposer }}
           onSave={async (oldPiece, newPiece) => {
             try {
-              const updatedCount = await updatePieceName(oldPiece, newPiece)
-              toast.success(
-                t('reports:pieceEdit.successMessage', { count: updatedCount })
-              )
-              setIsEditingPiece(false)
-              // Update the local item data
-              item.scoreTitle = newPiece.title
-              item.scoreComposer = newPiece.composer || ''
-              // Update the score metadata cache
+              // Update the score metadata cache FIRST
               cacheScoreMetadata(item.scoreId, {
                 id: item.scoreId,
                 title: newPiece.title,
                 composer: newPiece.composer || '',
               })
-              // Reload repertoire to reflect changes
-              await loadRepertoire()
-              // Reload logbook entries to reflect the composer name changes
-              await loadEntries()
+
+              // Update piece names in logbook
+              const updatedCount = await updatePieceName(oldPiece, newPiece)
+
+              // Reload data
+              await Promise.all([loadRepertoire(), loadEntries()])
+
+              // Notify parent component of the update
+              onPieceUpdated?.({
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+
+              toast.success(
+                t('reports:pieceEdit.successMessage', { count: updatedCount })
+              )
+              setIsEditingPiece(false)
             } catch (_error) {
               toast.error(t('reports:pieceEdit.errorMessage'))
             }
