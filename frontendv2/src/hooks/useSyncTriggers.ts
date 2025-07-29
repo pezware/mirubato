@@ -3,6 +3,9 @@ import { useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
+import { syncMutex } from '../utils/syncMutex'
+import { SyncEventQueue, type SyncEvent } from '../utils/syncEventQueue'
+import { syncEventLogger } from '../utils/syncEventLogger'
 
 interface SyncTriggerOptions {
   enableVisibility?: boolean
@@ -28,58 +31,105 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
   // Initialize lastSync to 30 seconds ago to allow initial sync on first meaningful interaction
   const lastSyncRef = useRef<Date>(new Date(Date.now() - 30000))
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const isSyncingRef = useRef(false)
   const lastVisibilityChangeRef = useRef<Date>(new Date())
 
-  // Helper to perform sync with debouncing
-  const performSync = useCallback(
+  // Initialize event queue with our sync handler
+  const eventQueue = useRef<SyncEventQueue>()
+  if (!eventQueue.current) {
+    eventQueue.current = new SyncEventQueue(async (event: SyncEvent) => {
+      await performSyncWithMutex(event.trigger)
+    })
+  }
+
+  // Helper to perform sync with mutex protection
+  const performSyncWithMutex = useCallback(
     async (trigger: string) => {
       // Skip if not authenticated or in local mode
       if (!isAuthenticated || isLocalMode) {
         return
       }
 
-      // Skip if already syncing
-      if (isSyncingRef.current) {
-        console.log(`[Sync] Skipping ${trigger} sync - already in progress`)
-        return
-      }
-
-      // Debounce: Skip if synced within last 30 seconds (except for manual sync)
-      const now = new Date()
-      const timeSinceLastSync = now.getTime() - lastSyncRef.current.getTime()
-      const minInterval = trigger === 'manual' ? 1000 : 30000 // 1s for manual, 30s for auto
-
-      if (timeSinceLastSync < minInterval) {
-        console.log(
-          `[Sync] Skipping ${trigger} sync - too soon (${Math.round(timeSinceLastSync / 1000)}s ago)`
-        )
-        return
-      }
+      // Try to acquire the mutex
+      const release = await syncMutex.acquireGlobalLock()
+      const syncId = syncEventLogger.startSync(trigger)
 
       try {
-        isSyncingRef.current = true
         console.log(`[Sync] 🔄 Starting sync from ${trigger}`)
 
-        // Sync both logbook and repertoire data in parallel
-        await Promise.all([
-          syncWithServer(),
-          syncRepertoireData().catch(err => {
-            console.error(`[Sync] Repertoire sync failed:`, err)
-            // Don't throw - continue even if repertoire sync fails
-          }),
+        // Check debounce after acquiring mutex
+        const now = new Date()
+        const minInterval = trigger === 'manual' ? 1000 : 30000
+
+        if (!syncMutex.shouldSync(trigger, minInterval)) {
+          const timeSinceLastSync =
+            now.getTime() - lastSyncRef.current.getTime()
+          console.log(
+            `[Sync] Skipping ${trigger} sync - too soon (${Math.round(timeSinceLastSync / 1000)}s ago)`
+          )
+          syncEventLogger.failSync(syncId, 'Too soon after last sync')
+          return
+        }
+
+        // Perform sync with operation-specific locks
+        const [logbookRelease, repertoireRelease] = await Promise.all([
+          syncMutex.acquireOperationLock('logbook'),
+          syncMutex.acquireOperationLock('repertoire'),
         ])
 
-        lastSyncRef.current = now
-        const duration = Date.now() - now.getTime()
-        console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
+        try {
+          // Track stats
+          let stats = {
+            entriesProcessed: 0,
+            duplicatesPrevented: 0,
+            goalsProcessed: 0,
+          }
+
+          // Sync both logbook and repertoire data in parallel
+          await Promise.all([
+            syncWithServer().then(result => {
+              // Extract stats from result if available
+              if (result && typeof result === 'object' && 'stats' in result) {
+                const syncStats = (result as any).stats
+                stats.entriesProcessed = syncStats.entriesProcessed || 0
+                stats.duplicatesPrevented = syncStats.duplicatesPrevented || 0
+              }
+            }),
+            syncRepertoireData().catch(err => {
+              console.error(`[Sync] Repertoire sync failed:`, err)
+              // Don't throw - continue even if repertoire sync fails
+            }),
+          ])
+
+          syncMutex.updateLastSyncTime(trigger)
+          lastSyncRef.current = now
+          const duration = Date.now() - now.getTime()
+
+          syncEventLogger.completeSync(syncId, stats)
+          console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
+        } finally {
+          logbookRelease()
+          repertoireRelease()
+        }
       } catch (error) {
         console.error(`[Sync] ❌ ${trigger} sync failed:`, error)
+        syncEventLogger.failSync(syncId, error as Error)
       } finally {
-        isSyncingRef.current = false
+        release()
       }
     },
     [isAuthenticated, isLocalMode, syncWithServer, syncRepertoireData]
+  )
+
+  // Queue sync event instead of performing directly
+  const queueSync = useCallback(
+    (trigger: string) => {
+      if (!isAuthenticated || isLocalMode) {
+        return
+      }
+
+      eventQueue.current?.queueEvent(trigger)
+    },
+    [isAuthenticated, isLocalMode]
   )
 
   // 1. Visibility change sync (when tab becomes visible after being hidden)
@@ -96,7 +146,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
           Date.now() - lastVisibilityChangeRef.current.getTime()
         if (hiddenDuration > 60000) {
           // 1 minute
-          performSync('visibility')
+          queueSync('visibility')
         }
       }
     }
@@ -108,7 +158,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
       const timeSinceLastSync = Date.now() - lastSyncRef.current.getTime()
       if (timeSinceLastSync > 120000) {
         // 2 minutes
-        performSync('focus')
+        queueSync('focus')
       }
     }
     window.addEventListener('focus', handleFocus)
@@ -117,7 +167,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleFocus)
     }
-  }, [enableVisibility, isAuthenticated, isLocalMode, performSync])
+  }, [enableVisibility, isAuthenticated, isLocalMode, queueSync])
 
   // 2. Route change sync (only for important routes)
   useEffect(() => {
@@ -130,14 +180,14 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     )
 
     if (isImportantRoute) {
-      performSync('route-change')
+      queueSync('route-change')
     }
   }, [
     location.pathname,
     enableRouteChange,
     isAuthenticated,
     isLocalMode,
-    performSync,
+    queueSync,
   ])
 
   // 3. Periodic sync
@@ -153,7 +203,7 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
 
     // Set up periodic sync
     syncIntervalRef.current = setInterval(() => {
-      performSync('periodic')
+      queueSync('periodic')
     }, periodicInterval)
 
     return () => {
@@ -167,14 +217,14 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     periodicInterval,
     isAuthenticated,
     isLocalMode,
-    performSync,
+    queueSync,
   ])
 
   // 4. Online/offline status
   useEffect(() => {
     const handleOnline = () => {
       console.log('[Sync] Device came online')
-      performSync('online')
+      queueSync('online')
     }
 
     window.addEventListener('online', handleOnline)
@@ -182,11 +232,25 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     return () => {
       window.removeEventListener('online', handleOnline)
     }
-  }, [isAuthenticated, isLocalMode, performSync])
+  }, [isAuthenticated, isLocalMode, queueSync])
+
+  // 5. Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear the event queue on unmount
+      eventQueue.current?.clear()
+    }
+  }, [])
 
   return {
     lastSync: lastSyncRef.current,
-    isSyncing: isSyncingRef.current,
-    triggerSync: () => performSync('manual'),
+    isSyncing: syncMutex.isLocked(),
+    triggerSync: () => queueSync('manual'),
+    forceSync: () => eventQueue.current?.forceProcess(),
+    getSyncStatus: () => ({
+      isLocked: syncMutex.isLocked(),
+      lockStatus: syncMutex.getLockStatus(),
+      queueStatus: eventQueue.current?.getStatus(),
+    }),
   }
 }

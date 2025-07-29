@@ -127,7 +127,11 @@ describe('Sync Handlers', () => {
 
   describe('POST /api/sync/push', () => {
     it('should successfully push entries', async () => {
-      mockDbInstance.upsertSyncData.mockResolvedValue(undefined)
+      mockDbInstance.upsertSyncData.mockResolvedValue({
+        id: 'sync-id',
+        entity_id: 'entry_1750717972797_0suwq20o8',
+        action: 'created',
+      })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
       const testEntry = {
@@ -181,11 +185,16 @@ describe('Sync Handlers', () => {
           instrument: 'piano', // normalized to lowercase
         },
         checksum: 'test-checksum-abc',
+        deviceId: undefined, // no device ID provided in test
       })
     })
 
     it('should handle multiple entries and goals', async () => {
-      mockDbInstance.upsertSyncData.mockResolvedValue(undefined)
+      mockDbInstance.upsertSyncData.mockResolvedValue({
+        id: 'sync-id',
+        entity_id: 'test-id',
+        action: 'created',
+      })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
       const testGoal = {
