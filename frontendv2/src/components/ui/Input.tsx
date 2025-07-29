@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'focus:outline-none focus:ring-2 focus:ring-offset-2',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'transition-colors duration-200',
-              'bg-white !important',
+              'bg-white',
               hasError
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-gray-300 focus:border-morandi-sage-500 focus:ring-morandi-sage-500',
