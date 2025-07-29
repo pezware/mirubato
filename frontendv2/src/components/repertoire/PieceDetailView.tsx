@@ -20,6 +20,7 @@ import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { toast } from '@/utils/toast'
+import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 
 interface PracticeSession {
   id: string
@@ -521,7 +522,20 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           piece={{ title: item.scoreTitle, composer: item.scoreComposer }}
           onSave={async (oldPiece, newPiece) => {
             try {
-              // Update the score metadata cache FIRST
+              // Generate new scoreId based on updated title and composer
+              const newScoreId = generateNormalizedScoreId(
+                newPiece.title,
+                newPiece.composer || ''
+              )
+
+              // Update the score metadata cache with NEW scoreId
+              cacheScoreMetadata(newScoreId, {
+                id: newScoreId,
+                title: newPiece.title,
+                composer: newPiece.composer || '',
+              })
+
+              // Also keep the old scoreId in cache temporarily for matching
               cacheScoreMetadata(item.scoreId, {
                 id: item.scoreId,
                 title: newPiece.title,

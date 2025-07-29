@@ -5,6 +5,22 @@ import type { Env } from '../../index'
 
 export const piecesHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
+// Helper to generate normalized score ID (matching frontend logic)
+function generateNormalizedScoreId(
+  title: string,
+  composer?: string | null
+): string {
+  const normalizedTitle = title.toLowerCase().trim().replace(/\s+/g, ' ')
+  const normalizedComposer = composer
+    ? composer.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\./g, '')
+    : ''
+
+  if (normalizedComposer) {
+    return `${normalizedTitle}-${normalizedComposer}`
+  }
+  return normalizedTitle
+}
+
 // Schema for piece update request
 const updatePieceNameSchema = z.object({
   oldPiece: z.object({
@@ -73,6 +89,24 @@ piecesHandler.put('/update-name', authMiddleware, async c => {
             }
             return piece
           })
+        }
+
+        // Also update scoreId if it matches the old piece
+        const oldScoreId = generateNormalizedScoreId(
+          oldPiece.title,
+          oldPiece.composer
+        )
+        const newScoreId = generateNormalizedScoreId(
+          newPiece.title,
+          newPiece.composer
+        )
+
+        if (data.scoreId === oldScoreId) {
+          data.scoreId = newScoreId
+          wasUpdated = true
+          console.log(
+            `[Pieces] Updating scoreId in entry ${row.id}: "${oldScoreId}" → "${newScoreId}"`
+          )
         }
 
         // If the entry was updated, save it back
