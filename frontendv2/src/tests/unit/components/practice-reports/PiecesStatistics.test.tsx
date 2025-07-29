@@ -47,6 +47,12 @@ vi.mock('../../../../utils/toast', () => ({
   },
 }))
 
+vi.mock('../../../../utils/reportsCacheManager', () => ({
+  reportsCache: {
+    clear: vi.fn(),
+  },
+}))
+
 describe('PiecesStatistics', () => {
   const mockSetSelectedPiece = vi.fn()
   const mockFormatDuration = (minutes: number) => `${minutes} min`
@@ -83,6 +89,34 @@ describe('PiecesStatistics', () => {
     moodStats: new Map(),
     instrumentStats: new Map(),
     typeStats: new Map(),
+    filteredEntries: [
+      {
+        id: '1',
+        timestamp: '2024-01-01T10:00:00Z',
+        duration: 30,
+        pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
+        techniques: [],
+        instrument: 'piano',
+        type: 'repertoire',
+        tags: [],
+        userId: 'user-1',
+        createdAt: '2024-01-01T10:00:00Z',
+        updatedAt: '2024-01-01T10:00:00Z',
+      },
+      {
+        id: '2',
+        timestamp: '2024-01-02T10:00:00Z',
+        duration: 30,
+        pieces: [{ title: 'Sonata No. 11', composer: 'Mozart' }],
+        techniques: [],
+        instrument: 'piano',
+        type: 'repertoire',
+        tags: [],
+        userId: 'user-1',
+        createdAt: '2024-01-02T10:00:00Z',
+        updatedAt: '2024-01-02T10:00:00Z',
+      },
+    ],
   }
 
   beforeEach(() => {
@@ -194,6 +228,21 @@ describe('PiecesStatistics', () => {
           { totalDuration: 60, count: 2, lastPlayed: new Date('2024-01-03') },
         ],
       ]),
+      filteredEntries: [
+        {
+          id: '3',
+          timestamp: '2024-01-03T10:00:00Z',
+          duration: 30,
+          pieces: [{ title: 'Unknown Piece' }],
+          techniques: [],
+          instrument: 'piano',
+          type: 'repertoire',
+          tags: [],
+          userId: 'user-1',
+          createdAt: '2024-01-03T10:00:00Z',
+          updatedAt: '2024-01-03T10:00:00Z',
+        },
+      ],
     }
 
     render(
