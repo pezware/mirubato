@@ -84,6 +84,18 @@ export function PiecesStatistics({
       const updatedCount = await updatePieceName(oldPiece, newPiece)
       toast.success(`Updated ${updatedCount} entries`)
       setEditingPiece(null)
+
+      // Update selectedPiece if it was the edited piece
+      const oldKey = oldPiece.composer
+        ? `${oldPiece.composer} - ${oldPiece.title}`
+        : oldPiece.title
+      const newKey = newPiece.composer
+        ? `${newPiece.composer} - ${newPiece.title}`
+        : newPiece.title
+
+      if (selectedPiece === oldKey && setSelectedPiece) {
+        setSelectedPiece(newKey)
+      }
     } catch (_error) {
       toast.error('Failed to update piece name')
     }
