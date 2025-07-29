@@ -107,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 bg-gray-50 border-r border-gray-200 transition-all duration-300 flex flex-col ${
+      className={`fixed left-0 top-0 bottom-0 bg-gray-50 border-r border-gray-200 transition-all duration-300 flex flex-col z-50 ${
         isCollapsed ? 'w-16' : 'w-60'
       } ${className}`}
     >
@@ -246,7 +246,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               {/* User Dropdown */}
               {showUserDropdown && (
                 <div
-                  className={`absolute ${isCollapsed ? 'left-full ml-2' : 'left-0'} bottom-full mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50`}
+                  className={`absolute ${isCollapsed ? 'left-full ml-2' : 'left-0'} bottom-full mb-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-[100]`}
                 >
                   <div className="p-4 border-b border-gray-100">
                     <div className="font-medium text-gray-900">
