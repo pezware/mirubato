@@ -50,7 +50,7 @@ interface RepertoireViewProps {
 
 export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { t } = useTranslation(['repertoire', 'common'])
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
@@ -104,52 +104,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Reset selectedPiece when navigating to repertoire tab without specific piece
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    const pieceId = searchParams.get('pieceId')
-
-    // If we're on repertoire tab without a specific piece ID, reset selection
-    if (tab === 'repertoire' && !pieceId && selectedPiece !== null) {
-      console.log('Resetting selectedPiece due to navigation to repertoire tab')
-      setSelectedPiece(null)
-      wasOnPieceDetailRef.current = false
-    }
-  }, [searchParams, selectedPiece])
-
-  // Also listen for popstate events (browser navigation) to ensure state reset
-  useEffect(() => {
-    const handlePopState = () => {
-      const tab = new URLSearchParams(window.location.search).get('tab')
-      const pieceId = new URLSearchParams(window.location.search).get('pieceId')
-
-      if (tab === 'repertoire' && !pieceId && selectedPiece !== null) {
-        console.log('Resetting selectedPiece due to popstate navigation')
-        setSelectedPiece(null)
-        wasOnPieceDetailRef.current = false
-      }
-    }
-
-    // Listen for custom event from sidebar to force reset
-    const handleRepertoireReset = () => {
-      console.log(
-        'Resetting selectedPiece due to custom repertoire reset event'
-      )
-      // Only reset if we're actually viewing a piece detail
-      if (selectedPiece !== null) {
-        setSelectedPiece(null)
-        wasOnPieceDetailRef.current = false
-      }
-    }
-
-    window.addEventListener('popstate', handlePopState)
-    window.addEventListener('repertoire-reset', handleRepertoireReset)
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-      window.removeEventListener('repertoire-reset', handleRepertoireReset)
-    }
-  }, [selectedPiece])
+  // useEffect will be moved after sortedRepertoire calculation
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
@@ -357,6 +312,38 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     return items
   }, [enrichedRepertoire, sortBy])
 
+  // Sync selectedPiece state with URL pieceId parameter
+  useEffect(() => {
+    const pieceId = searchParams.get('pieceId')
+
+    if (pieceId) {
+      // Find the piece with the matching scoreId
+      const piece = sortedRepertoire.find(p => p.scoreId === pieceId)
+      if (piece && piece.scoreId !== selectedPiece?.scoreId) {
+        console.log('Setting selectedPiece from URL pieceId:', pieceId)
+        setSelectedPiece(piece)
+        wasOnPieceDetailRef.current = true
+      } else if (!piece && sortedRepertoire.length > 0) {
+        // If piece not found and we have data, remove invalid pieceId from URL
+        console.log(
+          'Piece not found for pieceId:',
+          pieceId,
+          'removing from URL'
+        )
+        const newParams = new URLSearchParams(searchParams)
+        newParams.delete('pieceId')
+        setSearchParams(newParams, { replace: true })
+      }
+    } else {
+      // No pieceId in URL, show list view
+      if (selectedPiece !== null) {
+        console.log('No pieceId in URL, clearing selectedPiece')
+        setSelectedPiece(null)
+        wasOnPieceDetailRef.current = false
+      }
+    }
+  }, [searchParams, sortedRepertoire, setSearchParams, selectedPiece])
+
   // Find the entry being edited
   const editingEntry = editingSessionId
     ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
@@ -423,8 +410,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               composer: selectedPiece.scoreComposer,
               scoreId: selectedPiece.scoreId,
             })
-            setSelectedPiece(null)
-            wasOnPieceDetailRef.current = false
+            // Clear piece selection by removing pieceId from URL
+            const newParams = new URLSearchParams(searchParams)
+            newParams.delete('pieceId')
+            setSearchParams(newParams)
             setShowManualEntry(true)
           }}
           onEditNotes={() => {
@@ -630,8 +619,14 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
             <div
               key={item.scoreId}
               onClick={() => {
-                setSelectedPiece(item)
-                wasOnPieceDetailRef.current = true
+                // Update URL to include pieceId instead of directly setting state
+                console.log(
+                  'Clicking piece, updating URL with pieceId:',
+                  item.scoreId
+                )
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('pieceId', item.scoreId)
+                setSearchParams(newParams)
               }}
               className="cursor-pointer"
             >

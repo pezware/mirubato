@@ -154,17 +154,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 to={item.path}
                 onClick={() => {
-                  // If this is the Pieces link and we have a pieceId in URL, dispatch reset event
-                  if (item.id === 'pieces') {
-                    const currentSearch = new URLSearchParams(
-                      window.location.search
-                    )
-                    const currentPieceId = currentSearch.get('pieceId')
-                    // Only reset if there's a piece currently selected
-                    if (currentPieceId) {
-                      window.dispatchEvent(new CustomEvent('repertoire-reset'))
-                    }
-                  }
+                  // No special handling needed - URL navigation will handle piece selection
+                  // The Link component will update the URL and RepertoireView will sync its state
                 }}
                 className={`
                   flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
