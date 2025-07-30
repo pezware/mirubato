@@ -53,7 +53,12 @@ app.use(
       return null
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Device-ID',
+      'X-Idempotency-Key',
+    ],
     exposeHeaders: ['Content-Length'],
     maxAge: 86400,
     credentials: true,
@@ -63,7 +68,10 @@ app.use(
 // Add Cross-Origin-Opener-Policy header for OAuth popups
 app.use('*', async (c, next) => {
   await next()
-  c.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+  // Use unsafe-none for staging to allow cross-origin popups, same-origin-allow-popups for production
+  const policy =
+    c.env.ENVIRONMENT === 'staging' ? 'unsafe-none' : 'same-origin-allow-popups'
+  c.header('Cross-Origin-Opener-Policy', policy)
 })
 
 // Apply caching middleware for GET requests
