@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
@@ -51,6 +51,7 @@ interface RepertoireViewProps {
 export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { t } = useTranslation(['repertoire', 'common'])
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
@@ -68,6 +69,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [searchQuery] = useState('') // TODO: Add search input
   const [editingPieceNotes, setEditingPieceNotes] =
     useState<EnrichedRepertoireItem | null>(null)
+
+  // Track navigation to detect when user clicks "Pieces" from piece detail
+  const previousLocationRef = useRef(location.pathname + location.search)
+  const navigationTriggeredRef = useRef(false)
 
   const {
     repertoireLoading,
@@ -101,22 +106,48 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Reset selectedPiece when navigating to repertoire tab
+  // Reset selectedPiece when navigating to repertoire tab or detecting navigation
+  useEffect(() => {
+    const currentLocation = location.pathname + location.search
+    const tab = searchParams.get('tab')
+    const previousLocation = previousLocationRef.current
+
+    // Detect if location changed (including same URL navigation via Link clicks)
+    if (
+      currentLocation !== previousLocation ||
+      navigationTriggeredRef.current
+    ) {
+      // If we're on the repertoire tab and no piece is specified in URL, reset selection
+      if (tab === 'repertoire' && !searchParams.get('pieceId')) {
+        setSelectedPiece(null)
+      }
+      // If we're navigating away from repertoire tab, also reset
+      else if (tab && tab !== 'repertoire') {
+        setSelectedPiece(null)
+      }
+      // If there's no tab parameter (overview), reset as well
+      else if (!tab) {
+        setSelectedPiece(null)
+      }
+
+      // Update refs for next comparison
+      previousLocationRef.current = currentLocation
+      navigationTriggeredRef.current = false
+    }
+  }, [location, searchParams])
+
+  // Additional effect to handle when component mounts/remounts or tab becomes active
   useEffect(() => {
     const tab = searchParams.get('tab')
-    // If we're on the repertoire tab and no piece is specified in URL, reset selection
+    // When this component renders and we're on repertoire tab, ensure we start fresh
     if (tab === 'repertoire' && !searchParams.get('pieceId')) {
-      setSelectedPiece(null)
+      // Small delay to allow for proper state settling
+      const timer = setTimeout(() => {
+        setSelectedPiece(null)
+      }, 0)
+      return () => clearTimeout(timer)
     }
-    // If we're navigating away from repertoire tab, also reset
-    else if (tab && tab !== 'repertoire') {
-      setSelectedPiece(null)
-    }
-    // If there's no tab parameter (overview), reset as well
-    else if (!tab) {
-      setSelectedPiece(null)
-    }
-  }, [searchParams])
+  }, [searchParams.get('tab')]) // Only depend on the tab parameter
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
