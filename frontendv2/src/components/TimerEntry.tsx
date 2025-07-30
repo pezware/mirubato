@@ -92,7 +92,7 @@ export default function TimerEntry({
     >
       <div className="text-center py-8">
         {/* Timer Display */}
-        <div className="text-6xl md:text-7xl font-mono font-light text-stone-800 mb-2">
+        <div className="text-6xl md:text-7xl font-inter font-light text-stone-800 mb-2">
           {formatTime(seconds)}
         </div>
 

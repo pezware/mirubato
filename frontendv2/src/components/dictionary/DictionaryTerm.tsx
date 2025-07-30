@@ -234,7 +234,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
             <span className="font-medium">
               {t('toolbox:dictionary.pronunciation')}:
             </span>{' '}
-            <span className="font-mono">
+            <span className="font-inter">
               {sanitizeOutput(termEntry.definition.pronunciation.ipa)}
             </span>
           </div>
