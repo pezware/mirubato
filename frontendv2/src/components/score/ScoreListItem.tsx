@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Score } from '../../services/scoreService'
 import type { Collection } from '../../types/collections'
 import CollectionBadges from './CollectionBadges'
+import { MusicTitle, MusicComposer } from '../ui'
 import { cn } from '../../utils/cn'
 
 interface ScoreListItemProps {
@@ -62,12 +63,12 @@ export default function ScoreListItem({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="font-medium text-morandi-stone-800">
+              <MusicTitle as="h3" className="text-morandi-stone-800">
                 {score.title}
-              </h3>
-              <span className="text-sm text-morandi-stone-600">
+              </MusicTitle>
+              <MusicComposer as="span" className="text-morandi-stone-600">
                 {score.composer}
-              </span>
+              </MusicComposer>
             </div>
 
             <div className="flex items-center gap-3">
