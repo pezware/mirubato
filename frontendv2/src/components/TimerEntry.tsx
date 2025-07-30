@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from './ui/Modal'
 import Button from './ui/Button'
 import { Play, Pause, Square, RotateCcw } from 'lucide-react'
-import { formatTime } from '@/utils/dateUtils'
+import { formatTime as formatTimeUtil } from '@/utils/dateUtils'
 
 interface TimerEntryProps {
   isOpen: boolean
@@ -150,7 +150,7 @@ export default function TimerEntry({
         {/* Start time display */}
         {startTime && (
           <div className="text-xs text-stone-500 mb-6">
-            {t('logbook:timer.startedAt')} {formatTime(startTime)}
+            {t('logbook:timer.startedAt')} {formatTimeUtil(startTime)}
           </div>
         )}
 
