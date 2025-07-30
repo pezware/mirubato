@@ -39,7 +39,6 @@ interface EnrichedRepertoireItem {
 interface PieceDetailViewProps {
   item: EnrichedRepertoireItem
   sessions: PracticeSession[]
-  onBack: () => void
   onLogPractice: () => void
   onEditNotes: () => void
   onEditSession?: (sessionId: string) => void
@@ -50,7 +49,6 @@ interface PieceDetailViewProps {
 export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   item,
   sessions,
-  onBack,
   onLogPractice,
   onEditNotes,
   onEditSession,

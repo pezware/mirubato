@@ -72,7 +72,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   // Track navigation to detect when user clicks "Pieces" from piece detail
   const previousLocationRef = useRef(location.pathname + location.search)
-  const navigationTriggeredRef = useRef(false)
+  const wasOnPieceDetailRef = useRef(false)
 
   const {
     repertoireLoading,
@@ -106,48 +106,39 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Reset selectedPiece when navigating to repertoire tab or detecting navigation
+  // Reset selectedPiece only when navigating back from piece detail view
   useEffect(() => {
     const currentLocation = location.pathname + location.search
     const tab = searchParams.get('tab')
     const previousLocation = previousLocationRef.current
 
-    // Detect if location changed (including same URL navigation via Link clicks)
-    if (
-      currentLocation !== previousLocation ||
-      navigationTriggeredRef.current
-    ) {
-      // If we're on the repertoire tab and no piece is specified in URL, reset selection
-      if (tab === 'repertoire' && !searchParams.get('pieceId')) {
-        setSelectedPiece(null)
-      }
-      // If we're navigating away from repertoire tab, also reset
-      else if (tab && tab !== 'repertoire') {
-        setSelectedPiece(null)
-      }
-      // If there's no tab parameter (overview), reset as well
-      else if (!tab) {
-        setSelectedPiece(null)
-      }
+    // Check if we're currently viewing a piece detail
+    const isCurrentlyOnPieceDetail = !!selectedPiece
 
-      // Update refs for next comparison
-      previousLocationRef.current = currentLocation
-      navigationTriggeredRef.current = false
+    // Check if we were on piece detail and now we're navigating to repertoire tab
+    const isNavigatingBackToPieces =
+      wasOnPieceDetailRef.current &&
+      tab === 'repertoire' &&
+      !searchParams.get('pieceId') &&
+      currentLocation !== previousLocation
+
+    // Only reset if we were on piece detail and now navigating back to pieces list
+    if (isNavigatingBackToPieces) {
+      setSelectedPiece(null)
     }
-  }, [location, searchParams])
 
-  // Additional effect to handle when component mounts/remounts or tab becomes active
+    // Update tracking refs
+    previousLocationRef.current = currentLocation
+    wasOnPieceDetailRef.current = isCurrentlyOnPieceDetail
+  }, [location, searchParams, selectedPiece])
+
+  // Reset selection on component mount if we're on repertoire tab without piece ID
   useEffect(() => {
     const tab = searchParams.get('tab')
-    // When this component renders and we're on repertoire tab, ensure we start fresh
-    if (tab === 'repertoire' && !searchParams.get('pieceId')) {
-      // Small delay to allow for proper state settling
-      const timer = setTimeout(() => {
-        setSelectedPiece(null)
-      }, 0)
-      return () => clearTimeout(timer)
+    if (tab === 'repertoire' && !searchParams.get('pieceId') && selectedPiece) {
+      setSelectedPiece(null)
     }
-  }, [searchParams.get('tab')]) // Only depend on the tab parameter
+  }, []) // Only run on mount
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
@@ -415,7 +406,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         <PieceDetailView
           item={selectedPiece}
           sessions={practiceSessions}
-          onBack={() => setSelectedPiece(null)}
           onLogPractice={() => {
             setManualEntryPiece({
               title: selectedPiece.scoreTitle,
@@ -423,6 +413,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
               scoreId: selectedPiece.scoreId,
             })
             setSelectedPiece(null)
+            wasOnPieceDetailRef.current = false
             setShowManualEntry(true)
           }}
           onEditNotes={() => {
@@ -627,7 +618,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           sortedRepertoire.map(item => (
             <div
               key={item.scoreId}
-              onClick={() => setSelectedPiece(item)}
+              onClick={() => {
+                setSelectedPiece(item)
+                wasOnPieceDetailRef.current = true
+              }}
               className="cursor-pointer"
             >
               <FocusedRepertoireItem item={item} />

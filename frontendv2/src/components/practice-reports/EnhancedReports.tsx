@@ -30,7 +30,6 @@ export default function EnhancedReports({
   const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
     undefined
   )
-  const [repertoireKey, setRepertoireKey] = useState(0)
 
   // Load entries on mount
   useEffect(() => {
@@ -58,8 +57,6 @@ export default function EnhancedReports({
       }
     } else if (tab === 'repertoire') {
       setReportView('repertoire')
-      // Force remount when navigating to repertoire via URL
-      setRepertoireKey(prev => prev + 1)
     } else if (tab === 'data') {
       setReportView('data')
     } else if (!tab) {
@@ -71,11 +68,6 @@ export default function EnhancedReports({
   // Update URL when tab changes
   const handleViewChange = (view: ReportView) => {
     setReportView(view)
-
-    // Force remount of RepertoireView when switching to repertoire tab
-    if (view === 'repertoire') {
-      setRepertoireKey(prev => prev + 1)
-    }
 
     if (view === 'newEntry') {
       // Keep editId if it exists
@@ -159,13 +151,7 @@ export default function EnhancedReports({
       case 'overview':
         return <OverviewView analytics={analytics} />
       case 'repertoire':
-        // Force remount when switching to repertoire tab by using a stable key
-        return (
-          <RepertoireView
-            key={`repertoire-${repertoireKey}`}
-            analytics={analytics}
-          />
-        )
+        return <RepertoireView analytics={analytics} />
       case 'data':
         return <DataView analytics={analytics} />
       case 'newEntry':
