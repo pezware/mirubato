@@ -62,7 +62,12 @@ app.use('*', async (c, next) => {
       return allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
     },
     credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Device-ID',
+      'X-Idempotency-Key',
+    ],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })
   return corsMiddleware(c, next)

@@ -14,7 +14,11 @@ export function SyncDebugPanel() {
   const [isOpen, setIsOpen] = useState(false)
   const [events, setEvents] = useState<SyncEvent[]>([])
   const [summary, setSummary] = useState(syncEventLogger.getSummary())
-  const [lockStatus, setLockStatus] = useState(syncMutex.getLockStatus())
+  const [lockStatus, setLockStatus] = useState({
+    isLocked: syncMutex.isLocked(),
+    currentOperation: syncMutex.getCurrentOperation(),
+    queueLength: syncMutex.getQueueLength(),
+  })
   const [activeTab, setActiveTab] = useState<'events' | 'stats' | 'locks'>(
     'events'
   )
@@ -31,7 +35,11 @@ export function SyncDebugPanel() {
     const interval = setInterval(() => {
       setEvents(syncEventLogger.getRecentEvents(20))
       setSummary(syncEventLogger.getSummary())
-      setLockStatus(syncMutex.getLockStatus())
+      setLockStatus({
+        isLocked: syncMutex.isLocked(),
+        currentOperation: syncMutex.getCurrentOperation(),
+        queueLength: syncMutex.getQueueLength(),
+      })
     }, 1000)
 
     return () => clearInterval(interval)
@@ -309,13 +317,13 @@ export function SyncDebugPanel() {
               <h4 className="font-medium mb-2">Global Mutex</h4>
               <div
                 className={`p-3 rounded-lg ${
-                  lockStatus.global
+                  lockStatus.isLocked
                     ? 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
                     : 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  {lockStatus.global ? (
+                  {lockStatus.isLocked ? (
                     <>
                       <RefreshCw
                         size={16}
@@ -338,35 +346,14 @@ export function SyncDebugPanel() {
             </div>
 
             <div>
-              <h4 className="font-medium mb-2">Operation Locks</h4>
+              <h4 className="font-medium mb-2">Mutex Status</h4>
               <div className="space-y-2">
-                {Object.entries(lockStatus.operations).length === 0 ? (
-                  <p className="text-sm text-gray-500">No operation locks</p>
-                ) : (
-                  Object.entries(lockStatus.operations).map(
-                    ([operation, locked]) => (
-                      <div
-                        key={operation}
-                        className={`p-2 rounded ${
-                          locked
-                            ? 'bg-yellow-50 dark:bg-yellow-900/20'
-                            : 'bg-gray-50 dark:bg-gray-700'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-sm">
-                          <span>{operation}</span>
-                          <span
-                            className={
-                              locked ? 'text-yellow-600' : 'text-gray-600'
-                            }
-                          >
-                            {locked ? 'Locked' : 'Available'}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  )
-                )}
+                <div className="text-sm">
+                  <div>Queue Length: {lockStatus.queueLength}</div>
+                  <div>
+                    Current Operation: {lockStatus.currentOperation || 'None'}
+                  </div>
+                </div>
               </div>
             </div>
 

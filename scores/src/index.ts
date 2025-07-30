@@ -64,7 +64,12 @@ app.use(
       return null
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Device-ID',
+      'X-Idempotency-Key',
+    ],
     exposeHeaders: ['Content-Length'],
     maxAge: 86400,
     credentials: true,

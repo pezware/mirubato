@@ -49,66 +49,62 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
         return
       }
 
-      // Try to acquire the mutex
-      const release = await syncMutex.acquireGlobalLock()
+      // Try to acquire the mutex using runExclusive pattern
       const syncId = syncEventLogger.startSync(trigger)
 
-      try {
-        console.log(`[Sync] 🔄 Starting sync from ${trigger}`)
+      return await syncMutex.runExclusive(async () => {
+        try {
+          console.log(`[Sync] 🔄 Starting sync from ${trigger}`)
 
-        // Check debounce after acquiring mutex
-        const now = new Date()
-        const minInterval = trigger === 'manual' ? 1000 : 30000
+          // Check debounce after acquiring mutex
+          const now = new Date()
+          const minInterval = trigger === 'manual' ? 1000 : 30000
 
-        if (!syncMutex.shouldSync(trigger, minInterval)) {
+          // Check debounce timing manually
           const timeSinceLastSync =
             now.getTime() - lastSyncRef.current.getTime()
-          console.log(
-            `[Sync] Skipping ${trigger} sync - too soon (${Math.round(timeSinceLastSync / 1000)}s ago)`
-          )
-          syncEventLogger.failSync(syncId, 'Too soon after last sync')
-          return
-        }
-
-        // Perform sync with operation-specific locks
-        const [logbookRelease, repertoireRelease] = await Promise.all([
-          syncMutex.acquireOperationLock('logbook'),
-          syncMutex.acquireOperationLock('repertoire'),
-        ])
-
-        try {
-          // Track stats
-          const stats = {
-            entriesProcessed: 0,
-            duplicatesPrevented: 0,
-            goalsProcessed: 0,
+          if (timeSinceLastSync < minInterval) {
+            console.log(
+              `[Sync] Skipping ${trigger} sync - too soon (${Math.round(timeSinceLastSync / 1000)}s ago)`
+            )
+            syncEventLogger.failSync(syncId, 'Too soon after last sync')
+            return
           }
 
-          // Sync both logbook and repertoire data in parallel
-          await Promise.all([
-            syncWithServer(),
-            syncRepertoireData().catch(err => {
-              console.error(`[Sync] Repertoire sync failed:`, err)
-              // Don't throw - continue even if repertoire sync fails
-            }),
-          ])
+          // Perform sync operations (removed per-operation locks for simplicity)
 
-          syncMutex.updateLastSyncTime(trigger)
-          lastSyncRef.current = now
-          const duration = Date.now() - now.getTime()
+          try {
+            // Track stats
+            const stats = {
+              entriesProcessed: 0,
+              duplicatesPrevented: 0,
+              goalsProcessed: 0,
+            }
 
-          syncEventLogger.completeSync(syncId, stats)
-          console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
-        } finally {
-          logbookRelease()
-          repertoireRelease()
+            // Sync both logbook and repertoire data in parallel
+            await Promise.all([
+              syncWithServer(),
+              syncRepertoireData().catch(err => {
+                console.error(`[Sync] Repertoire sync failed:`, err)
+                // Don't throw - continue even if repertoire sync fails
+              }),
+            ])
+
+            // Update last sync time manually
+            lastSyncRef.current = now
+            const duration = Date.now() - now.getTime()
+
+            syncEventLogger.completeSync(syncId, stats)
+            console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
+          } finally {
+            // No longer need to release per-operation locks
+          }
+        } catch (error) {
+          console.error(`[Sync] ❌ ${trigger} sync failed:`, error)
+          syncEventLogger.failSync(syncId, error as Error)
+          throw error
         }
-      } catch (error) {
-        console.error(`[Sync] ❌ ${trigger} sync failed:`, error)
-        syncEventLogger.failSync(syncId, error as Error)
-      } finally {
-        release()
-      }
+      }, `sync-${trigger}`)
     },
     [isAuthenticated, isLocalMode, syncWithServer, syncRepertoireData]
   )
@@ -242,7 +238,8 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     forceSync: () => eventQueue.current?.forceProcess(),
     getSyncStatus: () => ({
       isLocked: syncMutex.isLocked(),
-      lockStatus: syncMutex.getLockStatus(),
+      currentOperation: syncMutex.getCurrentOperation(),
+      queueLength: syncMutex.getQueueLength(),
       queueStatus: eventQueue.current?.getStatus(),
     }),
   }

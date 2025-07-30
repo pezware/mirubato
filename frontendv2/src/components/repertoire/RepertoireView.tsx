@@ -26,6 +26,7 @@ import {
   isSameScore,
 } from '@/utils/scoreIdNormalizer'
 import { Music } from 'lucide-react'
+import { useSubmissionProtection } from '@/hooks/useSubmissionProtection'
 
 interface RecentPractice {
   id: string
@@ -90,6 +91,12 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
   const { entries, loadEntries } = useLogbookStore()
+
+  // Submission protection for "Log Practice" actions
+  const { handleSubmission } = useSubmissionProtection({
+    debounceMs: 300, // Prevent rapid clicking
+    maxSubmissionsPerMinute: 5, // Reasonable limit for practice logging
+  })
 
   // Load data on mount
   useEffect(() => {
@@ -405,16 +412,24 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           item={selectedPiece}
           sessions={practiceSessions}
           onLogPractice={() => {
-            setManualEntryPiece({
-              title: selectedPiece.scoreTitle,
-              composer: selectedPiece.scoreComposer,
-              scoreId: selectedPiece.scoreId,
+            handleSubmission(async () => {
+              setManualEntryPiece({
+                title: selectedPiece.scoreTitle,
+                composer: selectedPiece.scoreComposer,
+                scoreId: selectedPiece.scoreId,
+              })
+              // Clear piece selection by removing pieceId from URL
+              const newParams = new URLSearchParams(searchParams)
+              newParams.delete('pieceId')
+              setSearchParams(newParams)
+              setShowManualEntry(true)
+              return true
+            }).catch(error => {
+              console.error(
+                '[RepertoireView] Failed to open practice form:',
+                error
+              )
             })
-            // Clear piece selection by removing pieceId from URL
-            const newParams = new URLSearchParams(searchParams)
-            newParams.delete('pieceId')
-            setSearchParams(newParams)
-            setShowManualEntry(true)
           }}
           onEditNotes={() => {
             setEditingPieceNotes(selectedPiece)

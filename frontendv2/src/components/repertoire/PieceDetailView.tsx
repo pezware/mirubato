@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { Edit2, Clock, Target, Music, Smile, Link } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { MusicTitle, MusicComposer } from '@/components/ui'
@@ -382,9 +383,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <option value="lesson">{t('common:music.lesson')}</option>
           </select>
         </div>
-        <Button variant="primary" onClick={onLogPractice}>
+        <LogPracticeButton onClick={onLogPractice}>
           + {t('repertoire:logPractice')}
-        </Button>
+        </LogPracticeButton>
       </div>
 
       {/* Timeline View */}
@@ -484,9 +485,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               <p className="text-stone-600 mb-6">
                 {t('repertoire:startTrackingPrompt')}
               </p>
-              <Button variant="primary" onClick={onLogPractice}>
+              <LogPracticeButton onClick={onLogPractice}>
                 {t('repertoire:logFirstSession')}
-              </Button>
+              </LogPracticeButton>
             </div>
           )}
         </div>
