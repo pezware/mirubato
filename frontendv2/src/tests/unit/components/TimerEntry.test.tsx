@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import TimerEntry from '@/components/TimerEntry'
 
@@ -50,17 +50,25 @@ describe('TimerEntry Component', () => {
     global.performance.now = vi.fn(() => mockTime)
 
     // Helper functions
-    ;(global as any).advancePerformanceTime = (deltaMs: number) => {
+    ;(
+      global as { advancePerformanceTime?: (deltaMs: number) => void }
+    ).advancePerformanceTime = (deltaMs: number) => {
       mockTime += deltaMs
     }
-    ;(global as any).setPerformanceTime = (timeMs: number) => {
+    ;(
+      global as { setPerformanceTime?: (timeMs: number) => void }
+    ).setPerformanceTime = (timeMs: number) => {
       mockTime = timeMs
     }
 
     // Helper to simulate timer running for a duration
-    ;(global as any).simulateTimerRunning = (durationMs: number) => {
+    ;(
+      global as { simulateTimerRunning?: (durationMs: number) => void }
+    ).simulateTimerRunning = (durationMs: number) => {
       // Simulate time passing by advancing performance.now
-      ;(global as any).advancePerformanceTime(durationMs)
+      ;(
+        global as { advancePerformanceTime?: (deltaMs: number) => void }
+      ).advancePerformanceTime?.(durationMs)
       // Run timers multiple times to simulate the interval updates
       for (let i = 0; i < Math.ceil(durationMs / 100); i++) {
         vi.runOnlyPendingTimers()
@@ -131,7 +139,9 @@ describe('TimerEntry Component', () => {
       // Instead of relying on mocked intervals, test that the timer
       // shows some non-zero value after starting (the timer should update)
       act(() => {
-        ;(global as any).advancePerformanceTime(5000)
+        ;(
+          global as { advancePerformanceTime?: (deltaMs: number) => void }
+        ).advancePerformanceTime?.(5000)
         vi.runOnlyPendingTimers() // Run any pending setInterval calls
       })
 
@@ -155,7 +165,9 @@ describe('TimerEntry Component', () => {
 
       // Simulate timer running for 3 seconds to accumulate time
       act(() => {
-        ;(global as any).simulateTimerRunning(3000)
+        ;(
+          global as { simulateTimerRunning?: (durationMs: number) => void }
+        ).simulateTimerRunning?.(3000)
       })
 
       // Now pause the timer - based on the actual behavior, it shows Start Timer after pause
