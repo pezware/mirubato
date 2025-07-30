@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
@@ -49,6 +50,7 @@ interface RepertoireViewProps {
 
 export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { t } = useTranslation(['repertoire', 'common'])
+  const [searchParams] = useSearchParams()
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
@@ -98,6 +100,23 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Reset selectedPiece when navigating to repertoire tab
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    // If we're on the repertoire tab and no piece is specified in URL, reset selection
+    if (tab === 'repertoire' && !searchParams.get('pieceId')) {
+      setSelectedPiece(null)
+    }
+    // If we're navigating away from repertoire tab, also reset
+    else if (tab && tab !== 'repertoire') {
+      setSelectedPiece(null)
+    }
+    // If there's no tab parameter (overview), reset as well
+    else if (!tab) {
+      setSelectedPiece(null)
+    }
+  }, [searchParams])
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()

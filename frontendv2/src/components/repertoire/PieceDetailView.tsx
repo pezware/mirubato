@@ -1,15 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import {
-  ChevronLeft,
-  Edit2,
-  Clock,
-  Target,
-  Music,
-  Smile,
-  Link,
-} from 'lucide-react'
+import { Edit2, Clock, Target, Music, Smile, Link } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
@@ -233,32 +225,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      {/* Top Bar with Breadcrumb */}
-      <div className="bg-white border-b border-stone-200 px-4 sm:px-6 py-4">
-        <nav className="flex items-center gap-2 text-sm">
-          <button
-            onClick={onBack}
-            className="text-stone-600 hover:text-stone-900 flex items-center gap-1 whitespace-nowrap"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {t('repertoire:myRepertoire')}
-            </span>
-            <span className="sm:hidden">{t('common:back')}</span>
-          </button>
-          <span className="text-stone-400">›</span>
-          <span className="text-stone-900 font-medium truncate">
-            <MusicComposer as="span" className="font-medium">
-              {toTitleCase(item.scoreComposer)}
-            </MusicComposer>
-            {' - '}
-            <MusicTitle as="span" className="font-medium">
-              {toTitleCase(item.scoreTitle)}
-            </MusicTitle>
-          </span>
-        </nav>
-      </div>
-
       {/* Piece Header */}
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
         <div className="flex items-start justify-between mb-2">
