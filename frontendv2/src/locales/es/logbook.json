@@ -88,9 +88,13 @@
     "runningHint": "El temporizador está en marcha. Haz clic en Pausar para tomar un descanso o Detener para finalizar.",
     "start": "Iniciar Temporizador",
     "startHint": "Haz clic en Iniciar para comenzar a cronometrar tu sesión de práctica",
+    "startedAt": "Iniciado a las",
     "stop": "Detener y Registrar",
     "stopHint": "Haz clic en Detener y Registrar para crear una entrada de práctica con esta duración",
-    "title": "Temporizador de Práctica"
+    "title": "Temporizador de Práctica",
+    "startHintMobile": "Toca para iniciar",
+    "runningHintMobile": "Toca para pausar",
+    "stopHintMobile": "Reanudar • Detener"
   },
   "title": "Diario",
   "viewScore": "Ver partitura"
