@@ -234,7 +234,6 @@ For advanced use cases, import typography class combinations:
 
 ```tsx
 import { TYPOGRAPHY_CLASSES } from '@/constants/typography'
-
 ;<div className={TYPOGRAPHY_CLASSES.musicTitle}>Symphony No. 9</div>
 ```
 
