@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import TimerEntry from '@/components/TimerEntry'
 
@@ -314,7 +314,7 @@ describe('TimerEntry Component', () => {
 
       fireEvent.click(screen.getByText('Start Timer'))
 
-      expect(screen.getByText(/Started at 2:30/)).toBeInTheDocument()
+      expect(screen.getByText(/Started at 02:30 PM/)).toBeInTheDocument()
     })
 
     it('Issue #400: Has mobile-optimized instruction classes', () => {
@@ -329,28 +329,38 @@ describe('TimerEntry Component', () => {
       expect(mobileInstruction).toHaveClass('text-sm', 'text-stone-600')
     })
 
-    it('Issue #398: Maintains accuracy when performance.now is used', async () => {
+    it('Issue #398: Maintains accuracy when performance.now is used', () => {
+      // Mock performance.now for precise timing
       let performanceNow = 0
       global.performance.now = vi.fn(() => performanceNow)
 
       render(<TimerEntry {...defaultProps} />)
 
-      fireEvent.click(screen.getByText('Start Timer'))
-
-      // Simulate precise time advancement
-      performanceNow = 1337 // 1.337 seconds
-      vi.advanceTimersByTime(100)
-
-      await waitFor(() => {
-        expect(screen.getByText('0:01')).toBeInTheDocument() // Should floor to 1 second
+      // Start the timer
+      act(() => {
+        fireEvent.click(screen.getByText('Start Timer'))
       })
 
-      performanceNow = 60000 // Exactly 60 seconds
-      vi.advanceTimersByTime(100)
+      // Verify timer shows 0:00 initially
+      expect(screen.getByText('0:00')).toBeInTheDocument()
 
-      await waitFor(() => {
-        expect(screen.getByText('1:00')).toBeInTheDocument()
+      // Simulate 1.337 seconds elapsed (should floor to 1 second)
+      performanceNow = 1337
+      act(() => {
+        vi.advanceTimersByTime(100) // Trigger the interval update
       })
+
+      // Should display 0:01 after 1.337 seconds
+      expect(screen.getByText('0:01')).toBeInTheDocument()
+
+      // Simulate exactly 60 seconds elapsed
+      performanceNow = 60000
+      act(() => {
+        vi.advanceTimersByTime(100)
+      })
+
+      // Should display 1:00 after 60 seconds
+      expect(screen.getByText('1:00')).toBeInTheDocument()
     })
   })
 })
