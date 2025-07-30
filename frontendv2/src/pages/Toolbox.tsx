@@ -48,6 +48,7 @@ const Toolbox: React.FC = () => {
   const [showTimer, setShowTimer] = useState(false)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -379,9 +380,10 @@ const Toolbox: React.FC = () => {
     }
   }
 
-  const handleTimerComplete = (duration: number) => {
+  const handleTimerComplete = (duration: number, startTime?: Date) => {
     setShowTimer(false)
     setTimerDuration(duration)
+    setTimerStartTime(startTime)
     setShowManualEntry(true)
   }
 
@@ -392,11 +394,13 @@ const Toolbox: React.FC = () => {
   const handleManualEntryClose = () => {
     setShowManualEntry(false)
     setTimerDuration(undefined)
+    setTimerStartTime(undefined)
   }
 
   const handleManualEntrySave = () => {
     setShowManualEntry(false)
     setTimerDuration(undefined)
+    setTimerStartTime(undefined)
   }
 
   return (
@@ -791,6 +795,7 @@ const Toolbox: React.FC = () => {
           onClose={handleManualEntryClose}
           onSave={handleManualEntrySave}
           initialDuration={timerDuration}
+          initialStartTime={timerStartTime}
         />
       )}
     </AppLayout>

@@ -8,7 +8,7 @@ import { formatTime as formatTimeUtil } from '@/utils/dateUtils'
 interface TimerEntryProps {
   isOpen: boolean
   onClose: () => void
-  onComplete: (duration: number) => void
+  onComplete: (duration: number, startTime?: Date) => void
 }
 
 export default function TimerEntry({
@@ -98,7 +98,7 @@ export default function TimerEntry({
     if (seconds > 0) {
       // Convert seconds to minutes for the entry form
       const minutes = Math.round(seconds / 60)
-      onComplete(minutes)
+      onComplete(minutes, startTime || undefined)
       setSeconds(0)
     }
   }

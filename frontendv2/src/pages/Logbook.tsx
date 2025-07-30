@@ -11,20 +11,23 @@ export default function LogbookPage() {
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [showTimer, setShowTimer] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
 
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
 
-  const handleTimerComplete = (duration: number) => {
+  const handleTimerComplete = (duration: number, startTime?: Date) => {
     setShowTimer(false)
     setTimerDuration(duration)
+    setTimerStartTime(startTime)
     setShowManualEntry(true)
   }
 
   const handleManualEntryClose = () => {
     setShowManualEntry(false)
     setTimerDuration(undefined)
+    setTimerStartTime(undefined)
   }
 
   return (
@@ -61,6 +64,7 @@ export default function LogbookPage() {
               onClose={handleManualEntryClose}
               onSave={handleManualEntryClose}
               initialDuration={timerDuration}
+              initialStartTime={timerStartTime}
             />
           )}
 
