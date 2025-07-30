@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams, useLocation } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
@@ -51,7 +51,6 @@ interface RepertoireViewProps {
 export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { t } = useTranslation(['repertoire', 'common'])
   const [searchParams] = useSearchParams()
-  const location = useLocation()
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
@@ -70,8 +69,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [editingPieceNotes, setEditingPieceNotes] =
     useState<EnrichedRepertoireItem | null>(null)
 
-  // Track navigation to detect when user clicks "Pieces" from piece detail
-  const previousLocationRef = useRef(location.pathname + location.search)
+  // Track when user was viewing piece detail (for click handlers)
   const wasOnPieceDetailRef = useRef(false)
 
   const {
@@ -106,39 +104,17 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Reset selectedPiece only when navigating back from piece detail view
-  useEffect(() => {
-    const currentLocation = location.pathname + location.search
-    const tab = searchParams.get('tab')
-    const previousLocation = previousLocationRef.current
-
-    // Check if we're currently viewing a piece detail
-    const isCurrentlyOnPieceDetail = !!selectedPiece
-
-    // Check if we were on piece detail and now we're navigating to repertoire tab
-    const isNavigatingBackToPieces =
-      wasOnPieceDetailRef.current &&
-      tab === 'repertoire' &&
-      !searchParams.get('pieceId') &&
-      currentLocation !== previousLocation
-
-    // Only reset if we were on piece detail and now navigating back to pieces list
-    if (isNavigatingBackToPieces) {
-      setSelectedPiece(null)
-    }
-
-    // Update tracking refs
-    previousLocationRef.current = currentLocation
-    wasOnPieceDetailRef.current = isCurrentlyOnPieceDetail
-  }, [location, searchParams, selectedPiece])
-
-  // Reset selection on component mount if we're on repertoire tab without piece ID
+  // Reset selectedPiece when navigating to repertoire tab without specific piece
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab === 'repertoire' && !searchParams.get('pieceId') && selectedPiece) {
+    const pieceId = searchParams.get('pieceId')
+
+    // If we're on repertoire tab without a specific piece ID, reset selection
+    if (tab === 'repertoire' && !pieceId) {
       setSelectedPiece(null)
+      wasOnPieceDetailRef.current = false
     }
-  }, []) // Only run on mount
+  }, [searchParams])
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
