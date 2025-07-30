@@ -110,11 +110,43 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     const pieceId = searchParams.get('pieceId')
 
     // If we're on repertoire tab without a specific piece ID, reset selection
-    if (tab === 'repertoire' && !pieceId) {
+    if (tab === 'repertoire' && !pieceId && selectedPiece !== null) {
+      console.log('Resetting selectedPiece due to navigation to repertoire tab')
       setSelectedPiece(null)
       wasOnPieceDetailRef.current = false
     }
-  }, [searchParams])
+  }, [searchParams, selectedPiece])
+
+  // Also listen for popstate events (browser navigation) to ensure state reset
+  useEffect(() => {
+    const handlePopState = () => {
+      const tab = new URLSearchParams(window.location.search).get('tab')
+      const pieceId = new URLSearchParams(window.location.search).get('pieceId')
+
+      if (tab === 'repertoire' && !pieceId && selectedPiece !== null) {
+        console.log('Resetting selectedPiece due to popstate navigation')
+        setSelectedPiece(null)
+        wasOnPieceDetailRef.current = false
+      }
+    }
+
+    // Listen for custom event from sidebar to force reset
+    const handleRepertoireReset = () => {
+      console.log(
+        'Resetting selectedPiece due to custom repertoire reset event'
+      )
+      setSelectedPiece(null)
+      wasOnPieceDetailRef.current = false
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    window.addEventListener('repertoire-reset', handleRepertoireReset)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+      window.removeEventListener('repertoire-reset', handleRepertoireReset)
+    }
+  }, [selectedPiece])
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()

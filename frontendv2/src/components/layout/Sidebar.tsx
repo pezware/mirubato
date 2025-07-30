@@ -153,6 +153,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               <Link
                 key={item.id}
                 to={item.path}
+                onClick={() => {
+                  // If this is the Pieces link, dispatch custom event to reset repertoire state
+                  if (item.id === 'pieces') {
+                    window.dispatchEvent(new CustomEvent('repertoire-reset'))
+                  }
+                }}
                 className={`
                   flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
                     isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
