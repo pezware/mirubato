@@ -1,16 +1,12 @@
 -- Migration: Add duplicate prevention mechanisms
 -- This migration adds the necessary schema changes to prevent duplicate entries during sync
 
--- 1. Add composite unique constraint to prevent duplicate content
--- Note: We need to drop and recreate the constraint if it exists
+-- 1. Clean up any existing conflicting constraints
+-- Note: We'll create the proper constraints later in step 8
 DROP INDEX IF EXISTS idx_sync_data_unique_content;
+DROP INDEX IF EXISTS idx_sync_data_exact_match;
 
--- Create a composite index for duplicate prevention based on content
-CREATE UNIQUE INDEX idx_sync_data_unique_content 
-ON sync_data(user_id, entity_type, checksum)
-WHERE deleted_at IS NULL;
-
--- 2. Add device_id column for tracking sync sources
+-- 2. Add device_id column for tracking sync sources (if not exists)
 ALTER TABLE sync_data ADD COLUMN device_id TEXT;
 
 -- 3. Create idempotency tracking table
@@ -78,8 +74,17 @@ BEGIN
   WHERE expires_at < datetime('now');
 END;
 
--- 8. Add composite constraint for exact timestamp matching
--- This prevents entries with identical content and timestamps
-CREATE UNIQUE INDEX idx_sync_data_exact_match
-ON sync_data(user_id, entity_type, entity_id, checksum)
+-- 8. Replace content-based constraint with entity-specific constraint
+-- This prevents duplicate entity IDs for the same user and type
+-- Drop the content-based constraint as it can conflict with entity-based uniqueness
+DROP INDEX IF EXISTS idx_sync_data_unique_content;
+
+-- Create entity-specific uniqueness constraint instead
+CREATE UNIQUE INDEX idx_sync_data_entity_unique
+ON sync_data(user_id, entity_type, entity_id)
+WHERE deleted_at IS NULL;
+
+-- Create separate index for content-based duplicate detection (non-unique)
+CREATE INDEX idx_sync_data_content_detection
+ON sync_data(user_id, entity_type, checksum)
 WHERE deleted_at IS NULL;

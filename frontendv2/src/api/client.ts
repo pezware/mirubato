@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
+import { getOrCreateDeviceId, generateIdempotencyKey } from '../utils/deviceId'
 
 // Determine API URL based on environment
 const getApiUrl = () => {
@@ -27,19 +28,58 @@ export const apiClient: AxiosInstance = axios.create({
   },
 })
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and idempotency headers
 apiClient.interceptors.request.use(
   config => {
     const token = localStorage.getItem('auth-token')
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
+    // Add idempotency headers for write operations that need duplicate prevention
+    if (
+      config.method &&
+      ['post', 'put', 'patch'].includes(config.method.toLowerCase())
+    ) {
+      // Add device ID for all write operations
+      config.headers['X-Device-ID'] = getOrCreateDeviceId()
+
+      // Add idempotency key for sync operations and entry creation
+      if (config.url && isIdempotentOperation(config.url)) {
+        const idempotencyKey = generateIdempotencyKey(
+          config.method.toUpperCase(),
+          config.url,
+          config.data
+        )
+        config.headers['X-Idempotency-Key'] = idempotencyKey
+
+        // Debug logging for sync operations
+        if (config.url.includes('/sync/') || config.url.includes('/logbook')) {
+          console.log(
+            `[API] Adding idempotency key: ${idempotencyKey} for ${config.method} ${config.url}`
+          )
+        }
+      }
+    }
+
     return config
   },
   error => {
     return Promise.reject(error)
   }
 )
+
+// Helper function to determine if an operation needs idempotency protection
+function isIdempotentOperation(url: string): boolean {
+  const idempotentPaths = [
+    '/api/sync/push',
+    '/api/logbook',
+    '/api/goals',
+    '/api/repertoire',
+  ]
+
+  return idempotentPaths.some(path => url.includes(path))
+}
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(

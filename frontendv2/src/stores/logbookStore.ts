@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import { logbookApi, type LogbookEntry, type Goal } from '../api/logbook'
 import { nanoid } from 'nanoid'
+import { syncMutex } from '../utils/syncMutex'
+import {
+  removeDuplicates,
+  getDuplicateReport,
+  type DuplicateEntry,
+} from '../utils/duplicateCleanup'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -52,6 +58,31 @@ interface LogbookState {
     oldPiece: { title: string; composer?: string },
     newPiece: { title: string; composer?: string }
   ) => Promise<number>
+
+  // Actions - Duplicate Management
+  cleanupDuplicates: () => Promise<{
+    duplicatesRemoved: number
+    report: {
+      duplicates: DuplicateEntry[]
+      summary: {
+        totalEntries: number
+        duplicatesFound: number
+        highConfidence: number
+        mediumConfidence: number
+        lowConfidence: number
+      }
+    }
+  }>
+  getDuplicateReport: () => {
+    duplicates: DuplicateEntry[]
+    summary: {
+      totalEntries: number
+      duplicatesFound: number
+      highConfidence: number
+      mediumConfidence: number
+      lowConfidence: number
+    }
+  }
 }
 
 // Local storage keys
@@ -60,8 +91,7 @@ const GOALS_KEY = 'mirubato:logbook:goals'
 const SCORE_METADATA_KEY = 'mirubato:logbook:scoreMetadata'
 
 // Debounce helper
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function debounce<T extends (...args: any[]) => void>(
+function debounce<T extends (...args: never[]) => void>(
   func: T,
   wait: number
 ): T {
@@ -157,85 +187,88 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   createEntry: async entryData => {
-    set({ error: null })
+    // Use mutex to prevent concurrent entry creation
+    return syncMutex.runExclusive(async () => {
+      set({ error: null })
 
-    try {
-      // Always create locally first
-      const entry: LogbookEntry = {
-        ...entryData,
-        id: nanoid(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      // Cache score metadata if present
-      let updatedScoreMetadata = get().scoreMetadata
-      if (entry.scoreId && entry.scoreTitle) {
-        updatedScoreMetadata = {
-          ...updatedScoreMetadata,
-          [entry.scoreId]: {
-            title: entry.scoreTitle,
-            composer: entry.scoreComposer,
-          },
+      try {
+        // Always create locally first
+        const entry: LogbookEntry = {
+          ...entryData,
+          id: nanoid(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
+
+        // Cache score metadata if present
+        let updatedScoreMetadata = get().scoreMetadata
+        if (entry.scoreId && entry.scoreTitle) {
+          updatedScoreMetadata = {
+            ...updatedScoreMetadata,
+            [entry.scoreId]: {
+              title: entry.scoreTitle,
+              composer: entry.scoreComposer,
+            },
+          }
+          immediateLocalStorageWrite(
+            SCORE_METADATA_KEY,
+            JSON.stringify(updatedScoreMetadata)
+          )
+        }
+
+        // O(1) insertion
+        const newEntriesMap = new Map(get().entriesMap)
+        newEntriesMap.set(entry.id, entry)
+        set({
+          entriesMap: newEntriesMap,
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+          scoreMetadata: updatedScoreMetadata,
+        })
+
+        // Immediate write to localStorage for new entries
         immediateLocalStorageWrite(
-          SCORE_METADATA_KEY,
-          JSON.stringify(updatedScoreMetadata)
+          ENTRIES_KEY,
+          JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Link to goals after creating entry
+        const { useRepertoireStore } = await import('./repertoireStore')
+        await useRepertoireStore.getState().linkPracticeToGoals(entry)
+
+        // If authenticated and online, sync to server in background
+        const token = localStorage.getItem('auth-token')
+        if (token && !get().isLocalMode) {
+          logbookApi
+            .createEntry(entryData)
+            .then(serverEntry => {
+              // Update the entry with server ID if different
+              if (serverEntry.id !== entry.id) {
+                const updatedEntriesMap = new Map(get().entriesMap)
+                updatedEntriesMap.delete(entry.id)
+                updatedEntriesMap.set(serverEntry.id, serverEntry)
+                set({
+                  entriesMap: updatedEntriesMap,
+                  entries: sortEntriesByTimestamp(
+                    Array.from(updatedEntriesMap.values())
+                  ),
+                })
+
+                debouncedLocalStorageWrite(
+                  ENTRIES_KEY,
+                  JSON.stringify(Array.from(updatedEntriesMap.values()))
+                )
+              }
+            })
+            .catch(err => {
+              console.warn('Background sync failed for new entry:', err)
+              // Entry remains in local storage
+            })
+        }
+      } catch (error: unknown) {
+        set({ error: 'Failed to create entry' })
+        throw error
       }
-
-      // O(1) insertion
-      const newEntriesMap = new Map(get().entriesMap)
-      newEntriesMap.set(entry.id, entry)
-      set({
-        entriesMap: newEntriesMap,
-        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
-        scoreMetadata: updatedScoreMetadata,
-      })
-
-      // Immediate write to localStorage for new entries
-      immediateLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(newEntriesMap.values()))
-      )
-
-      // Link to goals after creating entry
-      const { useRepertoireStore } = await import('./repertoireStore')
-      await useRepertoireStore.getState().linkPracticeToGoals(entry)
-
-      // If authenticated and online, sync to server in background
-      const token = localStorage.getItem('auth-token')
-      if (token && !get().isLocalMode) {
-        logbookApi
-          .createEntry(entryData)
-          .then(serverEntry => {
-            // Update the entry with server ID if different
-            if (serverEntry.id !== entry.id) {
-              const updatedEntriesMap = new Map(get().entriesMap)
-              updatedEntriesMap.delete(entry.id)
-              updatedEntriesMap.set(serverEntry.id, serverEntry)
-              set({
-                entriesMap: updatedEntriesMap,
-                entries: sortEntriesByTimestamp(
-                  Array.from(updatedEntriesMap.values())
-                ),
-              })
-
-              debouncedLocalStorageWrite(
-                ENTRIES_KEY,
-                JSON.stringify(Array.from(updatedEntriesMap.values()))
-              )
-            }
-          })
-          .catch(err => {
-            console.warn('Background sync failed for new entry:', err)
-            // Entry remains in local storage
-          })
-      }
-    } catch (error: unknown) {
-      set({ error: 'Failed to create entry' })
-      throw error
-    }
+    }, 'createEntry')
   },
 
   updateEntry: async (id, updates) => {
@@ -504,125 +537,130 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   syncWithServer: async () => {
-    const token = localStorage.getItem('auth-token')
-    if (!token) {
-      set({ error: 'Please sign in to sync with server' })
-      return
-    }
-
-    set({ isLoading: true, error: null })
-
-    try {
-      // Get local entries
-      const localEntries = Array.from(get().entriesMap.values())
-
-      // Pull from server
-      const serverEntries = await logbookApi.getEntries()
-
-      // Create maps for deduplication
-      const serverEntriesMap = new Map(
-        serverEntries.map(entry => [entry.id, entry])
-      )
-
-      // Create a map to track entries by content signature for deduplication
-      const contentSignatureMap = new Map<string, LogbookEntry>()
-
-      // Helper to create a content signature for deduplication
-      const createContentSignature = (entry: LogbookEntry): string => {
-        // Create a signature based on key content fields (excluding timestamp to allow deduplication)
-        const pieces = entry.pieces
-          .map(p => `${p.title}-${p.composer}`)
-          .sort()
-          .join('|')
-        // Use a time window approach - entries within 5 minutes are considered potentially duplicate
-        const timeWindow = Math.floor(
-          new Date(entry.timestamp).getTime() / (5 * 60 * 1000)
-        )
-        return `${timeWindow}-${entry.duration}-${entry.type}-${entry.instrument}-${pieces}`
+    // Use mutex to prevent concurrent sync operations
+    return syncMutex.runExclusive(async () => {
+      const token = localStorage.getItem('auth-token')
+      if (!token) {
+        set({ error: 'Please sign in to sync with server' })
+        return
       }
 
-      // Add server entries to content map
-      serverEntries.forEach(entry => {
-        const signature = createContentSignature(entry)
-        contentSignatureMap.set(signature, entry)
-      })
+      set({ isLoading: true, error: null })
 
-      // Find truly unique local entries (not duplicates by content)
-      const uniqueLocalEntries: LogbookEntry[] = []
-      const duplicateLocalEntries: LogbookEntry[] = []
+      try {
+        // Get local entries
+        const localEntries = Array.from(get().entriesMap.values())
 
-      localEntries.forEach(localEntry => {
-        // Skip if already on server by ID
-        if (serverEntriesMap.has(localEntry.id)) {
-          return
+        // Pull from server
+        const serverEntries = await logbookApi.getEntries()
+
+        // Create maps for deduplication
+        const serverEntriesMap = new Map(
+          serverEntries.map(entry => [entry.id, entry])
+        )
+
+        // Create a map to track entries by content signature for deduplication
+        const contentSignatureMap = new Map<string, LogbookEntry>()
+
+        // Helper to create a content signature for deduplication
+        const createContentSignature = (entry: LogbookEntry): string => {
+          // Create a signature based on key content fields (excluding timestamp to allow deduplication)
+          const pieces = entry.pieces
+            .map(p => `${p.title}-${p.composer}`)
+            .sort()
+            .join('|')
+          // Use a time window approach - entries within 5 minutes are considered potentially duplicate
+          const timeWindow = Math.floor(
+            new Date(entry.timestamp).getTime() / (5 * 60 * 1000)
+          )
+          return `${timeWindow}-${entry.duration}-${entry.type}-${entry.instrument}-${pieces}`
         }
 
-        // Check if this is a duplicate by content
-        const signature = createContentSignature(localEntry)
-        if (contentSignatureMap.has(signature)) {
-          duplicateLocalEntries.push(localEntry)
-        } else {
-          uniqueLocalEntries.push(localEntry)
-          // Add to content map to catch duplicates within local entries
-          contentSignatureMap.set(signature, localEntry)
-        }
-      })
+        // Add server entries to content map
+        serverEntries.forEach(entry => {
+          const signature = createContentSignature(entry)
+          contentSignatureMap.set(signature, entry)
+        })
 
-      console.log(
-        `Found ${uniqueLocalEntries.length} unique local entries, ${duplicateLocalEntries.length} duplicates`
-      )
+        // Find truly unique local entries (not duplicates by content)
+        const uniqueLocalEntries: LogbookEntry[] = []
+        const duplicateLocalEntries: LogbookEntry[] = []
 
-      // Start with server entries
-      const mergedEntriesMap = new Map(serverEntriesMap)
+        localEntries.forEach(localEntry => {
+          // Skip if already on server by ID
+          if (serverEntriesMap.has(localEntry.id)) {
+            return
+          }
 
-      if (uniqueLocalEntries.length > 0) {
+          // Check if this is a duplicate by content
+          const signature = createContentSignature(localEntry)
+          if (contentSignatureMap.has(signature)) {
+            duplicateLocalEntries.push(localEntry)
+          } else {
+            uniqueLocalEntries.push(localEntry)
+            // Add to content map to catch duplicates within local entries
+            contentSignatureMap.set(signature, localEntry)
+          }
+        })
+
         console.log(
-          `Pushing ${uniqueLocalEntries.length} unique local entries to server`
+          `Found ${uniqueLocalEntries.length} unique local entries, ${duplicateLocalEntries.length} duplicates`
         )
 
-        try {
-          // Push only unique local entries to server
-          const { syncApi } = await import('../api/sync')
-          await syncApi.push({
-            changes: {
-              entries: uniqueLocalEntries,
-              goals: [], // TODO: Sync goals too
-            },
-          })
+        // Start with server entries
+        const mergedEntriesMap = new Map(serverEntriesMap)
 
-          // After successful push, add unique entries to merged map
-          uniqueLocalEntries.forEach(entry => {
-            mergedEntriesMap.set(entry.id, entry)
-          })
-        } catch (pushError) {
-          console.error('Failed to push local entries:', pushError)
-          // Still merge unique local entries even if push fails
-          uniqueLocalEntries.forEach(entry => {
-            mergedEntriesMap.set(entry.id, entry)
-          })
+        if (uniqueLocalEntries.length > 0) {
+          console.log(
+            `Pushing ${uniqueLocalEntries.length} unique local entries to server`
+          )
+
+          try {
+            // Push only unique local entries to server
+            const { syncApi } = await import('../api/sync')
+            await syncApi.push({
+              changes: {
+                entries: uniqueLocalEntries,
+                goals: [], // TODO: Sync goals too
+              },
+            })
+
+            // After successful push, add unique entries to merged map
+            uniqueLocalEntries.forEach(entry => {
+              mergedEntriesMap.set(entry.id, entry)
+            })
+          } catch (pushError) {
+            console.error('Failed to push local entries:', pushError)
+            // Still merge unique local entries even if push fails
+            uniqueLocalEntries.forEach(entry => {
+              mergedEntriesMap.set(entry.id, entry)
+            })
+          }
         }
+
+        // Update state with merged entries
+        set({
+          entriesMap: mergedEntriesMap,
+          entries: sortEntriesByTimestamp(
+            Array.from(mergedEntriesMap.values())
+          ),
+          isLoading: false,
+          isLocalMode: false,
+        })
+
+        // Update local storage with merged data
+        debouncedLocalStorageWrite(
+          ENTRIES_KEY,
+          JSON.stringify(Array.from(mergedEntriesMap.values()))
+        )
+      } catch (error: unknown) {
+        set({
+          error: 'Failed to sync with server. Continuing with local data.',
+          isLoading: false,
+        })
+        console.error('Sync failed:', error)
       }
-
-      // Update state with merged entries
-      set({
-        entriesMap: mergedEntriesMap,
-        entries: sortEntriesByTimestamp(Array.from(mergedEntriesMap.values())),
-        isLoading: false,
-        isLocalMode: false,
-      })
-
-      // Update local storage with merged data
-      debouncedLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(mergedEntriesMap.values()))
-      )
-    } catch (error: unknown) {
-      set({
-        error: 'Failed to sync with server. Continuing with local data.',
-        isLoading: false,
-      })
-      console.error('Sync failed:', error)
-    }
+    }, 'syncWithServer')
   },
 
   updatePieceName: async (oldPiece, newPiece) => {
@@ -707,5 +745,48 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       set({ error: err.response?.data?.error || 'Failed to update piece name' })
       throw error
     }
+  },
+
+  // Duplicate Management
+  cleanupDuplicates: async () => {
+    return syncMutex.runExclusive(async () => {
+      console.log('[LogbookStore] Starting duplicate cleanup...')
+
+      const currentEntries = Array.from(get().entriesMap.values())
+      const report = getDuplicateReport(currentEntries)
+
+      if (report.summary.duplicatesFound === 0) {
+        console.log('[LogbookStore] No duplicates found')
+        return { duplicatesRemoved: 0, report }
+      }
+
+      // Remove duplicates and update store
+      const cleanedEntries = removeDuplicates(currentEntries)
+      const duplicatesRemoved = currentEntries.length - cleanedEntries.length
+
+      // Update the entries map
+      const newEntriesMap = new Map(
+        cleanedEntries.map(entry => [entry.id, entry])
+      )
+      set({
+        entriesMap: newEntriesMap,
+        entries: sortEntriesByTimestamp(cleanedEntries),
+      })
+
+      // Update local storage
+      immediateLocalStorageWrite(ENTRIES_KEY, JSON.stringify(cleanedEntries))
+
+      console.log(
+        `[LogbookStore] Removed ${duplicatesRemoved} duplicate entries`
+      )
+      console.log(`[LogbookStore] Kept ${cleanedEntries.length} unique entries`)
+
+      return { duplicatesRemoved, report }
+    }, 'cleanupDuplicates')
+  },
+
+  getDuplicateReport: () => {
+    const currentEntries = Array.from(get().entriesMap.values())
+    return getDuplicateReport(currentEntries)
   },
 }))
