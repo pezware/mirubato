@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from './ui/Modal'
 import Button from './ui/Button'
 import { Play, Pause, Square, RotateCcw } from 'lucide-react'
-import { formatDuration } from '@/utils/dateUtils'
+import { formatTime as formatTimeUtil } from '@/utils/dateUtils'
 
 interface TimerEntryProps {
   isOpen: boolean
   onClose: () => void
-  onComplete: (duration: number) => void
+  onComplete: (duration: number, startTime?: Date) => void
 }
 
 export default function TimerEntry({
@@ -19,17 +19,59 @@ export default function TimerEntry({
   const { t } = useTranslation(['logbook', 'common'])
   const [seconds, setSeconds] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
+  const [startTime, setStartTime] = useState<Date | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const startTimeRef = useRef<number | null>(null)
+  const accumulatedSecondsRef = useRef(0)
 
+  // High-precision timer with background tab handling
   useEffect(() => {
     if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setSeconds(s => s + 1)
-      }, 1000)
+      if (!startTimeRef.current) {
+        startTimeRef.current = performance.now()
+      }
+
+      const updateTimer = () => {
+        if (startTimeRef.current) {
+          const currentTime = performance.now()
+          const elapsedMs = currentTime - startTimeRef.current
+          const totalSeconds =
+            accumulatedSecondsRef.current + Math.floor(elapsedMs / 1000)
+          setSeconds(totalSeconds)
+        }
+      }
+
+      intervalRef.current = setInterval(updateTimer, 100) // More frequent updates for precision
+
+      // Handle visibility changes to maintain accuracy
+      const handleVisibilityChange = () => {
+        if (!document.hidden && isRunning && startTimeRef.current) {
+          // Recalculate when tab becomes visible
+          const currentTime = performance.now()
+          const elapsedMs = currentTime - startTimeRef.current
+          const totalSeconds =
+            accumulatedSecondsRef.current + Math.floor(elapsedMs / 1000)
+          setSeconds(totalSeconds)
+        }
+      }
+
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
+      }
+
+      // Accumulate elapsed time when pausing
+      if (startTimeRef.current) {
+        const currentTime = performance.now()
+        const elapsedMs = currentTime - startTimeRef.current
+        accumulatedSecondsRef.current += Math.floor(elapsedMs / 1000)
+        startTimeRef.current = null
       }
     }
 
@@ -41,6 +83,9 @@ export default function TimerEntry({
   }, [isRunning])
 
   const handleStart = () => {
+    if (!startTime) {
+      setStartTime(new Date())
+    }
     setIsRunning(true)
   }
 
@@ -53,7 +98,7 @@ export default function TimerEntry({
     if (seconds > 0) {
       // Convert seconds to minutes for the entry form
       const minutes = Math.round(seconds / 60)
-      onComplete(minutes)
+      onComplete(minutes, startTime || undefined)
       setSeconds(0)
     }
   }
@@ -61,6 +106,9 @@ export default function TimerEntry({
   const handleReset = () => {
     setIsRunning(false)
     setSeconds(0)
+    setStartTime(null)
+    startTimeRef.current = null
+    accumulatedSecondsRef.current = 0
   }
 
   const handleClose = () => {
@@ -70,6 +118,9 @@ export default function TimerEntry({
     }
     setIsRunning(false)
     setSeconds(0)
+    setStartTime(null)
+    startTimeRef.current = null
+    accumulatedSecondsRef.current = 0
     onClose()
   }
 
@@ -96,10 +147,12 @@ export default function TimerEntry({
           {formatTime(seconds)}
         </div>
 
-        {/* Duration in readable format */}
-        <div className="text-sm text-stone-600 mb-8">
-          {seconds > 0 && formatDuration(Math.round(seconds / 60))}
-        </div>
+        {/* Start time display */}
+        {startTime && (
+          <div className="text-xs text-stone-500 mb-6">
+            {t('logbook:timer.startedAt')} {formatTimeUtil(startTime)}
+          </div>
+        )}
 
         {/* Control Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -152,8 +205,17 @@ export default function TimerEntry({
           )}
         </div>
 
-        {/* Instructions */}
-        <p className="text-sm text-stone-600">
+        {/* Instructions - Mobile optimized */}
+        <p className="text-sm text-stone-600 sm:hidden">
+          {isRunning
+            ? t('logbook:timer.runningHintMobile')
+            : seconds > 0
+              ? t('logbook:timer.stopHintMobile')
+              : t('logbook:timer.startHintMobile')}
+        </p>
+
+        {/* Instructions - Desktop */}
+        <p className="text-sm text-stone-600 hidden sm:block">
           {isRunning
             ? t('logbook:timer.runningHint')
             : seconds > 0

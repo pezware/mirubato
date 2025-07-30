@@ -90,8 +90,12 @@
     "stop": "Stop & Log",
     "reset": "Reset",
     "confirmClose": "Timer is running. Are you sure you want to close?",
+    "startedAt": "Started at",
     "startHint": "Click Start to begin timing your practice session",
     "runningHint": "Timer is running. Click Pause to take a break or Stop to finish.",
-    "stopHint": "Click Stop & Log to create a practice entry with this duration"
+    "stopHint": "Click Stop & Log to create a practice entry with this duration",
+    "startHintMobile": "Tap to start",
+    "runningHintMobile": "Tap to pause",
+    "stopHintMobile": "Resume • Stop"
   }
 }

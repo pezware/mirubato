@@ -27,6 +27,7 @@ interface ManualEntryFormProps {
   onSave: () => void
   entry?: LogbookEntry
   initialDuration?: number
+  initialStartTime?: Date
   initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
 }
 
@@ -35,6 +36,7 @@ export default function ManualEntryForm({
   onSave,
   entry,
   initialDuration,
+  initialStartTime,
   initialPieces,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
@@ -78,7 +80,7 @@ export default function ManualEntryForm({
   )
   const [tags] = useState<string[]>(entry?.tags || [])
 
-  // Date state - default to today or existing entry date
+  // Date state - use initialStartTime date, existing entry date, or default to today
   const [practiceDate, setPracticeDate] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to YYYY-MM-DD format in local timezone
@@ -86,17 +88,25 @@ export default function ManualEntryForm({
       // Use local date components to avoid timezone conversion issues
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     }
+    if (initialStartTime) {
+      // Use the date from timer start time
+      return `${initialStartTime.getFullYear()}-${String(initialStartTime.getMonth() + 1).padStart(2, '0')}-${String(initialStartTime.getDate()).padStart(2, '0')}`
+    }
     // Default to today in local timezone
     const today = new Date()
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
 
-  // Time state - default to current time minus duration or existing entry time
+  // Time state - use initialStartTime from timer, existing entry time, or default to current time minus duration
   const [practiceTime, setPracticeTime] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to HH:MM format in local timezone
       const date = new Date(entry.timestamp)
       return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+    }
+    if (initialStartTime) {
+      // Use the actual start time from timer
+      return `${String(initialStartTime.getHours()).padStart(2, '0')}:${String(initialStartTime.getMinutes()).padStart(2, '0')}`
     }
     // Default to current time minus duration in local timezone
     const now = new Date()

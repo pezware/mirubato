@@ -92,7 +92,7 @@ export default function ScorebookPage() {
     }
   }
 
-  const handleTimerComplete = (_duration: number) => {
+  const handleTimerComplete = (_duration: number, _startTime?: Date) => {
     setShowTimer(false)
     // Could add practice session logging here if needed
   }
