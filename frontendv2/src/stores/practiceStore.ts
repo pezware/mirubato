@@ -43,11 +43,22 @@ const calculateDuration = (session: PracticeSession): number => {
 
   const now = new Date()
   const endTime = session.endTime || now
-  const startTime = session.startTime
+
+  // Ensure dates are Date objects (defensive programming)
+  const startTime =
+    session.startTime instanceof Date
+      ? session.startTime
+      : new Date(session.startTime)
 
   // If paused, use pausedTime instead of current time
   const effectiveEndTime =
-    session.isPaused && session.pausedTime ? session.pausedTime : endTime
+    session.isPaused && session.pausedTime
+      ? session.pausedTime instanceof Date
+        ? session.pausedTime
+        : new Date(session.pausedTime)
+      : endTime instanceof Date
+        ? endTime
+        : new Date(endTime)
 
   const totalDuration = effectiveEndTime.getTime() - startTime.getTime()
   const activeDuration = totalDuration - session.totalPausedDuration
@@ -132,7 +143,10 @@ export const usePracticeStore = create<PracticeState>()(
 
         const pausedTime = session.pausedTime
         if (pausedTime) {
-          const pauseDuration = new Date().getTime() - pausedTime.getTime()
+          // Ensure pausedTime is a Date object
+          const pausedTimeDate =
+            pausedTime instanceof Date ? pausedTime : new Date(pausedTime)
+          const pauseDuration = new Date().getTime() - pausedTimeDate.getTime()
           set({
             currentSession: {
               ...session,
@@ -177,6 +191,27 @@ export const usePracticeStore = create<PracticeState>()(
           ? state.currentSession
           : null,
       }),
+      // Handle Date serialization/deserialization
+      serialize: state => {
+        return JSON.stringify(state)
+      },
+      deserialize: str => {
+        const parsed = JSON.parse(str)
+        if (parsed.state?.currentSession) {
+          const session = parsed.state.currentSession
+          // Convert string dates back to Date objects
+          if (session.startTime) {
+            session.startTime = new Date(session.startTime)
+          }
+          if (session.endTime) {
+            session.endTime = new Date(session.endTime)
+          }
+          if (session.pausedTime) {
+            session.pausedTime = new Date(session.pausedTime)
+          }
+        }
+        return parsed
+      },
     }
   )
 )
