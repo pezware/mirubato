@@ -39,3 +39,11 @@ export { Tabs } from './Tabs'
 
 export { SegmentedControl } from './SegmentedControl'
 export type { SegmentOption } from './SegmentedControl'
+
+export {
+  Typography,
+  MusicTitle,
+  MusicComposer,
+  MusicMetadata,
+} from './Typography'
+export type { TypographyProps } from './Typography'

@@ -1,18 +1,11 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import {
-  ChevronLeft,
-  Edit2,
-  Clock,
-  Target,
-  Music,
-  Smile,
-  Link,
-} from 'lucide-react'
+import { Edit2, Clock, Target, Music, Smile, Link } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
+import { MusicTitle, MusicComposer } from '@/components/ui'
 import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
@@ -46,7 +39,6 @@ interface EnrichedRepertoireItem {
 interface PieceDetailViewProps {
   item: EnrichedRepertoireItem
   sessions: PracticeSession[]
-  onBack: () => void
   onLogPractice: () => void
   onEditNotes: () => void
   onEditSession?: (sessionId: string) => void
@@ -57,7 +49,6 @@ interface PieceDetailViewProps {
 export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   item,
   sessions,
-  onBack,
   onLogPractice,
   onEditNotes,
   onEditSession,
@@ -232,36 +223,23 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      {/* Top Bar with Breadcrumb */}
-      <div className="bg-white border-b border-stone-200 px-4 sm:px-6 py-4">
-        <nav className="flex items-center gap-2 text-sm">
-          <button
-            onClick={onBack}
-            className="text-stone-600 hover:text-stone-900 flex items-center gap-1 whitespace-nowrap"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {t('repertoire:myRepertoire')}
-            </span>
-            <span className="sm:hidden">{t('common:back')}</span>
-          </button>
-          <span className="text-stone-400">›</span>
-          <span className="text-stone-900 font-medium truncate">
-            {toTitleCase(item.scoreComposer)} - {toTitleCase(item.scoreTitle)}
-          </span>
-        </nav>
-      </div>
-
       {/* Piece Header */}
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 mb-2">
+            <MusicTitle
+              as="h1"
+              className="text-xl sm:text-2xl font-medium text-stone-900 mb-2"
+            >
               {toTitleCase(item.scoreTitle)}
-            </h1>
-            <div className="text-base sm:text-lg text-stone-600 mb-4 sm:mb-6">
-              {toTitleCase(item.scoreComposer)}{' '}
-              {item.catalogNumber && `• ${item.catalogNumber}`}
+            </MusicTitle>
+            <div className="text-base sm:text-lg mb-4 sm:mb-6">
+              <MusicComposer className="text-stone-600">
+                {toTitleCase(item.scoreComposer)}
+              </MusicComposer>
+              {item.catalogNumber && (
+                <span className="text-stone-600"> • {item.catalogNumber}</span>
+              )}
             </div>
           </div>
           <Button

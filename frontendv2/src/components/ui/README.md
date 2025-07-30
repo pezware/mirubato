@@ -192,7 +192,66 @@ The component library uses the Morandi color palette defined in tailwind.config.
 
 Consistent spacing scale from 0 to 96 (0rem to 24rem).
 
-### Typography
+### Typography System
+
+Mirubato uses a sophisticated three-font system designed for optimal multilingual support and clear information hierarchy:
+
+#### Font Families
+
+- **Noto Serif** (`font-serif`): Music content (titles, composers) - Excellent CJK character support
+- **Inter** (`font-inter`): UI elements, metadata, body text - Clean, modern sans-serif
+- **Lexend** (`font-lexend`): Headers and section titles - Reading proficiency optimized
+
+#### Typography Components
+
+Use semantic typography components instead of manual font classes:
+
+```tsx
+import { Typography, MusicTitle, MusicComposer, MusicMetadata } from '@/components/ui'
+
+// Semantic music content components
+<MusicTitle>{score.title}</MusicTitle>
+<MusicComposer>{score.composer}</MusicComposer>
+<MusicMetadata>Duration: 4:30</MusicMetadata>
+
+// General typography with variants
+<Typography variant="h1">Page Title</Typography>
+<Typography variant="body">Regular text content</Typography>
+<Typography variant="music-title">Sonata No. 14</Typography>
+```
+
+#### Typography Hierarchy
+
+1. **Music Titles**: `font-serif text-lg font-medium` - Noto Serif for musical pieces
+2. **Music Composers**: `font-serif text-base text-gray-700` - Noto Serif for composers
+3. **Section Headers**: `font-lexend text-xl font-light` - Lexend for UI headers
+4. **UI Text**: `font-inter text-sm text-gray-600` - Inter for interface elements
+5. **Metadata**: `font-inter text-xs text-gray-500` - Inter for supplementary info
+
+#### Typography Constants
+
+For advanced use cases, import typography class combinations:
+
+```tsx
+import { TYPOGRAPHY_CLASSES } from '@/constants/typography'
+;<div className={TYPOGRAPHY_CLASSES.musicTitle}>Symphony No. 9</div>
+```
+
+#### Best Practices
+
+1. **Always use Typography components** for music-related content
+2. **Use semantic HTML elements** (`h1`, `h2`, `p`) with Typography components
+3. **Maintain font hierarchy** - don't mix serif fonts in UI elements
+4. **Test with different languages** - especially Chinese characters
+5. **Check ESLint warnings** for typography consistency
+
+#### ESLint Rules
+
+The codebase includes custom ESLint rules to enforce typography consistency:
+
+- Warns against generic `font-sans` usage
+- Suggests Typography components for music content
+- Enforces proper font family usage
 
 Font sizes from 'xs' to '9xl' with appropriate line heights.
 
@@ -217,3 +276,8 @@ All components follow WCAG 2.1 AA standards:
 3. **Composition**: Build complex UIs by composing simple components
 4. **Responsive**: All components are mobile-first and responsive
 5. **Dark mode**: Components support dark mode automatically
+6. **Typography consistency**:
+   - Use `MusicTitle` and `MusicComposer` for music content
+   - Use `Typography` component with semantic variants
+   - Never use generic `font-sans` or `font-mono`
+   - Follow the three-font hierarchy (Noto Serif, Inter, Lexend)

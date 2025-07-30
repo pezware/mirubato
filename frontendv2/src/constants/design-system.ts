@@ -138,6 +138,35 @@ export const transition = {
   transform: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)',
 } as const
 
+// Typography constants
+export const typography = {
+  fontFamily: {
+    inter: ['Inter', 'system-ui', 'sans-serif'],
+    lexend: ['Lexend', 'system-ui', 'sans-serif'],
+    serif: ['Noto Serif', 'Georgia', 'serif'],
+  },
+  // Typography hierarchy based on usage patterns
+  hierarchy: {
+    // Headers use Lexend (clean, modern)
+    header: 'font-lexend',
+    // UI content uses Inter (readable, neutral)
+    ui: 'font-inter',
+    // Musical content uses Noto Serif (academic, classical)
+    music: 'font-serif',
+  },
+  // Common text size combinations
+  scale: {
+    musicTitle: 'text-lg sm:text-xl font-medium',
+    musicComposer: 'text-base font-normal',
+    musicMetadata: 'text-sm font-normal',
+    sectionHeader: 'text-2xl sm:text-3xl font-light',
+    cardTitle: 'text-lg font-medium',
+    bodyText: 'text-base font-normal',
+    caption: 'text-sm font-normal',
+    small: 'text-xs font-normal',
+  },
+} as const
+
 // Component-specific constants
 export const componentSpacing = {
   cardPadding: spacing[6], // 24px

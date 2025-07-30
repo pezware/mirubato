@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { useScoreStore } from '@/stores/scoreStore'
 import { useLogbookStore } from '@/stores/logbookStore'
@@ -49,6 +50,7 @@ interface RepertoireViewProps {
 
 export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const { t } = useTranslation(['repertoire', 'common'])
+  const [searchParams, setSearchParams] = useSearchParams()
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
@@ -66,6 +68,9 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [searchQuery] = useState('') // TODO: Add search input
   const [editingPieceNotes, setEditingPieceNotes] =
     useState<EnrichedRepertoireItem | null>(null)
+
+  // Track when user was viewing piece detail (for click handlers)
+  const wasOnPieceDetailRef = useRef(false)
 
   const {
     repertoireLoading,
@@ -98,6 +103,8 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // useEffect will be moved after sortedRepertoire calculation
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
@@ -305,6 +312,38 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     return items
   }, [enrichedRepertoire, sortBy])
 
+  // Sync selectedPiece state with URL pieceId parameter
+  useEffect(() => {
+    const pieceId = searchParams.get('pieceId')
+
+    if (pieceId) {
+      // Find the piece with the matching scoreId
+      const piece = sortedRepertoire.find(p => p.scoreId === pieceId)
+      if (piece && piece.scoreId !== selectedPiece?.scoreId) {
+        console.log('Setting selectedPiece from URL pieceId:', pieceId)
+        setSelectedPiece(piece)
+        wasOnPieceDetailRef.current = true
+      } else if (!piece && sortedRepertoire.length > 0) {
+        // If piece not found and we have data, remove invalid pieceId from URL
+        console.log(
+          'Piece not found for pieceId:',
+          pieceId,
+          'removing from URL'
+        )
+        const newParams = new URLSearchParams(searchParams)
+        newParams.delete('pieceId')
+        setSearchParams(newParams, { replace: true })
+      }
+    } else {
+      // No pieceId in URL, show list view
+      if (selectedPiece !== null) {
+        console.log('No pieceId in URL, clearing selectedPiece')
+        setSelectedPiece(null)
+        wasOnPieceDetailRef.current = false
+      }
+    }
+  }, [searchParams, sortedRepertoire, setSearchParams, selectedPiece])
+
   // Find the entry being edited
   const editingEntry = editingSessionId
     ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
@@ -365,14 +404,16 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
         <PieceDetailView
           item={selectedPiece}
           sessions={practiceSessions}
-          onBack={() => setSelectedPiece(null)}
           onLogPractice={() => {
             setManualEntryPiece({
               title: selectedPiece.scoreTitle,
               composer: selectedPiece.scoreComposer,
               scoreId: selectedPiece.scoreId,
             })
-            setSelectedPiece(null)
+            // Clear piece selection by removing pieceId from URL
+            const newParams = new URLSearchParams(searchParams)
+            newParams.delete('pieceId')
+            setSearchParams(newParams)
             setShowManualEntry(true)
           }}
           onEditNotes={() => {
@@ -577,7 +618,16 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           sortedRepertoire.map(item => (
             <div
               key={item.scoreId}
-              onClick={() => setSelectedPiece(item)}
+              onClick={() => {
+                // Update URL to include pieceId instead of directly setting state
+                console.log(
+                  'Clicking piece, updating URL with pieceId:',
+                  item.scoreId
+                )
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('pieceId', item.scoreId)
+                setSearchParams(newParams)
+              }}
               className="cursor-pointer"
             >
               <FocusedRepertoireItem item={item} />

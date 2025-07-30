@@ -68,6 +68,7 @@ export default function EnhancedReports({
   // Update URL when tab changes
   const handleViewChange = (view: ReportView) => {
     setReportView(view)
+
     if (view === 'newEntry') {
       // Keep editId if it exists
       const editId = searchParams.get('editId')

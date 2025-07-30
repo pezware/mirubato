@@ -9,6 +9,7 @@ import ScoreManagement from '../components/score/ScoreManagement'
 import AppLayout from '../components/layout/AppLayout'
 import TimerEntry from '../components/TimerEntry'
 import { Modal } from '../components/ui/Modal'
+import { MusicTitle, MusicComposer } from '../components/ui'
 import Button from '../components/ui/Button'
 
 export default function ScorebookPage() {
@@ -119,12 +120,12 @@ export default function ScorebookPage() {
           <div className="bg-white border-b border-morandi-stone-200 px-3 sm:px-4 py-2 sm:py-3">
             <div className="container mx-auto max-w-6xl flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <h2 className="text-lg font-medium text-morandi-stone-800">
+                <MusicTitle as="h2" className="text-morandi-stone-800">
                   {currentScore.title}
-                </h2>
-                <span className="text-sm text-morandi-stone-600">
+                </MusicTitle>
+                <MusicComposer as="span" className="text-morandi-stone-600">
                   {currentScore.composer}
-                </span>
+                </MusicComposer>
                 <span className="px-2 py-1 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
                   {currentScore.difficulty}
                 </span>

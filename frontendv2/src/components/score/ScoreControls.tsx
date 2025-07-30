@@ -341,7 +341,7 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="text-lg font-mono font-medium text-morandi-stone-800">
+                      <span className="text-lg font-inter font-medium text-morandi-stone-800">
                         {metronomeSettings.tempo}
                       </span>
                       <span className="text-xs text-morandi-stone-500">
@@ -633,7 +633,7 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="text-lg font-mono font-medium text-morandi-stone-800">
+                      <span className="text-lg font-inter font-medium text-morandi-stone-800">
                         {metronomeSettings.tempo}
                       </span>
                       <span className="text-xs text-morandi-stone-500">

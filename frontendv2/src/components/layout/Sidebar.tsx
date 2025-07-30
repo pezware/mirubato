@@ -153,6 +153,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               <Link
                 key={item.id}
                 to={item.path}
+                onClick={() => {
+                  // No special handling needed - URL navigation will handle piece selection
+                  // The Link component will update the URL and RepertoireView will sync its state
+                }}
                 className={`
                   flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
                     isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'

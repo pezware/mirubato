@@ -11,6 +11,7 @@ import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
 import TimelineNav, { type TimelineLevel } from './ui/TimelineNav'
+import { MusicTitle, MusicComposer } from './ui'
 import { cn } from '../utils/cn'
 
 interface LogbookEntryListProps {
@@ -599,14 +600,26 @@ export default function LogbookEntryList({
                           {entry.pieces.map((piece, index) => (
                             <div
                               key={index}
-                              className="px-3 py-1 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-sm border border-morandi-sky-200"
+                              className="px-3 py-1 bg-morandi-sky-100 rounded-full text-sm border border-morandi-sky-200 flex items-center gap-1"
                             >
-                              {piece.title}
+                              <MusicTitle
+                                as="span"
+                                className="text-morandi-stone-700 text-sm font-normal"
+                              >
+                                {piece.title}
+                              </MusicTitle>
                               {piece.composer && (
-                                <span className="text-morandi-stone-600">
-                                  {' '}
-                                  - {piece.composer}
-                                </span>
+                                <>
+                                  <span className="text-morandi-stone-600">
+                                    -
+                                  </span>
+                                  <MusicComposer
+                                    as="span"
+                                    className="text-morandi-stone-600 text-sm"
+                                  >
+                                    {piece.composer}
+                                  </MusicComposer>
+                                </>
                               )}
                             </div>
                           ))}

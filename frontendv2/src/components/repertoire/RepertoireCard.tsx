@@ -5,6 +5,7 @@ import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
+import { MusicTitle, MusicComposer } from '@/components/ui'
 import { formatDuration, formatRelativeTime } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { EditNotesModal } from './EditNotesModal'
@@ -139,10 +140,21 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 text-left group cursor-pointer"
             >
-              <h3 className="font-serif text-lg font-semibold text-stone-900 group-hover:text-stone-700 transition-colors duration-200">
-                {toTitleCase(item.scoreTitle)} -{' '}
-                {toTitleCase(item.scoreComposer)}
-              </h3>
+              <div className="flex items-center gap-2 group-hover:text-stone-700 transition-colors duration-200">
+                <MusicTitle
+                  as="span"
+                  className="text-stone-900 group-hover:text-stone-700"
+                >
+                  {toTitleCase(item.scoreTitle)}
+                </MusicTitle>
+                <span className="text-stone-600">-</span>
+                <MusicComposer
+                  as="span"
+                  className="text-stone-700 group-hover:text-stone-600"
+                >
+                  {toTitleCase(item.scoreComposer)}
+                </MusicComposer>
+              </div>
             </button>
 
             {/* Status and Menu */}
