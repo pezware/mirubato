@@ -324,9 +324,6 @@ describe('TimerEntry Component', () => {
       const mobileInstruction = screen
         .getByText('Click Start to begin timing your practice session')
         .closest('p')
-      const desktopInstruction = screen
-        .getByText('Click Start to begin timing your practice session')
-        .closest('p')
 
       // Both should exist with different responsive classes
       expect(mobileInstruction).toHaveClass('text-sm', 'text-stone-600')
