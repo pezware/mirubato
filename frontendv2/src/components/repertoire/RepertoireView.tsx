@@ -135,8 +135,11 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       console.log(
         'Resetting selectedPiece due to custom repertoire reset event'
       )
-      setSelectedPiece(null)
-      wasOnPieceDetailRef.current = false
+      // Only reset if we're actually viewing a piece detail
+      if (selectedPiece !== null) {
+        setSelectedPiece(null)
+        wasOnPieceDetailRef.current = false
+      }
     }
 
     window.addEventListener('popstate', handlePopState)

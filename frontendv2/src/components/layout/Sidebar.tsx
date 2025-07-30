@@ -154,9 +154,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 to={item.path}
                 onClick={() => {
-                  // If this is the Pieces link, dispatch custom event to reset repertoire state
+                  // If this is the Pieces link and we have a pieceId in URL, dispatch reset event
                   if (item.id === 'pieces') {
-                    window.dispatchEvent(new CustomEvent('repertoire-reset'))
+                    const currentSearch = new URLSearchParams(
+                      window.location.search
+                    )
+                    const currentPieceId = currentSearch.get('pieceId')
+                    // Only reset if there's a piece currently selected
+                    if (currentPieceId) {
+                      window.dispatchEvent(new CustomEvent('repertoire-reset'))
+                    }
                   }
                 }}
                 className={`
