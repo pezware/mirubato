@@ -1,7 +1,6 @@
 name = "mirubato-frontendv2"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
-account_id = "1362434665780520e89f9f06b1057d24"
 
 [build]
 command = "pnpm run build"

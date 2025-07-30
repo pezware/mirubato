@@ -3,7 +3,6 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-account_id = "1362434665780520e89f9f06b1057d24"
 
 [build]
 command = "pnpm run build"
