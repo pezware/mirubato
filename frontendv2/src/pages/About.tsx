@@ -10,12 +10,14 @@ import {
   Package,
   Users,
   MessageCircle,
+  Settings,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Tabs } from '../components/ui'
 import VersionInfo from '../components/VersionInfo'
+import { WebSocketSyncDemo } from '../components/debug'
 
 export default function About() {
   const { t } = useTranslation(['about', 'common'])
@@ -51,6 +53,16 @@ export default function About() {
               label: t('about:tabs.contact', 'Contact'),
               icon: <MessageCircle size={20} />,
             },
+            // Add debug tab in development
+            ...(process.env.NODE_ENV === 'development'
+              ? [
+                  {
+                    id: 'debug',
+                    label: 'Debug',
+                    icon: <Settings size={20} />,
+                  },
+                ]
+              : []),
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -252,6 +264,63 @@ export default function About() {
                 {t('about:backToHome')}
               </Link>
             </div>
+          </div>
+        )}
+
+        {/* Debug Tab (Development only) */}
+        {activeTab === 'debug' && process.env.NODE_ENV === 'development' && (
+          <div className="space-y-6">
+            {/* WebSocket Sync Demo */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-lexend text-morandi-stone-700">
+                  <Settings className="h-5 w-5" />
+                  WebSocket Sync Testing
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <WebSocketSyncDemo />
+              </CardContent>
+            </Card>
+
+            {/* Feature Flags */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-lexend text-morandi-stone-700">
+                  Feature Flags
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="font-inter">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        localStorage.getItem(
+                          'mirubato:features:websocket-sync'
+                        ) === 'true'
+                      }
+                      onChange={e => {
+                        if (e.target.checked) {
+                          localStorage.setItem(
+                            'mirubato:features:websocket-sync',
+                            'true'
+                          )
+                        } else {
+                          localStorage.removeItem(
+                            'mirubato:features:websocket-sync'
+                          )
+                        }
+                        window.location.reload()
+                      }}
+                    />
+                    <span className="text-sm">
+                      Enable WebSocket Sync Feature
+                    </span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>

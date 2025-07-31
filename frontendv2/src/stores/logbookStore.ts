@@ -6,6 +6,7 @@ import {
   getDuplicateReport,
   type DuplicateEntry,
 } from '../utils/duplicateCleanup'
+import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -25,6 +26,15 @@ interface LogbookState {
   isSyncing: boolean
   lastSyncTime: Date | null
   syncError: string | null
+
+  // WebSocket real-time sync state
+  isRealtimeSyncEnabled: boolean
+  realtimeSyncStatus:
+    | 'connected'
+    | 'connecting'
+    | 'disconnected'
+    | 'reconnecting'
+  realtimeSyncError: string | null
 
   // Computed getters
   entries: LogbookEntry[]
@@ -57,6 +67,14 @@ interface LogbookState {
   // Actions - Sync
   manualSync: () => Promise<{ success: boolean; error?: string }>
   clearSyncError: () => void
+
+  // Actions - Real-time Sync
+  enableRealtimeSync: () => Promise<boolean>
+  disableRealtimeSync: () => void
+  addEntryFromSync: (entry: LogbookEntry) => void
+  updateEntryFromSync: (entry: LogbookEntry) => void
+  removeEntryFromSync: (entryId: string) => void
+  mergeEntriesFromSync: (entries: LogbookEntry[]) => void
 
   // Actions - Piece Management
   updatePieceName: (
@@ -147,6 +165,11 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   lastSyncTime: null,
   syncError: null,
 
+  // Real-time sync state
+  isRealtimeSyncEnabled: false,
+  realtimeSyncStatus: 'disconnected',
+  realtimeSyncError: null,
+
   // Computed properties - these need to be regular properties that get updated
   entries: [],
   goals: [],
@@ -230,6 +253,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const { useRepertoireStore } = await import('./repertoireStore')
       await useRepertoireStore.getState().linkPracticeToGoals(entry)
 
+      // Send real-time sync event if enabled
+      if (get().isRealtimeSyncEnabled) {
+        const webSocketSync = getWebSocketSync()
+        webSocketSync.send({
+          type: 'ENTRY_CREATED',
+          entry,
+          timestamp: new Date().toISOString(),
+        })
+      }
+
       // Entry saved locally - user can sync manually later
     } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
@@ -265,6 +298,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_UPDATED',
+            entry: updatedEntry,
+            timestamp: new Date().toISOString(),
+          })
+        }
       } else {
         // Update via API
         const updated = await logbookApi.updateEntry(id, updates)
@@ -305,6 +348,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_DELETED',
+            entryId: id,
+            timestamp: new Date().toISOString(),
+          })
+        }
       } else {
         // Delete via API
         await logbookApi.deleteEntry(id)
@@ -569,6 +622,207 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   clearSyncError: () => set({ syncError: null }),
+
+  // Real-time sync methods
+  enableRealtimeSync: async () => {
+    try {
+      set({ realtimeSyncError: null, realtimeSyncStatus: 'connecting' })
+
+      const webSocketSync = getWebSocketSync()
+
+      // Set up event handlers
+      webSocketSync.on('ENTRY_CREATED', (event: SyncEvent) => {
+        if (event.entry) {
+          get().addEntryFromSync(event.entry)
+        }
+      })
+
+      webSocketSync.on('ENTRY_UPDATED', (event: SyncEvent) => {
+        if (event.entry) {
+          get().updateEntryFromSync(event.entry)
+        }
+      })
+
+      webSocketSync.on('ENTRY_DELETED', (event: SyncEvent) => {
+        if (event.entryId) {
+          get().removeEntryFromSync(event.entryId)
+        }
+      })
+
+      webSocketSync.on('BULK_SYNC', (event: SyncEvent) => {
+        if (event.entries) {
+          get().mergeEntriesFromSync(event.entries)
+        }
+      })
+
+      // Get auth token and user info
+      const authToken = localStorage.getItem('auth-token')
+      const userStr = localStorage.getItem('mirubato:user')
+
+      if (!authToken || !userStr) {
+        throw new Error('Authentication required for real-time sync')
+      }
+
+      const user = JSON.parse(userStr)
+      const success = await webSocketSync.connect(user.id, authToken)
+
+      if (success) {
+        set({
+          isRealtimeSyncEnabled: true,
+          realtimeSyncStatus: 'connected',
+          realtimeSyncError: null,
+        })
+        return true
+      } else {
+        throw new Error('Failed to connect to real-time sync')
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Real-time sync failed'
+      set({
+        isRealtimeSyncEnabled: false,
+        realtimeSyncStatus: 'disconnected',
+        realtimeSyncError: errorMessage,
+      })
+      console.error('Failed to enable real-time sync:', error)
+      return false
+    }
+  },
+
+  disableRealtimeSync: () => {
+    const webSocketSync = getWebSocketSync()
+    webSocketSync.disconnect()
+    set({
+      isRealtimeSyncEnabled: false,
+      realtimeSyncStatus: 'disconnected',
+      realtimeSyncError: null,
+    })
+  },
+
+  addEntryFromSync: (entry: LogbookEntry) => {
+    const newEntriesMap = new Map(get().entriesMap)
+
+    // Avoid duplicates and don't overwrite newer local entries
+    const existingEntry = newEntriesMap.get(entry.id)
+    if (existingEntry) {
+      // Check if incoming entry is newer
+      if (
+        new Date(entry.updatedAt).getTime() <=
+        new Date(existingEntry.updatedAt).getTime()
+      ) {
+        return // Local entry is newer, ignore
+      }
+    }
+
+    newEntriesMap.set(entry.id, entry)
+    set({
+      entriesMap: newEntriesMap,
+      entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+    })
+
+    // Update localStorage
+    debouncedLocalStorageWrite(
+      ENTRIES_KEY,
+      JSON.stringify(Array.from(newEntriesMap.values()))
+    )
+
+    // Show toast notification if it's a new entry
+    if (!existingEntry) {
+      console.log(
+        '✨ New practice entry synced from another device:',
+        entry.pieces?.[0]?.title || 'Untitled'
+      )
+    }
+  },
+
+  updateEntryFromSync: (entry: LogbookEntry) => {
+    const newEntriesMap = new Map(get().entriesMap)
+
+    // Only update if the incoming entry is newer
+    const existingEntry = newEntriesMap.get(entry.id)
+    if (
+      existingEntry &&
+      new Date(entry.updatedAt).getTime() <=
+        new Date(existingEntry.updatedAt).getTime()
+    ) {
+      return // Local entry is newer, ignore
+    }
+
+    newEntriesMap.set(entry.id, entry)
+    set({
+      entriesMap: newEntriesMap,
+      entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+    })
+
+    // Update localStorage
+    debouncedLocalStorageWrite(
+      ENTRIES_KEY,
+      JSON.stringify(Array.from(newEntriesMap.values()))
+    )
+
+    console.log(
+      '📝 Practice entry updated from another device:',
+      entry.pieces?.[0]?.title || 'Untitled'
+    )
+  },
+
+  removeEntryFromSync: (entryId: string) => {
+    const newEntriesMap = new Map(get().entriesMap)
+    const removedEntry = newEntriesMap.get(entryId)
+
+    if (removedEntry) {
+      newEntriesMap.delete(entryId)
+      set({
+        entriesMap: newEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+      })
+
+      // Update localStorage
+      immediateLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(newEntriesMap.values()))
+      )
+
+      console.log(
+        '🗑️ Practice entry deleted from another device:',
+        removedEntry.pieces?.[0]?.title || 'Untitled'
+      )
+    }
+  },
+
+  mergeEntriesFromSync: (entries: LogbookEntry[]) => {
+    const newEntriesMap = new Map(get().entriesMap)
+    let changesCount = 0
+
+    for (const entry of entries) {
+      const existingEntry = newEntriesMap.get(entry.id)
+
+      // Add new entries or update if incoming is newer
+      if (
+        !existingEntry ||
+        new Date(entry.updatedAt).getTime() >
+          new Date(existingEntry.updatedAt).getTime()
+      ) {
+        newEntriesMap.set(entry.id, entry)
+        changesCount++
+      }
+    }
+
+    if (changesCount > 0) {
+      set({
+        entriesMap: newEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+      })
+
+      // Update localStorage
+      debouncedLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(newEntriesMap.values()))
+      )
+
+      console.log(`📊 Merged ${changesCount} entries from sync`)
+    }
+  },
 
   updatePieceName: async (oldPiece, newPiece) => {
     set({ error: null })

@@ -1,0 +1,29 @@
+{
+  "name": "@mirubato/sync-worker",
+  "version": "1.0.0",
+  "description": "Mirubato WebSocket sync service built on Cloudflare Workers + Durable Objects",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "wrangler dev --env local --port 8787 --local-protocol http",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "deploy": "wrangler deploy --env production",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "websocket",
+    "sync",
+    "real-time"
+  ],
+  "author": "Mirubato Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "typescript": "~5.8.3",
+    "wrangler": "^4.20.5"
+  }
+}
