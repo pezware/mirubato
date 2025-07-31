@@ -57,13 +57,17 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     // Clear all mocks first
     vi.clearAllMocks()
 
+    // Re-establish mocks to ensure they work consistently
+    vi.mocked(mockCreateEntryApi).mockClear()
+    vi.mocked(mockAuthStoreGetState).mockClear()
+
     // Reset all timers and async operations
     vi.clearAllTimers()
 
     // Wait for any pending operations to complete
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    // Reset the store state completely with all required properties
+    // Reset only the data state, not the methods
     useLogbookStore.setState({
       entriesMap: new Map(),
       goalsMap: new Map(),
@@ -74,22 +78,6 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       isLocalMode: true,
       entries: [],
       goals: [],
-      // Include any other state properties that might exist
-      loadEntries: useLogbookStore.getState().loadEntries,
-      createEntry: useLogbookStore.getState().createEntry,
-      updateEntry: useLogbookStore.getState().updateEntry,
-      deleteEntry: useLogbookStore.getState().deleteEntry,
-      loadGoals: useLogbookStore.getState().loadGoals,
-      createGoal: useLogbookStore.getState().createGoal,
-      updateGoal: useLogbookStore.getState().updateGoal,
-      deleteGoal: useLogbookStore.getState().deleteGoal,
-      setSearchQuery: useLogbookStore.getState().setSearchQuery,
-      setLocalMode: useLogbookStore.getState().setLocalMode,
-      clearError: useLogbookStore.getState().clearError,
-      syncWithServer: useLogbookStore.getState().syncWithServer,
-      updatePieceName: useLogbookStore.getState().updatePieceName,
-      cleanupDuplicates: useLogbookStore.getState().cleanupDuplicates,
-      getDuplicateReport: useLogbookStore.getState().getDuplicateReport,
     })
 
     // Create completely fresh localStorage mock for each test
@@ -143,10 +131,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     // Wait for any pending promises to resolve
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    // Restore all mocks
-    vi.restoreAllMocks()
-
-    // Reset the store to a clean state
+    // Reset only the data state, not the methods
     useLogbookStore.setState({
       entriesMap: new Map(),
       goalsMap: new Map(),
@@ -222,31 +207,10 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       const store = useLogbookStore.getState()
       const entryData = createTestEntry()
 
-      console.log(
-        'Before createEntry - entriesMap size:',
-        store.entriesMap.size
-      )
-      console.log(
-        'Before createEntry - store instance:',
-        store === useLogbookStore.getState()
-      )
-
       await store.createEntry(entryData)
 
       // Should create local entry
       const finalState = useLogbookStore.getState()
-      console.log(
-        'After createEntry - entriesMap size:',
-        finalState.entriesMap.size
-      )
-      console.log(
-        'After createEntry - entries in map:',
-        Array.from(finalState.entriesMap.keys())
-      )
-      console.log(
-        'After createEntry - store instances same:',
-        store === finalState
-      )
 
       expect(finalState.entriesMap.has('test-entry-id')).toBe(true)
 
@@ -265,38 +229,10 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       const store = useLogbookStore.getState()
       const entryData = createTestEntry()
 
-      console.log(
-        'Before createEntry - entriesMap size:',
-        store.entriesMap.size
-      )
-      console.log(
-        'Before createEntry - store instance:',
-        store === useLogbookStore.getState()
-      )
-
-      try {
-        console.log('About to call createEntry')
-        await store.createEntry(entryData)
-        console.log('createEntry completed successfully')
-      } catch (error) {
-        console.error('createEntry threw an error:', error)
-        throw error
-      }
+      await store.createEntry(entryData)
 
       // Should create local entry
       const finalState = useLogbookStore.getState()
-      console.log(
-        'After createEntry - entriesMap size:',
-        finalState.entriesMap.size
-      )
-      console.log(
-        'After createEntry - entries in map:',
-        Array.from(finalState.entriesMap.keys())
-      )
-      console.log(
-        'After createEntry - store instances same:',
-        store === finalState
-      )
 
       expect(finalState.entriesMap.has('test-entry-id')).toBe(true)
 
