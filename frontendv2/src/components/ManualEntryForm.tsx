@@ -47,7 +47,7 @@ export default function ManualEntryForm({
   const { createEntry, updateEntry } = useLogbookStore()
   const { repertoire, loadRepertoire } = useRepertoireStore()
   const { getPrimaryInstrument } = useUserPreferences()
-  const { setFormSubmitting, getSyncStatus, forceSync } = useSyncTriggers()
+  const { setFormSubmitting, getSyncStatus } = useSyncTriggers()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -111,6 +111,9 @@ export default function ManualEntryForm({
 
   // Cleanup on unmount - ensure sync queue is cleared and form submission state is reset
   useEffect(() => {
+    // Capture ref values to avoid stale closure warning
+    const signatures = recentSignatures.current
+
     return () => {
       // Abort any in-flight requests
       if (abortControllerRef.current) {
@@ -121,7 +124,7 @@ export default function ManualEntryForm({
       // Reset form submission state to prevent lingering sync blocks
       setFormSubmitting(false)
       // Clear any pending signature timeouts
-      recentSignatures.current.clear()
+      signatures.clear()
 
       // Check if sync queue is growing and log status for debugging
       const syncStatus = getSyncStatus()
