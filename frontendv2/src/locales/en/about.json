@@ -1,6 +1,25 @@
 {
   "tagline": "Your private music practice journal, built for and by musicians",
   "backToHome": "Back to Home",
+  "tabs": {
+    "about": "About",
+    "version": "Version",
+    "credits": "Credits",
+    "contact": "Contact"
+  },
+  "version": {
+    "title": "Version Information",
+    "appVersion": "App Version",
+    "gitCommit": "Git Commit",
+    "branch": "Branch",
+    "buildDate": "Build Date",
+    "environment": "Environment",
+    "viewOnGithub": "View on GitHub",
+    "issueReporting": "Issue Reporting",
+    "issueReportingDescription": "When reporting issues on GitHub, please include this version information:",
+    "copyVersionInfo": "Copy Version Info",
+    "reportIssue": "Report Issue"
+  },
   "sections": {
     "about": {
       "title": "About Mirubato",

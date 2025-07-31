@@ -1,10 +1,42 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { execSync } from 'child_process'
+
+// Get build-time information
+const getBuildInfo = () => {
+  try {
+    const gitCommit = execSync('git rev-parse --short HEAD', {
+      encoding: 'utf8',
+    }).trim()
+    const gitBranch = execSync('git branch --show-current', {
+      encoding: 'utf8',
+    }).trim()
+    const buildDate = new Date().toISOString()
+
+    return {
+      gitCommit,
+      gitBranch,
+      buildDate,
+      nodeEnv: process.env.NODE_ENV || 'development',
+    }
+  } catch (error) {
+    console.warn('Failed to get git info:', error)
+    return {
+      gitCommit: 'unknown',
+      gitBranch: 'unknown',
+      buildDate: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV || 'development',
+    }
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __BUILD_INFO__: JSON.stringify(getBuildInfo()),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
