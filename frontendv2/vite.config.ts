@@ -14,11 +14,32 @@ const getBuildInfo = () => {
     }).trim()
     const buildDate = new Date().toISOString()
 
+    // Detect environment properly for Cloudflare Workers
+    const getEnvironment = () => {
+      // First check for explicit Cloudflare environment variable
+      if (process.env.CLOUDFLARE_ENV) {
+        return process.env.CLOUDFLARE_ENV
+      }
+
+      // Check for Wrangler environment variable
+      if (process.env.WRANGLER_ENV) {
+        return process.env.WRANGLER_ENV
+      }
+
+      // Check NODE_ENV for local development
+      if (process.env.NODE_ENV === 'development') {
+        return 'development'
+      }
+
+      // Default fallback - assume production if none specified
+      return 'production'
+    }
+
     return {
       gitCommit,
       gitBranch,
       buildDate,
-      nodeEnv: process.env.NODE_ENV || 'development',
+      nodeEnv: getEnvironment(),
     }
   } catch (error) {
     console.warn('Failed to get git info:', error)
@@ -26,7 +47,8 @@ const getBuildInfo = () => {
       gitCommit: 'unknown',
       gitBranch: 'unknown',
       buildDate: new Date().toISOString(),
-      nodeEnv: process.env.NODE_ENV || 'development',
+      nodeEnv:
+        process.env.CLOUDFLARE_ENV || process.env.NODE_ENV || 'development',
     }
   }
 }
