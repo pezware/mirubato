@@ -287,8 +287,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { setLocalMode, loadEntries } = logbookStore
-        if (!setLocalMode || !loadEntries) {
+        const { setLocalMode, manualSync } = logbookStore
+        if (!setLocalMode || !manualSync) {
           throw new Error('Logbook store methods not available')
         }
 
@@ -302,8 +302,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Prepare sync operations with error boundaries
-        const syncOperations = [loadEntries()]
+        // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
+        const syncOperations = [
+          manualSync()
+            .then(() => {
+              console.log(
+                '✅ Auto-sync completed after magic link verification'
+              )
+            })
+            .catch((error: unknown) => {
+              console.warn(
+                '⚠️ Auto-sync failed after magic link verification:',
+                error
+              )
+              // Don't throw - continue with other operations
+            }),
+        ]
 
         if (repertoireStore?.syncLocalData) {
           syncOperations.push(
@@ -376,8 +390,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { loadEntries, setLocalMode } = logbookStore
-        if (!loadEntries || !setLocalMode) {
+        const { manualSync, setLocalMode } = logbookStore
+        if (!manualSync || !setLocalMode) {
           throw new Error('Logbook store methods not available')
         }
 
@@ -389,8 +403,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Prepare sync operations with proper error boundaries
-        const syncOperations = [loadEntries()]
+        // Prepare sync operations with proper error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
+        const syncOperations = [
+          manualSync()
+            .then(() => {
+              console.log('✅ Auto-sync completed after Google login')
+            })
+            .catch((error: unknown) => {
+              console.warn('⚠️ Auto-sync failed after Google login:', error)
+              // Don't throw - continue with other operations
+            }),
+        ]
 
         if (repertoireStore?.syncLocalData) {
           syncOperations.push(
@@ -605,8 +628,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             throw new Error('Logbook store not initialized')
           }
 
-          const { setLocalMode, loadEntries } = logbookStore
-          if (!setLocalMode || !loadEntries) {
+          const { setLocalMode, manualSync } = logbookStore
+          if (!setLocalMode || !manualSync) {
             throw new Error('Logbook store methods not available')
           }
 
@@ -618,8 +641,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
           setLocalMode(false)
 
-          // Prepare sync operations with error boundaries
-          const syncOperations = [loadEntries()]
+          // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
+          const syncOperations = [
+            manualSync()
+              .then(() => {
+                console.log('✅ Auto-sync completed after authentication')
+              })
+              .catch((error: unknown) => {
+                console.warn('⚠️ Auto-sync failed after authentication:', error)
+                // Don't throw - continue with other operations
+              }),
+          ]
 
           if (repertoireStore?.syncLocalData) {
             syncOperations.push(
