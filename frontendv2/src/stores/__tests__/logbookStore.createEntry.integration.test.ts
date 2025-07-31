@@ -43,7 +43,9 @@ vi.mock('nanoid', () => ({
 // Mock sync mutex
 vi.mock('../../utils/syncMutex', () => ({
   syncMutex: {
-    runExclusive: vi.fn().mockImplementation(async fn => fn()),
+    runExclusive: vi.fn().mockImplementation(async fn => {
+      return await fn()
+    }),
   },
 }))
 
@@ -54,16 +56,20 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Reset the store state
+    // Reset the store state completely
     useLogbookStore.setState({
       entriesMap: new Map(),
-      entries: [],
+      goalsMap: new Map(),
+      scoreMetadata: {},
       isLoading: false,
       error: null,
+      searchQuery: '',
       isLocalMode: true,
+      entries: [],
+      goals: [],
     })
 
-    // Mock localStorage
+    // Mock localStorage with fresh mocks for each test
     const mockLocalStorage = {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -154,6 +160,10 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
         'Before createEntry - entriesMap size:',
         store.entriesMap.size
       )
+      console.log(
+        'Before createEntry - store instance:',
+        store === useLogbookStore.getState()
+      )
 
       await store.createEntry(entryData)
 
@@ -166,6 +176,10 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       console.log(
         'After createEntry - entries in map:',
         Array.from(finalState.entriesMap.keys())
+      )
+      console.log(
+        'After createEntry - store instances same:',
+        store === finalState
       )
 
       expect(finalState.entriesMap.has('test-entry-id')).toBe(true)
@@ -185,10 +199,39 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       const store = useLogbookStore.getState()
       const entryData = createTestEntry()
 
-      await store.createEntry(entryData)
+      console.log(
+        'Before createEntry - entriesMap size:',
+        store.entriesMap.size
+      )
+      console.log(
+        'Before createEntry - store instance:',
+        store === useLogbookStore.getState()
+      )
+
+      try {
+        console.log('About to call createEntry')
+        await store.createEntry(entryData)
+        console.log('createEntry completed successfully')
+      } catch (error) {
+        console.error('createEntry threw an error:', error)
+        throw error
+      }
 
       // Should create local entry
       const finalState = useLogbookStore.getState()
+      console.log(
+        'After createEntry - entriesMap size:',
+        finalState.entriesMap.size
+      )
+      console.log(
+        'After createEntry - entries in map:',
+        Array.from(finalState.entriesMap.keys())
+      )
+      console.log(
+        'After createEntry - store instances same:',
+        store === finalState
+      )
+
       expect(finalState.entriesMap.has('test-entry-id')).toBe(true)
 
       // Should NOT call the API (no token)

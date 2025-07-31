@@ -245,12 +245,35 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         console.log(
           '[LogbookStore] createEntry: Entry added to map, updating store state'
         )
+        console.log(
+          '[LogbookStore] createEntry: newEntriesMap size before set:',
+          newEntriesMap.size
+        )
+        console.log(
+          '[LogbookStore] createEntry: newEntriesMap contents:',
+          Array.from(newEntriesMap.keys())
+        )
 
         set({
           entriesMap: newEntriesMap,
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
           scoreMetadata: updatedScoreMetadata,
         })
+
+        // Verify the store was actually updated
+        const verifyState = get()
+        console.log(
+          '[LogbookStore] createEntry: Store state after set - entriesMap size:',
+          verifyState.entriesMap.size
+        )
+        console.log(
+          '[LogbookStore] createEntry: Store state after set - entries length:',
+          verifyState.entries.length
+        )
+        console.log(
+          '[LogbookStore] createEntry: Store state after set - entry keys:',
+          Array.from(verifyState.entriesMap.keys())
+        )
         console.log(
           '[LogbookStore] createEntry: Store state updated successfully'
         )
