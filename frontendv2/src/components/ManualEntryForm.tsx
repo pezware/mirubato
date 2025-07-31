@@ -288,41 +288,70 @@ export default function ManualEntryForm({
     }
 
     try {
-      if (entry) {
-        // When updating, only send the fields that should be updated
-        // Don't send createdAt or other fields that shouldn't change
-        await updateEntry(entry.id, entryData)
-      } else {
-        await createEntry(entryData)
+      console.log('[ManualEntryForm] Starting entry operation:', {
+        isEditing: !!entry,
+      })
 
-        // Check if any piece should be added to repertoire
-        // Skip the prompt if we have initialPieces (coming from piece detail page)
-        if (!initialPieces) {
-          for (const piece of entryData.pieces) {
-            const scoreId = generateNormalizedScoreId(
-              piece.title,
-              piece.composer
+      // Add timeout protection for the entire operation
+      const operationTimeout = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Entry operation timed out after 10 seconds'))
+        }, 10000)
+      })
+
+      const entryOperation = (async () => {
+        if (entry) {
+          // When updating, only send the fields that should be updated
+          // Don't send createdAt or other fields that shouldn't change
+          console.log('[ManualEntryForm] Updating entry:', entry.id)
+          await updateEntry(entry.id, entryData)
+          console.log('[ManualEntryForm] Entry updated successfully')
+        } else {
+          console.log('[ManualEntryForm] Creating new entry')
+          await createEntry(entryData)
+          console.log('[ManualEntryForm] Entry created successfully')
+
+          // Check if any piece should be added to repertoire
+          // Skip the prompt if we have initialPieces (coming from piece detail page)
+          if (!initialPieces) {
+            console.log(
+              '[ManualEntryForm] Checking repertoire for pieces:',
+              entryData.pieces
             )
+            for (const piece of entryData.pieces) {
+              const scoreId = generateNormalizedScoreId(
+                piece.title,
+                piece.composer
+              )
 
-            // Check if this piece is already in repertoire
-            const isInRepertoire = Array.from(repertoire.values()).some(item =>
-              isSameScore(item.scoreId, scoreId)
-            )
+              // Check if this piece is already in repertoire
+              const isInRepertoire = Array.from(repertoire.values()).some(
+                item => isSameScore(item.scoreId, scoreId)
+              )
 
-            if (!isInRepertoire) {
-              // Show prompt for this piece
-              setShowRepertoirePrompt({ piece, scoreId })
-              // Clear error state and ensure UI states are reset
-              setSubmitError(null)
-              // Note: onSave() will be called from the repertoire prompt handlers
-              // Reset loading states immediately to prevent stuck UI
-              resetLoadingStates()
-              return
+              if (!isInRepertoire) {
+                console.log(
+                  '[ManualEntryForm] Showing repertoire prompt for piece:',
+                  piece
+                )
+                // Show prompt for this piece
+                setShowRepertoirePrompt({ piece, scoreId })
+                // Clear error state and ensure UI states are reset
+                setSubmitError(null)
+                // Note: onSave() will be called from the repertoire prompt handlers
+                // Reset loading states immediately to prevent stuck UI
+                resetLoadingStates()
+                return
+              }
             }
           }
         }
-      }
+      })()
 
+      // Race between the operation and timeout
+      await Promise.race([entryOperation, operationTimeout])
+
+      console.log('[ManualEntryForm] Operation completed, calling onSave')
       setSubmitError(null) // Clear any previous errors
       onSave()
     } catch (error) {
@@ -348,11 +377,24 @@ export default function ManualEntryForm({
         stack: error instanceof Error ? error.stack : 'No stack trace',
       })
 
-      // Set user-friendly error message
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to save entry. Please check your connection and try again.'
+      // Set user-friendly error message based on error type
+      let errorMessage = 'Failed to save entry. Please try again.'
+
+      if (error instanceof Error) {
+        if (error.message.includes('timed out')) {
+          errorMessage =
+            'Entry is taking too long to save. It may have been saved locally. Please try refreshing the page.'
+        } else if (
+          error.message.includes('network') ||
+          error.message.includes('fetch')
+        ) {
+          errorMessage =
+            'Network error. Entry saved locally and will sync when connection is restored.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
       setSubmitError(errorMessage)
 
       // Reset loading states on error

@@ -243,34 +243,41 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           // Don't fail the entire entry creation if goal linking fails
         }
 
-        // If authenticated and online, sync to server in background
+        // If authenticated and online, sync to server (await to ensure proper error handling)
         const token = localStorage.getItem('auth-token')
-        if (token && !get().isLocalMode) {
-          logbookApi
-            .createEntry(entryData)
-            .then(serverEntry => {
-              // Update the entry with server ID if different
-              if (serverEntry.id !== entry.id) {
-                const updatedEntriesMap = new Map(get().entriesMap)
-                updatedEntriesMap.delete(entry.id)
-                updatedEntriesMap.set(serverEntry.id, serverEntry)
-                set({
-                  entriesMap: updatedEntriesMap,
-                  entries: sortEntriesByTimestamp(
-                    Array.from(updatedEntriesMap.values())
-                  ),
-                })
+        const { useAuthStore } = await import('./authStore')
+        const isAuthenticated = useAuthStore.getState().isAuthenticated
 
-                debouncedLocalStorageWrite(
-                  ENTRIES_KEY,
-                  JSON.stringify(Array.from(updatedEntriesMap.values()))
-                )
-              }
-            })
-            .catch(err => {
-              console.warn('Background sync failed for new entry:', err)
-              // Entry remains in local storage
-            })
+        if (token && isAuthenticated) {
+          try {
+            console.log('[LogbookStore] Syncing new entry to server...')
+            const serverEntry = await logbookApi.createEntry(entryData)
+            console.log('[LogbookStore] Entry synced to server successfully')
+
+            // Update the entry with server ID if different
+            if (serverEntry.id !== entry.id) {
+              const updatedEntriesMap = new Map(get().entriesMap)
+              updatedEntriesMap.delete(entry.id)
+              updatedEntriesMap.set(serverEntry.id, serverEntry)
+              set({
+                entriesMap: updatedEntriesMap,
+                entries: sortEntriesByTimestamp(
+                  Array.from(updatedEntriesMap.values())
+                ),
+              })
+
+              debouncedLocalStorageWrite(
+                ENTRIES_KEY,
+                JSON.stringify(Array.from(updatedEntriesMap.values()))
+              )
+            }
+          } catch (syncError) {
+            console.warn('Server sync failed for new entry:', syncError)
+            // Re-throw the error so the form can handle it properly
+            throw new Error(
+              `Entry saved locally but failed to sync to server: ${syncError instanceof Error ? syncError.message : 'Unknown error'}`
+            )
+          }
         }
       } catch (error: unknown) {
         set({ error: 'Failed to create entry' })
