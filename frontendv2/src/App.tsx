@@ -53,26 +53,36 @@ function App() {
         await refreshAuth()
       }
 
-      // Auto-enable WebSocket sync in staging environment
+      // Auto-enable WebSocket sync in staging environment AFTER auth is complete
       const hostname = window.location.hostname
       if (hostname.includes('staging') && isMounted) {
         // Set feature flag
         localStorage.setItem('mirubato:feature:realtime-sync', 'true')
 
-        // Enable WebSocket sync if user is authenticated
-        const authToken = localStorage.getItem('auth-token')
-        const userStr = localStorage.getItem('mirubato:user')
+        // Wait a bit for auth to settle, then enable WebSocket sync
+        setTimeout(async () => {
+          const authToken = localStorage.getItem('auth-token')
+          const userStr = localStorage.getItem('mirubato:user')
 
-        if (authToken && userStr) {
-          try {
-            await enableRealtimeSync()
-            console.log(
-              '✅ Auto-enabled WebSocket sync for staging environment'
+          if (authToken && userStr && isMounted) {
+            try {
+              await enableRealtimeSync()
+              console.log(
+                '✅ Auto-enabled WebSocket sync for staging environment'
+              )
+            } catch (error) {
+              console.warn('⚠️ Failed to auto-enable WebSocket sync:', error)
+            }
+          } else {
+            console.warn(
+              '⚠️ WebSocket sync not enabled - missing auth credentials:',
+              {
+                hasToken: !!authToken,
+                hasUser: !!userStr,
+              }
             )
-          } catch (error) {
-            console.warn('⚠️ Failed to auto-enable WebSocket sync:', error)
           }
-        }
+        }, 1000) // Wait 1 second for auth to complete
       }
     }
 
