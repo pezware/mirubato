@@ -53,10 +53,100 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
   const mockCreateEntryApi = vi.mocked(logbookApi.createEntry)
   const mockAuthStoreGetState = vi.mocked(useAuthStore.getState)
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clear all mocks first
     vi.clearAllMocks()
 
-    // Reset the store state completely
+    // Reset all timers and async operations
+    vi.clearAllTimers()
+
+    // Wait for any pending operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    // Reset the store state completely with all required properties
+    useLogbookStore.setState({
+      entriesMap: new Map(),
+      goalsMap: new Map(),
+      scoreMetadata: {},
+      isLoading: false,
+      error: null,
+      searchQuery: '',
+      isLocalMode: true,
+      entries: [],
+      goals: [],
+      // Include any other state properties that might exist
+      loadEntries: useLogbookStore.getState().loadEntries,
+      createEntry: useLogbookStore.getState().createEntry,
+      updateEntry: useLogbookStore.getState().updateEntry,
+      deleteEntry: useLogbookStore.getState().deleteEntry,
+      loadGoals: useLogbookStore.getState().loadGoals,
+      createGoal: useLogbookStore.getState().createGoal,
+      updateGoal: useLogbookStore.getState().updateGoal,
+      deleteGoal: useLogbookStore.getState().deleteGoal,
+      setSearchQuery: useLogbookStore.getState().setSearchQuery,
+      setLocalMode: useLogbookStore.getState().setLocalMode,
+      clearError: useLogbookStore.getState().clearError,
+      syncWithServer: useLogbookStore.getState().syncWithServer,
+      updatePieceName: useLogbookStore.getState().updatePieceName,
+      cleanupDuplicates: useLogbookStore.getState().cleanupDuplicates,
+      getDuplicateReport: useLogbookStore.getState().getDuplicateReport,
+    })
+
+    // Create completely fresh localStorage mock for each test
+    const mockLocalStorage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      key: vi.fn(),
+      length: 0,
+    }
+
+    // Replace localStorage completely
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+      configurable: true,
+    })
+
+    // Setup default auth state (fresh for each test)
+    mockAuthStoreGetState.mockReturnValue({
+      isAuthenticated: true,
+    } as any)
+
+    // Setup default localStorage token (each test can override)
+    vi.mocked(localStorage.getItem).mockReturnValue('mock-auth-token')
+
+    // Reset the API mocks with default successful responses
+    mockCreateEntryApi.mockResolvedValue({
+      id: 'server-entry-id',
+      timestamp: '2025-01-01T12:00:00Z',
+      duration: 30,
+      type: 'practice',
+      instrument: 'piano',
+      pieces: [{ title: 'Test Piece', composer: 'Test Composer' }],
+      notes: 'Test notes',
+      mood: null,
+      techniques: [],
+      tags: [],
+      goalIds: [],
+      metadata: { source: 'manual' },
+      createdAt: '2025-01-01T12:00:00Z',
+      updatedAt: '2025-01-01T12:00:00Z',
+    } as any)
+  })
+
+  afterEach(async () => {
+    // Clear all timers and pending operations
+    vi.clearAllTimers()
+
+    // Wait for any pending promises to resolve
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    // Restore all mocks
+    vi.restoreAllMocks()
+
+    // Reset the store to a clean state
     useLogbookStore.setState({
       entriesMap: new Map(),
       goalsMap: new Map(),
@@ -68,30 +158,6 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       entries: [],
       goals: [],
     })
-
-    // Mock localStorage with fresh mocks for each test
-    const mockLocalStorage = {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-    }
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true,
-    })
-
-    // Setup default auth state
-    mockAuthStoreGetState.mockReturnValue({
-      isAuthenticated: true,
-    } as any)
-
-    // Setup default localStorage token
-    vi.mocked(localStorage.getItem).mockReturnValue('mock-auth-token')
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
   })
 
   const createTestEntry = (): Omit<
