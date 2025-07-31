@@ -48,6 +48,20 @@ export const schemas = {
     lastSyncToken: z.string().optional(),
   }),
 
+  // Sync V2 schemas
+  syncV2: z.object({
+    lastKnownServerVersion: z.number().min(0),
+    changes: z.array(
+      z.object({
+        changeId: z.string().min(1),
+        type: z.enum(['CREATED', 'UPDATED', 'DELETED']),
+        entityType: z.enum(['logbook_entry', 'goal']),
+        entityId: z.string().min(1),
+        data: z.any().optional(),
+      })
+    ),
+  }),
+
   // User schemas
   userPreferences: z.object({
     theme: z.enum(['light', 'dark', 'auto']).optional(),

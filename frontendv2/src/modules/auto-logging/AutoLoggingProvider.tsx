@@ -203,7 +203,7 @@ export const AutoLoggingProvider: React.FC<AutoLoggingProviderProps> = ({
           techniques: [],
           goalIds: [],
           notes: finalNotes,
-          mood: null,
+          mood: undefined,
           tags: [...(metadata.tags || config.defaultTags), ...practiceTypeTags],
           scoreId: metadata.scoreId,
         })

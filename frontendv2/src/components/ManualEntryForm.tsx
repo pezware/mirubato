@@ -10,7 +10,7 @@ import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import { useUserPreferences } from '../hooks/useUserPreferences'
 import { useSyncTriggers } from '../hooks/useSyncTriggers'
-import { createLogbookEntrySignature } from '../utils/contentSignature'
+// Removed unused import: createLogbookEntrySignature
 import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
@@ -280,7 +280,7 @@ export default function ManualEntryForm({
 
       // Check if sync queue is growing and log status for debugging
       const syncStatus = getSyncStatus()
-      if (syncStatus?.queueStatus && syncStatus.queueStatus.queueSize > 5) {
+      if (syncStatus?.queueStatus && syncStatus.queueStatus.size > 5) {
         console.warn(
           '[ManualEntryForm] Large sync queue detected on unmount:',
           syncStatus.queueStatus
@@ -324,12 +324,12 @@ export default function ManualEntryForm({
         .filter(p => p.title) // Only include pieces with titles
         .map(p => ({
           title: p.title,
-          composer: p.composer ? p.composer : null, // Convert empty string to null
+          composer: p.composer || null, // Convert empty string to null
         })),
       techniques: techniques.length > 0 ? techniques : [],
       goalIds: [],
-      notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
-      mood: mood || null, // Convert undefined to null for D1 compatibility
+      notes: notes || null, // Convert empty string to null for API compatibility
+      mood: mood || null, // Convert empty to null for API compatibility
       tags: tags.length > 0 ? tags : [],
       metadata: {
         source: 'manual',

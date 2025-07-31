@@ -33,12 +33,9 @@ export function SyncIndicator({
   useEffect(() => {
     if (isSyncing) {
       setSyncStatus('syncing')
-    } else if (
-      lastSync &&
-      lastSync.getTime() > (lastSyncTime?.getTime() || 0)
-    ) {
+    } else if (lastSync && lastSync > (lastSyncTime?.getTime() || 0)) {
       setSyncStatus('success')
-      setLastSyncTime(lastSync)
+      setLastSyncTime(new Date(lastSync))
       // Reset to idle after 3 seconds
       const timer = setTimeout(() => setSyncStatus('idle'), 3000)
       return () => clearTimeout(timer)

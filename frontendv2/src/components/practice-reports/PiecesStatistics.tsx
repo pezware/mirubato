@@ -109,7 +109,7 @@ export function PiecesStatistics({
     newPiece: { title: string; composer?: string }
   ) => {
     try {
-      const updatedCount = await updatePieceName(oldPiece, newPiece)
+      const updatedCount = await updatePieceName(oldPiece.title, newPiece.title)
       toast.success(`Updated ${updatedCount} entries`)
       setEditingPiece(null)
 

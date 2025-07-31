@@ -161,8 +161,8 @@ describe('PiecesStatistics', () => {
     // Wait for the save to complete
     await waitFor(() => {
       expect(mockUpdatePieceName).toHaveBeenCalledWith(
-        { title: 'Moonlight Sonata', composer: 'Beethoven' },
-        { title: 'Moonlight Sonata Op. 27', composer: 'Beethoven' }
+        'Moonlight Sonata',
+        'Moonlight Sonata Op. 27'
       )
     })
 
@@ -210,8 +210,8 @@ describe('PiecesStatistics', () => {
     // Wait for updatePieceName to be called
     await waitFor(() => {
       expect(mockUpdatePieceName).toHaveBeenCalledWith(
-        { title: 'Sonata No. 11', composer: 'Mozart' },
-        { title: 'Sonata No. 11 K. 331', composer: 'Mozart' }
+        'Sonata No. 11',
+        'Sonata No. 11 K. 331'
       )
     })
 
