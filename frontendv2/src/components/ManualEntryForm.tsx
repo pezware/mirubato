@@ -18,6 +18,7 @@ import {
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import { SubmitButton } from './ui/ProtectedButtonFactory'
+import type { ProtectedButtonRef } from './ui/ProtectedButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
@@ -46,9 +47,15 @@ export default function ManualEntryForm({
   const { createEntry, updateEntry } = useLogbookStore()
   const { repertoire, loadRepertoire } = useRepertoireStore()
   const { getPrimaryInstrument } = useUserPreferences()
-  const { setFormSubmitting } = useSyncTriggers()
+  const { setFormSubmitting, getSyncStatus, forceSync } = useSyncTriggers()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  // Button ref for state management
+  const submitButtonRef = useRef<ProtectedButtonRef>(null)
+
+  // AbortController for canceling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Track recent submissions for content-based duplicate detection
   const recentSignatures = useRef<Map<string, number>>(new Map())
@@ -101,6 +108,33 @@ export default function ManualEntryForm({
   useEffect(() => {
     loadRepertoire()
   }, [loadRepertoire])
+
+  // Cleanup on unmount - ensure sync queue is cleared and form submission state is reset
+  useEffect(() => {
+    return () => {
+      // Abort any in-flight requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort('Component unmounting')
+        abortControllerRef.current = null
+      }
+
+      // Reset form submission state to prevent lingering sync blocks
+      setFormSubmitting(false)
+      // Clear any pending signature timeouts
+      recentSignatures.current.clear()
+
+      // Check if sync queue is growing and log status for debugging
+      const syncStatus = getSyncStatus()
+      if (syncStatus.queueStatus && syncStatus.queueStatus.queueSize > 5) {
+        console.warn(
+          '[ManualEntryForm] Large sync queue detected on unmount:',
+          syncStatus.queueStatus
+        )
+      }
+
+      console.log('[ManualEntryForm] Cleanup completed on unmount')
+    }
+  }, [setFormSubmitting, getSyncStatus])
 
   // Form state
   const [duration, setDuration] = useState<number>(
@@ -190,6 +224,8 @@ export default function ManualEntryForm({
     const resetLoadingStates = () => {
       setIsSubmitting(false)
       setFormSubmitting(false)
+      // Also reset the button's internal state
+      submitButtonRef.current?.resetState()
     }
 
     // Prepare entry data for content-based duplicate detection
@@ -220,6 +256,9 @@ export default function ManualEntryForm({
       ...(initialPieces &&
         initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
     }
+
+    // Create new AbortController for this submission
+    abortControllerRef.current = new AbortController()
 
     // Set loading states BEFORE any checks to ensure proper cleanup
     setIsSubmitting(true)
@@ -284,6 +323,14 @@ export default function ManualEntryForm({
       setSubmitError(null) // Clear any previous errors
       onSave()
     } catch (error) {
+      // Handle AbortError (component unmounted)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log(
+          '[ManualEntryForm] Operation aborted due to component unmount'
+        )
+        return
+      }
+
       console.error('[ManualEntryForm] Failed to save entry:', {
         error,
         entryData: {
@@ -310,6 +357,8 @@ export default function ManualEntryForm({
       // Don't call onSave if there was an error
       return
     } finally {
+      // Clean up AbortController
+      abortControllerRef.current = null
       // Always reset states in finally block to prevent stuck states (defensive programming)
       resetLoadingStates() // Re-enable focus sync
     }
@@ -607,9 +656,11 @@ export default function ManualEntryForm({
             {t('common:cancel')}
           </Button>
           <SubmitButton
+            ref={submitButtonRef}
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
+            externalLoading={isSubmitting}
             debounceMs={500}
             loadingText={
               entry

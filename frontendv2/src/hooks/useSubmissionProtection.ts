@@ -424,8 +424,14 @@ export function useClickProtection(
     }
   }, [onClick, isClicking, debounceMs])
 
+  const reset = useCallback(() => {
+    setIsClicking(false)
+    lastClickTime.current = 0
+  }, [])
+
   return {
     handleClick,
     isClicking,
+    reset,
   }
 }

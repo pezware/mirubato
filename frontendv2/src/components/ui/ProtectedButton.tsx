@@ -1,5 +1,6 @@
 import Button, { type ButtonProps } from './Button'
 import { useClickProtection } from '@/hooks/useSubmissionProtection'
+import { forwardRef, useImperativeHandle } from 'react'
 
 interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   /** The action to perform when clicked */
@@ -10,35 +11,60 @@ interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   loadingText?: string
   /** Whether to show loading state (default: true) */
   showLoadingState?: boolean
+  /** External loading state that overrides internal state */
+  externalLoading?: boolean
+}
+
+export interface ProtectedButtonRef {
+  /** Reset the button's internal loading state */
+  resetState: () => void
 }
 
 /**
  * Button component with built-in click protection and debouncing
  * Prevents rapid clicking and provides visual feedback during processing
  */
-export default function ProtectedButton({
-  onClick,
-  debounceMs,
-  loadingText = 'Processing...',
-  showLoadingState = true,
-  children,
-  disabled,
-  ...props
-}: ProtectedButtonProps) {
-  const { handleClick, isClicking } = useClickProtection(onClick, debounceMs)
+const ProtectedButton = forwardRef<ProtectedButtonRef, ProtectedButtonProps>(
+  function ProtectedButton(
+    {
+      onClick,
+      debounceMs,
+      loadingText = 'Processing...',
+      showLoadingState = true,
+      externalLoading = false,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) {
+    const { handleClick, isClicking, reset } = useClickProtection(
+      onClick,
+      debounceMs
+    )
 
-  const isDisabled = disabled || isClicking
+    // Expose reset function through ref
+    useImperativeHandle(ref, () => ({
+      resetState: reset,
+    }))
 
-  return (
-    <Button
-      {...props}
-      onClick={handleClick}
-      disabled={isDisabled}
-      className={`${props.className || ''} ${
-        isClicking ? 'opacity-75 cursor-not-allowed' : ''
-      }`}
-    >
-      {isClicking && showLoadingState ? loadingText : children}
-    </Button>
-  )
-}
+    // Use external loading state if provided, otherwise use internal state
+    const isLoading = externalLoading || isClicking
+    const isDisabled = disabled || isLoading
+
+    return (
+      <Button
+        {...props}
+        onClick={handleClick}
+        disabled={isDisabled}
+        className={`${props.className || ''} ${
+          isLoading ? 'opacity-75 cursor-not-allowed' : ''
+        }`}
+      >
+        {isLoading && showLoadingState ? loadingText : children}
+      </Button>
+    )
+  }
+)
+
+export default ProtectedButton

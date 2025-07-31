@@ -1,6 +1,6 @@
 import React from 'react'
 import type { ButtonProps } from './Button'
-import ProtectedButton from './ProtectedButton'
+import ProtectedButton, { type ProtectedButtonRef } from './ProtectedButton'
 
 interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   /** The action to perform when clicked */
@@ -11,6 +11,8 @@ interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
   loadingText?: string
   /** Whether to show loading state (default: true) */
   showLoadingState?: boolean
+  /** External loading state that overrides internal state */
+  externalLoading?: boolean
 }
 
 /**
@@ -19,9 +21,15 @@ interface ProtectedButtonProps extends Omit<ButtonProps, 'onClick'> {
 export function createProtectedButton(
   defaultProps: Partial<ProtectedButtonProps> = {}
 ) {
-  return function CustomProtectedButton(props: ProtectedButtonProps) {
-    return React.createElement(ProtectedButton, { ...defaultProps, ...props })
-  }
+  return React.forwardRef<ProtectedButtonRef, ProtectedButtonProps>(
+    function CustomProtectedButton(props, ref) {
+      return React.createElement(ProtectedButton, {
+        ...defaultProps,
+        ...props,
+        ref,
+      })
+    }
+  )
 }
 
 /**
