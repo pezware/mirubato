@@ -259,7 +259,12 @@ export default function ManualEntryForm({
             if (!isInRepertoire) {
               // Show prompt for this piece
               setShowRepertoirePrompt({ piece, scoreId })
-              // Exit after showing prompt for first piece not in repertoire
+              // Clear error state and ensure UI states are reset
+              setSubmitError(null)
+              // Note: onSave() will be called from the repertoire prompt handlers
+              // Reset loading states immediately to prevent stuck UI
+              setIsSubmitting(false)
+              setFormSubmitting(false)
               return
             }
           }
