@@ -66,7 +66,7 @@ export const VersionInfo: React.FC<VersionInfoProps> = ({ className = '' }) => {
               {t('about:version.appVersion', 'App Version')}
             </span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm bg-morandi-sage-100 text-morandi-sage-700 px-2 py-1 rounded">
+              <span className="font-inter text-sm bg-morandi-sage-100 text-morandi-sage-700 px-2 py-1 rounded">
                 v{versionInfo.version}
               </span>
             </div>
@@ -78,7 +78,7 @@ export const VersionInfo: React.FC<VersionInfoProps> = ({ className = '' }) => {
               {t('about:version.gitCommit', 'Git Commit')}
             </span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm bg-morandi-stone-100 text-morandi-stone-700 px-2 py-1 rounded">
+              <span className="font-inter text-sm bg-morandi-stone-100 text-morandi-stone-700 px-2 py-1 rounded">
                 {versionInfo.gitCommit}
               </span>
               <a
@@ -100,7 +100,7 @@ export const VersionInfo: React.FC<VersionInfoProps> = ({ className = '' }) => {
             </span>
             <div className="flex items-center gap-2">
               <GitBranch className="h-4 w-4 text-morandi-stone-500" />
-              <span className="font-mono text-sm text-morandi-stone-700">
+              <span className="font-inter text-sm text-morandi-stone-700">
                 {versionInfo.gitBranch}
               </span>
             </div>
@@ -153,7 +153,7 @@ export const VersionInfo: React.FC<VersionInfoProps> = ({ className = '' }) => {
           </p>
 
           <div className="bg-morandi-stone-50 p-3 rounded-lg border">
-            <pre className="text-xs font-mono text-morandi-stone-700 whitespace-pre-wrap">
+            <pre className="text-xs font-inter text-morandi-stone-700 whitespace-pre-wrap">
               {getVersionText()}
             </pre>
           </div>
