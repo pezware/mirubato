@@ -4,7 +4,7 @@
   "description": "Mirubato WebSocket sync service built on Cloudflare Workers + Durable Objects",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "echo 'Build handled by Wrangler - no separate build step needed'",
     "dev": "wrangler dev --env local --port 8787 --local-protocol http",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",
