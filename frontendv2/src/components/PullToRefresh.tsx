@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, ReactNode } from 'react'
 import { IconRefresh } from '@tabler/icons-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useLogbookStore } from '@/stores/logbookStore'
-import { useSyncTriggers } from '@/hooks'
+// useSyncTriggers removed - using manual sync instead
 
 interface PullToRefreshProps {
   children: ReactNode
@@ -17,7 +17,7 @@ export function PullToRefresh({
 }: PullToRefreshProps) {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const isLocalMode = useLogbookStore(state => state.isLocalMode)
-  const { triggerSync } = useSyncTriggers()
+  const { manualSync } = useLogbookStore()
 
   const [pullDistance, setPullDistance] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -70,7 +70,7 @@ export function PullToRefresh({
           if (onRefresh) {
             await onRefresh()
           } else {
-            await triggerSync()
+            await manualSync()
           }
         } catch (error) {
           console.error('Refresh failed:', error)
@@ -99,7 +99,7 @@ export function PullToRefresh({
     isRefreshing,
     pullDistance,
     onRefresh,
-    triggerSync,
+    manualSync,
   ])
 
   // Don't enable pull-to-refresh if not authenticated or in local mode
