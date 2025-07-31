@@ -325,11 +325,19 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         )
 
         if (token) {
-          // Perform server sync in background, but don't block the local operation
+          // Perform server sync in background with timeout protection
           console.log(
             '[LogbookStore] createEntry: Starting background server sync'
           )
           Promise.resolve().then(async () => {
+            // Add timeout protection for background sync
+            const syncTimeout = new Promise((_, reject) => {
+              setTimeout(
+                () => reject(new Error('Background sync timeout')),
+                15000
+              ) // 15 second timeout
+            })
+
             try {
               const { useAuthStore } = await import('./authStore')
               const isAuthenticated = useAuthStore.getState().isAuthenticated
@@ -342,7 +350,11 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
                 console.log(
                   '[LogbookStore] createEntry: Syncing new entry to server in background...'
                 )
-                const serverEntry = await logbookApi.createEntry(entryData)
+                // Race the sync operation against timeout
+                const serverEntry = (await Promise.race([
+                  logbookApi.createEntry(entryData),
+                  syncTimeout,
+                ])) as LogbookEntry
                 console.log(
                   '[LogbookStore] createEntry: Entry synced to server successfully'
                 )

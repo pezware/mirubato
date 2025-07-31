@@ -8,14 +8,17 @@ import type { Goal } from '../api/goals'
 
 /**
  * Create a deterministic content signature for a logbook entry
+ * Uses time windows to detect near-duplicate entries from rapid submissions
  */
 export async function createLogbookEntrySignature(
   entry: LogbookEntry
 ): Promise<string> {
   // Create a normalized object with sorted keys for consistent hashing
   const normalizedContent = {
-    // Use exact timestamp for precise matching
-    timestamp: entry.timestamp,
+    // Use time window (5-minute blocks) instead of exact timestamp to catch rapid duplicates
+    timeWindow: Math.floor(
+      new Date(entry.timestamp).getTime() / (5 * 60 * 1000)
+    ),
     duration: entry.duration,
     type: entry.type,
     instrument: entry.instrument,

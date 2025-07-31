@@ -50,6 +50,7 @@ export default function ManualEntryForm({
   const { setFormSubmitting, getSyncStatus } = useSyncTriggers()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitProgress, setSubmitProgress] = useState<string | null>(null)
 
   // Button ref for state management
   const submitButtonRef = useRef<ProtectedButtonRef>(null)
@@ -57,89 +58,18 @@ export default function ManualEntryForm({
   // AbortController for canceling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Track recent submissions for content-based duplicate detection
-  const recentSignatures = useRef<Map<string, number>>(new Map())
+  // Track recent submissions for UI-level duplicate prevention
+  const recentSubmissions = useRef<
+    Map<string, { timestamp: number; pending: boolean }>
+  >(new Map())
+  const lastSubmissionId = useRef<string | null>(null)
 
-  // Simple content duplicate check
-  const checkContentDuplicate = useCallback(
-    async (data: unknown): Promise<boolean> => {
-      try {
-        const signature = await createLogbookEntrySignature(
-          data as LogbookEntry
-        )
-        const now = Date.now()
-
-        // Clean old signatures (older than 30 seconds)
-        const thirtySecondsAgo = now - 30000
-        for (const [sig, timestamp] of recentSignatures.current.entries()) {
-          if (timestamp < thirtySecondsAgo) {
-            recentSignatures.current.delete(sig)
-          }
-        }
-
-        // Check if we've seen this content recently
-        const lastSeenTimestamp = recentSignatures.current.get(signature)
-        if (lastSeenTimestamp) {
-          console.log(
-            '[ManualEntryForm] Blocked content duplicate - identical content submitted recently'
-          )
-          return true
-        }
-
-        // Record this signature
-        recentSignatures.current.set(signature, now)
-        console.log(
-          `[ManualEntryForm] Generated content signature: ${signature.substring(0, 8)}...`
-        )
-        return false
-      } catch (error) {
-        console.warn('[ManualEntryForm] Content duplicate check failed:', error)
-        return false // Don't block on error
-      }
-    },
-    []
-  )
   const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
     piece: { title: string; composer?: string | null }
     scoreId: string
   } | null>(null)
 
-  // Load repertoire on mount
-  useEffect(() => {
-    loadRepertoire()
-  }, [loadRepertoire])
-
-  // Cleanup on unmount - ensure sync queue is cleared and form submission state is reset
-  useEffect(() => {
-    // Capture ref values to avoid stale closure warning
-    const signatures = recentSignatures.current
-
-    return () => {
-      // Abort any in-flight requests
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort('Component unmounting')
-        abortControllerRef.current = null
-      }
-
-      // Reset form submission state to prevent lingering sync blocks
-      setFormSubmitting(false)
-      // Clear any pending signature timeouts
-      signatures.clear()
-
-      // Check if sync queue is growing and log status for debugging
-      const syncStatus = getSyncStatus()
-      if (syncStatus.queueStatus && syncStatus.queueStatus.queueSize > 5) {
-        console.warn(
-          '[ManualEntryForm] Large sync queue detected on unmount:',
-          syncStatus.queueStatus
-        )
-      }
-
-      console.log('[ManualEntryForm] Cleanup completed on unmount')
-    }
-  }, [setFormSubmitting, getSyncStatus])
-
-  // Form state
+  // Form state - declared early so they can be used in callbacks
   const [duration, setDuration] = useState<number>(
     entry?.duration || initialDuration || 30
   )
@@ -238,6 +168,129 @@ export default function ManualEntryForm({
   //   }
   // }, [duration, entry])
 
+  // Create a UI-level submission signature based on current form state
+  const createFormSignature = useCallback(() => {
+    // Create signature from current form values (not entry data)
+    const formData = {
+      duration,
+      type,
+      instrument,
+      practiceDate,
+      practiceTime,
+      pieces: pieces
+        .filter(p => p.title)
+        .map(p => ({
+          title: p.title.trim(),
+          composer: (p.composer || '').trim(),
+        })),
+      techniques: techniques.sort(),
+      notes: notes.trim(),
+      mood: mood || '',
+    }
+
+    // Simple hash of form data for UI-level deduplication
+    const str = JSON.stringify(formData)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash
+    }
+    return Math.abs(hash).toString(16)
+  }, [
+    duration,
+    type,
+    instrument,
+    practiceDate,
+    practiceTime,
+    pieces,
+    techniques,
+    notes,
+    mood,
+  ])
+
+  // Check if this exact form submission is already in progress
+  const checkUILevelDuplicate = useCallback((): boolean => {
+    const signature = createFormSignature()
+    const now = Date.now()
+
+    // Clean old submissions (older than 2 minutes)
+    const twoMinutesAgo = now - 120000
+    for (const [sig, data] of recentSubmissions.current.entries()) {
+      if (data.timestamp < twoMinutesAgo) {
+        recentSubmissions.current.delete(sig)
+      }
+    }
+
+    // Check if this exact form data is already being submitted
+    const existing = recentSubmissions.current.get(signature)
+    if (existing && existing.pending) {
+      console.log(
+        '[ManualEntryForm] Blocked UI-level duplicate - same form data already being submitted'
+      )
+      return true
+    }
+
+    // Record this submission as pending
+    recentSubmissions.current.set(signature, { timestamp: now, pending: true })
+    lastSubmissionId.current = signature
+    console.log(
+      `[ManualEntryForm] Recorded UI submission: ${signature.substring(0, 8)}...`
+    )
+    return false
+  }, [createFormSignature])
+
+  // Mark current submission as completed
+  const markSubmissionCompleted = useCallback(() => {
+    if (lastSubmissionId.current) {
+      const existing = recentSubmissions.current.get(lastSubmissionId.current)
+      if (existing) {
+        recentSubmissions.current.set(lastSubmissionId.current, {
+          ...existing,
+          pending: false,
+        })
+      }
+      lastSubmissionId.current = null
+    }
+  }, [])
+
+  // Load repertoire on mount
+  useEffect(() => {
+    loadRepertoire()
+  }, [loadRepertoire])
+
+  // Cleanup on unmount - ensure sync queue is cleared and form submission state is reset
+  useEffect(() => {
+    // Capture ref values to avoid stale closure warning
+    const submissions = recentSubmissions.current
+
+    return () => {
+      // Abort any in-flight requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort('Component unmounting')
+        abortControllerRef.current = null
+      }
+
+      // Reset form submission state to prevent lingering sync blocks
+      setFormSubmitting(false)
+      markSubmissionCompleted()
+
+      // Clear any pending submissions
+      submissions.clear()
+
+      // Check if sync queue is growing and log status for debugging
+      const syncStatus = getSyncStatus()
+      if (syncStatus?.queueStatus && syncStatus.queueStatus.queueSize > 5) {
+        console.warn(
+          '[ManualEntryForm] Large sync queue detected on unmount:',
+          syncStatus.queueStatus
+        )
+      }
+
+      console.log('[ManualEntryForm] Cleanup completed on unmount')
+    }
+  }, [setFormSubmitting, getSyncStatus, markSubmissionCompleted])
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
 
@@ -251,6 +304,8 @@ export default function ManualEntryForm({
     const resetLoadingStates = () => {
       setIsSubmitting(false)
       setFormSubmitting(false)
+      setSubmitProgress(null)
+      markSubmissionCompleted()
       // Also reset the button's internal state
       submitButtonRef.current?.resetState()
     }
@@ -287,61 +342,34 @@ export default function ManualEntryForm({
     // Create new AbortController for this submission
     abortControllerRef.current = new AbortController()
 
-    // Set loading states BEFORE any checks to ensure proper cleanup
+    // UI-level duplicate prevention (check before setting loading states)
+    if (!entry && checkUILevelDuplicate()) {
+      setSubmitError('This entry is already being submitted. Please wait.')
+      return
+    }
+
+    // Set loading states AFTER duplicate check
     setIsSubmitting(true)
     setFormSubmitting(true) // Prevent focus sync during form submission
-
-    // Content-based duplicate detection (now with proper state management)
-    if (!entry) {
-      try {
-        const isDuplicate = await checkContentDuplicate(entryData)
-        if (isDuplicate) {
-          console.log('[ManualEntryForm] Blocked duplicate content submission')
-          resetLoadingStates()
-          setSubmitError(
-            'Duplicate entry detected. Please wait before resubmitting the same content.'
-          )
-          return
-        }
-      } catch (error) {
-        console.warn(
-          '[ManualEntryForm] Content duplicate check failed, proceeding with submission:',
-          error
-        )
-      }
-    }
 
     try {
       console.log('[ManualEntryForm] Starting entry operation:', {
         isEditing: !!entry,
       })
 
-      // Add timeout protection to prevent hanging forever
-      const OPERATION_TIMEOUT = 10000 // 10 seconds
-
-      const entryOperation = entry
-        ? updateEntry(entry.id, entryData)
-        : createEntry(entryData)
-
-      // Wrap the operation with timeout protection
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(
-            new Error(
-              'Entry operation took too long to complete. Please try again.'
-            )
-          )
-        }, OPERATION_TIMEOUT)
-      })
-
+      // Perform the operation with progress tracking
       if (entry) {
+        setSubmitProgress('Updating entry...')
         console.log('[ManualEntryForm] Updating entry:', entry.id)
-        await Promise.race([entryOperation, timeoutPromise])
+        await updateEntry(entry.id, entryData)
         console.log('[ManualEntryForm] Entry updated successfully')
+        setSubmitProgress('Entry updated successfully!')
       } else {
+        setSubmitProgress('Saving practice entry...')
         console.log('[ManualEntryForm] Creating new entry')
-        await Promise.race([entryOperation, timeoutPromise])
+        await createEntry(entryData)
         console.log('[ManualEntryForm] Entry created successfully')
+        setSubmitProgress('Entry saved successfully!')
 
         // Check if any piece should be added to repertoire
         // Skip the prompt if we have initialPieces (coming from piece detail page)
@@ -366,10 +394,13 @@ export default function ManualEntryForm({
                 '[ManualEntryForm] Showing repertoire prompt for piece:',
                 piece
               )
+              setSubmitProgress('Checking repertoire...')
               // Show prompt for this piece
               setShowRepertoirePrompt({ piece, scoreId })
               // Clear error state and ensure UI states are reset
               setSubmitError(null)
+              // Mark submission as completed since the entry was created successfully
+              markSubmissionCompleted()
               // Note: onSave() will be called from the repertoire prompt handlers
               // Reset loading states immediately to prevent stuck UI
               resetLoadingStates()
@@ -381,6 +412,7 @@ export default function ManualEntryForm({
 
       console.log('[ManualEntryForm] Operation completed, calling onSave')
       setSubmitError(null) // Clear any previous errors
+      markSubmissionCompleted() // Mark this submission as successful
       onSave()
     } catch (error) {
       // Handle AbortError (component unmounted)
@@ -724,9 +756,10 @@ export default function ManualEntryForm({
             externalLoading={isSubmitting}
             debounceMs={500}
             loadingText={
-              entry
+              submitProgress ||
+              (entry
                 ? t('logbook:entry.updating', 'Updating...')
-                : t('logbook:entry.saving', 'Saving...')
+                : t('logbook:entry.saving', 'Saving...'))
             }
             showLoadingState={true}
             data-testid="save-entry-button"
