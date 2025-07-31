@@ -145,13 +145,14 @@ export function SyncIndicator({
           return <span className="text-sm text-blue-500">Connecting...</span>
         case 'reconnecting':
           return <span className="text-sm text-blue-500">Reconnecting...</span>
-        case 'disconnected':
+        case 'disconnected': {
           const error = realtimeSyncError || 'Disconnected'
           return (
             <span className="text-sm text-red-500" title={error}>
               Real-time sync offline
             </span>
           )
+        }
         default:
           return <span className="text-sm text-gray-500">Real-time sync</span>
       }

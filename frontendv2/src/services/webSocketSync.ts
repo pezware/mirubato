@@ -330,7 +330,7 @@ export class WebSocketSync {
     localStorage.setItem('mirubato:lastSyncTime', timestamp)
   }
 
-  private log(...args: any[]): void {
+  private log(...args: unknown[]): void {
     if (this.enableLogging) {
       console.log('[WebSocketSync]', ...args)
     }

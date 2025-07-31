@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useWebSocketSync } from '@/hooks/useWebSocketSync'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/Button'
@@ -169,7 +168,7 @@ export function WebSocketSyncDemo() {
                   {logs.map((log, index) => (
                     <div
                       key={index}
-                      className="text-xs font-mono text-gray-700"
+                      className="text-xs font-inter text-gray-700"
                     >
                       {log}
                     </div>
