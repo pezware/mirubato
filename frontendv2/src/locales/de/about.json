@@ -36,5 +36,24 @@
       "reportIssue": "GitHub Issues",
       "twitter": "Folge uns für Updates"
     }
+  },
+  "tabs": {
+    "about": "[NEEDS TRANSLATION] About",
+    "version": "[NEEDS TRANSLATION] Version",
+    "credits": "[NEEDS TRANSLATION] Credits",
+    "contact": "[NEEDS TRANSLATION] Contact"
+  },
+  "version": {
+    "title": "[NEEDS TRANSLATION] Version Information",
+    "appVersion": "[NEEDS TRANSLATION] App Version",
+    "gitCommit": "[NEEDS TRANSLATION] Git Commit",
+    "branch": "[NEEDS TRANSLATION] Branch",
+    "buildDate": "[NEEDS TRANSLATION] Build Date",
+    "environment": "[NEEDS TRANSLATION] Environment",
+    "viewOnGithub": "[NEEDS TRANSLATION] View on GitHub",
+    "issueReporting": "[NEEDS TRANSLATION] Issue Reporting",
+    "issueReportingDescription": "[NEEDS TRANSLATION] When reporting issues on GitHub, please include this version information:",
+    "copyVersionInfo": "[NEEDS TRANSLATION] Copy Version Info",
+    "reportIssue": "[NEEDS TRANSLATION] Report Issue"
   }
 }
