@@ -63,21 +63,21 @@ describe('ManualEntryForm - Comprehensive Button Hanging Tests', () => {
     vi.mocked(useLogbookStore).mockReturnValue({
       createEntry: mockCreateEntry,
       updateEntry: mockUpdateEntry,
-    } as any)
+    } as ReturnType<typeof useLogbookStore>)
 
     vi.mocked(useRepertoireStore).mockReturnValue({
       repertoire: new Map(),
       loadRepertoire: mockLoadRepertoire,
-    } as any)
+    } as ReturnType<typeof useRepertoireStore>)
 
     vi.mocked(useAuthStore).mockReturnValue({
       isAuthenticated: true,
-    } as any)
+    } as ReturnType<typeof useAuthStore>)
 
     vi.mocked(useSyncTriggers).mockReturnValue({
       setFormSubmitting: mockSetFormSubmitting,
       getSyncStatus: mockGetSyncStatus,
-    } as any)
+    } as ReturnType<typeof useSyncTriggers>)
 
     mockGetSyncStatus.mockReturnValue({
       queueStatus: { queueSize: 0 },
@@ -328,7 +328,7 @@ describe('ManualEntryForm - Comprehensive Button Hanging Tests', () => {
     it('should handle unauthenticated user', async () => {
       vi.mocked(useAuthStore).mockReturnValue({
         isAuthenticated: false,
-      } as any)
+      } as ReturnType<typeof useAuthStore>)
 
       // Mock localStorage to return no token
       vi.mocked(localStorage.getItem).mockReturnValue(null)

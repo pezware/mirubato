@@ -112,7 +112,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     // Setup default auth state (fresh for each test)
     mockAuthStoreGetState.mockReturnValue({
       isAuthenticated: true,
-    } as any)
+    } as ReturnType<typeof useAuthStore.getState>)
 
     // Setup default localStorage token (each test can override)
     vi.mocked(localStorage.getItem).mockReturnValue('mock-auth-token')
@@ -133,7 +133,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
       metadata: { source: 'manual' },
       createdAt: '2025-01-01T12:00:00Z',
       updatedAt: '2025-01-01T12:00:00Z',
-    } as any)
+    } as LogbookEntry)
   })
 
   afterEach(async () => {
@@ -215,7 +215,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     it('should create entry locally only when not authenticated', async () => {
       mockAuthStoreGetState.mockReturnValue({
         isAuthenticated: false,
-      } as any)
+      } as ReturnType<typeof useAuthStore.getState>)
 
       vi.mocked(localStorage.getItem).mockReturnValue(null) // No token
 
@@ -359,7 +359,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     })
 
     it('should handle API returning null/undefined', async () => {
-      mockCreateEntryApi.mockResolvedValue(null as any)
+      mockCreateEntryApi.mockResolvedValue(null as unknown as LogbookEntry)
 
       const store = useLogbookStore.getState()
       const entryData = createTestEntry()
@@ -441,7 +441,9 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
 
   describe('Authentication Edge Cases', () => {
     it('should handle auth store returning null', async () => {
-      mockAuthStoreGetState.mockReturnValue(null as any)
+      mockAuthStoreGetState.mockReturnValue(
+        null as unknown as ReturnType<typeof useAuthStore.getState>
+      )
 
       const store = useLogbookStore.getState()
       const entryData = createTestEntry()
@@ -476,7 +478,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     it('should handle token present but isAuthenticated false', async () => {
       mockAuthStoreGetState.mockReturnValue({
         isAuthenticated: false,
-      } as any)
+      } as ReturnType<typeof useAuthStore.getState>)
 
       // Token is present but user is not authenticated (expired token case)
       vi.mocked(localStorage.getItem).mockReturnValue('expired-token')
@@ -678,7 +680,7 @@ describe('LogbookStore.createEntry - Integration Tests', () => {
     it('should handle state corruption gracefully', async () => {
       // Manually corrupt the state
       useLogbookStore.setState({
-        entriesMap: null as any,
+        entriesMap: null as unknown as Map<string, LogbookEntry>,
         entries: [],
       })
 
