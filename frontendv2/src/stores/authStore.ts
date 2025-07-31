@@ -585,6 +585,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true })
       try {
         const user = await authApi.getCurrentUser()
+
+        // Store user info in localStorage for WebSocket sync
+        localStorage.setItem('mirubato:user', JSON.stringify(user))
+
         set({
           user,
           isAuthenticated: true,

@@ -6,6 +6,7 @@ import {
   Navigate,
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
+import { useLogbookStore } from './stores/logbookStore'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
@@ -38,6 +39,7 @@ const PageLoader = () => (
 
 function App() {
   const { refreshAuth, isAuthInitialized } = useAuthStore()
+  const { enableRealtimeSync } = useLogbookStore()
 
   useEffect(() => {
     let isMounted = true
@@ -50,6 +52,28 @@ function App() {
       if (isMounted) {
         await refreshAuth()
       }
+
+      // Auto-enable WebSocket sync in staging environment
+      const hostname = window.location.hostname
+      if (hostname.includes('staging') && isMounted) {
+        // Set feature flag
+        localStorage.setItem('mirubato:feature:realtime-sync', 'true')
+
+        // Enable WebSocket sync if user is authenticated
+        const authToken = localStorage.getItem('auth-token')
+        const userStr = localStorage.getItem('mirubato:user')
+
+        if (authToken && userStr) {
+          try {
+            await enableRealtimeSync()
+            console.log(
+              '✅ Auto-enabled WebSocket sync for staging environment'
+            )
+          } catch (error) {
+            console.warn('⚠️ Failed to auto-enable WebSocket sync:', error)
+          }
+        }
+      }
     }
 
     initializeApp()
@@ -57,7 +81,7 @@ function App() {
     return () => {
       isMounted = false
     }
-  }, [refreshAuth])
+  }, [refreshAuth, enableRealtimeSync])
 
   // Show loading screen while auth is being determined
   if (!isAuthInitialized) {

@@ -33,10 +33,11 @@ export const authApi = {
       { token }
     )
 
-    // Store tokens in localStorage
+    // Store tokens and user info in localStorage
     if (response.data.accessToken) {
       localStorage.setItem('auth-token', response.data.accessToken)
       localStorage.setItem('refresh-token', response.data.refreshToken)
+      localStorage.setItem('mirubato:user', JSON.stringify(response.data.user))
     }
 
     return response.data
@@ -48,10 +49,11 @@ export const authApi = {
       credential,
     })
 
-    // Store tokens in localStorage
+    // Store tokens and user info in localStorage
     if (response.data.accessToken) {
       localStorage.setItem('auth-token', response.data.accessToken)
       localStorage.setItem('refresh-token', response.data.refreshToken)
+      localStorage.setItem('mirubato:user', JSON.stringify(response.data.user))
     }
 
     return response.data
@@ -73,9 +75,10 @@ export const authApi = {
     try {
       await apiClient.post('/api/auth/logout')
     } finally {
-      // Clear tokens regardless of API response
+      // Clear tokens and user info regardless of API response
       localStorage.removeItem('auth-token')
       localStorage.removeItem('refresh-token')
+      localStorage.removeItem('mirubato:user')
     }
   },
 
