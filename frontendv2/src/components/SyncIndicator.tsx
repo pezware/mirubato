@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useLogbookStore } from '@/stores/logbookStore'
-import { useSyncTriggers } from '@/hooks'
 import { useTranslation } from 'react-i18next'
 import {
   IconRefresh,
@@ -22,28 +21,33 @@ export function SyncIndicator({
 }: SyncIndicatorProps) {
   const { t } = useTranslation()
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
-  const isLocalMode = useLogbookStore(state => state.isLocalMode)
-  const { lastSync, isSyncing, triggerSync } = useSyncTriggers()
+  const {
+    isLocalMode,
+    isSyncing,
+    lastSyncTime,
+    syncError,
+    manualSync,
+    clearSyncError,
+  } = useLogbookStore()
 
   const [syncStatus, setSyncStatus] = useState<
     'idle' | 'syncing' | 'success' | 'error'
   >('idle')
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null)
 
   useEffect(() => {
     if (isSyncing) {
       setSyncStatus('syncing')
-    } else if (
-      lastSync &&
-      lastSync.getTime() > (lastSyncTime?.getTime() || 0)
-    ) {
+    } else if (syncError) {
+      setSyncStatus('error')
+    } else if (lastSyncTime) {
       setSyncStatus('success')
-      setLastSyncTime(lastSync)
       // Reset to idle after 3 seconds
       const timer = setTimeout(() => setSyncStatus('idle'), 3000)
       return () => clearTimeout(timer)
+    } else {
+      setSyncStatus('idle')
     }
-  }, [isSyncing, lastSync, lastSyncTime])
+  }, [isSyncing, syncError, lastSyncTime])
 
   // Don't show if not authenticated
   if (!isAuthenticated) {
@@ -51,12 +55,14 @@ export function SyncIndicator({
   }
 
   const handleManualSync = async () => {
-    try {
-      await triggerSync()
-      setSyncStatus('success')
-    } catch (error) {
-      setSyncStatus('error')
-      console.error('Manual sync failed:', error)
+    // Clear any previous sync error
+    if (syncError) {
+      clearSyncError()
+    }
+
+    const result = await manualSync()
+    if (!result.success) {
+      console.error('Manual sync failed:', result.error)
     }
   }
 
@@ -94,7 +100,11 @@ export function SyncIndicator({
           <span className="text-sm text-green-500">{t('sync.synced')}</span>
         )
       case 'error':
-        return <span className="text-sm text-red-500">{t('sync.error')}</span>
+        return (
+          <span className="text-sm text-red-500" title={syncError || undefined}>
+            {t('sync.error')}
+          </span>
+        )
       default:
         if (lastSyncTime) {
           const minutesAgo = Math.floor(

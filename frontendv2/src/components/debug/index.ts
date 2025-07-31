@@ -1,1 +1,1 @@
-export { SyncDebugPanel } from './SyncDebugPanel'
+// Debug components - add new debug tools here
