@@ -189,9 +189,13 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   createEntry: async entryData => {
     // Use mutex to prevent concurrent entry creation
     return syncMutex.runExclusive(async () => {
+      console.log('[LogbookStore] createEntry: Starting entry creation', {
+        entryData,
+      })
       set({ error: null })
 
       try {
+        console.log('[LogbookStore] createEntry: Creating local entry object')
         // Always create locally first
         const entry: LogbookEntry = {
           ...entryData,
@@ -199,10 +203,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
+        console.log('[LogbookStore] createEntry: Local entry object created', {
+          entryId: entry.id,
+        })
 
         // Cache score metadata if present
+        console.log('[LogbookStore] createEntry: Processing score metadata')
         let updatedScoreMetadata = get().scoreMetadata
         if (entry.scoreId && entry.scoreTitle) {
+          console.log('[LogbookStore] createEntry: Caching score metadata', {
+            scoreId: entry.scoreId,
+          })
           updatedScoreMetadata = {
             ...updatedScoreMetadata,
             [entry.scoreId]: {
@@ -210,76 +221,173 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               composer: entry.scoreComposer,
             },
           }
-          immediateLocalStorageWrite(
-            SCORE_METADATA_KEY,
-            JSON.stringify(updatedScoreMetadata)
-          )
+          try {
+            immediateLocalStorageWrite(
+              SCORE_METADATA_KEY,
+              JSON.stringify(updatedScoreMetadata)
+            )
+            console.log(
+              '[LogbookStore] createEntry: Score metadata cached successfully'
+            )
+          } catch (metadataError) {
+            console.error(
+              '[LogbookStore] createEntry: Failed to cache score metadata',
+              metadataError
+            )
+            // Continue - don't fail the entire operation for metadata caching
+          }
         }
 
+        console.log('[LogbookStore] createEntry: Adding entry to local store')
         // O(1) insertion
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.set(entry.id, entry)
+        console.log(
+          '[LogbookStore] createEntry: Entry added to map, updating store state'
+        )
+
         set({
           entriesMap: newEntriesMap,
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
           scoreMetadata: updatedScoreMetadata,
         })
-
-        // Immediate write to localStorage for new entries
-        immediateLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
+        console.log(
+          '[LogbookStore] createEntry: Store state updated successfully'
         )
 
+        // Immediate write to localStorage for new entries
+        console.log('[LogbookStore] createEntry: Writing to localStorage')
+        try {
+          immediateLocalStorageWrite(
+            ENTRIES_KEY,
+            JSON.stringify(Array.from(newEntriesMap.values()))
+          )
+          console.log(
+            '[LogbookStore] createEntry: localStorage write successful'
+          )
+        } catch (storageError) {
+          console.error(
+            '[LogbookStore] createEntry: localStorage write failed',
+            storageError
+          )
+          // Re-throw storage errors as they're critical for local-first operation
+          throw storageError
+        }
+
         // Link to goals after creating entry (with defensive error handling)
+        console.log('[LogbookStore] createEntry: Linking practice to goals')
         try {
           const { useRepertoireStore } = await import('./repertoireStore')
           await useRepertoireStore.getState().linkPracticeToGoals(entry)
+          console.log(
+            '[LogbookStore] createEntry: Goal linking completed successfully'
+          )
         } catch (error) {
           console.warn(
-            '[LogbookStore] Failed to link practice to goals:',
+            '[LogbookStore] createEntry: Failed to link practice to goals:',
             error
           )
           // Don't fail the entire entry creation if goal linking fails
         }
 
-        // If authenticated and online, sync to server (await to ensure proper error handling)
+        console.log(
+          '[LogbookStore] createEntry: Local entry creation completed successfully'
+        )
+
+        // Background server sync (don't let sync failures break local entry creation)
         const token = localStorage.getItem('auth-token')
-        const { useAuthStore } = await import('./authStore')
-        const isAuthenticated = useAuthStore.getState().isAuthenticated
+        console.log(
+          '[LogbookStore] createEntry: Checking for background server sync',
+          { hasToken: !!token }
+        )
 
-        if (token && isAuthenticated) {
-          try {
-            console.log('[LogbookStore] Syncing new entry to server...')
-            const serverEntry = await logbookApi.createEntry(entryData)
-            console.log('[LogbookStore] Entry synced to server successfully')
-
-            // Update the entry with server ID if different
-            if (serverEntry.id !== entry.id) {
-              const updatedEntriesMap = new Map(get().entriesMap)
-              updatedEntriesMap.delete(entry.id)
-              updatedEntriesMap.set(serverEntry.id, serverEntry)
-              set({
-                entriesMap: updatedEntriesMap,
-                entries: sortEntriesByTimestamp(
-                  Array.from(updatedEntriesMap.values())
-                ),
-              })
-
-              debouncedLocalStorageWrite(
-                ENTRIES_KEY,
-                JSON.stringify(Array.from(updatedEntriesMap.values()))
+        if (token) {
+          // Perform server sync in background, but don't block the local operation
+          console.log(
+            '[LogbookStore] createEntry: Starting background server sync'
+          )
+          Promise.resolve().then(async () => {
+            try {
+              const { useAuthStore } = await import('./authStore')
+              const isAuthenticated = useAuthStore.getState().isAuthenticated
+              console.log(
+                '[LogbookStore] createEntry: Auth check for background sync',
+                { isAuthenticated }
               )
+
+              if (isAuthenticated) {
+                console.log(
+                  '[LogbookStore] createEntry: Syncing new entry to server in background...'
+                )
+                const serverEntry = await logbookApi.createEntry(entryData)
+                console.log(
+                  '[LogbookStore] createEntry: Entry synced to server successfully'
+                )
+
+                // Update the entry with server ID if different
+                if (serverEntry.id !== entry.id) {
+                  const currentState = get()
+                  const updatedEntriesMap = new Map(currentState.entriesMap)
+
+                  // Only update if the local entry still exists (not deleted by user)
+                  if (updatedEntriesMap.has(entry.id)) {
+                    updatedEntriesMap.delete(entry.id)
+                    updatedEntriesMap.set(serverEntry.id, serverEntry)
+                    set({
+                      entriesMap: updatedEntriesMap,
+                      entries: sortEntriesByTimestamp(
+                        Array.from(updatedEntriesMap.values())
+                      ),
+                    })
+
+                    debouncedLocalStorageWrite(
+                      ENTRIES_KEY,
+                      JSON.stringify(Array.from(updatedEntriesMap.values()))
+                    )
+                  }
+                }
+              }
+            } catch (syncError) {
+              console.warn(
+                '[LogbookStore] createEntry: Background server sync failed for new entry:',
+                syncError
+              )
+              // Set a non-blocking error state that doesn't break the UI
+              const currentState = get()
+              if (!currentState.error) {
+                set({
+                  error:
+                    'Entry saved locally. Will sync when connection is restored.',
+                })
+                // Clear the error after 5 seconds
+                setTimeout(() => {
+                  const state = get()
+                  if (
+                    state.error ===
+                    'Entry saved locally. Will sync when connection is restored.'
+                  ) {
+                    set({ error: null })
+                  }
+                }, 5000)
+              }
             }
-          } catch (syncError) {
-            console.warn('Server sync failed for new entry:', syncError)
-            // Re-throw the error so the form can handle it properly
-            throw new Error(
-              `Entry saved locally but failed to sync to server: ${syncError instanceof Error ? syncError.message : 'Unknown error'}`
-            )
-          }
+          })
+        } else {
+          console.log(
+            '[LogbookStore] createEntry: No background sync (no token or not authenticated)'
+          )
         }
+
+        console.log(
+          '[LogbookStore] createEntry: Entry creation process completed successfully'
+        )
+        // Explicitly return nothing - the local operation is complete
+        return
       } catch (error: unknown) {
+        console.error(
+          '[LogbookStore] createEntry: Entry creation failed with error:',
+          error
+        )
         set({ error: 'Failed to create entry' })
         throw error
       }

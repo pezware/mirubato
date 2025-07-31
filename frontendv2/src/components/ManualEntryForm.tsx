@@ -165,24 +165,42 @@ export default function ManualEntryForm({
   )
   const [tags] = useState<string[]>(entry?.tags || [])
 
-  // Date state - use initialStartTime date, existing entry date, or default to today
+  // Calculate the practice start time by subtracting duration from current time
+  // This handles midnight rollover correctly
+  const calculatePracticeStartTime = (
+    currentTime: Date,
+    durationMinutes: number
+  ) => {
+    const practiceStartTime = new Date(
+      currentTime.getTime() - durationMinutes * 60 * 1000
+    )
+    return practiceStartTime
+  }
+
+  // Date state - use initialStartTime date, existing entry date, or calculated practice date
   const [practiceDate, setPracticeDate] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to YYYY-MM-DD format in local timezone
       const date = new Date(entry.timestamp)
-      // Use local date components to avoid timezone conversion issues
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     }
     if (initialStartTime) {
       // Use the date from timer start time
       return `${initialStartTime.getFullYear()}-${String(initialStartTime.getMonth() + 1).padStart(2, '0')}-${String(initialStartTime.getDate()).padStart(2, '0')}`
     }
-    // Default to today in local timezone
-    const today = new Date()
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+    // Calculate the practice start time by subtracting duration from now
+    const now = new Date()
+    const practiceStartTime = calculatePracticeStartTime(
+      now,
+      initialDuration || 30
+    )
+
+    // Use the calculated practice start time for the date
+    return `${practiceStartTime.getFullYear()}-${String(practiceStartTime.getMonth() + 1).padStart(2, '0')}-${String(practiceStartTime.getDate()).padStart(2, '0')}`
   })
 
-  // Time state - use initialStartTime from timer, existing entry time, or default to current time minus duration
+  // Time state - use initialStartTime from timer, existing entry time, or calculated practice time
   const [practiceTime, setPracticeTime] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to HH:MM format in local timezone
@@ -193,10 +211,16 @@ export default function ManualEntryForm({
       // Use the actual start time from timer
       return `${String(initialStartTime.getHours()).padStart(2, '0')}:${String(initialStartTime.getMinutes()).padStart(2, '0')}`
     }
-    // Default to current time minus duration in local timezone
+
+    // Calculate the practice start time by subtracting duration from now
     const now = new Date()
-    const adjustedTime = new Date(now.getTime() - duration * 60 * 1000) // Subtract duration in milliseconds
-    return `${String(adjustedTime.getHours()).padStart(2, '0')}:${String(adjustedTime.getMinutes()).padStart(2, '0')}`
+    const practiceStartTime = calculatePracticeStartTime(
+      now,
+      initialDuration || 30
+    )
+
+    // Use the calculated practice start time for the time
+    return `${String(practiceStartTime.getHours()).padStart(2, '0')}:${String(practiceStartTime.getMinutes()).padStart(2, '0')}`
   })
 
   // Auto-adjust practice time when duration changes (only for new entries)
@@ -292,64 +316,68 @@ export default function ManualEntryForm({
         isEditing: !!entry,
       })
 
-      // Add timeout protection for the entire operation
-      const operationTimeout = new Promise((_, reject) => {
+      // Add timeout protection to prevent hanging forever
+      const OPERATION_TIMEOUT = 10000 // 10 seconds
+
+      const entryOperation = entry
+        ? updateEntry(entry.id, entryData)
+        : createEntry(entryData)
+
+      // Wrap the operation with timeout protection
+      const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
-          reject(new Error('Entry operation timed out after 10 seconds'))
-        }, 10000)
+          reject(
+            new Error(
+              'Entry operation took too long to complete. Please try again.'
+            )
+          )
+        }, OPERATION_TIMEOUT)
       })
 
-      const entryOperation = (async () => {
-        if (entry) {
-          // When updating, only send the fields that should be updated
-          // Don't send createdAt or other fields that shouldn't change
-          console.log('[ManualEntryForm] Updating entry:', entry.id)
-          await updateEntry(entry.id, entryData)
-          console.log('[ManualEntryForm] Entry updated successfully')
-        } else {
-          console.log('[ManualEntryForm] Creating new entry')
-          await createEntry(entryData)
-          console.log('[ManualEntryForm] Entry created successfully')
+      if (entry) {
+        console.log('[ManualEntryForm] Updating entry:', entry.id)
+        await Promise.race([entryOperation, timeoutPromise])
+        console.log('[ManualEntryForm] Entry updated successfully')
+      } else {
+        console.log('[ManualEntryForm] Creating new entry')
+        await Promise.race([entryOperation, timeoutPromise])
+        console.log('[ManualEntryForm] Entry created successfully')
 
-          // Check if any piece should be added to repertoire
-          // Skip the prompt if we have initialPieces (coming from piece detail page)
-          if (!initialPieces) {
-            console.log(
-              '[ManualEntryForm] Checking repertoire for pieces:',
-              entryData.pieces
+        // Check if any piece should be added to repertoire
+        // Skip the prompt if we have initialPieces (coming from piece detail page)
+        if (!initialPieces) {
+          console.log(
+            '[ManualEntryForm] Checking repertoire for pieces:',
+            entryData.pieces
+          )
+          for (const piece of entryData.pieces) {
+            const scoreId = generateNormalizedScoreId(
+              piece.title,
+              piece.composer
             )
-            for (const piece of entryData.pieces) {
-              const scoreId = generateNormalizedScoreId(
-                piece.title,
-                piece.composer
-              )
 
-              // Check if this piece is already in repertoire
-              const isInRepertoire = Array.from(repertoire.values()).some(
-                item => isSameScore(item.scoreId, scoreId)
-              )
+            // Check if this piece is already in repertoire
+            const isInRepertoire = Array.from(repertoire.values()).some(item =>
+              isSameScore(item.scoreId, scoreId)
+            )
 
-              if (!isInRepertoire) {
-                console.log(
-                  '[ManualEntryForm] Showing repertoire prompt for piece:',
-                  piece
-                )
-                // Show prompt for this piece
-                setShowRepertoirePrompt({ piece, scoreId })
-                // Clear error state and ensure UI states are reset
-                setSubmitError(null)
-                // Note: onSave() will be called from the repertoire prompt handlers
-                // Reset loading states immediately to prevent stuck UI
-                resetLoadingStates()
-                return
-              }
+            if (!isInRepertoire) {
+              console.log(
+                '[ManualEntryForm] Showing repertoire prompt for piece:',
+                piece
+              )
+              // Show prompt for this piece
+              setShowRepertoirePrompt({ piece, scoreId })
+              // Clear error state and ensure UI states are reset
+              setSubmitError(null)
+              // Note: onSave() will be called from the repertoire prompt handlers
+              // Reset loading states immediately to prevent stuck UI
+              resetLoadingStates()
+              return
             }
           }
         }
-      })()
-
-      // Race between the operation and timeout
-      await Promise.race([entryOperation, operationTimeout])
+      }
 
       console.log('[ManualEntryForm] Operation completed, calling onSave')
       setSubmitError(null) // Clear any previous errors
@@ -377,23 +405,11 @@ export default function ManualEntryForm({
         stack: error instanceof Error ? error.stack : 'No stack trace',
       })
 
-      // Set user-friendly error message based on error type
-      let errorMessage = 'Failed to save entry. Please try again.'
-
-      if (error instanceof Error) {
-        if (error.message.includes('timed out')) {
-          errorMessage =
-            'Entry is taking too long to save. It may have been saved locally. Please try refreshing the page.'
-        } else if (
-          error.message.includes('network') ||
-          error.message.includes('fetch')
-        ) {
-          errorMessage =
-            'Network error. Entry saved locally and will sync when connection is restored.'
-        } else {
-          errorMessage = error.message
-        }
-      }
+      // Set user-friendly error message
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to save entry. Please try again.'
 
       setSubmitError(errorMessage)
 
