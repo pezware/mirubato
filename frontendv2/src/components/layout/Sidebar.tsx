@@ -108,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={`fixed left-0 top-0 bottom-0 bg-gray-50 border-r border-gray-200 transition-all duration-300 flex flex-col z-50 ${
-        isCollapsed ? 'w-16' : 'w-60'
+        isCollapsed ? 'w-16' : 'w-56'
       } ${className}`}
     >
       <div className={`${isCollapsed ? 'p-4' : 'p-6'} relative`}>

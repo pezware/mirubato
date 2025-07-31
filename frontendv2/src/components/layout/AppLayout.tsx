@@ -78,7 +78,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         {/* Main Content Area - No TopBar */}
         <div
           className={`transition-all duration-300 min-h-screen ${
-            isSidebarCollapsed ? 'sm:ml-16' : 'sm:ml-60'
+            isSidebarCollapsed ? 'sm:ml-16' : 'sm:ml-56'
           }`}
         >
           {/* Page Content */}
