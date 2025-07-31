@@ -15,6 +15,12 @@ vi.mock('../../hooks/useSyncTriggers')
 vi.mock('../../hooks/useUserPreferences', () => ({
   useUserPreferences: () => ({
     getPrimaryInstrument: () => 'piano',
+    addCustomInstrument: vi.fn(),
+    setPrimaryInstrument: vi.fn(),
+    preferences: {
+      customInstruments: [],
+    },
+    techniques: [],
   }),
 }))
 
@@ -77,9 +83,16 @@ describe('ManualEntryForm - Comprehensive Button Hanging Tests', () => {
     vi.mocked(useSyncTriggers).mockReturnValue({
       setFormSubmitting: mockSetFormSubmitting,
       getSyncStatus: mockGetSyncStatus,
+      lastSync: new Date(),
+      isSyncing: false,
+      triggerSync: vi.fn(),
+      forceSync: vi.fn(),
     } as ReturnType<typeof useSyncTriggers>)
 
     mockGetSyncStatus.mockReturnValue({
+      isLocked: false,
+      currentOperation: null,
+      queueLength: 0,
       queueStatus: { queueSize: 0 },
     })
 
