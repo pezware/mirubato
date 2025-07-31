@@ -323,6 +323,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_UPDATED',
+            entry: updated,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     } catch (error: unknown) {
       const err = error as Error & { response?: { data?: { error?: string } } }
@@ -373,6 +383,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_DELETED',
+            entryId: id,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     } catch (error: unknown) {
       const err = error as Error & { response?: { data?: { error?: string } } }
