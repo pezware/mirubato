@@ -186,6 +186,12 @@ export default function ManualEntryForm({
       return
     }
 
+    // Helper function to reset all loading states
+    const resetLoadingStates = () => {
+      setIsSubmitting(false)
+      setFormSubmitting(false)
+    }
+
     // Prepare entry data for content-based duplicate detection
     const [year, month, day] = practiceDate.split('-').map(Number)
     const [hours, minutes] = practiceTime.split(':').map(Number)
@@ -215,12 +221,20 @@ export default function ManualEntryForm({
         initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
     }
 
-    // Content-based duplicate detection (SubmitButton handles click protection)
+    // Set loading states BEFORE any checks to ensure proper cleanup
+    setIsSubmitting(true)
+    setFormSubmitting(true) // Prevent focus sync during form submission
+
+    // Content-based duplicate detection (now with proper state management)
     if (!entry) {
       try {
         const isDuplicate = await checkContentDuplicate(entryData)
         if (isDuplicate) {
           console.log('[ManualEntryForm] Blocked duplicate content submission')
+          resetLoadingStates()
+          setSubmitError(
+            'Duplicate entry detected. Please wait before resubmitting the same content.'
+          )
           return
         }
       } catch (error) {
@@ -230,9 +244,6 @@ export default function ManualEntryForm({
         )
       }
     }
-
-    setIsSubmitting(true)
-    setFormSubmitting(true) // Prevent focus sync during form submission
 
     try {
       if (entry) {
@@ -263,8 +274,7 @@ export default function ManualEntryForm({
               setSubmitError(null)
               // Note: onSave() will be called from the repertoire prompt handlers
               // Reset loading states immediately to prevent stuck UI
-              setIsSubmitting(false)
-              setFormSubmitting(false)
+              resetLoadingStates()
               return
             }
           }
@@ -274,7 +284,19 @@ export default function ManualEntryForm({
       setSubmitError(null) // Clear any previous errors
       onSave()
     } catch (error) {
-      console.error('Failed to save entry:', error)
+      console.error('[ManualEntryForm] Failed to save entry:', {
+        error,
+        entryData: {
+          timestamp: entryData.timestamp,
+          duration: entryData.duration,
+          type: entryData.type,
+          instrument: entryData.instrument,
+          pieces: entryData.pieces,
+          mood: entryData.mood,
+        },
+        isEditing: !!entry,
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+      })
 
       // Set user-friendly error message
       const errorMessage =
@@ -283,12 +305,13 @@ export default function ManualEntryForm({
           : 'Failed to save entry. Please check your connection and try again.'
       setSubmitError(errorMessage)
 
+      // Reset loading states on error
+      resetLoadingStates()
       // Don't call onSave if there was an error
       return
     } finally {
-      // Always reset states in finally block to prevent stuck states
-      setIsSubmitting(false)
-      setFormSubmitting(false) // Re-enable focus sync
+      // Always reset states in finally block to prevent stuck states (defensive programming)
+      resetLoadingStates() // Re-enable focus sync
     }
   }
 

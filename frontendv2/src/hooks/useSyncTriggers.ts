@@ -74,7 +74,13 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
             return
           }
 
-          // Perform sync operations (removed per-operation locks for simplicity)
+          // Perform sync operations with timeout protection
+          const syncTimeout = new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Sync timeout after 30 seconds')),
+              30000
+            )
+          )
 
           try {
             // Track stats
@@ -84,13 +90,19 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
               goalsProcessed: 0,
             }
 
-            // Sync both logbook and repertoire data in parallel
-            await Promise.all([
-              syncWithServer(),
-              syncRepertoireData().catch(err => {
-                console.error(`[Sync] Repertoire sync failed:`, err)
-                // Don't throw - continue even if repertoire sync fails
-              }),
+            // Sync both logbook and repertoire data in parallel with timeout
+            await Promise.race([
+              Promise.all([
+                syncWithServer().catch(err => {
+                  console.error(`[Sync] Logbook sync failed:`, err)
+                  // Don't throw - log error but continue
+                }),
+                syncRepertoireData().catch(err => {
+                  console.error(`[Sync] Repertoire sync failed:`, err)
+                  // Don't throw - continue even if repertoire sync fails
+                }),
+              ]),
+              syncTimeout,
             ])
 
             // Update last sync time manually
@@ -99,13 +111,19 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
 
             syncEventLogger.completeSync(syncId, stats)
             console.log(`[Sync] ✅ ${trigger} sync completed in ${duration}ms`)
-          } finally {
-            // No longer need to release per-operation locks
+          } catch (timeoutError) {
+            console.warn(
+              `[Sync] ⏱️ ${trigger} sync timed out or had network issues:`,
+              timeoutError
+            )
+            // Don't throw timeout errors - just log them
+            syncEventLogger.failSync(syncId, timeoutError as Error)
           }
         } catch (error) {
           console.error(`[Sync] ❌ ${trigger} sync failed:`, error)
           syncEventLogger.failSync(syncId, error as Error)
-          throw error
+          // Don't throw error to prevent queue from getting stuck
+          // Individual sync failures should not crash the sync system
         }
       }, `sync-${trigger}`)
     },
@@ -274,16 +292,24 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
       isFormSubmittingRef.current = submitting
       console.log(`[Sync] Form submission state: ${submitting}`)
 
-      // Auto-reset form submission state after 30 seconds to prevent stuck state
+      // Auto-reset form submission state after 15 seconds to prevent stuck state (reduced from 30s)
       if (formSubmissionTimeoutRef.current) {
         clearTimeout(formSubmissionTimeoutRef.current)
       }
 
       if (submitting) {
         formSubmissionTimeoutRef.current = setTimeout(() => {
-          console.log('[Sync] Auto-resetting stuck form submission state')
+          console.warn(
+            '[Sync] Auto-resetting stuck form submission state (15s timeout)'
+          )
           isFormSubmittingRef.current = false
-        }, 30000) // 30 seconds timeout
+        }, 15000) // 15 seconds timeout (reduced for better UX)
+      } else {
+        // Clear timeout immediately when manually set to false
+        if (formSubmissionTimeoutRef.current) {
+          clearTimeout(formSubmissionTimeoutRef.current)
+          formSubmissionTimeoutRef.current = null
+        }
       }
     },
   }

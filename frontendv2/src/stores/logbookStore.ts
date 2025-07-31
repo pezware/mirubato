@@ -231,9 +231,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
 
-        // Link to goals after creating entry
-        const { useRepertoireStore } = await import('./repertoireStore')
-        await useRepertoireStore.getState().linkPracticeToGoals(entry)
+        // Link to goals after creating entry (with defensive error handling)
+        try {
+          const { useRepertoireStore } = await import('./repertoireStore')
+          await useRepertoireStore.getState().linkPracticeToGoals(entry)
+        } catch (error) {
+          console.warn(
+            '[LogbookStore] Failed to link practice to goals:',
+            error
+          )
+          // Don't fail the entire entry creation if goal linking fails
+        }
 
         // If authenticated and online, sync to server in background
         const token = localStorage.getItem('auth-token')
