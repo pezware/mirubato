@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useAuthStore } from '@/stores/authStore'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import {
   IconWifi,
@@ -53,8 +53,8 @@ export function WebSocketSyncDemo() {
     const testEntry = {
       timestamp: new Date().toISOString(),
       duration: Math.floor(Math.random() * 60) + 15, // 15-75 minutes
-      type: 'PRACTICE' as const,
-      instrument: 'PIANO' as const,
+      type: 'practice' as const,
+      instrument: 'piano' as const,
       pieces: [
         {
           title: `Test Piece ${Math.floor(Math.random() * 100)}`,
