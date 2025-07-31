@@ -32,6 +32,9 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
   const lastSyncRef = useRef<Date>(new Date(Date.now() - 30000))
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const lastVisibilityChangeRef = useRef<Date>(new Date())
+  const lastFocusEventRef = useRef<Date>(new Date(0)) // Track last focus event
+  const isFormSubmittingRef = useRef<boolean>(false) // Track form submission state
+  const formSubmissionTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Auto-reset form submission state
 
   // Initialize event queue with our sync handler
   const eventQueue = useRef<SyncEventQueue>()
@@ -142,11 +145,30 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
-    // Also sync on focus (but only if we haven't synced recently)
+    // Also sync on focus (but only if we haven't synced recently and avoid rapid focus events)
     const handleFocus = () => {
-      const timeSinceLastSync = Date.now() - lastSyncRef.current.getTime()
+      const now = Date.now()
+      const timeSinceLastSync = now - lastSyncRef.current.getTime()
+      const timeSinceLastFocus = now - lastFocusEventRef.current.getTime()
+
+      // Skip if form is submitting or focus events are too frequent
+      if (isFormSubmittingRef.current) {
+        console.log('[Sync] Skipping focus sync - form is submitting')
+        return
+      }
+
+      // Increase debounce time for focus events to prevent rapid firing
+      if (timeSinceLastFocus < 5000) {
+        // 5 seconds between focus syncs
+        console.log(
+          '[Sync] Skipping focus sync - too soon since last focus event'
+        )
+        return
+      }
+
       if (timeSinceLastSync > 120000) {
-        // 2 minutes
+        // 2 minutes since last sync
+        lastFocusEventRef.current = new Date(now)
         queueSync('focus')
       }
     }
@@ -228,6 +250,11 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
     return () => {
       // Clear the event queue on unmount
       eventQueue.current?.clear()
+
+      // Clear form submission timeout
+      if (formSubmissionTimeoutRef.current) {
+        clearTimeout(formSubmissionTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -242,5 +269,22 @@ export function useSyncTriggers(options: SyncTriggerOptions = {}) {
       queueLength: syncMutex.getQueueLength(),
       queueStatus: eventQueue.current?.getStatus(),
     }),
+    // Expose form submission state management with auto-reset
+    setFormSubmitting: (submitting: boolean) => {
+      isFormSubmittingRef.current = submitting
+      console.log(`[Sync] Form submission state: ${submitting}`)
+
+      // Auto-reset form submission state after 30 seconds to prevent stuck state
+      if (formSubmissionTimeoutRef.current) {
+        clearTimeout(formSubmissionTimeoutRef.current)
+      }
+
+      if (submitting) {
+        formSubmissionTimeoutRef.current = setTimeout(() => {
+          console.log('[Sync] Auto-resetting stuck form submission state')
+          isFormSubmittingRef.current = false
+        }, 30000) // 30 seconds timeout
+      }
+    },
   }
 }

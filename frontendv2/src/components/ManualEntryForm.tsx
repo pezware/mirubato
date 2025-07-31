@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   IconMoodAngry,
@@ -9,12 +9,15 @@ import {
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import { useUserPreferences } from '../hooks/useUserPreferences'
+import { useSyncTriggers } from '../hooks/useSyncTriggers'
+import { createLogbookEntrySignature } from '../utils/contentSignature'
 import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
   isSameScore,
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
+import { SubmitButton } from './ui/ProtectedButtonFactory'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
 import { TechniqueSelector } from './logbook/TechniqueSelector'
@@ -43,7 +46,52 @@ export default function ManualEntryForm({
   const { createEntry, updateEntry } = useLogbookStore()
   const { repertoire, loadRepertoire } = useRepertoireStore()
   const { getPrimaryInstrument } = useUserPreferences()
+  const { setFormSubmitting } = useSyncTriggers()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  // Track recent submissions for content-based duplicate detection
+  const recentSignatures = useRef<Map<string, number>>(new Map())
+
+  // Simple content duplicate check
+  const checkContentDuplicate = useCallback(
+    async (data: unknown): Promise<boolean> => {
+      try {
+        const signature = await createLogbookEntrySignature(
+          data as LogbookEntry
+        )
+        const now = Date.now()
+
+        // Clean old signatures (older than 30 seconds)
+        const thirtySecondsAgo = now - 30000
+        for (const [sig, timestamp] of recentSignatures.current.entries()) {
+          if (timestamp < thirtySecondsAgo) {
+            recentSignatures.current.delete(sig)
+          }
+        }
+
+        // Check if we've seen this content recently
+        const lastSeenTimestamp = recentSignatures.current.get(signature)
+        if (lastSeenTimestamp) {
+          console.log(
+            '[ManualEntryForm] Blocked content duplicate - identical content submitted recently'
+          )
+          return true
+        }
+
+        // Record this signature
+        recentSignatures.current.set(signature, now)
+        console.log(
+          `[ManualEntryForm] Generated content signature: ${signature.substring(0, 8)}...`
+        )
+        return false
+      } catch (error) {
+        console.warn('[ManualEntryForm] Content duplicate check failed:', error)
+        return false // Don't block on error
+      }
+    },
+    []
+  )
   const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
     piece: { title: string; composer?: string | null }
     scoreId: string
@@ -129,42 +177,64 @@ export default function ManualEntryForm({
   //   }
   // }, [duration, entry])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      console.log('[ManualEntryForm] Submission already in progress')
+      return
+    }
+
+    // Prepare entry data for content-based duplicate detection
+    const [year, month, day] = practiceDate.split('-').map(Number)
+    const [hours, minutes] = practiceTime.split(':').map(Number)
+    const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
+
+    const entryData = {
+      timestamp: selectedDate.toISOString(),
+      duration: Math.max(1, duration), // Ensure minimum duration of 1
+      type,
+      instrument,
+      pieces: pieces
+        .filter(p => p.title) // Only include pieces with titles
+        .map(p => ({
+          title: p.title,
+          composer: p.composer ? p.composer : null, // Convert empty string to null
+        })),
+      techniques: techniques.length > 0 ? techniques : [],
+      goalIds: [],
+      notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
+      mood: mood || null, // Convert undefined to null for D1 compatibility
+      tags: tags.length > 0 ? tags : [],
+      metadata: {
+        source: 'manual',
+      },
+      // If we have a scoreId from initialPieces (from piece detail page), include it
+      ...(initialPieces &&
+        initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
+    }
+
+    // Content-based duplicate detection (SubmitButton handles click protection)
+    if (!entry) {
+      try {
+        const isDuplicate = await checkContentDuplicate(entryData)
+        if (isDuplicate) {
+          console.log('[ManualEntryForm] Blocked duplicate content submission')
+          return
+        }
+      } catch (error) {
+        console.warn(
+          '[ManualEntryForm] Content duplicate check failed, proceeding with submission:',
+          error
+        )
+      }
+    }
+
     setIsSubmitting(true)
+    setFormSubmitting(true) // Prevent focus sync during form submission
 
     try {
-      // Create a date object from the selected date and time in local timezone
-      const [year, month, day] = practiceDate.split('-').map(Number)
-      const [hours, minutes] = practiceTime.split(':').map(Number)
-
-      // Create the date directly with the correct time to avoid timezone issues
-      const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
-
-      const entryData = {
-        timestamp: selectedDate.toISOString(),
-        duration: Math.max(1, duration), // Ensure minimum duration of 1
-        type,
-        instrument,
-        pieces: pieces
-          .filter(p => p.title) // Only include pieces with titles
-          .map(p => ({
-            title: p.title,
-            composer: p.composer ? p.composer : null, // Convert empty string to null
-          })),
-        techniques: techniques.length > 0 ? techniques : [],
-        goalIds: [],
-        notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
-        mood: mood || null, // Convert undefined to null for D1 compatibility
-        tags: tags.length > 0 ? tags : [],
-        metadata: {
-          source: 'manual',
-        },
-        // If we have a scoreId from initialPieces (from piece detail page), include it
-        ...(initialPieces &&
-          initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
-      }
-
       if (entry) {
         // When updating, only send the fields that should be updated
         // Don't send createdAt or other fields that shouldn't change
@@ -196,11 +266,24 @@ export default function ManualEntryForm({
         }
       }
 
+      setSubmitError(null) // Clear any previous errors
       onSave()
     } catch (error) {
       console.error('Failed to save entry:', error)
+
+      // Set user-friendly error message
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to save entry. Please check your connection and try again.'
+      setSubmitError(errorMessage)
+
+      // Don't call onSave if there was an error
+      return
     } finally {
+      // Always reset states in finally block to prevent stuck states
       setIsSubmitting(false)
+      setFormSubmitting(false) // Re-enable focus sync
     }
   }
 
@@ -236,7 +319,10 @@ export default function ManualEntryForm({
       className="sm:max-w-3xl"
     >
       <form
-        onSubmit={handleSubmit}
+        onSubmit={e => {
+          e.preventDefault() // Prevent default form submission
+          // Form submission now handled by SubmitButton onClick
+        }}
         className="space-y-4"
         data-testid="logbook-entry-form"
       >
@@ -470,22 +556,46 @@ export default function ManualEntryForm({
           </div>
         </div>
 
+        {/* Error Display */}
+        {submitError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{submitError}</span>
+              <button
+                type="button"
+                onClick={() => setSubmitError(null)}
+                className="ml-auto text-red-500 hover:text-red-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">
           <Button type="button" onClick={onClose} variant="secondary">
             {t('common:cancel')}
           </Button>
-          <Button
-            type="submit"
+          <SubmitButton
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
-            loading={isSubmitting}
-            leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
+            debounceMs={500}
+            loadingText={
+              entry
+                ? t('logbook:entry.updating', 'Updating...')
+                : t('logbook:entry.saving', 'Saving...')
+            }
+            showLoadingState={true}
             data-testid="save-entry-button"
           >
+            {!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
             {entry
               ? t('logbook:entry.updateEntry')
               : t('logbook:entry.saveEntry')}
-          </Button>
+          </SubmitButton>
         </div>
       </form>
 

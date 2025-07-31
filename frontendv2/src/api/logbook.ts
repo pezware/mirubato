@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import { createRequestSignature } from '../utils/contentSignature'
 
 export interface LogbookEntry {
   id: string
@@ -121,11 +122,30 @@ export const logbookApi = {
       autoTracked: entry.autoTracked || undefined,
     }
 
+    // Generate idempotency key for request deduplication
+    const idempotencyKey = await createRequestSignature({
+      ...entry,
+      // Exclude dynamic fields for consistent signatures
+      timestamp: entry.timestamp,
+      duration: entry.duration,
+      type: entry.type,
+      instrument: entry.instrument,
+      pieces: entry.pieces,
+      techniques: entry.techniques,
+      notes: entry.notes,
+      mood: entry.mood,
+    })
+
     const response = await apiClient.post<{ success: boolean }>(
       '/api/sync/push',
       {
         changes: {
           entries: [newEntry],
+        },
+      },
+      {
+        headers: {
+          'Idempotency-Key': idempotencyKey,
         },
       }
     )

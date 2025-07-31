@@ -116,18 +116,31 @@ describe('Logbook API', () => {
 
       const result = await logbookApi.createEntry(mockEntryData)
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/sync/push', {
-        changes: {
-          entries: [
-            expect.objectContaining({
-              ...mockEntryData,
-              id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
-              createdAt: '2025-06-26T12:00:00.000Z',
-              updatedAt: '2025-06-26T12:00:00.000Z',
-            }),
-          ],
+      expect(apiClient.post).toHaveBeenCalledWith(
+        '/api/sync/push',
+        {
+          changes: {
+            entries: [
+              expect.objectContaining({
+                ...mockEntryData,
+                id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
+                notes: null,
+                scoreId: undefined,
+                scoreTitle: undefined,
+                scoreComposer: undefined,
+                autoTracked: undefined,
+                createdAt: '2025-06-26T12:00:00.000Z',
+                updatedAt: '2025-06-26T12:00:00.000Z',
+              }),
+            ],
+          },
         },
-      })
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Idempotency-Key': expect.any(String),
+          }),
+        })
+      )
 
       expect(result).toMatchObject({
         ...mockEntryData,

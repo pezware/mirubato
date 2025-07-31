@@ -25,6 +25,9 @@ export class SyncEventQueue {
   private queue: SyncEvent[] = []
   private coalescenceTimer: NodeJS.Timeout | null = null
   private eventCounter = 0
+  private readonly maxQueueSize = 50 // Prevent infinite queue growth
+  private focusEventCount = 0 // Track focus events for circuit breaker
+  private lastFocusReset = Date.now() // Reset counter periodically
   private readonly coalescenceWindows: Map<string, number> = new Map([
     ['manual', 100], // Process manual syncs quickly
     ['online', 500], // Online events can wait a bit
@@ -37,9 +40,38 @@ export class SyncEventQueue {
   }
 
   /**
-   * Add a sync event to the queue
+   * Add a sync event to the queue with safeguards
    */
   queueEvent(trigger: string, metadata?: Record<string, unknown>): void {
+    // Check and apply queue size limit
+    if (this.queue.length >= this.maxQueueSize) {
+      console.warn(
+        `[SyncQueue] Queue size limit reached (${this.maxQueueSize}), dropping oldest events`
+      )
+      // Remove oldest events to make room
+      this.queue = this.queue.slice(-Math.floor(this.maxQueueSize / 2))
+    }
+
+    // Circuit breaker for focus events
+    if (trigger === 'focus') {
+      const now = Date.now()
+      // Reset counter every 60 seconds
+      if (now - this.lastFocusReset > 60000) {
+        this.focusEventCount = 0
+        this.lastFocusReset = now
+      }
+
+      this.focusEventCount++
+
+      // Circuit breaker: if more than 10 focus events in 60 seconds, skip
+      if (this.focusEventCount > 10) {
+        console.warn(
+          `[SyncQueue] Circuit breaker activated - too many focus events (${this.focusEventCount} in last minute)`
+        )
+        return
+      }
+    }
+
     const event: SyncEvent = {
       id: `sync-${++this.eventCounter}`,
       trigger,
@@ -50,7 +82,7 @@ export class SyncEventQueue {
 
     this.queue.push(event)
     console.log(
-      `[SyncQueue] Queued event: ${trigger} (priority: ${event.priority})`
+      `[SyncQueue] Queued event: ${trigger} (priority: ${event.priority}, queue size: ${this.queue.length})`
     )
 
     this.scheduleProcessing(trigger)
@@ -128,10 +160,13 @@ export class SyncEventQueue {
    */
   clear(): void {
     this.queue = []
+    this.focusEventCount = 0
+    this.lastFocusReset = Date.now()
     if (this.coalescenceTimer) {
       clearTimeout(this.coalescenceTimer)
       this.coalescenceTimer = null
     }
+    console.log('[SyncQueue] Queue cleared and circuit breaker reset')
   }
 
   /**
@@ -141,6 +176,8 @@ export class SyncEventQueue {
     queueSize: number
     isProcessing: boolean
     events: Array<{ trigger: string; priority: number; age: number }>
+    focusEventCount: number
+    circuitBreakerActive: boolean
   } {
     const now = Date.now()
     return {
@@ -151,6 +188,8 @@ export class SyncEventQueue {
         priority: e.priority,
         age: now - e.timestamp,
       })),
+      focusEventCount: this.focusEventCount,
+      circuitBreakerActive: this.focusEventCount > 10,
     }
   }
 

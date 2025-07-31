@@ -49,9 +49,23 @@ export async function createLogbookEntrySignature(
     goalIds: [...(entry.goalIds || [])].sort(),
   }
 
-  // Create SHA-256 hash using Web Crypto API
+  // Create SHA-256 hash using Web Crypto API (or fallback for tests)
   const encoder = new TextEncoder()
   const data = encoder.encode(JSON.stringify(normalizedContent))
+
+  // Fallback for test environments where crypto.subtle is not available
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    // Simple hash for testing - NOT cryptographically secure
+    const str = JSON.stringify(normalizedContent)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0')
+  }
+
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
@@ -72,9 +86,23 @@ export async function createGoalSignature(goal: Goal): Promise<string> {
     scoreId: goal.scoreId || '',
   }
 
-  // Create SHA-256 hash using Web Crypto API
+  // Create SHA-256 hash using Web Crypto API (or fallback for tests)
   const encoder = new TextEncoder()
   const data = encoder.encode(JSON.stringify(normalizedContent))
+
+  // Fallback for test environments where crypto.subtle is not available
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    // Simple hash for testing - NOT cryptographically secure
+    const str = JSON.stringify(normalizedContent)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0')
+  }
+
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
@@ -204,6 +232,20 @@ export async function deduplicateEntries(entries: LogbookEntry[]): Promise<{
 export async function createRequestSignature(data: unknown): Promise<string> {
   const encoder = new TextEncoder()
   const dataString = encoder.encode(JSON.stringify(data))
+
+  // Fallback for test environments where crypto.subtle is not available
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    // Simple hash for testing - NOT cryptographically secure
+    const str = JSON.stringify(data)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0')
+  }
+
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataString)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
