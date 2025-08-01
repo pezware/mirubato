@@ -12,7 +12,7 @@ import { X, Upload, Trash2, Edit } from 'lucide-react'
 import { sanitizeImageUrl, getFallbackImageUrl } from '../../utils/urlSanitizer'
 
 export default function ScoreManagement() {
-  const { t } = useTranslation(['scorebook', 'common'])
+  const { t } = useTranslation(['scorebook', 'common', 'ui'])
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
   const { toggleManagement, userLibrary, loadUserLibrary } = useScoreStore()
@@ -662,14 +662,18 @@ export default function ScoreManagement() {
                           type="text"
                           value={imageTitle}
                           onChange={e => setImageTitle(e.target.value)}
-                          placeholder="Title (optional - AI will extract)"
+                          placeholder={t(
+                            'ui:components.scoreUpload.titlePlaceholder'
+                          )}
                           className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
                         />
                         <input
                           type="text"
                           value={imageComposer}
                           onChange={e => setImageComposer(e.target.value)}
-                          placeholder="Composer (optional - AI will extract)"
+                          placeholder={t(
+                            'ui:components.scoreUpload.composerPlaceholder'
+                          )}
                           className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
                         />
 
@@ -692,7 +696,9 @@ export default function ScoreManagement() {
                       type="url"
                       value={uploadUrl}
                       onChange={e => setUploadUrl(e.target.value)}
-                      placeholder="https://example.com/score.pdf"
+                      placeholder={t(
+                        'ui:components.scoreUpload.urlPlaceholder'
+                      )}
                       className="w-full px-3 py-2 bg-morandi-stone-50 border border-morandi-stone-200 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-sm"
                     />
                     <Button

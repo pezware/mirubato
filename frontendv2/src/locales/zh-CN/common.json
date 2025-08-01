@@ -292,15 +292,15 @@
     "license": "许可证"
   },
   "sync": {
-    "offline": "[NEEDS TRANSLATION] Offline mode",
-    "syncing": "[NEEDS TRANSLATION] Syncing...",
-    "synced": "[NEEDS TRANSLATION] Synced",
-    "error": "[NEEDS TRANSLATION] Sync error",
-    "justNow": "[NEEDS TRANSLATION] Just now",
-    "minutesAgo": "[NEEDS TRANSLATION] {{minutes}} min ago",
-    "hoursAgo": "[NEEDS TRANSLATION] {{hours}} hr ago",
-    "notSynced": "[NEEDS TRANSLATION] Not synced",
-    "offlineMode": "[NEEDS TRANSLATION] Offline mode - sync disabled",
-    "syncNow": "[NEEDS TRANSLATION] Sync now"
+    "offline": "离线模式",
+    "syncing": "同步中...",
+    "synced": "已同步",
+    "error": "同步错误",
+    "justNow": "刚才同步",
+    "minutesAgo": "{{minutes}} 分钟前",
+    "hoursAgo": "{{hours}} 小时前",
+    "notSynced": "未同步",
+    "offlineMode": "离线模式 - 同步已禁用",
+    "syncNow": "立即同步"
   }
 }

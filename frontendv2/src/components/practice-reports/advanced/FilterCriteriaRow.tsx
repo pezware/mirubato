@@ -29,7 +29,7 @@ export function FilterCriteriaRow({
   showLogic,
   availableFields,
 }: FilterCriteriaRowProps) {
-  const { t } = useTranslation(['reports'])
+  const { t } = useTranslation(['reports', 'ui'])
   const { updateFilter, removeFilter } = useReportingStore()
   const { entries } = useLogbookStore()
 
@@ -253,7 +253,7 @@ export function FilterCriteriaRow({
                     max: range.max,
                   })
                 }
-                placeholder="Min"
+                placeholder={t('ui:components.filters.minPlaceholder')}
                 className="w-20"
               />
               <span className="text-morandi-stone-500">
@@ -268,7 +268,7 @@ export function FilterCriteriaRow({
                     max: parseInt(e.target.value) || 0,
                   })
                 }
-                placeholder="Max"
+                placeholder={t('ui:components.filters.maxPlaceholder')}
                 className="w-20"
               />
               <span className="text-morandi-stone-500">
@@ -285,7 +285,7 @@ export function FilterCriteriaRow({
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleValueChange(parseInt(e.target.value) || 0)
                 }
-                placeholder="0"
+                placeholder={t('ui:components.filters.defaultValuePlaceholder')}
                 className="w-20"
               />
               <span className="text-morandi-stone-500">

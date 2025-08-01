@@ -38,22 +38,22 @@
     }
   },
   "tabs": {
-    "about": "[NEEDS TRANSLATION] About",
-    "version": "[NEEDS TRANSLATION] Version",
-    "credits": "[NEEDS TRANSLATION] Credits",
-    "contact": "[NEEDS TRANSLATION] Contact"
+    "about": "À propos",
+    "version": "Version",
+    "credits": "Crédits",
+    "contact": "Contact"
   },
   "version": {
-    "title": "[NEEDS TRANSLATION] Version Information",
-    "appVersion": "[NEEDS TRANSLATION] App Version",
-    "gitCommit": "[NEEDS TRANSLATION] Git Commit",
-    "branch": "[NEEDS TRANSLATION] Branch",
-    "buildDate": "[NEEDS TRANSLATION] Build Date",
-    "environment": "[NEEDS TRANSLATION] Environment",
-    "viewOnGithub": "[NEEDS TRANSLATION] View on GitHub",
-    "issueReporting": "[NEEDS TRANSLATION] Issue Reporting",
-    "issueReportingDescription": "[NEEDS TRANSLATION] When reporting issues on GitHub, please include this version information:",
-    "copyVersionInfo": "[NEEDS TRANSLATION] Copy Version Info",
-    "reportIssue": "[NEEDS TRANSLATION] Report Issue"
+    "title": "Informations de Version",
+    "appVersion": "Version de l'App",
+    "gitCommit": "Commit Git",
+    "branch": "Branche",
+    "buildDate": "Date de Compilation",
+    "environment": "Environnement",
+    "viewOnGithub": "Voir sur GitHub",
+    "issueReporting": "Signalement de Problèmes",
+    "issueReportingDescription": "Lors du signalement de problèmes sur GitHub, veuillez inclure ces informations de version :",
+    "copyVersionInfo": "Copier les Infos de Version",
+    "reportIssue": "Signaler un Problème"
   }
 }

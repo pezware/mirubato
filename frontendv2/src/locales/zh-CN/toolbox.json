@@ -11,7 +11,12 @@
       "playbackMode": "播放模式",
       "stop": "停止",
       "tempo": "速度",
-      "volume": "音量"
+      "volume": "音量",
+      "modes": {
+        "chord": "和弦",
+        "scale": "音阶",
+        "arpeggio": "琶音"
+      }
     },
     "keyDetails": {
       "characteristics": "特征",
@@ -187,7 +192,10 @@
     "wasHelpful": "这有帮助吗？",
     "watchVideo": "观看视频{{number}}",
     "wikipedia": "维基百科",
-    "youtubeVideos": "YouTube视频"
+    "youtubeVideos": "YouTube视频",
+    "searchResultsFor": "\"{{term}}\" 的搜索结果",
+    "searchWikipediaMore": "搜索维基百科获取更多信息",
+    "youtubeSearch": "YouTube 搜索"
   },
   "metronome": {
     "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",

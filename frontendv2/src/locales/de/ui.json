@@ -19,6 +19,43 @@
     },
     "imageLoading": {
       "loading": "Bild wird geladen..."
+    },
+    "segmentedControl": {
+      "ariaLabel": "Ansichts-Selektor"
+    },
+    "metronome": {
+      "playPause": "Abspielen/Pausieren",
+      "expand": "Metronom erweitern",
+      "collapse": "Zuklappen"
+    },
+    "syncIndicator": {
+      "manualSync": "Manuelle Synchronisation",
+      "enableRealTimeSync": "Echtzeit-Synchronisation aktivieren (experimentell)"
+    },
+    "scoreViewer": {
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite"
+    },
+    "entryCard": {
+      "viewDetails": "Details anzeigen",
+      "editEntry": "Eintrag bearbeiten",
+      "deleteEntry": "Eintrag löschen"
+    },
+    "practiceReports": {
+      "editPieceName": "Stück-Name bearbeiten"
+    },
+    "scoreUpload": {
+      "titlePlaceholder": "Titel (optional - KI wird extrahieren)",
+      "composerPlaceholder": "Komponist (optional - KI wird extrahieren)",
+      "urlPlaceholder": "https://beispiel.com/noten.pdf"
+    },
+    "goals": {
+      "measuresPlaceholder": "z.B. 8-12, 15-16, 24-32"
+    },
+    "filters": {
+      "minPlaceholder": "Min",
+      "maxPlaceholder": "Max",
+      "defaultValuePlaceholder": "0"
     }
   }
 }

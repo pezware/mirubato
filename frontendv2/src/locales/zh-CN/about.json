@@ -38,22 +38,22 @@
     }
   },
   "tabs": {
-    "about": "[NEEDS TRANSLATION] About",
-    "version": "[NEEDS TRANSLATION] Version",
-    "credits": "[NEEDS TRANSLATION] Credits",
-    "contact": "[NEEDS TRANSLATION] Contact"
+    "about": "关于",
+    "version": "版本",
+    "credits": "制作团队",
+    "contact": "联系"
   },
   "version": {
-    "title": "[NEEDS TRANSLATION] Version Information",
-    "appVersion": "[NEEDS TRANSLATION] App Version",
-    "gitCommit": "[NEEDS TRANSLATION] Git Commit",
-    "branch": "[NEEDS TRANSLATION] Branch",
-    "buildDate": "[NEEDS TRANSLATION] Build Date",
-    "environment": "[NEEDS TRANSLATION] Environment",
-    "viewOnGithub": "[NEEDS TRANSLATION] View on GitHub",
-    "issueReporting": "[NEEDS TRANSLATION] Issue Reporting",
-    "issueReportingDescription": "[NEEDS TRANSLATION] When reporting issues on GitHub, please include this version information:",
-    "copyVersionInfo": "[NEEDS TRANSLATION] Copy Version Info",
-    "reportIssue": "[NEEDS TRANSLATION] Report Issue"
+    "title": "版本信息",
+    "appVersion": "应用程序版本",
+    "gitCommit": "Git 提交",
+    "branch": "分支",
+    "buildDate": "构建日期",
+    "environment": "环境",
+    "viewOnGithub": "在 GitHub 上查看",
+    "issueReporting": "问题反馈",
+    "issueReportingDescription": "在 GitHub 上反馈问题时，请包含这些版本信息：",
+    "copyVersionInfo": "复制版本信息",
+    "reportIssue": "反馈问题"
   }
 }

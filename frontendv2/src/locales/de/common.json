@@ -292,15 +292,15 @@
     "license": "Lizenz"
   },
   "sync": {
-    "offline": "[NEEDS TRANSLATION] Offline mode",
-    "syncing": "[NEEDS TRANSLATION] Syncing...",
-    "synced": "[NEEDS TRANSLATION] Synced",
-    "error": "[NEEDS TRANSLATION] Sync error",
-    "justNow": "[NEEDS TRANSLATION] Just now",
-    "minutesAgo": "[NEEDS TRANSLATION] {{minutes}} min ago",
-    "hoursAgo": "[NEEDS TRANSLATION] {{hours}} hr ago",
-    "notSynced": "[NEEDS TRANSLATION] Not synced",
-    "offlineMode": "[NEEDS TRANSLATION] Offline mode - sync disabled",
-    "syncNow": "[NEEDS TRANSLATION] Sync now"
+    "offline": "Offline-Modus",
+    "syncing": "Synchronisiere...",
+    "synced": "Synchronisiert",
+    "error": "Synchronisationsfehler",
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {{minutes}} Min",
+    "hoursAgo": "vor {{hours}} Std",
+    "notSynced": "Nicht synchronisiert",
+    "offlineMode": "Offline-Modus - Synchronisation deaktiviert",
+    "syncNow": "Jetzt synchronisieren"
   }
 }

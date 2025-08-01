@@ -23,7 +23,7 @@ export function SyncIndicator({
   showText = true,
   showRealtimeToggle = true,
 }: SyncIndicatorProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'ui'])
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const {
     isLocalMode,
@@ -240,7 +240,7 @@ export function SyncIndicator({
           onClick={handleManualSync}
           disabled={isLocalMode || isSyncing}
           className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Manual sync"
+          title={t('ui:components.syncIndicator.manualSync')}
         >
           <IconRefresh
             className={`h-4 w-4 text-gray-400 ${
@@ -258,7 +258,7 @@ export function SyncIndicator({
             onClick={handleRealtimeSyncToggle}
             disabled={!isAuthenticated}
             className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 transition-colors"
-            title="Enable real-time sync (experimental)"
+            title={t('ui:components.syncIndicator.enableRealTimeSync')}
           >
             Enable Real-time
           </button>

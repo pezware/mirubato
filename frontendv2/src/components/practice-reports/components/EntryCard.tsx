@@ -18,7 +18,7 @@ interface EntryCardProps {
 }
 
 export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['common', 'ui'])
   const [isExpanded, setIsExpanded] = useState(false)
   const date = new Date(entry.timestamp)
 
@@ -97,7 +97,7 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
-            aria-label="View details"
+            aria-label={t('ui:components.entryCard.viewDetails')}
           >
             <Eye className="w-5 h-5" />
           </button>
@@ -105,7 +105,7 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
             <button
               onClick={() => onEdit(entry)}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
-              aria-label="Edit entry"
+              aria-label={t('ui:components.entryCard.editEntry')}
             >
               <svg
                 className="w-5 h-5"
@@ -126,7 +126,7 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
             <button
               onClick={() => onDelete(entry)}
               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-              aria-label="Delete entry"
+              aria-label={t('ui:components.entryCard.deleteEntry')}
             >
               <svg
                 className="w-5 h-5"

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '../../utils/cn'
 
 interface Tab {
@@ -22,11 +23,12 @@ export const Tabs: React.FC<TabsProps> = ({
   onTabChange,
   className,
 }) => {
+  const { t } = useTranslation('ui')
   return (
     <div className={cn('border-b border-morandi-stone-200', className)}>
       <nav
         className="-mb-px flex space-x-2 sm:space-x-4 md:space-x-8 overflow-x-auto scrollbar-hide"
-        aria-label="Tabs"
+        aria-label={t('components.tabs.ariaLabel')}
       >
         {tabs.map(tab => (
           <button

@@ -11,7 +11,12 @@
       "playbackMode": "Wiedergabemodus",
       "stop": "Stoppen",
       "tempo": "Tempo",
-      "volume": "Lautstärke"
+      "volume": "Lautstärke",
+      "modes": {
+        "chord": "Akkord",
+        "scale": "Tonleiter",
+        "arpeggio": "Arpeggio"
+      }
     },
     "keyDetails": {
       "characteristics": "Eigenschaften",
@@ -187,7 +192,10 @@
     "wasHelpful": "War das hilfreich?",
     "watchVideo": "Video {{number}} ansehen",
     "wikipedia": "Wikipedia",
-    "youtubeVideos": "YouTube-Videos"
+    "youtubeVideos": "YouTube-Videos",
+    "searchResultsFor": "Suchergebnisse für \"{{term}}\"",
+    "searchWikipediaMore": "Wikipedia für weitere Informationen durchsuchen",
+    "youtubeSearch": "YouTube-Suche"
   },
   "metronome": {
     "clickToCreate": "Klicken Sie auf das Raster, um Ihr eigenes Rhythmusmuster zu erstellen. Jede Zeile stellt eine andere Klangschicht dar.",

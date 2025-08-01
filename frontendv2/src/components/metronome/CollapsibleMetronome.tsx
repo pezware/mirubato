@@ -8,6 +8,7 @@ import {
   Minus,
   Volume2,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getPatternMetronome } from '../../services/patternMetronomeService'
 import metronomeData from '../../data/metronomePatterns.json'
 import type { MetronomePattern } from '../../types/metronome'
@@ -30,6 +31,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   position: propPosition,
   onTripleClick,
 }) => {
+  const { t } = useTranslation('ui')
   const { settings, updateSettings } = useMetronomeSettings()
 
   // Use prop position if provided, otherwise use settings position
@@ -292,7 +294,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               className={`w-12 h-12 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
                 isFlashing && isPlaying ? 'scale-110 bg-morandi-purple-500' : ''
               }`}
-              title="Play/Pause"
+              title={t('components.metronome.playPause')}
             >
               {isPlaying ? <Pause size={18} /> : <Play size={18} />}
             </button>
@@ -330,7 +332,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
 
             <button
               className="w-12 h-12 text-morandi-stone-400 flex items-center justify-center hover:text-morandi-stone-600"
-              title="Expand metronome"
+              title={t('components.metronome.expand')}
             >
               <ChevronLeft size={18} />
             </button>
@@ -348,7 +350,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                   updateSettings({ isExpanded: false })
                 }}
                 className="text-morandi-stone-400 hover:text-morandi-stone-600"
-                title="Collapse"
+                title={t('components.metronome.collapse')}
               >
                 <ChevronRight size={18} />
               </button>

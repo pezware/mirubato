@@ -136,7 +136,9 @@ describe('PiecesStatistics', () => {
     )
 
     // Click edit button for the first piece
-    const editButtons = screen.getAllByTitle('Edit piece name')
+    const editButtons = screen.getAllByTitle(
+      'components.practiceReports.editPieceName'
+    )
     fireEvent.click(editButtons[0])
 
     // Wait for modal to appear
@@ -187,7 +189,9 @@ describe('PiecesStatistics', () => {
     )
 
     // Click edit button for the second piece (Mozart)
-    const editButtons = screen.getAllByTitle('Edit piece name')
+    const editButtons = screen.getAllByTitle(
+      'components.practiceReports.editPieceName'
+    )
     fireEvent.click(editButtons[1])
 
     // Wait for modal to appear
@@ -256,7 +260,9 @@ describe('PiecesStatistics', () => {
     )
 
     // Click edit button
-    const editButton = screen.getByTitle('Edit piece name')
+    const editButton = screen.getByTitle(
+      'components.practiceReports.editPieceName'
+    )
     fireEvent.click(editButton)
 
     // Wait for modal and change title

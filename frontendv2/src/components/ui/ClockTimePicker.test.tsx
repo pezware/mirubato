@@ -15,6 +15,7 @@ vi.mock('react-i18next', () => ({
         cancel: 'Cancel',
         'timePicker.confirmTime': 'Confirm Time',
         'timePicker.clickToTypeManually': 'Click to type time manually',
+        'ui:components.timePicker.placeholder': 'HH:MM',
       }
       return translations[key] || key
     },
@@ -85,12 +86,16 @@ describe('ClockTimePicker', () => {
     const trigger = screen.getByText('9:00 AM').parentElement
     fireEvent.click(trigger!)
 
-    // Click on time display to edit
-    const timeDisplay = screen.getByText('09:00')
+    // Wait for the dropdown to be fully rendered, then click on time display to edit
+    await waitFor(() => {
+      expect(screen.getByText('Select Practice Time')).toBeInTheDocument()
+    })
+
+    const timeDisplay = screen.getByTitle('Click to type time manually')
     fireEvent.click(timeDisplay)
 
-    // Should show input field
-    const input = screen.getByPlaceholderText('HH:MM')
+    // Should show input field after state update
+    const input = await screen.findByPlaceholderText('HH:MM')
     expect(input).toBeInTheDocument()
 
     // Type new time
@@ -171,12 +176,16 @@ describe('ClockTimePicker', () => {
       )
     ).toBeInTheDocument()
 
-    // Click on time display to edit manually
-    const timeDisplay = screen.getByText('09:00')
+    // Wait for the dropdown to be fully rendered, then click on time display to edit manually
+    await waitFor(() => {
+      expect(screen.getByText('Select Practice Time')).toBeInTheDocument()
+    })
+
+    const timeDisplay = screen.getByTitle('Click to type time manually')
     fireEvent.click(timeDisplay)
 
     // Type a precise time (not on 5-minute interval)
-    const input = screen.getByPlaceholderText('HH:MM')
+    const input = await screen.findByPlaceholderText('HH:MM')
     fireEvent.change(input, { target: { value: '09:23' } })
     fireEvent.blur(input)
 
