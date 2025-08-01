@@ -1,0 +1,146 @@
+# Mirubato Sync Worker Configuration
+name = "mirubato-sync-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "1362434665780520e89f9f06b1057d24"
+
+# No build command needed - wrangler handles TypeScript directly
+
+# Durable Objects configuration
+[[durable_objects.bindings]]
+name = "SYNC_COORDINATOR"
+class_name = "SyncCoordinator"
+
+# Migration for existing Durable Objects (if any)
+[[migrations]]
+tag = "v1"
+new_classes = ["SyncCoordinator"]
+
+# Production environment configuration (default)
+workers_dev = false
+
+[vars]
+ENVIRONMENT = "production"
+API_URL = "https://api.mirubato.com"
+FRONTEND_URL = "https://mirubato.com"
+
+# Observability
+[observability.logs]
+enabled = true
+
+[[routes]]
+pattern = "sync.mirubato.com"
+custom_domain = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+# Rate limiting configuration
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 100, period = 60 }
+
+# Local development configuration
+[env.local]
+name = "mirubato-sync-worker-local"
+
+[env.local.vars]
+ENVIRONMENT = "local"
+API_URL = "http://api-mirubato.localhost:9797"
+FRONTEND_URL = "http://www-mirubato.localhost:4000"
+JWT_SECRET = "local-jwt-secret-for-development-only"
+
+# Observability
+[env.local.observability.logs]
+enabled = false
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "local-db"  # Placeholder for local dev - wrangler will manage the actual file
+
+# Durable Objects configuration for local
+[[env.local.durable_objects.bindings]]
+name = "SYNC_COORDINATOR"
+class_name = "SyncCoordinator"
+
+# Rate limiting for local development
+[[env.local.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 1000, period = 60 }
+
+# Staging environment
+[env.staging]
+name = "mirubato-sync-worker-staging"
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+API_URL = "https://api-staging.mirubato.com"
+FRONTEND_URL = "https://staging.mirubato.com"
+
+# Observability
+[env.staging.observability.logs]
+enabled = true
+
+[[env.staging.routes]]
+pattern = "sync-staging.mirubato.com"
+custom_domain = true
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mirubato-dev"
+database_id = "4510137a-7fdf-4fcd-83c9-a1b0adb7fe3e"
+
+# Durable Objects configuration for staging
+[[env.staging.durable_objects.bindings]]
+name = "SYNC_COORDINATOR"
+class_name = "SyncCoordinator"
+
+# Rate limiting for staging
+[[env.staging.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 100, period = 60 }
+
+# Production environment (explicit config for consistency)
+[env.production]
+name = "mirubato-sync-worker"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+API_URL = "https://api.mirubato.com"
+FRONTEND_URL = "https://mirubato.com"
+
+# Observability
+[env.production.observability.logs]
+enabled = true
+
+[[env.production.routes]]
+pattern = "sync.mirubato.com"
+custom_domain = true
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+# Durable Objects configuration for production
+[[env.production.durable_objects.bindings]]
+name = "SYNC_COORDINATOR"
+class_name = "SyncCoordinator"
+
+[[env.production.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1234"
+simple = { limit = 100, period = 60 }

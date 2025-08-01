@@ -50,7 +50,7 @@ describe('authStore - Data Preservation', () => {
         score1: { title: 'Nocturne', composer: 'Chopin' },
       },
       setLocalMode: vi.fn(),
-      loadEntries: vi.fn().mockResolvedValue(undefined),
+      manualSync: vi.fn().mockResolvedValue(undefined),
     }))
 
     // Mock localStorage
