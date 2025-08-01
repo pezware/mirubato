@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   Plus,
   Clock,
+  Info,
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import Button from '../ui/Button'
@@ -213,6 +214,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
+        {/* About page link */}
+        <div className="border-t border-gray-200 pt-3 mt-4">
+          <Link
+            to="/about"
+            className={`
+              flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
+                isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
+              } rounded-lg text-sm font-medium transition-all
+              text-gray-600 hover:bg-gray-100 hover:text-gray-900
+            `}
+            title={isCollapsed ? t('common:navigation.about') : undefined}
+          >
+            <Info className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+            {!isCollapsed && t('common:navigation.about')}
+          </Link>
+        </div>
+
         {/* Spacer to push user section to bottom */}
         <div className="flex-1 min-h-[60px]" />
       </nav>
@@ -223,9 +241,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         {isAuthenticated ? (
           <>
-            {/* Sync Indicator */}
-            <div className={`mb-3 ${isCollapsed ? 'flex justify-center' : ''}`}>
-              <SyncIndicator showText={!isCollapsed} />
+            {/* Sync Indicator - Aligned with nav items */}
+            <div
+              className={`mb-3 flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'} rounded-lg hover:bg-gray-100 transition-colors`}
+            >
+              <SyncIndicator
+                showText={!isCollapsed}
+                className="flex items-center gap-2"
+              />
             </div>
 
             <div className="relative" ref={dropdownRef}>

@@ -11,6 +11,7 @@ import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
 import { GroupedData } from '../../../../types/reporting'
 import { LogbookEntry } from '../../../../api/logbook'
+import { toTitleCase } from '../../../../utils/textFormatting'
 import { format } from 'date-fns'
 
 interface GroupedDataTableProps {
@@ -434,8 +435,8 @@ function EntryRow({
                         key={i}
                         className="px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-xs"
                       >
-                        {piece.title}
-                        {piece.composer && ` - ${piece.composer}`}
+                        {toTitleCase(piece.title)}
+                        {piece.composer && ` - ${toTitleCase(piece.composer)}`}
                       </span>
                     ))}
                   </div>
