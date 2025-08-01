@@ -131,50 +131,59 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
-              {/* Title and Composer - Mobile First */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 mb-2">
+              {/* Title and Composer */}
+              <div className="mb-2">
                 <h3 className="font-serif text-base font-medium text-stone-900 break-words">
                   {toTitleCase(item.scoreComposer)} -{' '}
                   {toTitleCase(item.scoreTitle)}
                 </h3>
-                {/* Status Badge - Mobile: Below title, Desktop: Inline */}
+              </div>
+
+              {/* Metadata - Compact single line layout optimized for mobile */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600 flex-wrap">
+                {/* Status Badge - Moved inline for more compact layout */}
                 <span
-                  className={`self-start sm:self-center px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium mt-1 sm:mt-0 inline-block`}
+                  className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium flex-shrink-0`}
                 >
                   {status.label}
                 </span>
-              </div>
 
-              {/* Metadata - Stack on mobile for better readability */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-stone-600">
+                {/* Last practiced */}
                 <span
-                  className={
+                  className={`flex-shrink-0 ${
                     needsAttention ? 'text-orange-600 font-medium' : ''
-                  }
+                  }`}
                 >
                   {lastPracticeText}
                 </span>
-                <div className="flex items-center gap-3">
-                  {isActive && recentSessionDuration > 0 && (
-                    <>
-                      <span className="hidden sm:inline">•</span>
-                      <span>{formatDuration(recentSessionDuration)}</span>
-                    </>
-                  )}
-                  <span className="hidden sm:inline">•</span>
-                  <span>
-                    {formatDuration(totalPracticeTime)}{' '}
-                    {t('repertoire:totalSessions')}
-                  </span>
-                  {activeGoal && (
-                    <>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="truncate">
-                        {t('common:goal')}: {activeGoal.title}
-                      </span>
-                    </>
-                  )}
-                </div>
+
+                {/* Separator */}
+                <span className="text-stone-400 flex-shrink-0">•</span>
+
+                {/* Total practice time */}
+                <span className="flex-shrink-0">
+                  {formatDuration(totalPracticeTime)}
+                </span>
+
+                {/* Recent session duration (if active) */}
+                {isActive && recentSessionDuration > 0 && (
+                  <>
+                    <span className="text-stone-400 flex-shrink-0">•</span>
+                    <span className="flex-shrink-0">
+                      {formatDuration(recentSessionDuration)}
+                    </span>
+                  </>
+                )}
+
+                {/* Goal (if present) - will wrap to next line if needed */}
+                {activeGoal && (
+                  <>
+                    <span className="text-stone-400 flex-shrink-0">•</span>
+                    <span className="truncate min-w-0">
+                      {t('common:goal')}: {activeGoal.title}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
