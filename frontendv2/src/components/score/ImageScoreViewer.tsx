@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { scoreService } from '../../services/scoreService'
 
 interface ImageScoreViewerProps {
@@ -24,6 +25,7 @@ export default function ImageScoreViewer({
   onPageChange,
   className = '',
 }: ImageScoreViewerProps) {
+  const { t } = useTranslation('ui')
   const [pages, setPages] = useState<ScorePage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -172,7 +174,7 @@ export default function ImageScoreViewer({
             onClick={() => onPageChange?.(currentPage - 1)}
             disabled={currentPage <= 1}
             className="p-2 bg-white/90 backdrop-blur rounded-lg shadow-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            aria-label="Previous page"
+            aria-label={t('components.scoreViewer.previousPage')}
           >
             <svg
               className="w-5 h-5"
@@ -197,7 +199,7 @@ export default function ImageScoreViewer({
             onClick={() => onPageChange?.(currentPage + 1)}
             disabled={currentPage >= pages.length}
             className="p-2 bg-white/90 backdrop-blur rounded-lg shadow-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            aria-label="Next page"
+            aria-label={t('components.scoreViewer.nextPage')}
           >
             <svg
               className="w-5 h-5"

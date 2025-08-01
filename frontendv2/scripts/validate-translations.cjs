@@ -16,6 +16,8 @@ const NAMESPACES = [
   'scorebook',
   'toolbox',
   'repertoire',
+  'about',
+  'ui',
 ]
 const REFERENCE_LANGUAGE = 'en' // English as the reference language
 

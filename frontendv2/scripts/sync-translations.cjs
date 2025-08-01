@@ -17,6 +17,7 @@ const NAMESPACES = [
   'toolbox',
   'repertoire',
   'about',
+  'ui',
 ]
 const REFERENCE_LANGUAGE = 'en'
 

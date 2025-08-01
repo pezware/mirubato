@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '../../utils/cn'
 
 export interface SegmentOption {
@@ -24,6 +25,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   size = 'md',
   fullWidth = false,
 }) => {
+  const { t } = useTranslation('ui')
   const sizeClasses = {
     sm: 'p-0.5',
     md: 'p-1',
@@ -45,7 +47,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         className
       )}
       role="tablist"
-      aria-label="View selector"
+      aria-label={t('components.segmentedControl.ariaLabel')}
     >
       {options.map(option => {
         const isActive = value === option.value

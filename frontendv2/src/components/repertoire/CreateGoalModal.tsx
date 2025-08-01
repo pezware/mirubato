@@ -40,7 +40,7 @@ export function CreateGoalModal({
   onClose,
   scoreId,
 }: CreateGoalModalProps) {
-  const { t } = useTranslation(['repertoire', 'common'])
+  const { t } = useTranslation(['repertoire', 'common', 'ui'])
   const { createGoal, initializeGoalWithHistory } = useRepertoireStore()
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
@@ -458,7 +458,7 @@ export function CreateGoalModal({
           <Input
             value={focusMeasures}
             onChange={e => setFocusMeasures(e.target.value)}
-            placeholder="e.g., 8-12, 15-16, 24-32"
+            placeholder={t('ui:components.goals.measuresPlaceholder')}
             className="w-full"
           />
           <p className="text-xs text-stone-500 mt-1">

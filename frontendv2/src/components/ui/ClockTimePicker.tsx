@@ -13,7 +13,7 @@ export default function ClockTimePicker({
   onChange,
   className = '',
 }: ClockTimePickerProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'ui'])
   const [isOpen, setIsOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTime, setIsEditingTime] = useState(false)
@@ -419,7 +419,7 @@ export default function ClockTimePicker({
                 onBlur={handleTimeInputBlur}
                 onKeyDown={handleTimeInputKeyDown}
                 className="text-xl sm:text-2xl font-light bg-white text-gray-800 text-center rounded px-2 py-1 w-24 sm:w-28 focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 border border-gray-300"
-                placeholder="HH:MM"
+                placeholder={t('ui:components.timePicker.placeholder')}
               />
             ) : (
               <div

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Edit2 } from 'lucide-react'
 import { EnhancedAnalyticsData } from '../../types/reporting'
 import { EditPieceModal } from './EditPieceModal'
@@ -22,6 +23,7 @@ export function PiecesStatistics({
   formatDuration,
   setSelectedPiece,
 }: PiecesStatisticsProps) {
+  const { t } = useTranslation('ui')
   const [editingPiece, setEditingPiece] = useState<{
     title: string
     composer?: string
@@ -154,7 +156,7 @@ export function PiecesStatistics({
                       size="sm"
                       onClick={e => handleEditPiece(piece.key, e)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                      title="Edit piece name"
+                      title={t('components.practiceReports.editPieceName')}
                     >
                       <Edit2 className="w-3 h-3" />
                     </Button>

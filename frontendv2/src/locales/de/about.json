@@ -38,22 +38,22 @@
     }
   },
   "tabs": {
-    "about": "[NEEDS TRANSLATION] About",
-    "version": "[NEEDS TRANSLATION] Version",
-    "credits": "[NEEDS TRANSLATION] Credits",
-    "contact": "[NEEDS TRANSLATION] Contact"
+    "about": "Über",
+    "version": "Version",
+    "credits": "Danksagungen",
+    "contact": "Kontakt"
   },
   "version": {
-    "title": "[NEEDS TRANSLATION] Version Information",
-    "appVersion": "[NEEDS TRANSLATION] App Version",
-    "gitCommit": "[NEEDS TRANSLATION] Git Commit",
-    "branch": "[NEEDS TRANSLATION] Branch",
-    "buildDate": "[NEEDS TRANSLATION] Build Date",
-    "environment": "[NEEDS TRANSLATION] Environment",
-    "viewOnGithub": "[NEEDS TRANSLATION] View on GitHub",
-    "issueReporting": "[NEEDS TRANSLATION] Issue Reporting",
-    "issueReportingDescription": "[NEEDS TRANSLATION] When reporting issues on GitHub, please include this version information:",
-    "copyVersionInfo": "[NEEDS TRANSLATION] Copy Version Info",
-    "reportIssue": "[NEEDS TRANSLATION] Report Issue"
+    "title": "Versionsinformationen",
+    "appVersion": "App-Version",
+    "gitCommit": "Git-Commit",
+    "branch": "Branch",
+    "buildDate": "Build-Datum",
+    "environment": "Umgebung",
+    "viewOnGithub": "Auf GitHub anzeigen",
+    "issueReporting": "Problemmeldung",
+    "issueReportingDescription": "Bei der Meldung von Problemen auf GitHub bitte diese Versionsinformationen einschließen:",
+    "copyVersionInfo": "Versionsinfo kopieren",
+    "reportIssue": "Problem melden"
   }
 }
