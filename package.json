@@ -29,13 +29,15 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@playwright/test": "^1.53.1",
+    "@types/ws": "8.18.1",
     "diff-sequences": "^29.6.3",
     "husky": "^8.0.0",
     "lint-staged": "^16.1.0",
     "merge-stream": "^2.0.0",
     "prettier": "^3.5.3",
     "rollup": "^4.44.0",
-    "wrangler": "^4.20.5"
+    "wrangler": "^4.20.5",
+    "ws": "8.18.3"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",

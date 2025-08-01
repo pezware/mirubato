@@ -29,6 +29,9 @@ importers:
       '@playwright/test':
         specifier: ^1.53.1
         version: 1.54.1
+      '@types/ws':
+        specifier: 8.18.1
+        version: 8.18.1
       diff-sequences:
         specifier: ^29.6.3
         version: 29.6.3
@@ -50,6 +53,9 @@ importers:
       wrangler:
         specifier: ^4.20.5
         version: 4.25.0(@cloudflare/workers-types@4.20250726.0)
+      ws:
+        specifier: 8.18.3
+        version: 8.18.3
 
   api:
     dependencies:
@@ -2856,6 +2862,12 @@ packages:
     resolution:
       {
         integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==,
+      }
+
+  '@types/ws@8.18.1':
+    resolution:
+      {
+        integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==,
       }
 
   '@typescript-eslint/eslint-plugin@6.21.0':
@@ -7214,6 +7226,21 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.18.3:
+    resolution:
+      {
+        integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==,
+      }
+    engines: { node: '>=10.0.0' }
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xml-name-validator@5.0.0:
     resolution:
       {
@@ -8499,7 +8526,7 @@ snapshots:
 
   '@types/conventional-commits-parser@5.0.1':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 20.19.9
 
   '@types/deep-eql@4.0.2': {}
 
@@ -8562,6 +8589,10 @@ snapshots:
     optional: true
 
   '@types/uuid@10.0.0': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 20.19.9
 
   '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)':
     dependencies:
@@ -11475,6 +11506,8 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@8.18.0: {}
+
+  ws@8.18.3: {}
 
   xml-name-validator@5.0.0: {}
 

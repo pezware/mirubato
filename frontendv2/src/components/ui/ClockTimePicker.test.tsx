@@ -15,6 +15,7 @@ vi.mock('react-i18next', () => ({
         cancel: 'Cancel',
         'timePicker.confirmTime': 'Confirm Time',
         'timePicker.clickToTypeManually': 'Click to type time manually',
+        'ui:components.timePicker.placeholder': 'HH:MM',
       }
       return translations[key] || key
     },
