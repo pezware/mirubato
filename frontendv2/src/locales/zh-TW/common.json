@@ -296,7 +296,7 @@
     "syncing": "同步中...",
     "synced": "已同步",
     "error": "同步錯誤",
-    "justNow": "剛才",
+    "justNow": "剛才同步",
     "minutesAgo": "{{minutes}} 分鐘前",
     "hoursAgo": "{{hours}} 小時前",
     "notSynced": "未同步",
