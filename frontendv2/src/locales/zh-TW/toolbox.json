@@ -11,7 +11,12 @@
       "playbackMode": "播放模式",
       "stop": "停止",
       "tempo": "速度",
-      "volume": "音量"
+      "volume": "音量",
+      "modes": {
+        "chord": "和弦",
+        "scale": "音階",
+        "arpeggio": "琶音"
+      }
     },
     "keyDetails": {
       "characteristics": "特徵",

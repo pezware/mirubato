@@ -11,7 +11,12 @@
       "playbackMode": "Wiedergabemodus",
       "stop": "Stoppen",
       "tempo": "Tempo",
-      "volume": "Lautstärke"
+      "volume": "Lautstärke",
+      "modes": {
+        "chord": "Akkord",
+        "scale": "Tonleiter",
+        "arpeggio": "Arpeggio"
+      }
     },
     "keyDetails": {
       "characteristics": "Eigenschaften",

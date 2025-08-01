@@ -11,7 +11,12 @@
       "playbackMode": "Mode de lecture",
       "stop": "Arrêter",
       "tempo": "Tempo",
-      "volume": "Volume"
+      "volume": "Volume",
+      "modes": {
+        "chord": "Accord",
+        "scale": "Gamme",
+        "arpeggio": "Arpège"
+      }
     },
     "keyDetails": {
       "characteristics": "Caractéristiques",

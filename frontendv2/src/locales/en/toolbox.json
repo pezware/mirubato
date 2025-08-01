@@ -237,6 +237,11 @@
       "play": "Play",
       "stop": "Stop",
       "playbackMode": "Playback Mode",
+      "modes": {
+        "chord": "Chord",
+        "scale": "Scale",
+        "arpeggio": "Arpeggio"
+      },
       "tempo": "Tempo"
     },
     "keyDetails": {

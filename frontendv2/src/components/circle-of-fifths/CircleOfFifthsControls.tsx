@@ -116,9 +116,8 @@ const CircleOfFifthsControls: React.FC<CircleOfFifthsControlsProps> = ({
                 variant={playbackMode === mode ? 'primary' : 'secondary'}
                 size="sm"
                 onClick={() => onPlaybackModeChange(mode)}
-                className="capitalize"
               >
-                {mode}
+                {t(`toolbox:circleOfFifths.controls.modes.${mode}`)}
               </Button>
             ))}
           </div>
