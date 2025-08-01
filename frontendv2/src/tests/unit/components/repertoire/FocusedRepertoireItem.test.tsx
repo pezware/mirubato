@@ -183,9 +183,7 @@ describe('FocusedRepertoireItem', () => {
 
       expect(screen.getByText(/Test Composer.*Test Piece/)).toBeInTheDocument()
       expect(screen.getByText('repertoire:status.learning')).toBeInTheDocument()
-      expect(
-        screen.getByText(/120 min.*repertoire:totalSessions/)
-      ).toBeInTheDocument()
+      expect(screen.getByText('120 min')).toBeInTheDocument()
     })
 
     it('should show active goal if present', () => {

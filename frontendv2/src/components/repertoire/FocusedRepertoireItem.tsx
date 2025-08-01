@@ -129,43 +129,57 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
         {/* Main Content */}
         <div className="flex-1">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="font-serif text-base font-medium text-stone-900">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              {/* Title and Composer */}
+              <div className="mb-2">
+                <h3 className="font-serif text-base font-medium text-stone-900 break-words">
                   {toTitleCase(item.scoreComposer)} -{' '}
                   {toTitleCase(item.scoreTitle)}
                 </h3>
-                {/* Status Badge */}
+              </div>
+
+              {/* Metadata - Compact single line layout optimized for mobile */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600 flex-wrap">
+                {/* Status Badge - Moved inline for more compact layout */}
                 <span
-                  className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium`}
+                  className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium flex-shrink-0`}
                 >
                   {status.label}
                 </span>
-              </div>
-              <div className="flex items-center gap-3 mt-1 text-sm text-stone-600">
+
+                {/* Last practiced */}
                 <span
-                  className={
+                  className={`flex-shrink-0 ${
                     needsAttention ? 'text-orange-600 font-medium' : ''
-                  }
+                  }`}
                 >
                   {lastPracticeText}
                 </span>
+
+                {/* Separator */}
+                <span className="text-stone-400 flex-shrink-0">•</span>
+
+                {/* Total practice time */}
+                <span className="flex-shrink-0">
+                  {formatDuration(totalPracticeTime)}
+                </span>
+
+                {/* Recent session duration (if active) */}
                 {isActive && recentSessionDuration > 0 && (
                   <>
-                    <span>•</span>
-                    <span>{formatDuration(recentSessionDuration)}</span>
+                    <span className="text-stone-400 flex-shrink-0">•</span>
+                    <span className="flex-shrink-0">
+                      {formatDuration(recentSessionDuration)}
+                    </span>
                   </>
                 )}
-                <span>•</span>
-                <span>
-                  {formatDuration(totalPracticeTime)}{' '}
-                  {t('repertoire:totalSessions')}
-                </span>
+
+                {/* Goal (if present) - will wrap to next line if needed */}
                 {activeGoal && (
                   <>
-                    <span>•</span>
-                    <span>
+                    <span className="text-stone-400 flex-shrink-0">•</span>
+                    <span className="truncate min-w-0">
                       {t('common:goal')}: {activeGoal.title}
                     </span>
                   </>
@@ -173,12 +187,12 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
               </div>
             </div>
 
-            {/* Delete Button */}
+            {/* Delete Button - Better mobile positioning */}
             {canDelete && (
-              <div className="ml-4">
+              <div className="flex-shrink-0 self-start">
                 {showDeleteConfirm ? (
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                    <span className="text-sm text-stone-600 sm:mr-2">
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-sm text-stone-600 text-right">
                       {t('repertoire:confirmDelete')}
                     </span>
                     <div className="flex gap-2">
@@ -187,6 +201,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                         size="sm"
                         onClick={handleDelete}
                         disabled={isDeleting}
+                        className="min-w-[44px] min-h-[44px]" // Touch target size
                       >
                         {t('common:yes')}
                       </Button>
@@ -195,6 +210,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                         size="sm"
                         onClick={() => setShowDeleteConfirm(false)}
                         disabled={isDeleting}
+                        className="min-w-[44px] min-h-[44px]" // Touch target size
                       >
                         {t('common:cancel')}
                       </Button>
@@ -209,7 +225,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                       setShowDeleteConfirm(true)
                     }}
                     title={t('repertoire:delete')}
-                    className="text-stone-500 hover:text-red-600"
+                    className="text-stone-500 hover:text-red-600 min-w-[44px] min-h-[44px] p-2" // Touch target size
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

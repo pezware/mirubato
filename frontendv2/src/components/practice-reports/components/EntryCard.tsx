@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LogbookEntry } from '../../../api/logbook'
 import { formatDuration } from '../../../utils/dateUtils'
+import { toTitleCase } from '../../../utils/textFormatting'
 import { Clock, Eye, ChevronDown } from 'lucide-react'
 import {
   IconMoodAngry,
@@ -33,11 +34,11 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
         {entry.pieces && entry.pieces.length > 0 ? (
           <>
             <h3 className="font-serif text-lg sm:text-xl font-medium text-gray-900 leading-tight">
-              {entry.pieces[0].title}
+              {toTitleCase(entry.pieces[0].title)}
             </h3>
             {entry.pieces[0].composer && (
               <p className="font-serif text-base text-gray-700 mt-0.5">
-                {entry.pieces[0].composer}
+                {toTitleCase(entry.pieces[0].composer)}
               </p>
             )}
             {entry.pieces.length > 1 && (

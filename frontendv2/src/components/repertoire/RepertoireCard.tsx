@@ -135,25 +135,27 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
         <div className="space-y-3">
           {/* Header Row */}
           <div className="flex items-start justify-between gap-4">
-            {/* Title and Composer - Clickable */}
+            {/* Title and Composer - Clickable with improved overflow handling */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex-1 text-left group cursor-pointer"
+              className="flex-1 text-left group cursor-pointer min-w-0" // min-w-0 allows flex child to shrink
             >
-              <div className="flex items-center gap-2 group-hover:text-stone-700 transition-colors duration-200">
-                <MusicTitle
-                  as="span"
-                  className="text-stone-900 group-hover:text-stone-700"
-                >
-                  {toTitleCase(item.scoreTitle)}
-                </MusicTitle>
-                <span className="text-stone-600">-</span>
-                <MusicComposer
-                  as="span"
-                  className="text-stone-700 group-hover:text-stone-600"
-                >
-                  {toTitleCase(item.scoreComposer)}
-                </MusicComposer>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 group-hover:text-stone-700 transition-colors duration-200">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <MusicTitle
+                    as="span"
+                    className="text-stone-900 group-hover:text-stone-700 break-words leading-tight"
+                  >
+                    {toTitleCase(item.scoreTitle)}
+                  </MusicTitle>
+                  <span className="text-stone-600 flex-shrink-0">-</span>
+                  <MusicComposer
+                    as="span"
+                    className="text-stone-700 group-hover:text-stone-600 break-words leading-tight"
+                  >
+                    {toTitleCase(item.scoreComposer)}
+                  </MusicComposer>
+                </div>
               </div>
             </button>
 
@@ -217,26 +219,28 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
             </div>
           </div>
 
-          {/* Practice Summary */}
-          <div className="flex items-center text-sm text-stone-600">
-            <span>{practiceSummary.totalTime}</span>
-            <span className="mx-2">•</span>
-            <span>
-              {practiceSummary.sessionCount} {t('repertoire:sessions')}
-            </span>
-            {practiceSummary.lastPracticed && (
-              <>
-                <span className="mx-2">•</span>
-                <span>
-                  {t('repertoire:lastPracticed', {
-                    time: practiceSummary.lastPracticed,
-                  })}
-                </span>
-              </>
-            )}
+          {/* Practice Summary - Improved mobile layout */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 text-sm text-stone-600">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <span className="flex-shrink-0">{practiceSummary.totalTime}</span>
+              <span className="flex-shrink-0">•</span>
+              <span className="flex-shrink-0">
+                {practiceSummary.sessionCount} {t('repertoire:sessions')}
+              </span>
+              {practiceSummary.lastPracticed && (
+                <>
+                  <span className="flex-shrink-0">•</span>
+                  <span className="truncate">
+                    {t('repertoire:lastPracticed', {
+                      time: practiceSummary.lastPracticed,
+                    })}
+                  </span>
+                </>
+              )}
+            </div>
             {/* Expand/Collapse Indicator */}
             <span
-              className={`ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              className={`ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''} flex-shrink-0`}
             >
               <ChevronDown className="w-4 h-4 text-stone-400" />
             </span>

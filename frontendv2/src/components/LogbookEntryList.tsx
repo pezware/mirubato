@@ -13,6 +13,7 @@ import ManualEntryForm from './ManualEntryForm'
 import TimelineNav, { type TimelineLevel } from './ui/TimelineNav'
 import { MusicTitle, MusicComposer } from './ui'
 import { cn } from '../utils/cn'
+import { toTitleCase } from '../utils/textFormatting'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -606,7 +607,7 @@ export default function LogbookEntryList({
                                 as="span"
                                 className="text-morandi-stone-700 text-sm font-normal"
                               >
-                                {piece.title}
+                                {toTitleCase(piece.title)}
                               </MusicTitle>
                               {piece.composer && (
                                 <>
@@ -617,7 +618,7 @@ export default function LogbookEntryList({
                                     as="span"
                                     className="text-morandi-stone-600 text-sm"
                                   >
-                                    {piece.composer}
+                                    {toTitleCase(piece.composer)}
                                   </MusicComposer>
                                 </>
                               )}
