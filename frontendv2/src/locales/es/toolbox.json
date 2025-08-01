@@ -192,7 +192,10 @@
     "wasHelpful": "¿Fue útil?",
     "watchVideo": "Ver video {{number}}",
     "wikipedia": "Wikipedia",
-    "youtubeVideos": "Videos de YouTube"
+    "youtubeVideos": "Videos de YouTube",
+    "searchResultsFor": "Resultados de búsqueda para \"{{term}}\"",
+    "searchWikipediaMore": "Buscar en Wikipedia para más información",
+    "youtubeSearch": "Búsqueda en YouTube"
   },
   "metronome": {
     "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",

@@ -192,7 +192,10 @@
     "wasHelpful": "Cela vous a-t-il aidé?",
     "watchVideo": "Regarder la vidéo {{number}}",
     "wikipedia": "Wikipédia",
-    "youtubeVideos": "Vidéos YouTube"
+    "youtubeVideos": "Vidéos YouTube",
+    "searchResultsFor": "Résultats de recherche pour \"{{term}}\"",
+    "searchWikipediaMore": "Rechercher sur Wikipédia pour plus d'informations",
+    "youtubeSearch": "Recherche YouTube"
   },
   "metronome": {
     "clickToCreate": "Cliquez sur la grille pour créer votre propre motif rythmique. Chaque ligne représente une couche sonore différente.",
