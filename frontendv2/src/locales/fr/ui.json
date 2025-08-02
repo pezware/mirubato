@@ -3,59 +3,59 @@
     "autocomplete": {
       "noResults": "Aucun résultat trouvé"
     },
-    "select": {
-      "placeholder": "Sélectionner une option"
+    "entryCard": {
+      "deleteEntry": "Supprimer l'entrée",
+      "editEntry": "Modifier l'entrée",
+      "viewDetails": "Voir les détails"
     },
-    "multiSelect": {
-      "placeholder": "Sélectionner des options"
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "Max",
+      "minPlaceholder": "Min"
     },
-    "timePicker": {
-      "placeholder": "HH:MM",
-      "am": "AM",
-      "pm": "PM"
-    },
-    "tabs": {
-      "ariaLabel": "Onglets"
+    "goals": {
+      "measuresPlaceholder": "ex., 8-12, 15-16, 24-32"
     },
     "imageLoading": {
       "loading": "Chargement de l'image..."
     },
-    "segmentedControl": {
-      "ariaLabel": "Sélecteur de vue"
-    },
     "metronome": {
-      "playPause": "Lecture/Pause",
+      "collapse": "Réduire",
       "expand": "Déployer le métronome",
-      "collapse": "Réduire"
+      "playPause": "Lecture/Pause"
     },
-    "syncIndicator": {
-      "manualSync": "Synchronisation manuelle",
-      "enableRealTimeSync": "Activer la synchronisation en temps réel (expérimental)"
-    },
-    "scoreViewer": {
-      "previousPage": "Page précédente",
-      "nextPage": "Page suivante"
-    },
-    "entryCard": {
-      "viewDetails": "Voir les détails",
-      "editEntry": "Modifier l'entrée",
-      "deleteEntry": "Supprimer l'entrée"
+    "multiSelect": {
+      "placeholder": "Sélectionner des options"
     },
     "practiceReports": {
       "editPieceName": "Modifier le nom de la pièce"
     },
     "scoreUpload": {
-      "titlePlaceholder": "Titre (optionnel - l'IA l'extraira)",
       "composerPlaceholder": "Compositeur (optionnel - l'IA l'extraira)",
+      "titlePlaceholder": "Titre (optionnel - l'IA l'extraira)",
       "urlPlaceholder": "https://exemple.com/partition.pdf"
     },
-    "goals": {
-      "measuresPlaceholder": "ex., 8-12, 15-16, 24-32"
+    "scoreViewer": {
+      "nextPage": "Page suivante",
+      "previousPage": "Page précédente"
     },
-    "filters": {
-      "minPlaceholder": "Min",
-      "maxPlaceholder": "Max",
-      "defaultValuePlaceholder": "0"
+    "segmentedControl": {
+      "ariaLabel": "Sélecteur de vue"
+    },
+    "select": {
+      "placeholder": "Sélectionner une option"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "Activer la synchronisation en temps réel (expérimental)",
+      "manualSync": "Synchronisation manuelle"
+    },
+    "tabs": {
+      "ariaLabel": "Onglets"
+    },
+    "timePicker": {
+      "am": "AM",
+      "placeholder": "HH:MM",
+      "pm": "PM"
     }
   }
 }

@@ -8,8 +8,6 @@
   "addNotesPrompt": "Añadir notas o instrucciones de práctica",
   "addToEntries": "Añadir a Entradas",
   "addToRepertoire": "Añadir a Piezas",
-  "fromLibrary": "De la Biblioteca",
-  "createCustom": "Crear Personalizado",
   "addToRepertoireQuestion": "¿Añadir a Tu Repertorio?",
   "addedToRepertoire": "{{piece}} añadido a tu repertorio",
   "additionalGoals": "+{{count}} objetivos más",
@@ -30,6 +28,7 @@
   "confirmDeleteGoal": "¿Estás seguro de que quieres eliminar este objetivo?",
   "confirmRemove": "¿Estás seguro de que quieres eliminar esta pieza de tu repertorio?",
   "continuePractice": "Continuar Práctica",
+  "createCustom": "Crear Personalizado",
   "currentProgress": "Progreso Actual",
   "delete": "Eliminar del repertorio",
   "deleteGoal": "Eliminar Objetivo",
@@ -41,6 +40,7 @@
   "editingNotesFor": "Editando notas para {{piece}}",
   "emptyRepertoire": "Tu repertorio está vacío. Comienza añadiendo piezas que quieras aprender o dominar.",
   "failedToAdd": "Error al añadir al repertorio",
+  "fromLibrary": "De la Biblioteca",
   "fromLogbook": "del diario de práctica",
   "goal": {
     "addMilestone": "Añadir Hito",
@@ -128,6 +128,13 @@
   "setGoal": "Establecer Objetivo",
   "showAll": "Mostrar todo",
   "showLess": "Mostrar menos",
+  "sort": {
+    "composerAsc": "Compositor (A-Z)",
+    "lastPracticed": "Practicado recientemente",
+    "mostPracticed": "Más practicado",
+    "statusLearningFirst": "Estado (Aprendiendo primero)",
+    "titleAsc": "Título (A-Z)"
+  },
   "startPractice": "Iniciar Práctica",
   "startTrackingPrompt": "Comienza a seguir tu progreso con esta pieza",
   "status": {
@@ -155,12 +162,5 @@
   "unit": "Unidad",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
   "viewDetails": "Ver Detalles",
-  "viewScore": "Ver Partitura",
-  "sort": {
-    "statusLearningFirst": "Estado (Aprendiendo primero)",
-    "lastPracticed": "Practicado recientemente",
-    "mostPracticed": "Más practicado",
-    "titleAsc": "Título (A-Z)",
-    "composerAsc": "Compositor (A-Z)"
-  }
+  "viewScore": "Ver Partitura"
 }

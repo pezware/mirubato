@@ -86,15 +86,15 @@
     "reset": "重設",
     "resume": "繼續",
     "runningHint": "計時器正在運行。點擊暫停以休息或停止以結束。",
+    "runningHintMobile": "點擊暫停",
     "start": "開始計時",
     "startHint": "點擊開始以計時您的練習時段",
+    "startHintMobile": "點擊開始",
     "startedAt": "開始時間",
     "stop": "停止並記錄",
     "stopHint": "點擊停止並記錄以建立此時長的練習記錄",
-    "title": "練習計時器",
-    "startHintMobile": "點擊開始",
-    "runningHintMobile": "點擊暫停",
-    "stopHintMobile": "繼續 • 停止"
+    "stopHintMobile": "繼續 • 停止",
+    "title": "練習計時器"
   },
   "title": "練習日誌",
   "viewScore": "查看樂譜"

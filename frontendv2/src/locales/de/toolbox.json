@@ -5,18 +5,18 @@
       "audio": "Audio",
       "disableAudio": "Audio deaktivieren",
       "enableAudio": "Audio aktivieren",
+      "modes": {
+        "arpeggio": "Arpeggio",
+        "chord": "Akkord",
+        "scale": "Tonleiter"
+      },
       "off": "Aus",
       "on": "Ein",
       "play": "Abspielen",
       "playbackMode": "Wiedergabemodus",
       "stop": "Stoppen",
       "tempo": "Tempo",
-      "volume": "Lautstärke",
-      "modes": {
-        "chord": "Akkord",
-        "scale": "Tonleiter",
-        "arpeggio": "Arpeggio"
-      }
+      "volume": "Lautstärke"
     },
     "keyDetails": {
       "characteristics": "Eigenschaften",
@@ -158,6 +158,8 @@
     "searchButton": "Suchen",
     "searchLabel": "Musikbegriffe suchen",
     "searchPlaceholder": "Musikbegriffe suchen...",
+    "searchResultsFor": "Suchergebnisse für \"{{term}}\"",
+    "searchWikipediaMore": "Wikipedia für weitere Informationen durchsuchen",
     "searchedAllLanguages": "In allen verfügbaren Sprachen gesucht",
     "showInLanguage": "Auf {{lang}} anzeigen",
     "showingRecentSearches": "Zeige die letzten {{count}} Suchen",
@@ -192,10 +194,8 @@
     "wasHelpful": "War das hilfreich?",
     "watchVideo": "Video {{number}} ansehen",
     "wikipedia": "Wikipedia",
-    "youtubeVideos": "YouTube-Videos",
-    "searchResultsFor": "Suchergebnisse für \"{{term}}\"",
-    "searchWikipediaMore": "Wikipedia für weitere Informationen durchsuchen",
-    "youtubeSearch": "YouTube-Suche"
+    "youtubeSearch": "YouTube-Suche",
+    "youtubeVideos": "YouTube-Videos"
   },
   "metronome": {
     "clickToCreate": "Klicken Sie auf das Raster, um Ihr eigenes Rhythmusmuster zu erstellen. Jede Zeile stellt eine andere Klangschicht dar.",

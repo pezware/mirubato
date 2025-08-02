@@ -86,15 +86,15 @@
     "reset": "Réinitialiser",
     "resume": "Reprendre",
     "runningHint": "Le chronomètre est en cours. Cliquez sur Pause pour faire une pause ou Arrêter pour terminer.",
+    "runningHintMobile": "Toucher pour pause",
     "start": "Démarrer le chronomètre",
     "startHint": "Cliquez sur Démarrer pour commencer à chronométrer votre session de pratique",
+    "startHintMobile": "Toucher pour démarrer",
     "startedAt": "Démarré à",
     "stop": "Arrêter et enregistrer",
     "stopHint": "Cliquez sur Arrêter et enregistrer pour créer une entrée de pratique avec cette durée",
-    "title": "Chronomètre de pratique",
-    "startHintMobile": "Toucher pour démarrer",
-    "runningHintMobile": "Toucher pour pause",
-    "stopHintMobile": "Reprendre • Arrêter"
+    "stopHintMobile": "Reprendre • Arrêter",
+    "title": "Chronomètre de pratique"
   },
   "title": "Journal",
   "viewScore": "Voir la partition"

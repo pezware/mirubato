@@ -5,18 +5,18 @@
       "audio": "Audio",
       "disableAudio": "Désactiver l'audio",
       "enableAudio": "Activer l'audio",
+      "modes": {
+        "arpeggio": "Arpège",
+        "chord": "Accord",
+        "scale": "Gamme"
+      },
       "off": "Désactivé",
       "on": "Activé",
       "play": "Jouer",
       "playbackMode": "Mode de lecture",
       "stop": "Arrêter",
       "tempo": "Tempo",
-      "volume": "Volume",
-      "modes": {
-        "chord": "Accord",
-        "scale": "Gamme",
-        "arpeggio": "Arpège"
-      }
+      "volume": "Volume"
     },
     "keyDetails": {
       "characteristics": "Caractéristiques",
@@ -158,6 +158,8 @@
     "searchButton": "Rechercher",
     "searchLabel": "Rechercher des termes musicaux",
     "searchPlaceholder": "Rechercher des termes musicaux...",
+    "searchResultsFor": "Résultats de recherche pour \"{{term}}\"",
+    "searchWikipediaMore": "Rechercher sur Wikipédia pour plus d'informations",
     "searchedAllLanguages": "Recherché dans toutes les langues disponibles",
     "showInLanguage": "Afficher en {{lang}}",
     "showingRecentSearches": "Affichage des {{count}} dernières recherches",
@@ -192,10 +194,8 @@
     "wasHelpful": "Cela vous a-t-il aidé?",
     "watchVideo": "Regarder la vidéo {{number}}",
     "wikipedia": "Wikipédia",
-    "youtubeVideos": "Vidéos YouTube",
-    "searchResultsFor": "Résultats de recherche pour \"{{term}}\"",
-    "searchWikipediaMore": "Rechercher sur Wikipédia pour plus d'informations",
-    "youtubeSearch": "Recherche YouTube"
+    "youtubeSearch": "Recherche YouTube",
+    "youtubeVideos": "Vidéos YouTube"
   },
   "metronome": {
     "clickToCreate": "Cliquez sur la grille pour créer votre propre motif rythmique. Chaque ligne représente une couche sonore différente.",

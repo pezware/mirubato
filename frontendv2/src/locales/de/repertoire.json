@@ -8,8 +8,6 @@
   "addNotesPrompt": "Notizen oder Übungsanweisungen hinzufügen",
   "addToEntries": "Zu Einträgen hinzufügen",
   "addToRepertoire": "Zu Stücken hinzufügen",
-  "fromLibrary": "Aus der Bibliothek",
-  "createCustom": "Eigenes erstellen",
   "addToRepertoireQuestion": "Zum Repertoire hinzufügen?",
   "addedToRepertoire": "{{piece}} wurde zu Ihrem Repertoire hinzugefügt",
   "additionalGoals": "+{{count}} weitere Ziele",
@@ -30,6 +28,7 @@
   "confirmDeleteGoal": "Sind Sie sicher, dass Sie dieses Ziel löschen möchten?",
   "confirmRemove": "Sind Sie sicher, dass Sie dieses Stück aus Ihrem Repertoire entfernen möchten?",
   "continuePractice": "Übung fortsetzen",
+  "createCustom": "Eigenes erstellen",
   "currentProgress": "Aktueller Fortschritt",
   "delete": "Aus Repertoire löschen",
   "deleteGoal": "Ziel löschen",
@@ -41,6 +40,7 @@
   "editingNotesFor": "Notizen bearbeiten für {{piece}}",
   "emptyRepertoire": "Ihr Repertoire ist leer. Beginnen Sie mit dem Hinzufügen von Stücken, die Sie lernen oder meistern möchten.",
   "failedToAdd": "Fehler beim Hinzufügen zum Repertoire",
+  "fromLibrary": "Aus der Bibliothek",
   "fromLogbook": "aus Logbuch",
   "goal": {
     "addMilestone": "Meilenstein hinzufügen",
@@ -128,6 +128,13 @@
   "setGoal": "Ziel setzen",
   "showAll": "Alle anzeigen",
   "showLess": "Weniger anzeigen",
+  "sort": {
+    "composerAsc": "Komponist (A-Z)",
+    "lastPracticed": "Kürzlich geübt",
+    "mostPracticed": "Meistgeübt",
+    "statusLearningFirst": "Status (Lernend zuerst)",
+    "titleAsc": "Titel (A-Z)"
+  },
   "startPractice": "Übung beginnen",
   "startTrackingPrompt": "Beginnen Sie, Ihren Fortschritt mit diesem Stück zu verfolgen",
   "status": {
@@ -155,12 +162,5 @@
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen",
-  "sort": {
-    "statusLearningFirst": "Status (Lernend zuerst)",
-    "lastPracticed": "Kürzlich geübt",
-    "mostPracticed": "Meistgeübt",
-    "titleAsc": "Titel (A-Z)",
-    "composerAsc": "Komponist (A-Z)"
-  }
+  "viewScore": "Noten ansehen"
 }

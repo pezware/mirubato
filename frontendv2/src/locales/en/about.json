@@ -33,11 +33,34 @@
       "viewOnGithub": "View on GitHub"
     },
     "privacy": {
-      "title": "Your Privacy, Your Data",
-      "dataOwnership": "You own your practice data, always",
-      "localFirst": "Works offline, with your data saved locally on your device",
-      "noTracking": "We don't use tracking or analytics. Ever",
-      "optionalSync": "Optional cloud sync for backup or access across devices"
+      "title": "Privacy & Your Data",
+      "intro": "We believe in transparency about what data we collect and how we use it.",
+      "dataWeCollect": {
+        "title": "What Data We Collect",
+        "account": "Account information: email address, display name, authentication method (Google or magic link)",
+        "profile": "Profile information: primary instrument and musical goals (optional)",
+        "practice": "Practice data: your logbook entries, goals, repertoire, and any content you choose to sync",
+        "technical": "Technical data: login timestamps, sync metadata for multi-device access"
+      },
+      "dataWeStore": {
+        "title": "How We Store Your Data",
+        "localFirst": "Works offline-first with data saved locally on your device",
+        "cloudSync": "Optional cloud sync stores your data securely on Cloudflare's global network",
+        "retention": "Data is retained while your account is active; you can delete your account anytime"
+      },
+      "dataWeShare": {
+        "title": "What We Don't Do",
+        "noSelling": "We never sell your personal data",
+        "noAds": "We don't use your data for advertising",
+        "noTracking": "We don't use tracking cookies or analytics beyond essential functionality",
+        "noThirdParty": "We don't share your practice data with third parties"
+      },
+      "yourRights": {
+        "title": "Your Rights",
+        "access": "You can export your data anytime through the app",
+        "deletion": "You can delete your account and all associated data",
+        "control": "You control what data to sync across devices"
+      }
     },
     "credits": {
       "title": "Credits & Attribution",

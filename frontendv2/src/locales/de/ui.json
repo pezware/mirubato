@@ -3,59 +3,59 @@
     "autocomplete": {
       "noResults": "Keine Ergebnisse gefunden"
     },
-    "select": {
-      "placeholder": "Option auswählen"
+    "entryCard": {
+      "deleteEntry": "Eintrag löschen",
+      "editEntry": "Eintrag bearbeiten",
+      "viewDetails": "Details anzeigen"
     },
-    "multiSelect": {
-      "placeholder": "Optionen auswählen"
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "Max",
+      "minPlaceholder": "Min"
     },
-    "timePicker": {
-      "placeholder": "HH:MM",
-      "am": "AM",
-      "pm": "PM"
-    },
-    "tabs": {
-      "ariaLabel": "Registerkarten"
+    "goals": {
+      "measuresPlaceholder": "z.B. 8-12, 15-16, 24-32"
     },
     "imageLoading": {
       "loading": "Bild wird geladen..."
     },
-    "segmentedControl": {
-      "ariaLabel": "Ansichts-Selektor"
-    },
     "metronome": {
-      "playPause": "Abspielen/Pausieren",
+      "collapse": "Zuklappen",
       "expand": "Metronom erweitern",
-      "collapse": "Zuklappen"
+      "playPause": "Abspielen/Pausieren"
     },
-    "syncIndicator": {
-      "manualSync": "Manuelle Synchronisation",
-      "enableRealTimeSync": "Echtzeit-Synchronisation aktivieren (experimentell)"
-    },
-    "scoreViewer": {
-      "previousPage": "Vorherige Seite",
-      "nextPage": "Nächste Seite"
-    },
-    "entryCard": {
-      "viewDetails": "Details anzeigen",
-      "editEntry": "Eintrag bearbeiten",
-      "deleteEntry": "Eintrag löschen"
+    "multiSelect": {
+      "placeholder": "Optionen auswählen"
     },
     "practiceReports": {
       "editPieceName": "Stück-Name bearbeiten"
     },
     "scoreUpload": {
-      "titlePlaceholder": "Titel (optional - KI wird extrahieren)",
       "composerPlaceholder": "Komponist (optional - KI wird extrahieren)",
+      "titlePlaceholder": "Titel (optional - KI wird extrahieren)",
       "urlPlaceholder": "https://beispiel.com/noten.pdf"
     },
-    "goals": {
-      "measuresPlaceholder": "z.B. 8-12, 15-16, 24-32"
+    "scoreViewer": {
+      "nextPage": "Nächste Seite",
+      "previousPage": "Vorherige Seite"
     },
-    "filters": {
-      "minPlaceholder": "Min",
-      "maxPlaceholder": "Max",
-      "defaultValuePlaceholder": "0"
+    "segmentedControl": {
+      "ariaLabel": "Ansichts-Selektor"
+    },
+    "select": {
+      "placeholder": "Option auswählen"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "Echtzeit-Synchronisation aktivieren (experimentell)",
+      "manualSync": "Manuelle Synchronisation"
+    },
+    "tabs": {
+      "ariaLabel": "Registerkarten"
+    },
+    "timePicker": {
+      "am": "AM",
+      "placeholder": "HH:MM",
+      "pm": "PM"
     }
   }
 }

@@ -75,6 +75,10 @@
   "files": "文件",
   "filter": "筛选",
   "finish": "完成",
+  "footer": {
+    "about": "关于",
+    "license": "许可证"
+  },
   "goBack": "返回",
   "goal": "目标",
   "help": "帮助",
@@ -158,6 +162,7 @@
   },
   "name": "名称",
   "navigation": {
+    "about": "关于",
     "add": "添加",
     "closeMenu": "关闭菜单",
     "goals": "目标",
@@ -175,8 +180,7 @@
     "scores": "乐谱",
     "settings": "设置",
     "timer": "计时",
-    "toolbox": "工具箱",
-    "about": "关于"
+    "toolbox": "工具箱"
   },
   "next": "下一个",
   "no": "否",
@@ -234,12 +238,25 @@
   "stop": "停止",
   "success": "成功",
   "summary": "摘要",
+  "sync": {
+    "error": "同步错误",
+    "hoursAgo": "{{hours}} 小时前",
+    "justNow": "刚才同步",
+    "minutesAgo": "{{minutes}} 分钟前",
+    "notSynced": "未同步",
+    "offline": "离线模式",
+    "offlineMode": "离线模式 - 同步已禁用",
+    "syncNow": "立即同步",
+    "synced": "已同步",
+    "syncing": "同步中..."
+  },
   "system": "系统",
   "tagline": "練琴搭子",
   "tasks": "任务",
   "theme": "主题",
   "time": {
     "allTime": "全部时间",
+    "am": "上午",
     "day": "天",
     "day_one": "{{count}} 天",
     "day_other": "{{count}} 天",
@@ -256,6 +273,7 @@
     "minute_plural": "分钟",
     "month": "月",
     "month_plural": "月",
+    "pm": "下午",
     "thisMonth": "本月",
     "thisWeek": "本周",
     "today": "今天",
@@ -263,15 +281,13 @@
     "week_plural": "周",
     "year": "年",
     "year_plural": "年",
-    "yesterday": "昨天",
-    "am": "上午",
-    "pm": "下午"
+    "yesterday": "昨天"
   },
   "timePicker": {
-    "selectPracticeTime": "选择练习时间",
-    "hint": "点击内圈选择小时，外圈选择分钟",
+    "clickToTypeManually": "点击手动输入时间",
     "confirmTime": "确认时间",
-    "clickToTypeManually": "点击手动输入时间"
+    "hint": "点击内圈选择小时，外圈选择分钟",
+    "selectPracticeTime": "选择练习时间"
   },
   "title": "标题",
   "toggle": "切换",
@@ -287,21 +303,5 @@
     "list": "列表"
   },
   "warning": "警告",
-  "yes": "是",
-  "footer": {
-    "about": "关于",
-    "license": "许可证"
-  },
-  "sync": {
-    "offline": "离线模式",
-    "syncing": "同步中...",
-    "synced": "已同步",
-    "error": "同步错误",
-    "justNow": "刚才同步",
-    "minutesAgo": "{{minutes}} 分钟前",
-    "hoursAgo": "{{hours}} 小时前",
-    "notSynced": "未同步",
-    "offlineMode": "离线模式 - 同步已禁用",
-    "syncNow": "立即同步"
-  }
+  "yes": "是"
 }

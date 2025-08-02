@@ -8,8 +8,6 @@
   "addNotesPrompt": "添加筆記或練習指示",
   "addToEntries": "加入練習記錄",
   "addToRepertoire": "加入曲目",
-  "fromLibrary": "從曲庫選擇",
-  "createCustom": "建立自訂",
   "addToRepertoireQuestion": "添加到您的曲目庫？",
   "addedToRepertoire": "{{piece}} 已添加到您的曲目庫",
   "additionalGoals": "+{{count}} 個更多目標",
@@ -30,6 +28,7 @@
   "confirmDeleteGoal": "您確定要刪除這個目標嗎？",
   "confirmRemove": "您確定要從曲目庫中移除這首樂曲嗎？",
   "continuePractice": "繼續練習",
+  "createCustom": "建立自訂",
   "currentProgress": "目前進度",
   "delete": "從曲目庫中刪除",
   "deleteGoal": "刪除目標",
@@ -41,6 +40,7 @@
   "editingNotesFor": "正在編輯 {{piece}} 的筆記",
   "emptyRepertoire": "您的曲目庫是空的。開始添加您想學習或精通的樂曲吧。",
   "failedToAdd": "添加到曲目庫失敗",
+  "fromLibrary": "從曲庫選擇",
   "fromLogbook": "來自練習日誌",
   "goal": {
     "addMilestone": "新增里程碑",
@@ -128,6 +128,13 @@
   "setGoal": "設定目標",
   "showAll": "顯示全部",
   "showLess": "顯示較少",
+  "sort": {
+    "composerAsc": "作曲家（A-Z）",
+    "lastPracticed": "最近練習",
+    "mostPracticed": "練習最多",
+    "statusLearningFirst": "狀態（學習中優先）",
+    "titleAsc": "標題（A-Z）"
+  },
   "startPractice": "開始練習",
   "startTrackingPrompt": "開始追蹤您在這首曲目上的進度",
   "status": {
@@ -155,12 +162,5 @@
   "unit": "單位",
   "viewAllSessions": "查看所有 {{count}} 次練習",
   "viewDetails": "查看詳情",
-  "viewScore": "查看樂譜",
-  "sort": {
-    "statusLearningFirst": "狀態（學習中優先）",
-    "lastPracticed": "最近練習",
-    "mostPracticed": "練習最多",
-    "titleAsc": "標題（A-Z）",
-    "composerAsc": "作曲家（A-Z）"
-  }
+  "viewScore": "查看樂譜"
 }
