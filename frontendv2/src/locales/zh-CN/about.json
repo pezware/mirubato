@@ -1,59 +1,82 @@
 {
-  "tagline": "您的私人音乐练习日志，由音乐家为音乐家打造",
   "backToHome": "返回首页",
   "sections": {
     "about": {
+      "how": "Mirubato 是开源的，采用本地优先的方式构建。这意味着您的数据默认会保存在您的设备上。没有追踪，没有分析——只有您和您的音乐。",
       "title": "关于 Mirubato",
       "what": "Mirubato 帮助您充分利用练习时间。无论您是在练习视谱还是完善演奏，我们都提供工具来追踪您的进步并保持动力。",
-      "why": "我们相信持续、有意识的练习是音乐成长的关键。Mirubato 旨在成为您音乐旅程中简单而鼓舞人心的伙伴。",
-      "how": "Mirubato 是开源的，采用本地优先的方式构建。这意味着您的数据默认会保存在您的设备上。没有追踪，没有分析——只有您和您的音乐。"
+      "why": "我们相信持续、有意识的练习是音乐成长的关键。Mirubato 旨在成为您音乐旅程中简单而鼓舞人心的伙伴。"
+    },
+    "contact": {
+      "github": "发现错误或有想法？",
+      "reportIssue": "GitHub Issues",
+      "title": "联系我们",
+      "twitter": "关注我们获取更新"
+    },
+    "credits": {
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" 作者 Chelsea Green，采用 CC BY 4.0 授权",
+      "educationalContent": "教育内容",
+      "imslp": "来自 IMSLP 的古典作品属于公有领域",
+      "librariesDescription": "用爱打造，使用 React、TypeScript 和许多其他优秀的开源项目",
+      "musicalContent": "音乐内容",
+      "openSourceLibraries": "开源程序库",
+      "title": "致谢与归属",
+      "viewSource": "查看原始来源"
     },
     "openSource": {
-      "title": "开放源代码",
       "description": "Mirubato 自豪地采用开源。我们欢迎社区的贡献，并相信透明地共同建造伟大的事物。",
+      "title": "开放源代码",
       "viewOnGithub": "在 GitHub 上查看"
     },
     "privacy": {
-      "title": "您的隐私，您的数据",
-      "dataOwnership": "您永远拥有您的练习数据",
-      "localFirst": "离线工作，数据储存在您的设备上",
-      "noTracking": "我们不使用追踪或分析。永远不会",
-      "optionalSync": "可选的云端同步，用于备份或跨设备访问"
-    },
-    "credits": {
-      "title": "致谢与归属",
-      "educationalContent": "教育内容",
-      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" 作者 Chelsea Green，采用 CC BY 4.0 授权",
-      "viewSource": "查看原始来源",
-      "musicalContent": "音乐内容",
-      "imslp": "来自 IMSLP 的古典作品属于公有领域",
-      "openSourceLibraries": "开源程序库",
-      "librariesDescription": "用爱打造，使用 React、TypeScript 和许多其他优秀的开源项目"
-    },
-    "contact": {
-      "title": "联系我们",
-      "github": "发现错误或有想法？",
-      "reportIssue": "GitHub Issues",
-      "twitter": "关注我们获取更新"
+      "dataWeCollect": {
+        "account": "账户信息：电子邮件地址、显示名称、身份验证方式（Google 或魔术链接）",
+        "practice": "练习数据：您的练习日志条目、目标、曲目以及您选择同步的任何内容",
+        "profile": "个人资料信息：主要乐器和音乐目标（可选）",
+        "technical": "技术数据：登录时间戳记、多设备访问的同步元数据",
+        "title": "我们收集哪些数据"
+      },
+      "dataWeShare": {
+        "noAds": "我们不将您的数据用于广告",
+        "noSelling": "我们绝不出售您的个人数据",
+        "noThirdParty": "我们不与第三方分享您的练习数据",
+        "noTracking": "除了基本功能外，我们不使用追踪 Cookie 或分析工具",
+        "title": "我们不会做的事"
+      },
+      "dataWeStore": {
+        "cloudSync": "可选的云端同步将您的数据安全地存储在 Cloudflare 的全球网络上",
+        "localFirst": "优先离线工作，数据存储在您的设备本地",
+        "retention": "数据在您的账户活跃期间保留；您可以随时删除账户",
+        "title": "我们如何存储您的数据"
+      },
+      "intro": "我们相信对于我们收集哪些数据以及如何使用这些数据保持透明。",
+      "title": "隐私与您的数据",
+      "yourRights": {
+        "access": "您可以随时通过应用程序导出您的数据",
+        "control": "您控制在设备间同步哪些数据",
+        "deletion": "您可以删除您的账户和所有相关数据",
+        "title": "您的权利"
+      }
     }
   },
   "tabs": {
     "about": "关于",
-    "version": "版本",
+    "contact": "联系",
     "credits": "制作团队",
-    "contact": "联系"
+    "version": "版本"
   },
+  "tagline": "您的私人音乐练习日志，由音乐家为音乐家打造",
   "version": {
-    "title": "版本信息",
     "appVersion": "应用程序版本",
-    "gitCommit": "Git 提交",
     "branch": "分支",
     "buildDate": "构建日期",
+    "copyVersionInfo": "复制版本信息",
     "environment": "环境",
-    "viewOnGithub": "在 GitHub 上查看",
+    "gitCommit": "Git 提交",
     "issueReporting": "问题反馈",
     "issueReportingDescription": "在 GitHub 上反馈问题时，请包含这些版本信息：",
-    "copyVersionInfo": "复制版本信息",
-    "reportIssue": "反馈问题"
+    "reportIssue": "反馈问题",
+    "title": "版本信息",
+    "viewOnGithub": "在 GitHub 上查看"
   }
 }

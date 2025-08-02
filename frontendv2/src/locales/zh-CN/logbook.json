@@ -86,15 +86,15 @@
     "reset": "重置",
     "resume": "继续",
     "runningHint": "计时器正在运行。点击暂停以休息或停止以结束。",
+    "runningHintMobile": "点击暂停",
     "start": "开始计时",
     "startHint": "点击开始以计时您的练习时段",
+    "startHintMobile": "点击开始",
     "startedAt": "开始时间",
     "stop": "停止并记录",
     "stopHint": "点击停止并记录以创建此时长的练习记录",
-    "title": "练习计时器",
-    "startHintMobile": "点击开始",
-    "runningHintMobile": "点击暂停",
-    "stopHintMobile": "继续 • 停止"
+    "stopHintMobile": "继续 • 停止",
+    "title": "练习计时器"
   },
   "title": "练习日志",
   "viewScore": "查看乐谱"

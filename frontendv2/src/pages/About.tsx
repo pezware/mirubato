@@ -122,7 +122,7 @@ export default function About() {
               </CardContent>
             </Card>
 
-            {/* Privacy First Card */}
+            {/* Privacy Policy Card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-lexend text-morandi-stone-700">
@@ -130,25 +130,102 @@ export default function About() {
                   {t('about:sections.privacy.title')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 font-inter text-morandi-stone-600">
-                  <li className="flex items-start">
-                    <span className="text-morandi-sage-600 mr-2">•</span>
-                    {t('about:sections.privacy.dataOwnership')}
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-morandi-sage-600 mr-2">•</span>
-                    {t('about:sections.privacy.localFirst')}
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-morandi-sage-600 mr-2">•</span>
-                    {t('about:sections.privacy.noTracking')}
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-morandi-sage-600 mr-2">•</span>
-                    {t('about:sections.privacy.optionalSync')}
-                  </li>
-                </ul>
+              <CardContent className="space-y-6 font-inter text-morandi-stone-600">
+                <p className="text-sm text-morandi-stone-600">
+                  {t('about:sections.privacy.intro')}
+                </p>
+
+                {/* What Data We Collect */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.dataWeCollect.title')}
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.account')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.profile')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.practice')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.technical')}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* How We Store Your Data */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.dataWeStore.title')}
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeStore.localFirst')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeStore.cloudSync')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeStore.retention')}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* What We Don't Do */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.dataWeShare.title')}
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.noSelling')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.noAds')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.noTracking')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.noThirdParty')}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Your Rights */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.yourRights.title')}
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.yourRights.access')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.yourRights.deletion')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.yourRights.control')}
+                    </li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           </div>

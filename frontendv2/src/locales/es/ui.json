@@ -3,59 +3,59 @@
     "autocomplete": {
       "noResults": "No se encontraron resultados"
     },
-    "select": {
-      "placeholder": "Seleccionar una opción"
+    "entryCard": {
+      "deleteEntry": "Eliminar entrada",
+      "editEntry": "Editar entrada",
+      "viewDetails": "Ver detalles"
     },
-    "multiSelect": {
-      "placeholder": "Seleccionar opciones"
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "Máx",
+      "minPlaceholder": "Mín"
     },
-    "timePicker": {
-      "placeholder": "HH:MM",
-      "am": "AM",
-      "pm": "PM"
-    },
-    "tabs": {
-      "ariaLabel": "Pestañas"
+    "goals": {
+      "measuresPlaceholder": "ej., 8-12, 15-16, 24-32"
     },
     "imageLoading": {
       "loading": "Cargando imagen..."
     },
-    "segmentedControl": {
-      "ariaLabel": "Selector de vista"
-    },
     "metronome": {
-      "playPause": "Reproducir/Pausar",
+      "collapse": "Contraer",
       "expand": "Expandir metrónomo",
-      "collapse": "Contraer"
+      "playPause": "Reproducir/Pausar"
     },
-    "syncIndicator": {
-      "manualSync": "Sincronización manual",
-      "enableRealTimeSync": "Activar sincronización en tiempo real (experimental)"
-    },
-    "scoreViewer": {
-      "previousPage": "Página anterior",
-      "nextPage": "Página siguiente"
-    },
-    "entryCard": {
-      "viewDetails": "Ver detalles",
-      "editEntry": "Editar entrada",
-      "deleteEntry": "Eliminar entrada"
+    "multiSelect": {
+      "placeholder": "Seleccionar opciones"
     },
     "practiceReports": {
       "editPieceName": "Editar nombre de pieza"
     },
     "scoreUpload": {
-      "titlePlaceholder": "Título (opcional - la IA lo extraerá)",
       "composerPlaceholder": "Compositor (opcional - la IA lo extraerá)",
+      "titlePlaceholder": "Título (opcional - la IA lo extraerá)",
       "urlPlaceholder": "https://ejemplo.com/partitura.pdf"
     },
-    "goals": {
-      "measuresPlaceholder": "ej., 8-12, 15-16, 24-32"
+    "scoreViewer": {
+      "nextPage": "Página siguiente",
+      "previousPage": "Página anterior"
     },
-    "filters": {
-      "minPlaceholder": "Mín",
-      "maxPlaceholder": "Máx",
-      "defaultValuePlaceholder": "0"
+    "segmentedControl": {
+      "ariaLabel": "Selector de vista"
+    },
+    "select": {
+      "placeholder": "Seleccionar una opción"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "Activar sincronización en tiempo real (experimental)",
+      "manualSync": "Sincronización manual"
+    },
+    "tabs": {
+      "ariaLabel": "Pestañas"
+    },
+    "timePicker": {
+      "am": "AM",
+      "placeholder": "HH:MM",
+      "pm": "PM"
     }
   }
 }

@@ -75,6 +75,10 @@
   "files": "Dateien",
   "filter": "Filtern",
   "finish": "Fertigstellen",
+  "footer": {
+    "about": "Über",
+    "license": "Lizenz"
+  },
   "goBack": "Zurück",
   "goal": "Ziel",
   "help": "Hilfe",
@@ -158,6 +162,7 @@
   },
   "name": "Name",
   "navigation": {
+    "about": "Über",
     "add": "Hinzufügen",
     "closeMenu": "Menü schließen",
     "goals": "Ziele",
@@ -175,8 +180,7 @@
     "scores": "Noten",
     "settings": "Einstellungen",
     "timer": "Timer",
-    "toolbox": "Werkzeugkasten",
-    "about": "Über"
+    "toolbox": "Werkzeugkasten"
   },
   "next": "Weiter",
   "no": "Nein",
@@ -234,12 +238,25 @@
   "stop": "Stoppen",
   "success": "Erfolg",
   "summary": "Zusammenfassung",
+  "sync": {
+    "error": "Synchronisationsfehler",
+    "hoursAgo": "vor {{hours}} Std",
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {{minutes}} Min",
+    "notSynced": "Nicht synchronisiert",
+    "offline": "Offline-Modus",
+    "offlineMode": "Offline-Modus - Synchronisation deaktiviert",
+    "syncNow": "Jetzt synchronisieren",
+    "synced": "Synchronisiert",
+    "syncing": "Synchronisiere..."
+  },
   "system": "System",
   "tagline": "spiel mit mir",
   "tasks": "Aufgaben",
   "theme": "Design",
   "time": {
     "allTime": "Alle Zeit",
+    "am": "AM",
     "day": "Tag",
     "day_one": "{{count}} Tag",
     "day_other": "{{count}} Tage",
@@ -256,6 +273,7 @@
     "minute_plural": "Minuten",
     "month": "Monat",
     "month_plural": "Monate",
+    "pm": "PM",
     "thisMonth": "Diesen Monat",
     "thisWeek": "Diese Woche",
     "today": "Heute",
@@ -263,15 +281,13 @@
     "week_plural": "Wochen",
     "year": "Jahr",
     "year_plural": "Jahre",
-    "yesterday": "Gestern",
-    "am": "AM",
-    "pm": "PM"
+    "yesterday": "Gestern"
   },
   "timePicker": {
-    "selectPracticeTime": "Übungszeit Auswählen",
-    "hint": "Inneren Kreis für Stunde, äußeren Kreis für Minute klicken",
+    "clickToTypeManually": "Klicken Sie, um die Zeit manuell einzugeben",
     "confirmTime": "Zeit Bestätigen",
-    "clickToTypeManually": "Klicken Sie, um die Zeit manuell einzugeben"
+    "hint": "Inneren Kreis für Stunde, äußeren Kreis für Minute klicken",
+    "selectPracticeTime": "Übungszeit Auswählen"
   },
   "title": "Titel",
   "toggle": "Umschalten",
@@ -287,21 +303,5 @@
     "list": "Liste"
   },
   "warning": "Warnung",
-  "yes": "Ja",
-  "footer": {
-    "about": "Über",
-    "license": "Lizenz"
-  },
-  "sync": {
-    "offline": "Offline-Modus",
-    "syncing": "Synchronisiere...",
-    "synced": "Synchronisiert",
-    "error": "Synchronisationsfehler",
-    "justNow": "Gerade eben",
-    "minutesAgo": "vor {{minutes}} Min",
-    "hoursAgo": "vor {{hours}} Std",
-    "notSynced": "Nicht synchronisiert",
-    "offlineMode": "Offline-Modus - Synchronisation deaktiviert",
-    "syncNow": "Jetzt synchronisieren"
-  }
+  "yes": "Ja"
 }

@@ -8,8 +8,6 @@
   "addNotesPrompt": "Ajouter des notes ou des instructions de pratique",
   "addToEntries": "Ajouter aux Entrées",
   "addToRepertoire": "Ajouter aux Pièces",
-  "fromLibrary": "De la Bibliothèque",
-  "createCustom": "Créer Personnalisé",
   "addToRepertoireQuestion": "Ajouter à Votre Répertoire ?",
   "addedToRepertoire": "{{piece}} ajouté à votre répertoire",
   "additionalGoals": "+{{count}} objectifs supplémentaires",
@@ -30,6 +28,7 @@
   "confirmDeleteGoal": "Êtes-vous sûr de vouloir supprimer cet objectif ?",
   "confirmRemove": "Êtes-vous sûr de vouloir supprimer cette pièce de votre répertoire ?",
   "continuePractice": "Continuer la Pratique",
+  "createCustom": "Créer Personnalisé",
   "currentProgress": "Progrès Actuel",
   "delete": "Supprimer du répertoire",
   "deleteGoal": "Supprimer l'Objectif",
@@ -41,6 +40,7 @@
   "editingNotesFor": "Modification des notes pour {{piece}}",
   "emptyRepertoire": "Votre répertoire est vide. Commencez par ajouter des pièces que vous voulez apprendre ou maîtriser.",
   "failedToAdd": "Échec de l'ajout au répertoire",
+  "fromLibrary": "De la Bibliothèque",
   "fromLogbook": "du journal de pratique",
   "goal": {
     "addMilestone": "Ajouter un Jalon",
@@ -128,6 +128,13 @@
   "setGoal": "Définir un Objectif",
   "showAll": "Tout afficher",
   "showLess": "Afficher moins",
+  "sort": {
+    "composerAsc": "Compositeur (A-Z)",
+    "lastPracticed": "Pratiqué récemment",
+    "mostPracticed": "Le plus pratiqué",
+    "statusLearningFirst": "Statut (En apprentissage d'abord)",
+    "titleAsc": "Titre (A-Z)"
+  },
   "startPractice": "Commencer la Pratique",
   "startTrackingPrompt": "Commencez à suivre vos progrès avec cette pièce",
   "status": {
@@ -155,12 +162,5 @@
   "unit": "Unité",
   "viewAllSessions": "Voir toutes les {{count}} sessions",
   "viewDetails": "Voir les détails",
-  "viewScore": "Voir la Partition",
-  "sort": {
-    "statusLearningFirst": "Statut (En apprentissage d'abord)",
-    "lastPracticed": "Pratiqué récemment",
-    "mostPracticed": "Le plus pratiqué",
-    "titleAsc": "Titre (A-Z)",
-    "composerAsc": "Compositeur (A-Z)"
-  }
+  "viewScore": "Voir la Partition"
 }

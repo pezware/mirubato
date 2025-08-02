@@ -86,15 +86,15 @@
     "reset": "Zurücksetzen",
     "resume": "Fortsetzen",
     "runningHint": "Timer läuft. Klicke auf Pausieren für eine Pause oder Stoppen zum Beenden.",
+    "runningHintMobile": "Zum Pausieren tippen",
     "start": "Timer starten",
     "startHint": "Klicke auf Start, um deine Übungszeit zu messen",
+    "startHintMobile": "Zum Starten tippen",
     "startedAt": "Gestartet um",
     "stop": "Stoppen & Speichern",
     "stopHint": "Klicke auf Stoppen & Speichern, um einen Übungseintrag mit dieser Dauer zu erstellen",
-    "title": "Übungstimer",
-    "startHintMobile": "Zum Starten tippen",
-    "runningHintMobile": "Zum Pausieren tippen",
-    "stopHintMobile": "Fortsetzen • Stoppen"
+    "stopHintMobile": "Fortsetzen • Stoppen",
+    "title": "Übungstimer"
   },
   "title": "Übungstagebuch",
   "viewScore": "Noten ansehen"

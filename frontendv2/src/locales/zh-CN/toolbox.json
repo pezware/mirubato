@@ -5,18 +5,18 @@
       "audio": "音频",
       "disableAudio": "禁用音频",
       "enableAudio": "启用音频",
+      "modes": {
+        "arpeggio": "琶音",
+        "chord": "和弦",
+        "scale": "音阶"
+      },
       "off": "关",
       "on": "开",
       "play": "播放",
       "playbackMode": "播放模式",
       "stop": "停止",
       "tempo": "速度",
-      "volume": "音量",
-      "modes": {
-        "chord": "和弦",
-        "scale": "音阶",
-        "arpeggio": "琶音"
-      }
+      "volume": "音量"
     },
     "keyDetails": {
       "characteristics": "特征",
@@ -158,6 +158,8 @@
     "searchButton": "搜索",
     "searchLabel": "搜索音乐术语",
     "searchPlaceholder": "搜索音乐术语...",
+    "searchResultsFor": "\"{{term}}\" 的搜索结果",
+    "searchWikipediaMore": "搜索维基百科获取更多信息",
     "searchedAllLanguages": "已搜索所有可用语言",
     "showInLanguage": "以{{lang}}显示",
     "showingRecentSearches": "显示最近{{count}}次搜索",
@@ -192,10 +194,8 @@
     "wasHelpful": "这有帮助吗？",
     "watchVideo": "观看视频{{number}}",
     "wikipedia": "维基百科",
-    "youtubeVideos": "YouTube视频",
-    "searchResultsFor": "\"{{term}}\" 的搜索结果",
-    "searchWikipediaMore": "搜索维基百科获取更多信息",
-    "youtubeSearch": "YouTube 搜索"
+    "youtubeSearch": "YouTube 搜索",
+    "youtubeVideos": "YouTube视频"
   },
   "metronome": {
     "clickToCreate": "点击网格创建您自己的节奏模式。每一行代表不同的声音层。",

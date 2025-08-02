@@ -1,59 +1,82 @@
 {
-  "tagline": "Dein privates Musikübungstagebuch, von und für Musiker entwickelt",
   "backToHome": "Zurück zur Startseite",
   "sections": {
     "about": {
+      "how": "Mirubato ist Open Source und mit einem lokalen Ansatz entwickelt. Das bedeutet, deine Daten bleiben standardmäßig bei dir, auf deinem Gerät. Kein Tracking, keine Analysen – nur du und deine Musik.",
       "title": "Über Mirubato",
       "what": "Mirubato hilft dir, das Beste aus deiner Übungszeit herauszuholen. Egal ob du am Blattspiel arbeitest oder ein Stück perfektionierst, wir bieten dir die Werkzeuge, um deinen Fortschritt zu verfolgen und motiviert zu bleiben.",
-      "why": "Wir glauben, dass beständiges, bewusstes Üben der Schlüssel zum musikalischen Wachstum ist. Mirubato ist als einfacher, ermutigender Begleiter auf deiner musikalischen Reise konzipiert.",
-      "how": "Mirubato ist Open Source und mit einem lokalen Ansatz entwickelt. Das bedeutet, deine Daten bleiben standardmäßig bei dir, auf deinem Gerät. Kein Tracking, keine Analysen – nur du und deine Musik."
+      "why": "Wir glauben, dass beständiges, bewusstes Üben der Schlüssel zum musikalischen Wachstum ist. Mirubato ist als einfacher, ermutigender Begleiter auf deiner musikalischen Reise konzipiert."
+    },
+    "contact": {
+      "github": "Fehler gefunden oder eine Idee?",
+      "reportIssue": "GitHub Issues",
+      "title": "Kontakt",
+      "twitter": "Folge uns für Updates"
+    },
+    "credits": {
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" von Chelsea Green, lizenziert unter CC BY 4.0",
+      "educationalContent": "Bildungsinhalte",
+      "imslp": "Klassische Kompositionen von IMSLP sind gemeinfrei",
+      "librariesDescription": "Mit Liebe erstellt unter Verwendung von React, TypeScript und vielen anderen wunderbaren Open-Source-Projekten",
+      "musicalContent": "Musikalische Inhalte",
+      "openSourceLibraries": "Open Source Bibliotheken",
+      "title": "Credits & Quellenangaben",
+      "viewSource": "Originalquelle ansehen"
     },
     "openSource": {
-      "title": "Open Source",
       "description": "Mirubato ist stolz darauf, Open Source zu sein. Wir begrüßen Beiträge aus der Community und glauben daran, gemeinsam und transparent großartige Dinge zu schaffen.",
+      "title": "Open Source",
       "viewOnGithub": "Auf GitHub ansehen"
     },
     "privacy": {
-      "title": "Deine Privatsphäre, Deine Daten",
-      "dataOwnership": "Du besitzt deine Übungsdaten, immer",
-      "localFirst": "Funktioniert offline, mit lokal auf deinem Gerät gespeicherten Daten",
-      "noTracking": "Wir verwenden kein Tracking oder Analysen. Niemals",
-      "optionalSync": "Optionale Cloud-Synchronisierung für Backup oder geräteübergreifenden Zugriff"
-    },
-    "credits": {
-      "title": "Credits & Quellenangaben",
-      "educationalContent": "Bildungsinhalte",
-      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" von Chelsea Green, lizenziert unter CC BY 4.0",
-      "viewSource": "Originalquelle ansehen",
-      "musicalContent": "Musikalische Inhalte",
-      "imslp": "Klassische Kompositionen von IMSLP sind gemeinfrei",
-      "openSourceLibraries": "Open Source Bibliotheken",
-      "librariesDescription": "Mit Liebe erstellt unter Verwendung von React, TypeScript und vielen anderen wunderbaren Open-Source-Projekten"
-    },
-    "contact": {
-      "title": "Kontakt",
-      "github": "Fehler gefunden oder eine Idee?",
-      "reportIssue": "GitHub Issues",
-      "twitter": "Folge uns für Updates"
+      "dataWeCollect": {
+        "account": "Kontoinformationen: E-Mail-Adresse, Anzeigename, Authentifizierungsmethode (Google oder Magic Link)",
+        "practice": "Übungsdaten: deine Tagebucheinträge, Ziele, Repertoire und alle Inhalte, die du zu synchronisieren wählst",
+        "profile": "Profilinformationen: Hauptinstrument und musikalische Ziele (optional)",
+        "technical": "Technische Daten: Anmeldezeitstempel, Synchronisations-Metadaten für Multi-Geräte-Zugriff",
+        "title": "Welche Daten Wir Sammeln"
+      },
+      "dataWeShare": {
+        "noAds": "Wir verwenden deine Daten nicht für Werbung",
+        "noSelling": "Wir verkaufen niemals deine persönlichen Daten",
+        "noThirdParty": "Wir teilen deine Übungsdaten nicht mit Dritten",
+        "noTracking": "Wir verwenden keine Tracking-Cookies oder Analysen über die wesentlichen Funktionen hinaus",
+        "title": "Was Wir Nicht Tun"
+      },
+      "dataWeStore": {
+        "cloudSync": "Optionale Cloud-Synchronisierung speichert deine Daten sicher im globalen Netzwerk von Cloudflare",
+        "localFirst": "Funktioniert offline-first mit lokal auf deinem Gerät gespeicherten Daten",
+        "retention": "Daten werden gespeichert, solange dein Konto aktiv ist; du kannst dein Konto jederzeit löschen",
+        "title": "Wie Wir Deine Daten Speichern"
+      },
+      "intro": "Wir glauben an Transparenz darüber, welche Daten wir sammeln und wie wir sie verwenden.",
+      "title": "Datenschutz und Deine Daten",
+      "yourRights": {
+        "access": "Du kannst deine Daten jederzeit über die App exportieren",
+        "control": "Du kontrollierst, welche Daten zwischen Geräten synchronisiert werden",
+        "deletion": "Du kannst dein Konto und alle zugehörigen Daten löschen",
+        "title": "Deine Rechte"
+      }
     }
   },
   "tabs": {
     "about": "Über",
-    "version": "Version",
+    "contact": "Kontakt",
     "credits": "Danksagungen",
-    "contact": "Kontakt"
+    "version": "Version"
   },
+  "tagline": "Dein privates Musikübungstagebuch, von und für Musiker entwickelt",
   "version": {
-    "title": "Versionsinformationen",
     "appVersion": "App-Version",
-    "gitCommit": "Git-Commit",
     "branch": "Branch",
     "buildDate": "Build-Datum",
+    "copyVersionInfo": "Versionsinfo kopieren",
     "environment": "Umgebung",
-    "viewOnGithub": "Auf GitHub anzeigen",
+    "gitCommit": "Git-Commit",
     "issueReporting": "Problemmeldung",
     "issueReportingDescription": "Bei der Meldung von Problemen auf GitHub bitte diese Versionsinformationen einschließen:",
-    "copyVersionInfo": "Versionsinfo kopieren",
-    "reportIssue": "Problem melden"
+    "reportIssue": "Problem melden",
+    "title": "Versionsinformationen",
+    "viewOnGithub": "Auf GitHub anzeigen"
   }
 }

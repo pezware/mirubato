@@ -75,6 +75,10 @@
   "files": "Fichiers",
   "filter": "Filtrer",
   "finish": "Terminer",
+  "footer": {
+    "about": "À propos",
+    "license": "Licence"
+  },
   "goBack": "Retour",
   "goal": "Objectif",
   "help": "Aide",
@@ -158,6 +162,7 @@
   },
   "name": "Nom",
   "navigation": {
+    "about": "À propos",
     "add": "Ajouter",
     "closeMenu": "Fermer le menu",
     "goals": "Objectifs",
@@ -175,8 +180,7 @@
     "scores": "Partitions",
     "settings": "Paramètres",
     "timer": "Chrono",
-    "toolbox": "Boîte à outils",
-    "about": "À propos"
+    "toolbox": "Boîte à outils"
   },
   "next": "Suivant",
   "no": "Non",
@@ -234,12 +238,25 @@
   "stop": "Arrêter",
   "success": "Succès",
   "summary": "Résumé",
+  "sync": {
+    "error": "Erreur de synchronisation",
+    "hoursAgo": "il y a {{hours}} h",
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a {{minutes}} min",
+    "notSynced": "Non synchronisé",
+    "offline": "Mode hors ligne",
+    "offlineMode": "Mode hors ligne - synchronisation désactivée",
+    "syncNow": "Synchroniser maintenant",
+    "synced": "Synchronisé",
+    "syncing": "Synchronisation..."
+  },
   "system": "Système",
   "tagline": "joue avec moi",
   "tasks": "Tâches",
   "theme": "Thème",
   "time": {
     "allTime": "Tout le temps",
+    "am": "AM",
     "day": "jour",
     "day_one": "{{count}} jour",
     "day_other": "{{count}} jours",
@@ -256,6 +273,7 @@
     "minute_plural": "minutes",
     "month": "mois",
     "month_plural": "mois",
+    "pm": "PM",
     "thisMonth": "Ce mois-ci",
     "thisWeek": "Cette semaine",
     "today": "Aujourd'hui",
@@ -263,15 +281,13 @@
     "week_plural": "semaines",
     "year": "an",
     "year_plural": "ans",
-    "yesterday": "Hier",
-    "am": "AM",
-    "pm": "PM"
+    "yesterday": "Hier"
   },
   "timePicker": {
-    "selectPracticeTime": "Sélectionner l'Heure de Pratique",
-    "hint": "Cliquez cercle intérieur pour heure, cercle extérieur pour minute",
+    "clickToTypeManually": "Cliquez pour saisir l'heure manuellement",
     "confirmTime": "Confirmer l'Heure",
-    "clickToTypeManually": "Cliquez pour saisir l'heure manuellement"
+    "hint": "Cliquez cercle intérieur pour heure, cercle extérieur pour minute",
+    "selectPracticeTime": "Sélectionner l'Heure de Pratique"
   },
   "title": "Titre",
   "toggle": "Basculer",
@@ -287,21 +303,5 @@
     "list": "Liste"
   },
   "warning": "Avertissement",
-  "yes": "Oui",
-  "footer": {
-    "about": "À propos",
-    "license": "Licence"
-  },
-  "sync": {
-    "offline": "Mode hors ligne",
-    "syncing": "Synchronisation...",
-    "synced": "Synchronisé",
-    "error": "Erreur de synchronisation",
-    "justNow": "À l'instant",
-    "minutesAgo": "il y a {{minutes}} min",
-    "hoursAgo": "il y a {{hours}} h",
-    "notSynced": "Non synchronisé",
-    "offlineMode": "Mode hors ligne - synchronisation désactivée",
-    "syncNow": "Synchroniser maintenant"
-  }
+  "yes": "Oui"
 }
