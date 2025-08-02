@@ -649,7 +649,7 @@ export default function ScoreManagement() {
                                 </Button>
                               </div>
                               {img.edited && (
-                                <div className="absolute top-1 right-1 bg-morandi-sage-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded shadow-sm">
+                                <div className="absolute top-1 right-1 bg-morandi-sage-500 text-white text-xs px-1.5 sm:px-2 py-0.5 rounded shadow-sm">
                                   Edited
                                 </div>
                               )}

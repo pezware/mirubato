@@ -401,7 +401,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 >
                   <span
                     className={`
-                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px]
+                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-xs
                     ${isRootNote ? 'text-red-400 font-bold' : isChordNote ? 'text-red-300 font-semibold' : isInScale ? 'text-orange-400 font-medium' : 'text-gray-500'}
                   `}
                   >
@@ -463,7 +463,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 >
                   <span
                     className={`
-                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px]
+                    absolute bottom-1 left-1/2 transform -translate-x-1/2 text-xs
                     ${isRootNote ? 'text-red-400 font-bold' : isChordNote ? 'text-red-300 font-semibold' : isInScale ? 'text-orange-400 font-medium' : 'text-gray-500'}
                   `}
                   >

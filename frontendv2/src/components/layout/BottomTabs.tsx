@@ -124,7 +124,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
                   ) : (
                     <Icon className="w-5 h-5" />
                   )}
-                  <span className="text-[11px]">{tab.label}</span>
+                  <span className="text-xs">{tab.label}</span>
                 </button>
 
                 {/* User Dropdown for mobile */}
@@ -178,7 +178,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
               `}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[11px]">{tab.label}</span>
+              <span className="text-xs">{tab.label}</span>
             </Link>
           )
         })}

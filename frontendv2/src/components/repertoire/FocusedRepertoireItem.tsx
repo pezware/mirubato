@@ -8,6 +8,7 @@ import { Goal } from '@/api/goals'
 import { Trash2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { useRepertoireStore } from '@/stores/repertoireStore'
+import { MusicTitle } from '@/components/ui'
 
 interface RecentPractice {
   timestamp: number
@@ -133,10 +134,13 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
             <div className="flex-1 min-w-0">
               {/* Title and Composer */}
               <div className="mb-2">
-                <h3 className="font-serif text-base font-medium text-stone-900 break-words">
+                <MusicTitle
+                  as="h3"
+                  className="text-base break-words text-stone-900"
+                >
                   {toTitleCase(item.scoreComposer)} -{' '}
                   {toTitleCase(item.scoreTitle)}
-                </h3>
+                </MusicTitle>
               </div>
 
               {/* Metadata - Compact single line layout optimized for mobile */}
