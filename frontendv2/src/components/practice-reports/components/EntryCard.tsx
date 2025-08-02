@@ -10,6 +10,7 @@ import {
   IconMoodSmile,
   IconMoodHappy,
 } from '@tabler/icons-react'
+import { MusicTitle, MusicComposer } from '../../ui'
 
 interface EntryCardProps {
   entry: LogbookEntry
@@ -33,13 +34,13 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
       <div className="mb-3">
         {entry.pieces && entry.pieces.length > 0 ? (
           <>
-            <h3 className="font-serif text-lg sm:text-xl font-medium text-gray-900 leading-tight">
+            <MusicTitle as="h3">
               {toTitleCase(entry.pieces[0].title)}
-            </h3>
+            </MusicTitle>
             {entry.pieces[0].composer && (
-              <p className="font-serif text-base text-gray-700 mt-0.5">
+              <MusicComposer className="mt-0.5">
                 {toTitleCase(entry.pieces[0].composer)}
-              </p>
+              </MusicComposer>
             )}
             {entry.pieces.length > 1 && (
               <p className="text-xs text-gray-500 mt-1">
@@ -49,9 +50,9 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
             )}
           </>
         ) : (
-          <h3 className="font-serif text-lg sm:text-xl font-medium text-gray-900">
+          <MusicTitle as="h3">
             {t(`logbook:entry.typeOptions.${entry.type.toLowerCase()}`)}
-          </h3>
+          </MusicTitle>
         )}
       </div>
 
