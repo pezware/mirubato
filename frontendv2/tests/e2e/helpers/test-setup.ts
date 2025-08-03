@@ -121,7 +121,7 @@ export async function dismissPrivacyBanner(page: Page) {
       await acceptButton.click()
       await page.waitForTimeout(500) // Wait for banner to dismiss
     }
-  } catch (error) {
+  } catch (_error) {
     // Banner not present, continue
   }
 }
