@@ -311,7 +311,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <div
                     key={`white-${index}`}
                     className={`
-                    relative flex-shrink-0 w-[19px] sm:w-7 md:w-10 h-24 md:h-36 bg-white rounded-b
+                    relative flex-shrink-0 w-[21px] sm:w-7 md:w-10 h-24 md:h-36 bg-white rounded-b
                     transition-all duration-200 shadow-sm
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-50
@@ -375,13 +375,13 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 <div
                   key={`black-mobile-${index}`}
                   className={`
-                    absolute w-[14px] h-12 bg-gray-900 rounded-b shadow-md
+                    absolute w-[15px] h-12 bg-gray-900 rounded-b shadow-md
                     transition-all duration-200 z-10
                     ${isActive ? 'shadow-inner' : ''}
                     hover:bg-gray-800
                   `}
                   style={{
-                    left: `${Math.ceil(position) * 19 - 7}px`,
+                    left: `${Math.ceil(position) * 21 - 7.5}px`,
                     top: '0px',
                     border: '1px solid #374151',
                     borderBottom: isRootNote
