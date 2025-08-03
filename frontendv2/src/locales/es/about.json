@@ -29,33 +29,98 @@
       "viewOnGithub": "Ver en GitHub"
     },
     "privacy": {
-      "dataWeCollect": {
-        "account": "Información de cuenta: dirección de correo electrónico, nombre para mostrar, método de autenticación (Google o enlace mágico)",
-        "practice": "Datos de práctica: tus entradas de diario, objetivos, repertorio y cualquier contenido que elijas sincronizar",
-        "profile": "Información de perfil: instrumento principal y objetivos musicales (opcional)",
-        "technical": "Datos técnicos: marcas de tiempo de inicio de sesión, metadatos de sincronización para acceso multi-dispositivo",
-        "title": "Qué Datos Recopilamos"
+      "title": "Privacidad y Tus Datos",
+      "intro": "Esta política de privacidad explica cómo Mirubato procesa tus datos personales en cumplimiento del Reglamento General de Protección de Datos (RGPD) y otras leyes aplicables de protección de datos.",
+      "lastUpdated": "Última actualización: Enero 2025",
+      "controller": {
+        "title": "Controlador de Datos",
+        "info": "Mirubato (contacto: privacy@mirubato.com) es el controlador de datos responsable de tus datos personales."
       },
-      "dataWeShare": {
-        "noAds": "No utilizamos tus datos para publicidad",
-        "noSelling": "Nunca vendemos tus datos personales",
-        "noThirdParty": "No compartimos tus datos de práctica con terceros",
-        "noTracking": "No utilizamos cookies de rastreo o análisis más allá de la funcionalidad esencial",
-        "title": "Lo Que No Hacemos"
+      "legalBasis": {
+        "title": "Base Legal para el Procesamiento",
+        "consent": "Consentimiento: Para funciones opcionales como sincronización en la nube y análisis",
+        "contract": "Ejecución de Contrato: Para proporcionar nuestros servicios de seguimiento de práctica musical",
+        "legitimate": "Interés Legítimo: Para seguridad, prevención de fraude y mejora del servicio"
+      },
+      "dataWeCollect": {
+        "title": "Datos Personales que Recopilamos",
+        "account": "Datos de Cuenta: Dirección de correo electrónico, nombre para mostrar, método de autenticación (Google OAuth o enlace mágico)",
+        "profile": "Datos de Perfil: Instrumento principal, objetivos musicales, preferencias (todo opcional)",
+        "practice": "Datos de Práctica: Entradas de diario, objetivos, repertorio, partituras, sesiones de práctica, seguimiento de progreso",
+        "technical": "Datos Técnicos: ID de dispositivo, tipo de navegador, sistema operativo, dirección IP, marcas de tiempo de inicio de sesión, metadatos de sincronización",
+        "usage": "Datos de Uso: Uso de funciones, duración de sesión, métricas de rendimiento (anonimizados cuando es posible)",
+        "device": "Información del Dispositivo: Resolución de pantalla, zona horaria, preferencia de idioma, especificaciones del dispositivo para sincronización"
       },
       "dataWeStore": {
-        "cloudSync": "La sincronización en la nube opcional almacena tus datos de forma segura en la red global de Cloudflare",
-        "localFirst": "Funciona sin conexión con datos guardados localmente en tu dispositivo",
-        "retention": "Los datos se conservan mientras tu cuenta esté activa; puedes eliminar tu cuenta en cualquier momento",
-        "title": "Cómo Almacenamos Tus Datos"
+        "title": "Cómo Almacenamos y Procesamos Tus Datos",
+        "localFirst": "Almacenamiento Local: Los datos se almacenan principalmente localmente en tu dispositivo usando almacenamiento del navegador (localStorage, IndexedDB)",
+        "cloudSync": "Almacenamiento en la Nube: La sincronización opcional usa la red global segura de Cloudflare con cifrado de extremo a extremo",
+        "location": "Ubicación de Datos: UE y mundial a través de la red edge de Cloudflare, con salvaguardas apropiadas",
+        "security": "Seguridad: Cifrado estándar de la industria, autenticación segura, auditorías de seguridad regulares",
+        "retention": "Retención de Datos: Datos de cuenta retenidos mientras estén activos; datos de práctica durante 7 años o hasta solicitud de eliminación"
       },
-      "intro": "Creemos en la transparencia sobre qué datos recopilamos y cómo los utilizamos.",
-      "title": "Privacidad y Tus Datos",
+      "dataWeShare": {
+        "title": "Compartir Datos y Terceros",
+        "noSelling": "Nunca vendemos, alquilamos o intercambiamos tus datos personales con terceros",
+        "noAds": "No utilizamos tus datos para publicidad o propósitos de marketing",
+        "noTracking": "No utilizamos cookies de rastreo o análisis de terceros más allá de la funcionalidad esencial",
+        "noThirdParty": "No compartimos tus datos de práctica con terceros sin consentimiento explícito",
+        "service": "Proveedores de Servicios: Utilizamos Cloudflare para hosting y Google para autenticación (ambos compatibles con RGPD)",
+        "legal": "Requisitos Legales: Podemos divulgar datos si lo requiere la ley o para proteger nuestros derechos"
+      },
+      "cookies": {
+        "title": "Cookies y Rastreo",
+        "essential": "Cookies Esenciales: Requeridas para autenticación, seguridad y funcionalidad principal",
+        "functional": "Cookies Funcionales: Preferencias de idioma, configuraciones, reconocimiento de dispositivo para sincronización",
+        "noTracking": "Sin Rastreo: No utilizamos cookies de publicidad, rastreadores de redes sociales o cookies de análisis",
+        "control": "Control de Cookies: Puedes gestionar las preferencias de cookies en la configuración de tu navegador"
+      },
       "yourRights": {
-        "access": "Puedes exportar tus datos en cualquier momento a través de la aplicación",
-        "control": "Tú controlas qué datos sincronizar entre dispositivos",
-        "deletion": "Puedes eliminar tu cuenta y todos los datos asociados",
-        "title": "Tus Derechos"
+        "title": "Tus Derechos bajo el RGPD",
+        "intro": "Bajo el RGPD, tienes los siguientes derechos con respecto a tus datos personales:",
+        "access": "Derecho de Acceso: Solicitar copias de tus datos personales e información sobre el procesamiento",
+        "rectification": "Derecho de Rectificación: Corregir datos personales inexactos o incompletos",
+        "erasure": "Derecho al Olvido ('Derecho a ser Olvidado'): Solicitar la eliminación de tus datos personales",
+        "restrict": "Derecho a Restringir el Procesamiento: Limitar cómo procesamos tus datos personales",
+        "portability": "Derecho a la Portabilidad de Datos: Recibir tus datos en un formato estructurado y legible por máquina",
+        "object": "Derecho a Objetar: Objetar al procesamiento basado en intereses legítimos",
+        "withdraw": "Derecho a Retirar el Consentimiento: Retirar el consentimiento para el procesamiento basado en consentimiento",
+        "complain": "Derecho a Quejarse: Presentar una queja ante tu autoridad de protección de datos",
+        "exercise": "Cómo Ejercer los Derechos: Contacta privacy@mirubato.com o usa los controles de privacidad en la aplicación"
+      },
+      "dataSubjectRequests": {
+        "title": "Solicitudes de Sujetos de Datos",
+        "response": "Responderemos a tu solicitud dentro de 30 días (extendido a 60 días para solicitudes complejas)",
+        "verification": "Podemos necesitar verificar tu identidad antes de procesar tu solicitud",
+        "format": "Los datos se proporcionarán en formatos comúnmente utilizados y legibles por máquina (JSON, CSV)",
+        "free": "Las solicitudes son generalmente gratuitas, aunque las solicitudes excesivas pueden incurrir en una tarifa razonable"
+      },
+      "automated": {
+        "title": "Toma de Decisiones Automatizada",
+        "info": "No utilizamos toma de decisiones automatizada o perfilado que produzca efectos legales o significativos"
+      },
+      "international": {
+        "title": "Transferencias Internacionales de Datos",
+        "cloudflare": "Los datos pueden procesarse en centros de datos de Cloudflare en todo el mundo, protegidos por Cláusulas Contractuales Estándar",
+        "adequacy": "Aseguramos salvaguardas apropiadas para todas las transferencias internacionales"
+      },
+      "breach": {
+        "title": "Notificación de Violación de Datos",
+        "notification": "Notificaremos a los usuarios afectados dentro de 72 horas de descubrir cualquier violación de datos que pueda afectar tus derechos"
+      },
+      "children": {
+        "title": "Privacidad de Menores",
+        "info": "Nuestro servicio no está destinado a menores de 13 años. No recopilamos conscientemente datos de menores de 13 años."
+      },
+      "changes": {
+        "title": "Cambios en la Política de Privacidad",
+        "notification": "Notificaremos a los usuarios sobre cambios materiales en esta política vía correo electrónico o notificación en la aplicación",
+        "effective": "Los cambios entran en vigor 30 días después de la notificación"
+      },
+      "contact": {
+        "title": "Información de Contacto",
+        "email": "Oficial de Privacidad: privacy@mirubato.com",
+        "response": "Nos esforzamos por responder a consultas de privacidad dentro de 48 horas"
       }
     }
   },

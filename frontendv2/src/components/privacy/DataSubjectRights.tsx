@@ -16,10 +16,35 @@ import { useRepertoireStore } from '../../stores/repertoireStore'
 import { showToast } from '../../utils/toastManager'
 
 interface DataExportFormat {
-  logbook: any[]
-  repertoire: any[]
-  profile: any
-  preferences: any
+  logbook: Array<{
+    id: string
+    date: string
+    duration?: number
+    piece?: string
+    notes?: string
+    mood?: string
+    [key: string]: unknown
+  }>
+  repertoire: Array<{
+    id: string
+    title: string
+    composer?: string
+    status?: string
+    [key: string]: unknown
+  }>
+  profile: {
+    id?: string
+    email?: string
+    displayName?: string
+    createdAt?: string
+    [key: string]: unknown
+  }
+  preferences: {
+    language?: string
+    theme?: string
+    privacyConsent?: string
+    [key: string]: unknown
+  }
   exportDate: string
   version: string
 }
