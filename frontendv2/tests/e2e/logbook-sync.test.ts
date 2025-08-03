@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
+import {
+  setPrivacyConsentInBrowser,
+  dismissPrivacyBanner,
+} from './helpers/test-setup'
 
 test.describe('Logbook Sync', () => {
   let logbookPage: LogbookPage
@@ -14,7 +18,13 @@ test.describe('Logbook Sync', () => {
       sessionStorage.clear()
     })
 
+    // Set privacy consent to prevent privacy banner interference
+    await setPrivacyConsentInBrowser(page)
+
     await page.reload({ waitUntil: 'domcontentloaded' })
+
+    // Dismiss privacy banner if it still appears
+    await dismissPrivacyBanner(page)
     await page.waitForSelector('[data-testid="overview-tab"]', {
       state: 'visible',
       timeout: 5000,

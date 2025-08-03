@@ -1,6 +1,22 @@
 import { Page } from '@playwright/test'
 
 /**
+ * Set privacy consent to prevent privacy banner from showing during tests
+ */
+export function setPrivacyConsent() {
+  const privacyConsent = {
+    essential: true,
+    functional: true,
+    consentDate: new Date().toISOString(),
+    version: '2025-01',
+  }
+  localStorage.setItem(
+    'mirubato:privacy-consent',
+    JSON.stringify(privacyConsent)
+  )
+}
+
+/**
  * Common test setup to reduce redundant operations
  */
 export async function setupTest(page: Page) {
@@ -29,10 +45,31 @@ export async function setupTest(page: Page) {
   // Navigate to home first, then clear storage
   await page.goto('/', { waitUntil: 'domcontentloaded' })
 
-  // Clear storage after navigation completes
+  // Clear storage and set privacy consent
   await page.evaluate(() => {
     localStorage.clear()
     sessionStorage.clear()
+  })
+
+  // Set privacy consent after clearing storage
+  await setPrivacyConsentInBrowser(page)
+}
+
+/**
+ * Set privacy consent in browser context
+ */
+export async function setPrivacyConsentInBrowser(page: Page) {
+  await page.evaluate(() => {
+    const privacyConsent = {
+      essential: true,
+      functional: true,
+      consentDate: new Date().toISOString(),
+      version: '2025-01',
+    }
+    localStorage.setItem(
+      'mirubato:privacy-consent',
+      JSON.stringify(privacyConsent)
+    )
   })
 }
 
@@ -71,4 +108,20 @@ export async function fillForm(page: Page, fields: Record<string, string>) {
     await element.fill(value)
   })
   await Promise.all(promises)
+}
+
+/**
+ * Dismiss privacy banner if it appears
+ */
+export async function dismissPrivacyBanner(page: Page) {
+  try {
+    // Check if privacy banner is visible and dismiss it
+    const acceptButton = page.locator('button:has-text("Accept All")')
+    if (await acceptButton.isVisible({ timeout: 1000 })) {
+      await acceptButton.click()
+      await page.waitForTimeout(500) // Wait for banner to dismiss
+    }
+  } catch (error) {
+    // Banner not present, continue
+  }
 }

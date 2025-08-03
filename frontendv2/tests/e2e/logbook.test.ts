@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
+import {
+  setPrivacyConsentInBrowser,
+  dismissPrivacyBanner,
+} from './helpers/test-setup'
 
 test.describe('Logbook', () => {
   let logbookPage: LogbookPage
@@ -12,6 +16,12 @@ test.describe('Logbook', () => {
 
     // Clear entries after navigation
     await logbookPage.clearAllEntries()
+
+    // Set privacy consent to prevent privacy banner interference
+    await setPrivacyConsentInBrowser(page)
+
+    // Dismiss privacy banner if it appears
+    await dismissPrivacyBanner(page)
 
     // Mock APIs to prevent flakiness
     await page.route('**/api/autocomplete/**', route => {
