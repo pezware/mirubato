@@ -1,7 +1,9 @@
 {
   "activeGoals": "Objectifs Actifs",
+  "totalPieces": "Total de Pièces",
   "activePieces": "Pièces actives",
   "activeRepertoire": "Répertoire actif",
+  "polishedPieces": "Pièces Polies",
   "addCustomPiece": "Ajouter une Pièce Personnalisée",
   "addCustomPieceDescription": "Ajouter une pièce qui n'est pas dans la bibliothèque",
   "addFirstPiece": "Ajoutez Votre Première Pièce",

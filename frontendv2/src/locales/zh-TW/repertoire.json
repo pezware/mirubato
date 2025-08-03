@@ -1,7 +1,9 @@
 {
   "activeGoals": "進行中的目標",
+  "totalPieces": "總曲目數",
   "activePieces": "活躍曲目",
   "activeRepertoire": "活躍曲目庫",
+  "polishedPieces": "完善曲目",
   "addCustomPiece": "新增自訂曲目",
   "addCustomPieceDescription": "新增不在曲庫中的曲目",
   "addFirstPiece": "添加您的第一首樂曲",

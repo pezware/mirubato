@@ -1,14 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import { LogbookEntry } from '../../api/logbook'
+import { EnhancedAnalyticsData } from '../../types/reporting'
 
 interface SummaryStatsProps {
   filteredAndSortedEntries: LogbookEntry[]
   formatDuration: (minutes: number) => string
+  analytics: EnhancedAnalyticsData
 }
 
 export function SummaryStats({
   filteredAndSortedEntries,
   formatDuration,
+  analytics,
 }: SummaryStatsProps) {
   const { t } = useTranslation(['reports'])
 
@@ -26,31 +29,47 @@ export function SummaryStats({
     return filteredAndSortedEntries.length
   }
 
-  const getUniquePieces = () => {
-    const pieces = new Set<string>()
-    filteredAndSortedEntries.forEach(entry => {
-      entry.pieces.forEach(piece => {
-        pieces.add(`${piece.composer || 'Unknown'} - ${piece.title}`)
-      })
-    })
-    return pieces.size
-  }
-
-  const getUniqueComposers = () => {
-    const composers = new Set<string>()
-    filteredAndSortedEntries.forEach(entry => {
-      entry.pieces.forEach(piece => {
-        composers.add(piece.composer || 'Unknown')
-      })
-    })
-    return composers.size
-  }
-
   return (
     <div className="space-y-3" data-testid="summary-stats">
-      {/* Summary Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Summary Stats Grid - Now 5 stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="bg-morandi-stone-50 rounded-lg p-3">
+          <p
+            className="text-2xl font-bold text-morandi-stone-900"
+            data-testid="today-practice-time"
+          >
+            {formatDuration(analytics.todayTotal)}
+          </p>
+          <p className="text-xs text-morandi-stone-600">
+            {t('reports:stats.todaysPractice')}
+          </p>
+        </div>
+
+        <div className="bg-morandi-stone-100 rounded-lg p-3">
+          <p
+            className="text-2xl font-bold text-morandi-stone-900"
+            data-testid="week-practice-time"
+          >
+            {formatDuration(analytics.weekTotal)}
+          </p>
+          <p className="text-xs text-morandi-stone-600">
+            {t('reports:stats.thisWeek')}
+          </p>
+        </div>
+
+        <div className="bg-morandi-peach-50 rounded-lg p-3">
+          <p
+            className="text-2xl font-bold text-morandi-stone-900"
+            data-testid="current-streak"
+          >
+            {analytics.currentStreak}
+          </p>
+          <p className="text-xs text-morandi-stone-600">
+            {t('reports:currentStreak')}
+          </p>
+        </div>
+
+        <div className="bg-morandi-rose-50 rounded-lg p-3">
           <p
             className="text-2xl font-bold text-morandi-stone-900"
             data-testid="total-practice-time"
@@ -62,7 +81,7 @@ export function SummaryStats({
           </p>
         </div>
 
-        <div className="bg-morandi-stone-100 rounded-lg p-3">
+        <div className="bg-morandi-stone-50 rounded-lg p-3">
           <p
             className="text-2xl font-bold text-morandi-stone-900"
             data-testid="session-count"
@@ -71,24 +90,6 @@ export function SummaryStats({
           </p>
           <p className="text-xs text-morandi-stone-600">
             {t('reports:sessions')}
-          </p>
-        </div>
-
-        <div className="bg-morandi-peach-50 rounded-lg p-3">
-          <p className="text-2xl font-bold text-morandi-stone-900">
-            {getUniquePieces()}
-          </p>
-          <p className="text-xs text-morandi-stone-600">
-            {t('reports:pieces')} {t('reports:practiced')}
-          </p>
-        </div>
-
-        <div className="bg-morandi-rose-50 rounded-lg p-3">
-          <p className="text-2xl font-bold text-morandi-stone-900">
-            {getUniqueComposers()}
-          </p>
-          <p className="text-xs text-morandi-stone-600">
-            {t('reports:composers')}
           </p>
         </div>
       </div>

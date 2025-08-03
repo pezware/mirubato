@@ -1,7 +1,9 @@
 {
   "activeGoals": "Aktive Ziele",
+  "totalPieces": "Alle Stücke",
   "activePieces": "Aktive Stücke",
   "activeRepertoire": "Aktives Repertoire",
+  "polishedPieces": "Polierte Stücke",
   "addCustomPiece": "Eigenes Stück hinzufügen",
   "addCustomPieceDescription": "Ein Stück hinzufügen, das nicht in der Bibliothek ist",
   "addFirstPiece": "Fügen Sie Ihr erstes Stück hinzu",
