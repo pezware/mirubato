@@ -97,11 +97,10 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
         : capitalizeTimeString(
             formatDistanceToNow(lastPracticeDate, { addSuffix: true })
           )
-    : t('repertoire:notPracticedYet')
+    : '' // Remove "Not practiced yet" text
 
   // Calculate total practice time
   const totalPracticeTime = item.totalPracticeTime || 0
-  const recentSessionDuration = item.recentPractice?.[0]?.duration || 0
 
   // Check if item can be deleted (no practice sessions)
   const canDelete =
@@ -124,57 +123,55 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-shadow">
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-4">
         {/* Status Indicator */}
         <div className={`w-1 h-12 rounded-full ${indicatorClass}`} />
 
         {/* Main Content */}
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Title and Composer */}
-              <div className="mb-2">
-                <MusicTitle
-                  as="h3"
-                  className="text-base break-words text-stone-900"
-                >
-                  {toTitleCase(item.scoreComposer)} -{' '}
-                  {toTitleCase(item.scoreTitle)}
-                </MusicTitle>
-              </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col gap-2">
+            {/* Title and Composer */}
+            <div>
+              <MusicTitle
+                as="h3"
+                className="text-base break-words text-stone-900"
+              >
+                {toTitleCase(item.scoreComposer)} -{' '}
+                {toTitleCase(item.scoreTitle)}
+              </MusicTitle>
+            </div>
 
-              {/* Metadata - Compact single line layout optimized for mobile */}
-              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600 flex-wrap">
-                {/* Status Badge - Moved inline for more compact layout */}
+            {/* Metadata and Actions Row */}
+            <div className="flex items-center justify-between gap-2">
+              {/* Left side: Status and metadata */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600 flex-wrap min-w-0 flex-1">
+                {/* Status Badge */}
                 <span
                   className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium flex-shrink-0`}
                 >
                   {status.label}
                 </span>
 
-                {/* Last practiced */}
-                <span
-                  className={`flex-shrink-0 ${
-                    needsAttention ? 'text-orange-600 font-medium' : ''
-                  }`}
-                >
-                  {lastPracticeText}
-                </span>
+                {/* Last practiced - only show if there's actual text */}
+                {lastPracticeText && (
+                  <>
+                    <span className="text-stone-400 flex-shrink-0">•</span>
+                    <span
+                      className={`flex-shrink-0 ${
+                        needsAttention ? 'text-orange-600 font-medium' : ''
+                      }`}
+                    >
+                      {lastPracticeText}
+                    </span>
+                  </>
+                )}
 
-                {/* Separator */}
-                <span className="text-stone-400 flex-shrink-0">•</span>
-
-                {/* Total practice time */}
-                <span className="flex-shrink-0">
-                  {formatDuration(totalPracticeTime)}
-                </span>
-
-                {/* Recent session duration (if active) */}
-                {isActive && recentSessionDuration > 0 && (
+                {/* Total practice time - show only if there's practice time */}
+                {totalPracticeTime > 0 && (
                   <>
                     <span className="text-stone-400 flex-shrink-0">•</span>
                     <span className="flex-shrink-0">
-                      {formatDuration(recentSessionDuration)}
+                      {formatDuration(totalPracticeTime)}
                     </span>
                   </>
                 )}
@@ -189,23 +186,18 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                   </>
                 )}
               </div>
-            </div>
 
-            {/* Delete Button - Better mobile positioning */}
-            {canDelete && (
-              <div className="flex-shrink-0 self-start">
-                {showDeleteConfirm ? (
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="text-sm text-stone-600 text-right">
-                      {t('repertoire:confirmDelete')}
-                    </span>
-                    <div className="flex gap-2">
+              {/* Right side: Delete button */}
+              {canDelete && (
+                <div className="flex-shrink-0">
+                  {showDeleteConfirm ? (
+                    <div className="flex gap-1">
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="min-w-[44px] min-h-[44px]" // Touch target size
+                        className="min-w-[32px] min-h-[32px] px-2 text-xs"
                       >
                         {t('common:yes')}
                       </Button>
@@ -214,28 +206,28 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                         size="sm"
                         onClick={() => setShowDeleteConfirm(false)}
                         disabled={isDeleting}
-                        className="min-w-[44px] min-h-[44px]" // Touch target size
+                        className="min-w-[32px] min-h-[32px] px-2 text-xs"
                       >
                         {t('common:cancel')}
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={e => {
-                      e.stopPropagation()
-                      setShowDeleteConfirm(true)
-                    }}
-                    title={t('repertoire:delete')}
-                    className="text-stone-500 hover:text-red-600 min-w-[44px] min-h-[44px] p-2" // Touch target size
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={e => {
+                        e.stopPropagation()
+                        setShowDeleteConfirm(true)
+                      }}
+                      title={t('repertoire:delete')}
+                      className="text-stone-500 hover:text-red-600 min-w-[44px] min-h-[44px] p-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
