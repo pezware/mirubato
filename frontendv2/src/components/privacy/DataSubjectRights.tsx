@@ -14,36 +14,22 @@ import { useAuthStore } from '../../stores/authStore'
 import { useLogbookStore } from '../../stores/logbookStore'
 import { useRepertoireStore } from '../../stores/repertoireStore'
 import { showToast } from '../../utils/toastManager'
+import { LogbookEntry } from '../../api/logbook'
+import { RepertoireItem } from '../../api/repertoire'
 
 interface DataExportFormat {
-  logbook: Array<{
-    id: string
-    date: string
-    duration?: number
-    piece?: string
-    notes?: string
-    mood?: string
-    [key: string]: unknown
-  }>
-  repertoire: Array<{
-    id: string
-    title: string
-    composer?: string
-    status?: string
-    [key: string]: unknown
-  }>
+  logbook: LogbookEntry[]
+  repertoire: RepertoireItem[]
   profile: {
     id?: string
     email?: string
     displayName?: string
     createdAt?: string
-    [key: string]: unknown
   }
   preferences: {
-    language?: string
-    theme?: string
-    privacyConsent?: string
-    [key: string]: unknown
+    language?: string | null
+    theme?: string | null
+    privacyConsent?: string | null
   }
   exportDate: string
   version: string
