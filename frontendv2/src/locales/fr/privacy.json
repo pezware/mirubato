@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "Confidentialité et Protection des Données",
+    "message": "Nous utilisons des cookies essentiels pour l'authentification et les fonctionnalités, plus des cookies optionnels pour les préférences et la synchronisation des appareils. Vos données de pratique restent locales avec une synchronisation cloud optionnelle. Nous ne vendons jamais vos données ni n'utilisons de cookies de suivi.",
+    "readPolicy": "Politique de Confidentialité",
+    "preferences": "Préférences des Cookies",
+    "acceptAll": "Tout Accepter",
+    "rejectOptional": "Essentiels Seulement"
+  },
+  "preferences": {
+    "title": "Préférences des Cookies",
+    "save": "Enregistrer les Préférences",
+    "essential": {
+      "title": "Cookies Essentiels",
+      "description": "Requis pour l'authentification, la sécurité et les fonctionnalités principales. Ne peuvent pas être désactivés."
+    },
+    "functional": {
+      "title": "Cookies Fonctionnels",
+      "description": "Stockent vos préférences de langue, paramètres d'interface et reconnaissance d'appareil pour la synchronisation multi-appareils."
+    }
+  },
+  "rights": {
+    "title": "Vos Droits sur les Données",
+    "description": "Sous le RGPD, vous avez des droits concernant vos données personnelles :",
+    "access": "Demander une copie de vos données",
+    "rectify": "Corriger des données inexactes",
+    "erase": "Supprimer vos données",
+    "restrict": "Limiter le traitement des données",
+    "portable": "Exporter vos données",
+    "object": "S'opposer au traitement",
+    "withdraw": "Retirer le consentement",
+    "complain": "Déposer une plainte"
+  },
+  "contact": {
+    "title": "Questions sur la Confidentialité ?",
+    "email": "Contactez notre Responsable de la Confidentialité à privacy@mirubato.com",
+    "response": "Nous répondons sous 48 heures"
+  }
+}

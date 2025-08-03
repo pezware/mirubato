@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { LogbookPage } from './pages/LogbookPage'
+import {
+  setPrivacyConsentInBrowser,
+  dismissPrivacyBanner,
+} from './helpers/test-setup'
 
 test.describe('Enhanced Reports - Core Tests', () => {
   let logbookPage: LogbookPage
@@ -16,8 +20,14 @@ test.describe('Enhanced Reports - Core Tests', () => {
       sessionStorage.clear()
     })
 
+    // Set privacy consent to prevent privacy banner interference
+    await setPrivacyConsentInBrowser(page)
+
     // Reload page after clearing storage to ensure clean state
     await page.reload({ waitUntil: 'domcontentloaded' })
+
+    // Dismiss privacy banner if it still appears
+    await dismissPrivacyBanner(page)
 
     // Wait for the overview tab to be visible
     await page.waitForSelector('[data-testid="overview-tab"]', {

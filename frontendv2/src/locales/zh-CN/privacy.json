@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "隐私和数据保护",
+    "message": "我们使用必要的 Cookie 进行身份验证和功能运行，以及可选的 Cookie 用于偏好设置和设备同步。您的练习数据采用本地优先存储，可选择云端同步。我们绝不出售您的数据或使用跟踪 Cookie。",
+    "readPolicy": "隐私政策",
+    "preferences": "Cookie 偏好设置",
+    "acceptAll": "全部接受",
+    "rejectOptional": "仅必要项目"
+  },
+  "preferences": {
+    "title": "Cookie 偏好设置",
+    "save": "保存偏好设置",
+    "essential": {
+      "title": "必要 Cookie",
+      "description": "身份验证、安全性和核心功能所必需。无法禁用。"
+    },
+    "functional": {
+      "title": "功能性 Cookie",
+      "description": "存储您的语言偏好、界面设置和设备识别，用于多设备同步。"
+    }
+  },
+  "rights": {
+    "title": "您的数据权利",
+    "description": "根据 GDPR，您对个人数据享有以下权利：",
+    "access": "请求获取您的数据副本",
+    "rectify": "更正不正确的数据",
+    "erase": "删除您的数据",
+    "restrict": "限制数据处理",
+    "portable": "导出您的数据",
+    "object": "反对处理",
+    "withdraw": "撤回同意",
+    "complain": "提出申诉"
+  },
+  "contact": {
+    "title": "隐私问题？",
+    "email": "请联系我们的隐私专员：privacy@mirubato.com",
+    "response": "我们会在 48 小时内回复"
+  }
+}

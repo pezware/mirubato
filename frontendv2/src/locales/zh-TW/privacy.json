@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "隱私權與資料保護",
+    "message": "我們使用必要的 Cookie 來進行身份驗證和功能運作，以及可選的 Cookie 來儲存偏好設定和裝置同步。您的練習資料採用本地優先儲存，可選擇雲端同步。我們絕不販售您的資料或使用追蹤 Cookie。",
+    "readPolicy": "隱私權政策",
+    "preferences": "Cookie 偏好設定",
+    "acceptAll": "全部接受",
+    "rejectOptional": "僅必要項目"
+  },
+  "preferences": {
+    "title": "Cookie 偏好設定",
+    "save": "儲存偏好設定",
+    "essential": {
+      "title": "必要 Cookie",
+      "description": "身份驗證、安全性和核心功能所必需。無法停用。"
+    },
+    "functional": {
+      "title": "功能性 Cookie",
+      "description": "儲存您的語言偏好、介面設定和裝置識別，用於多裝置同步。"
+    }
+  },
+  "rights": {
+    "title": "您的資料權利",
+    "description": "根據 GDPR，您對個人資料享有以下權利：",
+    "access": "要求取得您的資料副本",
+    "rectify": "更正不正確的資料",
+    "erase": "刪除您的資料",
+    "restrict": "限制資料處理",
+    "portable": "匯出您的資料",
+    "object": "反對處理",
+    "withdraw": "撤回同意",
+    "complain": "提出申訴"
+  },
+  "contact": {
+    "title": "隱私權問題？",
+    "email": "請聯繫我們的隱私權專員：privacy@mirubato.com",
+    "response": "我們會在 48 小時內回覆"
+  }
+}

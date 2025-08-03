@@ -34,32 +34,97 @@
     },
     "privacy": {
       "title": "Privacy & Your Data",
-      "intro": "We believe in transparency about what data we collect and how we use it.",
+      "intro": "This privacy policy explains how Mirubato processes your personal data in compliance with the General Data Protection Regulation (GDPR) and other applicable data protection laws.",
+      "lastUpdated": "Last updated: January 2025",
+      "controller": {
+        "title": "Data Controller",
+        "info": "Mirubato (contact: privacy@mirubato.com) is the data controller responsible for your personal data."
+      },
+      "legalBasis": {
+        "title": "Legal Basis for Processing",
+        "consent": "Consent: For optional features like cloud sync and analytics",
+        "contract": "Contract Performance: To provide our music practice tracking services",
+        "legitimate": "Legitimate Interest: For security, fraud prevention, and service improvement"
+      },
       "dataWeCollect": {
-        "title": "What Data We Collect",
-        "account": "Account information: email address, display name, authentication method (Google or magic link)",
-        "profile": "Profile information: primary instrument and musical goals (optional)",
-        "practice": "Practice data: your logbook entries, goals, repertoire, and any content you choose to sync",
-        "technical": "Technical data: login timestamps, sync metadata for multi-device access"
+        "title": "Personal Data We Collect",
+        "account": "Account Data: Email address, display name, authentication method (Google OAuth or magic link)",
+        "profile": "Profile Data: Primary instrument, musical goals, preferences (all optional)",
+        "practice": "Practice Data: Logbook entries, goals, repertoire, sheet music, practice sessions, progress tracking",
+        "technical": "Technical Data: Device ID, browser type, operating system, IP address, login timestamps, sync metadata",
+        "usage": "Usage Data: Feature usage, session duration, performance metrics (anonymized when possible)",
+        "device": "Device Information: Screen resolution, timezone, language preference, device specifications for sync"
       },
       "dataWeStore": {
-        "title": "How We Store Your Data",
-        "localFirst": "Works offline-first with data saved locally on your device",
-        "cloudSync": "Optional cloud sync stores your data securely on Cloudflare's global network",
-        "retention": "Data is retained while your account is active; you can delete your account anytime"
+        "title": "How We Store and Process Your Data",
+        "localFirst": "Local Storage: Data is primarily stored locally on your device using browser storage (localStorage, IndexedDB)",
+        "cloudSync": "Cloud Storage: Optional sync uses Cloudflare's secure global network with end-to-end encryption",
+        "location": "Data Location: EU and worldwide through Cloudflare's edge network, with appropriate safeguards",
+        "security": "Security: Industry-standard encryption, secure authentication, regular security audits",
+        "retention": "Data Retention: Account data retained while active; practice data for 7 years or until deletion request"
       },
       "dataWeShare": {
-        "title": "What We Don't Do",
-        "noSelling": "We never sell your personal data",
-        "noAds": "We don't use your data for advertising",
-        "noTracking": "We don't use tracking cookies or analytics beyond essential functionality",
-        "noThirdParty": "We don't share your practice data with third parties"
+        "title": "Data Sharing and Third Parties",
+        "noSelling": "We never sell, rent, or trade your personal data to third parties",
+        "noAds": "We don't use your data for advertising or marketing purposes",
+        "noTracking": "We don't use tracking cookies or third-party analytics beyond essential functionality",
+        "noThirdParty": "We don't share your practice data with third parties without explicit consent",
+        "service": "Service Providers: We use Cloudflare for hosting and Google for authentication (both GDPR-compliant)",
+        "legal": "Legal Requirements: We may disclose data if required by law or to protect our rights"
+      },
+      "cookies": {
+        "title": "Cookies and Tracking",
+        "essential": "Essential Cookies: Required for authentication, security, and core functionality",
+        "functional": "Functional Cookies: Language preferences, settings, device recognition for sync",
+        "noTracking": "No Tracking: We don't use advertising cookies, social media trackers, or analytics cookies",
+        "control": "Cookie Control: You can manage cookie preferences in your browser settings"
       },
       "yourRights": {
-        "title": "Your Rights",
-        "access": "You can export your data anytime through the app",
-        "deletion": "You can delete your account and all associated data",
-        "control": "You control what data to sync across devices"
+        "title": "Your GDPR Rights",
+        "intro": "Under GDPR, you have the following rights regarding your personal data:",
+        "access": "Right of Access: Request copies of your personal data and information about processing",
+        "rectification": "Right to Rectification: Correct inaccurate or incomplete personal data",
+        "erasure": "Right to Erasure ('Right to be Forgotten'): Request deletion of your personal data",
+        "restrict": "Right to Restrict Processing: Limit how we process your personal data",
+        "portability": "Right to Data Portability: Receive your data in a structured, machine-readable format",
+        "object": "Right to Object: Object to processing based on legitimate interests",
+        "withdraw": "Right to Withdraw Consent: Withdraw consent for consent-based processing",
+        "complain": "Right to Complain: Lodge a complaint with your data protection authority",
+        "exercise": "How to Exercise Rights: Contact privacy@mirubato.com or use the privacy controls in the app"
+      },
+      "dataSubjectRequests": {
+        "title": "Data Subject Requests",
+        "response": "We will respond to your request within 30 days (extended to 60 days for complex requests)",
+        "verification": "We may need to verify your identity before processing your request",
+        "format": "Data will be provided in commonly used, machine-readable formats (JSON, CSV)",
+        "free": "Requests are generally free, though excessive requests may incur a reasonable fee"
+      },
+      "automated": {
+        "title": "Automated Decision Making",
+        "info": "We do not use automated decision-making or profiling that produces legal or significant effects"
+      },
+      "international": {
+        "title": "International Data Transfers",
+        "cloudflare": "Data may be processed in Cloudflare data centers worldwide, protected by Standard Contractual Clauses",
+        "adequacy": "We ensure appropriate safeguards for all international transfers"
+      },
+      "breach": {
+        "title": "Data Breach Notification",
+        "notification": "We will notify affected users within 72 hours of discovering any data breach that may affect your rights"
+      },
+      "children": {
+        "title": "Children's Privacy",
+        "info": "Our service is not intended for children under 13. We do not knowingly collect data from children under 13."
+      },
+      "changes": {
+        "title": "Privacy Policy Changes",
+        "notification": "We will notify users of material changes to this policy via email or in-app notification",
+        "effective": "Changes become effective 30 days after notification"
+      },
+      "contact": {
+        "title": "Contact Information",
+        "email": "Privacy Officer: privacy@mirubato.com",
+        "response": "We aim to respond to privacy inquiries within 48 hours"
       }
     },
     "credits": {
