@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Tabs } from '../components/ui'
 import VersionInfo from '../components/VersionInfo'
 import { WebSocketSyncDemo } from '../components/debug'
+import { DataSubjectRights } from '../components/privacy/DataSubjectRights'
 
 export default function About() {
   const { t } = useTranslation(['about', 'common'])
@@ -131,11 +132,47 @@ export default function About() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 font-inter text-morandi-stone-600">
-                <p className="text-sm text-morandi-stone-600">
-                  {t('about:sections.privacy.intro')}
-                </p>
+                <div className="bg-morandi-sage-50 p-4 rounded-lg border border-morandi-sage-200">
+                  <p className="text-sm text-morandi-stone-700 font-medium mb-2">
+                    {t('about:sections.privacy.intro')}
+                  </p>
+                  <p className="text-xs text-morandi-stone-600">
+                    {t('about:sections.privacy.lastUpdated')}
+                  </p>
+                </div>
 
-                {/* What Data We Collect */}
+                {/* Data Controller */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.controller.title')}
+                  </h4>
+                  <p className="text-sm">
+                    {t('about:sections.privacy.controller.info')}
+                  </p>
+                </div>
+
+                {/* Legal Basis */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.legalBasis.title')}
+                  </h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.legalBasis.consent')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.legalBasis.contract')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.legalBasis.legitimate')}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Personal Data We Collect */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-morandi-stone-700">
                     {t('about:sections.privacy.dataWeCollect.title')}
@@ -157,10 +194,18 @@ export default function About() {
                       <span className="text-morandi-sage-600 mr-2">•</span>
                       {t('about:sections.privacy.dataWeCollect.technical')}
                     </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.usage')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeCollect.device')}
+                    </li>
                   </ul>
                 </div>
 
-                {/* How We Store Your Data */}
+                {/* How We Store and Process Your Data */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-morandi-stone-700">
                     {t('about:sections.privacy.dataWeStore.title')}
@@ -176,12 +221,20 @@ export default function About() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeStore.location')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeStore.security')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
                       {t('about:sections.privacy.dataWeStore.retention')}
                     </li>
                   </ul>
                 </div>
 
-                {/* What We Don't Do */}
+                {/* Data Sharing and Third Parties */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-morandi-stone-700">
                     {t('about:sections.privacy.dataWeShare.title')}
@@ -203,31 +256,190 @@ export default function About() {
                       <span className="text-morandi-sage-600 mr-2">•</span>
                       {t('about:sections.privacy.dataWeShare.noThirdParty')}
                     </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.service')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.dataWeShare.legal')}
+                    </li>
                   </ul>
                 </div>
 
-                {/* Your Rights */}
+                {/* Cookies and Tracking */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-morandi-stone-700">
-                    {t('about:sections.privacy.yourRights.title')}
+                    {t('about:sections.privacy.cookies.title')}
                   </h4>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <span className="text-morandi-sage-600 mr-2">•</span>
-                      {t('about:sections.privacy.yourRights.access')}
+                      {t('about:sections.privacy.cookies.essential')}
                     </li>
                     <li className="flex items-start">
                       <span className="text-morandi-sage-600 mr-2">•</span>
-                      {t('about:sections.privacy.yourRights.deletion')}
+                      {t('about:sections.privacy.cookies.functional')}
                     </li>
                     <li className="flex items-start">
                       <span className="text-morandi-sage-600 mr-2">•</span>
-                      {t('about:sections.privacy.yourRights.control')}
+                      {t('about:sections.privacy.cookies.noTracking')}
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      {t('about:sections.privacy.cookies.control')}
                     </li>
                   </ul>
                 </div>
+
+                {/* Your GDPR Rights */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-morandi-stone-700">
+                    {t('about:sections.privacy.yourRights.title')}
+                  </h4>
+                  <p className="text-sm italic text-morandi-stone-600 mb-3">
+                    {t('about:sections.privacy.yourRights.intro')}
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.access')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.rectification')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.erasure')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.restrict')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.portability')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.object')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.withdraw')}
+                      </strong>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-morandi-sage-600 mr-2">•</span>
+                      <strong className="text-morandi-stone-700">
+                        {t('about:sections.privacy.yourRights.complain')}
+                      </strong>
+                    </li>
+                  </ul>
+                  <div className="mt-3 p-3 bg-morandi-sage-50 rounded border border-morandi-sage-200">
+                    <p className="text-sm font-medium text-morandi-stone-700">
+                      {t('about:sections.privacy.yourRights.exercise')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Additional GDPR Sections */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Data Subject Requests */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-morandi-stone-700">
+                      {t('about:sections.privacy.dataSubjectRequests.title')}
+                    </h4>
+                    <ul className="space-y-1 text-xs">
+                      <li>
+                        •{' '}
+                        {t(
+                          'about:sections.privacy.dataSubjectRequests.response'
+                        )}
+                      </li>
+                      <li>
+                        •{' '}
+                        {t(
+                          'about:sections.privacy.dataSubjectRequests.verification'
+                        )}
+                      </li>
+                      <li>
+                        •{' '}
+                        {t('about:sections.privacy.dataSubjectRequests.format')}
+                      </li>
+                      <li>
+                        • {t('about:sections.privacy.dataSubjectRequests.free')}
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* International Transfers */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-morandi-stone-700">
+                      {t('about:sections.privacy.international.title')}
+                    </h4>
+                    <ul className="space-y-1 text-xs">
+                      <li>
+                        • {t('about:sections.privacy.international.cloudflare')}
+                      </li>
+                      <li>
+                        • {t('about:sections.privacy.international.adequacy')}
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Automated Decision Making */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-morandi-stone-700">
+                      {t('about:sections.privacy.automated.title')}
+                    </h4>
+                    <p className="text-xs">
+                      {t('about:sections.privacy.automated.info')}
+                    </p>
+                  </div>
+
+                  {/* Children's Privacy */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-morandi-stone-700">
+                      {t('about:sections.privacy.children.title')}
+                    </h4>
+                    <p className="text-xs">
+                      {t('about:sections.privacy.children.info')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="bg-morandi-sage-50 p-4 rounded-lg border border-morandi-sage-200">
+                  <h4 className="font-medium text-morandi-stone-700 mb-2">
+                    {t('about:sections.privacy.contact.title')}
+                  </h4>
+                  <p className="text-sm text-morandi-stone-700">
+                    {t('about:sections.privacy.contact.email')}
+                  </p>
+                  <p className="text-xs text-morandi-stone-600 mt-1">
+                    {t('about:sections.privacy.contact.response')}
+                  </p>
+                </div>
               </CardContent>
             </Card>
+
+            {/* Data Subject Rights */}
+            <DataSubjectRights />
           </div>
         )}
 

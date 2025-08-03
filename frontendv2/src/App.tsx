@@ -29,6 +29,7 @@ const About = lazy(() => import('./pages/About'))
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './components/ui/ToastProvider'
+import { PrivacyBanner } from './components/privacy/PrivacyBanner'
 
 // Loading component
 const PageLoader = () => (
@@ -103,6 +104,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-morandi-stone-100">
           <ToastProvider />
+          <PrivacyBanner />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}

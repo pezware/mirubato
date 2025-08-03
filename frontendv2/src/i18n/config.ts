@@ -13,6 +13,7 @@ import enToolbox from '../locales/en/toolbox.json'
 import enRepertoire from '../locales/en/repertoire.json'
 import enUI from '../locales/en/ui.json'
 import enAbout from '../locales/en/about.json'
+import enPrivacy from '../locales/en/privacy.json'
 
 import esCommon from '../locales/es/common.json'
 import esAuth from '../locales/es/auth.json'
@@ -24,6 +25,7 @@ import esToolbox from '../locales/es/toolbox.json'
 import esRepertoire from '../locales/es/repertoire.json'
 import esUI from '../locales/es/ui.json'
 import esAbout from '../locales/es/about.json'
+import esPrivacy from '../locales/es/privacy.json'
 
 import frCommon from '../locales/fr/common.json'
 import frAuth from '../locales/fr/auth.json'
@@ -35,6 +37,7 @@ import frToolbox from '../locales/fr/toolbox.json'
 import frRepertoire from '../locales/fr/repertoire.json'
 import frUI from '../locales/fr/ui.json'
 import frAbout from '../locales/fr/about.json'
+import frPrivacy from '../locales/fr/privacy.json'
 
 import zhTWCommon from '../locales/zh-TW/common.json'
 import zhTWAuth from '../locales/zh-TW/auth.json'
@@ -46,6 +49,7 @@ import zhTWToolbox from '../locales/zh-TW/toolbox.json'
 import zhTWRepertoire from '../locales/zh-TW/repertoire.json'
 import zhTWUI from '../locales/zh-TW/ui.json'
 import zhTWAbout from '../locales/zh-TW/about.json'
+import zhTWPrivacy from '../locales/zh-TW/privacy.json'
 
 import deCommon from '../locales/de/common.json'
 import deAuth from '../locales/de/auth.json'
@@ -57,6 +61,7 @@ import deToolbox from '../locales/de/toolbox.json'
 import deRepertoire from '../locales/de/repertoire.json'
 import deUI from '../locales/de/ui.json'
 import deAbout from '../locales/de/about.json'
+import dePrivacy from '../locales/de/privacy.json'
 
 import zhCNCommon from '../locales/zh-CN/common.json'
 import zhCNAuth from '../locales/zh-CN/auth.json'
@@ -68,6 +73,7 @@ import zhCNToolbox from '../locales/zh-CN/toolbox.json'
 import zhCNRepertoire from '../locales/zh-CN/repertoire.json'
 import zhCNUI from '../locales/zh-CN/ui.json'
 import zhCNAbout from '../locales/zh-CN/about.json'
+import zhCNPrivacy from '../locales/zh-CN/privacy.json'
 
 export const defaultNS = 'common'
 export const resources = {
@@ -82,6 +88,7 @@ export const resources = {
     repertoire: enRepertoire,
     ui: enUI,
     about: enAbout,
+    privacy: enPrivacy,
   },
   es: {
     common: esCommon,
@@ -94,6 +101,7 @@ export const resources = {
     repertoire: esRepertoire,
     ui: esUI,
     about: esAbout,
+    privacy: esPrivacy,
   },
   fr: {
     common: frCommon,
@@ -106,6 +114,7 @@ export const resources = {
     repertoire: frRepertoire,
     ui: frUI,
     about: frAbout,
+    privacy: frPrivacy,
   },
   'zh-TW': {
     common: zhTWCommon,
@@ -118,6 +127,7 @@ export const resources = {
     repertoire: zhTWRepertoire,
     ui: zhTWUI,
     about: zhTWAbout,
+    privacy: zhTWPrivacy,
   },
   de: {
     common: deCommon,
@@ -130,6 +140,7 @@ export const resources = {
     repertoire: deRepertoire,
     ui: deUI,
     about: deAbout,
+    privacy: dePrivacy,
   },
   'zh-CN': {
     common: zhCNCommon,
@@ -142,6 +153,7 @@ export const resources = {
     repertoire: zhCNRepertoire,
     ui: zhCNUI,
     about: zhCNAbout,
+    privacy: zhCNPrivacy,
   },
 } as const
 

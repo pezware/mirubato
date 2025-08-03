@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "Privacidad y Protección de Datos",
+    "message": "Utilizamos cookies esenciales para autenticación y funcionalidad, además de cookies opcionales para preferencias y sincronización de dispositivos. Tus datos de práctica se mantienen localmente con sincronización opcional en la nube. Nunca vendemos tus datos ni utilizamos cookies de seguimiento.",
+    "readPolicy": "Política de Privacidad",
+    "preferences": "Preferencias de Cookies",
+    "acceptAll": "Aceptar Todo",
+    "rejectOptional": "Solo Esenciales"
+  },
+  "preferences": {
+    "title": "Preferencias de Cookies",
+    "save": "Guardar Preferencias",
+    "essential": {
+      "title": "Cookies Esenciales",
+      "description": "Requeridas para autenticación, seguridad y funcionalidad principal. No se pueden desactivar."
+    },
+    "functional": {
+      "title": "Cookies Funcionales",
+      "description": "Almacenan tu preferencia de idioma, configuración de UI y reconocimiento de dispositivo para sincronización multi-dispositivo."
+    }
+  },
+  "rights": {
+    "title": "Tus Derechos de Datos",
+    "description": "Bajo el RGPD, tienes derechos sobre tus datos personales:",
+    "access": "Solicitar una copia de tus datos",
+    "rectify": "Corregir datos inexactos",
+    "erase": "Eliminar tus datos",
+    "restrict": "Limitar el procesamiento de datos",
+    "portable": "Exportar tus datos",
+    "object": "Objetar al procesamiento",
+    "withdraw": "Retirar consentimiento",
+    "complain": "Presentar una queja"
+  },
+  "contact": {
+    "title": "¿Preguntas sobre Privacidad?",
+    "email": "Contacta a nuestro Oficial de Privacidad en privacy@mirubato.com",
+    "response": "Respondemos en 48 horas"
+  }
+}

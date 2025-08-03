@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "Privacy & Data Protection",
+    "message": "We use essential cookies for authentication and functionality, plus optional cookies for preferences and device sync. Your practice data stays local-first with optional cloud sync. We never sell your data or use tracking cookies.",
+    "readPolicy": "Privacy Policy",
+    "preferences": "Cookie Preferences",
+    "acceptAll": "Accept All",
+    "rejectOptional": "Essential Only"
+  },
+  "preferences": {
+    "title": "Cookie Preferences",
+    "save": "Save Preferences",
+    "essential": {
+      "title": "Essential Cookies",
+      "description": "Required for authentication, security, and core functionality. Cannot be disabled."
+    },
+    "functional": {
+      "title": "Functional Cookies",
+      "description": "Store your language preference, UI settings, and device recognition for multi-device sync."
+    }
+  },
+  "rights": {
+    "title": "Your Data Rights",
+    "description": "Under GDPR, you have rights regarding your personal data:",
+    "access": "Request a copy of your data",
+    "rectify": "Correct inaccurate data",
+    "erase": "Delete your data",
+    "restrict": "Limit data processing",
+    "portable": "Export your data",
+    "object": "Object to processing",
+    "withdraw": "Withdraw consent",
+    "complain": "File a complaint"
+  },
+  "contact": {
+    "title": "Privacy Questions?",
+    "email": "Contact our Privacy Officer at privacy@mirubato.com",
+    "response": "We respond within 48 hours"
+  }
+}
