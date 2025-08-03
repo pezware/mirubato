@@ -97,7 +97,7 @@ describe('FocusedRepertoireItem', () => {
       const deleteButton = screen.getByTitle('repertoire:delete')
       fireEvent.click(deleteButton)
 
-      expect(screen.getByText('repertoire:confirmDelete')).toBeInTheDocument()
+      // Confirmation is now compact - just yes/cancel buttons without extra text
       expect(screen.getByText('common:yes')).toBeInTheDocument()
       expect(screen.getByText('common:cancel')).toBeInTheDocument()
     })
@@ -132,14 +132,16 @@ describe('FocusedRepertoireItem', () => {
       const deleteButton = screen.getByTitle('repertoire:delete')
       fireEvent.click(deleteButton)
 
-      expect(screen.getByText('repertoire:confirmDelete')).toBeInTheDocument()
+      // Confirm buttons are visible
+      expect(screen.getByText('common:yes')).toBeInTheDocument()
+      expect(screen.getByText('common:cancel')).toBeInTheDocument()
 
       const cancelButton = screen.getByText('common:cancel')
       fireEvent.click(cancelButton)
 
-      expect(
-        screen.queryByText('repertoire:confirmDelete')
-      ).not.toBeInTheDocument()
+      // Buttons should disappear after cancel
+      expect(screen.queryByText('common:yes')).not.toBeInTheDocument()
+      expect(screen.queryByText('common:cancel')).not.toBeInTheDocument()
     })
 
     it('should handle delete errors gracefully', async () => {
