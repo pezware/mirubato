@@ -291,19 +291,6 @@ export default function ClockTimePicker({
                 style={{ cursor: 'pointer' }}
               />
 
-              {/* Visual guide rings */}
-              {/* Inner ring boundary (hour area) */}
-              <circle
-                cx="120"
-                cy="120"
-                r="70"
-                fill="none"
-                stroke="#e5e5e5"
-                strokeWidth="1"
-                strokeDasharray="2 2"
-                className="pointer-events-none"
-              />
-
               {/* Minute dots (outer ring) - skip where numbers are displayed */}
               {Array.from({ length: 60 }, (_, i) => {
                 const isFiveMinute = i % 5 === 0
