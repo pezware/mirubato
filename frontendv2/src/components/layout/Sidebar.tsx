@@ -9,8 +9,8 @@ import {
   ChevronLeft,
   Plus,
   Clock,
-  Info,
 } from 'lucide-react'
+import { IconInfoSquareRoundedFilled } from '@tabler/icons-react'
 import { useAuthStore } from '../../stores/authStore'
 import Button from '../ui/Button'
 import { SyncIndicator } from '../SyncIndicator'
@@ -215,18 +215,20 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* About page link */}
-        <div className="border-t border-gray-200 pt-3 mt-4">
+        <div className="border-t border-gray-300 pt-4 mt-6">
           <Link
             to="/about"
             className={`
               flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
                 isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
               } rounded-lg text-sm font-medium transition-all
-              text-gray-600 hover:bg-gray-100 hover:text-gray-900
+              text-gray-500 hover:bg-gray-100 hover:text-gray-900
             `}
             title={isCollapsed ? t('common:navigation.about') : undefined}
           >
-            <Info className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+            <IconInfoSquareRoundedFilled
+              className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`}
+            />
             {!isCollapsed && t('common:navigation.about')}
           </Link>
         </div>
