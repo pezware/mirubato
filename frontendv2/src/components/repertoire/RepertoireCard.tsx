@@ -179,7 +179,7 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               ) : (
                 <button
                   onClick={() => setIsEditingStatus(true)}
-                  className={`px-3 py-1 ${status.bg} ${status.color} rounded-full text-sm font-medium hover:opacity-80 transition-opacity`}
+                  className={`px-3 py-1 ${status.color} rounded-full text-sm font-medium hover:opacity-80 transition-opacity`}
                 >
                   {status.label}
                 </button>

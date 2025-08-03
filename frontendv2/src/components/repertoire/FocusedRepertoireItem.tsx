@@ -147,7 +147,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
               <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600 flex-wrap min-w-0 flex-1">
                 {/* Status Badge */}
                 <span
-                  className={`px-2 py-0.5 ${status.bg} ${status.color} rounded-full text-xs font-medium flex-shrink-0`}
+                  className={`px-2 py-0.5 ${status.color} rounded-full text-xs font-medium flex-shrink-0`}
                 >
                   {status.label}
                 </span>

@@ -405,6 +405,7 @@ const Toolbox: React.FC = () => {
 
   return (
     <AppLayout
+      onNewEntry={handleToolboxAdd}
       onTimerClick={() => setShowTimer(true)}
       onToolboxAdd={handleToolboxAdd}
     >
