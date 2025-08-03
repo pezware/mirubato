@@ -19,7 +19,7 @@ import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
 import { EditNotesModal } from './EditNotesModal'
 import ManualEntryForm from '@/components/ManualEntryForm'
-import { formatDuration } from '@/utils/dateUtils'
+import { RepertoireStats } from '@/components/practice-reports/RepertoireStats'
 import { toTitleCase } from '@/utils/textFormatting'
 import {
   generateNormalizedScoreId,
@@ -115,38 +115,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   // Get filtered repertoire items
   const filteredItems = getFilteredRepertoire()
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    // Practice today
-    const practiceToday = analytics.filteredEntries
-      .filter(entry => new Date(entry.timestamp).getTime() >= today.getTime())
-      .reduce((sum, entry) => sum + entry.duration, 0)
-
-    // Practice this week
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-    const practiceThisWeek = analytics.filteredEntries
-      .filter(entry => new Date(entry.timestamp).getTime() > oneWeekAgo)
-      .reduce((sum, entry) => sum + entry.duration, 0)
-
-    // Active pieces count - only count pieces with 'learning' status
-    const activePieces = filteredItems.filter(
-      item => item.status === 'learning'
-    ).length
-
-    // Calculate current streak
-    const streak = analytics.currentStreak || 0
-
-    return {
-      practiceToday,
-      practiceThisWeek,
-      activePieces,
-      streak,
-    }
-  }, [filteredItems, analytics])
 
   // Merge repertoire data with score metadata and apply search filter
   const enrichedRepertoire = useMemo(() => {
@@ -502,41 +470,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Summary Bar */}
-      <div className="bg-white rounded-lg border border-stone-200 p-3 sm:p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-stone-800">
-              {formatDuration(stats.practiceToday)}
-            </div>
-            <div className="text-sm text-stone-500">
-              {t('common:time.today')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-stone-800">
-              {formatDuration(stats.practiceThisWeek)}
-            </div>
-            <div className="text-sm text-stone-500">
-              {t('common:time.thisWeek')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-stone-800">
-              {stats.activePieces}
-            </div>
-            <div className="text-sm text-stone-500">
-              {t('repertoire:activePieces')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-stone-800">
-              {stats.streak} {t('common:time.day_plural')}
-            </div>
-            <div className="text-sm text-stone-500">
-              {t('common:statistics.streak')}
-            </div>
-          </div>
+      {/* Repertoire Statistics */}
+      <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
+        <div className="p-4 sm:p-6">
+          <RepertoireStats repertoireItems={filteredItems} />
         </div>
       </div>
 

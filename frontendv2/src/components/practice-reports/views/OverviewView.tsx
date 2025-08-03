@@ -49,19 +49,12 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-        {/* Recent Entries - Moved to top */}
-        <RecentEntries
-          entries={analytics.filteredEntries}
-          limit={10}
-          onEdit={handleEditEntry}
-          onDelete={handleDeleteEntry}
-        />
-
-        {/* Summary Statistics */}
+        {/* Summary Statistics - Moved to top */}
         <div className="w-full">
           <SummaryStats
             filteredAndSortedEntries={analytics.filteredEntries}
             formatDuration={formatDuration}
+            analytics={analytics}
           />
         </div>
 
@@ -69,6 +62,14 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
         <div className="w-full">
           <HeatmapCalendar data={heatmapData} />
         </div>
+
+        {/* Recent Entries - Moved after stats and calendar */}
+        <RecentEntries
+          entries={analytics.filteredEntries}
+          limit={10}
+          onEdit={handleEditEntry}
+          onDelete={handleDeleteEntry}
+        />
 
         {/* Progress Indicators */}
         {analytics.progressData && analytics.progressData.length > 0 && (
