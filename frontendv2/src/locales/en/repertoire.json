@@ -169,5 +169,8 @@
     "mostPracticed": "Most practiced",
     "titleAsc": "Title (A-Z)",
     "composerAsc": "Composer (A-Z)"
-  }
+  },
+  "dissociateSuccess": "Piece removed from repertoire.",
+  "dissociateSuccessWithLogs": "Piece removed from repertoire. {{count}} practice log converted to standalone entries.",
+  "dissociateSuccessWithLogs_other": "Piece removed from repertoire. {{count}} practice logs converted to standalone entries."
 }

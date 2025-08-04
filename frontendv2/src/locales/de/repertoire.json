@@ -169,5 +169,8 @@
   "deleteFromPieces": "Stück löschen",
   "deleteCompletely": "Vollständig löschen",
   "removeConfirmMessage": "Dies entfernt \"{{title}}\" aus Ihren Stücken, während Ihre {{count}} Übungssitzungen erhalten bleiben. Das Stück kann später bei Bedarf wieder hinzugefügt werden.",
-  "deleteConfirmMessage": "Dies löscht \"{{title}}\" dauerhaft aus Ihren Stücken. Diese Aktion kann nicht rückgängig gemacht werden."
+  "deleteConfirmMessage": "Dies löscht \"{{title}}\" dauerhaft aus Ihren Stücken. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "dissociateSuccess": "Stück aus dem Repertoire entfernt.",
+  "dissociateSuccessWithLogs": "Stück aus dem Repertoire entfernt. {{count}} Übungsprotokoll in eigenständigen Eintrag umgewandelt.",
+  "dissociateSuccessWithLogs_other": "Stück aus dem Repertoire entfernt. {{count}} Übungsprotokolle in eigenständige Einträge umgewandelt."
 }

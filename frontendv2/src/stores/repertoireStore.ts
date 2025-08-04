@@ -8,6 +8,7 @@ import { goalsApi, Goal, CreateGoalInput } from '@/api/goals'
 import { logbookApi, LogbookEntry } from '@/api/logbook'
 import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
+import i18n from 'i18next'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
 import { useAuthStore } from './authStore'
 import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
@@ -502,11 +503,13 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
         if (entriesWithScore.length > 0) {
           showToast(
-            `Piece removed from repertoire. ${entriesWithScore.length} practice log${entriesWithScore.length === 1 ? '' : 's'} converted to standalone entries.`,
+            i18n.t('repertoire:dissociateSuccessWithLogs', {
+              count: entriesWithScore.length,
+            }),
             'success'
           )
         } else {
-          showToast('Piece removed from repertoire.', 'success')
+          showToast(i18n.t('repertoire:dissociateSuccess'), 'success')
         }
 
         return {
@@ -538,11 +541,13 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
         if (result.preservedLogs > 0) {
           showToast(
-            `Piece removed from repertoire. ${result.preservedLogs} practice log${result.preservedLogs === 1 ? '' : 's'} converted to standalone entries.`,
+            i18n.t('repertoire:dissociateSuccessWithLogs', {
+              count: result.preservedLogs,
+            }),
             'success'
           )
         } else {
-          showToast('Piece removed from repertoire.', 'success')
+          showToast(i18n.t('repertoire:dissociateSuccess'), 'success')
         }
         return result
       }

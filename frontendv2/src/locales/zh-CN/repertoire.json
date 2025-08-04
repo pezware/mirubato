@@ -169,5 +169,8 @@
   "deleteFromPieces": "删除曲目",
   "deleteCompletely": "完全删除",
   "removeConfirmMessage": "这会将《{{title}}》从您的曲目中移除，同时保留您的 {{count}} 次练习记录。之后可以重新添加此曲目。",
-  "deleteConfirmMessage": "这会永久删除《{{title}}》。此操作无法撤销。"
+  "deleteConfirmMessage": "这会永久删除《{{title}}》。此操作无法撤销。",
+  "dissociateSuccess": "曲目已从曲库中移除。",
+  "dissociateSuccessWithLogs": "曲目已从曲库中移除。{{count}} 个练习记录已转换为独立条目。",
+  "dissociateSuccessWithLogs_other": "曲目已从曲库中移除。{{count}} 个练习记录已转换为独立条目。"
 }
