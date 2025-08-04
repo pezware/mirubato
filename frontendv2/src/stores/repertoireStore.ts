@@ -502,7 +502,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
         if (entriesWithScore.length > 0) {
           showToast(
-            `Piece removed from repertoire. ${entriesWithScore.length} practice log${entriesWithScore.length === 1 ? '' : 's'} kept safe.`,
+            `Piece removed from repertoire. ${entriesWithScore.length} practice log${entriesWithScore.length === 1 ? '' : 's'} converted to standalone entries.`,
             'success'
           )
         } else {
@@ -538,7 +538,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
         if (result.preservedLogs > 0) {
           showToast(
-            `Piece removed from repertoire. ${result.preservedLogs} practice log${result.preservedLogs === 1 ? '' : 's'} kept safe.`,
+            `Piece removed from repertoire. ${result.preservedLogs} practice log${result.preservedLogs === 1 ? '' : 's'} converted to standalone entries.`,
             'success'
           )
         } else {
