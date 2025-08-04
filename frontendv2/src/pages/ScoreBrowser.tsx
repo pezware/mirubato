@@ -45,6 +45,11 @@ export default function ScoreBrowserPage() {
     Record<string, Collection[]>
   >({})
   const [showTimer, setShowTimer] = useState(false)
+  const [defaultCollectionScores, setDefaultCollectionScores] = useState<
+    Score[]
+  >([])
+  const [isLoadingDefaultCollection, setIsLoadingDefaultCollection] =
+    useState(false)
 
   useEffect(() => {
     loadData()
@@ -73,6 +78,17 @@ export default function ScoreBrowserPage() {
           const userCollectionsData = await scoreService.getUserCollections()
           setUserCollections(userCollectionsData)
           allUserCollections = userCollectionsData
+
+          // Find and load default collection
+          const defaultColl = userCollectionsData.find(
+            c => c.is_default === true
+          )
+          if (defaultColl) {
+            // Auto-expand default collection
+            setExpandedCollections(prev => new Set([...prev, defaultColl.id]))
+            // Load default collection scores
+            loadDefaultCollectionScores(defaultColl.id)
+          }
         } catch (error) {
           console.error('Failed to load user data:', error)
         }
@@ -193,6 +209,59 @@ export default function ScoreBrowserPage() {
     }
 
     setScoreCollections(collectionMap)
+  }
+
+  const loadDefaultCollectionScores = async (collectionId: string) => {
+    setIsLoadingDefaultCollection(true)
+    try {
+      const fullCollection = await scoreService.getUserCollection(collectionId)
+      if (fullCollection.scores && Array.isArray(fullCollection.scores)) {
+        // Normalize scores to ensure tags property exists
+        const normalizedScores = fullCollection.scores.map(score => ({
+          ...score,
+          tags: Array.isArray(score.tags)
+            ? score.tags
+            : typeof score.tags === 'string'
+              ? [score.tags]
+              : score.tags === null || score.tags === undefined
+                ? []
+                : [],
+        }))
+        setDefaultCollectionScores(normalizedScores)
+      } else if (
+        fullCollection.scoreIds &&
+        fullCollection.scoreIds.length > 0
+      ) {
+        // If we only have scoreIds but no full scores, we need to load them
+        const scorePromises = fullCollection.scoreIds.map(id =>
+          scoreService.getScore(id).catch(err => {
+            console.error(`Failed to load score ${id}:`, err)
+            return null
+          })
+        )
+        const loadedScores = await Promise.all(scorePromises)
+        const validScores = loadedScores
+          .filter(s => s !== null)
+          .map(score => ({
+            ...score,
+            tags: Array.isArray(score.tags)
+              ? score.tags
+              : typeof score.tags === 'string'
+                ? [score.tags]
+                : score.tags === null || score.tags === undefined
+                  ? []
+                  : [],
+          }))
+        setDefaultCollectionScores(validScores)
+      } else {
+        setDefaultCollectionScores([])
+      }
+    } catch (error) {
+      console.error('Failed to load default collection scores:', error)
+      setDefaultCollectionScores([])
+    } finally {
+      setIsLoadingDefaultCollection(false)
+    }
   }
 
   const toggleCollectionExpansion = (id: string) => {
@@ -358,6 +427,55 @@ export default function ScoreBrowserPage() {
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Show scores for default collection */}
+            {collection.is_default && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-morandi-stone-700 mb-3">
+                  {t('scorebook:scores', 'Scores')}:
+                </p>
+                {isLoadingDefaultCollection ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+                    <p className="text-sm text-morandi-stone-600">
+                      {t('common:loading')}...
+                    </p>
+                  </div>
+                ) : defaultCollectionScores.length === 0 ? (
+                  <div className="text-center py-4 text-morandi-stone-600 text-sm">
+                    {t(
+                      'scorebook:noScoresInCollection',
+                      'No scores in this collection yet'
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden mb-3">
+                    {defaultCollectionScores.slice(0, 5).map(score => (
+                      <ScoreListItem
+                        key={score.id}
+                        score={score}
+                        onAddToCollection={handleAddToCollection}
+                        collections={scoreCollections[score.id]}
+                        showCollections={false}
+                        showTagsInCollapsed={false}
+                        className="border-b-0"
+                      />
+                    ))}
+                    {defaultCollectionScores.length > 5 && (
+                      <div className="p-3 bg-morandi-stone-50 text-center text-sm text-morandi-stone-600">
+                        {t(
+                          'scorebook:showingFirst',
+                          'Showing first 5 of {{total}} scores',
+                          {
+                            total: defaultCollectionScores.length,
+                          }
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
