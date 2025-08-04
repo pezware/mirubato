@@ -22,6 +22,15 @@ export default {
             600: '#6b7857',
             700: '#555e45',
           },
+          navy: {
+            100: '#e6f0f5',
+            200: '#c2d9e6',
+            300: '#9ec2d6',
+            400: '#7aacc7',
+            500: '#2c5282',
+            600: '#1e3a5b',
+            700: '#1a365d',
+          },
           sand: {
             100: '#f5f2ed',
             200: '#e8e2d5',
@@ -173,5 +182,11 @@ export default {
     'border-morandi-peach-300',
     'border-morandi-sky-300',
     'border-morandi-sand-300',
+    // Status bars for pieces and repertoire statuses
+    'bg-morandi-navy-600', // Polished (darkest)
+    'bg-morandi-navy-500', // (unused but kept for backward compatibility)
+    'bg-morandi-navy-400', // Learning (medium)
+    'bg-morandi-navy-300', // Planned (lightest)
+    'bg-gray-300', // Dropped/default
   ],
 }

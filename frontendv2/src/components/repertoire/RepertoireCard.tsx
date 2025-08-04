@@ -117,12 +117,38 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
         )
       : 0
 
-  // Format practice summary
+  // Format practice summary with mobile abbreviations
+  const formatDurationMobile = (duration: number): string => {
+    const minutes = Math.round(duration / 60)
+    if (minutes < 60) return `${minutes}m`
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+  }
+
+  const formatRelativeTimeMobile = (timestamp: number): string => {
+    const now = Date.now()
+    const diff = now - timestamp
+    const minutes = Math.floor(diff / (1000 * 60))
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    if (minutes < 60) return minutes < 5 ? 'now' : `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    if (days < 30) return `${Math.floor(days / 7)}w ago`
+    return `${Math.floor(days / 30)}mo ago`
+  }
+
   const practiceSummary = {
     totalTime: formatDuration(item.totalPracticeTime || 0),
+    totalTimeMobile: formatDurationMobile(item.totalPracticeTime || 0),
     sessionCount: item.practiceCount || 0,
     lastPracticed: item.lastPracticed
       ? formatRelativeTime(item.lastPracticed)
+      : null,
+    lastPracticedMobile: item.lastPracticed
+      ? formatRelativeTimeMobile(item.lastPracticed)
       : null,
   }
 
@@ -130,9 +156,9 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
     <>
       <Card
         variant="elevated"
-        className="hover:shadow-lg transition-shadow duration-200"
+        className="hover:shadow-lg transition-shadow duration-200 p-3 sm:p-4"
       >
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {/* Header Row */}
           <div className="flex items-start justify-between gap-4">
             {/* Title and Composer - Clickable with improved overflow handling */}
@@ -141,7 +167,7 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               className="flex-1 text-left group cursor-pointer min-w-0" // min-w-0 allows flex child to shrink
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 group-hover:text-stone-700 transition-colors duration-200">
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
                   <MusicTitle
                     as="span"
                     className="text-stone-900 group-hover:text-stone-700 break-words leading-tight"
@@ -179,7 +205,7 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               ) : (
                 <button
                   onClick={() => setIsEditingStatus(true)}
-                  className={`px-3 py-1 ${status.color} rounded-full text-sm font-medium hover:opacity-80 transition-opacity`}
+                  className={`px-2 py-0.5 sm:px-3 sm:py-1 ${status.color} rounded-full text-xs sm:text-sm font-medium hover:opacity-80 transition-opacity`}
                 >
                   {status.label}
                 </button>
@@ -220,8 +246,8 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
           </div>
 
           {/* Practice Summary - Improved mobile layout */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 text-sm text-stone-600">
-            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <div className="flex flex-row items-center gap-1 text-xs sm:text-sm text-stone-600">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
               <span className="flex-shrink-0">{practiceSummary.totalTime}</span>
               <span className="flex-shrink-0">•</span>
               <span className="flex-shrink-0">
