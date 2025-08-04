@@ -10,7 +10,12 @@ export interface SyncEvent {
     | 'ENTRY_CREATED'
     | 'ENTRY_UPDATED'
     | 'ENTRY_DELETED'
+    | 'PIECE_ADDED'
+    | 'PIECE_UPDATED'
+    | 'PIECE_REMOVED'
+    | 'PIECE_DISSOCIATED'
     | 'BULK_SYNC'
+    | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
     | 'CONFLICT_DETECTED'
   userId?: string
@@ -18,6 +23,9 @@ export interface SyncEvent {
   entry?: LogbookEntry
   entries?: LogbookEntry[]
   entryId?: string
+  piece?: unknown // RepertoireItem - avoiding circular dependency
+  pieces?: unknown[] // RepertoireItem[]
+  scoreId?: string
   lastSyncTime?: string
 }
 

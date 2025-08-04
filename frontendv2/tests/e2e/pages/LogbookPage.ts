@@ -111,6 +111,36 @@ export class LogbookPage {
     }
   }
 
+  // Handle duplicate resolution modal that may appear after saving
+  async handleDuplicateResolutionIfNeeded() {
+    // Wait a bit to see if duplicate resolution modal appears
+    const duplicateModal = this.page
+      .locator('text="Similar to"')
+      .or(this.page.locator('text="Use existing or create new?"'))
+      .or(this.page.locator('button:has-text("Create New Anyway")'))
+
+    try {
+      const isVisible = await duplicateModal
+        .first()
+        .isVisible({ timeout: 3000 })
+      if (isVisible) {
+        // Click "Create New Anyway" to proceed with creating the entry
+        const createNewButton = this.page.locator(
+          'button:has-text("Create New Anyway")'
+        )
+        await createNewButton.click({ timeout: 2000 })
+
+        // Wait for modal to disappear
+        await duplicateModal
+          .first()
+          .waitFor({ state: 'hidden', timeout: 5000 })
+          .catch(() => {})
+      }
+    } catch (_error) {
+      // No duplicate modal appeared, which is fine
+    }
+  }
+
   // Helper to wait for autocomplete to settle
   private async waitForAutocomplete() {
     // Wait for autocomplete dropdown to appear or disappear
@@ -239,6 +269,9 @@ export class LogbookPage {
     // Save the entry with retry logic
     await this.saveEntryButton.click({ force: true })
 
+    // Check if duplicate resolution modal appears and handle it
+    await this.handleDuplicateResolutionIfNeeded()
+
     // Wait for save to complete
     await this.waitForSaveConfirmation()
 
@@ -253,7 +286,7 @@ export class LogbookPage {
         return entries.length === expectedCount
       },
       initialCount + 1,
-      { timeout: 5000 }
+      { timeout: 10000 } // Increase timeout to account for duplicate resolution
     )
 
     // Force a re-render by triggering storage event

@@ -334,3 +334,124 @@ repertoireHandler.delete('/:scoreId', async c => {
     throw error
   }
 })
+
+/**
+ * Dissociate piece from repertoire while preserving practice logs
+ * DELETE /api/repertoire/:scoreId/dissociate
+ */
+repertoireHandler.delete('/:scoreId/dissociate', async c => {
+  const userId = c.get('userId') as string
+  const scoreId = c.req.param('scoreId')
+
+  try {
+    // Start a transaction to ensure data consistency
+    const result = await c.env.DB.batch([
+      // First, get the repertoire item to extract piece metadata
+      c.env.DB.prepare(
+        'SELECT * FROM user_repertoire WHERE user_id = ? AND score_id = ?'
+      ).bind(userId, scoreId),
+
+      // Get all logbook entries that reference this scoreId
+      c.env.DB.prepare(
+        `SELECT id, data FROM sync_data 
+         WHERE user_id = ? 
+         AND entity_type = 'logbook_entry' 
+         AND json_extract(data, '$.scoreId') = ?`
+      ).bind(userId, scoreId),
+    ])
+
+    const repertoireItem = result[0].results[0] as
+      | Record<string, unknown>
+      | undefined
+    const logbookEntries = result[1].results as Array<{
+      id: string
+      data: string
+    }>
+
+    if (!repertoireItem) {
+      throw Errors.NotFound('Repertoire item not found')
+    }
+
+    // Extract piece metadata from the first logbook entry or derive from scoreId
+    let pieceTitle = 'Unknown Piece'
+    let pieceComposer = ''
+
+    if (logbookEntries.length > 0) {
+      const firstEntry = JSON.parse(logbookEntries[0].data)
+      pieceTitle =
+        firstEntry.scoreTitle || firstEntry.pieces?.[0]?.title || pieceTitle
+      pieceComposer =
+        firstEntry.scoreComposer || firstEntry.pieces?.[0]?.composer || ''
+    } else if (scoreId.includes('-')) {
+      // Parse from normalized scoreId format
+      const parts = scoreId.split('-')
+      if (parts.length >= 2) {
+        pieceTitle = parts[0]
+          .split('-')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+        pieceComposer = parts
+          .slice(1)
+          .join('-')
+          .split('-')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      }
+    }
+
+    // Prepare batch operations to update logbook entries
+    const updateOperations = []
+
+    // Remove from repertoire
+    updateOperations.push(
+      c.env.DB.prepare(
+        'DELETE FROM user_repertoire WHERE user_id = ? AND score_id = ?'
+      ).bind(userId, scoreId)
+    )
+
+    // Update all logbook entries to remove scoreId and embed piece data
+    for (const entry of logbookEntries) {
+      const entryData = JSON.parse(entry.data)
+
+      // Remove scoreId and ensure piece data is embedded
+      delete entryData.scoreId
+      entryData.scoreTitle = pieceTitle
+      entryData.scoreComposer = pieceComposer
+
+      // Ensure pieces array exists with the piece data
+      if (!entryData.pieces || entryData.pieces.length === 0) {
+        entryData.pieces = [
+          {
+            title: pieceTitle,
+            composer: pieceComposer,
+          },
+        ]
+      } else {
+        // Update existing piece data
+        entryData.pieces = entryData.pieces.map((piece: any) => ({
+          title: piece.title || pieceTitle,
+          composer: piece.composer || pieceComposer,
+        }))
+      }
+
+      updateOperations.push(
+        c.env.DB.prepare(
+          'UPDATE sync_data SET data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+        ).bind(JSON.stringify(entryData), entry.id)
+      )
+    }
+
+    // Execute all operations in a batch
+    await c.env.DB.batch(updateOperations)
+
+    return c.json({
+      message: 'Piece dissociated from repertoire',
+      preservedLogs: logbookEntries.length,
+      pieceTitle,
+      pieceComposer,
+    })
+  } catch (error) {
+    console.error('Error dissociating piece from repertoire:', error)
+    throw error
+  }
+})

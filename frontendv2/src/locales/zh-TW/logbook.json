@@ -20,6 +20,13 @@
     "foundEntries": "找到 {{count}} 筆記錄",
     "instrument": "樂器",
     "maxPiecesReached": "每筆記錄最多3個曲目",
+    "duplicateDetection": {
+      "similarTo": "與「{{title}}」{{composer, composer}}相似。使用現有還是建立新的？",
+      "matchPercentage": "{{percentage}}%",
+      "useThis": "使用此項",
+      "createNewAnyway": "仍然建立新的",
+      "letMeEdit": "讓我編輯"
+    },
     "mood": "練習感受如何？",
     "notes": "筆記",
     "notesPlaceholder": "您練習了什麼？有什麼觀察？",

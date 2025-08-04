@@ -164,5 +164,13 @@
   "unit": "Unité",
   "viewAllSessions": "Voir toutes les {{count}} sessions",
   "viewDetails": "Voir les détails",
-  "viewScore": "Voir la Partition"
+  "viewScore": "Voir la Partition",
+  "removeFromPieces": "Retirer des pièces",
+  "deleteFromPieces": "Supprimer la pièce",
+  "deleteCompletely": "Supprimer complètement",
+  "removeConfirmMessage": "Ceci retirera \"{{title}}\" de vos pièces tout en préservant vos {{count}} sessions de pratique. La pièce peut être rajoutée plus tard si nécessaire.",
+  "deleteConfirmMessage": "Ceci supprimera définitivement \"{{title}}\" de vos pièces. Cette action ne peut pas être annulée.",
+  "dissociateSuccess": "Pièce retirée du répertoire.",
+  "dissociateSuccessWithLogs": "Pièce retirée du répertoire. {{count}} journal de pratique converti en entrée autonome.",
+  "dissociateSuccessWithLogs_other": "Pièce retirée du répertoire. {{count}} journaux de pratique convertis en entrées autonomes."
 }

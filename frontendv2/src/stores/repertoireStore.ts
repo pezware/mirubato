@@ -8,8 +8,10 @@ import { goalsApi, Goal, CreateGoalInput } from '@/api/goals'
 import { logbookApi, LogbookEntry } from '@/api/logbook'
 import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
+import i18n from 'i18next'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
 import { useAuthStore } from './authStore'
+import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
 
 interface RepertoireStatus {
   planned: 'planned'
@@ -48,6 +50,15 @@ interface RepertoireStore {
   // Local mode flag
   isLocalMode: boolean
 
+  // WebSocket real-time sync state
+  isRealtimeSyncEnabled: boolean
+  realtimeSyncStatus:
+    | 'connected'
+    | 'connecting'
+    | 'disconnected'
+    | 'reconnecting'
+  realtimeSyncError: string | null
+
   // Filters
   statusFilter: 'all' | keyof RepertoireStatus
   goalFilter: 'all' | 'active' | 'completed' | 'no_goals'
@@ -73,6 +84,11 @@ interface RepertoireStore {
   ) => Promise<void>
   updateRepertoireNotes: (scoreId: string, notes: string) => Promise<void>
   removeFromRepertoire: (scoreId: string) => Promise<void>
+  dissociatePieceFromRepertoire: (scoreId: string) => Promise<{
+    preservedLogs: number
+    pieceTitle: string
+    pieceComposer: string
+  }>
   getRepertoireStats: (scoreId: string) => Promise<RepertoireStats | null>
 
   // Goal actions
@@ -109,6 +125,17 @@ interface RepertoireStore {
   // Sync function
   syncLocalData: () => Promise<void>
 
+  // WebSocket real-time sync methods
+  enableRealtimeSync: () => Promise<boolean>
+  disableRealtimeSync: () => void
+
+  // WebSocket sync event handlers (internal)
+  addPieceFromSync: (item: RepertoireItem) => void
+  updatePieceFromSync: (item: RepertoireItem) => void
+  removePieceFromSync: (scoreId: string) => void
+  dissociatePieceFromSync: (scoreId: string) => void
+  mergePiecesFromSync: (items: RepertoireItem[]) => void
+
   // Link practice session to goals
   linkPracticeToGoals: (entry: LogbookEntry) => Promise<void>
 }
@@ -117,6 +144,9 @@ const REPERTOIRE_KEY = 'mirubato:repertoire:items'
 const GOALS_KEY = 'mirubato:repertoire:goals'
 const SCORE_METADATA_KEY = 'mirubato:repertoire:scoreMetadata'
 const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
+
+// Sync debounce timer
+let syncDebounceTimer: NodeJS.Timeout | null = null
 
 export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   // Initial state
@@ -128,6 +158,12 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   goalsError: null,
   scoreMetadataCache: new Map(),
   isLocalMode: true, // Always start in local mode
+
+  // WebSocket real-time sync state
+  isRealtimeSyncEnabled: false,
+  realtimeSyncStatus: 'disconnected',
+  realtimeSyncError: null,
+
   statusFilter: 'all',
   goalFilter: 'all',
   searchQuery: '',
@@ -344,8 +380,14 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
       } else {
-        // Use API
-        await repertoireApi.remove(scoreId)
+        // Use API with timeout protection
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('API request timeout')), 15000) // 15 second timeout
+        })
+
+        await Promise.race([repertoireApi.remove(scoreId), timeoutPromise])
+
+        // Remove from local state immediately for responsive UI
         set(state => {
           const newRepertoire = new Map(state.repertoire)
           newRepertoire.delete(scoreId)
@@ -361,6 +403,159 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       console.error('Error removing from repertoire:', error)
       showToast(
         (error as Error).message || 'Failed to remove from repertoire',
+        'error'
+      )
+      throw error
+    }
+  },
+
+  // Dissociate piece from repertoire while preserving practice logs
+  dissociatePieceFromRepertoire: async (scoreId: string) => {
+    try {
+      const { isLocalMode, repertoire, scoreMetadataCache } = get()
+      const item = repertoire.get(scoreId)
+
+      if (!item) {
+        throw new Error('Piece not found in repertoire')
+      }
+
+      // Get piece metadata for the response
+      const metadata = scoreMetadataCache.get(scoreId)
+      let pieceTitle = 'Unknown Piece'
+      let pieceComposer = ''
+
+      if (metadata) {
+        pieceTitle = metadata.title
+        pieceComposer = metadata.composer || ''
+      } else if (scoreId.includes('-')) {
+        // Parse from normalized scoreId format
+        const parts = scoreId.split('-')
+        if (parts.length >= 2) {
+          pieceTitle = parts[0]
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+          pieceComposer = parts
+            .slice(1)
+            .join('-')
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+        }
+      }
+
+      if (isLocalMode) {
+        // For localStorage mode, we need to update logbook entries
+        // Import logbook store to dissociate logs
+        const { useLogbookStore } = await import('./logbookStore')
+        const logbookStore = useLogbookStore.getState()
+
+        // Count how many logs will be affected
+        const entriesWithScore = Array.from(
+          logbookStore.entriesMap.values()
+        ).filter(entry => entry.scoreId === scoreId)
+
+        // Update logbook entries to remove scoreId and embed piece data
+        const updatedEntries = new Map(logbookStore.entriesMap)
+
+        entriesWithScore.forEach(entry => {
+          const updatedEntry = {
+            ...entry,
+            scoreId: undefined, // Remove scoreId reference
+            scoreTitle: pieceTitle,
+            scoreComposer: pieceComposer,
+            pieces: entry.pieces?.length
+              ? entry.pieces
+              : [
+                  {
+                    title: pieceTitle,
+                    composer: pieceComposer,
+                  },
+                ],
+          }
+          // Remove undefined scoreId property
+          delete (updatedEntry as { [key: string]: unknown }).scoreId
+          updatedEntries.set(entry.id, updatedEntry)
+        })
+
+        // Update logbook store
+        logbookStore.entriesMap = updatedEntries
+        logbookStore.entries = Array.from(updatedEntries.values()).sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+
+        // Save updated entries to localStorage
+        const entries = Array.from(updatedEntries.values())
+        localStorage.setItem(
+          'mirubato:logbook:entries',
+          JSON.stringify(entries)
+        )
+
+        // Remove from repertoire locally
+        const newRepertoire = new Map(repertoire)
+        newRepertoire.delete(scoreId)
+        set({ repertoire: newRepertoire })
+
+        // Update localStorage
+        const items = Array.from(newRepertoire.values())
+        localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+        if (entriesWithScore.length > 0) {
+          showToast(
+            i18n.t('repertoire:dissociateSuccessWithLogs', {
+              count: entriesWithScore.length,
+            }),
+            'success'
+          )
+        } else {
+          showToast(i18n.t('repertoire:dissociateSuccess'), 'success')
+        }
+
+        return {
+          preservedLogs: entriesWithScore.length,
+          pieceTitle,
+          pieceComposer,
+        }
+      } else {
+        // Use API for authenticated users with timeout protection
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('API request timeout')), 15000) // 15 second timeout
+        })
+
+        const result = await Promise.race([
+          repertoireApi.dissociate(scoreId),
+          timeoutPromise,
+        ])
+
+        // Remove from local state immediately for responsive UI
+        set(state => {
+          const newRepertoire = new Map(state.repertoire)
+          newRepertoire.delete(scoreId)
+          return { repertoire: newRepertoire }
+        })
+
+        // Update localStorage
+        const items = Array.from(get().repertoire.values())
+        localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+        if (result.preservedLogs > 0) {
+          showToast(
+            i18n.t('repertoire:dissociateSuccessWithLogs', {
+              count: result.preservedLogs,
+            }),
+            'success'
+          )
+        } else {
+          showToast(i18n.t('repertoire:dissociateSuccess'), 'success')
+        }
+        return result
+      }
+    } catch (error) {
+      console.error('Error dissociating piece from repertoire:', error)
+      showToast(
+        (error as Error).message ||
+          'Failed to dissociate piece from repertoire',
         'error'
       )
       throw error
@@ -663,80 +858,137 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       return
     }
 
-    try {
-      // Sync repertoire items
-      const localRepertoireItems = Array.from(repertoire.values())
-      if (localRepertoireItems.length > 0) {
-        console.log(
-          'Syncing',
-          localRepertoireItems.length,
-          'repertoire items to server'
-        )
+    // Debounce sync calls to prevent rapid successive syncs
+    if (syncDebounceTimer) {
+      clearTimeout(syncDebounceTimer)
+    }
 
-        for (const item of localRepertoireItems) {
-          try {
-            // Check if item exists on server first
-            const serverItems = await repertoireApi.list()
-            const exists = serverItems.items.some(
-              serverItem => serverItem.scoreId === item.scoreId
-            )
+    return new Promise<void>((resolve, reject) => {
+      syncDebounceTimer = setTimeout(async () => {
+        try {
+          await performSync()
+          resolve()
+        } catch (error) {
+          reject(error)
+        }
+      }, 1000) // 1 second debounce
+    })
 
-            if (!exists) {
-              // Add to server
-              await repertoireApi.add({
-                scoreId: item.scoreId,
-                status: item.status,
-                difficultyRating: item.difficultyRating ?? undefined,
-                personalNotes: item.personalNotes,
-                referenceLinks: item.referenceLinks,
-              })
-            } else {
-              // Update on server
-              await repertoireApi.update(item.scoreId, {
-                status: item.status,
-                difficultyRating: item.difficultyRating ?? undefined,
-                personalNotes: item.personalNotes,
-                referenceLinks: item.referenceLinks,
-              })
+    async function performSync() {
+      try {
+        // Sync repertoire items
+        const localRepertoireItems = Array.from(repertoire.values())
+        if (localRepertoireItems.length > 0) {
+          console.log(
+            'Syncing',
+            localRepertoireItems.length,
+            'repertoire items to server'
+          )
+
+          // Fetch server items only once to avoid N+1 query problem
+          const serverItems = await repertoireApi.list()
+          const serverScoreIds = new Set(
+            serverItems.items.map(item => item.scoreId)
+          )
+
+          // Track sync results
+          const syncResults = {
+            added: 0,
+            updated: 0,
+            errors: 0,
+          }
+
+          for (const item of localRepertoireItems) {
+            try {
+              const exists = serverScoreIds.has(item.scoreId)
+
+              if (!exists) {
+                // Add to server
+                await repertoireApi.add({
+                  scoreId: item.scoreId,
+                  status: item.status,
+                  difficultyRating: item.difficultyRating ?? undefined,
+                  personalNotes: item.personalNotes,
+                  referenceLinks: item.referenceLinks,
+                })
+                syncResults.added++
+              } else {
+                // Update on server
+                await repertoireApi.update(item.scoreId, {
+                  status: item.status,
+                  difficultyRating: item.difficultyRating ?? undefined,
+                  personalNotes: item.personalNotes,
+                  referenceLinks: item.referenceLinks,
+                })
+                syncResults.updated++
+              }
+            } catch (err) {
+              console.warn('Failed to sync repertoire item:', item.scoreId, err)
+              syncResults.errors++
             }
-          } catch (err) {
-            console.warn('Failed to sync repertoire item:', item.scoreId, err)
           }
+
+          console.log('Repertoire sync completed:', syncResults)
         }
-      }
 
-      // Sync goals
-      const localGoals = Array.from(goals.values())
-      if (localGoals.length > 0) {
-        console.log('Syncing', localGoals.length, 'goals to server')
+        // Sync goals
+        const localGoals = Array.from(goals.values())
+        if (localGoals.length > 0) {
+          console.log('Syncing', localGoals.length, 'goals to server')
 
-        for (const goal of localGoals) {
-          try {
-            // Create on server (goals don't have update endpoint in current implementation)
-            await goalsApi.create({
-              title: goal.title,
-              description: goal.description,
-              type: goal.type,
-              targetValue: goal.targetValue,
-              targetDate: goal.targetDate,
-              scoreId: goal.scoreId,
-              milestones: goal.milestones,
-            })
-          } catch (err) {
-            console.warn('Failed to sync goal:', goal.title, err)
+          // Fetch server goals to avoid duplicates
+          const serverGoals = await goalsApi.list()
+          const existingGoalTitles = new Set(
+            serverGoals.goals.map(
+              goal => `${goal.title}-${goal.scoreId || 'no-score'}`
+            )
+          )
+
+          const goalSyncResults = {
+            added: 0,
+            skipped: 0,
+            errors: 0,
           }
+
+          for (const goal of localGoals) {
+            try {
+              // Create a unique key based on title and scoreId to check for duplicates
+              const goalKey = `${goal.title}-${goal.scoreId || 'no-score'}`
+
+              if (!existingGoalTitles.has(goalKey)) {
+                await goalsApi.create({
+                  title: goal.title,
+                  description: goal.description,
+                  type: goal.type,
+                  targetValue: goal.targetValue,
+                  targetDate: goal.targetDate,
+                  scoreId: goal.scoreId,
+                  milestones: goal.milestones,
+                })
+                goalSyncResults.added++
+              } else {
+                goalSyncResults.skipped++
+              }
+            } catch (err) {
+              console.warn('Failed to sync goal:', goal.title, err)
+              goalSyncResults.errors++
+            }
+          }
+
+          console.log('Goals sync completed:', goalSyncResults)
         }
+
+        // After successful sync, reload from server
+        await get().loadRepertoire()
+        await get().loadGoals()
+
+        set({ isLocalMode: false })
+        // Don't show success toast - sync should be silent when successful
+      } catch (error) {
+        console.error('Error syncing repertoire data:', error)
+        // Keep local mode if sync fails
+        throw error
       }
-
-      // After successful sync, reload from server
-      await get().loadRepertoire()
-      await get().loadGoals()
-
-      set({ isLocalMode: false })
-      // Don't show success toast - sync should be silent when successful
-    } catch (error) {
-      console.error('Error syncing repertoire data:', error)
-      // Keep local mode if sync fails
     }
   },
 
@@ -910,5 +1162,148 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         }
       }
     }
+  },
+
+  // WebSocket real-time sync methods
+  enableRealtimeSync: async () => {
+    try {
+      set({ realtimeSyncError: null, realtimeSyncStatus: 'connecting' })
+
+      const webSocketSync = getWebSocketSync()
+
+      // Set up event handlers for repertoire events
+      webSocketSync.on('PIECE_ADDED', (event: SyncEvent) => {
+        if (event.piece) {
+          get().addPieceFromSync(event.piece as RepertoireItem)
+        }
+      })
+
+      webSocketSync.on('PIECE_UPDATED', (event: SyncEvent) => {
+        if (event.piece) {
+          get().updatePieceFromSync(event.piece as RepertoireItem)
+        }
+      })
+
+      webSocketSync.on('PIECE_REMOVED', (event: SyncEvent) => {
+        if (event.scoreId) {
+          get().removePieceFromSync(event.scoreId)
+        }
+      })
+
+      webSocketSync.on('PIECE_DISSOCIATED', (event: SyncEvent) => {
+        if (event.scoreId) {
+          get().dissociatePieceFromSync(event.scoreId)
+        }
+      })
+
+      webSocketSync.on('REPERTOIRE_BULK_SYNC', (event: SyncEvent) => {
+        if (event.pieces) {
+          get().mergePiecesFromSync(event.pieces as RepertoireItem[])
+        }
+      })
+
+      // Connect with auth
+      const authToken = localStorage.getItem('auth-token')
+      const userStr = localStorage.getItem('mirubato:user')
+
+      if (!authToken || !userStr) {
+        throw new Error('Authentication required for real-time sync')
+      }
+
+      const user = JSON.parse(userStr)
+      const success = await webSocketSync.connect(user.id, authToken)
+
+      if (success) {
+        set({
+          isRealtimeSyncEnabled: true,
+          realtimeSyncStatus: 'connected',
+          realtimeSyncError: null,
+        })
+        return true
+      } else {
+        throw new Error('Failed to connect to real-time sync')
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Real-time sync failed'
+      set({
+        isRealtimeSyncEnabled: false,
+        realtimeSyncStatus: 'disconnected',
+        realtimeSyncError: errorMessage,
+      })
+      console.error('Failed to enable repertoire real-time sync:', error)
+      return false
+    }
+  },
+
+  disableRealtimeSync: () => {
+    const webSocketSync = getWebSocketSync()
+    webSocketSync.disconnect()
+    set({
+      isRealtimeSyncEnabled: false,
+      realtimeSyncStatus: 'disconnected',
+      realtimeSyncError: null,
+    })
+  },
+
+  // WebSocket sync event handlers (internal)
+  addPieceFromSync: (item: RepertoireItem) => {
+    set(state => {
+      const newRepertoire = new Map(state.repertoire)
+      newRepertoire.set(item.scoreId, item)
+      return { repertoire: newRepertoire }
+    })
+
+    // Update localStorage
+    const items = Array.from(get().repertoire.values())
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+  },
+
+  updatePieceFromSync: (item: RepertoireItem) => {
+    set(state => {
+      const newRepertoire = new Map(state.repertoire)
+      const existing = newRepertoire.get(item.scoreId)
+      if (existing) {
+        // Merge the updated item with existing data
+        newRepertoire.set(item.scoreId, { ...existing, ...item })
+      } else {
+        // Add if it doesn't exist
+        newRepertoire.set(item.scoreId, item)
+      }
+      return { repertoire: newRepertoire }
+    })
+
+    // Update localStorage
+    const items = Array.from(get().repertoire.values())
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+  },
+
+  removePieceFromSync: (scoreId: string) => {
+    set(state => {
+      const newRepertoire = new Map(state.repertoire)
+      newRepertoire.delete(scoreId)
+      return { repertoire: newRepertoire }
+    })
+
+    // Update localStorage
+    const items = Array.from(get().repertoire.values())
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+  },
+
+  dissociatePieceFromSync: (scoreId: string) => {
+    // Same as remove for sync purposes - piece is no longer in repertoire
+    get().removePieceFromSync(scoreId)
+  },
+
+  mergePiecesFromSync: (items: RepertoireItem[]) => {
+    const newRepertoire = new Map<string, RepertoireItem>()
+    items.forEach(item => {
+      newRepertoire.set(item.scoreId, item)
+    })
+
+    set({ repertoire: newRepertoire })
+
+    // Update localStorage
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
   },
 }))

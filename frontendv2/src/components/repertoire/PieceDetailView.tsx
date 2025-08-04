@@ -1,12 +1,18 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import { Edit2, Clock, Target, Music, Smile, Link } from 'lucide-react'
+import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
-import { MusicTitle, MusicComposer } from '@/components/ui'
+import {
+  MusicTitle,
+  MusicComposer,
+  Modal,
+  ModalBody,
+  ModalFooter,
+} from '@/components/ui'
 import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
@@ -61,8 +67,18 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [isEditingPiece, setIsEditingPiece] = useState(false)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
+
+  // Note: Modal scroll lock is now handled by the Modal component
   const { updatePieceName, loadEntries } = useLogbookStore()
-  const { cacheScoreMetadata, loadRepertoire } = useRepertoireStore()
+  const {
+    cacheScoreMetadata,
+    loadRepertoire,
+    removeFromRepertoire,
+    dissociatePieceFromRepertoire,
+  } = useRepertoireStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -94,6 +110,61 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const handleStatusChange = (newStatus: keyof RepertoireStatus) => {
     onStatusChange?.(newStatus)
     setIsEditingStatus(false)
+  }
+
+  const handleRemoveFromRepertoire = async () => {
+    try {
+      setIsRemoving(true)
+
+      // With WebSocket sync, operations should be faster
+      // Reduced timeout and better error handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
+      })
+
+      await Promise.race([
+        dissociatePieceFromRepertoire(item.scoreId),
+        timeoutPromise,
+      ])
+
+      setShowRemoveConfirm(false)
+      // Navigate back to repertoire list since piece is no longer in repertoire
+      window.history.back()
+    } catch (error) {
+      console.error('Failed to remove piece from repertoire:', error)
+      // Show user-friendly error message
+      toast.error(t('repertoire:operationFailed'))
+      // Still close the modal to prevent frozen state
+      setShowRemoveConfirm(false)
+    } finally {
+      setIsRemoving(false)
+    }
+  }
+
+  const handleDeleteCompletely = async () => {
+    try {
+      setIsRemoving(true)
+
+      // With WebSocket sync, operations should be faster
+      // Reduced timeout and better error handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
+      })
+
+      await Promise.race([removeFromRepertoire(item.scoreId), timeoutPromise])
+
+      setShowDeleteConfirm(false)
+      // Navigate back to repertoire list since piece is deleted
+      window.history.back()
+    } catch (error) {
+      console.error('Failed to delete piece completely:', error)
+      // Show user-friendly error message
+      toast.error(t('repertoire:operationFailed'))
+      // Still close the modal to prevent frozen state
+      setShowDeleteConfirm(false)
+    } finally {
+      setIsRemoving(false)
+    }
   }
 
   // Calculate stats
@@ -243,15 +314,39 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditingPiece(true)}
-            className="flex items-center gap-2 ml-4"
-          >
-            <Edit2 className="w-4 h-4" />
-            {t('common:edit')}
-          </Button>
+          <div className="flex items-center gap-2 ml-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditingPiece(true)}
+              className="flex items-center gap-2"
+            >
+              <Edit2 className="w-4 h-4" />
+              {t('common:edit')}
+            </Button>
+
+            {/* Piece Management Dropdown */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // Show context menu or dropdown with remove options
+                  if (sessions.length === 0) {
+                    setShowDeleteConfirm(true)
+                  } else {
+                    setShowRemoveConfirm(true)
+                  }
+                }}
+                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                {sessions.length === 0
+                  ? t('repertoire:deleteFromPieces')
+                  : t('repertoire:removeFromPieces')}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -492,6 +587,75 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Remove from Repertoire Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveConfirm}
+        onClose={() => setShowRemoveConfirm(false)}
+        title={t('repertoire:removeFromPieces')}
+        size="sm"
+      >
+        <ModalBody>
+          <p className="text-stone-600">
+            {t('repertoire:removeConfirmMessage', {
+              count: sessions.length,
+              title: item.scoreTitle,
+            })}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setShowRemoveConfirm(false)}
+            disabled={isRemoving}
+          >
+            {t('common:cancel')}
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleRemoveFromRepertoire}
+            disabled={isRemoving}
+          >
+            {isRemoving
+              ? t('common:removing')
+              : t('repertoire:removeFromPieces')}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Delete Completely Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title={t('repertoire:deleteCompletely')}
+        size="sm"
+      >
+        <ModalBody>
+          <p className="text-stone-600">
+            {t('repertoire:deleteConfirmMessage', {
+              title: item.scoreTitle,
+            })}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={isRemoving}
+          >
+            {t('common:cancel')}
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteCompletely}
+            disabled={isRemoving}
+          >
+            {isRemoving
+              ? t('common:deleting')
+              : t('repertoire:deleteCompletely')}
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Edit Piece Modal */}
       {isEditingPiece && (

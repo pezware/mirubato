@@ -44,6 +44,7 @@
     }
   },
   "delete": "Supprimer",
+  "deleting": "Suppression...",
   "description": "Description",
   "deselectAll": "Tout désélectionner",
   "details": "Détails",
@@ -212,6 +213,7 @@
   "refresh": "Actualiser",
   "register": "S'inscrire",
   "remove": "Retirer",
+  "removing": "Suppression...",
   "reports": "Rapports",
   "reset": "Réinitialiser",
   "resume": "Reprendre",

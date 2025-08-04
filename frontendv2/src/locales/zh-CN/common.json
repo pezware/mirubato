@@ -44,6 +44,7 @@
     }
   },
   "delete": "删除",
+  "deleting": "删除中...",
   "description": "描述",
   "deselectAll": "取消全选",
   "details": "详情",
@@ -212,6 +213,7 @@
   "refresh": "刷新",
   "register": "注册",
   "remove": "移除",
+  "removing": "移除中...",
   "reports": "报告",
   "reset": "重置",
   "resume": "继续",

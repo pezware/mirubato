@@ -13,6 +13,8 @@ import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
   isSameScore,
+  findSimilarPieces,
+  type DuplicateMatch,
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
 import TimePicker from './ui/TimePicker'
@@ -47,6 +49,14 @@ export default function ManualEntryForm({
   const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
     piece: { title: string; composer?: string | null }
     scoreId: string
+  } | null>(null)
+  const [duplicateMatches, setDuplicateMatches] = useState<{
+    piece: { title: string; composer?: string | null }
+    matches: DuplicateMatch[]
+  } | null>(null)
+  const [duplicateCheckSkipped, setDuplicateCheckSkipped] = useState(false)
+  const [pendingEntryData, setPendingEntryData] = useState<{
+    [key: string]: unknown
   } | null>(null)
 
   // Load repertoire on mount
@@ -170,9 +180,7 @@ export default function ManualEntryForm({
         // Don't send createdAt or other fields that shouldn't change
         await updateEntry(entry.id, entryData)
       } else {
-        await createEntry(entryData)
-
-        // Check if any piece should be added to repertoire
+        // For new entries, check for duplicates BEFORE creating the entry
         // Skip the prompt if we have initialPieces (coming from piece detail page)
         if (!initialPieces) {
           for (const piece of entryData.pieces) {
@@ -187,13 +195,79 @@ export default function ManualEntryForm({
             )
 
             if (!isInRepertoire) {
-              // Show prompt for this piece
+              // Check for similar pieces in both repertoire and logbook
+              const { scoreMetadataCache } = useRepertoireStore.getState()
+              const existingRepertoirePieces = Array.from(
+                repertoire.values()
+              ).map(item => {
+                const metadata = scoreMetadataCache.get(item.scoreId)
+                const fallbackTitle = item.scoreId.split('-')[0] || 'Unknown'
+                const fallbackComposer = item.scoreId.split('-')[1] || ''
+
+                return {
+                  scoreId: item.scoreId,
+                  title: metadata?.title || fallbackTitle,
+                  composer: metadata?.composer || fallbackComposer,
+                }
+              })
+
+              // Also check logbook entries for similar pieces
+              const logbookEntries = useLogbookStore.getState()
+              const existingLogbookPieces = Array.from(
+                logbookEntries.entriesMap.values()
+              )
+                .flatMap(entry => entry.pieces || [])
+                .filter(
+                  (piece, index, arr) =>
+                    // Remove duplicates by creating a unique key
+                    arr.findIndex(
+                      p =>
+                        generateNormalizedScoreId(p.title, p.composer) ===
+                        generateNormalizedScoreId(piece.title, piece.composer)
+                    ) === index
+                )
+                .map(piece => ({
+                  scoreId: generateNormalizedScoreId(
+                    piece.title,
+                    piece.composer
+                  ),
+                  title: piece.title,
+                  composer: piece.composer || '',
+                }))
+
+              const allExistingPieces = [
+                ...existingRepertoirePieces,
+                ...existingLogbookPieces,
+              ]
+
+              // Find similar pieces using fuzzy matching (only if user hasn't already handled duplicates)
+              if (!duplicateCheckSkipped) {
+                const similarPieces = findSimilarPieces(
+                  piece.title,
+                  piece.composer,
+                  allExistingPieces,
+                  0.7 // Lower threshold to catch more potential duplicates
+                )
+
+                if (similarPieces.length > 0) {
+                  // Store entry data to create later and show duplicate confirmation modal
+                  setPendingEntryData(entryData)
+                  setDuplicateMatches({ piece, matches: similarPieces })
+                  return
+                }
+              }
+
+              // No duplicates found, create entry and show repertoire prompt
+              await createEntry(entryData)
               setShowRepertoirePrompt({ piece, scoreId })
               // Exit after showing prompt for first piece not in repertoire
               return
             }
           }
         }
+
+        // No pieces or all pieces already in repertoire - create entry directly
+        await createEntry(entryData)
       }
 
       onSave()
@@ -503,6 +577,134 @@ export default function ManualEntryForm({
             onSave()
           }}
         />
+      )}
+
+      {/* Duplicate Detection Modal */}
+      {duplicateMatches && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <p className="text-stone-700 mb-4 text-sm sm:text-base">
+              {t('logbook:entry.duplicateDetection.similarTo', {
+                title: duplicateMatches.piece.title,
+                composer: duplicateMatches.piece.composer
+                  ? ` by ${duplicateMatches.piece.composer}`
+                  : '',
+              })}
+            </p>
+
+            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 max-h-48 sm:max-h-60 overflow-y-auto">
+              {duplicateMatches.matches.map((match, index) => (
+                <div
+                  key={index}
+                  className="border border-stone-200 rounded-lg p-3"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-stone-900 text-sm sm:text-base truncate">
+                        {match.title}
+                      </div>
+                      {match.composer && (
+                        <div className="text-xs sm:text-sm text-stone-600 truncate">
+                          {match.composer}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full whitespace-nowrap ${
+                          match.confidence === 'high'
+                            ? 'bg-red-100 text-red-700'
+                            : match.confidence === 'medium'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {t('logbook:entry.duplicateDetection.matchPercentage', {
+                          percentage: Math.round(match.similarity * 100),
+                        })}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                        onClick={async () => {
+                          // Use the existing piece instead of creating a new one
+                          const updatedPieces = pieces.map((piece, idx) =>
+                            idx === 0
+                              ? { title: match.title, composer: match.composer }
+                              : piece
+                          )
+                          setPieces(updatedPieces)
+
+                          // Update the pending entry data with the selected piece
+                          if (pendingEntryData) {
+                            const updatedEntryData = {
+                              ...pendingEntryData,
+                              pieces: updatedPieces
+                                .filter(p => p.title)
+                                .map(p => ({
+                                  title: p.title,
+                                  composer: p.composer ? p.composer : null,
+                                })),
+                            }
+
+                            // Create the entry with the selected piece
+                            await createEntry(
+                              updatedEntryData as Omit<
+                                LogbookEntry,
+                                'id' | 'createdAt' | 'updatedAt'
+                              >
+                            )
+                            setPendingEntryData(null)
+                          }
+
+                          setDuplicateMatches(null)
+                          setDuplicateCheckSkipped(true) // Skip duplicate check for this session
+                          onSave() // Close the form
+                        }}
+                      >
+                        {t('logbook:entry.duplicateDetection.useThis')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+              <Button
+                variant="ghost"
+                className="w-full sm:w-auto text-sm"
+                onClick={async () => {
+                  // Create the entry with the original piece data
+                  if (pendingEntryData) {
+                    await createEntry(
+                      pendingEntryData as Omit<
+                        LogbookEntry,
+                        'id' | 'createdAt' | 'updatedAt'
+                      >
+                    )
+                    setPendingEntryData(null)
+                  }
+                  setDuplicateMatches(null)
+                  onSave() // Close the form
+                }}
+              >
+                {t('logbook:entry.duplicateDetection.createNewAnyway')}
+              </Button>
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto text-sm"
+                onClick={() => {
+                  setDuplicateMatches(null)
+                  // Don't save, let user modify the piece
+                }}
+              >
+                {t('logbook:entry.duplicateDetection.letMeEdit')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </Modal>
   )

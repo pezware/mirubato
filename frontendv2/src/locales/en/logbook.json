@@ -56,7 +56,14 @@
     "successAdded": "Practice entry successfully added!",
     "successUpdated": "Practice entry successfully updated!",
     "piecesNote": "Practice time will be divided equally among pieces",
-    "maxPiecesReached": "Maximum 3 pieces per entry"
+    "maxPiecesReached": "Maximum 3 pieces per entry",
+    "duplicateDetection": {
+      "similarTo": "Similar to \"{{title}}\"{{composer, composer}}. Use existing or create new?",
+      "matchPercentage": "{{percentage}}%",
+      "useThis": "Use This",
+      "createNewAnyway": "Create New Anyway",
+      "letMeEdit": "Let Me Edit"
+    }
   },
   "filters": {
     "last7Days": "Last 7 days",
