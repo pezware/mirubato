@@ -123,6 +123,9 @@ const GOALS_KEY = 'mirubato:repertoire:goals'
 const SCORE_METADATA_KEY = 'mirubato:repertoire:scoreMetadata'
 const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
 
+// Sync debounce timer
+let syncDebounceTimer: NodeJS.Timeout | null = null
+
 export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   // Initial state
   repertoire: new Map(),
@@ -802,80 +805,137 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       return
     }
 
-    try {
-      // Sync repertoire items
-      const localRepertoireItems = Array.from(repertoire.values())
-      if (localRepertoireItems.length > 0) {
-        console.log(
-          'Syncing',
-          localRepertoireItems.length,
-          'repertoire items to server'
-        )
+    // Debounce sync calls to prevent rapid successive syncs
+    if (syncDebounceTimer) {
+      clearTimeout(syncDebounceTimer)
+    }
 
-        for (const item of localRepertoireItems) {
-          try {
-            // Check if item exists on server first
-            const serverItems = await repertoireApi.list()
-            const exists = serverItems.items.some(
-              serverItem => serverItem.scoreId === item.scoreId
-            )
+    return new Promise<void>((resolve, reject) => {
+      syncDebounceTimer = setTimeout(async () => {
+        try {
+          await performSync()
+          resolve()
+        } catch (error) {
+          reject(error)
+        }
+      }, 1000) // 1 second debounce
+    })
 
-            if (!exists) {
-              // Add to server
-              await repertoireApi.add({
-                scoreId: item.scoreId,
-                status: item.status,
-                difficultyRating: item.difficultyRating ?? undefined,
-                personalNotes: item.personalNotes,
-                referenceLinks: item.referenceLinks,
-              })
-            } else {
-              // Update on server
-              await repertoireApi.update(item.scoreId, {
-                status: item.status,
-                difficultyRating: item.difficultyRating ?? undefined,
-                personalNotes: item.personalNotes,
-                referenceLinks: item.referenceLinks,
-              })
+    async function performSync() {
+      try {
+        // Sync repertoire items
+        const localRepertoireItems = Array.from(repertoire.values())
+        if (localRepertoireItems.length > 0) {
+          console.log(
+            'Syncing',
+            localRepertoireItems.length,
+            'repertoire items to server'
+          )
+
+          // Fetch server items only once to avoid N+1 query problem
+          const serverItems = await repertoireApi.list()
+          const serverScoreIds = new Set(
+            serverItems.items.map(item => item.scoreId)
+          )
+
+          // Track sync results
+          const syncResults = {
+            added: 0,
+            updated: 0,
+            errors: 0,
+          }
+
+          for (const item of localRepertoireItems) {
+            try {
+              const exists = serverScoreIds.has(item.scoreId)
+
+              if (!exists) {
+                // Add to server
+                await repertoireApi.add({
+                  scoreId: item.scoreId,
+                  status: item.status,
+                  difficultyRating: item.difficultyRating ?? undefined,
+                  personalNotes: item.personalNotes,
+                  referenceLinks: item.referenceLinks,
+                })
+                syncResults.added++
+              } else {
+                // Update on server
+                await repertoireApi.update(item.scoreId, {
+                  status: item.status,
+                  difficultyRating: item.difficultyRating ?? undefined,
+                  personalNotes: item.personalNotes,
+                  referenceLinks: item.referenceLinks,
+                })
+                syncResults.updated++
+              }
+            } catch (err) {
+              console.warn('Failed to sync repertoire item:', item.scoreId, err)
+              syncResults.errors++
             }
-          } catch (err) {
-            console.warn('Failed to sync repertoire item:', item.scoreId, err)
           }
+
+          console.log('Repertoire sync completed:', syncResults)
         }
-      }
 
-      // Sync goals
-      const localGoals = Array.from(goals.values())
-      if (localGoals.length > 0) {
-        console.log('Syncing', localGoals.length, 'goals to server')
+        // Sync goals
+        const localGoals = Array.from(goals.values())
+        if (localGoals.length > 0) {
+          console.log('Syncing', localGoals.length, 'goals to server')
 
-        for (const goal of localGoals) {
-          try {
-            // Create on server (goals don't have update endpoint in current implementation)
-            await goalsApi.create({
-              title: goal.title,
-              description: goal.description,
-              type: goal.type,
-              targetValue: goal.targetValue,
-              targetDate: goal.targetDate,
-              scoreId: goal.scoreId,
-              milestones: goal.milestones,
-            })
-          } catch (err) {
-            console.warn('Failed to sync goal:', goal.title, err)
+          // Fetch server goals to avoid duplicates
+          const serverGoals = await goalsApi.list()
+          const existingGoalTitles = new Set(
+            serverGoals.goals.map(
+              goal => `${goal.title}-${goal.scoreId || 'no-score'}`
+            )
+          )
+
+          const goalSyncResults = {
+            added: 0,
+            skipped: 0,
+            errors: 0,
           }
+
+          for (const goal of localGoals) {
+            try {
+              // Create a unique key based on title and scoreId to check for duplicates
+              const goalKey = `${goal.title}-${goal.scoreId || 'no-score'}`
+
+              if (!existingGoalTitles.has(goalKey)) {
+                await goalsApi.create({
+                  title: goal.title,
+                  description: goal.description,
+                  type: goal.type,
+                  targetValue: goal.targetValue,
+                  targetDate: goal.targetDate,
+                  scoreId: goal.scoreId,
+                  milestones: goal.milestones,
+                })
+                goalSyncResults.added++
+              } else {
+                goalSyncResults.skipped++
+              }
+            } catch (err) {
+              console.warn('Failed to sync goal:', goal.title, err)
+              goalSyncResults.errors++
+            }
+          }
+
+          console.log('Goals sync completed:', goalSyncResults)
         }
+
+        // After successful sync, reload from server
+        await get().loadRepertoire()
+        await get().loadGoals()
+
+        set({ isLocalMode: false })
+        // Don't show success toast - sync should be silent when successful
+      } catch (error) {
+        console.error('Error syncing repertoire data:', error)
+        // Keep local mode if sync fails
+        throw error
       }
-
-      // After successful sync, reload from server
-      await get().loadRepertoire()
-      await get().loadGoals()
-
-      set({ isLocalMode: false })
-      // Don't show success toast - sync should be silent when successful
-    } catch (error) {
-      console.error('Error syncing repertoire data:', error)
-      // Keep local mode if sync fails
     }
   },
 
