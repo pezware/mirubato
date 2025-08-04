@@ -649,7 +649,12 @@ export default function ManualEntryForm({
                             }
 
                             // Create the entry with the selected piece
-                            await createEntry(updatedEntryData)
+                            await createEntry(
+                              updatedEntryData as Omit<
+                                LogbookEntry,
+                                'id' | 'createdAt' | 'updatedAt'
+                              >
+                            )
                             setPendingEntryData(null)
                           }
 
@@ -673,7 +678,12 @@ export default function ManualEntryForm({
                 onClick={async () => {
                   // Create the entry with the original piece data
                   if (pendingEntryData) {
-                    await createEntry(pendingEntryData)
+                    await createEntry(
+                      pendingEntryData as Omit<
+                        LogbookEntry,
+                        'id' | 'createdAt' | 'updatedAt'
+                      >
+                    )
                     setPendingEntryData(null)
                   }
                   setDuplicateMatches(null)
