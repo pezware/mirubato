@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
@@ -64,6 +64,22 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showRemoveConfirm || showDeleteConfirm) {
+      document.body.style.overflow = 'hidden'
+      // Scroll to top to ensure modal is visible
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showRemoveConfirm, showDeleteConfirm])
   const { updatePieceName, loadEntries } = useLogbookStore()
   const {
     cacheScoreMetadata,
@@ -555,34 +571,36 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
       {/* Remove from Repertoire Confirmation Modal */}
       {showRemoveConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-stone-900">
-              {t('repertoire:removeFromPieces')}
-            </h3>
-            <p className="text-stone-600 mb-6">
-              {t('repertoire:removeConfirmMessage', {
-                count: sessions.length,
-                title: item.scoreTitle,
-              })}
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="ghost"
-                onClick={() => setShowRemoveConfirm(false)}
-                disabled={isRemoving}
-              >
-                {t('common:cancel')}
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleRemoveFromRepertoire}
-                disabled={isRemoving}
-              >
-                {isRemoving
-                  ? t('common:removing')
-                  : t('repertoire:removeFromPieces')}
-              </Button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-full p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full relative shadow-xl">
+              <h3 className="text-lg font-semibold mb-4 text-stone-900">
+                {t('repertoire:removeFromPieces')}
+              </h3>
+              <p className="text-stone-600 mb-6">
+                {t('repertoire:removeConfirmMessage', {
+                  count: sessions.length,
+                  title: item.scoreTitle,
+                })}
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowRemoveConfirm(false)}
+                  disabled={isRemoving}
+                >
+                  {t('common:cancel')}
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleRemoveFromRepertoire}
+                  disabled={isRemoving}
+                >
+                  {isRemoving
+                    ? t('common:removing')
+                    : t('repertoire:removeFromPieces')}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -590,33 +608,35 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
       {/* Delete Completely Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-stone-900">
-              {t('repertoire:deleteCompletely')}
-            </h3>
-            <p className="text-stone-600 mb-6">
-              {t('repertoire:deleteConfirmMessage', {
-                title: item.scoreTitle,
-              })}
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="ghost"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isRemoving}
-              >
-                {t('common:cancel')}
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDeleteCompletely}
-                disabled={isRemoving}
-              >
-                {isRemoving
-                  ? t('common:deleting')
-                  : t('repertoire:deleteCompletely')}
-              </Button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-full p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full relative shadow-xl">
+              <h3 className="text-lg font-semibold mb-4 text-stone-900">
+                {t('repertoire:deleteCompletely')}
+              </h3>
+              <p className="text-stone-600 mb-6">
+                {t('repertoire:deleteConfirmMessage', {
+                  title: item.scoreTitle,
+                })}
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isRemoving}
+                >
+                  {t('common:cancel')}
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleDeleteCompletely}
+                  disabled={isRemoving}
+                >
+                  {isRemoving
+                    ? t('common:deleting')
+                    : t('repertoire:deleteCompletely')}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
