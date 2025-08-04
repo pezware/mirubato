@@ -500,10 +500,14 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast(
-          `Piece dissociated. ${entriesWithScore.length} practice logs preserved.`,
-          'success'
-        )
+        if (entriesWithScore.length > 0) {
+          showToast(
+            `Piece removed from repertoire. ${entriesWithScore.length} practice log${entriesWithScore.length === 1 ? '' : 's'} kept safe.`,
+            'success'
+          )
+        } else {
+          showToast('Piece removed from repertoire.', 'success')
+        }
 
         return {
           preservedLogs: entriesWithScore.length,
@@ -532,10 +536,14 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(get().repertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-        showToast(
-          `Piece dissociated. ${result.preservedLogs} practice logs preserved.`,
-          'success'
-        )
+        if (result.preservedLogs > 0) {
+          showToast(
+            `Piece removed from repertoire. ${result.preservedLogs} practice log${result.preservedLogs === 1 ? '' : 's'} kept safe.`,
+            'success'
+          )
+        } else {
+          showToast('Piece removed from repertoire.', 'success')
+        }
         return result
       }
     } catch (error) {
