@@ -28,6 +28,7 @@ export function PiecesStatistics({
     title: string
     composer?: string
   } | null>(null)
+
   // Get piece stats - either for selected piece/composer or top pieces
   const getPieceStats = () => {
     if (selectedPiece) {
@@ -137,12 +138,12 @@ export function PiecesStatistics({
   return (
     <div className="space-y-4" data-testid="pieces-statistics">
       {/* Pieces List */}
-      <div className="space-y-2">
+      <div className="space-y-1 sm:space-y-2">
         {pieceStats.map(piece => {
           return (
             <div
               key={piece.key}
-              className="p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer group"
+              className="p-2 sm:p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer group"
               onClick={() => setSelectedPiece?.(piece.key)}
             >
               <div className="flex items-center justify-between">
@@ -161,7 +162,7 @@ export function PiecesStatistics({
                       <Edit2 className="w-3 h-3" />
                     </Button>
                   </div>
-                  <div className="flex items-center gap-4 mt-1">
+                  <div className="flex items-center gap-2 sm:gap-4 mt-0.5 sm:mt-1">
                     <span className="text-xs text-morandi-stone-500">
                       {formatDuration(piece.totalDuration)} total
                     </span>
