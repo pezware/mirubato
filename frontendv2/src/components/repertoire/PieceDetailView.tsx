@@ -307,8 +307,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               >
                 <Trash2 className="w-4 h-4" />
                 {sessions.length === 0
-                  ? t('repertoire:delete')
-                  : t('repertoire:removeFromRepertoire')}
+                  ? t('repertoire:deleteFromPieces')
+                  : t('repertoire:removeFromPieces')}
               </Button>
             </div>
           </div>
@@ -558,7 +558,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-4 text-stone-900">
-              {t('repertoire:removeFromRepertoire')}
+              {t('repertoire:removeFromPieces')}
             </h3>
             <p className="text-stone-600 mb-6">
               {t('repertoire:removeConfirmMessage', {
@@ -581,7 +581,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               >
                 {isRemoving
                   ? t('common:removing')
-                  : t('repertoire:removeFromRepertoire')}
+                  : t('repertoire:removeFromPieces')}
               </Button>
             </div>
           </div>

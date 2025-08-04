@@ -437,7 +437,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
                 ],
           }
           // Remove undefined scoreId property
-          delete (updatedEntry as any).scoreId
+          delete (updatedEntry as { [key: string]: unknown }).scoreId
           updatedEntries.set(entry.id, updatedEntry)
         })
 

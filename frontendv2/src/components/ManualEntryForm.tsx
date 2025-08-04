@@ -55,7 +55,9 @@ export default function ManualEntryForm({
     matches: DuplicateMatch[]
   } | null>(null)
   const [duplicateCheckSkipped, setDuplicateCheckSkipped] = useState(false)
-  const [pendingEntryData, setPendingEntryData] = useState<any>(null)
+  const [pendingEntryData, setPendingEntryData] = useState<{
+    [key: string]: unknown
+  } | null>(null)
 
   // Load repertoire on mount
   useEffect(() => {

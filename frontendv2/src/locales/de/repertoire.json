@@ -164,5 +164,10 @@
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen"
+  "viewScore": "Noten ansehen",
+  "removeFromPieces": "Aus Stücken entfernen",
+  "deleteFromPieces": "Stück löschen",
+  "deleteCompletely": "Vollständig löschen",
+  "removeConfirmMessage": "Dies entfernt \"{{title}}\" aus Ihren Stücken, während Ihre {{count}} Übungssitzungen erhalten bleiben. Das Stück kann später bei Bedarf wieder hinzugefügt werden.",
+  "deleteConfirmMessage": "Dies löscht \"{{title}}\" dauerhaft aus Ihren Stücken. Diese Aktion kann nicht rückgängig gemacht werden."
 }

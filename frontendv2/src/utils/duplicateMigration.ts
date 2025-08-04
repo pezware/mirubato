@@ -42,7 +42,7 @@ export function detectLocalStorageDuplicates(): MigrationResult {
 
     // Extract all unique pieces from logbook entries
     const logbookPieces: LocalStoragePiece[] = []
-    logbookEntries.forEach((entry: any) => {
+    logbookEntries.forEach((entry: { pieces?: LocalStoragePiece[] }) => {
       if (entry.pieces) {
         entry.pieces.forEach((piece: LocalStoragePiece) => {
           const normalizedId = generateNormalizedScoreId(
@@ -64,34 +64,52 @@ export function detectLocalStorageDuplicates(): MigrationResult {
     })
 
     // Check for duplicates in repertoire
-    const repertoireDuplicates = new Map<string, any[]>()
+    const repertoireDuplicates = new Map<
+      string,
+      {
+        scoreId: string
+        title: string
+        composer: string
+        similarity: number
+        confidence: 'high' | 'medium' | 'low'
+      }[]
+    >()
 
-    repertoirePieces.forEach((item: any) => {
-      // Find similar pieces
-      const allOtherPieces = [...repertoirePieces, ...logbookPieces]
-        .filter(p => p !== item)
-        .map(p => ({
-          scoreId: p.scoreId || generateNormalizedScoreId(p.title, p.composer),
-          title: p.title,
-          composer: p.composer || '',
-        }))
+    repertoirePieces.forEach(
+      (item: {
+        scoreId: string
+        scoreTitle?: string
+        title?: string
+        scoreComposer?: string
+        composer?: string
+      }) => {
+        // Find similar pieces
+        const allOtherPieces = [...repertoirePieces, ...logbookPieces]
+          .filter(p => p !== item)
+          .map(p => ({
+            scoreId:
+              p.scoreId || generateNormalizedScoreId(p.title, p.composer),
+            title: p.title,
+            composer: p.composer || '',
+          }))
 
-      const similar = findSimilarPieces(
-        item.scoreTitle || item.title || 'Unknown',
-        item.scoreComposer || item.composer,
-        allOtherPieces,
-        0.85 // High threshold for automatic detection
-      )
+        const similar = findSimilarPieces(
+          item.scoreTitle || item.title || 'Unknown',
+          item.scoreComposer || item.composer,
+          allOtherPieces,
+          0.85 // High threshold for automatic detection
+        )
 
-      if (similar.length > 0) {
-        const key = item.scoreId
-        if (!repertoireDuplicates.has(key)) {
-          repertoireDuplicates.set(key, [])
+        if (similar.length > 0) {
+          const key = item.scoreId || ''
+          if (!repertoireDuplicates.has(key)) {
+            repertoireDuplicates.set(key, [])
+          }
+          repertoireDuplicates.get(key)!.push(...similar)
+          result.duplicatesFound += similar.length
         }
-        repertoireDuplicates.get(key)!.push(...similar)
-        result.duplicatesFound += similar.length
       }
-    })
+    )
 
     // Log findings for debugging
     if (result.duplicatesFound > 0) {

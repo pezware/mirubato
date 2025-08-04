@@ -164,5 +164,10 @@
   "unit": "Unidad",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
   "viewDetails": "Ver Detalles",
-  "viewScore": "Ver Partitura"
+  "viewScore": "Ver Partitura",
+  "removeFromPieces": "Quitar de piezas",
+  "deleteFromPieces": "Eliminar pieza",
+  "deleteCompletely": "Eliminar completamente",
+  "removeConfirmMessage": "Esto quitará \"{{title}}\" de sus piezas mientras preserva sus {{count}} sesiones de práctica. La pieza puede volver a agregarse más tarde si es necesario.",
+  "deleteConfirmMessage": "Esto eliminará permanentemente \"{{title}}\" de sus piezas. Esta acción no se puede deshacer."
 }
