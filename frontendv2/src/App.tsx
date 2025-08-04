@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import { useLogbookStore } from './stores/logbookStore'
+import { useRepertoireStore } from './stores/repertoireStore'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
@@ -41,6 +42,7 @@ const PageLoader = () => (
 function App() {
   const { refreshAuth, isAuthInitialized } = useAuthStore()
   const { enableRealtimeSync } = useLogbookStore()
+  const { enableRealtimeSync: enableRepertoireSync } = useRepertoireStore()
 
   useEffect(() => {
     let isMounted = true
@@ -67,9 +69,10 @@ function App() {
 
           if (authToken && userStr && isMounted) {
             try {
-              await enableRealtimeSync()
+              // Enable both logbook and repertoire sync
+              await Promise.all([enableRealtimeSync(), enableRepertoireSync()])
               console.log(
-                '✅ Auto-enabled WebSocket sync for staging environment'
+                '✅ Auto-enabled WebSocket sync for staging environment (logbook + repertoire)'
               )
             } catch (error) {
               console.warn('⚠️ Failed to auto-enable WebSocket sync:', error)
@@ -92,7 +95,7 @@ function App() {
     return () => {
       isMounted = false
     }
-  }, [refreshAuth, enableRealtimeSync])
+  }, [refreshAuth, enableRealtimeSync, enableRepertoireSync])
 
   // Show loading screen while auth is being determined
   if (!isAuthInitialized) {

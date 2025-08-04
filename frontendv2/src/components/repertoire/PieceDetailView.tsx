@@ -124,9 +124,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     try {
       setIsRemoving(true)
 
-      // Add timeout to prevent infinite hanging
+      // With WebSocket sync, operations should be faster
+      // Reduced timeout and better error handling
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
       })
 
       await Promise.race([
@@ -139,6 +140,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       window.history.back()
     } catch (error) {
       console.error('Failed to remove piece from repertoire:', error)
+      // Show user-friendly error message
+      toast.error(t('repertoire:operationFailed'))
       // Still close the modal to prevent frozen state
       setShowRemoveConfirm(false)
     } finally {
@@ -150,9 +153,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     try {
       setIsRemoving(true)
 
-      // Add timeout to prevent infinite hanging
+      // With WebSocket sync, operations should be faster
+      // Reduced timeout and better error handling
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
+        setTimeout(() => reject(new Error('Request timeout')), 10000) // 10 second timeout
       })
 
       await Promise.race([removeFromRepertoire(item.scoreId), timeoutPromise])
@@ -162,6 +166,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       window.history.back()
     } catch (error) {
       console.error('Failed to delete piece completely:', error)
+      // Show user-friendly error message
+      toast.error(t('repertoire:operationFailed'))
       // Still close the modal to prevent frozen state
       setShowDeleteConfirm(false)
     } finally {

@@ -1,6 +1,6 @@
 /**
  * SyncCoordinator Durable Object
- * Handles real-time synchronization for practice log entries
+ * Handles real-time synchronization for practice log entries and repertoire pieces
  */
 
 export interface SyncEvent {
@@ -8,7 +8,12 @@ export interface SyncEvent {
     | 'ENTRY_CREATED'
     | 'ENTRY_UPDATED'
     | 'ENTRY_DELETED'
+    | 'PIECE_ADDED'
+    | 'PIECE_UPDATED'
+    | 'PIECE_REMOVED'
+    | 'PIECE_DISSOCIATED'
     | 'BULK_SYNC'
+    | 'REPERTOIRE_BULK_SYNC'
     | 'SYNC_REQUEST'
     | 'PING'
   userId?: string
@@ -16,6 +21,9 @@ export interface SyncEvent {
   entry?: any // LogbookEntry
   entries?: any[] // LogbookEntry[]
   entryId?: string
+  piece?: any // RepertoireItem
+  pieces?: any[] // RepertoireItem[]
+  scoreId?: string
   lastSyncTime?: string
 }
 
@@ -178,6 +186,14 @@ export class SyncCoordinator implements DurableObject {
         await this.handleEntryChange(clientId, event)
         break
 
+      case 'PIECE_ADDED':
+      case 'PIECE_UPDATED':
+      case 'PIECE_REMOVED':
+      case 'PIECE_DISSOCIATED':
+        // Broadcast repertoire change to other clients
+        await this.handlePieceChange(clientId, event)
+        break
+
       default:
         console.warn(`⚠️ Unknown event type: ${event.type}`)
     }
@@ -220,6 +236,28 @@ export class SyncCoordinator implements DurableObject {
 
     // TODO: Phase 2 - Save to D1 database
     // await this.saveToDatabase(event)
+  }
+
+  private async handlePieceChange(
+    senderId: string,
+    event: SyncEvent
+  ): Promise<void> {
+    const sender = this.clients.get(senderId)
+    if (!sender) return
+
+    console.log(
+      `🎵 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
+    )
+
+    // Broadcast to all other clients of the same user
+    for (const [clientId, client] of this.clients) {
+      if (clientId !== senderId && client.userId === sender.userId) {
+        this.sendToClient(clientId, event)
+      }
+    }
+
+    // TODO: Phase 2 - Save repertoire changes to D1 database
+    // await this.saveRepertoireToDatabase(event)
   }
 
   private sendToClient(clientId: string, data: any): void {
