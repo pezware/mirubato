@@ -43,6 +43,7 @@
     }
   },
   "delete": "Delete",
+  "deleting": "Deleting...",
   "description": "Description",
   "deselectAll": "Deselect all",
   "details": "Details",
@@ -212,6 +213,7 @@
   "refresh": "Refresh",
   "register": "Register",
   "remove": "Remove",
+  "removing": "Removing...",
   "reports": "Reports",
   "reset": "Reset",
   "resume": "Resume",

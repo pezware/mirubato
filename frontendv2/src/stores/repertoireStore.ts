@@ -73,6 +73,11 @@ interface RepertoireStore {
   ) => Promise<void>
   updateRepertoireNotes: (scoreId: string, notes: string) => Promise<void>
   removeFromRepertoire: (scoreId: string) => Promise<void>
+  dissociatePieceFromRepertoire: (scoreId: string) => Promise<{
+    preservedLogs: number
+    pieceTitle: string
+    pieceComposer: string
+  }>
   getRepertoireStats: (scoreId: string) => Promise<RepertoireStats | null>
 
   // Goal actions
@@ -361,6 +366,140 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       console.error('Error removing from repertoire:', error)
       showToast(
         (error as Error).message || 'Failed to remove from repertoire',
+        'error'
+      )
+      throw error
+    }
+  },
+
+  // Dissociate piece from repertoire while preserving practice logs
+  dissociatePieceFromRepertoire: async (scoreId: string) => {
+    try {
+      const { isLocalMode, repertoire, scoreMetadataCache } = get()
+      const item = repertoire.get(scoreId)
+
+      if (!item) {
+        throw new Error('Piece not found in repertoire')
+      }
+
+      // Get piece metadata for the response
+      const metadata = scoreMetadataCache.get(scoreId)
+      let pieceTitle = 'Unknown Piece'
+      let pieceComposer = ''
+
+      if (metadata) {
+        pieceTitle = metadata.title
+        pieceComposer = metadata.composer || ''
+      } else if (scoreId.includes('-')) {
+        // Parse from normalized scoreId format
+        const parts = scoreId.split('-')
+        if (parts.length >= 2) {
+          pieceTitle = parts[0]
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+          pieceComposer = parts
+            .slice(1)
+            .join('-')
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+        }
+      }
+
+      if (isLocalMode) {
+        // For localStorage mode, we need to update logbook entries
+        // Import logbook store to dissociate logs
+        const { useLogbookStore } = await import('./logbookStore')
+        const logbookStore = useLogbookStore.getState()
+
+        // Count how many logs will be affected
+        const entriesWithScore = Array.from(
+          logbookStore.entriesMap.values()
+        ).filter(entry => entry.scoreId === scoreId)
+
+        // Update logbook entries to remove scoreId and embed piece data
+        const updatedEntries = new Map(logbookStore.entriesMap)
+
+        entriesWithScore.forEach(entry => {
+          const updatedEntry = {
+            ...entry,
+            scoreId: undefined, // Remove scoreId reference
+            scoreTitle: pieceTitle,
+            scoreComposer: pieceComposer,
+            pieces: entry.pieces?.length
+              ? entry.pieces
+              : [
+                  {
+                    title: pieceTitle,
+                    composer: pieceComposer,
+                  },
+                ],
+          }
+          // Remove undefined scoreId property
+          delete (updatedEntry as any).scoreId
+          updatedEntries.set(entry.id, updatedEntry)
+        })
+
+        // Update logbook store
+        logbookStore.entriesMap = updatedEntries
+        logbookStore.entries = Array.from(updatedEntries.values()).sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+
+        // Save updated entries to localStorage
+        const entries = Array.from(updatedEntries.values())
+        localStorage.setItem(
+          'mirubato:logbook:entries',
+          JSON.stringify(entries)
+        )
+
+        // Remove from repertoire locally
+        const newRepertoire = new Map(repertoire)
+        newRepertoire.delete(scoreId)
+        set({ repertoire: newRepertoire })
+
+        // Update localStorage
+        const items = Array.from(newRepertoire.values())
+        localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+        showToast(
+          `Piece dissociated. ${entriesWithScore.length} practice logs preserved.`,
+          'success'
+        )
+
+        return {
+          preservedLogs: entriesWithScore.length,
+          pieceTitle,
+          pieceComposer,
+        }
+      } else {
+        // Use API for authenticated users
+        const result = await repertoireApi.dissociate(scoreId)
+
+        // Remove from local state
+        set(state => {
+          const newRepertoire = new Map(state.repertoire)
+          newRepertoire.delete(scoreId)
+          return { repertoire: newRepertoire }
+        })
+
+        // Update localStorage
+        const items = Array.from(get().repertoire.values())
+        localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+        showToast(
+          `Piece dissociated. ${result.preservedLogs} practice logs preserved.`,
+          'success'
+        )
+        return result
+      }
+    } catch (error) {
+      console.error('Error dissociating piece from repertoire:', error)
+      showToast(
+        (error as Error).message ||
+          'Failed to dissociate piece from repertoire',
         'error'
       )
       throw error

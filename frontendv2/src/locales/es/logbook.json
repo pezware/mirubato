@@ -20,6 +20,13 @@
     "foundEntries": "Se encontraron {{count}} entradas",
     "instrument": "Instrumento",
     "maxPiecesReached": "Máximo 3 piezas por entrada",
+    "duplicateDetection": {
+      "similarTo": "Similar a \"{{title}}\"{{composer, composer}}. ¿Usar existente o crear nueva?",
+      "matchPercentage": "{{percentage}}%",
+      "useThis": "Usar Esta",
+      "createNewAnyway": "Crear Nueva De Todos Modos",
+      "letMeEdit": "Déjame Editar"
+    },
     "mood": "¿Cómo te fue?",
     "notes": "Notas",
     "notesPlaceholder": "¿En qué trabajaste? ¿Alguna observación?",

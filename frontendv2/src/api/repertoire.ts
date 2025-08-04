@@ -97,4 +97,19 @@ export const repertoireApi = {
     )
     return response.data
   },
+
+  // Dissociate piece from repertoire while preserving practice logs
+  dissociate: async (
+    scoreId: string
+  ): Promise<{
+    message: string
+    preservedLogs: number
+    pieceTitle: string
+    pieceComposer: string
+  }> => {
+    const response = await apiClient.delete(
+      `/api/repertoire/${encodeURIComponent(scoreId)}/dissociate`
+    )
+    return response.data
+  },
 }

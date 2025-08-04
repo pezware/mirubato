@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import { Edit2, Clock, Target, Music, Smile, Link } from 'lucide-react'
+import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
@@ -61,8 +61,16 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const [isEditingPiece, setIsEditingPiece] = useState(false)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
   const { updatePieceName, loadEntries } = useLogbookStore()
-  const { cacheScoreMetadata, loadRepertoire } = useRepertoireStore()
+  const {
+    cacheScoreMetadata,
+    loadRepertoire,
+    removeFromRepertoire,
+    dissociatePieceFromRepertoire,
+  } = useRepertoireStore()
 
   // Status colors and labels
   const statusConfig: Record<
@@ -94,6 +102,34 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const handleStatusChange = (newStatus: keyof RepertoireStatus) => {
     onStatusChange?.(newStatus)
     setIsEditingStatus(false)
+  }
+
+  const handleRemoveFromRepertoire = async () => {
+    try {
+      setIsRemoving(true)
+      await dissociatePieceFromRepertoire(item.scoreId)
+      setShowRemoveConfirm(false)
+      // Navigate back to repertoire list since piece is no longer in repertoire
+      window.history.back()
+    } catch (error) {
+      console.error('Failed to remove piece from repertoire:', error)
+    } finally {
+      setIsRemoving(false)
+    }
+  }
+
+  const handleDeleteCompletely = async () => {
+    try {
+      setIsRemoving(true)
+      await removeFromRepertoire(item.scoreId)
+      setShowDeleteConfirm(false)
+      // Navigate back to repertoire list since piece is deleted
+      window.history.back()
+    } catch (error) {
+      console.error('Failed to delete piece completely:', error)
+    } finally {
+      setIsRemoving(false)
+    }
   }
 
   // Calculate stats
@@ -243,15 +279,39 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditingPiece(true)}
-            className="flex items-center gap-2 ml-4"
-          >
-            <Edit2 className="w-4 h-4" />
-            {t('common:edit')}
-          </Button>
+          <div className="flex items-center gap-2 ml-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditingPiece(true)}
+              className="flex items-center gap-2"
+            >
+              <Edit2 className="w-4 h-4" />
+              {t('common:edit')}
+            </Button>
+
+            {/* Piece Management Dropdown */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // Show context menu or dropdown with remove options
+                  if (sessions.length === 0) {
+                    setShowDeleteConfirm(true)
+                  } else {
+                    setShowRemoveConfirm(true)
+                  }
+                }}
+                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                {sessions.length === 0
+                  ? t('repertoire:delete')
+                  : t('repertoire:removeFromRepertoire')}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -492,6 +552,75 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Remove from Repertoire Confirmation Modal */}
+      {showRemoveConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-stone-900">
+              {t('repertoire:removeFromRepertoire')}
+            </h3>
+            <p className="text-stone-600 mb-6">
+              {t('repertoire:removeConfirmMessage', {
+                count: sessions.length,
+                title: item.scoreTitle,
+              })}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setShowRemoveConfirm(false)}
+                disabled={isRemoving}
+              >
+                {t('common:cancel')}
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleRemoveFromRepertoire}
+                disabled={isRemoving}
+              >
+                {isRemoving
+                  ? t('common:removing')
+                  : t('repertoire:removeFromRepertoire')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Completely Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-stone-900">
+              {t('repertoire:deleteCompletely')}
+            </h3>
+            <p className="text-stone-600 mb-6">
+              {t('repertoire:deleteConfirmMessage', {
+                title: item.scoreTitle,
+              })}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isRemoving}
+              >
+                {t('common:cancel')}
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteCompletely}
+                disabled={isRemoving}
+              >
+                {isRemoving
+                  ? t('common:deleting')
+                  : t('repertoire:deleteCompletely')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Piece Modal */}
       {isEditingPiece && (
