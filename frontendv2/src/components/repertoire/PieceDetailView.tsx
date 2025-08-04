@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
@@ -6,7 +6,13 @@ import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
-import { MusicTitle, MusicComposer } from '@/components/ui'
+import {
+  MusicTitle,
+  MusicComposer,
+  Modal,
+  ModalBody,
+  ModalFooter,
+} from '@/components/ui'
 import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
@@ -65,21 +71,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (showRemoveConfirm || showDeleteConfirm) {
-      document.body.style.overflow = 'hidden'
-      // Scroll to top to ensure modal is visible
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [showRemoveConfirm, showDeleteConfirm])
+  // Note: Modal scroll lock is now handled by the Modal component
   const { updatePieceName, loadEntries } = useLogbookStore()
   const {
     cacheScoreMetadata,
@@ -597,79 +589,73 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       </div>
 
       {/* Remove from Repertoire Confirmation Modal */}
-      {showRemoveConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-full p-4">
-            <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm sm:max-w-md w-full relative shadow-xl mx-auto my-8">
-              <h3 className="text-lg font-semibold mb-4 text-stone-900">
-                {t('repertoire:removeFromPieces')}
-              </h3>
-              <p className="text-stone-600 mb-6">
-                {t('repertoire:removeConfirmMessage', {
-                  count: sessions.length,
-                  title: item.scoreTitle,
-                })}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowRemoveConfirm(false)}
-                  disabled={isRemoving}
-                  className="w-full sm:w-auto"
-                >
-                  {t('common:cancel')}
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={handleRemoveFromRepertoire}
-                  disabled={isRemoving}
-                  className="w-full sm:w-auto"
-                >
-                  {isRemoving
-                    ? t('common:removing')
-                    : t('repertoire:removeFromPieces')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showRemoveConfirm}
+        onClose={() => setShowRemoveConfirm(false)}
+        title={t('repertoire:removeFromPieces')}
+        size="sm"
+      >
+        <ModalBody>
+          <p className="text-stone-600">
+            {t('repertoire:removeConfirmMessage', {
+              count: sessions.length,
+              title: item.scoreTitle,
+            })}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setShowRemoveConfirm(false)}
+            disabled={isRemoving}
+          >
+            {t('common:cancel')}
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleRemoveFromRepertoire}
+            disabled={isRemoving}
+          >
+            {isRemoving
+              ? t('common:removing')
+              : t('repertoire:removeFromPieces')}
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Delete Completely Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-full p-4">
-            <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm sm:max-w-md w-full relative shadow-xl mx-auto my-8">
-              <h3 className="text-lg font-semibold mb-4 text-stone-900">
-                {t('repertoire:deleteCompletely')}
-              </h3>
-              <p className="text-stone-600 mb-6">
-                {t('repertoire:deleteConfirmMessage', {
-                  title: item.scoreTitle,
-                })}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isRemoving}
-                >
-                  {t('common:cancel')}
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={handleDeleteCompletely}
-                  disabled={isRemoving}
-                >
-                  {isRemoving
-                    ? t('common:deleting')
-                    : t('repertoire:deleteCompletely')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title={t('repertoire:deleteCompletely')}
+        size="sm"
+      >
+        <ModalBody>
+          <p className="text-stone-600">
+            {t('repertoire:deleteConfirmMessage', {
+              title: item.scoreTitle,
+            })}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={isRemoving}
+          >
+            {t('common:cancel')}
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteCompletely}
+            disabled={isRemoving}
+          >
+            {isRemoving
+              ? t('common:deleting')
+              : t('repertoire:deleteCompletely')}
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Edit Piece Modal */}
       {isEditingPiece && (
