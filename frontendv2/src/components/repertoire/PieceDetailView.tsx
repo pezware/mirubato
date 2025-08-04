@@ -123,12 +123,24 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const handleRemoveFromRepertoire = async () => {
     try {
       setIsRemoving(true)
-      await dissociatePieceFromRepertoire(item.scoreId)
+
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
+      })
+
+      await Promise.race([
+        dissociatePieceFromRepertoire(item.scoreId),
+        timeoutPromise,
+      ])
+
       setShowRemoveConfirm(false)
       // Navigate back to repertoire list since piece is no longer in repertoire
       window.history.back()
     } catch (error) {
       console.error('Failed to remove piece from repertoire:', error)
+      // Still close the modal to prevent frozen state
+      setShowRemoveConfirm(false)
     } finally {
       setIsRemoving(false)
     }
@@ -137,12 +149,21 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const handleDeleteCompletely = async () => {
     try {
       setIsRemoving(true)
-      await removeFromRepertoire(item.scoreId)
+
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
+      })
+
+      await Promise.race([removeFromRepertoire(item.scoreId), timeoutPromise])
+
       setShowDeleteConfirm(false)
       // Navigate back to repertoire list since piece is deleted
       window.history.back()
     } catch (error) {
       console.error('Failed to delete piece completely:', error)
+      // Still close the modal to prevent frozen state
+      setShowDeleteConfirm(false)
     } finally {
       setIsRemoving(false)
     }
@@ -573,7 +594,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       {showRemoveConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-full p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full relative shadow-xl">
+            <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm sm:max-w-md w-full relative shadow-xl mx-auto my-8">
               <h3 className="text-lg font-semibold mb-4 text-stone-900">
                 {t('repertoire:removeFromPieces')}
               </h3>
@@ -583,11 +604,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                   title: item.scoreTitle,
                 })}
               </p>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
                 <Button
                   variant="ghost"
                   onClick={() => setShowRemoveConfirm(false)}
                   disabled={isRemoving}
+                  className="w-full sm:w-auto"
                 >
                   {t('common:cancel')}
                 </Button>
@@ -595,6 +617,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                   variant="danger"
                   onClick={handleRemoveFromRepertoire}
                   disabled={isRemoving}
+                  className="w-full sm:w-auto"
                 >
                   {isRemoving
                     ? t('common:removing')
@@ -610,7 +633,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-full p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full relative shadow-xl">
+            <div className="bg-white rounded-lg p-4 sm:p-6 max-w-sm sm:max-w-md w-full relative shadow-xl mx-auto my-8">
               <h3 className="text-lg font-semibold mb-4 text-stone-900">
                 {t('repertoire:deleteCompletely')}
               </h3>
@@ -619,7 +642,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                   title: item.scoreTitle,
                 })}
               </p>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
                 <Button
                   variant="ghost"
                   onClick={() => setShowDeleteConfirm(false)}
