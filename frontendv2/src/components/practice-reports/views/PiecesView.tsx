@@ -117,9 +117,9 @@ export default function PiecesView({ analytics }: PiecesViewProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-3 sm:space-y-6">
         {/* Search and Filters */}
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="flex flex-col gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-morandi-stone-400 w-4 h-4" />

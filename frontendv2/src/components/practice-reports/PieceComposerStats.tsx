@@ -88,76 +88,80 @@ export function PieceComposerStats({
 
   return (
     <div className="space-y-4">
-      <Card className="bg-morandi-sage-50 p-4">
+      <Card className="bg-morandi-sage-50 p-2 sm:p-4">
         {selectedPiece && (
           <>
-            <h3 className="font-medium text-morandi-stone-900 mb-2">
+            <h3 className="font-medium text-morandi-stone-900 mb-1 sm:mb-2">
               {selectedPiece.split(' - ')[1]}
             </h3>
-            <p className="text-sm text-morandi-stone-600 mb-3">
+            <p className="text-sm text-morandi-stone-600 mb-2 sm:mb-3">
               {selectedPiece.split(' - ')[0]}
             </p>
           </>
         )}
         {selectedComposer && !selectedPiece && (
-          <h3 className="font-medium text-morandi-stone-900 mb-3">
+          <h3 className="font-medium text-morandi-stone-900 mb-2 sm:mb-3">
             {selectedComposer}
           </h3>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-2xl font-bold text-morandi-stone-900">
+        {/* Mobile: Single row compact layout, Desktop: 2-column grid */}
+        <div
+          className={`grid gap-1 sm:gap-2 md:gap-4 ${selectedPiece ? 'grid-cols-4' : 'grid-cols-3'}`}
+        >
+          <div className="text-center sm:text-left">
+            <p className="text-sm sm:text-lg md:text-2xl font-bold text-morandi-stone-900">
               {formatDuration(stats.totalDuration)}
             </p>
-            <p className="text-xs text-morandi-stone-600">
+            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
               {t('reports:totalTime')}
             </p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-morandi-stone-900">
+          <div className="text-center sm:text-left">
+            <p className="text-sm sm:text-lg md:text-2xl font-bold text-morandi-stone-900">
               {stats.count}
             </p>
-            <p className="text-xs text-morandi-stone-600">
+            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
               {t('reports:sessions')}
             </p>
           </div>
           {selectedPiece && (
-            <div>
-              <p className="text-lg font-bold text-morandi-stone-900">
+            <div className="text-center sm:text-left">
+              <p className="text-sm sm:text-lg font-bold text-morandi-stone-900">
                 {formatDuration(Math.round(stats.totalDuration / stats.count))}
               </p>
-              <p className="text-xs text-morandi-stone-600">
+              <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
                 {t('reports:avgPerSession')}
               </p>
             </div>
           )}
-          <div>
-            <p className="text-lg font-bold text-morandi-stone-900">
+          <div className="text-center sm:text-left">
+            <p className="text-sm sm:text-lg font-bold text-morandi-stone-900">
               {new Date(stats.lastPracticed).toLocaleDateString()}
             </p>
-            <p className="text-xs text-morandi-stone-600">
+            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
               {t('reports:lastPracticed')}
             </p>
           </div>
-          {stats.techniques.size > 0 && (
-            <div className="col-span-2">
-              <p className="text-sm text-morandi-stone-600 mb-2">
-                {t('reports:techniquesPracticed')}:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {Array.from(stats.techniques).map((technique: string) => (
-                  <span
-                    key={technique}
-                    className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-700 rounded-md text-xs"
-                  >
-                    {technique}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+
+        {stats.techniques.size > 0 && (
+          <div className="mt-3">
+            <p className="text-sm text-morandi-stone-600 mb-2">
+              {t('reports:techniquesPracticed')}:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(stats.techniques).map((technique: string) => (
+                <span
+                  key={technique}
+                  className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-700 rounded-md text-xs"
+                >
+                  {technique}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Practice Entries */}
