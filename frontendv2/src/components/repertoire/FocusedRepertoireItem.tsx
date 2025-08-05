@@ -1,12 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { formatDistanceToNow, isToday } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
-import Button from '@/components/ui/Button'
-import { useRepertoireStore } from '@/stores/repertoireStore'
 import { MusicTitle } from '@/components/ui'
 
 interface RecentPractice {
@@ -29,7 +27,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   item,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
-  const { removeFromRepertoire } = useRepertoireStore()
 
   // Status configuration
   const statusConfig: Record<
