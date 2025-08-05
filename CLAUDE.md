@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Mirubato Developer Guide
 
 ## Table of Contents
@@ -50,12 +54,31 @@ pnpm install
 # Development
 pnpm install                  # Install dependencies
 ./start-scorebook.sh          # Start all services
-pnpm test                     # Run tests
-pnpm run build                # Build for production
+pnpm test                     # Run all tests across workspaces
+pnpm run build                # Build all services for production
 
 # Individual services (debugging)
 cd frontendv2 && pnpm run dev # Frontend only
 cd api && pnpm run dev        # API only
+cd scores && pnpm run dev     # Scores service only
+cd dictionary && pnpm run dev # Dictionary service only
+
+# Testing
+pnpm test                     # All tests
+pnpm run test:unit            # Unit tests only
+pnpm run test:integration     # Integration tests only
+pnpm run test:coverage        # Tests with coverage report
+pnpm test -- src/specific.test.ts  # Single test file
+
+# Linting & Type Checking
+pnpm run lint                 # Lint all workspaces
+pnpm run type-check           # TypeScript type checking
+pnpm run format               # Format with Prettier
+
+# Internationalization
+cd frontendv2 && pnpm run sync:i18n     # Sync translations
+cd frontendv2 && pnpm run validate:i18n # Validate completeness
+cd frontendv2 && pnpm run i18n:fix      # Fix and sort keys
 
 # Deployment
 cd [service] && wrangler deploy --env staging  # Deploy to staging
@@ -65,10 +88,13 @@ cd [service] && wrangler deploy                # Deploy to production
 ### Key Principles - MUST READ
 
 1. **Test First**: Write tests before implementation
-2. **Use Component Library**: Never use native HTML elements
-3. **Check Branch**: Never edit on main branch
-4. **Run Hooks**: Never skip pre-commit hooks with `--no-verify`
+2. **Use Component Library**: Never use native HTML elements - always import from `@/components/ui`
+3. **Check Branch**: Never edit on main branch - create feature branches
+4. **Run Hooks**: Never skip pre-commit hooks with `--no-verify` - they run linting and tests
 5. **Use ast-grep**: For syntax-aware code searches
+6. **Monorepo Structure**: Use workspace commands (`pnpm -r`) for cross-workspace operations
+7. **TypeScript Strict**: No `any` types, always use proper typing
+8. **Pre-commit Quality**: Husky runs lint-staged which lints and tests only changed files
 
 ---
 
@@ -312,261 +338,7 @@ Cloudflare handles deployments with:
 
 ---
 
-## 4. Cloudflare Operational Best Practices {#cloudflare-operations}
-
-### Resource Limits & Optimization
-
-| Resource                  | Limit                         | Best Practice                              |
-| ------------------------- | ----------------------------- | ------------------------------------------ |
-| **CPU Time**              | 50ms (Bundled), 30s (Unbound) | Use Streams API, implement caching         |
-| **Memory**                | 128MB                         | Stream large data, use external storage    |
-| **Script Size**           | 10MB compressed               | Tree-shake, lazy load, use dynamic imports |
-| **Subrequests**           | 1000 per request              | Batch operations, use Promise.all()        |
-| **Environment Variables** | 64 variables, 5KB each        | Use KV for larger config                   |
-| **Response Size**         | No limit (streaming)          | Use TransformStream for large responses    |
-
-### Caching Strategies
-
-#### 1. Edge Cache (Cache API)
-
-```typescript
-// Cache at Cloudflare edge
-const cache = caches.default
-const cacheKey = new Request(request.url, request)
-const cachedResponse = await cache.match(cacheKey)
-
-if (cachedResponse) {
-  return cachedResponse
-}
-
-const response = await generateResponse()
-const responseToCache = response.clone()
-
-// Cache with custom TTL
-responseToCache.headers.set('Cache-Control', 'public, max-age=3600')
-await cache.put(cacheKey, responseToCache)
-
-return response
-```
-
-#### 2. KV Cache (Application Layer)
-
-```typescript
-// Application-level caching with KV
-const cached = await env.CACHE.get(key, 'json')
-if (cached && cached.expires > Date.now()) {
-  return new Response(JSON.stringify(cached.data))
-}
-
-const data = await fetchData()
-await env.CACHE.put(
-  key,
-  JSON.stringify({
-    data,
-    expires: Date.now() + 3600000, // 1 hour
-  }),
-  {
-    expirationTtl: 3600,
-  }
-)
-```
-
-#### 3. Browser Cache Headers
-
-```typescript
-// Set proper cache headers
-response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400')
-response.headers.set('CDN-Cache-Control', 'max-age=86400')
-response.headers.set('Vary', 'Accept-Encoding')
-```
-
-### Database Optimization (D1)
-
-#### 1. Connection Pooling
-
-```typescript
-// D1 handles connection pooling automatically
-// But batch operations when possible
-const results = await env.DB.batch([
-  env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(1),
-  env.DB.prepare('SELECT * FROM scores WHERE user_id = ?').bind(1),
-])
-```
-
-#### 2. Prepared Statements
-
-```typescript
-// Always use prepared statements
-const stmt = env.DB.prepare('SELECT * FROM users WHERE email = ?')
-const user = await stmt.bind(email).first()
-
-// Reuse statements in loops
-const updateStmt = env.DB.prepare(
-  'UPDATE users SET last_login = ? WHERE id = ?'
-)
-for (const userId of userIds) {
-  await updateStmt.bind(new Date().toISOString(), userId).run()
-}
-```
-
-#### 3. Indexing Strategy
-
-```sql
--- Create indexes for common queries
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_scores_user_id ON scores(user_id);
-CREATE INDEX idx_logbook_user_date ON logbook(user_id, practice_date);
-```
-
-### Queue Processing Patterns
-
-#### 1. Batch Processing
-
-```typescript
-export default {
-  async queue(batch: MessageBatch<QueueMessage>, env: Env): Promise<void> {
-    // Process messages in parallel
-    await Promise.all(
-      batch.messages.map(async message => {
-        try {
-          await processMessage(message.body, env)
-          message.ack()
-        } catch (error) {
-          // Retry logic
-          message.retry()
-        }
-      })
-    )
-  },
-}
-```
-
-#### 2. Dead Letter Queue
-
-```toml
-# wrangler.toml
-[[queues.consumers]]
-queue = "pdf-processing"
-max_retries = 3
-dead_letter_queue = "pdf-processing-dlq"
-```
-
-### Security Best Practices
-
-#### 1. Environment Variables
-
-```bash
-# Never commit secrets
-wrangler secret put JWT_SECRET
-wrangler secret put API_KEY
-
-# Use different secrets per environment
-wrangler secret put JWT_SECRET --env staging
-wrangler secret put JWT_SECRET --env production
-```
-
-#### 2. CORS Configuration
-
-```typescript
-// Strict CORS for production
-const corsHeaders = {
-  'Access-Control-Allow-Origin': env.FRONTEND_URL,
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Max-Age': '86400',
-}
-```
-
-#### 3. Rate Limiting
-
-```typescript
-// Use Cloudflare's rate limiter
-const { success } = await env.RATE_LIMITER.limit({ key: userId })
-if (!success) {
-  return new Response('Too Many Requests', {
-    status: 429,
-    headers: { 'Retry-After': '60' },
-  })
-}
-```
-
-### Monitoring & Alerting
-
-#### 1. Custom Metrics
-
-```typescript
-// Log custom metrics
-ctx.waitUntil(
-  env.ANALYTICS.writeDataPoint({
-    blobs: ['api_request', endpoint],
-    doubles: [responseTime, responseSize],
-    indexes: [userId, statusCode.toString()],
-  })
-)
-```
-
-#### 2. Error Boundaries
-
-```typescript
-// Global error handler
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    try {
-      return await app.fetch(request, env, ctx)
-    } catch (error) {
-      // Log error
-      console.error('Unhandled error:', error)
-
-      // Report to monitoring
-      ctx.waitUntil(reportError(error, request, env))
-
-      // Return user-friendly error
-      return new Response('Something went wrong', { status: 500 })
-    }
-  },
-}
-```
-
-### Performance Patterns
-
-#### 1. Streaming Responses
-
-```typescript
-// Stream large responses
-const { readable, writable } = new TransformStream()
-const writer = writable.getWriter()
-
-// Start streaming immediately
-ctx.waitUntil(streamData(writer, env).finally(() => writer.close()))
-
-return new Response(readable, {
-  headers: { 'Content-Type': 'application/json' },
-})
-```
-
-#### 2. Early Hints
-
-```typescript
-// Send early hints for critical resources
-return new Response(body, {
-  headers: {
-    Link: '</static/app.css>; rel=preload; as=style, </static/app.js>; rel=preload; as=script',
-  },
-})
-```
-
-#### 3. Service Bindings (Future)
-
-```toml
-# Direct worker-to-worker communication
-[[services]]
-binding = "SCORES_SERVICE"
-service = "mirubato-scores"
-```
-
----
-
-## 5. Development Workflow {#development-workflow}
+## 4. Development Workflow {#development-workflow}
 
 ### Before Starting Work - Checklist
 
@@ -600,12 +372,14 @@ service = "mirubato-scores"
 
 ### Local Development URLs
 
-| Service    | URL                                       | Port |
-| ---------- | ----------------------------------------- | ---- |
-| Frontend   | http://www-mirubato.localhost:4000        | 4000 |
-| API        | http://api-mirubato.localhost:9797        | 9797 |
-| Scores     | http://scores-mirubato.localhost:9788     | 9788 |
-| Dictionary | http://dictionary-mirubato.localhost:9799 | 9799 |
+| Service    | URL                                       | Port | Health Check |
+| ---------- | ----------------------------------------- | ---- | ------------ |
+| Frontend   | http://www-mirubato.localhost:4000        | 4000 | N/A (SPA)    |
+| API        | http://api-mirubato.localhost:9797        | 9797 | /health      |
+| Scores     | http://scores-mirubato.localhost:9788     | 9788 | /health      |
+| Dictionary | http://dictionary-mirubato.localhost:9799 | 9799 | /health      |
+
+**Note**: The `./start-scorebook.sh` script automatically starts API and Scores services first, seeds test data, then starts the frontend.
 
 ---
 
@@ -636,20 +410,33 @@ pnpm test -- --coverage
 ### Running Tests
 
 ```bash
-# All tests
+# All tests across all workspaces
 pnpm test
 
-# With coverage
+# Unit tests only (faster)
+pnpm run test:unit
+
+# Integration tests
+pnpm run test:integration
+
+# With coverage report
 pnpm run test:coverage
 
-# Specific file
-pnpm test -- src/utils/audioManager.test.ts
+# Specific workspace
+cd frontendv2 && pnpm test
+cd api && pnpm test
 
-# E2E tests
-pnpm run test:e2e
+# Specific test file
+cd frontendv2 && pnpm test -- src/utils/audioManager.test.ts
 
-# Watch mode
-pnpm test -- --watch
+# E2E tests (Playwright)
+cd frontendv2 && pnpm run test:e2e
+
+# Watch mode for development
+cd frontendv2 && pnpm test -- --watch
+
+# Related tests only (lint-staged integration)
+cd frontendv2 && vitest related --run --no-coverage --passWithNoTests
 ```
 
 ---
@@ -755,45 +542,6 @@ wrangler kv:key put --binding MUSIC_CATALOG "key" "value"
 wrangler kv:key list --binding MUSIC_CATALOG --prefix "user:"
 ```
 
-### Deployment Best Practices
-
-#### 1. Blue-Green Deployments
-
-```bash
-# Deploy to staging first
-wrangler deploy --env staging
-
-# Test staging thoroughly
-# Then deploy to production
-wrangler deploy --env production
-```
-
-#### 2. Rollback Strategy
-
-```bash
-# List deployments
-wrangler deployments list
-
-# Rollback to previous version
-wrangler rollback [deployment-id]
-
-# Or use GitHub to revert and redeploy
-git revert HEAD && git push
-```
-
-#### 3. Gradual Rollouts
-
-```toml
-# wrangler.toml
-[env.production]
-# Gradual rollout configuration
-routes = [
-  { pattern = "mirubato.com/*", zone_name = "mirubato.com" }
-]
-
-# Use Cloudflare's percentage-based routing in dashboard
-```
-
 ### Secrets Management
 
 ```bash
@@ -807,99 +555,6 @@ wrangler secret list --env production
 
 # Delete secret
 wrangler secret delete JWT_SECRET --env production
-```
-
-### CI/CD Pipeline (GitHub Actions)
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Cloudflare
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-      - uses: actions/setup-node@v3
-
-      - run: pnpm install
-      - run: pnpm test
-      - run: pnpm run build
-
-      - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-```
-
-### Monitoring Deployments
-
-#### Real-time Logs
-
-```bash
-# Tail production logs
-wrangler tail --env production
-
-# Filter logs
-wrangler tail --env production --search "error"
-
-# Format as JSON
-wrangler tail --env production --format json
-```
-
-#### Deployment Status
-
-```bash
-# Check deployment status
-wrangler deployments list
-
-# View deployment details
-wrangler deployments view [deployment-id]
-```
-
-### Performance Optimization
-
-#### 1. Bundle Size Optimization
-
-```toml
-# wrangler.toml
-[build]
-command = "pnpm run build"
-
-[build.upload]
-format = "modules"
-main = "./src/index.ts"
-
-# Minimize bundle
-[minify]
-minify = true
-```
-
-#### 2. Smart Placement
-
-```toml
-# Optimize for specific regions
-[placement]
-mode = "smart"
-hint = "us-east"  # Primary user base location
-```
-
-### Cost Monitoring
-
-```bash
-# View usage metrics
-wrangler analytics engine --account-id [id]
-
-# Check limits
-wrangler limits
 ```
 
 ### Environment URLs & Health Checks
@@ -1224,94 +879,6 @@ response.headers.set('X-Edge-Location', request.cf?.colo || 'unknown')
 response.headers.set('X-Processing-Time', `${Date.now() - start}ms`)
 ```
 
-### Performance Profiling
-
-#### 1. Measure Worker Performance
-
-```typescript
-const metrics = {
-  dbTime: 0,
-  cacheTime: 0,
-  computeTime: 0,
-}
-
-// Measure database query
-const dbStart = performance.now()
-const result = await env.DB.prepare(query).all()
-metrics.dbTime = performance.now() - dbStart
-
-// Log metrics
-console.log('Performance:', metrics)
-```
-
-#### 2. Identify Bottlenecks
-
-```bash
-# Check Worker CPU time
-wrangler tail --format json | jq '.outcome.cpuTime'
-
-# Monitor subrequests
-wrangler tail --format json | jq '.outcome.subrequests'
-```
-
-### Cloudflare Dashboard Debugging
-
-1. **Workers & Pages** → Select service → **Logs** tab
-2. **Analytics** → View request patterns and errors
-3. **Real-time Logs** → Stream live requests
-4. **Metrics** → CPU time, duration, subrequests
-
-### Environment-Specific Debugging
-
-```typescript
-// Add environment-aware debugging
-if (env.ENVIRONMENT === 'staging' || env.ENVIRONMENT === 'local') {
-  console.log('Request:', {
-    url: request.url,
-    method: request.method,
-    headers: Object.fromEntries(request.headers),
-    cf: request.cf,
-  })
-}
-```
-
-### Testing Cloudflare Features Locally
-
-```bash
-# Test D1 database locally
-wrangler d1 execute DB --local --command "SELECT * FROM users"
-
-# Test KV locally
-wrangler kv:key put --binding CACHE "test" "value" --local
-
-# Test R2 locally
-wrangler r2 object put BUCKET "test.txt" --local --file ./test.txt
-```
-
-### Error Tracking Integration
-
-```typescript
-// Sentry-style error tracking
-async function reportError(error: Error, request: Request, env: Env) {
-  const errorData = {
-    message: error.message,
-    stack: error.stack,
-    url: request.url,
-    method: request.method,
-    timestamp: new Date().toISOString(),
-    environment: env.ENVIRONMENT,
-    cf: request.cf,
-  }
-
-  // Store in KV for analysis
-  await env.ERRORS.put(
-    `error:${Date.now()}`,
-    JSON.stringify(errorData),
-    { expirationTtl: 86400 * 7 } // 7 days
-  )
-}
-```
-
 ### Health Check Endpoints
 
 Every service should implement:
@@ -1382,25 +949,9 @@ app.get('/health', async c => {
 
 ## 13. Version History {#version-history}
 
-### Current Version: 1.7.1 (July 2025)
+### Current Version: 1.7.0 (August 2025)
 
-#### Automatic Sync Implementation (PR #379)
-
-- **Fixed race condition**: Added `isAuthInitialized` flag to prevent sync before auth completes
-- **Automatic sync triggers**:
-  - On tab/window focus
-  - On route change
-  - Every 30 seconds when authenticated
-  - When coming back online
-- **Manual sync options**:
-  - Sync indicator button in sidebar
-  - Pull-to-refresh on mobile devices
-- **Visual feedback**: Real-time sync status indicator with icons and timing
-- **Debouncing**: 5-second debounce to prevent excessive sync calls
-
-### Previous Version: 1.7.0 (July 2025)
-
-#### Focused UI Design System (PR #261)
+#### Focused UI Design System
 
 - New layout: Desktop sidebar + mobile bottom tabs
 - Simplified navigation: 6 → 4 sections
@@ -1408,7 +959,7 @@ app.get('/health', async c => {
 - Enhanced repertoire timeline
 - Complete i18n (200+ translations fixed)
 
-#### Mobile UI Improvements (PR #357)
+#### Mobile UI Improvements
 
 - **Typography Enhancement**: Added Noto Serif font for better multilingual support
 - **Vertical Layout**: Optimized for small screens (iPhone SE and up)
@@ -1423,8 +974,6 @@ app.get('/health', async c => {
 - All services unified at v1.7.0
 - Migrated from npm to pnpm
 - @cloudflare/puppeteer downgraded to 0.0.11
-
-[Previous versions moved to CHANGELOG.md]
 
 ---
 
@@ -1446,7 +995,7 @@ Need to...
 
 ```
 Feature location...
-├── UI Components → frontendv2/src/components/ui/
+├── UI Components → frontendv2/src/components/
 ├── API Routes → api/src/api/routes.ts
 ├── Practice Logging → frontendv2/src/components/logbook/
 ├── Sheet Music → scores/src/
@@ -1504,11 +1053,38 @@ When analyzing large codebases or multiple files that might exceed context limit
 # Analyze entire codebase
 gemini -p "@./ Give me an overview of this project"
 
-# Check implementation
-gemini -p "@src/ @lib/ Has dark mode been implemented?"
+# Check implementation across specific workspaces
+gemini -p "@frontendv2/src/ @api/src/ Has authentication been implemented?"
 
-# Verify patterns
-gemini -p "@src/ List all React hooks that handle WebSocket connections"
+# Verify patterns in frontend
+gemini -p "@frontendv2/src/ List all React hooks that handle WebSocket connections"
+
+# Check Cloudflare Workers patterns
+gemini -p "@api/src/ @scores/src/ @dictionary/src/ Show all Hono route handlers"
+
+# Analyze test coverage
+gemini -p "@frontendv2/src/ @*/src/**/*.test.* What components lack test coverage?"
+```
+
+## Workspace Structure
+
+Mirubato uses pnpm workspaces with the following structure:
+
+```
+mirubato/
+├── frontendv2/          # React SPA (Vite + TypeScript)
+├── api/                 # Main API Worker (Hono + D1)
+├── scores/              # Sheet Music Worker (PDF + AI)
+├── dictionary/          # Music Terms Worker (AI + KV)
+└── package.json         # Root workspace configuration
+```
+
+**Workspace Commands**:
+
+```bash
+pnpm -r run build        # Run build in all workspaces
+pnpm -r run test         # Run tests in all workspaces
+pnpm --filter @mirubato/frontendv2 run dev  # Run specific workspace
 ```
 
 **Remember**: When in doubt, check the production endpoints first. They're your debugging lifeline.
