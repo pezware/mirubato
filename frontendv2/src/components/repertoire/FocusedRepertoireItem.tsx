@@ -1,13 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { formatDistanceToNow, isToday } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
-import { Trash2 } from 'lucide-react'
-import Button from '@/components/ui/Button'
-import { useRepertoireStore } from '@/stores/repertoireStore'
 import { MusicTitle } from '@/components/ui'
 
 interface RecentPractice {
@@ -30,9 +27,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   item,
 }) => {
   const { t } = useTranslation(['repertoire', 'common'])
-  const { removeFromRepertoire } = useRepertoireStore()
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // Status configuration
   const statusConfig: Record<
@@ -102,25 +96,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
   // Calculate total practice time
   const totalPracticeTime = item.totalPracticeTime || 0
 
-  // Check if item can be deleted (no practice sessions)
-  const canDelete =
-    (item.practiceCount === 0 || !item.practiceCount) &&
-    item.status !== 'dropped'
-
-  const handleDelete = async () => {
-    if (!canDelete) return
-
-    setIsDeleting(true)
-    try {
-      await removeFromRepertoire(item.scoreId)
-      setShowDeleteConfirm(false)
-    } catch (error) {
-      console.error('Failed to delete repertoire item:', error)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-shadow">
       <div className="flex items-start gap-4">
@@ -186,47 +161,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
                   </>
                 )}
               </div>
-
-              {/* Right side: Delete button */}
-              {canDelete && (
-                <div className="flex-shrink-0">
-                  {showDeleteConfirm ? (
-                    <div className="flex gap-1">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="min-w-[32px] min-h-[32px] px-2 text-xs"
-                      >
-                        {t('common:yes')}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        disabled={isDeleting}
-                        className="min-w-[32px] min-h-[32px] px-2 text-xs"
-                      >
-                        {t('common:cancel')}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={e => {
-                        e.stopPropagation()
-                        setShowDeleteConfirm(true)
-                      }}
-                      title={t('repertoire:delete')}
-                      className="text-stone-500 hover:text-red-600 min-w-[44px] min-h-[44px] p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
