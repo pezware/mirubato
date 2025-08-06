@@ -243,10 +243,16 @@ export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
               </h4>
               <ul className="space-y-1">
                 {entry.pieces.map((piece, idx) => (
-                  <li key={idx} className="text-sm text-gray-600">
-                    <span className="font-medium">{piece.title}</span>
+                  <li
+                    key={idx}
+                    className="text-sm text-gray-600 flex flex-wrap items-center gap-1"
+                  >
+                    <MusicTitle>{piece.title}</MusicTitle>
                     {piece.composer && (
-                      <span className="text-gray-500"> - {piece.composer}</span>
+                      <>
+                        <span className="text-gray-500">-</span>
+                        <MusicComposer>{piece.composer}</MusicComposer>
+                      </>
                     )}
                   </li>
                 ))}

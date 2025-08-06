@@ -130,7 +130,6 @@ export function ReportsFilters({
           onClick={() => setTimePeriod('all')}
           variant={timePeriod === 'all' ? 'primary' : 'secondary'}
           size="sm"
-          className="text-xs md:text-sm"
         >
           {t('reports:filters.allTime')}
         </Button>
@@ -138,7 +137,6 @@ export function ReportsFilters({
           onClick={() => setTimePeriod('month')}
           variant={timePeriod === 'month' ? 'primary' : 'secondary'}
           size="sm"
-          className="text-xs md:text-sm"
         >
           {t('reports:filters.thisMonth')}
         </Button>
@@ -146,7 +144,6 @@ export function ReportsFilters({
           onClick={() => setTimePeriod('week')}
           variant={timePeriod === 'week' ? 'primary' : 'secondary'}
           size="sm"
-          className="text-xs md:text-sm"
         >
           {t('reports:filters.last7Days')}
         </Button>

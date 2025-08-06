@@ -27,36 +27,36 @@ export function RepertoireStats({ repertoireItems }: RepertoireStatsProps) {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-lg sm:text-2xl font-bold text-morandi-stone-900 text-center"
+            className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="total-pieces"
           >
             {getTotalPieces()}
           </p>
-          <p className="text-xs text-morandi-stone-600 text-center leading-tight">
+          <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             {t('repertoire:totalPieces')}
           </p>
         </div>
 
         <div className="bg-morandi-peach-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-lg sm:text-2xl font-bold text-morandi-stone-900 text-center"
+            className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="active-pieces"
           >
             {getActivePieces()}
           </p>
-          <p className="text-xs text-morandi-stone-600 text-center leading-tight">
+          <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             {t('repertoire:activePieces')}
           </p>
         </div>
 
         <div className="bg-morandi-rose-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-lg sm:text-2xl font-bold text-morandi-stone-900 text-center"
+            className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="polished-pieces"
           >
             {getPolishedPieces()}
           </p>
-          <p className="text-xs text-morandi-stone-600 text-center leading-tight">
+          <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             {t('repertoire:polishedPieces')}
           </p>
         </div>

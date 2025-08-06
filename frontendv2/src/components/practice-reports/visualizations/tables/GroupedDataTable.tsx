@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react'
 import { Card } from '../../../ui/Card'
 import Button from '../../../ui/Button'
+import { MusicTitle, MusicComposer } from '../../../ui'
 import { GroupedData } from '../../../../types/reporting'
 import { LogbookEntry } from '../../../../api/logbook'
 import { toTitleCase } from '../../../../utils/textFormatting'
@@ -433,10 +434,17 @@ function EntryRow({
                     {entry.pieces.map((piece, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-xs"
+                        className="px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 rounded-full text-xs inline-flex items-center gap-1"
                       >
-                        {toTitleCase(piece.title)}
-                        {piece.composer && ` - ${toTitleCase(piece.composer)}`}
+                        <MusicTitle>{toTitleCase(piece.title)}</MusicTitle>
+                        {piece.composer && (
+                          <>
+                            <span>-</span>
+                            <MusicComposer>
+                              {toTitleCase(piece.composer)}
+                            </MusicComposer>
+                          </>
+                        )}
                       </span>
                     ))}
                   </div>

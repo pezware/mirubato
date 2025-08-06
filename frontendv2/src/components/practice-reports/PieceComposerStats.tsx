@@ -110,36 +110,36 @@ export function PieceComposerStats({
           className={`grid gap-1 sm:gap-2 md:gap-4 ${selectedPiece ? 'grid-cols-4' : 'grid-cols-3'}`}
         >
           <div className="text-center sm:text-left">
-            <p className="text-sm sm:text-lg md:text-2xl font-bold text-morandi-stone-900">
+            <p className="text-lg font-bold text-morandi-stone-900">
               {formatDuration(stats.totalDuration)}
             </p>
-            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
+            <p className="text-xs sm:text-sm text-morandi-stone-600 leading-tight">
               {t('reports:totalTime')}
             </p>
           </div>
           <div className="text-center sm:text-left">
-            <p className="text-sm sm:text-lg md:text-2xl font-bold text-morandi-stone-900">
+            <p className="text-lg font-bold text-morandi-stone-900">
               {stats.count}
             </p>
-            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
+            <p className="text-xs sm:text-sm text-morandi-stone-600 leading-tight">
               {t('reports:sessions')}
             </p>
           </div>
           {selectedPiece && (
             <div className="text-center sm:text-left">
-              <p className="text-sm sm:text-lg font-bold text-morandi-stone-900">
+              <p className="text-lg font-bold text-morandi-stone-900">
                 {formatDuration(Math.round(stats.totalDuration / stats.count))}
               </p>
-              <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
+              <p className="text-xs sm:text-sm text-morandi-stone-600 leading-tight">
                 {t('reports:avgPerSession')}
               </p>
             </div>
           )}
           <div className="text-center sm:text-left">
-            <p className="text-sm sm:text-lg font-bold text-morandi-stone-900">
+            <p className="text-lg font-bold text-morandi-stone-900">
               {new Date(stats.lastPracticed).toLocaleDateString()}
             </p>
-            <p className="text-xs sm:text-xs text-morandi-stone-600 leading-tight">
+            <p className="text-xs sm:text-sm text-morandi-stone-600 leading-tight">
               {t('reports:lastPracticed')}
             </p>
           </div>
