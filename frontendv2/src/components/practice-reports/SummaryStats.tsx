@@ -30,65 +30,65 @@ export function SummaryStats({
   }
 
   return (
-    <div className="space-y-3" data-testid="summary-stats">
+    <div className="space-y-2" data-testid="summary-stats">
       {/* Summary Stats Grid - Now 5 stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="bg-morandi-stone-50 rounded-lg p-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+        <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-2xl font-bold text-morandi-stone-900"
+            className="text-lg font-bold text-morandi-stone-900"
             data-testid="today-practice-time"
           >
             {formatDuration(analytics.todayTotal)}
           </p>
-          <p className="text-xs text-morandi-stone-600">
+          <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:stats.todaysPractice')}
           </p>
         </div>
 
-        <div className="bg-morandi-stone-100 rounded-lg p-3">
+        <div className="bg-morandi-stone-100 rounded-lg p-2 sm:p-3">
           <p
-            className="text-2xl font-bold text-morandi-stone-900"
+            className="text-lg font-bold text-morandi-stone-900"
             data-testid="week-practice-time"
           >
             {formatDuration(analytics.weekTotal)}
           </p>
-          <p className="text-xs text-morandi-stone-600">
+          <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:stats.thisWeek')}
           </p>
         </div>
 
-        <div className="bg-morandi-peach-50 rounded-lg p-3">
+        <div className="bg-morandi-peach-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-2xl font-bold text-morandi-stone-900"
+            className="text-lg font-bold text-morandi-stone-900"
             data-testid="current-streak"
           >
             {analytics.currentStreak}
           </p>
-          <p className="text-xs text-morandi-stone-600">
+          <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:currentStreak')}
           </p>
         </div>
 
-        <div className="bg-morandi-rose-50 rounded-lg p-3">
+        <div className="bg-morandi-rose-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-2xl font-bold text-morandi-stone-900"
+            className="text-lg font-bold text-morandi-stone-900"
             data-testid="total-practice-time"
           >
             {formatDuration(getTimePeriodTotal())}
           </p>
-          <p className="text-xs text-morandi-stone-600">
+          <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:totalPractice')}
           </p>
         </div>
 
-        <div className="bg-morandi-stone-50 rounded-lg p-3">
+        <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3">
           <p
-            className="text-2xl font-bold text-morandi-stone-900"
+            className="text-lg font-bold text-morandi-stone-900"
             data-testid="session-count"
           >
             {getSessionCount()}
           </p>
-          <p className="text-xs text-morandi-stone-600">
+          <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:sessions')}
           </p>
         </div>
