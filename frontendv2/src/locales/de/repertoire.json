@@ -165,7 +165,7 @@
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
   "viewScore": "Noten ansehen",
-  "removeFromPieces": "Aus Stücken entfernen",
+  "removeFromPieces": "Entfernen",
   "deleteFromPieces": "Stück löschen",
   "deleteCompletely": "Vollständig löschen",
   "removeConfirmMessage": "Dies entfernt \"{{title}}\" aus Ihren Stücken, während Ihre {{count}} Übungssitzungen erhalten bleiben. Das Stück kann später bei Bedarf wieder hinzugefügt werden.",

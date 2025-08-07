@@ -165,7 +165,7 @@
   "viewAllSessions": "查看所有 {{count}} 次練習",
   "viewDetails": "查看詳情",
   "viewScore": "查看樂譜",
-  "removeFromPieces": "從曲目中移除",
+  "removeFromPieces": "移除",
   "deleteFromPieces": "刪除曲目",
   "deleteCompletely": "完全刪除",
   "removeConfirmMessage": "這會將《{{title}}》從您的曲目中移除，同時保留您的 {{count}} 次練習記錄。之後可以重新添加此曲目。",
