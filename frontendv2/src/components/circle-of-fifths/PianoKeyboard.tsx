@@ -151,17 +151,22 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   // Separate root note for special highlighting
   const rootNote = keyData.id
-  const rootNoteWithEnharmonic = new Set([rootNote])
-  if (keyData.enharmonic) {
-    rootNoteWithEnharmonic.add(keyData.enharmonic)
-  }
-
-  const chordNotes = getChordNotes()
 
   // Extract the actual root note (without 'm' for minor keys)
   const actualRootNote = rootNote.includes('m')
     ? rootNote.replace(/m$/, '')
     : rootNote
+
+  const rootNoteWithEnharmonic = new Set([actualRootNote])
+  if (keyData.enharmonic) {
+    // For enharmonics, also strip 'm' if present
+    const enharmonicNote = keyData.enharmonic.includes('m')
+      ? keyData.enharmonic.replace(/m$/, '')
+      : keyData.enharmonic
+    rootNoteWithEnharmonic.add(enharmonicNote)
+  }
+
+  const chordNotes = getChordNotes()
 
   // Track octave highlighting state
   const octaveHighlighting = (() => {
@@ -303,8 +308,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                     (note === 'F' && keyData.scale.includes('E#')) ||
                     (note === 'C' && keyData.scale.includes('B#')))
                 const isChordNote = isInOctave && chordNotes.has(note)
-                const isRootNote =
-                  isInOctave && rootNoteWithEnharmonic.has(note)
+                const isRootNote = rootNoteWithEnharmonic.has(note)
                 const isActive = isPlaying && isRootNote
 
                 return (
@@ -366,9 +370,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 isInOctave &&
                 (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                isInOctave &&
-                (rootNoteWithEnharmonic.has(note) ||
-                  rootNoteWithEnharmonic.has(displayNote))
+                rootNoteWithEnharmonic.has(note) ||
+                rootNoteWithEnharmonic.has(displayNote)
               const isActive = isPlaying && isRootNote
 
               return (
@@ -428,9 +431,8 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                 isInOctave &&
                 (chordNotes.has(note) || chordNotes.has(displayNote))
               const isRootNote =
-                isInOctave &&
-                (rootNoteWithEnharmonic.has(note) ||
-                  rootNoteWithEnharmonic.has(displayNote))
+                rootNoteWithEnharmonic.has(note) ||
+                rootNoteWithEnharmonic.has(displayNote)
               const isActive = isPlaying && isRootNote
 
               return (
