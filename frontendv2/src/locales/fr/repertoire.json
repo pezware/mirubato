@@ -165,7 +165,7 @@
   "viewAllSessions": "Voir toutes les {{count}} sessions",
   "viewDetails": "Voir les détails",
   "viewScore": "Voir la Partition",
-  "removeFromPieces": "Retirer des pièces",
+  "removeFromPieces": "Retirer",
   "deleteFromPieces": "Supprimer la pièce",
   "deleteCompletely": "Supprimer complètement",
   "removeConfirmMessage": "Ceci retirera \"{{title}}\" de vos pièces tout en préservant vos {{count}} sessions de pratique. La pièce peut être rajoutée plus tard si nécessaire.",
