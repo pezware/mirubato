@@ -11,6 +11,7 @@ import {
   ComparativeData,
 } from '../types/reporting'
 import { reportsCache } from '../utils/reportsCacheManager'
+import { toTitleCase } from '../utils/textFormatting'
 
 interface UseEnhancedAnalyticsProps {
   entries: LogbookEntry[]
@@ -620,8 +621,8 @@ function calculateDistributionData(entries: LogbookEntry[]): {
 
     // Piece and composer distribution
     entry.pieces.forEach(piece => {
-      const pieceKey = piece.title
-      const composerKey = piece.composer || 'Unknown'
+      const pieceKey = toTitleCase(piece.title)
+      const composerKey = toTitleCase(piece.composer || 'Unknown')
 
       pieceMap.set(pieceKey, (pieceMap.get(pieceKey) || 0) + entry.duration)
       composerMap.set(
