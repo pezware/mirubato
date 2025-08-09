@@ -12,6 +12,7 @@ import { useRepertoireStore } from './stores/repertoireStore'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
+import { useBetaFeature } from './hooks/useBetaFeatures'
 
 // Set up PDF worker before any components load
 setupPdfWorker()
@@ -49,6 +50,34 @@ function RouteChangeHandler({ children }: { children: React.ReactNode }) {
     // Refresh auth status on route change to ensure UI is in sync
     refreshAuth()
   }, [location.pathname, refreshAuth])
+
+  return <>{children}</>
+}
+
+// Component to handle beta-protected routes
+function BetaProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isScorebookEnabled = useBetaFeature('scorebook')
+
+  if (!isScorebookEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-morandi-stone-100">
+        <div className="max-w-md mx-auto text-center p-8">
+          <h2 className="text-2xl font-lexend text-morandi-stone-700 mb-4">
+            Feature Not Available
+          </h2>
+          <p className="text-gray-600 mb-6">
+            The Scorebook feature is currently in beta and not enabled.
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            To enable beta features, add{' '}
+            <code className="bg-gray-100 px-2 py-1 rounded">?beta=on</code> to
+            any URL.
+          </p>
+          <Navigate to="/" replace />
+        </div>
+      </div>
+    )
+  }
 
   return <>{children}</>
 }
@@ -141,46 +170,56 @@ function App() {
                   }
                 />
 
-                {/* Scorebook routes (public access) */}
+                {/* Scorebook routes (beta-protected) */}
                 <Route path="/scorebook">
                   <Route
                     index
                     element={
-                      <Suspense fallback={<PageLoader />}>
-                        <ScoreBrowser />
-                      </Suspense>
+                      <BetaProtectedRoute>
+                        <Suspense fallback={<PageLoader />}>
+                          <ScoreBrowser />
+                        </Suspense>
+                      </BetaProtectedRoute>
                     }
                   />
                   <Route
                     path="browse"
                     element={
-                      <Suspense fallback={<PageLoader />}>
-                        <ScoreBrowser />
-                      </Suspense>
+                      <BetaProtectedRoute>
+                        <Suspense fallback={<PageLoader />}>
+                          <ScoreBrowser />
+                        </Suspense>
+                      </BetaProtectedRoute>
                     }
                   />
                   <Route
                     path="collection/user/:id"
                     element={
-                      <Suspense fallback={<PageLoader />}>
-                        <CollectionView />
-                      </Suspense>
+                      <BetaProtectedRoute>
+                        <Suspense fallback={<PageLoader />}>
+                          <CollectionView />
+                        </Suspense>
+                      </BetaProtectedRoute>
                     }
                   />
                   <Route
                     path="collection/:slug"
                     element={
-                      <Suspense fallback={<PageLoader />}>
-                        <CollectionView />
-                      </Suspense>
+                      <BetaProtectedRoute>
+                        <Suspense fallback={<PageLoader />}>
+                          <CollectionView />
+                        </Suspense>
+                      </BetaProtectedRoute>
                     }
                   />
                   <Route
                     path=":scoreId"
                     element={
-                      <Suspense fallback={<PageLoader />}>
-                        <ScorebookPage />
-                      </Suspense>
+                      <BetaProtectedRoute>
+                        <Suspense fallback={<PageLoader />}>
+                          <ScorebookPage />
+                        </Suspense>
+                      </BetaProtectedRoute>
                     }
                   />
                 </Route>

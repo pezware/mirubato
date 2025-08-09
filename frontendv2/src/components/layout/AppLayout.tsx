@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import BottomTabs from './BottomTabs'
 import SignInModal from '../auth/SignInModal'
+import { useBetaFeature } from '../../hooks/useBetaFeatures'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -30,6 +31,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   })
 
   const location = useLocation()
+  const isScorebookEnabled = useBetaFeature('scorebook')
 
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
@@ -50,8 +52,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     ) {
       onNewEntry?.()
     } else if (
-      location.pathname === '/scorebook/browse' ||
-      location.pathname.startsWith('/scorebook')
+      isScorebookEnabled &&
+      (location.pathname === '/scorebook/browse' ||
+        location.pathname.startsWith('/scorebook'))
     ) {
       onImportScore?.()
     } else if (

@@ -14,6 +14,7 @@ import { IconInfoSquareRoundedFilled } from '@tabler/icons-react'
 import { useAuthStore } from '../../stores/authStore'
 import Button from '../ui/Button'
 import { SyncIndicator } from '../SyncIndicator'
+import { useBetaFeature } from '../../hooks/useBetaFeatures'
 
 interface SidebarProps {
   className?: string
@@ -43,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { user, isAuthenticated, logout } = useAuthStore()
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const isScorebookEnabled = useBetaFeature('scorebook')
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const navItems = [
+  const allNavItems = [
     {
       id: 'logbook',
       label: t('logbook:title'),
@@ -76,6 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: t('scorebook:title'),
       path: '/scorebook/browse',
       icon: FileText,
+      beta: true,
     },
     {
       id: 'tools',
@@ -84,6 +87,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: Wrench,
     },
   ]
+
+  // Filter nav items based on beta features
+  const navItems = allNavItems.filter(item => !item.beta || isScorebookEnabled)
 
   const getUserInitials = () => {
     if (!user) return '?'
