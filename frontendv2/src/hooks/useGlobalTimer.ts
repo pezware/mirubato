@@ -1,4 +1,4 @@
-import { useTimer } from '@/contexts/TimerContext'
+import { useTimer } from '@/hooks/useTimer'
 
 // Export the hook from the context for convenience
 export function useGlobalTimer() {

@@ -1,72 +1,14 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { showToast } from '@/utils/toastManager'
-
-interface TimerCheckpoint {
-  startTimestamp: number | null
-  accumulatedSeconds: number
-  isRunning: boolean
-  lastCheckpoint: number
-  sessionStartTime: string | null
-}
-
-interface TimerSettings {
-  enableReminders: boolean
-  reminderType: 'visual' | 'sound' | 'both'
-  reminderInterval: number // in minutes
-}
-
-interface TimerContextType {
-  // Timer state
-  seconds: number
-  isRunning: boolean
-  startTime: Date | null
-  wasRunningInBackground: boolean
-
-  // Modal state
-  isModalOpen: boolean
-  isMinimized: boolean
-
-  // Timer controls
-  start: () => void
-  pause: () => void
-  stop: (callback?: (duration: number, startTime?: Date) => void) => void
-  reset: () => void
-
-  // Modal controls
-  openModal: () => void
-  closeModal: () => void
-  minimizeModal: () => void
-
-  // Settings
-  settings: TimerSettings
-  updateSettings: (settings: Partial<TimerSettings>) => void
-}
-
-const TIMER_STORAGE_KEY = 'mirubato_timer_state'
-const SETTINGS_STORAGE_KEY = 'mirubato_timer_settings'
-
-const defaultSettings: TimerSettings = {
-  enableReminders: false,
-  reminderType: 'visual',
-  reminderInterval: 30, // 30 minutes
-}
-
-const TimerContext = createContext<TimerContextType | undefined>(undefined)
-
-export function useTimer() {
-  const context = useContext(TimerContext)
-  if (!context) {
-    throw new Error('useTimer must be used within TimerProvider')
-  }
-  return context
-}
+import {
+  TimerContext,
+  TimerContextType,
+  TimerCheckpoint,
+  TimerSettings,
+  defaultSettings,
+  TIMER_STORAGE_KEY,
+  SETTINGS_STORAGE_KEY,
+} from './TimerContextType'
 
 export function TimerProvider({ children }: { children: React.ReactNode }) {
   // Timer state

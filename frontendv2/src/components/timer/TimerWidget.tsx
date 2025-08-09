@@ -49,7 +49,11 @@ export function TimerWidget({ isCollapsed }: TimerWidgetProps) {
             <button
               onClick={e => {
                 e.stopPropagation()
-                isRunning ? pause() : start()
+                if (isRunning) {
+                  pause()
+                } else {
+                  start()
+                }
               }}
               className={`
                 p-1 rounded 
