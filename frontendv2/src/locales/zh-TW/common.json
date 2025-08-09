@@ -1,7 +1,9 @@
 {
   "actions": {
     "addEntry": "新增記錄",
-    "timer": "計時器"
+    "timer": "計時器",
+    "cancel": "取消",
+    "save": "儲存"
   },
   "active": "活躍",
   "add": "新增",

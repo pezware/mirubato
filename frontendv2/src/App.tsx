@@ -13,6 +13,7 @@ import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
 import { useBetaFeature } from './hooks/useBetaFeatures'
+import { TimerProvider } from './contexts/TimerContext'
 
 // Set up PDF worker before any components load
 setupPdfWorker()
@@ -146,92 +147,94 @@ function App() {
   }
 
   return (
-    <AutoLoggingProvider>
-      <Router>
-        <RouteChangeHandler>
-          <div className="min-h-screen bg-morandi-stone-100">
-            <ToastProvider />
-            <PrivacyBanner />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<HomePage />} />
-                <Route path="/auth/verify" element={<AuthVerifyPage />} />
-                <Route path="/toolbox" element={<Toolbox />} />
-                <Route path="/about" element={<About />} />
+    <TimerProvider>
+      <AutoLoggingProvider>
+        <Router>
+          <RouteChangeHandler>
+            <div className="min-h-screen bg-morandi-stone-100">
+              <ToastProvider />
+              <PrivacyBanner />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/auth/verify" element={<AuthVerifyPage />} />
+                  <Route path="/toolbox" element={<Toolbox />} />
+                  <Route path="/about" element={<About />} />
 
-                {/* Protected routes (but work for anonymous users too) */}
-                <Route
-                  path="/logbook"
-                  element={
-                    <ProtectedRoute>
-                      <LogbookPage />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Protected routes (but work for anonymous users too) */}
+                  <Route
+                    path="/logbook"
+                    element={
+                      <ProtectedRoute>
+                        <LogbookPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Scorebook routes (beta-protected) */}
-                <Route path="/scorebook">
-                  <Route
-                    index
-                    element={
-                      <BetaProtectedRoute>
-                        <Suspense fallback={<PageLoader />}>
-                          <ScoreBrowser />
-                        </Suspense>
-                      </BetaProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="browse"
-                    element={
-                      <BetaProtectedRoute>
-                        <Suspense fallback={<PageLoader />}>
-                          <ScoreBrowser />
-                        </Suspense>
-                      </BetaProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="collection/user/:id"
-                    element={
-                      <BetaProtectedRoute>
-                        <Suspense fallback={<PageLoader />}>
-                          <CollectionView />
-                        </Suspense>
-                      </BetaProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="collection/:slug"
-                    element={
-                      <BetaProtectedRoute>
-                        <Suspense fallback={<PageLoader />}>
-                          <CollectionView />
-                        </Suspense>
-                      </BetaProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path=":scoreId"
-                    element={
-                      <BetaProtectedRoute>
-                        <Suspense fallback={<PageLoader />}>
-                          <ScorebookPage />
-                        </Suspense>
-                      </BetaProtectedRoute>
-                    }
-                  />
-                </Route>
+                  {/* Scorebook routes (beta-protected) */}
+                  <Route path="/scorebook">
+                    <Route
+                      index
+                      element={
+                        <BetaProtectedRoute>
+                          <Suspense fallback={<PageLoader />}>
+                            <ScoreBrowser />
+                          </Suspense>
+                        </BetaProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="browse"
+                      element={
+                        <BetaProtectedRoute>
+                          <Suspense fallback={<PageLoader />}>
+                            <ScoreBrowser />
+                          </Suspense>
+                        </BetaProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="collection/user/:id"
+                      element={
+                        <BetaProtectedRoute>
+                          <Suspense fallback={<PageLoader />}>
+                            <CollectionView />
+                          </Suspense>
+                        </BetaProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="collection/:slug"
+                      element={
+                        <BetaProtectedRoute>
+                          <Suspense fallback={<PageLoader />}>
+                            <CollectionView />
+                          </Suspense>
+                        </BetaProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path=":scoreId"
+                      element={
+                        <BetaProtectedRoute>
+                          <Suspense fallback={<PageLoader />}>
+                            <ScorebookPage />
+                          </Suspense>
+                        </BetaProtectedRoute>
+                      }
+                    />
+                  </Route>
 
-                {/* Redirect unknown routes to home */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </div>
-        </RouteChangeHandler>
-      </Router>
-    </AutoLoggingProvider>
+                  {/* Redirect unknown routes to home */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </div>
+          </RouteChangeHandler>
+        </Router>
+      </AutoLoggingProvider>
+    </TimerProvider>
   )
 }
 

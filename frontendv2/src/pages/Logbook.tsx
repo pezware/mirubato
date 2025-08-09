@@ -5,20 +5,20 @@ import AppLayout from '../components/layout/AppLayout'
 import ManualEntryForm from '../components/ManualEntryForm'
 import TimerEntry from '../components/TimerEntry'
 import { PullToRefresh } from '../components/PullToRefresh'
+import { useGlobalTimer } from '@/hooks/useGlobalTimer'
 
 export default function LogbookPage() {
   const { error, loadEntries, clearError } = useLogbookStore()
   const [showManualEntry, setShowManualEntry] = useState(false)
-  const [showTimer, setShowTimer] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
   const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
+  const { isModalOpen, openModal } = useGlobalTimer()
 
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
 
   const handleTimerComplete = (duration: number, startTime?: Date) => {
-    setShowTimer(false)
     setTimerDuration(duration)
     setTimerStartTime(startTime)
     setShowManualEntry(true)
@@ -33,7 +33,7 @@ export default function LogbookPage() {
   return (
     <AppLayout
       onNewEntry={() => setShowManualEntry(true)}
-      onTimerClick={() => setShowTimer(true)}
+      onTimerClick={openModal}
     >
       <PullToRefresh className="h-full">
         <div className="p-4 sm:p-8">
@@ -69,10 +69,10 @@ export default function LogbookPage() {
           )}
 
           {/* Timer Modal */}
-          {showTimer && (
+          {isModalOpen && (
             <TimerEntry
-              isOpen={showTimer}
-              onClose={() => setShowTimer(false)}
+              isOpen={isModalOpen}
+              onClose={() => {}} // Close is handled by global state
               onComplete={handleTimerComplete}
             />
           )}
