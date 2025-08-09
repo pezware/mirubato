@@ -103,6 +103,7 @@
     "stopHint": "Click Stop & Log to create a practice entry with this duration",
     "startHintMobile": "Tap to start",
     "runningHintMobile": "Tap to pause",
-    "stopHintMobile": "Resume • Stop"
+    "stopHintMobile": "Resume • Stop",
+    "continuedInBackground": "Continued in background"
   }
 }

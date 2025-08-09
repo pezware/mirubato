@@ -101,7 +101,8 @@
     "stop": "Stoppen & Speichern",
     "stopHint": "Klicke auf Stoppen & Speichern, um einen Übungseintrag mit dieser Dauer zu erstellen",
     "stopHintMobile": "Fortsetzen • Stoppen",
-    "title": "Übungstimer"
+    "title": "Übungstimer",
+    "continuedInBackground": "Im Hintergrund fortgesetzt"
   },
   "title": "Übungstagebuch",
   "viewScore": "Noten ansehen"

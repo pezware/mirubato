@@ -101,7 +101,8 @@
     "stop": "停止并记录",
     "stopHint": "点击停止并记录以创建此时长的练习记录",
     "stopHintMobile": "继续 • 停止",
-    "title": "练习计时器"
+    "title": "练习计时器",
+    "continuedInBackground": "已在后台继续"
   },
   "title": "练习日志",
   "viewScore": "查看乐谱"

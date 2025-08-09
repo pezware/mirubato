@@ -101,7 +101,8 @@
     "stop": "Arrêter et enregistrer",
     "stopHint": "Cliquez sur Arrêter et enregistrer pour créer une entrée de pratique avec cette durée",
     "stopHintMobile": "Reprendre • Arrêter",
-    "title": "Chronomètre de pratique"
+    "title": "Chronomètre de pratique",
+    "continuedInBackground": "Continué en arrière-plan"
   },
   "title": "Journal",
   "viewScore": "Voir la partition"

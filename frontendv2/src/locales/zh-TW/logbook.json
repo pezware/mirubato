@@ -101,7 +101,8 @@
     "stop": "停止並記錄",
     "stopHint": "點擊停止並記錄以建立此時長的練習記錄",
     "stopHintMobile": "繼續 • 停止",
-    "title": "練習計時器"
+    "title": "練習計時器",
+    "continuedInBackground": "已在背景中繼續"
   },
   "title": "練習日誌",
   "viewScore": "查看樂譜"
