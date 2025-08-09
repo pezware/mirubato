@@ -104,6 +104,22 @@
     "startHintMobile": "Tap to start",
     "runningHintMobile": "Tap to pause",
     "stopHintMobile": "Resume • Stop",
-    "continuedInBackground": "Continued in background"
+    "continuedInBackground": "Continued in background",
+    "minimize": "Minimize timer",
+    "minimizeHint": "You can minimize this timer to continue practicing while it runs in the background",
+    "settings": "Timer Settings",
+    "enableReminders": "Enable Reminders",
+    "reminderDescription": "Get notified at regular intervals",
+    "reminderType": "Reminder Type",
+    "visualOnly": "Visual notification only",
+    "soundOnly": "Sound only",
+    "both": "Visual and sound",
+    "reminderInterval": "Reminder Interval",
+    "every15min": "Every 15 minutes",
+    "every20min": "Every 20 minutes",
+    "every25min": "Every 25 minutes",
+    "every30min": "Every 30 minutes",
+    "every45min": "Every 45 minutes",
+    "every60min": "Every hour"
   }
 }

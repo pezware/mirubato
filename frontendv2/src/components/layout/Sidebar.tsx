@@ -15,6 +15,8 @@ import { useAuthStore } from '../../stores/authStore'
 import Button from '../ui/Button'
 import { SyncIndicator } from '../SyncIndicator'
 import { useBetaFeature } from '../../hooks/useBetaFeatures'
+import { TimerWidget } from '../timer/TimerWidget'
+import { useGlobalTimer } from '@/hooks/useGlobalTimer'
 
 interface SidebarProps {
   className?: string
@@ -45,6 +47,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isScorebookEnabled = useBetaFeature('scorebook')
+  const { openModal: openTimerModal, seconds, isRunning } = useGlobalTimer()
+
+  // Show timer widget instead of button when timer is active
+  const showTimerWidget = seconds > 0 || isRunning
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -203,9 +209,13 @@ const Sidebar: React.FC<SidebarProps> = ({
               {!isCollapsed && t('common:actions.addEntry')}
             </button>
           )}
-          {onTimerClick && (
+          {/* Show timer button OR widget, not both */}
+          {onTimerClick && !showTimerWidget && (
             <button
-              onClick={onTimerClick}
+              onClick={() => {
+                onTimerClick()
+                openTimerModal()
+              }}
               className={`
                 w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${
                   isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'
@@ -219,6 +229,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
         </div>
+
+        {/* Timer Widget - Only show when timer is active */}
+        {showTimerWidget && <TimerWidget isCollapsed={isCollapsed} />}
 
         {/* About page link */}
         <div className="border-t border-gray-300 pt-4 mt-6">

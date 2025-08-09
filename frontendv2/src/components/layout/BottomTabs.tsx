@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookOpen, Plus, Wrench, Clock, User } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
+import { useGlobalTimer, formatCompactTime } from '@/hooks/useGlobalTimer'
 
 interface BottomTabsProps {
   onAddClick?: () => void
@@ -20,6 +21,7 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
   const { user, isAuthenticated, logout } = useAuthStore()
   const [showUserDropdown, setShowUserDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { seconds, isRunning, openModal: openTimerModal } = useGlobalTimer()
 
   const getUserInitials = () => {
     if (!user) return '?'
@@ -46,7 +48,10 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
       label: t('common:navigation.timer'),
       path: null, // Special case - triggers action instead of navigation
       icon: Clock,
-      action: onTimerClick,
+      action: () => {
+        onTimerClick?.()
+        openTimerModal()
+      },
     },
     {
       id: 'add',
@@ -115,16 +120,29 @@ const BottomTabs: React.FC<BottomTabsProps> = ({
               <div key={tab.id} className="relative">
                 <button
                   onClick={tab.action}
-                  className="flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex flex-col items-center justify-center gap-1 py-2 px-4 min-h-[56px] text-gray-600 hover:text-gray-900 transition-colors relative"
                 >
                   {tab.id === 'profile' && isAuthenticated ? (
                     <div className="w-5 h-5 rounded-full bg-morandi-sage-500 text-white flex items-center justify-center text-xs font-semibold">
                       {getUserInitials()}
                     </div>
+                  ) : tab.id === 'timer' ? (
+                    <div className="relative">
+                      <Icon
+                        className={`w-5 h-5 ${isRunning ? 'text-green-600' : ''}`}
+                      />
+                      {isRunning && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
                   ) : (
                     <Icon className="w-5 h-5" />
                   )}
-                  <span className="text-xs">{tab.label}</span>
+                  <span className="text-xs">
+                    {tab.id === 'timer' && seconds > 0
+                      ? formatCompactTime(seconds)
+                      : tab.label}
+                  </span>
                 </button>
 
                 {/* User Dropdown for mobile */}

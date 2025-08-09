@@ -3,7 +3,9 @@
   "add": "Add",
   "actions": {
     "addEntry": "Add Entry",
-    "timer": "Timer"
+    "timer": "Timer",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "analytics": "Analytics",
   "appName": "mirubato",

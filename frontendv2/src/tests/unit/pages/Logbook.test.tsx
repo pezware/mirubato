@@ -9,6 +9,68 @@ import { useAuthStore } from '../../../stores/authStore'
 vi.mock('../../../stores/logbookStore')
 vi.mock('../../../stores/authStore')
 
+// Mock the TimerContext
+vi.mock('../../../contexts/TimerContext', () => ({
+  useTimer: () => ({
+    seconds: 0,
+    isRunning: false,
+    startTime: null,
+    wasRunningInBackground: false,
+    isModalOpen: false,
+    isMinimized: false,
+    start: vi.fn(),
+    pause: vi.fn(),
+    stop: vi.fn(),
+    reset: vi.fn(),
+    openModal: vi.fn(),
+    closeModal: vi.fn(),
+    minimizeModal: vi.fn(),
+    settings: {
+      enableReminders: false,
+      reminderType: 'both',
+      reminderInterval: 30,
+    },
+    updateSettings: vi.fn(),
+  }),
+}))
+
+// Mock the useGlobalTimer hook
+vi.mock('../../../hooks/useGlobalTimer', () => ({
+  useGlobalTimer: () => ({
+    seconds: 0,
+    isRunning: false,
+    startTime: null,
+    wasRunningInBackground: false,
+    isModalOpen: false,
+    isMinimized: false,
+    start: vi.fn(),
+    pause: vi.fn(),
+    stop: vi.fn(),
+    reset: vi.fn(),
+    openModal: vi.fn(),
+    closeModal: vi.fn(),
+    minimizeModal: vi.fn(),
+    settings: {
+      enableReminders: false,
+      reminderType: 'both',
+      reminderInterval: 30,
+    },
+    updateSettings: vi.fn(),
+  }),
+  formatTime: (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  },
+  formatCompactTime: (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    if (hours > 0) return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`
+    if (minutes > 0) return `${minutes}m`
+    return `${seconds}s`
+  },
+}))
+
 // Mock i18n
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
