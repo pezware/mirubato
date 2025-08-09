@@ -82,7 +82,8 @@ describe('App', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(mockRefreshAuth).toHaveBeenCalledTimes(1)
+      // refreshAuth is now called twice: once on mount and once from RouteChangeHandler
+      expect(mockRefreshAuth).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -163,7 +164,12 @@ describe('App', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(callOrder).toEqual(['runLowercaseMigration', 'refreshAuth'])
+      // refreshAuth is called twice now: once on mount and once on initial route
+      expect(callOrder).toEqual([
+        'refreshAuth',
+        'runLowercaseMigration',
+        'refreshAuth',
+      ])
     })
   })
 })
