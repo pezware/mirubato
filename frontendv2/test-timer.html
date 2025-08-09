@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer Mobile Test</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      #timer {
+        font-size: 72px;
+        font-weight: 200;
+        text-align: center;
+        margin: 40px 0;
+        color: #333;
+      }
+      .buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background: #4a90e2;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #357abd;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .info {
+        margin-top: 30px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .info div {
+        margin: 5px 0;
+      }
+      .warning {
+        color: orange;
+        font-weight: bold;
+      }
+      .success {
+        color: green;
+        font-weight: bold;
+      }
+      .instructions {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+      }
+      h2 {
+        color: #333;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Mobile Timer Accuracy Test</h2>
+
+    <div id="timer">0:00</div>
+
+    <div class="buttons">
+      <button id="startBtn" onclick="startTimer()">Start</button>
+      <button id="pauseBtn" onclick="pauseTimer()" disabled>Pause</button>
+      <button id="stopBtn" onclick="stopTimer()" disabled>Stop</button>
+      <button id="resetBtn" onclick="resetTimer()">Reset</button>
+    </div>
+
+    <div class="info">
+      <div>Status: <span id="status">Stopped</span></div>
+      <div>Start Time: <span id="startTime">-</span></div>
+      <div>Elapsed (Calculated): <span id="elapsed">0</span> seconds</div>
+      <div>Background Recovery: <span id="recovery">No</span></div>
+      <div>Last Checkpoint: <span id="checkpoint">-</span></div>
+    </div>
+
+    <div class="instructions">
+      <h3>Test Instructions:</h3>
+      <ol>
+        <li>Click "Start" to begin the timer</li>
+        <li>Lock your phone screen or switch to another app</li>
+        <li>Wait for 5-10 minutes</li>
+        <li>Return to this page</li>
+        <li>The timer should show the correct elapsed time</li>
+      </ol>
+      <p>
+        <strong>Expected Result:</strong> Timer shows actual elapsed time, not
+        the time when tab was active
+      </p>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'timer_test_state'
+
+      let isRunning = false
+      let startTimestamp = null
+      let accumulatedSeconds = 0
+      let intervalId = null
+      let rafId = null
+
+      // Load any saved state on page load
+      window.addEventListener('load', () => {
+        loadFromCheckpoint()
+      })
+
+      // Save state when page is hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isRunning) {
+          saveCheckpoint()
+          updateInfo('Background checkpoint saved')
+        } else if (!document.hidden && isRunning) {
+          // Page became visible - check for time drift
+          const elapsed = getElapsedSeconds()
+          updateDisplay(elapsed)
+          updateInfo('Recovered from background')
+          document.getElementById('recovery').innerHTML =
+            '<span class="success">Yes - Recovered!</span>'
+        }
+      })
+
+      // Save state before page unload
+      window.addEventListener('beforeunload', () => {
+        if (isRunning) {
+          saveCheckpoint()
+        }
+      })
+
+      function startTimer() {
+        if (isRunning) return
+
+        const now = new Date()
+        startTimestamp = Date.now()
+        isRunning = true
+
+        document.getElementById('startBtn').disabled = true
+        document.getElementById('pauseBtn').disabled = false
+        document.getElementById('stopBtn').disabled = false
+        document.getElementById('status').textContent = 'Running'
+        document.getElementById('startTime').textContent =
+          now.toLocaleTimeString()
+
+        // Use both requestAnimationFrame and setInterval
+        updateLoop()
+        intervalId = setInterval(() => {
+          const elapsed = getElapsedSeconds()
+          updateDisplay(elapsed)
+          saveCheckpoint()
+        }, 1000)
+
+        saveCheckpoint()
+      }
+
+      function pauseTimer() {
+        if (!isRunning) return
+
+        // Calculate accumulated time before pausing
+        accumulatedSeconds = getElapsedSeconds()
+        startTimestamp = null
+        isRunning = false
+
+        document.getElementById('startBtn').disabled = false
+        document.getElementById('pauseBtn').disabled = true
+        document.getElementById('status').textContent = 'Paused'
+
+        if (intervalId) {
+          clearInterval(intervalId)
+          intervalId = null
+        }
+        if (rafId) {
+          cancelAnimationFrame(rafId)
+          rafId = null
+        }
+
+        saveCheckpoint()
+      }
+
+      function stopTimer() {
+        const finalSeconds = getElapsedSeconds()
+
+        isRunning = false
+        startTimestamp = null
+        accumulatedSeconds = 0
+
+        document.getElementById('startBtn').disabled = false
+        document.getElementById('pauseBtn').disabled = true
+        document.getElementById('stopBtn').disabled = true
+        document.getElementById('status').textContent = 'Stopped'
+
+        if (intervalId) {
+          clearInterval(intervalId)
+          intervalId = null
+        }
+        if (rafId) {
+          cancelAnimationFrame(rafId)
+          rafId = null
+        }
+
+        localStorage.removeItem(STORAGE_KEY)
+
+        alert(`Timer stopped!\nTotal time: ${formatTime(finalSeconds)}`)
+      }
+
+      function resetTimer() {
+        isRunning = false
+        startTimestamp = null
+        accumulatedSeconds = 0
+
+        document.getElementById('timer').textContent = '0:00'
+        document.getElementById('startBtn').disabled = false
+        document.getElementById('pauseBtn').disabled = true
+        document.getElementById('stopBtn').disabled = true
+        document.getElementById('status').textContent = 'Stopped'
+        document.getElementById('startTime').textContent = '-'
+        document.getElementById('elapsed').textContent = '0'
+        document.getElementById('recovery').textContent = 'No'
+        document.getElementById('checkpoint').textContent = '-'
+
+        if (intervalId) {
+          clearInterval(intervalId)
+          intervalId = null
+        }
+        if (rafId) {
+          cancelAnimationFrame(rafId)
+          rafId = null
+        }
+
+        localStorage.removeItem(STORAGE_KEY)
+      }
+
+      function getElapsedSeconds() {
+        if (!startTimestamp) return accumulatedSeconds
+        const elapsedMs = Date.now() - startTimestamp
+        return accumulatedSeconds + Math.floor(elapsedMs / 1000)
+      }
+
+      function updateDisplay(seconds) {
+        document.getElementById('timer').textContent = formatTime(seconds)
+        document.getElementById('elapsed').textContent = seconds
+      }
+
+      function formatTime(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600)
+        const minutes = Math.floor((totalSeconds % 3600) / 60)
+        const seconds = totalSeconds % 60
+
+        if (hours > 0) {
+          return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        }
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+      }
+
+      function updateLoop() {
+        if (!isRunning || document.hidden) return
+
+        const elapsed = getElapsedSeconds()
+        updateDisplay(elapsed)
+
+        rafId = requestAnimationFrame(updateLoop)
+      }
+
+      function saveCheckpoint() {
+        const checkpoint = {
+          isRunning,
+          startTimestamp,
+          accumulatedSeconds: getElapsedSeconds(),
+          lastCheckpoint: Date.now(),
+          startTime: document.getElementById('startTime').textContent,
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(checkpoint))
+        document.getElementById('checkpoint').textContent =
+          new Date().toLocaleTimeString()
+      }
+
+      function loadFromCheckpoint() {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (!saved) return
+
+        try {
+          const checkpoint = JSON.parse(saved)
+          const timeSinceCheckpoint = Date.now() - checkpoint.lastCheckpoint
+
+          // Only restore if less than 24 hours old
+          if (timeSinceCheckpoint < 24 * 60 * 60 * 1000) {
+            if (checkpoint.isRunning) {
+              // Timer was running - calculate missed time
+              const missedSeconds = Math.floor(timeSinceCheckpoint / 1000)
+              accumulatedSeconds = checkpoint.accumulatedSeconds + missedSeconds
+
+              document.getElementById('timer').textContent =
+                formatTime(accumulatedSeconds)
+              document.getElementById('elapsed').textContent =
+                accumulatedSeconds
+              document.getElementById('startTime').textContent =
+                checkpoint.startTime || '-'
+              document.getElementById('recovery').innerHTML =
+                '<span class="warning">Recovered from previous session</span>'
+              document.getElementById('status').textContent =
+                'Recovered (click Start to continue)'
+
+              localStorage.removeItem(STORAGE_KEY)
+            } else if (checkpoint.accumulatedSeconds > 0) {
+              // Timer was paused
+              accumulatedSeconds = checkpoint.accumulatedSeconds
+              document.getElementById('timer').textContent =
+                formatTime(accumulatedSeconds)
+              document.getElementById('elapsed').textContent =
+                accumulatedSeconds
+              document.getElementById('startTime').textContent =
+                checkpoint.startTime || '-'
+              document.getElementById('status').textContent =
+                'Paused (from previous session)'
+            }
+          }
+        } catch (error) {
+          console.error('Failed to restore timer state:', error)
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      }
+
+      function updateInfo(message) {
+        console.log(message)
+      }
+    </script>
+  </body>
+</html>

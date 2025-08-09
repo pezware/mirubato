@@ -101,7 +101,8 @@
     "stop": "Detener y Registrar",
     "stopHint": "Haz clic en Detener y Registrar para crear una entrada de práctica con esta duración",
     "stopHintMobile": "Reanudar • Detener",
-    "title": "Temporizador de Práctica"
+    "title": "Temporizador de Práctica",
+    "continuedInBackground": "Continuado en segundo plano"
   },
   "title": "Diario",
   "viewScore": "Ver partitura"
