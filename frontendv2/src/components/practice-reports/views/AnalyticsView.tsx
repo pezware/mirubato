@@ -84,8 +84,9 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
               {t('reports:analytics.topPieces')}
             </h3>
             <DistributionPie
-              data={analytics.distributionData?.byPiece?.slice(0, 10) || []}
+              data={analytics.distributionData?.byPiece || []}
               type="doughnut"
+              maxItems={5}
             />
           </div>
           <div>
@@ -93,8 +94,9 @@ export default function AnalyticsView({ analytics }: AnalyticsViewProps) {
               {t('reports:analytics.topComposers')}
             </h3>
             <DistributionPie
-              data={analytics.distributionData?.byComposer?.slice(0, 10) || []}
+              data={analytics.distributionData?.byComposer || []}
               type="doughnut"
+              maxItems={5}
             />
           </div>
         </div>

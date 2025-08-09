@@ -16,6 +16,7 @@ interface DistributionPieProps {
   showLegend?: boolean
   type?: 'pie' | 'doughnut' | 'instrument' | 'piece' | 'composer'
   className?: string
+  maxItems?: number
 }
 
 export function DistributionPie({
@@ -25,6 +26,7 @@ export function DistributionPie({
   showLegend = true,
   type = 'pie',
   className,
+  maxItems = 10,
 }: DistributionPieProps) {
   const chartType = type === 'doughnut' || type === 'pie' ? type : 'pie'
   const { t } = useTranslation(['reports'])
@@ -33,17 +35,17 @@ export function DistributionPie({
     // Sort data by value descending
     const sortedData = [...data].sort((a, b) => b.value - a.value)
 
-    // Limit to top 10 items and group the rest as "Other"
+    // Limit to top N items and group the rest as "Other"
     let displayData = sortedData
-    if (sortedData.length > 10) {
-      const top10 = sortedData.slice(0, 10)
+    if (sortedData.length > maxItems) {
+      const topItems = sortedData.slice(0, maxItems)
       const otherValue = sortedData
-        .slice(10)
+        .slice(maxItems)
         .reduce((sum, item) => sum + item.value, 0)
       const total = sortedData.reduce((sum, item) => sum + item.value, 0)
 
       displayData = [
-        ...top10,
+        ...topItems,
         {
           label: t('reports:charts.other'),
           value: otherValue,
@@ -80,7 +82,7 @@ export function DistributionPie({
         },
       ],
     }
-  }, [data, t])
+  }, [data, t, maxItems])
 
   const config: ChartConfig = {
     type: chartType,
