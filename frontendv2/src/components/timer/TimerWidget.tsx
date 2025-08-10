@@ -15,12 +15,12 @@ export function TimerWidget({ isCollapsed }: TimerWidgetProps) {
 
   return (
     <div className={`${isCollapsed ? 'px-2' : 'px-4'}`}>
-      <button
+      <div
         onClick={openModal}
         className={`
           w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} 
           ${isCollapsed ? 'px-2 py-2' : 'px-3 py-2'} 
-          rounded-lg transition-all
+          rounded-lg transition-all cursor-pointer
           ${isRunning ? 'bg-green-100 hover:bg-green-200' : 'bg-gray-100 hover:bg-gray-200'}
           group relative
         `}
@@ -70,7 +70,7 @@ export function TimerWidget({ isCollapsed }: TimerWidgetProps) {
             </button>
           </>
         )}
-      </button>
+      </div>
     </div>
   )
 }

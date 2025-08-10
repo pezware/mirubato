@@ -323,7 +323,14 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-medium text-stone-900">
-                            {new Date(session.timestamp).toLocaleDateString()}
+                            {new Date(session.timestamp).toLocaleDateString(
+                              undefined,
+                              {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              }
+                            )}
                           </span>
                           <span className="text-sm text-stone-600">
                             {new Date(session.timestamp).toLocaleTimeString(

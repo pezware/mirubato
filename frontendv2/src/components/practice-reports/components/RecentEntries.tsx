@@ -59,6 +59,7 @@ export function RecentEntries({
           const formattedDate = date.toLocaleDateString(i18n.language, {
             month: 'short',
             day: '2-digit',
+            year: 'numeric',
           })
 
           return (

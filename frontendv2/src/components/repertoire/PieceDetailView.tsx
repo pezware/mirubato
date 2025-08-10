@@ -258,7 +258,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     const date = new Date(timestamp)
     if (isToday(date)) return t('common:time.today')
     if (isYesterday(date)) return t('common:time.yesterday')
-    return format(date, 'MMMM d')
+    return format(date, 'MMMM d, yyyy')
   }
 
   const formatSessionTime = (timestamp: string | number) => {
