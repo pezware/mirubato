@@ -79,7 +79,7 @@ export function AddToRepertoirePrompt({
               onClick={handleAdd}
               disabled={isAdding}
             >
-              {isAdding ? t('common:adding') : t('repertoire:addToEntries')}
+              {isAdding ? t('common:adding') : t('repertoire:addToRepertoire')}
             </Button>
             <Button variant="ghost" size="sm" onClick={onClose}>
               {t('common:notNow')}
