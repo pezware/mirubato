@@ -401,6 +401,7 @@ export default function LogbookEntryList({
           const formattedDate = entryDate.toLocaleDateString(i18n.language, {
             month: 'short',
             day: '2-digit',
+            year: 'numeric',
           })
 
           return (
