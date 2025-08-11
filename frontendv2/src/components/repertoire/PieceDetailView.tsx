@@ -341,9 +341,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                 className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4" />
-                {sessions.length === 0
-                  ? t('repertoire:deleteFromPieces')
-                  : t('repertoire:removeFromPieces')}
+                {t('repertoire:removeFromPieces')}
               </Button>
             </div>
           </div>
