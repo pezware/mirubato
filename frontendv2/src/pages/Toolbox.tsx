@@ -49,6 +49,9 @@ const Toolbox: React.FC = () => {
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [timerDuration, setTimerDuration] = useState<number | undefined>()
   const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
+  const [beatsInputValue, setBeatsInputValue] = useState<string>(
+    settings.beatsPerMeasure.toString()
+  )
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -156,6 +159,11 @@ const Toolbox: React.FC = () => {
       patterns: [currentPatternData.name],
     },
   })
+
+  // Sync beats input value when settings change (e.g., from pattern loading)
+  useEffect(() => {
+    setBeatsInputValue(settings.beatsPerMeasure.toString())
+  }, [settings.beatsPerMeasure])
 
   // Cleanup metronome on unmount
   useEffect(() => {
@@ -525,15 +533,36 @@ const Toolbox: React.FC = () => {
                           type="number"
                           min="1"
                           max="36"
-                          value={settings.beatsPerMeasure}
-                          onChange={e =>
-                            updateSettings({
-                              beatsPerMeasure: Math.max(
-                                1,
-                                Math.min(36, Number(e.target.value))
-                              ),
-                            })
-                          }
+                          value={beatsInputValue}
+                          onChange={e => {
+                            const value = e.target.value
+                            setBeatsInputValue(value) // Always update local state
+
+                            // Only update settings if valid number
+                            if (value !== '') {
+                              const numValue = Number(value)
+                              if (
+                                !isNaN(numValue) &&
+                                numValue >= 1 &&
+                                numValue <= 36
+                              ) {
+                                updateSettings({
+                                  beatsPerMeasure: numValue,
+                                })
+                              }
+                            }
+                          }}
+                          onBlur={e => {
+                            // Ensure valid value when user leaves the field
+                            const value = e.target.value
+                            if (value === '' || Number(value) < 1) {
+                              setBeatsInputValue('1')
+                              updateSettings({ beatsPerMeasure: 1 })
+                            } else if (Number(value) > 36) {
+                              setBeatsInputValue('36')
+                              updateSettings({ beatsPerMeasure: 36 })
+                            }
+                          }}
                           className="w-16 px-2 py-1 text-center border border-morandi-stone-200 rounded"
                         />
                         <span className="text-xl text-morandi-stone-400">
