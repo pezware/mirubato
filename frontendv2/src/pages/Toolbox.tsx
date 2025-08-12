@@ -23,10 +23,8 @@ import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
 import TimerEntry from '../components/TimerEntry'
 import ManualEntryForm from '../components/ManualEntryForm'
-import {
-  usePracticeTracking,
-  PracticeSummaryModal,
-} from '../modules/auto-logging'
+// Auto-logging removed for metronome per issue #469
+// Practice Counter component imports its own auto-logging hooks
 
 type PatternState = {
   accent: boolean[]
@@ -51,6 +49,11 @@ const Toolbox: React.FC = () => {
   const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
   const [beatsInputValue, setBeatsInputValue] = useState<string>(
     settings.beatsPerMeasure.toString()
+  )
+  // Simple elapsed time tracking for metronome (without auto-logging)
+  const [metronomeElapsedTime, setMetronomeElapsedTime] = useState(0)
+  const [metronomeStartTime, setMetronomeStartTime] = useState<number | null>(
+    null
   )
 
   // Get current pattern data from JSON file
@@ -140,30 +143,29 @@ const Toolbox: React.FC = () => {
   // Get metronome instance
   const metronome = getPatternMetronome()
 
-  // Practice tracking for metronome
-  const {
-    isTracking,
-    formattedTime,
-    showSummary,
-    pendingSession,
-    start: startTracking,
-    stop: stopTracking,
-    update: updateTracking,
-    confirmSave,
-    dismissSummary,
-  } = usePracticeTracking({
-    type: 'metronome',
-    metadata: {
-      title: 'Metronome Practice',
-      instrument: 'piano', // Could be made configurable later
-      patterns: [currentPatternData.name],
-    },
-  })
+  // Format elapsed time as MM:SS
+  const formatMetronomeTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   // Sync beats input value when settings change (e.g., from pattern loading)
   useEffect(() => {
     setBeatsInputValue(settings.beatsPerMeasure.toString())
   }, [settings.beatsPerMeasure])
+
+  // Track elapsed time when metronome is playing
+  useEffect(() => {
+    if (isPlaying && metronomeStartTime) {
+      const interval = setInterval(() => {
+        setMetronomeElapsedTime(
+          Math.floor((Date.now() - metronomeStartTime) / 1000)
+        )
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [isPlaying, metronomeStartTime])
 
   // Cleanup metronome on unmount
   useEffect(() => {
@@ -172,10 +174,6 @@ const Toolbox: React.FC = () => {
     return () => {
       // Always stop metronome when leaving the page
       metronome.stop()
-      // Also stop tracking if it's active
-      if (isTracking) {
-        stopTracking()
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -183,14 +181,8 @@ const Toolbox: React.FC = () => {
   // Handle tempo changes
   useEffect(() => {
     metronome.setTempo(settings.bpm)
-    // Update tracking metadata with tempo info
-    if (isTracking) {
-      updateTracking({
-        averageTempo: settings.bpm,
-      })
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.bpm, isTracking, updateTracking])
+  }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
@@ -198,29 +190,19 @@ const Toolbox: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.volume])
 
-  // Update tracking when pattern changes
-  useEffect(() => {
-    if (isTracking) {
-      updateTracking({
-        patterns: [currentPatternData.name],
-      })
-    }
-  }, [currentPatternData.name, isTracking, updateTracking])
-
   // Stop metronome when switching tabs
   useEffect(() => {
     if (activeTab !== 'metronome') {
       if (isPlaying) {
         metronome.stop()
         setIsPlaying(false)
-      }
-      // Also stop practice tracking
-      if (isTracking) {
-        stopTracking()
+        // Reset timer when stopping
+        setMetronomeElapsedTime(0)
+        setMetronomeStartTime(null)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]) // Removed isTracking and stopTracking from deps to prevent loops
+  }, [activeTab])
 
   // Handle pattern changes while playing
   useEffect(() => {
@@ -280,10 +262,9 @@ const Toolbox: React.FC = () => {
     if (isPlaying) {
       metronome.stop()
       setIsPlaying(false)
-      // Stop practice tracking when metronome stops
-      if (isTracking) {
-        stopTracking()
-      }
+      // Reset timer when stopping
+      setMetronomeElapsedTime(0)
+      setMetronomeStartTime(null)
     } else {
       try {
         // Ensure Tone.js audio context is started (required for user gesture)
@@ -307,10 +288,8 @@ const Toolbox: React.FC = () => {
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)
-        // Start practice tracking when metronome starts
-        if (!isTracking) {
-          startTracking()
-        }
+        // Start timer when metronome starts
+        setMetronomeStartTime(Date.now())
       } catch (error) {
         console.error('Failed to start metronome:', error)
       }
@@ -457,9 +436,10 @@ const Toolbox: React.FC = () => {
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
                   {/* Practice time display */}
-                  {isTracking && (
+                  {isPlaying && metronomeElapsedTime > 0 && (
                     <div className="mb-2 text-sm text-morandi-stone-600">
-                      {t('common:practice.duration')}: {formattedTime}
+                      {t('common:practice.duration')}:{' '}
+                      {formatMetronomeTime(metronomeElapsedTime)}
                     </div>
                   )}
                   <button
@@ -800,17 +780,6 @@ const Toolbox: React.FC = () => {
         {/* Dictionary Tab */}
         {activeTab === 'dictionary' && <Dictionary />}
       </div>
-
-      {/* Practice Summary Modal */}
-      <PracticeSummaryModal
-        isOpen={showSummary}
-        onClose={dismissSummary}
-        onSave={confirmSave}
-        onDiscard={dismissSummary}
-        duration={pendingSession?.duration || 0}
-        metadata={pendingSession?.metadata || {}}
-        title={t('common:practice.practiceSummary')}
-      />
 
       {/* Timer Modal */}
       <TimerEntry
