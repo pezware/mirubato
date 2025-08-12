@@ -9,6 +9,7 @@ interface RepertoireStoreType {
   goals: Map<string, unknown>
   scoreMetadataCache: Map<string, unknown>
   syncLocalData: () => Promise<void>
+  cleanupDuplicates?: () => Promise<void>
 }
 
 // Safe dynamic import helper to avoid circular dependency issues
@@ -292,8 +293,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store methods not available')
         }
 
-        // Get repertoire store using deferred import
-        const repertoireStore = await getRepertoireStore()
+        // Get repertoire store using deferred import (non-blocking)
+        let repertoireStore: RepertoireStoreType | null = null
+        try {
+          repertoireStore = await getRepertoireStore()
+        } catch (error) {
+          console.warn(
+            'Failed to get repertoire store during magic link verification:',
+            error
+          )
+          // Continue without repertoire sync - auth is still successful
+        }
+
         if (!repertoireStore) {
           console.warn(
             'Repertoire store not available during magic link verification'
@@ -395,8 +406,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store methods not available')
         }
 
-        // Get repertoire store using deferred import
-        const repertoireStore = await getRepertoireStore()
+        // Get repertoire store using deferred import (non-blocking)
+        let repertoireStore: RepertoireStoreType | null = null
+        try {
+          repertoireStore = await getRepertoireStore()
+        } catch (error) {
+          console.warn(
+            'Failed to get repertoire store during Google login:',
+            error
+          )
+          // Continue without repertoire sync - auth is still successful
+        }
+
         if (!repertoireStore) {
           console.warn('Repertoire store not available during Google login')
         }
@@ -415,13 +436,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             }),
         ]
 
-        if (repertoireStore?.syncLocalData) {
-          syncOperations.push(
-            repertoireStore.syncLocalData().catch((error: unknown) => {
-              console.warn('Repertoire sync failed during login:', error)
-              // Don't throw - continue with other operations
-            })
-          )
+        if (repertoireStore) {
+          // Clean up any duplicate repertoire items first
+          if (repertoireStore.cleanupDuplicates) {
+            syncOperations.push(
+              repertoireStore.cleanupDuplicates().catch((error: unknown) => {
+                console.warn('Repertoire cleanup failed during login:', error)
+                // Don't throw - continue with other operations
+              })
+            )
+          }
+
+          if (repertoireStore.syncLocalData) {
+            syncOperations.push(
+              repertoireStore.syncLocalData().catch((error: unknown) => {
+                console.warn('Repertoire sync failed during login:', error)
+                // Don't throw - continue with other operations
+              })
+            )
+          }
         }
 
         const authStore = useAuthStore.getState()

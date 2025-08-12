@@ -197,6 +197,12 @@ repertoireHandler.post('/', validateBody(createRepertoireSchema), async c => {
           id, user_id, score_id, status, difficulty_rating,
           personal_notes, reference_links, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, score_id) DO UPDATE SET
+          status = excluded.status,
+          difficulty_rating = excluded.difficulty_rating,
+          personal_notes = excluded.personal_notes,
+          reference_links = excluded.reference_links,
+          updated_at = excluded.updated_at
       `
     )
       .bind(
