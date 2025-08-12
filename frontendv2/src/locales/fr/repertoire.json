@@ -146,8 +146,10 @@
     "performance_ready": "Prêt pour la performance",
     "planned": "Planifié",
     "polished": "Poli",
-    "working": "En travail"
+    "working": "En travail",
+    "statusChangeEntry": "Statut modifié: {{oldStatus}} → {{newStatus}}"
   },
+  "statusHistory": "Historique des Statuts",
   "targetDate": "Objectif : {{date}}",
   "targetValue": "Valeur Cible",
   "targetValueHelp": {

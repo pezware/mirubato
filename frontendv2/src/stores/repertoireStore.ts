@@ -214,16 +214,26 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           .list()
           .then(({ items: serverItems }) => {
             const newRepertoireMap = new Map<string, RepertoireItem>()
+
+            // Build map using scoreId as key, keeping only the most recent if duplicates exist
             serverItems.forEach(item => {
-              newRepertoireMap.set(item.scoreId, item)
+              const existing = newRepertoireMap.get(item.scoreId)
+              if (!existing || item.updatedAt > existing.updatedAt) {
+                newRepertoireMap.set(item.scoreId, item)
+              }
             })
+
             set({
               repertoire: newRepertoireMap,
               isLocalMode: false,
             })
 
-            // Update localStorage
-            localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(serverItems))
+            // Update localStorage with deduplicated items
+            const deduplicatedItems = Array.from(newRepertoireMap.values())
+            localStorage.setItem(
+              REPERTOIRE_KEY,
+              JSON.stringify(deduplicatedItems)
+            )
           })
           .catch(err => {
             console.warn('Background repertoire sync failed:', err)
@@ -309,10 +319,33 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       if (!existing) throw new Error('Repertoire item not found')
 
       if (isLocalMode) {
+        // Handle status change tracking in local mode
+        const finalUpdates: Partial<RepertoireItem> = { ...updates }
+
+        if (
+          updates.status !== undefined &&
+          updates.status !== existing.status
+        ) {
+          // Append status change to personal notes
+          const currentNotes = existing.personalNotes || ''
+          const timestamp = new Date().toISOString()
+          // Add newline only if there are existing notes
+          const separator = currentNotes ? '\n' : ''
+          const statusChangeEntry = `${separator}[STATUS_CHANGE:${timestamp}:${existing.status}:${updates.status}]`
+
+          // If personalNotes is also being updated, append to that; otherwise update separately
+          if (updates.personalNotes !== undefined) {
+            finalUpdates.personalNotes =
+              updates.personalNotes + statusChangeEntry
+          } else {
+            finalUpdates.personalNotes = currentNotes + statusChangeEntry
+          }
+        }
+
         // Update locally
         const updatedItem = {
           ...existing,
-          ...updates,
+          ...finalUpdates,
           updatedAt: Date.now(),
         }
         const newRepertoire = new Map(repertoire)
@@ -1093,17 +1126,33 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   cleanupDuplicates: async () => {
     const { repertoire, isLocalMode } = get()
 
-    // Import the cleanup utility
-    const { cleanupDuplicateRepertoire } = await import(
-      '@/utils/cleanupDuplicateRepertoire'
+    // Simple deduplication by scoreId
+    const seen = new Set<string>()
+    const cleaned = new Map<string, RepertoireItem>()
+    const duplicates: RepertoireItem[] = []
+
+    // Keep the most recently updated version of each scoreId
+    const sortedItems = Array.from(repertoire.values()).sort(
+      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
     )
 
-    const { cleaned, duplicates } = cleanupDuplicateRepertoire(repertoire)
+    for (const item of sortedItems) {
+      if (!seen.has(item.scoreId)) {
+        seen.add(item.scoreId)
+        cleaned.set(item.scoreId, item)
+      } else {
+        duplicates.push(item)
+      }
+    }
 
     if (duplicates.length === 0) {
-      showToast('No duplicate pieces found', 'info')
+      console.log('No duplicate repertoire pieces found')
       return
     }
+
+    console.log(
+      `Found ${duplicates.length} duplicate repertoire pieces, cleaning up...`
+    )
 
     // Update the repertoire
     set({ repertoire: cleaned })
@@ -1112,28 +1161,12 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     const items = Array.from(cleaned.values())
     localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
 
-    // If not in local mode, update on server
+    // If not in local mode, let the server handle deduplication through ON CONFLICT
     if (!isLocalMode) {
-      try {
-        // Delete duplicates from server
-        for (const dup of duplicates) {
-          for (const removed of dup.removed) {
-            await repertoireApi.remove(removed.id)
-          }
-          // Update the kept item with the normalized scoreId
-          // Note: totalPracticeTime, practiceCount, and lastPracticed are
-          // calculated server-side from practice sessions, so we don't update them
-        }
-      } catch (error) {
-        console.error('Error cleaning up duplicates on server:', error)
-      }
+      console.log('Server will handle deduplication through ON CONFLICT clause')
     }
 
-    const totalRemoved = duplicates.reduce(
-      (sum, d) => sum + d.removed.length,
-      0
-    )
-    showToast(`Cleaned up ${totalRemoved} duplicate pieces`, 'success')
+    console.log(`Cleaned up ${duplicates.length} duplicate pieces`)
   },
 
   // Link practice session to goals
