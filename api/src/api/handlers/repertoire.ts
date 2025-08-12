@@ -267,10 +267,32 @@ repertoireHandler.put(
       const updateFields: string[] = []
       const updateValues: (string | number | null)[] = []
 
-      if (body.status !== undefined) {
+      // Handle status change with automatic tracking
+      if (body.status !== undefined && body.status !== existing.status) {
+        updateFields.push('status = ?')
+        updateValues.push(body.status)
+
+        // Append status change to personal notes
+        const currentNotes = existing.personal_notes || ''
+        const timestamp = new Date().toISOString()
+        // Add newline only if there are existing notes
+        const separator = currentNotes ? '\n' : ''
+        const statusChangeEntry = `${separator}[STATUS_CHANGE:${timestamp}:${existing.status}:${body.status}]`
+
+        // If personalNotes is also being updated, append to that; otherwise update separately
+        if (body.personalNotes !== undefined) {
+          body.personalNotes = body.personalNotes + statusChangeEntry
+        } else {
+          const updatedNotes = currentNotes + statusChangeEntry
+          updateFields.push('personal_notes = ?')
+          updateValues.push(updatedNotes)
+        }
+      } else if (body.status !== undefined) {
+        // Status provided but unchanged - still update in case of data sync
         updateFields.push('status = ?')
         updateValues.push(body.status)
       }
+
       if (body.difficultyRating !== undefined) {
         updateFields.push('difficulty_rating = ?')
         updateValues.push(body.difficultyRating)

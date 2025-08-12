@@ -27,8 +27,10 @@
     "polished": "Polished",
     "performance_ready": "Performance Ready",
     "dropped": "Dropped",
-    "current": "Current Status"
+    "current": "Current Status",
+    "statusChangeEntry": "Status changed: {{oldStatus}} → {{newStatus}}"
   },
+  "statusHistory": "Status History",
   "lastPracticed": "Last practiced {{time}}",
   "sessionCount": "{{count}} sessions",
   "sessions": "sessions",

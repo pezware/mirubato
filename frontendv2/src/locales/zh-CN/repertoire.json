@@ -146,8 +146,10 @@
     "performance_ready": "演出就绪",
     "planned": "计划中",
     "polished": "精炼",
-    "working": "练习中"
+    "working": "练习中",
+    "statusChangeEntry": "状态更改：{{oldStatus}} → {{newStatus}}"
   },
+  "statusHistory": "状态变更记录",
   "targetDate": "目标：{{date}}",
   "targetValue": "目标值",
   "targetValueHelp": {

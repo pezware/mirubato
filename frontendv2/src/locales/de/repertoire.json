@@ -146,8 +146,10 @@
     "performance_ready": "Aufführungsbereit",
     "planned": "Geplant",
     "polished": "Poliert",
-    "working": "In Arbeit"
+    "working": "In Arbeit",
+    "statusChangeEntry": "Status geändert: {{oldStatus}} → {{newStatus}}"
   },
+  "statusHistory": "Statusverlauf",
   "targetDate": "Ziel: {{date}}",
   "targetValue": "Zielwert",
   "targetValueHelp": {

@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
+import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
@@ -25,8 +27,54 @@ export function EditNotesModal({
   currentLinks = [],
   pieceTitle,
 }: EditNotesModalProps) {
-  const { t } = useTranslation(['repertoire', 'common'])
-  const [notes, setNotes] = useState(currentNotes)
+  const { t, i18n } = useTranslation(['repertoire', 'common'])
+
+  // Get date-fns locale based on current language
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'es':
+        return es
+      case 'fr':
+        return fr
+      case 'de':
+        return de
+      case 'zh-CN':
+        return zhCN
+      case 'zh-TW':
+        return zhTW
+      default:
+        return enUS
+    }
+  }
+
+  // Extract user notes and status changes
+  const { userNotes, statusChanges } = useMemo(() => {
+    const statusChangeRegex =
+      /\[STATUS_CHANGE:(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z):([^:]+):([^\]]+)\]/g
+    const changes: Array<{
+      timestamp: string
+      oldStatus: string
+      newStatus: string
+    }> = []
+    let userText = currentNotes
+    let match
+
+    // Extract all status changes
+    while ((match = statusChangeRegex.exec(currentNotes)) !== null) {
+      changes.push({
+        timestamp: match[1],
+        oldStatus: match[2],
+        newStatus: match[3],
+      })
+    }
+
+    // Remove status changes from the text to get only user notes
+    userText = currentNotes.replace(statusChangeRegex, '').trim()
+
+    return { userNotes: userText, statusChanges: changes }
+  }, [currentNotes])
+
+  const [notes, setNotes] = useState(userNotes)
   const [links, setLinks] = useState<string[]>(currentLinks)
   const [newLink, setNewLink] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -58,7 +106,26 @@ export function EditNotesModal({
   const handleSave = async () => {
     setIsLoading(true)
     try {
-      await onSave(notes, links)
+      // Combine user notes with status changes
+      let combinedNotes = notes.trim()
+
+      // If there are status changes, append them back
+      if (statusChanges.length > 0) {
+        // Add separator if there are user notes
+        if (combinedNotes) {
+          combinedNotes += '\n'
+        }
+
+        // Re-add all status changes
+        statusChanges.forEach(change => {
+          combinedNotes += `[STATUS_CHANGE:${change.timestamp}:${change.oldStatus}:${change.newStatus}]\n`
+        })
+
+        // Remove trailing newline
+        combinedNotes = combinedNotes.trimEnd()
+      }
+
+      await onSave(combinedNotes, links)
       onClose()
     } catch (error) {
       console.error('Error saving notes:', error)
@@ -97,6 +164,43 @@ export function EditNotesModal({
             {t('repertoire:notesHelpText')}
           </p>
         </div>
+
+        {/* Status Change History (read-only) */}
+        {statusChanges.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              {t('repertoire:statusHistory', 'Status History')}
+            </label>
+            <Card variant="ghost" className="p-3 bg-stone-50">
+              <div className="space-y-1 text-sm text-stone-600 italic">
+                {statusChanges.map((change, index) => {
+                  const date = new Date(change.timestamp)
+                  const formattedDate = format(date, 'MMM d, yyyy h:mm a', {
+                    locale: getDateLocale(),
+                  })
+                  const oldStatusLabel = t(
+                    `repertoire:status.${change.oldStatus}`,
+                    change.oldStatus
+                  )
+                  const newStatusLabel = t(
+                    `repertoire:status.${change.newStatus}`,
+                    change.newStatus
+                  )
+
+                  return (
+                    <div key={index}>
+                      [{formattedDate}]{' '}
+                      {t('repertoire:status.statusChangeEntry', {
+                        oldStatus: oldStatusLabel,
+                        newStatus: newStatusLabel,
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Reference Links */}
         <div>

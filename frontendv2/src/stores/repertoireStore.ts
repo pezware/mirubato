@@ -309,10 +309,33 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       if (!existing) throw new Error('Repertoire item not found')
 
       if (isLocalMode) {
+        // Handle status change tracking in local mode
+        const finalUpdates: Partial<RepertoireItem> = { ...updates }
+
+        if (
+          updates.status !== undefined &&
+          updates.status !== existing.status
+        ) {
+          // Append status change to personal notes
+          const currentNotes = existing.personalNotes || ''
+          const timestamp = new Date().toISOString()
+          // Add newline only if there are existing notes
+          const separator = currentNotes ? '\n' : ''
+          const statusChangeEntry = `${separator}[STATUS_CHANGE:${timestamp}:${existing.status}:${updates.status}]`
+
+          // If personalNotes is also being updated, append to that; otherwise update separately
+          if (updates.personalNotes !== undefined) {
+            finalUpdates.personalNotes =
+              updates.personalNotes + statusChangeEntry
+          } else {
+            finalUpdates.personalNotes = currentNotes + statusChangeEntry
+          }
+        }
+
         // Update locally
         const updatedItem = {
           ...existing,
-          ...updates,
+          ...finalUpdates,
           updatedAt: Date.now(),
         }
         const newRepertoire = new Map(repertoire)

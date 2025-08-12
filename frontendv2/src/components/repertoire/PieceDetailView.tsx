@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
+import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
 import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
@@ -62,7 +63,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   onStatusChange,
   onPieceUpdated,
 }) => {
-  const { t } = useTranslation(['repertoire', 'common'])
+  const { t, i18n } = useTranslation(['repertoire', 'common'])
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
@@ -105,6 +106,116 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       bg: 'bg-gray-100',
       label: t('repertoire:status.dropped'),
     },
+  }
+
+  // Get date-fns locale based on current language
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'es':
+        return es
+      case 'fr':
+        return fr
+      case 'de':
+        return de
+      case 'zh-CN':
+        return zhCN
+      case 'zh-TW':
+        return zhTW
+      default:
+        return enUS
+    }
+  }
+
+  // Parse and format notes with status change entries
+  const formatNotesWithStatusChanges = (
+    notes: string | undefined
+  ): React.ReactNode => {
+    if (!notes) return null
+
+    // Regular expression to match status change entries
+    // Format: [STATUS_CHANGE:ISO8601_timestamp:oldStatus:newStatus]
+    // The timestamp contains colons, so we need a more specific pattern
+    const statusChangeRegex =
+      /\[STATUS_CHANGE:(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z):([^:]+):([^\]]+)\]/g
+
+    const parts: React.ReactNode[] = []
+    let lastIndex = 0
+    let match
+
+    while ((match = statusChangeRegex.exec(notes)) !== null) {
+      // Add text before the status change
+      if (match.index > lastIndex) {
+        const textBefore = notes.substring(lastIndex, match.index)
+
+        // Check if this is the first status change after user notes
+        // If there's text before and it doesn't end with multiple newlines, add spacing
+        if (textBefore.trim() && parts.length === 0) {
+          parts.push(
+            <span key={`text-${lastIndex}`}>{textBefore.trimEnd()}</span>
+          )
+          // Add visual separator between user notes and status history
+          parts.push(
+            <div
+              key={`separator-${match.index}`}
+              className="mt-4 mb-2 border-t border-stone-200"
+            />
+          )
+        } else {
+          parts.push(<span key={`text-${lastIndex}`}>{textBefore}</span>)
+        }
+      }
+
+      // Parse the status change
+      const [, timestamp, oldStatus, newStatus] = match
+
+      // Check if timestamp is valid and parse it
+      let formattedDate: string
+      try {
+        const date = new Date(timestamp)
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid timestamp in status change:', timestamp)
+          formattedDate = new Date().toLocaleString()
+        } else {
+          // Format without seconds: "Jan 12, 2025 2:30 PM"
+          formattedDate = format(date, 'MMM d, yyyy h:mm a', {
+            locale: getDateLocale(),
+          })
+        }
+      } catch (error) {
+        console.error('Error parsing status change date:', timestamp, error)
+        formattedDate = new Date().toLocaleString()
+      }
+
+      // Get localized status labels, with fallback to the raw status if not found
+      const oldStatusLabel = t(`repertoire:status.${oldStatus}`, oldStatus)
+      const newStatusLabel = t(`repertoire:status.${newStatus}`, newStatus)
+
+      // Add formatted status change entry
+      parts.push(
+        <div
+          key={`status-${match.index}`}
+          className="mt-2 text-sm text-stone-500 italic"
+        >
+          [{formattedDate}]{' '}
+          {t('repertoire:status.statusChangeEntry', {
+            oldStatus: oldStatusLabel,
+            newStatus: newStatusLabel,
+          })}
+        </div>
+      )
+
+      lastIndex = statusChangeRegex.lastIndex
+    }
+
+    // Add any remaining text after the last match
+    if (lastIndex < notes.length) {
+      parts.push(
+        <span key={`text-${lastIndex}`}>{notes.substring(lastIndex)}</span>
+      )
+    }
+
+    // If no status changes were found, just return the notes as-is
+    return parts.length > 0 ? <>{parts}</> : <span>{notes}</span>
   }
 
   const handleStatusChange = (newStatus: keyof RepertoireStatus) => {
@@ -419,7 +530,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           </div>
           <div className="text-stone-700">
             {item.personalNotes ? (
-              <p className="whitespace-pre-wrap">{item.personalNotes}</p>
+              <div className="whitespace-pre-wrap">
+                {formatNotesWithStatusChanges(item.personalNotes)}
+              </div>
             ) : (
               <p className="text-stone-500 italic text-sm">
                 {t('repertoire:addNotesPrompt')}
