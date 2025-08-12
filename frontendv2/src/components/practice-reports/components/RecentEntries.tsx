@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { LogbookEntry } from '../../../api/logbook'
 import { EntryCard } from './EntryCard'
 import { Card } from '../../ui/Card'
+import { formatDuration } from '../../../utils/dateUtils'
 
 interface RecentEntriesProps {
   entries: LogbookEntry[]
@@ -38,8 +39,17 @@ export function RecentEntries({
     )
   }
 
-  // Track which dates have been shown
+  // Track which dates have been shown and calculate daily totals
   const shownDates = new Set<string>()
+  const dailyTotals = new Map<string, number>()
+
+  // Calculate daily totals first
+  recentEntries.forEach(entry => {
+    const date = new Date(entry.timestamp)
+    const entryDate = date.toDateString()
+    const currentTotal = dailyTotals.get(entryDate) || 0
+    dailyTotals.set(entryDate, currentTotal + entry.duration)
+  })
 
   return (
     <div className={className}>
@@ -62,6 +72,9 @@ export function RecentEntries({
             year: 'numeric',
           })
 
+          // Get the daily total for this date
+          const dayTotal = dailyTotals.get(entryDate) || 0
+
           return (
             <div key={entry.id}>
               {/* Date Separator */}
@@ -69,6 +82,9 @@ export function RecentEntries({
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
                     {formattedDate}
+                  </span>
+                  <span className="text-sm font-bold text-gray-600">
+                    · {formatDuration(dayTotal)}
                   </span>
                   <div className="flex-1 h-px bg-gray-200"></div>
                 </div>
