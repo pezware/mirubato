@@ -4,6 +4,9 @@ import { AlertCircle } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import Button from '../ui/Button'
 import { Input } from '../ui/Input'
+import Autocomplete from '../ui/Autocomplete'
+import { useAutocomplete } from '../../hooks/useAutocomplete'
+import { formatComposerName } from '../../utils/textFormatting'
 import { useLogbookStore } from '../../stores/logbookStore'
 
 interface EditPieceModalProps {
@@ -32,6 +35,12 @@ export const EditPieceModal: React.FC<EditPieceModalProps> = ({
   const [composer, setComposer] = useState(piece.composer || '')
   const [error, setError] = useState('')
   const [affectedCount, setAffectedCount] = useState(0)
+
+  // Autocomplete for composer
+  const composerAutocomplete = useAutocomplete({
+    type: 'composer',
+    minLength: 0, // Show suggestions immediately
+  })
 
   // Calculate how many entries will be affected
   useEffect(() => {
@@ -136,14 +145,28 @@ export const EditPieceModal: React.FC<EditPieceModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {t('reports:pieceEdit.composer')}
           </label>
-          <Input
-            type="text"
+          <Autocomplete
             value={composer}
-            onChange={e => {
-              setComposer(e.target.value)
+            onChange={value => {
+              setComposer(value)
+              composerAutocomplete.setQuery(value)
               setError('')
             }}
+            onBlur={() => {
+              // Auto-capitalize composer name on blur
+              if (composer && composer.trim()) {
+                const formatted = formatComposerName(composer.trim())
+                if (formatted !== composer) {
+                  setComposer(formatted)
+                }
+              }
+            }}
+            onSelect={() => {
+              // Selection is already handled by onChange in Autocomplete component
+            }}
+            options={composerAutocomplete.suggestions}
             placeholder={t('reports:pieceEdit.composerPlaceholder')}
+            isLoading={composerAutocomplete.isLoading}
             className="w-full"
           />
         </div>

@@ -49,6 +49,13 @@ export function AddToRepertoireModal({
   } = useScoreStore()
   const { entries } = useLogbookStore()
 
+  // Autocomplete for piece title
+  const pieceAutocomplete = useAutocomplete({
+    type: 'piece',
+    composer: customComposer || undefined, // Filter by composer if already selected
+    minLength: 0, // Show suggestions immediately
+  })
+
   // Autocomplete for composer
   const composerAutocomplete = useAutocomplete({
     type: 'composer',
@@ -313,7 +320,8 @@ export function AddToRepertoireModal({
                 {showCustomEntry && (
                   <Card className="p-3 sm:p-4 space-y-3 bg-sage-50 border-sage-200">
                     {/* Offline indicator - only show when offline */}
-                    {composerAutocomplete.isOffline && (
+                    {(pieceAutocomplete.isOffline ||
+                      composerAutocomplete.isOffline) && (
                       <div className="text-xs text-amber-600 flex items-center gap-1 mb-2">
                         <svg
                           className="w-3 h-3"
@@ -340,12 +348,26 @@ export function AddToRepertoireModal({
                       <label className="block text-sm font-medium text-stone-700 mb-1">
                         {t('repertoire:pieceTitle')} *
                       </label>
-                      <Input
-                        type="text"
+                      <Autocomplete
                         value={customTitle}
-                        onChange={e => setCustomTitle(e.target.value)}
+                        onChange={value => {
+                          setCustomTitle(value)
+                          pieceAutocomplete.setQuery(value)
+                        }}
+                        onSelect={option => {
+                          // If the selected piece has a composer, auto-fill it
+                          if (option.metadata?.composer) {
+                            setCustomComposer(option.metadata.composer)
+                          }
+                        }}
+                        options={pieceAutocomplete.suggestions}
                         placeholder={t('repertoire:pieceTitlePlaceholder')}
+                        isLoading={pieceAutocomplete.isLoading}
                         className="w-full"
+                        emptyMessage={t(
+                          'repertoire:noPiecesFound',
+                          'No pieces found'
+                        )}
                       />
                     </div>
                     <div>
