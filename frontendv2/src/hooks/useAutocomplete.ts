@@ -4,6 +4,7 @@ import { autocompleteApi } from '../api/autocomplete'
 import type { AutocompleteOption } from '../components/ui/Autocomplete'
 import { useLogbookStore } from '../stores/logbookStore'
 import { isOnline } from '../utils/offlineAutocomplete'
+import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
 
 interface UseAutocompleteOptions {
   type: 'composer' | 'piece'
@@ -89,20 +90,30 @@ export function useAutocomplete({
     entries.forEach(entry => {
       entry.pieces.forEach(piece => {
         if (type === 'composer' && piece.composer) {
-          if (piece.composer.toLowerCase().includes(queryLower)) {
-            suggestions.set(piece.composer, {
-              value: piece.composer,
-              label: piece.composer,
+          // Apply canonicalization to composer names
+          const canonicalComposer =
+            getCanonicalComposerName(piece.composer) || piece.composer
+
+          if (canonicalComposer.toLowerCase().includes(queryLower)) {
+            // Use canonical name as both key and value to avoid duplicates
+            suggestions.set(canonicalComposer, {
+              value: canonicalComposer,
+              label: canonicalComposer,
             })
           }
         } else if (type === 'piece') {
           if (piece.title.toLowerCase().includes(queryLower)) {
+            // Apply canonicalization to composer in metadata
+            const canonicalComposer = piece.composer
+              ? getCanonicalComposerName(piece.composer) || piece.composer
+              : undefined
+
             // If filtering by composer, only include pieces by that composer
-            if (!composer || piece.composer === composer) {
+            if (!composer || canonicalComposer === composer) {
               suggestions.set(piece.title, {
                 value: piece.title,
                 label: piece.title,
-                metadata: { composer: piece.composer || undefined },
+                metadata: { composer: canonicalComposer },
               })
             }
           }

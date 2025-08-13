@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { Env } from '../../index'
 import type { Variables } from '../middleware'
+import { getCanonicalComposerName } from '../../services/composerCanonicalizer'
 
 export const autocompleteHandler = new Hono<{
   Bindings: Env
@@ -73,6 +74,7 @@ autocompleteHandler.get('/composers', async c => {
     }
 
     const results: AutocompleteResult[] = []
+    const addedCanonicalNames = new Set<string>() // Track canonical names to avoid duplicates
 
     // Get user ID from JWT if authenticated
     const userId = c.get('userId') as string | undefined
@@ -87,10 +89,17 @@ autocompleteHandler.get('/composers', async c => {
       )
 
       for (const composer of userComposers) {
-        results.push({
-          value: composer,
-          label: composer,
-        })
+        // Get canonical name for the composer
+        const canonicalName = getCanonicalComposerName(composer) || composer
+
+        // Only add if we haven't added this canonical name yet
+        if (!addedCanonicalNames.has(canonicalName)) {
+          results.push({
+            value: canonicalName,
+            label: canonicalName,
+          })
+          addedCanonicalNames.add(canonicalName)
+        }
       }
     }
 
@@ -100,12 +109,16 @@ autocompleteHandler.get('/composers', async c => {
 
     if (cachedResults && Array.isArray(cachedResults)) {
       for (const composer of cachedResults) {
-        // Avoid duplicates
-        if (!results.some(r => r.value === composer)) {
+        // Get canonical name
+        const canonicalName = getCanonicalComposerName(composer) || composer
+
+        // Avoid duplicates based on canonical name
+        if (!addedCanonicalNames.has(canonicalName)) {
           results.push({
-            value: composer,
-            label: composer,
+            value: canonicalName,
+            label: canonicalName,
           })
+          addedCanonicalNames.add(canonicalName)
         }
       }
     } else {
@@ -119,12 +132,20 @@ autocompleteHandler.get('/composers', async c => {
         )) as string[]) || []
 
       for (const composer of allComposers) {
-        if (composer.toLowerCase().includes(query.toLowerCase())) {
-          if (!results.some(r => r.value === composer)) {
+        // Check if the canonical name or original matches the query
+        const canonicalName = getCanonicalComposerName(composer) || composer
+
+        if (
+          canonicalName.toLowerCase().includes(query.toLowerCase()) ||
+          composer.toLowerCase().includes(query.toLowerCase())
+        ) {
+          // Avoid duplicates based on canonical name
+          if (!addedCanonicalNames.has(canonicalName)) {
             results.push({
-              value: composer,
-              label: composer,
+              value: canonicalName,
+              label: canonicalName,
             })
+            addedCanonicalNames.add(canonicalName)
           }
         }
       }
