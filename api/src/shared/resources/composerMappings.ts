@@ -304,6 +304,7 @@ export const COMPOSER_CANONICAL_NAMES: Record<string, string> = {
   'agustín barrios': 'Agustín Barrios',
   'barrios mangoré': 'Agustín Barrios',
   'agustín barrios mangoré': 'Agustín Barrios',
+  'agustin barrios mangore': 'Agustín Barrios',
 
   brouwer: 'Leo Brouwer',
   'l. brouwer': 'Leo Brouwer',
@@ -323,11 +324,16 @@ export const COMPOSER_CANONICAL_NAMES: Record<string, string> = {
   czerny: 'Carl Czerny',
   'c. czerny': 'Carl Czerny',
   'carl czerny': 'Carl Czerny',
+  'karl czerny': 'Carl Czerny',
+  'czerny, c.': 'Carl Czerny',
   'czerny, carl': 'Carl Czerny',
 
   hanon: 'Charles-Louis Hanon',
   'c.l. hanon': 'Charles-Louis Hanon',
+  'c. l. hanon': 'Charles-Louis Hanon',
+  'cl hanon': 'Charles-Louis Hanon',
   'charles-louis hanon': 'Charles-Louis Hanon',
+  'charles louis hanon': 'Charles-Louis Hanon',
   'hanon, charles-louis': 'Charles-Louis Hanon',
 
   burgmüller: 'Friedrich Burgmüller',
@@ -345,6 +351,27 @@ export const COMPOSER_CANONICAL_NAMES: Record<string, string> = {
   suzuki: 'Shinichi Suzuki',
   's. suzuki': 'Shinichi Suzuki',
   'shinichi suzuki': 'Shinichi Suzuki',
+
+  aguado: 'Dionisio Aguado',
+  'd. aguado': 'Dionisio Aguado',
+  'dionisio aguado': 'Dionisio Aguado',
+  'aguado, dionisio': 'Dionisio Aguado',
+
+  abt: 'Franz Abt',
+  'f. abt': 'Franz Abt',
+  'franz abt': 'Franz Abt',
+  'abt, franz': 'Franz Abt',
+
+  tallis: 'Thomas Tallis',
+  't. tallis': 'Thomas Tallis',
+  'thomas tallis': 'Thomas Tallis',
+  'tallis, thomas': 'Thomas Tallis',
+
+  doonan: 'Stephen C. Doonan',
+  's. doonan': 'Stephen C. Doonan',
+  'stephen doonan': 'Stephen C. Doonan',
+  'stephen c. doonan': 'Stephen C. Doonan',
+  'doonan, stephen c.': 'Stephen C. Doonan',
 
   // ==========================================
   // TRADITIONAL & SPECIAL CATEGORIES

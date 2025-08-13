@@ -9,7 +9,7 @@ import { UploadService } from '../../services/uploadService'
 const TEST_PDFS = {
   'score_01.pdf': {
     title: 'Aire Sureño',
-    composer: 'Agustín Barrios Mangoré',
+    composer: 'Agustín Barrios',
     instrument: 'guitar',
     difficulty: 'advanced',
     // This is a minimal valid PDF that displays "Test Score 1"
@@ -17,7 +17,7 @@ const TEST_PDFS = {
   },
   'score_02.pdf': {
     title: 'Romance (Spanish Romance)',
-    composer: 'Anonymous (arr. Eythor Thorlaksson)',
+    composer: 'Anonymous',
     instrument: 'guitar',
     difficulty: 'intermediate',
     // This is a minimal valid PDF that displays "Test Score 2"
