@@ -14,6 +14,7 @@ import TimelineNav, { type TimelineLevel } from './ui/TimelineNav'
 import { MusicTitle, MusicComposer } from './ui'
 import { cn } from '../utils/cn'
 import { toTitleCase } from '../utils/textFormatting'
+import { getDisplayComposerName } from '../utils/composerCanonicalizer'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -619,7 +620,7 @@ export default function LogbookEntryList({
                                     as="span"
                                     className="text-morandi-stone-600 text-sm"
                                   >
-                                    {toTitleCase(piece.composer)}
+                                    {getDisplayComposerName(piece.composer)}
                                   </MusicComposer>
                                 </>
                               )}
