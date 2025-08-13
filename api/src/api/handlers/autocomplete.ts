@@ -218,11 +218,16 @@ autocompleteHandler.get('/pieces', async c => {
       for (const piece of cachedResults) {
         // Avoid duplicates
         if (!results.some(r => r.value === piece.title)) {
+          // Canonicalize composer name in metadata
+          const canonicalComposer = piece.composer
+            ? getCanonicalComposerName(piece.composer) || piece.composer
+            : piece.composer
+
           results.push({
             value: piece.title,
             label: piece.title,
             metadata: {
-              composer: piece.composer,
+              composer: canonicalComposer,
               gradeLevel: piece.gradeLevel,
               instrument: piece.instrument,
             },
@@ -248,12 +253,17 @@ autocompleteHandler.get('/pieces', async c => {
 
         if (titleMatches || composerMatches) {
           if (!results.some(r => r.value === piece.title)) {
+            // Canonicalize composer name in metadata
+            const canonicalComposer = piece.composer
+              ? getCanonicalComposerName(piece.composer) || piece.composer
+              : piece.composer
+
             filteredPieces.push(piece)
             results.push({
               value: piece.title,
               label: piece.title,
               metadata: {
-                composer: piece.composer,
+                composer: canonicalComposer,
                 gradeLevel: piece.gradeLevel,
                 instrument: piece.instrument,
               },
