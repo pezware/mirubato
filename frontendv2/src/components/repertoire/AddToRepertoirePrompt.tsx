@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRepertoireStore } from '@/stores/repertoireStore'
 import { showToast } from '@/utils/toastManager'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
+import { getDisplayComposerName } from '@/utils/composerCanonicalizer'
 import Button from '@/components/ui/Button'
 import { Music, X } from 'lucide-react'
 
@@ -23,11 +24,15 @@ export function AddToRepertoirePrompt({
   const { addToRepertoire } = useRepertoireStore()
   const [isAdding, setIsAdding] = useState(false)
 
+  // Get the canonical composer name for display
+  const displayComposer = getDisplayComposerName(composer)
+
   const handleAdd = async () => {
     setIsAdding(true)
     try {
       // Create a normalized scoreId from the piece info
-      const scoreId = generateNormalizedScoreId(pieceTitle, composer)
+      // Use the canonical composer name for consistency
+      const scoreId = generateNormalizedScoreId(pieceTitle, displayComposer)
 
       await addToRepertoire(scoreId, 'learning')
 
@@ -65,10 +70,10 @@ export function AddToRepertoirePrompt({
             {t('repertoire:addToRepertoireQuestion')}
           </h3>
           <p className="text-sm text-stone-600 mb-3">
-            {composer
+            {displayComposer
               ? t('repertoire:justPracticedWithComposer', {
                   piece: pieceTitle,
-                  composer: composer,
+                  composer: displayComposer,
                 })
               : t('repertoire:justPracticed', { piece: pieceTitle })}
           </p>

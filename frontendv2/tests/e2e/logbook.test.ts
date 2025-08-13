@@ -55,7 +55,9 @@ test.describe('Logbook', () => {
         expect(entries).toHaveLength(1)
         expect(entries[0]).toMatchObject({
           duration: 30,
-          pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
+          pieces: [
+            { title: 'Moonlight Sonata', composer: 'Ludwig van Beethoven' },
+          ],
           notes: 'Worked on first movement dynamics',
           mood: 'satisfied',
         })
