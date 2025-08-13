@@ -61,7 +61,7 @@ export function getCanonicalComposerName(
   }
 
   // First, remove any catalog numbers
-  let cleanedName = removeCatalogNumbers(composerName)
+  const cleanedName = removeCatalogNumbers(composerName)
 
   // If the name is now empty or just whitespace, return empty string
   if (!cleanedName.trim()) {
