@@ -37,7 +37,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   // Use prop position if provided, otherwise use settings position
   const position = propPosition ?? settings.position
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentBeat, setCurrentBeat] = useState(0)
+  const [, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [clickCount, setClickCount] = useState(0)
 
@@ -314,20 +314,6 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               <div className="text-sm font-semibold text-morandi-stone-700">
                 {settings.beatsPerMeasure}/{settings.beatValue}
               </div>
-              {isPlaying && (
-                <div className="flex justify-center mt-1 space-x-1">
-                  {Array.from({ length: settings.beatsPerMeasure }, (_, i) => (
-                    <div
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-100 ${
-                        i === currentBeat
-                          ? 'bg-morandi-purple-400 scale-150'
-                          : 'bg-morandi-stone-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
             <button
