@@ -39,7 +39,7 @@ const Toolbox: React.FC = () => {
   const { settings, updateSettings, saveCurrentPattern } =
     useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentBeat, setCurrentBeat] = useState(0)
+  const [, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
@@ -51,7 +51,7 @@ const Toolbox: React.FC = () => {
     settings.beatsPerMeasure.toString()
   )
   // Simple elapsed time tracking for metronome (without auto-logging)
-  const [metronomeElapsedTime, setMetronomeElapsedTime] = useState(0)
+  const [, setMetronomeElapsedTime] = useState(0)
   const [metronomeStartTime, setMetronomeStartTime] = useState<number | null>(
     null
   )
@@ -142,13 +142,6 @@ const Toolbox: React.FC = () => {
 
   // Get metronome instance
   const metronome = getPatternMetronome()
-
-  // Format elapsed time as MM:SS
-  const formatMetronomeTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
 
   // Sync beats input value when settings change (e.g., from pattern loading)
   useEffect(() => {
@@ -435,13 +428,6 @@ const Toolbox: React.FC = () => {
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
-                  {/* Practice time display */}
-                  {isPlaying && metronomeElapsedTime > 0 && (
-                    <div className="mb-2 text-sm text-morandi-stone-600">
-                      {t('common:practice.duration')}:{' '}
-                      {formatMetronomeTime(metronomeElapsedTime)}
-                    </div>
-                  )}
                   <button
                     onClick={handlePlayPause}
                     className={`w-20 h-20 mx-auto mb-4 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
@@ -564,65 +550,7 @@ const Toolbox: React.FC = () => {
                         </select>
                       </div>
                     </div>
-
-                    {/* Volume */}
-                    <div>
-                      <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
-                        <Volume2 size={16} />
-                        {t('toolbox:metronome.volume')}: {settings.volume}%
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={settings.volume}
-                        onChange={e =>
-                          updateSettings({ volume: Number(e.target.value) })
-                        }
-                        className="w-full accent-morandi-purple-400"
-                      />
-                    </div>
-
-                    {/* Beat Indicator */}
-                    {isPlaying && (
-                      <div className="flex justify-center gap-2">
-                        {Array.from(
-                          { length: settings.beatsPerMeasure },
-                          (_, i) => (
-                            <div
-                              key={i}
-                              className={`w-3 h-3 rounded-full transition-all duration-100 ${
-                                i === currentBeat
-                                  ? 'bg-morandi-purple-400 scale-125'
-                                  : 'bg-morandi-stone-300'
-                              }`}
-                            />
-                          )
-                        )}
-                      </div>
-                    )}
                   </div>
-                </div>
-
-                {/* Pattern Selector */}
-                <div>
-                  <label className="text-sm text-morandi-stone-600 mb-2 block">
-                    {t('toolbox:metronome.presetPatterns')}
-                  </label>
-                  <select
-                    value={settings.selectedPattern}
-                    onChange={e => loadPattern(e.target.value)}
-                    className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
-                  >
-                    {commonPatterns.map(pattern => (
-                      <option key={pattern.id} value={pattern.id}>
-                        {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
-                        {t(
-                          `toolbox:metronome.patterns.${pattern.id}.description`
-                        )}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
             </div>
@@ -761,6 +689,48 @@ const Toolbox: React.FC = () => {
 
                 <div className="mt-6 text-sm text-morandi-stone-600">
                   <p>{t('toolbox:metronome.clickToCreate')}</p>
+                </div>
+
+                {/* Secondary Controls */}
+                <div className="mt-6 space-y-6">
+                  {/* Pattern Selector */}
+                  <div>
+                    <label className="text-sm text-morandi-stone-600 mb-2 block">
+                      {t('toolbox:metronome.presetPatterns')}
+                    </label>
+                    <select
+                      value={settings.selectedPattern}
+                      onChange={e => loadPattern(e.target.value)}
+                      className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
+                    >
+                      {commonPatterns.map(pattern => (
+                        <option key={pattern.id} value={pattern.id}>
+                          {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
+                          {t(
+                            `toolbox:metronome.patterns.${pattern.id}.description`
+                          )}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Volume */}
+                  <div>
+                    <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
+                      <Volume2 size={16} />
+                      {t('toolbox:metronome.volume')}: {settings.volume}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={settings.volume}
+                      onChange={e =>
+                        updateSettings({ volume: Number(e.target.value) })
+                      }
+                      className="w-full accent-morandi-purple-400"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
