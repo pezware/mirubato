@@ -28,7 +28,7 @@ export function PracticeTrendChart({
 }: PracticeTrendChartProps) {
   const { t } = useTranslation(['reports'])
 
-  const chartData = useMemo<ChartData<'line'>>(() => {
+  const chartData = useMemo<ChartData<'bar'>>(() => {
     // Group data by period
     const groupedData = groupDataByPeriod(data, period)
 
@@ -39,14 +39,14 @@ export function PracticeTrendChart({
     const sortedData = filledData.sort((a, b) => a.date.localeCompare(b.date))
 
     // Create chart datasets
-    const datasets: ChartDataset<'line', number[]>[] = [
+    const datasets: ChartDataset<'bar', number[]>[] = [
       {
         label: t('reports:charts.practiceTime'),
         data: sortedData.map(d => d.value),
         borderColor: '#7C9885',
-        backgroundColor: '#7C988533',
-        tension: 0.4,
-        fill: true,
+        backgroundColor: '#7C9885',
+        borderWidth: 1,
+        borderRadius: 4,
       },
     ]
 
@@ -60,11 +60,10 @@ export function PracticeTrendChart({
         label: t('reports:charts.movingAverage'),
         data: movingAvg,
         borderColor: '#B4A394',
-        backgroundColor: 'transparent',
-        tension: 0.4,
-        fill: false,
-        borderDash: [5, 5],
-      } as ChartDataset<'line', number[]>)
+        backgroundColor: 'rgba(180, 163, 148, 0.7)',
+        borderWidth: 1,
+        borderRadius: 4,
+      } as ChartDataset<'bar', number[]>)
     }
 
     // Add goal line if specified
@@ -73,13 +72,10 @@ export function PracticeTrendChart({
         label: t('reports:charts.goal'),
         data: sortedData.map(() => showGoalLine),
         borderColor: '#E5C1A6',
-        backgroundColor: 'transparent',
-        borderDash: [10, 5],
+        backgroundColor: 'rgba(229, 193, 166, 0.5)',
         borderWidth: 2,
-        pointRadius: 0,
-        tension: 0,
-        fill: false,
-      } as ChartDataset<'line', number[]>)
+        borderRadius: 2,
+      } as ChartDataset<'bar', number[]>)
     }
 
     return {
@@ -89,7 +85,7 @@ export function PracticeTrendChart({
   }, [data, period, showMovingAverage, showGoalLine, t])
 
   const config: ChartConfig = {
-    type: 'line',
+    type: 'bar',
     dataKey: 'practiceTime',
     options: {
       title: t('reports:charts.practiceTrend'),
@@ -98,7 +94,7 @@ export function PracticeTrendChart({
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: TooltipItem<'line'>) => {
+            label: (context: TooltipItem<'bar'>) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
               return `${label}: ${formatDuration(value)}`

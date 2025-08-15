@@ -7,6 +7,7 @@ import {
   type DuplicateEntry,
 } from '../utils/duplicateCleanup'
 import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
+import { localEventBus } from '../services/localEventBus'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -270,9 +271,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         JSON.stringify(Array.from(newEntriesMap.values()))
       )
 
-      // Link to goals after creating entry
-      const { useRepertoireStore } = await import('./repertoireStore')
-      await useRepertoireStore.getState().linkPracticeToGoals(entry)
+      // Emit event for repertoire to handle goal linking
+      // This avoids circular dependency between stores
+      localEventBus.emit('PRACTICE_CREATED', { entry })
 
       // Send real-time sync event if enabled
       if (get().isRealtimeSyncEnabled) {
@@ -1128,3 +1129,25 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     return getDuplicateReport(currentEntries)
   },
 }))
+
+// Register event handler for piece dissociation from repertoire
+// This handles updates when a piece is removed from repertoire but logs should be preserved
+// Skip registration only in test environment
+const isTestEnvironment =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+if (!isTestEnvironment) {
+  localEventBus.on('PIECE_DISSOCIATED', ({ updatedEntries }) => {
+    // Update store state with the modified entries
+    useLogbookStore.setState({
+      entriesMap: updatedEntries,
+      entries: Array.from(updatedEntries.values()).sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    })
+
+    // Preserve localStorage sync - write immediately
+    const entries = Array.from(updatedEntries.values())
+    localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
+  })
+}
