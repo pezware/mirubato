@@ -24,11 +24,6 @@ export function SummaryStats({
     )
   }
 
-  const getSessionCount = () => {
-    // Use filtered entries count directly
-    return filteredAndSortedEntries.length
-  }
-
   return (
     <div className="space-y-2" data-testid="summary-stats">
       {/* Summary Stats Grid - Now 4 stats for better mobile layout */}
