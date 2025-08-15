@@ -78,12 +78,23 @@ test.describe('Enhanced Reports - Core Tests', () => {
           timeout: 5000,
         })
 
-        // Verify period presets are visible
-        const periodPresets = page.locator(
-          '[data-testid="period-preset-daily"], [data-testid="period-preset-week"], [data-testid="period-preset-month"], [data-testid="period-preset-year"]'
-        )
-        const presetCount = await periodPresets.count()
-        expect(presetCount).toBeGreaterThan(0)
+        // Verify period presets section is visible
+        // Look for the Quick Periods heading or the SegmentedControl
+        const quickPeriodsVisible = await page
+          .locator(
+            'text=/Quick Periods|Períodos rápidos|Périodes rapides|Schnellzeiträume|快速期間|快速期间/'
+          )
+          .isVisible()
+          .catch(() => false)
+
+        // Or check for period selector buttons (Daily, This Week, etc.)
+        const periodButtonsVisible = await page
+          .locator('button:has-text(/Daily|This Week|This Month/)')
+          .first()
+          .isVisible()
+          .catch(() => false)
+
+        expect(quickPeriodsVisible || periodButtonsVisible).toBeTruthy()
 
         // Verify practice logs list is shown
         const practiceLogsList = await page
