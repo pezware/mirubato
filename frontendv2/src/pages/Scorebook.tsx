@@ -2,15 +2,12 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../stores/scoreStore'
-import { usePracticeStore } from '../stores/practiceStore'
 import ScoreViewer from '../components/score/ScoreViewer'
 import ScoreControls from '../components/score/ScoreControls'
 import ScoreManagement from '../components/score/ScoreManagement'
 import AppLayout from '../components/layout/AppLayout'
 import TimerEntry from '../components/TimerEntry'
-import { Modal } from '../components/ui/Modal'
 import { MusicTitle, MusicComposer } from '../components/ui'
-import Button from '../components/ui/Button'
 
 export default function ScorebookPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -26,11 +23,6 @@ export default function ScorebookPage() {
     loadCollections,
   } = useScoreStore()
 
-  const [showPracticeWarning, setShowPracticeWarning] = useState(false)
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null
-  )
-  const currentSession = usePracticeStore(state => state.currentSession)
   const [showTimer, setShowTimer] = useState(false)
 
   // Load score if scoreId is provided
@@ -44,53 +36,6 @@ export default function ScorebookPage() {
   useEffect(() => {
     loadCollections()
   }, [loadCollections])
-
-  // Check for active practice session before navigation
-  useEffect(() => {
-    const handleBeforeNavigate = (e: PopStateEvent) => {
-      if (currentSession?.isActive && !showPracticeWarning) {
-        e.preventDefault()
-        setShowPracticeWarning(true)
-      }
-    }
-
-    window.addEventListener('popstate', handleBeforeNavigate)
-    return () => window.removeEventListener('popstate', handleBeforeNavigate)
-  }, [currentSession, showPracticeWarning])
-
-  // Browser refresh/close warning
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (currentSession?.isActive) {
-        e.preventDefault()
-        e.returnValue = ''
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [currentSession])
-
-  const handleStopPractice = () => {
-    usePracticeStore.getState().stopPractice()
-    useScoreStore.getState().stopPractice()
-    setShowPracticeWarning(false)
-    if (pendingNavigation) {
-      navigate(pendingNavigation)
-      setPendingNavigation(null)
-    }
-  }
-
-  const handleDiscardPractice = () => {
-    // Clear practice session without saving
-    usePracticeStore.getState().clearSession()
-    useScoreStore.getState().isRecording = false
-    setShowPracticeWarning(false)
-    if (pendingNavigation) {
-      navigate(pendingNavigation)
-      setPendingNavigation(null)
-    }
-  }
 
   const handleTimerComplete = (_duration: number, _startTime?: Date) => {
     setShowTimer(false)
@@ -149,7 +94,7 @@ export default function ScorebookPage() {
         {/* Error State */}
         {error && (
           <div className="flex-1 flex items-center justify-center p-3 sm:px-6 sm:py-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 max-w-md">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 max-w-md">
               <h3 className="text-red-800 font-medium mb-2">
                 {t('scorebook:error', 'Error loading score')}
               </h3>
@@ -178,46 +123,6 @@ export default function ScorebookPage() {
 
       {/* Score Management Panel */}
       {showManagement && <ScoreManagement />}
-
-      {/* Practice Warning Modal */}
-      <Modal
-        isOpen={showPracticeWarning}
-        onClose={() => setShowPracticeWarning(false)}
-        title={t('scorebook:practiceInProgress', 'Practice in Progress')}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-morandi-stone-700">
-            {t(
-              'scorebook:practiceWarning',
-              'You have an active practice session. Would you like to save it before leaving?'
-            )}
-          </p>
-          {currentSession && (
-            <div className="bg-morandi-sand-50 p-3 rounded-lg">
-              <p className="text-sm text-morandi-stone-600">
-                {t('scorebook:practiceDuration', 'Duration')}:{' '}
-                {Math.floor(usePracticeStore.getState().getCurrentDuration())}{' '}
-                {t('common:minutes')}
-              </p>
-            </div>
-          )}
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="ghost"
-              onClick={() => setShowPracticeWarning(false)}
-            >
-              {t('common:cancel')}
-            </Button>
-            <Button variant="secondary" onClick={handleDiscardPractice}>
-              {t('scorebook:discardPractice', 'Discard')}
-            </Button>
-            <Button variant="primary" onClick={handleStopPractice}>
-              {t('scorebook:savePractice', 'Save & Exit')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       {/* Timer Modal */}
       <TimerEntry

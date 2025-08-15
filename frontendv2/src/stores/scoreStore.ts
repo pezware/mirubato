@@ -1,18 +1,6 @@
 import { create } from 'zustand'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
-import { usePracticeStore } from './practiceStore'
-
-interface PracticeSession {
-  id: string
-  scoreId: string
-  startTime: Date
-  endTime?: Date
-  duration: number // in seconds
-  measuresCompleted: number[]
-  tempo: number
-  notes?: string
-}
 
 interface MetronomeSettings {
   tempo: number
@@ -35,10 +23,6 @@ interface ScoreStore {
   featuredCollections: Collection[]
   userLibrary: Score[]
 
-  // Practice session
-  practiceSession: PracticeSession | null
-  isRecording: boolean
-
   // Metronome
   metronomeSettings: MetronomeSettings
 
@@ -54,11 +38,6 @@ interface ScoreStore {
   setTotalPages: (pages: number) => void
   nextPage: () => void
   previousPage: () => void
-
-  // Practice actions
-  startPractice: () => void
-  stopPractice: () => void
-  updatePracticeProgress: (measure: number) => void
 
   // Metronome actions
   setTempo: (tempo: number) => void
@@ -103,9 +82,6 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
   userCollections: [],
   featuredCollections: [],
   userLibrary: [],
-
-  practiceSession: null,
-  isRecording: false,
 
   metronomeSettings: {
     tempo: 120,
@@ -182,59 +158,6 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     const { currentPage } = get()
     if (currentPage > 1) {
       set({ currentPage: currentPage - 1 })
-    }
-  },
-
-  // Practice actions
-  startPractice: () => {
-    const { currentScore } = get()
-    if (!currentScore) return
-
-    // Get user's instrument preference (default to piano for now)
-    // TODO: Add user instrument preference to profile
-    const instrument = 'piano' as const
-
-    // Start practice in practiceStore
-    usePracticeStore.getState().startPractice(currentScore, instrument)
-
-    // Mark as recording in scoreStore for UI
-    set({ isRecording: true })
-  },
-
-  stopPractice: () => {
-    const { currentScore } = get()
-    if (!currentScore) return
-
-    // Stop practice and get session data
-    const sessionData = usePracticeStore.getState().stopPractice()
-    if (!sessionData) {
-      set({ isRecording: false })
-      return
-    }
-
-    // Note: Logbook entry creation is now handled by the auto-logging module
-    // in ScoreControls component to avoid duplicate entries
-
-    set({ isRecording: false })
-  },
-
-  updatePracticeProgress: (measure: number) => {
-    const { practiceSession } = get()
-    if (
-      !practiceSession ||
-      !practiceSession.measuresCompleted.includes(measure)
-    ) {
-      set({
-        practiceSession: practiceSession
-          ? {
-              ...practiceSession,
-              measuresCompleted: [
-                ...practiceSession.measuresCompleted,
-                measure,
-              ],
-            }
-          : null,
-      })
     }
   },
 
