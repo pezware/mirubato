@@ -33,9 +33,9 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   }
 
   const buttonSizeClasses = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-2.5 text-base',
+    sm: 'px-2 sm:px-3 py-1.5 text-xs',
+    md: 'px-2 sm:px-4 py-2 text-xs sm:text-sm',
+    lg: 'px-4 sm:px-6 py-2.5 text-sm sm:text-base',
   }
 
   return (
@@ -59,7 +59,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
             aria-controls={`${option.value}-panel`}
             onClick={() => onChange(option.value)}
             className={cn(
-              'relative flex-1 inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-morandi-purple-500',
+              'relative flex-1 inline-flex items-center justify-center gap-1 sm:gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-morandi-purple-500 min-w-0',
               buttonSizeClasses[size],
               isActive
                 ? 'bg-white dark:bg-gray-900 text-morandi-stone-900 dark:text-white shadow-sm'
@@ -69,7 +69,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
             {option.icon && (
               <span className="flex-shrink-0">{option.icon}</span>
             )}
-            <span>{option.label}</span>
+            <span className="truncate">{option.label}</span>
           </button>
         )
       })}

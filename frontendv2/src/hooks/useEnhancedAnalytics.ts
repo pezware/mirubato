@@ -575,8 +575,90 @@ function calculateBaseAnalytics(entries: LogbookEntry[]) {
   }
 }
 
+// Calculate time series data grouped by period for period presets
+export function calculateTimeSeriesDataByPeriod(
+  entries: LogbookEntry[],
+  period: 'daily' | 'week' | 'month' | 'year'
+): TimeSeriesData[] {
+  if (period === 'daily') {
+    return calculateTimeSeriesData(entries) // Daily grouping
+  }
+
+  const groupedData = new Map<string, number>()
+
+  entries.forEach(entry => {
+    let key: string
+    const date = new Date(entry.timestamp)
+
+    switch (period) {
+      case 'week':
+        key = getWeekKey(date)
+        break
+      case 'month':
+        key = getMonthKey(date)
+        break
+      case 'year':
+        key = date.getFullYear().toString()
+        break
+      default:
+        // This should never happen since we check for 'daily' above
+        key = date.toISOString().split('T')[0]
+    }
+
+    groupedData.set(key, (groupedData.get(key) || 0) + entry.duration)
+  })
+
+  return Array.from(groupedData.entries())
+    .map(([date, value]) => ({
+      date,
+      value,
+      label: formatPeriodLabel(date, period),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+// Helper function to format period labels
+function formatPeriodLabel(
+  key: string,
+  period: 'daily' | 'week' | 'month' | 'year'
+): string {
+  switch (period) {
+    case 'week': {
+      // key format: YYYY-Www
+      const weekMatch = key.match(/^(\d{4})-W(\d{2})$/)
+      if (weekMatch) {
+        return `Week ${weekMatch[2]}, ${weekMatch[1]}`
+      }
+      return key
+    }
+    case 'month': {
+      // key format: YYYY-MM
+      const monthMatch = key.match(/^(\d{4})-(\d{2})$/)
+      if (monthMatch) {
+        const date = new Date(
+          parseInt(monthMatch[1]),
+          parseInt(monthMatch[2]) - 1,
+          15
+        )
+        return date.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'long',
+        })
+      }
+      return key
+    }
+    case 'year':
+      return key
+    case 'daily':
+    default:
+      return new Date(key).toLocaleDateString()
+  }
+}
+
 // Calculate time series data for charts
-function calculateTimeSeriesData(entries: LogbookEntry[]): TimeSeriesData[] {
+export function calculateTimeSeriesData(
+  entries: LogbookEntry[]
+): TimeSeriesData[] {
   const dailyData = new Map<string, number>()
 
   entries.forEach(entry => {
@@ -732,4 +814,128 @@ function calculateComparativeData(filteredEntries: LogbookEntry[]): {
       },
     ],
   }
+}
+
+// Helper functions for period presets
+export function createPeriodFilter(
+  period: 'week' | 'month' | 'year'
+): Omit<FilterCriteria, 'id'> {
+  const endDate = new Date()
+  const startDate = new Date()
+
+  switch (period) {
+    case 'week':
+      startDate.setDate(endDate.getDate() - 7)
+      break
+    case 'month':
+      startDate.setDate(endDate.getDate() - 30)
+      break
+    case 'year':
+      startDate.setDate(endDate.getDate() - 365)
+      break
+  }
+
+  return {
+    field: 'date',
+    operator: 'between',
+    value: { start: startDate, end: endDate },
+    logic: 'AND',
+  }
+}
+
+export function calculatePeriodComparative(
+  entries: LogbookEntry[],
+  period: 'week' | 'month' | 'year'
+): ComparativeData[] {
+  const now = new Date()
+  let currentStart: Date,
+    previousStart: Date,
+    currentEnd: Date,
+    previousEnd: Date
+
+  switch (period) {
+    case 'week':
+      currentEnd = new Date(now)
+      currentStart = new Date(now)
+      currentStart.setDate(now.getDate() - 7)
+      previousEnd = new Date(currentStart)
+      previousStart = new Date(currentStart)
+      previousStart.setDate(currentStart.getDate() - 7)
+      break
+    case 'month':
+      currentEnd = new Date(now)
+      currentStart = new Date(now)
+      currentStart.setDate(now.getDate() - 30)
+      previousEnd = new Date(currentStart)
+      previousStart = new Date(currentStart)
+      previousStart.setDate(currentStart.getDate() - 30)
+      break
+    case 'year':
+      currentEnd = new Date(now)
+      currentStart = new Date(now)
+      currentStart.setDate(now.getDate() - 365)
+      previousEnd = new Date(currentStart)
+      previousStart = new Date(currentStart)
+      previousStart.setDate(currentStart.getDate() - 365)
+      break
+  }
+
+  // Filter entries for current and previous periods
+  const currentEntries = entries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= currentStart && date <= currentEnd
+  })
+
+  const previousEntries = entries.filter(e => {
+    const date = new Date(e.timestamp)
+    return date >= previousStart && date <= previousEnd
+  })
+
+  const currentTotal = currentEntries.reduce((sum, e) => sum + e.duration, 0)
+  const previousTotal = previousEntries.reduce((sum, e) => sum + e.duration, 0)
+  const change = currentTotal - previousTotal
+  const changePercent = previousTotal > 0 ? (change / previousTotal) * 100 : 0
+
+  return [
+    {
+      category: `${period.charAt(0).toUpperCase() + period.slice(1)} Practice Time`,
+      current: currentTotal,
+      previous: previousTotal,
+      change,
+      changePercent,
+    },
+  ]
+}
+
+export function calculatePeriodGroupedData(
+  entries: LogbookEntry[],
+  period: 'week' | 'month' | 'year'
+): GroupedData[] {
+  // Apply period filter - add temporary ID for internal use
+  const periodFilter = {
+    ...createPeriodFilter(period),
+    id: `temp-${period}-filter`,
+  }
+  const filteredEntries = applyFilters(entries, [periodFilter])
+
+  // Group by the appropriate time unit for the period
+  let groupingField: GroupingConfig['field']
+  switch (period) {
+    case 'week':
+      groupingField = 'date:day'
+      break
+    case 'month':
+      groupingField = 'date:week'
+      break
+    case 'year':
+      groupingField = 'date:month'
+      break
+  }
+
+  const grouping: GroupingConfig = {
+    field: groupingField,
+    order: 'desc',
+  }
+
+  return applyGrouping(filteredEntries, [grouping])
 }

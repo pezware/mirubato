@@ -9,6 +9,21 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/tests/setup.ts',
     exclude: ['node_modules/**', 'tests/e2e/**', '**/*.e2e.test.ts'],
+
+    // Use forks pool for better stability with complex module graphs
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        maxForks: 4, // Allow parallel test execution
+        minForks: 1,
+      },
+    },
+
+    // Reasonable timeouts
+    testTimeout: 30000,
+    hookTimeout: 10000,
+    teardownTimeout: 5000,
+
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [

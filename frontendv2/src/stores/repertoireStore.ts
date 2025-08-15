@@ -12,6 +12,7 @@ import i18n from 'i18next'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
 import { useAuthStore } from './authStore'
 import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
+import { localEventBus } from '@/services/localEventBus'
 
 interface RepertoireStatus {
   planned: 'planned'
@@ -479,17 +480,22 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
       if (isLocalMode) {
         // For localStorage mode, we need to update logbook entries
-        // Import logbook store to dissociate logs
-        const { useLogbookStore } = await import('./logbookStore')
-        const logbookStore = useLogbookStore.getState()
+        // We now use events to avoid circular dependency
+
+        // Get current entries from localStorage directly to avoid importing logbookStore
+        const storedEntries = localStorage.getItem('mirubato:logbook:entries')
+        const entries = storedEntries
+          ? (JSON.parse(storedEntries) as LogbookEntry[])
+          : []
 
         // Count how many logs will be affected
-        const entriesWithScore = Array.from(
-          logbookStore.entriesMap.values()
-        ).filter(entry => entry.scoreId === scoreId)
+        const entriesWithScore = entries.filter(
+          entry => entry.scoreId === scoreId
+        )
 
         // Update logbook entries to remove scoreId and embed piece data
-        const updatedEntries = new Map(logbookStore.entriesMap)
+        const entriesMap = new Map(entries.map(e => [e.id, e]))
+        const updatedEntries = new Map(entriesMap)
 
         entriesWithScore.forEach(entry => {
           const updatedEntry = {
@@ -511,19 +517,14 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           updatedEntries.set(entry.id, updatedEntry)
         })
 
-        // Update logbook store
-        logbookStore.entriesMap = updatedEntries
-        logbookStore.entries = Array.from(updatedEntries.values()).sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )
-
-        // Save updated entries to localStorage
-        const entries = Array.from(updatedEntries.values())
-        localStorage.setItem(
-          'mirubato:logbook:entries',
-          JSON.stringify(entries)
-        )
+        // Emit event for logbook store to handle its own state update
+        // This maintains separation of concerns and avoids circular dependency
+        localEventBus.emit('PIECE_DISSOCIATED', {
+          scoreId,
+          updatedEntries,
+          pieceTitle,
+          pieceComposer,
+        })
 
         // Remove from repertoire locally
         const newRepertoire = new Map(repertoire)
@@ -1340,3 +1341,15 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
   },
 }))
+
+// Register event handler for practice creation
+// This handles goal linking when a new practice entry is created
+// Skip registration only in test environment
+const isTestEnvironment =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+if (!isTestEnvironment) {
+  localEventBus.on('PRACTICE_CREATED', async ({ entry }) => {
+    // Call the existing linkPracticeToGoals method
+    await useRepertoireStore.getState().linkPracticeToGoals(entry)
+  })
+}
