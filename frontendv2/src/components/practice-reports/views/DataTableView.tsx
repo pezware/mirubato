@@ -190,8 +190,10 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => exportToCSV(currentData)}
-          disabled={currentData.length === 0}
+          onClick={() =>
+            exportToCSV(currentData.length > 0 ? currentData : entries)
+          }
+          disabled={entries.length === 0}
           className="flex-1 sm:flex-initial"
           data-testid="export-csv-button"
         >
@@ -200,8 +202,10 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => exportToJSON(currentData)}
-          disabled={currentData.length === 0}
+          onClick={() =>
+            exportToJSON(currentData.length > 0 ? currentData : entries)
+          }
+          disabled={entries.length === 0}
           className="flex-1 sm:flex-initial"
           data-testid="export-json-button"
         >

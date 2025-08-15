@@ -71,24 +71,29 @@ test.describe('Enhanced Reports - Core Tests', () => {
       })
 
       await test.step('Verify data view is loaded', async () => {
-        // The data tab should show either table or analytics view
-        // Look for the segmented control that allows switching between views
-        const segmentedControl = page.locator('role=tablist')
-        await expect(segmentedControl).toBeVisible({ timeout: 5000 })
+        // The data tab now shows the period presets and data table
+        // Wait for the data table to be visible
+        await page.waitForSelector('[data-testid="data-table"]', {
+          state: 'visible',
+          timeout: 5000,
+        })
 
-        // Verify we have the table/analytics toggle buttons
-        const tableButton = page.locator('button[role="tab"]:has-text("Table")')
-        const analyticsButton = page.locator(
-          'button[role="tab"]:has-text("Analytics")'
+        // Verify period presets are visible
+        const periodPresets = page.locator(
+          '[data-testid="period-preset-daily"], [data-testid="period-preset-week"], [data-testid="period-preset-month"], [data-testid="period-preset-year"]'
         )
+        const presetCount = await periodPresets.count()
+        expect(presetCount).toBeGreaterThan(0)
 
-        // At least one should be visible
-        const hasTableButton = await tableButton.isVisible().catch(() => false)
-        const hasAnalyticsButton = await analyticsButton
+        // Verify practice logs list is shown
+        const practiceLogsList = await page
+          .locator(
+            'text=/Practice Logs|Registros de práctica|Journaux de pratique|Übungsprotokolle|練習紀錄|练习记录/'
+          )
           .isVisible()
           .catch(() => false)
 
-        expect(hasTableButton || hasAnalyticsButton).toBeTruthy()
+        expect(practiceLogsList).toBeTruthy()
       })
 
       await test.step('Verify data content is displayed', async () => {
