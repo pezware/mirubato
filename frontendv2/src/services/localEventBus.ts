@@ -33,10 +33,7 @@ export type LocalEventHandler<T extends LocalEventType> = (
 ) => void | Promise<void>
 
 class LocalEventBus {
-  private handlers: Map<
-    LocalEventType,
-    Set<LocalEventHandler<LocalEventType>>
-  > = new Map()
+  private handlers: Map<LocalEventType, Set<LocalEventHandler<any>>> = new Map()
   private isDebugMode = process.env.NODE_ENV === 'development'
 
   /**
@@ -66,7 +63,7 @@ class LocalEventBus {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set())
     }
-    this.handlers.get(event)!.add(handler)
+    this.handlers.get(event)!.add(handler as LocalEventHandler<any>)
 
     if (this.isDebugMode) {
       console.log(`[LocalEventBus] Registered handler for ${event}`)
@@ -80,7 +77,7 @@ class LocalEventBus {
     const eventHandlers = this.handlers.get(event)
     if (!eventHandlers) return
 
-    eventHandlers.delete(handler)
+    eventHandlers.delete(handler as LocalEventHandler<any>)
 
     // Clean up empty sets
     if (eventHandlers.size === 0) {
