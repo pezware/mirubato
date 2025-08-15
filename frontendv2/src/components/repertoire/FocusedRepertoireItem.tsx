@@ -67,17 +67,6 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
   const needsAttention = daysSinceLastPractice && daysSinceLastPractice >= 5
 
-  // Determine status indicator color
-  const isActive = lastPracticeDate ? isToday(lastPracticeDate) : false
-  const indicatorClass =
-    item.status === 'polished'
-      ? 'bg-morandi-navy-500' // Dark morandi blue for polished pieces
-      : isActive
-        ? 'bg-green-500'
-        : needsAttention
-          ? 'bg-orange-500'
-          : 'bg-gray-300'
-
   // Format last practice time
   const lastPracticeText = lastPracticeDate
     ? isToday(lastPracticeDate)
@@ -98,10 +87,7 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
 
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-shadow">
-      <div className="flex items-start gap-4">
-        {/* Status Indicator */}
-        <div className={`w-1 h-12 rounded-full ${indicatorClass}`} />
-
+      <div className="flex items-start">
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-col gap-2">
