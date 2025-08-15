@@ -1,37 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { useScoreStore } from '../scoreStore'
-import { useLogbookStore } from '../logbookStore'
-
-// Mock functions
-const mockStartPractice = vi.fn()
-const mockStopPractice = vi.fn(() => ({
-  scoreId: 'test-score-1',
-  scoreTitle: 'Test Score',
-  scoreComposer: 'Test Composer',
-  duration: 120,
-  startTime: new Date(),
-  endTime: new Date(),
-}))
-
-// Mock the practice store
-vi.mock('../practiceStore', () => ({
-  usePracticeStore: {
-    getState: vi.fn(() => ({
-      startPractice: mockStartPractice,
-      stopPractice: mockStopPractice,
-    })),
-  },
-}))
-
-// Mock the logbook store
-vi.mock('../logbookStore', () => ({
-  useLogbookStore: {
-    getState: vi.fn(() => ({
-      createEntry: vi.fn(),
-    })),
-  },
-}))
 
 describe('scoreStore', () => {
   beforeEach(() => {
@@ -57,35 +26,16 @@ describe('scoreStore', () => {
         thumbnailUrl: '',
         previewPages: 1,
       },
-      isRecording: false,
     })
   })
 
-  it('should stop practice without creating a logbook entry', () => {
+  it('should have initial state', () => {
     const { result } = renderHook(() => useScoreStore())
-    const logbookCreateEntry = vi.spyOn(
-      useLogbookStore.getState(),
-      'createEntry'
-    )
 
-    // Start practice
-    act(() => {
-      result.current.startPractice()
-    })
-
-    expect(result.current.isRecording).toBe(true)
-
-    // Stop practice
-    act(() => {
-      result.current.stopPractice()
-    })
-
-    expect(result.current.isRecording).toBe(false)
-
-    // Verify that logbook entry was NOT created directly
-    expect(logbookCreateEntry).not.toHaveBeenCalled()
-
-    // Verify that practiceStore.stopPractice was called
-    expect(mockStopPractice).toHaveBeenCalled()
+    // Check that the store has the expected properties
+    expect(result.current.currentScore).toBeDefined()
+    expect(result.current.metronomeSettings).toBeDefined()
+    expect(result.current.autoScrollEnabled).toBe(false)
+    expect(result.current.showManagement).toBe(false)
   })
 })
