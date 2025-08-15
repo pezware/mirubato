@@ -1,428 +1,937 @@
-# CLAUDE.md - AI Agent Quick Reference
+# CLAUDE.md
 
-## 🚨 CRITICAL: Start Here
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-### Deployment Architecture (2025)
+# Mirubato Developer Guide
 
-- **Frontend & API**: Both are Cloudflare Workers (NOT Pages)
-- **Configuration**: Environment-based `wrangler.toml` files (no manual generation)
-- **Deployment**:
-  - **PR/Branch pushes**: Automatically deploy to staging environment
-  - **Main branch**: Automatically deploy to production
-  - Cloudflare handles deployments via GitHub integration
-- **Key Files**: `frontendv2/wrangler.toml`, `api/wrangler.toml`, `scores/wrangler.toml`
+## Table of Contents
 
-### Essential Commands
+1. [Quick Start (5 minutes)](#quick-start)
+2. [What is Mirubato?](#what-is-mirubato)
+3. [Cloudflare Architecture Deep Dive](#cloudflare-architecture)
+4. [Development Workflow](#development-workflow)
+5. [Testing Guidelines](#testing-guidelines)
+6. [Cloudflare Deployment & Operations](#cloudflare-deployment)
+7. [Core Features](#core-features)
+8. [UI Components](#ui-components)
+9. [API Reference](#api-reference)
+10. [Internationalization](#internationalization)
+11. [Cloudflare Debugging & Monitoring](#cloudflare-debugging)
+12. [Educational Context](#educational-context)
+13. [Version History](#version-history)
+
+---
+
+## 1. Quick Start (5 minutes) {#quick-start}
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm (`npm install -g pnpm`)
+- Cloudflare account (for deployment)
+
+### First Time Setup
 
 ```bash
-# Local Development
-npm install                    # Install all dependencies
-./start-scorebook.sh           # Start all services with proper domains
+# Clone and install
+git clone https://github.com/mirubato/mirubato.git
+cd mirubato
+pnpm install
 
-# Individual services (for debugging)
-cd api && wrangler dev --port 9797 --env local --local-protocol http     # http://api-mirubato.localhost:9797
-cd scores && wrangler dev --port 9788 --env local --local-protocol http  # http://scores-mirubato.localhost:9788
-cd frontendv2 && npm run dev                                             # http://www-mirubato.localhost:4000
-
-# API Development
-cd api && npm run dev          # Full dev workflow (build + server)
-cd api && npm run build        # Production build
-
-# Deployment (from respective directories)
-# Frontend (now frontendv2)
-cd frontendv2 && wrangler deploy             # Deploy to production (default)
-cd frontendv2 && wrangler deploy --env staging # Deploy to staging
-
-# API
-cd api && wrangler deploy                  # Deploy to production (default)
-cd api && wrangler deploy --env staging    # Deploy to staging
-
-# Scores
+# Start all services
 ./start-scorebook.sh
-cd scores && wrangler deploy               # Deploy to production (default)
-cd scores && wrangler deploy --env staging # Deploy to staging
+
+# Access the app
+# Frontend: http://www-mirubato.localhost:4000
+# API: http://api-mirubato.localhost:9797
+# Scores: http://scores-mirubato.localhost:9788
+# Dictionary: http://dictionary-mirubato.localhost:9799
 ```
 
-### Project Structure
-
-```
-mirubato/
-├── frontendv2/        # React app → Cloudflare Worker
-│   └── wrangler.toml  # All environments defined here
-├── api/               # REST API → Cloudflare Worker
-│   └── wrangler.toml  # All environments defined here
-├── scores/            # Scores service → Cloudflare Worker
-│   └── wrangler.toml  # All environments defined here
-└── config/
-    └── environments.json  # Domain and team configuration
-```
-
-### Local Development Architecture
-
-We use explicit localhost domains with ports to properly simulate production environment and catch CORS issues:
-
-- **Frontend**: `http://www-mirubato.localhost:4000` (Vite dev server)
-- **API**: `http://api-mirubato.localhost:9797` (Wrangler dev)
-- **Scores**: `http://scores-mirubato.localhost:9788` (Wrangler dev)
-
-This approach:
-
-- ✅ Catches CORS issues during development
-- ✅ Maintains service isolation
-- ✅ Uses consistent URLs across environments
-- ✅ Avoids mixing temporary Cloudflare URLs
-- ✅ Works without root privileges (no port 80)
-
-**Note**: The `.localhost` domains automatically resolve to 127.0.0.1 on most systems.
-
-## 🛠 Quick Debugging Reference
-
-For comprehensive debugging information, see **[docs/DEBUG.md](./docs/DEBUG.md)**
-
-### Quick Links
-
-- **Production Frontend**: `https://mirubato.com`
-- **Production API Health Check**: `https://api.mirubato.com/health`
-- **API Documentation**: `https://api.mirubato.com/docs`
-
-### Common Issues
-
-| Problem                  | See DEBUG.md Section         |
-| ------------------------ | ---------------------------- |
-| VexFlow "Too Many Ticks" | Known Issues #1              |
-| GraphQL 500 errors       | Known Issues #2              |
-| Mobile audio issues      | Known Issues #6              |
-| Type misalignment        | Common Development Issues #1 |
-| Memory leaks             | Common Development Issues #4 |
-
-## 📋 Development Checklist
-
-### Before Starting Work
-
-- [ ] Pull latest from main
-- [ ] Run `npm install` if package.json changed
-- [ ] Generate configs for your environment
-- [ ] Check `/health` endpoint if working with production
-
-### When Writing New Code
-
-- [ ] **Write tests FIRST** - Follow Test-Driven Development (TDD)
-- [ ] Ensure >80% test coverage (90% for critical paths)
-- [ ] No function is complete without tests
-- [ ] Tests are the primary metric of feature completeness
-
-### Before Committing
-
-- [ ] All tests pass with proper coverage
-- [ ] Let pre-commit hooks run (NEVER use `--no-verify`)
-- [ ] No `console.log` statements in code
-- [ ] No `any` types in TypeScript
-- [ ] **Use UI component library** - No native HTML buttons/inputs/modals
-- [ ] Update CLAUDE.md if you discover new patterns
-
-### Key Principles
-
-1. **Test First**: Write tests before implementation - tests define the spec
-2. **Education First**: Features must enhance sight-reading learning
-3. **Instrument Specific**: Guitar ≠ Piano (positions, fingerings, notation)
-4. **Mobile First**: Test on actual devices
-5. **Open Source**: Keep endpoints public for debugging
-6. **PATH** always use pwd to check what is current path
-7. **BRANCH** always check what is current branch, if at main branch, must create a new branch before editing.
-
-## 🎨 UI Component Usage (IMPORTANT)
-
-### Always Use the Component Library
-
-When creating or updating UI components:
-
-1. **Never use native HTML elements**:
-   - ❌ `<button>Click me</button>`
-   - ✅ `<Button>Click me</Button>`
-2. **Import from the UI library**:
-
-   ```tsx
-   import { Button, Modal, Card, Input, Select } from '@/components/ui'
-   ```
-
-3. **Available Components**:
-   - **Button**: 5 variants (primary, secondary, ghost, danger, icon)
-   - **Modal**: Accessible modals with multiple sizes
-   - **Card**: Container with borders, elevation, or ghost styles
-   - **Input/Textarea**: Form inputs with error states
-   - **Select/MultiSelect**: Dropdown components
-   - **Loading**: Spinner, dots, pulse, skeleton
-   - **Toast**: Notification system
-
-4. **Documentation**: See `frontendv2/docs/COMPONENT-LIBRARY.md`
-
-## 🎯 Current Focus Areas
-
-### Immediate Priority: MVP Simplification (2 Weeks)
-
-1. **Week 1**: Stabilization & Bug Fixes
-   - Fix VexFlow rendering bugs
-   - Fix audio playback issues
-   - Ensure mobile compatibility
-   - Disable complex modules temporarily
-
-2. **Week 2**: Content & Polish
-   - Add 10 curated pieces (5 piano, 5 guitar)
-   - Implement preset practice workouts
-   - Simplify UI to single "Practice" mode
-
-### Technical Debt (Ongoing)
-
-1. **Type Alignment** (IN PROGRESS)
-   - Unify types across backend/frontend/shared
-   - Setup GraphQL Code Generator
-   - Remove duplicate type definitions
-
-2. **Code Quality**
-   - Remove console.log statements
-   - ✅ EnhancedPracticeReports.tsx refactored (1515 → 662 lines, 8+ components extracted)
-   - ✅ Auto-logging module added for reusable practice tracking across features
-   - Replace `any` types with proper types
-   - Continue refactoring ~150 files still using native buttons
-
-### Core Technologies
-
-- **Frontend**: React + TypeScript + Vite + Tailwind + Zustand
-- **UI Components**: Custom component library in `frontendv2/src/components/ui/`
-  - Always use Button, Modal, Card, Input, Select, Toast components
-  - Import from `@/components/ui`
-  - See `frontendv2/docs/COMPONENT-LIBRARY.md` for usage
-- **API**: Cloudflare Workers + Hono + D1 (SQLite) + REST
-- **Auth**: Magic links + Google OAuth + JWT
-- **Music**: VexFlow.js (notation) + Tone.js (audio)
-
-### Module Implementation Guidelines
-
-When implementing any new module, **ALWAYS** follow these steps:
-
-1. **Write Tests First (TDD)**
-   - Create comprehensive test suite BEFORE implementation
-   - Aim for >80% coverage (90% for critical modules)
-   - Tests define the specification
-
-2. **Add TypeDoc Documentation**
-   - Document all public interfaces with JSDoc comments
-   - Include examples in documentation
-   - Run `npm run docs:generate` to verify
-
-3. **Verify Test Coverage**
-   - Run `npm test -- --coverage` for the module
-   - Ensure coverage meets requirements
-   - No module is complete without proper tests
-
-Example workflow:
+### Most Common Commands
 
 ```bash
-# 1. Create test file first
-touch src/modules/newModule/NewModule.test.ts
+# Development
+pnpm install                  # Install dependencies
+./start-scorebook.sh          # Start all services
+pnpm test                     # Run all tests across workspaces
+pnpm run build                # Build all services for production
 
-# 2. Write tests that define behavior
-# 3. Implement module to make tests pass
-# 4. Add JSDoc comments
-# 5. Generate and verify documentation
-npm run docs:generate
+# Individual services (debugging)
+cd frontendv2 && pnpm run dev # Frontend only
+cd api && pnpm run dev        # API only
+cd scores && pnpm run dev     # Scores service only
+cd dictionary && pnpm run dev # Dictionary service only
 
-# 6. Check coverage
-npm test -- src/modules/newModule --coverage
+# Testing
+pnpm test                     # All tests
+pnpm run test:unit            # Unit tests only
+pnpm run test:integration     # Integration tests only
+pnpm run test:coverage        # Tests with coverage report
+pnpm test -- src/specific.test.ts  # Single test file
+
+# Linting & Type Checking
+pnpm run lint                 # Lint all workspaces
+pnpm run type-check           # TypeScript type checking
+pnpm run format               # Format with Prettier
+
+# Internationalization
+cd frontendv2 && pnpm run sync:i18n     # Sync translations
+cd frontendv2 && pnpm run validate:i18n # Validate completeness
+cd frontendv2 && pnpm run i18n:fix      # Fix and sort keys
+
+# Deployment
+cd [service] && wrangler deploy --env staging  # Deploy to staging
+cd [service] && wrangler deploy                # Deploy to production
 ```
 
-### Auto-Logging Module (July 2025)
+### Key Principles - MUST READ
 
-The auto-logging module provides automatic practice session tracking across features:
+1. **Test First**: Write tests before implementation
+2. **Use Component Library**: Never use native HTML elements - always import from `@/components/ui`
+3. **Check Branch**: Never edit on main branch - create feature branches
+4. **Run Hooks**: Never skip pre-commit hooks with `--no-verify` - they run linting and tests
+5. **Use ast-grep**: For syntax-aware code searches
+6. **Monorepo Structure**: Use workspace commands (`pnpm -r`) for cross-workspace operations
+7. **TypeScript Strict**: No `any` types, always use proper typing
+8. **Pre-commit Quality**: Husky runs lint-staged which lints and tests only changed files
 
-**Usage Example:**
+---
+
+## 2. What is Mirubato? {#what-is-mirubato}
+
+Mirubato is a comprehensive music education platform designed to help musicians improve their sight-reading skills through:
+
+- **Practice Logging**: Track practice sessions with detailed analytics
+- **Sheet Music Library**: Browse, import, and organize sheet music
+- **Goal Setting**: Create and track musical goals
+- **Practice Tools**: Metronome, Circle of Fifths, practice counter
+
+Built on Cloudflare's edge infrastructure for global performance and offline-first functionality.
+
+---
+
+## 3. Cloudflare Architecture Deep Dive {#cloudflare-architecture}
+
+### Why Cloudflare Workers?
+
+Mirubato leverages Cloudflare's edge computing platform for:
+
+- **Global Distribution**: Runs in 300+ data centers worldwide
+- **Zero Cold Starts**: V8 isolates provide instant response times
+- **Auto-Scaling**: Handles millions of requests without configuration
+- **Cost Efficiency**: Pay only for actual compute time used
+
+### Edge-First Microservices Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Cloudflare Edge Network               │
+│                    (300+ Global Locations)               │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+    ┌─────────────────┼─────────────┬────────────────────┐
+    │                 │             │                    │
+┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
+│  Frontend     │  │   API       │  │   Scores    │  │ Dictionary  │
+│  Worker       │  │   Worker    │  │   Worker    │  │   Worker    │
+│ (Static SPA)  │  │ (REST API)  │  │ (PDF/AI)    │  │ (Lookup)    │
+└───┬──────────┘  └──┬──────────┘  └──┬──────────┘  └──┬──────────┘
+    │                 │                 │                 │
+┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
+│ Assets (CDN)  │  │ D1 Database │  │ D1 + R2     │  │ D1 Database │
+│               │  │ KV Cache    │  │ KV + Queue  │  │ KV Cache    │
+└───────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
+```
+
+### Cloudflare Services Used
+
+| Service               | Purpose           | Usage in Mirubato                      |
+| --------------------- | ----------------- | -------------------------------------- |
+| **Workers**           | Edge compute      | All microservices run as Workers       |
+| **D1**                | Edge SQL database | User data, scores metadata, dictionary |
+| **R2**                | Object storage    | PDF files, images, audio files         |
+| **KV**                | Key-value store   | Session cache, API responses, catalog  |
+| **Queues**            | Async processing  | PDF processing, email sending          |
+| **AI**                | Machine learning  | Score analysis, metadata extraction    |
+| **Browser Rendering** | Headless browser  | PDF preview generation                 |
+| **Rate Limiting**     | API protection    | Prevent abuse, ensure fair usage       |
+
+### Build & Bundle Process
+
+#### Frontend (React SPA as Worker)
+
+```bash
+# 1. Vite builds React app to static files
+pnpm run build  # → dist/ folder
+
+# 2. Wrangler deploys with Worker wrapper
+wrangler deploy  # → Serves SPA with routing
+```
+
+The frontend Worker (`frontendv2/src/index.js`) handles:
+
+- Static asset serving from `ASSETS` binding
+- SPA routing (returns index.html for client routes)
+- Proper Content-Type headers
+- 404 fallback for client-side routing
+
+#### Backend Services (API Workers)
+
+```bash
+# 1. TypeScript compilation (type checking only)
+tsc --noEmit
+
+# 2. Wrangler bundles and deploys
+wrangler deploy  # → Deploys TypeScript directly
+```
+
+Workers use:
+
+- **Hono**: Lightweight router optimized for Workers
+- **Direct TypeScript**: No build step needed
+- **Tree shaking**: Automatic dead code elimination
+
+### Environment Configuration (wrangler.toml)
+
+```toml
+# Core configuration
+name = "mirubato-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Bindings for Cloudflare services
+[[d1_databases]]
+binding = "DB"
+database_name = "mirubato-prod"
+database_id = "31ecc854-aecf-4994-8bda-7a9cd3055122"
+
+[[kv_namespaces]]
+binding = "MUSIC_CATALOG"
+id = "b04ae504f7884fc180d27c9320b378f6"
+
+[[r2_buckets]]
+binding = "SCORES_BUCKET"
+bucket_name = "mirubato-scores-production"
+
+# Advanced features
+[ai]
+binding = "AI"
+
+[browser]
+binding = "BROWSER"
+
+[[queues.producers]]
+binding = "PDF_QUEUE"
+queue = "pdf-processing"
+```
+
+### Edge Computing Patterns
+
+#### 1. Request Routing
 
 ```typescript
-import { usePracticeTracking, PracticeSummaryModal } from '@/modules/auto-logging'
-
-function MyPracticeComponent() {
-  const {
-    isTracking,
-    formattedTime,
-    showSummary,
-    pendingSession,
-    start,
-    stop,
-    confirmSave,
-    dismissSummary,
-  } = usePracticeTracking({
-    type: 'metronome', // or 'score', 'counter', 'custom'
-    metadata: {
-      title: 'Practice Session',
-      instrument: 'PIANO',
-      // ... other metadata
-    },
-  })
-
-  return (
-    <>
-      <Button onClick={isTracking ? stop : start}>
-        {isTracking ? `Stop (${formattedTime})` : 'Start Practice'}
-      </Button>
-
-      <PracticeSummaryModal
-        isOpen={showSummary}
-        onClose={dismissSummary}
-        onSave={confirmSave}
-        onDiscard={dismissSummary}
-        duration={pendingSession?.duration || 0}
-        metadata={pendingSession?.metadata || {}}
-      />
-    </>
-  )
+// All requests hit the nearest edge location
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    // Request handled at edge, not origin server
+    return app.fetch(request, env)
+  },
 }
 ```
 
-**Key Features:**
-
-- Automatic session tracking with start/stop/pause/resume
-- Real-time duration display
-- Summary modal before saving to logbook
-- Configurable auto-logging preferences
-- TypeScript support with comprehensive types
-- Integrated with Metronome and Scorebook features
-
-### API Development Workflow
-
-**IMPORTANT**: The API uses REST endpoints with TypeScript interfaces for type safety.
-
-```bash
-# API Development:
-cd api && npm run dev          # Start local API server
-cd api && npm run test         # Run API tests
-cd api && npm run type-check   # Verify TypeScript types
-
-# Frontend API Integration:
-# Types are defined directly in frontendv2/src/api/ files
-# No code generation needed - just TypeScript interfaces
-```
-
-**API Structure**: `api/src/api/routes.ts` defines all endpoints
-
-### Musical Implementation
+#### 2. Edge Caching Strategy
 
 ```typescript
-// Guitar: positions (I-XIX), strings, fingerings (p,i,m,a)
-// Piano: grand staff, hand independence, fingerings (1-5)
+// Multi-layer caching
+const cache = caches.default // Cloudflare edge cache
+const kvCache = env.KV // Application cache
 
-// Always handle audio context for mobile
-await Tone.start() // Required for mobile browsers
+// Check edge cache first
+let response = await cache.match(request)
+if (!response) {
+  // Check KV cache
+  const cached = await kvCache.get(key)
+  if (cached) {
+    response = new Response(cached)
+  } else {
+    // Generate fresh response
+    response = await generateResponse()
+    // Cache at both layers
+    await Promise.all([
+      cache.put(request, response.clone()),
+      kvCache.put(key, response.clone().text(), { expirationTtl: 3600 }),
+    ])
+  }
+}
 ```
 
-### Database Pattern
+#### 3. Database at the Edge (D1)
 
-```sql
--- D1 uses SQLite syntax
--- Always include proper indexes
-CREATE INDEX idx_sessions_user ON practice_sessions(user_id);
+```typescript
+// SQLite queries run at edge location
+const results = await env.DB.prepare(
+  'SELECT * FROM users WHERE id = ?'
+).bind(userId).all()
+
+// Transactions supported
+await env.DB.batch([
+  env.DB.prepare('INSERT INTO logs...').bind(...),
+  env.DB.prepare('UPDATE users...').bind(...)
+])
 ```
 
-## 🚀 Deployment Workflow
+#### 4. Async Processing (Queues)
 
-### Configuration System
+```typescript
+// Producer: Send to queue
+await env.PDF_QUEUE.send({
+  scoreId,
+  userId,
+  operation: 'extract-metadata',
+})
 
-1. **Environment-based**: All environments defined in `wrangler.toml`
-2. **Production default**: Top-level config is production (no --env flag needed)
-3. **Local development**: Uses `--env local` for placeholder values
-4. **Automatic deployments**:
-   - Push to PR → Cloudflare deploys to staging automatically
-   - Merge to main → Cloudflare deploys to production automatically
-   - No manual `wrangler deploy` needed for staging/production
-
-### Environment Detection
-
-- Local: `localhost:3000`
-- Staging: `mirubato.pezware.workers.dev`
-- Production: `mirubato.com`, `api.mirubato.com`
-
-### Database Configuration
-
-**Local Development**: Backend and API share the same D1 database locally
-
-- Run `api/scripts/setup-shared-database.sh` after initial setup
-- This creates a symlink so API uses backend's database
-- Ensures data consistency during development
-- See `api/scripts/MIGRATION_README.md` for details
-
-### Database Migrations
-
-**IMPORTANT**: Always use the safe migration script that includes automatic backups:
-
-```bash
-cd api/scripts
-
-# Safe migration with automatic backup (recommended)
-./safe-migrate.sh                  # Staging (default)
-./safe-migrate.sh --env production  # Production (requires confirmation)
-
-# Direct migrations (only for development)
-cd backend
-npm run db:migrate                  # Local only
-npm run db:migrate:dev              # Development environment
-npm run db:migrate:staging          # Staging environment
-npm run db:migrate:production       # Production environment
+// Consumer: Process in background
+export default {
+  async queue(batch: MessageBatch, env: Env): Promise<void> {
+    for (const message of batch.messages) {
+      await processScore(message.body)
+      message.ack() // Mark as processed
+    }
+  },
+}
 ```
 
-**Backup Procedures**: See `api/scripts/BACKUP_README.md` for detailed backup and restore instructions.
+### Service Communication
 
-## 🧪 Testing Guidelines
+Services communicate via HTTP with JWT authentication:
+
+```typescript
+// API calling Scores service
+const response = await fetch(`${env.SCORES_URL}/api/score/${id}`, {
+  headers: {
+    Authorization: `Bearer ${serviceToken}`,
+    'Content-Type': 'application/json',
+  },
+})
+```
+
+### Zero-Downtime Deployments
+
+Cloudflare handles deployments with:
+
+1. **Gradual rollout**: New version deployed to subset of traffic
+2. **Instant rollback**: Previous version kept warm
+3. **No cold starts**: Workers stay warm across deployments
+4. **Atomic updates**: All-or-nothing deployment
+
+### Cost Optimization
+
+- **Request pricing**: $0.50 per million requests
+- **CPU pricing**: $0.02 per million CPU milliseconds
+- **Included resources**:
+  - 10M requests/month free
+  - 30M CPU ms/month free
+  - D1: 5GB storage free
+  - R2: 10GB storage free
+
+---
+
+## 4. Development Workflow {#development-workflow}
+
+### Before Starting Work - Checklist
+
+- [ ] Pull latest from main: `git pull origin main`
+- [ ] Create feature branch: `git checkout -b feature/your-feature`
+- [ ] Install dependencies: `pnpm install`
+- [ ] Start services: `./start-scorebook.sh`
+- [ ] Check health endpoints
+
+### Development Flow
+
+```
+1. Write Tests First (TDD)
+   └── Create test file
+   └── Write failing tests
+   └── Implement feature
+   └── Make tests pass
+
+2. Development
+   └── Use component library
+   └── Follow TypeScript types
+   └── No console.log
+   └── No 'any' types
+
+3. Before Commit
+   └── Run tests: pnpm test
+   └── Check types: pnpm run type-check
+   └── Let hooks run (no --no-verify)
+   └── Update docs if needed
+```
+
+### Local Development URLs
+
+| Service    | URL                                       | Port | Health Check |
+| ---------- | ----------------------------------------- | ---- | ------------ |
+| Frontend   | http://www-mirubato.localhost:4000        | 4000 | N/A (SPA)    |
+| API        | http://api-mirubato.localhost:9797        | 9797 | /health      |
+| Scores     | http://scores-mirubato.localhost:9788     | 9788 | /health      |
+| Dictionary | http://dictionary-mirubato.localhost:9799 | 9799 | /health      |
+
+**Note**: The `./start-scorebook.sh` script automatically starts API and Scores services first, seeds test data, then starts the frontend.
+
+---
+
+## 5. Testing Guidelines {#testing-guidelines}
 
 ### Test-Driven Development (TDD)
 
-1. **Write the test first** - The test defines the expected behavior
-2. **Run the test** - It should fail (red)
-3. **Write minimal code** - Just enough to make the test pass (green)
-4. **Refactor** - Improve the code while keeping tests passing
+```bash
+# 1. Create test file first
+touch src/components/MyComponent.test.tsx
+
+# 2. Write tests that define behavior
+# 3. Run tests (should fail)
+pnpm test
+
+# 4. Implement feature
+# 5. Make tests pass
+# 6. Check coverage
+pnpm test -- --coverage
+```
 
 ### Coverage Requirements
 
-- **Overall**: Minimum 80% coverage
-- **Critical Paths**: Minimum 90% coverage (auth, payments, core features)
-- **New Code**: Must have tests before merging
+- **Minimum**: 80% overall coverage
+- **Critical paths**: 90% (auth, payments)
+- **New features**: Must have tests before merge
 
 ### Running Tests
 
 ```bash
-# Run all tests with coverage
-npm run test:coverage
+# All tests across all workspaces
+pnpm test
 
-# Run specific workspace tests
-npm test -w @mirubato/frontend
-npm test -w @mirubato/backend
+# Unit tests only (faster)
+pnpm run test:unit
 
-# Run specific test file
-npm test -- src/utils/audioManager.test.ts
+# Integration tests
+pnpm run test:integration
+
+# With coverage report
+pnpm run test:coverage
+
+# Specific workspace
+cd frontendv2 && pnpm test
+cd api && pnpm test
+
+# Specific test file
+cd frontendv2 && pnpm test -- src/utils/audioManager.test.ts
+
+# E2E tests (Playwright)
+cd frontendv2 && pnpm run test:e2e
 
 # Watch mode for development
-npm test -- --watch
+cd frontendv2 && pnpm test -- --watch
+
+# Related tests only (lint-staged integration)
+cd frontendv2 && vitest related --run --no-coverage --passWithNoTests
 ```
 
-### Current Test Status (as of July 2025)
+---
 
-- **Frontend Coverage**: ~29% (Target: 80%)
-  - ✅ AuthContext: 100%
-  - ✅ notationRenderer: 100%
-  - ✅ audioManager: 91.54%
-  - ✅ Practice page: 91.66%
-  - ✅ Auto-logging module: 100%
-  - ✅ All tests passing: 270+ unit tests, 65 E2E tests (including smoke tests)
-- **Backend Coverage**: ~43% (Target: 80%)
-  - ✅ practice resolver: 100%
-  - ✅ sheetMusic resolver: 100%
-  - ✅ auth service: 100%
+## 6. Cloudflare Deployment & Operations {#cloudflare-deployment}
 
-## 📚 Key Documentation
+### Deployment Architecture
 
-- **Development**: `docs/DEVELOPMENT.md` (setup, development, deployment)
-- **Infrastructure**: `docs/DESIGN.md`
-- **Roadmap**: `docs/ROADMAP.md` (includes detailed test coverage status)
+```
+GitHub Push → GitHub Actions → Wrangler CLI → Cloudflare Edge
+     │              │                │              │
+     └── Trigger    └── Build/Test   └── Deploy    └── Global Distribution
+```
 
-## 🎓 Educational Context
+### Wrangler CLI - The Deployment Tool
+
+```bash
+# Install globally
+npm install -g wrangler
+
+# Authenticate (one-time)
+wrangler login
+
+# Deploy commands
+wrangler deploy              # Production deployment
+wrangler deploy --env staging # Staging deployment
+wrangler dev                 # Local development server
+```
+
+### Local Development with Wrangler
+
+```bash
+# Start local development (mimics Cloudflare environment)
+cd api && wrangler dev --port 9797 --env local --local-protocol http
+
+# Key flags explained:
+# --local: Use local D1/KV/R2 instead of remote
+# --port: Specify port number
+# --env: Use environment config from wrangler.toml
+# --local-protocol: Use HTTP for local development
+```
+
+### Multi-Environment Strategy
+
+Each service has 3-4 environments:
+
+| Environment    | Purpose                | Custom Domain        | Persistence |
+| -------------- | ---------------------- | -------------------- | ----------- |
+| **local**      | Developer machine      | \*.localhost         | Ephemeral   |
+| **staging**    | Pre-production testing | staging.mirubato.com | Persistent  |
+| **production** | Live users             | mirubato.com         | Persistent  |
+
+### Database Operations with D1
+
+#### Migrations
+
+```bash
+# Create migration
+wrangler d1 migrations create DB "add_user_preferences"
+
+# Apply migrations
+wrangler d1 migrations apply DB --local      # Local
+wrangler d1 migrations apply DB --env staging # Staging
+wrangler d1 migrations apply DB              # Production
+
+# Safe migration script (with backups)
+cd api/scripts && ./safe-migrate.sh --env production
+```
+
+#### Database Backups
+
+```bash
+# Export database
+wrangler d1 export DB --output backup.sql --env production
+
+# Query database directly
+wrangler d1 execute DB --command "SELECT COUNT(*) FROM users" --env production
+```
+
+### Object Storage with R2
+
+```bash
+# Create bucket
+wrangler r2 bucket create mirubato-scores-production
+
+# List buckets
+wrangler r2 bucket list
+
+# Upload file directly
+wrangler r2 object put mirubato-scores-production/test.pdf --file ./test.pdf
+```
+
+### KV Namespace Operations
+
+```bash
+# Create namespace
+wrangler kv:namespace create "MUSIC_CATALOG"
+
+# Write to KV
+wrangler kv:key put --binding MUSIC_CATALOG "key" "value"
+
+# List keys
+wrangler kv:key list --binding MUSIC_CATALOG --prefix "user:"
+```
+
+### Secrets Management
+
+```bash
+# Set secrets (never commit these!)
+wrangler secret put JWT_SECRET --env production
+wrangler secret put MAGIC_LINK_SECRET --env production
+wrangler secret put SENDGRID_API_KEY --env production
+
+# List secrets (names only, not values)
+wrangler secret list --env production
+
+# Delete secret
+wrangler secret delete JWT_SECRET --env production
+```
+
+### Environment URLs & Health Checks
+
+| Service    | Local                                            | Staging                                        | Production                             |
+| ---------- | ------------------------------------------------ | ---------------------------------------------- | -------------------------------------- |
+| Frontend   | http://www-mirubato.localhost:4000               | https://staging.mirubato.com                   | https://mirubato.com                   |
+| API        | http://api-mirubato.localhost:9797/health        | https://api-staging.mirubato.com/health        | https://api.mirubato.com/health        |
+| Scores     | http://scores-mirubato.localhost:9788/health     | https://scores-staging.mirubato.com/health     | https://scores.mirubato.com/health     |
+| Dictionary | http://dictionary-mirubato.localhost:9799/health | https://dictionary-staging.mirubato.com/health | https://dictionary.mirubato.com/health |
+
+---
+
+## 7. Core Features {#core-features}
+
+### Logbook - Practice Tracking
+
+- Manual entry and timer modes
+- Calendar heatmap visualization
+- Advanced filtering and analytics
+- CSV/JSON export
+- Auto-logging integration
+
+### Scorebook - Sheet Music Library
+
+- PDF and image upload
+- AI metadata extraction
+- Collections and organization
+- Practice integration
+- Public/private libraries
+
+### Repertoire & Goals System
+
+Track musical progress with:
+
+- **Status tracking**: Planned → Learning → Working → Polished → Performance Ready
+- **Goal integration**: Link goals to specific pieces
+- **Practice history**: View all sessions per piece
+- **Auto-prompt**: Add pieces after practice
+
+### Toolbox - Practice Tools
+
+- **Metronome**: Multiple patterns, auto-logging
+- **Circle of Fifths**: Interactive theory tool
+- **Practice Counter**: Visual repetition tracking
+
+---
+
+## 8. UI Components {#ui-components}
+
+### Component Library Usage
+
+```tsx
+// ❌ NEVER do this
+;<button>Click me</button>
+
+// ✅ ALWAYS do this
+import { Button } from '@/components/ui'
+;<Button>Click me</Button>
+```
+
+### Available Components
+
+| Component | Variants                                | Usage              |
+| --------- | --------------------------------------- | ------------------ |
+| Button    | primary, secondary, ghost, danger, icon | Actions, forms     |
+| Modal     | sm, md, lg, xl                          | Dialogs, forms     |
+| Card      | default, bordered, elevated, ghost      | Content containers |
+| Input     | text, email, password, number           | Form fields        |
+| Select    | single, multi                           | Dropdowns          |
+| Toast     | success, error, warning, info           | Notifications      |
+| Loading   | spinner, dots, pulse, skeleton          | Loading states     |
+
+### Typography Design System (Updated v1.7.2)
+
+**✅ FULLY IMPLEMENTED**: Comprehensive typography unification completed in v1.7.2 with centralized component system and ESLint enforcement.
+
+Based on extensive research using Gemini AI for multilingual font selection, Mirubato uses a three-font system:
+
+**Font Families**:
+
+- **Noto Serif** (`font-serif`): Music piece titles and composers (excellent multilingual support for Latin, CJK characters)
+- **Inter** (`font-inter`): UI elements, metadata, body text
+- **Lexend** (`font-lexend`): Headers and section titles
+
+**Implementation Strategy**:
+
+```tsx
+// ✅ ALWAYS use Typography components for music content
+import { MusicTitle, MusicComposer, MusicMetadata } from '@/components/ui'
+
+// Music content
+<MusicTitle>{score.title}</MusicTitle>
+<MusicComposer>{score.composer}</MusicComposer>
+<MusicMetadata>Opus 1</MusicMetadata>
+
+// General typography with semantic variants
+<Typography variant="h1">Page Title</Typography>
+<Typography variant="body">UI content</Typography>
+```
+
+**Typography Hierarchy**:
+
+1. **Music Titles**: Noto Serif, `text-lg sm:text-xl font-medium` - Use `<MusicTitle>` component
+2. **Music Composers**: Noto Serif, `text-base font-normal` - Use `<MusicComposer>` component
+3. **Section Headers**: Lexend, `text-xl font-light` - Use `<Typography variant="h2">`
+4. **UI Text**: Inter, `text-sm text-gray-600` - Use `<Typography variant="body">`
+5. **Metadata**: Inter, `text-xs text-gray-500` - Use `<MusicMetadata>` component
+
+**Performance Optimization**:
+
+- Font loading reduced by 40% (300KB → 180KB)
+- Optimized Google Fonts URL with only required weights
+- ESLint rules prevent regression to generic font classes
+
+**ESLint Integration**:
+
+```javascript
+// Custom rules prevent typography inconsistencies
+'no-restricted-syntax': [
+  'error',
+  {
+    selector: 'JSXAttribute[name.name="className"] Literal[value=/font-(sans|mono)\\b/]',
+    message: 'Use font-inter for UI text, font-lexend for headers, or font-serif for music content instead of generic font classes.'
+  }
+]
+```
+
+**Design Rationale**:
+
+- Noto Serif provides academic/classical feel appropriate for music education
+- Creates visual contrast between content (serif) and UI (sans-serif)
+- Aligns with Morandi aesthetic - sophisticated without being flashy
+- Ensures readability across all supported languages
+- **Centralized maintenance** through Typography component system
+- **Developer experience** improved with semantic components and linting
+
+### Chart.js Integration
+
+```typescript
+// Proper typing pattern
+const chartData = useMemo<ChartData<'line'>>(
+  () => ({
+    labels: dates,
+    datasets: [
+      {
+        label: 'Practice Time',
+        data: values,
+        borderColor: 'rgb(75, 192, 192)',
+      },
+    ],
+  }),
+  [dates, values]
+)
+
+// Never use 'any'
+// ❌ const chartData: any = {...}
+// ✅ const chartData: ChartData<'line'> = {...}
+```
+
+---
+
+## 9. API Reference {#api-reference}
+
+### REST Endpoints
+
+```typescript
+// Authentication
+POST   /api/auth/google      // Google OAuth
+POST   /api/auth/magic-link  // Send magic link
+GET    /api/auth/verify      // Verify magic link
+
+// Logbook
+GET    /api/logbook          // Get entries
+POST   /api/logbook          // Create entry
+PUT    /api/logbook/:id      // Update entry
+DELETE /api/logbook/:id      // Delete entry
+
+// Repertoire
+GET    /api/repertoire       // Get repertoire
+POST   /api/repertoire       // Add to repertoire
+PUT    /api/repertoire/:id   // Update status
+
+// Goals
+GET    /api/goals            // Get goals
+POST   /api/goals            // Create goal
+PUT    /api/goals/:id        // Update progress
+```
+
+### Health Endpoints
+
+- `/health` - Comprehensive health check
+- `/livez` - Liveness probe
+- `/readyz` - Readiness probe
+- `/metrics` - Prometheus metrics
+
+---
+
+## 10. Internationalization {#internationalization}
+
+### Supported Languages
+
+- 🇺🇸 English (en) - Reference
+- 🇪🇸 Spanish (es)
+- 🇫🇷 French (fr)
+- 🇩🇪 German (de)
+- 🇹🇼 Traditional Chinese (zh-TW)
+- 🇨🇳 Simplified Chinese (zh-CN)
+
+### Translation Workflow
+
+```bash
+# 1. Add English key first
+# Edit: src/locales/en/common.json
+
+# 2. Sync to other languages
+pnpm run sync:i18n
+
+# 3. Validate completeness
+pnpm run validate:i18n
+
+# 4. Fix and sort
+pnpm run i18n:fix
+```
+
+### Usage in Code
+
+```tsx
+import { useTranslation } from 'react-i18next'
+
+function Component() {
+  const { t } = useTranslation('common')
+
+  return <Button>{t('button.save')}</Button>
+}
+```
+
+---
+
+## 11. Cloudflare Debugging & Monitoring {#cloudflare-debugging}
+
+### Cloudflare-Specific Debug Tools
+
+#### 1. Wrangler Tail (Real-time Logs)
+
+```bash
+# Stream logs from production
+wrangler tail --env production
+
+# Filter for errors only
+wrangler tail --env production --search "error" --status 500
+
+# Format as JSON for parsing
+wrangler tail --env production --format json | jq '.'
+
+# Save logs to file
+wrangler tail --env production > debug.log
+```
+
+#### 2. Local Debugging with Miniflare
+
+```bash
+# Run with debug output
+wrangler dev --local --log-level debug
+
+# Inspect bindings
+wrangler dev --local --inspect
+
+# Test with production-like environment
+wrangler dev --env staging --remote
+```
+
+#### 3. Workers Analytics
+
+```typescript
+// Add custom analytics
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const start = Date.now()
+
+    try {
+      const response = await handleRequest(request, env)
+
+      // Log to Analytics Engine
+      env.ANALYTICS.writeDataPoint({
+        blobs: [request.url],
+        doubles: [Date.now() - start],
+        indexes: [response.status.toString()],
+      })
+
+      return response
+    } catch (error) {
+      // Error tracking
+      console.error('Worker error:', error)
+      return new Response('Internal Error', { status: 500 })
+    }
+  },
+}
+```
+
+### Common Cloudflare Issues & Solutions
+
+| Problem                      | Symptoms                                 | Solution                                               |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
+| **CPU Limit Exceeded**       | 503 errors, "Worker exceeded CPU limits" | Optimize code, use Streams API, implement caching      |
+| **Memory Limit Hit**         | Worker crashes, 500 errors               | Reduce in-memory data, use KV/D1 for storage           |
+| **Subrequest Limit**         | "Too many subrequests" error             | Batch requests, use Promise.all()                      |
+| **Script Size Too Large**    | Deployment fails                         | Tree-shake dependencies, lazy load modules             |
+| **D1 Query Timeout**         | Database queries fail                    | Add indexes, optimize queries, use prepared statements |
+| **KV Eventually Consistent** | Stale data after writes                  | Use cache.waitUntil(), implement read-after-write      |
+| **R2 Upload Fails**          | Large file uploads timeout               | Use multipart uploads, stream data                     |
+
+### Debug Headers
+
+Add debug headers to trace requests:
+
+```typescript
+// Add tracing headers
+response.headers.set('X-Worker-Version', env.WORKER_VERSION)
+response.headers.set('X-Request-ID', crypto.randomUUID())
+response.headers.set('X-Edge-Location', request.cf?.colo || 'unknown')
+response.headers.set('X-Processing-Time', `${Date.now() - start}ms`)
+```
+
+### Health Check Endpoints
+
+Every service should implement:
+
+```typescript
+// Comprehensive health check
+app.get('/health', async c => {
+  const checks = {
+    service: 'api',
+    version: c.env.WORKER_VERSION,
+    environment: c.env.ENVIRONMENT,
+    timestamp: new Date().toISOString(),
+    checks: {
+      database: 'unknown',
+      cache: 'unknown',
+      external: 'unknown',
+    },
+  }
+
+  // Check D1
+  try {
+    await c.env.DB.prepare('SELECT 1').first()
+    checks.checks.database = 'healthy'
+  } catch {
+    checks.checks.database = 'unhealthy'
+  }
+
+  // Check KV
+  try {
+    await c.env.CACHE.get('health-check')
+    checks.checks.cache = 'healthy'
+  } catch {
+    checks.checks.cache = 'unhealthy'
+  }
+
+  const isHealthy = Object.values(checks.checks).every(v => v === 'healthy')
+  return c.json(checks, isHealthy ? 200 : 503)
+})
+```
+
+### Quick Debug URLs
+
+| Check                   | URL                                                   |
+| ----------------------- | ----------------------------------------------------- |
+| API Health              | https://api.mirubato.com/health                       |
+| API Metrics             | https://api.mirubato.com/metrics                      |
+| Frontend Version        | https://mirubato.com/ (check X-Worker-Version header) |
+| Scores Queue Status     | https://scores.mirubato.com/health                    |
+| Dictionary Cache Status | https://dictionary.mirubato.com/health                |
+
+---
+
+## 12. Educational Context {#educational-context}
 
 ### Sight-Reading Method
 
@@ -438,81 +947,144 @@ npm test -- --watch
 
 ---
 
+## 13. Version History {#version-history}
+
+### Current Version: 1.7.0 (August 2025)
+
+#### Focused UI Design System
+
+- New layout: Desktop sidebar + mobile bottom tabs
+- Simplified navigation: 6 → 4 sections
+- Practice timer feature
+- Enhanced repertoire timeline
+- Complete i18n (200+ translations fixed)
+
+#### Mobile UI Improvements
+
+- **Typography Enhancement**: Added Noto Serif font for better multilingual support
+- **Vertical Layout**: Optimized for small screens (iPhone SE and up)
+- **Expandable Details**: View-only mode with Eye icon for full entry details
+- **Day Separators**: Clear visual distinction between practice days
+- **Icon Consistency**: Replaced emojis with Tabler Icons throughout
+- **Touch Targets**: Improved to 44x44px for better accessibility
+
+#### Security & Infrastructure
+
+- Fixed tar-fs, ws, esbuild vulnerabilities
+- All services unified at v1.7.0
+- Migrated from npm to pnpm
+- @cloudflare/puppeteer downgraded to 0.0.11
+
+---
+
+## Quick Decision Trees
+
+### "Which command should I use?"
+
+```
+Need to...
+├── Start development → ./start-scorebook.sh
+├── Run tests → pnpm test
+├── Deploy to staging → wrangler deploy --env staging
+├── Deploy to production → wrangler deploy
+├── Add translations → pnpm run sync:i18n
+└── Debug issues → Check /health endpoints first
+```
+
+### "Where is the code for...?"
+
+```
+Feature location...
+├── UI Components → frontendv2/src/components/
+├── API Routes → api/src/api/routes.ts
+├── Practice Logging → frontendv2/src/components/logbook/
+├── Sheet Music → scores/src/
+├── Translations → frontendv2/src/locales/
+└── Tests → [feature]/__tests__/ or [feature].test.ts
+```
+
+### "Which Cloudflare service for...?"
+
+```
+Need to store...
+├── User data/metadata → D1 (SQL database)
+├── Files (PDFs, images) → R2 (object storage)
+├── Session/cache data → KV (key-value store)
+├── Temporary data → TransformStream in memory
+├── Configuration → Environment variables or KV
+└── Logs/metrics → Analytics Engine
+
+Need to process...
+├── Async/background tasks → Queues
+├── AI/ML operations → Workers AI
+├── PDF rendering → Browser Rendering API
+├── Real-time data → WebSockets (Durable Objects)
+├── Scheduled tasks → Cron Triggers
+└── Image manipulation → Image Resizing API
+```
+
+### "How to debug Cloudflare issues?"
+
+```
+Issue type...
+├── 500 errors → wrangler tail --env production
+├── Performance → Check CPU time in logs
+├── Database → wrangler d1 execute --command "EXPLAIN QUERY PLAN..."
+├── Cache issues → Check KV TTL and Cache-Control headers
+├── Deploy failed → Check bundle size and script limits
+└── Auth issues → Verify JWT secret in environment
+```
+
+---
+
+## Additional Resources
+
+- **Detailed Docs**: See `/docs` folder
+- **Roadmap**: `docs/ROADMAP.md`
+- **Architecture**: `docs/DESIGN.md`
+- **Debug Guide**: `docs/DEBUG.md`
+- **User Flows**: `docs/USER_FLOWS.md`
+
+## Using Gemini CLI for Large Codebase Analysis
+
+When analyzing large codebases or multiple files that might exceed context limits, use the Gemini CLI:
+
+```bash
+# Analyze entire codebase
+gemini -p "@./ Give me an overview of this project"
+
+# Check implementation across specific workspaces
+gemini -p "@frontendv2/src/ @api/src/ Has authentication been implemented?"
+
+# Verify patterns in frontend
+gemini -p "@frontendv2/src/ List all React hooks that handle WebSocket connections"
+
+# Check Cloudflare Workers patterns
+gemini -p "@api/src/ @scores/src/ @dictionary/src/ Show all Hono route handlers"
+
+# Analyze test coverage
+gemini -p "@frontendv2/src/ @*/src/**/*.test.* What components lack test coverage?"
+```
+
+## Workspace Structure
+
+Mirubato uses pnpm workspaces with the following structure:
+
+```
+mirubato/
+├── frontendv2/          # React SPA (Vite + TypeScript)
+├── api/                 # Main API Worker (Hono + D1)
+├── scores/              # Sheet Music Worker (PDF + AI)
+├── dictionary/          # Music Terms Worker (AI + KV)
+└── package.json         # Root workspace configuration
+```
+
+**Workspace Commands**:
+
+```bash
+pnpm -r run build        # Run build in all workspaces
+pnpm -r run test         # Run tests in all workspaces
+pnpm --filter @mirubato/frontendv2 run dev  # Run specific workspace
+```
+
 **Remember**: When in doubt, check the production endpoints first. They're your debugging lifeline.
-
-# Using Gemini CLI for Large Codebase Analysis
-
-When analyzing large codebases or multiple files that might exceed context limits, use the Gemini CLI with its massive
-context window. Use `gemini -p` to leverage Google Gemini's large context capacity.
-
-## File and Directory Inclusion Syntax
-
-Use the `@` syntax to include files and directories in your Gemini prompts. The paths should be relative to WHERE you run the
-gemini command:
-
-### Examples:
-
-**Single file analysis:**
-gemini -p "@src/main.py Explain this file's purpose and structure"
-
-Multiple files:
-gemini -p "@package.json @src/index.js Analyze the dependencies used in the code"
-
-Entire directory:
-gemini -p "@src/ Summarize the architecture of this codebase"
-
-Multiple directories:
-gemini -p "@src/ @tests/ Analyze test coverage for the source code"
-
-Current directory and subdirectories:
-gemini -p "@./ Give me an overview of this entire project"
-
-# Or use --all_files flag:
-
-gemini --all_files -p "Analyze the project structure and dependencies"
-
-Implementation Verification Examples
-
-Check if a feature is implemented:
-gemini -p "@src/ @lib/ Has dark mode been implemented in this codebase? Show me the relevant files and functions"
-
-Verify authentication implementation:
-gemini -p "@src/ @middleware/ Is JWT authentication implemented? List all auth-related endpoints and middleware"
-
-Check for specific patterns:
-gemini -p "@src/ Are there any React hooks that handle WebSocket connections? List them with file paths"
-
-Verify error handling:
-gemini -p "@src/ @api/ Is proper error handling implemented for all API endpoints? Show examples of try-catch blocks"
-
-Check for rate limiting:
-gemini -p "@backend/ @middleware/ Is rate limiting implemented for the API? Show the implementation details"
-
-Verify caching strategy:
-gemini -p "@src/ @lib/ @services/ Is Redis caching implemented? List all cache-related functions and their usage"
-
-Check for specific security measures:
-gemini -p "@src/ @api/ Are SQL injection protections implemented? Show how user inputs are sanitized"
-
-Verify test coverage for features:
-gemini -p "@src/payment/ @tests/ Is the payment processing module fully tested? List all test cases"
-
-When to Use Gemini CLI
-
-Use gemini -p when:
-
-- Analyzing entire codebases or large directories
-- Comparing multiple large files
-- Need to understand project-wide patterns or architecture
-- Current context window is insufficient for the task
-- Working with files totaling more than 100KB
-- Verifying if specific features, patterns, or security measures are implemented
-- Checking for the presence of certain coding patterns across the entire codebase
-
-Important Notes
-
-- Paths in @ syntax are relative to your current working directory when invoking gemini
-- The CLI will include file contents directly in the context
-- No need for --yolo flag for read-only analysis
-- Gemini's context window can handle entire codebases that would overflow Claude's context
-- When checking implementations, be specific about what you're looking for to get accurate results

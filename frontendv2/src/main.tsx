@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
 import './i18n/config'
+import './utils/chartSetup' // Initialize Chart.js before any components
 import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 

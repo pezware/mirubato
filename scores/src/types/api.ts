@@ -11,14 +11,14 @@ import { z } from 'zod'
 // } from './score'
 
 // Validation schemas
-export const InstrumentSchema = z.enum(['PIANO', 'GUITAR', 'BOTH'])
-export const DifficultySchema = z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'])
+export const InstrumentSchema = z.enum(['piano', 'guitar', 'both'])
+export const DifficultySchema = z.enum(['beginner', 'intermediate', 'advanced'])
 export const StylePeriodSchema = z.enum([
-  'BAROQUE',
-  'CLASSICAL',
-  'ROMANTIC',
-  'MODERN',
-  'CONTEMPORARY',
+  'baroque',
+  'classical',
+  'romantic',
+  'modern',
+  'contemporary',
 ])
 export const ScoreFormatSchema = z.enum([
   'pdf',

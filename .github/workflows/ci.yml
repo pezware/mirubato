@@ -16,20 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check formatting with Prettier
-        run: npx prettier --check .
+        run: pnpm exec prettier --check .
 
   type-check:
     name: Type Check
@@ -37,38 +42,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run TypeScript type check
-        run: npm run type-check
+        run: pnpm run type-check
 
   test:
     name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        workspace: [frontendv2, api, scores]
+        workspace: [frontendv2, api, scores, dictionary]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests for ${{ matrix.workspace }}
-        run: npm run test:unit -w @mirubato/${{ matrix.workspace }}
+        run: pnpm --filter @mirubato/${{ matrix.workspace }} run test:unit
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -84,21 +99,26 @@ jobs:
     needs: [lint, type-check, test]
     strategy:
       matrix:
-        workspace: [frontendv2, api, scores]
+        workspace: [frontendv2, api, scores, dictionary]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build ${{ matrix.workspace }}
-        run: npm run build -w @mirubato/${{ matrix.workspace }}
+        run: pnpm --filter @mirubato/${{ matrix.workspace }} run build
 
   e2e-tests:
     name: E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
@@ -112,17 +132,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Get Playwright version
         id: playwright-version
         run: |
-          cd frontendv2
-          PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('./frontendv2/package.json').devDependencies['@playwright/test'])")
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
@@ -134,19 +158,17 @@ jobs:
           restore-keys: |
             playwright-browsers-${{ runner.os }}-
 
-      - name: Install dependencies for frontendv2 only
-        run: npm ci --workspace @mirubato/frontendv2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: cd frontendv2 && pnpm exec playwright install chromium
 
       - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: cd frontendv2 && pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests for frontendv2 (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-        run: npm run test:e2e -w @mirubato/frontendv2 -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: cd frontendv2 && pnpm exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           CI: true
 
@@ -166,21 +188,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium
-        working-directory: frontendv2
+        run: cd frontendv2 && pnpm exec playwright install chromium
+
+      - name: Install Playwright system dependencies
+        run: cd frontendv2 && pnpm exec playwright install-deps chromium
 
       - name: Run smoke tests
-        run: npm run test:e2e -w @mirubato/frontendv2 -- --grep "@smoke" --project=chromium
+        run: cd frontendv2 && pnpm exec playwright test --grep "@smoke" --project=chromium
 
       - name: Upload smoke test report
         uses: actions/upload-artifact@v4

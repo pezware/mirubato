@@ -45,7 +45,7 @@ describe('Scores API', () => {
     // Check the response structure is correct regardless of health status
     expect(json.status).toMatch(/healthy|degraded/)
     expect(json.service).toBe('mirubato-scores')
-    expect(json.version).toBe('1.1.0')
+    expect(json.version).toBe('1.7.0')
     expect(json.environment).toBe('test')
     expect(json.services).toBeDefined()
 

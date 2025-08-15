@@ -138,15 +138,25 @@ export function usePracticeAnalytics({
       (a, b) => new Date(b).getTime() - new Date(a).getTime()
     )
 
-    if (sortedDates.length > 0 && sortedDates[0] === today.toDateString()) {
-      currentStreak = 1
-      const checkDate = new Date(today)
+    if (sortedDates.length > 0) {
+      // Check if today has practice
+      const todayHasPractice = practiceDates.has(today.toDateString())
+      const streakStartDate = new Date(today)
 
-      for (let i = 1; i < sortedDates.length; i++) {
-        checkDate.setDate(checkDate.getDate() - 1)
-        if (sortedDates[i] === checkDate.toDateString()) {
+      if (!todayHasPractice) {
+        // If no practice today, start counting from yesterday
+        streakStartDate.setDate(streakStartDate.getDate() - 1)
+      }
+
+      // Count consecutive days from the start date
+      const checkDate = new Date(streakStartDate)
+
+      for (const sortedDate of sortedDates) {
+        if (sortedDate === checkDate.toDateString()) {
           currentStreak++
-        } else {
+          checkDate.setDate(checkDate.getDate() - 1)
+        } else if (new Date(sortedDate) < checkDate) {
+          // Gap found, stop counting
           break
         }
       }

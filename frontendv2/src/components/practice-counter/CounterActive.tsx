@@ -59,6 +59,7 @@ export const CounterActive: React.FC<CounterActiveProps> = ({
     if (mode === 'down' && count === 0 && repetitions.length > 0) {
       handleFinish()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count, mode])
 
   const handleCountClick = () => {

@@ -30,8 +30,8 @@ enhancedImportHandler.post('/pdf', async c => {
     let scoreData = {
       title: file.name.replace('.pdf', '') || 'Untitled Score',
       composer: 'Unknown',
-      instrument: 'PIANO' as const,
-      difficulty: 'INTERMEDIATE' as const,
+      instrument: 'piano' as const,
+      difficulty: 'intermediate' as const,
       source: 'upload' as const,
       tags: [] as string[],
     }
@@ -186,9 +186,9 @@ enhancedImportHandler.post('/imslp', async c => {
     const scoreId = nanoid()
 
     // Determine instrument from instrumentation
-    let instrument: Instrument = 'PIANO'
+    let instrument: Instrument = 'piano'
     if (metadata.instrumentation?.toLowerCase().includes('guitar')) {
-      instrument = 'GUITAR'
+      instrument = 'guitar'
     }
 
     await c.env.DB.prepare(
@@ -205,7 +205,7 @@ enhancedImportHandler.post('/imslp', async c => {
         metadata.composer || 'Unknown Composer',
         metadata.opus || null,
         instrument,
-        'INTERMEDIATE', // Default difficulty
+        'intermediate', // Default difficulty
         'imslp',
         validatedData.url,
         JSON.stringify(['imslp', 'imported']),
@@ -267,8 +267,25 @@ enhancedImportHandler.post('/batch', async c => {
 
     for (const url of urls) {
       try {
-        // Determine if URL is IMSLP
-        if (url.includes('imslp.org')) {
+        // Parse and validate URL
+        let parsedUrl: URL
+        try {
+          parsedUrl = new URL(url)
+        } catch (e) {
+          results.push({
+            url,
+            error: 'Invalid URL format',
+          })
+          continue
+        }
+
+        // Determine if URL is IMSLP (check hostname properly)
+        const isImslp =
+          parsedUrl.hostname === 'imslp.org' ||
+          parsedUrl.hostname === 'www.imslp.org' ||
+          parsedUrl.hostname.endsWith('.imslp.org')
+
+        if (isImslp) {
           const scoreId = nanoid()
 
           // Queue for processing

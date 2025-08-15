@@ -1,0 +1,61 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "未找到結果"
+    },
+    "entryCard": {
+      "deleteEntry": "刪除條目",
+      "editEntry": "編輯條目",
+      "viewDetails": "檢視詳情"
+    },
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "最大值",
+      "minPlaceholder": "最小值"
+    },
+    "goals": {
+      "measuresPlaceholder": "例如，8-12, 15-16, 24-32"
+    },
+    "imageLoading": {
+      "loading": "正在載入圖片..."
+    },
+    "metronome": {
+      "collapse": "收起",
+      "expand": "展開節拍器",
+      "playPause": "播放/暫停"
+    },
+    "multiSelect": {
+      "placeholder": "選擇多個選項"
+    },
+    "practiceReports": {
+      "editPieceName": "編輯樂曲名稱"
+    },
+    "scoreUpload": {
+      "composerPlaceholder": "作曲家（可選 - AI 將提取）",
+      "titlePlaceholder": "標題（可選 - AI 將提取）",
+      "urlPlaceholder": "https://example.com/score.pdf"
+    },
+    "scoreViewer": {
+      "nextPage": "下一頁",
+      "previousPage": "上一頁"
+    },
+    "segmentedControl": {
+      "ariaLabel": "視圖選擇器"
+    },
+    "select": {
+      "placeholder": "選擇選項"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "啟用即時同步（實驗性）",
+      "manualSync": "手動同步"
+    },
+    "tabs": {
+      "ariaLabel": "標籤頁"
+    },
+    "timePicker": {
+      "am": "上午",
+      "placeholder": "HH:MM",
+      "pm": "下午"
+    }
+  }
+}

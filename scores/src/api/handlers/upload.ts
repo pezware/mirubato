@@ -82,8 +82,8 @@ export async function uploadScore(c: Context) {
             scoreId,
             metadata.title || 'Untitled Score',
             metadata.composer || 'Unknown',
-            metadata.instrument || 'GENERAL',
-            metadata.difficulty || 'INTERMEDIATE',
+            metadata.instrument || 'piano',
+            metadata.difficulty || 'intermediate',
             result.key,
             userId,
             'pending'

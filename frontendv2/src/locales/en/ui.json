@@ -1,0 +1,61 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "No results found"
+    },
+    "select": {
+      "placeholder": "Select an option"
+    },
+    "multiSelect": {
+      "placeholder": "Select options"
+    },
+    "timePicker": {
+      "placeholder": "HH:MM",
+      "am": "AM",
+      "pm": "PM"
+    },
+    "tabs": {
+      "ariaLabel": "Tabs"
+    },
+    "imageLoading": {
+      "loading": "Loading image..."
+    },
+    "segmentedControl": {
+      "ariaLabel": "View selector"
+    },
+    "metronome": {
+      "playPause": "Play/Pause",
+      "expand": "Expand metronome",
+      "collapse": "Collapse"
+    },
+    "syncIndicator": {
+      "manualSync": "Manual sync",
+      "enableRealTimeSync": "Enable real-time sync (experimental)"
+    },
+    "scoreViewer": {
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "entryCard": {
+      "viewDetails": "View details",
+      "editEntry": "Edit entry",
+      "deleteEntry": "Delete entry"
+    },
+    "practiceReports": {
+      "editPieceName": "Edit piece name"
+    },
+    "scoreUpload": {
+      "titlePlaceholder": "Title (optional - AI will extract)",
+      "composerPlaceholder": "Composer (optional - AI will extract)",
+      "urlPlaceholder": "https://example.com/score.pdf"
+    },
+    "goals": {
+      "measuresPlaceholder": "e.g., 8-12, 15-16, 24-32"
+    },
+    "filters": {
+      "minPlaceholder": "Min",
+      "maxPlaceholder": "Max",
+      "defaultValuePlaceholder": "0"
+    }
+  }
+}

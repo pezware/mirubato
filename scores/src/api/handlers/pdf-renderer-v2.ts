@@ -208,7 +208,14 @@ async function renderPage(
       quality: params.format === 'png' ? undefined : params.quality,
     })
 
-    return screenshot
+    // Convert Buffer to ArrayBuffer if needed
+    if (screenshot instanceof Buffer) {
+      return screenshot.buffer.slice(
+        screenshot.byteOffset,
+        screenshot.byteOffset + screenshot.byteLength
+      )
+    }
+    return screenshot as ArrayBuffer
   } finally {
     await browser.close()
   }

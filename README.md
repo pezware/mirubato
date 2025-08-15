@@ -6,28 +6,32 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 
 ## Features
 
-🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 🌐 Open source (MIT)
+🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 📚 Repertoire & goals tracking • 🎼 Sheet music library • 🌐 Open source (MIT)
 
 ## Quick Start
+
+**Prerequisites**: Install pnpm globally first: `npm install -g pnpm`
 
 ```bash
 git clone https://github.com/pezware/mirubato.git
 cd mirubato
-npm install
-npm run dev                    # Frontend: www-mirubato.localhost:4000
-cd api && npm run dev          # API: api-mirubato.localhost:9797
-cd ../scores && npm run dev    # Scores: scores-mirubato.localhost:9788
+pnpm install
+pnpm run dev                    # Frontend: www-mirubato.localhost:4000
+cd api && pnpm run dev          # API: api-mirubato.localhost:9797
+cd ../scores && pnpm run dev    # Scores: scores-mirubato.localhost:9788
 ```
 
 ## Documentation
 
-| Type            | Link                                                         | Description                       |
-| --------------- | ------------------------------------------------------------ | --------------------------------- |
-| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**   |
-| 📖 Development  | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                 | Setup and deployment instructions |
-| 🏗️ Architecture | [Design Docs](docs/DESIGN.md)                                | System design and architecture    |
-| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting     |
-| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API       |
+| Type            | Link                                                         | Description                         |
+| --------------- | ------------------------------------------------------------ | ----------------------------------- |
+| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**     |
+| 📖 Development  | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                 | Setup and deployment instructions   |
+| 🏗️ Architecture | [Design Docs](docs/DESIGN.md)                                | System design and architecture      |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting       |
+| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API         |
+| 🔄 User Flows   | [User Flow Diagrams](docs/USER_FLOWS.md)                     | Complete user journey documentation |
+| 🎯 Repertoire   | [Repertoire & Goals](docs/REPERTOIRE_GOALS_PLAN.md)          | Feature implementation details      |
 
 ## Technology Stack
 
@@ -47,15 +51,15 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 
 ## Project Info
 
-|                   |                                                                    |
-| ----------------- | ------------------------------------------------------------------ |
-| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
-| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
-| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
-| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
-| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
-| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
-| **🚧 Status**     | v1.4.0 Released - Logbook MVP Complete (290+ tests passing)        |
+|                   |                                                                         |
+| ----------------- | ----------------------------------------------------------------------- |
+| **🌐 Website**    | [mirubato.com](https://mirubato.com)                                    |
+| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)                  |
+| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato)      |
+| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)             |
+| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                                 |
+| **📄 License**    | MIT ([details](docs/LICENSE.md))                                        |
+| **🚧 Status**     | v1.7.0 Released - Focused UI Design & Complete i18n (297 tests passing) |
 
 ---
 

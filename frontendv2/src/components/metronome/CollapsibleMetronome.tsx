@@ -8,6 +8,7 @@ import {
   Minus,
   Volume2,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getPatternMetronome } from '../../services/patternMetronomeService'
 import metronomeData from '../../data/metronomePatterns.json'
 import type { MetronomePattern } from '../../types/metronome'
@@ -30,6 +31,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   position: propPosition,
   onTripleClick,
 }) => {
+  const { t } = useTranslation('ui')
   const { settings, updateSettings } = useMetronomeSettings()
 
   // Use prop position if provided, otherwise use settings position
@@ -107,16 +109,19 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       // Always stop metronome when component unmounts
       metronome.stop()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle tempo changes
   useEffect(() => {
     metronome.setTempo(settings.bpm)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.volume])
 
   // Handle pattern changes while playing
@@ -131,6 +136,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
       }
       metronome.setPatterns(trimmedPatterns)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator
@@ -288,7 +294,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               className={`w-12 h-12 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
                 isFlashing && isPlaying ? 'scale-110 bg-morandi-purple-500' : ''
               }`}
-              title="Play/Pause"
+              title={t('components.metronome.playPause')}
             >
               {isPlaying ? <Pause size={18} /> : <Play size={18} />}
             </button>
@@ -308,25 +314,11 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
               <div className="text-sm font-semibold text-morandi-stone-700">
                 {settings.beatsPerMeasure}/{settings.beatValue}
               </div>
-              {isPlaying && (
-                <div className="flex justify-center mt-1 space-x-1">
-                  {Array.from({ length: settings.beatsPerMeasure }, (_, i) => (
-                    <div
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-100 ${
-                        i === currentBeat
-                          ? 'bg-morandi-purple-400 scale-150'
-                          : 'bg-morandi-stone-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
             <button
               className="w-12 h-12 text-morandi-stone-400 flex items-center justify-center hover:text-morandi-stone-600"
-              title="Expand metronome"
+              title={t('components.metronome.expand')}
             >
               <ChevronLeft size={18} />
             </button>
@@ -344,7 +336,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                   updateSettings({ isExpanded: false })
                 }}
                 className="text-morandi-stone-400 hover:text-morandi-stone-600"
-                title="Collapse"
+                title={t('components.metronome.collapse')}
               >
                 <ChevronRight size={18} />
               </button>
@@ -496,6 +488,10 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                               patterns[layer.id as keyof PatternState][i]
                                 ? layer.color + ' opacity-80'
                                 : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                            } ${
+                              i === currentBeat && isPlaying
+                                ? 'shadow-md shadow-morandi-purple-400/50 ring-1 ring-morandi-purple-400'
+                                : ''
                             }`}
                           />
                         )

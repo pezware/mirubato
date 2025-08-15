@@ -1,25 +1,76 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AnalyticsData } from '../../hooks/usePracticeAnalytics'
-import { Card } from '../ui/Card'
-import { ChevronRight } from 'lucide-react'
+import { Edit2 } from 'lucide-react'
+import { EnhancedAnalyticsData } from '../../types/reporting'
+import { EditPieceModal } from './EditPieceModal'
+import Button from '../ui/Button'
+import { useLogbookStore } from '../../stores/logbookStore'
+import { useRepertoireStore } from '../../stores/repertoireStore'
+import { generateNormalizedScoreId } from '../../utils/scoreIdNormalizer'
+import { toast } from '../../utils/toast'
+import { reportsCache } from '../../utils/reportsCacheManager'
 
 interface PiecesStatisticsProps {
-  analytics: AnalyticsData
+  analytics: EnhancedAnalyticsData
   selectedPiece: string | null
   selectedComposer: string | null
-  setSelectedPiece: (piece: string) => void
   formatDuration: (minutes: number) => string
+  setSelectedPiece?: (piece: string) => void
 }
 
 export function PiecesStatistics({
   analytics,
   selectedPiece,
   selectedComposer,
-  setSelectedPiece,
   formatDuration,
+  setSelectedPiece,
 }: PiecesStatisticsProps) {
-  const { t } = useTranslation(['reports'])
+  const { t } = useTranslation('ui')
+  const { repertoire } = useRepertoireStore()
+  const [editingPiece, setEditingPiece] = useState<{
+    title: string
+    composer?: string
+  } | null>(null)
 
+  // Helper function to get repertoire status for a piece
+  const getPieceRepertoireStatus = (pieceKey: string): string | null => {
+    // Parse the piece key to extract title and composer
+    const parts = pieceKey.split(' - ')
+    let title: string
+    let composer: string | undefined
+
+    if (parts.length > 1) {
+      composer = parts[0]
+      title = parts.slice(1).join(' - ')
+    } else {
+      title = pieceKey
+      composer = undefined
+    }
+
+    // Generate normalized scoreId
+    const scoreId = generateNormalizedScoreId(title, composer)
+
+    // Look up in repertoire
+    const repertoireItem = repertoire.get(scoreId)
+
+    return repertoireItem?.status || null
+  }
+
+  // Helper function to get status bar color
+  const getStatusBarColor = (status: string | null): string => {
+    switch (status) {
+      case 'learning':
+        return 'bg-morandi-navy-400' // Lighter navy for learning
+      case 'polished':
+        return 'bg-morandi-navy-600' // Darker navy for polished
+      case 'planned':
+        return 'bg-morandi-navy-300' // Lightest navy for planned
+      case 'dropped':
+        return 'bg-gray-300' // Gray for dropped
+      default:
+        return 'bg-gray-300'
+    }
+  }
   // Get piece stats - either for selected piece/composer or top pieces
   const getPieceStats = () => {
     if (selectedPiece) {
@@ -53,131 +104,115 @@ export function PiecesStatistics({
 
   const pieceStats = getPieceStats()
 
-  // Calculate composer stats if composer is selected
-  const getComposerStats = () => {
-    if (!selectedComposer || selectedPiece) return null
+  const handleEditPiece = (key: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent row click
 
-    let totalTime = 0
-    let totalSessions = 0
-    const techniques = new Set<string>()
-    let lastPracticed = ''
+    // Find the actual piece data from log entries
+    let actualPiece: { title: string; composer?: string } | null = null
 
-    analytics.pieceStats.forEach((stats, pieceKey) => {
-      if (pieceKey.startsWith(selectedComposer + ' - ')) {
-        totalTime += stats.totalDuration
-        totalSessions += stats.count
-        stats.techniques.forEach(t => techniques.add(t))
-        if (
-          !lastPracticed ||
-          new Date(stats.lastPracticed) > new Date(lastPracticed)
-        ) {
-          lastPracticed = stats.lastPracticed
+    // Search through all entries to find the first occurrence of this piece
+    for (const entry of analytics.filteredEntries) {
+      for (const piece of entry.pieces) {
+        const pieceKey = piece.composer
+          ? `${piece.composer} - ${piece.title}`
+          : piece.title
+
+        if (pieceKey === key) {
+          actualPiece = {
+            title: piece.title,
+            composer: piece.composer || undefined,
+          }
+          break
         }
       }
-    })
+      if (actualPiece) break
+    }
 
-    return {
-      totalTime,
-      totalSessions,
-      techniques: Array.from(techniques),
-      lastPracticed,
+    // If we found the actual piece data, use it; otherwise fall back to parsing the key
+    if (actualPiece) {
+      setEditingPiece(actualPiece)
+    } else {
+      // Fallback: parse the key to extract composer and title
+      const parts = key.split(' - ')
+      if (parts.length > 1) {
+        setEditingPiece({
+          composer: parts[0],
+          title: parts.slice(1).join(' - '),
+        })
+      } else {
+        setEditingPiece({
+          title: key,
+        })
+      }
     }
   }
 
-  const composerStats = getComposerStats()
+  const { updatePieceName } = useLogbookStore()
+
+  const handleSavePiece = async (
+    oldPiece: { title: string; composer?: string },
+    newPiece: { title: string; composer?: string }
+  ) => {
+    try {
+      const updatedCount = await updatePieceName(oldPiece, newPiece)
+      toast.success(`Updated ${updatedCount} entries`)
+      setEditingPiece(null)
+
+      // Clear the analytics cache to force recalculation
+      reportsCache.clear()
+
+      // Update selectedPiece if it was the edited piece
+      const oldKey = oldPiece.composer
+        ? `${oldPiece.composer} - ${oldPiece.title}`
+        : oldPiece.title
+      const newKey = newPiece.composer
+        ? `${newPiece.composer} - ${newPiece.title}`
+        : newPiece.title
+
+      if (selectedPiece === oldKey && setSelectedPiece) {
+        setSelectedPiece(newKey)
+      }
+    } catch (_error) {
+      toast.error('Failed to update piece name')
+    }
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Selected Piece/Composer Summary */}
-      {(selectedPiece || selectedComposer) && (
-        <Card className="bg-white border border-morandi-stone-200 p-4">
-          {selectedPiece && (
-            <>
-              <h3 className="font-medium text-morandi-stone-900 mb-2">
-                {selectedPiece.split(' - ')[1]}
-              </h3>
-              <p className="text-sm text-morandi-stone-600 mb-3">
-                {selectedPiece.split(' - ')[0]}
-              </p>
-            </>
-          )}
-          {selectedComposer && !selectedPiece && (
-            <h3 className="font-medium text-morandi-stone-900 mb-3">
-              {selectedComposer}
-            </h3>
-          )}
-
-          {selectedPiece && pieceStats[0] && (
-            <PieceStatsDisplay
-              stats={pieceStats[0]}
-              formatDuration={formatDuration}
-              t={t}
-            />
-          )}
-
-          {composerStats && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-2xl font-bold text-morandi-stone-900">
-                  {formatDuration(composerStats.totalTime)}
-                </p>
-                <p className="text-xs text-morandi-stone-600">
-                  {t('reports:totalTime')}
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-morandi-stone-900">
-                  {composerStats.totalSessions}
-                </p>
-                <p className="text-xs text-morandi-stone-600">
-                  {t('reports:sessions')}
-                </p>
-              </div>
-              {composerStats.lastPracticed && (
-                <div className="col-span-2">
-                  <p className="text-sm text-morandi-stone-600">
-                    {t('reports:lastPracticed')}:{' '}
-                    {new Date(composerStats.lastPracticed).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-              {composerStats.techniques.length > 0 && (
-                <div className="col-span-2">
-                  <p className="text-sm text-morandi-stone-600 mb-2">
-                    {t('reports:techniquesPracticed')}:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {composerStats.techniques.map(technique => (
-                      <span
-                        key={technique}
-                        className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-700 rounded-md text-xs"
-                      >
-                        {technique}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </Card>
-      )}
-
+    <div className="space-y-4" data-testid="pieces-statistics">
       {/* Pieces List */}
-      <div className="space-y-2">
+      <div className="space-y-1 sm:space-y-2">
         {pieceStats.map(piece => {
+          const pieceStatus = getPieceRepertoireStatus(piece.key)
+          const statusBarColor = getStatusBarColor(pieceStatus)
+
           return (
             <div
               key={piece.key}
-              className="p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer"
-              onClick={() => setSelectedPiece(piece.key)}
+              className="p-2 sm:p-3 bg-white border border-morandi-stone-200 rounded-lg hover:bg-morandi-stone-50 transition-colors cursor-pointer group"
+              onClick={() => setSelectedPiece?.(piece.key)}
             >
               <div className="flex items-center justify-between">
+                {/* Status indicator bar */}
+                <div
+                  className={`w-1 h-8 rounded-full mr-3 flex-shrink-0 ${statusBarColor}`}
+                />
+
                 <div className="flex-1">
-                  <h4 className="font-medium text-morandi-stone-900">
-                    {piece.key}
-                  </h4>
-                  <div className="flex items-center gap-4 mt-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-morandi-stone-900">
+                      {piece.key}
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={e => handleEditPiece(piece.key, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                      title={t('components.practiceReports.editPieceName')}
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-4 mt-0.5 sm:mt-1">
                     <span className="text-xs text-morandi-stone-500">
                       {formatDuration(piece.totalDuration)} total
                     </span>
@@ -186,81 +221,20 @@ export function PiecesStatistics({
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-morandi-stone-400" />
               </div>
             </div>
           )
         })}
       </div>
-    </div>
-  )
-}
 
-function PieceStatsDisplay({
-  stats,
-  formatDuration,
-  t,
-}: {
-  stats: {
-    key: string
-    count: number
-    totalDuration: number
-    lastPracticed: string
-    techniques: Set<string>
-  }
-  formatDuration: (minutes: number) => string
-  t: (key: string) => string
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <p className="text-2xl font-bold text-morandi-stone-900">
-          {formatDuration(stats.totalDuration)}
-        </p>
-        <p className="text-xs text-morandi-stone-600">
-          {t('reports:totalTime')}
-        </p>
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-morandi-stone-900">
-          {stats.count}
-        </p>
-        <p className="text-xs text-morandi-stone-600">
-          {t('reports:sessions')}
-        </p>
-      </div>
-      <div>
-        <p className="text-lg font-bold text-morandi-stone-900">
-          {formatDuration(Math.round(stats.totalDuration / stats.count))}
-        </p>
-        <p className="text-xs text-morandi-stone-600">
-          {t('reports:avgPerSession')}
-        </p>
-      </div>
-      <div>
-        <p className="text-sm text-morandi-stone-900">
-          {new Date(stats.lastPracticed).toLocaleDateString()}
-        </p>
-        <p className="text-xs text-morandi-stone-600">
-          {t('reports:lastPracticed')}
-        </p>
-      </div>
-      {stats.techniques.size > 0 && (
-        <div className="col-span-2">
-          <p className="text-sm text-morandi-stone-600 mb-2">
-            {t('reports:techniquesPracticed')}:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(stats.techniques).map((technique: string) => (
-              <span
-                key={technique}
-                className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-700 rounded-md text-xs"
-              >
-                {technique}
-              </span>
-            ))}
-          </div>
-        </div>
+      {/* Edit Piece Modal */}
+      {editingPiece && (
+        <EditPieceModal
+          isOpen={!!editingPiece}
+          onClose={() => setEditingPiece(null)}
+          piece={editingPiece}
+          onSave={handleSavePiece}
+        />
       )}
     </div>
   )

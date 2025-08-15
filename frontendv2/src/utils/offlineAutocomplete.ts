@@ -1,4 +1,5 @@
 import type { LogbookEntry } from '../api/logbook'
+import { getCanonicalComposerName } from './composerCanonicalizer'
 
 interface AutocompleteResult {
   value: string
@@ -41,12 +42,14 @@ export function searchLocalComposers(
   const entries = getLocalLogbookEntries()
   const composerSet = new Set<string>()
 
-  // Extract all unique composers
+  // Extract all unique composers and canonicalize them
   entries.forEach(entry => {
     if (entry.pieces && Array.isArray(entry.pieces)) {
       entry.pieces.forEach(piece => {
         if (piece.composer) {
-          composerSet.add(piece.composer)
+          const canonicalName =
+            getCanonicalComposerName(piece.composer) || piece.composer
+          composerSet.add(canonicalName)
         }
       })
     }
@@ -99,8 +102,12 @@ export function searchLocalPieces(
         if (piece.title) {
           // Store the piece with its metadata, preferring existing metadata
           const existing = piecesMap.get(piece.title)
+          // Canonicalize composer name
+          const canonicalComposer = piece.composer
+            ? getCanonicalComposerName(piece.composer) || piece.composer
+            : undefined
           piecesMap.set(piece.title, {
-            composer: piece.composer || existing?.composer,
+            composer: canonicalComposer || existing?.composer,
             gradeLevel: existing?.gradeLevel, // gradeLevel is not part of LogbookEntry pieces
           })
         }

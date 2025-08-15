@@ -13,7 +13,7 @@ export interface User {
   email: string
   displayName?: string
   role: UserRole
-  primaryInstrument?: 'PIANO' | 'GUITAR' | 'BOTH'
+  primaryInstrument?: 'piano' | 'guitar' | 'both'
   createdAt: Date
   updatedAt: Date
 }
@@ -47,8 +47,8 @@ export interface Score {
   title: string
   composer: string
   opus?: string
-  instrument: 'PIANO' | 'GUITAR' | 'BOTH'
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  instrument: 'piano' | 'guitar' | 'both'
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
   visibility: CollectionVisibility
   derivedVisibility?: CollectionVisibility // Inherited from collections
   userId?: string // Owner for user-uploaded scores

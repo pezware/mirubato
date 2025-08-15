@@ -40,6 +40,26 @@ export default {
           headers.set('content-type', 'application/json; charset=utf-8')
         }
 
+        // Add CORS headers for all responses
+        headers.set('Access-Control-Allow-Origin', '*')
+        headers.set(
+          'Access-Control-Allow-Methods',
+          'GET, POST, PUT, DELETE, OPTIONS'
+        )
+        headers.set(
+          'Access-Control-Allow-Headers',
+          'Content-Type, Authorization, X-Device-ID, X-Idempotency-Key'
+        )
+        headers.set('Access-Control-Max-Age', '86400')
+
+        // Set Cross-Origin-Opener-Policy for OAuth flows
+        headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+
+        // Add security headers
+        headers.set('X-Frame-Options', 'DENY')
+        headers.set('X-Content-Type-Options', 'nosniff')
+        headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
         // Create new response with updated headers
         response = new Response(response.body, {
           status: response.status,

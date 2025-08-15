@@ -7,16 +7,16 @@ import {
   type ScoreSearchParams,
 } from '../services/scoreService'
 import type { Collection } from '../types/collections'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ImportScoreModal from '../components/score/ImportScoreModal'
 import CollectionsManager from '../components/score/CollectionsManager'
 import ScoreListItem from '../components/score/ScoreListItem'
+import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
-import { cn } from '../utils/cn'
 import Button from '../components/ui/Button'
-import { Plus } from 'lucide-react'
+import { Tabs } from '../components/ui'
+import { Plus, BookOpen, Folder, User } from 'lucide-react'
 
 type TabView = 'scores' | 'publicCollections' | 'myCollections'
 
@@ -31,24 +31,38 @@ export default function ScoreBrowserPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [showCollectionsManager, setShowCollectionsManager] = useState(false)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
+  const [hasInitializedTab, setHasInitializedTab] = useState(false)
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     new Set()
   )
   const [scoreCollections, setScoreCollections] = useState<
     Record<string, Collection[]>
   >({})
+  const [showTimer, setShowTimer] = useState(false)
+  const [defaultCollectionScores, setDefaultCollectionScores] = useState<
+    Score[]
+  >([])
+  const [isLoadingDefaultCollection, setIsLoadingDefaultCollection] =
+    useState(false)
 
   useEffect(() => {
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, selectedInstrument, selectedDifficulty, isAuthenticated])
+
+  // Set default tab to "My Collections" if user is authenticated and has collections
+  useEffect(() => {
+    if (!hasInitializedTab && isAuthenticated && userCollections.length > 0) {
+      setTabView('myCollections')
+      setHasInitializedTab(true)
+    }
+  }, [isAuthenticated, userCollections, hasInitializedTab])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -64,6 +78,17 @@ export default function ScoreBrowserPage() {
           const userCollectionsData = await scoreService.getUserCollections()
           setUserCollections(userCollectionsData)
           allUserCollections = userCollectionsData
+
+          // Find and load default collection
+          const defaultColl = userCollectionsData.find(
+            c => c.is_default === true
+          )
+          if (defaultColl) {
+            // Auto-expand default collection
+            setExpandedCollections(prev => new Set([...prev, defaultColl.id]))
+            // Load default collection scores
+            loadDefaultCollectionScores(defaultColl.id)
+          }
         } catch (error) {
           console.error('Failed to load user data:', error)
         }
@@ -186,6 +211,59 @@ export default function ScoreBrowserPage() {
     setScoreCollections(collectionMap)
   }
 
+  const loadDefaultCollectionScores = async (collectionId: string) => {
+    setIsLoadingDefaultCollection(true)
+    try {
+      const fullCollection = await scoreService.getUserCollection(collectionId)
+      if (fullCollection.scores && Array.isArray(fullCollection.scores)) {
+        // Normalize scores to ensure tags property exists
+        const normalizedScores = fullCollection.scores.map(score => ({
+          ...score,
+          tags: Array.isArray(score.tags)
+            ? score.tags
+            : typeof score.tags === 'string'
+              ? [score.tags]
+              : score.tags === null || score.tags === undefined
+                ? []
+                : [],
+        }))
+        setDefaultCollectionScores(normalizedScores)
+      } else if (
+        fullCollection.scoreIds &&
+        fullCollection.scoreIds.length > 0
+      ) {
+        // If we only have scoreIds but no full scores, we need to load them
+        const scorePromises = fullCollection.scoreIds.map(id =>
+          scoreService.getScore(id).catch(err => {
+            console.error(`Failed to load score ${id}:`, err)
+            return null
+          })
+        )
+        const loadedScores = await Promise.all(scorePromises)
+        const validScores = loadedScores
+          .filter(s => s !== null)
+          .map(score => ({
+            ...score,
+            tags: Array.isArray(score.tags)
+              ? score.tags
+              : typeof score.tags === 'string'
+                ? [score.tags]
+                : score.tags === null || score.tags === undefined
+                  ? []
+                  : [],
+          }))
+        setDefaultCollectionScores(validScores)
+      } else {
+        setDefaultCollectionScores([])
+      }
+    } catch (error) {
+      console.error('Failed to load default collection scores:', error)
+      setDefaultCollectionScores([])
+    } finally {
+      setIsLoadingDefaultCollection(false)
+    }
+  }
+
   const toggleCollectionExpansion = (id: string) => {
     const newExpanded = new Set(expandedCollections)
     if (newExpanded.has(id)) {
@@ -199,7 +277,7 @@ export default function ScoreBrowserPage() {
   const handleAddToCollection = (e: React.MouseEvent, score: Score) => {
     e.stopPropagation()
     if (!isAuthenticated) {
-      setShowSignInModal(true)
+      // The AppLayout will handle showing sign in modal
       return
     }
     setSelectedScoreForCollection(score)
@@ -352,6 +430,55 @@ export default function ScoreBrowserPage() {
               </div>
             )}
 
+            {/* Show scores for default collection */}
+            {collection.is_default && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-morandi-stone-700 mb-3">
+                  {t('scorebook:scores', 'Scores')}:
+                </p>
+                {isLoadingDefaultCollection ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-morandi-sage-500 mx-auto mb-2"></div>
+                    <p className="text-sm text-morandi-stone-600">
+                      {t('common:loading')}...
+                    </p>
+                  </div>
+                ) : defaultCollectionScores.length === 0 ? (
+                  <div className="text-center py-4 text-morandi-stone-600 text-sm">
+                    {t(
+                      'scorebook:noScoresInCollection',
+                      'No scores in this collection yet'
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg border border-morandi-stone-200 overflow-hidden mb-3">
+                    {defaultCollectionScores.slice(0, 5).map(score => (
+                      <ScoreListItem
+                        key={score.id}
+                        score={score}
+                        onAddToCollection={handleAddToCollection}
+                        collections={scoreCollections[score.id]}
+                        showCollections={false}
+                        showTagsInCollapsed={false}
+                        className="border-b-0"
+                      />
+                    ))}
+                    {defaultCollectionScores.length > 5 && (
+                      <div className="p-3 bg-morandi-stone-50 text-center text-sm text-morandi-stone-600">
+                        {t(
+                          'scorebook:showingFirst',
+                          'Showing first 5 of {{total}} scores',
+                          {
+                            total: defaultCollectionScores.length,
+                          }
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               onClick={e => {
                 e.stopPropagation()
@@ -372,21 +499,49 @@ export default function ScoreBrowserPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-morandi-sand-100">
-      <UnifiedHeader
-        currentPage="scorebook"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
+  const handleTimerComplete = (_duration: number, _startTime?: Date) => {
+    setShowTimer(false)
+    // Could add practice session logging here if needed
+  }
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+  return (
+    <AppLayout
+      onTimerClick={() => setShowTimer(true)}
+      onImportScore={() => setShowImportModal(true)}
+    >
+      <div className="p-3 sm:px-6 sm:py-4">
+        {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
+        <Tabs
+          tabs={[
+            {
+              id: 'scores',
+              label: t('scorebook:scores', 'Scores'),
+              icon: <BookOpen size={20} />,
+            },
+            {
+              id: 'publicCollections',
+              label: t('scorebook:publicCollections', 'Public Collections'),
+              icon: <Folder size={20} />,
+            },
+            ...(isAuthenticated
+              ? [
+                  {
+                    id: 'myCollections',
+                    label: t('scorebook:myCollections', 'My Collections'),
+                    icon: <User size={20} />,
+                  },
+                ]
+              : []),
+          ]}
+          activeTab={tabView}
+          onTabChange={tabId => setTabView(tabId as TabView)}
+          className="mb-6"
+        />
+
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
-          {/* Header with Import Button */}
-          <div className="flex items-center justify-between px-4 md:px-6 pt-4">
-            <h1 className="text-xl font-semibold text-morandi-stone-800">
-              {t('scorebook:title', 'Scorebook')}
-            </h1>
-            {isAuthenticated && (
+          {/* Import Button - moved here after tabs */}
+          {isAuthenticated && tabView === 'scores' && (
+            <div className="flex items-center justify-end px-4 md:px-6 pt-4">
               <Button
                 onClick={() => setShowImportModal(true)}
                 size="sm"
@@ -396,51 +551,12 @@ export default function ScoreBrowserPage() {
                 <Plus className="w-4 h-4" />
                 {t('scorebook:importScore', 'Import Score')}
               </Button>
-            )}
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex gap-1 p-1 bg-morandi-stone-100 mx-4 md:mx-6 mt-4 rounded-lg">
-            <button
-              onClick={() => setTabView('scores')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                tabView === 'scores'
-                  ? 'bg-white text-morandi-stone-800 shadow-sm'
-                  : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-              )}
-            >
-              {t('scorebook:scores', 'Scores')}
-            </button>
-            <button
-              onClick={() => setTabView('publicCollections')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                tabView === 'publicCollections'
-                  ? 'bg-white text-morandi-stone-800 shadow-sm'
-                  : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-              )}
-            >
-              {t('scorebook:publicCollections', 'Public Collections')}
-            </button>
-            {isAuthenticated && (
-              <button
-                onClick={() => setTabView('myCollections')}
-                className={cn(
-                  'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-                  tabView === 'myCollections'
-                    ? 'bg-white text-morandi-stone-800 shadow-sm'
-                    : 'text-morandi-stone-600 hover:text-morandi-stone-800'
-                )}
-              >
-                {t('scorebook:myCollections', 'My Collections')}
-              </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Filters - only show for scores tab */}
           {tabView === 'scores' && (
-            <div className="p-4 md:p-6 border-b border-morandi-stone-200">
+            <div className="p-3 md:p-4 border-b border-morandi-stone-200">
               <div className="flex gap-4">
                 <select
                   value={selectedInstrument}
@@ -450,8 +566,8 @@ export default function ScoreBrowserPage() {
                   <option value="">
                     {t('scorebook:allInstruments', 'All Instruments')}
                   </option>
-                  <option value="PIANO">{t('scorebook:piano', 'Piano')}</option>
-                  <option value="GUITAR">
+                  <option value="piano">{t('scorebook:piano', 'Piano')}</option>
+                  <option value="guitar">
                     {t('scorebook:guitar', 'Guitar')}
                   </option>
                 </select>
@@ -464,13 +580,13 @@ export default function ScoreBrowserPage() {
                   <option value="">
                     {t('scorebook:allDifficulties', 'All Difficulties')}
                   </option>
-                  <option value="BEGINNER">
+                  <option value="beginner">
                     {t('scorebook:beginner', 'Beginner')}
                   </option>
-                  <option value="INTERMEDIATE">
+                  <option value="intermediate">
                     {t('scorebook:intermediate', 'Intermediate')}
                   </option>
-                  <option value="ADVANCED">
+                  <option value="advanced">
                     {t('scorebook:advanced', 'Advanced')}
                   </option>
                 </select>
@@ -479,7 +595,7 @@ export default function ScoreBrowserPage() {
           )}
 
           {/* Content */}
-          <div className="p-4 md:p-6">
+          <div className="p-3 md:p-4">
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morandi-sage-500 mx-auto mb-4"></div>
@@ -588,46 +704,47 @@ export default function ScoreBrowserPage() {
             )}
           </div>
         </div>
+
+        {/* Add to Collection Modal */}
+        {showCollectionModal && selectedScoreForCollection && (
+          <AddToCollectionModal
+            scoreId={selectedScoreForCollection.id}
+            scoreTitle={selectedScoreForCollection.title}
+            onClose={handleCollectionModalClose}
+            onSave={handleCollectionModalSave}
+          />
+        )}
+
+        {/* Import Score Modal */}
+        <ImportScoreModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
+        />
+
+        {/* Collections Manager Modal */}
+        {showCollectionsManager && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+              <CollectionsManager
+                onClose={() => {
+                  setShowCollectionsManager(false)
+                  // Reload user collections after closing
+                  loadData()
+                }}
+                className="h-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
       />
-
-      {/* Add to Collection Modal */}
-      {showCollectionModal && selectedScoreForCollection && (
-        <AddToCollectionModal
-          scoreId={selectedScoreForCollection.id}
-          scoreTitle={selectedScoreForCollection.title}
-          onClose={handleCollectionModalClose}
-          onSave={handleCollectionModalSave}
-        />
-      )}
-
-      {/* Import Score Modal */}
-      <ImportScoreModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onSuccess={handleImportSuccess}
-      />
-
-      {/* Collections Manager Modal */}
-      {showCollectionsManager && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <CollectionsManager
-              onClose={() => {
-                setShowCollectionsManager(false)
-                // Reload user collections after closing
-                loadData()
-              }}
-              className="h-full"
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    </AppLayout>
   )
 }

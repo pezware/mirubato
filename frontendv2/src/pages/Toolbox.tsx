@@ -7,20 +7,24 @@ import {
   Volume2,
   Music,
   ListChecks,
+  Circle,
+  Book,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import * as Tone from 'tone'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
 import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
-import SignInModal from '../components/auth/SignInModal'
+import AppLayout from '../components/layout/AppLayout'
 import { Tabs } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
-import {
-  usePracticeTracking,
-  PracticeSummaryModal,
-} from '../modules/auto-logging'
+import { CircleOfFifths } from '../components/circle-of-fifths'
+import Dictionary from '../components/dictionary/Dictionary'
+import TimerEntry from '../components/TimerEntry'
+import ManualEntryForm from '../components/ManualEntryForm'
+// Auto-logging removed for metronome per issue #469
+// Practice Counter component imports its own auto-logging hooks
 
 type PatternState = {
   accent: boolean[]
@@ -38,8 +42,19 @@ const Toolbox: React.FC = () => {
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
-  const [showSignInModal, setShowSignInModal] = useState(false)
   const [activeTab, setActiveTab] = useState('metronome')
+  const [showTimer, setShowTimer] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
+  const [beatsInputValue, setBeatsInputValue] = useState<string>(
+    settings.beatsPerMeasure.toString()
+  )
+  // Simple elapsed time tracking for metronome (without auto-logging)
+  const [, setMetronomeElapsedTime] = useState(0)
+  const [metronomeStartTime, setMetronomeStartTime] = useState<number | null>(
+    null
+  )
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -128,37 +143,30 @@ const Toolbox: React.FC = () => {
   // Get metronome instance
   const metronome = getPatternMetronome()
 
-  // Practice tracking for metronome
-  const {
-    isTracking,
-    formattedTime,
-    showSummary,
-    pendingSession,
-    start: startTracking,
-    stop: stopTracking,
-    update: updateTracking,
-    confirmSave,
-    dismissSummary,
-  } = usePracticeTracking({
-    type: 'metronome',
-    metadata: {
-      title: 'Metronome Practice',
-      instrument: 'PIANO', // Could be made configurable later
-      patterns: [currentPatternData.name],
-    },
-  })
-
-  // Initialize metronome
+  // Sync beats input value when settings change (e.g., from pattern loading)
   useEffect(() => {
-    metronome.setTempo(settings.bpm)
-    metronome.setVolume(settings.volume / 100)
+    setBeatsInputValue(settings.beatsPerMeasure.toString())
+  }, [settings.beatsPerMeasure])
+
+  // Track elapsed time when metronome is playing
+  useEffect(() => {
+    if (isPlaying && metronomeStartTime) {
+      const interval = setInterval(() => {
+        setMetronomeElapsedTime(
+          Math.floor((Date.now() - metronomeStartTime) / 1000)
+        )
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [isPlaying, metronomeStartTime])
+
+  // Cleanup metronome on unmount
+  useEffect(() => {
+    // Don't set tempo/volume here - wait for user interaction
+    // The settings will be applied when the user starts the metronome
     return () => {
       // Always stop metronome when leaving the page
       metronome.stop()
-      // Also stop tracking if it's active
-      if (isTracking) {
-        stopTracking()
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -166,27 +174,14 @@ const Toolbox: React.FC = () => {
   // Handle tempo changes
   useEffect(() => {
     metronome.setTempo(settings.bpm)
-    // Update tracking metadata with tempo info
-    if (isTracking) {
-      updateTracking({
-        averageTempo: settings.bpm,
-      })
-    }
-  }, [settings.bpm, isTracking, updateTracking])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.bpm])
 
   // Handle volume changes
   useEffect(() => {
     metronome.setVolume(settings.volume / 100)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.volume])
-
-  // Update tracking when pattern changes
-  useEffect(() => {
-    if (isTracking) {
-      updateTracking({
-        patterns: [currentPatternData.name],
-      })
-    }
-  }, [currentPatternData.name, isTracking, updateTracking])
 
   // Stop metronome when switching tabs
   useEffect(() => {
@@ -194,14 +189,13 @@ const Toolbox: React.FC = () => {
       if (isPlaying) {
         metronome.stop()
         setIsPlaying(false)
-      }
-      // Also stop practice tracking
-      if (isTracking) {
-        stopTracking()
+        // Reset timer when stopping
+        setMetronomeElapsedTime(0)
+        setMetronomeStartTime(null)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]) // Removed isTracking and stopTracking from deps to prevent loops
+  }, [activeTab])
 
   // Handle pattern changes while playing
   useEffect(() => {
@@ -215,6 +209,7 @@ const Toolbox: React.FC = () => {
       }
       metronome.setPatterns(trimmedPatterns)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns, settings.beatsPerMeasure, isPlaying])
 
   // Visual beat indicator
@@ -260,12 +255,16 @@ const Toolbox: React.FC = () => {
     if (isPlaying) {
       metronome.stop()
       setIsPlaying(false)
-      // Stop practice tracking when metronome stops
-      if (isTracking) {
-        stopTracking()
-      }
+      // Reset timer when stopping
+      setMetronomeElapsedTime(0)
+      setMetronomeStartTime(null)
     } else {
       try {
+        // Ensure Tone.js audio context is started (required for user gesture)
+        if (Tone.context.state !== 'running') {
+          await Tone.start()
+        }
+
         // Only use the beats that are within the current beats per measure
         const trimmedPatterns = {
           accent: patterns.accent.slice(0, settings.beatsPerMeasure),
@@ -282,17 +281,20 @@ const Toolbox: React.FC = () => {
           patterns: trimmedPatterns,
         })
         setIsPlaying(true)
-        // Start practice tracking when metronome starts
-        if (!isTracking) {
-          startTracking()
-        }
+        // Start timer when metronome starts
+        setMetronomeStartTime(Date.now())
       } catch (error) {
         console.error('Failed to start metronome:', error)
       }
     }
   }
 
-  const handleTapTempo = () => {
+  const handleTapTempo = async () => {
+    // Ensure audio context is started for tap tempo sound (if any)
+    if (Tone.context.state !== 'running') {
+      await Tone.start()
+    }
+
     const now = Date.now()
     const recentTaps = [...tapTimes, now].filter(t => now - t < 3000)
 
@@ -358,15 +360,37 @@ const Toolbox: React.FC = () => {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-morandi-stone-50">
-      <UnifiedHeader
-        currentPage="toolbox"
-        onSignInClick={() => setShowSignInModal(true)}
-      />
+  const handleTimerComplete = (duration: number, startTime?: Date) => {
+    setShowTimer(false)
+    setTimerDuration(duration)
+    setTimerStartTime(startTime)
+    setShowManualEntry(true)
+  }
 
+  const handleToolboxAdd = () => {
+    setShowManualEntry(true)
+  }
+
+  const handleManualEntryClose = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+    setTimerStartTime(undefined)
+  }
+
+  const handleManualEntrySave = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+    setTimerStartTime(undefined)
+  }
+
+  return (
+    <AppLayout
+      onNewEntry={handleToolboxAdd}
+      onTimerClick={() => setShowTimer(true)}
+      onToolboxAdd={handleToolboxAdd}
+    >
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="p-3 sm:px-6 sm:py-4">
         {/* Tabs */}
         <Tabs
           tabs={[
@@ -380,6 +404,16 @@ const Toolbox: React.FC = () => {
               label: t('tabs.counter'),
               icon: <ListChecks size={20} />,
             },
+            {
+              id: 'circle-of-fifths',
+              label: t('tabs.circleOfFifths'),
+              icon: <Circle size={20} />,
+            },
+            {
+              id: 'dictionary',
+              label: t('tabs.dictionary'),
+              icon: <Book size={20} />,
+            },
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -391,15 +425,9 @@ const Toolbox: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Control Panel */}
             <div className="lg:w-1/3">
-              <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 space-y-3 sm:space-y-4">
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
-                  {/* Practice time display */}
-                  {isTracking && (
-                    <div className="mb-2 text-sm text-morandi-stone-600">
-                      {t('common:practice.duration')}: {formattedTime}
-                    </div>
-                  )}
                   <button
                     onClick={handlePlayPause}
                     className={`w-20 h-20 mx-auto mb-4 bg-morandi-purple-400 text-white rounded-full flex items-center justify-center hover:bg-morandi-purple-500 transition-all duration-300 ${
@@ -417,7 +445,7 @@ const Toolbox: React.FC = () => {
                         <button
                           onClick={() =>
                             updateSettings({
-                              bpm: Math.max(40, settings.bpm - 5),
+                              bpm: Math.max(40, settings.bpm - 1),
                             })
                           }
                           className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
@@ -435,7 +463,7 @@ const Toolbox: React.FC = () => {
                         <button
                           onClick={() =>
                             updateSettings({
-                              bpm: Math.min(240, settings.bpm + 5),
+                              bpm: Math.min(240, settings.bpm + 1),
                             })
                           }
                           className="w-10 h-10 bg-morandi-stone-100 rounded-full flex items-center justify-center hover:bg-morandi-stone-200"
@@ -471,15 +499,36 @@ const Toolbox: React.FC = () => {
                           type="number"
                           min="1"
                           max="36"
-                          value={settings.beatsPerMeasure}
-                          onChange={e =>
-                            updateSettings({
-                              beatsPerMeasure: Math.max(
-                                1,
-                                Math.min(36, Number(e.target.value))
-                              ),
-                            })
-                          }
+                          value={beatsInputValue}
+                          onChange={e => {
+                            const value = e.target.value
+                            setBeatsInputValue(value) // Always update local state
+
+                            // Only update settings if valid number
+                            if (value !== '') {
+                              const numValue = Number(value)
+                              if (
+                                !isNaN(numValue) &&
+                                numValue >= 1 &&
+                                numValue <= 36
+                              ) {
+                                updateSettings({
+                                  beatsPerMeasure: numValue,
+                                })
+                              }
+                            }
+                          }}
+                          onBlur={e => {
+                            // Ensure valid value when user leaves the field
+                            const value = e.target.value
+                            if (value === '' || Number(value) < 1) {
+                              setBeatsInputValue('1')
+                              updateSettings({ beatsPerMeasure: 1 })
+                            } else if (Number(value) > 36) {
+                              setBeatsInputValue('36')
+                              updateSettings({ beatsPerMeasure: 36 })
+                            }
+                          }}
                           className="w-16 px-2 py-1 text-center border border-morandi-stone-200 rounded"
                         />
                         <span className="text-xl text-morandi-stone-400">
@@ -501,128 +550,197 @@ const Toolbox: React.FC = () => {
                         </select>
                       </div>
                     </div>
-
-                    {/* Volume */}
-                    <div>
-                      <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
-                        <Volume2 size={16} />
-                        {t('toolbox:metronome.volume')}: {settings.volume}%
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={settings.volume}
-                        onChange={e =>
-                          updateSettings({ volume: Number(e.target.value) })
-                        }
-                        className="w-full accent-morandi-purple-400"
-                      />
-                    </div>
-
-                    {/* Beat Indicator */}
-                    {isPlaying && (
-                      <div className="flex justify-center gap-2">
-                        {Array.from(
-                          { length: settings.beatsPerMeasure },
-                          (_, i) => (
-                            <div
-                              key={i}
-                              className={`w-3 h-3 rounded-full transition-all duration-100 ${
-                                i === currentBeat
-                                  ? 'bg-morandi-purple-400 scale-125'
-                                  : 'bg-morandi-stone-300'
-                              }`}
-                            />
-                          )
-                        )}
-                      </div>
-                    )}
                   </div>
-                </div>
-
-                {/* Pattern Selector */}
-                <div>
-                  <label className="text-sm text-morandi-stone-600 mb-2 block">
-                    {t('toolbox:metronome.presetPatterns')}
-                  </label>
-                  <select
-                    value={settings.selectedPattern}
-                    onChange={e => loadPattern(e.target.value)}
-                    className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
-                  >
-                    {commonPatterns.map(pattern => (
-                      <option key={pattern.id} value={pattern.id}>
-                        {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
-                        {t(
-                          `toolbox:metronome.patterns.${pattern.id}.description`
-                        )}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
             </div>
 
             {/* Beat Pattern Grid */}
             <div className="lg:w-2/3">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="overflow-x-auto">
-                  <div className="min-w-[600px]">
-                    {/* Grid with beat numbers and layers */}
-                    <div className="grid grid-cols-[96px_repeat(36,40px)] gap-1">
-                      {/* Header row with beat numbers */}
-                      <div></div>
-                      {Array.from(
-                        { length: settings.beatsPerMeasure },
-                        (_, i) => (
-                          <div
-                            key={i}
-                            className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
-                          >
-                            {i + 1}
+              <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+                <div className="w-full">
+                  <div
+                    className={`${
+                      settings.beatsPerMeasure <= 16
+                        ? 'w-full'
+                        : 'overflow-x-auto overflow-y-hidden'
+                    }`}
+                  >
+                    <div
+                      className={`${
+                        settings.beatsPerMeasure <= 16
+                          ? 'w-full'
+                          : 'inline-block min-w-fit'
+                      }`}
+                    >
+                      {/* Grid with beat numbers and layers */}
+                      <div
+                        className={`grid gap-1 ${
+                          settings.beatsPerMeasure <= 16
+                            ? 'grid-cols-[96px_1fr]'
+                            : 'grid-cols-[96px_repeat(36,40px)]'
+                        }`}
+                      >
+                        {/* Header row with beat numbers */}
+                        <div></div>
+                        {settings.beatsPerMeasure <= 16 ? (
+                          <div className="grid grid-cols-subgrid col-span-1">
+                            <div className="flex justify-around">
+                              {Array.from(
+                                { length: settings.beatsPerMeasure },
+                                (_, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex-1 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
+                                  >
+                                    {i + 1}
+                                  </div>
+                                )
+                              )}
+                            </div>
                           </div>
-                        )
-                      )}
-                      {/* Fill remaining columns */}
-                      {Array.from(
-                        { length: 36 - settings.beatsPerMeasure },
-                        (_, i) => (
-                          <div key={`empty-${i}`}></div>
-                        )
-                      )}
+                        ) : (
+                          <>
+                            {Array.from(
+                              { length: settings.beatsPerMeasure },
+                              (_, i) => (
+                                <div
+                                  key={i}
+                                  className="w-10 h-6 flex items-center justify-center text-sm text-morandi-stone-600"
+                                >
+                                  {i + 1}
+                                </div>
+                              )
+                            )}
+                            {/* Fill remaining columns */}
+                            {Array.from(
+                              { length: 36 - settings.beatsPerMeasure },
+                              (_, i) => (
+                                <div key={`empty-${i}`}></div>
+                              )
+                            )}
+                          </>
+                        )}
 
-                      {/* Sound Layers */}
-                      {soundLayers.map(layer => (
-                        <React.Fragment key={layer.id}>
-                          <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
-                            {t(`toolbox:metronome.sounds.${layer.id}`)}
-                          </div>
-                          {Array.from({ length: 36 }, (_, i) => (
-                            <button
-                              key={i}
-                              onClick={() =>
-                                i < settings.beatsPerMeasure &&
-                                toggleBeat(layer.id as keyof PatternState, i)
-                              }
-                              disabled={i >= settings.beatsPerMeasure}
-                              className={`w-10 h-10 rounded transition-all ${
-                                i < settings.beatsPerMeasure
-                                  ? patterns[layer.id as keyof PatternState][i]
-                                    ? layer.color + ' text-white'
-                                    : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
-                                  : 'bg-transparent cursor-default'
-                              }`}
-                            />
-                          ))}
-                        </React.Fragment>
-                      ))}
+                        {/* Sound Layers */}
+                        {soundLayers.map(layer => (
+                          <React.Fragment key={layer.id}>
+                            <div className="text-sm text-morandi-stone-700 text-right pr-2 flex items-center justify-end">
+                              {t(`toolbox:metronome.sounds.${layer.id}`)}
+                            </div>
+                            {settings.beatsPerMeasure <= 16 ? (
+                              <div className="grid grid-cols-subgrid col-span-1">
+                                <div className="flex justify-around gap-1">
+                                  {Array.from(
+                                    { length: settings.beatsPerMeasure },
+                                    (_, i) => (
+                                      <button
+                                        key={i}
+                                        onClick={() =>
+                                          toggleBeat(
+                                            layer.id as keyof PatternState,
+                                            i
+                                          )
+                                        }
+                                        className={`flex-1 h-10 rounded transition-all ${
+                                          patterns[
+                                            layer.id as keyof PatternState
+                                          ][i]
+                                            ? layer.color + ' text-white'
+                                            : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                        } ${
+                                          i === currentBeat && isPlaying
+                                            ? 'shadow-lg shadow-morandi-purple-400/50 ring-2 ring-morandi-purple-400 ring-opacity-75'
+                                            : ''
+                                        }`}
+                                      />
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {Array.from({ length: 36 }, (_, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() =>
+                                      i < settings.beatsPerMeasure &&
+                                      toggleBeat(
+                                        layer.id as keyof PatternState,
+                                        i
+                                      )
+                                    }
+                                    disabled={i >= settings.beatsPerMeasure}
+                                    className={`w-10 h-10 rounded transition-all ${
+                                      i < settings.beatsPerMeasure
+                                        ? patterns[
+                                            layer.id as keyof PatternState
+                                          ][i]
+                                          ? layer.color + ' text-white'
+                                          : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                        : 'bg-transparent cursor-default'
+                                    } ${
+                                      i === currentBeat &&
+                                      isPlaying &&
+                                      i < settings.beatsPerMeasure
+                                        ? 'shadow-lg shadow-morandi-purple-400/50 ring-2 ring-morandi-purple-400 ring-opacity-75'
+                                        : ''
+                                    }`}
+                                  />
+                                ))}
+                              </>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-6 text-sm text-morandi-stone-600">
                   <p>{t('toolbox:metronome.clickToCreate')}</p>
+                </div>
+
+                {/* Secondary Controls */}
+                <div className="mt-6 space-y-6">
+                  {/* Pattern Selector */}
+                  <div>
+                    <label className="text-sm text-morandi-stone-600 mb-2 block">
+                      {t('toolbox:metronome.presetPatterns')}
+                    </label>
+                    <select
+                      value={settings.selectedPattern}
+                      onChange={e => loadPattern(e.target.value)}
+                      className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg"
+                    >
+                      {commonPatterns.map(pattern => (
+                        <option key={pattern.id} value={pattern.id}>
+                          {t(`toolbox:metronome.patterns.${pattern.id}.name`)} -{' '}
+                          {t(
+                            `toolbox:metronome.patterns.${pattern.id}.description`
+                          )}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Volume */}
+                  <div>
+                    <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
+                      <Volume2 size={16} />
+                      {t('toolbox:metronome.volume')}: {settings.volume}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={settings.volume}
+                      onChange={e =>
+                        updateSettings({ volume: Number(e.target.value) })
+                      }
+                      className="w-full accent-morandi-purple-400"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -631,25 +749,35 @@ const Toolbox: React.FC = () => {
 
         {/* Practice Counter Tab */}
         {activeTab === 'counter' && <PracticeCounter />}
+
+        {/* Circle of Fifths Tab */}
+        {activeTab === 'circle-of-fifths' && (
+          <div>
+            <CircleOfFifths />
+          </div>
+        )}
+
+        {/* Dictionary Tab */}
+        {activeTab === 'dictionary' && <Dictionary />}
       </div>
 
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
+      {/* Timer Modal */}
+      <TimerEntry
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        onComplete={handleTimerComplete}
       />
 
-      {/* Practice Summary Modal */}
-      <PracticeSummaryModal
-        isOpen={showSummary}
-        onClose={dismissSummary}
-        onSave={confirmSave}
-        onDiscard={dismissSummary}
-        duration={pendingSession?.duration || 0}
-        metadata={pendingSession?.metadata || {}}
-        title={t('common:practice.practiceSummary')}
-      />
-    </div>
+      {/* Manual Entry Form */}
+      {showManualEntry && (
+        <ManualEntryForm
+          onClose={handleManualEntryClose}
+          onSave={handleManualEntrySave}
+          initialDuration={timerDuration}
+          initialStartTime={timerStartTime}
+        />
+      )}
+    </AppLayout>
   )
 }
 

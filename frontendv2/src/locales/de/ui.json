@@ -1,0 +1,61 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "Keine Ergebnisse gefunden"
+    },
+    "entryCard": {
+      "deleteEntry": "Eintrag löschen",
+      "editEntry": "Eintrag bearbeiten",
+      "viewDetails": "Details anzeigen"
+    },
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "Max",
+      "minPlaceholder": "Min"
+    },
+    "goals": {
+      "measuresPlaceholder": "z.B. 8-12, 15-16, 24-32"
+    },
+    "imageLoading": {
+      "loading": "Bild wird geladen..."
+    },
+    "metronome": {
+      "collapse": "Zuklappen",
+      "expand": "Metronom erweitern",
+      "playPause": "Abspielen/Pausieren"
+    },
+    "multiSelect": {
+      "placeholder": "Optionen auswählen"
+    },
+    "practiceReports": {
+      "editPieceName": "Stück-Name bearbeiten"
+    },
+    "scoreUpload": {
+      "composerPlaceholder": "Komponist (optional - KI wird extrahieren)",
+      "titlePlaceholder": "Titel (optional - KI wird extrahieren)",
+      "urlPlaceholder": "https://beispiel.com/noten.pdf"
+    },
+    "scoreViewer": {
+      "nextPage": "Nächste Seite",
+      "previousPage": "Vorherige Seite"
+    },
+    "segmentedControl": {
+      "ariaLabel": "Ansichts-Selektor"
+    },
+    "select": {
+      "placeholder": "Option auswählen"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "Echtzeit-Synchronisation aktivieren (experimentell)",
+      "manualSync": "Manuelle Synchronisation"
+    },
+    "tabs": {
+      "ariaLabel": "Registerkarten"
+    },
+    "timePicker": {
+      "am": "AM",
+      "placeholder": "HH:MM",
+      "pm": "PM"
+    }
+  }
+}

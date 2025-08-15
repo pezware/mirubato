@@ -3,6 +3,7 @@ import { act } from 'react'
 
 // Mock the API and nanoid modules
 vi.mock('../../../api/logbook')
+vi.mock('../../../api/sync')
 vi.mock('nanoid', () => ({
   nanoid: vi.fn(() => 'test-id-123'),
 }))
@@ -10,6 +11,7 @@ vi.mock('nanoid', () => ({
 // Import after mocks
 import { useLogbookStore } from '../../../stores/logbookStore'
 import { logbookApi, type LogbookEntry, type Goal } from '../../../api/logbook'
+import { syncApi } from '../../../api/sync'
 import { nanoid } from 'nanoid'
 
 // Mock implementations
@@ -23,6 +25,11 @@ const mockLogbookApi = logbookApi as {
   updateGoal: ReturnType<typeof vi.fn>
   deleteGoal: ReturnType<typeof vi.fn>
   linkEntryToGoal: ReturnType<typeof vi.fn>
+}
+
+const mockSyncApi = syncApi as {
+  push: ReturnType<typeof vi.fn>
+  pull: ReturnType<typeof vi.fn>
 }
 
 describe('logbookStore', () => {
@@ -119,6 +126,10 @@ describe('logbookStore', () => {
     mockLogbookApi.updateGoal = vi.fn()
     mockLogbookApi.deleteGoal = vi.fn()
     mockLogbookApi.linkEntryToGoal = vi.fn()
+
+    // Reset sync API mocks
+    mockSyncApi.push = vi.fn()
+    mockSyncApi.pull = vi.fn()
   })
 
   afterEach(() => {
@@ -414,7 +425,7 @@ describe('logbookStore', () => {
     })
   })
 
-  describe('syncWithServer', () => {
+  describe('manualSync', () => {
     it('should sync entries with server', async () => {
       localStorageData['auth-token'] = 'valid-token'
 
@@ -427,28 +438,37 @@ describe('logbookStore', () => {
 
       const serverEntries = [mockEntry]
       mockLogbookApi.getEntries.mockResolvedValue(serverEntries)
+      mockSyncApi.push.mockResolvedValue({ success: true })
 
       await act(async () => {
-        await useLogbookStore.getState().syncWithServer()
+        await useLogbookStore.getState().manualSync()
       })
 
       expect(mockLogbookApi.getEntries).toHaveBeenCalled()
+      expect(mockSyncApi.push).toHaveBeenCalledWith({
+        changes: {
+          entries: [localEntry],
+          goals: [],
+        },
+      })
       const state = useLogbookStore.getState()
-      expect(state.entriesMap.size).toBe(1)
-      expect(state.entriesMap.has('entry-1')).toBe(true)
-      expect(state.entriesMap.has('local-1')).toBe(false)
+      expect(state.entriesMap.size).toBe(2) // Both server and local entries should be present
+      expect(state.entriesMap.has('entry-1')).toBe(true) // Server entry
+      expect(state.entriesMap.has('local-1')).toBe(true) // Local entry should remain
       expect(state.isLocalMode).toBe(false)
+      expect(state.syncError).toBeNull()
+      expect(state.lastSyncTime).toBeTruthy()
     })
 
     it('should handle sync without auth token', async () => {
       // No auth token set
 
       await act(async () => {
-        await useLogbookStore.getState().syncWithServer()
+        await useLogbookStore.getState().manualSync()
       })
 
       expect(mockLogbookApi.getEntries).not.toHaveBeenCalled()
-      expect(useLogbookStore.getState().error).toBe(
+      expect(useLogbookStore.getState().syncError).toBe(
         'Please sign in to sync with server'
       )
     })
@@ -461,22 +481,20 @@ describe('logbookStore', () => {
       mockLogbookApi.getEntries.mockRejectedValue(new Error('Network error'))
 
       await act(async () => {
-        await useLogbookStore.getState().syncWithServer()
+        await useLogbookStore.getState().manualSync()
       })
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Sync failed:',
+        'Manual sync failed:',
         expect.any(Error)
       )
-      expect(useLogbookStore.getState().error).toBe(
-        'Failed to sync with server. Continuing with local data.'
-      )
-      expect(useLogbookStore.getState().isLoading).toBe(false)
+      expect(useLogbookStore.getState().syncError).toBeTruthy()
+      expect(useLogbookStore.getState().isSyncing).toBe(false)
 
       consoleErrorSpy.mockRestore()
     })
 
-    it('should log info about local-only entries', async () => {
+    it('should merge local-only entries with server entries', async () => {
       localStorageData['auth-token'] = 'valid-token'
 
       // Add local entries
@@ -492,20 +510,25 @@ describe('logbookStore', () => {
 
       const serverEntries = [mockEntry]
       mockLogbookApi.getEntries.mockResolvedValue(serverEntries)
-
-      const consoleLogSpy = vi
-        .spyOn(console, 'log')
-        .mockImplementation(() => {})
+      mockSyncApi.push.mockResolvedValue({ success: true })
 
       await act(async () => {
-        await useLogbookStore.getState().syncWithServer()
+        await useLogbookStore.getState().manualSync()
       })
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Found 0 unique local entries, 2 duplicates'
-      )
-
-      consoleLogSpy.mockRestore()
+      const state = useLogbookStore.getState()
+      // Should have server entry + local entries
+      expect(state.entriesMap.size).toBe(3)
+      expect(state.entriesMap.has('entry-1')).toBe(true) // Server entry
+      expect(state.entriesMap.has('local-1')).toBe(true) // Local entry
+      expect(state.entriesMap.has('local-2')).toBe(true) // Local entry
+      expect(mockSyncApi.push).toHaveBeenCalledWith({
+        changes: {
+          entries: [localEntry1, localEntry2],
+          goals: [],
+        },
+      })
+      expect(state.syncError).toBeNull()
     })
   })
 })

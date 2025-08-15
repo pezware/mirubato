@@ -6,6 +6,7 @@ import { api } from './api/routes'
 import { healthHandler } from './api/handlers/health'
 import { docsHandler } from './api/handlers/docs'
 import { apiCacheMiddleware } from './utils/cache'
+import { SERVICE_VERSION } from './utils/version'
 import type { RateLimit } from '@cloudflare/workers-types'
 
 // Define environment bindings
@@ -52,7 +53,12 @@ app.use(
       return null
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Device-ID',
+      'X-Idempotency-Key',
+    ],
     exposeHeaders: ['Content-Length'],
     maxAge: 86400,
     credentials: true,
@@ -62,7 +68,10 @@ app.use(
 // Add Cross-Origin-Opener-Policy header for OAuth popups
 app.use('*', async (c, next) => {
   await next()
-  c.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+  // Use unsafe-none for staging to allow cross-origin popups, same-origin-allow-popups for production
+  const policy =
+    c.env.ENVIRONMENT === 'staging' ? 'unsafe-none' : 'same-origin-allow-popups'
+  c.header('Cross-Origin-Opener-Policy', policy)
 })
 
 // Apply caching middleware for GET requests
@@ -180,7 +189,7 @@ app.get('/', c => {
 <body>
   <div class="container">
     <h1>🔐 Mirubato API Service</h1>
-    <div class="version">Version 1.0.0</div>
+    <div class="version">Version ${SERVICE_VERSION}</div>
     <div class="status">Service Operational</div>
     
     <p>Welcome to the Mirubato API. This service handles authentication and data synchronization for Mirubato users.</p>

@@ -1,0 +1,61 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "未找到结果"
+    },
+    "entryCard": {
+      "deleteEntry": "删除条目",
+      "editEntry": "编辑条目",
+      "viewDetails": "查看详情"
+    },
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "最大值",
+      "minPlaceholder": "最小值"
+    },
+    "goals": {
+      "measuresPlaceholder": "例如，8-12, 15-16, 24-32"
+    },
+    "imageLoading": {
+      "loading": "正在加载图片..."
+    },
+    "metronome": {
+      "collapse": "收起",
+      "expand": "展开节拍器",
+      "playPause": "播放/暂停"
+    },
+    "multiSelect": {
+      "placeholder": "选择多个选项"
+    },
+    "practiceReports": {
+      "editPieceName": "编辑乐曲名称"
+    },
+    "scoreUpload": {
+      "composerPlaceholder": "作曲家（可选 - AI 将提取）",
+      "titlePlaceholder": "标题（可选 - AI 将提取）",
+      "urlPlaceholder": "https://example.com/score.pdf"
+    },
+    "scoreViewer": {
+      "nextPage": "下一页",
+      "previousPage": "上一页"
+    },
+    "segmentedControl": {
+      "ariaLabel": "视图选择器"
+    },
+    "select": {
+      "placeholder": "选择选项"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "启用实时同步（实验性）",
+      "manualSync": "手动同步"
+    },
+    "tabs": {
+      "ariaLabel": "标签页"
+    },
+    "timePicker": {
+      "am": "上午",
+      "placeholder": "HH:MM",
+      "pm": "下午"
+    }
+  }
+}

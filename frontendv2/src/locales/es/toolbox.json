@@ -1,95 +1,267 @@
 {
-  "title": "Caja de herramientas",
-  "metronome": {
-    "tapTempo": "Tap Tempo",
-    "timeSignature": "Compás",
-    "volume": "Volumen",
-    "presetPatterns": "Patrones preestablecidos",
-    "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",
-    "sounds": {
-      "accent": "acento",
-      "click": "clic",
-      "woodblock": "wood block",
-      "shaker": "shaker",
-      "triangle": "triángulo"
+  "backToLogbook": "Volver al diario",
+  "circleOfFifths": {
+    "controls": {
+      "audio": "Audio",
+      "disableAudio": "Deshabilitar audio",
+      "enableAudio": "Habilitar audio",
+      "modes": {
+        "arpeggio": "Arpegio",
+        "chord": "Acorde",
+        "scale": "Escala"
+      },
+      "off": "Apagado",
+      "on": "Encendido",
+      "play": "Reproducir",
+      "playbackMode": "Modo de reproducción",
+      "stop": "Detener",
+      "tempo": "Tempo",
+      "volume": "Volumen"
     },
-    "patterns": {
-      "basic": {
-        "name": "Basic Beat",
-        "description": "4/4 estándar con acento en 1"
-      },
-      "backbeat": {
-        "name": "Backbeat (2 & 4)",
-        "description": "Acento en tiempos 2 y 4"
-      },
-      "waltz": {
-        "name": "Waltz (3/4)",
-        "description": "Patrón fuerte-débil-débil"
-      },
-      "clave32": {
-        "name": "3-2 Clave",
-        "description": "Patrón de clave latina"
-      },
-      "shuffle": {
-        "name": "Shuffle/Swing",
-        "description": "Sensación de tresillo con nota media silenciosa"
-      },
-      "sixeight": {
-        "name": "6/8 Time",
-        "description": "Sensación de dos negras con puntillo"
-      },
-      "bossa": {
-        "name": "Bossa Nova",
-        "description": "Patrón rítmico brasileño"
-      },
-      "subdivisions": {
-        "name": "Subdivisions",
-        "description": "Práctica de corcheas y semicorcheas"
-      },
-      "offbeat": {
-        "name": "Off-beat Practice",
-        "description": "Clic solo en contratiempos"
-      },
-      "progressive": {
-        "name": "Progressive Accent",
-        "description": "Patrón de acento móvil"
-      }
+    "keyDetails": {
+      "characteristics": "Características",
+      "commonProgressions": "Progresiones comunes",
+      "dominant": "Dominante (V)",
+      "enharmonic": "Enarmónico",
+      "famousWorks": "Obras famosas",
+      "flat": "bemol",
+      "keyRelationships": "Relaciones de tonalidad",
+      "keySignature": "{{count}} {{type}}",
+      "noSharpsOrFlats": "Sin sostenidos o bemoles",
+      "primaryChords": "Acordes principales (I, IV, V)",
+      "relativeMinor": "Relativo menor",
+      "scaleNotes": "Notas de la escala",
+      "sharp": "sostenido",
+      "subdominant": "Subdominante (IV)"
     }
   },
   "counter": {
-    "title": "Contador de práctica",
-    "mode": {
-      "up": "Contar hacia arriba",
-      "down": "Contar hacia abajo"
+    "button": {
+      "finish": "Finalizar",
+      "save_to_log": "Guardar en el diario",
+      "start": "Iniciar",
+      "start_new": "Comenzar nuevo"
     },
+    "log_summary": "Practicado con el contador: {{reps}} repeticiones en {{time}}",
+    "mode": {
+      "down": "Contar hacia abajo",
+      "up": "Contar hacia arriba"
+    },
+    "practice_title": "Práctica de repeticiones",
+    "save_failed": "Error al guardar la sesión de práctica",
+    "saved_to_log": "Sesión de práctica guardada en el diario",
     "start_at": {
       "placeholder": "Empezar en"
     },
-    "button": {
-      "start": "Iniciar",
-      "finish": "Finalizar",
-      "save_to_log": "Guardar en el diario",
-      "start_new": "Comenzar nuevo"
-    },
     "summary": {
+      "duration_column": "Duración",
+      "rep_column": "Rep",
       "title": "Resumen de la sesión",
       "total_reps": "Repeticiones totales",
-      "total_time": "Tiempo total",
-      "rep_column": "Rep",
-      "duration_column": "Duración"
+      "total_time": "Tiempo total"
     },
-    "log_summary": "Practicado con el contador: {{reps}} repeticiones en {{time}}",
-    "practice_title": "Práctica de repeticiones",
-    "saved_to_log": "Sesión de práctica guardada en el diario",
-    "save_failed": "Error al guardar la sesión de práctica"
+    "title": "Contador de práctica"
   },
-  "tabs": {
-    "metronome": "Metrónomo",
-    "counter": "Contador de práctica"
+  "dictionary": {
+    "aiGenerated": "Generado por IA",
+    "aiGeneratedTooltip": "Esta definición fue generada por IA",
+    "aiGenerating": "La IA está generando una definición para este término...",
+    "aiServiceUnavailable": "El servicio de IA no está disponible temporalmente. Por favor, intenta más tarde.",
+    "aiWillGenerate": "La IA está trabajando para generar una definición para este término. Por favor, intenta de nuevo en un momento.",
+    "album": "Álbum",
+    "amazonBooks": "Libros de Amazon",
+    "availableInLanguages": "También disponible en:",
+    "backToDictionary": "Volver al Diccionario",
+    "backToResults": "Volver a resultados",
+    "browseByCategory": "Explorar por categoría",
+    "byAuthor": "por {{author}}",
+    "byChannel": "por {{channel}}",
+    "cancel": "Cancelar",
+    "categoryBrowseNote": "Haz clic en una categoría para explorar términos relacionados",
+    "categoryDescriptions": {
+      "articulation": "Expresión de notas",
+      "composer": "Creadores musicales",
+      "dynamics": "Volumen e intensidad",
+      "form": "Estructuras musicales",
+      "general": "Otros términos",
+      "genre": "Estilos musicales",
+      "instrument": "Instrumentos musicales",
+      "notation": "Símbolos escritos",
+      "period": "Épocas históricas",
+      "technique": "Métodos de interpretación",
+      "tempo": "Indicaciones de velocidad",
+      "theory": "Conceptos musicales"
+    },
+    "compareLanguages": "Comparar idiomas",
+    "confirmExternalLink": "Esto abrirá {{domain}} en una nueva pestaña. ¿Continuar?",
+    "currentLanguage": "Idioma actual: {{lang}}",
+    "definitionGenerating": "Generando definición...",
+    "definitionPending": "Generando definición...",
+    "description": "Aprende sobre términos musicales, compositores y conceptos",
+    "didYouMean": "¿Quisiste decir uno de estos?",
+    "difficulty": {
+      "advanced": "Avanzado",
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "professional": "Profesional"
+    },
+    "discoverMore": "Descubre más términos:",
+    "educationalVideos": "Videos educativos",
+    "errors": {
+      "emptySearch": "Por favor ingresa un término de búsqueda",
+      "invalidTerm": "Por favor ingresa un término musical válido",
+      "loadFailed": "Error al cargar el término. Por favor intenta de nuevo.",
+      "rateLimitExceeded": "Demasiadas solicitudes. Por favor, inténtelo de nuevo después de un tiempo.",
+      "searchFailed": "La búsqueda falló. Por favor intenta de nuevo.",
+      "tryAgainIn": "Inténtelo de nuevo en {{time}}."
+    },
+    "estimatedTime": "Tiempo estimado: {{time}}",
+    "etymology": "Etimología",
+    "example": "Ejemplo",
+    "explore": "Explorar",
+    "externalLinkNote": "Los enlaces externos se abren en una nueva pestaña. Mirubato no es responsable del contenido externo.",
+    "fetchingInLanguage": "Obteniendo versión en {{lang}}...",
+    "hasReferences": "Tiene referencias",
+    "hear": "Escuchar",
+    "helpful": "Útil",
+    "imslp": "Partituras IMSLP",
+    "languageNotAvailable": "No disponible en {{lang}}",
+    "languageVersions": "Versiones por idioma",
+    "learnMore": "Aprender más",
+    "linkUnavailable": "Enlace no disponible",
+    "listenToAlbum": "Escuchar {{name}}",
+    "listenToArtist": "Escuchar a {{name}} en Spotify",
+    "listenToPlaylist": "Escuchar lista {{name}}",
+    "listenToTrack": "Escuchar {{name}}",
+    "loading": "Cargando...",
+    "musicBrainz": "MusicBrainz",
+    "noReferencesYet": "No hay referencias disponibles aún.",
+    "noResults": "No se encontraron resultados para \"{{query}}\"",
+    "notHelpful": "No útil",
+    "opensInNewTab": "Abre {{domain}} en una nueva pestaña",
+    "originalLanguage": "Originalmente de {{lang}}",
+    "otherResources": "Otros recursos",
+    "playPronunciation": "Reproducir pronunciación",
+    "playlist": "Lista de reproducción",
+    "popularTerms": "Términos populares",
+    "popularTermsNote": "Términos musicales buscados frecuentemente por la comunidad",
+    "pronunciation": "Pronunciación",
+    "qualityScore": "Calidad",
+    "readOnWikipedia": "Leer sobre {{term}} en Wikipedia",
+    "recentSearches": "Búsquedas recientes",
+    "referencesComingSoon": "Las referencias para \"{{term}}\" se están recopilando y estarán disponibles pronto.",
+    "relatedTerms": "Términos relacionados",
+    "reportIssue": "Reportar problema",
+    "reportPlaceholder": "Describe el problema con esta definición...",
+    "search": "Buscar",
+    "searchAllLanguages": "Buscar en todos los idiomas",
+    "searchButton": "Buscar",
+    "searchLabel": "Buscar términos musicales",
+    "searchPlaceholder": "Buscar términos musicales...",
+    "searchResultsFor": "Resultados de búsqueda para \"{{term}}\"",
+    "searchWikipediaMore": "Buscar en Wikipedia para más información",
+    "searchedAllLanguages": "Se buscó en todos los idiomas disponibles",
+    "showInLanguage": "Mostrar en {{lang}}",
+    "showingRecentSearches": "Mostrando las últimas {{count}} búsquedas",
+    "showingResults": "Mostrando {{start}}-{{end}} de {{total}} resultados",
+    "spotify": "Spotify",
+    "startSearching": "¡Comienza a buscar para descubrir términos musicales!",
+    "submitReport": "Enviar reporte",
+    "suggestions": "Sugerencias",
+    "termInLanguage": "Este término está en {{lang}}",
+    "termNotFound": "\"{{term}}\" no se encontró en el diccionario",
+    "thanksFeedback": "¡Gracias por tu comentario!",
+    "title": "Diccionario Musical",
+    "track": "Pista",
+    "types": {
+      "articulation": "Articulación",
+      "composer": "Compositor",
+      "dynamics": "Dinámica",
+      "form": "Forma",
+      "general": "General",
+      "genre": "Género",
+      "instrument": "Instrumento",
+      "notation": "Notación",
+      "period": "Período",
+      "technique": "Técnica",
+      "tempo": "Tempo",
+      "theory": "Teoría"
+    },
+    "viewBook": "Ver libro {{number}}",
+    "viewOnIMSLP": "Ver partituras en IMSLP",
+    "viewOnMusicBrainz": "Ver en MusicBrainz",
+    "viewResource": "Ver recurso {{number}}",
+    "wasHelpful": "¿Fue útil?",
+    "watchVideo": "Ver video {{number}}",
+    "wikipedia": "Wikipedia",
+    "youtubeSearch": "Búsqueda en YouTube",
+    "youtubeVideos": "Videos de YouTube"
+  },
+  "metronome": {
+    "clickToCreate": "Haz clic en la cuadrícula para crear tu propio patrón rítmico. Cada fila representa una capa de sonido diferente.",
+    "patterns": {
+      "backbeat": {
+        "description": "Acento en tiempos 2 y 4",
+        "name": "Backbeat (2 & 4)"
+      },
+      "basic": {
+        "description": "4/4 estándar con acento en 1",
+        "name": "Basic Beat"
+      },
+      "bossa": {
+        "description": "Patrón rítmico brasileño",
+        "name": "Bossa Nova"
+      },
+      "clave32": {
+        "description": "Patrón de clave latina",
+        "name": "3-2 Clave"
+      },
+      "offbeat": {
+        "description": "Clic solo en contratiempos",
+        "name": "Off-beat Practice"
+      },
+      "progressive": {
+        "description": "Patrón de acento móvil",
+        "name": "Progressive Accent"
+      },
+      "shuffle": {
+        "description": "Sensación de tresillo con nota media silenciosa",
+        "name": "Shuffle/Swing"
+      },
+      "sixeight": {
+        "description": "Sensación de dos negras con puntillo",
+        "name": "6/8 Time"
+      },
+      "subdivisions": {
+        "description": "Práctica de corcheas y semicorcheas",
+        "name": "Subdivisions"
+      },
+      "waltz": {
+        "description": "Patrón fuerte-débil-débil",
+        "name": "Waltz (3/4)"
+      }
+    },
+    "presetPatterns": "Patrones preestablecidos",
+    "sounds": {
+      "accent": "acento",
+      "click": "clic",
+      "shaker": "shaker",
+      "triangle": "triángulo",
+      "woodblock": "wood block"
+    },
+    "tapTempo": "Tap Tempo",
+    "timeSignature": "Compás",
+    "volume": "Volumen"
   },
   "syncStatus": {
-    "synced": "Sincronizado",
-    "localOnly": "Almacenamiento local"
+    "localOnly": "Almacenamiento local",
+    "synced": "Sincronizado"
   },
-  "backToLogbook": "Volver al diario"
+  "tabs": {
+    "circleOfFifths": "Círculo",
+    "counter": "Contador",
+    "dictionary": "Diccionario",
+    "metronome": "Metrónomo"
+  },
+  "title": "Caja de herramientas"
 }

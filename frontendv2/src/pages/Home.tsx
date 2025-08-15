@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../stores/authStore'
@@ -17,6 +17,7 @@ const PianoLoader = () => (
 
 export default function HomePage() {
   const { t } = useTranslation(['common', 'auth', 'logbook'])
+  const navigate = useNavigate()
   const { user, isAuthenticated, login, logout, isLoading, error } =
     useAuthStore()
   const [email, setEmail] = useState('')
@@ -38,9 +39,21 @@ export default function HomePage() {
     await logout()
   }
 
+  // Extract initials from email
+  const getUserInitials = (email: string) => {
+    const [localPart] = email.split('@')
+    const parts = localPart.split(/[._-]/)
+    if (parts.length >= 2) {
+      // Take first letter of first two parts
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    // Single part - take first letter
+    return localPart[0].toUpperCase()
+  }
+
   return (
     <div
-      className="min-h-screen bg-cover bg-center relative"
+      className="min-h-screen bg-cover bg-center relative overflow-x-hidden"
       style={{
         backgroundImage: 'url(/mirubato-cover.jpeg)',
       }}
@@ -51,25 +64,15 @@ export default function HomePage() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="p-6 flex justify-between items-center">
+        <header className="p-4 sm:p-6 flex justify-between items-center">
           <div className="text-white/90">{/* Logo placeholder */}</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSwitcher />
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-white/90 text-sm">{user.email}</span>
-                <Link
-                  to="/logbook"
-                  className="text-white/90 hover:text-white text-sm transition-colors"
-                >
-                  {t('common:navigation.logbook')}
-                </Link>
-                <Link
-                  to="/toolbox"
-                  className="text-white/90 hover:text-white text-sm transition-colors"
-                >
-                  Toolbox
-                </Link>
+              <div className="flex items-center gap-2 sm:gap-4">
+                <span className="text-white/90 text-sm font-medium">
+                  {getUserInitials(user.email)}
+                </span>
                 <button
                   onClick={handleLogout}
                   className="text-white/90 hover:text-white text-sm transition-colors"
@@ -94,7 +97,7 @@ export default function HomePage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center px-6">
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6">
           <div className="text-center">
             {/* Title */}
             <h1 className="text-7xl font-thin text-white mb-4 tracking-wide animate-fade-in">
@@ -129,17 +132,40 @@ export default function HomePage() {
         </main>
 
         {/* Footer */}
-        <footer className="p-6 text-center">
-          <p className="text-white/70 text-sm">
+        <footer className="p-4 sm:p-6 text-center">
+          <p className="text-white/70 text-sm mb-2">
             Open-source practice journal for musicians
           </p>
+          <div className="flex items-center justify-center gap-4 text-white/70 text-sm">
+            <Link to="/about" className="hover:text-white/90 transition-colors">
+              {t('common:footer.about')}
+            </Link>
+            <span className="text-white/40">•</span>
+            <a
+              href="https://github.com/pezware/mirubato"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/90 transition-colors"
+            >
+              GitHub
+            </a>
+            <span className="text-white/40">•</span>
+            <a
+              href="https://github.com/pezware/mirubato/blob/main/LICENSE.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/90 transition-colors"
+            >
+              {t('common:footer.license')}
+            </a>
+          </div>
         </footer>
       </div>
 
       {/* Login Modal */}
       {showLoginForm && !isAuthenticated && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 sm:p-6 z-50">
+          <div className="glass-panel p-6 sm:p-8 w-full max-w-md animate-slide-up">
             <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
               {t('auth:signIn')}
             </h2>
@@ -150,6 +176,7 @@ export default function HomePage() {
                 onSuccess={() => {
                   setShowLoginForm(false)
                   setLoginSuccess(false)
+                  navigate('/logbook')
                 }}
                 onError={error => {
                   // Error is already handled in the store, but we can add extra handling here if needed
@@ -207,8 +234,8 @@ export default function HomePage() {
 
       {/* Login Success Message */}
       {loginSuccess && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-          <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 sm:p-6 z-50">
+          <div className="glass-panel p-6 sm:p-8 w-full max-w-md animate-slide-up">
             <div className="text-center">
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-xl font-light text-morandi-stone-700 mb-2">

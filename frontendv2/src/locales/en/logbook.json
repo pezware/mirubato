@@ -20,7 +20,15 @@
     "duration": "Duration (minutes)",
     "durationPlaceholder": "30",
     "type": "Type",
+    "typeOptions": {
+      "practice": "Practice",
+      "lesson": "Lesson",
+      "performance": "Performance",
+      "rehearsal": "Rehearsal",
+      "technique": "Technique"
+    },
     "pieces": "Pieces",
+    "instrument": "Instrument",
     "notes": "Notes",
     "notesPlaceholder": "What did you work on? Any observations?",
     "addPiece": "Add Piece",
@@ -32,11 +40,30 @@
     "confirmDelete": "Are you sure you want to delete this entry?",
     "foundEntries": "Found {{count}} entries",
     "techniques": "Techniques",
+    "techniqueOptions": {
+      "scale": "Scale",
+      "arpeggio": "Arpeggio",
+      "octave": "Octave",
+      "rhythm": "Rhythm",
+      "custom": "Custom",
+      "selectTechniques": "Select techniques practiced",
+      "addCustom": "Add custom technique",
+      "customPlaceholder": "Enter custom technique name",
+      "customTechniques": "Custom Techniques"
+    },
     "practiceDate": "Practice Date",
+    "time": "Time",
     "successAdded": "Practice entry successfully added!",
     "successUpdated": "Practice entry successfully updated!",
     "piecesNote": "Practice time will be divided equally among pieces",
-    "maxPiecesReached": "Maximum 3 pieces per entry"
+    "maxPiecesReached": "Maximum 3 pieces per entry",
+    "duplicateDetection": {
+      "similarTo": "Similar to \"{{title}}\"{{composer, composer}}. Use existing or create new?",
+      "matchPercentage": "{{percentage}}%",
+      "useThis": "Use This",
+      "createNewAnyway": "Create New Anyway",
+      "letMeEdit": "Let Me Edit"
+    }
   },
   "filters": {
     "last7Days": "Last 7 days",
@@ -61,5 +88,38 @@
   },
   "viewScore": "View Score",
   "linkedScore": "Linked Score",
-  "autoTracked": "Auto-tracked from score practice"
+  "autoTracked": "Auto-tracked from score practice",
+  "timer": {
+    "title": "Practice Timer",
+    "start": "Start Timer",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop & Log",
+    "reset": "Reset",
+    "confirmClose": "Timer is running. Are you sure you want to close?",
+    "startedAt": "Started at",
+    "startHint": "Click Start to begin timing your practice session",
+    "runningHint": "Timer is running. Click Pause to take a break or Stop to finish.",
+    "stopHint": "Click Stop & Log to create a practice entry with this duration",
+    "startHintMobile": "Tap to start",
+    "runningHintMobile": "Tap to pause",
+    "stopHintMobile": "Resume • Stop",
+    "continuedInBackground": "Continued in background",
+    "minimize": "Minimize timer",
+    "minimizeHint": "You can minimize this timer to continue practicing while it runs in the background",
+    "settings": "Timer Settings",
+    "enableReminders": "Enable Reminders",
+    "reminderDescription": "Get notified at regular intervals",
+    "reminderType": "Reminder Type",
+    "visualOnly": "Visual notification only",
+    "soundOnly": "Sound only",
+    "both": "Visual and sound",
+    "reminderInterval": "Reminder Interval",
+    "every15min": "Every 15 minutes",
+    "every20min": "Every 20 minutes",
+    "every25min": "Every 25 minutes",
+    "every30min": "Every 30 minutes",
+    "every45min": "Every 45 minutes",
+    "every60min": "Every hour"
+  }
 }

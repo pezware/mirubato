@@ -1,6 +1,13 @@
 import { create } from 'zustand'
 import { logbookApi, type LogbookEntry, type Goal } from '../api/logbook'
 import { nanoid } from 'nanoid'
+import {
+  removeDuplicates,
+  getDuplicateReport,
+  type DuplicateEntry,
+} from '../utils/duplicateCleanup'
+import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
+import { localEventBus } from '../services/localEventBus'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -15,6 +22,20 @@ interface LogbookState {
 
   // Local Storage Management (for anonymous users)
   isLocalMode: boolean
+
+  // Simple sync state
+  isSyncing: boolean
+  lastSyncTime: Date | null
+  syncError: string | null
+
+  // WebSocket real-time sync state
+  isRealtimeSyncEnabled: boolean
+  realtimeSyncStatus:
+    | 'connected'
+    | 'connecting'
+    | 'disconnected'
+    | 'reconnecting'
+  realtimeSyncError: string | null
 
   // Computed getters
   entries: LogbookEntry[]
@@ -45,17 +66,57 @@ interface LogbookState {
   clearError: () => void
 
   // Actions - Sync
-  syncWithServer: () => Promise<void>
+  manualSync: () => Promise<{ success: boolean; error?: string }>
+  clearSyncError: () => void
+
+  // Actions - Real-time Sync
+  enableRealtimeSync: () => Promise<boolean>
+  disableRealtimeSync: () => void
+  addEntryFromSync: (entry: LogbookEntry) => void
+  updateEntryFromSync: (entry: LogbookEntry) => void
+  removeEntryFromSync: (entryId: string) => void
+  mergeEntriesFromSync: (entries: LogbookEntry[]) => void
+
+  // Actions - Piece Management
+  updatePieceName: (
+    oldPiece: { title: string; composer?: string },
+    newPiece: { title: string; composer?: string }
+  ) => Promise<number>
+
+  // Actions - Duplicate Management
+  cleanupDuplicates: () => Promise<{
+    duplicatesRemoved: number
+    report: {
+      duplicates: DuplicateEntry[]
+      summary: {
+        totalEntries: number
+        duplicatesFound: number
+        highConfidence: number
+        mediumConfidence: number
+        lowConfidence: number
+      }
+    }
+  }>
+  getDuplicateReport: () => {
+    duplicates: DuplicateEntry[]
+    summary: {
+      totalEntries: number
+      duplicatesFound: number
+      highConfidence: number
+      mediumConfidence: number
+      lowConfidence: number
+    }
+  }
 }
 
 // Local storage keys
 const ENTRIES_KEY = 'mirubato:logbook:entries'
 const GOALS_KEY = 'mirubato:logbook:goals'
 const SCORE_METADATA_KEY = 'mirubato:logbook:scoreMetadata'
+const DELETED_ENTRIES_KEY = 'mirubato:logbook:deletedEntries'
 
 // Debounce helper
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function debounce<T extends (...args: any[]) => void>(
+function debounce<T extends (...args: never[]) => void>(
   func: T,
   wait: number
 ): T {
@@ -92,6 +153,26 @@ const sortEntriesByTimestamp = (entries: LogbookEntry[]): LogbookEntry[] => {
   )
 }
 
+// Deletion tracking helpers
+const getDeletedEntries = (): Set<string> => {
+  try {
+    const deleted = localStorage.getItem(DELETED_ENTRIES_KEY)
+    return deleted ? new Set(JSON.parse(deleted)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+const addToDeletedEntries = (entryId: string): void => {
+  const deletedEntries = getDeletedEntries()
+  deletedEntries.add(entryId)
+  localStorage.setItem(DELETED_ENTRIES_KEY, JSON.stringify([...deletedEntries]))
+}
+
+const clearDeletedEntries = (): void => {
+  localStorage.removeItem(DELETED_ENTRIES_KEY)
+}
+
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
   goalsMap: new Map(),
@@ -100,6 +181,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   error: null,
   searchQuery: '',
   isLocalMode: true, // Always start in local mode
+
+  // Simple sync state
+  isSyncing: false,
+  lastSyncTime: null,
+  syncError: null,
+
+  // Real-time sync state
+  isRealtimeSyncEnabled: false,
+  realtimeSyncStatus: 'disconnected',
+  realtimeSyncError: null,
 
   // Computed properties - these need to be regular properties that get updated
   entries: [],
@@ -126,34 +217,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         isLoading: false,
       })
 
-      // If user is authenticated and online, sync in background
-      const token = localStorage.getItem('auth-token')
-      if (token && !get().isLocalMode) {
-        // Try to sync with server in background
-        logbookApi
-          .getEntries()
-          .then(serverEntries => {
-            const newEntriesMap = new Map(
-              serverEntries.map(entry => [entry.id, entry])
-            )
-            set({
-              entriesMap: newEntriesMap,
-              entries: sortEntriesByTimestamp(
-                Array.from(newEntriesMap.values())
-              ),
-            })
-
-            // Debounced write to localStorage
-            debouncedLocalStorageWrite(
-              ENTRIES_KEY,
-              JSON.stringify(serverEntries)
-            )
-          })
-          .catch(err => {
-            console.warn('Background sync failed:', err)
-            // Keep using local data
-          })
-      }
+      // No automatic sync - user controls when to sync
     } catch (error: unknown) {
       console.error('Failed to load entries:', error as Error)
       set({
@@ -207,35 +271,21 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         JSON.stringify(Array.from(newEntriesMap.values()))
       )
 
-      // If authenticated and online, sync to server in background
-      const token = localStorage.getItem('auth-token')
-      if (token && !get().isLocalMode) {
-        logbookApi
-          .createEntry(entryData)
-          .then(serverEntry => {
-            // Update the entry with server ID if different
-            if (serverEntry.id !== entry.id) {
-              const updatedEntriesMap = new Map(get().entriesMap)
-              updatedEntriesMap.delete(entry.id)
-              updatedEntriesMap.set(serverEntry.id, serverEntry)
-              set({
-                entriesMap: updatedEntriesMap,
-                entries: sortEntriesByTimestamp(
-                  Array.from(updatedEntriesMap.values())
-                ),
-              })
+      // Emit event for repertoire to handle goal linking
+      // This avoids circular dependency between stores
+      localEventBus.emit('PRACTICE_CREATED', { entry })
 
-              debouncedLocalStorageWrite(
-                ENTRIES_KEY,
-                JSON.stringify(Array.from(updatedEntriesMap.values()))
-              )
-            }
-          })
-          .catch(err => {
-            console.warn('Background sync failed for new entry:', err)
-            // Entry remains in local storage
-          })
+      // Send real-time sync event if enabled
+      if (get().isRealtimeSyncEnabled) {
+        const webSocketSync = getWebSocketSync()
+        webSocketSync.send({
+          type: 'ENTRY_CREATED',
+          entry,
+          timestamp: new Date().toISOString(),
+        })
       }
+
+      // Entry saved locally - user can sync manually later
     } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
       throw error
@@ -270,6 +320,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_UPDATED',
+            entry: updatedEntry,
+            timestamp: new Date().toISOString(),
+          })
+        }
       } else {
         // Update via API
         const updated = await logbookApi.updateEntry(id, updates)
@@ -285,6 +345,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_UPDATED',
+            entry: updated,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     } catch (error: unknown) {
       const err = error as Error & { response?: { data?: { error?: string } } }
@@ -310,6 +380,19 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Track deletion for sync conflict resolution
+        addToDeletedEntries(id)
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_DELETED',
+            entryId: id,
+            timestamp: new Date().toISOString(),
+          })
+        }
       } else {
         // Delete via API
         await logbookApi.deleteEntry(id)
@@ -325,6 +408,16 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
+
+        // Send real-time sync event if enabled
+        if (get().isRealtimeSyncEnabled) {
+          const webSocketSync = getWebSocketSync()
+          webSocketSync.send({
+            type: 'ENTRY_DELETED',
+            entryId: id,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     } catch (error: unknown) {
       const err = error as Error & { response?: { data?: { error?: string } } }
@@ -507,125 +600,554 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   setLocalMode: isLocal => set({ isLocalMode: isLocal }),
   clearError: () => set({ error: null }),
 
-  syncWithServer: async () => {
+  manualSync: async () => {
     const token = localStorage.getItem('auth-token')
     if (!token) {
-      set({ error: 'Please sign in to sync with server' })
-      return
+      set({ syncError: 'Please sign in to sync with server' })
+      return { success: false, error: 'Please sign in to sync with server' }
     }
 
-    set({ isLoading: true, error: null })
+    set({ isSyncing: true, syncError: null })
 
     try {
-      // Get local entries
-      const localEntries = Array.from(get().entriesMap.values())
-
-      // Pull from server
+      // Enhanced sync: "Local Activity Wins" conflict resolution
       const serverEntries = await logbookApi.getEntries()
+      const localEntries = Array.from(get().entriesMap.values())
+      const lastSyncTime = get().lastSyncTime
 
-      // Create maps for deduplication
+      // Get locally deleted entries to respect deletions
+      const deletedEntries = getDeletedEntries()
+
+      // Create maps for efficient lookup
       const serverEntriesMap = new Map(
         serverEntries.map(entry => [entry.id, entry])
       )
+      const localEntriesMap = new Map(
+        localEntries.map(entry => [entry.id, entry])
+      )
 
-      // Create a map to track entries by content signature for deduplication
-      const contentSignatureMap = new Map<string, LogbookEntry>()
-
-      // Helper to create a content signature for deduplication
-      const createContentSignature = (entry: LogbookEntry): string => {
-        // Create a signature based on key content fields (excluding timestamp to allow deduplication)
-        const pieces = entry.pieces
-          .map(p => `${p.title}-${p.composer}`)
-          .sort()
-          .join('|')
-        // Use a time window approach - entries within 5 minutes are considered potentially duplicate
-        const timeWindow = Math.floor(
-          new Date(entry.timestamp).getTime() / (5 * 60 * 1000)
-        )
-        return `${timeWindow}-${entry.duration}-${entry.type}-${entry.instrument}-${pieces}`
+      // Track sync statistics for user feedback
+      const syncStats = {
+        localWins: 0,
+        serverWins: 0,
+        localDeletes: 0,
+        localCreates: 0,
+        serverCreates: 0,
       }
 
-      // Add server entries to content map
-      serverEntries.forEach(entry => {
-        const signature = createContentSignature(entry)
-        contentSignatureMap.set(signature, entry)
-      })
+      const mergedEntries: LogbookEntry[] = []
+      const entriesToUpdate: LogbookEntry[] = []
 
-      // Find truly unique local entries (not duplicates by content)
-      const uniqueLocalEntries: LogbookEntry[] = []
-      const duplicateLocalEntries: LogbookEntry[] = []
+      // Handle deletions first (local deletions always win)
+      if (deletedEntries.size > 0) {
+        for (const deletedId of deletedEntries) {
+          if (serverEntriesMap.has(deletedId)) {
+            try {
+              await logbookApi.deleteEntry(deletedId)
+              syncStats.localDeletes++
+              console.log(`✅ Local deletion wins: ${deletedId}`)
+            } catch (error) {
+              console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
+            }
+          }
+        }
+      }
 
-      localEntries.forEach(localEntry => {
-        // Skip if already on server by ID
-        if (serverEntriesMap.has(localEntry.id)) {
-          return
+      // Get all unique entry IDs from both local and server
+      const allEntryIds = new Set([
+        ...localEntries.map(e => e.id),
+        ...serverEntries.map(e => e.id),
+      ])
+
+      // Process each entry with "Local Activity Wins" logic
+      for (const entryId of allEntryIds) {
+        // Skip if locally deleted
+        if (deletedEntries.has(entryId)) {
+          continue
         }
 
-        // Check if this is a duplicate by content
-        const signature = createContentSignature(localEntry)
-        if (contentSignatureMap.has(signature)) {
-          duplicateLocalEntries.push(localEntry)
-        } else {
-          uniqueLocalEntries.push(localEntry)
-          // Add to content map to catch duplicates within local entries
-          contentSignatureMap.set(signature, localEntry)
+        const localEntry = localEntriesMap.get(entryId)
+        const serverEntry = serverEntriesMap.get(entryId)
+
+        if (localEntry && !serverEntry) {
+          // Local-only entry: push to server (local wins)
+          mergedEntries.push(localEntry)
+          syncStats.localCreates++
+          console.log(
+            `📤 Pushing local-only entry: ${localEntry.pieces?.[0]?.title || 'Untitled'}`
+          )
+        } else if (!localEntry && serverEntry) {
+          // Server-only entry: accept from server (server wins)
+          mergedEntries.push(serverEntry)
+          syncStats.serverCreates++
+          console.log(
+            `📥 Accepting server entry: ${serverEntry.pieces?.[0]?.title || 'Untitled'}`
+          )
+        } else if (localEntry && serverEntry) {
+          // Both exist: check for local activity since last sync
+          const hasLocalActivity = lastSyncTime
+            ? new Date(localEntry.updatedAt).getTime() >
+              new Date(lastSyncTime).getTime()
+            : false
+
+          if (hasLocalActivity) {
+            // Local activity detected: local wins, push to server
+            mergedEntries.push(localEntry)
+            entriesToUpdate.push(localEntry)
+            syncStats.localWins++
+            console.log(
+              `🏆 Local activity wins: ${localEntry.pieces?.[0]?.title || 'Untitled'}`
+            )
+          } else {
+            // No local activity: server wins
+            mergedEntries.push(serverEntry)
+            syncStats.serverWins++
+            console.log(
+              `📲 Server version accepted: ${serverEntry.pieces?.[0]?.title || 'Untitled'}`
+            )
+          }
+        }
+      }
+
+      // Push local-only entries to server
+      const localOnlyEntries = mergedEntries.filter(
+        entry =>
+          localEntriesMap.has(entry.id) && !serverEntriesMap.has(entry.id)
+      )
+
+      if (localOnlyEntries.length > 0) {
+        try {
+          const { syncApi } = await import('../api/sync')
+          await syncApi.push({
+            changes: {
+              entries: localOnlyEntries,
+              goals: [], // TODO: Add goals sync
+            },
+          })
+          console.log(
+            `✅ Pushed ${localOnlyEntries.length} local entries to server`
+          )
+        } catch (error) {
+          console.warn('⚠️ Failed to push local entries to server:', error)
+        }
+      }
+
+      // Update server entries where local wins
+      for (const entry of entriesToUpdate) {
+        try {
+          await logbookApi.updateEntry(entry.id, {
+            pieces: entry.pieces,
+            duration: entry.duration,
+            timestamp: entry.timestamp,
+            type: entry.type,
+            instrument: entry.instrument,
+            techniques: entry.techniques,
+            goalIds: entry.goalIds,
+            notes: entry.notes,
+            mood: entry.mood,
+            tags: entry.tags,
+            metadata: entry.metadata,
+            scoreId: entry.scoreId,
+            scoreTitle: entry.scoreTitle,
+            scoreComposer: entry.scoreComposer,
+            autoTracked: entry.autoTracked,
+          })
+          console.log(
+            `✅ Updated server with local changes: ${entry.pieces?.[0]?.title || 'Untitled'}`
+          )
+        } catch (error) {
+          console.warn(`⚠️ Failed to update server entry ${entry.id}:`, error)
+        }
+      }
+
+      // Create final merged map
+      const mergedEntriesMap = new Map(
+        mergedEntries.map(entry => [entry.id, entry])
+      )
+
+      // Update state
+      set({
+        entriesMap: mergedEntriesMap,
+        entries: sortEntriesByTimestamp(mergedEntries),
+        isSyncing: false,
+        lastSyncTime: new Date(),
+        isLocalMode: false,
+      })
+
+      // Update local storage
+      debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(mergedEntries))
+
+      // Clear deletion tracking after successful sync
+      clearDeletedEntries()
+
+      // Log sync summary
+      console.log('🔄 Sync completed with Local Activity Wins strategy:', {
+        totalEntries: mergedEntries.length,
+        localWins: syncStats.localWins,
+        serverWins: syncStats.serverWins,
+        localDeletes: syncStats.localDeletes,
+        localCreates: syncStats.localCreates,
+        serverCreates: syncStats.serverCreates,
+      })
+
+      return { success: true }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Sync failed'
+      set({
+        isSyncing: false,
+        syncError: errorMessage,
+      })
+      console.error('Manual sync failed:', error)
+      return { success: false, error: errorMessage }
+    }
+  },
+
+  clearSyncError: () => set({ syncError: null }),
+
+  // Real-time sync methods
+  enableRealtimeSync: async () => {
+    try {
+      set({ realtimeSyncError: null, realtimeSyncStatus: 'connecting' })
+
+      const webSocketSync = getWebSocketSync()
+
+      // Set up event handlers
+      webSocketSync.on('ENTRY_CREATED', (event: SyncEvent) => {
+        if (event.entry) {
+          get().addEntryFromSync(event.entry)
+        }
+      })
+
+      webSocketSync.on('ENTRY_UPDATED', (event: SyncEvent) => {
+        if (event.entry) {
+          get().updateEntryFromSync(event.entry)
+        }
+      })
+
+      webSocketSync.on('ENTRY_DELETED', (event: SyncEvent) => {
+        if (event.entryId) {
+          get().removeEntryFromSync(event.entryId)
+        }
+      })
+
+      webSocketSync.on('BULK_SYNC', (event: SyncEvent) => {
+        if (event.entries) {
+          get().mergeEntriesFromSync(event.entries)
+        }
+      })
+
+      // Get auth token and user info
+      const authToken = localStorage.getItem('auth-token')
+      const userStr = localStorage.getItem('mirubato:user')
+
+      if (!authToken || !userStr) {
+        throw new Error('Authentication required for real-time sync')
+      }
+
+      const user = JSON.parse(userStr)
+      const success = await webSocketSync.connect(user.id, authToken)
+
+      if (success) {
+        set({
+          isRealtimeSyncEnabled: true,
+          realtimeSyncStatus: 'connected',
+          realtimeSyncError: null,
+        })
+        return true
+      } else {
+        throw new Error('Failed to connect to real-time sync')
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Real-time sync failed'
+      set({
+        isRealtimeSyncEnabled: false,
+        realtimeSyncStatus: 'disconnected',
+        realtimeSyncError: errorMessage,
+      })
+      console.error('Failed to enable real-time sync:', error)
+      return false
+    }
+  },
+
+  disableRealtimeSync: () => {
+    const webSocketSync = getWebSocketSync()
+    webSocketSync.disconnect()
+    set({
+      isRealtimeSyncEnabled: false,
+      realtimeSyncStatus: 'disconnected',
+      realtimeSyncError: null,
+    })
+  },
+
+  addEntryFromSync: (entry: LogbookEntry) => {
+    const newEntriesMap = new Map(get().entriesMap)
+
+    // Avoid duplicates and don't overwrite newer local entries
+    const existingEntry = newEntriesMap.get(entry.id)
+    if (existingEntry) {
+      // Check if incoming entry is newer
+      if (
+        new Date(entry.updatedAt).getTime() <=
+        new Date(existingEntry.updatedAt).getTime()
+      ) {
+        return // Local entry is newer, ignore
+      }
+    }
+
+    newEntriesMap.set(entry.id, entry)
+    set({
+      entriesMap: newEntriesMap,
+      entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+    })
+
+    // Update localStorage
+    debouncedLocalStorageWrite(
+      ENTRIES_KEY,
+      JSON.stringify(Array.from(newEntriesMap.values()))
+    )
+
+    // Show toast notification if it's a new entry
+    if (!existingEntry) {
+      console.log(
+        '✨ New practice entry synced from another device:',
+        entry.pieces?.[0]?.title || 'Untitled'
+      )
+    }
+  },
+
+  updateEntryFromSync: (entry: LogbookEntry) => {
+    const newEntriesMap = new Map(get().entriesMap)
+
+    // Only update if the incoming entry is newer
+    const existingEntry = newEntriesMap.get(entry.id)
+    if (
+      existingEntry &&
+      new Date(entry.updatedAt).getTime() <=
+        new Date(existingEntry.updatedAt).getTime()
+    ) {
+      return // Local entry is newer, ignore
+    }
+
+    newEntriesMap.set(entry.id, entry)
+    set({
+      entriesMap: newEntriesMap,
+      entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+    })
+
+    // Update localStorage
+    debouncedLocalStorageWrite(
+      ENTRIES_KEY,
+      JSON.stringify(Array.from(newEntriesMap.values()))
+    )
+
+    console.log(
+      '📝 Practice entry updated from another device:',
+      entry.pieces?.[0]?.title || 'Untitled'
+    )
+  },
+
+  removeEntryFromSync: (entryId: string) => {
+    const newEntriesMap = new Map(get().entriesMap)
+    const removedEntry = newEntriesMap.get(entryId)
+
+    if (removedEntry) {
+      newEntriesMap.delete(entryId)
+      set({
+        entriesMap: newEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+      })
+
+      // Update localStorage
+      immediateLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(newEntriesMap.values()))
+      )
+
+      console.log(
+        '🗑️ Practice entry deleted from another device:',
+        removedEntry.pieces?.[0]?.title || 'Untitled'
+      )
+    }
+  },
+
+  mergeEntriesFromSync: (entries: LogbookEntry[]) => {
+    const newEntriesMap = new Map(get().entriesMap)
+    let changesCount = 0
+
+    for (const entry of entries) {
+      const existingEntry = newEntriesMap.get(entry.id)
+
+      // Add new entries or update if incoming is newer
+      if (
+        !existingEntry ||
+        new Date(entry.updatedAt).getTime() >
+          new Date(existingEntry.updatedAt).getTime()
+      ) {
+        newEntriesMap.set(entry.id, entry)
+        changesCount++
+      }
+    }
+
+    if (changesCount > 0) {
+      set({
+        entriesMap: newEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+      })
+
+      // Update localStorage
+      debouncedLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(newEntriesMap.values()))
+      )
+
+      console.log(`📊 Merged ${changesCount} entries from sync`)
+    }
+  },
+
+  updatePieceName: async (oldPiece, newPiece) => {
+    set({ error: null })
+
+    try {
+      console.log('[updatePieceName] Starting update:', { oldPiece, newPiece })
+
+      // Update all entries locally first
+      const updatedEntriesMap = new Map(get().entriesMap)
+      const affectedEntryIds: string[] = []
+
+      updatedEntriesMap.forEach((entry, id) => {
+        let wasUpdated = false
+        const updatedPieces = entry.pieces.map(piece => {
+          if (
+            piece.title === oldPiece.title &&
+            (piece.composer || '') === (oldPiece.composer || '')
+          ) {
+            wasUpdated = true
+            console.log(`[updatePieceName] Found matching piece in entry ${id}`)
+            return {
+              ...piece,
+              title: newPiece.title,
+              composer: newPiece.composer || null,
+            }
+          }
+          return piece
+        })
+
+        if (wasUpdated) {
+          affectedEntryIds.push(id)
+          updatedEntriesMap.set(id, {
+            ...entry,
+            pieces: updatedPieces,
+            updatedAt: new Date().toISOString(),
+          })
         }
       })
 
       console.log(
-        `Found ${uniqueLocalEntries.length} unique local entries, ${duplicateLocalEntries.length} duplicates`
+        `[updatePieceName] Updated ${affectedEntryIds.length} entries locally`
       )
 
-      // Start with server entries
-      const mergedEntriesMap = new Map(serverEntriesMap)
+      // Update state
+      set({
+        entriesMap: updatedEntriesMap,
+        entries: sortEntriesByTimestamp(Array.from(updatedEntriesMap.values())),
+      })
 
-      if (uniqueLocalEntries.length > 0) {
-        console.log(
-          `Pushing ${uniqueLocalEntries.length} unique local entries to server`
-        )
+      // Save to localStorage immediately
+      immediateLocalStorageWrite(
+        ENTRIES_KEY,
+        JSON.stringify(Array.from(updatedEntriesMap.values()))
+      )
 
+      // If online, update on server
+      if (!get().isLocalMode && localStorage.getItem('auth-token')) {
         try {
-          // Push only unique local entries to server
-          const { syncApi } = await import('../api/sync')
-          await syncApi.push({
-            changes: {
-              entries: uniqueLocalEntries,
-              goals: [], // TODO: Sync goals too
-            },
-          })
-
-          // After successful push, add unique entries to merged map
-          uniqueLocalEntries.forEach(entry => {
-            mergedEntriesMap.set(entry.id, entry)
-          })
-        } catch (pushError) {
-          console.error('Failed to push local entries:', pushError)
-          // Still merge unique local entries even if push fails
-          uniqueLocalEntries.forEach(entry => {
-            mergedEntriesMap.set(entry.id, entry)
+          console.log('[updatePieceName] Calling API to update server')
+          // Call API to update pieces
+          const serverUpdateCount = await logbookApi.updatePieceName(
+            oldPiece,
+            newPiece
+          )
+          console.log(
+            `[updatePieceName] Server updated ${serverUpdateCount} entries`
+          )
+        } catch (apiError) {
+          // If API fails, we still keep local changes
+          console.error('Failed to update piece name on server:', apiError)
+          set({
+            error: 'Piece name updated locally. Will sync when online.',
           })
         }
       }
 
-      // Update state with merged entries
-      set({
-        entriesMap: mergedEntriesMap,
-        entries: sortEntriesByTimestamp(Array.from(mergedEntriesMap.values())),
-        isLoading: false,
-        isLocalMode: false,
-      })
-
-      // Update local storage with merged data
-      debouncedLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(mergedEntriesMap.values()))
-      )
+      // Return the number of affected entries
+      return affectedEntryIds.length
     } catch (error: unknown) {
-      set({
-        error: 'Failed to sync with server. Continuing with local data.',
-        isLoading: false,
-      })
-      console.error('Sync failed:', error)
+      const err = error as { response?: { data?: { error?: string } } }
+      set({ error: err.response?.data?.error || 'Failed to update piece name' })
+      throw error
     }
   },
+
+  // Duplicate Management
+  cleanupDuplicates: async () => {
+    console.log('[LogbookStore] Starting duplicate cleanup...')
+
+    const currentEntries = Array.from(get().entriesMap.values())
+    const report = getDuplicateReport(currentEntries)
+
+    if (report.summary.duplicatesFound === 0) {
+      console.log('[LogbookStore] No duplicates found')
+      return { duplicatesRemoved: 0, report }
+    }
+
+    // Remove duplicates and update store
+    const cleanedEntries = removeDuplicates(currentEntries)
+    const duplicatesRemoved = currentEntries.length - cleanedEntries.length
+
+    // Update the entries map
+    const newEntriesMap = new Map(
+      cleanedEntries.map(entry => [entry.id, entry])
+    )
+    set({
+      entriesMap: newEntriesMap,
+      entries: sortEntriesByTimestamp(cleanedEntries),
+    })
+
+    // Update local storage
+    immediateLocalStorageWrite(ENTRIES_KEY, JSON.stringify(cleanedEntries))
+
+    console.log(`[LogbookStore] Removed ${duplicatesRemoved} duplicate entries`)
+    console.log(`[LogbookStore] Kept ${cleanedEntries.length} unique entries`)
+
+    return { duplicatesRemoved, report }
+  },
+
+  getDuplicateReport: () => {
+    const currentEntries = Array.from(get().entriesMap.values())
+    return getDuplicateReport(currentEntries)
+  },
 }))
+
+// Register event handler for piece dissociation from repertoire
+// This handles updates when a piece is removed from repertoire but logs should be preserved
+// Skip registration only in test environment
+const isTestEnvironment =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+if (!isTestEnvironment) {
+  localEventBus.on('PIECE_DISSOCIATED', ({ updatedEntries }) => {
+    // Update store state with the modified entries
+    useLogbookStore.setState({
+      entriesMap: updatedEntries,
+      entries: Array.from(updatedEntries.values()).sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    })
+
+    // Preserve localStorage sync - write immediately
+    const entries = Array.from(updatedEntries.values())
+    localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
+  })
+}

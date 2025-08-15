@@ -58,7 +58,7 @@ describe('Sync Handlers', () => {
             entity_id: 'entry-1',
             data: JSON.stringify({
               id: 'entry-1',
-              type: 'PRACTICE',
+              type: 'practice',
               duration: 30,
             }),
           },
@@ -127,15 +127,19 @@ describe('Sync Handlers', () => {
 
   describe('POST /api/sync/push', () => {
     it('should successfully push entries', async () => {
-      mockDbInstance.upsertSyncData.mockResolvedValue(undefined)
+      mockDbInstance.upsertSyncData.mockResolvedValue({
+        id: 'sync-id',
+        entity_id: 'entry_1750717972797_0suwq20o8',
+        action: 'created',
+      })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
       const testEntry = {
         id: 'entry_1750717972797_0suwq20o8',
         timestamp: '2025-06-23T22:32:52.797Z',
         duration: 30,
-        type: 'PRACTICE',
-        instrument: 'PIANO',
+        type: 'practice',
+        instrument: 'piano',
         pieces: [],
         techniques: [],
         goalIds: [],
@@ -181,11 +185,16 @@ describe('Sync Handlers', () => {
           instrument: 'piano', // normalized to lowercase
         },
         checksum: 'test-checksum-abc',
+        deviceId: undefined, // no device ID provided in test
       })
     })
 
     it('should handle multiple entries and goals', async () => {
-      mockDbInstance.upsertSyncData.mockResolvedValue(undefined)
+      mockDbInstance.upsertSyncData.mockResolvedValue({
+        id: 'sync-id',
+        entity_id: 'test-id',
+        action: 'created',
+      })
       mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
 
       const testGoal = {

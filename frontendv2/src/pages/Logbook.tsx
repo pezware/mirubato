@@ -1,164 +1,83 @@
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useLogbookStore } from '../stores/logbookStore'
-import { useAuthStore } from '../stores/authStore'
-import EnhancedPracticeReports from '../components/EnhancedPracticeReports'
-import GoogleSignInButton from '../components/GoogleSignInButton'
-import UnifiedHeader from '../components/layout/UnifiedHeader'
+import EnhancedReports from '../components/practice-reports/EnhancedReports'
+import AppLayout from '../components/layout/AppLayout'
+import ManualEntryForm from '../components/ManualEntryForm'
+import TimerEntry from '../components/TimerEntry'
+import { PullToRefresh } from '../components/PullToRefresh'
+import { useGlobalTimer } from '@/hooks/useGlobalTimer'
 
 export default function LogbookPage() {
-  const { t } = useTranslation(['logbook', 'common', 'auth', 'errors'])
-  const {
-    isAuthenticated,
-    login,
-    isLoading: authLoading,
-    error: authError,
-  } = useAuthStore()
   const { error, loadEntries, clearError } = useLogbookStore()
-
-  const [showLoginForm, setShowLoginForm] = useState(false)
-  const [email, setEmail] = useState('')
-  const [loginSuccess, setLoginSuccess] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [timerDuration, setTimerDuration] = useState<number | undefined>()
+  const [timerStartTime, setTimerStartTime] = useState<Date | undefined>()
+  const { isModalOpen, openModal } = useGlobalTimer()
 
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await login(email)
-      setLoginSuccess(true)
-      setShowLoginForm(false)
-    } catch {
-      // Error is handled in the store
-    }
+  const handleTimerComplete = (duration: number, startTime?: Date) => {
+    setTimerDuration(duration)
+    setTimerStartTime(startTime)
+    setShowManualEntry(true)
+  }
+
+  const handleManualEntryClose = () => {
+    setShowManualEntry(false)
+    setTimerDuration(undefined)
+    setTimerStartTime(undefined)
   }
 
   return (
-    <div className="min-h-screen bg-morandi-sand-100">
-      <UnifiedHeader
-        currentPage="logbook"
-        onSignInClick={() => setShowLoginForm(true)}
-      />
-
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <p className="text-red-700 flex items-center gap-2">
-                <span>⚠️</span>
-                {error}
-              </p>
-              <button
-                onClick={clearError}
-                className="text-red-600 hover:text-red-800"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Reports Section */}
-        <EnhancedPracticeReports />
-
-        {/* Login Modal */}
-        {showLoginForm && !isAuthenticated && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-            <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
-              <h2 className="text-2xl font-light mb-6 text-morandi-stone-700">
-                {t('auth:signIn')}
-              </h2>
-
-              {/* Google Sign In */}
-              <div className="mb-6">
-                <GoogleSignInButton
-                  onSuccess={() => {
-                    setShowLoginForm(false)
-                    setLoginSuccess(false)
-                  }}
-                  onError={error => {
-                    console.error('Google Sign-In error:', error)
-                  }}
-                />
-              </div>
-
-              {/* Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-morandi-stone-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white/90 text-morandi-stone-500">
-                    {t('auth:orContinueWithEmail')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Email Login Form */}
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 bg-white/50 border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
-                    placeholder={t('auth:emailPlaceholder')}
-                  />
-                </div>
-                {authError && (
-                  <p className="text-red-600 text-sm">{authError}</p>
-                )}
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    disabled={authLoading}
-                    className="btn-primary flex-1"
-                  >
-                    {authLoading
-                      ? t('common:loading')
-                      : t('auth:sendMagicLink')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowLoginForm(false)}
-                    className="btn-secondary flex-1"
-                  >
-                    {t('common:cancel')}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Login Success Message */}
-        {loginSuccess && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-            <div className="glass-panel p-8 w-full max-w-md animate-slide-up">
-              <div className="text-center">
-                <div className="text-4xl mb-4">📧</div>
-                <h3 className="text-xl font-light text-morandi-stone-700 mb-2">
-                  {t('auth:checkYourEmail')}
-                </h3>
-                <p className="text-morandi-stone-600 mb-6">
-                  {t('auth:magicLinkSent', { email })}
+    <AppLayout
+      onNewEntry={() => setShowManualEntry(true)}
+      onTimerClick={openModal}
+    >
+      <PullToRefresh className="h-full">
+        <div className="p-3 sm:px-6 sm:py-4">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
+              <div className="flex items-center justify-between">
+                <p className="text-red-700 flex items-center gap-2">
+                  <span>⚠️</span>
+                  {error}
                 </p>
                 <button
-                  onClick={() => setLoginSuccess(false)}
-                  className="btn-secondary"
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800"
                 >
-                  {t('auth:gotIt')}
+                  ✕
                 </button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+
+          {/* Reports Section */}
+          <EnhancedReports />
+
+          {/* Manual Entry Modal */}
+          {showManualEntry && (
+            <ManualEntryForm
+              onClose={handleManualEntryClose}
+              onSave={handleManualEntryClose}
+              initialDuration={timerDuration}
+              initialStartTime={timerStartTime}
+            />
+          )}
+
+          {/* Timer Modal */}
+          {isModalOpen && (
+            <TimerEntry
+              isOpen={isModalOpen}
+              onClose={() => {}} // Close is handled by global state
+              onComplete={handleTimerComplete}
+            />
+          )}
+        </div>
+      </PullToRefresh>
+    </AppLayout>
   )
 }

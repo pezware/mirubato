@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../../index'
+import { SERVICE_VERSION } from '../../utils/version'
 
 export const healthHandler = new Hono<{ Bindings: Env }>()
 
@@ -103,7 +104,7 @@ healthHandler.get('/health', async c => {
     return c.json(
       {
         status: allHealthy ? 'healthy' : 'degraded',
-        version: '1.1.0',
+        version: SERVICE_VERSION,
         environment: c.env.ENVIRONMENT,
         timestamp: new Date().toISOString(),
         uptime: 'N/A', // process.uptime not available in Workers
@@ -119,7 +120,7 @@ healthHandler.get('/health', async c => {
     return c.json(
       {
         status: 'error',
-        version: '1.0.0',
+        version: SERVICE_VERSION,
         environment: c.env.ENVIRONMENT,
         timestamp: new Date().toISOString(),
         error: errorMessage,
@@ -158,7 +159,7 @@ healthHandler.get('/health/detailed', async c => {
   return c.json({
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT,
-    version: '1.0.0',
+    version: SERVICE_VERSION,
     latency: Date.now() - startTime,
     system: systemInfo,
     database: {
@@ -196,7 +197,7 @@ http_request_duration_seconds_bucket{le="+Inf"} 0
 
 # HELP api_version API version info
 # TYPE api_version gauge
-api_version{version="1.1.0",environment="${c.env.ENVIRONMENT}"} 1
+api_version{version="${SERVICE_VERSION}",environment="${c.env.ENVIRONMENT}"} 1
 `.trim()
 
   return c.text(metrics, 200, {

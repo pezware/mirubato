@@ -31,6 +31,34 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // Typography consistency rules
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'JSXAttribute[name.name="className"] Literal[value=/font-(sans|mono)\\b/]',
+          message:
+            'Use font-inter for UI text, font-lexend for headers, or font-serif for music content instead of generic font classes.',
+        },
+        {
+          selector:
+            'JSXAttribute[name.name="className"] TemplateLiteral :matches(TemplateElement[value.raw*="font-sans"], TemplateElement[value.raw*="font-mono"])',
+          message:
+            'Use font-inter for UI text, font-lexend for headers, or font-serif for music content instead of generic font classes.',
+        },
+        {
+          selector:
+            'JSXAttribute[name.name="className"] Literal[value=/text-\\[[0-9]+px\\]/]',
+          message:
+            'Use standard Tailwind text size classes (text-xs, text-sm, text-base, etc.) instead of hardcoded pixel values.',
+        },
+        {
+          selector:
+            'JSXAttribute[name.name="className"] TemplateLiteral TemplateElement[value.raw*="text-["][value.raw*="px]"]',
+          message:
+            'Use standard Tailwind text size classes (text-xs, text-sm, text-base, etc.) instead of hardcoded pixel values.',
+        },
+      ],
     },
   }
 )

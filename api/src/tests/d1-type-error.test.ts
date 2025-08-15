@@ -127,9 +127,17 @@ describe('D1 Type Error Prevention', () => {
     })
 
     it('should handle entry updates with undefined values', async () => {
-      const mockFirst = vi
-        .fn()
-        .mockResolvedValue({ id: 'existing_id', version: 1 })
+      let selectCallCount = 0
+      const mockFirst = vi.fn(() => {
+        selectCallCount++
+        if (selectCallCount === 1) {
+          // First SELECT checks for duplicate by checksum - return null
+          return Promise.resolve(null)
+        } else {
+          // Second SELECT checks by entity_id - return existing record
+          return Promise.resolve({ id: 'existing_id', version: 1 })
+        }
+      })
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
 
@@ -187,9 +195,17 @@ describe('D1 Type Error Prevention', () => {
       // - Updating duration from 9 to 19 minutes
       // - Empty notes and mood fields sending undefined
 
-      const mockFirst = vi
-        .fn()
-        .mockResolvedValue({ id: 'existing', version: 1 })
+      let selectCallCount = 0
+      const mockFirst = vi.fn(() => {
+        selectCallCount++
+        if (selectCallCount === 1) {
+          // First SELECT checks for duplicate by checksum - return null
+          return Promise.resolve(null)
+        } else {
+          // Second SELECT checks by entity_id - return existing record
+          return Promise.resolve({ id: 'existing', version: 1 })
+        }
+      })
       const mockRun = vi.fn().mockResolvedValue({ success: true })
       const mockBind = vi.fn().mockReturnThis()
 

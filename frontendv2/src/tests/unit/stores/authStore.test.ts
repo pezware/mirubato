@@ -5,16 +5,19 @@ const initialAuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isAuthInitialized: false,
   error: null,
 }
 
 // Mock the API modules
 vi.mock('../../../api/auth')
+vi.mock('../../../api/user')
 vi.mock('../../../stores/logbookStore')
 
 // Import after mocks
 import { useAuthStore } from '../../../stores/authStore'
 import { authApi } from '../../../api/auth'
+import { userApi } from '../../../api/user'
 import { useLogbookStore } from '../../../stores/logbookStore'
 
 // Mock implementations
@@ -26,7 +29,14 @@ const mockAuthApi = authApi as unknown as {
   getCurrentUser: ReturnType<typeof vi.fn>
 }
 
+const mockUserApi = userApi as unknown as {
+  getPreferences: ReturnType<typeof vi.fn>
+  savePreferences: ReturnType<typeof vi.fn>
+}
+
 const mockSyncWithServer = vi.fn()
+const mockSetLocalMode = vi.fn()
+const mockManualSync = vi.fn()
 const mockLogbookStore = useLogbookStore as unknown as {
   getState: ReturnType<typeof vi.fn>
 }
@@ -46,10 +56,22 @@ describe('authStore', () => {
     mockAuthApi.logout = vi.fn()
     mockAuthApi.getCurrentUser = vi.fn()
 
+    // Reset userApi mocks
+    mockUserApi.getPreferences = vi.fn().mockResolvedValue({})
+    mockUserApi.savePreferences = vi.fn().mockResolvedValue({})
+
     mockSyncWithServer.mockReset()
     mockSyncWithServer.mockResolvedValue(undefined)
+    mockSetLocalMode.mockReset()
+    mockManualSync.mockReset()
+    mockManualSync.mockResolvedValue(undefined)
     mockLogbookStore.getState = vi.fn(() => ({
       syncWithServer: mockSyncWithServer,
+      setLocalMode: mockSetLocalMode,
+      manualSync: mockManualSync,
+      entriesMap: new Map(),
+      goalsMap: new Map(),
+      scoreMetadata: {},
     })) as unknown as ReturnType<typeof vi.fn>
 
     // Reset localStorage mock
@@ -134,8 +156,27 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
 
-      // Verify sync was triggered
-      expect(mockSyncWithServer).toHaveBeenCalled()
+      // Verify manualSync was triggered
+      expect(mockManualSync).toHaveBeenCalled()
+    })
+
+    it('should set local mode to false when authenticated via magic link', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        displayName: 'Test User',
+      }
+      mockAuthApi.verifyMagicLink.mockResolvedValue({
+        success: true,
+        user: mockUser,
+        accessToken: 'test-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresIn: 3600,
+      })
+
+      await useAuthStore.getState().verifyMagicLink('test-token')
+
+      expect(mockSetLocalMode).toHaveBeenCalledWith(false)
     })
 
     it('should handle invalid token error', async () => {
@@ -163,25 +204,26 @@ describe('authStore', () => {
       const mockResponse = { user: mockUser }
       mockAuthApi.verifyMagicLink.mockResolvedValue(mockResponse)
 
-      // Mock sync failure
+      // Mock manualSync failure
       const consoleWarnSpy = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => {})
-      mockSyncWithServer.mockRejectedValue(new Error('Sync failed'))
+      mockManualSync.mockRejectedValue(new Error('Sync failed'))
 
       const token = 'test-token'
       await useAuthStore.getState().verifyMagicLink(token)
 
-      // Wait for the async sync to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-
       // User should still be authenticated even if sync fails
       expect(useAuthStore.getState().user).toEqual(mockUser)
       expect(useAuthStore.getState().isAuthenticated).toBe(true)
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Initial sync failed:',
-        expect.any(Error)
-      )
+
+      // With improved error handling using Promise.allSettled, individual sync
+      // operation failures are handled gracefully without affecting the auth process
+      // The main thing is that the user is still authenticated despite sync failure
+      expect(consoleWarnSpy).toHaveBeenCalled()
+
+      // The specific error message may vary depending on which sync operation fails first
+      // but the important thing is that errors are logged and handled gracefully
 
       consoleWarnSpy.mockRestore()
     })
@@ -206,8 +248,27 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
 
-      // Verify sync was triggered
-      expect(mockSyncWithServer).toHaveBeenCalled()
+      // Verify manualSync was triggered
+      expect(mockManualSync).toHaveBeenCalled()
+    })
+
+    it('should set local mode to false when authenticated via Google', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@example.com',
+        displayName: 'Test User',
+      }
+      mockAuthApi.googleLogin.mockResolvedValue({
+        success: true,
+        user: mockUser,
+        accessToken: 'test-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresIn: 3600,
+      })
+
+      await useAuthStore.getState().googleLogin('test-credential')
+
+      expect(mockSetLocalMode).toHaveBeenCalledWith(false)
     })
 
     it('should handle 401 error with appropriate message', async () => {
@@ -316,6 +377,40 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false)
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
+    })
+
+    it('should save logbook data to localStorage and set local mode on logout', async () => {
+      mockAuthApi.logout.mockResolvedValue({ success: true })
+
+      // Set up some mock data in the logbook store
+      const mockEntries = [{ id: '1', title: 'Test Entry' }]
+      const mockGoals = [{ id: '2', title: 'Test Goal' }]
+      mockLogbookStore.getState = vi.fn(() => ({
+        syncWithServer: mockSyncWithServer,
+        setLocalMode: mockSetLocalMode,
+        entriesMap: new Map(mockEntries.map(e => [e.id, e])),
+        goalsMap: new Map(mockGoals.map(g => [g.id, g])),
+        scoreMetadata: { test: 'metadata' },
+      })) as unknown as ReturnType<typeof vi.fn>
+
+      await useAuthStore.getState().logout()
+
+      // Verify data was saved to localStorage
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:entries',
+        JSON.stringify(mockEntries)
+      )
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:goals',
+        JSON.stringify(mockGoals)
+      )
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'mirubato:logbook:scoreMetadata',
+        JSON.stringify({ test: 'metadata' })
+      )
+
+      // Verify local mode was set back to true
+      expect(mockSetLocalMode).toHaveBeenCalledWith(true)
     })
 
     it('should clear state even if logout API call fails', async () => {

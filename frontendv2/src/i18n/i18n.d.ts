@@ -6,6 +6,7 @@ import type reports from '../locales/en/reports.json'
 import type errors from '../locales/en/errors.json'
 import type scorebook from '../locales/en/scorebook.json'
 import type toolbox from '../locales/en/toolbox.json'
+import type ui from '../locales/en/ui.json'
 
 declare module 'react-i18next' {
   interface CustomTypeOptions {
@@ -18,6 +19,7 @@ declare module 'react-i18next' {
       errors: typeof errors
       scorebook: typeof scorebook
       toolbox: typeof toolbox
+      ui: typeof ui
     }
   }
 }

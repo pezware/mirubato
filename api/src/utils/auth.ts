@@ -20,7 +20,7 @@ export async function generateAccessToken(
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
     .setIssuedAt()
-    .setExpirationTime('1h')
+    .setExpirationTime('7d')
     .sign(new TextEncoder().encode(secret))
 
   return jwt

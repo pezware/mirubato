@@ -1,0 +1,270 @@
+import { useEffect, useState } from 'react'
+import { useAuthStore } from '@/stores/authStore'
+import { useLogbookStore } from '@/stores/logbookStore'
+import { useTranslation } from 'react-i18next'
+import {
+  IconRefresh,
+  IconCloud,
+  IconCloudOff,
+  IconCloudCheck,
+  IconCloudX,
+  IconWifi,
+  IconWifiOff,
+} from '@tabler/icons-react'
+
+interface SyncIndicatorProps {
+  className?: string
+  showText?: boolean
+  showRealtimeToggle?: boolean
+}
+
+export function SyncIndicator({
+  className = '',
+  showText = true,
+  showRealtimeToggle = true,
+}: SyncIndicatorProps) {
+  const { t } = useTranslation(['common', 'ui'])
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
+  const {
+    isLocalMode,
+    isSyncing,
+    lastSyncTime,
+    syncError,
+    manualSync,
+    clearSyncError,
+    // Real-time sync state
+    isRealtimeSyncEnabled,
+    realtimeSyncStatus,
+    realtimeSyncError,
+    enableRealtimeSync,
+    disableRealtimeSync,
+  } = useLogbookStore()
+
+  const [syncStatus, setSyncStatus] = useState<
+    'idle' | 'syncing' | 'success' | 'error'
+  >('idle')
+
+  // Check if WebSocket sync feature is enabled
+  const [isRealtimeFeatureEnabled, setIsRealtimeFeatureEnabled] =
+    useState(false)
+
+  useEffect(() => {
+    // Check feature flag
+    const featureEnabled =
+      process.env.NODE_ENV === 'development' ||
+      localStorage.getItem('mirubato:features:websocket-sync') === 'true'
+    setIsRealtimeFeatureEnabled(featureEnabled)
+  }, [])
+
+  useEffect(() => {
+    if (isSyncing) {
+      setSyncStatus('syncing')
+    } else if (syncError) {
+      setSyncStatus('error')
+    } else if (lastSyncTime) {
+      setSyncStatus('success')
+      // Reset to idle after 3 seconds
+      const timer = setTimeout(() => setSyncStatus('idle'), 3000)
+      return () => clearTimeout(timer)
+    } else {
+      setSyncStatus('idle')
+    }
+  }, [isSyncing, syncError, lastSyncTime])
+
+  // Don't show if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
+
+  const handleManualSync = async () => {
+    // Clear any previous sync error
+    if (syncError) {
+      clearSyncError()
+    }
+
+    const result = await manualSync()
+    if (!result.success) {
+      console.error('Manual sync failed:', result.error)
+    }
+  }
+
+  const handleRealtimeSyncToggle = async () => {
+    if (isRealtimeSyncEnabled) {
+      disableRealtimeSync()
+    } else {
+      await enableRealtimeSync()
+    }
+  }
+
+  const getIcon = () => {
+    // Show real-time sync status if enabled
+    if (isRealtimeSyncEnabled) {
+      switch (realtimeSyncStatus) {
+        case 'connected':
+          return <IconWifi className="h-5 w-5 text-green-500" />
+        case 'connecting':
+        case 'reconnecting':
+          return <IconRefresh className="h-5 w-5 text-blue-500 animate-spin" />
+        case 'disconnected':
+          return <IconWifiOff className="h-5 w-5 text-red-500" />
+        default:
+          return <IconWifi className="h-5 w-5 text-gray-400" />
+      }
+    }
+
+    // Fallback to manual sync status
+    if (isLocalMode) {
+      return <IconCloudOff className="h-5 w-5 text-gray-400" />
+    }
+
+    switch (syncStatus) {
+      case 'syncing':
+        return <IconRefresh className="h-5 w-5 text-blue-500 animate-spin" />
+      case 'success':
+        return <IconCloudCheck className="h-5 w-5 text-green-500" />
+      case 'error':
+        return <IconCloudX className="h-5 w-5 text-red-500" />
+      default:
+        return <IconCloud className="h-5 w-5 text-gray-400" />
+    }
+  }
+
+  const getText = () => {
+    if (!showText) return null
+
+    // Show real-time sync status if enabled
+    if (isRealtimeSyncEnabled) {
+      switch (realtimeSyncStatus) {
+        case 'connected':
+          return (
+            <span className="text-sm text-green-500">
+              Real-time sync active
+            </span>
+          )
+        case 'connecting':
+          return <span className="text-sm text-blue-500">Connecting...</span>
+        case 'reconnecting':
+          return <span className="text-sm text-blue-500">Reconnecting...</span>
+        case 'disconnected': {
+          const error = realtimeSyncError || 'Disconnected'
+          return (
+            <span className="text-sm text-red-500" title={error}>
+              Real-time sync offline
+            </span>
+          )
+        }
+        default:
+          return <span className="text-sm text-gray-500">Real-time sync</span>
+      }
+    }
+
+    // Fallback to manual sync status
+    if (isLocalMode) {
+      return <span className="text-sm text-gray-500">{t('sync.offline')}</span>
+    }
+
+    switch (syncStatus) {
+      case 'syncing':
+        return (
+          <span className="text-sm text-blue-500">{t('sync.syncing')}</span>
+        )
+      case 'success':
+        return (
+          <span className="text-sm text-green-500">{t('sync.synced')}</span>
+        )
+      case 'error':
+        return (
+          <span className="text-sm text-red-500" title={syncError || undefined}>
+            {t('sync.error')}
+          </span>
+        )
+      default:
+        if (lastSyncTime) {
+          const minutesAgo = Math.floor(
+            (Date.now() - lastSyncTime.getTime()) / 60000
+          )
+          if (minutesAgo < 1) {
+            return (
+              <span className="text-sm text-gray-500">{t('sync.justNow')}</span>
+            )
+          } else if (minutesAgo < 60) {
+            return (
+              <span className="text-sm text-gray-500">
+                {t('sync.minutesAgo', { minutes: minutesAgo })}
+              </span>
+            )
+          } else {
+            const hoursAgo = Math.floor(minutesAgo / 60)
+            return (
+              <span className="text-sm text-gray-500">
+                {t('sync.hoursAgo', { hours: hoursAgo })}
+              </span>
+            )
+          }
+        }
+        return (
+          <span className="text-sm text-gray-500">{t('sync.notSynced')}</span>
+        )
+    }
+  }
+
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      {/* Main sync button */}
+      <button
+        onClick={
+          isRealtimeSyncEnabled ? handleRealtimeSyncToggle : handleManualSync
+        }
+        disabled={
+          isLocalMode ||
+          isSyncing ||
+          (isRealtimeSyncEnabled && realtimeSyncStatus === 'connecting')
+        }
+        className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        title={
+          isRealtimeSyncEnabled
+            ? realtimeSyncStatus === 'connected'
+              ? 'Disable real-time sync'
+              : 'Enable real-time sync'
+            : isLocalMode
+              ? t('sync.offlineMode')
+              : t('sync.syncNow')
+        }
+      >
+        {getIcon()}
+      </button>
+
+      {/* Manual sync button when real-time is enabled */}
+      {isRealtimeSyncEnabled && (
+        <button
+          onClick={handleManualSync}
+          disabled={isLocalMode || isSyncing}
+          className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title={t('ui:components.syncIndicator.manualSync')}
+        >
+          <IconRefresh
+            className={`h-4 w-4 text-gray-400 ${
+              isSyncing ? 'animate-spin text-blue-500' : ''
+            }`}
+          />
+        </button>
+      )}
+
+      {/* Real-time sync toggle (development only) */}
+      {showRealtimeToggle &&
+        isRealtimeFeatureEnabled &&
+        !isRealtimeSyncEnabled && (
+          <button
+            onClick={handleRealtimeSyncToggle}
+            disabled={!isAuthenticated}
+            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 transition-colors"
+            title={t('ui:components.syncIndicator.enableRealTimeSync')}
+          >
+            Enable Real-time
+          </button>
+        )}
+
+      {getText()}
+    </div>
+  )
+}

@@ -1,0 +1,147 @@
+{
+  "backToHome": "返回首页",
+  "sections": {
+    "about": {
+      "how": "Mirubato 是开源的，采用本地优先的方式构建。这意味着您的数据默认会保存在您的设备上。没有追踪，没有分析——只有您和您的音乐。",
+      "title": "关于 Mirubato",
+      "what": "Mirubato 帮助您充分利用练习时间。无论您是在练习视谱还是完善演奏，我们都提供工具来追踪您的进步并保持动力。",
+      "why": "我们相信持续、有意识的练习是音乐成长的关键。Mirubato 旨在成为您音乐旅程中简单而鼓舞人心的伙伴。"
+    },
+    "contact": {
+      "github": "发现错误或有想法？",
+      "reportIssue": "GitHub Issues",
+      "title": "联系我们",
+      "twitter": "关注我们获取更新"
+    },
+    "credits": {
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" 作者 Chelsea Green，采用 CC BY 4.0 授权",
+      "educationalContent": "教育内容",
+      "imslp": "来自 IMSLP 的古典作品属于公有领域",
+      "librariesDescription": "用爱打造，使用 React、TypeScript 和许多其他优秀的开源项目",
+      "musicalContent": "音乐内容",
+      "openSourceLibraries": "开源程序库",
+      "title": "致谢与归属",
+      "viewSource": "查看原始来源"
+    },
+    "openSource": {
+      "description": "Mirubato 自豪地采用开源。我们欢迎社区的贡献，并相信透明地共同建造伟大的事物。",
+      "title": "开放源代码",
+      "viewOnGithub": "在 GitHub 上查看"
+    },
+    "privacy": {
+      "title": "隐私和您的数据",
+      "intro": "此隐私政策说明 Mirubato 如何根据通用数据保护条例 (GDPR) 和其他适用的数据保护法律处理您的个人数据。",
+      "lastUpdated": "最后更新：2025年1月",
+      "controller": {
+        "title": "数据控制者",
+        "info": "Mirubato（联系方式：privacy@mirubato.com）是负责您个人数据的数据控制者。"
+      },
+      "legalBasis": {
+        "title": "处理的法律依据",
+        "consent": "同意：对于可选功能，如云端同步和分析",
+        "contract": "合同履行：提供我们的音乐练习跟踪服务",
+        "legitimate": "合法利益：用于安全、防欺诈和服务改进"
+      },
+      "dataWeCollect": {
+        "title": "我们收集的个人数据",
+        "account": "账户数据：电子邮件地址、显示名称、身份验证方式（Google OAuth 或魔术链接）",
+        "profile": "个人资料数据：主要乐器、音乐目标、偏好设置（全部为可选）",
+        "practice": "练习数据：练习记录、目标、曲目、乐谱、练习课程、进度跟踪",
+        "technical": "技术数据：设备 ID、浏览器类型、操作系统、IP 地址、登录时间戳、同步元数据",
+        "usage": "使用数据：功能使用情况、会话时长、性能指标（尽可能匿名化）",
+        "device": "设备信息：屏幕分辨率、时区、语言偏好、同步用设备规格"
+      },
+      "dataWeStore": {
+        "title": "我们如何存储和处理您的数据",
+        "localFirst": "本地存储：数据主要使用浏览器存储（localStorage、IndexedDB）存储在您的设备本地",
+        "cloudSync": "云端存储：可选同步使用 Cloudflare 的安全全球网络，采用端到端加密",
+        "location": "数据位置：通过 Cloudflare 的边缘网络在欧盟和全球范围内，采用适当的保护措施",
+        "security": "安全性：行业标准加密、安全身份验证、定期安全审计",
+        "retention": "数据保留：账户数据在活跃期间保留；练习数据保留 7 年或直到删除请求"
+      },
+      "dataWeShare": {
+        "title": "数据共享和第三方",
+        "noSelling": "我们绝不向第三方出售、出租或交换您的个人数据",
+        "noAds": "我们不将您的数据用于广告或营销目的",
+        "noTracking": "除了基本功能外，我们不使用跟踪 Cookie 或第三方分析",
+        "noThirdParty": "未经明确同意，我们不与第三方共享您的练习数据",
+        "service": "服务提供商：我们使用 Cloudflare 进行托管，Google 进行身份验证（均符合 GDPR）",
+        "legal": "法律要求：如法律要求或为保护我们的权利，我们可能会披露数据"
+      },
+      "cookies": {
+        "title": "Cookie 和跟踪",
+        "essential": "必要 Cookie：身份验证、安全和核心功能所需",
+        "functional": "功能性 Cookie：语言偏好、设置、同步用设备识别",
+        "noTracking": "无跟踪：我们不使用广告 Cookie、社交媒体跟踪器或分析 Cookie",
+        "control": "Cookie 控制：您可以在浏览器设置中管理 Cookie 偏好"
+      },
+      "yourRights": {
+        "title": "您的 GDPR 权利",
+        "intro": "根据 GDPR，您对个人数据享有以下权利：",
+        "access": "访问权：请求获取您的个人数据副本和处理信息",
+        "rectification": "更正权：更正不正确或不完整的个人数据",
+        "erasure": "删除权（\"被遗忘权\"）：请求删除您的个人数据",
+        "restrict": "限制处理权：限制我们如何处理您的个人数据",
+        "portability": "数据可携权：以结构化、机器可读格式接收您的数据",
+        "object": "反对权：反对基于合法利益的处理",
+        "withdraw": "撤回同意权：撤回基于同意的处理的同意",
+        "complain": "投诉权：向您的数据保护机构提出投诉",
+        "exercise": "如何行使权利：联系 privacy@mirubato.com 或使用应用程序中的隐私控制"
+      },
+      "dataSubjectRequests": {
+        "title": "数据主体请求",
+        "response": "我们将在 30 天内回应您的请求（复杂请求延长至 60 天）",
+        "verification": "在处理您的请求之前，我们可能需要验证您的身份",
+        "format": "数据将以常用的机器可读格式提供（JSON、CSV）",
+        "free": "请求通常免费，但过度请求可能产生合理费用"
+      },
+      "automated": {
+        "title": "自动化决策",
+        "info": "我们不使用产生法律或重大影响的自动化决策或分析"
+      },
+      "international": {
+        "title": "国际数据传输",
+        "cloudflare": "数据可能在 Cloudflare 全球数据中心处理，受标准合同条款保护",
+        "adequacy": "我们确保所有国际传输都有适当的保护措施"
+      },
+      "breach": {
+        "title": "数据泄露通知",
+        "notification": "我们将在发现可能影响您权利的任何数据泄露后 72 小时内通知受影响的用户"
+      },
+      "children": {
+        "title": "儿童隐私",
+        "info": "我们的服务不针对 13 岁以下儿童。我们不会故意收集 13 岁以下儿童的数据。"
+      },
+      "changes": {
+        "title": "隐私政策变更",
+        "notification": "我们将通过电子邮件或应用程序内通知告知用户此政策的重大变更",
+        "effective": "变更将在通知后 30 天生效"
+      },
+      "contact": {
+        "title": "联系信息",
+        "email": "隐私专员：privacy@mirubato.com",
+        "response": "我们力求在 48 小时内回应隐私询问"
+      }
+    }
+  },
+  "tabs": {
+    "about": "关于",
+    "contact": "联系",
+    "credits": "制作团队",
+    "version": "版本"
+  },
+  "tagline": "您的私人音乐练习日志，由音乐家为音乐家打造",
+  "version": {
+    "appVersion": "应用程序版本",
+    "branch": "分支",
+    "buildDate": "构建日期",
+    "copyVersionInfo": "复制版本信息",
+    "environment": "环境",
+    "gitCommit": "Git 提交",
+    "issueReporting": "问题反馈",
+    "issueReportingDescription": "在 GitHub 上反馈问题时，请包含这些版本信息：",
+    "reportIssue": "反馈问题",
+    "title": "版本信息",
+    "viewOnGithub": "在 GitHub 上查看"
+  }
+}

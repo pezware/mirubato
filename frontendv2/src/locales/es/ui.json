@@ -1,0 +1,61 @@
+{
+  "components": {
+    "autocomplete": {
+      "noResults": "No se encontraron resultados"
+    },
+    "entryCard": {
+      "deleteEntry": "Eliminar entrada",
+      "editEntry": "Editar entrada",
+      "viewDetails": "Ver detalles"
+    },
+    "filters": {
+      "defaultValuePlaceholder": "0",
+      "maxPlaceholder": "Máx",
+      "minPlaceholder": "Mín"
+    },
+    "goals": {
+      "measuresPlaceholder": "ej., 8-12, 15-16, 24-32"
+    },
+    "imageLoading": {
+      "loading": "Cargando imagen..."
+    },
+    "metronome": {
+      "collapse": "Contraer",
+      "expand": "Expandir metrónomo",
+      "playPause": "Reproducir/Pausar"
+    },
+    "multiSelect": {
+      "placeholder": "Seleccionar opciones"
+    },
+    "practiceReports": {
+      "editPieceName": "Editar nombre de pieza"
+    },
+    "scoreUpload": {
+      "composerPlaceholder": "Compositor (opcional - la IA lo extraerá)",
+      "titlePlaceholder": "Título (opcional - la IA lo extraerá)",
+      "urlPlaceholder": "https://ejemplo.com/partitura.pdf"
+    },
+    "scoreViewer": {
+      "nextPage": "Página siguiente",
+      "previousPage": "Página anterior"
+    },
+    "segmentedControl": {
+      "ariaLabel": "Selector de vista"
+    },
+    "select": {
+      "placeholder": "Seleccionar una opción"
+    },
+    "syncIndicator": {
+      "enableRealTimeSync": "Activar sincronización en tiempo real (experimental)",
+      "manualSync": "Sincronización manual"
+    },
+    "tabs": {
+      "ariaLabel": "Pestañas"
+    },
+    "timePicker": {
+      "am": "AM",
+      "placeholder": "HH:MM",
+      "pm": "PM"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { SERVICE_VERSION } from '../../utils/version'
 
 export const healthHandler = new Hono<{ Bindings: Env }>()
 
@@ -103,7 +104,7 @@ healthHandler.get('/health', async c => {
     {
       status: allHealthy ? 'healthy' : 'degraded',
       service: 'mirubato-scores',
-      version: '1.1.0',
+      version: SERVICE_VERSION,
       environment: c.env.ENVIRONMENT,
       timestamp: new Date().toISOString(),
       uptime: process.uptime ? process.uptime() : 'N/A',
@@ -143,7 +144,7 @@ healthHandler.get('/health/detailed', async c => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT,
     service: 'mirubato-scores',
-    version: '1.1.0',
+    version: SERVICE_VERSION,
     latency: Date.now() - startTime,
     system: systemInfo,
     database: {
@@ -211,7 +212,7 @@ score_downloads_total ${metrics?.total_downloads || 0}
 
 # HELP scores_service_info Service information
 # TYPE scores_service_info gauge
-scores_service_info{version="1.1.0",environment="${c.env.ENVIRONMENT}"} 1
+scores_service_info{version="${SERVICE_VERSION}",environment="${c.env.ENVIRONMENT}"} 1
 `.trim()
 
     return c.text(prometheusMetrics, 200, {

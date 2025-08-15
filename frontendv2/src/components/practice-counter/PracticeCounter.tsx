@@ -7,6 +7,7 @@ import CounterSummary from './CounterSummary'
 import {
   usePracticeTracking,
   PracticeSummaryModal,
+  useAutoLogging,
 } from '../../modules/auto-logging'
 
 type CounterState = 'setup' | 'active' | 'summary'
@@ -25,6 +26,9 @@ export const PracticeCounter: React.FC = () => {
   const [state, setState] = useState<CounterState>('setup')
   const [sessionData, setSessionData] = useState<SessionData | null>(null)
 
+  // Get direct access to saveSessionToLogbook
+  const { saveSessionToLogbook } = useAutoLogging()
+
   // Practice tracking with auto-logging
   const {
     isTracking,
@@ -40,7 +44,7 @@ export const PracticeCounter: React.FC = () => {
     type: 'counter',
     metadata: {
       title: t('counter.practice_title'),
-      instrument: 'PIANO', // Could be made configurable
+      instrument: 'piano', // Could be made configurable
     },
     onSessionEnd: useCallback(() => {
       // Navigate to logbook after saving
@@ -87,17 +91,33 @@ export const PracticeCounter: React.FC = () => {
 
       // Don't stop tracking here - let the user decide via the summary screen
       setState('summary')
+
+      // If the auto-logging modal is showing, dismiss it
+      // We'll handle saving through our own summary screen
+      if (showSummary) {
+        dismissSummary()
+      }
     }
   }
 
   // Handle save from CounterSummary
   const handleSaveToLog = async () => {
     if (isTracking) {
-      // Stop tracking - this will auto-save the session via AutoLoggingProvider
-      await stopTracking()
+      // Stop tracking without showing modal (we're already in our summary)
+      const session = await stopTracking()
+
+      if (session) {
+        // Save directly to logbook with a custom note
+        const customNote = `Practice Counter Summary:\n${sessionData?.repetitions.length || 0} repetitions completed`
+        await saveSessionToLogbook(session, customNote)
+
+        // Navigate to logbook
+        navigate('/logbook')
+      }
+    } else {
+      // If not tracking (shouldn't happen), just navigate
+      navigate('/logbook')
     }
-    // Navigate to logbook
-    navigate('/logbook')
   }
 
   const handleStartNew = () => {
@@ -138,16 +158,18 @@ export const PracticeCounter: React.FC = () => {
         )}
       </div>
 
-      {/* Practice Summary Modal */}
-      <PracticeSummaryModal
-        isOpen={showSummary}
-        onClose={dismissSummary}
-        onSave={confirmSave}
-        onDiscard={dismissSummary}
-        duration={pendingSession?.duration || 0}
-        metadata={pendingSession?.metadata || {}}
-        title={t('common:practice.practiceSummary')}
-      />
+      {/* Practice Summary Modal - Only show if we're not in our own summary state */}
+      {state !== 'summary' && (
+        <PracticeSummaryModal
+          isOpen={showSummary}
+          onClose={dismissSummary}
+          onSave={confirmSave}
+          onDiscard={dismissSummary}
+          duration={pendingSession?.duration || 0}
+          metadata={pendingSession?.metadata || {}}
+          title={t('common:practice.practiceSummary')}
+        />
+      )}
     </>
   )
 }

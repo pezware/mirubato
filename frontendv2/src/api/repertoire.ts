@@ -1,0 +1,115 @@
+import { apiClient } from './client'
+
+// Types
+export interface RepertoireStatus {
+  planned: 'planned'
+  learning: 'learning'
+  polished: 'polished'
+  dropped: 'dropped'
+}
+
+export interface RepertoireItem {
+  id: string
+  scoreId: string
+  status: keyof RepertoireStatus
+  difficultyRating?: number
+  personalNotes?: string
+  referenceLinks?: string[]
+  practiceCount: number
+  totalPracticeTime: number
+  lastPracticed?: number
+  createdAt: number
+  updatedAt: number
+}
+
+export interface RepertoireStats {
+  repertoire: Omit<
+    RepertoireItem,
+    'practiceCount' | 'totalPracticeTime' | 'lastPracticed'
+  >
+  stats: {
+    practiceCount: number
+    totalPracticeTime: number
+    avgSessionDuration: number
+    lastPracticed?: number
+    firstPracticed?: number
+    recentSessions: Array<{
+      timestamp: number
+      duration: number
+      notes?: string
+    }>
+  }
+}
+
+export interface CreateRepertoireInput {
+  scoreId: string
+  status?: keyof RepertoireStatus
+  difficultyRating?: number
+  personalNotes?: string
+  referenceLinks?: string[]
+}
+
+export interface UpdateRepertoireInput {
+  status?: keyof RepertoireStatus
+  difficultyRating?: number
+  personalNotes?: string
+  referenceLinks?: string[]
+}
+
+// API Client
+export const repertoireApi = {
+  // List user's repertoire
+  list: async (): Promise<{ items: RepertoireItem[] }> => {
+    const response = await apiClient.get('/api/repertoire')
+    return response.data
+  },
+
+  // Get repertoire stats for a specific score
+  getStats: async (scoreId: string): Promise<RepertoireStats> => {
+    const response = await apiClient.get(
+      `/api/repertoire/${encodeURIComponent(scoreId)}/stats`
+    )
+    return response.data
+  },
+
+  // Add piece to repertoire
+  add: async (data: CreateRepertoireInput): Promise<RepertoireItem> => {
+    const response = await apiClient.post('/api/repertoire', data)
+    return response.data
+  },
+
+  // Update repertoire item
+  update: async (
+    scoreId: string,
+    data: UpdateRepertoireInput
+  ): Promise<{ message: string }> => {
+    const response = await apiClient.put(
+      `/api/repertoire/${encodeURIComponent(scoreId)}`,
+      data
+    )
+    return response.data
+  },
+
+  // Remove from repertoire
+  remove: async (scoreId: string): Promise<{ message: string }> => {
+    const response = await apiClient.delete(
+      `/api/repertoire/${encodeURIComponent(scoreId)}`
+    )
+    return response.data
+  },
+
+  // Dissociate piece from repertoire while preserving practice logs
+  dissociate: async (
+    scoreId: string
+  ): Promise<{
+    message: string
+    preservedLogs: number
+    pieceTitle: string
+    pieceComposer: string
+  }> => {
+    const response = await apiClient.delete(
+      `/api/repertoire/${encodeURIComponent(scoreId)}/dissociate`
+    )
+    return response.data
+  },
+}

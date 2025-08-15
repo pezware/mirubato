@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "title": "Datenschutz und Datenschutz",
+    "message": "Wir verwenden wesentliche Cookies für Authentifizierung und Funktionalität, sowie optionale Cookies für Einstellungen und Gerätesynchronisation. Ihre Übungsdaten bleiben lokal mit optionaler Cloud-Synchronisation. Wir verkaufen niemals Ihre Daten oder verwenden Tracking-Cookies.",
+    "readPolicy": "Datenschutzrichtlinie",
+    "preferences": "Cookie-Einstellungen",
+    "acceptAll": "Alle Akzeptieren",
+    "rejectOptional": "Nur Wesentliche"
+  },
+  "preferences": {
+    "title": "Cookie-Einstellungen",
+    "save": "Einstellungen Speichern",
+    "essential": {
+      "title": "Wesentliche Cookies",
+      "description": "Erforderlich für Authentifizierung, Sicherheit und Kernfunktionalität. Können nicht deaktiviert werden."
+    },
+    "functional": {
+      "title": "Funktionale Cookies",
+      "description": "Speichern Ihre Spracheinstellungen, UI-Einstellungen und Geräteerkennung für Multi-Geräte-Synchronisation."
+    }
+  },
+  "rights": {
+    "title": "Ihre Datenrechte",
+    "description": "Unter der DSGVO haben Sie Rechte bezüglich Ihrer personenbezogenen Daten:",
+    "access": "Eine Kopie Ihrer Daten anfordern",
+    "rectify": "Unrichtige Daten korrigieren",
+    "erase": "Ihre Daten löschen",
+    "restrict": "Datenverarbeitung einschränken",
+    "portable": "Ihre Daten exportieren",
+    "object": "Der Verarbeitung widersprechen",
+    "withdraw": "Einwilligung widerrufen",
+    "complain": "Eine Beschwerde einreichen"
+  },
+  "contact": {
+    "title": "Datenschutzfragen?",
+    "email": "Kontaktieren Sie unseren Datenschutzbeauftragten unter privacy@mirubato.com",
+    "response": "Wir antworten innerhalb von 48 Stunden"
+  }
+}

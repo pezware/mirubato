@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useScoreStore } from '../../stores/scoreStore'
-import { useAuthStore } from '../../stores/authStore'
 import { cn } from '../../utils/cn'
 import {
   getMetronome,
@@ -16,21 +15,12 @@ import {
   Scroll,
   MoreVertical,
 } from 'lucide-react'
-import {
-  usePracticeTracking,
-  PracticeSummaryModal,
-} from '../../modules/auto-logging'
 
 export default function ScoreControls() {
   const { t } = useTranslation(['scorebook', 'common'])
-  const { isAuthenticated } = useAuthStore()
   const {
-    isRecording,
     metronomeSettings,
     autoScrollEnabled,
-    practiceSession,
-    startPractice: originalStartPractice,
-    stopPractice: originalStopPractice,
     setTempo,
     toggleMetronome,
     setMetronomeVolume,
@@ -39,40 +29,14 @@ export default function ScoreControls() {
     currentPage,
     totalPages,
     setCurrentPage,
-    currentScore,
   } = useScoreStore()
 
-  const [elapsedTime, setElapsedTime] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [visualPulse, setVisualPulse] = useState(false)
   const [showAdvancedMetronome, setShowAdvancedMetronome] = useState(false)
   const [clickCount, setClickCount] = useState(0)
   const metronome = getMetronome()
   const pulseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Practice tracking with auto-logging
-  const {
-    isTracking,
-    formattedTime,
-    showSummary,
-    pendingSession,
-    start: startTracking,
-    stop: stopTracking,
-    update: updateTracking,
-    confirmSave,
-    dismissSummary,
-  } = usePracticeTracking({
-    type: 'score',
-    metadata: currentScore
-      ? {
-          scoreId: currentScore.id,
-          scoreTitle: currentScore.title,
-          scoreComposer: currentScore.composer,
-          instrument: 'PIANO', // Could be made configurable
-          pagesViewed: [currentPage],
-        }
-      : {},
-  })
 
   // Visual callback for metronome beats
   const visualCallback: VisualCallback = {
@@ -149,38 +113,6 @@ export default function ScoreControls() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Update elapsed time when recording
-  useEffect(() => {
-    if (!isRecording || !practiceSession) return
-
-    const interval = setInterval(() => {
-      const elapsed = Math.floor(
-        (Date.now() - practiceSession.startTime.getTime()) / 1000
-      )
-      setElapsedTime(elapsed)
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [isRecording, practiceSession])
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  // Update tracking when page changes
-  useEffect(() => {
-    if (isTracking && currentPage) {
-      updateTracking({
-        pagesViewed: [
-          ...(pendingSession?.metadata.pagesViewed || []),
-          currentPage,
-        ],
-      })
-    }
-  }, [currentPage, isTracking, updateTracking])
-
   // Page navigation handlers
   const changePage = useCallback(
     (offset: number) => {
@@ -218,55 +150,11 @@ export default function ScoreControls() {
     setShowAdvancedMetronome(false)
   }
 
-  // Wrapper functions for practice tracking with auto-logging
-  const startPractice = useCallback(() => {
-    originalStartPractice()
-    if (!isTracking) {
-      startTracking()
-    }
-  }, [originalStartPractice, isTracking, startTracking])
-
-  const stopPractice = useCallback(() => {
-    originalStopPractice()
-    if (isTracking) {
-      stopTracking()
-    }
-  }, [originalStopPractice, isTracking, stopTracking])
-
   // Mobile: Right side vertical layout with semi-transparency
   if (isMobile) {
     return (
       <>
         <div className="fixed right-4 bottom-20 flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-morandi-stone-200/50 p-3 z-40">
-          {/* Practice Tracking Toggle - Compact */}
-          {isAuthenticated && (
-            <Button
-              onClick={() => (isRecording ? stopPractice() : startPractice())}
-              variant={isRecording ? 'danger' : 'secondary'}
-              size="sm"
-              className="flex flex-col items-center gap-1"
-            >
-              <div
-                className={cn(
-                  'w-3 h-3 rounded-full',
-                  isRecording ? 'bg-white animate-pulse' : 'bg-red-500'
-                )}
-              />
-              <span className="text-xs font-medium">
-                {isRecording ? (
-                  <>
-                    {t('scorebook:recording', 'Rec')}
-                    <div className="text-xs">
-                      {isTracking ? formattedTime : formatTime(elapsedTime)}
-                    </div>
-                  </>
-                ) : (
-                  t('scorebook:practice', 'Practice')
-                )}
-              </span>
-            </Button>
-          )}
-
           {/* Metronome Controls - Vertical */}
           {!showAdvancedMetronome && (
             <div className="flex flex-col items-center gap-2">
@@ -340,7 +228,7 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="text-lg font-mono font-medium text-morandi-stone-800">
+                      <span className="text-lg font-inter font-medium text-morandi-stone-800">
                         {metronomeSettings.tempo}
                       </span>
                       <span className="text-xs text-morandi-stone-500">
@@ -526,38 +414,6 @@ export default function ScoreControls() {
               <div className="h-px w-full bg-morandi-stone-200" />
             </>
           )}
-          {/* Practice Tracking Toggle */}
-          {isAuthenticated && (
-            <div className="w-full">
-              <Button
-                onClick={() => (isRecording ? stopPractice() : startPractice())}
-                variant={isRecording ? 'danger' : 'secondary'}
-                fullWidth
-                className="flex flex-col items-center gap-1 py-2"
-              >
-                <div
-                  className={cn(
-                    'w-3 h-3 rounded-full',
-                    isRecording ? 'bg-white animate-pulse' : 'bg-red-500'
-                  )}
-                />
-                <span className="text-xs font-medium">
-                  {isRecording ? (
-                    <>
-                      {t('scorebook:recording', 'Recording')}
-                      <div className="text-xs">
-                        {isTracking ? formattedTime : formatTime(elapsedTime)}
-                      </div>
-                    </>
-                  ) : (
-                    t('scorebook:practice', 'Practice')
-                  )}
-                </span>
-              </Button>
-            </div>
-          )}
-
-          <div className="h-px w-full bg-morandi-stone-200" />
 
           {/* Metronome Controls */}
           {!showAdvancedMetronome && (
@@ -632,7 +488,7 @@ export default function ScoreControls() {
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="text-lg font-mono font-medium text-morandi-stone-800">
+                      <span className="text-lg font-inter font-medium text-morandi-stone-800">
                         {metronomeSettings.tempo}
                       </span>
                       <span className="text-xs text-morandi-stone-500">
@@ -774,17 +630,6 @@ export default function ScoreControls() {
           onTripleClick={handleAdvancedMetronomeTripleClick}
         />
       )}
-
-      {/* Practice Summary Modal */}
-      <PracticeSummaryModal
-        isOpen={showSummary}
-        onClose={dismissSummary}
-        onSave={confirmSave}
-        onDiscard={dismissSummary}
-        duration={pendingSession?.duration || 0}
-        metadata={pendingSession?.metadata || {}}
-        title={t('common:practice.practiceSummary')}
-      />
     </>
   )
 }

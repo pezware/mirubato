@@ -1,0 +1,147 @@
+{
+  "backToHome": "Volver al inicio",
+  "sections": {
+    "about": {
+      "how": "Mirubato es de código abierto y está construido con un enfoque local primero. Esto significa que tus datos permanecen contigo, en tu dispositivo, por defecto. Sin rastreo, sin análisis, solo tú y tu música.",
+      "title": "Acerca de Mirubato",
+      "what": "Mirubato te ayuda a aprovechar al máximo tu práctica. Ya sea que estés trabajando en lectura a primera vista o perfeccionando una pieza, te proporcionamos las herramientas para seguir tu progreso y mantenerte motivado.",
+      "why": "Creemos que la práctica constante y consciente es la clave del crecimiento musical. Mirubato está diseñado para ser un compañero simple y alentador en tu viaje musical."
+    },
+    "contact": {
+      "github": "¿Encontraste un error o tienes una idea?",
+      "reportIssue": "Issues de GitHub",
+      "title": "Ponte en Contacto",
+      "twitter": "Síguenos para actualizaciones"
+    },
+    "credits": {
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" por Chelsea Green, licenciado bajo CC BY 4.0",
+      "educationalContent": "Contenido Educativo",
+      "imslp": "Las composiciones clásicas de IMSLP son de dominio público",
+      "librariesDescription": "Construido con amor usando React, TypeScript y muchos otros maravillosos proyectos de código abierto",
+      "musicalContent": "Contenido Musical",
+      "openSourceLibraries": "Bibliotecas de Código Abierto",
+      "title": "Créditos y Atribuciones",
+      "viewSource": "Ver fuente original"
+    },
+    "openSource": {
+      "description": "Mirubato es orgullosamente de código abierto. Damos la bienvenida a las contribuciones de la comunidad y creemos en construir grandes cosas juntos, de forma transparente.",
+      "title": "Código Abierto",
+      "viewOnGithub": "Ver en GitHub"
+    },
+    "privacy": {
+      "title": "Privacidad y Tus Datos",
+      "intro": "Esta política de privacidad explica cómo Mirubato procesa tus datos personales en cumplimiento del Reglamento General de Protección de Datos (RGPD) y otras leyes aplicables de protección de datos.",
+      "lastUpdated": "Última actualización: Enero 2025",
+      "controller": {
+        "title": "Controlador de Datos",
+        "info": "Mirubato (contacto: privacy@mirubato.com) es el controlador de datos responsable de tus datos personales."
+      },
+      "legalBasis": {
+        "title": "Base Legal para el Procesamiento",
+        "consent": "Consentimiento: Para funciones opcionales como sincronización en la nube y análisis",
+        "contract": "Ejecución de Contrato: Para proporcionar nuestros servicios de seguimiento de práctica musical",
+        "legitimate": "Interés Legítimo: Para seguridad, prevención de fraude y mejora del servicio"
+      },
+      "dataWeCollect": {
+        "title": "Datos Personales que Recopilamos",
+        "account": "Datos de Cuenta: Dirección de correo electrónico, nombre para mostrar, método de autenticación (Google OAuth o enlace mágico)",
+        "profile": "Datos de Perfil: Instrumento principal, objetivos musicales, preferencias (todo opcional)",
+        "practice": "Datos de Práctica: Entradas de diario, objetivos, repertorio, partituras, sesiones de práctica, seguimiento de progreso",
+        "technical": "Datos Técnicos: ID de dispositivo, tipo de navegador, sistema operativo, dirección IP, marcas de tiempo de inicio de sesión, metadatos de sincronización",
+        "usage": "Datos de Uso: Uso de funciones, duración de sesión, métricas de rendimiento (anonimizados cuando es posible)",
+        "device": "Información del Dispositivo: Resolución de pantalla, zona horaria, preferencia de idioma, especificaciones del dispositivo para sincronización"
+      },
+      "dataWeStore": {
+        "title": "Cómo Almacenamos y Procesamos Tus Datos",
+        "localFirst": "Almacenamiento Local: Los datos se almacenan principalmente localmente en tu dispositivo usando almacenamiento del navegador (localStorage, IndexedDB)",
+        "cloudSync": "Almacenamiento en la Nube: La sincronización opcional usa la red global segura de Cloudflare con cifrado de extremo a extremo",
+        "location": "Ubicación de Datos: UE y mundial a través de la red edge de Cloudflare, con salvaguardas apropiadas",
+        "security": "Seguridad: Cifrado estándar de la industria, autenticación segura, auditorías de seguridad regulares",
+        "retention": "Retención de Datos: Datos de cuenta retenidos mientras estén activos; datos de práctica durante 7 años o hasta solicitud de eliminación"
+      },
+      "dataWeShare": {
+        "title": "Compartir Datos y Terceros",
+        "noSelling": "Nunca vendemos, alquilamos o intercambiamos tus datos personales con terceros",
+        "noAds": "No utilizamos tus datos para publicidad o propósitos de marketing",
+        "noTracking": "No utilizamos cookies de rastreo o análisis de terceros más allá de la funcionalidad esencial",
+        "noThirdParty": "No compartimos tus datos de práctica con terceros sin consentimiento explícito",
+        "service": "Proveedores de Servicios: Utilizamos Cloudflare para hosting y Google para autenticación (ambos compatibles con RGPD)",
+        "legal": "Requisitos Legales: Podemos divulgar datos si lo requiere la ley o para proteger nuestros derechos"
+      },
+      "cookies": {
+        "title": "Cookies y Rastreo",
+        "essential": "Cookies Esenciales: Requeridas para autenticación, seguridad y funcionalidad principal",
+        "functional": "Cookies Funcionales: Preferencias de idioma, configuraciones, reconocimiento de dispositivo para sincronización",
+        "noTracking": "Sin Rastreo: No utilizamos cookies de publicidad, rastreadores de redes sociales o cookies de análisis",
+        "control": "Control de Cookies: Puedes gestionar las preferencias de cookies en la configuración de tu navegador"
+      },
+      "yourRights": {
+        "title": "Tus Derechos bajo el RGPD",
+        "intro": "Bajo el RGPD, tienes los siguientes derechos con respecto a tus datos personales:",
+        "access": "Derecho de Acceso: Solicitar copias de tus datos personales e información sobre el procesamiento",
+        "rectification": "Derecho de Rectificación: Corregir datos personales inexactos o incompletos",
+        "erasure": "Derecho al Olvido ('Derecho a ser Olvidado'): Solicitar la eliminación de tus datos personales",
+        "restrict": "Derecho a Restringir el Procesamiento: Limitar cómo procesamos tus datos personales",
+        "portability": "Derecho a la Portabilidad de Datos: Recibir tus datos en un formato estructurado y legible por máquina",
+        "object": "Derecho a Objetar: Objetar al procesamiento basado en intereses legítimos",
+        "withdraw": "Derecho a Retirar el Consentimiento: Retirar el consentimiento para el procesamiento basado en consentimiento",
+        "complain": "Derecho a Quejarse: Presentar una queja ante tu autoridad de protección de datos",
+        "exercise": "Cómo Ejercer los Derechos: Contacta privacy@mirubato.com o usa los controles de privacidad en la aplicación"
+      },
+      "dataSubjectRequests": {
+        "title": "Solicitudes de Sujetos de Datos",
+        "response": "Responderemos a tu solicitud dentro de 30 días (extendido a 60 días para solicitudes complejas)",
+        "verification": "Podemos necesitar verificar tu identidad antes de procesar tu solicitud",
+        "format": "Los datos se proporcionarán en formatos comúnmente utilizados y legibles por máquina (JSON, CSV)",
+        "free": "Las solicitudes son generalmente gratuitas, aunque las solicitudes excesivas pueden incurrir en una tarifa razonable"
+      },
+      "automated": {
+        "title": "Toma de Decisiones Automatizada",
+        "info": "No utilizamos toma de decisiones automatizada o perfilado que produzca efectos legales o significativos"
+      },
+      "international": {
+        "title": "Transferencias Internacionales de Datos",
+        "cloudflare": "Los datos pueden procesarse en centros de datos de Cloudflare en todo el mundo, protegidos por Cláusulas Contractuales Estándar",
+        "adequacy": "Aseguramos salvaguardas apropiadas para todas las transferencias internacionales"
+      },
+      "breach": {
+        "title": "Notificación de Violación de Datos",
+        "notification": "Notificaremos a los usuarios afectados dentro de 72 horas de descubrir cualquier violación de datos que pueda afectar tus derechos"
+      },
+      "children": {
+        "title": "Privacidad de Menores",
+        "info": "Nuestro servicio no está destinado a menores de 13 años. No recopilamos conscientemente datos de menores de 13 años."
+      },
+      "changes": {
+        "title": "Cambios en la Política de Privacidad",
+        "notification": "Notificaremos a los usuarios sobre cambios materiales en esta política vía correo electrónico o notificación en la aplicación",
+        "effective": "Los cambios entran en vigor 30 días después de la notificación"
+      },
+      "contact": {
+        "title": "Información de Contacto",
+        "email": "Oficial de Privacidad: privacy@mirubato.com",
+        "response": "Nos esforzamos por responder a consultas de privacidad dentro de 48 horas"
+      }
+    }
+  },
+  "tabs": {
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "credits": "Créditos",
+    "version": "Versión"
+  },
+  "tagline": "Tu diario privado de práctica musical, creado por y para músicos",
+  "version": {
+    "appVersion": "Versión de la App",
+    "branch": "Rama",
+    "buildDate": "Fecha de Compilación",
+    "copyVersionInfo": "Copiar Info de Versión",
+    "environment": "Entorno",
+    "gitCommit": "Commit de Git",
+    "issueReporting": "Reportar Problemas",
+    "issueReportingDescription": "Al reportar problemas en GitHub, por favor incluye esta información de versión:",
+    "reportIssue": "Reportar Problema",
+    "title": "Información de Versión",
+    "viewOnGithub": "Ver en GitHub"
+  }
+}

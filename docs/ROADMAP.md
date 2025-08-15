@@ -1,18 +1,30 @@
 # Mirubato Development Roadmap
 
-## Current Status - Version 1.3.0 (July 2025)
+## Current Status - Version 1.7.0 (July 2025)
 
-### 🎉 Frontend Polish & Component Library Complete
+### 🔒 Security & Infrastructure Update
 
-✅ **Version 1.3.0 Released**: Comprehensive UI component library and design system
+✅ **Version 1.7.0 Released**: Major security and dependency updates
 
-- Unified UI component library with 8+ reusable components
-- Design system with consistent spacing, typography, and colors
-- Refactored 43+ components to use new Button component
-- Mobile navigation improvements (preserved from PR #201)
-- Accessibility improvements with @headlessui/react
-- Component documentation and unified styling guide
-- Deleted obsolete LogbookReports.tsx (11KB)
+- Fixed critical security vulnerabilities across all services
+- Updated tar-fs to address high severity path traversal vulnerabilities
+- Resolved ws package DoS vulnerability affecting HTTP header handling
+- Fixed esbuild development server security issues
+- All services now unified at version 1.7.0
+- Dictionary service promoted from v1.0.0 to align with platform versioning
+- Comprehensive dependency updates to latest secure versions
+
+### 🎉 Focused UI Design System (PR #261)
+
+✅ **Version 1.7.0 Released**: Major UI overhaul with focused design system
+
+- **New Layout Architecture**: Desktop sidebar + mobile bottom tabs
+- **Simplified Navigation**: Reduced from 6 to 4 main sections (Logbook, Pieces, Scores, Tools)
+- **Enhanced Components**: AppLayout, Sidebar, TopBar, BottomTabs
+- **Practice Timer**: New timer feature with start/pause/stop functionality
+- **Repertoire Improvements**: Timeline visualization, status updates, practice history
+- **UI Polish**: Morandi color palette, consistent spacing and typography
+- **Component Library**: 8+ reusable components with accessibility
 
 ### 🎉 Scorebook Phase 5.5 Complete - Image Upload Support
 
@@ -90,22 +102,22 @@
 - Created MissingScorePrompt for scores without files
 - All features work offline with local storage
 
-## Immediate Priority: E2E Test Fixes & Localization (1-2 days)
+## ✅ COMPLETE: E2E Test Fixes & Localization
 
 ### Goal: Fix failing smoke tests and complete internationalization
 
 **Test Fixes**
 
-- [ ] Fix logbook search test waiting for composer filter
-- [ ] Update test selectors for new unified search
-- [ ] Ensure all smoke tests pass consistently
+- [✓] Fix logbook search test waiting for composer filter
+- [✓] Update test selectors for new unified search
+- [✓] Ensure all smoke tests pass consistently (297 unit tests, 65+ E2E tests passing)
 
 **Localization**
 
-- [ ] Complete translations for all 6 languages (de, es, fr, zh-CN, zh-TW)
-- [ ] Add new keys: searchScoresAndLogs, viewScore, linkedScore, autoTracked
-- [ ] Add missing score and upload translations
-- [ ] Verify all languages have complete coverage
+- [✓] Complete translations for all 6 languages (de, es, fr, zh-CN, zh-TW)
+- [✓] Add new keys: searchScoresAndLogs, viewScore, linkedScore, autoTracked
+- [✓] Add missing score and upload translations
+- [✓] Verify all languages have complete coverage (200 translations added)
 
 ## Next Phase: Analytics Dashboard (2 weeks)
 
@@ -167,6 +179,40 @@
 - [x] Component library documentation
 
 **Expected Outcome**: More polished, professional-looking application with better mobile experience. ✅ ACHIEVED
+
+## Priority 1.5: Theme System Implementation (1 week)
+
+### Goal: Implement proper dark/light/system theme switcher
+
+**Current Status**
+
+- App currently forced to light theme via CSS override
+- UI components have dark mode classes but no control mechanism
+- System preference detection causes inconsistent behavior
+
+**Implementation Plan**
+
+- [ ] Configure Tailwind for manual dark mode control (`darkMode: 'class'`)
+- [ ] Create theme store using Zustand with persistence
+- [ ] Add theme switcher UI component in header
+- [ ] Support three modes: Light, Dark, System (auto)
+- [ ] Remove CSS override forcing light theme
+- [ ] Ensure all UI components respect theme preference
+- [ ] Add smooth theme transition animations
+- [ ] Test across all pages and modals
+
+**Technical Details**
+
+```typescript
+// Theme store structure
+interface ThemeStore {
+  theme: 'light' | 'dark' | 'system'
+  effectiveTheme: 'light' | 'dark' // Computed based on system preference
+  setTheme: (theme: Theme) => void
+}
+```
+
+**Expected Outcome**: Users can choose their preferred theme, improving accessibility and user satisfaction.
 
 ## Priority 2: E2E Testing with Playwright (2-3 weeks)
 
@@ -561,4 +607,4 @@ Based on the success of the MVP, Mirubato will continue to prioritize:
 ---
 
 **Next Review**: October 2025
-**Last Updated**: July 4, 2025 (v1.3.0)
+**Last Updated**: July 18, 2025 (v1.7.0)

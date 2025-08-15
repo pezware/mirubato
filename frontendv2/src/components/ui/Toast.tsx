@@ -149,8 +149,3 @@ export interface UseToastReturn {
   hideToast: (id: string) => void
   clearToasts: () => void
 }
-
-// This would typically be implemented in a store or context
-// Example usage:
-// const { showToast } = useToast()
-// showToast({ type: 'success', message: 'Changes saved!' })

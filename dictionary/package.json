@@ -1,0 +1,55 @@
+{
+  "name": "@mirubato/dictionary",
+  "version": "1.7.0",
+  "description": "Music Dictionary Service - AI-powered music terminology definitions",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wrangler dev --port 9799 --env local --local-protocol http",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
+    "db:migrate:production": "wrangler d1 migrations apply DB --remote",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest",
+    "test:unit": "vitest run --passWithNoTests",
+    "test:coverage": "vitest --coverage",
+    "test:api": "curl http://dictionary-mirubato.localhost:9799/health | jq",
+    "test:language": "tsx test-language-support.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
+  },
+  "dependencies": {
+    "@cloudflare/ai": "^1.2.2",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^0.19.10",
+    "@hono/zod-validator": "^0.7.2",
+    "axios": "^1.11.0",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.3",
+    "hono": "^4.8.9",
+    "jose": "^5.10.0",
+    "nanoid": "^5.1.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250726.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.9",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "jsonwebtoken": "^9.0.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.26.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

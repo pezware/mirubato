@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import Autocomplete from './ui/Autocomplete'
 import Button from './ui/Button'
 import { useAutocomplete } from '../hooks/useAutocomplete'
+import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
 
 interface PieceInputProps {
   piece: {
@@ -10,7 +11,7 @@ interface PieceInputProps {
   }
   index: number
   onUpdate: (index: number, field: 'title' | 'composer', value: string) => void
-  onRemove: (index: number) => void
+  onRemove?: (index: number) => void
 }
 
 export default function PieceInput({
@@ -88,6 +89,18 @@ export default function PieceInput({
             onUpdate(index, 'composer', value)
             composerAutocomplete.setQuery(value)
           }}
+          onBlur={() => {
+            // Canonicalize composer name on blur
+            const currentValue = piece.composer || ''
+            if (currentValue && currentValue.trim()) {
+              const canonicalName =
+                getCanonicalComposerName(currentValue.trim()) ||
+                currentValue.trim()
+              if (canonicalName !== currentValue) {
+                onUpdate(index, 'composer', canonicalName)
+              }
+            }
+          }}
           onSelect={() => {
             // Selection is already handled by onChange in Autocomplete component
           }}
@@ -98,14 +111,16 @@ export default function PieceInput({
           data-testid="composer-input"
         />
 
-        <Button
-          type="button"
-          onClick={() => onRemove(index)}
-          variant="secondary"
-          size="sm"
-        >
-          {t('common:remove')}
-        </Button>
+        {onRemove && (
+          <Button
+            type="button"
+            onClick={() => onRemove(index)}
+            variant="secondary"
+            size="sm"
+          >
+            {t('common:remove')}
+          </Button>
+        )}
       </div>
     </div>
   )

@@ -7,9 +7,26 @@ import { useAuthStore } from '../../stores/authStore'
 // Mock the stores
 vi.mock('../../stores/authStore')
 
+// Mock SyncProvider component
+vi.mock('../../components/SyncProvider', () => ({
+  SyncProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}))
+
 // Mock utils
-vi.mock('../../utils/fixLocalStorageData', () => ({
-  fixLocalStorageData: vi.fn(),
+vi.mock('../../utils/migrations/lowercaseMigration', () => ({
+  runLowercaseMigration: vi.fn(),
+}))
+
+vi.mock('../../utils/pdfWorkerSetup', () => ({
+  setupPdfWorker: vi.fn(),
+}))
+
+vi.mock('../../modules/auto-logging', () => ({
+  AutoLoggingProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 // Import pages for test components
@@ -44,6 +61,7 @@ describe('App', () => {
       refreshAuth: mockRefreshAuth,
       user: null,
       isAuthenticated: false,
+      isAuthInitialized: true, // Set to true to avoid loading screen
       login: vi.fn(),
       logout: vi.fn(),
       isLoading: false,
@@ -61,15 +79,11 @@ describe('App', () => {
   })
 
   it('should call initialization functions on mount', async () => {
-    const { fixLocalStorageData } = await import(
-      '../../utils/fixLocalStorageData'
-    )
-
     render(<App />)
 
     await waitFor(() => {
-      expect(fixLocalStorageData).toHaveBeenCalledTimes(1)
-      expect(mockRefreshAuth).toHaveBeenCalledTimes(1)
+      // refreshAuth is now called twice: once on mount and once from RouteChangeHandler
+      expect(mockRefreshAuth).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -131,15 +145,15 @@ describe('App', () => {
   })
 
   it('should call initialization in correct order', async () => {
-    const { fixLocalStorageData } = await import(
-      '../../utils/fixLocalStorageData'
+    const { runLowercaseMigration } = await import(
+      '../../utils/migrations/lowercaseMigration'
     )
 
     const callOrder: string[] = []
 
-    ;(fixLocalStorageData as ReturnType<typeof vi.fn>).mockImplementation(
+    ;(runLowercaseMigration as ReturnType<typeof vi.fn>).mockImplementation(
       () => {
-        callOrder.push('fixLocalStorageData')
+        callOrder.push('runLowercaseMigration')
       }
     )
 
@@ -150,7 +164,12 @@ describe('App', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(callOrder).toEqual(['fixLocalStorageData', 'refreshAuth'])
+      // refreshAuth is called twice now: once on mount and once on initial route
+      expect(callOrder).toEqual([
+        'refreshAuth',
+        'runLowercaseMigration',
+        'refreshAuth',
+      ])
     })
   })
 })

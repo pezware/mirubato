@@ -9,17 +9,17 @@ import { UploadService } from '../../services/uploadService'
 const TEST_PDFS = {
   'score_01.pdf': {
     title: 'Aire Sureño',
-    composer: 'Agustín Barrios Mangoré',
-    instrument: 'GUITAR',
-    difficulty: 'ADVANCED',
+    composer: 'Agustín Barrios',
+    instrument: 'guitar',
+    difficulty: 'advanced',
     // This is a minimal valid PDF that displays "Test Score 1"
     content: `JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlczw8L0ZvbnQ8PC9GMSA0IDAgUj4+Pj4vTWVkaWFCb3hbMCAwIDYxMiA3OTJdL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZS9Gb250L1N1YnR5cGUvVHlwZTEvQmFzZUZvbnQvSGVsdmV0aWNhPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDg4Pj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgoxMDAgNzAwIFRkCihUZXN0IFNjb3JlIDEgLSBBaXJlIFN1cmVubyBQbGFjZWhvbGRlcikgVGoKMTAwIDY1MCBUZAooVGhpcyBpcyBhIHBsYWNlaG9sZGVyIFBERiBmb3IgdGVzdGluZykgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqCjw8L1R5cGUvWFJlZi9TaXplIDcvV1sxIDIgMl0vUm9vdCAxIDAgUi9JbmZvIDcgMCBSL0lEWzwxMjM0NTY3ODkwQUJDREVGMTIzNDU2Nzg5MEFCQ0RFRj48MTIzNDU2Nzg5MEFCQ0RFRjEyMzQ1Njc4OTBBQkNERUY+XT4+CnN0cmVhbQp4nGNgYGBgZGBgYAZiRgYQYAJiIMnAwAIkWaA0AxMDEwMbEDMzMDMwMjAxAAAAPAAECgplbmRzdHJlYW0KZW5kb2JqCnN0YXJ0eHJlZgo2NDYKJSVFT0Y=`,
   },
   'score_02.pdf': {
     title: 'Romance (Spanish Romance)',
-    composer: 'Anonymous (arr. Eythor Thorlaksson)',
-    instrument: 'GUITAR',
-    difficulty: 'INTERMEDIATE',
+    composer: 'Anonymous',
+    instrument: 'guitar',
+    difficulty: 'intermediate',
     // This is a minimal valid PDF that displays "Test Score 2"
     content: `JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlczw8L0ZvbnQ8PC9GMSA0IDAgUj4+Pj4vTWVkaWFCb3hbMCAwIDYxMiA3OTJdL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZS9Gb250L1N1YnR5cGUvVHlwZTEvQmFzZUZvbnQvSGVsdmV0aWNhPj4KZW5kb2JqCjUgMCBvYmoKPDwvTGVuZ3RoIDk1Pj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgoxMDAgNzAwIFRkCihUZXN0IFNjb3JlIDIgLSBTcGFuaXNoIFJvbWFuY2UgUGxhY2Vob2xkZXIpIFRqCjEwMCA2NTAgVGQKKFRoaXMgaXMgYSBwbGFjZWhvbGRlciBQREYgZm9yIHRlc3RpbmcpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNiAwIG9iago8PC9UeXBlL1hSZWYvU2l6ZSA3L1dbMSAyIDJdL1Jvb3QgMSAwIFIvSW5mbyA3IDAgUi9JRFs8MTIzNDU2Nzg5MEFCQ0RFRjEyMzQ1Njc4OTBBQkNERUY+PDEyMzQ1Njc4OTBBQkNERUYxMjM0NTY3ODkwQUJDREVGPl0+PgpzdHJlYW0KeJxjYGBgYGRgYGAGYkYGEGACYiDJwMAMJFmgNAMTAxMDGxAzMzAzMDIwMQAAADwABAoKZW5kc3RyZWFtCmVuZG9iagpzdGFydHhyZWYKNjUzCiUlRU9G`,
   },

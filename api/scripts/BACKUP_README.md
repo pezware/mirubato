@@ -1,5 +1,7 @@
 # D1 Database Backup and Migration Scripts
 
+> **⚠️ NOTE**: The automated GitHub Actions backup workflow has been removed from the public repository due to security concerns. These scripts remain for local/manual backup operations only.
+
 This directory contains scripts for safely managing D1 database backups and migrations.
 
 ## Scripts

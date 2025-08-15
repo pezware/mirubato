@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { sanitizeImageUrl, getFallbackImageUrl } from '../../utils/urlSanitizer'
 
 interface ImageEditorProps {
   imageUrl: string
@@ -90,7 +91,7 @@ export default function ImageEditor({
             >
               <img
                 ref={imgRef}
-                src={imageUrl}
+                src={sanitizeImageUrl(imageUrl) || getFallbackImageUrl()}
                 alt="Upload"
                 style={{
                   filter: `brightness(${brightness}%) contrast(${contrast}%)`,
@@ -100,6 +101,9 @@ export default function ImageEditor({
                   width: 'auto',
                 }}
                 className="mx-auto"
+                onError={e => {
+                  e.currentTarget.src = getFallbackImageUrl()
+                }}
               />
             </ReactCrop>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAutoLogging } from './context'
-import type { PracticeType, PracticeMetadata } from './types'
+import type { PracticeType, PracticeMetadata, PracticeSession } from './types'
 
 interface UsePracticeTrackingOptions {
   type: PracticeType
@@ -19,6 +19,7 @@ export const usePracticeTracking = ({
     currentSession,
     startSession,
     stopSession,
+    saveSessionToLogbook,
     updateSession,
     cancelSession,
     isTracking,
@@ -27,10 +28,9 @@ export const usePracticeTracking = ({
   } = useAutoLogging()
 
   const [showSummary, setShowSummary] = useState(false)
-  const [pendingSession, setPendingSession] = useState<{
-    duration: number
-    metadata: PracticeMetadata
-  } | null>(null)
+  const [pendingSession, setPendingSession] = useState<PracticeSession | null>(
+    null
+  )
 
   // Auto-start if enabled
   useEffect(() => {
@@ -49,19 +49,17 @@ export const usePracticeTracking = ({
     const session = await stopSession()
 
     if (session && config.showSummary) {
-      // Store session data for summary modal
-      setPendingSession({
-        duration: session.duration,
-        metadata: session.metadata,
-      })
+      // Store complete session for summary modal
+      setPendingSession(session)
       setShowSummary(true)
     } else if (session) {
-      // Call callback if no summary needed
+      // Auto-save without summary
+      await saveSessionToLogbook(session)
       onSessionEnd?.(session.duration, session.metadata)
     }
 
     return session
-  }, [stopSession, config.showSummary, onSessionEnd])
+  }, [stopSession, config.showSummary, onSessionEnd, saveSessionToLogbook])
 
   const cancel = useCallback(() => {
     cancelSession()
@@ -69,13 +67,20 @@ export const usePracticeTracking = ({
     setShowSummary(false)
   }, [cancelSession])
 
-  const confirmSave = useCallback(() => {
-    if (pendingSession) {
-      onSessionEnd?.(pendingSession.duration, pendingSession.metadata)
-    }
-    setPendingSession(null)
-    setShowSummary(false)
-  }, [pendingSession, onSessionEnd])
+  const confirmSave = useCallback(
+    async (userNotes?: string) => {
+      if (pendingSession) {
+        // Save to logbook with user notes
+        await saveSessionToLogbook(pendingSession, userNotes)
+
+        // Call the callback if provided
+        onSessionEnd?.(pendingSession.duration, pendingSession.metadata)
+      }
+      setPendingSession(null)
+      setShowSummary(false)
+    },
+    [pendingSession, onSessionEnd, saveSessionToLogbook]
+  )
 
   const update = useCallback(
     (updates: Partial<PracticeMetadata>) => {

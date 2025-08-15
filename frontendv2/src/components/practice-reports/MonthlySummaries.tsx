@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Calendar } from 'lucide-react'
 import { LogbookEntry } from '../../api/logbook'
 import Button from '../ui/Button'
 import { Card } from '../ui/Card'
+import { MusicTitle, MusicComposer } from '../ui'
 
 interface MonthlySummariesProps {
   entries: LogbookEntry[]
@@ -164,18 +165,32 @@ export function MonthlySummaries({
                             {formatDuration(entry.duration)}
                           </span>
                           <span className="text-xs text-morandi-stone-500">
-                            {entry.instrument?.toUpperCase() === 'PIANO'
-                              ? '🎹'
-                              : '🎸'}
+                            {entry.instrument}
                           </span>
                         </div>
                         {entry.pieces.length > 0 && (
                           <div className="text-sm text-morandi-stone-600">
                             {entry.pieces.map((piece, index) => (
-                              <span key={index}>
-                                {piece.title}
-                                {piece.composer && ` by ${piece.composer}`}
-                                {index < entry.pieces.length - 1 && ', '}
+                              <span
+                                key={index}
+                                className="inline-flex flex-wrap items-center gap-1"
+                              >
+                                <MusicTitle>{piece.title}</MusicTitle>
+                                {piece.composer && (
+                                  <>
+                                    <span className="text-morandi-stone-500">
+                                      by
+                                    </span>
+                                    <MusicComposer>
+                                      {piece.composer}
+                                    </MusicComposer>
+                                  </>
+                                )}
+                                {index < entry.pieces.length - 1 && (
+                                  <span className="text-morandi-stone-500">
+                                    ,
+                                  </span>
+                                )}
                               </span>
                             ))}
                           </div>

@@ -32,37 +32,41 @@ export default function TimelineNav({
   }
 
   return (
-    <div className={cn('flex items-center w-full mb-6', className)}>
-      <div className="flex mr-auto bg-white rounded-lg border border-morandi-stone-300 overflow-hidden">
-        {levels.map((level, index) => {
-          const isActive = index <= activeIndex
-          const isFirst = index === 0
+    <div className={cn('w-full mb-6', className)}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+        <div className="flex mr-auto bg-white rounded-lg border border-morandi-stone-300 overflow-hidden">
+          {levels.map((level, index) => {
+            const isActive = index <= activeIndex
+            const isFirst = index === 0
 
-          return (
-            <button
-              key={level.value}
-              onClick={() => handleClick(level, index)}
-              className={cn(
-                'relative px-4 py-2 text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-morandi-stone-100 text-morandi-stone-700'
-                  : 'bg-white text-morandi-stone-500 hover:bg-morandi-stone-50',
-                !isFirst && 'border-l border-morandi-stone-300',
-                'focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 focus:ring-inset'
-              )}
-            >
-              <span className="relative z-10">{level.label}</span>
-              {isActive && index === activeIndex && (
-                <div className="absolute inset-0 bg-morandi-sage-100" />
-              )}
-            </button>
-          )
-        })}
+            return (
+              <button
+                key={level.value}
+                onClick={() => handleClick(level, index)}
+                className={cn(
+                  'relative px-4 py-2 text-sm font-medium transition-all duration-200',
+                  isActive
+                    ? 'bg-morandi-stone-100 text-morandi-stone-700'
+                    : 'bg-white text-morandi-stone-500 hover:bg-morandi-stone-50',
+                  !isFirst && 'border-l border-morandi-stone-300',
+                  'focus:outline-none focus:ring-2 focus:ring-morandi-sage-400 focus:ring-inset'
+                )}
+              >
+                <span className="relative z-10">{level.label}</span>
+                {isActive && index === activeIndex && (
+                  <div className="absolute inset-0 bg-morandi-sage-100" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {summary && (
+          <div className="text-sm text-morandi-stone-600 sm:ml-6">
+            {summary}
+          </div>
+        )}
       </div>
-
-      {summary && (
-        <div className="ml-6 text-sm text-morandi-stone-600">{summary}</div>
-      )}
     </div>
   )
 }

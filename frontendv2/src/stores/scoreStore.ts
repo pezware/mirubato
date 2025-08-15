@@ -1,19 +1,6 @@
 import { create } from 'zustand'
 import { scoreService, type Score } from '../services/scoreService'
 import type { Collection } from '../types/collections'
-import { usePracticeStore } from './practiceStore'
-import { useLogbookStore } from './logbookStore'
-
-interface PracticeSession {
-  id: string
-  scoreId: string
-  startTime: Date
-  endTime?: Date
-  duration: number // in seconds
-  measuresCompleted: number[]
-  tempo: number
-  notes?: string
-}
 
 interface MetronomeSettings {
   tempo: number
@@ -36,10 +23,6 @@ interface ScoreStore {
   featuredCollections: Collection[]
   userLibrary: Score[]
 
-  // Practice session
-  practiceSession: PracticeSession | null
-  isRecording: boolean
-
   // Metronome
   metronomeSettings: MetronomeSettings
 
@@ -55,11 +38,6 @@ interface ScoreStore {
   setTotalPages: (pages: number) => void
   nextPage: () => void
   previousPage: () => void
-
-  // Practice actions
-  startPractice: () => void
-  stopPractice: () => void
-  updatePracticeProgress: (measure: number) => void
 
   // Metronome actions
   setTempo: (tempo: number) => void
@@ -104,9 +82,6 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
   userCollections: [],
   featuredCollections: [],
   userLibrary: [],
-
-  practiceSession: null,
-  isRecording: false,
 
   metronomeSettings: {
     tempo: 120,
@@ -183,82 +158,6 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
     const { currentPage } = get()
     if (currentPage > 1) {
       set({ currentPage: currentPage - 1 })
-    }
-  },
-
-  // Practice actions
-  startPractice: () => {
-    const { currentScore } = get()
-    if (!currentScore) return
-
-    // Get user's instrument preference (default to PIANO for now)
-    // TODO: Add user instrument preference to profile
-    const instrument = 'PIANO' as const
-
-    // Start practice in practiceStore
-    usePracticeStore.getState().startPractice(currentScore, instrument)
-
-    // Mark as recording in scoreStore for UI
-    set({ isRecording: true })
-  },
-
-  stopPractice: () => {
-    const { currentScore } = get()
-    if (!currentScore) return
-
-    // Stop practice and get session data
-    const sessionData = usePracticeStore.getState().stopPractice()
-    if (!sessionData) {
-      set({ isRecording: false })
-      return
-    }
-
-    // Create logbook entry
-    const logbookStore = useLogbookStore.getState()
-    logbookStore.createEntry({
-      timestamp: new Date().toISOString(),
-      duration: sessionData.duration,
-      type: 'PRACTICE',
-      instrument: 'PIANO' as const, // TODO: Add user instrument preference
-      pieces: [
-        {
-          title: sessionData.scoreTitle,
-          composer: sessionData.scoreComposer || undefined,
-        },
-      ],
-      techniques: [],
-      goalIds: [],
-      tags: [],
-      metadata: {
-        source: 'score-viewer',
-      },
-      // Score integration fields
-      scoreId: sessionData.scoreId,
-      scoreTitle: sessionData.scoreTitle,
-      scoreComposer: sessionData.scoreComposer,
-      autoTracked: true,
-    })
-
-    set({ isRecording: false })
-  },
-
-  updatePracticeProgress: (measure: number) => {
-    const { practiceSession } = get()
-    if (
-      !practiceSession ||
-      !practiceSession.measuresCompleted.includes(measure)
-    ) {
-      set({
-        practiceSession: practiceSession
-          ? {
-              ...practiceSession,
-              measuresCompleted: [
-                ...practiceSession.measuresCompleted,
-                measure,
-              ],
-            }
-          : null,
-      })
     }
   },
 
@@ -348,6 +247,18 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       }))
       set({ userLibrary: normalizedScores })
     } catch (error) {
+      // Check if this is a network error (scores service not running)
+      if (
+        error instanceof Error &&
+        (error.message.includes('Network Error') ||
+          error.message.includes('ERR_CONNECTION_REFUSED'))
+      ) {
+        // Silently handle - scores service is not running
+        console.log('Scores service not available, continuing without scores')
+        set({ userLibrary: [] })
+        return
+      }
+
       // If getUserScores fails (likely due to authentication), fall back to public scores
       if (
         error instanceof Error &&
@@ -362,7 +273,18 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
           }))
           set({ userLibrary: normalizedPublicScores })
         } catch (publicError) {
-          console.error('Failed to load public library:', publicError)
+          // Also check for network errors in public fallback
+          if (
+            publicError instanceof Error &&
+            (publicError.message.includes('Network Error') ||
+              publicError.message.includes('ERR_CONNECTION_REFUSED'))
+          ) {
+            console.log(
+              'Scores service not available, continuing without scores'
+            )
+          } else {
+            console.error('Failed to load public library:', publicError)
+          }
           set({ userLibrary: [] })
         }
       } else {

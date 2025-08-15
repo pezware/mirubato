@@ -7,8 +7,8 @@ export interface Score {
   composer: string
   opus?: string | null
   movement?: string | null
-  instrument: 'PIANO' | 'GUITAR' | 'BOTH'
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  instrument: 'piano' | 'guitar' | 'both'
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
   difficulty_level?: number | null
   grade_level?: string | null
   duration_seconds?: number | null
@@ -17,11 +17,11 @@ export interface Score {
   tempo_marking?: string | null
   suggested_tempo?: number | null
   style_period?:
-    | 'BAROQUE'
-    | 'CLASSICAL'
-    | 'ROMANTIC'
-    | 'MODERN'
-    | 'CONTEMPORARY'
+    | 'baroque'
+    | 'classical'
+    | 'romantic'
+    | 'modern'
+    | 'contemporary'
     | null
   source?: string | null
   source_type?: 'pdf' | 'image' | 'multi-image' | 'external' | 'manual' | null
@@ -107,7 +107,7 @@ scoresApiClient.interceptors.response.use(
       localStorage.removeItem('refresh-token')
 
       // Redirect to login if not on public pages
-      const publicPaths = ['/', '/auth/verify', '/scorebook']
+      const publicPaths = ['/', '/auth/verify', '/scorebook', '/logbook']
       if (!publicPaths.includes(window.location.pathname)) {
         window.location.href = '/'
       }

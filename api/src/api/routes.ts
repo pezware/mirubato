@@ -4,6 +4,9 @@ import { syncHandler } from './handlers/sync'
 import { userHandler } from './handlers/user'
 import { debugHandler } from './handlers/debug'
 import { autocompleteHandler } from './handlers/autocomplete'
+import { repertoireHandler } from './handlers/repertoire'
+import { goalsHandler } from './handlers/goals'
+import { piecesHandler } from './handlers/pieces'
 import type { Env } from '../index'
 
 export const api = new Hono<{ Bindings: Env }>()
@@ -38,6 +41,25 @@ api.get('/', c => {
         'GET /api/autocomplete/composers': 'Get composer name suggestions',
         'GET /api/autocomplete/pieces': 'Get piece title suggestions',
       },
+      repertoire: {
+        'GET /api/repertoire': 'List user repertoire',
+        'GET /api/repertoire/:scoreId/stats':
+          'Get repertoire stats for a piece',
+        'POST /api/repertoire': 'Add piece to repertoire',
+        'PUT /api/repertoire/:scoreId': 'Update repertoire item',
+        'DELETE /api/repertoire/:scoreId': 'Remove from repertoire',
+      },
+      goals: {
+        'GET /api/goals': 'List user goals with optional filters',
+        'GET /api/goals/:id': 'Get specific goal with stats',
+        'POST /api/goals': 'Create new goal',
+        'PUT /api/goals/:id': 'Update goal',
+        'POST /api/goals/:id/progress': 'Track progress on a goal',
+        'DELETE /api/goals/:id': 'Delete goal',
+      },
+      pieces: {
+        'PUT /api/pieces/update-name': 'Update piece name across all entries',
+      },
     },
   })
 })
@@ -48,3 +70,6 @@ api.route('/sync', syncHandler)
 api.route('/user', userHandler)
 api.route('/debug', debugHandler)
 api.route('/autocomplete', autocompleteHandler)
+api.route('/repertoire', repertoireHandler)
+api.route('/goals', goalsHandler)
+api.route('/pieces', piecesHandler)

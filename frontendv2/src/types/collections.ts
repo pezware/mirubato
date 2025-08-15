@@ -11,6 +11,7 @@ export interface Collection {
   ownerType: 'user' | 'admin' | 'teacher'
   visibility: 'private' | 'public' | 'unlisted'
   tags: string[]
+  is_default?: boolean // Flag for default "General" collection
   featuredAt?: string | null
   featuredBy?: string | null
   displayOrder?: number | null

@@ -284,15 +284,15 @@ describe('HomePage', () => {
       })
     })
 
-    it('should show user email and navigation links', () => {
+    it('should show user initials and sign out button', () => {
       render(
         <MemoryRouter>
           <HomePage />
         </MemoryRouter>
       )
 
-      expect(screen.getByText('test@example.com')).toBeInTheDocument()
-      expect(screen.getByText('Logbook')).toBeInTheDocument()
+      // Should show "T" for test@example.com (single part email)
+      expect(screen.getByText('T')).toBeInTheDocument()
       expect(screen.getByText('Sign out')).toBeInTheDocument()
     })
 
@@ -342,15 +342,16 @@ describe('HomePage', () => {
       expect(signOutButton).toBeDisabled()
     })
 
-    it('should navigate to logbook when link clicked', () => {
+    it('should display user initials when authenticated', () => {
       render(
         <MemoryRouter>
           <HomePage />
         </MemoryRouter>
       )
 
-      const logbookLink = screen.getByText('Logbook')
-      expect(logbookLink).toHaveAttribute('href', '/logbook')
+      // Should show user initials "T" for test@example.com (single part email)
+      const userInitials = screen.getByText('T')
+      expect(userInitials).toBeInTheDocument()
     })
 
     it('should navigate to logbook when button clicked', () => {
@@ -362,6 +363,42 @@ describe('HomePage', () => {
 
       const logbookButton = screen.getByText(/Go to Logbook/)
       expect(logbookButton.closest('a')).toHaveAttribute('href', '/logbook')
+    })
+
+    it('should show correct initials for different email formats', () => {
+      // Test john.doe@example.com -> JD
+      ;(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        user: { ...mockUser, email: 'john.doe@example.com' },
+        isAuthenticated: true,
+        login: mockLogin,
+        logout: mockLogout,
+        isLoading: false,
+        error: null,
+      })
+
+      const { rerender } = render(
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      )
+      expect(screen.getByText('JD')).toBeInTheDocument()
+
+      // Test admin@example.com -> A
+      ;(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        user: { ...mockUser, email: 'admin@example.com' },
+        isAuthenticated: true,
+        login: mockLogin,
+        logout: mockLogout,
+        isLoading: false,
+        error: null,
+      })
+
+      rerender(
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      )
+      expect(screen.getByText('A')).toBeInTheDocument()
     })
   })
 

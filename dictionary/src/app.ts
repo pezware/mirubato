@@ -1,0 +1,616 @@
+/**
+ * Music Dictionary Service - Application Configuration
+ */
+
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { timing } from 'hono/timing'
+import { swaggerUI } from '@hono/swagger-ui'
+import { Env, Variables } from './types/env'
+import { errorHandler } from './utils/errors'
+import { tieredRateLimit } from './middleware/rate-limit'
+import { requestId } from './middleware/request-id'
+import { structuredLogger, accessLogger } from './middleware/logging'
+import { SERVICE_VERSION } from './utils/version'
+
+// Import routes
+import { healthRoutes } from './routes/health'
+import { docsRoutes } from './routes/docs'
+import { dictionaryRoutes } from './routes/dictionary'
+import adminAuthRoutes from './routes/admin-auth'
+import adminPortal from './routes/admin-portal'
+
+/**
+ * Create and configure Hono app
+ */
+export const app = new Hono<{ Bindings: Env; Variables: Variables }>()
+
+/**
+ * Global middleware
+ */
+// Add request ID first so it's available to all other middleware
+app.use('*', requestId())
+
+// Use structured logging in development, simple access logging in production
+app.use('*', async (c, next) => {
+  if (c.env.ENVIRONMENT === 'production' && c.env.LOG_LEVEL !== 'debug') {
+    return accessLogger()(c, next)
+  }
+  return structuredLogger()(c, next)
+})
+
+// Timing middleware for performance monitoring
+app.use('*', timing())
+
+// CORS configuration with environment-based origins
+app.use('*', async (c, next) => {
+  const corsMiddleware = cors({
+    origin: origin => {
+      // In production, use environment variable
+      const allowedOrigins = c.env.CORS_ORIGIN
+        ? c.env.CORS_ORIGIN.split(',').map(o => o.trim())
+        : [
+            'https://mirubato.com',
+            'https://www.mirubato.com',
+            'https://staging.mirubato.com',
+            'https://www-staging.mirubato.com',
+            'http://localhost:3000',
+            'http://localhost:4000',
+            'http://www-mirubato.localhost:4000',
+          ]
+
+      return allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
+    },
+    credentials: true,
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Device-ID',
+      'X-Idempotency-Key',
+    ],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  })
+  return corsMiddleware(c, next)
+})
+
+// Apply tiered rate limiting to API routes
+app.use(
+  '/api/*',
+  tieredRateLimit({
+    anonymous: {
+      windowMs: 60000,
+      max: 60,
+      message: 'Too many requests from this IP, please try again later',
+    },
+    authenticated: {
+      windowMs: 60000,
+      max: 120,
+    },
+    premium: {
+      windowMs: 60000,
+      max: 600,
+    },
+  })
+)
+
+/**
+ * Routes
+ */
+// Direct admin portal route (avoiding sub-router issues)
+app.get('/fredericchopin', c => {
+  const environment = c.env.ENVIRONMENT || 'production'
+  const isProduction = environment === 'production'
+  const apiBaseUrl = isProduction
+    ? 'https://dictionary.mirubato.com'
+    : 'https://dictionary-staging.mirubato.com'
+
+  // Login page HTML
+  const loginHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary Admin Portal - Mirubato</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f4;
+            color: #3d3d3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #3d3d3a;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b6b66;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e0d8cb;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #7a8a6f;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #7a8a6f;
+            color: white;
+        }
+        
+        .button:hover {
+            background: #687a5c;
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .alert.error {
+            background: #fbe8e8;
+            color: #a94442;
+            border-left: 4px solid #e89595;
+        }
+        
+        .alert.success {
+            background: #e8ebe6;
+            color: #687a5c;
+            border-left: 4px solid #7a8a6f;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dictionary Admin Portal</h1>
+        <p style="margin-bottom: 24px;">Please enter your @mirubato.com email address to receive a magic link.</p>
+        
+        <form onsubmit="requestMagicLink(event)">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    id="adminEmail" 
+                    placeholder="admin@mirubato.com"
+                    pattern="[^@]+@mirubato\\.com"
+                    title="Must be a @mirubato.com email address"
+                    required
+                >
+            </div>
+            <button type="submit" class="button" id="magicLinkBtn">
+                Send Magic Link
+            </button>
+        </form>
+        
+        <div id="magicLinkMessage"></div>
+    </div>
+    
+    <script>
+        async function requestMagicLink(event) {
+            event.preventDefault();
+            
+            const emailInput = document.getElementById('adminEmail');
+            const email = emailInput.value;
+            const button = document.getElementById('magicLinkBtn');
+            const messageDiv = document.getElementById('magicLinkMessage');
+            
+            // Disable form
+            emailInput.disabled = true;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Sending...';
+            
+            try {
+                const response = await fetch('${apiBaseUrl}/fredericchopin/auth/magic-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error?.message || 'Failed to send magic link');
+                }
+                
+                // Show success message
+                messageDiv.innerHTML = \`
+                    <div class="alert success">
+                        <strong>Success!</strong><br>
+                        <p style="margin-top: 8px;">A magic link has been sent to your email. Please check your inbox and click the link to sign in.</p>
+                    </div>
+                \`;
+            } catch (error) {
+                messageDiv.innerHTML = \`
+                    <div class="alert error">
+                        <strong>Error:</strong> \${error.message}
+                    </div>
+                \`;
+            } finally {
+                // Re-enable form
+                emailInput.disabled = false;
+                button.disabled = false;
+                button.innerHTML = 'Send Magic Link';
+            }
+        }
+    </script>
+</body>
+</html>
+  `
+
+  // Always show login page at this route
+  return c.html(loginHtml)
+})
+
+// Admin dashboard route - use the enhanced admin portal
+app.route('/fredericchopin/dashboard', adminPortal)
+
+// Admin auth routes
+app.route('/fredericchopin/auth', adminAuthRoutes)
+
+// Health check endpoints
+app.route('/', healthRoutes)
+
+// Documentation endpoints
+app.route('/docs', docsRoutes)
+app.get('/swagger', swaggerUI({ url: '/docs/openapi.json' }))
+
+// Dictionary API routes
+app.route('/', dictionaryRoutes)
+
+// Root endpoint - Landing page
+app.get('/', c => {
+  const environment = c.env.ENVIRONMENT || 'production'
+  const isProduction = environment === 'production'
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirubato Music Dictionary Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        .status {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-box h3 {
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+        
+        .info-box p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .link-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .link-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .link-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .endpoints {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .endpoints h3 {
+            color: #4b5563;
+            margin-bottom: 15px;
+        }
+        
+        .endpoint-list {
+            list-style: none;
+        }
+        
+        .endpoint-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        
+        .endpoint-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .endpoint-list .auth-required {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        
+        .environment-badge {
+            display: inline-block;
+            background: ${isProduction ? '#10b981' : '#f59e0b'};
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            📖 Mirubato Music Dictionary Service
+            <span class="version-badge">v${SERVICE_VERSION}</span>
+        </h1>
+        <p class="subtitle">AI-powered music terminology dictionary</p>
+        
+        <div class="status">
+            <span class="status-badge">
+                <span class="status-dot"></span>
+                Operational
+            </span>
+            <span class="environment-badge">${environment}</span>
+        </div>
+        
+        <div class="info-box">
+            <h3>About This Service</h3>
+            <p>
+                The Mirubato Music Dictionary provides comprehensive definitions and educational content
+                for musical terms, powered by AI models with quality verification and continuous improvement.
+            </p>
+        </div>
+        
+        <div class="links-grid">
+            <a href="/docs" class="link-card">
+                <h4>📚 API Documentation</h4>
+                <p>Interactive API documentation</p>
+            </a>
+            <a href="/swagger" class="link-card">
+                <h4>🔨 Swagger UI</h4>
+                <p>Explore API endpoints</p>
+            </a>
+            <a href="/health" class="link-card">
+                <h4>🏥 Health Status</h4>
+                <p>Service health information</p>
+            </a>
+            <a href="/metrics" class="link-card">
+                <h4>📊 Metrics</h4>
+                <p>Prometheus metrics endpoint</p>
+            </a>
+        </div>
+        
+        <div class="endpoints">
+            <h3>API Endpoints</h3>
+            <ul class="endpoint-list">
+                <li>GET /api/v1/terms/:term</li>
+                <li>GET /api/v1/search?q=query</li>
+                <li>POST /api/v1/search/semantic</li>
+                <li>POST /api/v1/batch/query</li>
+                <li>GET /api/v1/analytics/summary</li>
+                <li>POST /api/v1/enhance <span class="auth-required">(auth required)</span></li>
+                <li>* /api/v1/admin/* <span class="auth-required">(admin required)</span></li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>Part of the Mirubato music education platform</p>
+            <p>© 2025 Mirubato. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+  `
+
+  return c.html(html)
+})
+
+/**
+ * 404 handler
+ */
+app.notFound(c => {
+  return c.json(
+    {
+      status: 'error',
+      error: {
+        code: 'NOT_FOUND',
+        message: 'The requested endpoint does not exist',
+        timestamp: new Date().toISOString(),
+      },
+    },
+    404
+  )
+})
+
+/**
+ * Global error handler
+ */
+app.onError(errorHandler)
+
+/**
+ * Export configured app
+ */
+export default app

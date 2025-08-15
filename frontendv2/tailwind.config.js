@@ -1,13 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class', // This prevents automatic dark mode based on system preference
   theme: {
     extend: {
       fontFamily: {
         inter: ['Inter', 'system-ui', 'sans-serif'],
         lexend: ['Lexend', 'system-ui', 'sans-serif'],
+        serif: ['Noto Serif', 'Georgia', 'serif'],
       },
       colors: {
+        'circle-border': '#262a2a',
         morandi: {
           sage: {
             50: '#f4f5f2',
@@ -18,6 +21,15 @@ export default {
             500: '#818f6d',
             600: '#6b7857',
             700: '#555e45',
+          },
+          navy: {
+            100: '#e6f0f5',
+            200: '#c2d9e6',
+            300: '#9ec2d6',
+            400: '#7aacc7',
+            500: '#2c5282',
+            600: '#1e3a5b',
+            700: '#1a365d',
           },
           sand: {
             100: '#f5f2ed',
@@ -74,6 +86,23 @@ export default {
             400: '#f47c52',
             500: '#ec5a2b',
           },
+          red: {
+            500: '#d63638', // Morandi red for root note font
+          },
+          'dusty-red': {
+            500: '#a55a5a', // Morandi dusty red for chord note font
+          },
+          orange: {
+            500: '#e08849', // Morandi orange for scale note font
+          },
+        },
+        // Custom colors for piano keys
+        piano: {
+          'root-white': '#dbeeed',
+          'root-black': '#3f4444',
+          'chord-white': '#b4c4c3',
+          'chord-black': '#666f6e',
+          scale: '#8d9999',
         },
         mirubato: {
           leaf: '#9ca888', // Morandi sage
@@ -122,5 +151,42 @@ export default {
     'bg-morandi-sage-400',
     'bg-morandi-sand-400',
     'bg-morandi-blush-400',
+    // Circle of Fifths piano keyboard colors
+    'bg-morandi-rose-200',
+    'bg-morandi-rose-300',
+    'text-morandi-rose-500',
+    'bg-morandi-peach-200',
+    'text-morandi-peach-500',
+    'bg-morandi-sage-400',
+    'text-morandi-sage-500',
+    'text-morandi-sage-600',
+    'accent-morandi-sage-500',
+    'bg-morandi-stone-400',
+    'bg-morandi-stone-500',
+    'bg-morandi-stone-600',
+    'bg-morandi-stone-700',
+    // Key details panel colors
+    'bg-morandi-sage-100',
+    'bg-morandi-sage-300',
+    'bg-morandi-rose-300',
+    'bg-morandi-peach-300',
+    'bg-morandi-sky-300',
+    'bg-morandi-sand-300',
+    'bg-morandi-purple-50',
+    'text-morandi-purple-500',
+    'bg-morandi-purple-300',
+    'text-morandi-purple-400',
+    'border-morandi-purple-300',
+    'border-morandi-sage-300',
+    'border-morandi-rose-300',
+    'border-morandi-peach-300',
+    'border-morandi-sky-300',
+    'border-morandi-sand-300',
+    // Status bars for pieces and repertoire statuses
+    'bg-morandi-navy-600', // Polished (darkest)
+    'bg-morandi-navy-500', // (unused but kept for backward compatibility)
+    'bg-morandi-navy-400', // Learning (medium)
+    'bg-morandi-navy-300', // Planned (lightest)
+    'bg-gray-300', // Dropped/default
   ],
 }

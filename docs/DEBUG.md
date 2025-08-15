@@ -1,8 +1,22 @@
-# Mirubato Debug Guide - Version 1.1.0
+# Mirubato Debug Guide - Version 1.7.0
 
 ## Overview
 
 This document contains known issues, their solutions, and debugging tools for the Mirubato platform. Use this guide when encountering problems during development or in production.
+
+## Recent Fixes
+
+### ✅ Missing Translations Fixed (v1.7.0)
+
+- **Issue**: 200+ strings marked with [NEEDS TRANSLATION] across 5 languages
+- **Fix**: Complete translations for Spanish, French, German, Traditional and Simplified Chinese
+- **Files Updated**: All locale JSON files in `src/locales/`
+
+### ✅ UI Navigation Improvements (v1.7.0)
+
+- **Issue**: Complex navigation with 6 sections was overwhelming
+- **Fix**: Simplified to 4 main sections with focused design
+- **Components**: New AppLayout, Sidebar, TopBar, BottomTabs
 
 ## Recent Fixes in v1.1.0
 
@@ -34,6 +48,10 @@ This document contains known issues, their solutions, and debugging tools for th
 3. **Scores API Health**: `https://scores.mirubato.com/health`
    - Check scores service status
    - View scores API documentation at `https://scores.mirubato.com/docs`
+
+4. **Dictionary API Health**: `https://dictionary.mirubato.com/health`
+   - Check dictionary service status
+   - View dictionary API documentation at `https://dictionary.mirubato.com/docs`
 
 ## Known Issues & Solutions
 
@@ -638,6 +656,58 @@ useEffect(() => {
 }, [dataId]) // Only depend on data that changes
 ```
 
+### 10. Date Picker Timezone Jump Issue
+
+**Problem**: When selecting a date in date picker inputs, the selected date jumps back by one day (e.g., selecting July 23 shows July 22).
+
+**Root Cause**: JavaScript's `new Date(dateString)` constructor interprets date strings in ISO 8601 format (YYYY-MM-DD) as UTC midnight, which then gets converted to local timezone, causing the date to shift.
+
+**Example**:
+
+```javascript
+// ❌ WRONG: Creates date in UTC, converts to local
+new Date('2024-07-23')
+// In Pacific Time (UTC-7): Shows as July 22 at 17:00
+
+// ✅ CORRECT: Creates date in local timezone
+const [year, month, day] = '2024-07-23'.split('-').map(Number)
+new Date(year, month - 1, day) // July 23 at 00:00 local time
+```
+
+**Solution Applied** (July 2025):
+
+```typescript
+// Parse date components manually to avoid timezone conversion
+onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+  const [year, month, day] = e.target.value.split('-').map(Number)
+  const localDate = new Date(year, month - 1, day)
+  handleDateChange(localDate)
+}}
+```
+
+**Files Fixed**:
+
+- `src/components/practice-reports/advanced/FilterCriteriaRow.tsx`
+
+**Prevention**:
+
+1. **Always parse date strings manually** when creating Date objects from form inputs
+2. **Use the numeric Date constructor** `new Date(year, month - 1, day)` for local dates
+3. **Be consistent** - if displaying in local time, create in local time
+4. **Document the pattern** in component comments when handling dates
+
+**Testing**:
+
+```javascript
+// Quick test to verify the fix
+const testDate = '2024-07-23'
+const wrongWay = new Date(testDate)
+const [y, m, d] = testDate.split('-').map(Number)
+const rightWay = new Date(y, m - 1, d)
+console.log('UTC way:', wrongWay.toLocaleDateString()) // Might show July 22
+console.log('Local way:', rightWay.toLocaleDateString()) // Shows July 23
+```
+
 ## When All Else Fails
 
 1. Clear all caches (browser, service worker, CDN)
@@ -646,6 +716,97 @@ useEffect(() => {
 4. Test in incognito/private mode
 5. Try a clean install
 6. Check production logs in Cloudflare dashboard
+
+### 9. React StrictMode Memory Leak with Authentication
+
+**Problem**: Repeated connection failures causing memory leak due to multiple concurrent auth refresh attempts.
+
+**Root Causes Identified** (July 2025):
+
+1. **React StrictMode double-mounting**: In development, components mount twice causing duplicate API calls
+2. **Missing request deduplication**: `authStore.refreshAuth()` created new promises without checking for existing ones
+3. **Missing i18n context**: Hard-coded locale in components causing potential re-renders
+4. **No cleanup for async operations**: useEffect didn't clean up when component unmounted
+
+**Symptoms**:
+
+- Network tab shows repeated failed auth requests
+- Multiple concurrent requests to same endpoint
+- Memory usage increases over time
+- Browser becomes unresponsive
+
+**Solution Applied**:
+
+1. **Add request deduplication to authStore** (commit hash TBD):
+
+   ```typescript
+   interface AuthState {
+     refreshPromise: Promise<void> | null
+     // ... other state
+   }
+
+   refreshAuth: async () => {
+     // Check for existing promise
+     const existingPromise = get().refreshPromise
+     if (existingPromise) {
+       return existingPromise
+     }
+
+     // Create new promise and store it
+     const refreshPromise = (async () => {
+       // ... refresh logic
+     })()
+
+     set({ refreshPromise })
+     return refreshPromise
+   }
+   ```
+
+2. **Add proper cleanup in App.tsx**:
+
+   ```typescript
+   useEffect(() => {
+     let isMounted = true
+
+     const initializeApp = async () => {
+       runLowercaseMigration()
+       if (isMounted) {
+         await refreshAuth()
+       }
+     }
+
+     initializeApp()
+
+     return () => {
+       isMounted = false
+     }
+   }, [refreshAuth])
+   ```
+
+3. **Fix missing i18n context**:
+   ```typescript
+   // Replace hardcoded 'en' with i18n.language
+   const { t, i18n } = useTranslation()
+   const formattedDate = date.toLocaleDateString(i18n.language, {
+     month: 'short',
+     day: '2-digit',
+   })
+   ```
+
+**Prevention Guidelines**:
+
+1. **Always implement request deduplication** for auth operations
+2. **Use cleanup patterns** in useEffect for async operations
+3. **Never hardcode locales** - always use i18n context
+4. **Be aware of StrictMode** double-mounting in development
+5. **Track in-flight requests** to prevent duplicates
+
+**Debugging Steps**:
+
+- Check Network tab for duplicate requests
+- Look for missing cleanup in useEffect
+- Verify request deduplication is implemented
+- Check for hardcoded values that should use context
 
 ---
 

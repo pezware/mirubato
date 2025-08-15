@@ -4,8 +4,8 @@ export interface LogbookEntry {
   id: string
   timestamp: string
   duration: number
-  type: 'PRACTICE' | 'PERFORMANCE' | 'LESSON' | 'REHEARSAL'
-  instrument: 'PIANO' | 'GUITAR'
+  type: 'practice' | 'performance' | 'lesson' | 'rehearsal' | 'technique'
+  instrument: 'piano' | 'guitar'
   pieces: Array<{
     id?: string
     title: string
@@ -16,7 +16,7 @@ export interface LogbookEntry {
   techniques: string[]
   goalIds: string[]
   notes?: string | null
-  mood?: 'FRUSTRATED' | 'NEUTRAL' | 'SATISFIED' | 'EXCITED' | null
+  mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited' | null
   tags: string[]
   metadata?: {
     source: string
@@ -46,7 +46,7 @@ export interface Goal {
     completed: boolean
     completedAt?: string
   }>
-  status: 'ACTIVE' | 'COMPLETED' | 'PAUSED' | 'CANCELLED'
+  status: 'active' | 'completed' | 'paused' | 'cancelled'
   linkedEntries: string[]
   createdAt: string
   updatedAt: string
@@ -72,6 +72,26 @@ type UpdateEntryData = Partial<LogbookEntry> & {
   autoTracked?: boolean | null | undefined
 }
 
+// Temporary compatibility layer during migration
+const normalizeEntry = (
+  entry: LogbookEntry & {
+    type?: string
+    instrument?: string
+    mood?: string | null
+  }
+): LogbookEntry => ({
+  ...entry,
+  type: (entry.type?.toLowerCase() || 'practice') as LogbookEntry['type'],
+  instrument: (entry.instrument?.toLowerCase() ||
+    'piano') as LogbookEntry['instrument'],
+  mood: entry.mood ? (entry.mood.toLowerCase() as LogbookEntry['mood']) : null,
+})
+
+const normalizeGoal = (goal: Goal & { status?: string }): Goal => ({
+  ...goal,
+  status: (goal.status?.toLowerCase() || 'active') as Goal['status'],
+})
+
 export const logbookApi = {
   // Logbook entries via sync API
   getEntries: async () => {
@@ -83,7 +103,7 @@ export const logbookApi = {
       types: ['logbook_entry'],
       since: null, // Get all entries
     })
-    return response.data.entries || []
+    return (response.data.entries || []).map(normalizeEntry)
   },
 
   createEntry: async (entry: CreateEntryData) => {
@@ -186,7 +206,7 @@ export const logbookApi = {
     const response = await apiClient.get<{ goals: Goal[] }>('/api/goals', {
       params: status ? { status } : undefined,
     })
-    return response.data.goals
+    return response.data.goals.map(normalizeGoal)
   },
 
   createGoal: async (
@@ -213,5 +233,20 @@ export const logbookApi = {
       entryId,
     })
     return response.data
+  },
+
+  // Piece Management
+  updatePieceName: async (
+    oldPiece: { title: string; composer?: string },
+    newPiece: { title: string; composer?: string }
+  ) => {
+    const response = await apiClient.put<{ updatedCount: number }>(
+      '/api/pieces/update-name',
+      {
+        oldPiece,
+        newPiece,
+      }
+    )
+    return response.data.updatedCount
   },
 }

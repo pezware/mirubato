@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/scores",
-  "version": "1.1.0",
+  "version": "1.7.0",
   "description": "Scores service for mirubato - handles sheet music storage, processing, and delivery",
   "main": "dist/index.js",
   "scripts": {
@@ -46,7 +46,7 @@
     "wrangler": "^4.20.5"
   },
   "dependencies": {
-    "@cloudflare/puppeteer": "^1.0.3",
+    "@cloudflare/puppeteer": "^0.0.11",
     "@google/generative-ai": "^0.24.1",
     "aws4fetch": "^1.0.20",
     "hono": "^4.6.13",

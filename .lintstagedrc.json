@@ -15,6 +15,10 @@
     "cd api && eslint --fix",
     "cd api && vitest related --run --no-coverage --passWithNoTests"
   ],
+  "dictionary/**/*.{ts,tsx}": [
+    "cd dictionary && eslint --fix",
+    "cd dictionary && vitest related --run --no-coverage --passWithNoTests"
+  ],
   "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html,cjs,mjs,graphql}": [
     "prettier --write"
   ]

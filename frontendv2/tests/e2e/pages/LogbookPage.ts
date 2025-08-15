@@ -1,11 +1,12 @@
 import { Page, expect } from '@playwright/test'
+import { waitForTabContent, waitForAnimations } from '../helpers/wait-helpers'
 
 export class LogbookPage {
   constructor(private page: Page) {}
 
   // Locators
   private get newEntryTab() {
-    return this.page.locator('[data-testid="new-entry-tab"]')
+    return this.page.locator('[data-testid="newEntry-tab"]')
   }
 
   private get overviewTab() {
@@ -50,46 +51,155 @@ export class LogbookPage {
     return this.page.locator(`[data-testid="mood-button-${mood}"]`)
   }
 
+  // Helper to dismiss any UI prompts that might block interactions
+  async dismissPrompts() {
+    // Check for multiple variations of the repertoire prompt
+    const repertoirePromptVariations = [
+      'text="Add to Your Pieces?"',
+      'text="Add to Your Repertoire?"',
+      'text="You just practiced"', // Common part of the repertoire prompt
+    ]
+
+    for (const selector of repertoirePromptVariations) {
+      const prompt = this.page.locator(selector)
+      if (await prompt.isVisible({ timeout: 1000 }).catch(() => false)) {
+        // Try to find and click the dismiss button
+        const dismissButtons = [
+          'button:has-text("Not Now")',
+          'button:has-text("Skip")',
+          'button:has-text("Later")',
+          'button[aria-label="Close"]',
+        ]
+
+        let dismissed = false
+        for (const buttonSelector of dismissButtons) {
+          const button = this.page.locator(buttonSelector).first()
+          if (await button.isVisible({ timeout: 500 }).catch(() => false)) {
+            await button.click({ force: true })
+            // Wait for prompt to start disappearing
+            await prompt
+              .waitFor({ state: 'hidden', timeout: 2000 })
+              .catch(() => {})
+            dismissed = true
+            break
+          }
+        }
+
+        // If no button found, try clicking outside the modal
+        if (!dismissed) {
+          await this.page.mouse.click(10, 10)
+          // Wait for the prompt to disappear
+          await prompt
+            .waitFor({ state: 'hidden', timeout: 2000 })
+            .catch(() => {})
+        }
+      }
+    }
+
+    // Dismiss any other toasts
+    const toasts = this.page
+      .locator('.fixed.bottom-4.right-4')
+      .locator('text=/Practice logged|saved|success/i')
+    const toastCount = await toasts.count()
+    if (toastCount > 0) {
+      await this.page.mouse.click(10, 10)
+      // Wait for toasts to disappear
+      await toasts
+        .first()
+        .waitFor({ state: 'hidden', timeout: 2000 })
+        .catch(() => {})
+    }
+  }
+
+  // Handle duplicate resolution modal that may appear after saving
+  async handleDuplicateResolutionIfNeeded() {
+    // Wait a bit to see if duplicate resolution modal appears
+    const duplicateModal = this.page
+      .locator('text="Similar to"')
+      .or(this.page.locator('text="Use existing or create new?"'))
+      .or(this.page.locator('button:has-text("Create New Anyway")'))
+
+    try {
+      const isVisible = await duplicateModal
+        .first()
+        .isVisible({ timeout: 3000 })
+      if (isVisible) {
+        // Click "Create New Anyway" to proceed with creating the entry
+        const createNewButton = this.page.locator(
+          'button:has-text("Create New Anyway")'
+        )
+        await createNewButton.click({ timeout: 2000 })
+
+        // Wait for modal to disappear
+        await duplicateModal
+          .first()
+          .waitFor({ state: 'hidden', timeout: 5000 })
+          .catch(() => {})
+      }
+    } catch (_error) {
+      // No duplicate modal appeared, which is fine
+    }
+  }
+
   // Helper to wait for autocomplete to settle
   private async waitForAutocomplete() {
-    // Wait for any network requests to complete
+    // Wait for autocomplete dropdown to appear or disappear
     await this.page
-      .waitForLoadState('networkidle', { timeout: 2000 })
+      .waitForFunction(
+        () => {
+          const dropdown = document.querySelector('[role="listbox"]')
+          return !dropdown || dropdown.children.length > 0
+        },
+        { timeout: 2000 }
+      )
       .catch(() => {})
-    // Wait for debounce using evaluate instead of fixed timeout
-    await this.page.evaluate(
-      () => new Promise(resolve => setTimeout(resolve, 100))
-    )
   }
 
   // Navigation
   async navigate() {
-    await this.page.goto('/logbook')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.goto('/logbook', { waitUntil: 'domcontentloaded' })
+    // Wait for the enhanced reports component to load
+    await this.page.waitForSelector('[data-testid="overview-tab"]', {
+      state: 'visible',
+      timeout: 15000,
+    })
+    // Wait for initial data load
+    await this.page
+      .waitForLoadState('networkidle', { timeout: 5000 })
+      .catch(() => {})
+    await waitForAnimations(this.page)
   }
 
   async switchToNewEntryTab() {
-    await this.newEntryTab.click()
-    await this.entryForm.waitFor({ state: 'visible' })
+    await waitForTabContent(this.page, 'newEntry-tab', 'logbook-entry-form')
   }
 
   async switchToOverviewTab() {
     await this.overviewTab.click()
-    // Wait for tab content to load
+    // Wait for tab to be active
+    await this.page.waitForSelector(
+      '[data-testid="overview-tab"][class*="border-morandi-purple-400"]',
+      { state: 'visible', timeout: 5000 }
+    )
+    // Wait for content to load
     await this.page
-      .waitForLoadState('networkidle', { timeout: 2000 })
+      .waitForLoadState('networkidle', { timeout: 5000 })
       .catch(() => {})
-    // Or wait for any existing entries to be visible
-    await this.page
-      .waitForSelector('[data-testid="logbook-entry"], text="Total Practice"', {
-        state: 'visible',
-        timeout: 1000,
-      })
-      .catch(() => {})
+    await waitForAnimations(this.page)
   }
 
   async switchToPiecesTab() {
-    await this.piecesTab.click()
+    // Click the repertoire tab
+    await this.page.click('[data-testid="repertoire-tab"]')
+
+    // Wait for tab to be active
+    await this.page.waitForSelector(
+      '[data-testid="repertoire-tab"][class*="border-morandi-purple-400"]',
+      { state: 'visible', timeout: 5000 }
+    )
+
+    // Wait for content to load
+    await this.page.waitForLoadState('networkidle')
   }
 
   // Entry creation
@@ -100,6 +210,12 @@ export class LogbookPage {
     notes?: string
     mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
   }) {
+    // Get initial entry count from localStorage
+    const initialCount = await this.page.evaluate(() => {
+      const stored = localStorage.getItem('mirubato:logbook:entries')
+      return stored ? JSON.parse(stored).length : 0
+    })
+
     // Switch to new entry tab if not already there
     const isFormVisible = await this.entryForm
       .isVisible({ timeout: 1000 })
@@ -133,14 +249,50 @@ export class LogbookPage {
 
     // Select mood if provided
     if (data.mood) {
+      // Dismiss any prompts before clicking mood button
+      await this.dismissPrompts()
       await this.getMoodButton(data.mood).click()
     }
 
-    // Save the entry
-    await this.saveEntryButton.click()
+    // Dismiss any existing toasts before saving
+    const toasts = this.page.locator('.fixed.bottom-4.right-4')
+    const toastCount = await toasts.count()
+    if (toastCount > 0) {
+      // Click outside to dismiss and wait for toasts to disappear
+      await this.page.mouse.click(10, 10)
+      await toasts
+        .first()
+        .waitFor({ state: 'hidden', timeout: 2000 })
+        .catch(() => {})
+    }
+
+    // Save the entry with retry logic
+    await this.saveEntryButton.click({ force: true })
+
+    // Check if duplicate resolution modal appears and handle it
+    await this.handleDuplicateResolutionIfNeeded()
 
     // Wait for save to complete
     await this.waitForSaveConfirmation()
+
+    // Dismiss any prompts that appear after saving
+    await this.dismissPrompts()
+
+    // Wait for localStorage to be updated with the new entry
+    await this.page.waitForFunction(
+      expectedCount => {
+        const stored = localStorage.getItem('mirubato:logbook:entries')
+        const entries = stored ? JSON.parse(stored) : []
+        return entries.length === expectedCount
+      },
+      initialCount + 1,
+      { timeout: 10000 } // Increase timeout to account for duplicate resolution
+    )
+
+    // Force a re-render by triggering storage event
+    await this.page.evaluate(() => {
+      window.dispatchEvent(new Event('storage'))
+    })
   }
 
   // Wait helpers
@@ -152,6 +304,12 @@ export class LogbookPage {
         .catch(() => {}),
       this.page
         .waitForSelector('text=success', { state: 'visible', timeout: 5000 })
+        .catch(() => {}),
+      this.page
+        .waitForSelector('text=Practice logged', {
+          state: 'visible',
+          timeout: 5000,
+        })
         .catch(() => {}),
       // Or wait for the duration field to reset to default
       this.page
@@ -166,6 +324,9 @@ export class LogbookPage {
         )
         .catch(() => {}),
     ])
+
+    // Immediately check for and dismiss any repertoire prompts
+    await this.dismissPrompts()
   }
 
   async waitForEntries(minCount: number = 1) {
@@ -189,8 +350,40 @@ export class LogbookPage {
   }
 
   async verifyEntryContainsText(text: string) {
-    const entry = this.entries.filter({ hasText: text })
-    await expect(entry).toBeVisible()
+    // First check if we're in the enhanced reports view
+    const overviewTabVisible = await this.overviewTab
+      .isVisible()
+      .catch(() => false)
+    if (overviewTabVisible) {
+      // We're in enhanced reports view
+      // Since notes preview is removed, we need to expand the entry to see notes
+      // For now, just check if the entry exists (by title/composer)
+      const entryExists = await this.page
+        .locator('[data-testid="logbook-entry"]')
+        .filter({ hasText: text })
+        .first()
+        .isVisible()
+        .catch(() => false)
+
+      if (!entryExists) {
+        // If text is not found in the collapsed view, it might be notes
+        // We would need to expand entries to check notes content
+        throw new Error(
+          `Text "${text}" not found in collapsed entries. Notes are only visible when expanded.`
+        )
+      }
+
+      await expect(
+        this.page
+          .locator('[data-testid="logbook-entry"]')
+          .filter({ hasText: text })
+          .first()
+      ).toBeVisible()
+    } else {
+      // Legacy view - check for entries
+      const entry = this.entries.filter({ hasText: text })
+      await expect(entry).toBeVisible()
+    }
   }
 
   async getEntryByIndex(index: number) {

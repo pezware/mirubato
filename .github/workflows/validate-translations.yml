@@ -1,0 +1,108 @@
+name: Translation Validation
+
+on:
+  pull_request:
+    paths:
+      - 'frontendv2/src/locales/**'
+      - 'frontendv2/scripts/validate-translations.cjs'
+      - 'frontendv2/scripts/sync-translations.cjs'
+  push:
+    branches:
+      - main
+      - 'feat/**'
+    paths:
+      - 'frontendv2/src/locales/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-translations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: frontendv2
+
+      - name: Validate translations
+        run: pnpm run validate:i18n
+        working-directory: frontendv2
+
+      - name: Export validation results
+        if: failure()
+        run: pnpm run validate:i18n -- --json
+        working-directory: frontendv2
+        continue-on-error: true
+
+      - name: Upload validation results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: translation-validation-results
+          path: frontendv2/scripts/translation-validation-*.json
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find the validation results file
+            const scriptsDir = path.join(process.env.GITHUB_WORKSPACE, 'frontendv2', 'scripts');
+            const files = fs.readdirSync(scriptsDir);
+            const resultFile = files.find(f => f.startsWith('translation-validation-'));
+
+            if (resultFile) {
+              const results = JSON.parse(fs.readFileSync(path.join(scriptsDir, resultFile), 'utf8'));
+
+              let comment = '## 🌐 Translation Validation Failed\n\n';
+              comment += 'Missing or invalid translations were detected. Please fix these issues:\n\n';
+
+              // Summary
+              Object.entries(results.statistics).forEach(([namespace, stats]) => {
+                comment += `### ${namespace.toUpperCase()}\n`;
+                Object.entries(stats.languages).forEach(([lang, langStats]) => {
+                  if (langStats.missingKeys > 0 || langStats.emptyValues > 0) {
+                    comment += `- **${lang}**: ${langStats.completeness}% complete`;
+                    if (langStats.missingKeys > 0) comment += ` (${langStats.missingKeys} missing)`;
+                    if (langStats.emptyValues > 0) comment += ` (${langStats.emptyValues} empty)`;
+                    comment += '\n';
+                  }
+                });
+                comment += '\n';
+              });
+
+              comment += '\n### How to fix:\n';
+              comment += '```bash\n';
+              comment += 'cd frontendv2\n';
+              comment += 'pnpm run sync:i18n           # Add missing keys\n';
+              comment += 'pnpm run validate:i18n       # Verify fixes\n';
+              comment += '```\n';
+              comment += '\nKeys will be marked with `[NEEDS TRANSLATION]` and need to be translated.';
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }

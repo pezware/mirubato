@@ -1,88 +1,143 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
+import { useRepertoireStore } from '../stores/repertoireStore'
+import { useUserPreferences } from '../hooks/useUserPreferences'
 import type { LogbookEntry } from '../api/logbook'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+  findSimilarPieces,
+  type DuplicateMatch,
+} from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
-import SplitButton from './ui/SplitButton'
 import TimePicker from './ui/TimePicker'
 import PieceInput from './PieceInput'
+import { TechniqueSelector } from './logbook/TechniqueSelector'
+import { InstrumentSelector } from './logbook/InstrumentSelector'
+import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
+import { Modal } from './ui/Modal'
 
 interface ManualEntryFormProps {
   onClose: () => void
   onSave: () => void
   entry?: LogbookEntry
+  initialDuration?: number
+  initialStartTime?: Date
+  initialPieces?: Array<{ title: string; composer?: string; scoreId?: string }>
 }
 
 export default function ManualEntryForm({
   onClose,
   onSave,
   entry,
+  initialDuration,
+  initialStartTime,
+  initialPieces,
 }: ManualEntryFormProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { createEntry, updateEntry } = useLogbookStore()
+  const { repertoire, loadRepertoire } = useRepertoireStore()
+  const { getPrimaryInstrument } = useUserPreferences()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showRepertoirePrompt, setShowRepertoirePrompt] = useState<{
+    piece: { title: string; composer?: string | null }
+    scoreId: string
+  } | null>(null)
+  const [duplicateMatches, setDuplicateMatches] = useState<{
+    piece: { title: string; composer?: string | null }
+    matches: DuplicateMatch[]
+  } | null>(null)
+  const [duplicateCheckSkipped, setDuplicateCheckSkipped] = useState(false)
+  const [pendingEntryData, setPendingEntryData] = useState<{
+    [key: string]: unknown
+  } | null>(null)
+
+  // Load repertoire on mount
+  useEffect(() => {
+    loadRepertoire()
+  }, [loadRepertoire])
 
   // Form state
-  const [duration, setDuration] = useState<number>(entry?.duration || 30)
+  const [duration, setDuration] = useState<number>(
+    entry?.duration || initialDuration || 30
+  )
   const [type, setType] = useState<LogbookEntry['type']>(
-    entry?.type || 'PRACTICE'
+    entry?.type || 'practice'
   )
   const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
-    entry?.instrument || 'PIANO'
+    entry?.instrument ||
+      (getPrimaryInstrument() as LogbookEntry['instrument']) ||
+      'piano'
   )
   const [notes, setNotes] = useState(entry?.notes || '')
   const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
     entry?.mood
   )
   const [pieces, setPieces] = useState(
-    entry?.pieces || [{ title: '', composer: '' }]
+    entry?.pieces && entry.pieces.length > 0
+      ? entry.pieces
+      : initialPieces || [{ title: '', composer: '' }]
   )
-  const [techniques] = useState<string[]>(entry?.techniques || [])
+  const [techniques, setTechniques] = useState<string[]>(
+    entry?.techniques || []
+  )
   const [tags] = useState<string[]>(entry?.tags || [])
 
-  // Date state - default to today or existing entry date
+  // Date state - use initialStartTime date, existing entry date, or default to today
   const [practiceDate, setPracticeDate] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to YYYY-MM-DD format in local timezone
       const date = new Date(entry.timestamp)
-      return (
-        date.getFullYear() +
-        '-' +
-        String(date.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(date.getDate()).padStart(2, '0')
-      )
+      // Use local date components to avoid timezone conversion issues
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    }
+    if (initialStartTime) {
+      // Use the date from timer start time
+      return `${initialStartTime.getFullYear()}-${String(initialStartTime.getMonth() + 1).padStart(2, '0')}-${String(initialStartTime.getDate()).padStart(2, '0')}`
     }
     // Default to today in local timezone
     const today = new Date()
-    return (
-      today.getFullYear() +
-      '-' +
-      String(today.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(today.getDate()).padStart(2, '0')
-    )
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
 
-  // Time state - default to current time or existing entry time
+  // Time state - use initialStartTime from timer, existing entry time, or default to current time minus duration
   const [practiceTime, setPracticeTime] = useState(() => {
     if (entry?.timestamp) {
       // Convert existing timestamp to HH:MM format in local timezone
       const date = new Date(entry.timestamp)
-      return (
-        String(date.getHours()).padStart(2, '0') +
-        ':' +
-        String(date.getMinutes()).padStart(2, '0')
-      )
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     }
-    // Default to current time in local timezone
+    if (initialStartTime) {
+      // Use the actual start time from timer
+      return `${String(initialStartTime.getHours()).padStart(2, '0')}:${String(initialStartTime.getMinutes()).padStart(2, '0')}`
+    }
+    // Default to current time minus duration in local timezone
     const now = new Date()
-    return (
-      String(now.getHours()).padStart(2, '0') +
-      ':' +
-      String(now.getMinutes()).padStart(2, '0')
-    )
+    const adjustedTime = new Date(now.getTime() - duration * 60 * 1000) // Subtract duration in milliseconds
+    return `${String(adjustedTime.getHours()).padStart(2, '0')}:${String(adjustedTime.getMinutes()).padStart(2, '0')}`
   })
+
+  // Auto-adjust practice time when duration changes (only for new entries)
+  // Commented out per issue #330 - users don't want time to auto-adjust
+  // useEffect(() => {
+  //   if (!entry) {
+  //     // Only auto-adjust for new entries, not when editing existing ones
+  //     const now = new Date()
+  //     const adjustedTime = new Date(now.getTime() - duration * 60 * 1000)
+  //     const newTime =
+  //       String(adjustedTime.getHours()).padStart(2, '0') +
+  //       ':' +
+  //       String(adjustedTime.getMinutes()).padStart(2, '0')
+  //     setPracticeTime(newTime)
+  //   }
+  // }, [duration, entry])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,6 +147,8 @@ export default function ManualEntryForm({
       // Create a date object from the selected date and time in local timezone
       const [year, month, day] = practiceDate.split('-').map(Number)
       const [hours, minutes] = practiceTime.split(':').map(Number)
+
+      // Create the date directly with the correct time to avoid timezone issues
       const selectedDate = new Date(year, month - 1, day, hours, minutes, 0, 0)
 
       const entryData = {
@@ -113,6 +170,9 @@ export default function ManualEntryForm({
         metadata: {
           source: 'manual',
         },
+        // If we have a scoreId from initialPieces (from piece detail page), include it
+        ...(initialPieces &&
+          initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
       }
 
       if (entry) {
@@ -120,6 +180,93 @@ export default function ManualEntryForm({
         // Don't send createdAt or other fields that shouldn't change
         await updateEntry(entry.id, entryData)
       } else {
+        // For new entries, check for duplicates BEFORE creating the entry
+        // Skip the prompt if we have initialPieces (coming from piece detail page)
+        if (!initialPieces) {
+          for (const piece of entryData.pieces) {
+            const scoreId = generateNormalizedScoreId(
+              piece.title,
+              piece.composer
+            )
+
+            // Check if this piece is already in repertoire
+            const isInRepertoire = Array.from(repertoire.values()).some(item =>
+              isSameScore(item.scoreId, scoreId)
+            )
+
+            if (!isInRepertoire) {
+              // Check for similar pieces in both repertoire and logbook
+              const { scoreMetadataCache } = useRepertoireStore.getState()
+              const existingRepertoirePieces = Array.from(
+                repertoire.values()
+              ).map(item => {
+                const metadata = scoreMetadataCache.get(item.scoreId)
+                const fallbackTitle = item.scoreId.split('-')[0] || 'Unknown'
+                const fallbackComposer = item.scoreId.split('-')[1] || ''
+
+                return {
+                  scoreId: item.scoreId,
+                  title: metadata?.title || fallbackTitle,
+                  composer: metadata?.composer || fallbackComposer,
+                }
+              })
+
+              // Also check logbook entries for similar pieces
+              const logbookEntries = useLogbookStore.getState()
+              const existingLogbookPieces = Array.from(
+                logbookEntries.entriesMap.values()
+              )
+                .flatMap(entry => entry.pieces || [])
+                .filter(
+                  (piece, index, arr) =>
+                    // Remove duplicates by creating a unique key
+                    arr.findIndex(
+                      p =>
+                        generateNormalizedScoreId(p.title, p.composer) ===
+                        generateNormalizedScoreId(piece.title, piece.composer)
+                    ) === index
+                )
+                .map(piece => ({
+                  scoreId: generateNormalizedScoreId(
+                    piece.title,
+                    piece.composer
+                  ),
+                  title: piece.title,
+                  composer: piece.composer || '',
+                }))
+
+              const allExistingPieces = [
+                ...existingRepertoirePieces,
+                ...existingLogbookPieces,
+              ]
+
+              // Find similar pieces using fuzzy matching (only if user hasn't already handled duplicates)
+              if (!duplicateCheckSkipped) {
+                const similarPieces = findSimilarPieces(
+                  piece.title,
+                  piece.composer,
+                  allExistingPieces,
+                  0.7 // Lower threshold to catch more potential duplicates
+                )
+
+                if (similarPieces.length > 0) {
+                  // Store entry data to create later and show duplicate confirmation modal
+                  setPendingEntryData(entryData)
+                  setDuplicateMatches({ piece, matches: similarPieces })
+                  return
+                }
+              }
+
+              // No duplicates found, create entry and show repertoire prompt
+              await createEntry(entryData)
+              setShowRepertoirePrompt({ piece, scoreId })
+              // Exit after showing prompt for first piece not in repertoire
+              return
+            }
+          }
+        }
+
+        // No pieces or all pieces already in repertoire - create entry directly
         await createEntry(entryData)
       }
 
@@ -131,11 +278,12 @@ export default function ManualEntryForm({
     }
   }
 
-  const addPiece = () => {
-    if (pieces.length < 3) {
-      setPieces([...pieces, { title: '', composer: '' }])
-    }
-  }
+  // addPiece and removePiece functions kept for backward compatibility but not used in UI
+  // const addPiece = () => {
+  //   if (pieces.length < 3) {
+  //     setPieces([...pieces, { title: '', composer: '' }])
+  //   }
+  // }
 
   const updatePiece = (
     index: number,
@@ -149,18 +297,18 @@ export default function ManualEntryForm({
     })
   }
 
-  const removePiece = (index: number) => {
-    setPieces(pieces.filter((_, i) => i !== index))
-  }
+  // const removePiece = (index: number) => {
+  //   setPieces(pieces.filter((_, i) => i !== index))
+  // }
 
   return (
-    <div>
-      <h2 className="text-2xl font-light mb-6 text-morandi-stone-700 flex items-center gap-2">
-        {entry
-          ? `📝 ${t('logbook:entry.editEntry')}`
-          : `✨ ${t('logbook:entry.addEntry')}`}
-      </h2>
-
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={entry ? t('logbook:entry.editEntry') : t('logbook:entry.addEntry')}
+      size="lg"
+      className="sm:max-w-3xl"
+    >
       <form
         onSubmit={handleSubmit}
         className="space-y-4"
@@ -168,39 +316,40 @@ export default function ManualEntryForm({
       >
         {/* Basic Info */}
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+          {/* Date, Time, Duration, and Instrument - One line on desktop, stacked on mobile */}
+          <div className="grid grid-cols-2 sm:grid-cols-[1.2fr_1fr_1fr_1.2fr] gap-2 sm:gap-4">
+            {/* Date */}
+            <div>
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.practiceDate', 'Practice Date')}
               </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="date"
-                  value={practiceDate}
-                  onChange={e => setPracticeDate(e.target.value)}
-                  max={(() => {
-                    const today = new Date()
-                    return (
-                      today.getFullYear() +
-                      '-' +
-                      String(today.getMonth() + 1).padStart(2, '0') +
-                      '-' +
-                      String(today.getDate()).padStart(2, '0')
-                    )
-                  })()} // Don't allow future dates
-                  className="flex-1 px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                  required
-                />
-                <TimePicker
-                  value={practiceTime}
-                  onChange={setPracticeTime}
-                  className="w-full sm:w-auto"
-                  required
-                />
-              </div>
+              <input
+                type="date"
+                value={practiceDate}
+                onChange={e => setPracticeDate(e.target.value)}
+                max={(() => {
+                  const today = new Date()
+                  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                })()} // Don't allow future dates
+                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent text-morandi-stone-700 [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                required
+              />
             </div>
 
-            <div className="flex-1">
+            {/* Time */}
+            <div>
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                {t('logbook:entry.time', 'Time')}
+              </label>
+              <TimePicker
+                value={practiceTime}
+                onChange={setPracticeTime}
+                className="w-full"
+              />
+            </div>
+
+            {/* Duration */}
+            <div>
               <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
                 {t('logbook:entry.duration')}
               </label>
@@ -230,31 +379,41 @@ export default function ManualEntryForm({
               />
             </div>
 
-            <div className="flex gap-4">
-              <SplitButton<LogbookEntry['instrument']>
-                options={[
-                  {
-                    value: 'PIANO',
-                    label: `🎹 ${t('common:instruments.piano')}`,
-                  },
-                  {
-                    value: 'GUITAR',
-                    label: `🎸 ${t('common:instruments.guitar')}`,
-                  },
-                ]}
+            {/* Instrument */}
+            <div>
+              <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+                {t('logbook:entry.instrument')}
+              </label>
+              <InstrumentSelector
                 value={instrument}
-                onChange={value => value && setInstrument(value)}
-                orientation="horizontal"
+                onChange={value =>
+                  setInstrument(
+                    (value as LogbookEntry['instrument']) || 'piano'
+                  )
+                }
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {[
-              { value: 'PRACTICE', label: t('common:music.practice') },
-              { value: 'LESSON', label: t('common:music.lesson') },
-              { value: 'PERFORMANCE', label: t('common:music.performance') },
-              { value: 'REHEARSAL', label: t('common:music.rehearsal') },
+              {
+                value: 'practice',
+                label: t('logbook:entry.typeOptions.practice'),
+              },
+              { value: 'lesson', label: t('logbook:entry.typeOptions.lesson') },
+              {
+                value: 'performance',
+                label: t('logbook:entry.typeOptions.performance'),
+              },
+              {
+                value: 'rehearsal',
+                label: t('logbook:entry.typeOptions.rehearsal'),
+              },
+              {
+                value: 'technique',
+                label: t('logbook:entry.typeOptions.technique'),
+              },
             ].map(option => (
               <button
                 key={option.value}
@@ -276,45 +435,27 @@ export default function ManualEntryForm({
         <div>
           <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
             {t('logbook:entry.pieces')}
-            {pieces.length > 1 && (
-              <span className="text-xs text-morandi-stone-500 ml-2">
-                {t(
-                  'logbook:entry.piecesNote',
-                  'Practice time will be divided equally among pieces'
-                )}
-              </span>
-            )}
           </label>
-          {pieces.map((piece, index) => (
+          {/* Only show the first piece for new UI, but support multiple pieces for existing entries */}
+          {pieces.slice(0, 1).map((piece, index) => (
             <PieceInput
               key={index}
               piece={piece}
               index={index}
               onUpdate={updatePiece}
-              onRemove={removePiece}
+              onRemove={undefined} // No remove button for single piece
             />
           ))}
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              onClick={addPiece}
-              variant="ghost"
-              size="sm"
-              leftIcon={<span>+</span>}
-              disabled={pieces.length >= 3}
-            >
-              {t('logbook:entry.addPiece')}
-            </Button>
-            {pieces.length >= 3 && (
-              <span className="text-xs text-morandi-stone-500">
-                {t(
-                  'logbook:entry.maxPiecesReached',
-                  'Maximum 3 pieces per entry'
-                )}
-              </span>
-            )}
-          </div>
         </div>
+
+        {/* Technique Selection - Only show when type is technique */}
+        {type === 'technique' && (
+          <TechniqueSelector
+            selectedTechniques={techniques}
+            onTechniquesChange={setTechniques}
+            className="mt-4"
+          />
+        )}
 
         {/* Notes */}
         <div>
@@ -339,23 +480,23 @@ export default function ManualEntryForm({
           <div className="flex gap-px flex-wrap sm:flex-nowrap">
             {[
               {
-                value: 'FRUSTRATED',
-                label: '😤',
+                value: 'frustrated',
+                icon: <IconMoodAngry size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.frustrated'),
               },
               {
-                value: 'NEUTRAL',
-                label: '😐',
+                value: 'neutral',
+                icon: <IconMoodNeutral size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.neutral'),
               },
               {
-                value: 'SATISFIED',
-                label: '😊',
+                value: 'satisfied',
+                icon: <IconMoodSmile size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.satisfied'),
               },
               {
-                value: 'EXCITED',
-                label: '🎉',
+                value: 'excited',
+                icon: <IconMoodHappy size={20} stroke={1.5} />,
                 fullLabel: t('logbook:mood.excited'),
               },
             ].map((option, index) => {
@@ -389,7 +530,13 @@ export default function ManualEntryForm({
                     ${!isFirst ? 'sm:border-l-0' : ''}
                   `}
                 >
-                  <span>{option.label}</span>
+                  <span
+                    className={
+                      isActive ? 'text-white' : 'text-morandi-stone-600'
+                    }
+                  >
+                    {option.icon}
+                  </span>
                   <span className="hidden sm:inline">{option.fullLabel}</span>
                 </button>
               )
@@ -415,6 +562,150 @@ export default function ManualEntryForm({
           </Button>
         </div>
       </form>
-    </div>
+
+      {/* Add to Repertoire Prompt */}
+      {showRepertoirePrompt && (
+        <AddToRepertoirePrompt
+          pieceTitle={showRepertoirePrompt.piece.title}
+          composer={showRepertoirePrompt.piece.composer}
+          onClose={() => {
+            setShowRepertoirePrompt(null)
+            onSave()
+          }}
+          onAdded={() => {
+            setShowRepertoirePrompt(null)
+            onSave()
+          }}
+        />
+      )}
+
+      {/* Duplicate Detection Modal */}
+      {duplicateMatches && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-3 sm:p-4 w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <p className="text-stone-700 mb-4 text-sm sm:text-base">
+              {t('logbook:entry.duplicateDetection.similarTo', {
+                title: duplicateMatches.piece.title,
+                composer: duplicateMatches.piece.composer
+                  ? ` by ${duplicateMatches.piece.composer}`
+                  : '',
+              })}
+            </p>
+
+            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 max-h-48 sm:max-h-60 overflow-y-auto">
+              {duplicateMatches.matches.map((match, index) => (
+                <div
+                  key={index}
+                  className="border border-stone-200 rounded-lg p-3"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-stone-900 text-sm sm:text-base truncate">
+                        {match.title}
+                      </div>
+                      {match.composer && (
+                        <div className="text-xs sm:text-sm text-stone-600 truncate">
+                          {match.composer}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full whitespace-nowrap ${
+                          match.confidence === 'high'
+                            ? 'bg-red-100 text-red-700'
+                            : match.confidence === 'medium'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {t('logbook:entry.duplicateDetection.matchPercentage', {
+                          percentage: Math.round(match.similarity * 100),
+                        })}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                        onClick={async () => {
+                          // Use the existing piece instead of creating a new one
+                          const updatedPieces = pieces.map((piece, idx) =>
+                            idx === 0
+                              ? { title: match.title, composer: match.composer }
+                              : piece
+                          )
+                          setPieces(updatedPieces)
+
+                          // Update the pending entry data with the selected piece
+                          if (pendingEntryData) {
+                            const updatedEntryData = {
+                              ...pendingEntryData,
+                              pieces: updatedPieces
+                                .filter(p => p.title)
+                                .map(p => ({
+                                  title: p.title,
+                                  composer: p.composer ? p.composer : null,
+                                })),
+                            }
+
+                            // Create the entry with the selected piece
+                            await createEntry(
+                              updatedEntryData as Omit<
+                                LogbookEntry,
+                                'id' | 'createdAt' | 'updatedAt'
+                              >
+                            )
+                            setPendingEntryData(null)
+                          }
+
+                          setDuplicateMatches(null)
+                          setDuplicateCheckSkipped(true) // Skip duplicate check for this session
+                          onSave() // Close the form
+                        }}
+                      >
+                        {t('logbook:entry.duplicateDetection.useThis')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+              <Button
+                variant="ghost"
+                className="w-full sm:w-auto text-sm"
+                onClick={async () => {
+                  // Create the entry with the original piece data
+                  if (pendingEntryData) {
+                    await createEntry(
+                      pendingEntryData as Omit<
+                        LogbookEntry,
+                        'id' | 'createdAt' | 'updatedAt'
+                      >
+                    )
+                    setPendingEntryData(null)
+                  }
+                  setDuplicateMatches(null)
+                  onSave() // Close the form
+                }}
+              >
+                {t('logbook:entry.duplicateDetection.createNewAnyway')}
+              </Button>
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto text-sm"
+                onClick={() => {
+                  setDuplicateMatches(null)
+                  // Don't save, let user modify the piece
+                }}
+              >
+                {t('logbook:entry.duplicateDetection.letMeEdit')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Modal>
   )
 }

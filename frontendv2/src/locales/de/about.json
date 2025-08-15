@@ -1,0 +1,147 @@
+{
+  "backToHome": "Zurück zur Startseite",
+  "sections": {
+    "about": {
+      "how": "Mirubato ist Open Source und mit einem lokalen Ansatz entwickelt. Das bedeutet, deine Daten bleiben standardmäßig bei dir, auf deinem Gerät. Kein Tracking, keine Analysen – nur du und deine Musik.",
+      "title": "Über Mirubato",
+      "what": "Mirubato hilft dir, das Beste aus deiner Übungszeit herauszuholen. Egal ob du am Blattspiel arbeitest oder ein Stück perfektionierst, wir bieten dir die Werkzeuge, um deinen Fortschritt zu verfolgen und motiviert zu bleiben.",
+      "why": "Wir glauben, dass beständiges, bewusstes Üben der Schlüssel zum musikalischen Wachstum ist. Mirubato ist als einfacher, ermutigender Begleiter auf deiner musikalischen Reise konzipiert."
+    },
+    "contact": {
+      "github": "Fehler gefunden oder eine Idee?",
+      "reportIssue": "GitHub Issues",
+      "title": "Kontakt",
+      "twitter": "Folge uns für Updates"
+    },
+    "credits": {
+      "chelseaGreen": "\"Sight-Reading for Guitar: The Keep Going Method\" von Chelsea Green, lizenziert unter CC BY 4.0",
+      "educationalContent": "Bildungsinhalte",
+      "imslp": "Klassische Kompositionen von IMSLP sind gemeinfrei",
+      "librariesDescription": "Mit Liebe erstellt unter Verwendung von React, TypeScript und vielen anderen wunderbaren Open-Source-Projekten",
+      "musicalContent": "Musikalische Inhalte",
+      "openSourceLibraries": "Open Source Bibliotheken",
+      "title": "Credits & Quellenangaben",
+      "viewSource": "Originalquelle ansehen"
+    },
+    "openSource": {
+      "description": "Mirubato ist stolz darauf, Open Source zu sein. Wir begrüßen Beiträge aus der Community und glauben daran, gemeinsam und transparent großartige Dinge zu schaffen.",
+      "title": "Open Source",
+      "viewOnGithub": "Auf GitHub ansehen"
+    },
+    "privacy": {
+      "title": "Datenschutz und Deine Daten",
+      "intro": "Diese Datenschutzrichtlinie erklärt, wie Mirubato Ihre personenbezogenen Daten in Übereinstimmung mit der Datenschutz-Grundverordnung (DSGVO) und anderen anwendbaren Datenschutzgesetzen verarbeitet.",
+      "lastUpdated": "Letzte Aktualisierung: Januar 2025",
+      "controller": {
+        "title": "Datenverantwortlicher",
+        "info": "Mirubato (Kontakt: privacy@mirubato.com) ist der Datenverantwortliche für Ihre personenbezogenen Daten."
+      },
+      "legalBasis": {
+        "title": "Rechtsgrundlage für die Verarbeitung",
+        "consent": "Einwilligung: Für optionale Funktionen wie Cloud-Synchronisation und Analysen",
+        "contract": "Vertragserfüllung: Zur Bereitstellung unserer Musik-Übungsverfolgungsdienste",
+        "legitimate": "Berechtigtes Interesse: Für Sicherheit, Betrugsprävention und Serviceverbesserung"
+      },
+      "dataWeCollect": {
+        "title": "Personenbezogene Daten, die wir sammeln",
+        "account": "Kontodaten: E-Mail-Adresse, Anzeigename, Authentifizierungsmethode (Google OAuth oder Magic Link)",
+        "profile": "Profildaten: Hauptinstrument, musikalische Ziele, Präferenzen (alles optional)",
+        "practice": "Übungsdaten: Tagebucheinträge, Ziele, Repertoire, Noten, Übungssitzungen, Fortschrittsverfolgung",
+        "technical": "Technische Daten: Geräte-ID, Browser-Typ, Betriebssystem, IP-Adresse, Anmeldezeitstempel, Synchronisations-Metadaten",
+        "usage": "Nutzungsdaten: Funktionsnutzung, Sitzungsdauer, Leistungsmetriken (anonymisiert wenn möglich)",
+        "device": "Geräteinformationen: Bildschirmauflösung, Zeitzone, Sprachpräferenz, Gerätespezifikationen für Synchronisation"
+      },
+      "dataWeStore": {
+        "title": "Wie wir Ihre Daten speichern und verarbeiten",
+        "localFirst": "Lokale Speicherung: Daten werden hauptsächlich lokal auf Ihrem Gerät mit Browser-Speicher gespeichert (localStorage, IndexedDB)",
+        "cloudSync": "Cloud-Speicherung: Optionale Synchronisation nutzt Cloudflares sicheres globales Netzwerk mit Ende-zu-Ende-Verschlüsselung",
+        "location": "Datenstandort: EU und weltweit über Cloudflares Edge-Netzwerk, mit angemessenen Schutzmaßnahmen",
+        "security": "Sicherheit: Branchenübliche Verschlüsselung, sichere Authentifizierung, regelmäßige Sicherheitsaudits",
+        "retention": "Datenspeicherung: Kontodaten werden während der Aktivität gespeichert; Übungsdaten für 7 Jahre oder bis zur Löschungsanfrage"
+      },
+      "dataWeShare": {
+        "title": "Datenweitergabe und Dritte",
+        "noSelling": "Wir verkaufen, vermieten oder tauschen niemals Ihre personenbezogenen Daten mit Dritten",
+        "noAds": "Wir verwenden Ihre Daten nicht für Werbe- oder Marketingzwecke",
+        "noTracking": "Wir verwenden keine Tracking-Cookies oder Drittanbieter-Analysen über wesentliche Funktionen hinaus",
+        "noThirdParty": "Wir teilen Ihre Übungsdaten nicht mit Dritten ohne ausdrückliche Einwilligung",
+        "service": "Dienstleister: Wir nutzen Cloudflare für Hosting und Google für Authentifizierung (beide DSGVO-konform)",
+        "legal": "Rechtliche Anforderungen: Wir können Daten offenlegen, wenn gesetzlich vorgeschrieben oder zum Schutz unserer Rechte"
+      },
+      "cookies": {
+        "title": "Cookies und Tracking",
+        "essential": "Wesentliche Cookies: Erforderlich für Authentifizierung, Sicherheit und Kernfunktionalität",
+        "functional": "Funktionale Cookies: Sprachpräferenzen, Einstellungen, Geräteerkennung für Synchronisation",
+        "noTracking": "Kein Tracking: Wir verwenden keine Werbe-Cookies, Social-Media-Tracker oder Analytics-Cookies",
+        "control": "Cookie-Kontrolle: Sie können Cookie-Präferenzen in Ihren Browser-Einstellungen verwalten"
+      },
+      "yourRights": {
+        "title": "Ihre DSGVO-Rechte",
+        "intro": "Unter der DSGVO haben Sie folgende Rechte bezüglich Ihrer personenbezogenen Daten:",
+        "access": "Auskunftsrecht: Kopien Ihrer personenbezogenen Daten und Informationen über die Verarbeitung anfordern",
+        "rectification": "Berichtigungsrecht: Unrichtige oder unvollständige personenbezogene Daten korrigieren",
+        "erasure": "Recht auf Löschung ('Recht auf Vergessenwerden'): Löschung Ihrer personenbezogenen Daten beantragen",
+        "restrict": "Recht auf Einschränkung der Verarbeitung: Begrenzen, wie wir Ihre personenbezogenen Daten verarbeiten",
+        "portability": "Recht auf Datenübertragbarkeit: Ihre Daten in einem strukturierten, maschinenlesbaren Format erhalten",
+        "object": "Widerspruchsrecht: Verarbeitung auf Basis berechtigter Interessen widersprechen",
+        "withdraw": "Recht auf Widerruf der Einwilligung: Einwilligung für einwilligungsbasierte Verarbeitung widerrufen",
+        "complain": "Beschwerderecht: Beschwerde bei Ihrer Datenschutzbehörde einreichen",
+        "exercise": "Rechte ausüben: Kontaktieren Sie privacy@mirubato.com oder nutzen Sie die Datenschutz-Kontrollen in der App"
+      },
+      "dataSubjectRequests": {
+        "title": "Betroffenenanfragen",
+        "response": "Wir werden auf Ihre Anfrage innerhalb von 30 Tagen antworten (verlängert auf 60 Tage bei komplexen Anfragen)",
+        "verification": "Wir müssen möglicherweise Ihre Identität vor der Bearbeitung Ihrer Anfrage verifizieren",
+        "format": "Daten werden in üblichen, maschinenlesbaren Formaten bereitgestellt (JSON, CSV)",
+        "free": "Anfragen sind grundsätzlich kostenlos, obwohl übermäßige Anfragen angemessene Gebühren verursachen können"
+      },
+      "automated": {
+        "title": "Automatisierte Entscheidungsfindung",
+        "info": "Wir verwenden keine automatisierte Entscheidungsfindung oder Profiling, das rechtliche oder erhebliche Auswirkungen hat"
+      },
+      "international": {
+        "title": "Internationale Datenübertragungen",
+        "cloudflare": "Daten können in Cloudflare-Rechenzentren weltweit verarbeitet werden, geschützt durch Standardvertragsklauseln",
+        "adequacy": "Wir stellen angemessene Schutzmaßnahmen für alle internationalen Übertragungen sicher"
+      },
+      "breach": {
+        "title": "Datenschutzverletzungs-Benachrichtigung",
+        "notification": "Wir werden betroffene Nutzer innerhalb von 72 Stunden nach Entdeckung einer Datenschutzverletzung benachrichtigen, die Ihre Rechte beeinträchtigen könnte"
+      },
+      "children": {
+        "title": "Datenschutz für Kinder",
+        "info": "Unser Service ist nicht für Kinder unter 13 Jahren bestimmt. Wir sammeln wissentlich keine Daten von Kindern unter 13 Jahren."
+      },
+      "changes": {
+        "title": "Änderungen der Datenschutzrichtlinie",
+        "notification": "Wir werden Nutzer über wesentliche Änderungen dieser Richtlinie per E-Mail oder In-App-Benachrichtigung informieren",
+        "effective": "Änderungen werden 30 Tage nach Benachrichtigung wirksam"
+      },
+      "contact": {
+        "title": "Kontaktinformationen",
+        "email": "Datenschutzbeauftragter: privacy@mirubato.com",
+        "response": "Wir bemühen uns, Datenschutzanfragen innerhalb von 48 Stunden zu beantworten"
+      }
+    }
+  },
+  "tabs": {
+    "about": "Über",
+    "contact": "Kontakt",
+    "credits": "Danksagungen",
+    "version": "Version"
+  },
+  "tagline": "Dein privates Musikübungstagebuch, von und für Musiker entwickelt",
+  "version": {
+    "appVersion": "App-Version",
+    "branch": "Branch",
+    "buildDate": "Build-Datum",
+    "copyVersionInfo": "Versionsinfo kopieren",
+    "environment": "Umgebung",
+    "gitCommit": "Git-Commit",
+    "issueReporting": "Problemmeldung",
+    "issueReportingDescription": "Bei der Meldung von Problemen auf GitHub bitte diese Versionsinformationen einschließen:",
+    "reportIssue": "Problem melden",
+    "title": "Versionsinformationen",
+    "viewOnGithub": "Auf GitHub anzeigen"
+  }
+}
