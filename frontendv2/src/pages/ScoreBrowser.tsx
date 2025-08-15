@@ -509,7 +509,7 @@ export default function ScoreBrowserPage() {
       onTimerClick={() => setShowTimer(true)}
       onImportScore={() => setShowImportModal(true)}
     >
-      <div className="p-8">
+      <div className="p-3 sm:px-6 sm:py-4">
         {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
         <Tabs
           tabs={[
@@ -556,7 +556,7 @@ export default function ScoreBrowserPage() {
 
           {/* Filters - only show for scores tab */}
           {tabView === 'scores' && (
-            <div className="p-4 md:p-6 border-b border-morandi-stone-200">
+            <div className="p-3 md:p-4 border-b border-morandi-stone-200">
               <div className="flex gap-4">
                 <select
                   value={selectedInstrument}
@@ -595,7 +595,7 @@ export default function ScoreBrowserPage() {
           )}
 
           {/* Content */}
-          <div className="p-4 md:p-6">
+          <div className="p-3 md:p-4">
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morandi-sage-500 mx-auto mb-4"></div>

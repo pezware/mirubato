@@ -36,7 +36,7 @@ export default function LogbookPage() {
       onTimerClick={openModal}
     >
       <PullToRefresh className="h-full">
-        <div className="p-4 sm:p-8">
+        <div className="p-3 sm:px-6 sm:py-4">
           {/* Error Display */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">

@@ -582,7 +582,7 @@ export default function ManualEntryForm({
       {/* Duplicate Detection Modal */}
       {duplicateMatches && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg p-3 sm:p-4 w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <p className="text-stone-700 mb-4 text-sm sm:text-base">
               {t('logbook:entry.duplicateDetection.similarTo', {
                 title: duplicateMatches.piece.title,

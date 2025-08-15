@@ -472,7 +472,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     <div className="space-y-6">
       {/* Repertoire Statistics */}
       <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-        <div className="p-4 sm:p-6">
+        <div className="p-3 sm:p-4">
           <RepertoireStats repertoireItems={filteredItems} />
         </div>
       </div>

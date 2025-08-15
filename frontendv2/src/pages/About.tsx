@@ -30,7 +30,7 @@ export default function About() {
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-8">
+      <div className="p-3 sm:px-6 sm:py-4">
         {/* Tabs */}
         <Tabs
           tabs={[
@@ -67,7 +67,7 @@ export default function About() {
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          className="mb-6"
+          className="mb-3 sm:mb-4"
         />
 
         {/* Tab Content */}

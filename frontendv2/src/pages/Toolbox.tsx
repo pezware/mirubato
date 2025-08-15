@@ -390,7 +390,7 @@ const Toolbox: React.FC = () => {
       onToolboxAdd={handleToolboxAdd}
     >
       {/* Main Content */}
-      <div className="p-4 sm:p-8">
+      <div className="p-3 sm:px-6 sm:py-4">
         {/* Tabs */}
         <Tabs
           tabs={[
@@ -425,7 +425,7 @@ const Toolbox: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Control Panel */}
             <div className="lg:w-1/3">
-              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 space-y-3 sm:space-y-4">
                 {/* Play/Pause and BPM */}
                 <div className="text-center">
                   <button
@@ -557,7 +557,7 @@ const Toolbox: React.FC = () => {
 
             {/* Beat Pattern Grid */}
             <div className="lg:w-2/3">
-              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
                 <div className="w-full">
                   <div
                     className={`${

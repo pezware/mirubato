@@ -48,7 +48,7 @@ export default function OverviewView({ analytics }: OverviewViewProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
         {/* Summary Statistics - Moved to top */}
         <div className="w-full">
           <SummaryStats
