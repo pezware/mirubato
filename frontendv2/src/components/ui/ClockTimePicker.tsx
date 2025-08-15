@@ -291,22 +291,24 @@ export default function ClockTimePicker({
                 style={{ cursor: 'pointer' }}
               />
 
-              {/* Minute dots (outer ring) - skip where numbers are displayed */}
+              {/* Minute dots (outer ring) */}
               {Array.from({ length: 60 }, (_, i) => {
                 const isFiveMinute = i % 5 === 0
-                // Skip dots where minute numbers are displayed
-                if (isFiveMinute) return null
+                const isActive = i === tempMinutes
+
+                // Skip dots where 5-minute numbers are displayed, unless it's the active minute
+                if (isFiveMinute && !isActive) return null
 
                 const angle = i * 6 - 90
                 const x = 120 + 95 * Math.cos((angle * Math.PI) / 180)
                 const y = 120 + 95 * Math.sin((angle * Math.PI) / 180)
-                const isActive = i === tempMinutes
+
                 return (
                   <circle
                     key={`minute-dot-${i}`}
                     cx={x}
                     cy={y}
-                    r="1"
+                    r={isActive ? '4' : '1'}
                     fill={isActive ? '#4A5568' : '#ccc'}
                     className="pointer-events-none"
                   />
@@ -372,6 +374,45 @@ export default function ClockTimePicker({
                   </g>
                 )
               })}
+
+              {/* Dynamic minute number for non-5-minute selections */}
+              {tempMinutes % 5 !== 0 && (
+                <g>
+                  {/* Background circle for the minute number */}
+                  <circle
+                    cx={
+                      120 +
+                      95 * Math.cos(((tempMinutes * 6 - 90) * Math.PI) / 180)
+                    }
+                    cy={
+                      120 +
+                      95 * Math.sin(((tempMinutes * 6 - 90) * Math.PI) / 180)
+                    }
+                    r="18"
+                    fill="#4A5568"
+                    className="pointer-events-none"
+                  />
+                  {/* The minute number text */}
+                  <text
+                    x={
+                      120 +
+                      95 * Math.cos(((tempMinutes * 6 - 90) * Math.PI) / 180)
+                    }
+                    y={
+                      120 +
+                      95 * Math.sin(((tempMinutes * 6 - 90) * Math.PI) / 180)
+                    }
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="white"
+                    fontSize="14"
+                    fontWeight="600"
+                    className="select-none pointer-events-none"
+                  >
+                    {tempMinutes.toString().padStart(2, '0')}
+                  </text>
+                </g>
+              )}
 
               {/* Center dot */}
               <circle cx="120" cy="120" r="7" fill="#2D3748" />
