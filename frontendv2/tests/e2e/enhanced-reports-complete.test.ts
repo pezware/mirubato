@@ -79,10 +79,10 @@ test.describe('Enhanced Reports - Core Tests', () => {
         })
 
         // Verify period presets section is visible
-        // Look for the Quick Periods heading or the SegmentedControl
+        // Look for the Quick Time Periods heading or the SegmentedControl
         const quickPeriodsVisible = await page
           .locator(
-            'text=/Quick Periods|Períodos rápidos|Périodes rapides|Schnellzeiträume|快速期間|快速期间/'
+            'text=/Quick Time Periods|Períodos rápidos|Périodes rapides|Schnellzeiträume|快速期間|快速期间/'
           )
           .isVisible()
           .catch(() => false)
