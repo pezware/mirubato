@@ -186,7 +186,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
       </Card>
 
       {/* Export Controls */}
-      <div className="flex gap-2 w-full sm:w-auto mb-4 justify-end">
+      <div className="relative z-20 flex gap-2 w-full sm:w-auto mb-6 pb-2 justify-end">
         <Button
           variant="secondary"
           size="sm"
@@ -194,7 +194,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             exportToCSV(currentData.length > 0 ? currentData : entries)
           }
           disabled={entries.length === 0}
-          className="flex-1 sm:flex-initial"
+          className="flex-1 sm:flex-initial min-h-[44px]"
           data-testid="export-csv-button"
         >
           {t('reports:exportCSV')}
@@ -206,7 +206,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             exportToJSON(currentData.length > 0 ? currentData : entries)
           }
           disabled={entries.length === 0}
-          className="flex-1 sm:flex-initial"
+          className="flex-1 sm:flex-initial min-h-[44px]"
           data-testid="export-json-button"
         >
           {t('reports:exportJSON')}
