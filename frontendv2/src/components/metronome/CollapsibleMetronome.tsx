@@ -37,7 +37,7 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
   // Use prop position if provided, otherwise use settings position
   const position = propPosition ?? settings.position
   const [isPlaying, setIsPlaying] = useState(false)
-  const [, setCurrentBeat] = useState(0)
+  const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [clickCount, setClickCount] = useState(0)
 
@@ -488,6 +488,10 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
                               patterns[layer.id as keyof PatternState][i]
                                 ? layer.color + ' opacity-80'
                                 : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                            } ${
+                              i === currentBeat && isPlaying
+                                ? 'shadow-md shadow-morandi-purple-400/50 ring-1 ring-morandi-purple-400'
+                                : ''
                             }`}
                           />
                         )
