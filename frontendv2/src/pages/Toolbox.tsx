@@ -39,7 +39,7 @@ const Toolbox: React.FC = () => {
   const { settings, updateSettings, saveCurrentPattern } =
     useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
-  const [, setCurrentBeat] = useState(0)
+  const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
   const [tapTimes, setTapTimes] = useState<number[]>([])
   const [activeTab, setActiveTab] = useState('metronome')
@@ -648,6 +648,10 @@ const Toolbox: React.FC = () => {
                                           ][i]
                                             ? layer.color + ' text-white'
                                             : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
+                                        } ${
+                                          i === currentBeat && isPlaying
+                                            ? 'shadow-lg shadow-morandi-purple-400/50 ring-2 ring-morandi-purple-400 ring-opacity-75'
+                                            : ''
                                         }`}
                                       />
                                     )
@@ -675,6 +679,12 @@ const Toolbox: React.FC = () => {
                                           ? layer.color + ' text-white'
                                           : 'bg-morandi-stone-100 hover:bg-morandi-stone-200'
                                         : 'bg-transparent cursor-default'
+                                    } ${
+                                      i === currentBeat &&
+                                      isPlaying &&
+                                      i < settings.beatsPerMeasure
+                                        ? 'shadow-lg shadow-morandi-purple-400/50 ring-2 ring-morandi-purple-400 ring-opacity-75'
+                                        : ''
                                     }`}
                                   />
                                 ))}
