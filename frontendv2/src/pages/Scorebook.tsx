@@ -148,7 +148,7 @@ export default function ScorebookPage() {
 
         {/* Error State */}
         {error && (
-          <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+          <div className="flex-1 flex items-center justify-center p-3 sm:px-6 sm:py-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 max-w-md">
               <h3 className="text-red-800 font-medium mb-2">
                 {t('scorebook:error', 'Error loading score')}

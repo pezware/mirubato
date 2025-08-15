@@ -65,7 +65,7 @@ export default function DataView({ analytics }: DataViewProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
-      <div className="p-2 sm:p-4 lg:p-6">
+      <div className="p-2 sm:p-3 lg:p-4">
         {/* Segmented Control for view selection */}
         <div className="mb-4 sm:mb-6 flex justify-center sm:justify-start">
           <SegmentedControl

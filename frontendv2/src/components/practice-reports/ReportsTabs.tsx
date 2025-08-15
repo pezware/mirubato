@@ -58,7 +58,7 @@ export function ReportsTabs({
       tabs={tabs}
       activeTab={reportView}
       onTabChange={handleTabChange}
-      className="mb-6"
+      className="mb-3 sm:mb-4"
     />
   )
 }
