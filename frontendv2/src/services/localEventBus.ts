@@ -55,7 +55,9 @@ class LocalEventBus {
     // Execute handlers asynchronously to avoid blocking
     eventHandlers.forEach(handler => {
       // Wrap in Promise to handle both sync and async handlers
-      Promise.resolve(handler(data)).catch(error => {
+      // Cast handler to the specific type since we know it matches the event
+      const typedHandler = handler as LocalEventHandler<T>
+      Promise.resolve(typedHandler(data)).catch(error => {
         console.error(`[LocalEventBus] Error in handler for ${event}:`, error)
       })
     })
