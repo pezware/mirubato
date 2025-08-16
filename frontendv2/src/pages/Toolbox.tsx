@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import {
   Play,
   Pause,
@@ -36,6 +37,7 @@ type PatternState = {
 
 const Toolbox: React.FC = () => {
   const { t } = useTranslation(['toolbox', 'common'])
+  const { lang, term } = useParams<{ lang?: string; term?: string }>()
   const { settings, updateSettings, saveCurrentPattern } =
     useMetronomeSettings()
   const [isPlaying, setIsPlaying] = useState(false)
@@ -142,6 +144,14 @@ const Toolbox: React.FC = () => {
 
   // Get metronome instance
   const metronome = getPatternMetronome()
+
+  // Auto-switch to dictionary tab when on dictionary SEO URLs
+  useEffect(() => {
+    if (lang && term) {
+      // We're on a dictionary SEO URL, switch to dictionary tab
+      setActiveTab('dictionary')
+    }
+  }, [lang, term])
 
   // Sync beats input value when settings change (e.g., from pattern loading)
   useEffect(() => {

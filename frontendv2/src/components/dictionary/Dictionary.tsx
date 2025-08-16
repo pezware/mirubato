@@ -592,29 +592,94 @@ const Dictionary: React.FC = () => {
 
       {/* Navigation Breadcrumbs */}
       {state.selectedTerm && (
-        <nav className="mb-4 flex items-center text-sm text-stone-600">
-          <button
-            onClick={handleBackToDictionary}
-            className="flex items-center gap-1 hover:text-stone-900 transition-colors"
-          >
-            <ArrowLeft className="w-3 h-3" />
-            Dictionary
-          </button>
-          {state.searchQuery && (
-            <>
-              <ChevronRight className="w-4 h-4 mx-1" />
+        <nav className="mb-6" aria-label="Dictionary navigation">
+          {/* Desktop Breadcrumbs */}
+          <div className="hidden sm:flex items-center text-sm">
+            {/* Dictionary Home */}
+            <button
+              onClick={handleBackToDictionary}
+              className="flex items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('toolbox:dictionary.title')}
+            </button>
+
+            {/* Language Level */}
+            <ChevronRight className="w-4 h-4 mx-2 text-stone-400" />
+            <span className="text-stone-600">
+              {state.selectedTerm.lang === 'en' &&
+                t('toolbox:dictionary.languages.english')}
+              {state.selectedTerm.lang === 'es' &&
+                t('toolbox:dictionary.languages.spanish')}
+              {state.selectedTerm.lang === 'fr' &&
+                t('toolbox:dictionary.languages.french')}
+              {state.selectedTerm.lang === 'de' &&
+                t('toolbox:dictionary.languages.german')}
+              {state.selectedTerm.lang === 'zh-CN' &&
+                t('toolbox:dictionary.languages.chineseSimplified')}
+              {state.selectedTerm.lang === 'zh-TW' &&
+                t('toolbox:dictionary.languages.chineseTraditional')}
+              {!['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(
+                state.selectedTerm.lang
+              ) && state.selectedTerm.lang.toUpperCase()}{' '}
+              {t('toolbox:dictionary.terms')}
+            </span>
+
+            {/* Current Term */}
+            <ChevronRight className="w-4 h-4 mx-2 text-stone-400" />
+            <span className="text-stone-900 font-semibold font-serif">
+              {state.selectedTerm.term}
+            </span>
+          </div>
+
+          {/* Mobile Breadcrumbs - Simplified */}
+          <div className="sm:hidden">
+            <button
+              onClick={handleBackToDictionary}
+              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors font-medium py-2 px-1 -mx-1 rounded-md min-h-[44px]"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <div className="flex flex-col items-start">
+                <span className="text-xs text-stone-500">
+                  {state.selectedTerm.lang === 'en' &&
+                    t('toolbox:dictionary.languages.english')}
+                  {state.selectedTerm.lang === 'es' &&
+                    t('toolbox:dictionary.languages.spanish')}
+                  {state.selectedTerm.lang === 'fr' &&
+                    t('toolbox:dictionary.languages.french')}
+                  {state.selectedTerm.lang === 'de' &&
+                    t('toolbox:dictionary.languages.german')}
+                  {state.selectedTerm.lang === 'zh-CN' &&
+                    t('toolbox:dictionary.languages.chineseSimplified')}
+                  {state.selectedTerm.lang === 'zh-TW' &&
+                    t('toolbox:dictionary.languages.chineseTraditional')}
+                  {!['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(
+                    state.selectedTerm.lang
+                  ) && state.selectedTerm.lang.toUpperCase()}{' '}
+                  {t('toolbox:dictionary.title')}
+                </span>
+                <span className="text-base font-serif text-stone-900">
+                  {state.selectedTerm.term}
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* Secondary navigation for search results */}
+          {state.searchResults.length > 0 && (
+            <div className="mt-2">
               <button
                 onClick={handleBackToResults}
-                className="hover:text-stone-900 transition-colors"
+                className="text-xs text-stone-500 hover:text-stone-700 transition-colors flex items-center gap-1 py-1 px-1 -mx-1 rounded min-h-[32px]"
               >
-                Search: "{state.searchQuery}"
+                ←{' '}
+                {t('toolbox:dictionary.backToSearchResults', {
+                  query: state.searchQuery,
+                  count: state.searchResults.length,
+                })}
               </button>
-            </>
+            </div>
           )}
-          <ChevronRight className="w-4 h-4 mx-1" />
-          <span className="text-stone-900 font-medium">
-            {state.selectedTerm.term}
-          </span>
         </nav>
       )}
 
