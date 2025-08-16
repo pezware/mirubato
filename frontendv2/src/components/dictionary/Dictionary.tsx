@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams, useNavigate } from 'react-router-dom'
 import { dictionaryAPI } from '@/api/dictionary'
 import {
   DictionaryEntry,
@@ -29,6 +30,8 @@ interface DictionaryError extends Error {
  */
 const Dictionary: React.FC = () => {
   const { t, i18n } = useTranslation(['toolbox'])
+  const { lang, term } = useParams<{ lang?: string; term?: string }>()
+  const navigate = useNavigate()
 
   // Component state
   const [state, setState] = useState<
@@ -67,6 +70,65 @@ const Dictionary: React.FC = () => {
     loadPopularTerms()
     loadRecentSearches()
   }, [])
+
+  // Auto-load term from URL parameters (SEO support)
+  useEffect(() => {
+    if (term && lang) {
+      // Decode the term from URL
+      const decodedTerm = decodeURIComponent(term)
+
+      // Validate that this is a supported language
+      const supportedLanguages = ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']
+      if (!supportedLanguages.includes(lang)) {
+        // Redirect to default language
+        navigate(`/dictionary/en/${term}`, { replace: true })
+        return
+      }
+
+      // Set the search query and trigger term load
+      setState(prev => ({ ...prev, searchQuery: decodedTerm }))
+
+      // Load the term directly here to avoid dependency issues
+      const loadTermFromUrl = async () => {
+        setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+        try {
+          const entry = await dictionaryAPI.getTerm(decodedTerm, {
+            generateIfMissing: true,
+            lang: lang,
+            searchAllLanguages: true,
+          })
+
+          setState(prev => ({
+            ...prev,
+            selectedTerm: entry,
+            isLoading: false,
+          }))
+
+          // Add to recent searches
+          const recent = JSON.parse(
+            localStorage.getItem('recentSearches') || '[]'
+          )
+          const updatedRecent = [
+            decodedTerm,
+            ...recent.filter((r: string) => r !== decodedTerm),
+          ].slice(0, 5)
+          localStorage.setItem('recentSearches', JSON.stringify(updatedRecent))
+          setState(prev => ({ ...prev, recentSearches: updatedRecent }))
+        } catch (error) {
+          console.error('Failed to load term from URL:', error)
+          setState(prev => ({
+            ...prev,
+            isLoading: false,
+            error:
+              error instanceof Error ? error.message : 'Failed to load term',
+          }))
+        }
+      }
+
+      loadTermFromUrl()
+    }
+  }, [lang, term, navigate])
 
   // Load popular terms
   const loadPopularTerms = async () => {
@@ -262,6 +324,14 @@ const Dictionary: React.FC = () => {
           isLoading: false,
         }))
 
+        // Update URL to SEO-friendly format when term is selected
+        if (entry && !lang) {
+          // Only update if not already on a SEO URL
+          const termLang = entry.lang || currentLanguage
+          const encodedTerm = encodeURIComponent(entry.normalized_term)
+          navigate(`/dictionary/${termLang}/${encodedTerm}`, { replace: true })
+        }
+
         // If showing language comparison, fetch other languages
         if (showLanguageComparison && entry) {
           try {
@@ -393,6 +463,11 @@ const Dictionary: React.FC = () => {
       totalResults: 0,
       error: null,
     }))
+
+    // Navigate back to clean dictionary URL
+    if (lang || term) {
+      navigate('/toolbox', { replace: true })
+    }
   }
 
   return (

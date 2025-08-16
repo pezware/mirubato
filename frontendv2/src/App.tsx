@@ -162,6 +162,10 @@ function App() {
                   <Route path="/toolbox" element={<Toolbox />} />
                   <Route path="/about" element={<About />} />
 
+                  {/* Dictionary SEO routes */}
+                  <Route path="/dictionary/:lang/:term" element={<Toolbox />} />
+                  <Route path="/dictionary" element={<Toolbox />} />
+
                   {/* Protected routes (but work for anonymous users too) */}
                   <Route
                     path="/logbook"
