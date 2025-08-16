@@ -463,75 +463,93 @@ export class DictionaryAPIClient {
     const safeTerm = this.validateAndSanitize(term)
     const encodedTerm = encodeURIComponent(safeTerm)
 
-    const params = new URLSearchParams()
-    if (languages && languages.length > 0) {
-      params.append('languages', languages.join(','))
-    }
-
-    const queryString = params.toString()
-    const url = `/terms/${encodedTerm}/languages${queryString ? `?${queryString}` : ''}`
-
-    try {
-      const response = await this.client.get(url)
-
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
+    return this.circuitBreaker.execute(async () => {
+      const params = new URLSearchParams()
+      if (languages && languages.length > 0) {
+        params.append('languages', languages.join(','))
       }
 
-      // Extract data from dictionary API response
-      let termData = response.data
+      const queryString = params.toString()
+      const url = `/terms/${encodedTerm}/languages${queryString ? `?${queryString}` : ''}`
 
-      // Handle wrapped API response
-      if (typeof response.data === 'object' && 'success' in response.data) {
-        if (response.data.success && response.data.data) {
-          termData = response.data.data
-        } else if (!response.data.success) {
+      try {
+        const response = await this.client.get(url)
+
+        if (!isValidApiResponse(response.data)) {
+          throw new Error('Invalid response from server')
+        }
+
+        // Extract data from dictionary API response
+        let termData = response.data
+
+        // Handle wrapped API response
+        if (typeof response.data === 'object' && 'success' in response.data) {
+          if (response.data.success && response.data.data) {
+            termData = response.data.data
+          } else if (!response.data.success) {
+            throw new Error(
+              response.data.error || 'Failed to get term in multiple languages'
+            )
+          }
+        }
+
+        // Add better error handling before Zod parsing
+        try {
+          return MultiLanguageTermResponseSchema.parse(termData)
+        } catch (zodError) {
+          console.error(
+            'Schema validation failed for multi-language response:',
+            {
+              termData,
+              zodError,
+            }
+          )
           throw new Error(
-            response.data.error || 'Failed to get term in multiple languages'
+            `Invalid multi-language response format: ${zodError.message}`
           )
         }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          throw new Error(
+            error.response?.data?.error ||
+              'Failed to get term in multiple languages'
+          )
+        }
+        throw error
       }
-
-      return MultiLanguageTermResponseSchema.parse(termData)
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(
-          error.response?.data?.error ||
-            'Failed to get term in multiple languages'
-        )
-      }
-      throw error
-    }
+    })
   }
 
   /**
    * Get term by ID
    */
   async getTermById(id: string): Promise<DictionaryEntry> {
-    try {
-      const response = await this.client.get(`/terms/id/${id}`)
+    return this.circuitBreaker.execute(async () => {
+      try {
+        const response = await this.client.get(`/terms/id/${id}`)
 
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
+        if (!isValidApiResponse(response.data)) {
+          throw new Error('Invalid response from server')
+        }
 
-      // Dictionary API returns data in a different format
-      let entryData = response.data
-      if (response.data.success && response.data.data?.entry) {
-        entryData = response.data.data.entry
-      } else if (response.data.data?.entry) {
-        entryData = response.data.data.entry
-      } else if (response.data.data) {
-        entryData = response.data.data
-      }
+        // Dictionary API returns data in a different format
+        let entryData = response.data
+        if (response.data.success && response.data.data?.entry) {
+          entryData = response.data.data.entry
+        } else if (response.data.data?.entry) {
+          entryData = response.data.data.entry
+        } else if (response.data.data) {
+          entryData = response.data.data
+        }
 
-      return DictionaryEntrySchema.parse(entryData)
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to get term')
+        return DictionaryEntrySchema.parse(entryData)
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          throw new Error(error.response?.data?.error || 'Failed to get term')
+        }
+        throw error
       }
-      throw error
-    }
+    })
   }
 
   /**
