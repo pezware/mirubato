@@ -30,6 +30,52 @@ interface DictionaryError extends Error {
   estimatedCompletion?: string
 }
 
+// Circuit breaker for preventing endless retries
+class DictionaryCircuitBreaker {
+  private failures = 0
+  private lastFailureTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  private readonly threshold = 5 // Max failures before opening
+  private readonly timeout = 30000 // 30 seconds before retry
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailureTime < this.timeout) {
+        throw new Error(
+          'Dictionary service temporarily unavailable. Please try again later.'
+        )
+      }
+      this.state = 'HALF_OPEN'
+    }
+
+    try {
+      const result = await operation()
+      this.onSuccess()
+      return result
+    } catch (error) {
+      this.onFailure()
+      throw error
+    }
+  }
+
+  private onSuccess() {
+    this.failures = 0
+    this.state = 'CLOSED'
+  }
+
+  private onFailure() {
+    this.failures++
+    this.lastFailureTime = Date.now()
+    if (this.failures >= this.threshold) {
+      this.state = 'OPEN'
+    }
+  }
+
+  getState() {
+    return this.state
+  }
+}
+
 /**
  * Dictionary API client with built-in security, validation, and rate limiting
  */
@@ -37,6 +83,7 @@ export class DictionaryAPIClient {
   private client: AxiosInstance
   private searchRateLimiter = createRateLimiter('dictionary_search', 10, 60000) // 10 searches per minute
   private batchRateLimiter = createRateLimiter('dictionary_batch', 5, 60000) // 5 batch queries per minute
+  private circuitBreaker = new DictionaryCircuitBreaker()
 
   constructor(baseURL: string = '/api/v1') {
     // Determine Dictionary API URL based on environment
@@ -80,13 +127,38 @@ export class DictionaryAPIClient {
     this.client.interceptors.response.use(
       response => response,
       (error: AxiosError) => {
+        // Check if it's a network error (service unavailable)
+        if (
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ENOTFOUND' ||
+          !error.response
+        ) {
+          console.warn(
+            'Dictionary API: Service unavailable, circuit breaker may activate'
+          )
+          return Promise.reject(
+            new Error(
+              'Dictionary service is currently unavailable. Please try again later.'
+            )
+          )
+        }
+
         if (error.response?.status === 401) {
           // Handle unauthorized - could trigger re-auth flow
           console.error('Dictionary API: Unauthorized access')
         } else if (error.response?.status === 429) {
           // Handle rate limiting
-          console.error('Dictionary API: Rate limit exceeded')
+          const retryAfter = error.response.headers['retry-after']
+          const message = retryAfter
+            ? `Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`
+            : 'Too many requests. Please wait before trying again.'
+          return Promise.reject(new Error(message))
+        } else if (error.response?.status === 503) {
+          return Promise.reject(
+            new Error('Dictionary service is temporarily unavailable.')
+          )
         }
+
         return Promise.reject(error)
       }
     )
@@ -123,7 +195,7 @@ export class DictionaryAPIClient {
       ? this.validateAndSanitize(options.query)
       : ''
 
-    try {
+    return this.circuitBreaker.execute(async () => {
       const params = new URLSearchParams({
         q: safeQuery,
         ...(options.lang && { lang: options.lang }),
@@ -163,87 +235,89 @@ export class DictionaryAPIClient {
         ...(options.limit && { limit: options.limit.toString() }),
       })
 
-      const response = await this.client.get(`/search?${params.toString()}`)
-
-      // Dictionary API uses different response format
-      if (response.data.success === false && response.data.error) {
-        throw new Error(response.data.error)
-      }
-
-      // Extract the data from the dictionary API response
-      let searchData = response.data
-      if (response.data.success && response.data.data) {
-        searchData = response.data.data
-      }
-
-      // Map dictionary API response format to expected format
-      // Dictionary API returns 'results' but frontend expects 'entries'
-      const transformedData: Partial<SearchResult> = {
-        entries: searchData.results || [],
-        total: searchData.total || 0,
-      }
-
-      // Extract pagination from query object if present
-      if (searchData.query) {
-        const limit = searchData.query.limit || options.limit || 20
-        const offset = searchData.query.offset || 0
-        transformedData.limit = limit
-        transformedData.page = Math.floor(offset / limit) + 1
-      } else {
-        // Fallback to options
-        transformedData.limit = options.limit || 20
-        transformedData.page = options.page || 1
-      }
-
-      // Validate and return search results
       try {
-        return SearchResultSchema.parse(transformedData)
-      } catch (validationError) {
-        console.error('Search validation error:', validationError)
-        throw new Error('Invalid search results format')
-      }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        // Handle rate limiting specifically
-        if (error.response?.status === 429) {
-          const rateLimitInfo = error.response.headers
-          const retryAfter =
-            rateLimitInfo?.['retry-after'] ||
-            rateLimitInfo?.['x-ratelimit-reset']
+        const response = await this.client.get(`/search?${params.toString()}`)
 
-          // Create a specific error for rate limiting
-          const rateLimitError = new Error(
-            'RATE_LIMIT_EXCEEDED'
-          ) as DictionaryError
-          rateLimitError.code = 'RATE_LIMIT_EXCEEDED'
-
-          // Add retry information if available
-          if (retryAfter) {
-            const waitTime = parseInt(retryAfter) || 60
-            rateLimitError.estimatedCompletion = `${waitTime} seconds`
-          }
-
-          throw rateLimitError
+        // Dictionary API uses different response format
+        if (response.data.success === false && response.data.error) {
+          throw new Error(response.data.error)
         }
 
-        // Extract error message from the API response
-        const errorData = error.response?.data
-        let errorMessage = 'Failed to search terms'
-
-        if (errorData) {
-          if (typeof errorData === 'string') {
-            errorMessage = errorData
-          } else if (errorData.error) {
-            errorMessage = errorData.error
-          } else if (errorData.message) {
-            errorMessage = errorData.message
-          }
+        // Extract the data from the dictionary API response
+        let searchData = response.data
+        if (response.data.success && response.data.data) {
+          searchData = response.data.data
         }
 
-        throw new Error(errorMessage)
+        // Map dictionary API response format to expected format
+        // Dictionary API returns 'results' but frontend expects 'entries'
+        const transformedData: Partial<SearchResult> = {
+          entries: searchData.results || [],
+          total: searchData.total || 0,
+        }
+
+        // Extract pagination from query object if present
+        if (searchData.query) {
+          const limit = searchData.query.limit || options.limit || 20
+          const offset = searchData.query.offset || 0
+          transformedData.limit = limit
+          transformedData.page = Math.floor(offset / limit) + 1
+        } else {
+          // Fallback to options
+          transformedData.limit = options.limit || 20
+          transformedData.page = options.page || 1
+        }
+
+        // Validate and return search results
+        try {
+          return SearchResultSchema.parse(transformedData)
+        } catch (validationError) {
+          console.error('Search validation error:', validationError)
+          throw new Error('Invalid search results format')
+        }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          // Handle rate limiting specifically
+          if (error.response?.status === 429) {
+            const rateLimitInfo = error.response.headers
+            const retryAfter =
+              rateLimitInfo?.['retry-after'] ||
+              rateLimitInfo?.['x-ratelimit-reset']
+
+            // Create a specific error for rate limiting
+            const rateLimitError = new Error(
+              'RATE_LIMIT_EXCEEDED'
+            ) as DictionaryError
+            rateLimitError.code = 'RATE_LIMIT_EXCEEDED'
+
+            // Add retry information if available
+            if (retryAfter) {
+              const waitTime = parseInt(retryAfter) || 60
+              rateLimitError.estimatedCompletion = `${waitTime} seconds`
+            }
+
+            throw rateLimitError
+          }
+
+          // Extract error message from the API response
+          const errorData = error.response?.data
+          let errorMessage = 'Failed to search terms'
+
+          if (errorData) {
+            if (typeof errorData === 'string') {
+              errorMessage = errorData
+            } else if (errorData.error) {
+              errorMessage = errorData.error
+            } else if (errorData.message) {
+              errorMessage = errorData.message
+            }
+          }
+
+          throw new Error(errorMessage)
+        }
+        throw error
       }
-      throw error
-    }
+    })
   }
 
   /**
@@ -260,121 +334,123 @@ export class DictionaryAPIClient {
     const safeTerm = this.validateAndSanitize(term)
     const encodedTerm = encodeURIComponent(safeTerm)
 
-    const params = new URLSearchParams()
-    if (options?.generateIfMissing ?? true) {
-      params.append('generate_if_missing', 'true')
-    }
-    if (options?.lang) {
-      params.append('lang', options.lang)
-    }
-    if (options?.searchAllLanguages) {
-      params.append('searchAllLanguages', 'true')
-    }
+    return this.circuitBreaker.execute(async () => {
+      const params = new URLSearchParams()
+      if (options?.generateIfMissing ?? true) {
+        params.append('generate_if_missing', 'true')
+      }
+      if (options?.lang) {
+        params.append('lang', options.lang)
+      }
+      if (options?.searchAllLanguages) {
+        params.append('searchAllLanguages', 'true')
+      }
 
-    const queryString = params.toString()
-    const url = `/terms/${encodedTerm}${queryString ? `?${queryString}` : ''}`
+      const queryString = params.toString()
+      const url = `/terms/${encodedTerm}${queryString ? `?${queryString}` : ''}`
 
-    try {
-      const response = await this.client.get(url)
+      try {
+        const response = await this.client.get(url)
 
-      // Check if term was not found (404)
-      if (response.status === 404 && response.data) {
-        const notFoundData = response.data as {
-          success: boolean
-          error: string
-          data?: {
-            term: string
-            normalized_term: string
-            suggestions?: string[]
+        // Check if term was not found (404)
+        if (response.status === 404 && response.data) {
+          const notFoundData = response.data as {
+            success: boolean
+            error: string
+            data?: {
+              term: string
+              normalized_term: string
+              suggestions?: string[]
+            }
           }
+
+          // Create a custom error with more information
+          const error = new Error(
+            notFoundData.error || 'Term not found'
+          ) as DictionaryError
+          error.code = 'TERM_NOT_FOUND'
+          error.suggestions = notFoundData.data?.suggestions || []
+          throw error
         }
 
-        // Create a custom error with more information
-        const error = new Error(
-          notFoundData.error || 'Term not found'
-        ) as DictionaryError
-        error.code = 'TERM_NOT_FOUND'
-        error.suggestions = notFoundData.data?.suggestions || []
+        // Check if AI generation is in progress (202 Accepted)
+        if (response.status === 202 && response.data) {
+          const pendingData = response.data as {
+            success: boolean
+            message: string
+            data?: {
+              job_id?: string
+              estimated_completion?: string
+            }
+          }
+
+          const error = new Error(
+            pendingData.message || 'AI generation in progress'
+          ) as DictionaryError
+          error.code = 'AI_GENERATION_PENDING'
+          error.jobId = pendingData.data?.job_id
+          error.estimatedCompletion = pendingData.data?.estimated_completion
+          throw error
+        }
+
+        // Check for valid success response
+        if (!isValidApiResponse(response.data)) {
+          throw new Error('Invalid response from server')
+        }
+
+        // Check if this was AI-generated (look for header)
+        const wasGenerated = response.headers?.['x-generated'] === 'true'
+
+        // Dictionary API returns data in a different format
+        // Extract the entry from the nested response
+        let entryData = response.data
+        if (response.data.success && response.data.data?.entry) {
+          entryData = response.data.data.entry
+        } else if (response.data.data?.entry) {
+          entryData = response.data.data.entry
+        }
+
+        // Validate the dictionary entry directly
+        const result = DictionaryEntrySchema.parse(entryData)
+
+        // Add generation info to the result
+        if (wasGenerated) {
+          ;(
+            result as DictionaryEntry & { wasAIGenerated?: boolean }
+          ).wasAIGenerated = true
+        }
+
+        return result
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          // Handle 404 specifically
+          if (error.response?.status === 404) {
+            const notFoundError = new Error(
+              'Term not found in dictionary'
+            ) as DictionaryError
+            notFoundError.code = 'TERM_NOT_FOUND'
+
+            // Extract suggestions if available
+            if (error.response.data?.data?.suggestions) {
+              notFoundError.suggestions = error.response.data.data.suggestions
+            }
+            throw notFoundError
+          }
+
+          // Handle 503 (AI service unavailable)
+          if (error.response?.status === 503) {
+            const serviceError = new Error(
+              'AI service temporarily unavailable'
+            ) as DictionaryError
+            serviceError.code = 'AI_SERVICE_UNAVAILABLE'
+            throw serviceError
+          }
+
+          throw new Error(error.response?.data?.error || 'Failed to get term')
+        }
         throw error
       }
-
-      // Check if AI generation is in progress (202 Accepted)
-      if (response.status === 202 && response.data) {
-        const pendingData = response.data as {
-          success: boolean
-          message: string
-          data?: {
-            job_id?: string
-            estimated_completion?: string
-          }
-        }
-
-        const error = new Error(
-          pendingData.message || 'AI generation in progress'
-        ) as DictionaryError
-        error.code = 'AI_GENERATION_PENDING'
-        error.jobId = pendingData.data?.job_id
-        error.estimatedCompletion = pendingData.data?.estimated_completion
-        throw error
-      }
-
-      // Check for valid success response
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
-
-      // Check if this was AI-generated (look for header)
-      const wasGenerated = response.headers?.['x-generated'] === 'true'
-
-      // Dictionary API returns data in a different format
-      // Extract the entry from the nested response
-      let entryData = response.data
-      if (response.data.success && response.data.data?.entry) {
-        entryData = response.data.data.entry
-      } else if (response.data.data?.entry) {
-        entryData = response.data.data.entry
-      }
-
-      // Validate the dictionary entry directly
-      const result = DictionaryEntrySchema.parse(entryData)
-
-      // Add generation info to the result
-      if (wasGenerated) {
-        ;(
-          result as DictionaryEntry & { wasAIGenerated?: boolean }
-        ).wasAIGenerated = true
-      }
-
-      return result
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        // Handle 404 specifically
-        if (error.response?.status === 404) {
-          const notFoundError = new Error(
-            'Term not found in dictionary'
-          ) as DictionaryError
-          notFoundError.code = 'TERM_NOT_FOUND'
-
-          // Extract suggestions if available
-          if (error.response.data?.data?.suggestions) {
-            notFoundError.suggestions = error.response.data.data.suggestions
-          }
-          throw notFoundError
-        }
-
-        // Handle 503 (AI service unavailable)
-        if (error.response?.status === 503) {
-          const serviceError = new Error(
-            'AI service temporarily unavailable'
-          ) as DictionaryError
-          serviceError.code = 'AI_SERVICE_UNAVAILABLE'
-          throw serviceError
-        }
-
-        throw new Error(error.response?.data?.error || 'Failed to get term')
-      }
-      throw error
-    }
+    })
   }
 
   /**
@@ -387,75 +463,124 @@ export class DictionaryAPIClient {
     const safeTerm = this.validateAndSanitize(term)
     const encodedTerm = encodeURIComponent(safeTerm)
 
-    const params = new URLSearchParams()
-    if (languages && languages.length > 0) {
-      params.append('languages', languages.join(','))
-    }
-
-    const queryString = params.toString()
-    const url = `/terms/${encodedTerm}/languages${queryString ? `?${queryString}` : ''}`
-
-    try {
-      const response = await this.client.get(url)
-
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
+    return this.circuitBreaker.execute(async () => {
+      const params = new URLSearchParams()
+      if (languages && languages.length > 0) {
+        params.append('languages', languages.join(','))
       }
 
-      // Extract data from dictionary API response
-      let termData = response.data
+      const queryString = params.toString()
+      const url = `/terms/${encodedTerm}/languages${queryString ? `?${queryString}` : ''}`
 
-      // Handle wrapped API response
-      if (typeof response.data === 'object' && 'success' in response.data) {
-        if (response.data.success && response.data.data) {
-          termData = response.data.data
-        } else if (!response.data.success) {
+      try {
+        const response = await this.client.get(url)
+
+        if (!isValidApiResponse(response.data)) {
+          throw new Error('Invalid response from server')
+        }
+
+        // Extract data from dictionary API response
+        let termData = response.data
+
+        // Handle wrapped API response
+        if (typeof response.data === 'object' && 'success' in response.data) {
+          if (response.data.success && response.data.data) {
+            termData = response.data.data
+          } else if (!response.data.success) {
+            throw new Error(
+              response.data.error || 'Failed to get term in multiple languages'
+            )
+          }
+        }
+
+        // Add better error handling before Zod parsing
+        try {
+          // Pre-process the termData to handle common API inconsistencies
+          if (
+            termData &&
+            typeof termData === 'object' &&
+            'languages' in termData
+          ) {
+            // Filter out null/undefined language entries that cause validation errors
+            const cleanedLanguages: Record<string, unknown> = {}
+            for (const [lang, entry] of Object.entries(
+              termData.languages || {}
+            )) {
+              // Only include valid entries that have required fields
+              if (
+                entry &&
+                typeof entry === 'object' &&
+                'id' in entry &&
+                'term' in entry
+              ) {
+                cleanedLanguages[lang] = entry
+              }
+            }
+            termData = {
+              ...termData,
+              languages: cleanedLanguages,
+            }
+          }
+
+          return MultiLanguageTermResponseSchema.parse(termData)
+        } catch (zodError) {
+          console.error(
+            'Schema validation failed for multi-language response:',
+            {
+              originalData: termData,
+              zodError,
+            }
+          )
+          const errorMessage =
+            zodError instanceof Error
+              ? zodError.message
+              : 'Schema validation failed'
           throw new Error(
-            response.data.error || 'Failed to get term in multiple languages'
+            `Invalid multi-language response format: ${errorMessage}`
           )
         }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          throw new Error(
+            error.response?.data?.error ||
+              'Failed to get term in multiple languages'
+          )
+        }
+        throw error
       }
-
-      return MultiLanguageTermResponseSchema.parse(termData)
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(
-          error.response?.data?.error ||
-            'Failed to get term in multiple languages'
-        )
-      }
-      throw error
-    }
+    })
   }
 
   /**
    * Get term by ID
    */
   async getTermById(id: string): Promise<DictionaryEntry> {
-    try {
-      const response = await this.client.get(`/terms/id/${id}`)
+    return this.circuitBreaker.execute(async () => {
+      try {
+        const response = await this.client.get(`/terms/id/${id}`)
 
-      if (!isValidApiResponse(response.data)) {
-        throw new Error('Invalid response from server')
-      }
+        if (!isValidApiResponse(response.data)) {
+          throw new Error('Invalid response from server')
+        }
 
-      // Dictionary API returns data in a different format
-      let entryData = response.data
-      if (response.data.success && response.data.data?.entry) {
-        entryData = response.data.data.entry
-      } else if (response.data.data?.entry) {
-        entryData = response.data.data.entry
-      } else if (response.data.data) {
-        entryData = response.data.data
-      }
+        // Dictionary API returns data in a different format
+        let entryData = response.data
+        if (response.data.success && response.data.data?.entry) {
+          entryData = response.data.data.entry
+        } else if (response.data.data?.entry) {
+          entryData = response.data.data.entry
+        } else if (response.data.data) {
+          entryData = response.data.data
+        }
 
-      return DictionaryEntrySchema.parse(entryData)
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to get term')
+        return DictionaryEntrySchema.parse(entryData)
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          throw new Error(error.response?.data?.error || 'Failed to get term')
+        }
+        throw error
       }
-      throw error
-    }
+    })
   }
 
   /**
@@ -509,6 +634,20 @@ export class DictionaryAPIClient {
       console.error('Failed to get suggestions:', error)
       return []
     }
+  }
+
+  /**
+   * Check if dictionary service is available
+   */
+  isServiceAvailable(): boolean {
+    return this.circuitBreaker.getState() !== 'OPEN'
+  }
+
+  /**
+   * Get circuit breaker state for debugging
+   */
+  getServiceState(): string {
+    return this.circuitBreaker.getState()
   }
 
   /**

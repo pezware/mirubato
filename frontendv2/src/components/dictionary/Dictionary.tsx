@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams, useNavigate } from 'react-router-dom'
 import { dictionaryAPI } from '@/api/dictionary'
 import {
   DictionaryEntry,
@@ -7,13 +8,20 @@ import {
   DictionaryState,
   SupportedLanguage,
 } from '@/types/dictionary'
-import { Button } from '@/components/ui'
+import { Button, Card, CardContent } from '@/components/ui'
 import DictionarySearch from './DictionarySearch'
 import DictionaryResults from './DictionaryResults'
 import DictionaryTerm from './DictionaryTerm'
 import DictionaryPopular from './DictionaryPopular'
 import DictionaryCategories from './DictionaryCategories'
-import { Clock, AlertCircle } from 'lucide-react'
+import {
+  Clock,
+  AlertCircle,
+  Globe,
+  Languages,
+  ChevronRight,
+  ArrowLeft,
+} from 'lucide-react'
 
 // Error type for dictionary errors
 interface DictionaryError extends Error {
@@ -29,6 +37,8 @@ interface DictionaryError extends Error {
  */
 const Dictionary: React.FC = () => {
   const { t, i18n } = useTranslation(['toolbox'])
+  const { lang, term } = useParams<{ lang?: string; term?: string }>()
+  const navigate = useNavigate()
 
   // Component state
   const [state, setState] = useState<
@@ -67,6 +77,65 @@ const Dictionary: React.FC = () => {
     loadPopularTerms()
     loadRecentSearches()
   }, [])
+
+  // Auto-load term from URL parameters (SEO support)
+  useEffect(() => {
+    if (term && lang) {
+      // Decode the term from URL
+      const decodedTerm = decodeURIComponent(term)
+
+      // Validate that this is a supported language
+      const supportedLanguages = ['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW']
+      if (!supportedLanguages.includes(lang)) {
+        // Redirect to default language
+        navigate(`/dictionary/en/${term}`, { replace: true })
+        return
+      }
+
+      // Set the search query and trigger term load
+      setState(prev => ({ ...prev, searchQuery: decodedTerm }))
+
+      // Load the term directly here to avoid dependency issues
+      const loadTermFromUrl = async () => {
+        setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+        try {
+          const entry = await dictionaryAPI.getTerm(decodedTerm, {
+            generateIfMissing: true,
+            lang: lang,
+            searchAllLanguages: true,
+          })
+
+          setState(prev => ({
+            ...prev,
+            selectedTerm: entry,
+            isLoading: false,
+          }))
+
+          // Add to recent searches
+          const recent = JSON.parse(
+            localStorage.getItem('recentSearches') || '[]'
+          )
+          const updatedRecent = [
+            decodedTerm,
+            ...recent.filter((r: string) => r !== decodedTerm),
+          ].slice(0, 5)
+          localStorage.setItem('recentSearches', JSON.stringify(updatedRecent))
+          setState(prev => ({ ...prev, recentSearches: updatedRecent }))
+        } catch (error) {
+          console.error('Failed to load term from URL:', error)
+          setState(prev => ({
+            ...prev,
+            isLoading: false,
+            error:
+              error instanceof Error ? error.message : 'Failed to load term',
+          }))
+        }
+      }
+
+      loadTermFromUrl()
+    }
+  }, [lang, term, navigate])
 
   // Load popular terms
   const loadPopularTerms = async () => {
@@ -115,6 +184,18 @@ const Dictionary: React.FC = () => {
           searchResults: [],
           selectedTerm: null,
           error: null,
+        }))
+        return
+      }
+
+      // Check if dictionary service is available
+      if (!dictionaryAPI.isServiceAvailable()) {
+        setState(prev => ({
+          ...prev,
+          error:
+            'Dictionary service is temporarily unavailable. Please try again later.',
+          errorDetails: { code: 'SERVICE_UNAVAILABLE' },
+          isLoading: false,
         }))
         return
       }
@@ -262,6 +343,14 @@ const Dictionary: React.FC = () => {
           isLoading: false,
         }))
 
+        // Update URL to SEO-friendly format when term is selected
+        if (entry && !lang) {
+          // Only update if not already on a SEO URL
+          const termLang = entry.lang || currentLanguage
+          const encodedTerm = encodeURIComponent(entry.normalized_term)
+          navigate(`/dictionary/${termLang}/${encodedTerm}`, { replace: true })
+        }
+
         // If showing language comparison, fetch other languages
         if (showLanguageComparison && entry) {
           try {
@@ -393,6 +482,13 @@ const Dictionary: React.FC = () => {
       totalResults: 0,
       error: null,
     }))
+
+    // Clear URL parameters if coming from SEO route
+    if (lang || term) {
+      // Navigate to clean toolbox URL but stay on dictionary tab
+      navigate('/toolbox', { replace: true })
+      // The parent Toolbox component should handle switching to dictionary tab
+    }
   }
 
   return (
@@ -404,31 +500,40 @@ const Dictionary: React.FC = () => {
         <p className="text-stone-600">{t('toolbox:dictionary.description')}</p>
       </div>
 
-      {/* Search bar */}
-      <div className="mb-6">
-        <DictionarySearch
-          onSearch={handleSearch}
-          placeholder={t('toolbox:dictionary.searchPlaceholder')}
-        />
+      {/* Search Controls Card */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <DictionarySearch
+            onSearch={handleSearch}
+            placeholder={t('toolbox:dictionary.searchPlaceholder')}
+          />
 
-        {/* Language options */}
-        <div className="mt-3 flex items-center gap-4 text-sm">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={searchAllLanguages}
-              onChange={e => setSearchAllLanguages(e.target.checked)}
-              className="mr-2"
-            />
-            {t('toolbox:dictionary.searchAllLanguages')}
-          </label>
-          <span className="text-stone-500">
-            {t('toolbox:dictionary.currentLanguage', {
-              lang: currentLanguage.toUpperCase(),
-            })}
-          </span>
-        </div>
-      </div>
+          {/* Language options */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer hover:text-stone-900 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={searchAllLanguages}
+                  onChange={e => setSearchAllLanguages(e.target.checked)}
+                  className="rounded border-gray-300 text-morandi-sage-600 focus:ring-morandi-sage-500 focus:ring-offset-0"
+                />
+                <Globe className="w-4 h-4 text-morandi-sage-500" />
+                <span>{t('toolbox:dictionary.searchAllLanguages')}</span>
+              </label>
+
+              <div className="flex items-center gap-2 text-sm text-stone-600">
+                <Languages className="w-4 h-4 text-morandi-sage-500" />
+                <span>
+                  {t('toolbox:dictionary.currentLanguage', {
+                    lang: currentLanguage.toUpperCase(),
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Error display */}
       {state.error && (
@@ -448,6 +553,12 @@ const Dictionary: React.FC = () => {
                 {state.errorDetails?.code === 'TERM_NOT_FOUND' && (
                   <p className="text-sm mt-1">
                     {t('toolbox:dictionary.aiWillGenerate')}
+                  </p>
+                )}
+                {state.error.includes('temporarily unavailable') && (
+                  <p className="text-sm mt-1 text-amber-600">
+                    The dictionary service will be available again shortly.
+                    Please try again in a few moments.
                   </p>
                 )}
               </div>
@@ -479,13 +590,110 @@ const Dictionary: React.FC = () => {
         </div>
       )}
 
+      {/* Navigation Breadcrumbs */}
+      {state.selectedTerm && (
+        <nav className="mb-6" aria-label="Dictionary navigation">
+          {/* Desktop Breadcrumbs */}
+          <div className="hidden sm:flex items-center text-sm">
+            {/* Dictionary Home */}
+            <button
+              onClick={handleBackToDictionary}
+              className="flex items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('toolbox:dictionary.title')}
+            </button>
+
+            {/* Language Level */}
+            <ChevronRight className="w-4 h-4 mx-2 text-stone-400" />
+            <span className="text-stone-600">
+              {state.selectedTerm.lang === 'en' &&
+                t('toolbox:dictionary.languages.english')}
+              {state.selectedTerm.lang === 'es' &&
+                t('toolbox:dictionary.languages.spanish')}
+              {state.selectedTerm.lang === 'fr' &&
+                t('toolbox:dictionary.languages.french')}
+              {state.selectedTerm.lang === 'de' &&
+                t('toolbox:dictionary.languages.german')}
+              {state.selectedTerm.lang === 'zh-CN' &&
+                t('toolbox:dictionary.languages.chineseSimplified')}
+              {state.selectedTerm.lang === 'zh-TW' &&
+                t('toolbox:dictionary.languages.chineseTraditional')}
+              {!['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(
+                state.selectedTerm.lang
+              ) && state.selectedTerm.lang.toUpperCase()}{' '}
+              {t('toolbox:dictionary.terms')}
+            </span>
+
+            {/* Current Term */}
+            <ChevronRight className="w-4 h-4 mx-2 text-stone-400" />
+            <span className="text-stone-900 font-semibold font-serif">
+              {state.selectedTerm.term}
+            </span>
+          </div>
+
+          {/* Mobile Breadcrumbs - Simplified */}
+          <div className="sm:hidden">
+            <button
+              onClick={handleBackToDictionary}
+              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors font-medium py-2 px-1 -mx-1 rounded-md min-h-[44px]"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <div className="flex flex-col items-start">
+                <span className="text-xs text-stone-500">
+                  {state.selectedTerm.lang === 'en' &&
+                    t('toolbox:dictionary.languages.english')}
+                  {state.selectedTerm.lang === 'es' &&
+                    t('toolbox:dictionary.languages.spanish')}
+                  {state.selectedTerm.lang === 'fr' &&
+                    t('toolbox:dictionary.languages.french')}
+                  {state.selectedTerm.lang === 'de' &&
+                    t('toolbox:dictionary.languages.german')}
+                  {state.selectedTerm.lang === 'zh-CN' &&
+                    t('toolbox:dictionary.languages.chineseSimplified')}
+                  {state.selectedTerm.lang === 'zh-TW' &&
+                    t('toolbox:dictionary.languages.chineseTraditional')}
+                  {!['en', 'es', 'fr', 'de', 'zh-CN', 'zh-TW'].includes(
+                    state.selectedTerm.lang
+                  ) && state.selectedTerm.lang.toUpperCase()}{' '}
+                  {t('toolbox:dictionary.title')}
+                </span>
+                <span className="text-base font-serif text-stone-900">
+                  {state.selectedTerm.term}
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* Secondary navigation for search results */}
+          {state.searchResults.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={handleBackToResults}
+                className="text-xs text-stone-500 hover:text-stone-700 transition-colors flex items-center gap-1 py-1 px-1 -mx-1 rounded min-h-[32px]"
+              >
+                ←{' '}
+                {t('toolbox:dictionary.backToSearchResults', {
+                  query: state.searchQuery,
+                  count: state.searchResults.length,
+                })}
+              </button>
+            </div>
+          )}
+        </nav>
+      )}
+
       {/* Main content area */}
       {state.selectedTerm ? (
         // Show selected term
         <div>
           <DictionaryTerm
             entry={state.selectedTerm}
-            onBack={handleBackToResults}
+            onBack={
+              state.searchResults.length > 0
+                ? handleBackToResults
+                : handleBackToDictionary
+            }
           />
 
           {/* Language indicator for the term */}
@@ -518,9 +726,9 @@ const Dictionary: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleBackToDictionary}
-              className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800 flex items-center"
+              className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800 hover:bg-morandi-stone-50 transition-colors flex items-center"
             >
-              <span className="mr-1">←</span>
+              <ArrowLeft className="w-4 h-4 mr-2" />
               {t('toolbox:dictionary.backToDictionary')}
             </Button>
           )}

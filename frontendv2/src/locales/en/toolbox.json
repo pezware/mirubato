@@ -176,6 +176,16 @@
     "submitReport": "Submit Report",
     "cancel": "Cancel",
     "thanksFeedback": "Thanks for your feedback!",
+    "terms": "Terms",
+    "backToSearchResults": "Back to search results ({{count}} found)",
+    "languages": {
+      "english": "English",
+      "spanish": "Spanish",
+      "french": "French",
+      "german": "German",
+      "chineseSimplified": "Chinese (Simplified)",
+      "chineseTraditional": "Chinese (Traditional)"
+    },
     "noReferencesYet": "No references available yet.",
     "referencesComingSoon": "References for \"{{term}}\" are being gathered and will be available soon.",
     "explore": "Explore",

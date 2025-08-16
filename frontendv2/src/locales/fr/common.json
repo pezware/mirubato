@@ -1,9 +1,9 @@
 {
   "actions": {
     "addEntry": "Ajouter une entrée",
-    "timer": "Chronomètre",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "timer": "Chronomètre"
   },
   "active": "Actif",
   "add": "Ajouter",

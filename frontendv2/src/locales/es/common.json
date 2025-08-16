@@ -1,9 +1,9 @@
 {
   "actions": {
     "addEntry": "Añadir Entrada",
-    "timer": "Temporizador",
     "cancel": "Cancelar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "timer": "Temporizador"
   },
   "active": "Activo",
   "add": "Añadir",

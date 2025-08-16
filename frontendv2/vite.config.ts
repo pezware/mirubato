@@ -68,6 +68,13 @@ export default defineConfig({
     port: 4000,
     strictPort: false,
     host: process.env.CI ? 'localhost' : 'www-mirubato.localhost',
+    hmr: {
+      port: 4001,
+      host: process.env.CI ? 'localhost' : 'www-mirubato.localhost',
+      // Prevent excessive reconnect attempts
+      timeout: 30000,
+      overlay: true,
+    },
   },
   publicDir: 'public',
   build: {
