@@ -59,7 +59,7 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
     } finally {
       setLoadingLanguages(false)
     }
-  }, [entry.normalized_term, availableLanguages, entry])
+  }, [entry, availableLanguages])
 
   const fetchSpecificLanguage = useCallback(
     async (lang: string) => {

@@ -502,7 +502,7 @@ export class DictionaryAPIClient {
             'languages' in termData
           ) {
             // Filter out null/undefined language entries that cause validation errors
-            const cleanedLanguages: Record<string, any> = {}
+            const cleanedLanguages: Record<string, unknown> = {}
             for (const [lang, entry] of Object.entries(
               termData.languages || {}
             )) {
@@ -510,8 +510,8 @@ export class DictionaryAPIClient {
               if (
                 entry &&
                 typeof entry === 'object' &&
-                entry.id &&
-                entry.term
+                'id' in entry &&
+                'term' in entry
               ) {
                 cleanedLanguages[lang] = entry
               }
