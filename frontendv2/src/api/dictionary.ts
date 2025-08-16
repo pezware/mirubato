@@ -504,8 +504,12 @@ export class DictionaryAPIClient {
               zodError,
             }
           )
+          const errorMessage =
+            zodError instanceof Error
+              ? zodError.message
+              : 'Schema validation failed'
           throw new Error(
-            `Invalid multi-language response format: ${zodError.message}`
+            `Invalid multi-language response format: ${errorMessage}`
           )
         }
       } catch (error) {
