@@ -29,98 +29,98 @@
       "viewOnGithub": "在 GitHub 上查看"
     },
     "privacy": {
-      "title": "隱私權與您的資料",
-      "intro": "此隱私權政策說明 Mirubato 如何根據一般資料保護規則 (GDPR) 和其他適用的資料保護法律處理您的個人資料。",
-      "lastUpdated": "最後更新：2025年1月",
+      "automated": {
+        "info": "我們不使用產生法律或重大影響的自動化決策或分析",
+        "title": "自動化決策"
+      },
+      "breach": {
+        "notification": "我們將在發現可能影響您權利的任何資料外洩後 72 小時內通知受影響的使用者",
+        "title": "資料外洩通知"
+      },
+      "changes": {
+        "effective": "變更將在通知後 30 天生效",
+        "notification": "我們將透過電子郵件或應用程式內通知告知使用者此政策的重大變更",
+        "title": "隱私權政策變更"
+      },
+      "children": {
+        "info": "我們的服務不針對 13 歲以下兒童。我們不會故意收集 13 歲以下兒童的資料。",
+        "title": "兒童隱私"
+      },
+      "contact": {
+        "email": "隱私權專員：privacy@mirubato.com",
+        "response": "我們力求在 48 小時內回應隱私權詢問",
+        "title": "聯絡資訊"
+      },
       "controller": {
-        "title": "資料控制者",
-        "info": "Mirubato（聯繫方式：privacy@mirubato.com）是負責您個人資料的資料控制者。"
-      },
-      "legalBasis": {
-        "title": "處理的法律依據",
-        "consent": "同意：對於可選功能，如雲端同步和分析",
-        "contract": "合約履行：提供我們的音樂練習追蹤服務",
-        "legitimate": "合法利益：用於安全、防詐騙和服務改善"
-      },
-      "dataWeCollect": {
-        "title": "我們收集的個人資料",
-        "account": "帳戶資料：電子郵件地址、顯示名稱、驗證方式（Google OAuth 或魔術連結）",
-        "profile": "個人檔案資料：主要樂器、音樂目標、偏好設定（全部為選擇性）",
-        "practice": "練習資料：練習記錄、目標、曲目、樂譜、練習課程、進度追蹤",
-        "technical": "技術資料：裝置 ID、瀏覽器類型、作業系統、IP 位址、登入時間戳記、同步中繼資料",
-        "usage": "使用資料：功能使用情況、課程時長、效能指標（盡可能匿名化）",
-        "device": "裝置資訊：螢幕解析度、時區、語言偏好、同步用裝置規格"
-      },
-      "dataWeStore": {
-        "title": "我們如何儲存和處理您的資料",
-        "localFirst": "本地儲存：資料主要使用瀏覽器儲存（localStorage、IndexedDB）儲存在您的裝置本地",
-        "cloudSync": "雲端儲存：可選同步使用 Cloudflare 的安全全球網路，採用端對端加密",
-        "location": "資料位置：透過 Cloudflare 的邊緣網路在歐盟和全球範圍內，採用適當的保護措施",
-        "security": "安全性：業界標準加密、安全驗證、定期安全稽核",
-        "retention": "資料保留：帳戶資料在活躍期間保留；練習資料保留 7 年或直到刪除請求"
-      },
-      "dataWeShare": {
-        "title": "資料分享和第三方",
-        "noSelling": "我們絕不向第三方出售、出租或交換您的個人資料",
-        "noAds": "我們不將您的資料用於廣告或行銷目的",
-        "noTracking": "除了基本功能外，我們不使用追蹤 Cookie 或第三方分析",
-        "noThirdParty": "未經明確同意，我們不與第三方分享您的練習資料",
-        "service": "服務提供商：我們使用 Cloudflare 進行託管，Google 進行驗證（均符合 GDPR）",
-        "legal": "法律要求：如法律要求或為保護我們的權利，我們可能會揭露資料"
+        "info": "Mirubato（聯繫方式：privacy@mirubato.com）是負責您個人資料的資料控制者。",
+        "title": "資料控制者"
       },
       "cookies": {
-        "title": "Cookie 和追蹤",
+        "control": "Cookie 控制：您可以在瀏覽器設定中管理 Cookie 偏好",
         "essential": "必要 Cookie：驗證、安全和核心功能所需",
         "functional": "功能性 Cookie：語言偏好、設定、同步用裝置識別",
         "noTracking": "無追蹤：我們不使用廣告 Cookie、社群媒體追蹤器或分析 Cookie",
-        "control": "Cookie 控制：您可以在瀏覽器設定中管理 Cookie 偏好"
-      },
-      "yourRights": {
-        "title": "您的 GDPR 權利",
-        "intro": "根據 GDPR，您對個人資料享有以下權利：",
-        "access": "存取權：要求取得您的個人資料副本和處理資訊",
-        "rectification": "更正權：更正不正確或不完整的個人資料",
-        "erasure": "刪除權（\"被遺忘權\"）：要求刪除您的個人資料",
-        "restrict": "限制處理權：限制我們如何處理您的個人資料",
-        "portability": "資料可攜權：以結構化、機器可讀格式接收您的資料",
-        "object": "反對權：反對基於合法利益的處理",
-        "withdraw": "撤回同意權：撤回基於同意的處理的同意",
-        "complain": "申訴權：向您的資料保護機關提出申訴",
-        "exercise": "如何行使權利：聯繫 privacy@mirubato.com 或使用應用程式中的隱私控制"
+        "title": "Cookie 和追蹤"
       },
       "dataSubjectRequests": {
-        "title": "資料主體請求",
-        "response": "我們將在 30 天內回應您的請求（複雜請求延長至 60 天）",
-        "verification": "在處理您的請求之前，我們可能需要驗證您的身份",
         "format": "資料將以常用的機器可讀格式提供（JSON、CSV）",
-        "free": "請求通常免費，但過度請求可能產生合理費用"
+        "free": "請求通常免費，但過度請求可能產生合理費用",
+        "response": "我們將在 30 天內回應您的請求（複雜請求延長至 60 天）",
+        "title": "資料主體請求",
+        "verification": "在處理您的請求之前，我們可能需要驗證您的身份"
       },
-      "automated": {
-        "title": "自動化決策",
-        "info": "我們不使用產生法律或重大影響的自動化決策或分析"
+      "dataWeCollect": {
+        "account": "帳戶資料：電子郵件地址、顯示名稱、驗證方式（Google OAuth 或魔術連結）",
+        "device": "裝置資訊：螢幕解析度、時區、語言偏好、同步用裝置規格",
+        "practice": "練習資料：練習記錄、目標、曲目、樂譜、練習課程、進度追蹤",
+        "profile": "個人檔案資料：主要樂器、音樂目標、偏好設定（全部為選擇性）",
+        "technical": "技術資料：裝置 ID、瀏覽器類型、作業系統、IP 位址、登入時間戳記、同步中繼資料",
+        "title": "我們收集的個人資料",
+        "usage": "使用資料：功能使用情況、課程時長、效能指標（盡可能匿名化）"
+      },
+      "dataWeShare": {
+        "legal": "法律要求：如法律要求或為保護我們的權利，我們可能會揭露資料",
+        "noAds": "我們不將您的資料用於廣告或行銷目的",
+        "noSelling": "我們絕不向第三方出售、出租或交換您的個人資料",
+        "noThirdParty": "未經明確同意，我們不與第三方分享您的練習資料",
+        "noTracking": "除了基本功能外，我們不使用追蹤 Cookie 或第三方分析",
+        "service": "服務提供商：我們使用 Cloudflare 進行託管，Google 進行驗證（均符合 GDPR）",
+        "title": "資料分享和第三方"
+      },
+      "dataWeStore": {
+        "cloudSync": "雲端儲存：可選同步使用 Cloudflare 的安全全球網路，採用端對端加密",
+        "localFirst": "本地儲存：資料主要使用瀏覽器儲存（localStorage、IndexedDB）儲存在您的裝置本地",
+        "location": "資料位置：透過 Cloudflare 的邊緣網路在歐盟和全球範圍內，採用適當的保護措施",
+        "retention": "資料保留：帳戶資料在活躍期間保留；練習資料保留 7 年或直到刪除請求",
+        "security": "安全性：業界標準加密、安全驗證、定期安全稽核",
+        "title": "我們如何儲存和處理您的資料"
       },
       "international": {
-        "title": "國際資料傳輸",
+        "adequacy": "我們確保所有國際傳輸都有適當的保護措施",
         "cloudflare": "資料可能在 Cloudflare 全球資料中心處理，受標準合約條款保護",
-        "adequacy": "我們確保所有國際傳輸都有適當的保護措施"
+        "title": "國際資料傳輸"
       },
-      "breach": {
-        "title": "資料外洩通知",
-        "notification": "我們將在發現可能影響您權利的任何資料外洩後 72 小時內通知受影響的使用者"
+      "intro": "此隱私權政策說明 Mirubato 如何根據一般資料保護規則 (GDPR) 和其他適用的資料保護法律處理您的個人資料。",
+      "lastUpdated": "最後更新：2025年1月",
+      "legalBasis": {
+        "consent": "同意：對於可選功能，如雲端同步和分析",
+        "contract": "合約履行：提供我們的音樂練習追蹤服務",
+        "legitimate": "合法利益：用於安全、防詐騙和服務改善",
+        "title": "處理的法律依據"
       },
-      "children": {
-        "title": "兒童隱私",
-        "info": "我們的服務不針對 13 歲以下兒童。我們不會故意收集 13 歲以下兒童的資料。"
-      },
-      "changes": {
-        "title": "隱私權政策變更",
-        "notification": "我們將透過電子郵件或應用程式內通知告知使用者此政策的重大變更",
-        "effective": "變更將在通知後 30 天生效"
-      },
-      "contact": {
-        "title": "聯絡資訊",
-        "email": "隱私權專員：privacy@mirubato.com",
-        "response": "我們力求在 48 小時內回應隱私權詢問"
+      "title": "隱私權與您的資料",
+      "yourRights": {
+        "access": "存取權：要求取得您的個人資料副本和處理資訊",
+        "complain": "申訴權：向您的資料保護機關提出申訴",
+        "erasure": "刪除權（\"被遺忘權\"）：要求刪除您的個人資料",
+        "exercise": "如何行使權利：聯繫 privacy@mirubato.com 或使用應用程式中的隱私控制",
+        "intro": "根據 GDPR，您對個人資料享有以下權利：",
+        "object": "反對權：反對基於合法利益的處理",
+        "portability": "資料可攜權：以結構化、機器可讀格式接收您的資料",
+        "rectification": "更正權：更正不正確或不完整的個人資料",
+        "restrict": "限制處理權：限制我們如何處理您的個人資料",
+        "title": "您的 GDPR 權利",
+        "withdraw": "撤回同意權：撤回基於同意的處理的同意"
       }
     }
   },
