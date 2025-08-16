@@ -495,12 +495,39 @@ export class DictionaryAPIClient {
 
         // Add better error handling before Zod parsing
         try {
+          // Pre-process the termData to handle common API inconsistencies
+          if (
+            termData &&
+            typeof termData === 'object' &&
+            'languages' in termData
+          ) {
+            // Filter out null/undefined language entries that cause validation errors
+            const cleanedLanguages: Record<string, any> = {}
+            for (const [lang, entry] of Object.entries(
+              termData.languages || {}
+            )) {
+              // Only include valid entries that have required fields
+              if (
+                entry &&
+                typeof entry === 'object' &&
+                entry.id &&
+                entry.term
+              ) {
+                cleanedLanguages[lang] = entry
+              }
+            }
+            termData = {
+              ...termData,
+              languages: cleanedLanguages,
+            }
+          }
+
           return MultiLanguageTermResponseSchema.parse(termData)
         } catch (zodError) {
           console.error(
             'Schema validation failed for multi-language response:',
             {
-              termData,
+              originalData: termData,
               zodError,
             }
           )

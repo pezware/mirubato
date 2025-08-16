@@ -48,10 +48,18 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
       setLanguageVersions(response)
     } catch (error) {
       console.error('Failed to fetch language versions:', error)
+      // Set a fallback response with just the current language
+      setLanguageVersions({
+        term: entry.term,
+        normalized_term: entry.normalized_term,
+        languages: {
+          [entry.lang]: entry,
+        },
+      })
     } finally {
       setLoadingLanguages(false)
     }
-  }, [entry.normalized_term, availableLanguages])
+  }, [entry.normalized_term, availableLanguages, entry])
 
   const fetchSpecificLanguage = useCallback(
     async (lang: string) => {
