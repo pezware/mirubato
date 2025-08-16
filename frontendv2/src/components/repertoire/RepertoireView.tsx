@@ -104,9 +104,12 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     loadGoals()
     loadEntries()
     // Try to load user library but don't block if it fails
-    loadUserLibrary().catch(() => {
+    loadUserLibrary().catch(error => {
       // Ignore errors from scores service - not critical for repertoire
-      console.log('Scores service not available, continuing without scores')
+      console.log(
+        'Scores service not available, continuing without scores:',
+        error?.message || error
+      )
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
