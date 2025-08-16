@@ -30,14 +30,28 @@ export default function DataView({ analytics }: DataViewProps) {
     if (currentView !== activeView) {
       const newParams = new URLSearchParams(searchParams)
       newParams.set('view', activeView)
-      // Preserve the tab parameter to avoid conflict with EnhancedReports
-      const tab = searchParams.get('tab')
-      if (tab) {
-        newParams.set('tab', tab)
-      }
+
+      // DataView should always ensure tab=data since it's the Data tab
+      newParams.set('tab', 'data')
+
       setSearchParams(newParams, { replace: true })
     }
   }, [activeView, searchParams, setSearchParams])
+
+  // Ensure URL has both tab=data and view parameters when component mounts
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    const view = searchParams.get('view')
+
+    // If DataView is mounted, ensure we have tab=data and a view parameter
+    if (tab !== 'data' || !view) {
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('tab', 'data')
+      newParams.set('view', activeView)
+      setSearchParams(newParams, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - dependencies intentionally omitted
 
   // Remember last selected view in localStorage
   useEffect(() => {
