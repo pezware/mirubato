@@ -410,13 +410,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            <MusicTitle
-              as="h1"
-              className="text-xl sm:text-2xl font-medium text-stone-900 mb-2"
-            >
+            <MusicTitle as="h1" className="text-stone-900 mb-2">
               {toTitleCase(item.scoreTitle)}
             </MusicTitle>
-            <div className="text-base sm:text-lg mb-4 sm:mb-6">
+            <div className="mb-4 sm:mb-6">
               <MusicComposer className="text-stone-600">
                 {toTitleCase(item.scoreComposer)}
               </MusicComposer>
@@ -464,7 +461,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:totalPractice')}
             </div>
-            <div className="text-lg sm:text-2xl font-semibold text-stone-900">
+            <div className="text-base sm:text-lg font-semibold text-stone-900">
               {formatDuration(stats.totalPracticeTime)}
             </div>
           </div>
@@ -472,7 +469,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:sessions')}
             </div>
-            <div className="text-lg sm:text-2xl font-semibold text-stone-900">
+            <div className="text-base sm:text-lg font-semibold text-stone-900">
               {stats.sessionCount}
             </div>
           </div>
@@ -495,10 +492,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             ) : (
               <button
                 onClick={() => setIsEditingStatus(true)}
-                className={`text-lg sm:text-2xl font-semibold ${statusConfig[item.status].color} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1`}
+                className={`text-base sm:text-lg font-semibold ${statusConfig[item.status].color} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1`}
               >
                 {t(`repertoire:status.${item.status}`)}
-                <Edit2 className="w-4 h-4 mt-1 opacity-60" />
+                <Edit2 className="w-3 h-3 opacity-60" />
               </button>
             )}
           </div>
@@ -506,7 +503,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:avgSession')}
             </div>
-            <div className="text-lg sm:text-2xl font-semibold text-stone-900">
+            <div className="text-base sm:text-lg font-semibold text-stone-900">
               {formatDuration(stats.avgSessionTime)}
             </div>
           </div>
