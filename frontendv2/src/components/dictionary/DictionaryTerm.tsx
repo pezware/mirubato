@@ -304,15 +304,15 @@ const DictionaryTerm: React.FC<DictionaryTermProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Back to Dictionary button */}
+      {/* Back button */}
       {onBack && (
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800"
+          className="mb-4 text-morandi-stone-600 hover:text-morandi-stone-800 hover:bg-morandi-stone-50 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" />
+          <ArrowLeft className="w-4 h-4 mr-2" />
           {t('toolbox:dictionary.backToDictionary')}
         </Button>
       )}
