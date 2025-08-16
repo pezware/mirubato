@@ -7,11 +7,13 @@ import { LoadingSkeleton } from '../ui/Loading'
 import { ReportsTabs, ReportView } from './ReportsTabs'
 import { LogbookEntry } from '../../api/logbook'
 
-// Lazy load view components
+// Lazy load view components (except DataView for immediate response)
 const OverviewView = lazy(() => import('./views/OverviewView'))
-const DataView = lazy(() => import('./views/DataView'))
 const RepertoireView = lazy(() => import('../repertoire/RepertoireView'))
 const ManualEntryForm = lazy(() => import('../ManualEntryForm'))
+
+// Regular import for DataView to fix double-click issue
+import DataView from './views/DataView'
 
 interface EnhancedReportsProps {
   searchQuery?: string

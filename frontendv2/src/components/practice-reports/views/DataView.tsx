@@ -30,6 +30,11 @@ export default function DataView({ analytics }: DataViewProps) {
     if (currentView !== activeView) {
       const newParams = new URLSearchParams(searchParams)
       newParams.set('view', activeView)
+      // Preserve the tab parameter to avoid conflict with EnhancedReports
+      const tab = searchParams.get('tab')
+      if (tab) {
+        newParams.set('tab', tab)
+      }
       setSearchParams(newParams, { replace: true })
     }
   }, [activeView, searchParams, setSearchParams])
