@@ -247,13 +247,17 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       }))
       set({ userLibrary: normalizedScores })
     } catch (error) {
-      // Check if this is a network error (scores service not running)
+      // Check if this is a network error or HTTP error (scores service not available)
       if (
         error instanceof Error &&
         (error.message.includes('Network Error') ||
-          error.message.includes('ERR_CONNECTION_REFUSED'))
+          error.message.includes('ERR_CONNECTION_REFUSED') ||
+          error.message.includes('401') ||
+          error.message.includes('500') ||
+          error.message.includes('Unauthorized') ||
+          error.message.includes('Internal Server Error'))
       ) {
-        // Silently handle - scores service is not running
+        // Silently handle - scores service is not available or not configured
         console.log('Scores service not available, continuing without scores')
         set({ userLibrary: [] })
         return
@@ -273,11 +277,15 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
           }))
           set({ userLibrary: normalizedPublicScores })
         } catch (publicError) {
-          // Also check for network errors in public fallback
+          // Also check for network/HTTP errors in public fallback
           if (
             publicError instanceof Error &&
             (publicError.message.includes('Network Error') ||
-              publicError.message.includes('ERR_CONNECTION_REFUSED'))
+              publicError.message.includes('ERR_CONNECTION_REFUSED') ||
+              publicError.message.includes('401') ||
+              publicError.message.includes('500') ||
+              publicError.message.includes('Unauthorized') ||
+              publicError.message.includes('Internal Server Error'))
           ) {
             console.log(
               'Scores service not available, continuing without scores'

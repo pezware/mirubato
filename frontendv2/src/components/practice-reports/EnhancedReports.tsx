@@ -67,27 +67,55 @@ export default function EnhancedReports({
     }
   }, [searchParams, location.state, entries])
 
-  // Update URL when tab changes
+  // Update URL when tab changes with navigation guards
   const handleViewChange = (view: ReportView) => {
+    // Prevent rapid navigation changes that could cause race conditions
+    const currentTab = searchParams.get('tab')
+
+    // If we're already navigating to this view, don't trigger again
+    if (
+      (view === 'overview' && !currentTab) ||
+      (view !== 'overview' && currentTab === view)
+    ) {
+      return
+    }
+
+    console.log(`[Navigation] ${currentTab || 'overview'} → ${view}`)
     setReportView(view)
+
+    // Use a single atomic URL update to prevent conflicts
+    const newParams = new URLSearchParams()
 
     if (view === 'newEntry') {
       // Keep editId if it exists
       const editId = searchParams.get('editId')
+      newParams.set('tab', 'newEntry')
       if (editId) {
-        setSearchParams({ tab: 'newEntry', editId })
-      } else {
-        setSearchParams({ tab: 'newEntry' })
+        newParams.set('editId', editId)
       }
     } else if (view === 'overview') {
-      // Clear URL params for overview (default view)
-      setSearchParams({})
-      // Clear navigation state when switching away
-      window.history.replaceState({}, document.title)
+      // Clear all params for overview (default view) - newParams is already empty
     } else {
       // Set tab parameter for other views (repertoire, data)
-      setSearchParams({ tab: view })
+      newParams.set('tab', view)
+
+      // For data view, preserve existing view parameter if it exists
+      if (view === 'data') {
+        const existingView = searchParams.get('view')
+        if (existingView) {
+          newParams.set('view', existingView)
+        }
+      }
     }
+
+    // Apply URL changes atomically
+    setSearchParams(newParams, { replace: true })
+
+    // Clear navigation state when switching to overview
+    if (view === 'overview') {
+      window.history.replaceState({}, document.title)
+    }
+
     // Clear edit entry when switching away from newEntry
     if (view !== 'newEntry') {
       setEditEntry(undefined)
