@@ -12,6 +12,7 @@ interface HtmlTemplateOptions {
   relatedTerms?: string[]
   languageVersions?: Partial<Record<SupportedLanguage, boolean>>
   baseUrl?: string
+  isProduction?: boolean
 }
 
 /**
@@ -127,6 +128,7 @@ export function generateTermHtml(options: HtmlTemplateOptions): string {
     relatedTerms = [],
     languageVersions = {},
     baseUrl = 'https://mirubato.com',
+    isProduction = true,
   } = options
 
   const pageTitle = `${entry.term} - Music Definition | Mirubato Dictionary`
@@ -175,8 +177,9 @@ ${hreflangTags}
     
     <!-- Additional Meta Tags -->
     <meta name="author" content="Mirubato">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="${isProduction ? 'index, follow' : 'noindex, nofollow'}">
     <meta name="rating" content="general">
+    ${!isProduction ? '<meta name="googlebot" content="noindex, nofollow">' : ''}
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -571,7 +574,8 @@ export function generateNotFoundHtml(
   term: string,
   lang: SupportedLanguage,
   suggestions: string[] = [],
-  baseUrl: string = 'https://mirubato.com'
+  baseUrl: string = 'https://mirubato.com',
+  isProduction: boolean = true
 ): string {
   const pageTitle = `"${term}" not found - Mirubato Music Dictionary`
   const metaDescription = `The music term "${term}" was not found in our dictionary. Explore suggestions and related music terms.`
@@ -583,7 +587,8 @@ export function generateNotFoundHtml(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle}</title>
     <meta name="description" content="${metaDescription}">
-    <meta name="robots" content="noindex, follow">
+    <meta name="robots" content="${isProduction ? 'noindex, follow' : 'noindex, nofollow'}">
+    ${!isProduction ? '<meta name="googlebot" content="noindex, nofollow">' : ''}
     <link rel="canonical" href="${baseUrl}/dictionary">
     
     <style>

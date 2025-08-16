@@ -151,11 +151,17 @@ dictionaryRoutes.get(
           relatedTerms: relatedTerms,
           languageVersions: languageAvailability,
           baseUrl,
+          isProduction: c.env.ENVIRONMENT === 'production',
         })
 
         // Set SEO headers
         c.header('Content-Type', 'text/html; charset=utf-8')
-        c.header('X-Robots-Tag', 'index, follow')
+        c.header(
+          'X-Robots-Tag',
+          c.env.ENVIRONMENT === 'production'
+            ? 'index, follow'
+            : 'noindex, nofollow'
+        )
 
         // Set language-specific headers
         c.header('Content-Language', lang)
@@ -192,11 +198,17 @@ dictionaryRoutes.get(
           decodedTerm,
           lang as SupportedLanguage,
           suggestions.map(s => s.term as string),
-          baseUrl
+          baseUrl,
+          c.env.ENVIRONMENT === 'production'
         )
 
         c.header('Content-Type', 'text/html; charset=utf-8')
-        c.header('X-Robots-Tag', 'noindex, follow')
+        c.header(
+          'X-Robots-Tag',
+          c.env.ENVIRONMENT === 'production'
+            ? 'noindex, follow'
+            : 'noindex, nofollow'
+        )
 
         return c.html(html, 404)
       }
@@ -214,11 +226,17 @@ dictionaryRoutes.get(
         decodedTerm,
         lang as SupportedLanguage,
         [],
-        baseUrl
+        baseUrl,
+        c.env.ENVIRONMENT === 'production'
       )
 
       c.header('Content-Type', 'text/html; charset=utf-8')
-      c.header('X-Robots-Tag', 'noindex, follow')
+      c.header(
+        'X-Robots-Tag',
+        c.env.ENVIRONMENT === 'production'
+          ? 'noindex, follow'
+          : 'noindex, nofollow'
+      )
 
       return c.html(errorHtml, 500)
     }
@@ -250,6 +268,11 @@ dictionaryRoutes.get(
   cache({ ttl: 86400 }), // Cache for 24 hours
   edgeCache({ maxAge: 43200, sMaxAge: 86400 }), // 12 hours / 24 hours
   async c => {
+    // Only serve sitemaps in production
+    if (c.env.ENVIRONMENT !== 'production') {
+      return c.text('Sitemap not available in non-production environments', 404)
+    }
+
     const hostname = c.req.header('host') || 'mirubato.com'
     const baseUrl =
       hostname.includes('localhost') || hostname.includes('staging')
@@ -288,6 +311,11 @@ dictionaryRoutes.get(
   cache({ ttl: 86400 }),
   edgeCache({ maxAge: 43200, sMaxAge: 86400 }),
   async c => {
+    // Only serve sitemaps in production
+    if (c.env.ENVIRONMENT !== 'production') {
+      return c.text('Sitemap not available in non-production environments', 404)
+    }
+
     const { lang } = c.req.param()
 
     // Validate language
