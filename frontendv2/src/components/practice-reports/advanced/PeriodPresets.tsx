@@ -28,7 +28,7 @@ export function PeriodPresets({
 }: PeriodPresetsProps) {
   const { t } = useTranslation(['reports'])
   const [selectedPeriod, setSelectedPeriod] =
-    useState<PeriodPreset['id']>('year')
+    useState<PeriodPreset['id']>('daily')
   const [selectedPieces, setSelectedPieces] = useState<string[]>([])
   const [showPieceSelector, setShowPieceSelector] = useState(false)
 
