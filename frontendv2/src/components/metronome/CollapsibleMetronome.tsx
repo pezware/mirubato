@@ -251,6 +251,9 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
         i === beat ? !v : v
       ),
     }))
+
+    // Reset preset selection when manually modifying patterns
+    setSelectedPresetId('')
   }
 
   const loadPattern = (patternId: string) => {
@@ -284,6 +287,9 @@ const CollapsibleMetronome: React.FC<CollapsibleMetronomeProps> = ({
         ),
       }
       setPatterns(paddedPattern)
+
+      // Reset preset selection when switching to built-in pattern
+      setSelectedPresetId('')
     }
   }
 

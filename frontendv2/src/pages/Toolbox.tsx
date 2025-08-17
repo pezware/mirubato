@@ -355,6 +355,9 @@ const Toolbox: React.FC = () => {
       saveCurrentPattern(newPatterns)
       return newPatterns
     })
+
+    // Reset preset selection when manually modifying patterns
+    setSelectedPresetId('')
   }
 
   const loadPattern = (patternId: string) => {
@@ -389,6 +392,9 @@ const Toolbox: React.FC = () => {
         ),
       }
       setPatterns(paddedPattern)
+
+      // Reset preset selection when switching to built-in pattern
+      setSelectedPresetId('')
     }
   }
 
