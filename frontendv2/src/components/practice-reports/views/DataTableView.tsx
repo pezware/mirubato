@@ -166,12 +166,12 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
 
       {/* Chart Section */}
       {currentData.length > 0 && (
-        <Card className="mb-4 sm:mb-6" padding="sm">
+        <div className="mb-4 sm:mb-6">
           <PracticeTrendChart
             data={chartData}
             period={selectedPeriod === 'daily' ? 'day' : selectedPeriod}
           />
-        </Card>
+        </div>
       )}
 
       {/* Practice Logs Table - Shows all entries independent of filters */}
