@@ -1,10 +1,31 @@
 import { apiClient } from './client'
 
+export interface MetronomePreset {
+  id: string
+  name: string
+  bpm: number
+  beatsPerMeasure: number
+  beatValue: number
+  volume: number
+  selectedPattern: string
+  customPattern?: {
+    accent: boolean[]
+    click: boolean[]
+    woodblock: boolean[]
+    shaker: boolean[]
+    triangle: boolean[]
+  }
+  createdAt: string
+  lastModified: string
+  synced?: boolean
+}
+
 export interface UserPreferences {
   theme?: 'light' | 'dark' | 'auto'
   notificationSettings?: Record<string, unknown>
   primaryInstrument?: string
   customInstruments?: string[]
+  metronomePresets?: Record<string, MetronomePreset>
 }
 
 export const userApi = {

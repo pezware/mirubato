@@ -22,7 +22,35 @@
     "metronome": {
       "collapse": "Contraer",
       "expand": "Expandir metrónomo",
-      "playPause": "Reproducir/Pausar"
+      "playPause": "Reproducir/Pausar",
+      "presets": {
+        "title": "Ajustes Predefinidos",
+        "savedPresets": "Ajustes Guardados",
+        "saveCurrentSettings": "Guardar Configuración Actual",
+        "saveCurrentSettingsAsPreset": "Guardar Configuración Actual como Ajuste Predefinido",
+        "selectPreset": "Seleccionar un ajuste predefinido...",
+        "selectSavedPreset": "Seleccionar un ajuste guardado...",
+        "local": "local",
+        "rename": "Renombrar",
+        "update": "Actualizar",
+        "delete": "Eliminar",
+        "savePresetTitle": "Guardar Ajuste Predefinido del Metrónomo",
+        "presetName": "Nombre del Ajuste",
+        "presetNamePlaceholder": "ej. Ritmo Básico 120 BPM",
+        "currentSettings": "Configuración Actual",
+        "tempo": "Tempo",
+        "time": "Compás",
+        "volume": "Volumen",
+        "pattern": "Patrón",
+        "syncToCloud": "Se sincronizará automáticamente con tu cuenta en la nube",
+        "signInToSync": "Inicia sesión para sincronizar ajustes en todos tus dispositivos",
+        "savePreset": "Guardar Ajuste",
+        "cancel": "Cancelar",
+        "updateConfirm": "¿Actualizar \"{presetName}\" con la configuración actual?",
+        "deleteConfirm": "¿Estás seguro de que quieres eliminar este ajuste predefinido?",
+        "enterNewName": "Ingresa un nuevo nombre:",
+        "saveCurrentSettingsTooltip": "Guardar configuración actual como ajuste predefinido"
+      }
     },
     "multiSelect": {
       "placeholder": "Seleccionar opciones"

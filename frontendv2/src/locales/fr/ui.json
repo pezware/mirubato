@@ -22,7 +22,35 @@
     "metronome": {
       "collapse": "Réduire",
       "expand": "Déployer le métronome",
-      "playPause": "Lecture/Pause"
+      "playPause": "Lecture/Pause",
+      "presets": {
+        "title": "Préréglages",
+        "savedPresets": "Préréglages Sauvegardés",
+        "saveCurrentSettings": "Sauvegarder les Paramètres Actuels",
+        "saveCurrentSettingsAsPreset": "Sauvegarder les Paramètres Actuels comme Préréglage",
+        "selectPreset": "Sélectionner un préréglage...",
+        "selectSavedPreset": "Sélectionner un préréglage sauvegardé...",
+        "local": "local",
+        "rename": "Renommer",
+        "update": "Mettre à jour",
+        "delete": "Supprimer",
+        "savePresetTitle": "Sauvegarder un Préréglage de Métronome",
+        "presetName": "Nom du Préréglage",
+        "presetNamePlaceholder": "ex. Rythme de Base 120 BPM",
+        "currentSettings": "Paramètres Actuels",
+        "tempo": "Tempo",
+        "time": "Mesure",
+        "volume": "Volume",
+        "pattern": "Motif",
+        "syncToCloud": "Se synchronisera automatiquement avec votre compte cloud",
+        "signInToSync": "Connectez-vous pour synchroniser les préréglages sur tous vos appareils",
+        "savePreset": "Sauvegarder le Préréglage",
+        "cancel": "Annuler",
+        "updateConfirm": "Mettre à jour \"{presetName}\" avec les paramètres actuels ?",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce préréglage ?",
+        "enterNewName": "Entrez un nouveau nom :",
+        "saveCurrentSettingsTooltip": "Sauvegarder les paramètres actuels comme préréglage"
+      }
     },
     "multiSelect": {
       "placeholder": "Sélectionner des options"

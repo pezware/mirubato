@@ -34,6 +34,7 @@ api.get('/', c => {
       },
       user: {
         'GET /api/user/me': 'Get current user info',
+        'GET /api/user/preferences': 'Get user preferences',
         'PUT /api/user/preferences': 'Update user preferences',
         'DELETE /api/user/me': 'Delete user account',
       },

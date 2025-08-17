@@ -10,15 +10,23 @@ import {
   ListChecks,
   Circle,
   Book,
+  Save,
+  CloudOff,
+  Cloud,
+  Loader2,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import * as Tone from 'tone'
 import metronomeData from '../data/metronomePatterns.json'
 import type { MetronomePattern } from '../types/metronome'
 import { getPatternMetronome } from '../services/patternMetronomeService'
-import { useMetronomeSettings } from '../hooks/useMetronomeSettings'
+import {
+  useMetronomeSettings,
+  useMetronomePresets,
+} from '../hooks/useMetronomeSettings'
+import { useAuthStore } from '../stores/authStore'
 import AppLayout from '../components/layout/AppLayout'
-import { Tabs } from '../components/ui'
+import { Tabs, Button, Modal, Input } from '../components/ui'
 import PracticeCounter from '../components/practice-counter'
 import { CircleOfFifths } from '../components/circle-of-fifths'
 import Dictionary from '../components/dictionary/Dictionary'
@@ -36,10 +44,19 @@ type PatternState = {
 }
 
 const Toolbox: React.FC = () => {
-  const { t } = useTranslation(['toolbox', 'common'])
+  const { t } = useTranslation(['toolbox', 'common', 'ui'])
   const { lang, term } = useParams<{ lang?: string; term?: string }>()
   const { settings, updateSettings, saveCurrentPattern } =
     useMetronomeSettings()
+  const {
+    presets,
+    isLoading: presetsLoading,
+    savePreset,
+    deletePreset,
+    updatePreset,
+    syncError,
+  } = useMetronomePresets()
+  const { isAuthenticated } = useAuthStore()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
   const [isFlashing, setIsFlashing] = useState(false)
@@ -57,6 +74,11 @@ const Toolbox: React.FC = () => {
   const [metronomeStartTime, setMetronomeStartTime] = useState<number | null>(
     null
   )
+
+  // Preset management state
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [presetName, setPresetName] = useState('')
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('')
 
   // Get current pattern data from JSON file
   const currentPatternData = useMemo(() => {
@@ -367,6 +389,174 @@ const Toolbox: React.FC = () => {
         ),
       }
       setPatterns(paddedPattern)
+    }
+  }
+
+  // Generate suggested preset name
+  const getSuggestedPresetName = () => {
+    const patternName =
+      metronomeData.patterns.find(p => p.id === settings.selectedPattern)
+        ?.name || 'Custom'
+    return `${patternName} ${settings.beatsPerMeasure}/${settings.beatValue} ${settings.bpm} BPM`
+  }
+
+  // Preset management functions
+  const handleSavePreset = () => {
+    if (!presetName.trim()) return
+
+    // Check if current pattern differs from the built-in pattern
+    const builtInPattern = metronomeData.patterns.find(
+      p => p.id === settings.selectedPattern
+    )
+    let customPattern = undefined
+
+    if (builtInPattern) {
+      // Compare current pattern with built-in pattern to see if it's been modified
+      const currentPatternSlice = {
+        accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+        click: patterns.click.slice(0, settings.beatsPerMeasure),
+        woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+        shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+        triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
+      }
+
+      // Pad built-in pattern to match current beats per measure
+      const builtInPatternPadded = {
+        accent: [
+          ...builtInPattern.pattern.accent,
+          ...Array(settings.beatsPerMeasure).fill(false),
+        ].slice(0, settings.beatsPerMeasure),
+        click: [
+          ...builtInPattern.pattern.click,
+          ...Array(settings.beatsPerMeasure).fill(false),
+        ].slice(0, settings.beatsPerMeasure),
+        woodblock: [
+          ...builtInPattern.pattern.woodblock,
+          ...Array(settings.beatsPerMeasure).fill(false),
+        ].slice(0, settings.beatsPerMeasure),
+        shaker: [
+          ...builtInPattern.pattern.shaker,
+          ...Array(settings.beatsPerMeasure).fill(false),
+        ].slice(0, settings.beatsPerMeasure),
+        triangle: [
+          ...builtInPattern.pattern.triangle,
+          ...Array(settings.beatsPerMeasure).fill(false),
+        ].slice(0, settings.beatsPerMeasure),
+      }
+
+      // Check if patterns are different
+      const isModified = Object.keys(currentPatternSlice).some(
+        layer =>
+          JSON.stringify(
+            currentPatternSlice[layer as keyof typeof currentPatternSlice]
+          ) !==
+          JSON.stringify(
+            builtInPatternPadded[layer as keyof typeof builtInPatternPadded]
+          )
+      )
+
+      // Save custom pattern if it's been modified
+      if (isModified) {
+        customPattern = currentPatternSlice
+      }
+    } else {
+      // If no built-in pattern found, always save as custom
+      customPattern = {
+        accent: patterns.accent.slice(0, settings.beatsPerMeasure),
+        click: patterns.click.slice(0, settings.beatsPerMeasure),
+        woodblock: patterns.woodblock.slice(0, settings.beatsPerMeasure),
+        shaker: patterns.shaker.slice(0, settings.beatsPerMeasure),
+        triangle: patterns.triangle.slice(0, settings.beatsPerMeasure),
+      }
+    }
+
+    savePreset(presetName.trim(), settings, customPattern)
+    setPresetName('')
+    setShowSaveModal(false)
+  }
+
+  const handleOpenSaveModal = () => {
+    setPresetName(getSuggestedPresetName())
+    setShowSaveModal(true)
+  }
+
+  const loadPreset = (presetId: string) => {
+    const preset = presets.find(p => p.id === presetId)
+    if (!preset) return
+
+    // Update all settings from preset
+    updateSettings({
+      bpm: preset.bpm,
+      beatsPerMeasure: preset.beatsPerMeasure,
+      beatValue: preset.beatValue,
+      volume: preset.volume,
+      selectedPattern: preset.selectedPattern,
+    })
+
+    // If preset has custom pattern, load it
+    if (preset.customPattern) {
+      const paddedPattern = {
+        accent: [
+          ...preset.customPattern.accent,
+          ...Array(36).fill(false),
+        ].slice(0, 36),
+        click: [...preset.customPattern.click, ...Array(36).fill(false)].slice(
+          0,
+          36
+        ),
+        woodblock: [
+          ...preset.customPattern.woodblock,
+          ...Array(36).fill(false),
+        ].slice(0, 36),
+        shaker: [
+          ...preset.customPattern.shaker,
+          ...Array(36).fill(false),
+        ].slice(0, 36),
+        triangle: [
+          ...preset.customPattern.triangle,
+          ...Array(36).fill(false),
+        ].slice(0, 36),
+      }
+      setPatterns(paddedPattern)
+    } else {
+      // Load built-in pattern but preserve preset's time signature
+      const pattern = commonPatterns.find(p => p.id === preset.selectedPattern)
+      if (pattern) {
+        const paddedPattern = {
+          accent: [...pattern.pattern.accent, ...Array(36).fill(false)].slice(
+            0,
+            36
+          ),
+          click: [...pattern.pattern.click, ...Array(36).fill(false)].slice(
+            0,
+            36
+          ),
+          woodblock: [
+            ...pattern.pattern.woodblock,
+            ...Array(36).fill(false),
+          ].slice(0, 36),
+          shaker: [...pattern.pattern.shaker, ...Array(36).fill(false)].slice(
+            0,
+            36
+          ),
+          triangle: [
+            ...pattern.pattern.triangle,
+            ...Array(36).fill(false),
+          ].slice(0, 36),
+        }
+        setPatterns(paddedPattern)
+      }
+    }
+
+    setSelectedPresetId(presetId)
+  }
+
+  const handleDeletePreset = (presetId: string) => {
+    if (window.confirm(t('ui:components.metronome.presets.deleteConfirm'))) {
+      deletePreset(presetId)
+      if (selectedPresetId === presetId) {
+        setSelectedPresetId('')
+      }
     }
   }
 
@@ -734,6 +924,225 @@ const Toolbox: React.FC = () => {
                     </select>
                   </div>
 
+                  {/* Presets */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-morandi-stone-600">
+                        {t('ui:components.metronome.presets.savedPresets')}
+                      </label>
+                      {isAuthenticated && (
+                        <div className="flex items-center gap-1">
+                          {presetsLoading ? (
+                            <Loader2
+                              size={12}
+                              className="animate-spin text-morandi-stone-400"
+                            />
+                          ) : syncError ? (
+                            <div title={syncError}>
+                              <CloudOff size={12} className="text-red-400" />
+                            </div>
+                          ) : (
+                            <div title="Synced to cloud">
+                              <Cloud size={12} className="text-green-400" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Save Preset Button */}
+                    <button
+                      onClick={handleOpenSaveModal}
+                      className="w-full mb-3 px-3 py-2 bg-morandi-purple-100 hover:bg-morandi-purple-200 text-morandi-purple-700 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                      title={t(
+                        'ui:components.metronome.presets.saveCurrentSettingsTooltip'
+                      )}
+                    >
+                      <Save size={16} />
+                      {t(
+                        'ui:components.metronome.presets.saveCurrentSettingsAsPreset'
+                      )}
+                    </button>
+
+                    {presets.length > 0 && (
+                      <>
+                        <select
+                          value={selectedPresetId}
+                          onChange={e => {
+                            if (e.target.value) {
+                              loadPreset(e.target.value)
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-morandi-stone-200 rounded-lg mb-2"
+                        >
+                          <option value="">
+                            {t(
+                              'ui:components.metronome.presets.selectSavedPreset'
+                            )}
+                          </option>
+                          {presets.map(preset => (
+                            <option key={preset.id} value={preset.id}>
+                              {preset.name}{' '}
+                              {!preset.synced && !isAuthenticated
+                                ? ` (${t('ui:components.metronome.presets.local')})`
+                                : ''}
+                            </option>
+                          ))}
+                        </select>
+
+                        {selectedPresetId && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                const preset = presets.find(
+                                  p => p.id === selectedPresetId
+                                )
+                                if (preset) {
+                                  const newName = window.prompt(
+                                    t(
+                                      'ui:components.metronome.presets.enterNewName'
+                                    ),
+                                    preset.name
+                                  )
+                                  if (newName && newName.trim()) {
+                                    updatePreset(selectedPresetId, {
+                                      name: newName.trim(),
+                                    })
+                                  }
+                                }
+                              }}
+                              className="flex-1 px-3 py-1 text-sm bg-morandi-stone-100 hover:bg-morandi-stone-200 rounded-lg"
+                            >
+                              {t('ui:components.metronome.presets.rename')}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    t(
+                                      'ui:components.metronome.presets.updateConfirm',
+                                      {
+                                        presetName: presets.find(
+                                          p => p.id === selectedPresetId
+                                        )?.name,
+                                      }
+                                    )
+                                  )
+                                ) {
+                                  // Save current settings to the selected preset
+                                  const builtInPattern =
+                                    metronomeData.patterns.find(
+                                      p => p.id === settings.selectedPattern
+                                    )
+                                  let customPattern = undefined
+
+                                  if (builtInPattern) {
+                                    const currentPatternSlice = {
+                                      accent: patterns.accent.slice(
+                                        0,
+                                        settings.beatsPerMeasure
+                                      ),
+                                      click: patterns.click.slice(
+                                        0,
+                                        settings.beatsPerMeasure
+                                      ),
+                                      woodblock: patterns.woodblock.slice(
+                                        0,
+                                        settings.beatsPerMeasure
+                                      ),
+                                      shaker: patterns.shaker.slice(
+                                        0,
+                                        settings.beatsPerMeasure
+                                      ),
+                                      triangle: patterns.triangle.slice(
+                                        0,
+                                        settings.beatsPerMeasure
+                                      ),
+                                    }
+
+                                    const builtInPatternPadded = {
+                                      accent: [
+                                        ...builtInPattern.pattern.accent,
+                                        ...Array(settings.beatsPerMeasure).fill(
+                                          false
+                                        ),
+                                      ].slice(0, settings.beatsPerMeasure),
+                                      click: [
+                                        ...builtInPattern.pattern.click,
+                                        ...Array(settings.beatsPerMeasure).fill(
+                                          false
+                                        ),
+                                      ].slice(0, settings.beatsPerMeasure),
+                                      woodblock: [
+                                        ...builtInPattern.pattern.woodblock,
+                                        ...Array(settings.beatsPerMeasure).fill(
+                                          false
+                                        ),
+                                      ].slice(0, settings.beatsPerMeasure),
+                                      shaker: [
+                                        ...builtInPattern.pattern.shaker,
+                                        ...Array(settings.beatsPerMeasure).fill(
+                                          false
+                                        ),
+                                      ].slice(0, settings.beatsPerMeasure),
+                                      triangle: [
+                                        ...builtInPattern.pattern.triangle,
+                                        ...Array(settings.beatsPerMeasure).fill(
+                                          false
+                                        ),
+                                      ].slice(0, settings.beatsPerMeasure),
+                                    }
+
+                                    const isModified = Object.keys(
+                                      currentPatternSlice
+                                    ).some(
+                                      layer =>
+                                        JSON.stringify(
+                                          currentPatternSlice[
+                                            layer as keyof typeof currentPatternSlice
+                                          ]
+                                        ) !==
+                                        JSON.stringify(
+                                          builtInPatternPadded[
+                                            layer as keyof typeof builtInPatternPadded
+                                          ]
+                                        )
+                                    )
+
+                                    if (isModified) {
+                                      customPattern = currentPatternSlice
+                                    }
+                                  }
+
+                                  updatePreset(selectedPresetId, {
+                                    bpm: settings.bpm,
+                                    beatsPerMeasure: settings.beatsPerMeasure,
+                                    beatValue: settings.beatValue,
+                                    volume: settings.volume,
+                                    selectedPattern: settings.selectedPattern,
+                                    customPattern,
+                                    lastModified: new Date().toISOString(),
+                                  })
+                                }
+                              }}
+                              className="flex-1 px-3 py-1 text-sm bg-morandi-purple-100 hover:bg-morandi-purple-200 text-morandi-purple-700 rounded-lg"
+                            >
+                              {t('ui:components.metronome.presets.update')}
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeletePreset(selectedPresetId)
+                              }
+                              className="flex-1 px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
+                            >
+                              {t('ui:components.metronome.presets.delete')}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
                   {/* Volume */}
                   <div>
                     <label className="text-sm text-morandi-stone-600 mb-1 block flex items-center gap-2">
@@ -787,6 +1196,106 @@ const Toolbox: React.FC = () => {
           initialStartTime={timerStartTime}
         />
       )}
+
+      {/* Save Preset Modal */}
+      <Modal
+        isOpen={showSaveModal}
+        onClose={() => {
+          setShowSaveModal(false)
+          setPresetName('')
+        }}
+        title={t('ui:components.metronome.presets.savePresetTitle')}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
+              {t('ui:components.metronome.presets.presetName')}
+            </label>
+            <Input
+              value={presetName}
+              onChange={e => setPresetName(e.target.value)}
+              placeholder={t(
+                'ui:components.metronome.presets.presetNamePlaceholder'
+              )}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  handleSavePreset()
+                }
+              }}
+              autoFocus
+            />
+          </div>
+
+          {/* Current Settings Preview */}
+          <div className="bg-morandi-stone-50 rounded-lg p-3">
+            <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
+              {t('ui:components.metronome.presets.currentSettings')}
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-morandi-stone-500">
+                  {t('ui:components.metronome.presets.tempo')}:
+                </span>
+                <span className="ml-1 font-medium">{settings.bpm} BPM</span>
+              </div>
+              <div>
+                <span className="text-morandi-stone-500">
+                  {t('ui:components.metronome.presets.time')}:
+                </span>
+                <span className="ml-1 font-medium">
+                  {settings.beatsPerMeasure}/{settings.beatValue}
+                </span>
+              </div>
+              <div>
+                <span className="text-morandi-stone-500">
+                  {t('ui:components.metronome.presets.volume')}:
+                </span>
+                <span className="ml-1 font-medium">{settings.volume}%</span>
+              </div>
+              <div>
+                <span className="text-morandi-stone-500">
+                  {t('ui:components.metronome.presets.pattern')}:
+                </span>
+                <span className="ml-1 font-medium">
+                  {metronomeData.patterns.find(
+                    p => p.id === settings.selectedPattern
+                  )?.name || 'Custom'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xs text-morandi-stone-500">
+            {isAuthenticated ? (
+              <span>✓ {t('ui:components.metronome.presets.syncToCloud')}</span>
+            ) : (
+              <span>
+                💡 {t('ui:components.metronome.presets.signInToSync')}
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowSaveModal(false)
+                setPresetName('')
+              }}
+            >
+              {t('ui:components.metronome.presets.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSavePreset}
+              disabled={!presetName.trim()}
+            >
+              {t('ui:components.metronome.presets.savePreset')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </AppLayout>
   )
 }

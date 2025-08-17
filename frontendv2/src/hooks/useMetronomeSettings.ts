@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useAuthStore } from '../stores/authStore'
+import { userApi, type MetronomePreset } from '../api/user'
 
 interface PatternData {
   accent: boolean[]
@@ -77,7 +79,7 @@ export function useMetronomeSettings() {
   }
 }
 
-// Hook for storing custom patterns
+// Hook for storing custom patterns (deprecated - use useMetronomePresets instead)
 export function useCustomPatterns() {
   const [customPatterns, setCustomPatterns] = useState<
     Record<string, PatternData>
@@ -117,5 +119,254 @@ export function useCustomPatterns() {
     customPatterns,
     savePattern,
     deletePattern,
+  }
+}
+
+// Hook for managing metronome presets with cloud sync
+export function useMetronomePresets() {
+  const { isAuthenticated } = useAuthStore()
+  const [presets, setPresets] = useState<Record<string, MetronomePreset>>(
+    () => {
+      try {
+        const saved = localStorage.getItem('mirubato-metronome-presets')
+        return saved ? JSON.parse(saved) : {}
+      } catch {
+        return {}
+      }
+    }
+  )
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
+
+  // Save to localStorage whenever presets change
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'mirubato-metronome-presets',
+        JSON.stringify(presets)
+      )
+    } catch (error) {
+      console.error('Failed to save metronome presets to localStorage:', error)
+    }
+  }, [presets])
+
+  // Sync to cloud when authenticated
+  const syncToCloud = useCallback(async () => {
+    if (!isAuthenticated) return
+
+    try {
+      setIsLoading(true)
+      setSyncError(null)
+
+      await userApi.updatePreferences({
+        metronomePresets: presets,
+      })
+
+      // Mark all presets as synced
+      setPresets(prev => {
+        const updated = { ...prev }
+        Object.values(updated).forEach(preset => {
+          preset.synced = true
+        })
+        return updated
+      })
+    } catch (error) {
+      console.error('Failed to sync presets to cloud:', error)
+      setSyncError('Failed to sync presets to cloud')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated, presets])
+
+  // Load presets from cloud on auth
+  const loadFromCloud = useCallback(async () => {
+    if (!isAuthenticated) return
+
+    try {
+      setIsLoading(true)
+      setSyncError(null)
+
+      const preferences = await userApi.getPreferences()
+      const cloudPresets = preferences.metronomePresets || {}
+
+      // Merge cloud and local presets (cloud takes precedence for conflicts)
+      setPresets(prev => {
+        const merged = { ...prev }
+
+        Object.entries(cloudPresets).forEach(([id, cloudPreset]) => {
+          const localPreset = merged[id]
+
+          // If no local preset or cloud is newer, use cloud version
+          if (
+            !localPreset ||
+            new Date(cloudPreset.lastModified) >
+              new Date(localPreset.lastModified)
+          ) {
+            merged[id] = { ...cloudPreset, synced: true }
+          }
+        })
+
+        return merged
+      })
+    } catch (error) {
+      console.error('Failed to load presets from cloud:', error)
+      setSyncError('Failed to load presets from cloud')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated])
+
+  // Auto-sync when authentication status changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadFromCloud()
+    }
+  }, [isAuthenticated, loadFromCloud])
+
+  const savePreset = useCallback(
+    (
+      name: string,
+      settings: MetronomeSettings,
+      customPattern?: PatternData
+    ) => {
+      const preset: MetronomePreset = {
+        id: crypto.randomUUID(),
+        name,
+        bpm: settings.bpm,
+        beatsPerMeasure: settings.beatsPerMeasure,
+        beatValue: settings.beatValue,
+        volume: settings.volume,
+        selectedPattern: settings.selectedPattern,
+        customPattern,
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        synced: false,
+      }
+
+      setPresets(prev => ({ ...prev, [preset.id]: preset }))
+
+      // Auto-sync to cloud if authenticated
+      if (isAuthenticated) {
+        setTimeout(syncToCloud, 100) // Debounce sync
+      }
+
+      return preset.id
+    },
+    [isAuthenticated, syncToCloud]
+  )
+
+  const updatePreset = useCallback(
+    (
+      id: string,
+      updates: Partial<Omit<MetronomePreset, 'id' | 'createdAt'>>
+    ) => {
+      setPresets(prev => {
+        const preset = prev[id]
+        if (!preset) return prev
+
+        const updated = {
+          ...preset,
+          ...updates,
+          lastModified: new Date().toISOString(),
+          synced: false,
+        }
+
+        return { ...prev, [id]: updated }
+      })
+
+      // Auto-sync to cloud if authenticated
+      if (isAuthenticated) {
+        setTimeout(syncToCloud, 100) // Debounce sync
+      }
+    },
+    [isAuthenticated, syncToCloud]
+  )
+
+  const deletePreset = useCallback(
+    (id: string) => {
+      setPresets(prev => {
+        const updated = { ...prev }
+        delete updated[id]
+        return updated
+      })
+
+      // Auto-sync to cloud if authenticated
+      if (isAuthenticated) {
+        setTimeout(syncToCloud, 100) // Debounce sync
+      }
+    },
+    [isAuthenticated, syncToCloud]
+  )
+
+  const duplicatePreset = useCallback(
+    (id: string, newName?: string) => {
+      const preset = presets[id]
+      if (!preset) return null
+
+      const duplicate: MetronomePreset = {
+        ...preset,
+        id: crypto.randomUUID(),
+        name: newName || `${preset.name} Copy`,
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        synced: false,
+      }
+
+      setPresets(prev => ({ ...prev, [duplicate.id]: duplicate }))
+
+      // Auto-sync to cloud if authenticated
+      if (isAuthenticated) {
+        setTimeout(syncToCloud, 100) // Debounce sync
+      }
+
+      return duplicate.id
+    },
+    [presets, isAuthenticated, syncToCloud]
+  )
+
+  const importPresets = useCallback(
+    (importedPresets: Record<string, MetronomePreset>) => {
+      setPresets(prev => {
+        const updated = { ...prev }
+
+        Object.entries(importedPresets).forEach(([_, preset]) => {
+          const newPreset = {
+            ...preset,
+            id: crypto.randomUUID(), // Generate new ID to avoid conflicts
+            lastModified: new Date().toISOString(),
+            synced: false,
+          }
+          updated[newPreset.id] = newPreset
+        })
+
+        return updated
+      })
+
+      // Auto-sync to cloud if authenticated
+      if (isAuthenticated) {
+        setTimeout(syncToCloud, 100) // Debounce sync
+      }
+    },
+    [isAuthenticated, syncToCloud]
+  )
+
+  const exportPresets = useCallback(() => {
+    return JSON.stringify(presets, null, 2)
+  }, [presets])
+
+  return {
+    presets: Object.values(presets),
+    presetsMap: presets,
+    isLoading,
+    syncError,
+    savePreset,
+    updatePreset,
+    deletePreset,
+    duplicatePreset,
+    importPresets,
+    exportPresets,
+    syncToCloud,
+    loadFromCloud,
   }
 }
