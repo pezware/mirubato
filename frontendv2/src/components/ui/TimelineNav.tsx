@@ -32,7 +32,7 @@ export default function TimelineNav({
   }
 
   return (
-    <div className={cn('w-full mb-6', className)}>
+    <div className={cn('w-full', className)}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
         <div className="flex mr-auto bg-white rounded-lg border border-morandi-stone-300 overflow-hidden">
           {levels.map((level, index) => {
