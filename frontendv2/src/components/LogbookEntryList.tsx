@@ -54,16 +54,6 @@ export default function LogbookEntryList({
     }
   }
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return date.toLocaleDateString(i18n.language, {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
     return date.toLocaleTimeString(i18n.language, {
@@ -166,6 +156,12 @@ export default function LogbookEntryList({
         minutes > 0 ? `${hours}.${Math.round(minutes / 6)}h` : `${hours}h`,
     }
   }, [filteredEntries])
+
+  // Initialize expandedEntries with all entry IDs when entries change
+  useEffect(() => {
+    const allEntryIds = new Set(entries.map(entry => entry.id))
+    setExpandedEntries(allEntryIds)
+  }, [entries])
 
   // Initialize selectedDate based on entries
   useEffect(() => {
@@ -405,6 +401,16 @@ export default function LogbookEntryList({
             year: 'numeric',
           })
 
+          // Calculate total practice time for this day
+          const dayTotalMinutes = isNewDay
+            ? filteredEntries
+                .filter(e => {
+                  const eDate = new Date(e.timestamp)
+                  return eDate.toDateString() === entryDate.toDateString()
+                })
+                .reduce((sum, e) => sum + e.duration, 0)
+            : 0
+
           return (
             <div key={entry.id}>
               {/* Date Separator */}
@@ -413,6 +419,9 @@ export default function LogbookEntryList({
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
                       {formattedDate}
+                    </span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      {t('common:time.minute', { count: dayTotalMinutes })}
                     </span>
                     <div className="flex-1 h-px bg-gray-300"></div>
                   </div>
@@ -435,12 +444,13 @@ export default function LogbookEntryList({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm text-morandi-stone-700 font-medium">
-                          {formatDate(entry.timestamp)}
-                        </span>
                         <span className="text-sm text-morandi-stone-500">
                           {formatTime(entry.timestamp)}
                         </span>
+                        <span className="text-morandi-stone-700">
+                          {t('common:time.minute', { count: entry.duration })}
+                        </span>
+                        {entry.mood && getMoodIcon(entry.mood)}
                         <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
                           {entry.type}
                         </span>
@@ -450,10 +460,6 @@ export default function LogbookEntryList({
                       </div>
 
                       <div className="flex items-center gap-4">
-                        <span className="text-morandi-stone-700">
-                          {t('common:time.minute', { count: entry.duration })}
-                        </span>
-                        {entry.mood && getMoodIcon(entry.mood)}
                         {entry.scoreId && (
                           <button
                             onClick={e => {
@@ -596,19 +602,13 @@ export default function LogbookEntryList({
                     {/* Pieces */}
                     {entry.pieces.length > 0 && (
                       <div className="mb-3">
-                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                          🎵 {t('logbook:entry.pieces')}:
-                        </h4>
                         <div className="flex flex-wrap gap-2">
                           {entry.pieces.map((piece, index) => (
                             <div
                               key={index}
                               className="px-3 py-1 bg-morandi-sky-100 rounded-full text-sm border border-morandi-sky-200 flex items-center gap-1"
                             >
-                              <MusicTitle
-                                as="span"
-                                className="text-morandi-stone-700 text-sm font-normal"
-                              >
+                              <MusicTitle as="span">
                                 {toTitleCase(piece.title)}
                               </MusicTitle>
                               {piece.composer && (
@@ -616,10 +616,7 @@ export default function LogbookEntryList({
                                   <span className="text-morandi-stone-600">
                                     -
                                   </span>
-                                  <MusicComposer
-                                    as="span"
-                                    className="text-morandi-stone-600 text-sm"
-                                  >
+                                  <MusicComposer as="span">
                                     {getDisplayComposerName(piece.composer)}
                                   </MusicComposer>
                                 </>
