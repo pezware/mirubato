@@ -164,17 +164,14 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         />
       </Card>
 
-      {/* Combined Chart and Table View */}
+      {/* Chart Section */}
       {currentData.length > 0 && (
-        <>
-          {/* Chart Section */}
-          <Card className="mb-4 sm:mb-6" padding="sm">
-            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3 sm:mb-4">
-              {t('reports:presets.practiceOverview')}
-            </h3>
-            <PracticeTrendChart data={chartData} period="day" />
-          </Card>
-        </>
+        <div className="mb-4 sm:mb-6">
+          <PracticeTrendChart
+            data={chartData}
+            period={selectedPeriod === 'daily' ? 'day' : selectedPeriod}
+          />
+        </div>
       )}
 
       {/* Practice Logs Table - Shows all entries independent of filters */}

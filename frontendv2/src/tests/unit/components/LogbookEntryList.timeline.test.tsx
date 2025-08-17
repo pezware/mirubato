@@ -170,9 +170,13 @@ describe('LogbookEntryList Timeline Filtering', () => {
     expect(screen.getByText('Week 4')).toBeInTheDocument()
 
     // Check that only Week 4 entries are shown
-    expect(screen.getByText('30 minutes')).toBeInTheDocument() // week4-entry-1
-    expect(screen.getByText('45 minutes')).toBeInTheDocument() // week4-entry-2
-    expect(screen.queryByText('60 minutes')).not.toBeInTheDocument() // week3-entry-1
+    const entryElements = screen.getAllByTestId('logbook-entry')
+    expect(entryElements).toHaveLength(2)
+
+    const entryIds = entryElements.map(el => el.dataset.entryId)
+    expect(entryIds).toContain('week4-entry-1')
+    expect(entryIds).toContain('week4-entry-2')
+    expect(entryIds).not.toContain('week3-entry-1')
   })
 
   it('should show entries for selected month when month is clicked', async () => {
@@ -200,11 +204,15 @@ describe('LogbookEntryList Timeline Filtering', () => {
     })
 
     // Check that all June entries are shown but not May
-    expect(screen.getByText('30 minutes')).toBeInTheDocument() // week4-entry-1
-    expect(screen.getByText('45 minutes')).toBeInTheDocument() // week4-entry-2
-    expect(screen.getByText('60 minutes')).toBeInTheDocument() // week3-entry-1
+    const entryElements = screen.getAllByTestId('logbook-entry')
+    expect(entryElements).toHaveLength(3)
+
+    const entryIds = entryElements.map(el => el.dataset.entryId)
+    expect(entryIds).toContain('week4-entry-1')
+    expect(entryIds).toContain('week4-entry-2')
+    expect(entryIds).toContain('week3-entry-1')
     // May entry should not be shown
-    expect(screen.getAllByText('30 minutes')).toHaveLength(1) // Only June entry
+    expect(entryIds).not.toContain('may-entry-1')
   })
 
   it('should navigate to previous week when previous button is clicked', async () => {
@@ -232,10 +240,15 @@ describe('LogbookEntryList Timeline Filtering', () => {
       expect(screen.getByText('Found 1 entries')).toBeInTheDocument()
     })
 
-    // Check that only Week 3 entry is shown
-    expect(screen.getByText('60 minutes')).toBeInTheDocument() // week3-entry-1
-    expect(screen.queryByText('30 minutes')).not.toBeInTheDocument() // week4-entry-1
-    expect(screen.queryByText('45 minutes')).not.toBeInTheDocument() // week4-entry-2
+    // Check that only Week 3 entry is shown - now need to account for daily totals
+    // Use entry ID check instead of duration text to avoid daily total conflicts
+    expect(screen.getByTestId('logbook-entry').dataset.entryId).toBe(
+      'week3-entry-1'
+    )
+
+    // Verify only one entry is shown
+    const entryElements = screen.getAllByTestId('logbook-entry')
+    expect(entryElements).toHaveLength(1)
   })
 
   it('should show all year entries when year level is clicked', async () => {
@@ -257,10 +270,16 @@ describe('LogbookEntryList Timeline Filtering', () => {
       expect(screen.getByText('Found 4 entries')).toBeInTheDocument()
     })
 
-    // All 2025 entries should be shown
-    expect(screen.getAllByText('30 minutes')).toHaveLength(2) // week4-entry-1 and may-entry-1
-    expect(screen.getByText('45 minutes')).toBeInTheDocument()
-    expect(screen.getByText('60 minutes')).toBeInTheDocument()
+    // All 2025 entries should be shown - now account for daily totals showing durations too
+    // Check for specific entry IDs instead of just duration text
+    const entryElements = screen.getAllByTestId('logbook-entry')
+    expect(entryElements).toHaveLength(4)
+
+    const entryIds = entryElements.map(el => el.dataset.entryId)
+    expect(entryIds).toContain('week4-entry-1')
+    expect(entryIds).toContain('week4-entry-2')
+    expect(entryIds).toContain('week3-entry-1')
+    expect(entryIds).toContain('may-entry-1')
   })
 
   it('should handle empty state when no entries match filter', async () => {
