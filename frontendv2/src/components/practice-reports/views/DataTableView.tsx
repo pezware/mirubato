@@ -172,7 +172,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
             <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3 sm:mb-4">
               {t('reports:presets.practiceOverview')}
             </h3>
-            <PracticeTrendChart data={chartData} period="day" />
+            <PracticeTrendChart data={chartData} period={selectedPeriod} />
           </Card>
         </>
       )}
