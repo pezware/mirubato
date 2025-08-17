@@ -7,6 +7,7 @@ import {
   format,
   startOfWeek,
   startOfMonth,
+  endOfWeek,
   eachDayOfInterval,
   parseISO,
 } from 'date-fns'
@@ -94,6 +95,26 @@ export function PracticeTrendChart({
       plugins: {
         tooltip: {
           callbacks: {
+            title: (contexts: TooltipItem<'bar'>[]) => {
+              if (contexts.length === 0) return ''
+              const context = contexts[0]
+              const dateLabel = chartData.labels?.[context.dataIndex] as string
+
+              // Find the original date for this data point
+              const sortedData =
+                data.length > 0 ? groupDataByPeriod(data, period) : []
+              const filledData = fillMissingDates(sortedData, period)
+              const sortedFilledData = filledData.sort((a, b) =>
+                a.date.localeCompare(b.date)
+              )
+
+              if (context.dataIndex < sortedFilledData.length) {
+                const originalDate = sortedFilledData[context.dataIndex].date
+                return formatTooltipTitle(originalDate, period)
+              }
+
+              return dateLabel || ''
+            },
             label: (context: TooltipItem<'bar'>) => {
               const label = context.dataset.label || ''
               const value = context.parsed.y || 0
@@ -222,6 +243,27 @@ function formatDateLabel(
       return `Week of ${format(d, 'MMM d')}`
     case 'month':
       return format(d, 'MMM yyyy')
+  }
+}
+
+function formatTooltipTitle(
+  date: string,
+  period: 'day' | 'week' | 'month'
+): string {
+  const d = parseISO(date)
+
+  switch (period) {
+    case 'day':
+      return format(d, 'MMM d, yyyy')
+    case 'week': {
+      const weekStart = startOfWeek(d)
+      const weekEnd = endOfWeek(d)
+      return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
+    }
+    case 'month':
+      return format(d, 'MMMM yyyy')
+    default:
+      return format(d, 'MMM d, yyyy')
   }
 }
 
