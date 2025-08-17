@@ -22,7 +22,35 @@
     "metronome": {
       "collapse": "收起",
       "expand": "展开节拍器",
-      "playPause": "播放/暂停"
+      "playPause": "播放/暂停",
+      "presets": {
+        "title": "预设配置",
+        "savedPresets": "已保存的预设",
+        "saveCurrentSettings": "保存当前设置",
+        "saveCurrentSettingsAsPreset": "将当前设置保存为预设配置",
+        "selectPreset": "选择预设配置...",
+        "selectSavedPreset": "选择已保存的预设配置...",
+        "local": "本地",
+        "rename": "重命名",
+        "update": "更新",
+        "delete": "删除",
+        "savePresetTitle": "保存节拍器预设配置",
+        "presetName": "预设配置名称",
+        "presetNamePlaceholder": "例如：基本节拍 120 BPM",
+        "currentSettings": "当前设置",
+        "tempo": "速度",
+        "time": "拍号",
+        "volume": "音量",
+        "pattern": "节奏模式",
+        "syncToCloud": "将自动同步到您的云端账户",
+        "signInToSync": "登录以在所有设备上同步预设配置",
+        "savePreset": "保存预设",
+        "cancel": "取消",
+        "updateConfirm": "用当前设置更新\"{presetName}\"？",
+        "deleteConfirm": "您确定要删除此预设配置吗？",
+        "enterNewName": "输入新名称：",
+        "saveCurrentSettingsTooltip": "将当前设置保存为预设配置"
+      }
     },
     "multiSelect": {
       "placeholder": "选择多个选项"

@@ -40,6 +40,40 @@ userHandler.get('/me', async c => {
 })
 
 /**
+ * Get user preferences
+ * GET /api/user/preferences
+ */
+userHandler.get('/preferences', async c => {
+  const userId = c.get('userId') as string
+  const db = new DatabaseHelpers(c.env.DB)
+
+  try {
+    // Get preferences from sync_data
+    const result = await db.getSyncData(userId, 'user_preferences')
+
+    if (!result.results || result.results.length === 0) {
+      // Return empty preferences if none found
+      return c.json({})
+    }
+
+    // Find the user_preferences record for this user
+    const preferencesRecord = result.results.find(
+      (record: any) =>
+        record.entity_id === userId && record.entity_type === 'user_preferences'
+    )
+
+    if (!preferencesRecord) {
+      return c.json({})
+    }
+
+    return c.json(JSON.parse(preferencesRecord.data as string))
+  } catch (error) {
+    console.error('Error getting preferences:', error)
+    throw Errors.InternalError('Failed to get preferences')
+  }
+})
+
+/**
  * Update user preferences
  * PUT /api/user/preferences
  */

@@ -26,7 +26,35 @@
     "metronome": {
       "playPause": "Play/Pause",
       "expand": "Expand metronome",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "presets": {
+        "title": "Presets",
+        "savedPresets": "Saved Presets",
+        "saveCurrentSettings": "Save Current Settings",
+        "saveCurrentSettingsAsPreset": "Save Current Settings as Preset",
+        "selectPreset": "Select a preset...",
+        "selectSavedPreset": "Select a saved preset...",
+        "local": "local",
+        "rename": "Rename",
+        "update": "Update",
+        "delete": "Delete",
+        "savePresetTitle": "Save Metronome Preset",
+        "presetName": "Preset Name",
+        "presetNamePlaceholder": "e.g. Basic Beat 120 BPM",
+        "currentSettings": "Current Settings",
+        "tempo": "Tempo",
+        "time": "Time",
+        "volume": "Volume",
+        "pattern": "Pattern",
+        "syncToCloud": "Will sync to your cloud account automatically",
+        "signInToSync": "Sign in to sync presets across devices",
+        "savePreset": "Save Preset",
+        "cancel": "Cancel",
+        "updateConfirm": "Update \"{presetName}\" with current settings?",
+        "deleteConfirm": "Are you sure you want to delete this preset?",
+        "enterNewName": "Enter new name:",
+        "saveCurrentSettingsTooltip": "Save current settings as preset"
+      }
     },
     "syncIndicator": {
       "manualSync": "Manual sync",

@@ -22,7 +22,35 @@
     "metronome": {
       "collapse": "Zuklappen",
       "expand": "Metronom erweitern",
-      "playPause": "Abspielen/Pausieren"
+      "playPause": "Abspielen/Pausieren",
+      "presets": {
+        "title": "Voreinstellungen",
+        "savedPresets": "Gespeicherte Voreinstellungen",
+        "saveCurrentSettings": "Aktuelle Einstellungen Speichern",
+        "saveCurrentSettingsAsPreset": "Aktuelle Einstellungen als Voreinstellung Speichern",
+        "selectPreset": "Eine Voreinstellung auswählen...",
+        "selectSavedPreset": "Eine gespeicherte Voreinstellung auswählen...",
+        "local": "lokal",
+        "rename": "Umbenennen",
+        "update": "Aktualisieren",
+        "delete": "Löschen",
+        "savePresetTitle": "Metronom-Voreinstellung Speichern",
+        "presetName": "Name der Voreinstellung",
+        "presetNamePlaceholder": "z.B. Grundrhythmus 120 BPM",
+        "currentSettings": "Aktuelle Einstellungen",
+        "tempo": "Tempo",
+        "time": "Taktart",
+        "volume": "Lautstärke",
+        "pattern": "Muster",
+        "syncToCloud": "Wird automatisch mit Ihrem Cloud-Konto synchronisiert",
+        "signInToSync": "Melden Sie sich an, um Voreinstellungen auf allen Geräten zu synchronisieren",
+        "savePreset": "Voreinstellung Speichern",
+        "cancel": "Abbrechen",
+        "updateConfirm": "\"{presetName}\" mit aktuellen Einstellungen aktualisieren?",
+        "deleteConfirm": "Sind Sie sicher, dass Sie diese Voreinstellung löschen möchten?",
+        "enterNewName": "Neuen Namen eingeben:",
+        "saveCurrentSettingsTooltip": "Aktuelle Einstellungen als Voreinstellung speichern"
+      }
     },
     "multiSelect": {
       "placeholder": "Optionen auswählen"
