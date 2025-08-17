@@ -14,7 +14,7 @@ import {
 
 interface PracticeTrendChartProps {
   data: TimeSeriesData[]
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month' | 'year'
   showMovingAverage?: boolean
   showGoalLine?: number
   className?: string
@@ -152,11 +152,14 @@ export function PracticeTrendChart({
 // Helper functions
 function groupDataByPeriod(
   data: TimeSeriesData[],
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month' | 'year'
 ): TimeSeriesData[] {
   const grouped = new Map<string, number>()
 
   data.forEach(item => {
+    // Skip items with invalid dates
+    if (!item.date || item.date === '') return
+
     const date = parseISO(item.date)
     let key: string
 
@@ -169,6 +172,9 @@ function groupDataByPeriod(
         break
       case 'month':
         key = format(startOfMonth(date), 'yyyy-MM-dd')
+        break
+      case 'year':
+        key = format(date, 'yyyy-01-01')
         break
     }
 
@@ -183,13 +189,20 @@ function groupDataByPeriod(
 
 function fillMissingDates(
   data: TimeSeriesData[],
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month' | 'year'
 ): TimeSeriesData[] {
   if (data.length === 0) return []
 
-  const dates = data.map(d => d.date).sort()
-  const startDate = parseISO(dates[0])
-  const endDate = parseISO(dates[dates.length - 1])
+  // Filter out any entries with undefined or null dates
+  const validDates = data
+    .map(d => d.date)
+    .filter((date): date is string => date != null && date !== '')
+    .sort()
+
+  if (validDates.length === 0) return []
+
+  const startDate = parseISO(validDates[0])
+  const endDate = parseISO(validDates[validDates.length - 1])
 
   // Create a map for quick lookup
   const dataMap = new Map(data.map(d => [d.date, d.value]))
@@ -202,6 +215,8 @@ function fillMissingDates(
           return date.getDay() === 0 // Only Sundays for week view
         case 'month':
           return date.getDate() === 1 // Only first day of month
+        case 'year':
+          return date.getMonth() === 0 && date.getDate() === 1 // Only January 1st for year view
         default:
           return true // All days for day view
       }
@@ -232,7 +247,7 @@ function calculateMovingAverage(values: number[], window: number): number[] {
 
 function formatDateLabel(
   date: string,
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month' | 'year'
 ): string {
   const d = parseISO(date)
 
@@ -243,12 +258,14 @@ function formatDateLabel(
       return `Week of ${format(d, 'MMM d')}`
     case 'month':
       return format(d, 'MMM yyyy')
+    case 'year':
+      return format(d, 'yyyy')
   }
 }
 
 function formatTooltipTitle(
   date: string,
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month' | 'year'
 ): string {
   const d = parseISO(date)
 
@@ -262,6 +279,8 @@ function formatTooltipTitle(
     }
     case 'month':
       return format(d, 'MMMM yyyy')
+    case 'year':
+      return format(d, 'yyyy')
     default:
       return format(d, 'MMM d, yyyy')
   }
