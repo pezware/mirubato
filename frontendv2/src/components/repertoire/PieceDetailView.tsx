@@ -598,8 +598,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                     {group.date}
                   </span>
                   <span className="text-sm text-gray-500 whitespace-nowrap">
-                    {group.sessions.length}{' '}
-                    {group.sessions.length === 1 ? 'session' : 'sessions'}
+                    {formatDuration(
+                      group.sessions.reduce((sum, s) => sum + s.duration, 0)
+                    )}
                   </span>
                   <div className="flex-1 h-px bg-gray-300"></div>
                 </div>

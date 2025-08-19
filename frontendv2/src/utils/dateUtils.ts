@@ -77,10 +77,11 @@ export function formatDateForInput(date: Date | string): string {
  * Example: "Jan 05, 2024"
  */
 export function formatDateSeparator(
-  date: Date | string,
+  date: Date | string | number,
   language?: string
 ): string {
-  const d = typeof date === 'string' ? new Date(date) : date
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   return d.toLocaleDateString(language, {
     month: 'short',
     day: '2-digit',
