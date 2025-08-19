@@ -24,6 +24,7 @@ import {
   useMetronomeSettings,
   useMetronomePresets,
 } from '../hooks/useMetronomeSettings'
+import { useModal } from '../hooks/useModal'
 import { useAuthStore } from '../stores/authStore'
 import AppLayout from '../components/layout/AppLayout'
 import { Tabs, Button, Modal, Input } from '../components/ui'
@@ -76,7 +77,7 @@ const Toolbox: React.FC = () => {
   )
 
   // Preset management state
-  const [showSaveModal, setShowSaveModal] = useState(false)
+  const saveModal = useModal()
   const [presetName, setPresetName] = useState('')
   const [selectedPresetId, setSelectedPresetId] = useState<string>('')
 
@@ -478,12 +479,12 @@ const Toolbox: React.FC = () => {
 
     savePreset(presetName.trim(), settings, customPattern)
     setPresetName('')
-    setShowSaveModal(false)
+    saveModal.close()
   }
 
   const handleOpenSaveModal = () => {
     setPresetName(getSuggestedPresetName())
-    setShowSaveModal(true)
+    saveModal.open()
   }
 
   const loadPreset = (presetId: string) => {
@@ -1205,9 +1206,9 @@ const Toolbox: React.FC = () => {
 
       {/* Save Preset Modal */}
       <Modal
-        isOpen={showSaveModal}
+        isOpen={saveModal.isOpen}
         onClose={() => {
-          setShowSaveModal(false)
+          saveModal.close()
           setPresetName('')
         }}
         title={t('ui:components.metronome.presets.savePresetTitle')}
@@ -1286,7 +1287,7 @@ const Toolbox: React.FC = () => {
             <Button
               variant="secondary"
               onClick={() => {
-                setShowSaveModal(false)
+                saveModal.close()
                 setPresetName('')
               }}
             >

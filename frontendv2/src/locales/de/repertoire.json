@@ -174,5 +174,6 @@
   "unit": "Einheit",
   "viewAllSessions": "Alle {{count}} Sitzungen anzeigen",
   "viewDetails": "Details anzeigen",
-  "viewScore": "Noten ansehen"
+  "viewScore": "Noten ansehen",
+  "practiceHistory": "Übungsverlauf"
 }

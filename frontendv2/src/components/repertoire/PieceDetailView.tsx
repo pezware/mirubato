@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
 import { Edit2, Music, Link, Trash2 } from 'lucide-react'
 import {
   IconMoodAngry,
@@ -20,13 +18,19 @@ import {
   ModalBody,
   ModalFooter,
 } from '@/components/ui'
-import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
+import {
+  formatDuration,
+  formatDateTime,
+  formatRelativeTime,
+  formatDateSeparator,
+  formatTimeOnly,
+} from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { toast } from '@/utils/toast'
+import { toast } from '@/utils/toastManager'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 
 interface PracticeSession {
@@ -136,24 +140,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     }
   }
 
-  // Get date-fns locale based on current language
-  const getDateLocale = () => {
-    switch (i18n.language) {
-      case 'es':
-        return es
-      case 'fr':
-        return fr
-      case 'de':
-        return de
-      case 'zh-CN':
-        return zhCN
-      case 'zh-TW':
-        return zhTW
-      default:
-        return enUS
-    }
-  }
-
   // Parse and format notes with status change entries
   const formatNotesWithStatusChanges = (
     notes: string | undefined
@@ -205,9 +191,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           formattedDate = new Date().toLocaleString()
         } else {
           // Format without seconds: "Jan 12, 2025 2:30 PM"
-          formattedDate = format(date, 'MMM d, yyyy h:mm a', {
-            locale: getDateLocale(),
-          })
+          formattedDate = formatDateTime(date, i18n.language)
         }
       } catch (error) {
         console.error('Error parsing status change date:', timestamp, error)
@@ -315,16 +299,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
     let lastPracticed = 'Never'
     if (lastSession) {
-      const date = new Date(lastSession.timestamp)
-      if (isToday(date)) {
-        lastPracticed = 'Today'
-      } else if (isYesterday(date)) {
-        lastPracticed = 'Yesterday'
-      } else {
-        lastPracticed = capitalizeTimeString(
-          formatDistanceToNow(date, { addSuffix: true })
-        )
-      }
+      lastPracticed = formatRelativeTime(lastSession.timestamp, {
+        capitalize: true,
+        language: i18n.language,
+      })
     }
 
     return {
@@ -333,7 +311,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       lastPracticed,
       avgSessionTime,
     }
-  }, [sessions])
+  }, [sessions, i18n.language])
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
@@ -382,20 +360,20 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     return filtered
   }, [sessions, timeFilter, typeFilter])
 
-  // Group sessions by month
+  // Group sessions by day
   const groupedSessions = useMemo(() => {
     const groups: Record<string, PracticeSession[]> = {}
 
     filteredSessions.forEach(session => {
-      const monthKey = format(new Date(session.timestamp), 'MMMM yyyy')
-      if (!groups[monthKey]) {
-        groups[monthKey] = []
+      const dateKey = formatDateSeparator(session.timestamp, i18n.language)
+      if (!groups[dateKey]) {
+        groups[dateKey] = []
       }
-      groups[monthKey].push(session)
+      groups[dateKey].push(session)
     })
 
-    return Object.entries(groups).map(([month, sessions]) => ({
-      month,
+    return Object.entries(groups).map(([date, sessions]) => ({
+      date,
       sessions: sessions.sort((a, b) => {
         const aTime =
           typeof a.timestamp === 'string'
@@ -408,10 +386,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         return bTime - aTime
       }),
     }))
-  }, [filteredSessions])
+  }, [filteredSessions, i18n.language])
 
   const formatSessionTime = (timestamp: string | number) => {
-    return format(new Date(timestamp), 'h:mm a')
+    return formatTimeOnly(timestamp, i18n.language)
   }
 
   return (
@@ -612,16 +590,17 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
           {groupedSessions.map(group => (
-            <div key={group.month}>
-              {/* Month separator - matching LogbookEntryList day separator */}
+            <div key={group.date}>
+              {/* Day separator - matching LogbookEntryList day separator */}
               <div className="px-4 py-2 bg-gray-50">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
-                    {group.month}
+                    {group.date}
                   </span>
                   <span className="text-sm text-gray-500 whitespace-nowrap">
-                    {group.sessions.length}{' '}
-                    {group.sessions.length === 1 ? 'session' : 'sessions'}
+                    {formatDuration(
+                      group.sessions.reduce((sum, s) => sum + s.duration, 0)
+                    )}
                   </span>
                   <div className="flex-1 h-px bg-gray-300"></div>
                 </div>

@@ -8,6 +8,7 @@ import AddToCollectionModal from '../components/score/AddToCollectionModal'
 import ScoreListItem from '../components/score/ScoreListItem'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { useAuthStore } from '../stores/authStore'
+import { useModal } from '../hooks/useModal'
 
 export default function CollectionViewPage() {
   const { t } = useTranslation(['scorebook', 'common'])
@@ -18,7 +19,7 @@ export default function CollectionViewPage() {
   const [scores, setScores] = useState<Score[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showCollectionModal, setShowCollectionModal] = useState(false)
+  const collectionModal = useModal()
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
 
@@ -153,11 +154,11 @@ export default function CollectionViewPage() {
       return
     }
     setSelectedScoreForCollection(score)
-    setShowCollectionModal(true)
+    collectionModal.open()
   }
 
   const handleCollectionModalClose = () => {
-    setShowCollectionModal(false)
+    collectionModal.close()
     setSelectedScoreForCollection(null)
   }
 
@@ -265,7 +266,7 @@ export default function CollectionViewPage() {
       </div>
 
       {/* Add to Collection Modal */}
-      {showCollectionModal && selectedScoreForCollection && (
+      {collectionModal.isOpen && selectedScoreForCollection && (
         <AddToCollectionModal
           scoreId={selectedScoreForCollection.id}
           scoreTitle={selectedScoreForCollection.title}

@@ -14,6 +14,7 @@ import CollectionsManager from '../components/score/CollectionsManager'
 import ScoreListItem from '../components/score/ScoreListItem'
 import TimerEntry from '../components/TimerEntry'
 import { useAuthStore } from '../stores/authStore'
+import { useModals } from '../hooks/useModal'
 import Button from '../components/ui/Button'
 import { Tabs } from '../components/ui'
 import { Plus, BookOpen, Folder, User } from 'lucide-react'
@@ -31,9 +32,11 @@ export default function ScoreBrowserPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInstrument, setSelectedInstrument] = useState<string>('')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('')
-  const [showCollectionModal, setShowCollectionModal] = useState(false)
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [showCollectionsManager, setShowCollectionsManager] = useState(false)
+  const modals = useModals([
+    'collection',
+    'import',
+    'collectionsManager',
+  ] as const)
   const [selectedScoreForCollection, setSelectedScoreForCollection] =
     useState<Score | null>(null)
   const [tabView, setTabView] = useState<TabView>('scores')
@@ -281,11 +284,11 @@ export default function ScoreBrowserPage() {
       return
     }
     setSelectedScoreForCollection(score)
-    setShowCollectionModal(true)
+    modals.open('collection')
   }
 
   const handleCollectionModalClose = () => {
-    setShowCollectionModal(false)
+    modals.close('collection')
     setSelectedScoreForCollection(null)
   }
 
@@ -319,7 +322,7 @@ export default function ScoreBrowserPage() {
     score: Score,
     _selectedCollectionIds?: string[]
   ) => {
-    setShowImportModal(false)
+    modals.close('import')
     // Refresh data to show the new score
     await loadData()
     // Navigate to the imported score
@@ -507,7 +510,7 @@ export default function ScoreBrowserPage() {
   return (
     <AppLayout
       onTimerClick={() => setShowTimer(true)}
-      onImportScore={() => setShowImportModal(true)}
+      onImportScore={() => modals.open('import')}
     >
       <div className="p-3 sm:px-6 sm:py-4">
         {/* Navigation Tabs - Outside any white box to match Toolbox/Logbook */}
@@ -543,7 +546,7 @@ export default function ScoreBrowserPage() {
           {isAuthenticated && tabView === 'scores' && (
             <div className="flex items-center justify-end px-4 md:px-6 pt-4">
               <Button
-                onClick={() => setShowImportModal(true)}
+                onClick={() => modals.open('import')}
                 size="sm"
                 variant="primary"
                 className="flex items-center gap-2"
@@ -656,7 +659,7 @@ export default function ScoreBrowserPage() {
                         {t('scorebook:myCollections', 'My Collections')}
                       </h2>
                       <Button
-                        onClick={() => setShowCollectionsManager(true)}
+                        onClick={() => modals.open('collectionsManager')}
                         size="sm"
                         variant="primary"
                         className="flex items-center gap-2"
@@ -682,7 +685,7 @@ export default function ScoreBrowserPage() {
                             )}
                           </p>
                           <Button
-                            onClick={() => setShowCollectionsManager(true)}
+                            onClick={() => modals.open('collectionsManager')}
                             variant="secondary"
                             className="mt-4"
                           >
@@ -706,7 +709,7 @@ export default function ScoreBrowserPage() {
         </div>
 
         {/* Add to Collection Modal */}
-        {showCollectionModal && selectedScoreForCollection && (
+        {modals.isOpen('collection') && selectedScoreForCollection && (
           <AddToCollectionModal
             scoreId={selectedScoreForCollection.id}
             scoreTitle={selectedScoreForCollection.title}
@@ -717,18 +720,18 @@ export default function ScoreBrowserPage() {
 
         {/* Import Score Modal */}
         <ImportScoreModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
+          isOpen={modals.isOpen('import')}
+          onClose={() => modals.close('import')}
           onSuccess={handleImportSuccess}
         />
 
         {/* Collections Manager Modal */}
-        {showCollectionsManager && (
+        {modals.isOpen('collectionsManager') && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
               <CollectionsManager
                 onClose={() => {
-                  setShowCollectionsManager(false)
+                  modals.close('collectionsManager')
                   // Reload user collections after closing
                   loadData()
                 }}

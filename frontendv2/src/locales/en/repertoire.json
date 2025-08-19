@@ -31,6 +31,7 @@
     "statusChangeEntry": "Status changed: {{oldStatus}} → {{newStatus}}"
   },
   "statusHistory": "Status History",
+  "practiceHistory": "Practice History",
   "lastPracticed": "Last practiced {{time}}",
   "sessionCount": "{{count}} sessions",
   "sessions": "sessions",

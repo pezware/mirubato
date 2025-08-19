@@ -174,5 +174,6 @@
   "unit": "單位",
   "viewAllSessions": "查看所有 {{count}} 次練習",
   "viewDetails": "查看詳情",
-  "viewScore": "查看樂譜"
+  "viewScore": "查看樂譜",
+  "practiceHistory": "練習記錄"
 }
