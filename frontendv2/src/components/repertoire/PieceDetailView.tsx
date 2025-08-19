@@ -22,7 +22,7 @@ import {
   formatDuration,
   formatDateTime,
   formatRelativeTime,
-  formatMonthGroup,
+  formatDateSeparator,
   formatTimeOnly,
 } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
@@ -360,20 +360,20 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     return filtered
   }, [sessions, timeFilter, typeFilter])
 
-  // Group sessions by month
+  // Group sessions by day
   const groupedSessions = useMemo(() => {
     const groups: Record<string, PracticeSession[]> = {}
 
     filteredSessions.forEach(session => {
-      const monthKey = formatMonthGroup(session.timestamp, i18n.language)
-      if (!groups[monthKey]) {
-        groups[monthKey] = []
+      const dateKey = formatDateSeparator(session.timestamp, i18n.language)
+      if (!groups[dateKey]) {
+        groups[dateKey] = []
       }
-      groups[monthKey].push(session)
+      groups[dateKey].push(session)
     })
 
-    return Object.entries(groups).map(([month, sessions]) => ({
-      month,
+    return Object.entries(groups).map(([date, sessions]) => ({
+      date,
       sessions: sessions.sort((a, b) => {
         const aTime =
           typeof a.timestamp === 'string'
@@ -590,12 +590,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
         <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
           {groupedSessions.map(group => (
-            <div key={group.month}>
-              {/* Month separator - matching LogbookEntryList day separator */}
+            <div key={group.date}>
+              {/* Day separator - matching LogbookEntryList day separator */}
               <div className="px-4 py-2 bg-gray-50">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
-                    {group.month}
+                    {group.date}
                   </span>
                   <span className="text-sm text-gray-500 whitespace-nowrap">
                     {group.sessions.length}{' '}
