@@ -1,5 +1,6 @@
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
+import type { Locale } from 'date-fns'
 
 // Locale mapping for date-fns
 const localeMap: Record<string, Locale> = {
