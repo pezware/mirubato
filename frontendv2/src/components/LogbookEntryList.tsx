@@ -7,6 +7,15 @@ import {
   IconMoodSmile,
   IconMoodHappy,
 } from '@tabler/icons-react'
+import {
+  FileText,
+  Target,
+  Music,
+  Edit2,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import type { LogbookEntry } from '../api/logbook'
 import ManualEntryForm from './ManualEntryForm'
@@ -290,19 +299,7 @@ export default function LogbookEntryList({
             className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
             aria-label={t('common:previous')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           <TimelineNav
@@ -365,19 +362,7 @@ export default function LogbookEntryList({
             className="p-1 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
             aria-label={t('common:next')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -468,19 +453,7 @@ export default function LogbookEntryList({
                             }}
                             className="flex items-center gap-1 px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 text-xs rounded-full hover:bg-morandi-sky-200 transition-colors"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                              />
-                            </svg>
+                            <Music className="w-3 h-3" />
                             {entry.scoreTitle || t('logbook:viewScore')}
                           </button>
                         )}
@@ -508,19 +481,7 @@ export default function LogbookEntryList({
                         className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
                         aria-label={t('logbook:entry.editEntry')}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+                        <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={e => {
@@ -534,19 +495,7 @@ export default function LogbookEntryList({
                         {deletingId === entry.id ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
                         ) : (
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
+                          <Trash2 className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -559,8 +508,9 @@ export default function LogbookEntryList({
                     {/* Score Information */}
                     {entry.scoreId && (
                       <div className="mb-3 p-3 bg-morandi-sky-50 rounded-lg border border-morandi-sky-200">
-                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                          📄 {t('logbook:linkedScore')}:
+                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2 flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          {t('logbook:linkedScore')}:
                         </h4>
                         <button
                           onClick={e => {
@@ -569,19 +519,7 @@ export default function LogbookEntryList({
                           }}
                           className="flex items-center gap-2 text-morandi-stone-700 hover:text-morandi-stone-900 transition-colors"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                            />
-                          </svg>
+                          <Music className="w-4 h-4" />
                           <span className="font-medium">
                             {entry.scoreTitle || 'View Score'}
                           </span>
@@ -630,8 +568,9 @@ export default function LogbookEntryList({
                     {/* Techniques */}
                     {entry.techniques.length > 0 && (
                       <div className="mb-3">
-                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2">
-                          🎯 {t('logbook:entry.techniques')}:
+                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2 flex items-center gap-2">
+                          <Target className="w-4 h-4" />
+                          {t('logbook:entry.techniques')}:
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {entry.techniques.map((technique, index) => (
