@@ -26,7 +26,7 @@ import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
 import { useLogbookStore } from '@/stores/logbookStore'
 import { useRepertoireStore } from '@/stores/repertoireStore'
-import { toast } from '@/utils/toast'
+import { toast } from '@/utils/toastManager'
 import { generateNormalizedScoreId } from '@/utils/scoreIdNormalizer'
 
 interface PracticeSession {

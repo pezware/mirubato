@@ -4,7 +4,7 @@
  */
 
 import { useLogbookStore } from '../stores/logbookStore'
-import { toast } from './toast'
+import { toast } from './toastManager'
 import type { DuplicateEntry } from './duplicateCleanup'
 
 /**

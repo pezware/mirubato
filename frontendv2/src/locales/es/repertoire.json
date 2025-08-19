@@ -174,5 +174,6 @@
   "unit": "Unidad",
   "viewAllSessions": "Ver todas las {{count}} sesiones",
   "viewDetails": "Ver Detalles",
-  "viewScore": "Ver Partitura"
+  "viewScore": "Ver Partitura",
+  "practiceHistory": "Historial de Práctica"
 }

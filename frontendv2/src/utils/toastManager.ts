@@ -58,3 +58,14 @@ function notifyListeners() {
     listener(toastManager.toasts)
   })
 }
+
+// Compatibility wrapper for the old toast API
+export const toast = {
+  success: (message: string, title?: string) =>
+    showToast(message, 'success', title),
+  error: (message: string, title?: string) =>
+    showToast(message, 'error', title),
+  warning: (message: string, title?: string) =>
+    showToast(message, 'warning', title),
+  info: (message: string, title?: string) => showToast(message, 'info', title),
+}
