@@ -47,3 +47,8 @@ export {
   MusicMetadata,
 } from './Typography'
 export type { TypographyProps } from './Typography'
+
+export { ResizableSplitView } from './ResizableSplitView'
+export { EntryDetailPanel } from './EntryDetailPanel'
+export { DateSeparator } from './DateSeparator'
+export { CompactEntryRow } from './CompactEntryRow'

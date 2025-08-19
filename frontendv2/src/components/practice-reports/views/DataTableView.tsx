@@ -1,8 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
-import { GroupedDataTable } from '../visualizations/tables/GroupedDataTable'
 import { PeriodPresets } from '../advanced/PeriodPresets'
 import { PracticeTrendChart } from '../visualizations/charts/PracticeTrendChart'
 import { useLogbookStore } from '../../../stores/logbookStore'
@@ -18,14 +16,17 @@ interface DataTableViewProps {
 
 export default function DataTableView({ analytics }: DataTableViewProps) {
   const { t } = useTranslation(['reports', 'common', 'logbook'])
-  const navigate = useNavigate()
   // Always use presets mode - no toggle needed
-  // Removed unused state variables
   const [presetData, setPresetData] = useState<LogbookEntry[]>([])
   const [selectedPeriod, setSelectedPeriod] = useState<
     'daily' | 'week' | 'month' | 'year'
   >('daily')
-  const { deleteEntry, entries } = useLogbookStore()
+  const { entries, loadEntries } = useLogbookStore()
+
+  // Load entries on mount
+  useEffect(() => {
+    loadEntries()
+  }, [loadEntries])
 
   // Handle preset data changes
   const handlePresetDataChange = useCallback(
@@ -39,11 +40,10 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     []
   )
 
-  // Handle entry updates (for the practice logs table)
+  // Handle entry updates
   const handleEntryUpdate = useCallback(() => {
-    // This will trigger a re-render to show updated entries
-    // The useLogbookStore will automatically update the entries
-  }, [])
+    loadEntries()
+  }, [loadEntries])
 
   // Always use preset data
   const currentData = presetData
@@ -55,20 +55,6 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     }
     return analytics.timeSeriesData || []
   }, [presetData, selectedPeriod, analytics.timeSeriesData])
-
-  // Handlers for entry actions
-  const handleEditEntry = (entry: LogbookEntry) => {
-    // Navigate to edit tab with entry data
-    navigate(`/logbook?tab=newEntry&editId=${entry.id}`, {
-      state: { editEntry: entry },
-    })
-  }
-
-  const handleDeleteEntry = async (entry: LogbookEntry) => {
-    if (window.confirm(t('logbook:entry.confirmDelete'))) {
-      await deleteEntry(entry.id)
-    }
-  }
 
   const exportToCSV = (data: typeof analytics.filteredEntries) => {
     // CSV export implementation - add safety check
@@ -152,11 +138,9 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     URL.revokeObjectURL(url)
   }
 
-  // Removed chartViewOptions - no longer needed
-
   return (
     <div data-testid="data-table">
-      {/* Period Presets Section */}
+      {/* Period Presets Section with Date Range Selector */}
       <Card className="mb-4 sm:mb-6" padding="sm">
         <PeriodPresets
           entries={entries}
@@ -174,7 +158,7 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         </div>
       )}
 
-      {/* Practice Logs Table - Shows all entries independent of filters */}
+      {/* Practice Logs Table - Shows all entries with timeline navigation */}
       <Card className="mb-4 sm:mb-6" padding="sm">
         <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3 sm:mb-4">
           {t('reports:practiceLogsList')}
@@ -209,15 +193,6 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
           {t('reports:exportJSON')}
         </Button>
       </div>
-
-      {/* Data Table */}
-      {analytics.groupedData && analytics.groupedData.length > 0 && (
-        <GroupedDataTable
-          data={analytics.groupedData}
-          onEditEntry={handleEditEntry}
-          onDeleteEntry={handleDeleteEntry}
-        />
-      )}
     </div>
   )
 }

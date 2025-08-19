@@ -121,5 +121,17 @@
     "visualOnly": "Notification visuelle uniquement"
   },
   "title": "Journal",
-  "viewScore": "Voir la partition"
+  "viewScore": "Voir la partition",
+  "emptyDescription": "Commencez à enregistrer vos séances de pratique pour suivre vos progrès.",
+  "selectEntryToView": "Sélectionnez une entrée pour voir les détails",
+  "clickEntryInList": "Cliquez sur une entrée dans la liste pour voir tous les détails",
+  "entryDetails": "Détails de l'entrée",
+  "dateAndTime": "Date et heure",
+  "duration": "Durée",
+  "type": "Type",
+  "instrument": "Instrument",
+  "techniques": "Techniques",
+  "notes": "Notes",
+  "tags": "Étiquettes",
+  "pieces": "Pièces"
 }

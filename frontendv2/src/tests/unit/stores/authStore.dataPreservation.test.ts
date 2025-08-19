@@ -2,17 +2,24 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 // Mock the API modules
 vi.mock('../../../api/auth')
+vi.mock('../../../api/user')
 vi.mock('../../../stores/logbookStore')
 
 // Import after mocks
 import { useAuthStore } from '../../../stores/authStore'
 import { authApi } from '../../../api/auth'
+import { userApi } from '../../../api/user'
 import { useLogbookStore } from '../../../stores/logbookStore'
 
 // Mock implementations
 const mockAuthApi = authApi as unknown as {
   verifyMagicLink: ReturnType<typeof vi.fn>
   googleLogin: ReturnType<typeof vi.fn>
+}
+
+const mockUserApi = userApi as unknown as {
+  getPreferences: ReturnType<typeof vi.fn>
+  savePreferences: ReturnType<typeof vi.fn>
 }
 
 const mockLogbookStore = useLogbookStore as unknown as {
@@ -36,6 +43,10 @@ describe('authStore - Data Preservation', () => {
     // Reset mock implementations
     mockAuthApi.verifyMagicLink = vi.fn()
     mockAuthApi.googleLogin = vi.fn()
+
+    // Reset userApi mocks
+    mockUserApi.getPreferences = vi.fn().mockResolvedValue({})
+    mockUserApi.savePreferences = vi.fn().mockResolvedValue({})
 
     // Setup logbook store mock with sample data
     mockLogbookStore.getState = vi.fn(() => ({

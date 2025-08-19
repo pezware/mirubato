@@ -22,13 +22,19 @@ export default function TimelineNav({
   summary,
   className,
 }: TimelineNavProps) {
-  const [activeIndex, setActiveIndex] = useState(
-    levels.findIndex(l => l.value === selectedLevel)
-  )
+  const [activeIndex, setActiveIndex] = useState(() => {
+    if (!levels || levels.length === 0) return 0
+    const index = levels.findIndex(l => l.value === selectedLevel)
+    return index >= 0 ? index : 0
+  })
 
   const handleClick = (level: TimelineLevel, index: number) => {
     setActiveIndex(index)
     onLevelChange(level)
+  }
+
+  if (!levels || levels.length === 0) {
+    return null
   }
 
   return (

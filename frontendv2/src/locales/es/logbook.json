@@ -121,5 +121,17 @@
     "visualOnly": "Solo notificación visual"
   },
   "title": "Diario",
-  "viewScore": "Ver partitura"
+  "viewScore": "Ver partitura",
+  "emptyDescription": "Comienza a registrar tus sesiones de práctica para seguir tu progreso.",
+  "selectEntryToView": "Selecciona una entrada para ver los detalles",
+  "clickEntryInList": "Haz clic en una entrada de la lista para ver todos los detalles",
+  "entryDetails": "Detalles de la entrada",
+  "dateAndTime": "Fecha y hora",
+  "duration": "Duración",
+  "type": "Tipo",
+  "instrument": "Instrumento",
+  "techniques": "Técnicas",
+  "notes": "Notas",
+  "tags": "Etiquetas",
+  "pieces": "Piezas"
 }

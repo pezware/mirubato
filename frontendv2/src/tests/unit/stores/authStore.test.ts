@@ -455,7 +455,13 @@ describe('authStore', () => {
         removeItem: ReturnType<typeof vi.fn>
         clear: ReturnType<typeof vi.fn>
       }
-      localStorageMock.getItem.mockReturnValue('valid-token')
+      localStorageMock.getItem.mockImplementation((key: string) => {
+        if (key === 'auth-token') return 'valid-token'
+        if (key === 'mirubato:user-preferences') return JSON.stringify({})
+        if (key === 'mirubato:repertoire' || key === 'mirubato:goals')
+          return JSON.stringify([])
+        return null
+      })
       mockAuthApi.getCurrentUser.mockResolvedValue(mockUser)
 
       await useAuthStore.getState().refreshAuth()
