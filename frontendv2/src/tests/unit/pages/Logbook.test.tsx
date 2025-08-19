@@ -344,8 +344,13 @@ describe('LogbookPage', () => {
       </MemoryRouter>
     )
 
-    const dismissButton = screen.getByText('✕')
-    fireEvent.click(dismissButton)
+    // Find the dismiss button - it's a button with the X icon inside the error message
+    const errorContainer = screen
+      .getByText('Failed to load entries')
+      .closest('div')?.parentElement
+    const dismissButton = errorContainer?.querySelector('button')
+    expect(dismissButton).toBeTruthy()
+    fireEvent.click(dismissButton!)
 
     expect(mockClearError).toHaveBeenCalled()
   })

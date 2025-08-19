@@ -18,8 +18,8 @@ import { PieceDetailView } from './PieceDetailView'
 import { AddToRepertoireModal } from './AddToRepertoireModal'
 import { CreateGoalModal } from './CreateGoalModal'
 import { EditNotesModal } from './EditNotesModal'
+import { RepertoireStats } from '../practice-reports/RepertoireStats'
 import ManualEntryForm from '@/components/ManualEntryForm'
-import { RepertoireStats } from '@/components/practice-reports/RepertoireStats'
 import { toTitleCase } from '@/utils/textFormatting'
 import {
   generateNormalizedScoreId,

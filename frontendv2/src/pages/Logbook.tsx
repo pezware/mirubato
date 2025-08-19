@@ -6,6 +6,7 @@ import ManualEntryForm from '../components/ManualEntryForm'
 import TimerEntry from '../components/TimerEntry'
 import { PullToRefresh } from '../components/PullToRefresh'
 import { useGlobalTimer } from '@/hooks/useGlobalTimer'
+import { AlertTriangle, X } from 'lucide-react'
 
 export default function LogbookPage() {
   const { error, loadEntries, clearError } = useLogbookStore()
@@ -42,14 +43,14 @@ export default function LogbookPage() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 animate-slide-up">
               <div className="flex items-center justify-between">
                 <p className="text-red-700 flex items-center gap-2">
-                  <span>⚠️</span>
+                  <AlertTriangle className="w-5 h-5" />
                   {error}
                 </p>
                 <button
                   onClick={clearError}
                   className="text-red-600 hover:text-red-800"
                 >
-                  ✕
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>

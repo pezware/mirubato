@@ -2,7 +2,13 @@ import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
 import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
-import { Edit2, Clock, Target, Music, Smile, Link, Trash2 } from 'lucide-react'
+import { Edit2, Music, Link, Trash2 } from 'lucide-react'
+import {
+  IconMoodAngry,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
@@ -106,6 +112,28 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       bg: 'bg-gray-100',
       label: t('repertoire:status.dropped'),
     },
+  }
+
+  // Get mood icon based on mood value - matching LogbookEntryList
+  const getMoodIcon = (mood?: string) => {
+    const iconProps = {
+      size: 18,
+      className: 'text-morandi-stone-600',
+      stroke: 1.5,
+    }
+
+    switch (mood) {
+      case 'frustrated':
+        return <IconMoodAngry {...iconProps} />
+      case 'neutral':
+        return <IconMoodNeutral {...iconProps} />
+      case 'satisfied':
+        return <IconMoodSmile {...iconProps} />
+      case 'excited':
+        return <IconMoodHappy {...iconProps} />
+      default:
+        return null
+    }
   }
 
   // Get date-fns locale based on current language
@@ -313,20 +341,37 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
     // Time filter
     if (timeFilter !== 'all') {
-      const now = Date.now()
-      const filterMap: Record<string, number> = {
-        '7days': 7 * 24 * 60 * 60 * 1000,
-        '30days': 30 * 24 * 60 * 60 * 1000,
-        '3months': 90 * 24 * 60 * 60 * 1000,
+      const now = new Date()
+
+      if (timeFilter === 'thisMonth') {
+        // Filter for current month only
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        filtered = filtered.filter(s => {
+          const sessionDate = new Date(s.timestamp)
+          return sessionDate >= startOfMonth
+        })
+      } else if (timeFilter === 'thisWeek') {
+        // Filter for current week (last 7 days)
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        filtered = filtered.filter(s => {
+          const sessionDate = new Date(s.timestamp)
+          return sessionDate >= weekAgo
+        })
+      } else if (timeFilter === 'last30') {
+        // Filter for last 30 days
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        filtered = filtered.filter(s => {
+          const sessionDate = new Date(s.timestamp)
+          return sessionDate >= thirtyDaysAgo
+        })
+      } else if (timeFilter === 'last90') {
+        // Filter for last 90 days
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+        filtered = filtered.filter(s => {
+          const sessionDate = new Date(s.timestamp)
+          return sessionDate >= ninetyDaysAgo
+        })
       }
-      const cutoff = now - filterMap[timeFilter]
-      filtered = filtered.filter(s => {
-        const timestamp =
-          typeof s.timestamp === 'string'
-            ? new Date(s.timestamp).getTime()
-            : s.timestamp
-        return timestamp > cutoff
-      })
     }
 
     // Type filter
@@ -365,43 +410,8 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     }))
   }, [filteredSessions])
 
-  const formatSessionDate = (timestamp: string | number) => {
-    const date = new Date(timestamp)
-    if (isToday(date)) return t('common:time.today')
-    if (isYesterday(date)) return t('common:time.yesterday')
-    return format(date, 'MMMM d, yyyy')
-  }
-
   const formatSessionTime = (timestamp: string | number) => {
     return format(new Date(timestamp), 'h:mm a')
-  }
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'practice':
-        return <Target className="w-4 h-4" />
-      case 'lesson':
-        return <Music className="w-4 h-4" />
-      case 'performance':
-        return <Smile className="w-4 h-4" />
-      default:
-        return <Clock className="w-4 h-4" />
-    }
-  }
-
-  const getMoodColor = (mood?: string) => {
-    switch (mood) {
-      case 'excited':
-        return 'text-green-600'
-      case 'satisfied':
-        return 'text-blue-600'
-      case 'neutral':
-        return 'text-gray-600'
-      case 'frustrated':
-        return 'text-orange-600'
-      default:
-        return 'text-gray-600'
-    }
   }
 
   return (
@@ -562,23 +572,24 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         </div>
       </div>
 
-      {/* Action Bar */}
-      <div className="bg-stone-100 px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Period Filter Section - matching DataTableView */}
+      <Card className="mb-4 sm:mb-6" padding="sm">
         <div className="flex gap-3">
           <select
             value={timeFilter}
             onChange={e => setTimeFilter(e.target.value)}
-            className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm"
+            className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
           >
-            <option value="all">{t('common:time.allTime')}</option>
-            <option value="7days">{t('common:time.lastWeek')}</option>
-            <option value="30days">{t('common:time.lastMonth')}</option>
-            <option value="3months">{t('repertoire:last3Months')}</option>
+            <option value="all">All time</option>
+            <option value="thisMonth">This month</option>
+            <option value="thisWeek">This week</option>
+            <option value="last30">Last 30 days</option>
+            <option value="last90">Last 90 days</option>
           </select>
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm"
+            className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
           >
             <option value="all">{t('repertoire:allTypes')}</option>
             <option value="practice">{t('common:music.practice')}</option>
@@ -586,93 +597,84 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             <option value="lesson">{t('common:music.lesson')}</option>
           </select>
         </div>
-        <LogPracticeButton onClick={onLogPractice}>
-          + {t('repertoire:logPractice')}
-        </LogPracticeButton>
-      </div>
+      </Card>
 
-      {/* Timeline View */}
-      <div className="px-4 sm:px-8 py-6 sm:py-8">
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-stone-200" />
+      {/* Practice History List - matching LogbookEntryList */}
+      <Card className="mb-4 sm:mb-6" padding="sm">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700">
+            {t('repertoire:practiceHistory')}
+          </h3>
+          <LogPracticeButton onClick={onLogPractice}>
+            + {t('repertoire:logPractice')}
+          </LogPracticeButton>
+        </div>
 
-          {groupedSessions.map((group, groupIndex) => (
+        <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
+          {groupedSessions.map(group => (
             <div key={group.month}>
-              {/* Month separator */}
-              {groupIndex > 0 && (
-                <div className="flex items-center gap-4 my-8">
-                  <div className="flex-1 h-px bg-stone-200" />
-                  <span className="text-sm font-semibold text-stone-600">
+              {/* Month separator - matching LogbookEntryList day separator */}
+              <div className="px-4 py-2 bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
                     {group.month}
                   </span>
-                  <div className="flex-1 h-px bg-stone-200" />
+                  <span className="text-sm text-gray-500 whitespace-nowrap">
+                    {group.sessions.length}{' '}
+                    {group.sessions.length === 1 ? 'session' : 'sessions'}
+                  </span>
+                  <div className="flex-1 h-px bg-gray-300"></div>
                 </div>
-              )}
+              </div>
 
-              {/* Sessions */}
-              {group.sessions.map((session, index) => (
+              {/* Sessions - matching LogbookEntryList rows */}
+              {group.sessions.map(session => (
                 <div
                   key={session.id}
-                  className="relative mb-6 ml-8"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="border-b border-morandi-stone-200 last:border-b-0"
                 >
-                  {/* Timeline dot */}
-                  <div className="absolute -left-9 top-2 w-3 h-3 bg-white border-2 border-green-500 rounded-full" />
+                  <div className="p-3 hover:bg-morandi-stone-50 transition-colors group">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        {/* Time, duration, and type row */}
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-sm text-morandi-stone-500">
+                            {formatSessionTime(session.timestamp)}
+                          </span>
+                          <span className="text-morandi-stone-700">
+                            {formatDuration(session.duration)}
+                          </span>
+                          <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
+                            {t(`common:music.${session.type}`)}
+                          </span>
+                          {session.instrument && (
+                            <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
+                              {session.instrument}
+                            </span>
+                          )}
+                          {session.mood && getMoodIcon(session.mood)}
+                        </div>
 
-                  {/* Session card */}
-                  <Card className="p-4 sm:p-5 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="font-medium text-stone-900">
-                          {formatSessionDate(session.timestamp)}
-                        </div>
-                        <div className="text-sm text-stone-600">
-                          {formatSessionTime(session.timestamp)}
-                        </div>
+                        {/* Notes if present */}
+                        {session.notes && (
+                          <p className="text-sm text-morandi-stone-600">
+                            {session.notes}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-lg font-semibold text-green-600">
-                        {formatDuration(session.duration)}
-                      </div>
-                    </div>
 
-                    <div className="flex flex-wrap gap-2 sm:gap-4 text-sm text-stone-600 mb-3">
-                      <div className="flex items-center gap-1">
-                        {getTypeIcon(session.type)}
-                        <span>{t(`common:music.${session.type}`)}</span>
-                      </div>
-                      {session.tempo && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{session.tempo} BPM</span>
-                        </div>
-                      )}
-                      {session.mood && (
-                        <div
-                          className={`flex items-center gap-1 ${getMoodColor(session.mood)}`}
+                      {/* Edit button - matching LogbookEntryList positioning */}
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          onClick={() => onEditSession?.(session.id)}
+                          className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
+                          aria-label={t('common:edit')}
                         >
-                          <Smile className="w-4 h-4" />
-                          <span>{t(`logbook:mood.${session.mood}`)}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {session.notes && (
-                      <div className="bg-stone-50 rounded-lg p-3 text-sm text-stone-700">
-                        {session.notes}
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                       </div>
-                    )}
-
-                    <div className="flex gap-2 mt-4 flex-wrap">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEditSession?.(session.id)}
-                      >
-                        {t('common:edit')}
-                      </Button>
                     </div>
-                  </Card>
+                  </div>
                 </div>
               ))}
             </div>
@@ -685,16 +687,13 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
               <h3 className="text-lg font-medium text-stone-900 mb-2">
                 {t('repertoire:noPracticeSessions')}
               </h3>
-              <p className="text-stone-600 mb-6">
+              <p className="text-stone-600">
                 {t('repertoire:startTrackingPrompt')}
               </p>
-              <LogPracticeButton onClick={onLogPractice}>
-                {t('repertoire:logFirstSession')}
-              </LogPracticeButton>
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Remove from Repertoire Confirmation Modal */}
       <Modal

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { LogbookEntry } from '../../../api/logbook'
 import { EntryCard } from './EntryCard'
-import { Card } from '../../ui/Card'
 import { formatDuration } from '../../../utils/dateUtils'
 
 interface RecentEntriesProps {
@@ -31,11 +30,11 @@ export function RecentEntries({
 
   if (entries.length === 0) {
     return (
-      <Card className={className}>
+      <div className={className}>
         <div className="p-8 text-center text-gray-500">
           <p>{t('logbook:empty')}</p>
         </div>
-      </Card>
+      </div>
     )
   }
 
@@ -53,10 +52,10 @@ export function RecentEntries({
 
   return (
     <div className={className}>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3 sm:mb-4">
         {t('reports:recentEntries')}
-      </h2>
-      <div className="space-y-3">
+      </h3>
+      <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
         {recentEntries.map(entry => {
           const date = new Date(entry.timestamp)
           const entryDate = date.toDateString()
@@ -79,14 +78,16 @@ export function RecentEntries({
             <div key={entry.id}>
               {/* Date Separator */}
               {isFirstOfDay && (
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
-                    {formattedDate}
-                  </span>
-                  <span className="text-sm font-bold text-gray-600">
-                    · {formatDuration(dayTotal)}
-                  </span>
-                  <div className="flex-1 h-px bg-gray-200"></div>
+                <div className="px-4 py-2 bg-gray-50 border-b border-morandi-stone-200">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
+                      {formattedDate}
+                    </span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      {formatDuration(dayTotal)}
+                    </span>
+                    <div className="flex-1 h-px bg-gray-300"></div>
+                  </div>
                 </div>
               )}
 
