@@ -1,3 +1,27 @@
+import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
+import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
+
+// Locale mapping for date-fns
+const localeMap: Record<string, Locale> = {
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  'zh-CN': zhCN,
+  'zh-TW': zhTW,
+}
+
+/**
+ * Get the appropriate date-fns locale based on current language
+ */
+export function getDateLocale(language?: string): Locale {
+  const lang = language || 'en'
+  return localeMap[lang] || enUS
+}
+
+/**
+ * Format duration in minutes to human-readable string
+ */
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60)
   const mins = Math.round(minutes % 60)
@@ -7,43 +31,142 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${mins}m`
 }
 
-export function formatDate(date: Date | string): string {
+/**
+ * Format date for display (localized)
+ */
+export function formatDate(date: Date | string, language?: string): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString()
+  return d.toLocaleDateString(language)
 }
 
-export function formatTime(date: Date | string): string {
+/**
+ * Format time for display (12/24 hour based on locale)
+ */
+export function formatTime(date: Date | string, language?: string): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleTimeString(language || [], {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
-export function getDayOfWeek(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString([], { weekday: 'long' })
+/**
+ * Format full date and time
+ * Example: "Jan 5, 2024 3:30 PM"
+ */
+export function formatDateTime(
+  date: Date | string | number,
+  language?: string
+): string {
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  return format(d, 'MMM d, yyyy h:mm a', { locale: getDateLocale(language) })
 }
 
-export function getMonthYear(date: Date | string): string {
+/**
+ * Format date for HTML date input (yyyy-MM-dd)
+ */
+export function formatDateForInput(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString([], { month: 'long', year: 'numeric' })
+  return format(d, 'yyyy-MM-dd')
 }
 
-export function formatRelativeTime(timestamp: number | Date | string): string {
+/**
+ * Format date for section separators
+ * Example: "Jan 05, 2024"
+ */
+export function formatDateSeparator(
+  date: Date | string,
+  language?: string
+): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString(language, {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+
+/**
+ * Format full date with weekday
+ * Example: "Monday, January 5, 2024"
+ */
+export function formatFullDate(date: Date | string, language?: string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString(language, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+/**
+ * Get day of week
+ */
+export function getDayOfWeek(date: Date | string, language?: string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString(language || [], { weekday: 'long' })
+}
+
+/**
+ * Get month and year
+ */
+export function getMonthYear(date: Date | string, language?: string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString(language || [], {
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+/**
+ * Format month for grouping
+ * Example: "January 2024"
+ */
+export function formatMonthGroup(
+  date: Date | string | number,
+  language?: string
+): string {
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  return format(d, 'MMMM yyyy', { locale: getDateLocale(language) })
+}
+
+/**
+ * Format relative time with intelligent display
+ * - "Today" for today
+ * - "Yesterday" for yesterday
+ * - "X days ago" for recent dates
+ * - Full relative time for older dates
+ */
+export function formatRelativeTime(
+  timestamp: number | Date | string,
+  options?: {
+    capitalize?: boolean
+    language?: string
+    addSuffix?: boolean
+  }
+): string {
   const date =
     typeof timestamp === 'number'
       ? new Date(timestamp)
       : typeof timestamp === 'string'
         ? new Date(timestamp)
         : timestamp
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays} Days Ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} Weeks Ago`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} Months Ago`
-  return `${Math.floor(diffDays / 365)} Years Ago`
+  // Check for today/yesterday first
+  if (isToday(date)) return 'Today'
+  if (isYesterday(date)) return 'Yesterday'
+
+  // Use date-fns for other relative times
+  const relativeStr = formatDistanceToNow(date, {
+    addSuffix: options?.addSuffix !== false,
+    locale: getDateLocale(options?.language),
+  })
+
+  // Capitalize if requested
+  return options?.capitalize ? capitalizeTimeString(relativeStr) : relativeStr
 }
 
 /**
@@ -81,4 +204,35 @@ export function capitalizeTimeString(str: string): string {
   })
 
   return result
+}
+
+/**
+ * Check if a date is today
+ */
+export function checkIsToday(date: Date | string | number): boolean {
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  return isToday(d)
+}
+
+/**
+ * Check if a date is yesterday
+ */
+export function checkIsYesterday(date: Date | string | number): boolean {
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  return isYesterday(d)
+}
+
+/**
+ * Format time only (without date)
+ * Example: "3:30 PM"
+ */
+export function formatTimeOnly(
+  date: Date | string | number,
+  language?: string
+): string {
+  const d =
+    typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
+  return format(d, 'h:mm a', { locale: getDateLocale(language) })
 }

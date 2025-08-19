@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns'
-import { enUS, es, fr, de, zhCN, zhTW } from 'date-fns/locale'
 import { Edit2, Music, Link, Trash2 } from 'lucide-react'
 import {
   IconMoodAngry,
@@ -20,7 +18,13 @@ import {
   ModalBody,
   ModalFooter,
 } from '@/components/ui'
-import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
+import {
+  formatDuration,
+  formatDateTime,
+  formatRelativeTime,
+  formatMonthGroup,
+  formatTimeOnly,
+} from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
 import { EditPieceModal } from '../practice-reports/EditPieceModal'
@@ -136,24 +140,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     }
   }
 
-  // Get date-fns locale based on current language
-  const getDateLocale = () => {
-    switch (i18n.language) {
-      case 'es':
-        return es
-      case 'fr':
-        return fr
-      case 'de':
-        return de
-      case 'zh-CN':
-        return zhCN
-      case 'zh-TW':
-        return zhTW
-      default:
-        return enUS
-    }
-  }
-
   // Parse and format notes with status change entries
   const formatNotesWithStatusChanges = (
     notes: string | undefined
@@ -205,9 +191,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
           formattedDate = new Date().toLocaleString()
         } else {
           // Format without seconds: "Jan 12, 2025 2:30 PM"
-          formattedDate = format(date, 'MMM d, yyyy h:mm a', {
-            locale: getDateLocale(),
-          })
+          formattedDate = formatDateTime(date, i18n.language)
         }
       } catch (error) {
         console.error('Error parsing status change date:', timestamp, error)
@@ -315,16 +299,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
     let lastPracticed = 'Never'
     if (lastSession) {
-      const date = new Date(lastSession.timestamp)
-      if (isToday(date)) {
-        lastPracticed = 'Today'
-      } else if (isYesterday(date)) {
-        lastPracticed = 'Yesterday'
-      } else {
-        lastPracticed = capitalizeTimeString(
-          formatDistanceToNow(date, { addSuffix: true })
-        )
-      }
+      lastPracticed = formatRelativeTime(lastSession.timestamp, {
+        capitalize: true,
+        language: i18n.language,
+      })
     }
 
     return {
@@ -333,7 +311,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       lastPracticed,
       avgSessionTime,
     }
-  }, [sessions])
+  }, [sessions, i18n.language])
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
@@ -387,7 +365,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     const groups: Record<string, PracticeSession[]> = {}
 
     filteredSessions.forEach(session => {
-      const monthKey = format(new Date(session.timestamp), 'MMMM yyyy')
+      const monthKey = formatMonthGroup(session.timestamp, i18n.language)
       if (!groups[monthKey]) {
         groups[monthKey] = []
       }
@@ -408,10 +386,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         return bTime - aTime
       }),
     }))
-  }, [filteredSessions])
+  }, [filteredSessions, i18n.language])
 
   const formatSessionTime = (timestamp: string | number) => {
-    return format(new Date(timestamp), 'h:mm a')
+    return formatTimeOnly(timestamp, i18n.language)
   }
 
   return (
