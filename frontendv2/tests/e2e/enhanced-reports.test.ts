@@ -127,16 +127,10 @@ test.describe('Enhanced Reports', () => {
         const entries = page.locator('[data-testid="logbook-entry"]')
         await expect(entries).toHaveCount(2, { timeout: 5000 })
 
-        // The split view doesn't show piece titles in the list, only when selected
-        // Click on the first entry to see its details
-        await entries.first().click()
-
-        // Wait a bit for the detail panel to update
-        await page.waitForTimeout(500)
-
-        // Check for piece information - it should be visible somewhere on the page after clicking
-        const pageContent = await page.textContent('body')
-        expect(pageContent).toContain('Moonlight Sonata')
+        // Piece titles are now shown inline in the list view
+        // Get the text content directly from the first entry
+        const firstEntryContent = await entries.first().textContent()
+        expect(firstEntryContent).toContain('Moonlight Sonata')
       })
 
       await test.step('Verify calendar heatmap is visible', async () => {

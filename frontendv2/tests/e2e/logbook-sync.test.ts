@@ -173,22 +173,18 @@ test.describe('Logbook Sync', () => {
     const entryCards = page.locator('[data-testid="logbook-entry"]')
     const entryCount = await entryCards.count()
 
-    // Since the list view doesn't show titles, we need to click each entry to verify
+    // Now titles are shown directly in the list view (inline in CompactEntryRow)
     const entryTitles = []
     for (let i = 0; i < entryCount; i++) {
-      // Click on the entry to show details
-      await entryCards.nth(i).click()
-      await page.waitForTimeout(300) // Wait for detail panel to update
-
-      // Get the content from the detail panel
-      const detailContent = await page.textContent('body')
+      // Get the text content directly from the entry row (titles are now inline)
+      const entryContent = await entryCards.nth(i).textContent()
 
       // Determine which practice this is based on the content
-      if (detailContent.includes('Evening Practice')) {
+      if (entryContent.includes('Evening Practice')) {
         entryTitles.push('Evening Practice')
-      } else if (detailContent.includes('Afternoon Practice')) {
+      } else if (entryContent.includes('Afternoon Practice')) {
         entryTitles.push('Afternoon Practice')
-      } else if (detailContent.includes('Morning Practice')) {
+      } else if (entryContent.includes('Morning Practice')) {
         entryTitles.push('Morning Practice')
       } else {
         entryTitles.push('Unknown')
