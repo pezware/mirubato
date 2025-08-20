@@ -16,6 +16,7 @@ interface PracticeLogsListProps {
   onEntryDelete?: (entry: LogbookEntry) => void
   showTimeline?: boolean
   className?: string
+  hidePieceInfo?: boolean
 }
 
 interface GroupedEntries {
@@ -32,6 +33,7 @@ export function PracticeLogsList({
   onEntryDelete,
   showTimeline = false,
   className = '',
+  hidePieceInfo = false,
 }: PracticeLogsListProps) {
   const { t, i18n } = useTranslation(['logbook', 'common'])
   const [selectedLevel, setSelectedLevel] = useState<TimelineLevelType>('week')
@@ -324,14 +326,14 @@ export function PracticeLogsList({
             <p className="text-sm">{t('logbook:emptyDescription')}</p>
           </div>
         ) : (
-          groupedEntries.map(group => (
-            <div key={group.date}>
+          groupedEntries.map((group, groupIndex) => (
+            <div key={group.date} className={groupIndex > 0 ? 'mt-2' : ''}>
               <DateSeparator
                 date={group.date}
                 totalDuration={formatDuration(group.totalDuration)}
               />
 
-              {group.entries.map(entry => (
+              {group.entries.map((entry, entryIndex) => (
                 <CompactEntryRow
                   key={entry.id}
                   entryId={entry.id}
@@ -349,6 +351,10 @@ export function PracticeLogsList({
                     onEntryDelete ? () => onEntryDelete(entry) : undefined
                   }
                   onClick={() => onEntrySelect(entry)}
+                  hidePieceInfo={hidePieceInfo}
+                  className={
+                    entryIndex < group.entries.length - 1 ? 'mb-1' : ''
+                  }
                 />
               ))}
             </div>
