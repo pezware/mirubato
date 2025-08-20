@@ -41,8 +41,9 @@ test.describe('Recent Entries', () => {
       })
     })
 
-    await test.step('Verify entry appears in Recent Entries section', async () => {
-      await expect(page.locator('text=Recent Entries')).toBeVisible({
+    await test.step('Verify entry appears in the overview', async () => {
+      // Check that the entry is visible in the split view list
+      await expect(page.locator('[data-testid="logbook-entry"]')).toBeVisible({
         timeout: 5000,
       })
       await expect(page.locator('text=Test Piece')).toBeVisible()
@@ -78,11 +79,11 @@ test.describe('Recent Entries', () => {
     })
 
     await test.step('Verify entries appear in reverse chronological order', async () => {
-      // Switch to overview tab to see recent entries
+      // Switch to overview tab to see entries
       await page.click('[data-testid="overview-tab"]')
 
-      // Wait for the overview content to load
-      await page.waitForSelector('text=Recent Entries', {
+      // Wait for the entries to load in the split view
+      await page.waitForSelector('[data-testid="logbook-entry"]', {
         state: 'visible',
         timeout: 5000,
       })

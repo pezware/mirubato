@@ -158,9 +158,12 @@ test.describe('Logbook Sync', () => {
       notes: 'Final session',
     })
 
-    // Check recent entries order - newest should be first
-    const recentSection = page.locator('text=Recent Entries').first()
-    await expect(recentSection).toBeVisible()
+    // Check entries order - newest should be first in the split view
+    // Wait for entries to be visible
+    await page.waitForSelector('[data-testid="logbook-entry"]', {
+      state: 'visible',
+      timeout: 5000,
+    })
 
     // Get all individual entry cards by their test ID
     const entryCards = page.locator('[data-testid="logbook-entry"]')

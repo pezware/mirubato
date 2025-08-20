@@ -109,7 +109,8 @@ test.describe('Logbook', () => {
       })
 
       await test.step('Verify expanded details', async () => {
-        await expect(page.locator('text=Sonata No. 11')).toBeVisible()
+        // Use a more specific selector to avoid multiple matches
+        await expect(page.locator('h3:has-text("Sonata No. 11")')).toBeVisible()
 
         // Look for Mozart or other entry details in the expanded area
         // The composer might be displayed differently or not shown in expanded view
@@ -288,11 +289,15 @@ test.describe('Logbook', () => {
       })
 
       await test.step('Verify all composers and pieces are displayed', async () => {
-        // Wait for recent entries to load
-        await page.waitForSelector('text=Recent Entries', {
+        // Wait for entries to load in the split view
+        await page.waitForSelector('[data-testid="logbook-entry"]', {
           state: 'visible',
           timeout: 5000,
         })
+
+        // Check that we have the expected number of entries
+        const entries = page.locator('[data-testid="logbook-entry"]')
+        await expect(entries).toHaveCount(3, { timeout: 5000 })
 
         // Check that all our entries are visible in the overview
         const pageContent = await page.textContent('body')

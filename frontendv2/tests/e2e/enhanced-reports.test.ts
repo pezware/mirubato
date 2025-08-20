@@ -122,14 +122,17 @@ test.describe('Enhanced Reports', () => {
         }
       })
 
-      await test.step('Verify recent entries section', async () => {
-        await expect(page.locator('text=Recent Entries')).toBeVisible({
+      await test.step('Verify practice entries are displayed', async () => {
+        // Check that the entries we created are visible in the split view
+        // The LogbookSplitView component displays entries in a list format
+        await expect(page.locator('text=Moonlight Sonata')).toBeVisible({
           timeout: 5000,
         })
-
-        // Should show the entries we created
-        await expect(page.locator('text=Moonlight Sonata')).toBeVisible()
         await expect(page.locator('text=Clair de Lune')).toBeVisible()
+
+        // Verify entries have the data-testid attribute
+        const entries = page.locator('[data-testid="logbook-entry"]')
+        await expect(entries).toHaveCount(2, { timeout: 5000 })
       })
 
       await test.step('Verify calendar heatmap is visible', async () => {
