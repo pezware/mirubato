@@ -1,12 +1,6 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit2, Music, Link, Trash2 } from 'lucide-react'
-import {
-  IconMoodAngry,
-  IconMoodNeutral,
-  IconMoodSmile,
-  IconMoodHappy,
-} from '@tabler/icons-react'
 import Button from '@/components/ui/Button'
 import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
@@ -18,12 +12,12 @@ import {
   ModalBody,
   ModalFooter,
 } from '@/components/ui'
+import { LogbookSplitView } from '@/components/logbook/LogbookSplitView'
+import type { LogbookEntry } from '@/api/logbook'
 import {
   formatDuration,
   formatDateTime,
   formatRelativeTime,
-  formatDateSeparator,
-  formatTimeOnly,
 } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireStatus } from '@/api/repertoire'
@@ -59,7 +53,6 @@ interface PieceDetailViewProps {
   sessions: PracticeSession[]
   onLogPractice: () => void
   onEditNotes: () => void
-  onEditSession?: (sessionId: string) => void
   onStatusChange?: (newStatus: keyof RepertoireStatus) => void
   onPieceUpdated?: (updatedPiece: { title: string; composer: string }) => void
 }
@@ -69,11 +62,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   sessions,
   onLogPractice,
   onEditNotes,
-  onEditSession,
   onStatusChange,
   onPieceUpdated,
 }) => {
-  const { t, i18n } = useTranslation(['repertoire', 'common'])
+  const { t, i18n } = useTranslation(['repertoire', 'common', 'logbook'])
   const [timeFilter, setTimeFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
@@ -81,6 +73,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [selectedSessionId] = useState<string | undefined>(undefined)
 
   // Note: Modal scroll lock is now handled by the Modal component
   const { updatePieceName, loadEntries } = useLogbookStore()
@@ -116,28 +109,6 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       bg: 'bg-gray-100',
       label: t('repertoire:status.dropped'),
     },
-  }
-
-  // Get mood icon based on mood value - matching LogbookEntryList
-  const getMoodIcon = (mood?: string) => {
-    const iconProps = {
-      size: 18,
-      className: 'text-morandi-stone-600',
-      stroke: 1.5,
-    }
-
-    switch (mood) {
-      case 'frustrated':
-        return <IconMoodAngry {...iconProps} />
-      case 'neutral':
-        return <IconMoodNeutral {...iconProps} />
-      case 'satisfied':
-        return <IconMoodSmile {...iconProps} />
-      case 'excited':
-        return <IconMoodHappy {...iconProps} />
-      default:
-        return null
-    }
   }
 
   // Parse and format notes with status change entries
@@ -360,42 +331,43 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     return filtered
   }, [sessions, timeFilter, typeFilter])
 
-  // Group sessions by day
-  const groupedSessions = useMemo(() => {
-    const groups: Record<string, PracticeSession[]> = {}
+  // Convert sessions to LogbookEntry format
+  const sessionsAsEntries = useMemo(() => {
+    return filteredSessions.map(
+      session =>
+        ({
+          id: session.id,
+          timestamp: session.timestamp,
+          duration: session.duration,
+          type: session.type || 'practice',
+          mood: session.mood,
+          instrument: session.instrument,
+          notes: session.notes,
+          pieces: [{ title: item.scoreTitle, composer: item.scoreComposer }],
+          techniques: [],
+          tags: [],
+          goalIds: [],
+          createdAt:
+            typeof session.timestamp === 'string'
+              ? session.timestamp
+              : new Date(session.timestamp).toISOString(),
+          updatedAt:
+            typeof session.timestamp === 'string'
+              ? session.timestamp
+              : new Date(session.timestamp).toISOString(),
+        }) as LogbookEntry
+    )
+  }, [filteredSessions, item])
 
-    filteredSessions.forEach(session => {
-      const dateKey = formatDateSeparator(session.timestamp, i18n.language)
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
-      }
-      groups[dateKey].push(session)
-    })
-
-    return Object.entries(groups).map(([date, sessions]) => ({
-      date,
-      sessions: sessions.sort((a, b) => {
-        const aTime =
-          typeof a.timestamp === 'string'
-            ? new Date(a.timestamp).getTime()
-            : a.timestamp
-        const bTime =
-          typeof b.timestamp === 'string'
-            ? new Date(b.timestamp).getTime()
-            : b.timestamp
-        return bTime - aTime
-      }),
-    }))
-  }, [filteredSessions, i18n.language])
-
-  const formatSessionTime = (timestamp: string | number) => {
-    return formatTimeOnly(timestamp, i18n.language)
-  }
+  // Handle entry updates from LogbookSplitView
+  const handleEntryUpdate = useCallback(() => {
+    // Refresh if needed
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
-      {/* Piece Header */}
-      <div className="bg-white border-b border-stone-200 px-4 sm:px-8 py-6 sm:py-8">
+    <div className="space-y-4">
+      {/* Piece Header Card */}
+      <Card padding="md">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <MusicTitle as="h1" className="text-stone-900 mb-2">
@@ -442,7 +414,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </div>
+      </Card>
 
+      {/* Stats Section */}
+      <Card padding="sm">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <div>
@@ -496,8 +471,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </div>
+      </Card>
 
-        {/* Notes Section */}
+      {/* Notes Section */}
+      <Card padding="md">
         <div className="mt-6 pt-6 border-t border-stone-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm uppercase tracking-wider text-stone-500">
@@ -548,119 +525,58 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           )}
         </div>
-      </div>
-
-      {/* Period Filter Section - matching DataTableView */}
-      <Card className="mb-4 sm:mb-6" padding="sm">
-        <div className="flex gap-3">
-          <select
-            value={timeFilter}
-            onChange={e => setTimeFilter(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
-          >
-            <option value="all">All time</option>
-            <option value="thisMonth">This month</option>
-            <option value="thisWeek">This week</option>
-            <option value="last30">Last 30 days</option>
-            <option value="last90">Last 90 days</option>
-          </select>
-          <select
-            value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
-          >
-            <option value="all">{t('repertoire:allTypes')}</option>
-            <option value="practice">{t('common:music.practice')}</option>
-            <option value="performance">{t('common:music.performance')}</option>
-            <option value="lesson">{t('common:music.lesson')}</option>
-          </select>
-        </div>
       </Card>
 
-      {/* Practice History List - matching LogbookEntryList */}
-      <Card className="mb-4 sm:mb-6" padding="sm">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700">
-            {t('repertoire:practiceHistory')}
-          </h3>
-          <LogPracticeButton onClick={onLogPractice}>
-            + {t('repertoire:logPractice')}
-          </LogPracticeButton>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
-          {groupedSessions.map(group => (
-            <div key={group.date}>
-              {/* Day separator - matching LogbookEntryList day separator */}
-              <div className="px-4 py-2 bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
-                    {group.date}
-                  </span>
-                  <span className="text-sm text-gray-500 whitespace-nowrap">
-                    {formatDuration(
-                      group.sessions.reduce((sum, s) => sum + s.duration, 0)
-                    )}
-                  </span>
-                  <div className="flex-1 h-px bg-gray-300"></div>
-                </div>
-              </div>
-
-              {/* Sessions - matching LogbookEntryList rows */}
-              {group.sessions.map(session => (
-                <div
-                  key={session.id}
-                  className="border-b border-morandi-stone-200 last:border-b-0"
+      {/* Practice History Section with Filters */}
+      <div className="space-y-4">
+        <Card padding="sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700">
+              {t('repertoire:practiceHistory')}
+            </h3>
+            <div className="flex items-center gap-3">
+              <div className="flex gap-2">
+                <select
+                  value={timeFilter}
+                  onChange={e => setTimeFilter(e.target.value)}
+                  className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
                 >
-                  <div className="p-3 hover:bg-morandi-stone-50 transition-colors group">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        {/* Time, duration, and type row */}
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-sm text-morandi-stone-500">
-                            {formatSessionTime(session.timestamp)}
-                          </span>
-                          <span className="text-morandi-stone-700">
-                            {formatDuration(session.duration)}
-                          </span>
-                          <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
-                            {t(`common:music.${session.type}`)}
-                          </span>
-                          {session.instrument && (
-                            <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                              {session.instrument}
-                            </span>
-                          )}
-                          {session.mood && getMoodIcon(session.mood)}
-                        </div>
-
-                        {/* Notes if present */}
-                        {session.notes && (
-                          <p className="text-sm text-morandi-stone-600">
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Edit button - matching LogbookEntryList positioning */}
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button
-                          onClick={() => onEditSession?.(session.id)}
-                          className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-                          aria-label={t('common:edit')}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <option value="all">All time</option>
+                  <option value="thisMonth">This month</option>
+                  <option value="thisWeek">This week</option>
+                  <option value="last30">Last 30 days</option>
+                  <option value="last90">Last 90 days</option>
+                </select>
+                <select
+                  value={typeFilter}
+                  onChange={e => setTypeFilter(e.target.value)}
+                  className="px-3 py-1.5 bg-white border border-morandi-stone-200 rounded text-sm"
+                >
+                  <option value="all">{t('repertoire:allTypes')}</option>
+                  <option value="practice">{t('common:music.practice')}</option>
+                  <option value="performance">
+                    {t('common:music.performance')}
+                  </option>
+                  <option value="lesson">{t('common:music.lesson')}</option>
+                </select>
+              </div>
+              <LogPracticeButton onClick={onLogPractice}>
+                + {t('repertoire:logPractice')}
+              </LogPracticeButton>
             </div>
-          ))}
+          </div>
+        </Card>
 
-          {/* Empty state */}
-          {filteredSessions.length === 0 && (
+        {/* Practice History List using LogbookSplitView */}
+        {sessionsAsEntries.length > 0 ? (
+          <LogbookSplitView
+            entries={sessionsAsEntries}
+            onUpdate={handleEntryUpdate}
+            showTimeline={false}
+            initialSelectedId={selectedSessionId}
+          />
+        ) : (
+          <Card padding="lg">
             <div className="text-center py-12">
               <Music className="w-16 h-16 text-stone-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-stone-900 mb-2">
@@ -670,9 +586,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
                 {t('repertoire:startTrackingPrompt')}
               </p>
             </div>
-          )}
-        </div>
-      </Card>
+          </Card>
+        )}
+      </div>
 
       {/* Remove from Repertoire Confirmation Modal */}
       <Modal

@@ -121,5 +121,17 @@
     "visualOnly": "僅視覺通知"
   },
   "title": "練習日誌",
-  "viewScore": "查看樂譜"
+  "viewScore": "查看樂譜",
+  "emptyDescription": "開始記錄您的練習以追蹤進度。",
+  "selectEntryToView": "選擇一個條目以查看詳細資訊",
+  "clickEntryInList": "點擊列表中的條目以查看完整詳細資訊",
+  "entryDetails": "條目詳情",
+  "dateAndTime": "日期與時間",
+  "duration": "時長",
+  "type": "類型",
+  "instrument": "樂器",
+  "techniques": "技巧",
+  "notes": "筆記",
+  "tags": "標籤",
+  "pieces": "曲目"
 }

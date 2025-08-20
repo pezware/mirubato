@@ -121,7 +121,7 @@ export function FilterCriteriaRow({
 
     switch (field) {
       case 'instrument':
-        entries.forEach(e => values.add(e.instrument))
+        entries.forEach(e => e.instrument && values.add(e.instrument))
         break
       case 'type':
         entries.forEach(e => values.add(e.type))

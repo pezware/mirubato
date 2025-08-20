@@ -75,7 +75,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
           const timeStr =
             hours > 0 ? `${hours}h ${minutes}m` : `${minutes} minutes`
           showToast(
-            `Practice timer: ${timeStr} elapsed! Keep it up! 🎵`,
+            `Practice timer: ${timeStr} elapsed! Keep it up!`,
             'info',
             undefined,
             5000

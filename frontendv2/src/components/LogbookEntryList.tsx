@@ -1,29 +1,18 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import {
-  IconMoodAngry,
-  IconMoodNeutral,
-  IconMoodSmile,
-  IconMoodHappy,
-} from '@tabler/icons-react'
-import {
-  FileText,
-  Target,
-  Music,
-  Edit2,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
-import { useLogbookStore } from '../stores/logbookStore'
+import { ChevronLeft, ChevronRight, Music } from 'lucide-react'
 import type { LogbookEntry } from '../api/logbook'
+import { useLogbookStore } from '../stores/logbookStore'
+import { useLayoutPreferences } from '../hooks/useLayoutPreferences'
 import ManualEntryForm from './ManualEntryForm'
-import TimelineNav, { type TimelineLevel } from './ui/TimelineNav'
-import { MusicTitle, MusicComposer } from './ui'
-import { cn } from '../utils/cn'
-import { toTitleCase } from '../utils/textFormatting'
-import { getDisplayComposerName } from '../utils/composerCanonicalizer'
+import {
+  ResizableSplitView,
+  EntryDetailPanel,
+  DateSeparator,
+  CompactEntryRow,
+} from './ui'
+import TimelineNav, { TimelineLevel } from './ui/TimelineNav'
+import { formatDuration, formatDateSeparator } from '../utils/dateUtils'
 
 interface LogbookEntryListProps {
   entries: LogbookEntry[]
@@ -36,32 +25,37 @@ export default function LogbookEntryList({
 }: LogbookEntryListProps) {
   const { t, i18n } = useTranslation(['logbook', 'common'])
   const { deleteEntry } = useLogbookStore()
-  const navigate = useNavigate()
   const [editingEntry, setEditingEntry] = useState<LogbookEntry | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState('week')
-  const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set())
+  const [selectedEntry, setSelectedEntry] = useState<LogbookEntry | null>(null)
   const [selectedDate, setSelectedDate] = useState<{
     year: number
     month: number
     week: number
   } | null>(null)
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('logbook:entry.confirmDelete'))) {
-      return
-    }
+  // Layout preferences
+  const { splitRatio, setSplitRatio, setLastSelectedId } =
+    useLayoutPreferences('logbook')
 
-    setDeletingId(id)
-    try {
-      await deleteEntry(id)
-      onUpdate()
-    } catch (error) {
-      console.error('Failed to delete entry:', error)
-    } finally {
-      setDeletingId(null)
-    }
-  }
+  const handleDelete = useCallback(
+    async (entry: LogbookEntry) => {
+      if (!confirm(t('logbook:entry.confirmDelete'))) {
+        return
+      }
+
+      try {
+        await deleteEntry(entry.id)
+        if (selectedEntry?.id === entry.id) {
+          setSelectedEntry(null)
+        }
+        onUpdate()
+      } catch (error) {
+        console.error('Failed to delete entry:', error)
+      }
+    },
+    [deleteEntry, onUpdate, selectedEntry, t]
+  )
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -71,45 +65,19 @@ export default function LogbookEntryList({
     })
   }
 
-  const getMoodIcon = (mood?: LogbookEntry['mood']) => {
-    const iconProps = {
-      size: 18,
-      className: 'text-morandi-stone-600',
-      stroke: 1.5,
-    }
+  // Handle entry selection
+  const handleEntryClick = useCallback(
+    (entry: LogbookEntry) => {
+      setSelectedEntry(entry)
+      setLastSelectedId(entry.id)
+    },
+    [setLastSelectedId]
+  )
 
-    switch (mood) {
-      case 'frustrated':
-        return <IconMoodAngry {...iconProps} />
-      case 'neutral':
-        return <IconMoodNeutral {...iconProps} />
-      case 'satisfied':
-        return <IconMoodSmile {...iconProps} />
-      case 'excited':
-        return <IconMoodHappy {...iconProps} />
-      default:
-        return null
-    }
-  }
-
-  const toggleEntryExpansion = (id: string) => {
-    const newExpanded = new Set(expandedEntries)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedEntries(newExpanded)
-  }
-
-  const handleScoreClick = (entry: LogbookEntry) => {
-    if (entry.scoreId) {
-      navigate(`/scorebook/${entry.scoreId}`)
-    } else if (entry.scoreTitle) {
-      // If no scoreId but has title, navigate to search
-      navigate(`/scorebook/browse?q=${encodeURIComponent(entry.scoreTitle)}`)
-    }
-  }
+  // Handle edit
+  const handleEdit = useCallback((entry: LogbookEntry) => {
+    setEditingEntry(entry)
+  }, [])
 
   // Calculate the current week number of the month
   const getWeekOfMonth = (date: Date) => {
@@ -166,11 +134,45 @@ export default function LogbookEntryList({
     }
   }, [filteredEntries])
 
-  // Initialize expandedEntries with all entry IDs when entries change
-  useEffect(() => {
-    const allEntryIds = new Set(entries.map(entry => entry.id))
-    setExpandedEntries(allEntryIds)
-  }, [entries])
+  // Navigate between entries
+  const handleNavigate = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (!selectedEntry) return
+      const currentIndex = filteredEntries.findIndex(
+        e => e.id === selectedEntry.id
+      )
+      if (currentIndex === -1) return
+
+      const newIndex =
+        direction === 'prev' ? currentIndex - 1 : currentIndex + 1
+      if (newIndex >= 0 && newIndex < filteredEntries.length) {
+        handleEntryClick(filteredEntries[newIndex])
+      }
+    },
+    [selectedEntry, filteredEntries, handleEntryClick]
+  )
+
+  // Group entries by date
+  const groupedEntries = useMemo(() => {
+    const groups: Record<string, LogbookEntry[]> = {}
+
+    filteredEntries.forEach(entry => {
+      const dateKey = formatDateSeparator(entry.timestamp, i18n.language)
+      if (!groups[dateKey]) {
+        groups[dateKey] = []
+      }
+      groups[dateKey].push(entry)
+    })
+
+    return Object.entries(groups).map(([date, entries]) => ({
+      date,
+      entries: entries.sort((a, b) => {
+        const aTime = new Date(a.timestamp).getTime()
+        const bTime = new Date(b.timestamp).getTime()
+        return bTime - aTime
+      }),
+    }))
+  }, [filteredEntries, i18n.language])
 
   // Initialize selectedDate based on entries
   useEffect(() => {
@@ -235,7 +237,11 @@ export default function LogbookEntryList({
     )
   }
 
-  return (
+  // Check if we're on mobile/tablet
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024
+
+  // Main content (left panel)
+  const mainContent = (
     <div className="space-y-6">
       {/* Timeline Navigation */}
       <div className="bg-white rounded-lg p-4 shadow-sm border border-morandi-stone-200">
@@ -367,253 +373,76 @@ export default function LogbookEntryList({
         </div>
       </div>
 
-      {/* Entry List */}
+      {/* Entry List - using new compact design */}
       <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 overflow-hidden">
-        {filteredEntries.map((entry, index) => {
-          const isExpanded = expandedEntries.has(entry.id)
-          const entryDate = new Date(entry.timestamp)
-
-          // Check if this is the first entry of a new day
-          const prevEntry = index > 0 ? filteredEntries[index - 1] : null
-          const prevDate = prevEntry ? new Date(prevEntry.timestamp) : null
-          const isNewDay =
-            !prevDate || entryDate.toDateString() !== prevDate.toDateString()
-
-          // Format date for separator
-          const formattedDate = entryDate.toLocaleDateString(i18n.language, {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-          })
-
-          // Calculate total practice time for this day
-          const dayTotalMinutes = isNewDay
-            ? filteredEntries
-                .filter(e => {
-                  const eDate = new Date(e.timestamp)
-                  return eDate.toDateString() === entryDate.toDateString()
-                })
-                .reduce((sum, e) => sum + e.duration, 0)
-            : 0
-
-          return (
-            <div key={entry.id}>
-              {/* Date Separator */}
-              {isNewDay && (
-                <div className="px-4 py-2 bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
-                      {formattedDate}
-                    </span>
-                    <span className="text-sm text-gray-500 whitespace-nowrap">
-                      {t('common:time.minute', { count: dayTotalMinutes })}
-                    </span>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Entry */}
-              <div
-                className={cn(
-                  'transition-all duration-200',
-                  !isNewDay && 'border-t border-morandi-stone-200'
+        {groupedEntries.length === 0 ? (
+          <div className="text-center py-12">
+            <Music className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-stone-900 mb-2">
+              {t('logbook:empty')}
+            </h3>
+            <p className="text-stone-600">{t('logbook:emptyDescription')}</p>
+          </div>
+        ) : (
+          groupedEntries.map(group => (
+            <div key={group.date}>
+              {/* Use shared DateSeparator component */}
+              <DateSeparator
+                date={group.date}
+                totalDuration={formatDuration(
+                  group.entries.reduce((sum, e) => sum + e.duration, 0)
                 )}
-              >
-                <div
-                  className="p-4 hover:bg-morandi-stone-50 cursor-pointer group"
-                  onClick={() => toggleEntryExpansion(entry.id)}
-                  data-testid="logbook-entry"
-                  data-entry-id={entry.id}
+              />
+
+              {/* Use CompactEntryRow for consistent design */}
+              {group.entries.map(entry => (
+                <CompactEntryRow
+                  key={entry.id}
+                  entryId={entry.id}
+                  time={formatTime(entry.timestamp)}
+                  duration={entry.duration}
+                  type={t(`common:music.${entry.type.toLowerCase()}`)}
+                  instrument={entry.instrument || undefined}
+                  isSelected={selectedEntry?.id === entry.id}
+                  onEdit={() => handleEdit(entry)}
+                  onClick={() => handleEntryClick(entry)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm text-morandi-stone-500">
-                          {formatTime(entry.timestamp)}
-                        </span>
-                        <span className="text-morandi-stone-700">
-                          {t('common:time.minute', { count: entry.duration })}
-                        </span>
-                        {entry.mood && getMoodIcon(entry.mood)}
-                        <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
-                          {entry.type}
-                        </span>
-                        <span className="px-2 py-0.5 bg-morandi-sand-100 text-morandi-stone-700 text-xs rounded-full">
-                          {entry.instrument}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        {entry.scoreId && (
-                          <button
-                            onClick={e => {
-                              e.stopPropagation()
-                              handleScoreClick(entry)
-                            }}
-                            className="flex items-center gap-1 px-2 py-0.5 bg-morandi-sky-100 text-morandi-stone-700 text-xs rounded-full hover:bg-morandi-sky-200 transition-colors"
-                          >
-                            <Music className="w-3 h-3" />
-                            {entry.scoreTitle || t('logbook:viewScore')}
-                          </button>
-                        )}
-                        {entry.notes && !isExpanded && (
-                          <span className="text-sm text-morandi-stone-500 truncate max-w-md">
-                            {entry.notes}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      className={cn(
-                        'flex items-center gap-2 transition-opacity duration-200',
-                        isExpanded
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100'
-                      )}
-                    >
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          setEditingEntry(entry)
-                        }}
-                        className="p-2 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-                        aria-label={t('logbook:entry.editEntry')}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          handleDelete(entry.id)
-                        }}
-                        disabled={deletingId === entry.id}
-                        className="p-2 text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors"
-                        aria-label={t('logbook:entry.deleteEntry')}
-                      >
-                        {deletingId === entry.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Content */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 animate-fade-in">
-                    {/* Score Information */}
-                    {entry.scoreId && (
-                      <div className="mb-3 p-3 bg-morandi-sky-50 rounded-lg border border-morandi-sky-200">
-                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2 flex items-center gap-2">
-                          <FileText className="w-4 h-4" />
-                          {t('logbook:linkedScore')}:
-                        </h4>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleScoreClick(entry)
-                          }}
-                          className="flex items-center gap-2 text-morandi-stone-700 hover:text-morandi-stone-900 transition-colors"
-                        >
-                          <Music className="w-4 h-4" />
-                          <span className="font-medium">
-                            {entry.scoreTitle || 'View Score'}
-                          </span>
-                          {entry.scoreComposer && (
-                            <span className="text-sm text-morandi-stone-600">
-                              by {entry.scoreComposer}
-                            </span>
-                          )}
-                        </button>
-                        {entry.autoTracked && (
-                          <span className="inline-block mt-2 px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
-                            {t('logbook:autoTracked')}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Pieces */}
-                    {entry.pieces.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex flex-wrap gap-2">
-                          {entry.pieces.map((piece, index) => (
-                            <div
-                              key={index}
-                              className="px-3 py-1 bg-morandi-sky-100 rounded-full text-sm border border-morandi-sky-200 flex items-center gap-1"
-                            >
-                              <MusicTitle as="span">
-                                {toTitleCase(piece.title)}
-                              </MusicTitle>
-                              {piece.composer && (
-                                <>
-                                  <span className="text-morandi-stone-600">
-                                    -
-                                  </span>
-                                  <MusicComposer as="span">
-                                    {getDisplayComposerName(piece.composer)}
-                                  </MusicComposer>
-                                </>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Techniques */}
-                    {entry.techniques.length > 0 && (
-                      <div className="mb-3">
-                        <h4 className="text-sm font-medium text-morandi-stone-700 mb-2 flex items-center gap-2">
-                          <Target className="w-4 h-4" />
-                          {t('logbook:entry.techniques')}:
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {entry.techniques.map((technique, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-morandi-blush-100 text-morandi-stone-700 rounded-full text-sm"
-                            >
-                              {technique}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Notes */}
-                    {entry.notes && (
-                      <div className="mt-3">
-                        <p className="text-morandi-stone-700 whitespace-pre-wrap leading-relaxed">
-                          {entry.notes}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {entry.tags.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {entry.tags.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-morandi-stone-100 text-morandi-stone-600 rounded text-xs"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                  {/* Don't show piece details in the list - they'll be in the detail panel */}
+                </CompactEntryRow>
+              ))}
             </div>
-          )
-        })}
+          ))
+        )}
       </div>
     </div>
+  )
+
+  // Detail panel (right panel)
+  const detailPanel = (
+    <EntryDetailPanel
+      entry={selectedEntry}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+      onNavigate={handleNavigate}
+      onClose={() => setSelectedEntry(null)}
+    />
+  )
+
+  // Render with or without split view based on screen size
+  if (isMobile) {
+    return mainContent
+  }
+
+  return (
+    <ResizableSplitView
+      defaultRatio={splitRatio}
+      onRatioChange={setSplitRatio}
+      storageKey="logbook-split"
+      minSizes={[500, 350]}
+      maxSizes={[Infinity, 600]}
+    >
+      {mainContent}
+      {detailPanel}
+    </ResizableSplitView>
   )
 }

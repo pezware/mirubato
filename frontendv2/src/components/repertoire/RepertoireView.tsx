@@ -55,7 +55,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [selectedScoreId, setSelectedScoreId] = useState<string | null>(null)
-  const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedPiece, setSelectedPiece] =
@@ -90,7 +89,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
 
   const { userLibrary: scores, loadUserLibrary } = useScoreStore()
 
-  const { entries, loadEntries } = useLogbookStore()
+  const { loadEntries } = useLogbookStore()
 
   // Submission protection for "Log Practice" actions
   const { handleSubmission } = useSubmissionProtection({
@@ -322,25 +321,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     }
   }, [searchParams, sortedRepertoire, setSearchParams, selectedPiece])
 
-  // Find the entry being edited
-  const editingEntry = editingSessionId
-    ? Array.from(entries.values()).find(entry => entry.id === editingSessionId)
-    : null
-
-  // If editing an entry, show the ManualEntryForm
-  if (editingEntry) {
-    return (
-      <ManualEntryForm
-        entry={editingEntry}
-        onClose={() => setEditingSessionId(null)}
-        onSave={() => {
-          setEditingSessionId(null)
-          loadEntries() // Refresh the entries
-        }}
-      />
-    )
-  }
-
   // If viewing a piece detail
   if (selectedPiece) {
     // Get all practice sessions for this piece
@@ -404,9 +384,6 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           }}
           onEditNotes={() => {
             setEditingPieceNotes(selectedPiece)
-          }}
-          onEditSession={sessionId => {
-            setEditingSessionId(sessionId)
           }}
           onStatusChange={async newStatus => {
             await updateRepertoireStatus(selectedPiece.scoreId, newStatus)
@@ -592,13 +569,7 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
           // Grid view - use existing RepertoireCard
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {enrichedRepertoire.map(item => (
-              <RepertoireCard
-                key={item.scoreId}
-                item={item}
-                onEditSession={sessionId => {
-                  setEditingSessionId(sessionId)
-                }}
-              />
+              <RepertoireCard key={item.scoreId} item={item} />
             ))}
           </div>
         ) : (

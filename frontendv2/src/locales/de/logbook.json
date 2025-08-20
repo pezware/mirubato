@@ -121,5 +121,17 @@
     "visualOnly": "Nur visuelle Benachrichtigung"
   },
   "title": "Übungstagebuch",
-  "viewScore": "Noten ansehen"
+  "viewScore": "Noten ansehen",
+  "emptyDescription": "Beginnen Sie mit der Aufzeichnung Ihrer Übungssitzungen, um Ihren Fortschritt zu verfolgen.",
+  "selectEntryToView": "Wählen Sie einen Eintrag aus, um Details anzuzeigen",
+  "clickEntryInList": "Klicken Sie auf einen Eintrag in der Liste, um alle Details zu sehen",
+  "entryDetails": "Eintragsdetails",
+  "dateAndTime": "Datum und Uhrzeit",
+  "duration": "Dauer",
+  "type": "Typ",
+  "instrument": "Instrument",
+  "techniques": "Techniken",
+  "notes": "Notizen",
+  "tags": "Tags",
+  "pieces": "Stücke"
 }

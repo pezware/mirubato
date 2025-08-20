@@ -11,6 +11,12 @@ import { toTitleCase } from '@/utils/textFormatting'
 import { EditNotesModal } from './EditNotesModal'
 import { EditGoalModal } from './EditGoalModal'
 import { MoreVertical, ChevronDown } from 'lucide-react'
+import {
+  IconMoodSad,
+  IconMoodNeutral,
+  IconMoodSmile,
+  IconMoodHappy,
+} from '@tabler/icons-react'
 
 interface PracticeSession {
   id: string
@@ -368,11 +374,19 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
                           </span>
                         )}
                         {session.mood && (
-                          <span className="text-stone-600">
-                            {session.mood === 'frustrated' && '😣'}
-                            {session.mood === 'neutral' && '😐'}
-                            {session.mood === 'satisfied' && '😊'}
-                            {session.mood === 'excited' && '🤩'}
+                          <span className="text-morandi-stone-600">
+                            {session.mood === 'frustrated' && (
+                              <IconMoodSad className="w-4 h-4 inline" />
+                            )}
+                            {session.mood === 'neutral' && (
+                              <IconMoodNeutral className="w-4 h-4 inline" />
+                            )}
+                            {session.mood === 'satisfied' && (
+                              <IconMoodSmile className="w-4 h-4 inline" />
+                            )}
+                            {session.mood === 'excited' && (
+                              <IconMoodHappy className="w-4 h-4 inline" />
+                            )}
                           </span>
                         )}
                       </div>
