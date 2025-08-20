@@ -237,16 +237,67 @@ export class SyncCoordinator implements DurableObject {
     clientId: string,
     event: SyncEvent
   ): Promise<void> {
-    // For Phase 1, we'll just acknowledge the sync request
-    // In Phase 2, we could fetch recent changes from D1 and send them
+    const client = this.clients.get(clientId)
+    if (!client) return
+
     console.log(
       `🔄 Sync request from ${clientId}, lastSyncTime: ${event.lastSyncTime}`
     )
 
+    // Fetch recent changes from database
+    if (this.env.DB) {
+      try {
+        const lastSyncTime = event.lastSyncTime
+          ? new Date(event.lastSyncTime).getTime()
+          : Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
+
+        const results = await this.env.DB.prepare(
+          `
+          SELECT entity_id, data, last_modified 
+          FROM sync_data 
+          WHERE user_id = ? 
+            AND entity_type = 'logbook_entry'
+            AND last_modified > ?
+            AND deleted_at IS NULL
+          ORDER BY last_modified DESC
+          LIMIT 100
+        `
+        )
+          .bind(client.userId, lastSyncTime)
+          .all()
+
+        if (results.results && results.results.length > 0) {
+          const entries = results.results
+            .map((row: any) => {
+              try {
+                return JSON.parse(row.data)
+              } catch {
+                return null
+              }
+            })
+            .filter(Boolean)
+
+          if (entries.length > 0) {
+            // Send bulk sync event with recent entries
+            this.sendToClient(clientId, {
+              type: 'BULK_SYNC',
+              entries,
+              timestamp: new Date().toISOString(),
+            })
+            console.log(`📦 Sent ${entries.length} entries to ${clientId}`)
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch sync data:', error)
+      }
+    }
+
+    // Fallback response if no data or error
     this.sendToClient(clientId, {
       type: 'SYNC_RESPONSE',
       timestamp: new Date().toISOString(),
-      message: 'Sync request acknowledged',
+      message: 'No new data to sync',
     })
   }
 
@@ -276,15 +327,102 @@ export class SyncCoordinator implements DurableObject {
       `📤 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
 
+    // Save to database for persistence and recovery
+    try {
+      await this.saveEntryToDatabase(event, sender.userId)
+    } catch (error) {
+      console.error(`❌ Failed to save entry to database:`, error)
+      // Continue broadcasting even if database save fails
+    }
+
     // Broadcast to all other clients of the same user
     for (const [clientId, client] of this.clients) {
       if (clientId !== senderId && client.userId === sender.userId) {
         this.sendToClient(clientId, event)
       }
     }
+  }
 
-    // TODO: Phase 2 - Save to D1 database
-    // await this.saveToDatabase(event)
+  private async saveEntryToDatabase(
+    event: SyncEvent,
+    userId: string
+  ): Promise<void> {
+    if (!this.env.DB) {
+      console.warn('⚠️ Database not configured, skipping persistence')
+      return
+    }
+
+    try {
+      if (event.type === 'ENTRY_CREATED' || event.type === 'ENTRY_UPDATED') {
+        const entry = event.entry as any
+        if (!entry) return
+
+        // Ensure user_id is set
+        if (!entry.user_id) {
+          entry.user_id = userId
+        }
+
+        // Save to sync_data table
+        await this.env.DB.prepare(
+          `
+          INSERT INTO sync_data (
+            user_id, entity_type, entity_id, data, 
+            checksum, device_id, last_modified, version
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT (user_id, entity_type, entity_id) 
+          DO UPDATE SET 
+            data = excluded.data,
+            checksum = excluded.checksum,
+            last_modified = excluded.last_modified,
+            version = version + 1
+        `
+        )
+          .bind(
+            userId,
+            'logbook_entry',
+            entry.id,
+            JSON.stringify(entry),
+            this.calculateChecksum(entry),
+            entry.device_id || 'sync-worker',
+            Date.now(),
+            1
+          )
+          .run()
+
+        console.log(`✅ Saved entry ${entry.id} to database`)
+      } else if (event.type === 'ENTRY_DELETED') {
+        const entryId = event.entryId
+        if (!entryId) return
+
+        // Mark as deleted in sync_data
+        await this.env.DB.prepare(
+          `
+          UPDATE sync_data 
+          SET deleted_at = ?
+          WHERE user_id = ? AND entity_type = ? AND entity_id = ?
+        `
+        )
+          .bind(new Date().toISOString(), userId, 'logbook_entry', entryId)
+          .run()
+
+        console.log(`✅ Marked entry ${entryId} as deleted in database`)
+      }
+    } catch (error) {
+      console.error('Database operation failed:', error)
+      throw error
+    }
+  }
+
+  private calculateChecksum(data: any): string {
+    // Simple checksum for now - can be improved
+    const str = JSON.stringify(data)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return hash.toString(16)
   }
 
   private async handlePieceChange(
