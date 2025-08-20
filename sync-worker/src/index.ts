@@ -3,6 +3,8 @@
  * Built on Cloudflare Workers + Durable Objects + WebSockets
  */
 
+import { verifyWebSocketToken } from './auth'
+
 export interface Env {
   // Durable Object bindings
   SYNC_COORDINATOR: DurableObjectNamespace
@@ -64,29 +66,55 @@ async function handleWebSocketRequest(
   const url = new URL(request.url)
 
   // Extract auth parameters
-  const userId = url.searchParams.get('userId')
+  const providedUserId = url.searchParams.get('userId')
   const token = url.searchParams.get('token')
 
-  if (!userId || !token) {
-    return new Response('Missing userId or token', { status: 400 })
+  if (!providedUserId || !token) {
+    return new Response(JSON.stringify({ error: 'Missing userId or token' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
-  // Verify JWT token (simplified for now)
-  if (!(await isValidToken(token, env))) {
-    return new Response('Invalid token', { status: 401 })
+  // Verify JWT token
+  const verifiedUser = await verifyWebSocketToken(token, env.JWT_SECRET)
+  if (!verifiedUser) {
+    console.error('JWT verification failed for WebSocket connection')
+    return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
+
+  // Ensure the userId in the token matches the provided userId
+  if (verifiedUser.userId !== providedUserId) {
+    console.error(
+      `User ID mismatch: token=${verifiedUser.userId}, provided=${providedUserId}`
+    )
+    return new Response(JSON.stringify({ error: 'User ID mismatch' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  console.log(
+    `✅ Authenticated WebSocket connection for user ${verifiedUser.userId}`
+  )
 
   // Get the Durable Object for this user's sync coordination
   // For now, one coordinator per user - could be optimized to have shared coordinators
-  const coordinatorId = env.SYNC_COORDINATOR.idFromName(`user:${userId}`)
+  const coordinatorId = env.SYNC_COORDINATOR.idFromName(
+    `user:${verifiedUser.userId}`
+  )
   const coordinator = env.SYNC_COORDINATOR.get(coordinatorId)
 
   // Forward the WebSocket request to the Durable Object
-  return coordinator.fetch(request)
-}
+  // Include the verified user info in the URL for the Durable Object
+  const authenticatedUrl = new URL(request.url)
+  authenticatedUrl.searchParams.set('userId', verifiedUser.userId)
+  authenticatedUrl.searchParams.set('email', verifiedUser.email)
+  authenticatedUrl.searchParams.set('authenticated', 'true')
 
-async function isValidToken(token: string, env: Env): Promise<boolean> {
-  // TODO: Implement proper JWT verification
-  // For now, just check if token exists and is not empty
-  return token.length > 10
+  const authenticatedRequest = new Request(authenticatedUrl, request)
+  return coordinator.fetch(authenticatedRequest)
 }

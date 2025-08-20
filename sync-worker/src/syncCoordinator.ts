@@ -3,6 +3,15 @@
  * Handles real-time synchronization for practice log entries and repertoire pieces
  */
 
+import {
+  validateSyncEvent,
+  sanitizeEntry,
+  ResponseEventSchema,
+  type LogbookEntrySchema,
+  type RepertoireItemSchema,
+} from './schemas'
+import { z } from 'zod'
+
 export interface SyncEvent {
   type:
     | 'ENTRY_CREATED'
@@ -75,6 +84,14 @@ export class SyncCoordinator implements DurableObject {
   private async handleWebSocketUpgrade(request: Request): Promise<Response> {
     const url = new URL(request.url)
     const userId = url.searchParams.get('userId')
+    const authenticated = url.searchParams.get('authenticated')
+    const email = url.searchParams.get('email')
+
+    // Ensure this request came through authentication
+    if (!authenticated || authenticated !== 'true') {
+      console.error('WebSocket connection attempt without authentication')
+      return new Response('Unauthorized', { status: 401 })
+    }
 
     if (!userId) {
       return new Response('Missing userId', { status: 400 })
@@ -152,11 +169,28 @@ export class SyncCoordinator implements DurableObject {
       return
     }
 
-    let event: SyncEvent
+    let rawEvent: any
     try {
-      event = JSON.parse(data)
+      rawEvent = JSON.parse(data)
     } catch (error) {
       console.error(`❌ Invalid JSON from ${clientId}:`, data)
+      this.sendToClient(clientId, {
+        type: 'ERROR',
+        error: 'Invalid JSON format',
+        timestamp: new Date().toISOString(),
+      })
+      return
+    }
+
+    // Validate the sync event
+    const event = validateSyncEvent(rawEvent)
+    if (!event) {
+      console.error(`❌ Invalid sync event from ${clientId}:`, rawEvent)
+      this.sendToClient(clientId, {
+        type: 'ERROR',
+        error: 'Invalid sync event format',
+        timestamp: new Date().toISOString(),
+      })
       return
     }
 
@@ -223,6 +257,21 @@ export class SyncCoordinator implements DurableObject {
     const sender = this.clients.get(senderId)
     if (!sender) return
 
+    // Sanitize entry data if present
+    if ('entry' in event && event.entry) {
+      const sanitized = sanitizeEntry(event.entry)
+      if (!sanitized) {
+        console.error(`❌ Failed to sanitize entry from ${senderId}`)
+        this.sendToClient(senderId, {
+          type: 'ERROR',
+          error: 'Invalid entry data',
+          timestamp: new Date().toISOString(),
+        })
+        return
+      }
+      event.entry = sanitized
+    }
+
     console.log(
       `📤 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
@@ -267,7 +316,7 @@ export class SyncCoordinator implements DurableObject {
       return
     }
 
-    if (client.websocket.readyState === WebSocket.READY_STATE_OPEN) {
+    if (client.websocket.readyState === WebSocket.OPEN) {
       try {
         client.websocket.send(JSON.stringify(data))
       } catch (error) {
