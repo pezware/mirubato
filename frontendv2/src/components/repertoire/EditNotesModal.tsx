@@ -78,6 +78,7 @@ export function EditNotesModal({
   const [links, setLinks] = useState<string[]>(currentLinks)
   const [newLink, setNewLink] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [removedStatusChanges, setRemovedStatusChanges] = useState<number[]>([])
 
   const handleAddLink = () => {
     if (newLink.trim()) {
@@ -103,21 +104,30 @@ export function EditNotesModal({
     setLinks(links.filter((_, i) => i !== index))
   }
 
+  const handleRemoveStatusChange = (index: number) => {
+    setRemovedStatusChanges([...removedStatusChanges, index])
+  }
+
   const handleSave = async () => {
     setIsLoading(true)
     try {
       // Combine user notes with status changes
       let combinedNotes = notes.trim()
 
-      // If there are status changes, append them back
-      if (statusChanges.length > 0) {
+      // Filter out removed status changes
+      const keptStatusChanges = statusChanges.filter(
+        (_, index) => !removedStatusChanges.includes(index)
+      )
+
+      // If there are status changes to keep, append them back
+      if (keptStatusChanges.length > 0) {
         // Add separator if there are user notes
         if (combinedNotes) {
           combinedNotes += '\n'
         }
 
-        // Re-add all status changes
-        statusChanges.forEach(change => {
+        // Re-add only the status changes that weren't removed
+        keptStatusChanges.forEach(change => {
           combinedNotes += `[STATUS_CHANGE:${change.timestamp}:${change.oldStatus}:${change.newStatus}]\n`
         })
 
@@ -165,15 +175,21 @@ export function EditNotesModal({
           </p>
         </div>
 
-        {/* Status Change History (read-only) */}
+        {/* Status Change History (with remove option) */}
         {statusChanges.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-2">
               {t('repertoire:statusHistory', 'Status History')}
+              <span className="ml-2 text-xs text-stone-500 font-normal">
+                {t('repertoire:clickToRemove', '(Click × to remove)')}
+              </span>
             </label>
             <Card variant="ghost" className="p-3 bg-stone-50">
-              <div className="space-y-1 text-sm text-stone-600 italic">
+              <div className="space-y-2">
                 {statusChanges.map((change, index) => {
+                  // Skip if this status change was removed
+                  if (removedStatusChanges.includes(index)) return null
+
                   const date = new Date(change.timestamp)
                   const formattedDate = format(date, 'MMM d, yyyy h:mm a', {
                     locale: getDateLocale(),
@@ -188,12 +204,25 @@ export function EditNotesModal({
                   )
 
                   return (
-                    <div key={index}>
-                      [{formattedDate}]{' '}
-                      {t('repertoire:status.statusChangeEntry', {
-                        oldStatus: oldStatusLabel,
-                        newStatus: newStatusLabel,
-                      })}
+                    <div
+                      key={index}
+                      className="flex justify-between items-center group hover:bg-stone-100 px-2 py-1 rounded"
+                    >
+                      <span className="text-sm text-stone-600 italic">
+                        [{formattedDate}]{' '}
+                        {t('repertoire:status.statusChangeEntry', {
+                          oldStatus: oldStatusLabel,
+                          newStatus: newStatusLabel,
+                        })}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStatusChange(index)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-stone-200 rounded"
+                        aria-label={t('common:remove')}
+                      >
+                        <X className="w-4 h-4 text-stone-500" />
+                      </button>
                     </div>
                   )
                 })}

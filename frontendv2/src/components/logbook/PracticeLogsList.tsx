@@ -340,31 +340,7 @@ export function PracticeLogsList({
                   isSelected={selectedEntryId === entry.id}
                   onEdit={onEntryEdit ? () => onEntryEdit(entry) : undefined}
                   onClick={() => onEntrySelect(entry)}
-                >
-                  {/* Show piece information in the list */}
-                  {entry.pieces && entry.pieces.length > 0 && (
-                    <div className="flex flex-wrap gap-2 text-sm">
-                      {entry.pieces.map((piece, idx) => (
-                        <div key={idx} className="text-morandi-stone-700">
-                          <span
-                            className="font-serif font-medium"
-                            data-testid="entry-title"
-                          >
-                            {piece.title}
-                          </span>
-                          {piece.composer && (
-                            <span
-                              className="ml-1 text-morandi-stone-500 font-serif"
-                              data-testid="entry-composer"
-                            >
-                              · {piece.composer}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CompactEntryRow>
+                />
               ))}
             </div>
           ))

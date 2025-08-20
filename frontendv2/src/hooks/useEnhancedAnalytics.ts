@@ -353,7 +353,7 @@ function getGroupKeys(entry: LogbookEntry, field: string): string[] {
     case 'composer':
       return [...new Set(entry.pieces.map(p => p.composer || 'Unknown'))]
     case 'instrument':
-      return [entry.instrument]
+      return entry.instrument ? [entry.instrument] : []
     case 'type':
       return [entry.type]
     case 'mood':
@@ -692,9 +692,10 @@ function calculateDistributionData(entries: LogbookEntry[]): {
 
   entries.forEach(entry => {
     // Instrument distribution
+    const instrument = entry.instrument || 'piano' // Default to piano if not specified
     instrumentMap.set(
-      entry.instrument,
-      (instrumentMap.get(entry.instrument) || 0) + entry.duration
+      instrument,
+      (instrumentMap.get(instrument) || 0) + entry.duration
     )
 
     // Type distribution

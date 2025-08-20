@@ -315,38 +315,57 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     updates: Partial<RepertoireItem>
   ) => {
     try {
-      const { isLocalMode, repertoire } = get()
+      const { isLocalMode, repertoire, scoreMetadataCache } = get()
       const existing = repertoire.get(scoreId)
       if (!existing) throw new Error('Repertoire item not found')
 
       if (isLocalMode) {
-        // Handle status change tracking in local mode
-        const finalUpdates: Partial<RepertoireItem> = { ...updates }
-
+        // Handle status change by creating a logbook entry
         if (
           updates.status !== undefined &&
           updates.status !== existing.status
         ) {
-          // Append status change to personal notes
-          const currentNotes = existing.personalNotes || ''
-          const timestamp = new Date().toISOString()
-          // Add newline only if there are existing notes
-          const separator = currentNotes ? '\n' : ''
-          const statusChangeEntry = `${separator}[STATUS_CHANGE:${timestamp}:${existing.status}:${updates.status}]`
+          // Get score metadata for the piece
+          const metadata = scoreMetadataCache.get(scoreId)
 
-          // If personalNotes is also being updated, append to that; otherwise update separately
-          if (updates.personalNotes !== undefined) {
-            finalUpdates.personalNotes =
-              updates.personalNotes + statusChangeEntry
-          } else {
-            finalUpdates.personalNotes = currentNotes + statusChangeEntry
-          }
+          // Import logbookStore dynamically to avoid circular dependency
+          const { useLogbookStore } = await import('./logbookStore')
+          const logbookStore = useLogbookStore.getState()
+
+          // Create a logbook entry for the status change
+          await logbookStore.createEntry({
+            timestamp: new Date().toISOString(),
+            duration: 1, // 1 minute
+            type: 'status_change',
+            scoreId: scoreId,
+            notes: `Status changed: ${existing.status} → ${updates.status}`,
+            pieces: metadata
+              ? [
+                  {
+                    title: metadata.title || scoreId.split('-')[0],
+                    composer: metadata.composer || scoreId.split('-')[1],
+                  },
+                ]
+              : [
+                  {
+                    title: scoreId.split('-')[0],
+                    composer: scoreId.split('-')[1] || '',
+                  },
+                ],
+            techniques: [],
+            tags: [],
+            mood: 'neutral',
+            goalIds: [],
+          })
+
+          // No longer append status changes to personal notes
+          // Status changes are now tracked as logbook entries
         }
 
         // Update locally
         const updatedItem = {
           ...existing,
-          ...finalUpdates,
+          ...updates,
           updatedAt: Date.now(),
         }
         const newRepertoire = new Map(repertoire)
@@ -357,6 +376,45 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
       } else {
+        // Handle status change by creating a logbook entry (API mode)
+        if (
+          updates.status !== undefined &&
+          updates.status !== existing.status
+        ) {
+          // Get score metadata for the piece
+          const metadata = scoreMetadataCache.get(scoreId)
+
+          // Import logbookStore dynamically to avoid circular dependency
+          const { useLogbookStore } = await import('./logbookStore')
+          const logbookStore = useLogbookStore.getState()
+
+          // Create a logbook entry for the status change
+          await logbookStore.createEntry({
+            timestamp: new Date().toISOString(),
+            duration: 1, // 1 minute
+            type: 'status_change',
+            scoreId: scoreId,
+            notes: `Status changed: ${existing.status} → ${updates.status}`,
+            pieces: metadata
+              ? [
+                  {
+                    title: metadata.title || scoreId.split('-')[0],
+                    composer: metadata.composer || scoreId.split('-')[1],
+                  },
+                ]
+              : [
+                  {
+                    title: scoreId.split('-')[0],
+                    composer: scoreId.split('-')[1] || '',
+                  },
+                ],
+            techniques: [],
+            tags: [],
+            mood: 'neutral',
+            goalIds: [],
+          })
+        }
+
         // Use API
         await repertoireApi.update(scoreId, updates)
 
