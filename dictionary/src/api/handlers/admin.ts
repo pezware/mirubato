@@ -56,8 +56,8 @@ const entryUpdateSchema = z.object({
           })
         )
         .optional(),
-      media: z.any().optional(),
-      shopping: z.any().optional(),
+      media: z.unknown().optional(),
+      shopping: z.unknown().optional(),
     })
     .optional(),
   metadata: z
@@ -228,7 +228,7 @@ adminHandler.delete('/terms/:id', async c => {
  */
 const bulkOperationSchema = z.object({
   operation: z.enum(['import', 'delete', 'update_type', 'verify']),
-  data: z.any(), // Specific validation based on operation
+  data: z.unknown(), // Specific validation based on operation
 })
 
 adminHandler.post('/bulk', zValidator('json', bulkOperationSchema), async c => {
@@ -1057,7 +1057,7 @@ adminHandler.put(
     z.object({
       action: z.enum(['approve', 'reject']),
       notes: z.string().optional(),
-      modifications: z.any().optional(), // Modified entry data
+      modifications: z.unknown().optional(), // Modified entry data
     })
   ),
   async c => {

@@ -13,6 +13,7 @@ import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireId
 import { useAuthStore } from './authStore'
 import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
 import { localEventBus } from '@/services/localEventBus'
+import { getErrorMessage, parseJsonSafely } from '@/utils/typeGuards'
 
 interface RepertoireStatus {
   planned: 'planned'
@@ -302,7 +303,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     } catch (error) {
       console.error('Error adding to repertoire:', error)
       showToast(
-        (error as Error).message || 'Failed to add to repertoire',
+        getErrorMessage(error) || 'Failed to add to repertoire',
         'error'
       )
       throw error
@@ -439,7 +440,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     } catch (error) {
       console.error('Error updating repertoire:', error)
       showToast(
-        (error as Error).message || 'Failed to update repertoire',
+        getErrorMessage(error) || 'Failed to update repertoire',
         'error'
       )
       throw error
@@ -494,7 +495,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     } catch (error) {
       console.error('Error removing from repertoire:', error)
       showToast(
-        (error as Error).message || 'Failed to remove from repertoire',
+        getErrorMessage(error) || 'Failed to remove from repertoire',
         'error'
       )
       throw error
@@ -543,7 +544,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         // Get current entries from localStorage directly to avoid importing logbookStore
         const storedEntries = localStorage.getItem('mirubato:logbook:entries')
         const entries = storedEntries
-          ? (JSON.parse(storedEntries) as LogbookEntry[])
+          ? parseJsonSafely<LogbookEntry[]>(storedEntries) || []
           : []
 
         // Count how many logs will be affected
@@ -646,8 +647,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     } catch (error) {
       console.error('Error dissociating piece from repertoire:', error)
       showToast(
-        (error as Error).message ||
-          'Failed to dissociate piece from repertoire',
+        getErrorMessage(error) || 'Failed to dissociate piece from repertoire',
         'error'
       )
       throw error
@@ -786,7 +786,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       }
     } catch (error) {
       console.error('Error creating goal:', error)
-      showToast((error as Error).message || 'Failed to create goal', 'error')
+      showToast(getErrorMessage(error) || 'Failed to create goal', 'error')
       throw error
     }
   },
@@ -836,7 +836,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       showToast('Goal updated', 'success')
     } catch (error) {
       console.error('Error updating goal:', error)
-      showToast((error as Error).message || 'Failed to update goal', 'error')
+      showToast(getErrorMessage(error) || 'Failed to update goal', 'error')
       throw error
     }
   },
@@ -871,7 +871,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       showToast('Goal deleted', 'success')
     } catch (error) {
       console.error('Error deleting goal:', error)
-      showToast((error as Error).message || 'Failed to delete goal', 'error')
+      showToast(getErrorMessage(error) || 'Failed to delete goal', 'error')
       throw error
     }
   },
@@ -935,7 +935,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       }
     } catch (error) {
       console.error('Error tracking progress:', error)
-      showToast((error as Error).message || 'Failed to track progress', 'error')
+      showToast(getErrorMessage(error) || 'Failed to track progress', 'error')
       throw error
     }
   },

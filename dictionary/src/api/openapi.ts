@@ -72,12 +72,12 @@ export const createOpenAPIApp = () => {
 export const ErrorResponseSchema = z.object({
   success: z.boolean().default(false),
   error: z.string(),
-  details: z.any().optional(),
+  details: z.any().optional(), // Must use z.any() for OpenAPI schema generation
 })
 
 export const SuccessResponseSchema = z.object({
   success: z.boolean().default(true),
-  data: z.any(),
+  data: z.any(), // Must use z.any() for OpenAPI schema generation
   metadata: z
     .object({
       timestamp: z.string(),
