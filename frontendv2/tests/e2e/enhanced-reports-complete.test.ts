@@ -242,7 +242,8 @@ test.describe('Enhanced Reports - Core Tests', () => {
 
         // On mobile, verify the data view loads properly
         // Check for the segmented control (Table/Analytics toggle)
-        const segmentedControl = page.locator('role=tablist')
+        // Use more specific selector to avoid multiple matches
+        const segmentedControl = page.locator('role=tablist').first()
         const hasSegmentedControl = await segmentedControl
           .isVisible({ timeout: 3000 })
           .catch(() => false)

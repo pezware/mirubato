@@ -103,7 +103,10 @@ test.describe('Recent Entries', () => {
       const count = await entryContainers.count()
 
       for (let i = 0; i < count; i++) {
-        const titleElement = entryContainers.nth(i).locator('h3').first()
+        const titleElement = entryContainers
+          .nth(i)
+          .locator('[data-testid="entry-title"]')
+          .first()
         const title = await titleElement.textContent()
         if (title) {
           entryTitles.push(title.trim())

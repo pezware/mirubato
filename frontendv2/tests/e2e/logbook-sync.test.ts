@@ -172,7 +172,10 @@ test.describe('Logbook Sync', () => {
     const entryTitles = []
     for (let i = 0; i < entryCount; i++) {
       // Get just the title text from each entry card
-      const titleElement = entryCards.nth(i).locator('h3').first()
+      const titleElement = entryCards
+        .nth(i)
+        .locator('[data-testid="entry-title"]')
+        .first()
       const titleText = await titleElement.textContent()
       entryTitles.push(titleText || '')
     }
