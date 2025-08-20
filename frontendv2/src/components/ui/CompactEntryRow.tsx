@@ -43,7 +43,7 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
   pieces,
   notes,
   techniques,
-  mood,
+  mood: _mood, // Currently unused but kept for future implementation
   isSelected,
   onEdit,
   onDelete,
