@@ -14,6 +14,7 @@ import enRepertoire from '../locales/en/repertoire.json'
 import enUI from '../locales/en/ui.json'
 import enAbout from '../locales/en/about.json'
 import enPrivacy from '../locales/en/privacy.json'
+import enValidation from '../locales/en/validation.json'
 
 import esCommon from '../locales/es/common.json'
 import esAuth from '../locales/es/auth.json'
@@ -26,6 +27,7 @@ import esRepertoire from '../locales/es/repertoire.json'
 import esUI from '../locales/es/ui.json'
 import esAbout from '../locales/es/about.json'
 import esPrivacy from '../locales/es/privacy.json'
+import esValidation from '../locales/es/validation.json'
 
 import frCommon from '../locales/fr/common.json'
 import frAuth from '../locales/fr/auth.json'
@@ -38,6 +40,7 @@ import frRepertoire from '../locales/fr/repertoire.json'
 import frUI from '../locales/fr/ui.json'
 import frAbout from '../locales/fr/about.json'
 import frPrivacy from '../locales/fr/privacy.json'
+import frValidation from '../locales/fr/validation.json'
 
 import zhTWCommon from '../locales/zh-TW/common.json'
 import zhTWAuth from '../locales/zh-TW/auth.json'
@@ -50,6 +53,7 @@ import zhTWRepertoire from '../locales/zh-TW/repertoire.json'
 import zhTWUI from '../locales/zh-TW/ui.json'
 import zhTWAbout from '../locales/zh-TW/about.json'
 import zhTWPrivacy from '../locales/zh-TW/privacy.json'
+import zhTWValidation from '../locales/zh-TW/validation.json'
 
 import deCommon from '../locales/de/common.json'
 import deAuth from '../locales/de/auth.json'
@@ -62,6 +66,7 @@ import deRepertoire from '../locales/de/repertoire.json'
 import deUI from '../locales/de/ui.json'
 import deAbout from '../locales/de/about.json'
 import dePrivacy from '../locales/de/privacy.json'
+import deValidation from '../locales/de/validation.json'
 
 import zhCNCommon from '../locales/zh-CN/common.json'
 import zhCNAuth from '../locales/zh-CN/auth.json'
@@ -74,6 +79,7 @@ import zhCNRepertoire from '../locales/zh-CN/repertoire.json'
 import zhCNUI from '../locales/zh-CN/ui.json'
 import zhCNAbout from '../locales/zh-CN/about.json'
 import zhCNPrivacy from '../locales/zh-CN/privacy.json'
+import zhCNValidation from '../locales/zh-CN/validation.json'
 
 export const defaultNS = 'common'
 export const resources = {
@@ -89,6 +95,7 @@ export const resources = {
     ui: enUI,
     about: enAbout,
     privacy: enPrivacy,
+    validation: enValidation,
   },
   es: {
     common: esCommon,
@@ -102,6 +109,7 @@ export const resources = {
     ui: esUI,
     about: esAbout,
     privacy: esPrivacy,
+    validation: esValidation,
   },
   fr: {
     common: frCommon,
@@ -115,6 +123,7 @@ export const resources = {
     ui: frUI,
     about: frAbout,
     privacy: frPrivacy,
+    validation: frValidation,
   },
   'zh-TW': {
     common: zhTWCommon,
@@ -128,6 +137,7 @@ export const resources = {
     ui: zhTWUI,
     about: zhTWAbout,
     privacy: zhTWPrivacy,
+    validation: zhTWValidation,
   },
   de: {
     common: deCommon,
@@ -141,6 +151,7 @@ export const resources = {
     ui: deUI,
     about: deAbout,
     privacy: dePrivacy,
+    validation: deValidation,
   },
   'zh-CN': {
     common: zhCNCommon,
@@ -154,6 +165,7 @@ export const resources = {
     ui: zhCNUI,
     about: zhCNAbout,
     privacy: zhCNPrivacy,
+    validation: zhCNValidation,
   },
 } as const
 

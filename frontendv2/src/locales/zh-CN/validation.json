@@ -1,0 +1,41 @@
+{
+  "required": "{{field}} 是必填项",
+  "instrument": {
+    "required": "乐器是必填项"
+  },
+  "title": {
+    "required": "标题是必填项",
+    "maxLength": "标题必须少于 {{max}} 个字符"
+  },
+  "composer": {
+    "maxLength": "作曲家必须少于 {{max}} 个字符"
+  },
+  "datetime": {
+    "invalid": "无效的日期/时间"
+  },
+  "duration": {
+    "wholeNumber": "持续时间必须是整数",
+    "min": "持续时间至少 {{min}} 分钟",
+    "max": "持续时间不能超过 {{max}} 小时"
+  },
+  "pieces": {
+    "max": "每个条目最多 {{max}} 首曲子",
+    "requireTitle": "如果添加曲子，至少一首必须有标题"
+  },
+  "techniques": {
+    "max": "最多 {{max}} 个技巧"
+  },
+  "notes": {
+    "maxLength": "笔记不能超过 {{max}} 个字符"
+  },
+  "tags": {
+    "max": "最多 {{max}} 个标签"
+  },
+  "description": {
+    "maxLength": "描述必须少于 {{max}} 个字符"
+  },
+  "goal": {
+    "targetMin": "目标至少 {{min}}",
+    "targetDateFuture": "目标日期必须在未来"
+  }
+}

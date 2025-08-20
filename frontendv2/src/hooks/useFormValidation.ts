@@ -56,10 +56,15 @@ export function useFormValidation<T>({
         // Navigate to the specific field schema
         for (const segment of fieldPath) {
           if ('shape' in fieldSchema) {
-            fieldSchema = (fieldSchema as any).shape[segment]
+            // Type assertion for ZodObject
+            const objectSchema = fieldSchema as z.ZodObject<
+              Record<string, z.ZodTypeAny>
+            >
+            fieldSchema = objectSchema.shape[segment]
           } else if ('element' in fieldSchema) {
-            // Handle arrays
-            fieldSchema = (fieldSchema as any).element
+            // Type assertion for ZodArray
+            const arraySchema = fieldSchema as z.ZodArray<z.ZodTypeAny>
+            fieldSchema = arraySchema.element
           }
         }
 

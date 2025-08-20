@@ -1,0 +1,41 @@
+{
+  "required": "{{field}} 是必填項",
+  "instrument": {
+    "required": "樂器是必填項"
+  },
+  "title": {
+    "required": "標題是必填項",
+    "maxLength": "標題必須少於 {{max}} 個字符"
+  },
+  "composer": {
+    "maxLength": "作曲家必須少於 {{max}} 個字符"
+  },
+  "datetime": {
+    "invalid": "無效的日期/時間"
+  },
+  "duration": {
+    "wholeNumber": "持續時間必須是整數",
+    "min": "持續時間至少 {{min}} 分鐘",
+    "max": "持續時間不能超過 {{max}} 小時"
+  },
+  "pieces": {
+    "max": "每個條目最多 {{max}} 首曲子",
+    "requireTitle": "如果添加曲子，至少一首必須有標題"
+  },
+  "techniques": {
+    "max": "最多 {{max}} 個技巧"
+  },
+  "notes": {
+    "maxLength": "筆記不能超過 {{max}} 個字符"
+  },
+  "tags": {
+    "max": "最多 {{max}} 個標籤"
+  },
+  "description": {
+    "maxLength": "描述必須少於 {{max}} 個字符"
+  },
+  "goal": {
+    "targetMin": "目標至少 {{min}}",
+    "targetDateFuture": "目標日期必須在未來"
+  }
+}

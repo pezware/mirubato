@@ -1,0 +1,41 @@
+{
+  "required": "{{field}} is required",
+  "instrument": {
+    "required": "Instrument is required"
+  },
+  "title": {
+    "required": "Title is required",
+    "maxLength": "Title must be less than {{max}} characters"
+  },
+  "composer": {
+    "maxLength": "Composer must be less than {{max}} characters"
+  },
+  "datetime": {
+    "invalid": "Invalid date/time"
+  },
+  "duration": {
+    "wholeNumber": "Duration must be a whole number",
+    "min": "Duration must be at least {{min}} minute",
+    "max": "Duration cannot exceed {{max}} hours"
+  },
+  "pieces": {
+    "max": "Maximum {{max}} pieces per entry",
+    "requireTitle": "At least one piece must have a title if pieces are added"
+  },
+  "techniques": {
+    "max": "Maximum {{max}} techniques"
+  },
+  "notes": {
+    "maxLength": "Notes cannot exceed {{max}} characters"
+  },
+  "tags": {
+    "max": "Maximum {{max}} tags"
+  },
+  "description": {
+    "maxLength": "Description must be less than {{max}} characters"
+  },
+  "goal": {
+    "targetMin": "Target must be at least {{min}}",
+    "targetDateFuture": "Target date must be in the future"
+  }
+}

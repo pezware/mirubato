@@ -3,6 +3,9 @@ import { z } from 'zod'
 /**
  * Frontend validation schemas for forms
  * These match the API schemas but are tailored for client-side validation
+ *
+ * Note: Validation messages use i18n keys that are resolved at runtime
+ * via the validationTranslator utility
  */
 
 // Enum schemas matching API
@@ -25,18 +28,18 @@ export const MoodSchema = z.enum([
 // Allow any non-empty string for instruments (supports custom instruments)
 export const InstrumentSchema = z
   .string()
-  .min(1, { message: 'Instrument is required' })
+  .min(1, { message: 'validation:instrument.required' })
   .transform(s => s.toLowerCase())
 
 // Piece validation schema
 export const PieceSchema = z.object({
   title: z
     .string()
-    .min(1, { message: 'Title is required' })
-    .max(255, { message: 'Title must be less than 255 characters' }),
+    .min(1, { message: 'validation:title.required' })
+    .max(255, { message: 'validation:title.maxLength' }),
   composer: z
     .string()
-    .max(255, { message: 'Composer must be less than 255 characters' })
+    .max(255, { message: 'validation:composer.maxLength' })
     .nullable()
     .optional(),
   scoreId: z.string().optional(),
@@ -44,49 +47,52 @@ export const PieceSchema = z.object({
 
 // Manual entry form validation schema
 export const ManualEntryFormSchema = z.object({
-  timestamp: z.string().datetime({ message: 'Invalid date/time' }),
+  timestamp: z.string().datetime({ message: 'validation:datetime.invalid' }),
   duration: z
     .number()
-    .int({ message: 'Duration must be a whole number' })
-    .min(1, { message: 'Duration must be at least 1 minute' })
-    .max(600, { message: 'Duration cannot exceed 10 hours' }),
+    .int({ message: 'validation:duration.wholeNumber' })
+    .min(1, { message: 'validation:duration.min' })
+    .max(600, { message: 'validation:duration.max' }),
   type: LogbookEntryTypeSchema,
   instrument: InstrumentSchema.optional(),
   pieces: z
     .array(PieceSchema)
     .min(0)
-    .max(10, { message: 'Maximum 10 pieces per entry' })
+    .max(10, { message: 'validation:pieces.max' })
     .refine(
       pieces =>
         pieces.filter(p => p.title.trim().length > 0).length > 0 ||
         pieces.length === 0,
-      { message: 'At least one piece must have a title if pieces are added' }
+      { message: 'validation:pieces.requireTitle' }
     ),
   techniques: z
     .array(z.string().min(1).max(100))
-    .max(20, { message: 'Maximum 20 techniques' }),
+    .max(20, { message: 'validation:techniques.max' }),
   notes: z
     .string()
-    .max(5000, { message: 'Notes cannot exceed 5000 characters' })
+    .max(5000, { message: 'validation:notes.maxLength' })
     .nullable()
     .optional(),
   mood: MoodSchema.nullable().optional(),
   tags: z
     .array(z.string().min(1).max(50))
-    .max(10, { message: 'Maximum 10 tags' }),
+    .max(10, { message: 'validation:tags.max' }),
   goalIds: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 // Timer entry form validation (simpler than manual)
 export const TimerEntryFormSchema = z.object({
-  pieces: z.array(PieceSchema).min(0).max(10, 'Maximum 10 pieces per entry'),
+  pieces: z
+    .array(PieceSchema)
+    .min(0)
+    .max(10, { message: 'validation:pieces.max' }),
   techniques: z
     .array(z.string().min(1).max(100))
-    .max(20, { message: 'Maximum 20 techniques' }),
+    .max(20, { message: 'validation:techniques.max' }),
   notes: z
     .string()
-    .max(5000, { message: 'Notes cannot exceed 5000 characters' })
+    .max(5000, { message: 'validation:notes.maxLength' })
     .nullable()
     .optional(),
   mood: MoodSchema.nullable().optional(),
@@ -105,22 +111,22 @@ export const UserPreferencesSchema = z.object({
 export const GoalFormSchema = z.object({
   title: z
     .string()
-    .min(1, { message: 'Title is required' })
-    .max(255, { message: 'Title must be less than 255 characters' }),
+    .min(1, { message: 'validation:title.required' })
+    .max(255, { message: 'validation:title.maxLength' }),
   description: z
     .string()
-    .max(1000, { message: 'Description must be less than 1000 characters' })
+    .max(1000, { message: 'validation:description.maxLength' })
     .optional(),
   type: z.enum(['practice_time', 'accuracy', 'repertoire', 'custom']),
   targetValue: z
     .number()
     .int()
-    .min(1, { message: 'Target must be at least 1' })
+    .min(1, { message: 'validation:goal.targetMin' })
     .optional(),
   targetDate: z
     .string()
     .refine(val => !val || new Date(val) > new Date(), {
-      message: 'Target date must be in the future',
+      message: 'validation:goal.targetDateFuture',
     })
     .optional(),
 })
