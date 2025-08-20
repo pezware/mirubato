@@ -13,6 +13,7 @@ interface LogbookSplitViewProps {
   showTimeline?: boolean
   className?: string
   initialSelectedId?: string
+  hidePieceInfo?: boolean
 }
 
 export function LogbookSplitView({
@@ -21,6 +22,7 @@ export function LogbookSplitView({
   showTimeline = false,
   className = '',
   initialSelectedId,
+  hidePieceInfo = false,
 }: LogbookSplitViewProps) {
   const { t } = useTranslation(['logbook', 'common'])
   const { deleteEntry } = useLogbookStore()
@@ -112,6 +114,7 @@ export function LogbookSplitView({
         onEntryEdit={handleEdit}
         onEntryDelete={handleDelete}
         showTimeline={showTimeline}
+        hidePieceInfo={hidePieceInfo}
       />
     </div>
   )

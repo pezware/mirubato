@@ -475,7 +475,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
       {/* Notes Section */}
       <Card padding="md">
-        <div className="mt-6 pt-6 border-t border-stone-200">
+        <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm uppercase tracking-wider text-stone-500">
               {t('repertoire:personalNotes')}
@@ -574,6 +574,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             onUpdate={handleEntryUpdate}
             showTimeline={false}
             initialSelectedId={selectedSessionId}
+            hidePieceInfo={true}
           />
         ) : (
           <Card padding="lg">

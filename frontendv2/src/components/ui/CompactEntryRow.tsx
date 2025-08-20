@@ -32,6 +32,7 @@ interface CompactEntryRowProps {
   onClick?: () => void
   className?: string
   entryId?: string
+  hidePieceInfo?: boolean // Hide piece title/composer
   children?: React.ReactNode // For additional content like piece titles
 }
 
@@ -50,6 +51,7 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
   onClick,
   className,
   entryId,
+  hidePieceInfo = false,
   children,
 }) => {
   const [showNotes, setShowNotes] = useState(false)
@@ -83,15 +85,18 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
   return (
     <div
       className={cn(
-        'border-b border-morandi-stone-200 last:border-b-0',
-        isSelected && 'border-l-4 border-l-morandi-purple-600',
+        'border-b border-morandi-stone-200 last:border-b-0 relative',
         className
       )}
       data-testid="logbook-entry"
       data-entry-id={entryId}
     >
+      {/* Highlight bar that doesn't shift content */}
+      {isSelected && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-morandi-purple-600" />
+      )}
       <div
-        className="p-2 hover:bg-morandi-stone-50 transition-colors group cursor-pointer"
+        className="py-2 px-4 hover:bg-morandi-stone-50 transition-colors group cursor-pointer"
         onClick={e => {
           // Only toggle notes if clicking on the main area, not buttons
           if (notes && !(e.target as HTMLElement).closest('button')) {
@@ -105,17 +110,22 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-1">
             {/* First row: Piece name | Composer name (if available) */}
-            {pieces && pieces.length > 0 && (
-              <div className="flex items-center gap-2">
+            {!hidePieceInfo && pieces && pieces.length > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
                 {pieces.map((piece, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <MusicTitle className="text-base">
+                  <div
+                    key={index}
+                    className="flex flex-col sm:flex-row sm:items-center sm:gap-2"
+                  >
+                    <MusicTitle className="text-sm">
                       {toTitleCase(piece.title)}
                     </MusicTitle>
                     {piece.composer && (
                       <>
-                        <span className="text-morandi-stone-400">|</span>
-                        <MusicComposer className="text-sm">
+                        <span className="hidden sm:inline text-morandi-stone-400">
+                          |
+                        </span>
+                        <MusicComposer className="text-xs sm:text-sm text-morandi-stone-600">
                           {toTitleCase(piece.composer)}
                         </MusicComposer>
                       </>
@@ -125,8 +135,8 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
               </div>
             )}
 
-            {/* Second row: Time | Duration | Tags */}
-            <div className="flex items-center gap-3">
+            {/* Second row: Time | Duration | Tags - allow wrapping on mobile */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="text-sm text-morandi-stone-700 font-medium">
                 {time}
               </span>
