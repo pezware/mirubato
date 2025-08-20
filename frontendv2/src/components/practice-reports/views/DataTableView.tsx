@@ -8,7 +8,7 @@ import Button from '../../ui/Button'
 import { Card } from '../../ui/Card'
 import { LogbookEntry } from '../../../api/logbook'
 import { calculateTimeSeriesDataByPeriod } from '../../../hooks/useEnhancedAnalytics'
-import LogbookEntryList from '../../LogbookEntryList'
+import { LogbookSplitView } from '../../logbook/LogbookSplitView'
 
 interface DataTableViewProps {
   analytics: EnhancedAnalyticsData
@@ -163,7 +163,11 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
         <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700 mb-3 sm:mb-4">
           {t('reports:practiceLogsList')}
         </h3>
-        <LogbookEntryList entries={entries} onUpdate={handleEntryUpdate} />
+        <LogbookSplitView
+          entries={entries}
+          onUpdate={handleEntryUpdate}
+          showTimeline={true}
+        />
       </Card>
 
       {/* Export Controls */}
