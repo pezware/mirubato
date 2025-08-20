@@ -123,35 +123,39 @@ test.describe('Logbook Sync', () => {
   })
 
   test('entries maintain proper order', async ({ page }) => {
-    // Create first entry (created first = oldest timestamp)
+    // IMPORTANT: The form sets timestamp = now - duration minutes
+    // So entries with longer durations will have EARLIER timestamps
+
+    // Create first entry: duration 15 min → timestamp = now - 15 min (MOST RECENT)
     await logbookPage.createEntry({
       duration: 15,
       title: 'Morning Practice',
       notes: 'Early session',
     })
 
-    // Wait for entry to be saved and add delay to ensure different timestamp
-    await page.waitForSelector('text="Morning Practice"', {
+    // Wait for entry to be saved - check for data-testid instead of text
+    await page.waitForSelector('[data-testid="logbook-entry"]', {
       state: 'visible',
       timeout: 5000,
     })
     await page.waitForTimeout(1000) // 1 second delay
 
-    // Create second entry (created second = middle timestamp)
+    // Create second entry: duration 30 min → timestamp = now - 30 min (MIDDLE)
     await logbookPage.createEntry({
       duration: 30,
       title: 'Afternoon Practice',
       notes: 'Later session',
     })
 
-    // Wait for entry to be saved and add delay to ensure different timestamp
-    await page.waitForSelector('text="Afternoon Practice"', {
-      state: 'visible',
-      timeout: 5000,
-    })
+    // Wait for entry to be saved - check for count instead of text
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('[data-testid="logbook-entry"]').length >= 2,
+      { timeout: 5000 }
+    )
     await page.waitForTimeout(1000) // 1 second delay
 
-    // Create third entry (created last = newest timestamp)
+    // Create third entry: duration 45 min → timestamp = now - 45 min (OLDEST)
     await logbookPage.createEntry({
       duration: 45,
       title: 'Evening Practice',
@@ -169,30 +173,34 @@ test.describe('Logbook Sync', () => {
     const entryCards = page.locator('[data-testid="logbook-entry"]')
     const entryCount = await entryCards.count()
 
+    // Since the list view doesn't show titles, we need to click each entry to verify
     const entryTitles = []
     for (let i = 0; i < entryCount; i++) {
-      // Get just the title text from each entry card
-      const titleElement = entryCards
-        .nth(i)
-        .locator('[data-testid="entry-title"]')
-        .first()
-      const titleText = await titleElement.textContent()
-      entryTitles.push(titleText || '')
+      // Click on the entry to show details
+      await entryCards.nth(i).click()
+      await page.waitForTimeout(300) // Wait for detail panel to update
+
+      // Get the content from the detail panel
+      const detailContent = await page.textContent('body')
+
+      // Determine which practice this is based on the content
+      if (detailContent.includes('Evening Practice')) {
+        entryTitles.push('Evening Practice')
+      } else if (detailContent.includes('Afternoon Practice')) {
+        entryTitles.push('Afternoon Practice')
+      } else if (detailContent.includes('Morning Practice')) {
+        entryTitles.push('Morning Practice')
+      } else {
+        entryTitles.push('Unknown')
+      }
     }
 
     // Find the indices by checking which entry has each title
-    const eveningIndex = entryTitles.findIndex(title =>
-      title.includes('Evening Practice')
-    )
-    const afternoonIndex = entryTitles.findIndex(title =>
-      title.includes('Afternoon Practice')
-    )
-    const morningIndex = entryTitles.findIndex(title =>
-      title.includes('Morning Practice')
-    )
+    const eveningIndex = entryTitles.indexOf('Evening Practice')
+    const afternoonIndex = entryTitles.indexOf('Afternoon Practice')
+    const morningIndex = entryTitles.indexOf('Morning Practice')
 
-    // Verify that all entries are present and in consistent order
-    // The actual order appears to be by creation sequence in this test environment
+    // Verify that all entries are present
     expect(
       morningIndex,
       'Morning Practice should be found'
@@ -206,13 +214,19 @@ test.describe('Logbook Sync', () => {
       'Evening Practice should be found'
     ).toBeGreaterThanOrEqual(0)
 
-    // Verify they're in consistent order (actual observed behavior)
-    expect(morningIndex, 'Entries should be in consistent order').toBeLessThan(
-      afternoonIndex
-    )
+    // Verify they're in reverse chronological order (newest timestamp first)
+    // Because of how durations affect timestamps:
+    // - Morning Practice (15 min duration) has the MOST RECENT timestamp
+    // - Afternoon Practice (30 min duration) has the MIDDLE timestamp
+    // - Evening Practice (45 min duration) has the OLDEST timestamp
+    // So the expected order is: Morning, Afternoon, Evening
+    expect(
+      morningIndex,
+      'Morning Practice should appear first (most recent timestamp)'
+    ).toBeLessThan(afternoonIndex)
     expect(
       afternoonIndex,
-      'Entries should be in consistent order'
+      'Afternoon Practice should appear before Evening Practice'
     ).toBeLessThan(eveningIndex)
   })
 })

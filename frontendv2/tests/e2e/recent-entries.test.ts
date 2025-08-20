@@ -46,9 +46,16 @@ test.describe('Recent Entries', () => {
       await expect(page.locator('[data-testid="logbook-entry"]')).toBeVisible({
         timeout: 5000,
       })
-      await expect(page.locator('text=Test Piece')).toBeVisible()
-      await expect(page.locator('text=Test Composer')).toBeVisible()
-      // Notes are no longer shown in preview - only visible when expanded
+
+      // Click on the entry to see details (piece titles not shown in list view)
+      await page.locator('[data-testid="logbook-entry"]').first().click()
+      await page.waitForTimeout(500) // Wait for detail panel to update
+
+      // Now check for piece and composer in the detail panel
+      const detailContent = await page.textContent('body')
+      expect(detailContent).toContain('Test Piece')
+      expect(detailContent).toContain('Test Composer')
+      // Notes are visible in the detail panel when expanded
     })
   })
 
@@ -66,11 +73,15 @@ test.describe('Recent Entries', () => {
 
       for (let i = 0; i < entries.length; i++) {
         await logbookPage.createEntry(entries[i])
-        // Wait for entry to be saved and UI to update
-        await page.waitForSelector(`text="${entries[i].title}"`, {
-          state: 'visible',
-          timeout: 5000,
-        })
+        // Wait for entry to be saved - check for entry count instead of text
+        // (titles aren't shown in list view, only in detail panel)
+        await page.waitForFunction(
+          expectedCount =>
+            document.querySelectorAll('[data-testid="logbook-entry"]').length >=
+            expectedCount,
+          i + 1, // Expected count after creating this entry
+          { timeout: 5000 }
+        )
         // Add a small delay between entries to ensure different timestamps
         if (i < entries.length - 1) {
           await page.waitForTimeout(1000)
@@ -88,43 +99,46 @@ test.describe('Recent Entries', () => {
         timeout: 5000,
       })
 
-      // Wait for all entries to be visible
-      await page.waitForSelector('text=Third Entry', {
-        state: 'visible',
-        timeout: 5000,
-      })
+      // Wait for all entries to be visible in the list
+      // Note: Piece titles are not shown in the list view, only in detail panel
 
       // Get all entry containers using the specific data-testid
       const entryContainers = page.locator('[data-testid="logbook-entry"]')
       await expect(entryContainers).toHaveCount(3, { timeout: 5000 })
 
-      // Get the entry titles in order
-      const entryTitles: string[] = []
-      const count = await entryContainers.count()
+      // Click through entries to verify they contain the expected pieces
+      const foundTitles: string[] = []
+      for (let i = 0; i < 3; i++) {
+        await entryContainers.nth(i).click()
+        await page.waitForTimeout(300) // Wait for detail panel
+        const detailContent = await page.textContent('body')
 
-      for (let i = 0; i < count; i++) {
-        const titleElement = entryContainers
-          .nth(i)
-          .locator('[data-testid="entry-title"]')
-          .first()
-        const title = await titleElement.textContent()
-        if (title) {
-          entryTitles.push(title.trim())
+        if (detailContent.includes('First Entry')) {
+          foundTitles.push('First Entry')
+        } else if (detailContent.includes('Second Entry')) {
+          foundTitles.push('Second Entry')
+        } else if (detailContent.includes('Third Entry')) {
+          foundTitles.push('Third Entry')
         }
       }
 
-      // Verify we found all entries
-      expect(entryTitles).toContain('First Entry')
-      expect(entryTitles).toContain('Second Entry')
-      expect(entryTitles).toContain('Third Entry')
+      // Verify all three entries were found
+      expect(foundTitles).toContain('First Entry')
+      expect(foundTitles).toContain('Second Entry')
+      expect(foundTitles).toContain('Third Entry')
 
-      // Get positions
-      const firstEntryPosition = entryTitles.indexOf('First Entry')
-      const secondEntryPosition = entryTitles.indexOf('Second Entry')
-      const thirdEntryPosition = entryTitles.indexOf('Third Entry')
+      // Since we clicked through entries in order, foundTitles contains them in displayed order
+      // Get positions for verification
+      const firstEntryPosition = foundTitles.indexOf('First Entry')
+      const secondEntryPosition = foundTitles.indexOf('Second Entry')
+      const thirdEntryPosition = foundTitles.indexOf('Third Entry')
 
       // Verify they appear in reverse chronological order (newest timestamp first)
-      // Since durations are increasing, First Entry has newest timestamp
+      // Due to the way the form works (timestamp = now - duration minutes):
+      // - First Entry: 20 min duration → most recent timestamp
+      // - Second Entry: 30 min duration → middle timestamp
+      // - Third Entry: 40 min duration → oldest timestamp
+      // So in reverse chronological order (newest first), we expect:
       // First Entry should appear before Second Entry
       // Second Entry should appear before Third Entry
       expect(firstEntryPosition).toBeLessThan(secondEntryPosition)

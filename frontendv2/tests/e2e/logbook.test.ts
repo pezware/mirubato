@@ -103,17 +103,26 @@ test.describe('Logbook', () => {
 
       await test.step('Expand entry', async () => {
         await logbookPage.switchToOverviewTab()
-        // Wait for entry to be visible first
-        await expect(page.locator('text=Sonata No. 11')).toBeVisible()
-        await logbookPage.expandEntry(0)
+        // Wait for entries to be visible first
+        await page.waitForSelector('[data-testid="logbook-entry"]', {
+          state: 'visible',
+          timeout: 5000,
+        })
+        // Click on the first entry to select and view details
+        const entries = page.locator('[data-testid="logbook-entry"]')
+        await entries.first().click()
       })
 
       await test.step('Verify expanded details', async () => {
-        // Use a more specific selector to avoid multiple matches
-        await expect(page.locator('h3:has-text("Sonata No. 11")')).toBeVisible()
+        // Wait a bit for detail panel to update
+        await page.waitForTimeout(500)
 
-        // Look for Mozart or other entry details in the expanded area
-        // The composer might be displayed differently or not shown in expanded view
+        // Check that piece information is visible in the detail panel
+        const detailContent = await page.textContent('body')
+        expect(detailContent).toContain('Sonata No. 11')
+        expect(detailContent).toContain('Mozart')
+
+        // Look for other entry details in the detail panel
         const mozartVisible = await page
           .locator('text=Mozart')
           .isVisible()
@@ -299,16 +308,48 @@ test.describe('Logbook', () => {
         const entries = page.locator('[data-testid="logbook-entry"]')
         await expect(entries).toHaveCount(3, { timeout: 5000 })
 
-        // Check that all our entries are visible in the overview
-        const pageContent = await page.textContent('body')
+        // The split view doesn't show piece details in the list
+        // We need to verify that all pieces are present, regardless of order
+        // Since the order might vary, let's check all entries for all pieces
 
-        // Verify our pieces and composers are visible
-        expect(pageContent).toContain('Beethoven')
-        expect(pageContent).toContain('Mozart')
-        expect(pageContent).toContain('Debussy')
-        expect(pageContent).toContain('Moonlight Sonata')
-        expect(pageContent).toContain('Clair de Lune')
-        expect(pageContent).toContain('Sonata No. 16')
+        const foundPieces = new Set<string>()
+        const foundComposers = new Set<string>()
+
+        // Click through all entries to collect the pieces and composers
+        for (let i = 0; i < 3; i++) {
+          await entries.nth(i).click()
+          await page.waitForTimeout(500) // Wait for detail panel to update
+
+          const detailContent = await page.textContent('body')
+
+          // Check for each piece and composer
+          if (detailContent.includes('Moonlight Sonata')) {
+            foundPieces.add('Moonlight Sonata')
+          }
+          if (detailContent.includes('Clair de Lune')) {
+            foundPieces.add('Clair de Lune')
+          }
+          if (detailContent.includes('Sonata No. 16')) {
+            foundPieces.add('Sonata No. 16')
+          }
+          if (detailContent.includes('Beethoven')) {
+            foundComposers.add('Beethoven')
+          }
+          if (detailContent.includes('Debussy')) {
+            foundComposers.add('Debussy')
+          }
+          if (detailContent.includes('Mozart')) {
+            foundComposers.add('Mozart')
+          }
+        }
+
+        // Verify all pieces and composers were found
+        expect(foundPieces.has('Moonlight Sonata')).toBeTruthy()
+        expect(foundPieces.has('Clair de Lune')).toBeTruthy()
+        expect(foundPieces.has('Sonata No. 16')).toBeTruthy()
+        expect(foundComposers.has('Beethoven')).toBeTruthy()
+        expect(foundComposers.has('Debussy')).toBeTruthy()
+        expect(foundComposers.has('Mozart')).toBeTruthy()
       })
     })
   })
