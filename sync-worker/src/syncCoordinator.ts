@@ -253,17 +253,17 @@ export class SyncCoordinator implements DurableObject {
 
         const results = await this.env.DB.prepare(
           `
-          SELECT entity_id, data, last_modified 
+          SELECT entity_id, data, updated_at 
           FROM sync_data 
           WHERE user_id = ? 
             AND entity_type = 'logbook_entry'
-            AND last_modified > ?
+            AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
             AND deleted_at IS NULL
-          ORDER BY last_modified DESC
+          ORDER BY updated_at DESC
           LIMIT 100
         `
         )
-          .bind(client.userId, lastSyncTime)
+          .bind(client.userId, lastSyncTime / 1000) // Convert to seconds for SQLite
           .all()
 
         if (results.results && results.results.length > 0) {
@@ -366,25 +366,26 @@ export class SyncCoordinator implements DurableObject {
         await this.env.DB.prepare(
           `
           INSERT INTO sync_data (
-            user_id, entity_type, entity_id, data, 
-            checksum, device_id, last_modified, version
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            id, user_id, entity_type, entity_id, data, 
+            checksum, device_id, version, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT (user_id, entity_type, entity_id) 
           DO UPDATE SET 
             data = excluded.data,
             checksum = excluded.checksum,
-            last_modified = excluded.last_modified,
-            version = version + 1
+            device_id = excluded.device_id,
+            updated_at = CURRENT_TIMESTAMP,
+            version = sync_data.version + 1
         `
         )
           .bind(
+            `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Generate ID
             userId,
             'logbook_entry',
             entry.id,
             JSON.stringify(entry),
             this.calculateChecksum(entry),
             entry.device_id || 'sync-worker',
-            Date.now(),
             1
           )
           .run()
@@ -436,15 +437,111 @@ export class SyncCoordinator implements DurableObject {
       `🎵 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
 
+    // Save repertoire changes to database for persistence
+    try {
+      await this.saveRepertoireToDatabase(event, sender.userId)
+    } catch (error) {
+      console.error(`❌ Failed to save repertoire change to database:`, error)
+      // Continue broadcasting even if database save fails
+    }
+
     // Broadcast to all other clients of the same user
     for (const [clientId, client] of this.clients) {
       if (clientId !== senderId && client.userId === sender.userId) {
         this.sendToClient(clientId, event)
       }
     }
+  }
 
-    // TODO: Phase 2 - Save repertoire changes to D1 database
-    // await this.saveRepertoireToDatabase(event)
+  private async saveRepertoireToDatabase(
+    event: SyncEvent,
+    userId: string
+  ): Promise<void> {
+    if (!this.env.DB) {
+      console.warn(
+        '⚠️ Database not configured, skipping repertoire persistence'
+      )
+      return
+    }
+
+    try {
+      const entityType = 'repertoire_item'
+      let entityId: string | undefined
+      let data: any = {}
+      let isDelete = false
+
+      switch (event.type) {
+        case 'PIECE_ADDED':
+          entityId = event.piece?.scoreId
+          data = event.piece
+          break
+        case 'PIECE_UPDATED':
+          entityId = event.piece?.scoreId
+          data = event.piece
+          break
+        case 'PIECE_REMOVED':
+        case 'PIECE_DISSOCIATED':
+          entityId = event.scoreId || event.piece?.scoreId
+          isDelete = true
+          break
+        default:
+          console.warn(`⚠️ Unknown repertoire event type: ${event.type}`)
+          return
+      }
+
+      if (!entityId) {
+        console.error('❌ No entity ID found for repertoire event')
+        return
+      }
+
+      if (isDelete) {
+        // Mark as deleted in sync_data
+        await this.env.DB.prepare(
+          `
+          UPDATE sync_data 
+          SET deleted_at = CURRENT_TIMESTAMP
+          WHERE user_id = ? AND entity_type = ? AND entity_id = ?
+        `
+        )
+          .bind(userId, entityType, entityId)
+          .run()
+
+        console.log(`✅ Marked repertoire item ${entityId} as deleted`)
+      } else {
+        // Insert or update repertoire item
+        await this.env.DB.prepare(
+          `
+          INSERT INTO sync_data (
+            id, user_id, entity_type, entity_id, data, 
+            checksum, device_id, version, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT (user_id, entity_type, entity_id) 
+          DO UPDATE SET 
+            data = excluded.data,
+            checksum = excluded.checksum,
+            device_id = excluded.device_id,
+            updated_at = CURRENT_TIMESTAMP,
+            version = sync_data.version + 1
+        `
+        )
+          .bind(
+            `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            userId,
+            entityType,
+            entityId,
+            JSON.stringify(data),
+            this.calculateChecksum(data),
+            data.device_id || 'sync-worker',
+            1
+          )
+          .run()
+
+        console.log(`✅ Saved repertoire item ${entityId} to database`)
+      }
+    } catch (error) {
+      console.error('Repertoire database operation failed:', error)
+      throw error
+    }
   }
 
   private sendToClient(clientId: string, data: any): void {

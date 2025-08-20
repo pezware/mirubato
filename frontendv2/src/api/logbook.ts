@@ -226,11 +226,35 @@ export const logbookApi = {
   },
 
   deleteEntry: async (id: string) => {
-    // The sync API doesn't have delete, so we'll mark it as deleted
-    const updates = {
-      deletedAt: new Date().toISOString(),
+    // The sync API doesn't have a direct delete endpoint
+    // We need to push a deletion marker through the sync endpoint
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          entries: [
+            {
+              id,
+              deletedAt: new Date().toISOString(),
+              // Include minimal required fields for validation
+              timestamp: new Date().toISOString(),
+              duration: 0,
+              type: 'practice',
+              pieces: [],
+              techniques: [],
+              goalIds: [],
+              tags: [],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to delete entry on server')
     }
-    await logbookApi.updateEntry(id, updates)
   },
 
   // Goals

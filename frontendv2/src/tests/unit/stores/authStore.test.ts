@@ -69,6 +69,8 @@ describe('authStore', () => {
       syncWithServer: mockSyncWithServer,
       setLocalMode: mockSetLocalMode,
       manualSync: mockManualSync,
+      startAutoSync: vi.fn(),
+      stopAutoSync: vi.fn(),
       entriesMap: new Map(),
       goalsMap: new Map(),
       scoreMetadata: {},

@@ -265,29 +265,9 @@ describe('Logbook API', () => {
   })
 
   describe('deleteEntry', () => {
-    it('should mark entry as deleted via update', async () => {
+    it('should mark entry as deleted via sync push', async () => {
       const mockDate = new Date('2025-06-26T15:00:00Z')
       vi.setSystemTime(mockDate)
-
-      const existingEntry: LogbookEntry = {
-        id: 'entry1',
-        timestamp: '2025-06-26T10:00:00Z',
-        duration: 30,
-        type: 'PRACTICE',
-        instrument: 'PIANO',
-        pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
-        techniques: ['scales'],
-        goalIds: ['goal1'],
-        mood: 'SATISFIED',
-        tags: ['morning'],
-        metadata: { source: 'manual' },
-        createdAt: '2025-06-26T10:00:00Z',
-        updatedAt: '2025-06-26T10:00:00Z',
-      }
-
-      ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
-        JSON.stringify([existingEntry])
-      )
       ;(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { success: true },
       })
@@ -298,21 +278,17 @@ describe('Logbook API', () => {
         changes: {
           entries: [
             {
-              ...existingEntry,
+              id: 'entry1',
               deletedAt: '2025-06-26T15:00:00.000Z',
+              timestamp: '2025-06-26T15:00:00.000Z',
+              duration: 0,
+              type: 'practice',
+              pieces: [],
+              techniques: [],
+              goalIds: [],
+              tags: [],
+              createdAt: '2025-06-26T15:00:00.000Z',
               updatedAt: '2025-06-26T15:00:00.000Z',
-              notes: existingEntry.notes || null,
-              mood: existingEntry.mood || null,
-              pieces: existingEntry.pieces.map(p => ({
-                ...p,
-                composer: p.composer || null,
-                measures: p.measures || null,
-                tempo: p.tempo || null,
-              })),
-              techniques: existingEntry.techniques || [],
-              goalIds: existingEntry.goalIds || [],
-              tags: existingEntry.tags || [],
-              metadata: existingEntry.metadata || { source: 'manual' },
             },
           ],
         },

@@ -37,6 +37,9 @@ interface LogbookState {
     | 'reconnecting'
   realtimeSyncError: string | null
 
+  // Auto-sync state
+  autoSyncInterval?: NodeJS.Timeout
+
   // Computed getters
   entries: LogbookEntry[]
   goals: Goal[]
@@ -68,6 +71,8 @@ interface LogbookState {
   // Actions - Sync
   manualSync: () => Promise<{ success: boolean; error?: string }>
   clearSyncError: () => void
+  startAutoSync: () => void
+  stopAutoSync: () => void
 
   // Actions - Real-time Sync
   enableRealtimeSync: () => Promise<boolean>
@@ -306,6 +311,37 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // This avoids circular dependency between stores
       localEventBus.emit('PRACTICE_CREATED', { entry })
 
+      // If not in local mode and authenticated, also sync to server
+      if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+        try {
+          const syncedEntry = await logbookApi.createEntry(entry)
+
+          // Update with server response if sync succeeds
+          const syncedEntriesMap = new Map(get().entriesMap)
+          syncedEntriesMap.set(entry.id, syncedEntry)
+          set({
+            entriesMap: syncedEntriesMap,
+            entries: sortEntriesByTimestamp(
+              Array.from(syncedEntriesMap.values())
+            ),
+          })
+
+          // Update localStorage with synced data
+          immediateLocalStorageWrite(
+            ENTRIES_KEY,
+            JSON.stringify(Array.from(syncedEntriesMap.values()))
+          )
+
+          console.log('✅ Entry synced to server:', entry.id)
+        } catch (syncError) {
+          console.warn(
+            '⚠️ Failed to sync new entry to server, keeping local copy:',
+            syncError
+          )
+          // Entry is already saved locally, so don't throw
+        }
+      }
+
       // Send real-time sync event if enabled
       if (get().isRealtimeSyncEnabled) {
         const webSocketSync = getWebSocketSync()
@@ -315,8 +351,6 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           timestamp: new Date().toISOString(),
         })
       }
-
-      // Entry saved locally - user can sync manually later
     } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
       throw error
@@ -1229,6 +1263,48 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     const currentEntries = Array.from(get().entriesMap.values())
     return getDuplicateReport(currentEntries)
   },
+
+  // Auto-sync management
+  startAutoSync: () => {
+    const state = get()
+
+    // Don't start auto-sync if in local mode or not authenticated
+    if (state.isLocalMode || !localStorage.getItem('auth-token')) {
+      return
+    }
+
+    // Clear any existing interval
+    if (state.autoSyncInterval) {
+      clearInterval(state.autoSyncInterval)
+    }
+
+    // Set up periodic sync every 30 seconds
+    const interval = setInterval(() => {
+      const currentState = get()
+      if (!currentState.isLocalMode && localStorage.getItem('auth-token')) {
+        console.log('⏰ Auto-sync triggered')
+        currentState.manualSync().catch(error => {
+          console.warn('Auto-sync failed:', error)
+        })
+      } else {
+        // Stop auto-sync if we're in local mode or logged out
+        clearInterval(interval)
+        set({ autoSyncInterval: undefined })
+      }
+    }, 30000) // 30 seconds
+
+    set({ autoSyncInterval: interval })
+    console.log('✅ Auto-sync started (every 30 seconds)')
+  },
+
+  stopAutoSync: () => {
+    const { autoSyncInterval } = get()
+    if (autoSyncInterval) {
+      clearInterval(autoSyncInterval)
+      set({ autoSyncInterval: undefined })
+      console.log('🛑 Auto-sync stopped')
+    }
+  },
 }))
 
 // Register event handler for piece dissociation from repertoire
@@ -1251,4 +1327,40 @@ if (!isTestEnvironment) {
     const entries = Array.from(updatedEntries.values())
     localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
   })
+
+  // Set up auto-sync event handlers
+  // Sync on window focus (when user returns to the app)
+  window.addEventListener('focus', () => {
+    const store = useLogbookStore.getState()
+    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
+      console.log('🔄 Window focused - triggering sync')
+      store.manualSync().catch(error => {
+        console.warn('Focus sync failed:', error)
+      })
+    }
+  })
+
+  // Sync before window unload (when user closes or navigates away)
+  window.addEventListener('beforeunload', () => {
+    const store = useLogbookStore.getState()
+    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
+      // Try to sync one last time
+      store.manualSync().catch(error => {
+        console.warn('Unload sync failed:', error)
+      })
+
+      // Note: Modern browsers heavily restrict what can be done in beforeunload
+      // This sync attempt may not always complete, but we try our best
+    }
+  })
+
+  // Start auto-sync when the store is initialized and user is authenticated
+  if (localStorage.getItem('auth-token')) {
+    setTimeout(() => {
+      const store = useLogbookStore.getState()
+      if (!store.isLocalMode) {
+        store.startAutoSync()
+      }
+    }, 1000) // Delay to ensure store is fully initialized
+  }
 }
