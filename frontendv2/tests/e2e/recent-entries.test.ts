@@ -42,20 +42,29 @@ test.describe('Recent Entries', () => {
     })
 
     await test.step('Verify entry appears in the overview', async () => {
-      // Check that the entry is visible in the split view list
+      // Check that the entry is visible in the list
       await expect(page.locator('[data-testid="logbook-entry"]')).toBeVisible({
         timeout: 5000,
       })
 
-      // Click on the entry to see details (piece titles not shown in list view)
-      await page.locator('[data-testid="logbook-entry"]').first().click()
-      await page.waitForTimeout(500) // Wait for detail panel to update
+      // Piece titles and composers are now shown inline in the list view
+      const entryContent = await page
+        .locator('[data-testid="logbook-entry"]')
+        .first()
+        .textContent()
+      expect(entryContent).toContain('Test Piece')
+      expect(entryContent).toContain('Test Composer')
 
-      // Now check for piece and composer in the detail panel
-      const detailContent = await page.textContent('body')
-      expect(detailContent).toContain('Test Piece')
-      expect(detailContent).toContain('Test Composer')
-      // Notes are visible in the detail panel when expanded
+      // Click on the entry to expand notes (notes are collapsed by default)
+      await page.locator('[data-testid="logbook-entry"]').first().click()
+      await page.waitForTimeout(300) // Wait for notes to expand
+
+      // Verify notes are now visible
+      await expect(
+        page.locator('text=Test notes for recent entry')
+      ).toBeVisible({
+        timeout: 5000,
+      })
     })
   })
 
@@ -73,8 +82,8 @@ test.describe('Recent Entries', () => {
 
       for (let i = 0; i < entries.length; i++) {
         await logbookPage.createEntry(entries[i])
-        // Wait for entry to be saved - check for entry count instead of text
-        // (titles aren't shown in list view, only in detail panel)
+        // Wait for entry to be saved - check for entry count
+        // (titles are now shown inline in list view)
         await page.waitForFunction(
           expectedCount =>
             document.querySelectorAll('[data-testid="logbook-entry"]').length >=
@@ -100,24 +109,22 @@ test.describe('Recent Entries', () => {
       })
 
       // Wait for all entries to be visible in the list
-      // Note: Piece titles are not shown in the list view, only in detail panel
+      // Note: Piece titles are now shown inline in the list view
 
       // Get all entry containers using the specific data-testid
       const entryContainers = page.locator('[data-testid="logbook-entry"]')
       await expect(entryContainers).toHaveCount(3, { timeout: 5000 })
 
-      // Click through entries to verify they contain the expected pieces
+      // Get entry titles directly from the list (now inline in CompactEntryRow)
       const foundTitles: string[] = []
       for (let i = 0; i < 3; i++) {
-        await entryContainers.nth(i).click()
-        await page.waitForTimeout(300) // Wait for detail panel
-        const detailContent = await page.textContent('body')
+        const entryContent = await entryContainers.nth(i).textContent()
 
-        if (detailContent.includes('First Entry')) {
+        if (entryContent.includes('First Entry')) {
           foundTitles.push('First Entry')
-        } else if (detailContent.includes('Second Entry')) {
+        } else if (entryContent.includes('Second Entry')) {
           foundTitles.push('Second Entry')
-        } else if (detailContent.includes('Third Entry')) {
+        } else if (entryContent.includes('Third Entry')) {
           foundTitles.push('Third Entry')
         }
       }

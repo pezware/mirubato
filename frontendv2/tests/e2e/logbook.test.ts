@@ -101,49 +101,35 @@ test.describe('Logbook', () => {
         })
       })
 
-      await test.step('Expand entry', async () => {
+      await test.step('Verify inline details and expand notes', async () => {
         await logbookPage.switchToOverviewTab()
         // Wait for entries to be visible first
         await page.waitForSelector('[data-testid="logbook-entry"]', {
           state: 'visible',
           timeout: 5000,
         })
-        // Click on the first entry to select and view details
+
+        // Piece title and composer are now always visible inline
         const entries = page.locator('[data-testid="logbook-entry"]')
-        await entries.first().click()
-      })
+        const firstEntry = entries.first()
 
-      await test.step('Verify expanded details', async () => {
-        // Wait a bit for detail panel to update
-        await page.waitForTimeout(500)
+        // Verify title and composer are visible inline
+        const entryContent = await firstEntry.textContent()
+        expect(entryContent).toContain('Sonata No. 11')
+        expect(entryContent).toContain('Mozart')
 
-        // Check that piece information is visible in the detail panel
-        const detailContent = await page.textContent('body')
-        expect(detailContent).toContain('Sonata No. 11')
-        expect(detailContent).toContain('Mozart')
+        // Click on the entry to expand notes (notes are collapsed by default)
+        await firstEntry.click()
+        await page.waitForTimeout(300) // Wait for notes to expand
 
-        // Look for other entry details in the detail panel
-        const mozartVisible = await page
-          .locator('text=Mozart')
-          .isVisible()
-          .catch(() => false)
-        const hasExpandedContent = await page
-          .locator('text=Focused on the famous Rondo Alla Turca')
-          .isVisible()
-          .catch(() => false)
-
-        // Verify either the composer is visible OR the expanded notes are visible
-        expect(mozartVisible || hasExpandedContent).toBeTruthy()
-
-        // Verify the entry is actually expanded by checking for notes in the expanded view
-        // Target the whitespace-pre-wrap class which is used in the expanded details
+        // Now verify the expanded notes are visible
         await expect(
           page
             .locator('.whitespace-pre-wrap')
             .filter({ hasText: 'Focused on the famous Rondo Alla Turca' })
             .first()
         ).toBeVisible({
-          timeout: 10000,
+          timeout: 5000,
         })
       })
     })
@@ -298,7 +284,7 @@ test.describe('Logbook', () => {
       })
 
       await test.step('Verify all composers and pieces are displayed', async () => {
-        // Wait for entries to load in the split view
+        // Wait for entries to load
         await page.waitForSelector('[data-testid="logbook-entry"]', {
           state: 'visible',
           timeout: 5000,
@@ -308,37 +294,32 @@ test.describe('Logbook', () => {
         const entries = page.locator('[data-testid="logbook-entry"]')
         await expect(entries).toHaveCount(3, { timeout: 5000 })
 
-        // The split view doesn't show piece details in the list
-        // We need to verify that all pieces are present, regardless of order
-        // Since the order might vary, let's check all entries for all pieces
-
+        // Piece titles and composers are now shown inline in the list view
+        // Collect all pieces and composers from the list
         const foundPieces = new Set<string>()
         const foundComposers = new Set<string>()
 
-        // Click through all entries to collect the pieces and composers
+        // Get text content from all entries
         for (let i = 0; i < 3; i++) {
-          await entries.nth(i).click()
-          await page.waitForTimeout(500) // Wait for detail panel to update
-
-          const detailContent = await page.textContent('body')
+          const entryContent = await entries.nth(i).textContent()
 
           // Check for each piece and composer
-          if (detailContent.includes('Moonlight Sonata')) {
+          if (entryContent.includes('Moonlight Sonata')) {
             foundPieces.add('Moonlight Sonata')
           }
-          if (detailContent.includes('Clair de Lune')) {
+          if (entryContent.includes('Clair de Lune')) {
             foundPieces.add('Clair de Lune')
           }
-          if (detailContent.includes('Sonata No. 16')) {
+          if (entryContent.includes('Sonata No. 16')) {
             foundPieces.add('Sonata No. 16')
           }
-          if (detailContent.includes('Beethoven')) {
+          if (entryContent.includes('Beethoven')) {
             foundComposers.add('Beethoven')
           }
-          if (detailContent.includes('Debussy')) {
+          if (entryContent.includes('Debussy')) {
             foundComposers.add('Debussy')
           }
-          if (detailContent.includes('Mozart')) {
+          if (entryContent.includes('Mozart')) {
             foundComposers.add('Mozart')
           }
         }
