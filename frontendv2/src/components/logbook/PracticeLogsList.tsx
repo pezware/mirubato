@@ -13,6 +13,7 @@ interface PracticeLogsListProps {
   selectedEntryId?: string
   onEntrySelect: (entry: LogbookEntry) => void
   onEntryEdit?: (entry: LogbookEntry) => void
+  onEntryDelete?: (entry: LogbookEntry) => void
   showTimeline?: boolean
   className?: string
 }
@@ -28,6 +29,7 @@ export function PracticeLogsList({
   selectedEntryId,
   onEntrySelect,
   onEntryEdit,
+  onEntryDelete,
   showTimeline = false,
   className = '',
 }: PracticeLogsListProps) {
@@ -337,8 +339,15 @@ export function PracticeLogsList({
                   duration={entry.duration}
                   type={t(`common:music.${entry.type.toLowerCase()}`)}
                   instrument={entry.instrument || undefined}
+                  pieces={entry.pieces}
+                  notes={entry.notes}
+                  techniques={entry.techniques}
+                  mood={entry.mood}
                   isSelected={selectedEntryId === entry.id}
                   onEdit={onEntryEdit ? () => onEntryEdit(entry) : undefined}
+                  onDelete={
+                    onEntryDelete ? () => onEntryDelete(entry) : undefined
+                  }
                   onClick={() => onEntrySelect(entry)}
                 />
               ))}
