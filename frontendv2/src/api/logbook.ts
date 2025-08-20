@@ -183,18 +183,45 @@ export const logbookApi = {
       metadata: updatedEntry.metadata || { source: 'manual' },
     }
 
-    const response = await apiClient.post<{ success: boolean }>(
-      '/api/sync/push',
-      {
-        changes: {
-          entries: [sanitizedEntry],
-        },
-      }
-    )
+    try {
+      const response = await apiClient.post<{ success: boolean }>(
+        '/api/sync/push',
+        {
+          changes: {
+            entries: [sanitizedEntry],
+          },
+        }
+      )
 
-    if (response.data.success) {
+      if (response.data.success) {
+        return sanitizedEntry
+      }
+    } catch (error) {
+      // If sync fails, still update locally and return the entry
+      console.warn(
+        'Failed to sync entry to server, keeping local changes:',
+        error
+      )
+
+      // Update local storage with the new entry
+      const localEntries = localStorage.getItem('mirubato:logbook:entries')
+      if (localEntries) {
+        const entries: LogbookEntry[] = JSON.parse(localEntries)
+        const index = entries.findIndex(e => e.id === sanitizedEntry.id)
+        if (index !== -1) {
+          entries[index] = sanitizedEntry
+          localStorage.setItem(
+            'mirubato:logbook:entries',
+            JSON.stringify(entries)
+          )
+        }
+      }
+
+      // Return the entry even if sync failed
       return sanitizedEntry
     }
+
+    // Only throw if we couldn't even update locally
     throw new Error('Failed to update entry')
   },
 

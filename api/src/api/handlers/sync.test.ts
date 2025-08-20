@@ -175,15 +175,20 @@ describe('Sync Handlers', () => {
       expect(data.conflicts).toEqual([])
 
       // Verify upsertSyncData was called correctly
-      // Note: instrument field is normalized to lowercase
+      // Note: fields are transformed and normalized
+      const expectedData = {
+        ...testEntry,
+        goal_ids: [], // transformed from goalIds
+        user_id: 'test-user-123', // added by handler
+        instrument: 'piano', // normalized to lowercase
+      }
+      delete (expectedData as any).goalIds // goalIds is removed after transformation
+
       expect(mockDbInstance.upsertSyncData).toHaveBeenCalledWith({
         userId: 'test-user-123',
         entityType: 'logbook_entry',
         entityId: testEntry.id,
-        data: {
-          ...testEntry,
-          instrument: 'piano', // normalized to lowercase
-        },
+        data: expectedData,
         checksum: 'test-checksum-abc',
         deviceId: undefined, // no device ID provided in test
       })
@@ -224,6 +229,64 @@ describe('Sync Handlers', () => {
       expect(res.status).toBe(200)
       expect(mockDbInstance.upsertSyncData).toHaveBeenCalledTimes(3)
       expect(mockDbInstance.updateSyncMetadata).toHaveBeenCalledOnce()
+    })
+
+    it('should accept both goalIds and goal_ids field names', async () => {
+      mockDbInstance.upsertSyncData.mockResolvedValue({
+        id: 'sync-id',
+        entity_id: 'entry-test',
+        action: 'created',
+      })
+      mockDbInstance.updateSyncMetadata.mockResolvedValue(undefined)
+
+      const testEntry = {
+        id: 'entry-test',
+        timestamp: 1724115660000, // Also test number timestamp
+        duration: 45,
+        type: 'practice',
+        instrument: 'guitar',
+        pieces: [],
+        techniques: [],
+        goal_ids: ['goal-1', 'goal-2'], // Using snake_case
+        notes: 'Test with goal_ids',
+        tags: [],
+        metadata: { source: 'manual' },
+        created_at: 1724115660000,
+        updated_at: 1724115660000,
+      }
+
+      const req = new Request('http://localhost/api/sync/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+        body: JSON.stringify({
+          changes: {
+            entries: [testEntry],
+          },
+        }),
+      })
+
+      const res = await app.fetch(req, {
+        DB: { prepare: vi.fn() } as unknown as D1Database,
+      } as Env)
+
+      expect(res.status).toBe(200)
+      const data = (await res.json()) as Record<string, unknown>
+      expect(data.success).toBe(true)
+
+      // Verify it processes correctly
+      expect(mockDbInstance.upsertSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'logbook_entry',
+          entityId: testEntry.id,
+          data: expect.objectContaining({
+            goal_ids: ['goal-1', 'goal-2'],
+            user_id: 'test-user-123',
+          }),
+        })
+      )
     })
 
     it('should handle database errors gracefully', async () => {

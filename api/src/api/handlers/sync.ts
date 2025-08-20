@@ -145,27 +145,54 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           instrument?: string
           type?: string
           mood?: string
+          goalIds?: string[]
+          goal_ids?: string[]
+          user_id?: string
           [key: string]: unknown
         }>) {
           try {
-            // Normalize enum fields to lowercase for database compatibility
-            if (entry.instrument && typeof entry.instrument === 'string') {
-              entry.instrument = entry.instrument.toLowerCase()
-            }
-            if (entry.type && typeof entry.type === 'string') {
-              entry.type = entry.type.toLowerCase()
-            }
-            if (entry.mood && typeof entry.mood === 'string') {
-              entry.mood = entry.mood.toLowerCase()
+            // Transform field names from frontend format to backend format
+            const transformedEntry = { ...entry }
+
+            // Add user_id if not present
+            if (!transformedEntry.user_id) {
+              transformedEntry.user_id = userId
             }
 
-            const checksum = await calculateChecksum(entry)
+            // Transform goalIds to goal_ids if needed
+            if (transformedEntry.goalIds && !transformedEntry.goal_ids) {
+              transformedEntry.goal_ids = transformedEntry.goalIds
+              delete transformedEntry.goalIds
+            }
+
+            // Normalize enum fields to lowercase for database compatibility
+            if (
+              transformedEntry.instrument &&
+              typeof transformedEntry.instrument === 'string'
+            ) {
+              transformedEntry.instrument =
+                transformedEntry.instrument.toLowerCase()
+            }
+            if (
+              transformedEntry.type &&
+              typeof transformedEntry.type === 'string'
+            ) {
+              transformedEntry.type = transformedEntry.type.toLowerCase()
+            }
+            if (
+              transformedEntry.mood &&
+              typeof transformedEntry.mood === 'string'
+            ) {
+              transformedEntry.mood = transformedEntry.mood.toLowerCase()
+            }
+
+            const checksum = await calculateChecksum(transformedEntry)
 
             const result = await db.upsertSyncData({
               userId,
               entityType: 'logbook_entry',
-              entityId: entry.id,
-              data: entry,
+              entityId: transformedEntry.id,
+              data: transformedEntry,
               checksum,
               deviceId,
             })
