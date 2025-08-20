@@ -1,4 +1,9 @@
 import { z } from 'zod'
+import {
+  NotificationSettingsSchema,
+  PartialLogbookEntrySchema,
+  PartialGoalSchema,
+} from '../schemas/entities'
 
 /**
  * Common validation schemas
@@ -26,24 +31,32 @@ export const schemas = {
     credential: z.string().min(1, 'Google credential is required'),
   }),
 
-  // Sync schemas
+  // Sync schemas with proper typing (using partial schemas for flexibility)
   syncEntity: z.object({
     id: z.string(),
-    type: z.enum(['logbook_entry', 'goal']),
-    data: z.any(),
+    type: z.enum(['logbook_entry', 'goal', 'user_preferences']),
+    data: z.unknown(), // Allow any data structure since sync_data is flexible
     checksum: z.string(),
     version: z.number().int().positive(),
   }),
 
   syncBatch: z.object({
-    entities: z.array(z.any()), // Will be validated individually
+    entities: z.array(
+      z.object({
+        id: z.string(),
+        type: z.enum(['logbook_entry', 'goal', 'user_preferences']),
+        data: z.unknown(), // Allow any data structure since sync_data is flexible
+        checksum: z.string(),
+        version: z.number().int().positive(),
+      })
+    ),
     syncToken: z.string().optional(),
   }),
 
   syncChanges: z.object({
     changes: z.object({
-      entries: z.array(z.any()).optional(),
-      goals: z.array(z.any()).optional(),
+      entries: z.array(PartialLogbookEntrySchema).optional(),
+      goals: z.array(PartialGoalSchema).optional(),
     }),
     lastSyncToken: z.string().optional(),
   }),
@@ -51,7 +64,7 @@ export const schemas = {
   // User schemas
   userPreferences: z.object({
     theme: z.enum(['light', 'dark', 'auto']).optional(),
-    notificationSettings: z.record(z.any()).optional(),
+    notificationSettings: NotificationSettingsSchema.optional(),
     primaryInstrument: z.string().optional(),
   }),
 }
@@ -94,33 +107,36 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Validate sync entity data
+ * Validate sync entity data with proper schema validation
  */
-export function validateSyncEntity(entity: any): boolean {
-  // Basic validation - can be extended based on entity type
-  if (!entity.id || !entity.type || !entity.data) {
+export function validateSyncEntity(entity: unknown): boolean {
+  try {
+    schemas.syncEntity.parse(entity)
+    return true
+  } catch {
     return false
   }
-
-  // Validate entity type
-  if (!['logbook_entry', 'goal'].includes(entity.type)) {
-    return false
-  }
-
-  // Validate checksum
-  if (entity.checksum && typeof entity.checksum !== 'string') {
-    return false
-  }
-
-  return true
 }
 
 /**
- * Validate pagination parameters
+ * Pagination schema
  */
-export function validatePagination(params: any) {
-  const limit = Math.min(Math.max(parseInt(params.limit) || 50, 1), 100)
-  const offset = Math.max(parseInt(params.offset) || 0, 0)
+export const paginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+})
 
-  return { limit, offset }
+/**
+ * Validate pagination parameters with proper typing
+ */
+export function validatePagination(params: unknown): {
+  limit: number
+  offset: number
+} {
+  const result = paginationSchema.safeParse(params)
+  if (result.success) {
+    return result.data
+  }
+  // Return defaults if parsing fails
+  return { limit: 50, offset: 0 }
 }

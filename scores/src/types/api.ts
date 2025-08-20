@@ -53,7 +53,7 @@ export const CreateScoreSchema = z.object({
   source: ScoreSourceSchema,
   imslpUrl: z.string().url().optional(),
   tags: z.array(z.string()).default([]),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const UpdateScoreSchema = CreateScoreSchema.partial()

@@ -11,7 +11,7 @@ export interface LogbookEntry {
     | 'rehearsal'
     | 'technique'
     | 'status_change'
-  instrument?: 'piano' | 'guitar'
+  instrument?: string
   pieces: Array<{
     id?: string
     title: string
@@ -88,8 +88,7 @@ const normalizeEntry = (
 ): LogbookEntry => ({
   ...entry,
   type: (entry.type?.toLowerCase() || 'practice') as LogbookEntry['type'],
-  instrument: (entry.instrument?.toLowerCase() ||
-    'piano') as LogbookEntry['instrument'],
+  instrument: entry.instrument?.toLowerCase(),
   mood: entry.mood ? (entry.mood.toLowerCase() as LogbookEntry['mood']) : null,
 })
 

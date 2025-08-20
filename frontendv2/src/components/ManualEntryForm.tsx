@@ -5,10 +5,13 @@ import {
   IconMoodNeutral,
   IconMoodSmile,
   IconMoodHappy,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import { useUserPreferences } from '../hooks/useUserPreferences'
+import { useFormValidation } from '../hooks/useFormValidation'
+import { ManualEntryFormSchema } from '../schemas/validation'
 import type { LogbookEntry } from '../api/logbook'
 import {
   generateNormalizedScoreId,
@@ -23,6 +26,8 @@ import { TechniqueSelector } from './logbook/TechniqueSelector'
 import { InstrumentSelector } from './logbook/InstrumentSelector'
 import { AddToRepertoirePrompt } from './repertoire/AddToRepertoirePrompt'
 import { Modal } from './ui/Modal'
+import { FormError } from './ui/FormError'
+import { toLogbookInstrument } from '../utils/instrumentGuards'
 
 interface ManualEntryFormProps {
   onClose: () => void
@@ -72,9 +77,7 @@ export default function ManualEntryForm({
     entry?.type || 'practice'
   )
   const [instrument, setInstrument] = useState<LogbookEntry['instrument']>(
-    entry?.instrument ||
-      (getPrimaryInstrument() as LogbookEntry['instrument']) ||
-      'piano'
+    entry?.instrument || toLogbookInstrument(getPrimaryInstrument())
   )
   const [notes, setNotes] = useState(entry?.notes || '')
   const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
@@ -123,6 +126,12 @@ export default function ManualEntryForm({
     const adjustedTime = new Date(now.getTime() - duration * 60 * 1000) // Subtract duration in milliseconds
     return `${String(adjustedTime.getHours()).padStart(2, '0')}:${String(adjustedTime.getMinutes()).padStart(2, '0')}`
   })
+
+  // Form validation
+  const { validate, validateField, getFieldError, hasErrors } =
+    useFormValidation({
+      schema: ManualEntryFormSchema,
+    })
 
   // Auto-adjust practice time when duration changes (only for new entries)
   // Commented out per issue #330 - users don't want time to auto-adjust
@@ -173,6 +182,13 @@ export default function ManualEntryForm({
         // If we have a scoreId from initialPieces (from piece detail page), include it
         ...(initialPieces &&
           initialPieces[0]?.scoreId && { scoreId: initialPieces[0].scoreId }),
+      }
+
+      // Validate form data before submission
+      const validationResult = validate(entryData)
+      if (!validationResult.isValid) {
+        setIsSubmitting(false)
+        return
       }
 
       if (entry) {
@@ -372,11 +388,17 @@ export default function ManualEntryForm({
                   if (duration < 1) {
                     setDuration(1)
                   }
+                  validateField('duration', duration)
                 }}
-                className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent"
+                className={`w-full px-3 py-2 bg-white border rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent ${
+                  getFieldError('duration')
+                    ? 'border-red-500'
+                    : 'border-morandi-stone-300'
+                }`}
                 required
                 data-testid="duration-input"
               />
+              <FormError error={getFieldError('duration')} />
             </div>
 
             {/* Instrument */}
@@ -386,11 +408,7 @@ export default function ManualEntryForm({
               </label>
               <InstrumentSelector
                 value={instrument}
-                onChange={value =>
-                  setInstrument(
-                    (value as LogbookEntry['instrument']) || 'piano'
-                  )
-                }
+                onChange={value => setInstrument(toLogbookInstrument(value))}
               />
             </div>
           </div>
@@ -465,11 +483,23 @@ export default function ManualEntryForm({
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
+            onBlur={() => validateField('notes', notes)}
             rows={3}
-            className="w-full px-3 py-2 bg-white border border-morandi-stone-300 rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none"
+            maxLength={5000}
+            className={`w-full px-3 py-2 bg-white border rounded-lg focus:ring-2 focus:ring-morandi-sage-400 focus:border-transparent resize-none ${
+              getFieldError('notes')
+                ? 'border-red-500'
+                : 'border-morandi-stone-300'
+            }`}
             placeholder={t('logbook:entry.notesPlaceholder')}
             data-testid="notes-textarea"
           />
+          <div className="flex justify-between items-center mt-1">
+            <FormError error={getFieldError('notes')} />
+            <span className="text-xs text-morandi-stone-500">
+              {notes.length}/5000
+            </span>
+          </div>
         </div>
 
         {/* Mood */}
@@ -543,6 +573,19 @@ export default function ManualEntryForm({
             })}
           </div>
         </div>
+
+        {/* Validation Error Summary */}
+        {hasErrors() && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+            <IconAlertCircle size={20} className="text-red-600 mt-0.5" />
+            <div className="text-sm text-red-700">
+              {t(
+                'logbook:validation.fixErrors',
+                'Please fix the errors above before saving'
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">

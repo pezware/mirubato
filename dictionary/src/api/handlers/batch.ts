@@ -44,7 +44,7 @@ const batchUpdateSchema = z.object({
             references: z.number().min(0).max(100).optional(),
           })
           .optional(),
-        metadata: z.record(z.any()).optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .min(1)

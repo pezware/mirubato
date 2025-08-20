@@ -165,7 +165,7 @@ export const batchSchemas = {
         z.object({
           id: z.string(),
           quality_score: commonSchemas.qualityScore.partial().optional(),
-          metadata: z.record(z.any()).optional(),
+          metadata: z.record(z.string(), z.unknown()).optional(),
           verified: z.boolean().optional(),
         })
       )
@@ -280,6 +280,6 @@ export const adminSchemas = {
         date_range: commonSchemas.dateRange.optional(),
       })
       .optional(),
-    options: z.record(z.any()).optional(),
+    options: z.record(z.string(), z.unknown()).optional(),
   }),
 }
