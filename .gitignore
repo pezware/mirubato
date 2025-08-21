@@ -364,3 +364,5 @@ backups/
 
 # kiro
 mirubato.code-workspace
+# Workspace-level lock files (only root pnpm-lock.yaml should be tracked)
+*/pnpm-lock.yaml
