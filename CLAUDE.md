@@ -635,9 +635,9 @@ import { Button } from '@/components/ui'
 | Toast     | success, error, warning, info           | Notifications      |
 | Loading   | spinner, dots, pulse, skeleton          | Loading states     |
 
-### Typography Design System (Updated v1.7.2)
+### Typography Design System (Updated v1.7.6)
 
-**✅ FULLY IMPLEMENTED**: Comprehensive typography unification completed in v1.7.2 with centralized component system and ESLint enforcement.
+**✅ FULLY IMPLEMENTED**: Comprehensive typography unification completed in v1.7.6 with centralized component system and ESLint enforcement.
 
 Based on extensive research using Gemini AI for multilingual font selection, Mirubato uses a three-font system:
 
@@ -956,7 +956,16 @@ app.get('/health', async c => {
 
 ## 13. Version History {#version-history}
 
-### Current Version: 1.7.1 (In Development)
+### Current Version: 1.7.6 (August 2025)
+
+#### Version Management Improvements
+
+- **Unified Version System**: Created centralized version.json for single source of truth
+- **Consistent Versioning**: All services updated to v1.7.6 (sync-worker and service-template aligned)
+- **Version Module**: All services now import from central version.json
+- **Automated Updates**: Script for future version bumps across entire codebase
+
+### Version 1.7.1
 
 #### Sync System Improvements
 
@@ -991,7 +1000,7 @@ app.get('/health', async c => {
 #### Security & Infrastructure
 
 - Fixed tar-fs, ws, esbuild vulnerabilities
-- All services unified at v1.7.0
+- All services unified at v1.7.6
 - Migrated from npm to pnpm
 - @cloudflare/puppeteer downgraded to 0.0.11
 

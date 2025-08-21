@@ -59,7 +59,7 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 | **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
 | **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
 | **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
-| **🚧 Status**     | v1.7.0 - Enhanced Mobile UI, Real-time Sync & Improved Reliability |
+| **🚧 Status**     | v1.7.6 - Enhanced Mobile UI, Real-time Sync & Improved Reliability |
 
 ---
 

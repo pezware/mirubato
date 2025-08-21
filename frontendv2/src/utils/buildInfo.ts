@@ -1,5 +1,6 @@
 // Import package.json to get version
 import packageJson from '../../package.json'
+import versionJson from '../../../version.json'
 
 // Type definitions for build-time constants
 export interface BuildInfo {
@@ -39,7 +40,7 @@ export const getVersionInfo = (): VersionInfo => {
   const buildInfo = getBuildInfo()
   return {
     ...buildInfo,
-    version: packageJson.version,
+    version: versionJson.version,
     name: packageJson.name,
   }
 }

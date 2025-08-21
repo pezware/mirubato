@@ -1,22 +1,22 @@
 # Mirubato Development Roadmap
 
-## Current Status - Version 1.7.0 (July 2025)
+## Current Status - Version 1.7.6 (August 2025)
 
 ### 🔒 Security & Infrastructure Update
 
-✅ **Version 1.7.0 Released**: Major security and dependency updates
+✅ **Version 1.7.6 Released**: Major security and dependency updates
 
 - Fixed critical security vulnerabilities across all services
 - Updated tar-fs to address high severity path traversal vulnerabilities
 - Resolved ws package DoS vulnerability affecting HTTP header handling
 - Fixed esbuild development server security issues
-- All services now unified at version 1.7.0
+- All services now unified at version 1.7.6
 - Dictionary service promoted from v1.0.0 to align with platform versioning
 - Comprehensive dependency updates to latest secure versions
 
 ### 🎉 Focused UI Design System (PR #261)
 
-✅ **Version 1.7.0 Released**: Major UI overhaul with focused design system
+✅ **Version 1.7.6 Released**: Major UI overhaul with focused design system
 
 - **New Layout Architecture**: Desktop sidebar + mobile bottom tabs
 - **Simplified Navigation**: Reduced from 6 to 4 main sections (Logbook, Pieces, Scores, Tools)
@@ -607,4 +607,4 @@ Based on the success of the MVP, Mirubato will continue to prioritize:
 ---
 
 **Next Review**: October 2025
-**Last Updated**: July 18, 2025 (v1.7.0)
+**Last Updated**: August 2025 (v1.7.6)

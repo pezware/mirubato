@@ -1,6 +1,6 @@
 {
   "name": "@mirubato/sync-worker",
-  "version": "1.0.0",
+  "version": "1.7.6",
   "description": "Mirubato WebSocket sync service built on Cloudflare Workers + Durable Objects",
   "main": "src/index.ts",
   "scripts": {
