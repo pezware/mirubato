@@ -313,6 +313,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
+        // Start auto-sync for authenticated users
+        logbookStore.startAutoSync()
+
         // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
         const syncOperations = [
           manualSync()
@@ -423,6 +426,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         setLocalMode(false) // Switch to online mode when authenticated
+
+        // Start auto-sync for authenticated users
+        logbookStore.startAutoSync()
 
         // Prepare sync operations with proper error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
         const syncOperations = [
@@ -610,11 +616,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (!logbookStore) {
           console.warn('Logbook store not available after logout')
         } else {
-          const { setLocalMode } = logbookStore
+          const { setLocalMode, stopAutoSync } = logbookStore
           if (setLocalMode) {
             setLocalMode(true)
           } else {
             console.warn('setLocalMode method not available after logout')
+          }
+          // Stop auto-sync when logging out
+          if (stopAutoSync) {
+            stopAutoSync()
           }
         }
       } catch (error) {
@@ -674,6 +684,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
           setLocalMode(false)
 
+          // Start auto-sync for authenticated users
+          logbookStore.startAutoSync()
+
           // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
           const syncOperations = [
             manualSync()
@@ -732,11 +745,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           if (!logbookStore) {
             console.warn('Logbook store not available when auth fails')
           } else {
-            const { setLocalMode } = logbookStore
+            const { setLocalMode, stopAutoSync } = logbookStore
             if (setLocalMode) {
               setLocalMode(true)
             } else {
               console.warn('setLocalMode method not available when auth fails')
+            }
+            // Stop auto-sync on auth failure
+            if (stopAutoSync) {
+              stopAutoSync()
             }
           }
         } catch (error) {

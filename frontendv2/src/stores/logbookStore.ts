@@ -37,6 +37,9 @@ interface LogbookState {
     | 'reconnecting'
   realtimeSyncError: string | null
 
+  // Auto-sync state
+  autoSyncInterval?: NodeJS.Timeout
+
   // Computed getters
   entries: LogbookEntry[]
   goals: Goal[]
@@ -68,6 +71,8 @@ interface LogbookState {
   // Actions - Sync
   manualSync: () => Promise<{ success: boolean; error?: string }>
   clearSyncError: () => void
+  startAutoSync: () => void
+  stopAutoSync: () => void
 
   // Actions - Real-time Sync
   enableRealtimeSync: () => Promise<boolean>
@@ -151,6 +156,37 @@ const sortEntriesByTimestamp = (entries: LogbookEntry[]): LogbookEntry[] => {
   return entries.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   )
+}
+
+// Sanitize entry for WebSocket sync to match API requirements
+const sanitizeEntryForSync = (entry: LogbookEntry): LogbookEntry => {
+  // Filter out undefined values first
+  const cleanEntry = Object.fromEntries(
+    Object.entries(entry).filter(([_, value]) => value !== undefined)
+  ) as LogbookEntry
+
+  return {
+    ...cleanEntry,
+    // Ensure proper null/undefined handling for optional fields
+    notes: cleanEntry.notes || null,
+    mood: cleanEntry.mood || null,
+    scoreId: cleanEntry.scoreId || undefined,
+    scoreTitle: cleanEntry.scoreTitle || undefined,
+    scoreComposer: cleanEntry.scoreComposer || undefined,
+    autoTracked: cleanEntry.autoTracked || undefined,
+    // Sanitize nested objects
+    pieces:
+      cleanEntry.pieces?.map(p => ({
+        ...p,
+        composer: p.composer || null,
+        measures: p.measures || null,
+        tempo: p.tempo || null,
+      })) || [],
+    techniques: cleanEntry.techniques || [],
+    goalIds: cleanEntry.goalIds || [],
+    tags: cleanEntry.tags || [],
+    metadata: cleanEntry.metadata || { source: 'manual' },
+  }
 }
 
 // Deletion tracking helpers
@@ -275,17 +311,46 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // This avoids circular dependency between stores
       localEventBus.emit('PRACTICE_CREATED', { entry })
 
+      // If not in local mode and authenticated, also sync to server
+      if (!get().isLocalMode && localStorage.getItem('auth-token')) {
+        try {
+          const syncedEntry = await logbookApi.createEntry(entry)
+
+          // Update with server response if sync succeeds
+          const syncedEntriesMap = new Map(get().entriesMap)
+          syncedEntriesMap.set(entry.id, syncedEntry)
+          set({
+            entriesMap: syncedEntriesMap,
+            entries: sortEntriesByTimestamp(
+              Array.from(syncedEntriesMap.values())
+            ),
+          })
+
+          // Update localStorage with synced data
+          immediateLocalStorageWrite(
+            ENTRIES_KEY,
+            JSON.stringify(Array.from(syncedEntriesMap.values()))
+          )
+
+          console.log('✅ Entry synced to server:', entry.id)
+        } catch (syncError) {
+          console.warn(
+            '⚠️ Failed to sync new entry to server, keeping local copy:',
+            syncError
+          )
+          // Entry is already saved locally, so don't throw
+        }
+      }
+
       // Send real-time sync event if enabled
       if (get().isRealtimeSyncEnabled) {
         const webSocketSync = getWebSocketSync()
         webSocketSync.send({
           type: 'ENTRY_CREATED',
-          entry,
+          entry: sanitizeEntryForSync(entry),
           timestamp: new Date().toISOString(),
         })
       }
-
-      // Entry saved locally - user can sync manually later
     } catch (error: unknown) {
       set({ error: 'Failed to create entry' })
       throw error
@@ -326,34 +391,79 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           const webSocketSync = getWebSocketSync()
           webSocketSync.send({
             type: 'ENTRY_UPDATED',
-            entry: updatedEntry,
+            entry: sanitizeEntryForSync(updatedEntry),
             timestamp: new Date().toISOString(),
           })
         }
       } else {
-        // Update via API
-        const updated = await logbookApi.updateEntry(id, updates)
+        // Prepare the updated entry first
+        const updatedEntry = {
+          ...currentEntry,
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        }
 
+        // Update local state immediately to preserve changes
         const newEntriesMap = new Map(get().entriesMap)
-        newEntriesMap.set(id, updated)
+        newEntriesMap.set(id, updatedEntry)
         set({
           entriesMap: newEntriesMap,
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
-        debouncedLocalStorageWrite(
+        // Save to localStorage immediately to prevent data loss
+        immediateLocalStorageWrite(
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
 
-        // Send real-time sync event if enabled
-        if (get().isRealtimeSyncEnabled) {
-          const webSocketSync = getWebSocketSync()
-          webSocketSync.send({
-            type: 'ENTRY_UPDATED',
-            entry: updated,
-            timestamp: new Date().toISOString(),
+        try {
+          // Try to sync with API
+          const syncedEntry = await logbookApi.updateEntry(id, updates)
+
+          // If sync succeeds, update with the server response
+          const syncedEntriesMap = new Map(get().entriesMap)
+          syncedEntriesMap.set(id, syncedEntry)
+          set({
+            entriesMap: syncedEntriesMap,
+            entries: sortEntriesByTimestamp(
+              Array.from(syncedEntriesMap.values())
+            ),
           })
+
+          // Update localStorage with synced data
+          immediateLocalStorageWrite(
+            ENTRIES_KEY,
+            JSON.stringify(Array.from(syncedEntriesMap.values()))
+          )
+
+          // Send real-time sync event with synced data
+          if (get().isRealtimeSyncEnabled) {
+            const webSocketSync = getWebSocketSync()
+            webSocketSync.send({
+              type: 'ENTRY_UPDATED',
+              entry: sanitizeEntryForSync(syncedEntry),
+              timestamp: new Date().toISOString(),
+            })
+          }
+        } catch (syncError) {
+          // Sync failed, but local changes are preserved
+          console.warn(
+            'Failed to sync entry update to server, keeping local changes:',
+            syncError
+          )
+
+          // Send real-time sync event with local data
+          if (get().isRealtimeSyncEnabled) {
+            const webSocketSync = getWebSocketSync()
+            webSocketSync.send({
+              type: 'ENTRY_UPDATED',
+              entry: sanitizeEntryForSync(updatedEntry),
+              timestamp: new Date().toISOString(),
+            })
+          }
+
+          // Don't throw - entry is saved locally
         }
       }
     } catch (error: unknown) {
@@ -394,9 +504,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           })
         }
       } else {
-        // Delete via API
-        await logbookApi.deleteEntry(id)
-
+        // Delete locally first to preserve user action
         const newEntriesMap = new Map(get().entriesMap)
         newEntriesMap.delete(id)
         set({
@@ -404,19 +512,46 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
+        // Save to localStorage immediately
         immediateLocalStorageWrite(
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
 
-        // Send real-time sync event if enabled
-        if (get().isRealtimeSyncEnabled) {
-          const webSocketSync = getWebSocketSync()
-          webSocketSync.send({
-            type: 'ENTRY_DELETED',
-            entryId: id,
-            timestamp: new Date().toISOString(),
-          })
+        // Track deletion for sync conflict resolution
+        addToDeletedEntries(id)
+
+        try {
+          // Try to sync deletion with API
+          await logbookApi.deleteEntry(id)
+
+          // Send real-time sync event if API delete succeeds
+          if (get().isRealtimeSyncEnabled) {
+            const webSocketSync = getWebSocketSync()
+            webSocketSync.send({
+              type: 'ENTRY_DELETED',
+              entryId: id,
+              timestamp: new Date().toISOString(),
+            })
+          }
+        } catch (syncError) {
+          // Deletion sync failed, but entry is removed locally
+          console.warn(
+            'Failed to sync entry deletion to server, keeping local deletion:',
+            syncError
+          )
+
+          // Still send WebSocket event even if API fails
+          if (get().isRealtimeSyncEnabled) {
+            const webSocketSync = getWebSocketSync()
+            webSocketSync.send({
+              type: 'ENTRY_DELETED',
+              entryId: id,
+              timestamp: new Date().toISOString(),
+            })
+          }
+
+          // Don't throw - deletion is saved locally
         }
       }
     } catch (error: unknown) {
@@ -639,16 +774,19 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const entriesToUpdate: LogbookEntry[] = []
 
       // Handle deletions first (local deletions always win)
+      const successfullyDeletedIds = new Set<string>()
       if (deletedEntries.size > 0) {
         for (const deletedId of deletedEntries) {
-          if (serverEntriesMap.has(deletedId)) {
-            try {
-              await logbookApi.deleteEntry(deletedId)
-              syncStats.localDeletes++
-              console.log(`✅ Local deletion wins: ${deletedId}`)
-            } catch (error) {
-              console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
-            }
+          // Always try to sync deletion, even if not on server
+          // (it might have been created and deleted locally)
+          try {
+            await logbookApi.deleteEntry(deletedId)
+            successfullyDeletedIds.add(deletedId)
+            syncStats.localDeletes++
+            console.log(`✅ Local deletion synced: ${deletedId}`)
+          } catch (error) {
+            console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
+            // Keep this ID in deletedEntries for next sync attempt
           }
         }
       }
@@ -777,8 +915,26 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // Update local storage
       debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(mergedEntries))
 
-      // Clear deletion tracking after successful sync
-      clearDeletedEntries()
+      // Only clear successfully synced deletions, keep failed ones for retry
+      if (successfullyDeletedIds.size > 0) {
+        const remainingDeleted = new Set(deletedEntries)
+        for (const deletedId of successfullyDeletedIds) {
+          remainingDeleted.delete(deletedId)
+        }
+        if (remainingDeleted.size > 0) {
+          // Still have some failed deletions to retry later
+          localStorage.setItem(
+            DELETED_ENTRIES_KEY,
+            JSON.stringify([...remainingDeleted])
+          )
+          console.log(
+            `⚠️ ${remainingDeleted.size} deletions will be retried next sync`
+          )
+        } else {
+          // All deletions successful
+          clearDeletedEntries()
+        }
+      }
 
       // Log sync summary
       console.log('🔄 Sync completed with Local Activity Wins strategy:', {
@@ -1128,6 +1284,48 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     const currentEntries = Array.from(get().entriesMap.values())
     return getDuplicateReport(currentEntries)
   },
+
+  // Auto-sync management
+  startAutoSync: () => {
+    const state = get()
+
+    // Don't start auto-sync if in local mode or not authenticated
+    if (state.isLocalMode || !localStorage.getItem('auth-token')) {
+      return
+    }
+
+    // Clear any existing interval
+    if (state.autoSyncInterval) {
+      clearInterval(state.autoSyncInterval)
+    }
+
+    // Set up periodic sync every 30 seconds
+    const interval = setInterval(() => {
+      const currentState = get()
+      if (!currentState.isLocalMode && localStorage.getItem('auth-token')) {
+        console.log('⏰ Auto-sync triggered')
+        currentState.manualSync().catch(error => {
+          console.warn('Auto-sync failed:', error)
+        })
+      } else {
+        // Stop auto-sync if we're in local mode or logged out
+        clearInterval(interval)
+        set({ autoSyncInterval: undefined })
+      }
+    }, 30000) // 30 seconds
+
+    set({ autoSyncInterval: interval })
+    console.log('✅ Auto-sync started (every 30 seconds)')
+  },
+
+  stopAutoSync: () => {
+    const { autoSyncInterval } = get()
+    if (autoSyncInterval) {
+      clearInterval(autoSyncInterval)
+      set({ autoSyncInterval: undefined })
+      console.log('🛑 Auto-sync stopped')
+    }
+  },
 }))
 
 // Register event handler for piece dissociation from repertoire
@@ -1150,4 +1348,40 @@ if (!isTestEnvironment) {
     const entries = Array.from(updatedEntries.values())
     localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
   })
+
+  // Set up auto-sync event handlers
+  // Sync on window focus (when user returns to the app)
+  window.addEventListener('focus', () => {
+    const store = useLogbookStore.getState()
+    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
+      console.log('🔄 Window focused - triggering sync')
+      store.manualSync().catch(error => {
+        console.warn('Focus sync failed:', error)
+      })
+    }
+  })
+
+  // Sync before window unload (when user closes or navigates away)
+  window.addEventListener('beforeunload', () => {
+    const store = useLogbookStore.getState()
+    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
+      // Try to sync one last time
+      store.manualSync().catch(error => {
+        console.warn('Unload sync failed:', error)
+      })
+
+      // Note: Modern browsers heavily restrict what can be done in beforeunload
+      // This sync attempt may not always complete, but we try our best
+    }
+  })
+
+  // Start auto-sync when the store is initialized and user is authenticated
+  if (localStorage.getItem('auth-token')) {
+    setTimeout(() => {
+      const store = useLogbookStore.getState()
+      if (!store.isLocalMode) {
+        store.startAutoSync()
+      }
+    }, 1000) // Delay to ensure store is fully initialized
+  }
 }

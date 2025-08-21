@@ -41,27 +41,40 @@ export const PieceSchema = z.object({
   duration: z.number().optional(),
 })
 
+// Helper to parse timestamp - accepts both Unix timestamp (number) and ISO string
+const TimestampSchema = z.union([
+  z.number().int(),
+  z
+    .string()
+    .datetime()
+    .transform(str => new Date(str).getTime()),
+])
+
 // Logbook Entry schema
 export const LogbookEntrySchema = z.object({
   id: z.string(),
-  user_id: z.string(),
-  timestamp: z.number().int(),
+  user_id: z.string().optional(), // Make optional since frontend doesn't always send it
+  timestamp: TimestampSchema,
   duration: z.number().int().min(0),
   type: LogbookEntryType,
   instrument: InstrumentType,
   pieces: z.array(PieceSchema).default([]),
   techniques: z.array(z.string()).default([]),
-  goal_ids: z.array(z.string()).default([]),
+  // Support both goal_ids and goalIds
+  goal_ids: z.array(z.string()).default([]).optional(),
+  goalIds: z.array(z.string()).default([]).optional(),
   notes: z.string().nullable().optional(),
   mood: MoodType.nullable().optional(),
   tags: z.array(z.string()).default([]),
   session_id: z.string().nullable().optional(),
   metadata: z.record(z.unknown()).nullable().optional(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
-  sync_version: z.number().int().default(1),
+  created_at: TimestampSchema.optional(),
+  updated_at: TimestampSchema.optional(),
+  updatedAt: z.string().datetime().optional(), // Support frontend's updatedAt
+  sync_version: z.number().int().default(1).optional(),
   checksum: z.string().nullable().optional(),
   deleted_at: z.string().nullable().optional(),
+  deletedAt: z.string().nullable().optional(), // Support frontend's deletedAt
   device_id: z.string().nullable().optional(),
 })
 

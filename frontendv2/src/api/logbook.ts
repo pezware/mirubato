@@ -183,27 +183,67 @@ export const logbookApi = {
       metadata: updatedEntry.metadata || { source: 'manual' },
     }
 
-    const response = await apiClient.post<{ success: boolean }>(
-      '/api/sync/push',
-      {
-        changes: {
-          entries: [sanitizedEntry],
-        },
-      }
-    )
+    try {
+      const response = await apiClient.post<{ success: boolean }>(
+        '/api/sync/push',
+        {
+          changes: {
+            entries: [sanitizedEntry],
+          },
+        }
+      )
 
-    if (response.data.success) {
+      if (response.data.success) {
+        return sanitizedEntry
+      }
+    } catch (error) {
+      // If sync fails, still update locally and return the entry
+      console.warn(
+        'Failed to sync entry to server, keeping local changes:',
+        error
+      )
+
+      // Update local storage with the new entry
+      const localEntries = localStorage.getItem('mirubato:logbook:entries')
+      if (localEntries) {
+        const entries: LogbookEntry[] = JSON.parse(localEntries)
+        const index = entries.findIndex(e => e.id === sanitizedEntry.id)
+        if (index !== -1) {
+          entries[index] = sanitizedEntry
+          localStorage.setItem(
+            'mirubato:logbook:entries',
+            JSON.stringify(entries)
+          )
+        }
+      }
+
+      // Return the entry even if sync failed
       return sanitizedEntry
     }
+
+    // Only throw if we couldn't even update locally
     throw new Error('Failed to update entry')
   },
 
   deleteEntry: async (id: string) => {
-    // The sync API doesn't have delete, so we'll mark it as deleted
-    const updates = {
-      deletedAt: new Date().toISOString(),
+    // Send minimal deletion marker - backend now handles this specially
+    const response = await apiClient.post<{ success: boolean }>(
+      '/api/sync/push',
+      {
+        changes: {
+          entries: [
+            {
+              id,
+              deletedAt: new Date().toISOString(),
+            },
+          ],
+        },
+      }
+    )
+
+    if (!response.data.success) {
+      throw new Error('Failed to delete entry on server')
     }
-    await logbookApi.updateEntry(id, updates)
   },
 
   // Goals
