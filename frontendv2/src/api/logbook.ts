@@ -226,8 +226,7 @@ export const logbookApi = {
   },
 
   deleteEntry: async (id: string) => {
-    // The sync API doesn't have a direct delete endpoint
-    // We need to push a deletion marker through the sync endpoint
+    // Send minimal deletion marker - backend now handles this specially
     const response = await apiClient.post<{ success: boolean }>(
       '/api/sync/push',
       {
@@ -236,16 +235,6 @@ export const logbookApi = {
             {
               id,
               deletedAt: new Date().toISOString(),
-              // Include minimal required fields for validation
-              timestamp: new Date().toISOString(),
-              duration: 0,
-              type: 'practice',
-              pieces: [],
-              techniques: [],
-              goalIds: [],
-              tags: [],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
             },
           ],
         },

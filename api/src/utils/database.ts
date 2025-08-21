@@ -287,6 +287,41 @@ export class DatabaseHelpers {
   }
 
   /**
+   * Soft delete sync data entry
+   * More efficient than full upsert for deletions
+   */
+  async softDeleteSyncData(
+    userId: string,
+    entityType: string,
+    entityId: string,
+    deletedAt: string
+  ): Promise<void> {
+    try {
+      await this.db
+        .prepare(
+          `UPDATE sync_data 
+           SET deleted_at = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = ? AND entity_type = ? AND entity_id = ?`
+        )
+        .bind(deletedAt, userId, entityType, entityId)
+        .run()
+
+      console.log(
+        `[Database] Soft deleted ${entityType} ${entityId} for user ${userId}`
+      )
+    } catch (error) {
+      console.error('[Database] softDeleteSyncData error:', error)
+      console.error('[Database] Params:', {
+        userId,
+        entityType,
+        entityId,
+        deletedAt,
+      })
+      throw error
+    }
+  }
+
+  /**
    * Get sync metadata
    */
   async getSyncMetadata(userId: string): Promise<DbSyncMetadata | null> {

@@ -774,16 +774,19 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const entriesToUpdate: LogbookEntry[] = []
 
       // Handle deletions first (local deletions always win)
+      const successfullyDeletedIds = new Set<string>()
       if (deletedEntries.size > 0) {
         for (const deletedId of deletedEntries) {
-          if (serverEntriesMap.has(deletedId)) {
-            try {
-              await logbookApi.deleteEntry(deletedId)
-              syncStats.localDeletes++
-              console.log(`✅ Local deletion wins: ${deletedId}`)
-            } catch (error) {
-              console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
-            }
+          // Always try to sync deletion, even if not on server
+          // (it might have been created and deleted locally)
+          try {
+            await logbookApi.deleteEntry(deletedId)
+            successfullyDeletedIds.add(deletedId)
+            syncStats.localDeletes++
+            console.log(`✅ Local deletion synced: ${deletedId}`)
+          } catch (error) {
+            console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
+            // Keep this ID in deletedEntries for next sync attempt
           }
         }
       }
@@ -912,8 +915,26 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // Update local storage
       debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(mergedEntries))
 
-      // Clear deletion tracking after successful sync
-      clearDeletedEntries()
+      // Only clear successfully synced deletions, keep failed ones for retry
+      if (successfullyDeletedIds.size > 0) {
+        const remainingDeleted = new Set(deletedEntries)
+        for (const deletedId of successfullyDeletedIds) {
+          remainingDeleted.delete(deletedId)
+        }
+        if (remainingDeleted.size > 0) {
+          // Still have some failed deletions to retry later
+          localStorage.setItem(
+            DELETED_ENTRIES_KEY,
+            JSON.stringify([...remainingDeleted])
+          )
+          console.log(
+            `⚠️ ${remainingDeleted.size} deletions will be retried next sync`
+          )
+        } else {
+          // All deletions successful
+          clearDeletedEntries()
+        }
+      }
 
       // Log sync summary
       console.log('🔄 Sync completed with Local Activity Wins strategy:', {

@@ -165,49 +165,71 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
               delete transformedEntry.goalIds
             }
 
-            // Normalize enum fields to lowercase for database compatibility
-            if (
-              transformedEntry.instrument &&
-              typeof transformedEntry.instrument === 'string'
-            ) {
-              transformedEntry.instrument =
-                transformedEntry.instrument.toLowerCase()
-            }
-            if (
-              transformedEntry.type &&
-              typeof transformedEntry.type === 'string'
-            ) {
-              transformedEntry.type = transformedEntry.type.toLowerCase()
-            }
-            if (
-              transformedEntry.mood &&
-              typeof transformedEntry.mood === 'string'
-            ) {
-              transformedEntry.mood = transformedEntry.mood.toLowerCase()
-            }
-
-            const checksum = await calculateChecksum(transformedEntry)
-
-            const result = await db.upsertSyncData({
-              userId,
-              entityType: 'logbook_entry',
-              entityId: transformedEntry.id,
-              data: transformedEntry,
-              checksum,
-              deviceId,
-            })
-
-            stats.entriesProcessed++
-            if (result.action === 'duplicate_prevented') {
-              stats.duplicatesPrevented++
-              console.log(
-                `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
-                  `using existing ${result.entity_id}`
+            // Check if this is a deletion request
+            if (transformedEntry.deletedAt) {
+              // Handle soft delete more efficiently
+              await db.softDeleteSyncData(
+                userId,
+                'logbook_entry',
+                transformedEntry.id,
+                transformedEntry.deletedAt as string
               )
-            }
 
-            if (c.env.ENVIRONMENT === 'staging') {
-              console.log('[Sync Push] Successfully upserted entry:', entry.id)
+              stats.entriesProcessed++
+              if (c.env.ENVIRONMENT === 'staging') {
+                console.log(
+                  '[Sync Push] Soft deleted entry:',
+                  transformedEntry.id
+                )
+              }
+            } else {
+              // Normalize enum fields to lowercase for database compatibility
+              if (
+                transformedEntry.instrument &&
+                typeof transformedEntry.instrument === 'string'
+              ) {
+                transformedEntry.instrument =
+                  transformedEntry.instrument.toLowerCase()
+              }
+              if (
+                transformedEntry.type &&
+                typeof transformedEntry.type === 'string'
+              ) {
+                transformedEntry.type = transformedEntry.type.toLowerCase()
+              }
+              if (
+                transformedEntry.mood &&
+                typeof transformedEntry.mood === 'string'
+              ) {
+                transformedEntry.mood = transformedEntry.mood.toLowerCase()
+              }
+
+              const checksum = await calculateChecksum(transformedEntry)
+
+              const result = await db.upsertSyncData({
+                userId,
+                entityType: 'logbook_entry',
+                entityId: transformedEntry.id,
+                data: transformedEntry,
+                checksum,
+                deviceId,
+              })
+
+              stats.entriesProcessed++
+              if (result.action === 'duplicate_prevented') {
+                stats.duplicatesPrevented++
+                console.log(
+                  `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
+                    `using existing ${result.entity_id}`
+                )
+              }
+
+              if (c.env.ENVIRONMENT === 'staging') {
+                console.log(
+                  '[Sync Push] Successfully upserted entry:',
+                  entry.id
+                )
+              }
             }
           } catch (entryError) {
             // Error: Failed to process entry
