@@ -6,7 +6,7 @@ Open-source practice journal for musicians - track sessions, log progress, and a
 
 ## Features
 
-🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 📚 Repertoire & goals tracking • 🎼 Sheet music library • 🌐 Open source (MIT)
+🎸 Multi-instrument support (guitar & piano) • 🎵 Real-time audio playback • 📱 Mobile-first design • 🎯 Practice logging & analytics • 📚 Repertoire & goals tracking • 🎼 Sheet music library • 🔄 Real-time sync • 🌐 Open source (MIT)
 
 ## Quick Start
 
@@ -51,15 +51,15 @@ Based on proven pedagogical methods including the **"Keep Going Method"** from [
 
 ## Project Info
 
-|                   |                                                                         |
-| ----------------- | ----------------------------------------------------------------------- |
-| **🌐 Website**    | [mirubato.com](https://mirubato.com)                                    |
-| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)                  |
-| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato)      |
-| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)             |
-| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                                 |
-| **📄 License**    | MIT ([details](docs/LICENSE.md))                                        |
-| **🚧 Status**     | v1.7.0 Released - Focused UI Design & Complete i18n (297 tests passing) |
+|                   |                                                                    |
+| ----------------- | ------------------------------------------------------------------ |
+| **🌐 Website**    | [mirubato.com](https://mirubato.com)                               |
+| **📚 API Docs**   | [api.mirubato.com/docs](https://api.mirubato.com/docs)             |
+| **📝 Repository** | [github.com/pezware/mirubato](https://github.com/pezware/mirubato) |
+| **🐛 Issues**     | [GitHub Issues](https://github.com/pezware/mirubato/issues)        |
+| **👨‍💻 Contact**    | [@arbeitandy](https://x.com/arbeitandy)                            |
+| **📄 License**    | MIT ([details](docs/LICENSE.md))                                   |
+| **🚧 Status**     | v1.7.0 - Enhanced Mobile UI, Real-time Sync & Improved Reliability |
 
 ---
 

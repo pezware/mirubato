@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sync Worker Service** (PR #523)
+  - New dedicated Cloudflare Worker for handling synchronization
+  - Database persistence and sync recovery capabilities
+  - Auto-sync implementation for improved reliability
+  - Prevention of data loss during sync operations
+
+- **Improved Logbook Entry Display** (PR #511, #507, #501)
+  - Consolidated entry details directly into list view
+  - Removed split view in favor of unified interface
+  - Collapsible notes section (collapsed by default)
+  - Mobile-optimized display with expandable details
+  - Enhanced E2E test coverage with data-testid attributes
+
+- **Composer Canonicalization System**
+  - Standardized composer names across all services
+  - Migration scripts for existing data
+  - Mapping system for common composer name variations
+  - Improved autocomplete with canonical composer names
+
 - **Status Change Tracking** (PR #475)
   - Automatic tracking of repertoire piece status changes in personal notes
   - Timestamped entries with full internationalization support
@@ -52,6 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **UI/UX Improvements**
+  - Resolved multiple mobile UI issues for better experience (PR #525, #519-#524, #518, #512-#516)
+  - Improved logbook entry display with consolidated UI components (PR #511)
+  - Enhanced type safety for custom instruments support (PR #517)
   - Consolidated Data Table and Analytics tabs (PR #262, #369)
   - Optimized sidebar width for better screen utilization (PR #407, #411)
   - Enhanced mobile UI responsiveness across all components (PR #343, #436, #439)
@@ -60,6 +82,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Reorganized logbook overview and repertoire statistics layout (PR #431)
   - Made metronome grid scrollbar responsive (PR #349)
   - Improved mobile dropdown width and status selects (PR #343)
+
+- **Code Organization**
+  - Eliminated redundant code and standardized utilities (PR #506)
+  - Removed obsolete code and cleaned up frontend
+  - Improved validation with i18n messages
 
 - **Repertoire Enhancements**
   - Added sort functionality to repertoire view (PR #354)
@@ -83,6 +110,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved privacy statement transparency with multilingual support (PR #422, #425)
 
 ### Fixed
+
+- **Sync System Improvements**
+  - Resolved logbook sync validation errors and data loss (PR #523)
+  - Fixed proper handling of logbook entry deletions
+  - Added sync-worker to pnpm workspace configuration
+  - Updated sync-worker compatibility date for Cloudflare Workers
+  - Prevented data loss and improved reliability
+
+- **UI Issues**
+  - Resolved UI issues #526 and #527
+  - Fixed multiple mobile experience issues (#519-#524)
+  - Resolved unused mood parameter build error
+  - Updated E2E tests for new UI components
 
 - **Critical Fixes**
   - Resolved timer accuracy issues on mobile when backgrounded (PR #454)
