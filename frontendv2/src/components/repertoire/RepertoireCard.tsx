@@ -176,14 +176,16 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
                 <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
                   <MusicTitle
                     as="span"
-                    className="text-stone-900 group-hover:text-stone-700 break-words leading-tight"
+                    className="text-sm text-stone-900 group-hover:text-stone-700 break-words leading-tight"
                   >
                     {toTitleCase(item.scoreTitle)}
                   </MusicTitle>
-                  <span className="text-stone-600 flex-shrink-0">-</span>
+                  <span className="text-stone-600 flex-shrink-0 text-sm">
+                    -
+                  </span>
                   <MusicComposer
                     as="span"
-                    className="text-stone-700 group-hover:text-stone-600 break-words leading-tight"
+                    className="text-sm text-stone-700 group-hover:text-stone-600 break-words leading-tight"
                   >
                     {toTitleCase(item.scoreComposer)}
                   </MusicComposer>

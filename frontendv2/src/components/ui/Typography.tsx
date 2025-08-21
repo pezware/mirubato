@@ -46,8 +46,8 @@ const variantStyles: Record<TypographyVariant, string> = {
 
   // Music-specific typography (use Noto Serif for musical content)
   'music-title':
-    'font-serif text-base sm:text-lg font-medium text-gray-900 leading-tight',
-  'music-composer': 'font-serif text-sm text-gray-700',
+    'font-serif text-sm sm:text-base font-medium text-gray-900 leading-tight',
+  'music-composer': 'font-serif text-xs sm:text-sm text-gray-700',
   'music-metadata': 'font-inter text-sm text-gray-600',
 }
 
