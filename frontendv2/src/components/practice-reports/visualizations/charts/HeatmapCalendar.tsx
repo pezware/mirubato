@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '../../../ui/Card'
 import {
   format,
-  startOfYear,
-  endOfYear,
   eachDayOfInterval,
   getDay,
   isSameDay,
@@ -15,14 +13,12 @@ import {
 
 interface HeatmapCalendarProps {
   data: Map<string, number> // date string -> minutes practiced
-  year?: number
   onDayClick?: (date: string) => void
   className?: string
 }
 
 export function HeatmapCalendar({
   data,
-  year = new Date().getFullYear(),
   onDayClick,
   className,
 }: HeatmapCalendarProps) {
@@ -44,11 +40,9 @@ export function HeatmapCalendar({
   const calendarData = useMemo(() => {
     const now = new Date()
     const startDate = isMobile
-      ? startOfMonth(subMonths(now, 5)) // Start 6 months ago for mobile (5 months back + current month)
-      : startOfYear(new Date(year, 0, 1))
-    const endDate = isMobile
-      ? endOfMonth(now) // End at current month for mobile
-      : endOfYear(new Date(year, 0, 1))
+      ? startOfMonth(subMonths(now, 3)) // Start 3 months ago for mobile (3 months back + current month = 4 months total)
+      : startOfMonth(subMonths(now, 5)) // For desktop, show 6 recent months to prevent horizontal scroll
+    const endDate = endOfMonth(now) // Always end at current month
     const days = eachDayOfInterval({ start: startDate, end: endDate })
 
     // Find max value for intensity calculation
@@ -88,14 +82,60 @@ export function HeatmapCalendar({
     }
 
     return { weeks, maxValue }
-  }, [data, year, isMobile])
+  }, [data, isMobile])
 
   // Month labels - find which column each month starts in (first visible day)
   const monthLabels = useMemo(() => {
     const labels: { month: string; columnIndex: number }[] = []
 
     if (isMobile) {
-      // For mobile, we show the last 6 months
+      // For mobile, we show the last 3 months + current month (4 total)
+      const now = new Date()
+      const months = [
+        subMonths(now, 3),
+        subMonths(now, 2),
+        subMonths(now, 1),
+        now,
+      ]
+
+      months.forEach(monthDate => {
+        const monthNum = monthDate.getMonth()
+        const monthYear = monthDate.getFullYear()
+        let found = false
+
+        // Look through each column to find where this month starts
+        for (
+          let colIndex = 0;
+          colIndex < calendarData.weeks.length && !found;
+          colIndex++
+        ) {
+          const week = calendarData.weeks[colIndex]
+
+          // Check if this column contains the first day of the month
+          const hasFirstDay = week.some(
+            d =>
+              d.date.getFullYear() === monthYear &&
+              d.date.getMonth() === monthNum &&
+              d.date.getDate() === 1 &&
+              d.date.getFullYear() !== 1970 // Not a placeholder
+          )
+
+          if (hasFirstDay) {
+            // For better visual alignment, place the label 2 columns after where the month actually starts
+            const adjustedIndex = Math.min(
+              colIndex + 2,
+              calendarData.weeks.length - 1
+            )
+            labels.push({
+              month: format(monthDate, 'MMM'),
+              columnIndex: adjustedIndex,
+            })
+            found = true
+          }
+        }
+      })
+    } else {
+      // For desktop, show the last 6 months
       const now = new Date()
       const months = [
         subMonths(now, 5),
@@ -142,45 +182,9 @@ export function HeatmapCalendar({
           }
         }
       })
-    } else {
-      // For desktop, show all months of the year
-      for (let i = 0; i < 12; i++) {
-        let found = false
-
-        // Look through each column to find where this month starts
-        for (
-          let colIndex = 0;
-          colIndex < calendarData.weeks.length && !found;
-          colIndex++
-        ) {
-          const week = calendarData.weeks[colIndex]
-
-          // Check if this column contains the first day of the month
-          const hasFirstDay = week.some(
-            d =>
-              d.date.getFullYear() === year &&
-              d.date.getMonth() === i &&
-              d.date.getDate() === 1 &&
-              d.date.getFullYear() !== 1970 // Not a placeholder
-          )
-
-          if (hasFirstDay) {
-            // For better visual alignment, place the label 2 columns after where the month actually starts
-            const adjustedIndex = Math.min(
-              colIndex + 2,
-              calendarData.weeks.length - 1
-            )
-            labels.push({
-              month: format(new Date(year, i, 1), 'MMM'),
-              columnIndex: adjustedIndex,
-            })
-            found = true
-          }
-        }
-      }
     }
     return labels
-  }, [year, calendarData.weeks, isMobile])
+  }, [calendarData.weeks, isMobile])
 
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -205,14 +209,8 @@ export function HeatmapCalendar({
   return (
     <Card className={className} data-testid="heatmap-calendar">
       <div className="p-3 sm:p-6">
-        <div
-          className={isMobile ? 'w-full overflow-hidden' : 'overflow-x-auto'}
-        >
-          <div
-            className={
-              isMobile ? 'w-full flex flex-col items-center' : 'inline-block'
-            }
-          >
+        <div className="w-full overflow-hidden">
+          <div className="inline-block">
             {/* Month labels row */}
             <div className="flex mb-1">
               {/* Empty space for day labels column */}

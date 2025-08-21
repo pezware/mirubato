@@ -34,7 +34,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Clone and install
-git clone https://github.com/mirubato/mirubato.git
+git clone https://github.com/pezware/mirubato.git
 cd mirubato
 pnpm install
 
@@ -58,10 +58,11 @@ pnpm test                     # Run all tests across workspaces
 pnpm run build                # Build all services for production
 
 # Individual services (debugging)
-cd frontendv2 && pnpm run dev # Frontend only
-cd api && pnpm run dev        # API only
-cd scores && pnpm run dev     # Scores service only
-cd dictionary && pnpm run dev # Dictionary service only
+cd frontendv2 && pnpm run dev  # Frontend only
+cd api && pnpm run dev         # API only
+cd scores && pnpm run dev      # Scores service only
+cd dictionary && pnpm run dev  # Dictionary service only
+cd sync-worker && pnpm run dev # Sync service (if needed)
 
 # Testing
 pnpm test                     # All tests
@@ -130,18 +131,18 @@ Mirubato leverages Cloudflare's edge computing platform for:
 │                    (300+ Global Locations)               │
 └─────────────────────┬───────────────────────────────────┘
                       │
-    ┌─────────────────┼─────────────┬────────────────────┐
-    │                 │             │                    │
-┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
-│  Frontend     │  │   API       │  │   Scores    │  │ Dictionary  │
-│  Worker       │  │   Worker    │  │   Worker    │  │   Worker    │
-│ (Static SPA)  │  │ (REST API)  │  │ (PDF/AI)    │  │ (Lookup)    │
-└───┬──────────┘  └──┬──────────┘  └──┬──────────┘  └──┬──────────┘
-    │                 │                 │                 │
-┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
-│ Assets (CDN)  │  │ D1 Database │  │ D1 + R2     │  │ D1 Database │
-│               │  │ KV Cache    │  │ KV + Queue  │  │ KV Cache    │
-└───────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
+    ┌─────────────────┼─────────────┬────────────────┬────────────────┐
+    │                 │             │                │                │
+┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
+│  Frontend     │  │   API       │  │   Scores    │  │ Dictionary  │  │ Sync Worker │
+│  Worker       │  │   Worker    │  │   Worker    │  │   Worker    │  │   Worker    │
+│ (Static SPA)  │  │ (REST API)  │  │ (PDF/AI)    │  │ (Lookup)    │  │ (Real-time) │
+└───┬──────────┘  └──┬──────────┘  └──┬──────────┘  └──┬──────────┘  └──┬──────────┘
+    │                 │                 │                 │                 │
+┌───▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐  ┌──▼──────────┐
+│ Assets (CDN)  │  │ D1 Database │  │ D1 + R2     │  │ D1 Database │  │ D1 Database │
+│               │  │ KV Cache    │  │ KV + Queue  │  │ KV Cache    │  │ WebSockets  │
+└───────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
 ### Cloudflare Services Used
@@ -573,10 +574,13 @@ wrangler secret delete JWT_SECRET --env production
 ### Logbook - Practice Tracking
 
 - Manual entry and timer modes
+- Consolidated entry display with collapsible notes
 - Calendar heatmap visualization
 - Advanced filtering and analytics
 - CSV/JSON export
 - Auto-logging integration
+- Real-time sync across devices
+- Daily practice totals in date separators
 
 ### Scorebook - Sheet Music Library
 
@@ -591,9 +595,12 @@ wrangler secret delete JWT_SECRET --env production
 Track musical progress with:
 
 - **Status tracking**: Planned → Learning → Working → Polished → Performance Ready
+- **Status change history**: Automatic tracking in personal notes with timestamps
 - **Goal integration**: Link goals to specific pieces
 - **Practice history**: View all sessions per piece
 - **Auto-prompt**: Add pieces after practice
+- **Composer canonicalization**: Standardized composer names with autocomplete
+- **Duplicate management**: Comprehensive system for handling duplicate pieces
 
 ### Toolbox - Practice Tools
 
@@ -949,7 +956,29 @@ app.get('/health', async c => {
 
 ## 13. Version History {#version-history}
 
-### Current Version: 1.7.0 (August 2025)
+### Current Version: 1.7.1 (In Development)
+
+#### Sync System Improvements
+
+- **New Sync Worker Service**: Dedicated Cloudflare Worker for real-time synchronization
+- **Enhanced Reliability**: Database persistence and sync recovery capabilities
+- **Data Loss Prevention**: Improved validation and error handling
+- **Auto-sync Implementation**: Automatic synchronization on data changes
+
+#### UI/UX Enhancements
+
+- **Consolidated Logbook Display**: Removed split view in favor of unified interface
+- **Mobile Experience**: Fixed issues #519-#527 for improved mobile usability
+- **Collapsible Notes**: Notes section collapsed by default with expand option
+- **Type Safety**: Enhanced custom instruments support with better typing
+
+#### Code Quality
+
+- **Composer Canonicalization**: Standardized composer names across all services
+- **Code Organization**: Eliminated redundant code and standardized utilities
+- **Test Coverage**: Enhanced E2E tests with data-testid attributes
+
+### Version 1.7.0 (July 2025)
 
 #### Focused UI Design System
 
@@ -958,15 +987,6 @@ app.get('/health', async c => {
 - Practice timer feature
 - Enhanced repertoire timeline
 - Complete i18n (200+ translations fixed)
-
-#### Mobile UI Improvements
-
-- **Typography Enhancement**: Added Noto Serif font for better multilingual support
-- **Vertical Layout**: Optimized for small screens (iPhone SE and up)
-- **Expandable Details**: View-only mode with Eye icon for full entry details
-- **Day Separators**: Clear visual distinction between practice days
-- **Icon Consistency**: Replaced emojis with Tabler Icons throughout
-- **Touch Targets**: Improved to 44x44px for better accessibility
 
 #### Security & Infrastructure
 
@@ -1076,6 +1096,7 @@ mirubato/
 ├── api/                 # Main API Worker (Hono + D1)
 ├── scores/              # Sheet Music Worker (PDF + AI)
 ├── dictionary/          # Music Terms Worker (AI + KV)
+├── sync-worker/         # Real-time Sync Worker (WebSockets + D1)
 └── package.json         # Root workspace configuration
 ```
 
