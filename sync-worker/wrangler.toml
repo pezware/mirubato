@@ -1,7 +1,7 @@
 # Mirubato Sync Worker Configuration
 name = "mirubato-sync-worker"
 main = "src/index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2025-08-21"
 compatibility_flags = ["nodejs_compat"]
 account_id = "1362434665780520e89f9f06b1057d24"
 
