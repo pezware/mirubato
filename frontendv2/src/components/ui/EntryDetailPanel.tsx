@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   X,
@@ -18,7 +18,10 @@ import {
 } from '@tabler/icons-react'
 import { LogbookEntry } from '@/api/logbook'
 import { MusicTitle, MusicComposer } from '@/components/ui'
-import Button from '@/components/ui/Button'
+import {
+  DropdownMenu,
+  type DropdownMenuItem,
+} from '@/components/ui/DropdownMenu'
 import { formatDuration, formatDateSeparator } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { cn } from '@/utils/cn'
@@ -41,6 +44,25 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
   className,
 }) => {
   const { t, i18n } = useTranslation(['logbook', 'common', 'repertoire'])
+  const [showMenu, setShowMenu] = useState(false)
+
+  // Build menu items
+  const menuItems: DropdownMenuItem[] = []
+  if (entry && onEdit) {
+    menuItems.push({
+      label: t('common:edit'),
+      onClick: () => onEdit(entry),
+      icon: <Edit2 className="w-3.5 h-3.5" />,
+    })
+  }
+  if (entry && onDelete) {
+    menuItems.push({
+      label: t('common:delete'),
+      onClick: () => onDelete(entry),
+      variant: 'danger',
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+    })
+  }
 
   // Get mood icon
   const getMoodIcon = (mood?: string) => {
@@ -101,39 +123,67 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
       )}
     >
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-2">
-          {onNavigate && (
-            <>
+      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {onNavigate && (
+              <>
+                <button
+                  onClick={() => onNavigate('prev')}
+                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0"
+                  aria-label={t('common:previous')}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => onNavigate('next')}
+                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0"
+                  aria-label={t('common:next')}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+            {/* Display piece title if available, otherwise entry details */}
+            {entry?.pieces && entry.pieces.length > 0 ? (
+              <div className="truncate">
+                <h3 className="text-xl font-semibold text-gray-800 truncate">
+                  {toTitleCase(entry.pieces[0].title)}
+                </h3>
+                {entry.pieces[0].composer && (
+                  <p className="text-sm text-gray-600 truncate">
+                    {toTitleCase(entry.pieces[0].composer)}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <h3 className="text-lg font-semibold text-gray-700">
+                {t('logbook:entryDetails')}
+              </h3>
+            )}
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Actions menu */}
+            {menuItems.length > 0 && (
+              <DropdownMenu
+                items={menuItems}
+                isOpen={showMenu}
+                onToggle={() => setShowMenu(!showMenu)}
+                onClose={() => setShowMenu(false)}
+                ariaLabel={t('common:moreOptions')}
+              />
+            )}
+            {onClose && (
               <button
-                onClick={() => onNavigate('prev')}
+                onClick={onClose}
                 className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-                aria-label={t('common:previous')}
+                aria-label={t('common:close')}
               >
-                <ChevronLeft className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </button>
-              <button
-                onClick={() => onNavigate('next')}
-                className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-                aria-label={t('common:next')}
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </>
-          )}
-          <h3 className="font-semibold text-gray-700">
-            {t('logbook:entryDetails')}
-          </h3>
+            )}
+          </div>
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label={t('common:close')}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
       </div>
 
       {/* Content - scrollable with tighter spacing */}
@@ -285,36 +335,6 @@ export const EntryDetailPanel: React.FC<EntryDetailPanelProps> = ({
           </div>
         )}
       </div>
-
-      {/* Actions - directly at bottom without extra spacing */}
-      {(onEdit || onDelete) && (
-        <div className="flex-shrink-0 p-3 pt-2 border-t border-gray-200">
-          <div className="flex gap-2">
-            {onEdit && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onEdit(entry)}
-                className="flex-1 flex items-center justify-center gap-1.5"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                {t('common:edit')}
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => onDelete(entry)}
-                className="flex-1 flex items-center justify-center gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {t('common:delete')}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

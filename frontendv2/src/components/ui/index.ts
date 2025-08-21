@@ -35,6 +35,9 @@ export { default as SplitButton } from './SplitButton'
 
 export { default as TimelineNav } from './TimelineNav'
 
+export { DropdownMenu } from './DropdownMenu'
+export type { DropdownMenuItem } from './DropdownMenu'
+
 export { Tabs } from './Tabs'
 
 export { SegmentedControl } from './SegmentedControl'
@@ -45,6 +48,8 @@ export {
   MusicTitle,
   MusicComposer,
   MusicMetadata,
+  MusicTitleLarge,
+  MusicComposerLarge,
 } from './Typography'
 export type { TypographyProps } from './Typography'
 

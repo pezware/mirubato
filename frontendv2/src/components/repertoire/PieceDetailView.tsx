@@ -6,12 +6,14 @@ import { LogPracticeButton } from '@/components/ui/ProtectedButtonFactory'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import {
-  MusicTitle,
-  MusicComposer,
+  MusicTitleLarge,
+  MusicComposerLarge,
   Modal,
   ModalBody,
   ModalFooter,
+  DropdownMenu,
 } from '@/components/ui'
+import type { DropdownMenuItem } from '@/components/ui'
 import { LogbookSplitView } from '@/components/logbook/LogbookSplitView'
 import type { LogbookEntry } from '@/api/logbook'
 import {
@@ -74,6 +76,7 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
   const [selectedSessionId] = useState<string | undefined>(undefined)
+  const [showMenu, setShowMenu] = useState(false)
 
   // Note: Modal scroll lock is now handled by the Modal component
   const { updatePieceName, loadEntries } = useLogbookStore()
@@ -364,6 +367,27 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
     // Refresh if needed
   }, [])
 
+  // Build dropdown menu items
+  const menuItems: DropdownMenuItem[] = [
+    {
+      label: t('common:edit'),
+      onClick: () => setIsEditingPiece(true),
+      icon: <Edit2 className="w-3.5 h-3.5" />,
+    },
+    {
+      label: t('repertoire:removeFromPieces'),
+      onClick: () => {
+        if (sessions.length === 0) {
+          setShowDeleteConfirm(true)
+        } else {
+          setShowRemoveConfirm(true)
+        }
+      },
+      variant: 'danger',
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+    },
+  ]
+
   return (
     <div className="space-y-4">
       {/* Combined Header, Stats, and Notes Card */}
@@ -371,48 +395,26 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
         {/* Header Section */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <MusicTitle as="h1" className="text-stone-900">
+            <MusicTitleLarge className="text-stone-900">
               {toTitleCase(item.scoreTitle)}
-            </MusicTitle>
+            </MusicTitleLarge>
             <div>
-              <MusicComposer className="text-stone-600">
+              <MusicComposerLarge className="text-stone-600">
                 {toTitleCase(item.scoreComposer)}
-              </MusicComposer>
+              </MusicComposerLarge>
               {item.catalogNumber && (
                 <span className="text-stone-600"> • {item.catalogNumber}</span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2 ml-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditingPiece(true)}
-              className="flex items-center gap-2"
-            >
-              <Edit2 className="w-4 h-4" />
-              {t('common:edit')}
-            </Button>
-
-            {/* Piece Management Dropdown */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  // Show context menu or dropdown with remove options
-                  if (sessions.length === 0) {
-                    setShowDeleteConfirm(true)
-                  } else {
-                    setShowRemoveConfirm(true)
-                  }
-                }}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                {t('repertoire:removeFromPieces')}
-              </Button>
-            </div>
+            <DropdownMenu
+              items={menuItems}
+              isOpen={showMenu}
+              onToggle={() => setShowMenu(!showMenu)}
+              onClose={() => setShowMenu(false)}
+              ariaLabel={t('common:moreOptions')}
+            />
           </div>
         </div>
 
