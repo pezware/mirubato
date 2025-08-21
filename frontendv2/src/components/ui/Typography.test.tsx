@@ -14,8 +14,8 @@ describe('Typography Component', () => {
       const element = screen.getByText('Test Title')
 
       expect(element).toHaveClass('font-serif')
-      expect(element).toHaveClass('text-base')
-      expect(element).toHaveClass('sm:text-lg')
+      expect(element).toHaveClass('text-sm')
+      expect(element).toHaveClass('sm:text-base')
       expect(element).toHaveClass('font-medium')
     })
 
@@ -68,8 +68,8 @@ describe('Typography Component', () => {
       const element = screen.getByText('Sonata No. 1')
 
       expect(element).toHaveClass('font-serif')
-      expect(element).toHaveClass('text-base')
-      expect(element).toHaveClass('sm:text-lg')
+      expect(element).toHaveClass('text-sm')
+      expect(element).toHaveClass('sm:text-base')
       expect(element).toHaveClass('font-medium')
       expect(element.tagName).toBe('H3')
     })
@@ -79,7 +79,8 @@ describe('Typography Component', () => {
       const element = screen.getByText('Mozart')
 
       expect(element).toHaveClass('font-serif')
-      expect(element).toHaveClass('text-sm')
+      expect(element).toHaveClass('text-xs')
+      expect(element).toHaveClass('sm:text-sm')
       expect(element.tagName).toBe('P')
     })
 

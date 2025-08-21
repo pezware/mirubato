@@ -44,7 +44,7 @@ export function HeatmapCalendar({
   const calendarData = useMemo(() => {
     const now = new Date()
     const startDate = isMobile
-      ? startOfMonth(subMonths(now, 3)) // Start 4 months ago for mobile (3 months back + current month)
+      ? startOfMonth(subMonths(now, 5)) // Start 6 months ago for mobile (5 months back + current month)
       : startOfYear(new Date(year, 0, 1))
     const endDate = isMobile
       ? endOfMonth(now) // End at current month for mobile
@@ -95,9 +95,11 @@ export function HeatmapCalendar({
     const labels: { month: string; columnIndex: number }[] = []
 
     if (isMobile) {
-      // For mobile, we show the last 4 months
+      // For mobile, we show the last 6 months
       const now = new Date()
       const months = [
+        subMonths(now, 5),
+        subMonths(now, 4),
         subMonths(now, 3),
         subMonths(now, 2),
         subMonths(now, 1),
@@ -203,7 +205,9 @@ export function HeatmapCalendar({
   return (
     <Card className={className} data-testid="heatmap-calendar">
       <div className="p-3 sm:p-6">
-        <div className={isMobile ? 'w-full' : 'overflow-x-auto'}>
+        <div
+          className={isMobile ? 'w-full overflow-hidden' : 'overflow-x-auto'}
+        >
           <div
             className={
               isMobile ? 'w-full flex flex-col items-center' : 'inline-block'

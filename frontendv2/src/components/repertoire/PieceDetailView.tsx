@@ -417,9 +417,9 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       </Card>
 
       {/* Stats Section */}
-      <Card padding="sm">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <Card padding="md">
+        {/* Stats Grid - aligned with Notes section padding */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div>
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:totalPractice')}
@@ -531,10 +531,10 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
       <div className="space-y-4">
         <Card padding="sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base sm:text-lg font-semibold text-morandi-stone-700">
+            <h3 className="hidden sm:block text-base sm:text-lg font-semibold text-morandi-stone-700">
               {t('repertoire:practiceHistory')}
             </h3>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto">
               <div className="flex gap-2">
                 <select
                   value={timeFilter}

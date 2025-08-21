@@ -339,7 +339,11 @@ export function PracticeLogsList({
                   entryId={entry.id}
                   time={formatTime(entry.timestamp)}
                   duration={entry.duration}
-                  type={t(`common:music.${entry.type.toLowerCase()}`)}
+                  type={
+                    entry.type === 'status_change'
+                      ? 'status_change'
+                      : t(`common:music.${entry.type.toLowerCase()}`)
+                  }
                   instrument={entry.instrument || undefined}
                   pieces={entry.pieces}
                   notes={entry.notes}
