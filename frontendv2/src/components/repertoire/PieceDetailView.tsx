@@ -366,14 +366,15 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Piece Header Card */}
+      {/* Combined Header, Stats, and Notes Card */}
       <Card padding="md">
-        <div className="flex items-start justify-between mb-2">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <MusicTitle as="h1" className="text-stone-900 mb-2">
+            <MusicTitle as="h1" className="text-stone-900">
               {toTitleCase(item.scoreTitle)}
             </MusicTitle>
-            <div className="mb-4 sm:mb-6">
+            <div>
               <MusicComposer className="text-stone-600">
                 {toTitleCase(item.scoreComposer)}
               </MusicComposer>
@@ -414,12 +415,12 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </div>
-      </Card>
 
-      {/* Stats Section */}
-      <Card padding="md">
-        {/* Stats Grid - aligned with Notes section padding */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Divider */}
+        <div className="border-t border-stone-200 my-4"></div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4">
           <div>
             <div className="text-xs uppercase tracking-wider text-stone-500 mb-1">
               {t('repertoire:totalPractice')}
@@ -471,10 +472,11 @@ export const PieceDetailView: React.FC<PieceDetailViewProps> = ({
             </div>
           </div>
         </div>
-      </Card>
 
-      {/* Notes Section */}
-      <Card padding="md">
+        {/* Divider */}
+        <div className="border-t border-stone-200 my-4"></div>
+
+        {/* Notes Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm uppercase tracking-wider text-stone-500">

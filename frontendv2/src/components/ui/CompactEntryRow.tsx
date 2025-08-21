@@ -150,7 +150,13 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                 </>
               )}
               {type && (
-                <span className="px-2 py-0.5 bg-morandi-sage-100 text-morandi-stone-700 text-xs rounded-full">
+                <span
+                  className={`px-2 py-0.5 text-xs rounded-full ${
+                    type.toLowerCase() === 'status_change'
+                      ? 'bg-orange-200 text-orange-800'
+                      : 'bg-morandi-sage-100 text-morandi-stone-700'
+                  }`}
+                >
                   {type}
                 </span>
               )}
