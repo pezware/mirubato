@@ -7,14 +7,17 @@
     "frontendv2",
     "api",
     "scores",
-    "dictionary"
+    "dictionary",
+    "sync-worker"
   ],
   "scripts": {
     "dev": "pnpm --filter @mirubato/frontendv2 run dev",
     "dev:api": "pnpm --filter @mirubato/api run dev",
+    "dev:sync": "pnpm --filter @mirubato/sync-worker run dev",
     "build": "pnpm -r run build",
     "build:frontend": "pnpm --filter @mirubato/frontendv2 run build",
     "build:api": "pnpm --filter @mirubato/api run build",
+    "build:sync": "pnpm --filter @mirubato/sync-worker run build",
     "lint": "pnpm -r run lint",
     "type-check": "pnpm -r run type-check",
     "test": "pnpm -r run test",
