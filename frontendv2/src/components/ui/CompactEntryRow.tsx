@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Edit2,
   Trash2,
@@ -13,6 +14,7 @@ import { cn } from '@/utils/cn'
 import { formatDuration } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { MusicTitle, MusicComposer } from './Typography'
+import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu'
 
 interface CompactEntryRowProps {
   time: string
@@ -54,7 +56,28 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
   hidePieceInfo = false,
   children,
 }) => {
+  const { t } = useTranslation('common')
   const [showNotes, setShowNotes] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+
+  // Build menu items
+  const menuItems: DropdownMenuItem[] = []
+  if (onEdit) {
+    menuItems.push({
+      label: t('edit'),
+      onClick: onEdit,
+      icon: <Edit2 className="w-3.5 h-3.5" />,
+    })
+  }
+  if (onDelete) {
+    menuItems.push({
+      label: t('delete'),
+      onClick: onDelete,
+      variant: 'danger',
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+    })
+  }
+
   // Get instrument icon
   const getInstrumentIcon = (instrument?: string) => {
     const iconProps = {
@@ -209,33 +232,16 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
             {children && <div className="mt-1">{children}</div>}
           </div>
 
-          {/* Action buttons */}
-          {(onEdit || onDelete) && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              {onEdit && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    onEdit()
-                  }}
-                  className="p-1.5 text-morandi-stone-600 hover:text-morandi-stone-800 transition-colors"
-                  aria-label="Edit"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    onDelete()
-                  }}
-                  className="p-1.5 text-red-600 hover:text-red-800 transition-colors"
-                  aria-label="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+          {/* Action menu */}
+          {menuItems.length > 0 && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <DropdownMenu
+                items={menuItems}
+                isOpen={showMenu}
+                onToggle={() => setShowMenu(!showMenu)}
+                onClose={() => setShowMenu(false)}
+                ariaLabel={t('moreOptions')}
+              />
             </div>
           )}
         </div>

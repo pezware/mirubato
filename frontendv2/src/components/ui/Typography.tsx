@@ -14,7 +14,9 @@ type TypographyVariant =
   | 'body-sm'
   | 'caption'
   | 'music-title'
+  | 'music-title-large'
   | 'music-composer'
+  | 'music-composer-large'
   | 'music-metadata'
 
 // Font family types
@@ -47,7 +49,10 @@ const variantStyles: Record<TypographyVariant, string> = {
   // Music-specific typography (use Noto Serif for musical content)
   'music-title':
     'font-serif text-sm sm:text-base font-medium text-gray-900 leading-tight',
+  'music-title-large':
+    'font-serif text-xl sm:text-2xl font-medium text-gray-900 leading-tight',
   'music-composer': 'font-serif text-xs sm:text-sm text-gray-700',
+  'music-composer-large': 'font-serif text-base sm:text-lg text-gray-700',
   'music-metadata': 'font-inter text-sm text-gray-600',
 }
 
@@ -65,7 +70,9 @@ const defaultElements: Record<TypographyVariant, keyof JSX.IntrinsicElements> =
     'body-sm': 'p',
     caption: 'span',
     'music-title': 'h3',
+    'music-title-large': 'h1',
     'music-composer': 'p',
+    'music-composer-large': 'p',
     'music-metadata': 'span',
   }
 
@@ -120,6 +127,26 @@ export const MusicMetadata = ({
   ...props
 }: Omit<TypographyProps, 'variant'>) => (
   <Typography variant="music-metadata" className={className} {...props}>
+    {children}
+  </Typography>
+)
+
+export const MusicTitleLarge = ({
+  children,
+  className,
+  ...props
+}: Omit<TypographyProps, 'variant'>) => (
+  <Typography variant="music-title-large" className={className} {...props}>
+    {children}
+  </Typography>
+)
+
+export const MusicComposerLarge = ({
+  children,
+  className,
+  ...props
+}: Omit<TypographyProps, 'variant'>) => (
+  <Typography variant="music-composer-large" className={className} {...props}>
     {children}
   </Typography>
 )
