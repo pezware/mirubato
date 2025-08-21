@@ -60,6 +60,27 @@ export default {
         headers.set('X-Content-Type-Options', 'nosniff')
         headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
+        // Add caching headers for static assets
+        const isStaticAsset =
+          /\.(ico|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|otf|eot)$/i.test(
+            url.pathname
+          )
+        const isVersionedAsset = /\.[a-f0-9]{8,}\.(js|css)$/i.test(url.pathname)
+
+        if (isStaticAsset) {
+          // Cache static assets for 1 year (they should be versioned if changed)
+          headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+        } else if (isVersionedAsset) {
+          // Versioned JS/CSS files can be cached for 1 year
+          headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+        } else if (ext === 'html' || !ext) {
+          // HTML files should not be cached to ensure updates are seen
+          headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+        } else {
+          // Other files get moderate caching
+          headers.set('Cache-Control', 'public, max-age=3600')
+        }
+
         // Create new response with updated headers
         response = new Response(response.body, {
           status: response.status,

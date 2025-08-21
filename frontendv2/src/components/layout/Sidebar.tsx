@@ -128,16 +128,34 @@ const Sidebar: React.FC<SidebarProps> = ({
         {!isCollapsed ? (
           <Link
             to="/"
-            className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            {t('common:appName')}
+            <img
+              src="/logo-48x48.png"
+              alt=""
+              width="48"
+              height="48"
+              className="w-8 h-8"
+              loading="eager"
+            />
+            <span className="text-lg font-semibold text-gray-900">
+              {t('common:appName')}
+            </span>
           </Link>
         ) : (
           <Link
             to="/"
-            className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors flex justify-center"
+            className="flex justify-center items-center hover:opacity-80 transition-opacity"
+            aria-label={t('common:appName')}
           >
-            M
+            <img
+              src="/logo-32x32.png"
+              alt={t('common:appName')}
+              width="32"
+              height="32"
+              className="w-8 h-8"
+              loading="eager"
+            />
           </Link>
         )}
 
