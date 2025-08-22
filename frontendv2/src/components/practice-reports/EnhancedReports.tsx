@@ -240,7 +240,9 @@ export default function EnhancedReports({
             </div>
           }
         >
-          {renderView()}
+          <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200">
+            {renderView()}
+          </div>
         </Suspense>
       )}
     </div>
