@@ -28,60 +28,63 @@ export default function EnhancedReports({
   const [searchParams, setSearchParams] = useSearchParams()
 
   // State management
-  const [reportView, setReportView] = useState<ReportView>('overview')
   const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
     undefined
   )
+
+  // Derive report view from URL - single source of truth
+  const tab = searchParams.get('tab')
+  const reportView: ReportView =
+    tab === 'newEntry'
+      ? 'newEntry'
+      : tab === 'repertoire'
+        ? 'repertoire'
+        : tab === 'data'
+          ? 'data'
+          : 'overview'
 
   // Load entries on mount
   useEffect(() => {
     loadEntries()
   }, [loadEntries])
 
-  // Handle URL parameters and navigation state
+  // Handle edit entry based on URL and navigation state
   useEffect(() => {
     const tab = searchParams.get('tab')
     const editId = searchParams.get('editId')
 
+    // Handle edit entry for newEntry tab
     if (tab === 'newEntry') {
-      setReportView('newEntry')
-
       // First check for entry ID in URL
       if (editId) {
         const entryToEdit = entries.find(e => e.id === editId)
-        if (entryToEdit) {
+        if (entryToEdit && entryToEdit !== editEntry) {
           setEditEntry(entryToEdit)
         }
       }
       // Fallback to navigation state
       else if (location.state && 'editEntry' in location.state) {
-        setEditEntry(location.state.editEntry as LogbookEntry)
+        const stateEntry = location.state.editEntry as LogbookEntry
+        if (stateEntry !== editEntry) {
+          setEditEntry(stateEntry)
+        }
       }
-    } else if (tab === 'repertoire') {
-      setReportView('repertoire')
-    } else if (tab === 'data') {
-      setReportView('data')
-    } else if (!tab) {
-      // Reset to overview if no tab parameter
-      setReportView('overview')
+    } else if (editEntry) {
+      // Clear edit entry when not on newEntry tab
+      setEditEntry(undefined)
     }
-  }, [searchParams, location.state, entries])
+  }, [searchParams.toString(), location.state, entries, editEntry])
 
-  // Update URL when tab changes with navigation guards
+  // Update URL when tab changes - URL is single source of truth
   const handleViewChange = (view: ReportView) => {
-    // Prevent rapid navigation changes that could cause race conditions
+    // Check if we're already on this view
     const currentTab = searchParams.get('tab')
+    const currentView = currentTab || 'overview'
 
-    // If we're already navigating to this view, don't trigger again
-    if (
-      (view === 'overview' && !currentTab) ||
-      (view !== 'overview' && currentTab === view)
-    ) {
+    // Prevent unnecessary updates
+    if (currentView === view) {
       return
     }
-
-    console.log(`[Navigation] ${currentTab || 'overview'} → ${view}`)
-    setReportView(view)
 
     // Use a single atomic URL update to prevent conflicts
     const newParams = new URLSearchParams()
@@ -99,12 +102,10 @@ export default function EnhancedReports({
       // Set tab parameter for other views (repertoire, data)
       newParams.set('tab', view)
 
-      // For data view, preserve existing view parameter if it exists
+      // For data view, set default view parameter if not exists
       if (view === 'data') {
         const existingView = searchParams.get('view')
-        if (existingView) {
-          newParams.set('view', existingView)
-        }
+        newParams.set('view', existingView || 'table')
       }
     }
 
@@ -114,11 +115,6 @@ export default function EnhancedReports({
     // Clear navigation state when switching to overview
     if (view === 'overview') {
       window.history.replaceState({}, document.title)
-    }
-
-    // Clear edit entry when switching away from newEntry
-    if (view !== 'newEntry') {
-      setEditEntry(undefined)
     }
   }
 
@@ -190,12 +186,10 @@ export default function EnhancedReports({
             entry={editEntry}
             onClose={() => {
               setSearchParams({})
-              setReportView('overview')
               setEditEntry(undefined)
             }}
             onSave={() => {
               setSearchParams({})
-              setReportView('overview')
               setEditEntry(undefined)
             }}
           />
@@ -230,12 +224,10 @@ export default function EnhancedReports({
             entry={editEntry}
             onClose={() => {
               setSearchParams({})
-              setReportView('overview')
               setEditEntry(undefined)
             }}
             onSave={() => {
               setSearchParams({})
-              setReportView('overview')
               setEditEntry(undefined)
             }}
           />

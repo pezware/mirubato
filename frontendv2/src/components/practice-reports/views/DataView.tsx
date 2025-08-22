@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Table, BarChart3 } from 'lucide-react'
@@ -20,55 +20,9 @@ export default function DataView({ analytics }: DataViewProps) {
   const { t } = useTranslation(['reports'])
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Get view from URL or default to 'table'
+  // Derive view from URL - single source of truth
   const urlView = searchParams.get('view') as ViewType | null
-  const [activeView, setActiveView] = useState<ViewType>(urlView || 'table')
-
-  // Update URL when view changes (only if we're still on the Data tab)
-  useEffect(() => {
-    const currentView = searchParams.get('view')
-    const currentTab = searchParams.get('tab')
-
-    // Only update if we're still on the Data tab and view has changed
-    if (currentTab === 'data' && currentView !== activeView) {
-      const newParams = new URLSearchParams(searchParams)
-      newParams.set('view', activeView)
-      // Don't modify tab parameter - respect current navigation state
-      setSearchParams(newParams, { replace: true })
-    }
-  }, [activeView, searchParams, setSearchParams])
-
-  // Ensure URL has view parameter when DataView is active (but only if tab=data)
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    const view = searchParams.get('view')
-
-    // Only update URL if we're actually supposed to be on the Data tab
-    // This prevents race conditions during navigation away from Data tab
-    if (tab === 'data' && !view) {
-      const newParams = new URLSearchParams(searchParams)
-      newParams.set('view', activeView)
-      // Keep existing tab parameter - don't force it
-      setSearchParams(newParams, { replace: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run on mount - dependencies intentionally omitted
-
-  // Remember last selected view in localStorage
-  useEffect(() => {
-    if (!urlView) {
-      const savedView = localStorage.getItem(
-        'mirubato.dataView'
-      ) as ViewType | null
-      if (savedView === 'table' || savedView === 'analytics') {
-        setActiveView(savedView)
-      }
-    }
-  }, [urlView])
-
-  useEffect(() => {
-    localStorage.setItem('mirubato.dataView', activeView)
-  }, [activeView])
+  const activeView: ViewType = urlView === 'analytics' ? 'analytics' : 'table'
 
   const viewOptions: SegmentOption[] = [
     {
@@ -83,6 +37,20 @@ export default function DataView({ analytics }: DataViewProps) {
     },
   ]
 
+  // Handle view change - directly update URL
+  const handleViewChange = (value: string) => {
+    const newView = value as ViewType
+
+    // Prevent unnecessary updates
+    if (activeView === newView) {
+      return
+    }
+
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('view', newView)
+    setSearchParams(newParams, { replace: true })
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-morandi-stone-200 w-full">
       <div className="p-2 sm:p-3 lg:p-4">
@@ -91,7 +59,7 @@ export default function DataView({ analytics }: DataViewProps) {
           <SegmentedControl
             options={viewOptions}
             value={activeView}
-            onChange={value => setActiveView(value as ViewType)}
+            onChange={handleViewChange}
             className="w-full max-w-xs sm:w-auto"
           />
         </div>
@@ -105,13 +73,9 @@ export default function DataView({ analytics }: DataViewProps) {
           }
         >
           {activeView === 'table' ? (
-            <div className="animate-fade-in">
-              <DataTableView analytics={analytics} />
-            </div>
+            <DataTableView analytics={analytics} />
           ) : (
-            <div className="animate-fade-in">
-              <AnalyticsView analytics={analytics} />
-            </div>
+            <AnalyticsView analytics={analytics} />
           )}
         </Suspense>
       </div>
