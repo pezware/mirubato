@@ -38,14 +38,26 @@ export default function EnhancedReports({
     loadEntries()
   }, [loadEntries])
 
-  // Handle URL parameters and navigation state
+  // Initialize report view from URL on mount and handle direct URL navigation
   useEffect(() => {
     const tab = searchParams.get('tab')
     const editId = searchParams.get('editId')
 
+    // Determine the correct view based on URL
+    let targetView: ReportView = 'overview'
     if (tab === 'newEntry') {
-      setReportView('newEntry')
+      targetView = 'newEntry'
+    } else if (tab === 'repertoire') {
+      targetView = 'repertoire'
+    } else if (tab === 'data') {
+      targetView = 'data'
+    }
 
+    // Update view based on URL
+    setReportView(targetView)
+
+    // Handle edit entry for newEntry tab
+    if (tab === 'newEntry') {
       // First check for entry ID in URL
       if (editId) {
         const entryToEdit = entries.find(e => e.id === editId)
@@ -57,30 +69,25 @@ export default function EnhancedReports({
       else if (location.state && 'editEntry' in location.state) {
         setEditEntry(location.state.editEntry as LogbookEntry)
       }
-    } else if (tab === 'repertoire') {
-      setReportView('repertoire')
-    } else if (tab === 'data') {
-      setReportView('data')
-    } else if (!tab) {
-      // Reset to overview if no tab parameter
-      setReportView('overview')
+    } else {
+      // Clear edit entry when not on newEntry tab
+      setEditEntry(undefined)
     }
-  }, [searchParams, location.state, entries])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.toString(), location.state, entries])
 
   // Update URL when tab changes with navigation guards
   const handleViewChange = (view: ReportView) => {
-    // Prevent rapid navigation changes that could cause race conditions
+    // Check if we're already on this view
     const currentTab = searchParams.get('tab')
+    const currentView = currentTab || 'overview'
 
-    // If we're already navigating to this view, don't trigger again
-    if (
-      (view === 'overview' && !currentTab) ||
-      (view !== 'overview' && currentTab === view)
-    ) {
+    // Prevent unnecessary updates
+    if (currentView === view) {
       return
     }
 
-    console.log(`[Navigation] ${currentTab || 'overview'} → ${view}`)
+    // Update state first
     setReportView(view)
 
     // Use a single atomic URL update to prevent conflicts
