@@ -1349,11 +1349,25 @@ if (!isTestEnvironment) {
     localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
   })
 
-  // Set up auto-sync event handlers
+  // Set up auto-sync event handlers with debouncing
+  let lastFocusSyncTime = 0
+  const FOCUS_SYNC_DEBOUNCE_MS = 5000 // 5 seconds debounce
+
   // Sync on window focus (when user returns to the app)
   window.addEventListener('focus', () => {
     const store = useLogbookStore.getState()
-    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
+    const now = Date.now()
+
+    // Only sync if:
+    // 1. Not in local mode
+    // 2. User is authenticated
+    // 3. At least 5 seconds since last focus sync
+    if (
+      !store.isLocalMode &&
+      localStorage.getItem('auth-token') &&
+      now - lastFocusSyncTime > FOCUS_SYNC_DEBOUNCE_MS
+    ) {
+      lastFocusSyncTime = now
       console.log('🔄 Window focused - triggering sync')
       store.manualSync().catch(error => {
         console.warn('Focus sync failed:', error)

@@ -99,12 +99,11 @@ export default function EnhancedReports({
       // Set tab parameter for other views (repertoire, data)
       newParams.set('tab', view)
 
-      // For data view, preserve existing view parameter if it exists
+      // For data view, always set a view parameter (default to 'table')
       if (view === 'data') {
         const existingView = searchParams.get('view')
-        if (existingView) {
-          newParams.set('view', existingView)
-        }
+        // Always set view param to prevent DataView from adding it later
+        newParams.set('view', existingView || 'table')
       }
     }
 

@@ -38,22 +38,6 @@ export default function DataView({ analytics }: DataViewProps) {
     }
   }, [activeView, searchParams, setSearchParams])
 
-  // Ensure URL has view parameter when DataView is active (but only if tab=data)
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    const view = searchParams.get('view')
-
-    // Only update URL if we're actually supposed to be on the Data tab
-    // This prevents race conditions during navigation away from Data tab
-    if (tab === 'data' && !view) {
-      const newParams = new URLSearchParams(searchParams)
-      newParams.set('view', activeView)
-      // Keep existing tab parameter - don't force it
-      setSearchParams(newParams, { replace: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run on mount - dependencies intentionally omitted
-
   // Remember last selected view in localStorage
   useEffect(() => {
     if (!urlView) {
