@@ -15,13 +15,11 @@ import {
 interface SyncIndicatorProps {
   className?: string
   showText?: boolean
-  showRealtimeToggle?: boolean
 }
 
 export function SyncIndicator({
   className = '',
   showText = true,
-  showRealtimeToggle = true,
 }: SyncIndicatorProps) {
   const { t } = useTranslation(['common', 'ui'])
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
@@ -44,17 +42,7 @@ export function SyncIndicator({
     'idle' | 'syncing' | 'success' | 'error'
   >('idle')
 
-  // Check if WebSocket sync feature is enabled
-  const [isRealtimeFeatureEnabled, setIsRealtimeFeatureEnabled] =
-    useState(false)
-
-  useEffect(() => {
-    // Check feature flag
-    const featureEnabled =
-      process.env.NODE_ENV === 'development' ||
-      localStorage.getItem('mirubato:features:websocket-sync') === 'true'
-    setIsRealtimeFeatureEnabled(featureEnabled)
-  }, [])
+  // WebSocket sync is now enabled by default
 
   useEffect(() => {
     if (isSyncing) {
@@ -249,20 +237,6 @@ export function SyncIndicator({
           />
         </button>
       )}
-
-      {/* Real-time sync toggle (development only) */}
-      {showRealtimeToggle &&
-        isRealtimeFeatureEnabled &&
-        !isRealtimeSyncEnabled && (
-          <button
-            onClick={handleRealtimeSyncToggle}
-            disabled={!isAuthenticated}
-            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 transition-colors"
-            title={t('ui:components.syncIndicator.enableRealTimeSync')}
-          >
-            Enable Real-time
-          </button>
-        )}
 
       {getText()}
     </div>

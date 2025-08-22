@@ -6,6 +6,15 @@ Mirubato is a sight-reading practice application for musicians, built on Cloudfl
 
 ## Current Architecture - Version 1.7.6 (August 2025)
 
+### Version 1.7.6 - Real-time WebSocket Synchronization
+
+- **WebSocket Infrastructure**: Replaced 30-second polling with real-time WebSocket sync
+- **Instant Synchronization**: Data changes sync immediately across all connected devices
+- **Offline Queue**: Automatic queuing and retry of sync events when offline
+- **Conflict Resolution**: Timestamp-based conflict resolution for concurrent edits
+- **Performance Improvement**: Eliminated unnecessary polling requests, reducing server load
+- **Backward Compatibility**: Manual sync remains available as fallback
+
 ### Version 1.7.6 Highlights - Focused UI Design (PR #261)
 
 - **New Layout System**: Desktop sidebar navigation + mobile bottom tabs
@@ -780,6 +789,74 @@ npm run i18n:fix
 5. **Test with different languages** - Ensure UI handles varying text lengths
 
 See `frontendv2/docs/I18N_VALIDATION.md` for detailed documentation.
+
+## Real-time Synchronization Architecture
+
+### WebSocket Implementation
+
+Mirubato uses WebSocket connections for real-time data synchronization, replacing the previous 30-second polling mechanism.
+
+#### Client-Side (webSocketSync.ts)
+
+```typescript
+// Core WebSocket client features
+- Automatic reconnection with exponential backoff
+- Offline queue for sync events
+- Heartbeat mechanism (30-second intervals)
+- Connection state management
+- Event-based architecture for sync operations
+```
+
+#### Server-Side (sync-worker)
+
+```typescript
+// Cloudflare Worker with Durable Objects
+- WebSocket handling via Durable Objects
+- Per-user connection management
+- Message broadcasting to connected devices
+- Persistent connection state
+- Automatic cleanup on disconnect
+```
+
+#### Sync Event Types
+
+- `ENTRY_CREATED`: New practice log entry
+- `ENTRY_UPDATED`: Modified practice entry
+- `ENTRY_DELETED`: Removed practice entry
+- `BULK_SYNC`: Initial sync on connection
+- `SYNC_REQUEST`: Request full sync from server
+- `PING/PONG`: Heartbeat mechanism
+
+#### Connection Flow
+
+1. **Authentication**: User logs in, receives auth token
+2. **WebSocket Initialization**: `initializeWebSocketSync()` called
+3. **Connection Establishment**: WebSocket connects to sync-worker
+4. **Initial Sync**: Server sends current state via BULK_SYNC
+5. **Real-time Updates**: Changes broadcast to all connected devices
+6. **Offline Handling**: Events queued when disconnected
+7. **Reconnection**: Automatic retry with exponential backoff
+
+#### Conflict Resolution
+
+- **Strategy**: Last-write-wins based on timestamp
+- **Comparison**: Entry timestamps determine precedence
+- **Local Priority**: Local changes preserved during sync failures
+- **Duplicate Prevention**: `entriesAreEqual()` prevents redundant updates
+
+#### Performance Benefits
+
+- **Reduced Latency**: Instant updates vs 30-second polling
+- **Lower Server Load**: Persistent connections vs repeated HTTP requests
+- **Better UX**: Real-time collaboration feel
+- **Efficient Bandwidth**: Only changes transmitted, not full state
+
+#### Fallback Mechanism
+
+- **Manual Sync**: Available as backup option
+- **Polling Removed**: No automatic polling fallback
+- **Error Recovery**: Graceful degradation to offline mode
+- **User Control**: Manual sync button always available
 
 ## Caching Architecture
 

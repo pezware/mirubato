@@ -70,14 +70,16 @@ test.describe('Recent Entries', () => {
 
   test('shows multiple recent entries in order', async ({ page }) => {
     await test.step('Create multiple entries with unique timestamps', async () => {
-      // Create entries with INCREASING durations so that when the form
-      // calculates "current time - duration", entries created later will have older timestamps
-      // This is because the form sets practice time to "now - duration minutes"
-      // Entry created last with longest duration will have the oldest timestamp
+      // Create entries with DECREASING durations so newer entries have more recent timestamps
+      // The form calculates timestamp as "now - duration minutes"
+      // To ensure proper ordering despite the delay between creating entries:
+      // - Third Entry: 60 min ago (oldest)
+      // - Second Entry: 30 min ago (middle)
+      // - First Entry: 10 min ago (newest)
       const entries = [
-        { duration: 20, title: 'First Entry', notes: 'Created first' },
-        { duration: 30, title: 'Second Entry', notes: 'Created second' },
-        { duration: 40, title: 'Third Entry', notes: 'Created third' },
+        { duration: 60, title: 'Third Entry', notes: 'Should appear last' },
+        { duration: 30, title: 'Second Entry', notes: 'Should appear middle' },
+        { duration: 10, title: 'First Entry', notes: 'Should appear first' },
       ]
 
       for (let i = 0; i < entries.length; i++) {
@@ -93,7 +95,7 @@ test.describe('Recent Entries', () => {
         )
         // Add a small delay between entries to ensure different timestamps
         if (i < entries.length - 1) {
-          await page.waitForTimeout(1000)
+          await page.waitForTimeout(500)
         }
       }
     })
@@ -141,11 +143,11 @@ test.describe('Recent Entries', () => {
       const thirdEntryPosition = foundTitles.indexOf('Third Entry')
 
       // Verify they appear in reverse chronological order (newest timestamp first)
-      // Due to the way the form works (timestamp = now - duration minutes):
-      // - First Entry: 20 min duration → most recent timestamp
-      // - Second Entry: 30 min duration → middle timestamp
-      // - Third Entry: 40 min duration → oldest timestamp
-      // So in reverse chronological order (newest first), we expect:
+      // Based on our durations:
+      // - First Entry: 10 min ago (newest) → should appear at position 0
+      // - Second Entry: 30 min ago (middle) → should appear at position 1
+      // - Third Entry: 60 min ago (oldest) → should appear at position 2
+      // So in the displayed list, we expect:
       // First Entry should appear before Second Entry
       // Second Entry should appear before Third Entry
       expect(firstEntryPosition).toBeLessThan(secondEntryPosition)

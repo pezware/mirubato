@@ -37,6 +37,8 @@ const mockUserApi = userApi as unknown as {
 const mockSyncWithServer = vi.fn()
 const mockSetLocalMode = vi.fn()
 const mockManualSync = vi.fn()
+const mockInitializeWebSocketSync = vi.fn()
+const mockDisableRealtimeSync = vi.fn()
 const mockLogbookStore = useLogbookStore as unknown as {
   getState: ReturnType<typeof vi.fn>
 }
@@ -65,12 +67,15 @@ describe('authStore', () => {
     mockSetLocalMode.mockReset()
     mockManualSync.mockReset()
     mockManualSync.mockResolvedValue(undefined)
+    mockInitializeWebSocketSync.mockReset()
+    mockInitializeWebSocketSync.mockResolvedValue(undefined)
+    mockDisableRealtimeSync.mockReset()
     mockLogbookStore.getState = vi.fn(() => ({
       syncWithServer: mockSyncWithServer,
       setLocalMode: mockSetLocalMode,
       manualSync: mockManualSync,
-      startAutoSync: vi.fn(),
-      stopAutoSync: vi.fn(),
+      initializeWebSocketSync: mockInitializeWebSocketSync,
+      disableRealtimeSync: mockDisableRealtimeSync,
       entriesMap: new Map(),
       goalsMap: new Map(),
       scoreMetadata: {},
