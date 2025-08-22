@@ -20,9 +20,23 @@ export default function DataView({ analytics }: DataViewProps) {
   const { t } = useTranslation(['reports'])
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Get view from URL or default to 'table'
-  const urlView = searchParams.get('view') as ViewType | null
-  const [activeView, setActiveView] = useState<ViewType>(urlView || 'table')
+  // Get view from URL with proper fallback
+  const getInitialView = (): ViewType => {
+    const urlView = searchParams.get('view') as ViewType | null
+    if (urlView === 'table' || urlView === 'analytics') {
+      return urlView
+    }
+    // Only use localStorage if no URL param
+    const savedView = localStorage.getItem(
+      'mirubato.dataView'
+    ) as ViewType | null
+    if (savedView === 'table' || savedView === 'analytics') {
+      return savedView
+    }
+    return 'table'
+  }
+
+  const [activeView, setActiveView] = useState<ViewType>(getInitialView())
 
   // Update URL when view changes (only if we're still on the Data tab)
   useEffect(() => {
@@ -38,18 +52,7 @@ export default function DataView({ analytics }: DataViewProps) {
     }
   }, [activeView, searchParams, setSearchParams])
 
-  // Remember last selected view in localStorage
-  useEffect(() => {
-    if (!urlView) {
-      const savedView = localStorage.getItem(
-        'mirubato.dataView'
-      ) as ViewType | null
-      if (savedView === 'table' || savedView === 'analytics') {
-        setActiveView(savedView)
-      }
-    }
-  }, [urlView])
-
+  // Save view preference to localStorage
   useEffect(() => {
     localStorage.setItem('mirubato.dataView', activeView)
   }, [activeView])

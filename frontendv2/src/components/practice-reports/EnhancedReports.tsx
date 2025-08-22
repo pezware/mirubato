@@ -27,8 +27,17 @@ export default function EnhancedReports({
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  // Get initial view from URL to prevent state change on mount
+  const getInitialView = (): ReportView => {
+    const tab = searchParams.get('tab')
+    if (tab === 'newEntry' || tab === 'repertoire' || tab === 'data') {
+      return tab as ReportView
+    }
+    return 'overview'
+  }
+
   // State management
-  const [reportView, setReportView] = useState<ReportView>('overview')
+  const [reportView, setReportView] = useState<ReportView>(getInitialView())
   const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
     undefined
   )
@@ -38,34 +47,40 @@ export default function EnhancedReports({
     loadEntries()
   }, [loadEntries])
 
-  // Handle URL parameters and navigation state
+  // Handle URL parameters and navigation state (only for browser back/forward)
   useEffect(() => {
     const tab = searchParams.get('tab')
     const editId = searchParams.get('editId')
 
-    if (tab === 'newEntry') {
-      setReportView('newEntry')
+    // Only update if URL changed externally (browser back/forward)
+    const expectedView =
+      tab === 'repertoire'
+        ? 'repertoire'
+        : tab === 'data'
+          ? 'data'
+          : tab === 'newEntry'
+            ? 'newEntry'
+            : 'overview'
 
-      // First check for entry ID in URL
+    if (expectedView !== reportView) {
+      setReportView(expectedView)
+    }
+
+    // Handle edit entry for newEntry tab
+    if (tab === 'newEntry') {
       if (editId) {
         const entryToEdit = entries.find(e => e.id === editId)
         if (entryToEdit) {
           setEditEntry(entryToEdit)
         }
-      }
-      // Fallback to navigation state
-      else if (location.state && 'editEntry' in location.state) {
+      } else if (location.state && 'editEntry' in location.state) {
         setEditEntry(location.state.editEntry as LogbookEntry)
       }
-    } else if (tab === 'repertoire') {
-      setReportView('repertoire')
-    } else if (tab === 'data') {
-      setReportView('data')
-    } else if (!tab) {
-      // Reset to overview if no tab parameter
-      setReportView('overview')
+    } else if (editEntry) {
+      // Clear edit entry when not on newEntry tab
+      setEditEntry(undefined)
     }
-  }, [searchParams, location.state, entries])
+  }, [searchParams, entries, reportView, editEntry, location.state])
 
   // Update URL when tab changes with navigation guards
   const handleViewChange = (view: ReportView) => {
