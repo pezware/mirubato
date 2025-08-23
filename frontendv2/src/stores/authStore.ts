@@ -288,9 +288,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { setLocalMode, manualSync } = logbookStore
-        if (!setLocalMode || !manualSync) {
-          throw new Error('Logbook store methods not available')
+        const { setLocalMode } = logbookStore
+        if (!setLocalMode) {
+          throw new Error('Logbook store setLocalMode method not available')
         }
 
         // Get repertoire store using deferred import (non-blocking)
@@ -391,9 +391,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { manualSync, setLocalMode } = logbookStore
-        if (!manualSync || !setLocalMode) {
-          throw new Error('Logbook store methods not available')
+        const { setLocalMode } = logbookStore
+        if (!setLocalMode) {
+          throw new Error('Logbook store setLocalMode method not available')
         }
 
         // Get repertoire store using deferred import (non-blocking)
@@ -650,9 +650,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             throw new Error('Logbook store not initialized')
           }
 
-          const { setLocalMode, manualSync } = logbookStore
-          if (!setLocalMode || !manualSync) {
-            throw new Error('Logbook store methods not available')
+          const { setLocalMode } = logbookStore
+          if (!setLocalMode) {
+            throw new Error('Logbook store setLocalMode method not available')
           }
 
           // Get repertoire store using deferred import

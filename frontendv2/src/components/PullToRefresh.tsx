@@ -17,7 +17,8 @@ export function PullToRefresh({
 }: PullToRefreshProps) {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const isLocalMode = useLogbookStore(state => state.isLocalMode)
-  const { manualSync } = useLogbookStore()
+  const { manualSync, isRealtimeSyncEnabled, initializeWebSocketSync } =
+    useLogbookStore()
 
   const [pullDistance, setPullDistance] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -69,7 +70,12 @@ export function PullToRefresh({
         try {
           if (onRefresh) {
             await onRefresh()
+          } else if (isRealtimeSyncEnabled) {
+            // If WebSocket is enabled, reconnect/refresh WebSocket instead of manual sync
+            console.log('Refreshing WebSocket connection...')
+            await initializeWebSocketSync()
           } else {
+            // Fall back to manual sync only if WebSocket is not enabled
             await manualSync()
           }
         } catch (error) {
@@ -100,6 +106,8 @@ export function PullToRefresh({
     pullDistance,
     onRefresh,
     manualSync,
+    isRealtimeSyncEnabled,
+    initializeWebSocketSync,
   ])
 
   // Don't enable pull-to-refresh if not authenticated or in local mode

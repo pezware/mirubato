@@ -65,6 +65,12 @@ export function SyncIndicator({
   }
 
   const handleManualSync = async () => {
+    // Prevent manual sync if WebSocket is actively syncing or connected
+    if (isRealtimeSyncEnabled && realtimeSyncStatus === 'connected') {
+      console.log('WebSocket sync is active, skipping manual sync')
+      return
+    }
+
     // Clear any previous sync error
     if (syncError) {
       clearSyncError()
@@ -222,13 +228,19 @@ export function SyncIndicator({
         {getIcon()}
       </button>
 
-      {/* Manual sync button when real-time is enabled */}
+      {/* Manual sync button when real-time is enabled (disabled when connected) */}
       {isRealtimeSyncEnabled && (
         <button
           onClick={handleManualSync}
-          disabled={isLocalMode || isSyncing}
+          disabled={
+            isLocalMode || isSyncing || realtimeSyncStatus === 'connected'
+          }
           className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title={t('ui:components.syncIndicator.manualSync')}
+          title={
+            realtimeSyncStatus === 'connected'
+              ? t('sync.webSocketActive')
+              : t('ui:components.syncIndicator.manualSync')
+          }
         >
           <IconRefresh
             className={`h-4 w-4 text-gray-400 ${
