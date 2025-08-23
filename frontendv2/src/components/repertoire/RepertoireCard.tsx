@@ -172,24 +172,19 @@ export function RepertoireCard({ item, onEditSession }: RepertoireCardProps) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex-1 text-left group cursor-pointer min-w-0" // min-w-0 allows flex child to shrink
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 group-hover:text-stone-700 transition-colors duration-200">
-                <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
-                  <MusicTitle
-                    as="span"
-                    className="text-sm text-stone-900 group-hover:text-stone-700 break-words leading-tight"
-                  >
-                    {toTitleCase(item.scoreTitle)}
-                  </MusicTitle>
-                  <span className="text-stone-600 flex-shrink-0 text-sm">
-                    -
-                  </span>
-                  <MusicComposer
-                    as="span"
-                    className="text-sm text-stone-700 group-hover:text-stone-600 break-words leading-tight"
-                  >
-                    {toTitleCase(item.scoreComposer)}
-                  </MusicComposer>
-                </div>
+              <div className="flex flex-col gap-0.5">
+                <MusicTitle
+                  as="div"
+                  className="text-sm sm:text-base text-stone-900 group-hover:text-stone-700 break-words leading-tight"
+                >
+                  {toTitleCase(item.scoreTitle)}
+                </MusicTitle>
+                <MusicComposer
+                  as="div"
+                  className="text-sm text-stone-700 group-hover:text-stone-600 break-words leading-tight"
+                >
+                  {toTitleCase(item.scoreComposer)}
+                </MusicComposer>
               </div>
             </button>
 
