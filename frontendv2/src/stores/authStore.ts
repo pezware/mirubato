@@ -314,24 +314,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         setLocalMode(false) // Switch to online mode when authenticated
 
         // Initialize WebSocket sync for authenticated users
+        // WebSocket will handle logbook sync via SYNC_REQUEST on connection
         await logbookStore.initializeWebSocketSync()
 
-        // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-        const syncOperations = [
-          manualSync()
-            .then(() => {
-              console.log(
-                '✅ Auto-sync completed after magic link verification'
-              )
-            })
-            .catch((error: unknown) => {
-              console.warn(
-                '⚠️ Auto-sync failed after magic link verification:',
-                error
-              )
-              // Don't throw - continue with other operations
-            }),
-        ]
+        // Sync other data stores (repertoire and preferences)
+        const syncOperations = []
 
         if (repertoireStore?.syncLocalData) {
           syncOperations.push(
@@ -428,19 +415,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         setLocalMode(false) // Switch to online mode when authenticated
 
         // Initialize WebSocket sync for authenticated users
+        // WebSocket will handle logbook sync via SYNC_REQUEST on connection
         await logbookStore.initializeWebSocketSync()
 
-        // Prepare sync operations with proper error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-        const syncOperations = [
-          manualSync()
-            .then(() => {
-              console.log('✅ Auto-sync completed after Google login')
-            })
-            .catch((error: unknown) => {
-              console.warn('⚠️ Auto-sync failed after Google login:', error)
-              // Don't throw - continue with other operations
-            }),
-        ]
+        // Sync other data stores (repertoire and preferences)
+        const syncOperations = []
 
         if (repertoireStore) {
           // Clean up any duplicate repertoire items first
