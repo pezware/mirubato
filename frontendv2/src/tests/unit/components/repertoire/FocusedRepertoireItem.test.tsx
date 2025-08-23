@@ -53,7 +53,8 @@ describe('FocusedRepertoireItem', () => {
 
       render(<FocusedRepertoireItem item={item} />)
 
-      expect(screen.getByText(/Test Composer.*Test Piece/)).toBeInTheDocument()
+      expect(screen.getByText('Test Piece')).toBeInTheDocument()
+      expect(screen.getByText('Test Composer')).toBeInTheDocument()
       expect(screen.getByText('repertoire:status.learning')).toBeInTheDocument()
       expect(screen.getByText('120 min')).toBeInTheDocument()
     })

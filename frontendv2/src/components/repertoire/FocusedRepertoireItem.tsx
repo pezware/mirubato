@@ -5,7 +5,7 @@ import { formatDuration, capitalizeTimeString } from '@/utils/dateUtils'
 import { toTitleCase } from '@/utils/textFormatting'
 import { RepertoireItem, RepertoireStatus } from '@/api/repertoire'
 import { Goal } from '@/api/goals'
-import { MusicTitle } from '@/components/ui'
+import { MusicTitle, MusicComposer } from '@/components/ui'
 
 interface RecentPractice {
   timestamp: number
@@ -92,14 +92,13 @@ export const FocusedRepertoireItem: React.FC<FocusedRepertoireItemProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex flex-col gap-2">
             {/* Title and Composer */}
-            <div>
-              <MusicTitle
-                as="h3"
-                className="text-base break-words text-stone-900"
-              >
-                {toTitleCase(item.scoreComposer)} -{' '}
+            <div className="flex flex-col gap-0.5">
+              <MusicTitle as="h3" className="break-words">
                 {toTitleCase(item.scoreTitle)}
               </MusicTitle>
+              <MusicComposer as="div" className="break-words">
+                {toTitleCase(item.scoreComposer)}
+              </MusicComposer>
             </div>
 
             {/* Metadata and Actions Row */}

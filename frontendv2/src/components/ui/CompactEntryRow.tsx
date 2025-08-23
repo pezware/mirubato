@@ -140,17 +140,20 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                     key={index}
                     className="flex flex-col sm:flex-row sm:items-center sm:gap-2"
                   >
-                    <MusicTitle>{toTitleCase(piece.title)}</MusicTitle>
-                    {piece.composer && (
-                      <>
-                        <span className="hidden sm:inline text-morandi-stone-400">
-                          |
-                        </span>
-                        <MusicComposer className="text-morandi-stone-600">
-                          {toTitleCase(piece.composer)}
-                        </MusicComposer>
-                      </>
-                    )}
+                    {/* Mobile: Two lines for title and composer */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                      <MusicTitle>{toTitleCase(piece.title)}</MusicTitle>
+                      {piece.composer && (
+                        <>
+                          <span className="hidden sm:inline text-morandi-stone-400">
+                            |
+                          </span>
+                          <MusicComposer className="block sm:inline text-morandi-stone-600">
+                            {toTitleCase(piece.composer)}
+                          </MusicComposer>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -174,11 +177,27 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
               )}
               {type && (
                 <span
-                  className={`px-2 py-0.5 text-xs rounded-full ${
-                    type.toLowerCase() === 'status_change'
-                      ? 'bg-orange-200 text-orange-800'
-                      : 'bg-morandi-sage-100 text-morandi-stone-700'
-                  }`}
+                  className={`px-2 py-0.5 text-xs rounded-full ${(() => {
+                    const typeLower = type.toLowerCase()
+                    if (typeLower === 'status_change') {
+                      return 'bg-orange-200 text-orange-800'
+                    }
+                    // Match the color scheme from ManualEntryForm
+                    switch (typeLower) {
+                      case 'lesson':
+                        return 'bg-morandi-purple-100 text-morandi-purple-700'
+                      case 'practice':
+                        return 'bg-morandi-sage-100 text-morandi-sage-700'
+                      case 'technique':
+                        return 'bg-morandi-sand-100 text-morandi-sand-700'
+                      case 'performance':
+                        return 'bg-morandi-blush-100 text-morandi-blush-700'
+                      case 'rehearsal':
+                        return 'bg-morandi-stone-200 text-morandi-stone-700'
+                      default:
+                        return 'bg-morandi-sage-100 text-morandi-stone-700'
+                    }
+                  })()}`}
                 >
                   {type}
                 </span>

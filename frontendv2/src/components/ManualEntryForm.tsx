@@ -432,20 +432,41 @@ export default function ManualEntryForm({
                 value: 'technique',
                 label: t('logbook:entry.typeOptions.technique'),
               },
-            ].map(option => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setType(option.value as LogbookEntry['type'])}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
-                  type === option.value
-                    ? 'bg-morandi-sage-500 text-white'
-                    : 'bg-white border border-morandi-stone-300 text-morandi-stone-600 hover:bg-morandi-stone-100'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+            ].map(option => {
+              // Define distinct background colors for each activity type
+              const getButtonStyles = () => {
+                if (type !== option.value) {
+                  // Inactive state - keep consistent
+                  return 'bg-white border border-morandi-stone-300 text-morandi-stone-600 hover:bg-morandi-stone-100'
+                }
+                // Active state - distinct colors for each type
+                switch (option.value) {
+                  case 'lesson':
+                    return 'bg-morandi-purple-500 text-white border-morandi-purple-600'
+                  case 'practice':
+                    return 'bg-morandi-sage-500 text-white border-morandi-sage-600'
+                  case 'technique':
+                    return 'bg-morandi-sand-500 text-white border-morandi-sand-600'
+                  case 'performance':
+                    return 'bg-morandi-blush-500 text-white border-morandi-blush-600'
+                  case 'rehearsal':
+                    return 'bg-morandi-stone-500 text-white border-morandi-stone-600'
+                  default:
+                    return 'bg-morandi-sage-500 text-white'
+                }
+              }
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setType(option.value as LogbookEntry['type'])}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${getButtonStyles()}`}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 
