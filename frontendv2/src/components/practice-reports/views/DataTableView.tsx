@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { PeriodPresets } from '../advanced/PeriodPresets'
