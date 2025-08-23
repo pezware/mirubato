@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EnhancedAnalyticsData } from '../../../types/reporting'
 import { PeriodPresets } from '../advanced/PeriodPresets'
@@ -22,11 +22,6 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
     'daily' | 'week' | 'month' | 'year'
   >('daily')
   const { entries, loadEntries } = useLogbookStore()
-
-  // Load entries on mount
-  useEffect(() => {
-    loadEntries()
-  }, [loadEntries])
 
   // Handle preset data changes
   const handlePresetDataChange = useCallback(

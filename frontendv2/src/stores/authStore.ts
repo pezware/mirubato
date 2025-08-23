@@ -288,9 +288,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { setLocalMode, manualSync } = logbookStore
-        if (!setLocalMode || !manualSync) {
-          throw new Error('Logbook store methods not available')
+        const { setLocalMode } = logbookStore
+        if (!setLocalMode) {
+          throw new Error('Logbook store setLocalMode method not available')
         }
 
         // Get repertoire store using deferred import (non-blocking)
@@ -313,25 +313,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Start auto-sync for authenticated users
-        logbookStore.startAutoSync()
+        // Initialize WebSocket sync for authenticated users
+        // WebSocket will handle logbook sync via SYNC_REQUEST on connection
+        await logbookStore.initializeWebSocketSync()
 
-        // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-        const syncOperations = [
-          manualSync()
-            .then(() => {
-              console.log(
-                '✅ Auto-sync completed after magic link verification'
-              )
-            })
-            .catch((error: unknown) => {
-              console.warn(
-                '⚠️ Auto-sync failed after magic link verification:',
-                error
-              )
-              // Don't throw - continue with other operations
-            }),
-        ]
+        // Sync other data stores (repertoire and preferences)
+        const syncOperations = []
 
         if (repertoireStore?.syncLocalData) {
           syncOperations.push(
@@ -404,9 +391,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           throw new Error('Logbook store not initialized')
         }
 
-        const { manualSync, setLocalMode } = logbookStore
-        if (!manualSync || !setLocalMode) {
-          throw new Error('Logbook store methods not available')
+        const { setLocalMode } = logbookStore
+        if (!setLocalMode) {
+          throw new Error('Logbook store setLocalMode method not available')
         }
 
         // Get repertoire store using deferred import (non-blocking)
@@ -427,20 +414,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
-        // Start auto-sync for authenticated users
-        logbookStore.startAutoSync()
+        // Initialize WebSocket sync for authenticated users
+        // WebSocket will handle logbook sync via SYNC_REQUEST on connection
+        await logbookStore.initializeWebSocketSync()
 
-        // Prepare sync operations with proper error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-        const syncOperations = [
-          manualSync()
-            .then(() => {
-              console.log('✅ Auto-sync completed after Google login')
-            })
-            .catch((error: unknown) => {
-              console.warn('⚠️ Auto-sync failed after Google login:', error)
-              // Don't throw - continue with other operations
-            }),
-        ]
+        // Sync other data stores (repertoire and preferences)
+        const syncOperations = []
 
         if (repertoireStore) {
           // Clean up any duplicate repertoire items first
@@ -616,15 +595,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (!logbookStore) {
           console.warn('Logbook store not available after logout')
         } else {
-          const { setLocalMode, stopAutoSync } = logbookStore
+          const { setLocalMode, disableRealtimeSync } = logbookStore
           if (setLocalMode) {
             setLocalMode(true)
           } else {
             console.warn('setLocalMode method not available after logout')
           }
-          // Stop auto-sync when logging out
-          if (stopAutoSync) {
-            stopAutoSync()
+          // Disconnect WebSocket when logging out
+          if (disableRealtimeSync) {
+            disableRealtimeSync()
           }
         }
       } catch (error) {
@@ -671,9 +650,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             throw new Error('Logbook store not initialized')
           }
 
-          const { setLocalMode, manualSync } = logbookStore
-          if (!setLocalMode || !manualSync) {
-            throw new Error('Logbook store methods not available')
+          const { setLocalMode } = logbookStore
+          if (!setLocalMode) {
+            throw new Error('Logbook store setLocalMode method not available')
           }
 
           // Get repertoire store using deferred import
@@ -684,20 +663,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
           setLocalMode(false)
 
-          // Start auto-sync for authenticated users
-          logbookStore.startAutoSync()
+          // Initialize WebSocket sync for authenticated users
+          // WebSocket will handle logbook sync via SYNC_REQUEST on connection
+          await logbookStore.initializeWebSocketSync()
 
-          // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-          const syncOperations = [
-            manualSync()
-              .then(() => {
-                console.log('✅ Auto-sync completed after authentication')
-              })
-              .catch((error: unknown) => {
-                console.warn('⚠️ Auto-sync failed after authentication:', error)
-                // Don't throw - continue with other operations
-              }),
-          ]
+          // Sync other data stores (repertoire and preferences)
+          const syncOperations = []
 
           if (repertoireStore?.syncLocalData) {
             syncOperations.push(
@@ -718,8 +689,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             )
           }
 
-          // Execute all sync operations
-          await Promise.allSettled(syncOperations)
+          // Execute remaining sync operations
+          if (syncOperations.length > 0) {
+            await Promise.allSettled(syncOperations)
+          }
 
           // Clear any existing backups after successful auth refresh and sync
           clearDataBackups()
@@ -745,15 +718,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           if (!logbookStore) {
             console.warn('Logbook store not available when auth fails')
           } else {
-            const { setLocalMode, stopAutoSync } = logbookStore
+            const { setLocalMode, disableRealtimeSync } = logbookStore
             if (setLocalMode) {
               setLocalMode(true)
             } else {
               console.warn('setLocalMode method not available when auth fails')
             }
-            // Stop auto-sync on auth failure
-            if (stopAutoSync) {
-              stopAutoSync()
+            // Disconnect WebSocket on auth failure
+            if (disableRealtimeSync) {
+              disableRealtimeSync()
             }
           }
         } catch (error) {

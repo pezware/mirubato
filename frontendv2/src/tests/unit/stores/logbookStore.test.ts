@@ -7,12 +7,25 @@ vi.mock('../../../api/sync')
 vi.mock('nanoid', () => ({
   nanoid: vi.fn(() => 'test-id-123'),
 }))
+vi.mock('../../../services/webSocketSync', () => ({
+  getWebSocketSync: vi.fn(() => ({
+    connect: vi.fn().mockResolvedValue(true),
+    disconnect: vi.fn(),
+    send: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    getConnectionStatus: vi.fn().mockReturnValue('disconnected'),
+    getOfflineQueueSize: vi.fn().mockReturnValue(0),
+  })),
+  SyncEvent: {},
+}))
 
 // Import after mocks
 import { useLogbookStore } from '../../../stores/logbookStore'
 import { logbookApi, type LogbookEntry, type Goal } from '../../../api/logbook'
 import { syncApi } from '../../../api/sync'
 import { nanoid } from 'nanoid'
+import { getWebSocketSync } from '../../../services/webSocketSync'
 
 // Mock implementations
 const mockLogbookApi = logbookApi as {
@@ -529,6 +542,311 @@ describe('logbookStore', () => {
         },
       })
       expect(state.syncError).toBeNull()
+    })
+  })
+
+  describe('WebSocket Sync', () => {
+    let mockWebSocketSync: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      mockWebSocketSync = {
+        connect: vi.fn().mockResolvedValue(true),
+        disconnect: vi.fn(),
+        send: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
+        getConnectionStatus: vi.fn().mockReturnValue('disconnected'),
+        getOfflineQueueSize: vi.fn().mockReturnValue(0),
+      }
+      ;(getWebSocketSync as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockWebSocketSync
+      )
+    })
+
+    describe('initializeWebSocketSync', () => {
+      it('should initialize WebSocket sync for authenticated users', async () => {
+        localStorageData['auth-token'] = 'valid-token'
+        localStorageData['mirubato:user'] = JSON.stringify({
+          id: 'user-123',
+          email: 'test@example.com',
+        })
+
+        act(() => {
+          useLogbookStore.setState({ isLocalMode: false })
+        })
+
+        await act(async () => {
+          await useLogbookStore.getState().initializeWebSocketSync()
+        })
+
+        const state = useLogbookStore.getState()
+        expect(state.webSocketInitialized).toBe(true)
+        expect(state.isRealtimeSyncEnabled).toBe(true)
+        expect(mockWebSocketSync.connect).toHaveBeenCalledWith(
+          'user-123',
+          'valid-token'
+        )
+      })
+
+      it('should not initialize if already initialized', async () => {
+        localStorageData['auth-token'] = 'valid-token'
+        act(() => {
+          useLogbookStore.setState({
+            isLocalMode: false,
+            webSocketInitialized: true,
+          })
+        })
+
+        await act(async () => {
+          await useLogbookStore.getState().initializeWebSocketSync()
+        })
+
+        expect(mockWebSocketSync.connect).not.toHaveBeenCalled()
+      })
+
+      it('should not initialize in local mode', async () => {
+        localStorageData['auth-token'] = 'valid-token'
+        act(() => {
+          useLogbookStore.setState({
+            isLocalMode: true,
+            webSocketInitialized: false, // Ensure it starts as false
+          })
+        })
+
+        await act(async () => {
+          await useLogbookStore.getState().initializeWebSocketSync()
+        })
+
+        expect(mockWebSocketSync.connect).not.toHaveBeenCalled()
+        expect(useLogbookStore.getState().webSocketInitialized).toBe(false)
+      })
+
+      it('should handle WebSocket connection failure', async () => {
+        localStorageData['auth-token'] = 'valid-token'
+        localStorageData['mirubato:user'] = JSON.stringify({
+          id: 'user-123',
+          email: 'test@example.com',
+        })
+        mockWebSocketSync.connect.mockResolvedValue(false)
+
+        act(() => {
+          useLogbookStore.setState({
+            isLocalMode: false,
+            webSocketInitialized: false,
+            isRealtimeSyncEnabled: false,
+          })
+        })
+
+        const consoleWarnSpy = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {})
+        const consoleLogSpy = vi
+          .spyOn(console, 'log')
+          .mockImplementation(() => {})
+
+        await act(async () => {
+          await useLogbookStore.getState().initializeWebSocketSync()
+        })
+
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('WebSocket sync initialization failed')
+        )
+        expect(useLogbookStore.getState().webSocketInitialized).toBe(false)
+
+        consoleWarnSpy.mockRestore()
+        consoleLogSpy.mockRestore()
+      })
+    })
+
+    describe('Real-time sync events', () => {
+      beforeEach(() => {
+        act(() => {
+          useLogbookStore.setState({
+            isRealtimeSyncEnabled: true,
+            realtimeSyncStatus: 'connected',
+          })
+        })
+      })
+
+      it('should send ENTRY_CREATED event when creating entry', async () => {
+        const newEntry = {
+          timestamp: '2024-01-01T00:00:00Z',
+          duration: 30,
+          type: 'PRACTICE' as const,
+          instrument: 'PIANO' as const,
+          pieces: [{ title: 'New Piece', composer: 'Composer' }],
+          techniques: [],
+          goalIds: [],
+        }
+
+        await act(async () => {
+          await useLogbookStore.getState().createEntry(newEntry)
+        })
+
+        expect(mockWebSocketSync.send).toHaveBeenCalledWith({
+          type: 'ENTRY_CREATED',
+          entry: expect.objectContaining({
+            id: 'test-id-123',
+            duration: 30,
+            type: 'PRACTICE',
+            instrument: 'PIANO',
+            timestamp: '2024-01-01T00:00:00Z',
+          }),
+          timestamp: expect.any(String),
+        })
+      })
+
+      it('should send ENTRY_UPDATED event when updating entry', async () => {
+        const existingEntry = { ...mockEntry, id: 'existing-1' }
+        act(() => {
+          useLogbookStore.setState({
+            entriesMap: new Map([[existingEntry.id, existingEntry]]),
+            isLocalMode: false, // Should be false to test WebSocket events
+          })
+        })
+
+        const updates = { notes: 'Updated notes' }
+
+        await act(async () => {
+          await useLogbookStore
+            .getState()
+            .updateEntry(existingEntry.id, updates)
+        })
+
+        expect(mockWebSocketSync.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'ENTRY_UPDATED',
+            entry: expect.objectContaining({
+              id: existingEntry.id,
+              notes: 'Updated notes',
+            }),
+          })
+        )
+      })
+
+      it('should send ENTRY_DELETED event when deleting entry', async () => {
+        const existingEntry = { ...mockEntry, id: 'existing-1' }
+        act(() => {
+          useLogbookStore.setState({
+            entriesMap: new Map([[existingEntry.id, existingEntry]]),
+            isLocalMode: false, // Should be false to test WebSocket events
+          })
+        })
+
+        await act(async () => {
+          await useLogbookStore.getState().deleteEntry(existingEntry.id)
+        })
+
+        expect(mockWebSocketSync.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'ENTRY_DELETED',
+            entryId: existingEntry.id,
+          })
+        )
+      })
+    })
+
+    describe('Sync event handlers', () => {
+      it('should handle incoming ENTRY_CREATED from other devices', () => {
+        const newEntry: LogbookEntry = {
+          ...mockEntry,
+          id: 'remote-entry-1',
+          updatedAt: new Date().toISOString(),
+        }
+
+        act(() => {
+          useLogbookStore.getState().addEntryFromSync(newEntry)
+        })
+
+        const state = useLogbookStore.getState()
+        expect(state.entriesMap.has('remote-entry-1')).toBe(true)
+        expect(state.entriesMap.get('remote-entry-1')).toEqual(newEntry)
+      })
+
+      it('should not overwrite newer local entries', () => {
+        const localEntry: LogbookEntry = {
+          ...mockEntry,
+          id: 'entry-1',
+          notes: 'Local notes',
+          updatedAt: new Date().toISOString(),
+        }
+
+        const olderRemoteEntry: LogbookEntry = {
+          ...mockEntry,
+          id: 'entry-1',
+          notes: 'Remote notes',
+          updatedAt: new Date(Date.now() - 10000).toISOString(),
+        }
+
+        act(() => {
+          useLogbookStore.setState({
+            entriesMap: new Map([[localEntry.id, localEntry]]),
+          })
+        })
+
+        act(() => {
+          useLogbookStore.getState().updateEntryFromSync(olderRemoteEntry)
+        })
+
+        const state = useLogbookStore.getState()
+        expect(state.entriesMap.get('entry-1')?.notes).toBe('Local notes')
+      })
+
+      it('should handle incoming ENTRY_DELETED from other devices', () => {
+        const existingEntry = { ...mockEntry, id: 'entry-to-delete' }
+        act(() => {
+          useLogbookStore.setState({
+            entriesMap: new Map([[existingEntry.id, existingEntry]]),
+          })
+        })
+
+        act(() => {
+          useLogbookStore.getState().removeEntryFromSync('entry-to-delete')
+        })
+
+        const state = useLogbookStore.getState()
+        expect(state.entriesMap.has('entry-to-delete')).toBe(false)
+      })
+
+      it('should merge bulk sync entries efficiently', () => {
+        const existingEntry = {
+          ...mockEntry,
+          id: 'existing-1',
+          updatedAt: new Date(Date.now() - 5000).toISOString(),
+        }
+
+        const newerEntry = {
+          ...mockEntry,
+          id: 'existing-1',
+          notes: 'Updated from sync',
+          updatedAt: new Date().toISOString(),
+        }
+
+        const newEntry = {
+          ...mockEntry,
+          id: 'new-entry-1',
+          updatedAt: new Date().toISOString(),
+        }
+
+        act(() => {
+          useLogbookStore.setState({
+            entriesMap: new Map([[existingEntry.id, existingEntry]]),
+          })
+        })
+
+        act(() => {
+          useLogbookStore
+            .getState()
+            .mergeEntriesFromSync([newerEntry, newEntry])
+        })
+
+        const state = useLogbookStore.getState()
+        expect(state.entriesMap.size).toBe(2)
+        expect(state.entriesMap.get('existing-1')?.notes).toBe(
+          'Updated from sync'
+        )
+        expect(state.entriesMap.has('new-entry-1')).toBe(true)
+      })
     })
   })
 })

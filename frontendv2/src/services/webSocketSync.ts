@@ -34,9 +34,11 @@ export interface WebSocketSyncOptions {
   reconnectInterval?: number
   heartbeatInterval?: number
   enableLogging?: boolean
+  disableReconnect?: boolean
 }
 
 export type SyncEventHandler = (event: SyncEvent) => void
+export type WebSocketFactory = (url: string) => WebSocket
 
 export class WebSocketSync {
   private ws: WebSocket | null = null
@@ -46,21 +48,28 @@ export class WebSocketSync {
   private heartbeatInterval: number
   private heartbeatTimer: NodeJS.Timeout | null = null
   private enableLogging: boolean
+  private disableReconnect: boolean
   private eventHandlers: Map<string, SyncEventHandler[]> = new Map()
   private offlineQueue: SyncEvent[] = []
   private isConnected = false
+  private webSocketFactory: WebSocketFactory
 
   // Connection details
   private userId: string | null = null
   private authToken: string | null = null
   private wsUrl: string | null = null
 
-  constructor(options: WebSocketSyncOptions = {}) {
+  constructor(
+    options: WebSocketSyncOptions = {},
+    webSocketFactory: WebSocketFactory = url => new WebSocket(url)
+  ) {
     this.maxReconnectAttempts = options.maxReconnectAttempts ?? 5
     this.reconnectInterval = options.reconnectInterval ?? 1000
     this.heartbeatInterval = options.heartbeatInterval ?? 30000
     this.enableLogging =
       options.enableLogging ?? process.env.NODE_ENV === 'development'
+    this.disableReconnect = options.disableReconnect ?? false
+    this.webSocketFactory = webSocketFactory
   }
 
   /**
@@ -145,7 +154,8 @@ export class WebSocketSync {
     | 'reconnecting' {
     if (this.isConnected) return 'connected'
     if (this.ws?.readyState === WebSocket.CONNECTING) return 'connecting'
-    if (this.reconnectAttempts > 0) return 'reconnecting'
+    if (this.reconnectAttempts > 0 && !this.disableReconnect)
+      return 'reconnecting'
     return 'disconnected'
   }
 
@@ -164,15 +174,24 @@ export class WebSocketSync {
       }
 
       this.log('🔗 Connecting to WebSocket:', this.wsUrl)
-      this.ws = new WebSocket(this.wsUrl)
+
+      // Track if promise has been resolved to prevent multiple resolutions
+      let isResolved = false
 
       const connectionTimeout = setTimeout(() => {
         if (this.ws?.readyState === WebSocket.CONNECTING) {
           this.ws.close()
-          reject(new Error('WebSocket connection timeout'))
+          if (!isResolved) {
+            isResolved = true
+            reject(new Error('WebSocket connection timeout'))
+          }
         }
       }, 10000) // 10 second timeout
 
+      // Create WebSocket using factory and IMMEDIATELY attach handlers to avoid race condition
+      this.ws = this.webSocketFactory(this.wsUrl)
+
+      // Attach all handlers immediately after creation
       this.ws.onopen = () => {
         clearTimeout(connectionTimeout)
         this.log('✅ WebSocket connected')
@@ -182,17 +201,37 @@ export class WebSocketSync {
         // Start heartbeat
         this.startHeartbeat()
 
-        // Send initial sync request
-        this.send({
-          type: 'SYNC_REQUEST',
-          timestamp: new Date().toISOString(),
-          lastSyncTime: this.getLastSyncTime(),
-        })
+        // Check if we need to sync based on last sync time
+        const lastSyncTime = this.getLastSyncTime()
+        const lastSyncDate = new Date(lastSyncTime)
+        const timeSinceLastSync = Date.now() - lastSyncDate.getTime()
+        const thirtySeconds = 30 * 1000
+
+        // Only send SYNC_REQUEST if:
+        // 1. Last sync was more than 30 seconds ago, OR
+        // 2. We have offline queued events
+        if (timeSinceLastSync > thirtySeconds || this.offlineQueue.length > 0) {
+          this.log(
+            `📊 Sending SYNC_REQUEST (last sync: ${Math.round(timeSinceLastSync / 1000)}s ago)`
+          )
+          this.send({
+            type: 'SYNC_REQUEST',
+            timestamp: new Date().toISOString(),
+            lastSyncTime: lastSyncTime,
+          })
+        } else {
+          this.log(
+            `⏸️ Skipping SYNC_REQUEST (synced ${Math.round(timeSinceLastSync / 1000)}s ago)`
+          )
+        }
 
         // Send queued offline events
         this.flushOfflineQueue()
 
-        resolve(true)
+        if (!isResolved) {
+          isResolved = true
+          resolve(true)
+        }
       }
 
       this.ws.onmessage = event => {
@@ -215,15 +254,21 @@ export class WebSocketSync {
 
         this.log('🔌 WebSocket disconnected:', event.code, event.reason)
 
-        // Don't reconnect if it was a clean close
+        // Check if this is the initial connection attempt
+        const isInitialAttempt = this.reconnectAttempts === 0
+
+        // Don't reconnect if it was a clean close or reconnection is disabled
         if (
+          !this.disableReconnect &&
           event.code !== 1000 &&
           this.reconnectAttempts < this.maxReconnectAttempts
         ) {
           this.scheduleReconnect()
         }
 
-        if (this.reconnectAttempts === 0) {
+        // Only resolve if not already resolved and this was the initial attempt
+        if (!isResolved && isInitialAttempt) {
+          isResolved = true
           resolve(false)
         }
       }
@@ -232,9 +277,8 @@ export class WebSocketSync {
         clearTimeout(connectionTimeout)
         this.log('❌ WebSocket error:', error)
 
-        if (this.reconnectAttempts === 0) {
-          reject(error)
-        }
+        // Don't reject if already resolved (onclose might have been called)
+        // WebSocket typically calls both onerror and onclose on failure
       }
     })
   }
@@ -310,6 +354,11 @@ export class WebSocketSync {
   }
 
   private getWebSocketUrl(): string {
+    // In test environment, use a test URL
+    if (process.env.NODE_ENV === 'test') {
+      return 'ws://test.localhost:8787'
+    }
+
     // In development, use local WebSocket server
     if (process.env.NODE_ENV === 'development') {
       return 'ws://localhost:8787'

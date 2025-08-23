@@ -62,8 +62,8 @@ describe('authStore - Data Preservation', () => {
       },
       setLocalMode: vi.fn(),
       manualSync: vi.fn().mockResolvedValue(undefined),
-      startAutoSync: vi.fn(),
-      stopAutoSync: vi.fn(),
+      initializeWebSocketSync: vi.fn().mockResolvedValue(undefined),
+      disableRealtimeSync: vi.fn(),
     }))
 
     // Mock localStorage

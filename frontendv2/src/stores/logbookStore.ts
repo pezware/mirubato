@@ -37,8 +37,8 @@ interface LogbookState {
     | 'reconnecting'
   realtimeSyncError: string | null
 
-  // Auto-sync state
-  autoSyncInterval?: NodeJS.Timeout
+  // WebSocket sync initialization status
+  webSocketInitialized: boolean
 
   // Computed getters
   entries: LogbookEntry[]
@@ -71,8 +71,7 @@ interface LogbookState {
   // Actions - Sync
   manualSync: () => Promise<{ success: boolean; error?: string }>
   clearSyncError: () => void
-  startAutoSync: () => void
-  stopAutoSync: () => void
+  initializeWebSocketSync: () => Promise<void>
 
   // Actions - Real-time Sync
   enableRealtimeSync: () => Promise<boolean>
@@ -148,6 +147,22 @@ const mapToSortedArray = <T extends { createdAt: string }>(
 ): T[] => {
   return Array.from(map.values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+}
+
+// Helper to check if entries are effectively the same
+const entriesAreEqual = (a: LogbookEntry, b: LogbookEntry): boolean => {
+  // Compare relevant fields (exclude timestamps that might differ slightly)
+  return (
+    a.id === b.id &&
+    a.duration === b.duration &&
+    a.type === b.type &&
+    a.instrument === b.instrument &&
+    JSON.stringify(a.pieces) === JSON.stringify(b.pieces) &&
+    JSON.stringify(a.techniques) === JSON.stringify(b.techniques) &&
+    a.notes === b.notes &&
+    a.mood === b.mood &&
+    JSON.stringify(a.tags) === JSON.stringify(b.tags)
   )
 }
 
@@ -227,6 +242,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   isRealtimeSyncEnabled: false,
   realtimeSyncStatus: 'disconnected',
   realtimeSyncError: null,
+  webSocketInitialized: false,
 
   // Computed properties - these need to be regular properties that get updated
   entries: [],
@@ -316,21 +332,23 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         try {
           const syncedEntry = await logbookApi.createEntry(entry)
 
-          // Update with server response if sync succeeds
-          const syncedEntriesMap = new Map(get().entriesMap)
-          syncedEntriesMap.set(entry.id, syncedEntry)
-          set({
-            entriesMap: syncedEntriesMap,
-            entries: sortEntriesByTimestamp(
-              Array.from(syncedEntriesMap.values())
-            ),
-          })
+          // Only update if the server returns a meaningfully different version
+          if (!entriesAreEqual(syncedEntry, entry)) {
+            const syncedEntriesMap = new Map(get().entriesMap)
+            syncedEntriesMap.set(entry.id, syncedEntry)
+            set({
+              entriesMap: syncedEntriesMap,
+              entries: sortEntriesByTimestamp(
+                Array.from(syncedEntriesMap.values())
+              ),
+            })
 
-          // Update localStorage with synced data
-          immediateLocalStorageWrite(
-            ENTRIES_KEY,
-            JSON.stringify(Array.from(syncedEntriesMap.values()))
-          )
+            // Update localStorage with synced data
+            immediateLocalStorageWrite(
+              ENTRIES_KEY,
+              JSON.stringify(Array.from(syncedEntriesMap.values()))
+            )
+          }
 
           console.log('✅ Entry synced to server:', entry.id)
         } catch (syncError) {
@@ -421,21 +439,23 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           // Try to sync with API
           const syncedEntry = await logbookApi.updateEntry(id, updates)
 
-          // If sync succeeds, update with the server response
-          const syncedEntriesMap = new Map(get().entriesMap)
-          syncedEntriesMap.set(id, syncedEntry)
-          set({
-            entriesMap: syncedEntriesMap,
-            entries: sortEntriesByTimestamp(
-              Array.from(syncedEntriesMap.values())
-            ),
-          })
+          // Only update if the server returns a meaningfully different version
+          if (!entriesAreEqual(syncedEntry, updatedEntry)) {
+            const syncedEntriesMap = new Map(get().entriesMap)
+            syncedEntriesMap.set(id, syncedEntry)
+            set({
+              entriesMap: syncedEntriesMap,
+              entries: sortEntriesByTimestamp(
+                Array.from(syncedEntriesMap.values())
+              ),
+            })
 
-          // Update localStorage with synced data
-          immediateLocalStorageWrite(
-            ENTRIES_KEY,
-            JSON.stringify(Array.from(syncedEntriesMap.values()))
-          )
+            // Update localStorage with synced data
+            immediateLocalStorageWrite(
+              ENTRIES_KEY,
+              JSON.stringify(Array.from(syncedEntriesMap.values()))
+            )
+          }
 
           // Send real-time sync event with synced data
           if (get().isRealtimeSyncEnabled) {
@@ -990,6 +1010,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       webSocketSync.on('BULK_SYNC', (event: SyncEvent) => {
         if (event.entries) {
           get().mergeEntriesFromSync(event.entries)
+          // Update last sync time after successful bulk sync
+          set({ lastSyncTime: new Date() })
         }
       })
 
@@ -1129,6 +1151,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   mergeEntriesFromSync: (entries: LogbookEntry[]) => {
+    // Skip if manual sync is in progress to avoid duplicates
+    if (get().isSyncing) {
+      console.log('⏸️ Skipping WebSocket bulk sync - manual sync in progress')
+      return
+    }
+
     const newEntriesMap = new Map(get().entriesMap)
     let changesCount = 0
 
@@ -1285,45 +1313,37 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     return getDuplicateReport(currentEntries)
   },
 
-  // Auto-sync management
-  startAutoSync: () => {
+  // Initialize WebSocket sync for authenticated users
+  initializeWebSocketSync: async () => {
     const state = get()
 
-    // Don't start auto-sync if in local mode or not authenticated
-    if (state.isLocalMode || !localStorage.getItem('auth-token')) {
+    // Don't initialize if already initialized, in local mode, or not authenticated
+    if (
+      state.webSocketInitialized ||
+      state.isRealtimeSyncEnabled ||
+      state.isLocalMode ||
+      !localStorage.getItem('auth-token')
+    ) {
       return
     }
 
-    // Clear any existing interval
-    if (state.autoSyncInterval) {
-      clearInterval(state.autoSyncInterval)
-    }
+    try {
+      console.log('🔌 Initializing WebSocket sync...')
+      const success = await get().enableRealtimeSync()
 
-    // Set up periodic sync every 30 seconds
-    const interval = setInterval(() => {
-      const currentState = get()
-      if (!currentState.isLocalMode && localStorage.getItem('auth-token')) {
-        console.log('⏰ Auto-sync triggered')
-        currentState.manualSync().catch(error => {
-          console.warn('Auto-sync failed:', error)
-        })
+      if (success) {
+        set({ webSocketInitialized: true })
+        console.log('✅ WebSocket sync initialized successfully')
       } else {
-        // Stop auto-sync if we're in local mode or logged out
-        clearInterval(interval)
-        set({ autoSyncInterval: undefined })
+        console.warn(
+          '⚠️ WebSocket sync initialization failed, falling back to manual sync'
+        )
+        // WebSocket failed, user can still use manual sync
+        set({ webSocketInitialized: false })
       }
-    }, 30000) // 30 seconds
-
-    set({ autoSyncInterval: interval })
-    console.log('✅ Auto-sync started (every 30 seconds)')
-  },
-
-  stopAutoSync: () => {
-    const { autoSyncInterval } = get()
-    if (autoSyncInterval) {
-      clearInterval(autoSyncInterval)
-      set({ autoSyncInterval: undefined })
-      console.log('🛑 Auto-sync stopped')
+    } catch (error) {
+      console.error('❌ Error initializing WebSocket sync:', error)
+      set({ webSocketInitialized: false })
     }
   },
 }))
@@ -1349,38 +1369,43 @@ if (!isTestEnvironment) {
     localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
   })
 
-  // Set up auto-sync event handlers
-  // Sync on window focus (when user returns to the app)
+  // Set up WebSocket sync event handlers
+  // Check WebSocket connection on window focus
   window.addEventListener('focus', () => {
     const store = useLogbookStore.getState()
     if (!store.isLocalMode && localStorage.getItem('auth-token')) {
-      console.log('🔄 Window focused - triggering sync')
-      store.manualSync().catch(error => {
-        console.warn('Focus sync failed:', error)
-      })
+      // Check if WebSocket is connected, reconnect if needed
+      if (
+        store.isRealtimeSyncEnabled &&
+        store.realtimeSyncStatus === 'disconnected'
+      ) {
+        console.log('🔄 Window focused - reconnecting WebSocket...')
+        store.enableRealtimeSync().catch(error => {
+          console.warn('WebSocket reconnection failed:', error)
+        })
+      } else if (!store.isRealtimeSyncEnabled && !store.webSocketInitialized) {
+        // Initialize WebSocket if not already done
+        store.initializeWebSocketSync()
+      }
     }
   })
 
-  // Sync before window unload (when user closes or navigates away)
+  // Gracefully close WebSocket connection before unload
   window.addEventListener('beforeunload', () => {
     const store = useLogbookStore.getState()
-    if (!store.isLocalMode && localStorage.getItem('auth-token')) {
-      // Try to sync one last time
-      store.manualSync().catch(error => {
-        console.warn('Unload sync failed:', error)
-      })
-
-      // Note: Modern browsers heavily restrict what can be done in beforeunload
-      // This sync attempt may not always complete, but we try our best
+    if (store.isRealtimeSyncEnabled) {
+      // Gracefully disconnect WebSocket
+      store.disableRealtimeSync()
+      console.log('🔌 WebSocket disconnected before unload')
     }
   })
 
-  // Start auto-sync when the store is initialized and user is authenticated
+  // Initialize WebSocket sync when the store is initialized and user is authenticated
   if (localStorage.getItem('auth-token')) {
     setTimeout(() => {
       const store = useLogbookStore.getState()
       if (!store.isLocalMode) {
-        store.startAutoSync()
+        store.initializeWebSocketSync()
       }
     }, 1000) // Delay to ensure store is fully initialized
   }

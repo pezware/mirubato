@@ -579,7 +579,8 @@ wrangler secret delete JWT_SECRET --env production
 - Advanced filtering and analytics
 - CSV/JSON export
 - Auto-logging integration
-- Real-time sync across devices
+- **Real-time WebSocket sync**: Instant synchronization across devices (replaced 30-second polling)
+- Offline queue with automatic retry
 - Daily practice totals in date separators
 
 ### Scorebook - Sheet Music Library
@@ -957,6 +958,16 @@ app.get('/health', async c => {
 ## 13. Version History {#version-history}
 
 ### Current Version: 1.7.6 (August 2025)
+
+#### Real-time WebSocket Sync Implementation
+
+- **Replaced 30-second polling**: Removed auto-sync mechanism in favor of real-time WebSocket sync
+- **WebSocket Infrastructure**: Fully implemented WebSocket client in `webSocketSync.ts`
+- **Sync Worker Service**: Dedicated Cloudflare Worker with Durable Objects for real-time sync
+- **Improved Performance**: Instant data synchronization across devices without polling overhead
+- **Offline Queue**: Automatic queuing and retry of sync events when connection is lost
+- **Conflict Resolution**: Timestamp-based conflict resolution for concurrent edits
+- **Backward Compatibility**: Manual sync remains available as fallback option
 
 #### Version Management Improvements
 

@@ -22,7 +22,7 @@ interface EnhancedReportsProps {
 export default function EnhancedReports({
   searchQuery = '',
 }: EnhancedReportsProps) {
-  const { entries, loadEntries } = useLogbookStore()
+  const { entries } = useLogbookStore()
   const { filters, groupBy, sortBy, clearFilters } = useReportingStore()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -32,11 +32,6 @@ export default function EnhancedReports({
   const [editEntry, setEditEntry] = useState<LogbookEntry | undefined>(
     undefined
   )
-
-  // Load entries on mount
-  useEffect(() => {
-    loadEntries()
-  }, [loadEntries])
 
   // Handle URL parameters and navigation state
   useEffect(() => {
