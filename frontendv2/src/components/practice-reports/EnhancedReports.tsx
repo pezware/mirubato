@@ -33,11 +33,6 @@ export default function EnhancedReports({
     undefined
   )
 
-  // Load entries on mount
-  useEffect(() => {
-    loadEntries()
-  }, [loadEntries])
-
   // Handle URL parameters and navigation state
   useEffect(() => {
     const tab = searchParams.get('tab')

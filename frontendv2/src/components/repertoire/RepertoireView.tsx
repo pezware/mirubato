@@ -97,11 +97,10 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
     maxSubmissionsPerMinute: 5, // Reasonable limit for practice logging
   })
 
-  // Load data on mount
+  // Load data on mount (entries are loaded by parent LogbookPage)
   useEffect(() => {
     loadRepertoire()
     loadGoals()
-    loadEntries()
     // Try to load user library but don't block if it fails
     loadUserLibrary().catch(error => {
       // Ignore errors from scores service - not critical for repertoire

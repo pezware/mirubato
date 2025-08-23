@@ -23,11 +23,6 @@ export default function DataTableView({ analytics }: DataTableViewProps) {
   >('daily')
   const { entries, loadEntries } = useLogbookStore()
 
-  // Load entries on mount
-  useEffect(() => {
-    loadEntries()
-  }, [loadEntries])
-
   // Handle preset data changes
   const handlePresetDataChange = useCallback(
     (
