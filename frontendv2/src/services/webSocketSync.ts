@@ -201,12 +201,29 @@ export class WebSocketSync {
         // Start heartbeat
         this.startHeartbeat()
 
-        // Send initial sync request
-        this.send({
-          type: 'SYNC_REQUEST',
-          timestamp: new Date().toISOString(),
-          lastSyncTime: this.getLastSyncTime(),
-        })
+        // Check if we need to sync based on last sync time
+        const lastSyncTime = this.getLastSyncTime()
+        const lastSyncDate = new Date(lastSyncTime)
+        const timeSinceLastSync = Date.now() - lastSyncDate.getTime()
+        const thirtySeconds = 30 * 1000
+
+        // Only send SYNC_REQUEST if:
+        // 1. Last sync was more than 30 seconds ago, OR
+        // 2. We have offline queued events
+        if (timeSinceLastSync > thirtySeconds || this.offlineQueue.length > 0) {
+          this.log(
+            `📊 Sending SYNC_REQUEST (last sync: ${Math.round(timeSinceLastSync / 1000)}s ago)`
+          )
+          this.send({
+            type: 'SYNC_REQUEST',
+            timestamp: new Date().toISOString(),
+            lastSyncTime: lastSyncTime,
+          })
+        } else {
+          this.log(
+            `⏸️ Skipping SYNC_REQUEST (synced ${Math.round(timeSinceLastSync / 1000)}s ago)`
+          )
+        }
 
         // Send queued offline events
         this.flushOfflineQueue()

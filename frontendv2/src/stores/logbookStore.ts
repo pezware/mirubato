@@ -1010,6 +1010,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       webSocketSync.on('BULK_SYNC', (event: SyncEvent) => {
         if (event.entries) {
           get().mergeEntriesFromSync(event.entries)
+          // Update last sync time after successful bulk sync
+          set({ lastSyncTime: new Date() })
         }
       })
 
@@ -1149,6 +1151,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   mergeEntriesFromSync: (entries: LogbookEntry[]) => {
+    // Skip if manual sync is in progress to avoid duplicates
+    if (get().isSyncing) {
+      console.log('⏸️ Skipping WebSocket bulk sync - manual sync in progress')
+      return
+    }
+
     const newEntriesMap = new Map(get().entriesMap)
     let changesCount = 0
 

@@ -685,19 +685,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           setLocalMode(false)
 
           // Initialize WebSocket sync for authenticated users
+          // WebSocket will handle logbook sync via SYNC_REQUEST on connection
           await logbookStore.initializeWebSocketSync()
 
-          // Prepare sync operations with error boundaries - use manualSync for complete D1 ↔ localStorage reconciliation
-          const syncOperations = [
-            manualSync()
-              .then(() => {
-                console.log('✅ Auto-sync completed after authentication')
-              })
-              .catch((error: unknown) => {
-                console.warn('⚠️ Auto-sync failed after authentication:', error)
-                // Don't throw - continue with other operations
-              }),
-          ]
+          // Sync other data stores (repertoire and preferences)
+          const syncOperations = []
 
           if (repertoireStore?.syncLocalData) {
             syncOperations.push(
@@ -718,8 +710,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             )
           }
 
-          // Execute all sync operations
-          await Promise.allSettled(syncOperations)
+          // Execute remaining sync operations
+          if (syncOperations.length > 0) {
+            await Promise.allSettled(syncOperations)
+          }
 
           // Clear any existing backups after successful auth refresh and sync
           clearDataBackups()
