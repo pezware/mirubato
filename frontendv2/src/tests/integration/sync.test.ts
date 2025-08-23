@@ -92,7 +92,7 @@ describe('Sync Integration Tests', () => {
   })
 
   describe('Authentication to WebSocket Sync Flow', () => {
-    it.skip('should initialize WebSocket sync after successful login', async () => {
+    it('should initialize WebSocket sync after successful login', async () => {
       // Setup mock responses
       const mockUser = {
         id: 'user-123',
@@ -108,6 +108,10 @@ describe('Sync Integration Tests', () => {
         mockUser
       )
       ;(logbookApi.getEntries as ReturnType<typeof vi.fn>).mockResolvedValue([])
+
+      // Set up localStorage to simulate successful auth
+      localStorageData['auth-token'] = 'auth-token-123'
+      localStorageData['mirubato:user'] = JSON.stringify(mockUser)
       ;(userApi.getPreferences as ReturnType<typeof vi.fn>).mockResolvedValue({
         theme: 'light',
         language: 'en',
@@ -137,16 +141,21 @@ describe('Sync Integration Tests', () => {
         await useAuthStore.getState().verifyMagicLink('magic-token')
       })
 
-      // Wait for async operations
+      // Wait for async operations including WebSocket initialization
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 1100)) // Wait for initialization delay
+        await new Promise(resolve => setTimeout(resolve, 1500)) // Wait for initialization delay
       })
 
-      // Verify WebSocket connection was attempted
-      expect(mockWebSocketSync.connect).toHaveBeenCalledWith(
-        'user-123',
-        'auth-token-123'
-      )
+      // Since initializeWebSocketSync calls enableRealtimeSync which then calls connect,
+      // we need to check if connect was eventually called
+      expect(mockWebSocketSync.connect).toHaveBeenCalled()
+
+      // If connect was called, verify it was with correct parameters
+      if (mockWebSocketSync.connect.mock.calls.length > 0) {
+        const [userId, token] = mockWebSocketSync.connect.mock.calls[0]
+        expect(userId).toBe('user-123')
+        expect(token).toBe('auth-token-123')
+      }
 
       // Verify store state
       const logbookState = useLogbookStore.getState()
