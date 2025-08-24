@@ -60,7 +60,8 @@ export interface Goal {
 }
 
 // Helper types for function parameters that accept null values
-type CreateEntryData = Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> & {
+type CreateEntryData = Omit<LogbookEntry, 'createdAt' | 'updatedAt'> & {
+  id?: string // Allow optional ID from client
   notes?: string | null
   mood?: LogbookEntry['mood'] | null
   scoreId?: string | null
@@ -114,7 +115,10 @@ export const logbookApi = {
   createEntry: async (entry: CreateEntryData) => {
     const newEntry: LogbookEntry = {
       ...entry,
-      id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      // Use the ID from the client if provided, otherwise generate a new one
+      id:
+        entry.id ||
+        `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       // Ensure fields are properly typed for D1

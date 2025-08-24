@@ -36,7 +36,6 @@ const mockUserApi = userApi as unknown as {
 
 const mockSyncWithServer = vi.fn()
 const mockSetLocalMode = vi.fn()
-const mockManualSync = vi.fn()
 const mockInitializeWebSocketSync = vi.fn()
 const mockDisableRealtimeSync = vi.fn()
 const mockLogbookStore = useLogbookStore as unknown as {
@@ -65,15 +64,12 @@ describe('authStore', () => {
     mockSyncWithServer.mockReset()
     mockSyncWithServer.mockResolvedValue(undefined)
     mockSetLocalMode.mockReset()
-    mockManualSync.mockReset()
-    mockManualSync.mockResolvedValue(undefined)
     mockInitializeWebSocketSync.mockReset()
     mockInitializeWebSocketSync.mockResolvedValue(undefined)
     mockDisableRealtimeSync.mockReset()
     mockLogbookStore.getState = vi.fn(() => ({
       syncWithServer: mockSyncWithServer,
       setLocalMode: mockSetLocalMode,
-      manualSync: mockManualSync,
       initializeWebSocketSync: mockInitializeWebSocketSync,
       disableRealtimeSync: mockDisableRealtimeSync,
       entriesMap: new Map(),
@@ -163,8 +159,8 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
 
-      // Verify manualSync was NOT triggered (we removed it to prevent duplicates)
-      expect(mockManualSync).not.toHaveBeenCalled()
+      // Verify WebSocket sync initialization was triggered
+      expect(mockInitializeWebSocketSync).toHaveBeenCalled()
     })
 
     it('should set local mode to false when authenticated via magic link', async () => {
@@ -211,7 +207,7 @@ describe('authStore', () => {
       const mockResponse = { user: mockUser }
       mockAuthApi.verifyMagicLink.mockResolvedValue(mockResponse)
 
-      // We removed manualSync, so mock WebSocket initialization failure instead
+      // Mock WebSocket initialization
       const mockLogbookStore = useLogbookStore.getState() as {
         initializeWebSocketSync: ReturnType<typeof vi.fn>
       }
@@ -226,8 +222,8 @@ describe('authStore', () => {
       expect(useAuthStore.getState().user).toEqual(mockUser)
       expect(useAuthStore.getState().isAuthenticated).toBe(true)
 
-      // Verify that manualSync was NOT called (we removed it)
-      expect(mockManualSync).not.toHaveBeenCalled()
+      // Verify WebSocket sync was initialized
+      expect(mockInitializeWebSocketSync).toHaveBeenCalled()
     })
   })
 
@@ -250,8 +246,8 @@ describe('authStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
       expect(useAuthStore.getState().error).toBeNull()
 
-      // Verify manualSync was NOT triggered (we removed it to prevent duplicates)
-      expect(mockManualSync).not.toHaveBeenCalled()
+      // Verify WebSocket sync initialization was triggered
+      expect(mockInitializeWebSocketSync).toHaveBeenCalled()
     })
 
     it('should set local mode to false when authenticated via Google', async () => {

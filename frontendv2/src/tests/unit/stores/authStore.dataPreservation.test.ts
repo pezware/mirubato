@@ -61,7 +61,6 @@ describe('authStore - Data Preservation', () => {
         score1: { title: 'Nocturne', composer: 'Chopin' },
       },
       setLocalMode: vi.fn(),
-      manualSync: vi.fn().mockResolvedValue(undefined),
       initializeWebSocketSync: vi.fn().mockResolvedValue(undefined),
       disableRealtimeSync: vi.fn(),
     }))

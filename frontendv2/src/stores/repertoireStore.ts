@@ -416,8 +416,26 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           })
         }
 
-        // Use API
-        await repertoireApi.update(scoreId, updates)
+        // Use API - sanitize data to match API validation
+        const sanitizedUpdates: Partial<RepertoireItem> = {
+          ...updates,
+          // Ensure personalNotes is undefined if empty
+          personalNotes: updates.personalNotes || undefined,
+          // Ensure referenceLinks is either undefined or an array of valid URLs
+          referenceLinks:
+            updates.referenceLinks?.filter(link => {
+              try {
+                // Validate that the link is a proper URL
+                new URL(link)
+                return true
+              } catch {
+                // Filter out invalid URLs
+                console.warn(`Filtering out invalid URL during update: ${link}`)
+                return false
+              }
+            }) || undefined,
+        }
+        await repertoireApi.update(scoreId, sanitizedUpdates)
 
         // Update local state with merged data
         const updatedItem = {
@@ -995,22 +1013,46 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
               const exists = serverScoreIds.has(item.scoreId)
 
               if (!exists) {
-                // Add to server
+                // Add to server - sanitize data to match API validation
                 await repertoireApi.add({
                   scoreId: item.scoreId,
                   status: item.status,
                   difficultyRating: item.difficultyRating ?? undefined,
-                  personalNotes: item.personalNotes,
-                  referenceLinks: item.referenceLinks,
+                  personalNotes: item.personalNotes || undefined,
+                  // Ensure referenceLinks is either undefined or an array of valid URLs
+                  referenceLinks:
+                    item.referenceLinks?.filter(link => {
+                      try {
+                        // Validate that the link is a proper URL
+                        new URL(link)
+                        return true
+                      } catch {
+                        // Filter out invalid URLs
+                        console.warn(`Filtering out invalid URL: ${link}`)
+                        return false
+                      }
+                    }) || undefined,
                 })
                 syncResults.added++
               } else {
-                // Update on server
+                // Update on server - sanitize data to match API validation
                 await repertoireApi.update(item.scoreId, {
                   status: item.status,
                   difficultyRating: item.difficultyRating ?? undefined,
-                  personalNotes: item.personalNotes,
-                  referenceLinks: item.referenceLinks,
+                  personalNotes: item.personalNotes || undefined,
+                  // Ensure referenceLinks is either undefined or an array of valid URLs
+                  referenceLinks:
+                    item.referenceLinks?.filter(link => {
+                      try {
+                        // Validate that the link is a proper URL
+                        new URL(link)
+                        return true
+                      } catch {
+                        // Filter out invalid URLs
+                        console.warn(`Filtering out invalid URL: ${link}`)
+                        return false
+                      }
+                    }) || undefined,
                 })
                 syncResults.updated++
               }

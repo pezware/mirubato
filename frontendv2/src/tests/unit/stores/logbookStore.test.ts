@@ -438,7 +438,8 @@ describe('logbookStore', () => {
     })
   })
 
-  describe('manualSync', () => {
+  // Manual sync tests removed - functionality replaced by WebSocket sync
+  describe.skip('manualSync (removed)', () => {
     it('should sync entries with server', async () => {
       localStorageData['auth-token'] = 'valid-token'
 
