@@ -12,6 +12,7 @@ import {
 } from '../types/reporting'
 import { reportsCache } from '../utils/reportsCacheManager'
 import { toTitleCase } from '../utils/textFormatting'
+import { format } from 'date-fns'
 
 interface UseEnhancedAnalyticsProps {
   entries: LogbookEntry[]
@@ -602,7 +603,7 @@ export function calculateTimeSeriesDataByPeriod(
         break
       default:
         // This should never happen since we check for 'daily' above
-        key = date.toISOString().split('T')[0]
+        key = format(date, 'yyyy-MM-dd')
     }
 
     groupedData.set(key, (groupedData.get(key) || 0) + entry.duration)
@@ -662,7 +663,8 @@ export function calculateTimeSeriesData(
   const dailyData = new Map<string, number>()
 
   entries.forEach(entry => {
-    const date = new Date(entry.timestamp).toISOString().split('T')[0]
+    // Use format to get local date string instead of UTC
+    const date = format(new Date(entry.timestamp), 'yyyy-MM-dd')
     dailyData.set(date, (dailyData.get(date) || 0) + entry.duration)
   })
 
