@@ -1129,3 +1129,95 @@ pnpm --filter @mirubato/frontendv2 run dev  # Run specific workspace
 ```
 
 **Remember**: When in doubt, check the production endpoints first. They're your debugging lifeline.
+
+## Debugging UI Component Issues
+
+### Efficient Component Location Strategy
+
+When trying to locate specific UI components (especially when multiple similar components exist):
+
+#### 1. Start with the Route/Page Structure
+
+```bash
+# Find the page component for a specific route
+grep -r "tab=repertoire" --include="*.tsx"
+# Or check the routing configuration
+grep -r "path.*logbook" frontendv2/src
+```
+
+#### 2. Follow the Component Hierarchy
+
+```bash
+# Trace from parent to child components
+# Example: Logbook → EnhancedReports → RepertoireView → FocusedRepertoireItem
+grep -r "EnhancedReports" --include="*.tsx"
+grep -r "RepertoireView" --include="*.tsx"
+```
+
+#### 3. Identify View Modes
+
+Many components have different display modes (list/grid/calendar). Check for:
+
+```typescript
+viewMode === 'list' ? <FocusedRepertoireItem /> : <RepertoireCard />
+```
+
+#### 4. Search for Visual Patterns
+
+If you see specific text patterns in the UI (e.g., "Composer - Title"):
+
+```bash
+# Search for concatenation patterns
+grep -r "scoreComposer.*-.*scoreTitle" --include="*.tsx"
+grep -r '\${.*composer.*}.*-.*\${.*title' --include="*.tsx"
+ast-grep --pattern '$COMPOSER - $TITLE' --lang typescript
+```
+
+#### 5. Use Component Names Effectively
+
+When multiple components serve similar purposes:
+
+- `RepertoireCard` - Grid view display
+- `FocusedRepertoireItem` - List view display
+- `PieceDetailView` - Detailed view
+- `CompactEntryRow` - Compact display in entries
+
+### Common Pitfalls to Avoid
+
+1. **Don't assume based on URL parameters** - A URL with `pieceId` doesn't necessarily mean you're in detail view
+2. **Check for responsive variations** - Same component might render differently on mobile vs desktop
+3. **Verify component reuse** - Same component might be used in multiple places with different props
+4. **Don't skip the parent component** - Always trace from the page component down
+
+### Quick Debugging Commands
+
+```bash
+# Find all components rendering a specific prop
+ast-grep --pattern 'scoreTitle' --lang typescript frontendv2/src
+
+# Find component usage across codebase
+grep -r "<FocusedRepertoireItem\|<RepertoireCard\|<PieceDetailView" --include="*.tsx"
+
+# Check what renders based on conditions
+grep -r "viewMode.*===.*list" --include="*.tsx" -A 5 -B 2
+
+# Find Typography component usage
+grep -r "MusicTitle\|MusicComposer" --include="*.tsx"
+```
+
+### Browser DevTools Integration
+
+When available, ask to check:
+
+- React DevTools to see component hierarchy
+- Inspect element to see actual rendered HTML classes
+- Network tab to verify which API endpoints are being called
+
+### Systematic Approach Checklist
+
+- [ ] Identify the route/URL pattern
+- [ ] Find the page component
+- [ ] Trace component hierarchy
+- [ ] Check for view modes/conditions
+- [ ] Search for visual text patterns
+- [ ] Verify in browser DevTools if needed
