@@ -35,8 +35,16 @@ test.describe('Duplicate Entry Prevention', () => {
     page,
   }) => {
     // Navigate to repertoire tab
-    await page.click('text=Repertoire')
-    await page.waitForTimeout(500)
+    await page.click('[data-testid="repertoire-tab"]')
+
+    // Wait for tab to become active
+    await page.waitForFunction(
+      () => {
+        const tab = document.querySelector('[data-testid="repertoire-tab"]')
+        return tab?.classList.contains('border-morandi-purple-400')
+      },
+      { timeout: 5000 }
+    )
 
     // Create a test piece in repertoire (mock or use existing)
     // For this test, we'll create an entry and check it's not duplicated
