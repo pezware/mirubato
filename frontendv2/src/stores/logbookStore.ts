@@ -23,10 +23,9 @@ interface LogbookState {
   // Local Storage Management (for anonymous users)
   isLocalMode: boolean
 
-  // Simple sync state
+  // Sync state (used by WebSocket sync)
   isSyncing: boolean
   lastSyncTime: Date | null
-  syncError: string | null
 
   // WebSocket real-time sync state
   isRealtimeSyncEnabled: boolean
@@ -68,9 +67,7 @@ interface LogbookState {
   setLocalMode: (isLocal: boolean) => void
   clearError: () => void
 
-  // Actions - Sync
-  manualSync: () => Promise<{ success: boolean; error?: string }>
-  clearSyncError: () => void
+  // Actions - WebSocket Sync
   initializeWebSocketSync: () => Promise<void>
 
   // Actions - Real-time Sync
@@ -220,10 +217,6 @@ const addToDeletedEntries = (entryId: string): void => {
   localStorage.setItem(DELETED_ENTRIES_KEY, JSON.stringify([...deletedEntries]))
 }
 
-const clearDeletedEntries = (): void => {
-  localStorage.removeItem(DELETED_ENTRIES_KEY)
-}
-
 export const useLogbookStore = create<LogbookState>((set, get) => ({
   entriesMap: new Map(),
   goalsMap: new Map(),
@@ -233,10 +226,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   searchQuery: '',
   isLocalMode: true, // Always start in local mode
 
-  // Simple sync state
+  // Sync state (used by WebSocket sync)
   isSyncing: false,
   lastSyncTime: null,
-  syncError: null,
 
   // Real-time sync state
   isRealtimeSyncEnabled: false,
@@ -755,232 +747,6 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   setLocalMode: isLocal => set({ isLocalMode: isLocal }),
   clearError: () => set({ error: null }),
 
-  manualSync: async () => {
-    const token = localStorage.getItem('auth-token')
-    if (!token) {
-      set({ syncError: 'Please sign in to sync with server' })
-      return { success: false, error: 'Please sign in to sync with server' }
-    }
-
-    set({ isSyncing: true, syncError: null })
-
-    try {
-      // Enhanced sync: "Local Activity Wins" conflict resolution
-      const serverEntries = await logbookApi.getEntries()
-      const localEntries = Array.from(get().entriesMap.values())
-      const lastSyncTime = get().lastSyncTime
-
-      // Get locally deleted entries to respect deletions
-      const deletedEntries = getDeletedEntries()
-
-      // Create maps for efficient lookup
-      const serverEntriesMap = new Map(
-        serverEntries.map(entry => [entry.id, entry])
-      )
-      const localEntriesMap = new Map(
-        localEntries.map(entry => [entry.id, entry])
-      )
-
-      // Track sync statistics for user feedback
-      const syncStats = {
-        localWins: 0,
-        serverWins: 0,
-        localDeletes: 0,
-        localCreates: 0,
-        serverCreates: 0,
-      }
-
-      const mergedEntries: LogbookEntry[] = []
-      const entriesToUpdate: LogbookEntry[] = []
-
-      // Handle deletions first (local deletions always win)
-      const successfullyDeletedIds = new Set<string>()
-      if (deletedEntries.size > 0) {
-        for (const deletedId of deletedEntries) {
-          // Always try to sync deletion, even if not on server
-          // (it might have been created and deleted locally)
-          try {
-            await logbookApi.deleteEntry(deletedId)
-            successfullyDeletedIds.add(deletedId)
-            syncStats.localDeletes++
-            console.log(`✅ Local deletion synced: ${deletedId}`)
-          } catch (error) {
-            console.warn(`⚠️ Failed to sync deletion of ${deletedId}:`, error)
-            // Keep this ID in deletedEntries for next sync attempt
-          }
-        }
-      }
-
-      // Get all unique entry IDs from both local and server
-      const allEntryIds = new Set([
-        ...localEntries.map(e => e.id),
-        ...serverEntries.map(e => e.id),
-      ])
-
-      // Process each entry with "Local Activity Wins" logic
-      for (const entryId of allEntryIds) {
-        // Skip if locally deleted
-        if (deletedEntries.has(entryId)) {
-          continue
-        }
-
-        const localEntry = localEntriesMap.get(entryId)
-        const serverEntry = serverEntriesMap.get(entryId)
-
-        if (localEntry && !serverEntry) {
-          // Local-only entry: push to server (local wins)
-          mergedEntries.push(localEntry)
-          syncStats.localCreates++
-          console.log(
-            `📤 Pushing local-only entry: ${localEntry.pieces?.[0]?.title || 'Untitled'}`
-          )
-        } else if (!localEntry && serverEntry) {
-          // Server-only entry: accept from server (server wins)
-          mergedEntries.push(serverEntry)
-          syncStats.serverCreates++
-          console.log(
-            `📥 Accepting server entry: ${serverEntry.pieces?.[0]?.title || 'Untitled'}`
-          )
-        } else if (localEntry && serverEntry) {
-          // Both exist: check for local activity since last sync
-          const hasLocalActivity = lastSyncTime
-            ? new Date(localEntry.updatedAt).getTime() >
-              new Date(lastSyncTime).getTime()
-            : false
-
-          if (hasLocalActivity) {
-            // Local activity detected: local wins, push to server
-            mergedEntries.push(localEntry)
-            entriesToUpdate.push(localEntry)
-            syncStats.localWins++
-            console.log(
-              `🏆 Local activity wins: ${localEntry.pieces?.[0]?.title || 'Untitled'}`
-            )
-          } else {
-            // No local activity: server wins
-            mergedEntries.push(serverEntry)
-            syncStats.serverWins++
-            console.log(
-              `📲 Server version accepted: ${serverEntry.pieces?.[0]?.title || 'Untitled'}`
-            )
-          }
-        }
-      }
-
-      // Push local-only entries to server
-      const localOnlyEntries = mergedEntries.filter(
-        entry =>
-          localEntriesMap.has(entry.id) && !serverEntriesMap.has(entry.id)
-      )
-
-      if (localOnlyEntries.length > 0) {
-        try {
-          const { syncApi } = await import('../api/sync')
-          await syncApi.push({
-            changes: {
-              entries: localOnlyEntries,
-              goals: [], // TODO: Add goals sync
-            },
-          })
-          console.log(
-            `✅ Pushed ${localOnlyEntries.length} local entries to server`
-          )
-        } catch (error) {
-          console.warn('⚠️ Failed to push local entries to server:', error)
-        }
-      }
-
-      // Update server entries where local wins
-      for (const entry of entriesToUpdate) {
-        try {
-          await logbookApi.updateEntry(entry.id, {
-            pieces: entry.pieces,
-            duration: entry.duration,
-            timestamp: entry.timestamp,
-            type: entry.type,
-            instrument: entry.instrument,
-            techniques: entry.techniques,
-            goalIds: entry.goalIds,
-            notes: entry.notes,
-            mood: entry.mood,
-            tags: entry.tags,
-            metadata: entry.metadata,
-            scoreId: entry.scoreId,
-            scoreTitle: entry.scoreTitle,
-            scoreComposer: entry.scoreComposer,
-            autoTracked: entry.autoTracked,
-          })
-          console.log(
-            `✅ Updated server with local changes: ${entry.pieces?.[0]?.title || 'Untitled'}`
-          )
-        } catch (error) {
-          console.warn(`⚠️ Failed to update server entry ${entry.id}:`, error)
-        }
-      }
-
-      // Create final merged map
-      const mergedEntriesMap = new Map(
-        mergedEntries.map(entry => [entry.id, entry])
-      )
-
-      // Update state
-      set({
-        entriesMap: mergedEntriesMap,
-        entries: sortEntriesByTimestamp(mergedEntries),
-        isSyncing: false,
-        lastSyncTime: new Date(),
-        isLocalMode: false,
-      })
-
-      // Update local storage
-      debouncedLocalStorageWrite(ENTRIES_KEY, JSON.stringify(mergedEntries))
-
-      // Only clear successfully synced deletions, keep failed ones for retry
-      if (successfullyDeletedIds.size > 0) {
-        const remainingDeleted = new Set(deletedEntries)
-        for (const deletedId of successfullyDeletedIds) {
-          remainingDeleted.delete(deletedId)
-        }
-        if (remainingDeleted.size > 0) {
-          // Still have some failed deletions to retry later
-          localStorage.setItem(
-            DELETED_ENTRIES_KEY,
-            JSON.stringify([...remainingDeleted])
-          )
-          console.log(
-            `⚠️ ${remainingDeleted.size} deletions will be retried next sync`
-          )
-        } else {
-          // All deletions successful
-          clearDeletedEntries()
-        }
-      }
-
-      // Log sync summary
-      console.log('🔄 Sync completed with Local Activity Wins strategy:', {
-        totalEntries: mergedEntries.length,
-        localWins: syncStats.localWins,
-        serverWins: syncStats.serverWins,
-        localDeletes: syncStats.localDeletes,
-        localCreates: syncStats.localCreates,
-        serverCreates: syncStats.serverCreates,
-      })
-
-      return { success: true }
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Sync failed'
-      set({
-        isSyncing: false,
-        syncError: errorMessage,
-      })
-      console.error('Manual sync failed:', error)
-      return { success: false, error: errorMessage }
-    }
-  },
-
-  clearSyncError: () => set({ syncError: null }),
-
   // Real-time sync methods
   enableRealtimeSync: async () => {
     try {
@@ -1151,42 +917,50 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   mergeEntriesFromSync: (entries: LogbookEntry[]) => {
-    // Skip if manual sync is in progress to avoid duplicates
+    // Skip if another sync is in progress to avoid duplicates
     if (get().isSyncing) {
-      console.log('⏸️ Skipping WebSocket bulk sync - manual sync in progress')
+      console.log('⏸️ Skipping WebSocket bulk sync - another sync in progress')
       return
     }
 
-    const newEntriesMap = new Map(get().entriesMap)
-    let changesCount = 0
+    // Set isSyncing to prevent concurrent operations
+    set({ isSyncing: true })
 
-    for (const entry of entries) {
-      const existingEntry = newEntriesMap.get(entry.id)
+    try {
+      const newEntriesMap = new Map(get().entriesMap)
+      let changesCount = 0
 
-      // Add new entries or update if incoming is newer
-      if (
-        !existingEntry ||
-        new Date(entry.updatedAt).getTime() >
-          new Date(existingEntry.updatedAt).getTime()
-      ) {
-        newEntriesMap.set(entry.id, entry)
-        changesCount++
+      for (const entry of entries) {
+        const existingEntry = newEntriesMap.get(entry.id)
+
+        // Add new entries or update if incoming is newer
+        if (
+          !existingEntry ||
+          new Date(entry.updatedAt).getTime() >
+            new Date(existingEntry.updatedAt).getTime()
+        ) {
+          newEntriesMap.set(entry.id, entry)
+          changesCount++
+        }
       }
-    }
 
-    if (changesCount > 0) {
-      set({
-        entriesMap: newEntriesMap,
-        entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
-      })
+      if (changesCount > 0) {
+        set({
+          entriesMap: newEntriesMap,
+          entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
+        })
 
-      // Update localStorage
-      debouncedLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(newEntriesMap.values()))
-      )
+        // Update localStorage
+        debouncedLocalStorageWrite(
+          ENTRIES_KEY,
+          JSON.stringify(Array.from(newEntriesMap.values()))
+        )
 
-      console.log(`📊 Merged ${changesCount} entries from sync`)
+        console.log(`📊 Merged ${changesCount} entries from sync`)
+      }
+    } finally {
+      // Always clear isSyncing
+      set({ isSyncing: false })
     }
   },
 

@@ -27,9 +27,6 @@ export function SyncIndicator({
     isLocalMode,
     isSyncing,
     lastSyncTime,
-    syncError,
-    manualSync,
-    clearSyncError,
     // Real-time sync state
     isRealtimeSyncEnabled,
     realtimeSyncStatus,
@@ -47,7 +44,7 @@ export function SyncIndicator({
   useEffect(() => {
     if (isSyncing) {
       setSyncStatus('syncing')
-    } else if (syncError) {
+    } else if (realtimeSyncError) {
       setSyncStatus('error')
     } else if (lastSyncTime) {
       setSyncStatus('success')
@@ -57,29 +54,11 @@ export function SyncIndicator({
     } else {
       setSyncStatus('idle')
     }
-  }, [isSyncing, syncError, lastSyncTime])
+  }, [isSyncing, realtimeSyncError, lastSyncTime])
 
   // Don't show if not authenticated
   if (!isAuthenticated) {
     return null
-  }
-
-  const handleManualSync = async () => {
-    // Prevent manual sync if WebSocket is actively syncing or connected
-    if (isRealtimeSyncEnabled && realtimeSyncStatus === 'connected') {
-      console.log('WebSocket sync is active, skipping manual sync')
-      return
-    }
-
-    // Clear any previous sync error
-    if (syncError) {
-      clearSyncError()
-    }
-
-    const result = await manualSync()
-    if (!result.success) {
-      console.error('Manual sync failed:', result.error)
-    }
   }
 
   const handleRealtimeSyncToggle = async () => {
@@ -168,7 +147,10 @@ export function SyncIndicator({
         )
       case 'error':
         return (
-          <span className="text-sm text-red-500" title={syncError || undefined}>
+          <span
+            className="text-sm text-red-500"
+            title={realtimeSyncError || undefined}
+          >
             {t('sync.error')}
           </span>
         )
@@ -204,14 +186,11 @@ export function SyncIndicator({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Main sync button */}
+      {/* WebSocket sync status indicator and toggle */}
       <button
-        onClick={
-          isRealtimeSyncEnabled ? handleRealtimeSyncToggle : handleManualSync
-        }
+        onClick={handleRealtimeSyncToggle}
         disabled={
           isLocalMode ||
-          isSyncing ||
           (isRealtimeSyncEnabled && realtimeSyncStatus === 'connecting')
         }
         className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -222,33 +201,11 @@ export function SyncIndicator({
               : 'Enable real-time sync'
             : isLocalMode
               ? t('sync.offlineMode')
-              : t('sync.syncNow')
+              : 'Enable real-time sync'
         }
       >
         {getIcon()}
       </button>
-
-      {/* Manual sync button when real-time is enabled (disabled when connected) */}
-      {isRealtimeSyncEnabled && (
-        <button
-          onClick={handleManualSync}
-          disabled={
-            isLocalMode || isSyncing || realtimeSyncStatus === 'connected'
-          }
-          className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title={
-            realtimeSyncStatus === 'connected'
-              ? t('sync.webSocketActive')
-              : t('ui:components.syncIndicator.manualSync')
-          }
-        >
-          <IconRefresh
-            className={`h-4 w-4 text-gray-400 ${
-              isSyncing ? 'animate-spin text-blue-500' : ''
-            }`}
-          />
-        </button>
-      )}
 
       {getText()}
     </div>
