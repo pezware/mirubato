@@ -327,7 +327,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           // Only update if the server returns a meaningfully different version
           if (!entriesAreEqual(syncedEntry, entry)) {
             const syncedEntriesMap = new Map(get().entriesMap)
-            syncedEntriesMap.set(entry.id, syncedEntry)
+            // Use the synced entry's ID as the key (in case server changed it)
+            syncedEntriesMap.set(syncedEntry.id, syncedEntry)
+            // Remove the old entry if the ID changed (shouldn't happen with our fix, but safe)
+            if (syncedEntry.id !== entry.id) {
+              syncedEntriesMap.delete(entry.id)
+              console.warn(
+                `Entry ID changed from ${entry.id} to ${syncedEntry.id} during sync`
+              )
+            }
             set({
               entriesMap: syncedEntriesMap,
               entries: sortEntriesByTimestamp(
@@ -434,7 +442,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           // Only update if the server returns a meaningfully different version
           if (!entriesAreEqual(syncedEntry, updatedEntry)) {
             const syncedEntriesMap = new Map(get().entriesMap)
-            syncedEntriesMap.set(id, syncedEntry)
+            // Use synced entry's ID as key (should be same as 'id' but be safe)
+            syncedEntriesMap.set(syncedEntry.id, syncedEntry)
+            // Remove old entry if ID changed (shouldn't happen, but be safe)
+            if (syncedEntry.id !== id) {
+              syncedEntriesMap.delete(id)
+              console.warn(
+                `Entry ID changed from ${id} to ${syncedEntry.id} during update`
+              )
+            }
             set({
               entriesMap: syncedEntriesMap,
               entries: sortEntriesByTimestamp(
