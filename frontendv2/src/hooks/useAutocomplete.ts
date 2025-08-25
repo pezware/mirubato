@@ -5,6 +5,8 @@ import type { AutocompleteOption } from '../components/ui/Autocomplete'
 import { useLogbookStore } from '../stores/logbookStore'
 import { isOnline } from '../utils/offlineAutocomplete'
 import { getCanonicalComposerName } from '../utils/composerCanonicalizer'
+import { generateNormalizedScoreId } from '../utils/scoreIdNormalizer'
+import { formatComposerName } from '../utils/textFormatting'
 
 interface UseAutocompleteOptions {
   type: 'composer' | 'piece'
@@ -138,23 +140,64 @@ export function useAutocomplete({
 
     // Add local suggestions first (higher priority)
     localSuggestions.forEach(suggestion => {
-      combined.set(suggestion.value.toLowerCase(), suggestion)
-    })
-
-    // Add API suggestions
-    data.results.forEach((result: AutocompleteOption) => {
-      const key = result.value.toLowerCase()
-      if (!combined.has(key)) {
-        combined.set(key, {
-          value: result.value,
-          label: result.label,
-          metadata: result.metadata,
+      if (type === 'piece') {
+        // For pieces, use normalized ID as key for deduplication
+        const normalizedKey = generateNormalizedScoreId(
+          suggestion.value,
+          suggestion.metadata?.composer
+        )
+        // Format composer name properly for display
+        if (suggestion.metadata?.composer) {
+          suggestion.metadata.composer = formatComposerName(
+            suggestion.metadata.composer
+          )
+        }
+        combined.set(normalizedKey, suggestion)
+      } else if (type === 'composer') {
+        // For composers, format the display value
+        const formattedComposer = formatComposerName(suggestion.value)
+        const normalizedKey = formattedComposer.toLowerCase()
+        combined.set(normalizedKey, {
+          ...suggestion,
+          value: formattedComposer,
+          label: formattedComposer,
         })
       }
     })
 
+    // Add API suggestions
+    data.results.forEach((result: AutocompleteOption) => {
+      if (type === 'piece') {
+        // For pieces, use normalized ID as key
+        const normalizedKey = generateNormalizedScoreId(
+          result.value,
+          result.metadata?.composer
+        )
+        // Format composer in metadata for display
+        if (result.metadata?.composer) {
+          result.metadata.composer = formatComposerName(
+            result.metadata.composer
+          )
+        }
+        if (!combined.has(normalizedKey)) {
+          combined.set(normalizedKey, result)
+        }
+      } else if (type === 'composer') {
+        // For composers, format and deduplicate
+        const formattedComposer = formatComposerName(result.value)
+        const normalizedKey = formattedComposer.toLowerCase()
+        if (!combined.has(normalizedKey)) {
+          combined.set(normalizedKey, {
+            ...result,
+            value: formattedComposer,
+            label: formattedComposer,
+          })
+        }
+      }
+    })
+
     return Array.from(combined.values())
-  }, [data, error, getLocalSuggestions])
+  }, [data, error, getLocalSuggestions, type])
 
   return {
     query,
