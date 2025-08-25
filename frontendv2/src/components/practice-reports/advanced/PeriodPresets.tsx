@@ -4,6 +4,8 @@ import { Calendar, Clock, TrendingUp, X } from 'lucide-react'
 import { SegmentedControl, Button } from '../../ui'
 import type { SegmentOption } from '../../ui'
 import { LogbookEntry } from '../../../api/logbook'
+import { generateNormalizedScoreId } from '../../../utils/scoreIdNormalizer'
+import { formatComposerName } from '../../../utils/textFormatting'
 
 export interface PeriodPreset {
   id: 'daily' | 'week' | 'month' | 'year'
@@ -63,16 +65,33 @@ export function PeriodPresets({
     [t]
   )
 
-  // Extract unique pieces from entries
+  // Extract unique pieces from entries with normalized keys for deduplication
   const availablePieces = useMemo(() => {
-    const pieceSet = new Set<string>()
+    // Map normalized keys to formatted display values
+    const pieceMap = new Map<string, string>()
+
     entries.forEach(entry => {
       entry.pieces.forEach(piece => {
-        const pieceKey = `${piece.composer || 'Unknown'} - ${piece.title}`
-        pieceSet.add(pieceKey)
+        // Create normalized key for deduplication
+        const normalizedKey = generateNormalizedScoreId(
+          piece.title,
+          piece.composer
+        )
+
+        // Create formatted display value
+        const formattedComposer = piece.composer
+          ? formatComposerName(piece.composer)
+          : 'Unknown'
+        const formattedTitle = formatComposerName(piece.title)
+        const displayValue = `${formattedComposer} - ${formattedTitle}`
+
+        // Store with normalized key to prevent duplicates
+        pieceMap.set(normalizedKey, displayValue)
       })
     })
-    return Array.from(pieceSet).sort()
+
+    // Return sorted display values
+    return Array.from(pieceMap.values()).sort()
   }, [entries])
 
   // Filter data directly based on selected period and pieces
@@ -96,8 +115,13 @@ export function PeriodPresets({
     if (selectedPieces.length > 0) {
       filtered = filtered.filter(entry => {
         return entry.pieces.some(piece => {
-          const pieceKey = `${piece.composer || 'Unknown'} - ${piece.title}`
-          return selectedPieces.includes(pieceKey)
+          // Create the same formatted display value for comparison
+          const formattedComposer = piece.composer
+            ? formatComposerName(piece.composer)
+            : 'Unknown'
+          const formattedTitle = formatComposerName(piece.title)
+          const displayValue = `${formattedComposer} - ${formattedTitle}`
+          return selectedPieces.includes(displayValue)
         })
       })
     }

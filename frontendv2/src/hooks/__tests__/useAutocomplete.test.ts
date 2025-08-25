@@ -10,7 +10,7 @@ vi.mock('../../api/autocomplete')
 vi.mock('../../stores/logbookStore')
 vi.mock('../../utils/offlineAutocomplete')
 vi.mock('swr', () => ({
-  default: vi.fn((key, fetcher) => {
+  default: vi.fn((key, _fetcher) => {
     if (!key) return { data: null, error: null, isLoading: false }
     // Simple mock implementation
     return {
@@ -29,7 +29,7 @@ describe('useAutocomplete', () => {
     // Mock empty logbook entries by default
     vi.mocked(useLogbookStore).mockReturnValue({
       entries: [],
-    } as any)
+    } as ReturnType<typeof useLogbookStore>)
   })
 
   describe('Deduplication', () => {
@@ -53,7 +53,7 @@ describe('useAutocomplete', () => {
             ],
           },
         ],
-      } as any)
+      } as ReturnType<typeof useLogbookStore>)
 
       const { result } = renderHook(() =>
         useAutocomplete({
@@ -91,7 +91,7 @@ describe('useAutocomplete', () => {
             ],
           },
         ],
-      } as any)
+      } as ReturnType<typeof useLogbookStore>)
 
       const { result } = renderHook(() =>
         useAutocomplete({
@@ -138,7 +138,7 @@ describe('useAutocomplete', () => {
 
       // Mock SWR to use our fetcher
       const useSWR = await import('swr')
-      vi.mocked(useSWR.default).mockImplementation((key, fetcher) => {
+      vi.mocked(useSWR.default).mockImplementation((key, _fetcher) => {
         if (!key) return { data: null, error: null, isLoading: false }
         // Call the actual fetcher
         const data = { results: mockApiResults }
@@ -187,7 +187,7 @@ describe('useAutocomplete', () => {
             ],
           },
         ],
-      } as any)
+      } as ReturnType<typeof useLogbookStore>)
 
       const { result } = renderHook(() =>
         useAutocomplete({
@@ -229,7 +229,7 @@ describe('useAutocomplete', () => {
             ],
           },
         ],
-      } as any)
+      } as ReturnType<typeof useLogbookStore>)
 
       const { result } = renderHook(() =>
         useAutocomplete({
@@ -269,7 +269,7 @@ describe('useAutocomplete', () => {
             ],
           },
         ],
-      } as any)
+      } as ReturnType<typeof useLogbookStore>)
 
       const { result } = renderHook(() =>
         useAutocomplete({
