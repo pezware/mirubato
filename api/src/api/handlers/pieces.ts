@@ -5,19 +5,38 @@ import type { Env } from '../../index'
 
 export const piecesHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// Helper to generate normalized score ID (matching frontend logic)
+// Helper functions to match frontend normalization exactly
+function normalizePieceTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/['']/g, "'") // Normalize apostrophes
+    .replace(/[""]/g, '"') // Normalize quotes
+    .replace(/[–—]/g, '-') // Normalize dashes
+}
+
+function normalizeComposer(composer: string): string {
+  return composer
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/['']/g, "'") // Normalize apostrophes
+    .replace(/\./g, '') // Remove periods (e.g., "J.S. Bach" -> "js bach")
+}
+
+// Helper to generate normalized score ID (matching frontend logic exactly)
 function generateNormalizedScoreId(
   title: string,
   composer?: string | null
 ): string {
-  const normalizedTitle = title.toLowerCase().trim().replace(/\s+/g, ' ')
-  const normalizedComposer = composer
-    ? composer.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\./g, '')
-    : ''
+  const normalizedTitle = normalizePieceTitle(title)
 
-  if (normalizedComposer) {
+  if (composer) {
+    const normalizedComposer = normalizeComposer(composer)
     return `${normalizedTitle}-${normalizedComposer}`
   }
+
   return normalizedTitle
 }
 
