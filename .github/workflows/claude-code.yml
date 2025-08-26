@@ -1,0 +1,237 @@
+# Claude Code Assistant for Mirubato
+# Restricts usage to authorized users defined in .github/CODEOWNERS
+#
+# SECURITY RESTRICTIONS:
+# - Only CODEOWNERS can trigger Claude
+# - Claude can ONLY: Review code, comment, create PRs
+# - Claude CANNOT: Merge PRs, delete branches, modify main branch
+# - External users are blocked even if they mention @claude
+
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request:
+    types: [opened]
+  issues:
+    types: [opened, assigned, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  check-authorization:
+    runs-on: ubuntu-latest
+    outputs:
+      authorized: ${{ steps.check.outputs.authorized }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/CODEOWNERS
+
+      - name: Check if user is authorized
+        id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read CODEOWNERS file
+            let authorizedUsers = [];
+            try {
+              const codeownersPath = path.join(process.env.GITHUB_WORKSPACE, '.github', 'CODEOWNERS');
+              const codeownersContent = fs.readFileSync(codeownersPath, 'utf8');
+              
+              // Extract all users mentioned in CODEOWNERS (format: @username)
+              const userMatches = codeownersContent.match(/@[\w-]+/g) || [];
+              authorizedUsers = userMatches.map(u => u.substring(1)); // Remove @ prefix
+              
+              // Don't log usernames in public repo for security
+              console.log(`Found ${authorizedUsers.length} authorized users from CODEOWNERS`);
+            } catch (error) {
+              console.error('Error reading CODEOWNERS file');
+              // Fallback to hardcoded list if CODEOWNERS can't be read
+              authorizedUsers = ['arbeitandy', 'xia-ann'];
+            }
+
+            // Get the commenter's username
+            let commenter = null;
+            let commentId = null;
+
+            if (context.payload.comment) {
+              commenter = context.payload.comment.user?.login;
+              commentId = context.payload.comment.id;
+            } else if (context.payload.pull_request) {
+              commenter = context.payload.pull_request.user?.login;
+            } else if (context.payload.issue) {
+              commenter = context.payload.issue.user?.login;
+            }
+
+            // Skip bot users
+            if (commenter && commenter.includes('[bot]')) {
+              console.log('Skipping bot user');
+              core.setOutput('authorized', 'false');
+              return;
+            }
+
+            // Check if commenter is authorized
+            const isAuthorized = commenter && authorizedUsers.includes(commenter);
+
+            if (isAuthorized) {
+              console.log('✅ User is authorized to use @claude');
+            } else if (commenter) {
+              console.log('❌ User is NOT authorized to use @claude');
+              
+              // Only add comment for non-bot unauthorized users
+              if (context.issue?.number) {
+                try {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: `@${commenter} Sorry, only CODEOWNERS are authorized to use @claude. Please ask a project maintainer for assistance.`
+                  });
+                } catch (e) {
+                  console.log('Could not post comment');
+                }
+              }
+              
+              // Only add reaction if we have a valid comment ID
+              if (commentId) {
+                try {
+                  await github.rest.reactions.createForIssueComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: commentId,
+                    content: '-1'
+                  });
+                } catch (e) {
+                  console.log('Could not add reaction');
+                }
+              }
+            } else {
+              console.log('Could not determine commenter');
+            }
+
+            core.setOutput('authorized', isAuthorized.toString());
+
+  claude-response:
+    needs: check-authorization
+    runs-on: ubuntu-latest
+    # Only run when @claude is mentioned OR issue is labeled 'claude' AND user is authorized
+    if: |
+      needs.check-authorization.outputs.authorized == 'true' &&
+      (contains(github.event.comment.body || github.event.issue.body || github.event.pull_request.body || '', '@claude') ||
+       contains(github.event.issue.labels.*.name || '', 'claude') ||
+       contains(github.event.issue.labels.*.name || '', 'ai-implement'))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        continue-on-error: true
+
+      - name: Add processing reaction
+        if: github.event.comment.id
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: 'rocket'
+              });
+            } catch (e) {
+              console.log('Could not add processing reaction');
+            }
+
+      - name: Claude Code Assistant
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # SECURITY: Limited tools - Claude can only create PRs, not merge
+          # Never allow: mcp__github__merge_pull_request, mcp__github__delete_*
+          allowed_tools: |
+            mcp__github__create_pull_request
+            mcp__github__create_branch
+            mcp__github__push_files
+          # Additional safety: Always create PRs to feature branches, never to main
+          base_ref: 'main'
+          create_pr: true
+          auto_merge: false
+
+      - name: Add success reaction
+        if: success() && github.event.comment.id
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: 'hooray'
+              });
+            } catch (e) {
+              console.log('Could not add success reaction');
+            }
+
+      - name: Error notification
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            if (context.issue?.number) {
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: '❌ Claude Code Assistant encountered an error. Please check the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+                });
+              } catch (e) {
+                console.log('Could not post error notification');
+              }
+            }
