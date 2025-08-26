@@ -8,12 +8,12 @@ import {
 
 describe('scoreIdNormalizer', () => {
   describe('generateNormalizedScoreId', () => {
-    it('should generate score ID with new delimiter for piece with composer', () => {
+    it('should use default delimiter for simple pieces (backward compatibility)', () => {
       const result = generateNormalizedScoreId('Sonata Op. 1', 'Beethoven')
-      expect(result).toBe('sonata op. 1||beethoven')
+      expect(result).toBe('sonata op. 1-beethoven') // Uses - for backward compatibility
     })
 
-    it('should handle pieces with dashes in title correctly', () => {
+    it('should use special delimiter for pieces with dashes in title', () => {
       const result = generateNormalizedScoreId(
         'Sonatina Op. 36 No. 1 - Movement 1',
         'Clementi'
@@ -21,7 +21,7 @@ describe('scoreIdNormalizer', () => {
       expect(result).toBe('sonatina op. 36 no. 1 - movement 1||clementi')
     })
 
-    it('should handle pieces with dashes in composer name', () => {
+    it('should use special delimiter for pieces with dashes in composer name', () => {
       const result = generateNormalizedScoreId('Symphony No. 5', 'Saint-Saëns')
       expect(result).toBe('symphony no. 5||saint-saëns')
     })
@@ -31,17 +31,17 @@ describe('scoreIdNormalizer', () => {
       expect(result).toBe('etude no. 1')
     })
 
-    it('should normalize special characters', () => {
+    it('should use default delimiter for normal pieces', () => {
       const result = generateNormalizedScoreId(
         "Debussy's Clair de Lune",
         'Claude Debussy'
       )
-      expect(result).toBe("debussy's clair de lune||claude debussy")
+      expect(result).toBe("debussy's clair de lune-claude debussy") // No dash in normalized form
     })
 
-    it('should remove periods from composer names', () => {
+    it('should use default delimiter when no dashes after normalization', () => {
       const result = generateNormalizedScoreId('Invention No. 1', 'J.S. Bach')
-      expect(result).toBe('invention no. 1||js bach')
+      expect(result).toBe('invention no. 1-js bach') // No dash after removing periods
     })
   })
 
@@ -130,27 +130,54 @@ describe('scoreIdNormalizer', () => {
   })
 
   describe('normalizeExistingScoreId', () => {
-    it('should convert legacy format to new format', () => {
+    it('should maintain delimiter for simple pieces', () => {
       const result = normalizeExistingScoreId('sonata-beethoven')
-      expect(result).toBe('sonata||beethoven')
+      expect(result).toBe('sonata-beethoven') // No dash in content, keeps dash
     })
 
-    it('should preserve new format', () => {
-      const result = normalizeExistingScoreId('sonata||beethoven')
-      expect(result).toBe('sonata||beethoven')
+    it('should preserve special delimiter format', () => {
+      const result = normalizeExistingScoreId('sonata - movement 1||beethoven')
+      expect(result).toBe('sonata - movement 1||beethoven')
     })
 
     it('should handle pieces with dashes in title', () => {
       const result = normalizeExistingScoreId(
         'sonata op. 1 - movement 1-beethoven'
       )
-      // The function parses and reconstructs with new delimiter
+      // The function parses (incorrectly as "sonata op. 1", "movement 1-beethoven")
+      // but reconstructs with proper delimiter since the composer part has a dash
       expect(result).toBe('sonata op. 1||movement 1-beethoven')
     })
 
     it('should handle score ID without composer', () => {
       const result = normalizeExistingScoreId('just a piece title')
       expect(result).toBe('just a piece title')
+    })
+  })
+
+  describe('Backward compatibility', () => {
+    it('should maintain compatibility for existing pieces like "G Minor" by "Bach"', () => {
+      // This ensures existing data remains unchanged
+      const result = generateNormalizedScoreId('G Minor', 'Bach')
+      expect(result).toBe('g minor-bach') // Uses - for backward compatibility
+
+      // The parser should handle both old and new formats
+      const parsed = parseScoreId('g minor-bach')
+      expect(parsed.title).toBe('g minor')
+      expect(parsed.composer).toBe('bach')
+    })
+
+    it('should only use special delimiter when actually needed', () => {
+      // Without dashes - uses default delimiter
+      const simple = generateNormalizedScoreId('Moonlight Sonata', 'Beethoven')
+      expect(simple).toBe('moonlight sonata-beethoven')
+
+      // With dash in title - uses special delimiter
+      const withDash = generateNormalizedScoreId(
+        'Opus 36 - Movement 1',
+        'Beethoven'
+      )
+      expect(withDash).toBe('opus 36 - movement 1||beethoven')
     })
   })
 

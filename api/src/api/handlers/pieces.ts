@@ -31,6 +31,11 @@ function normalizeComposer(composer: string): string {
  */
 const SCORE_ID_DELIMITER = '||'
 
+/**
+ * Default delimiter for backward compatibility
+ */
+const DEFAULT_DELIMITER = '-'
+
 // Helper to generate normalized score ID (matching frontend logic exactly)
 function generateNormalizedScoreId(
   title: string,
@@ -40,7 +45,17 @@ function generateNormalizedScoreId(
 
   if (composer) {
     const normalizedComposer = normalizeComposer(composer)
-    return `${normalizedTitle}${SCORE_ID_DELIMITER}${normalizedComposer}`
+
+    // Smart delimiter selection: only use || if there's a dash in title or composer
+    // This maintains backward compatibility for existing data
+    const needsSpecialDelimiter =
+      normalizedTitle.includes('-') || normalizedComposer.includes('-')
+
+    const delimiter = needsSpecialDelimiter
+      ? SCORE_ID_DELIMITER
+      : DEFAULT_DELIMITER
+
+    return `${normalizedTitle}${delimiter}${normalizedComposer}`
   }
 
   return normalizedTitle

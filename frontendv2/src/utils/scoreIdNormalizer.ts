@@ -34,12 +34,15 @@ export function normalizeComposer(composer: string): string {
 const SCORE_ID_DELIMITER = '||'
 
 /**
- * Legacy delimiter for backward compatibility
+ * Default delimiter for backward compatibility
  */
-const LEGACY_DELIMITER = '-'
+const DEFAULT_DELIMITER = '-'
 
 /**
  * Generates a normalized score ID from piece title and composer
+ * Smart delimiter selection:
+ * - Uses '-' by default for backward compatibility
+ * - Uses '||' only when title or composer contains a dash
  * @param title - The piece title
  * @param composer - The composer name (optional)
  * @returns Normalized score ID
@@ -52,7 +55,17 @@ export function generateNormalizedScoreId(
 
   if (composer) {
     const normalizedComposer = normalizeComposer(composer)
-    return `${normalizedTitle}${SCORE_ID_DELIMITER}${normalizedComposer}`
+
+    // Smart delimiter selection: only use || if there's a dash in title or composer
+    // This maintains backward compatibility for existing data
+    const needsSpecialDelimiter =
+      normalizedTitle.includes('-') || normalizedComposer.includes('-')
+
+    const delimiter = needsSpecialDelimiter
+      ? SCORE_ID_DELIMITER
+      : DEFAULT_DELIMITER
+
+    return `${normalizedTitle}${delimiter}${normalizedComposer}`
   }
 
   return normalizedTitle
@@ -79,15 +92,15 @@ export function parseScoreId(scoreId: string): {
     }
   }
 
-  // Fall back to legacy format
-  if (normalized.includes(LEGACY_DELIMITER)) {
-    const parts = normalized.split(LEGACY_DELIMITER)
+  // Fall back to default format
+  if (normalized.includes(DEFAULT_DELIMITER)) {
+    const parts = normalized.split(DEFAULT_DELIMITER)
     if (parts.length >= 2) {
-      // For legacy format, assume first part is title and rest is composer
+      // For default format, assume first part is title and rest is composer
       // This handles cases like "title-composer-with-dash"
       return {
         title: parts[0].trim(),
-        composer: parts.slice(1).join(LEGACY_DELIMITER).trim(),
+        composer: parts.slice(1).join(DEFAULT_DELIMITER).trim(),
       }
     }
   }
@@ -308,8 +321,14 @@ export function normalizeExistingScoreId(scoreId: string): string {
   const parsed = parseScoreId(scoreId)
 
   if (parsed.composer) {
-    // Reconstruct with new delimiter
-    return `${parsed.title}${SCORE_ID_DELIMITER}${parsed.composer}`
+    // Reconstruct using smart delimiter selection
+    const needsSpecialDelimiter =
+      parsed.title.includes('-') || parsed.composer.includes('-')
+    const delimiter = needsSpecialDelimiter
+      ? SCORE_ID_DELIMITER
+      : DEFAULT_DELIMITER
+
+    return `${parsed.title}${delimiter}${parsed.composer}`
   }
 
   return parsed.title
