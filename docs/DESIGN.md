@@ -609,24 +609,48 @@ React Components → Zustand Stores → API Clients → REST API
 
 ### Piece ID Normalization System (v1.7.7)
 
-**Problem Solved**: Pieces with dashes in their titles (e.g., "Sonatina Op. 36 No. 1 - Movement 1") were incorrectly parsed when using a single dash as the delimiter between title and composer.
+**Problem Solved**: Pieces with dashes in their titles (e.g., "Sonatina Op. 36 No. 1 - Movement 1") were incorrectly parsed when using a single dash as the delimiter between title and composer, causing them to not be added to repertoire correctly (Issue #552).
 
-**Solution**: Implemented a robust delimiter system using double pipe (`||`) to avoid conflicts with musical notation.
+**Solution**: Implemented a smart delimiter selection system that maintains backward compatibility while solving the parsing issue.
 
-#### Score ID Format
+#### Smart Delimiter Selection Algorithm
+
+The system now intelligently chooses between two delimiters based on content:
 
 ```typescript
-// New format (v1.7.7+)
-'piece title||composer name' // e.g., "sonatina op. 36 no. 1 - movement 1||clementi"
+// Decision logic
+const needsSpecialDelimiter =
+  normalizedTitle.includes('-') || normalizedComposer.includes('-')
 
-// Legacy format (pre-v1.7.7) - still supported for backward compatibility
-'piece title-composer name' // e.g., "sonatina op. 36 no. 1-clementi"
+const delimiter = needsSpecialDelimiter ? '||' : '-'
 ```
+
+#### Score ID Format Examples
+
+| Piece Title           | Composer      | Generated Score ID                | Delimiter Used   |
+| --------------------- | ------------- | --------------------------------- | ---------------- |
+| "G Minor"             | "Bach"        | `g minor-bach`                    | `-` (default)    |
+| "Moonlight Sonata"    | "Beethoven"   | `moonlight sonata-beethoven`      | `-` (default)    |
+| "Op. 36 - Movement 1" | "Clementi"    | `op. 36 - movement 1\|\|clementi` | `\|\|` (special) |
+| "Symphony No. 5"      | "Saint-Saëns" | `symphony no. 5\|\|saint-saëns`   | `\|\|` (special) |
+
+#### Why This Approach?
+
+1. **Backward Compatibility**: ~99% of existing pieces don't have dashes, so they keep using `-` delimiter
+2. **No Data Migration**: Existing entries like "g minor-bach" remain unchanged
+3. **Surgical Fix**: Only pieces that need special handling get the new delimiter
+4. **Future-Proof**: Parser handles both formats seamlessly
 
 #### Implementation Details
 
-1. **Delimiter Choice**: Double pipe (`||`) was chosen as it's extremely unlikely to appear in piece titles or composer names
-2. **Backward Compatibility**: The `parseScoreId()` function handles both formats transparently
+1. **Delimiter Selection**:
+   - Default delimiter: `-` (single dash) for backward compatibility
+   - Special delimiter: `||` (double pipe) only when title or composer contains a dash
+2. **Parsing Logic**:
+   - First checks for `||` delimiter (new/special format)
+   - Falls back to `-` delimiter (default/legacy format)
+   - Handles edge cases where no delimiter is present
+
 3. **Normalization Rules**:
    - Convert to lowercase
    - Normalize special characters (smart quotes → regular quotes, em-dash → hyphen)
@@ -635,17 +659,32 @@ React Components → Zustand Stores → API Clients → REST API
 
 #### Key Functions
 
-- `generateNormalizedScoreId(title, composer)`: Creates normalized IDs with new delimiter
-- `parseScoreId(scoreId)`: Parses both new and legacy formats
-- `isSameScore(id1, id2)`: Compares IDs regardless of format
-- `normalizeExistingScoreId(scoreId)`: Converts legacy IDs to new format
+- `generateNormalizedScoreId(title, composer)`: Creates normalized IDs with smart delimiter selection
+- `parseScoreId(scoreId)`: Parses both formats with automatic detection
+- `isSameScore(id1, id2)`: Compares IDs regardless of format used
+- `normalizeExistingScoreId(scoreId)`: Maintains appropriate delimiter based on content
 
-#### Migration Strategy
+#### System Behavior
 
-- No database migration required
-- Existing score IDs continue to work via backward compatibility
-- New entries automatically use the new format
-- System handles both formats transparently throughout the codebase
+**For Existing Users:**
+
+- All existing data continues to work without changes
+- "G Minor" by "Bach" still maps to `g minor-bach`
+- No duplicate entries created
+- No database migration needed
+
+**For New Entries:**
+
+- Simple pieces use familiar format: `title-composer`
+- Complex pieces with dashes use special format: `title||composer`
+- Transparent to users - system handles it automatically
+
+#### Technical Considerations
+
+1. **API Layer**: Treats score IDs as opaque strings, no parsing required
+2. **Database**: Stores whatever format is provided, uses exact string matching
+3. **Frontend**: Generates and parses IDs with the same logic
+4. **Backward Compatibility**: Both formats work simultaneously throughout the system
 
 ### Planned Module Architecture (Not Implemented)
 
