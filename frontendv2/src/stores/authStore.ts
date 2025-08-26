@@ -704,6 +704,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Token is invalid, clear auth state
         localStorage.removeItem('auth-token')
         localStorage.removeItem('refresh-token')
+        localStorage.removeItem('mirubato:user')
         set({
           user: null,
           isAuthenticated: false,

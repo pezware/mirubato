@@ -112,7 +112,7 @@ authHandler.post(
         httpOnly: true,
         secure: true,
         sameSite: 'Lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/',
       })
 
@@ -136,7 +136,7 @@ authHandler.post(
         },
         accessToken,
         refreshToken,
-        expiresIn: 604800, // 7 days in seconds
+        expiresIn: 2592000, // 30 days in seconds
       })
     } catch (error: any) {
       console.error('Error verifying magic link:', error)
@@ -226,7 +226,7 @@ authHandler.post(
         httpOnly: true,
         secure: true,
         sameSite: 'Lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/',
       })
 
@@ -250,7 +250,7 @@ authHandler.post(
         },
         accessToken,
         refreshToken,
-        expiresIn: 604800, // 7 days in seconds
+        expiresIn: 2592000, // 30 days in seconds
       })
     } catch (error) {
       console.error('Error with Google auth:', error)
