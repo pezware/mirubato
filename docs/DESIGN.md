@@ -4,7 +4,14 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.7.6 (August 2025)
+## Current Architecture - Version 1.7.7 (August 2025)
+
+### Version 1.7.7 - Piece ID Normalization Fix
+
+- **Delimiter Change**: Score IDs now use `||` instead of `-` to avoid conflicts with dashed piece titles
+- **Backward Compatibility**: Legacy score IDs continue to work transparently
+- **Bug Fix**: Resolves issue #552 where pieces with dashes weren't added to repertoire correctly
+- **No Migration Required**: System handles both formats automatically
 
 ### Version 1.7.6 - Real-time WebSocket Synchronization
 
@@ -599,6 +606,85 @@ React Components → Zustand Stores → API Clients → REST API
 - **scoreStore**: Sheet music metadata, collections, search/filter state
 - **practiceStore**: Active practice sessions, timers, auto-logging state
 - **reportingStore**: Report filters, view preferences, cached analytics data
+
+### Piece ID Normalization System (v1.7.7)
+
+**Problem Solved**: Pieces with dashes in their titles (e.g., "Sonatina Op. 36 No. 1 - Movement 1") were incorrectly parsed when using a single dash as the delimiter between title and composer, causing them to not be added to repertoire correctly (Issue #552).
+
+**Solution**: Implemented a smart delimiter selection system that maintains backward compatibility while solving the parsing issue.
+
+#### Smart Delimiter Selection Algorithm
+
+The system now intelligently chooses between two delimiters based on content:
+
+```typescript
+// Decision logic
+const needsSpecialDelimiter =
+  normalizedTitle.includes('-') || normalizedComposer.includes('-')
+
+const delimiter = needsSpecialDelimiter ? '||' : '-'
+```
+
+#### Score ID Format Examples
+
+| Piece Title           | Composer      | Generated Score ID                | Delimiter Used   |
+| --------------------- | ------------- | --------------------------------- | ---------------- |
+| "G Minor"             | "Bach"        | `g minor-bach`                    | `-` (default)    |
+| "Moonlight Sonata"    | "Beethoven"   | `moonlight sonata-beethoven`      | `-` (default)    |
+| "Op. 36 - Movement 1" | "Clementi"    | `op. 36 - movement 1\|\|clementi` | `\|\|` (special) |
+| "Symphony No. 5"      | "Saint-Saëns" | `symphony no. 5\|\|saint-saëns`   | `\|\|` (special) |
+
+#### Why This Approach?
+
+1. **Backward Compatibility**: ~99% of existing pieces don't have dashes, so they keep using `-` delimiter
+2. **No Data Migration**: Existing entries like "g minor-bach" remain unchanged
+3. **Surgical Fix**: Only pieces that need special handling get the new delimiter
+4. **Future-Proof**: Parser handles both formats seamlessly
+
+#### Implementation Details
+
+1. **Delimiter Selection**:
+   - Default delimiter: `-` (single dash) for backward compatibility
+   - Special delimiter: `||` (double pipe) only when title or composer contains a dash
+2. **Parsing Logic**:
+   - First checks for `||` delimiter (new/special format)
+   - Falls back to `-` delimiter (default/legacy format)
+   - Handles edge cases where no delimiter is present
+
+3. **Normalization Rules**:
+   - Convert to lowercase
+   - Normalize special characters (smart quotes → regular quotes, em-dash → hyphen)
+   - Remove periods from composer names (e.g., "J.S. Bach" → "js bach")
+   - Preserve dashes within titles and composer names
+
+#### Key Functions
+
+- `generateNormalizedScoreId(title, composer)`: Creates normalized IDs with smart delimiter selection
+- `parseScoreId(scoreId)`: Parses both formats with automatic detection
+- `isSameScore(id1, id2)`: Compares IDs regardless of format used
+- `normalizeExistingScoreId(scoreId)`: Maintains appropriate delimiter based on content
+
+#### System Behavior
+
+**For Existing Users:**
+
+- All existing data continues to work without changes
+- "G Minor" by "Bach" still maps to `g minor-bach`
+- No duplicate entries created
+- No database migration needed
+
+**For New Entries:**
+
+- Simple pieces use familiar format: `title-composer`
+- Complex pieces with dashes use special format: `title||composer`
+- Transparent to users - system handles it automatically
+
+#### Technical Considerations
+
+1. **API Layer**: Treats score IDs as opaque strings, no parsing required
+2. **Database**: Stores whatever format is provided, uses exact string matching
+3. **Frontend**: Generates and parses IDs with the same logic
+4. **Backward Compatibility**: Both formats work simultaneously throughout the system
 
 ### Planned Module Architecture (Not Implemented)
 

@@ -25,6 +25,17 @@ function normalizeComposer(composer: string): string {
     .replace(/\./g, '') // Remove periods (e.g., "J.S. Bach" -> "js bach")
 }
 
+/**
+ * Delimiter used to separate title and composer in score IDs.
+ * Using double pipe to avoid conflicts with dashes in piece titles.
+ */
+const SCORE_ID_DELIMITER = '||'
+
+/**
+ * Default delimiter for backward compatibility
+ */
+const DEFAULT_DELIMITER = '-'
+
 // Helper to generate normalized score ID (matching frontend logic exactly)
 function generateNormalizedScoreId(
   title: string,
@@ -34,7 +45,17 @@ function generateNormalizedScoreId(
 
   if (composer) {
     const normalizedComposer = normalizeComposer(composer)
-    return `${normalizedTitle}-${normalizedComposer}`
+
+    // Smart delimiter selection: only use || if there's a dash in title or composer
+    // This maintains backward compatibility for existing data
+    const needsSpecialDelimiter =
+      normalizedTitle.includes('-') || normalizedComposer.includes('-')
+
+    const delimiter = needsSpecialDelimiter
+      ? SCORE_ID_DELIMITER
+      : DEFAULT_DELIMITER
+
+    return `${normalizedTitle}${delimiter}${normalizedComposer}`
   }
 
   return normalizedTitle

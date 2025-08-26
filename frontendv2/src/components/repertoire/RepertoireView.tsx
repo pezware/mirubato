@@ -24,6 +24,7 @@ import { toTitleCase } from '@/utils/textFormatting'
 import {
   generateNormalizedScoreId,
   isSameScore,
+  parseScoreId,
 } from '@/utils/scoreIdNormalizer'
 import { Music } from 'lucide-react'
 import { useSubmissionProtection } from '@/hooks/useSubmissionProtection'
@@ -160,12 +161,12 @@ export default function RepertoireView({ analytics }: RepertoireViewProps) {
       if (cachedMetadata) {
         scoreTitle = cachedMetadata.title
         scoreComposer = cachedMetadata.composer
-      } else if (!score && item.scoreId.includes('-')) {
-        // This is likely a logbook piece
-        const parts = item.scoreId.split('-')
-        if (parts.length >= 2) {
-          scoreTitle = toTitleCase(parts[0])
-          scoreComposer = toTitleCase(parts.slice(1).join('-')) // Handle composers with hyphens
+      } else if (!score) {
+        // This is likely a logbook piece - parse the scoreId
+        const parsed = parseScoreId(item.scoreId)
+        if (parsed.composer || parsed.title) {
+          scoreTitle = toTitleCase(parsed.title)
+          scoreComposer = parsed.composer ? toTitleCase(parsed.composer) : ''
           isLogbookPiece = true
 
           // Cache this metadata for future use
