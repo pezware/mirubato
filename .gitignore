@@ -357,10 +357,21 @@ api-final.log
 scores/test-data/
 scores/music-library/**/*.pdf
 
-# db back
+# Database backups
 mirubato-db-backup/
 backup/
 backups/
+*.sql
+*.dump
+
+# Debug tool specific
+tools/debug-data-fix/.env
+tools/debug-data-fix/.env.*
+tools/debug-data-fix/logs/
+tools/debug-data-fix/backups/
+tools/debug-data-fix/dist/
+tools/debug-data-fix/*.log
+tools/debug-data-fix/transactions/
 
 # kiro
 mirubato.code-workspace
