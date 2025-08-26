@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { MoreVertical } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
@@ -33,6 +33,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   ariaLabel = 'More options',
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [openDirection, setOpenDirection] = useState<'down' | 'up'>('down')
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -48,8 +50,37 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
     }
   }, [isOpen, onClose])
 
+  // Decide whether to open upward if there's not enough space below
+  useEffect(() => {
+    if (!isOpen) return
+    const decide = () => {
+      const btn = buttonRef.current
+      if (!btn) return
+      const rect = btn.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      // Estimate menu height if not yet rendered
+      const estimatedHeight =
+        menuRef.current?.offsetHeight || Math.max(40, items.length * 36 + 12)
+      if (estimatedHeight > spaceBelow && spaceAbove > spaceBelow) {
+        setOpenDirection('up')
+      } else {
+        setOpenDirection('down')
+      }
+    }
+    // Run on next frame to ensure DOM is ready
+    const id = requestAnimationFrame(decide)
+    window.addEventListener('resize', decide)
+    window.addEventListener('scroll', decide, true)
+    return () => {
+      cancelAnimationFrame(id)
+      window.removeEventListener('resize', decide)
+      window.removeEventListener('scroll', decide, true)
+    }
+  }, [isOpen, items.length])
+
   return (
-    <div className={cn('relative', className)} ref={menuRef}>
+    <div className={cn('relative', className)}>
       <button
         onClick={e => {
           e.stopPropagation()
@@ -60,15 +91,21 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
           buttonClassName
         )}
         aria-label={ariaLabel}
+        ref={buttonRef}
       >
         {icon}
       </button>
 
       {isOpen && (
         <div
+          ref={menuRef}
           className={cn(
-            'absolute right-0 top-8 min-w-[160px] bg-white border border-morandi-stone-200 rounded-lg shadow-lg py-1 z-50',
-            'animate-in fade-in slide-in-from-top-1 duration-200',
+            'absolute right-0 min-w-[160px] bg-white border border-morandi-stone-200 rounded-lg shadow-lg py-1 z-50',
+            openDirection === 'down'
+              ? 'top-8 animate-in fade-in slide-in-from-top-1 duration-200'
+              : 'bottom-8 animate-in fade-in slide-in-from-bottom-1 duration-200',
+            // Ensure the menu isn't clipped by parent overflow if possible
+            'overflow-visible',
             menuClassName
           )}
         >
