@@ -2,18 +2,7 @@
 
 ## Quick Setup (5 minutes)
 
-### Step 1: Add Claude Code Token to GitHub Secrets
-
-#### Option A: Using Claude Code OAuth Token (Pro/Max users)
-
-- [ ] If you have Claude Pro/Max, run `claude setup-token` locally
-- [ ] Go to: https://github.com/[your-org]/mirubato/settings/secrets/actions
-- [ ] Click "New repository secret"
-- [ ] Name: `CLAUDE_CODE_OAUTH_TOKEN`
-- [ ] Value: [Your OAuth token from Claude Code]
-- [ ] Click "Add secret"
-
-#### Option B: Using Anthropic API Key
+### Step 1: Add Anthropic API Key to GitHub Secrets
 
 - [ ] Get API key from https://console.anthropic.com/
 - [ ] Go to: https://github.com/[your-org]/mirubato/settings/secrets/actions
@@ -70,23 +59,14 @@ Repository Settings → Actions → General:
 
 ## Troubleshooting Quick Fixes
 
-| Problem                | Solution                                                     |
-| ---------------------- | ------------------------------------------------------------ |
-| No response to @claude | Check if CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY is set |
-| Workflow not running   | Check Actions are enabled in Settings                        |
-| Authentication error   | Regenerate OAuth token or update API key                     |
-| Partial responses      | The simple config has default token limits                   |
+| Problem                | Solution                                   |
+| ---------------------- | ------------------------------------------ |
+| No response to @claude | Check if ANTHROPIC_API_KEY is set          |
+| Workflow not running   | Check Actions are enabled in Settings      |
+| Authentication error   | Regenerate and update API key              |
+| Partial responses      | The simple config has default token limits |
 
-## Getting Your Credentials
-
-### For Claude Code Pro/Max Users (OAuth Token):
-
-1. Run `claude setup-token` in your terminal
-2. Follow the authentication flow
-3. Copy the generated OAuth token
-4. Add as `CLAUDE_CODE_OAUTH_TOKEN` secret
-
-### For API Key Users:
+## Getting Your API Key
 
 1. Go to: https://console.anthropic.com/
 2. Sign in or create account

@@ -143,26 +143,20 @@ Request test cases for new implementations:
 
 ## ⚙️ Configuration
 
-### Authentication Methods
+### Authentication
 
-The workflow supports two authentication methods:
+The workflow uses Anthropic API key authentication:
 
-1. **OAuth Token** (for Claude Pro/Max users):
-
-   ```yaml
-   claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-   ```
-
-2. **API Key** (standard method):
-   ```yaml
-   anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-   ```
+```yaml
+anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
 
 ### Workflow Location
 
 - Single workflow file: `.github/workflows/claude-code.yml`
 - Automatically reads CODEOWNERS for authorization
 - Full error handling and user feedback
+- Minimal logging for security (no usernames logged)
 
 ## 🚦 Rate Limits & Access Control
 

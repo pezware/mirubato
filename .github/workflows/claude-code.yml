@@ -49,9 +49,10 @@ jobs:
               const userMatches = codeownersContent.match(/@[\w-]+/g) || [];
               authorizedUsers = userMatches.map(u => u.substring(1)); // Remove @ prefix
               
-              console.log('Authorized users from CODEOWNERS:', authorizedUsers.join(', '));
+              // Don't log usernames in public repo for security
+              console.log(`Found ${authorizedUsers.length} authorized users from CODEOWNERS`);
             } catch (error) {
-              console.error('Error reading CODEOWNERS:', error);
+              console.error('Error reading CODEOWNERS file');
               // Fallback to hardcoded list if CODEOWNERS can't be read
               authorizedUsers = ['arbeitandy', 'xia-ann'];
             }
@@ -71,7 +72,7 @@ jobs:
 
             // Skip bot users
             if (commenter && commenter.includes('[bot]')) {
-              console.log(`Skipping bot user: ${commenter}`);
+              console.log('Skipping bot user');
               core.setOutput('authorized', 'false');
               return;
             }
@@ -80,9 +81,9 @@ jobs:
             const isAuthorized = commenter && authorizedUsers.includes(commenter);
 
             if (isAuthorized) {
-              console.log(`✅ User ${commenter} is authorized to use @claude`);
+              console.log('✅ User is authorized to use @claude');
             } else if (commenter) {
-              console.log(`❌ User ${commenter} is NOT authorized to use @claude`);
+              console.log('❌ User is NOT authorized to use @claude');
               
               // Only add comment for non-bot unauthorized users
               if (context.issue?.number) {
@@ -94,7 +95,7 @@ jobs:
                     body: `@${commenter} Sorry, only CODEOWNERS are authorized to use @claude. Please ask a project maintainer for assistance.`
                   });
                 } catch (e) {
-                  console.log('Could not post comment:', e.message);
+                  console.log('Could not post comment');
                 }
               }
               
@@ -108,7 +109,7 @@ jobs:
                     content: '-1'
                   });
                 } catch (e) {
-                  console.log('Could not add reaction:', e.message);
+                  console.log('Could not add reaction');
                 }
               }
             } else {
@@ -172,7 +173,7 @@ jobs:
                 content: 'rocket'
               });
             } catch (e) {
-              console.log('Could not add reaction:', e.message);
+              console.log('Could not add processing reaction');
             }
 
       - name: Claude Code Assistant
@@ -180,11 +181,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Or use OAuth token if you have Claude Pro/Max:
-          # anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        env:
-          PROJECT_TYPE: 'mirubato-music-education'
-          TECH_STACK: 'typescript,react,cloudflare-workers,d1,r2'
 
       - name: Add success reaction
         if: success() && github.event.comment.id
@@ -200,7 +196,7 @@ jobs:
                 content: 'hooray'
               });
             } catch (e) {
-              console.log('Could not add reaction:', e.message);
+              console.log('Could not add success reaction');
             }
 
       - name: Error notification
@@ -218,6 +214,6 @@ jobs:
                   body: '❌ Claude Code Assistant encountered an error. Please check the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
                 });
               } catch (e) {
-                console.log('Could not post error comment:', e.message);
+                console.log('Could not post error notification');
               }
             }
