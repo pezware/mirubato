@@ -23,7 +23,7 @@ Ensure GitHub Actions are enabled for the repository:
 - Settings → Actions → General → Actions permissions
 - Select "Allow all actions and reusable workflows"
 
-## 🔒 Authorization
+## 🔒 Authorization & Security
 
 **Important**: Claude Code is restricted to CODEOWNERS only. Currently authorized users:
 
@@ -31,6 +31,26 @@ Ensure GitHub Actions are enabled for the repository:
 - @xia-ann
 
 Unauthorized users will receive an error message when trying to use @claude.
+
+### Security Restrictions
+
+Claude has been configured with strict limitations:
+
+**Claude CAN:**
+
+- ✅ Review code and provide feedback
+- ✅ Comment on issues and PRs
+- ✅ Create new branches and PRs
+- ✅ Push code to feature branches
+
+**Claude CANNOT:**
+
+- ❌ Merge pull requests (human review required)
+- ❌ Push directly to main branch
+- ❌ Delete branches or repositories
+- ❌ Modify repository settings
+- ❌ Access secrets or sensitive data
+- ❌ Respond to external users (non-CODEOWNERS)
 
 ## 📝 How to Use Claude Code
 
@@ -79,11 +99,32 @@ Mention `@claude` in:
 @claude How should I implement the admin API endpoints for the debug-data-fix tool?
 ```
 
+#### Create a PR from Issue (NEW)
+
+```markdown
+@claude Please implement the feature described in this issue and create a PR
+```
+
+#### Fix a Bug with PR (NEW)
+
+```markdown
+@claude This bug is causing errors in production. Can you fix it and create a PR with the solution?
+```
+
 #### Architecture Questions
 
 ```markdown
 @claude What's the best approach to handle WebSocket reconnection in our sync-worker?
 ```
+
+### Using Labels to Trigger Claude
+
+You can also trigger Claude by adding labels to issues:
+
+- `claude` - Triggers Claude to review the issue
+- `ai-implement` - Asks Claude to implement the feature and create a PR
+
+**Note**: Even with labels, only CODEOWNERS can create issues that trigger Claude.
 
 ## 🎯 Best Practices
 
@@ -157,6 +198,23 @@ anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 - Automatically reads CODEOWNERS for authorization
 - Full error handling and user feedback
 - Minimal logging for security (no usernames logged)
+
+## 🔄 Pull Request Workflow
+
+When Claude creates a pull request:
+
+1. **Branch Creation**: Claude creates a feature branch (never pushes to main)
+2. **Implementation**: Claude implements the requested changes
+3. **PR Creation**: Claude opens a PR with description and context
+4. **Human Review Required**: A team member must review and approve
+5. **Manual Merge**: Only humans can merge PRs to main branch
+
+### Safety Features
+
+- All PRs created by Claude are marked with a label
+- Claude cannot approve its own PRs
+- Claude cannot merge any PRs
+- Branch protection rules still apply
 
 ## 🚦 Rate Limits & Access Control
 

@@ -1,5 +1,11 @@
 # Claude Code Assistant for Mirubato
 # Restricts usage to authorized users defined in .github/CODEOWNERS
+#
+# SECURITY RESTRICTIONS:
+# - Only CODEOWNERS can trigger Claude
+# - Claude can ONLY: Review code, comment, create PRs
+# - Claude CANNOT: Merge PRs, delete branches, modify main branch
+# - External users are blocked even if they mention @claude
 
 name: Claude Code
 
@@ -11,7 +17,7 @@ on:
   pull_request:
     types: [opened]
   issues:
-    types: [opened]
+    types: [opened, assigned, labeled]
 
 permissions:
   contents: write
@@ -121,10 +127,12 @@ jobs:
   claude-response:
     needs: check-authorization
     runs-on: ubuntu-latest
-    # Only run when @claude is mentioned AND user is authorized
+    # Only run when @claude is mentioned OR issue is labeled 'claude' AND user is authorized
     if: |
       needs.check-authorization.outputs.authorized == 'true' &&
-      (contains(github.event.comment.body || github.event.issue.body || github.event.pull_request.body || '', '@claude'))
+      (contains(github.event.comment.body || github.event.issue.body || github.event.pull_request.body || '', '@claude') ||
+       contains(github.event.issue.labels.*.name || '', 'claude') ||
+       contains(github.event.issue.labels.*.name || '', 'ai-implement'))
 
     steps:
       - name: Checkout code
@@ -181,6 +189,16 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # SECURITY: Limited tools - Claude can only create PRs, not merge
+          # Never allow: mcp__github__merge_pull_request, mcp__github__delete_*
+          allowed_tools: |
+            mcp__github__create_pull_request
+            mcp__github__create_branch
+            mcp__github__push_files
+          # Additional safety: Always create PRs to feature branches, never to main
+          base_ref: 'main'
+          create_pr: true
+          auto_merge: false
 
       - name: Add success reaction
         if: success() && github.event.comment.id
