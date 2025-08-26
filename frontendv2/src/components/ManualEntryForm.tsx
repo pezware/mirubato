@@ -17,6 +17,7 @@ import {
   generateNormalizedScoreId,
   isSameScore,
   findSimilarPieces,
+  parseScoreId,
   type DuplicateMatch,
 } from '../utils/scoreIdNormalizer'
 import Button from './ui/Button'
@@ -217,13 +218,12 @@ export default function ManualEntryForm({
                 repertoire.values()
               ).map(item => {
                 const metadata = scoreMetadataCache.get(item.scoreId)
-                const fallbackTitle = item.scoreId.split('-')[0] || 'Unknown'
-                const fallbackComposer = item.scoreId.split('-')[1] || ''
+                const parsed = parseScoreId(item.scoreId)
 
                 return {
                   scoreId: item.scoreId,
-                  title: metadata?.title || fallbackTitle,
-                  composer: metadata?.composer || fallbackComposer,
+                  title: metadata?.title || parsed.title || 'Unknown',
+                  composer: metadata?.composer || parsed.composer || '',
                 }
               })
 

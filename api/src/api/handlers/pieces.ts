@@ -25,6 +25,17 @@ function normalizeComposer(composer: string): string {
     .replace(/\./g, '') // Remove periods (e.g., "J.S. Bach" -> "js bach")
 }
 
+/**
+ * Delimiter used to separate title and composer in score IDs.
+ * Using double pipe to avoid conflicts with dashes in piece titles.
+ */
+const SCORE_ID_DELIMITER = '||'
+
+/**
+ * Legacy delimiter for backward compatibility
+ */
+const LEGACY_DELIMITER = '-'
+
 // Helper to generate normalized score ID (matching frontend logic exactly)
 function generateNormalizedScoreId(
   title: string,
@@ -34,10 +45,51 @@ function generateNormalizedScoreId(
 
   if (composer) {
     const normalizedComposer = normalizeComposer(composer)
-    return `${normalizedTitle}-${normalizedComposer}`
+    return `${normalizedTitle}${SCORE_ID_DELIMITER}${normalizedComposer}`
   }
 
   return normalizedTitle
+}
+
+/**
+ * Parses a score ID into title and composer components.
+ * Handles both new format (||) and legacy format (-) for backward compatibility.
+ * @param scoreId - The score ID to parse
+ * @returns Object with title and composer
+ */
+function parseScoreId(scoreId: string): {
+  title: string
+  composer: string
+} {
+  const normalized = scoreId.toLowerCase().trim()
+
+  // Try new format first
+  if (normalized.includes(SCORE_ID_DELIMITER)) {
+    const parts = normalized.split(SCORE_ID_DELIMITER)
+    return {
+      title: parts[0].trim(),
+      composer: parts.slice(1).join(SCORE_ID_DELIMITER).trim(),
+    }
+  }
+
+  // Fall back to legacy format
+  if (normalized.includes(LEGACY_DELIMITER)) {
+    const parts = normalized.split(LEGACY_DELIMITER)
+    if (parts.length >= 2) {
+      // For legacy format, assume first part is title and rest is composer
+      // This handles cases like "title-composer-with-dash"
+      return {
+        title: parts[0].trim(),
+        composer: parts.slice(1).join(LEGACY_DELIMITER).trim(),
+      }
+    }
+  }
+
+  // No delimiter found, assume it's just a title
+  return {
+    title: normalized,
+    composer: '',
+  }
 }
 
 // Schema for piece update request

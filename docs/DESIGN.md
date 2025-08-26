@@ -4,7 +4,14 @@
 
 Mirubato is a sight-reading practice application for musicians, built on Cloudflare's edge infrastructure. The application helps users improve their music reading skills through interactive practice sessions with real-time feedback.
 
-## Current Architecture - Version 1.7.6 (August 2025)
+## Current Architecture - Version 1.7.7 (August 2025)
+
+### Version 1.7.7 - Piece ID Normalization Fix
+
+- **Delimiter Change**: Score IDs now use `||` instead of `-` to avoid conflicts with dashed piece titles
+- **Backward Compatibility**: Legacy score IDs continue to work transparently
+- **Bug Fix**: Resolves issue #552 where pieces with dashes weren't added to repertoire correctly
+- **No Migration Required**: System handles both formats automatically
 
 ### Version 1.7.6 - Real-time WebSocket Synchronization
 
@@ -599,6 +606,46 @@ React Components → Zustand Stores → API Clients → REST API
 - **scoreStore**: Sheet music metadata, collections, search/filter state
 - **practiceStore**: Active practice sessions, timers, auto-logging state
 - **reportingStore**: Report filters, view preferences, cached analytics data
+
+### Piece ID Normalization System (v1.7.7)
+
+**Problem Solved**: Pieces with dashes in their titles (e.g., "Sonatina Op. 36 No. 1 - Movement 1") were incorrectly parsed when using a single dash as the delimiter between title and composer.
+
+**Solution**: Implemented a robust delimiter system using double pipe (`||`) to avoid conflicts with musical notation.
+
+#### Score ID Format
+
+```typescript
+// New format (v1.7.7+)
+'piece title||composer name' // e.g., "sonatina op. 36 no. 1 - movement 1||clementi"
+
+// Legacy format (pre-v1.7.7) - still supported for backward compatibility
+'piece title-composer name' // e.g., "sonatina op. 36 no. 1-clementi"
+```
+
+#### Implementation Details
+
+1. **Delimiter Choice**: Double pipe (`||`) was chosen as it's extremely unlikely to appear in piece titles or composer names
+2. **Backward Compatibility**: The `parseScoreId()` function handles both formats transparently
+3. **Normalization Rules**:
+   - Convert to lowercase
+   - Normalize special characters (smart quotes → regular quotes, em-dash → hyphen)
+   - Remove periods from composer names (e.g., "J.S. Bach" → "js bach")
+   - Preserve dashes within titles and composer names
+
+#### Key Functions
+
+- `generateNormalizedScoreId(title, composer)`: Creates normalized IDs with new delimiter
+- `parseScoreId(scoreId)`: Parses both new and legacy formats
+- `isSameScore(id1, id2)`: Compares IDs regardless of format
+- `normalizeExistingScoreId(scoreId)`: Converts legacy IDs to new format
+
+#### Migration Strategy
+
+- No database migration required
+- Existing score IDs continue to work via backward compatibility
+- New entries automatically use the new format
+- System handles both formats transparently throughout the codebase
 
 ### Planned Module Architecture (Not Implemented)
 

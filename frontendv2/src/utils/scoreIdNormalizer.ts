@@ -28,6 +28,17 @@ export function normalizeComposer(composer: string): string {
 }
 
 /**
+ * Delimiter used to separate title and composer in score IDs.
+ * Using double pipe to avoid conflicts with dashes in piece titles.
+ */
+const SCORE_ID_DELIMITER = '||'
+
+/**
+ * Legacy delimiter for backward compatibility
+ */
+const LEGACY_DELIMITER = '-'
+
+/**
  * Generates a normalized score ID from piece title and composer
  * @param title - The piece title
  * @param composer - The composer name (optional)
@@ -41,10 +52,51 @@ export function generateNormalizedScoreId(
 
   if (composer) {
     const normalizedComposer = normalizeComposer(composer)
-    return `${normalizedTitle}-${normalizedComposer}`
+    return `${normalizedTitle}${SCORE_ID_DELIMITER}${normalizedComposer}`
   }
 
   return normalizedTitle
+}
+
+/**
+ * Parses a score ID into title and composer components.
+ * Handles both new format (||) and legacy format (-) for backward compatibility.
+ * @param scoreId - The score ID to parse
+ * @returns Object with title and composer
+ */
+export function parseScoreId(scoreId: string): {
+  title: string
+  composer: string
+} {
+  const normalized = scoreId.toLowerCase().trim()
+
+  // Try new format first
+  if (normalized.includes(SCORE_ID_DELIMITER)) {
+    const parts = normalized.split(SCORE_ID_DELIMITER)
+    return {
+      title: parts[0].trim(),
+      composer: parts.slice(1).join(SCORE_ID_DELIMITER).trim(),
+    }
+  }
+
+  // Fall back to legacy format
+  if (normalized.includes(LEGACY_DELIMITER)) {
+    const parts = normalized.split(LEGACY_DELIMITER)
+    if (parts.length >= 2) {
+      // For legacy format, assume first part is title and rest is composer
+      // This handles cases like "title-composer-with-dash"
+      return {
+        title: parts[0].trim(),
+        composer: parts.slice(1).join(LEGACY_DELIMITER).trim(),
+      }
+    }
+  }
+
+  // No delimiter found, assume it's just a title
+  return {
+    title: normalized,
+    composer: '',
+  }
 }
 
 /**
@@ -63,13 +115,18 @@ export function isSameScore(scoreId1: string, scoreId2: string): boolean {
     return true
   }
 
-  // Check if they might be the same piece with reversed order
-  const parts1 = normalized1.split(' - ')
-  const parts2 = normalized2.split(' - ')
+  // Parse both IDs using the robust parser
+  const piece1 = parseScoreId(scoreId1)
+  const piece2 = parseScoreId(scoreId2)
 
-  if (parts1.length === 2 && parts2.length === 2) {
-    // Check if it's the same piece with reversed composer/title order
-    return parts1[0] === parts2[1] && parts1[1] === parts2[0]
+  // Check if they're the same piece (exact match)
+  if (piece1.title === piece2.title && piece1.composer === piece2.composer) {
+    return true
+  }
+
+  // Check if they might be the same piece with reversed order (legacy support)
+  if (piece1.title === piece2.composer && piece1.composer === piece2.title) {
+    return true
   }
 
   return false
@@ -226,17 +283,6 @@ export function isSameScoreWithFuzzy(
   }
 
   // Try fuzzy matching by parsing the score IDs
-  const parseScoreId = (scoreId: string) => {
-    const parts = scoreId.toLowerCase().split('-')
-    if (parts.length >= 2) {
-      return {
-        title: parts[0].trim(),
-        composer: parts.slice(1).join('-').trim(),
-      }
-    }
-    return { title: scoreId.toLowerCase().trim(), composer: '' }
-  }
-
   const piece1 = parseScoreId(scoreId1)
   const piece2 = parseScoreId(scoreId2)
 
@@ -254,27 +300,17 @@ export function isSameScoreWithFuzzy(
 
 /**
  * Normalizes an existing score ID to ensure consistent format
- * This helps fix legacy IDs that might have "composer - title" format
+ * This helps fix legacy IDs and ensures new format is used
  * @param scoreId - The score ID to normalize
- * @returns Normalized score ID in "title - composer" format
+ * @returns Normalized score ID in new format
  */
 export function normalizeExistingScoreId(scoreId: string): string {
-  const parts = scoreId.split(' - ')
+  const parsed = parseScoreId(scoreId)
 
-  // If it's already a compound ID, ensure it's in the right order
-  if (parts.length === 2) {
-    const [part1, part2] = parts
-
-    // Simple heuristic: composers often have fewer words than titles
-    // and are often single names or "Firstname Lastname"
-    const words1 = part1.trim().split(' ').length
-    const words2 = part2.trim().split(' ').length
-
-    // If part1 looks like a composer name (1-2 words) and part2 is longer, flip them
-    if (words1 <= 2 && words2 > words1) {
-      return `${part2.trim()} - ${part1.trim()}`.toLowerCase()
-    }
+  if (parsed.composer) {
+    // Reconstruct with new delimiter
+    return `${parsed.title}${SCORE_ID_DELIMITER}${parsed.composer}`
   }
 
-  return scoreId.toLowerCase().trim()
+  return parsed.title
 }
