@@ -3,8 +3,6 @@ import {
   generateNormalizedScoreId,
   parseScoreId,
   isSameScore,
-  normalizePieceTitle,
-  normalizeComposer,
   normalizeExistingScoreId,
 } from '../scoreIdNormalizer'
 
