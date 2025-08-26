@@ -65,9 +65,9 @@ program
       process.exit(0)
     }
 
-    // Store for commands to use
-    actionCommand.environment = env
-    actionCommand.safety = safety
+    // Pass environment and safety through options
+    options.environment = env
+    options.safety = safety
   })
 
 // Global options

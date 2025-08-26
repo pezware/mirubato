@@ -15,11 +15,21 @@ export class D1Service {
     this.environment = environment
   }
 
+  /**
+   * Escapes a string value for safe use in SQL queries
+   * Prevents SQL injection by escaping single quotes
+   */
+  private escapeSqlString(value: string): string {
+    return value.replace(/'/g, "''")
+  }
+
   async query<T = any>(sql: string): Promise<T[]> {
     try {
       logger.debug(`Executing D1 query: ${sql}`)
 
-      const command = `wrangler d1 execute ${this.databaseId} --command "${sql.replace(/"/g, '\\"')}" --env ${this.environment} --json`
+      // Properly escape SQL for shell command - escape backslashes first, then quotes
+      const escapedSql = sql.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+      const command = `wrangler d1 execute ${this.databaseId} --command "${escapedSql}" --env ${this.environment} --json`
 
       const { stdout, stderr } = await execAsync(command)
 
@@ -45,12 +55,12 @@ export class D1Service {
   async getSyncData(userId: string, entityType?: string): Promise<SyncData[]> {
     let sql = `
       SELECT * FROM sync_data 
-      WHERE user_id = '${userId}' 
+      WHERE user_id = '${this.escapeSqlString(userId)}' 
       AND deleted_at IS NULL
     `
 
     if (entityType) {
-      sql += ` AND entity_type = '${entityType}'`
+      sql += ` AND entity_type = '${this.escapeSqlString(entityType)}'`
     }
 
     sql += ' ORDER BY updated_at DESC'
@@ -59,7 +69,7 @@ export class D1Service {
   }
 
   async getSyncDataById(id: string): Promise<SyncData | null> {
-    const sql = `SELECT * FROM sync_data WHERE id = '${id}' LIMIT 1`
+    const sql = `SELECT * FROM sync_data WHERE id = '${this.escapeSqlString(id)}' LIMIT 1`
     const results = await this.query<SyncData>(sql)
     return results[0] || null
   }
@@ -74,7 +84,7 @@ export class D1Service {
       if (value === null) {
         updateClauses.push(`${key} = NULL`)
       } else if (typeof value === 'string') {
-        updateClauses.push(`${key} = '${value.replace(/'/g, "''")}'`)
+        updateClauses.push(`${key} = '${this.escapeSqlString(value)}'`)
       } else {
         updateClauses.push(`${key} = ${value}`)
       }
@@ -85,7 +95,7 @@ export class D1Service {
     const sql = `
       UPDATE sync_data 
       SET ${updateClauses.join(', ')}
-      WHERE id = '${id}'
+      WHERE id = '${this.escapeSqlString(id)}'
     `
 
     try {
@@ -100,8 +110,8 @@ export class D1Service {
 
   async deleteSyncData(id: string, hard: boolean = false): Promise<boolean> {
     const sql = hard
-      ? `DELETE FROM sync_data WHERE id = '${id}'`
-      : `UPDATE sync_data SET deleted_at = CURRENT_TIMESTAMP WHERE id = '${id}'`
+      ? `DELETE FROM sync_data WHERE id = '${this.escapeSqlString(id)}'`
+      : `UPDATE sync_data SET deleted_at = CURRENT_TIMESTAMP WHERE id = '${this.escapeSqlString(id)}'`
 
     try {
       await this.query(sql)
@@ -130,7 +140,7 @@ export class D1Service {
         COUNT(*) as count,
         GROUP_CONCAT(id) as ids
       FROM sync_data
-      WHERE user_id = '${userId}'
+      WHERE user_id = '${this.escapeSqlString(userId)}'
         AND deleted_at IS NULL
       GROUP BY checksum, entity_type
       HAVING COUNT(*) > 1
@@ -180,7 +190,7 @@ export class D1Service {
     `
 
     if (userId) {
-      sql += ` AND user_id = '${userId}'`
+      sql += ` AND user_id = '${this.escapeSqlString(userId)}'`
     }
 
     sql += `
@@ -198,7 +208,7 @@ export class D1Service {
         sd.*,
         'orphaned_reference' as issue_type
       FROM sync_data sd
-      WHERE sd.user_id = '${userId}'
+      WHERE sd.user_id = '${this.escapeSqlString(userId)}'
         AND sd.deleted_at IS NULL
         AND sd.entity_type = 'logbook'
         AND json_extract(sd.data, '$.scoreId') IS NOT NULL

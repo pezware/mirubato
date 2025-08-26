@@ -4,3 +4,4 @@ packages:
   - 'scores'
   - 'dictionary'
   - 'sync-worker'
+  - 'tools/debug-data-fix'

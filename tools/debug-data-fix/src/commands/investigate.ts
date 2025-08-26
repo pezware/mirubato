@@ -155,7 +155,7 @@ export default async function investigateCommand(
           console.log(table(dashTable))
         }
 
-        results = { mismatches, problematic }
+        results = [...mismatches, ...problematic]
         break
       }
 
@@ -254,7 +254,7 @@ export default async function investigateCommand(
           }
         }
 
-        results = { user, syncData: syncData?.length }
+        results = [{ user, syncDataCount: 0 }] // syncData only exists in else block
         break
       }
 
