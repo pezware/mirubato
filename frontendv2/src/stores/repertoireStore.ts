@@ -10,6 +10,7 @@ import { showToast } from '@/utils/toastManager'
 import { nanoid } from 'nanoid'
 import i18n from 'i18next'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
+import { isRepertoireNormalizationComplete } from '@/utils/migrations/scoreIdNormalization'
 import { useAuthStore } from './authStore'
 import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
 import { localEventBus } from '@/services/localEventBus'
@@ -178,8 +179,12 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     set({ repertoireLoading: true, repertoireError: null })
 
     try {
-      // Run migration to normalize existing repertoire IDs
-      normalizeRepertoireIds()
+      // Run migration to normalize existing repertoire IDs (only if not already done)
+      if (!isRepertoireNormalizationComplete()) {
+        normalizeRepertoireIds()
+        // The flag is set by the scoreIdNormalization migration
+        // So we don't need to set it here
+      }
 
       // Always load from localStorage first
       const stored = localStorage.getItem(REPERTOIRE_KEY)
