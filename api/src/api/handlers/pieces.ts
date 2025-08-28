@@ -2,64 +2,9 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type Variables } from '../middleware'
 import type { Env } from '../../index'
+import { generateNormalizedScoreId } from '../../utils/scoreIdNormalizer'
 
 export const piecesHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
-
-// Helper functions to match frontend normalization exactly
-function normalizePieceTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .replace(/['']/g, "'") // Normalize apostrophes
-    .replace(/[""]/g, '"') // Normalize quotes
-    .replace(/[–—]/g, '-') // Normalize dashes
-}
-
-function normalizeComposer(composer: string): string {
-  return composer
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .replace(/['']/g, "'") // Normalize apostrophes
-    .replace(/\./g, '') // Remove periods (e.g., "J.S. Bach" -> "js bach")
-}
-
-/**
- * Delimiter used to separate title and composer in score IDs.
- * Using double pipe to avoid conflicts with dashes in piece titles.
- */
-const SCORE_ID_DELIMITER = '||'
-
-/**
- * Default delimiter for backward compatibility
- */
-const DEFAULT_DELIMITER = '-'
-
-// Helper to generate normalized score ID (matching frontend logic exactly)
-function generateNormalizedScoreId(
-  title: string,
-  composer?: string | null
-): string {
-  const normalizedTitle = normalizePieceTitle(title)
-
-  if (composer) {
-    const normalizedComposer = normalizeComposer(composer)
-
-    // Smart delimiter selection: only use || if there's a dash in title or composer
-    // This maintains backward compatibility for existing data
-    const needsSpecialDelimiter =
-      normalizedTitle.includes('-') || normalizedComposer.includes('-')
-
-    const delimiter = needsSpecialDelimiter
-      ? SCORE_ID_DELIMITER
-      : DEFAULT_DELIMITER
-
-    return `${normalizedTitle}${delimiter}${normalizedComposer}`
-  }
-
-  return normalizedTitle
-}
 
 // Schema for piece update request
 const updatePieceNameSchema = z.object({

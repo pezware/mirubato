@@ -4,11 +4,7 @@ import { authMiddleware, validateBody, type Variables } from '../middleware'
 import { Errors } from '../../utils/errors'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
-import {
-  generateNormalizedScoreId,
-  parseScoreId,
-  normalizeExistingScoreId,
-} from '../../utils/scoreIdNormalizer'
+import { normalizeExistingScoreId } from '../../utils/scoreIdNormalizer'
 
 // Validation schemas
 const repertoireStatusSchema = z.enum([

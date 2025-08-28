@@ -104,275 +104,261 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
   const idempotencyKey = c.req.header('X-Idempotency-Key')
   const deviceId = c.req.header('X-Device-ID')
 
-  // Enhanced debug logging for staging
-  if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'local') {
-    console.log('[Sync Push] Starting sync for user:', userId)
-    console.log('[Sync Push] Environment:', c.env.ENVIRONMENT)
-    console.log('[Sync Push] Device ID:', deviceId || 'not provided')
-    console.log(
-      '[Sync Push] Idempotency Key:',
-      idempotencyKey || 'not provided'
-    )
-    console.log('[Sync Push] Received changes:', {
-      entriesCount: changes.entries?.length || 0,
-      goalsCount: changes.goals?.length || 0,
-    })
-    if (changes.entries && changes.entries.length > 0) {
-      console.log(
-        '[Sync Push] First entry sample:',
-        JSON.stringify(changes.entries[0], null, 2)
-      )
-    }
-  }
+  // Enhanced debug logging for staging - commented out to avoid console warnings
+  // Uncomment for debugging if needed
+  // if (c.env.ENVIRONMENT === 'staging' || c.env.ENVIRONMENT === 'local') {
+  //   console.log('[Sync Push] Starting sync for user:', userId)
+  //   console.log('[Sync Push] Environment:', c.env.ENVIRONMENT)
+  //   console.log('[Sync Push] Device ID:', deviceId || 'not provided')
+  //   console.log(
+  //     '[Sync Push] Idempotency Key:',
+  //     idempotencyKey || 'not provided'
+  //   )
+  //   console.log('[Sync Push] Received changes:', {
+  //     entriesCount: changes.entries?.length || 0,
+  //     goalsCount: changes.goals?.length || 0,
+  //   })
+  //   if (changes.entries && changes.entries.length > 0) {
+  //     console.log(
+  //       '[Sync Push] First entry sample:',
+  //       JSON.stringify(changes.entries[0], null, 2)
+  //     )
+  //   }
+  // }
 
   // Process with idempotency if key provided
   const processSync = async () => {
-    try {
-      // Process changes
-      const conflicts: Array<{
-        entityId: string
-        entityType: string
-        reason: string
-      }> = []
+    // Process changes
+    const conflicts: Array<{
+      entityId: string
+      entityType: string
+      reason: string
+    }> = []
 
-      // Track duplicate prevention stats
-      const stats = {
-        entriesProcessed: 0,
-        duplicatesPrevented: 0,
-        goalsProcessed: 0,
-      }
+    // Track duplicate prevention stats
+    const stats = {
+      entriesProcessed: 0,
+      duplicatesPrevented: 0,
+      goalsProcessed: 0,
+    }
 
-      // Process entries
-      if (changes.entries && changes.entries.length > 0) {
-        for (const entry of changes.entries as Array<{
-          id: string
-          instrument?: string
-          type?: string
-          mood?: string
-          goalIds?: string[]
-          goal_ids?: string[]
-          user_id?: string
-          [key: string]: unknown
-        }>) {
-          try {
-            // Transform field names from frontend format to backend format
-            const transformedEntry = { ...entry }
+    // Process entries
+    if (changes.entries && changes.entries.length > 0) {
+      for (const entry of changes.entries as Array<{
+        id: string
+        instrument?: string
+        type?: string
+        mood?: string
+        goalIds?: string[]
+        goal_ids?: string[]
+        user_id?: string
+        [key: string]: unknown
+      }>) {
+        try {
+          // Transform field names from frontend format to backend format
+          const transformedEntry = { ...entry }
 
-            // Add user_id if not present
-            if (!transformedEntry.user_id) {
-              transformedEntry.user_id = userId
-            }
-
-            // Transform goalIds to goal_ids if needed
-            if (transformedEntry.goalIds && !transformedEntry.goal_ids) {
-              transformedEntry.goal_ids = transformedEntry.goalIds
-              delete transformedEntry.goalIds
-            }
-
-            // Check if this is a deletion request
-            if (transformedEntry.deletedAt) {
-              // Handle soft delete more efficiently
-              await db.softDeleteSyncData(
-                userId,
-                'logbook_entry',
-                transformedEntry.id,
-                transformedEntry.deletedAt as string
-              )
-
-              stats.entriesProcessed++
-              if (c.env.ENVIRONMENT === 'staging') {
-                console.log(
-                  '[Sync Push] Soft deleted entry:',
-                  transformedEntry.id
-                )
-              }
-            } else {
-              // Normalize enum fields to lowercase for database compatibility
-              if (
-                transformedEntry.instrument &&
-                typeof transformedEntry.instrument === 'string'
-              ) {
-                transformedEntry.instrument =
-                  transformedEntry.instrument.toLowerCase()
-              }
-              if (
-                transformedEntry.type &&
-                typeof transformedEntry.type === 'string'
-              ) {
-                transformedEntry.type = transformedEntry.type.toLowerCase()
-              }
-              if (
-                transformedEntry.mood &&
-                typeof transformedEntry.mood === 'string'
-              ) {
-                transformedEntry.mood = transformedEntry.mood.toLowerCase()
-              }
-
-              // Normalize score IDs if pieces are present
-              if (
-                transformedEntry.pieces &&
-                Array.isArray(transformedEntry.pieces)
-              ) {
-                // Generate normalized scoreId for each piece
-                transformedEntry.pieces = transformedEntry.pieces.map(
-                  (piece: any) => {
-                    if (piece && typeof piece === 'object' && piece.title) {
-                      // Generate normalized scoreId from piece title and composer
-                      const scoreId = generateNormalizedScoreId(
-                        piece.title,
-                        piece.composer
-                      )
-                      return {
-                        ...piece,
-                        id: scoreId, // Add normalized scoreId to each piece
-                      }
-                    }
-                    return piece
-                  }
-                )
-              }
-
-              // Also normalize standalone scoreId field if present
-              if (
-                transformedEntry.scoreId &&
-                typeof transformedEntry.scoreId === 'string'
-              ) {
-                const parsed = parseScoreId(transformedEntry.scoreId)
-                transformedEntry.scoreId = generateNormalizedScoreId(
-                  parsed.title,
-                  parsed.composer || undefined
-                )
-              }
-
-              // Normalize scoreTitle and scoreComposer if present (for backward compatibility)
-              if (
-                transformedEntry.scoreTitle &&
-                typeof transformedEntry.scoreTitle === 'string'
-              ) {
-                const scoreComposer =
-                  typeof transformedEntry.scoreComposer === 'string'
-                    ? transformedEntry.scoreComposer
-                    : ''
-                const normalizedScoreId = generateNormalizedScoreId(
-                  transformedEntry.scoreTitle as string,
-                  scoreComposer
-                )
-                // Add the normalized scoreId to the entry
-                transformedEntry.scoreId = normalizedScoreId
-              }
-
-              const checksum = await calculateChecksum(transformedEntry)
-
-              const result = await db.upsertSyncData({
-                userId,
-                entityType: 'logbook_entry',
-                entityId: transformedEntry.id,
-                data: transformedEntry,
-                checksum,
-                deviceId,
-              })
-
-              stats.entriesProcessed++
-              if (result.action === 'duplicate_prevented') {
-                stats.duplicatesPrevented++
-                console.log(
-                  `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
-                    `using existing ${result.entity_id}`
-                )
-              }
-
-              if (c.env.ENVIRONMENT === 'staging') {
-                console.log(
-                  '[Sync Push] Successfully upserted entry:',
-                  entry.id
-                )
-              }
-            }
-          } catch (entryError) {
-            // Error: Failed to process entry
-            // Continue processing other entries but track the error
-            conflicts.push({
-              entityId: entry.id,
-              entityType: 'logbook_entry',
-              reason:
-                entryError instanceof Error
-                  ? entryError.message
-                  : 'Unknown error',
-            })
+          // Add user_id if not present
+          if (!transformedEntry.user_id) {
+            transformedEntry.user_id = userId
           }
-        }
-      }
 
-      // Process goals
-      if (changes.goals && changes.goals.length > 0) {
-        for (const goal of changes.goals as Array<{
-          id: string
-          [key: string]: unknown
-        }>) {
-          try {
-            const checksum = await calculateChecksum(goal)
+          // Transform goalIds to goal_ids if needed
+          if (transformedEntry.goalIds && !transformedEntry.goal_ids) {
+            transformedEntry.goal_ids = transformedEntry.goalIds
+            delete transformedEntry.goalIds
+          }
 
-            await db.upsertSyncData({
+          // Check if this is a deletion request
+          if (transformedEntry.deletedAt) {
+            // Handle soft delete more efficiently
+            await db.softDeleteSyncData(
               userId,
-              entityType: 'goal',
-              entityId: goal.id,
-              data: goal,
+              'logbook_entry',
+              transformedEntry.id,
+              transformedEntry.deletedAt as string
+            )
+
+            stats.entriesProcessed++
+            // if (c.env.ENVIRONMENT === 'staging') {
+            //   console.log(
+            //     '[Sync Push] Soft deleted entry:',
+            //     transformedEntry.id
+            //   )
+            // }
+          } else {
+            // Normalize enum fields to lowercase for database compatibility
+            if (
+              transformedEntry.instrument &&
+              typeof transformedEntry.instrument === 'string'
+            ) {
+              transformedEntry.instrument =
+                transformedEntry.instrument.toLowerCase()
+            }
+            if (
+              transformedEntry.type &&
+              typeof transformedEntry.type === 'string'
+            ) {
+              transformedEntry.type = transformedEntry.type.toLowerCase()
+            }
+            if (
+              transformedEntry.mood &&
+              typeof transformedEntry.mood === 'string'
+            ) {
+              transformedEntry.mood = transformedEntry.mood.toLowerCase()
+            }
+
+            // Normalize score IDs if pieces are present
+            if (
+              transformedEntry.pieces &&
+              Array.isArray(transformedEntry.pieces)
+            ) {
+              // Generate normalized scoreId for each piece
+              transformedEntry.pieces = transformedEntry.pieces.map(
+                (piece: any) => {
+                  if (piece && typeof piece === 'object' && piece.title) {
+                    // Generate normalized scoreId from piece title and composer
+                    const scoreId = generateNormalizedScoreId(
+                      piece.title,
+                      piece.composer
+                    )
+                    return {
+                      ...piece,
+                      id: scoreId, // Add normalized scoreId to each piece
+                    }
+                  }
+                  return piece
+                }
+              )
+            }
+
+            // Also normalize standalone scoreId field if present
+            if (
+              transformedEntry.scoreId &&
+              typeof transformedEntry.scoreId === 'string'
+            ) {
+              const parsed = parseScoreId(transformedEntry.scoreId)
+              transformedEntry.scoreId = generateNormalizedScoreId(
+                parsed.title,
+                parsed.composer || undefined
+              )
+            }
+
+            // Normalize scoreTitle and scoreComposer if present (for backward compatibility)
+            if (
+              transformedEntry.scoreTitle &&
+              typeof transformedEntry.scoreTitle === 'string'
+            ) {
+              const scoreComposer =
+                typeof transformedEntry.scoreComposer === 'string'
+                  ? transformedEntry.scoreComposer
+                  : ''
+              const normalizedScoreId = generateNormalizedScoreId(
+                transformedEntry.scoreTitle as string,
+                scoreComposer
+              )
+              // Add the normalized scoreId to the entry
+              transformedEntry.scoreId = normalizedScoreId
+            }
+
+            const checksum = await calculateChecksum(transformedEntry)
+
+            const result = await db.upsertSyncData({
+              userId,
+              entityType: 'logbook_entry',
+              entityId: transformedEntry.id,
+              data: transformedEntry,
               checksum,
               deviceId,
             })
 
-            stats.goalsProcessed++
-          } catch (goalError) {
-            // Error: Failed to process goal
-            // Continue processing other goals but track the error
-            conflicts.push({
-              entityId: goal.id,
-              entityType: 'goal',
-              reason:
-                goalError instanceof Error
-                  ? goalError.message
-                  : 'Unknown error',
-            })
+            stats.entriesProcessed++
+            if (result.action === 'duplicate_prevented') {
+              stats.duplicatesPrevented++
+              // console.log(
+              //   `[Sync Push] Duplicate prevented for entry ${entry.id}, ` +
+              //     `using existing ${result.entity_id}`
+              // )
+            }
+
+            // if (c.env.ENVIRONMENT === 'staging') {
+            //   console.log(
+            //     '[Sync Push] Successfully upserted entry:',
+            //     entry.id
+            //   )
+            // }
           }
+        } catch (entryError) {
+          // Error: Failed to process entry
+          // Continue processing other entries but track the error
+          conflicts.push({
+            entityId: entry.id,
+            entityType: 'logbook_entry',
+            reason:
+              entryError instanceof Error
+                ? entryError.message
+                : 'Unknown error',
+          })
         }
       }
+    }
 
-      // Update sync metadata with device info
-      const newSyncToken = generateId('sync')
-      await db.updateSyncMetadata(userId, newSyncToken)
+    // Process goals
+    if (changes.goals && changes.goals.length > 0) {
+      for (const goal of changes.goals as Array<{
+        id: string
+        [key: string]: unknown
+      }>) {
+        try {
+          const checksum = await calculateChecksum(goal)
 
-      // Log sync event if we have the tracking
-      if (deviceId && stats.entriesProcessed > 0) {
-        console.log('[Sync Push] Sync completed:', {
-          userId,
-          deviceId,
-          entriesProcessed: stats.entriesProcessed,
-          duplicatesPrevented: stats.duplicatesPrevented,
-          goalsProcessed: stats.goalsProcessed,
-        })
+          await db.upsertSyncData({
+            userId,
+            entityType: 'goal',
+            entityId: goal.id,
+            data: goal,
+            checksum,
+            deviceId,
+          })
+
+          stats.goalsProcessed++
+        } catch (goalError) {
+          // Error: Failed to process goal
+          // Continue processing other goals but track the error
+          conflicts.push({
+            entityId: goal.id,
+            entityType: 'goal',
+            reason:
+              goalError instanceof Error ? goalError.message : 'Unknown error',
+          })
+        }
       }
+    }
 
-      return {
-        success: true,
-        syncToken: newSyncToken,
-        conflicts,
-        stats: {
-          entriesProcessed: stats.entriesProcessed,
-          duplicatesPrevented: stats.duplicatesPrevented,
-          goalsProcessed: stats.goalsProcessed,
-        },
-      }
-    } catch (error) {
-      // Error: Sync push failed
-      console.error('[Sync Push] Error occurred:', error)
-      console.error('[Sync Push] Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        userId,
-        entriesCount: changes.entries?.length || 0,
-        goalsCount: changes.goals?.length || 0,
-      })
-      throw error
+    // Update sync metadata with device info
+    const newSyncToken = generateId('sync')
+    await db.updateSyncMetadata(userId, newSyncToken)
+
+    // Log sync event if we have the tracking
+    if (deviceId && stats.entriesProcessed > 0) {
+      // console.log('[Sync Push] Sync completed:', {
+      //   userId,
+      //   deviceId,
+      //   entriesProcessed: stats.entriesProcessed,
+      //   duplicatesPrevented: stats.duplicatesPrevented,
+      //   goalsProcessed: stats.goalsProcessed,
+      // })
+    }
+
+    return {
+      success: true,
+      syncToken: newSyncToken,
+      conflicts,
+      stats: {
+        entriesProcessed: stats.entriesProcessed,
+        duplicatesPrevented: stats.duplicatesPrevented,
+        goalsProcessed: stats.goalsProcessed,
+      },
     }
   }
 
@@ -387,9 +373,9 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
     )
 
     if (wasReplayed) {
-      console.log(
-        `[Sync Push] Returned cached response for idempotency key: ${idempotencyKey}`
-      )
+      // console.log(
+      //   `[Sync Push] Returned cached response for idempotency key: ${idempotencyKey}`
+      // )
       return c.json(response, {
         headers: {
           'X-Idempotent-Replay': 'true',
