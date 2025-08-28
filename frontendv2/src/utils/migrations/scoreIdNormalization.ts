@@ -6,7 +6,6 @@
 
 import {
   generateNormalizedScoreId,
-  parseScoreId,
   normalizeExistingScoreId,
 } from '../scoreIdNormalizer'
 import { normalizeRepertoireIds } from './normalizeRepertoireIds'
@@ -197,10 +196,25 @@ export function runScoreIdNormalization(): void {
   }
 }
 
+type NormalizableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | NormalizableObject
+  | NormalizableArray
+
+interface NormalizableObject {
+  [key: string]: NormalizableValue
+}
+
+type NormalizableArray = Array<NormalizableValue>
+
 /**
  * Recursively normalize score IDs in any object structure
  */
-function normalizeScoreIdsInObject(obj: any): any {
+function normalizeScoreIdsInObject(obj: NormalizableValue): NormalizableValue {
   if (obj === null || obj === undefined) {
     return obj
   }
@@ -210,7 +224,7 @@ function normalizeScoreIdsInObject(obj: any): any {
   }
 
   if (typeof obj === 'object') {
-    const normalized: any = {}
+    const normalized: NormalizableObject = {}
 
     for (const [key, value] of Object.entries(obj)) {
       // Normalize scoreId fields
@@ -219,11 +233,22 @@ function normalizeScoreIdsInObject(obj: any): any {
       }
       // Handle pieces arrays
       else if (key === 'pieces' && Array.isArray(value)) {
-        normalized[key] = value.map((piece: any) => {
-          if (piece && typeof piece === 'object' && piece.title) {
+        normalized[key] = value.map((piece: NormalizableValue) => {
+          if (
+            piece &&
+            typeof piece === 'object' &&
+            !Array.isArray(piece) &&
+            'title' in piece &&
+            typeof piece.title === 'string'
+          ) {
+            const pieceObj = piece as NormalizableObject
+            const composer =
+              'composer' in pieceObj && typeof pieceObj.composer === 'string'
+                ? pieceObj.composer
+                : undefined
             return {
-              ...piece,
-              id: generateNormalizedScoreId(piece.title, piece.composer),
+              ...pieceObj,
+              id: generateNormalizedScoreId(piece.title as string, composer),
             }
           }
           return piece
