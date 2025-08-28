@@ -43,39 +43,120 @@ export const normalizeScoreIdBody = async (c: Context, next: Next) => {
   }
 
   try {
-    const body = await c.req.json()
+    // Get the body - check if it's already been parsed by validation middleware
+    let body = c.get('validatedBody')
+
+    if (!body) {
+      // If not validated yet, get the raw body
+      body = await c.req.json()
+    }
 
     if (body && typeof body === 'object') {
-      // Normalize scoreId field if present
-      if (body.scoreId && typeof body.scoreId === 'string') {
-        body.scoreId = normalizeExistingScoreId(body.scoreId)
-      }
+      // Create a normalized copy to avoid mutating the original
+      const normalizedBody = { ...body }
 
-      // Normalize pieces array if present (for logbook entries)
-      if (body.pieces && Array.isArray(body.pieces)) {
-        body.pieces = body.pieces.map((piece: any) => {
-          if (piece && typeof piece === 'object' && piece.title) {
-            const scoreId = generateNormalizedScoreId(
-              piece.title,
-              piece.composer
-            )
-            return {
-              ...piece,
-              id: scoreId,
+      // For sync endpoints, normalize within the changes object
+      if (normalizedBody.changes) {
+        const changes = normalizedBody.changes
+
+        // Normalize entries within changes
+        if (changes.entries && Array.isArray(changes.entries)) {
+          changes.entries = changes.entries.map((entry: any) => {
+            const normalizedEntry = { ...entry }
+
+            // Normalize pieces array in each entry
+            if (
+              normalizedEntry.pieces &&
+              Array.isArray(normalizedEntry.pieces)
+            ) {
+              normalizedEntry.pieces = normalizedEntry.pieces.map(
+                (piece: any) => {
+                  if (piece && typeof piece === 'object' && piece.title) {
+                    const scoreId = generateNormalizedScoreId(
+                      piece.title,
+                      piece.composer
+                    )
+                    return {
+                      ...piece,
+                      id: scoreId,
+                    }
+                  }
+                  return piece
+                }
+              )
             }
-          }
-          return piece
-        })
+
+            // Normalize scoreId field if present
+            if (
+              normalizedEntry.scoreId &&
+              typeof normalizedEntry.scoreId === 'string'
+            ) {
+              normalizedEntry.scoreId = normalizeExistingScoreId(
+                normalizedEntry.scoreId
+              )
+            }
+
+            // Handle scoreTitle/scoreComposer fields (legacy format)
+            if (
+              normalizedEntry.scoreTitle &&
+              typeof normalizedEntry.scoreTitle === 'string'
+            ) {
+              const scoreComposer = normalizedEntry.scoreComposer || ''
+              normalizedEntry.scoreId = generateNormalizedScoreId(
+                normalizedEntry.scoreTitle,
+                scoreComposer
+              )
+            }
+
+            return normalizedEntry
+          })
+        }
       }
 
-      // Handle scoreTitle/scoreComposer fields (legacy format)
-      if (body.scoreTitle && typeof body.scoreTitle === 'string') {
-        const scoreComposer = body.scoreComposer || ''
-        body.scoreId = generateNormalizedScoreId(body.scoreTitle, scoreComposer)
+      // For non-sync endpoints, normalize at top level
+      else {
+        // Normalize scoreId field if present
+        if (
+          normalizedBody.scoreId &&
+          typeof normalizedBody.scoreId === 'string'
+        ) {
+          normalizedBody.scoreId = normalizeExistingScoreId(
+            normalizedBody.scoreId
+          )
+        }
+
+        // Normalize pieces array if present (for logbook entries)
+        if (normalizedBody.pieces && Array.isArray(normalizedBody.pieces)) {
+          normalizedBody.pieces = normalizedBody.pieces.map((piece: any) => {
+            if (piece && typeof piece === 'object' && piece.title) {
+              const scoreId = generateNormalizedScoreId(
+                piece.title,
+                piece.composer
+              )
+              return {
+                ...piece,
+                id: scoreId,
+              }
+            }
+            return piece
+          })
+        }
+
+        // Handle scoreTitle/scoreComposer fields (legacy format)
+        if (
+          normalizedBody.scoreTitle &&
+          typeof normalizedBody.scoreTitle === 'string'
+        ) {
+          const scoreComposer = normalizedBody.scoreComposer || ''
+          normalizedBody.scoreId = generateNormalizedScoreId(
+            normalizedBody.scoreTitle,
+            scoreComposer
+          )
+        }
       }
 
-      // Store normalized body for handlers
-      c.set('normalizedBody', body)
+      // Store normalized body for handlers to use
+      c.set('normalizedBody', normalizedBody)
     }
   } catch (error) {
     // If JSON parsing fails, let the handler deal with it
