@@ -4,6 +4,11 @@ import { authMiddleware, validateBody, type Variables } from '../middleware'
 import { Errors } from '../../utils/errors'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
+import {
+  generateNormalizedScoreId,
+  parseScoreId,
+  normalizeExistingScoreId,
+} from '../../utils/scoreIdNormalizer'
 
 // Validation schemas
 const repertoireStatusSchema = z.enum([
@@ -14,7 +19,7 @@ const repertoireStatusSchema = z.enum([
 ])
 
 const createRepertoireSchema = z.object({
-  scoreId: z.string(),
+  scoreId: z.string().transform(scoreId => normalizeExistingScoreId(scoreId)),
   status: repertoireStatusSchema.optional(),
   difficultyRating: z
     .union([
@@ -105,7 +110,8 @@ repertoireHandler.get('/', async c => {
  */
 repertoireHandler.get('/:scoreId/stats', async c => {
   const userId = c.get('userId') as string
-  const scoreId = c.req.param('scoreId')
+  const rawScoreId = c.req.param('scoreId')
+  const scoreId = normalizeExistingScoreId(rawScoreId)
 
   try {
     // Get repertoire item with detailed stats
@@ -252,7 +258,8 @@ repertoireHandler.put(
   validateBody(updateRepertoireSchema),
   async c => {
     const userId = c.get('userId') as string
-    const scoreId = c.req.param('scoreId')
+    const rawScoreId = c.req.param('scoreId')
+    const scoreId = normalizeExistingScoreId(rawScoreId)
     const body = c.get('validatedBody') as z.infer<
       typeof updateRepertoireSchema
     >
@@ -343,7 +350,8 @@ repertoireHandler.put(
  */
 repertoireHandler.delete('/:scoreId', async c => {
   const userId = c.get('userId') as string
-  const scoreId = c.req.param('scoreId')
+  const rawScoreId = c.req.param('scoreId')
+  const scoreId = normalizeExistingScoreId(rawScoreId)
 
   try {
     const result = await c.env.DB.prepare(
@@ -369,7 +377,8 @@ repertoireHandler.delete('/:scoreId', async c => {
  */
 repertoireHandler.delete('/:scoreId/dissociate', async c => {
   const userId = c.get('userId') as string
-  const scoreId = c.req.param('scoreId')
+  const rawScoreId = c.req.param('scoreId')
+  const scoreId = normalizeExistingScoreId(rawScoreId)
 
   try {
     // Start a transaction to ensure data consistency

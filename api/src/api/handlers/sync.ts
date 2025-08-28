@@ -9,6 +9,10 @@ import {
 import { schemas } from '../../utils/validation'
 import { Errors } from '../../utils/errors'
 import { withIdempotency } from '../../utils/idempotency'
+import {
+  generateNormalizedScoreId,
+  parseScoreId,
+} from '../../utils/scoreIdNormalizer'
 
 export const syncHandler = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -202,6 +206,59 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
                 typeof transformedEntry.mood === 'string'
               ) {
                 transformedEntry.mood = transformedEntry.mood.toLowerCase()
+              }
+
+              // Normalize score IDs if pieces are present
+              if (
+                transformedEntry.pieces &&
+                Array.isArray(transformedEntry.pieces)
+              ) {
+                // Generate normalized scoreId for each piece
+                transformedEntry.pieces = transformedEntry.pieces.map(
+                  (piece: any) => {
+                    if (piece && typeof piece === 'object' && piece.title) {
+                      // Generate normalized scoreId from piece title and composer
+                      const scoreId = generateNormalizedScoreId(
+                        piece.title,
+                        piece.composer
+                      )
+                      return {
+                        ...piece,
+                        id: scoreId, // Add normalized scoreId to each piece
+                      }
+                    }
+                    return piece
+                  }
+                )
+              }
+
+              // Also normalize standalone scoreId field if present
+              if (
+                transformedEntry.scoreId &&
+                typeof transformedEntry.scoreId === 'string'
+              ) {
+                const parsed = parseScoreId(transformedEntry.scoreId)
+                transformedEntry.scoreId = generateNormalizedScoreId(
+                  parsed.title,
+                  parsed.composer || undefined
+                )
+              }
+
+              // Normalize scoreTitle and scoreComposer if present (for backward compatibility)
+              if (
+                transformedEntry.scoreTitle &&
+                typeof transformedEntry.scoreTitle === 'string'
+              ) {
+                const scoreComposer =
+                  typeof transformedEntry.scoreComposer === 'string'
+                    ? transformedEntry.scoreComposer
+                    : ''
+                const normalizedScoreId = generateNormalizedScoreId(
+                  transformedEntry.scoreTitle as string,
+                  scoreComposer
+                )
+                // Add the normalized scoreId to the entry
+                transformedEntry.scoreId = normalizedScoreId
               }
 
               const checksum = await calculateChecksum(transformedEntry)
