@@ -12,6 +12,7 @@ import { useRepertoireStore } from './stores/repertoireStore'
 import { setupPdfWorker } from './utils/pdfWorkerSetup'
 import { AutoLoggingProvider } from './modules/auto-logging'
 import { runLowercaseMigration } from './utils/migrations/lowercaseMigration'
+import { runScoreIdNormalization } from './utils/migrations/scoreIdNormalization'
 import { useBetaFeature } from './hooks/useBetaFeatures'
 import { TimerProvider } from './contexts/TimerContext'
 
@@ -92,8 +93,9 @@ function App() {
     let isMounted = true
 
     const initializeApp = async () => {
-      // Run lowercase migration for enum values
-      runLowercaseMigration()
+      // Run migrations for data consistency
+      runLowercaseMigration() // Convert enum values to lowercase
+      runScoreIdNormalization() // Normalize all score IDs
 
       // Check if user is authenticated on app load
       if (isMounted) {

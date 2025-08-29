@@ -6,6 +6,7 @@ import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { AiMetadataExtractor } from '../../services/aiMetadataExtractor'
 import { HybridAiExtractor } from '../../services/hybridAiExtractor'
+import { generateNormalizedScoreId } from '../../utils/scoreIdNormalizer'
 
 const importHandler = new Hono<{ Bindings: Env }>()
 
@@ -273,10 +274,16 @@ importHandler.post('/', async c => {
 
     // Create database record
     const db = c.env.DB
+    // Generate normalized ID for cross-service consistency
+    const normalizedId = generateNormalizedScoreId(
+      (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
+      (aiMetadata.composer as string) || 'Unknown'
+    )
+
     await db
       .prepare(
         `INSERT INTO scores (
-          id, slug, title, subtitle, composer, opus,
+          id, slug, normalized_id, title, subtitle, composer, opus,
           instrument, difficulty, difficulty_level,
           year, style_period, tags, description,
           source, source_url, pdf_url, file_name,
@@ -284,7 +291,7 @@ importHandler.post('/', async c => {
           user_id, visibility, source_type, page_count,
           created_at, updated_at
         ) VALUES (
-          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, ?,
@@ -299,6 +306,7 @@ importHandler.post('/', async c => {
           (aiMetadata.title as string) || cleanFileName,
           aiMetadata.opus as string
         ),
+        normalizedId,
         (aiMetadata.title as string) || cleanFileName.replace('.pdf', ''),
         (aiMetadata.subtitle as string) || null,
         (aiMetadata.composer as string) || 'Unknown',

@@ -361,8 +361,12 @@ scores/music-library/**/*.pdf
 mirubato-db-backup/
 backup/
 backups/
-*.sql
 *.dump
+# SQL files - only exclude backups and debug tool SQL, NOT migration files
+backups/*.sql
+mirubato-db-backup/*.sql
+tools/debug-data-fix/*.sql
+tools/debug-data-fix/**/*.sql
 
 # Debug tool specific
 tools/debug-data-fix/.env

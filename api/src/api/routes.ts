@@ -7,6 +7,10 @@ import { autocompleteHandler } from './handlers/autocomplete'
 import { repertoireHandler } from './handlers/repertoire'
 import { goalsHandler } from './handlers/goals'
 import { piecesHandler } from './handlers/pieces'
+import {
+  normalizeScoreIdBody,
+  normalizeScoreIdParam,
+} from './middleware/normalizeScoreId'
 import type { Env } from '../index'
 
 export const api = new Hono<{ Bindings: Env }>()
@@ -64,6 +68,19 @@ api.get('/', c => {
     },
   })
 })
+
+// Apply normalization middleware before handlers
+// This ensures all score IDs are normalized before reaching the handlers
+
+// Sync endpoints - normalize score IDs in request body
+api.use('/sync/*', normalizeScoreIdBody)
+
+// Repertoire endpoints - normalize score IDs in params and body
+api.use('/repertoire/:scoreId/*', normalizeScoreIdParam)
+api.use('/repertoire/*', normalizeScoreIdBody)
+
+// Pieces endpoints - normalize score IDs in body
+api.use('/pieces/*', normalizeScoreIdBody)
 
 // Mount handlers
 api.route('/auth', authHandler)

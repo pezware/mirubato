@@ -4,6 +4,7 @@ import { generateId } from '../../utils/generateId'
 import { EnhancedRateLimiter } from '../../utils/enhancedRateLimiter'
 import { HybridAiExtractor } from '../../services/hybridAiExtractor'
 import { getUserIdFromAuth } from '../../utils/auth'
+import { generateNormalizedScoreId } from '../../utils/scoreIdNormalizer'
 
 const importImagesHandler = new Hono<{ Bindings: Env }>()
 
@@ -262,9 +263,13 @@ importImagesHandler.post('/', async c => {
       extractedMetadata.opus || extractedMetadata.catalogNumber
     )
 
+    // Generate normalized ID for cross-service consistency
+    const normalizedId = generateNormalizedScoreId(finalTitle, finalComposer)
+
     // Create score record
     const score = {
       id: scoreId,
+      normalized_id: normalizedId,
       title: finalTitle,
       composer: finalComposer,
       slug,
@@ -293,14 +298,15 @@ importImagesHandler.post('/', async c => {
     // Insert score into database
     await c.env.DB.prepare(
       `INSERT INTO scores (
-        id, title, composer, slug, instrument, difficulty, difficulty_level,
+        id, normalized_id, title, composer, slug, instrument, difficulty, difficulty_level,
         source, source_type, page_count, user_id, visibility, tags, metadata,
         ai_metadata, visual_analysis, visual_confidence,
         created_at, updated_at, imported_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         score.id,
+        score.normalized_id,
         score.title,
         score.composer,
         score.slug,
