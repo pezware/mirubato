@@ -139,7 +139,7 @@ describe('scoreIdNormalization', () => {
 
       expect(isScoreIdNormalizationComplete()).toBe(true)
       expect(
-        localStorage.getItem('mirubato:score-id-normalization-v1')
+        localStorage.getItem('mirubato:score-id-normalization-v2')
       ).toBeTruthy()
     })
 
@@ -197,7 +197,7 @@ describe('scoreIdNormalization', () => {
 
       expect(isRepertoireNormalizationComplete()).toBe(true)
       expect(
-        localStorage.getItem('mirubato:repertoire-normalization-v1')
+        localStorage.getItem('mirubato:repertoire-normalization-v2')
       ).toBeTruthy()
     })
 
@@ -219,11 +219,11 @@ describe('scoreIdNormalization', () => {
     it('should clear migration flags', () => {
       // Set flags
       localStorage.setItem(
-        'mirubato:score-id-normalization-v1',
+        'mirubato:score-id-normalization-v2',
         new Date().toISOString()
       )
       localStorage.setItem(
-        'mirubato:repertoire-normalization-v1',
+        'mirubato:repertoire-normalization-v2',
         new Date().toISOString()
       )
 

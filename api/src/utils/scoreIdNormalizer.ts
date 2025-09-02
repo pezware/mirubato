@@ -64,22 +64,20 @@ export function generateNormalizedScoreId(
 ): string {
   const normalizedTitle = normalizePieceTitle(title)
 
-  if (composer) {
-    const normalizedComposer = normalizeComposer(composer)
+  // Treat empty/null/undefined composers as "Unknown"
+  const effectiveComposer = composer || 'Unknown'
+  const normalizedComposer = normalizeComposer(effectiveComposer)
 
-    // Smart delimiter selection: only use || if there's a dash in title or composer
-    // This maintains backward compatibility for existing data
-    const needsSpecialDelimiter =
-      normalizedTitle.includes('-') || normalizedComposer.includes('-')
+  // Smart delimiter selection: only use || if there's a dash in title or composer
+  // This maintains backward compatibility for existing data
+  const needsSpecialDelimiter =
+    normalizedTitle.includes('-') || normalizedComposer.includes('-')
 
-    const delimiter = needsSpecialDelimiter
-      ? SCORE_ID_DELIMITER
-      : DEFAULT_DELIMITER
+  const delimiter = needsSpecialDelimiter
+    ? SCORE_ID_DELIMITER
+    : DEFAULT_DELIMITER
 
-    return `${normalizedTitle}${delimiter}${normalizedComposer}`
-  }
-
-  return normalizedTitle
+  return `${normalizedTitle}${delimiter}${normalizedComposer}`
 }
 
 /**
@@ -331,16 +329,15 @@ export function isSameScoreWithFuzzy(
 export function normalizeExistingScoreId(scoreId: string): string {
   const parsed = parseScoreId(scoreId)
 
-  if (parsed.composer) {
-    // Reconstruct using smart delimiter selection
-    const needsSpecialDelimiter =
-      parsed.title.includes('-') || parsed.composer.includes('-')
-    const delimiter = needsSpecialDelimiter
-      ? SCORE_ID_DELIMITER
-      : DEFAULT_DELIMITER
+  // Treat empty composers as "Unknown"
+  const effectiveComposer = parsed.composer || 'unknown'
 
-    return `${parsed.title}${delimiter}${parsed.composer}`
-  }
+  // Reconstruct using smart delimiter selection
+  const needsSpecialDelimiter =
+    parsed.title.includes('-') || effectiveComposer.includes('-')
+  const delimiter = needsSpecialDelimiter
+    ? SCORE_ID_DELIMITER
+    : DEFAULT_DELIMITER
 
-  return parsed.title
+  return `${parsed.title}${delimiter}${effectiveComposer}`
 }
