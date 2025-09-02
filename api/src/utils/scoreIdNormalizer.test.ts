@@ -53,7 +53,7 @@ describe('scoreIdNormalizer', () => {
   describe('generateNormalizedScoreId', () => {
     it('should generate ID with title only', () => {
       expect(generateNormalizedScoreId('Moonlight Sonata')).toBe(
-        'moonlight sonata'
+        'moonlight sonata-unknown'
       )
     })
 
@@ -76,8 +76,10 @@ describe('scoreIdNormalizer', () => {
     })
 
     it('should handle null/undefined composer', () => {
-      expect(generateNormalizedScoreId('Piece', null)).toBe('piece')
-      expect(generateNormalizedScoreId('Piece', undefined)).toBe('piece')
+      expect(generateNormalizedScoreId('Piece', null)).toBe('piece-unknown')
+      expect(generateNormalizedScoreId('Piece', undefined)).toBe(
+        'piece-unknown'
+      )
     })
 
     it('should handle mixed case consistently', () => {
@@ -161,7 +163,7 @@ describe('scoreIdNormalizer', () => {
     })
 
     it('should handle title only', () => {
-      expect(normalizeExistingScoreId('piece')).toBe('piece')
+      expect(normalizeExistingScoreId('piece')).toBe('piece-unknown')
     })
   })
 
@@ -240,7 +242,7 @@ describe('scoreIdNormalizer', () => {
     it('should handle empty strings', () => {
       expect(normalizePieceTitle('')).toBe('')
       expect(normalizeComposer('')).toBe('')
-      expect(generateNormalizedScoreId('', '')).toBe('')
+      expect(generateNormalizedScoreId('', '')).toBe('-unknown')
     })
 
     it('should handle very long titles', () => {

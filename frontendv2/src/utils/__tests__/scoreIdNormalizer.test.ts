@@ -28,7 +28,7 @@ describe('scoreIdNormalizer', () => {
 
     it('should return just the title when no composer provided', () => {
       const result = generateNormalizedScoreId('Etude No. 1')
-      expect(result).toBe('etude no. 1')
+      expect(result).toBe('etude no. 1-unknown')
     })
 
     it('should use default delimiter for normal pieces', () => {
@@ -151,7 +151,7 @@ describe('scoreIdNormalizer', () => {
 
     it('should handle score ID without composer', () => {
       const result = normalizeExistingScoreId('just a piece title')
-      expect(result).toBe('just a piece title')
+      expect(result).toBe('just a piece title-unknown')
     })
   })
 

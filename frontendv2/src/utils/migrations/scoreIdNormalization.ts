@@ -10,8 +10,8 @@ import {
 } from '../scoreIdNormalizer'
 import { normalizeRepertoireIds } from './normalizeRepertoireIds'
 
-const MIGRATION_KEY = 'mirubato:score-id-normalization-v1'
-const REPERTOIRE_NORMALIZATION_KEY = 'mirubato:repertoire-normalization-v1'
+const MIGRATION_KEY = 'mirubato:score-id-normalization-v2' // Bumped version to re-run with new logic
+const REPERTOIRE_NORMALIZATION_KEY = 'mirubato:repertoire-normalization-v2' // Bumped version to re-run with new logic
 
 interface MigratableLogbookEntry {
   id: string
@@ -87,12 +87,16 @@ export function runScoreIdNormalization(): void {
             typeof normalizedEntry.scoreId === 'string'
           ) {
             const oldScoreId = normalizedEntry.scoreId
+            // normalizeExistingScoreId now ensures all scoreIds have a composer part
             const normalizedScoreId = normalizeExistingScoreId(oldScoreId)
 
             if (oldScoreId !== normalizedScoreId) {
               normalizedEntry.scoreId = normalizedScoreId
               scoreIdsNormalized++
               wasNormalized = true
+              console.log(
+                `[Migration] Normalized scoreId: "${oldScoreId}" -> "${normalizedScoreId}"`
+              )
             }
           }
 
