@@ -153,7 +153,7 @@ const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
 let syncDebounceTimer: NodeJS.Timeout | null = null
 
 // Helper for debouncing functions
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: never[]) => void>(
   func: T,
   wait: number
 ): T & { cancel?: () => void } {
