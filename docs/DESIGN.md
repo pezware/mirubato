@@ -4,19 +4,28 @@
 
 Mirubato is a comprehensive music education platform built on Cloudflare's edge infrastructure, designed to help musicians improve their sight-reading skills and track their practice journey. The platform combines sophisticated practice tracking, sheet music management, and advanced analytics with real-time synchronization across devices.
 
+> **📚 Note**: This document provides a high-level overview. For detailed specifications, see the [Technical Specifications](./specs/README.md).
+
+## Quick Navigation
+
+### 📖 Detailed Specifications
+
+- **[Architecture Specs](./specs/01-architecture/)** - System design, Cloudflare services, microservices, deployment
+- **[Database Specs](./specs/02-database/)** - Schemas, migrations, sync strategy
+- **[API Specs](./specs/03-api/)** - REST endpoints, WebSocket protocol, authentication
+- **[Frontend Specs](./specs/04-frontend/)** - React architecture, state management, components
+- **[Feature Specs](./specs/05-features/)** - Logbook, Scorebook, Repertoire, Analytics, Tools
+- **[Integration Specs](./specs/06-integrations/)** - IMSLP, AI services, third-party
+- **[Operations Specs](./specs/07-operations/)** - Monitoring, debugging, performance
+- **[Appendix](./specs/08-appendix/)** - Version history, roadmap, glossary
+
 ## Table of Contents
 
 1. [Current Architecture](#current-architecture)
 2. [Core Features](#core-features)
-3. [Advanced Analytics System](#advanced-analytics-system)
-4. [Services Architecture](#services-architecture)
-5. [Database Architecture](#database-architecture)
-6. [Real-time Synchronization](#real-time-synchronization)
-7. [Frontend Architecture](#frontend-architecture)
-8. [UI/UX Design System](#ui-ux-design-system)
-9. [Authentication & Security](#authentication-security)
-10. [Performance & Optimization](#performance-optimization)
-11. [Version History](#version-history)
+3. [Technology Stack](#technology-stack)
+4. [Quick Start](#quick-start)
+5. [Version History](#version-history)
 
 ## Current Architecture
 
@@ -74,949 +83,134 @@ All services run as Cloudflare Workers with the following domains:
 
 ## Core Features
 
-### 1. Practice Logbook
+Mirubato offers six major feature areas, each with comprehensive functionality:
 
-- **Manual Entry**: Detailed practice session logging with pieces, techniques, moods
-- **Timer Mode**: Real-time practice tracking with automatic pause detection
-- **Auto-logging**: Automatic session creation from other features (metronome, scorebook)
-- **Page-level Tracking**: Records which score pages are viewed during practice
-- **Session Persistence**: Survives browser restarts and network interruptions
-- **Batch Operations**: Multi-select for bulk editing and deletion
-- **Export**: CSV and JSON export with customizable date ranges
+### 1. **[Practice Logbook](./specs/05-features/logbook.md)**
 
-### 2. Advanced Analytics & Reporting
+Core practice tracking with manual entry, timer mode, auto-logging, and real-time sync.
 
-The platform includes a sophisticated analytics engine that rivals dedicated business intelligence tools:
+### 2. **[Advanced Analytics](./specs/05-features/analytics.md)**
 
-#### Report Views
+Sophisticated reporting with visualizations, custom metrics, and export capabilities.
 
-- **Overview Dashboard**: Practice streaks, consistency scores, trend visualizations
-- **Analytics View**: Advanced filtering, grouping, and custom metrics
-- **Data Table View**: Grouped data with multi-level aggregation
-- **Pieces View**: Composer and piece-specific analytics
+### 3. **[Repertoire Management](./specs/05-features/repertoire.md)**
 
-#### Visualization Components
+Track piece progress from planned to performance-ready with practice history.
 
-- **HeatmapCalendar**: GitHub-style practice visualization with daily/weekly/monthly views
-- **PracticeTrendChart**: Time series with moving averages and trend analysis
-- **DistributionPie**: Categorical breakdowns (instruments, practice types, moods)
-- **ComparativeChart**: Period-over-period comparisons (week/month/year)
-- **ProgressBar**: Goal tracking and completion visualization
+### 4. **[Sheet Music Library](./specs/05-features/scorebook.md)**
 
-#### Analytics Features
+PDF management with AI metadata extraction, IMSLP integration, and annotations.
 
-- **Filter Builder**: Complex multi-criteria filtering with AND/OR logic
-- **Grouping Panel**: Multi-level data grouping with aggregation
-- **Sorting Panel**: Multi-field sorting with custom priorities
-- **Calculated Metrics**: Consistency scores, practice frequency, session quality
-- **Filter Presets**: Save and reuse complex report configurations
-- **Export**: Charts as images, data as CSV/JSON
+### 5. **[Practice Tools](./specs/05-features/practice-tools.md)**
 
-### 3. Repertoire Management
+Metronome, Circle of Fifths, and Practice Counter with auto-logging.
 
-- **Status Tracking**: Planned → Learning → Working → Polished → Performance Ready
-- **Practice History**: Complete session history per piece
-- **Goal Integration**: Link goals to specific pieces with progress tracking
-- **Composer Canonicalization**: Standardized composer names with autocomplete
-- **Timeline View**: Visual progression of repertoire over time
-- **Duplicate Management**: Intelligent handling of duplicate pieces
-- **Wikipedia Integration**: Automatic composer information enrichment
+### 6. **[Music Dictionary](./specs/05-features/dictionary.md)**
 
-### 4. Sheet Music Library (Scorebook)
+AI-powered definitions in 6 languages with semantic search.
 
-- **Multi-format Support**: PDF, PNG, JPG, multi-page scores
-- **Import Methods**:
-  - Direct upload (drag & drop)
-  - IMSLP integration
-  - URL import
-  - Batch import
-- **AI Metadata Extraction**: Automatic title, composer, difficulty detection
-- **Collections**: Public, private, and featured collections
-- **Practice Integration**: Direct practice from score view
-- **Annotation System**: User drawings and notes on scores
-- **Privacy Controls**: Public, private, unlisted visibility
+## Technology Stack
 
-### 5. Practice Tools
+For detailed technology specifications, see:
 
-#### Metronome
+- **[Architecture Overview](./specs/01-architecture/overview.md)** - System design and principles
+- **[Cloudflare Services](./specs/01-architecture/cloudflare-services.md)** - Edge computing infrastructure
+- **[Microservices](./specs/01-architecture/microservices.md)** - Service architecture
 
-- **Pattern Support**: Standard, swing, triplet, custom patterns
-- **Visual Feedback**: Beat visualization and accent marks
-- **Auto-logging**: Optional automatic practice session creation
-- **Tempo Ranges**: 40-280 BPM with tap tempo
+## Quick Start
 
-#### Circle of Fifths
+### Local Development
 
-- **Interactive Visualization**: All 12 major and minor keys
-- **Piano Integration**: Synchronized keyboard display
-- **Audio Playback**: Chord and scale playback
-- **Theory Information**: Key signatures, scales, chord progressions
-- **Educational Content**: Characteristics and common uses
+```bash
+# Clone and install
+git clone https://github.com/pezware/mirubato.git
+cd mirubato
+pnpm install
 
-#### Practice Counter
+# Start all services
+./start-scorebook.sh
 
-- **Visual Tracking**: Repetition counting with progress indicators
-- **Session Integration**: Automatic logbook entry creation
-- **Customizable Goals**: Set target repetitions
-
-### 6. Music Dictionary
-
-- **AI-Powered Definitions**: GPT-generated explanations
-- **Multi-language Support**: Definitions in 6 languages
-- **Quality Scoring**: Automated quality assessment
-- **Semantic Search**: Find related terms using embeddings
-- **Curated Content**: Manual review queue for quality control
-- **Category Organization**: Terms grouped by musical categories
-
-## Advanced Analytics System
-
-### Architecture
-
-```typescript
-// Analytics Data Flow
-User Input → Filter Builder → Data Processing → Visualization
-                ↓                    ↓              ↓
-           Filter Presets    Grouping/Sorting   Chart Export
+# Access at:
+# Frontend: http://www-mirubato.localhost:4000
+# API: http://api-mirubato.localhost:9797
 ```
 
-### Filter System
+### Key Commands
 
-```typescript
-interface FilterCriteria {
-  field: string
-  operator: 'equals' | 'contains' | 'between' | 'in' | 'not_in'
-  value: any
-  logic?: 'AND' | 'OR'
-}
-
-interface FilterGroup {
-  criteria: FilterCriteria[]
-  groups?: FilterGroup[]
-  logic: 'AND' | 'OR'
-}
+```bash
+pnpm test                  # Run all tests
+pnpm run build            # Build for production
+pnpm run lint             # Lint code
+pnpm run type-check       # TypeScript checking
 ```
 
-### Calculated Metrics
+For detailed setup and deployment instructions, see:
 
-```typescript
-// Consistency Score Calculation
-const consistencyScore = (entries: LogbookEntry[]) => {
-  const days = getDaysInPeriod(entries)
-  const practiceDays = getUniquePracticeDays(entries)
-  const streaks = calculateStreaks(entries)
+- **[Deployment Guide](./specs/01-architecture/deployment.md)**
+- **[Development Workflow](../CLAUDE.md#development-workflow)**
 
-  return {
-    score: (practiceDays / days) * 100,
-    currentStreak: streaks.current,
-    longestStreak: streaks.longest,
-    frequency: practiceDays / days,
-  }
-}
-```
+## Services & Databases
 
-### Visualization Pipeline
+### Microservices Architecture
 
-1. **Data Collection**: Fetch from IndexedDB/API
-2. **Filtering**: Apply user-defined criteria
-3. **Aggregation**: Group and calculate metrics
-4. **Transformation**: Prepare for visualization library
-5. **Rendering**: Chart.js with responsive design
-6. **Export**: Canvas to image, data to CSV/JSON
+Mirubato consists of 5 independent services:
 
-## Services Architecture
+- **Frontend** - React SPA served via Worker
+- **API** - Core business logic and user data
+- **Scores** - PDF processing and sheet music
+- **Dictionary** - AI-powered music terms
+- **Sync Worker** - Real-time WebSocket sync
 
-### 1. Frontend Service (frontendv2)
+For detailed specifications:
 
-**Technology**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
-
-**Key Features**:
-
-- Single-page application with client-side routing
-- Offline-first with IndexedDB storage
-- Progressive Web App capabilities
-- Responsive design (mobile-first)
-- Lazy loading and code splitting
-- Internationalization (6 languages)
-
-**State Management**:
-
-```typescript
-// Zustand Stores
-authStore: Authentication and user session
-logbookStore: Practice entries and local sync
-scoreStore: Sheet music and collections
-practiceStore: Active practice sessions
-repertoireStore: Repertoire and goals
-reportingStore: Analytics preferences
-```
-
-### 2. API Service (api)
-
-**Technology**: Hono, TypeScript, D1, KV
-
-**Endpoints**:
-
-```typescript
-// Authentication
-POST   /api/auth/login
-POST   /api/auth/magic-link
-POST   /api/auth/google
-GET    /api/auth/verify
-POST   /api/auth/refresh
-POST   /api/auth/logout
-
-// Logbook
-GET    /api/logbook/entries
-POST   /api/logbook/entries
-PUT    /api/logbook/entries/:id
-DELETE /api/logbook/entries/:id
-POST   /api/logbook/sync
-GET    /api/logbook/export
-
-// Repertoire
-GET    /api/repertoire
-POST   /api/repertoire
-PUT    /api/repertoire/:id
-DELETE /api/repertoire/:id
-GET    /api/repertoire/:id/history
-
-// Goals
-GET    /api/goals
-POST   /api/goals
-PUT    /api/goals/:id
-DELETE /api/goals/:id
-POST   /api/goals/:id/progress
-
-// Sync
-POST   /api/sync/push
-GET    /api/sync/pull
-POST   /api/sync/resolve
-```
-
-**Database**: 11+ migrations managing users, sessions, logbook, repertoire, goals
-
-### 3. Scores Service (scores)
-
-**Technology**: Hono, TypeScript, D1, R2, Queues, AI
-
-**Features**:
-
-- Multi-page PDF processing
-- AI-powered metadata extraction
-- Queue-based async processing
-- Image optimization
-- IMSLP integration
-- Collection management
-
-**Processing Pipeline**:
-
-```typescript
-Upload → Queue → Process → Extract → Store → Index
-           ↓        ↓         ↓        ↓       ↓
-      Validation  Convert  AI Meta    R2    Search
-```
-
-### 4. Dictionary Service (dictionary)
-
-**Technology**: Hono, TypeScript, D1, AI, Embeddings
-
-**Features**:
-
-- GPT-4 powered definitions
-- Semantic search with embeddings
-- Multi-source content seeding
-- Quality scoring system
-- Dead letter queue for errors
-- Analytics and usage tracking
-
-**Content Pipeline**:
-
-```typescript
-Term Request → Cache Check → AI Generation → Quality Score → Store
-                    ↓             ↓              ↓           ↓
-                 KV Cache    GPT-4/Claude    Validation   D1 + Index
-```
-
-### 5. Sync Worker Service (sync-worker)
-
-**Technology**: Cloudflare Durable Objects, WebSockets, D1
-
-**Features**:
-
-- Real-time bidirectional sync
-- Conflict resolution
-- Offline queue management
-- Device presence tracking
-- Automatic reconnection
-
-**Architecture**:
-
-```typescript
-Client WebSocket → Durable Object → Broadcast to Clients
-         ↓              ↓                    ↓
-    Auth Check     State Sync         Other Devices
-```
-
-## Database Architecture
-
-### API Database Schema (mirubato-prod)
-
-```sql
--- Core Tables
-users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  primary_instrument TEXT,
-  role TEXT DEFAULT 'user', -- user, teacher, admin
-  auth_provider TEXT,
-  google_id TEXT,
-  created_at INTEGER,
-  updated_at INTEGER
-)
-
-logbook_entries (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  timestamp INTEGER NOT NULL,
-  duration INTEGER NOT NULL,
-  type TEXT CHECK(type IN ('practice','performance','lesson','rehearsal','technique')),
-  instrument TEXT,
-  pieces TEXT, -- JSON array
-  techniques TEXT, -- JSON array
-  mood TEXT CHECK(mood IN ('frustrated','neutral','satisfied','excited')),
-  notes TEXT,
-  goal_ids TEXT, -- JSON array
-  tags TEXT, -- JSON array
-  created_at INTEGER,
-  updated_at INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-)
-
-user_repertoire (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  score_id TEXT,
-  score_title TEXT NOT NULL,
-  score_composer TEXT,
-  status TEXT DEFAULT 'planned',
-  status_history TEXT, -- JSON array of status changes
-  added_at INTEGER,
-  updated_at INTEGER,
-  notes TEXT,
-  goal_ids TEXT, -- JSON array
-  practice_count INTEGER DEFAULT 0,
-  last_practiced_at INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-)
-
-goals (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT,
-  target_type TEXT, -- 'duration', 'sessions', 'pieces'
-  target_value INTEGER,
-  deadline INTEGER,
-  piece_ids TEXT, -- JSON array
-  created_at INTEGER,
-  updated_at INTEGER,
-  completed_at INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-)
-
-goal_progress (
-  id TEXT PRIMARY KEY,
-  goal_id TEXT NOT NULL,
-  date INTEGER NOT NULL,
-  value INTEGER NOT NULL,
-  notes TEXT,
-  created_at INTEGER,
-  FOREIGN KEY (goal_id) REFERENCES goals(id)
-)
-
--- Sync System Tables
-sync_data (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT NOT NULL,
-  data TEXT NOT NULL, -- JSON blob
-  version INTEGER DEFAULT 1,
-  updated_at INTEGER,
-  deleted INTEGER DEFAULT 0,
-  UNIQUE(user_id, entity_type, entity_id)
-)
-
-sync_events (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  event_type TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT NOT NULL,
-  data TEXT,
-  created_at INTEGER,
-  processed INTEGER DEFAULT 0
-)
-
-idempotency_keys (
-  key TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  created_at INTEGER
-)
-
--- Session Management
-sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  token TEXT UNIQUE NOT NULL,
-  expires_at INTEGER,
-  created_at INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-)
-```
-
-### Scores Database Schema (scores-prod)
-
-```sql
--- Score Management
-scores (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  composer TEXT,
-  normalized_composer TEXT, -- Canonicalized version
-  difficulty INTEGER,
-  genre TEXT,
-  year_composed INTEGER,
-  duration_seconds INTEGER,
-  page_count INTEGER DEFAULT 1,
-  file_url TEXT,
-  thumbnail_url TEXT,
-  source TEXT, -- 'upload', 'imslp', 'import'
-  source_url TEXT,
-  metadata TEXT, -- JSON with additional info
-  user_id TEXT,
-  visibility TEXT DEFAULT 'private', -- public, private, unlisted
-  created_at INTEGER,
-  updated_at INTEGER
-)
-
-score_pages (
-  id TEXT PRIMARY KEY,
-  score_id TEXT NOT NULL,
-  page_number INTEGER NOT NULL,
-  image_url TEXT NOT NULL,
-  thumbnail_url TEXT,
-  width INTEGER,
-  height INTEGER,
-  created_at INTEGER,
-  FOREIGN KEY (score_id) REFERENCES scores(id),
-  UNIQUE(score_id, page_number)
-)
-
-user_collections (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  visibility TEXT DEFAULT 'private',
-  featured INTEGER DEFAULT 0,
-  score_ids TEXT, -- JSON array
-  created_at INTEGER,
-  updated_at INTEGER,
-  UNIQUE(user_id, name)
-)
-
-score_annotations (
-  id TEXT PRIMARY KEY,
-  score_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  page_number INTEGER DEFAULT 1,
-  annotation_data TEXT, -- JSON with drawing data
-  created_at INTEGER,
-  updated_at INTEGER,
-  FOREIGN KEY (score_id) REFERENCES scores(id),
-  UNIQUE(score_id, user_id, page_number)
-)
-
--- Composer Canonicalization
-composers (
-  id TEXT PRIMARY KEY,
-  canonical_name TEXT UNIQUE NOT NULL,
-  aliases TEXT, -- JSON array of alternative names
-  birth_year INTEGER,
-  death_year INTEGER,
-  nationality TEXT,
-  wikipedia_url TEXT,
-  created_at INTEGER,
-  updated_at INTEGER
-)
-```
-
-### Dictionary Database Schema (dictionary-prod)
-
-```sql
--- Term Definitions
-terms (
-  id TEXT PRIMARY KEY,
-  term TEXT NOT NULL,
-  language TEXT NOT NULL,
-  definition TEXT NOT NULL,
-  category TEXT,
-  examples TEXT, -- JSON array
-  related_terms TEXT, -- JSON array
-  pronunciation TEXT,
-  etymology TEXT,
-  quality_score REAL, -- AI-generated quality metric
-  review_status TEXT DEFAULT 'pending', -- pending, approved, rejected
-  source TEXT, -- 'ai', 'manual', 'import'
-  created_at INTEGER,
-  updated_at INTEGER,
-  UNIQUE(term, language)
-)
-
-term_embeddings (
-  term_id TEXT PRIMARY KEY,
-  embedding BLOB NOT NULL, -- Vector embedding for semantic search
-  model_version TEXT,
-  created_at INTEGER,
-  FOREIGN KEY (term_id) REFERENCES terms(id)
-)
-
--- Usage Analytics
-term_searches (
-  id TEXT PRIMARY KEY,
-  term TEXT NOT NULL,
-  language TEXT,
-  user_id TEXT,
-  found INTEGER DEFAULT 1,
-  created_at INTEGER
-)
-
--- Content Management
-import_queue (
-  id TEXT PRIMARY KEY,
-  source TEXT NOT NULL,
-  data TEXT NOT NULL, -- JSON
-  status TEXT DEFAULT 'pending',
-  error_message TEXT,
-  processed_at INTEGER,
-  created_at INTEGER
-)
-
-dead_letter_queue (
-  id TEXT PRIMARY KEY,
-  original_id TEXT,
-  operation TEXT,
-  data TEXT,
-  error TEXT,
-  retry_count INTEGER DEFAULT 0,
-  created_at INTEGER
-)
-```
+- **[Microservices Architecture](./specs/01-architecture/microservices.md)**
+- **[Database Schemas](./specs/02-database/schema.md)**
+- **[API Documentation](./specs/03-api/rest-api.md)**
 
 ## Real-time Synchronization
 
-### WebSocket Architecture
+Mirubato uses WebSockets via Cloudflare Durable Objects for instant synchronization across devices:
 
-Mirubato uses Cloudflare Durable Objects for real-time synchronization, replacing the previous polling-based approach:
+- **Protocol**: WebSocket with JWT authentication
+- **Latency**: < 50ms globally
+- **Conflict Resolution**: Last-write-wins with timestamps
+- **Offline Support**: Queue with automatic retry
 
-```typescript
-// Client Connection Flow
-1. User authenticates → Receives JWT
-2. WebSocket connects to sync.mirubato.com
-3. Durable Object validates JWT
-4. Client joins user's sync room
-5. Bidirectional sync established
-```
+For implementation details:
 
-### Sync Protocol
-
-```typescript
-interface SyncMessage {
-  type: 'SYNC_EVENT' | 'BULK_SYNC' | 'PING' | 'PONG'
-  data: {
-    event?: {
-      type: 'ENTRY_CREATED' | 'ENTRY_UPDATED' | 'ENTRY_DELETED'
-      entity: 'logbook' | 'repertoire' | 'goals'
-      payload: any
-    }
-    entries?: LogbookEntry[]
-    timestamp: number
-  }
-}
-```
-
-### Conflict Resolution
-
-```typescript
-// Last-Write-Wins with Timestamp
-const resolveConflict = (local: Entry, remote: Entry): Entry => {
-  // Compare timestamps
-  if (remote.updated_at > local.updated_at) {
-    return remote
-  }
-
-  // Local wins on tie (optimistic UI)
-  return local
-}
-```
-
-### Offline Queue
-
-```typescript
-class OfflineQueue {
-  private queue: SyncEvent[] = []
-
-  add(event: SyncEvent) {
-    this.queue.push(event)
-    this.persist()
-  }
-
-  async flush() {
-    while (this.queue.length > 0) {
-      const event = this.queue.shift()
-      await this.send(event)
-    }
-  }
-
-  private persist() {
-    localStorage.setItem('sync_queue', JSON.stringify(this.queue))
-  }
-}
-```
-
-## Frontend Architecture
-
-### Component Organization
-
-```
-src/components/
-├── ui/                 # Design system components
-│   ├── Button.tsx
-│   ├── Modal.tsx
-│   ├── Card.tsx
-│   └── Typography.tsx
-├── layout/            # Layout components
-│   ├── AppLayout.tsx
-│   ├── UnifiedHeader.tsx
-│   └── BottomTabs.tsx
-├── logbook/           # Logbook feature
-│   ├── LogbookEntryList.tsx
-│   ├── ManualEntryForm.tsx
-│   └── TechniqueSelector.tsx
-├── practice-reports/  # Analytics feature
-│   ├── views/
-│   ├── visualizations/
-│   └── advanced/
-├── repertoire/        # Repertoire feature
-│   ├── RepertoireCard.tsx
-│   ├── RepertoireTimeline.tsx
-│   └── EditPieceModal.tsx
-├── score/             # Scorebook feature
-│   ├── ScoreViewer.tsx
-│   ├── PdfViewer.tsx
-│   └── ImportScoreModal.tsx
-└── auth/              # Authentication
-    ├── SignInModal.tsx
-    └── GoogleSignInButton.tsx
-```
-
-### State Management
-
-```typescript
-// Zustand Store Pattern
-interface LogbookStore {
-  entries: Map<string, LogbookEntry>
-  isLoading: boolean
-  error: string | null
-
-  // Actions
-  addEntry: (entry: LogbookEntry) => void
-  updateEntry: (id: string, updates: Partial<LogbookEntry>) => void
-  deleteEntry: (id: string) => void
-  syncEntries: () => Promise<void>
-
-  // Computed
-  getEntriesByDate: (date: string) => LogbookEntry[]
-  getTotalPracticeTime: () => number
-}
-```
-
-### Data Flow
-
-```
-User Action → Component → Store Action → API Call → Store Update → UI Update
-                              ↓                           ↓
-                        Local Storage              WebSocket Sync
-```
-
-## UI/UX Design System
-
-### Typography System (v1.7.6)
-
-Mirubato uses a carefully researched three-font typography system optimized for multilingual support:
-
-```scss
-// Font Families
-$font-serif: 'Noto Serif'    // Music content (titles, composers)
-$font-sans: 'Inter'           // UI elements and body text
-$font-display: 'Lexend'       // Headers and section titles
-
-// Usage via Components
-<MusicTitle>Moonlight Sonata</MusicTitle>       // Noto Serif
-<MusicComposer>Beethoven</MusicComposer>         // Noto Serif
-<Typography variant="h1">Practice Log</Typography> // Lexend
-<Typography variant="body">Settings</Typography>   // Inter
-```
-
-### Color System (Morandi Palette)
-
-```scss
-// Primary Colors
-$stone: #8B8680        // Primary UI elements
-$sage: #87A96B         // Success, positive actions
-$sand: #C2B280         // Warnings, featured content
-$slate: #708090        // Neutral, disabled states
-
-// Semantic Colors
-$success: $sage
-$warning: $sand
-$error: #CD5C5C        // Soft red for errors
-$info: $slate
-
-// Background Colors
-$bg-primary: #FAFAF8   // Main background
-$bg-secondary: #F5F5F0 // Card backgrounds
-$bg-tertiary: #EFEFEA  // Subtle differences
-```
-
-### Component Library
-
-All components follow consistent patterns:
-
-```typescript
-// Component Structure
-interface ComponentProps {
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-  children: React.ReactNode
-}
-
-// Accessibility
-- ARIA labels on all interactive elements
-- Keyboard navigation support
-- Focus management
-- Screen reader announcements
-```
-
-### Responsive Design
-
-```scss
-// Breakpoints
-$mobile: 640px
-$tablet: 768px
-$desktop: 1024px
-$wide: 1280px
-
-// Mobile-First Approach
-.component {
-  // Mobile styles (default)
-  padding: 1rem;
-
-  @media (min-width: $tablet) {
-    padding: 1.5rem;
-  }
-
-  @media (min-width: $desktop) {
-    padding: 2rem;
-  }
-}
-```
-
-## Authentication & Security
-
-### Authentication Flow
-
-```typescript
-// 1. Magic Link Flow
-POST /api/auth/magic-link { email }
-  → Send email with token
-  → User clicks link
-GET /api/auth/verify?token={token}
-  → Validate token
-  → Create session
-  → Return JWT
-
-// 2. Google OAuth Flow
-POST /api/auth/google { credential }
-  → Verify with Google
-  → Create/update user
-  → Create session
-  → Return JWT
-```
-
-### JWT Token Structure
-
-```typescript
-interface JWTPayload {
-  sub: string // User ID
-  email: string
-  role: 'user' | 'teacher' | 'admin'
-  iat: number // Issued at
-  exp: number // Expiration
-}
-```
-
-### Security Measures
-
-1. **Token Security**:
-   - Short-lived access tokens (1 hour)
-   - Refresh tokens for seamless re-auth
-   - Secure HttpOnly cookies
-   - CSRF protection
-
-2. **Data Protection**:
-   - User data isolation via foreign keys
-   - Row-level security in database
-   - Input validation with Zod
-   - SQL injection prevention
-
-3. **Rate Limiting**:
-   - API rate limiting per user
-   - Progressive backoff for failures
-   - DDoS protection via Cloudflare
-
-4. **Privacy Controls**:
-   - User-controlled data visibility
-   - GDPR compliance
-   - Data export functionality
-   - Account deletion support
-
-## Performance & Optimization
-
-### Frontend Optimization
-
-```typescript
-// Code Splitting
-const ScoreViewer = lazy(() => import('./components/score/ScoreViewer'))
-const Reports = lazy(() => import('./components/practice-reports'))
-
-// Bundle Optimization
-- Vendor chunks for caching
-- Tree shaking for unused code
-- Minification and compression
-- Asset optimization (WebP, lazy loading)
-```
-
-### Edge Caching Strategy
-
-```typescript
-// Cache Headers
-interface CacheStrategy {
-  'static-assets': 'public, max-age=31536000, immutable' // 1 year
-  'api-public': 'public, max-age=60, s-maxage=300' // 1 min client, 5 min edge
-  'api-private': 'private, no-cache' // No caching
-  images: 'public, max-age=86400, s-maxage=2592000' // 1 day client, 30 days edge
-}
-```
-
-### Database Performance
-
-```sql
--- Indexes for Common Queries
-CREATE INDEX idx_logbook_user_timestamp ON logbook_entries(user_id, timestamp DESC);
-CREATE INDEX idx_repertoire_user_status ON user_repertoire(user_id, status);
-CREATE INDEX idx_goals_user_deadline ON goals(user_id, deadline);
-CREATE INDEX idx_scores_composer ON scores(normalized_composer);
-```
-
-### Performance Metrics
-
-| Metric                 | Target  | Actual |
-| ---------------------- | ------- | ------ |
-| First Contentful Paint | < 1.5s  | 1.2s   |
-| Time to Interactive    | < 3.0s  | 2.8s   |
-| API Response Time      | < 100ms | 85ms   |
-| WebSocket Latency      | < 50ms  | 35ms   |
-| Bundle Size (gzipped)  | < 200KB | 185KB  |
+- **[WebSocket Protocol](./specs/03-api/websocket.md)**
+- **[Sync Strategy](./specs/02-database/sync-strategy.md)**
 
 ## Version History
 
-### v1.7.6 (December 2024) - Current Production
+### Current: v1.7.6 (December 2024)
 
-- **Real-time WebSocket Sync**: Replaced polling with Durable Objects
-- **Advanced Analytics**: Complete reporting and visualization system
-- **Typography Unification**: Three-font system with semantic components
-- **Enhanced Practice Tracking**: Page-level tracking, pause detection
-- **Performance Optimizations**: 40% reduction in font loading
+- Real-time WebSocket synchronization
+- Advanced analytics and reporting
+- Unified typography system
+- Enhanced practice tracking
 
-### v1.7.5 (November 2024)
+For complete version history and roadmap:
 
-- **Repertoire System**: Status tracking with history
-- **Goals Integration**: Link goals to pieces
-- **Composer Canonicalization**: Standardized names
-- **Mobile UI Improvements**: Better responsive design
+- **[Version History](./specs/08-appendix/version-history.md)**
+- **[Future Roadmap](./specs/08-appendix/roadmap.md)**
 
-### v1.7.0 (October 2024)
+## Additional Resources
 
-- **UI Redesign**: New layout with sidebar/bottom tabs
-- **Practice Timer**: Integrated timer with auto-logging
-- **Circle of Fifths**: Interactive music theory tool
-- **Dictionary Service**: AI-powered term definitions
+### Developer Documentation
 
-### v1.6.0 (September 2024)
+- **[CLAUDE.md](../CLAUDE.md)** - Development guidelines and commands
+- **[Contributing Guide](../../CONTRIBUTING.md)** - How to contribute
+- **[API Reference](./API.md)** - Quick API reference
 
-- **Scorebook Launch**: PDF/image management
-- **Collections**: Public and private collections
-- **IMSLP Integration**: Direct import from IMSLP
-- **AI Metadata**: Automatic extraction
+### Operations
 
-### v1.5.0 (August 2024)
-
-- **Authentication**: Magic links and Google OAuth
-- **Offline Support**: IndexedDB and sync queue
-- **Internationalization**: 6 language support
-- **PWA Features**: Installable app
-
-### v1.0.0 (July 2024)
-
-- **Initial Release**: Basic logbook functionality
-- **Manual Entry**: Simple practice logging
-- **CSV Export**: Data export capability
-
-## Future Roadmap
-
-### Phase 2: Practice Mode (Q1 2025)
-
-- Real-time sheet music display with VexFlow
-- Audio recording and playback with Tone.js
-- Performance analysis and feedback
-- MIDI device integration
-
-### Phase 3: Social Features (Q2 2025)
-
-- Teacher-student connections
-- Practice groups and challenges
-- Performance sharing
-- Community repertoire recommendations
-
-### Phase 4: AI Coach (Q3 2025)
-
-- Personalized practice recommendations
-- Technique analysis via audio/video
-- Adaptive difficulty adjustment
-- Progress predictions
-
-## Conclusion
-
-Mirubato has evolved from a simple practice logging app into a comprehensive music education platform. The architecture leverages Cloudflare's edge infrastructure to provide global performance, real-time synchronization, and sophisticated analytics while maintaining simplicity and usability for musicians of all levels.
-
-The platform's success lies in its pragmatic approach: using proven technologies, focusing on user needs, and iterating based on feedback. The microservices architecture allows independent scaling and development while the edge-first approach ensures excellent performance worldwide.
-
-For developers, the codebase maintains high standards with comprehensive testing, type safety, and clear documentation. The component library and design system ensure consistency while the analytics engine provides insights that help musicians improve their practice.
+- **[Monitoring](./specs/07-operations/monitoring.md)** - Health checks and metrics
+- **[Debugging](./specs/07-operations/debugging.md)** - Debug strategies
+- **[Performance](./specs/07-operations/performance.md)** - Optimization techniques
 
 ---
 
-_This document reflects the current state of Mirubato v1.7.6 as of December 2024. For implementation details, see the codebase and API documentation._
+> **📚 Summary**: This document provides a high-level overview of Mirubato's architecture. For detailed technical specifications, implementation details, and comprehensive documentation, please refer to the [Technical Specifications](./specs/README.md) folder.
+
+_Last updated: Sept 2025 | Version 1.7.6_

@@ -2,7 +2,13 @@
 
 ## Overview
 
-Based on the focused UI design approach, this document outlines how to implement a consistent layout across all sections of Mirubato: Logbook, Scorebook, Toolbox, and Data Tables.
+This document provides a high-level overview of Mirubato's layout patterns and design system. For detailed technical specifications, please refer to the modular documentation in the specs folder.
+
+> **📚 Detailed Specifications**:
+>
+> - **[UI Design System](./specs/04-frontend/ui-design-system.md)** - Colors, typography, and component patterns
+> - **[Layout Patterns](./specs/04-frontend/layout-patterns.md)** - Layout structure and navigation
+> - **[Responsive Design](./specs/04-frontend/responsive-design.md)** - Breakpoints and mobile patterns
 
 ## Core Layout Structure
 
@@ -152,90 +158,41 @@ Based on the focused UI design approach, this document outlines how to implement
 - Sticky column headers
 ```
 
-## Design Tokens
+## Current Implementation (v1.7.6)
 
-### Colors
+### Design System
 
-```css
-:root {
-  --sidebar-bg: #fafafa;
-  --sidebar-border: #e5e5e5;
-  --sidebar-text: #666666;
-  --sidebar-active-bg: #e8e8e8;
-  --sidebar-active-text: #1a1a1a;
+Mirubato uses a sophisticated **Morandi color palette** with muted, harmonious tones:
 
-  --topbar-bg: #ffffff;
-  --topbar-border: #e5e5e5;
-
-  --content-bg: #fafafa;
-  --card-bg: #ffffff;
-  --card-border: #e5e5e5;
-
-  --primary: #22c55e;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-}
-```
-
-### Spacing
-
-```css
-:root {
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-
-  --sidebar-width: 240px;
-  --topbar-height: 64px;
-  --topbar-height-mobile: 56px;
-  --bottom-tabs-height: 56px;
-}
-```
+- **Primary**: Sage green for actions and success states
+- **Neutral**: Stone colors for text and borders
+- **Accent**: Sand, blush, and sky tones for various UI states
 
 ### Typography
 
-```css
-:root {
-  --font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+Three-font system optimized for multilingual support:
 
-  --text-xs: 12px;
-  --text-sm: 14px;
-  --text-base: 15px;
-  --text-lg: 18px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
+- **Noto Serif**: Music content (titles, composers)
+- **Inter**: UI elements and body text
+- **Lexend**: Headers and navigation
 
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-}
-```
+For complete design token specifications, see **[UI Design System](./specs/04-frontend/ui-design-system.md)**.
 
-## Responsive Breakpoints
+## Responsive Design
 
-```css
-/* Mobile First Approach */
-/* Phones: 0-767px */
-/* Tablets/iPads: 768px+ (show desktop layout) */
-@media (min-width: 768px) {
-  /* Tablet/iPad and desktop styles */
-}
+### Breakpoint System
 
-@media (min-width: 1024px) {
-  /* Desktop styles */
-}
+Mirubato uses Tailwind CSS breakpoints with mobile-first approach:
 
-@media (min-width: 1440px) {
-  /* Large desktop styles */
-}
+- **Base**: < 640px (Mobile)
+- **sm**: ≥ 640px (Large phones)
+- **md**: ≥ 768px (Tablets - layout switch point)
+- **lg**: ≥ 1024px (Desktops)
+- **xl**: ≥ 1280px (Large desktops)
 
-/* For hiding desktop elements on mobile */
-@media (max-width: 767px) {
-  /* Phone-only styles */
-}
-```
+**Key transition at 768px**: Switch from bottom tabs to sidebar navigation.
+
+For detailed responsive patterns, see **[Responsive Design](./specs/04-frontend/responsive-design.md)**.
 
 ## Implementation Guidelines
 
@@ -267,45 +224,44 @@ Based on the focused UI design approach, this document outlines how to implement
 - **Debounce**: Search inputs (300ms)
 - **Optimistic updates**: For better perceived performance
 
-## Migration Strategy
+## Implementation Status
 
-1. **Phase 1**: Update navigation structure
-   - Implement new sidebar and top bar
-   - Add bottom tabs for mobile
+### ✅ Completed
 
-2. **Phase 2**: Update individual sections
-   - Start with Logbook (most used)
-   - Then Scorebook, Toolbox, Data Tables
+- Desktop sidebar navigation with collapse state
+- Mobile bottom tab navigation
+- Responsive layout switching at 768px
+- Morandi color palette implementation
+- Three-font typography system
+- Consistent spacing using 8px base unit
 
-3. **Phase 3**: Polish and optimize
-   - Add transitions and micro-interactions
-   - Optimize for performance
-   - User testing and feedback
+### 🚧 In Progress
 
-## Example Component Structure
+- Component library standardization
+- Dark mode preparation (infrastructure in place)
+- Performance optimizations
 
-```typescript
-// Layout wrapper component
-interface LayoutProps {
-  sidebar: 'logbook' | 'scorebook' | 'toolbox' | 'reports'
-  children: React.ReactNode
-}
+### 📋 Planned
 
-function AppLayout({ sidebar, children }: LayoutProps) {
-  return (
-    <div className="app-layout">
-      <Sidebar type={sidebar} />
-      <div className="main-container">
-        <TopBar />
-        <main className="content">
-          {children}
-        </main>
-      </div>
-      <MobileTabBar />
-    </div>
-  )
-}
-```
+- Container queries for component-level responsiveness
+- Advanced animation patterns
+- Accessibility audit and improvements
+
+## Key Implementation Files
+
+### Layout Components
+
+- `frontendv2/src/components/layout/AppLayout.tsx` - Main layout wrapper
+- `frontendv2/src/components/layout/Sidebar.tsx` - Desktop navigation
+- `frontendv2/src/components/layout/BottomTabs.tsx` - Mobile navigation
+- `frontendv2/src/components/layout/TopBar.tsx` - Header component
+
+### Configuration
+
+- `frontendv2/tailwind.config.js` - Design tokens and theme
+- `frontendv2/src/styles/index.css` - Global styles and utilities
+
+For implementation details, see **[Layout Patterns](./specs/04-frontend/layout-patterns.md)**.
 
 ## Accessibility Requirements
 
@@ -315,13 +271,43 @@ function AppLayout({ sidebar, children }: LayoutProps) {
 - **Focus Indicators**: Visible focus states for all interactive elements
 - **Mobile**: Touch targets minimum 44x44px
 
-## Next Steps
+## Quick Reference
 
-1. Review and approve these patterns
-2. Create shared layout components
-3. Update each section incrementally
-4. Test on various devices
-5. Gather user feedback
-6. Iterate and refine
+### Layout Dimensions
 
-This unified approach will create a consistent, professional experience across all of Mirubato while maintaining the clean, focused aesthetic users prefer.
+```scss
+// Desktop
+$sidebar-width: 240px;
+$topbar-height: 64px;
+
+// Mobile
+$mobile-header-height: 56px;
+$bottom-tabs-height: 56px;
+```
+
+### Common Patterns
+
+```tsx
+// Responsive grid
+className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+
+// Mobile-first spacing
+className = 'p-4 md:p-6 lg:p-8'
+
+// Conditional display
+className = 'hidden md:block' // Desktop only
+className = 'md:hidden' // Mobile only
+```
+
+## Related Documentation
+
+- **[Technical Specifications](./specs/README.md)** - Complete documentation index
+- **[Frontend Architecture](./specs/04-frontend/architecture.md)** - React architecture
+- **[Component Library](./specs/04-frontend/components.md)** - Component documentation
+- **[Feature Specifications](./specs/05-features/)** - Feature-specific layouts
+
+---
+
+> **Note**: This document serves as a quick reference. For detailed specifications and implementation guidelines, please refer to the linked documentation in the specs folder.
+
+_Last updated: December 2024 | Version 1.7.6_
