@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test'
+import { Page, expect } from '../playwright.base'
 import { waitForTabContent, waitForAnimations } from '../helpers/wait-helpers'
 
 export class LogbookPage {

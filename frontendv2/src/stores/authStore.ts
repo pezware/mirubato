@@ -280,6 +280,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       })
 
+      // Clear lastSyncTime to force full sync on WebSocket connection
+      localStorage.removeItem('mirubato:lastSyncTime')
+
       // Set to online mode and trigger sync after successful authentication
       try {
         // Defensive store access
@@ -382,6 +385,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       })
+
+      // Clear lastSyncTime to force full sync on WebSocket connection
+      localStorage.removeItem('mirubato:lastSyncTime')
 
       // Set to online mode and sync logbook after successful Google login
       try {
@@ -641,6 +647,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthInitialized: true,
           refreshPromise: null,
         })
+
+        // Clear lastSyncTime to force full sync on WebSocket connection
+        localStorage.removeItem('mirubato:lastSyncTime')
 
         // Set to online mode when authenticated
         try {

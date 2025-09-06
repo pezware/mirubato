@@ -1,5 +1,15 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import { vi, afterEach } from 'vitest'
+
+// Automatically cleanup after each test to prevent memory leaks
+afterEach(() => {
+  cleanup()
+  // Clear all mocks to prevent memory leaks from retained mock data
+  vi.clearAllMocks()
+  // Reset localStorage to prevent test interference
+  localStorage.clear()
+})
 
 // Mock localStorage with actual storage functionality
 class LocalStorageMock {
