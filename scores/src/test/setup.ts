@@ -1,25 +1,22 @@
 import { vi, afterEach, beforeEach } from 'vitest'
 
 // Mock environment variables
-vi.stubEnv('JWT_SECRET', 'test-jwt-secret')
-vi.stubEnv('MAGIC_LINK_SECRET', 'test-magic-link-secret')
-vi.stubEnv('GOOGLE_CLIENT_ID', 'test-google-client-id')
 vi.stubEnv('ENVIRONMENT', 'test')
+vi.stubEnv('JWT_SECRET', 'test-jwt-secret-that-is-long-enough-for-validation')
+vi.stubEnv('API_SERVICE_URL', 'https://api.mirubato.com')
 
 // Mock Cloudflare Workers globals
 Object.defineProperty(globalThis, 'crypto', {
   value: {
     subtle: {
       digest: vi.fn(async (algorithm: string, data: ArrayBuffer) => {
-        // Simple mock implementation that generates different hashes for different inputs
+        // Simple mock implementation
         const view = new Uint8Array(data)
         let hash = 0
         for (let i = 0; i < view.length; i++) {
           hash = (hash << 5) - hash + view[i]
-          hash = hash & hash // Convert to 32bit integer
+          hash = hash & hash
         }
-
-        // Create a 32-byte array with values based on the hash
         const result = new ArrayBuffer(32)
         const resultView = new Uint8Array(result)
         for (let i = 0; i < 32; i++) {
@@ -28,13 +25,24 @@ Object.defineProperty(globalThis, 'crypto', {
         return result
       }),
     } as unknown as SubtleCrypto,
+    // codeql[js/insecure-randomness]: This is test code - cryptographic security not required for test mocks
     getRandomValues: vi.fn((arr: any) => {
-      // Simple mock - fill with pseudo-random values
       for (let i = 0; i < arr.length; i++) {
         arr[i] = Math.floor(Math.random() * 256)
       }
       return arr
     }),
+    // codeql[js/insecure-randomness]: This is test code - cryptographic security not required for test UUIDs
+    randomUUID: () => {
+      const hex = '0123456789abcdef'
+      let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+      uuid = uuid.replace(/[xy]/g, c => {
+        const r = Math.floor(Math.random() * 16)
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
+        return hex[v]
+      })
+      return uuid
+    },
   },
   writable: true,
   configurable: true,
@@ -42,6 +50,10 @@ Object.defineProperty(globalThis, 'crypto', {
 
 // Setup fetch mock
 global.fetch = vi.fn()
+
+// Add TextEncoder/TextDecoder for Node environment
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
 
 // Reset mocks before each test
 beforeEach(() => {

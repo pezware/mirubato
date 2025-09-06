@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './playwright.base'
 import { LogbookPage } from './pages/LogbookPage'
 import {
   setPrivacyConsentInBrowser,

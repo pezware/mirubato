@@ -7,6 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0, // Reduce retries to save time
   workers: process.env.CI ? 2 : undefined, // Optimized for 2 shards in CI
   reporter: process.env.CI ? [['list'], ['html']] : 'html',
+  globalSetup: './tests/e2e/global-setup.ts',
   timeout: 60000, // Increase global timeout to 60 seconds for complex tests
   use: {
     baseURL: 'http://localhost:4000',

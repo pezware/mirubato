@@ -1,36 +1,45 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import app from '../index'
 
 // Mock environment bindings
-const mockEnv = {
-  ENVIRONMENT: 'test',
-  API_SERVICE_URL: 'https://api.mirubato.com',
-  JWT_SECRET: 'test-jwt-secret-that-is-long-enough-for-validation',
-  DB: {
-    prepare: () => ({
-      first: async () => ({ count: 5 }),
-      all: async () => ({ results: [] }),
-      run: async () => ({ success: true }),
-    }),
-  },
-  SCORES_BUCKET: {
-    list: async () => ({ objects: [] }),
-    put: async () => {},
-    get: async () => null,
-    delete: async () => {},
-  },
-  CACHE: {
-    get: async (key: string) => {
-      if (key === '__health_check_test') return '{"timestamp": 123}'
-      return null
-    },
-    put: async () => {},
-    delete: async () => {},
-    list: async () => ({ keys: [] }),
-  },
-}
+let mockEnv: any
 
 describe('Scores API', () => {
+  beforeEach(() => {
+    // Reset mock environment for each test
+    mockEnv = {
+      ENVIRONMENT: 'test',
+      API_SERVICE_URL: 'https://api.mirubato.com',
+      JWT_SECRET: 'test-jwt-secret-that-is-long-enough-for-validation',
+      DB: {
+        prepare: () => ({
+          first: async () => ({ count: 5 }),
+          all: async () => ({ results: [] }),
+          run: async () => ({ success: true }),
+        }),
+      },
+      SCORES_BUCKET: {
+        list: async () => ({ objects: [] }),
+        put: async () => {},
+        get: async () => null,
+        delete: async () => {},
+      },
+      CACHE: {
+        get: async (key: string) => {
+          if (key === '__health_check_test') return '{"timestamp": 123}'
+          return null
+        },
+        put: async () => {},
+        delete: async () => {},
+        list: async () => ({ keys: [] }),
+      },
+    }
+  })
+
+  afterEach(() => {
+    // Clear mock environment
+    mockEnv = null
+  })
   it('should return health check', async () => {
     const response = await app.fetch(
       new Request('http://localhost/health'),
