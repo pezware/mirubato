@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { CloudflareAiExtractor } from '../cloudflareAiExtractor'
 import { ImageAnalysisRequest } from '../../types/ai'
 
@@ -13,6 +13,15 @@ describe('CloudflareAiExtractor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     extractor = new CloudflareAiExtractor(mockAi as any)
+  })
+
+  afterEach(() => {
+    // Clear all mocks and reset
+    vi.clearAllMocks()
+    mockAi.run.mockReset()
+
+    // Clear extractor instance
+    extractor = null as any
   })
 
   describe('extractFromImage', () => {

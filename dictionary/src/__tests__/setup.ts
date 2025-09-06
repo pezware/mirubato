@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, afterEach, beforeEach } from 'vitest'
 
 // Mock console methods to avoid noise in tests
 global.console = {
@@ -60,3 +60,47 @@ global.fetch = vi.fn()
 // Add TextEncoder/TextDecoder for Node environment
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
+
+// Reset mocks before each test
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+// Comprehensive cleanup after each test to prevent memory leaks
+afterEach(() => {
+  // Clear all mocks and timers
+  vi.clearAllMocks()
+  vi.clearAllTimers()
+  // Note: vi.restoreAllMocks() removed as it breaks module-level mocks
+  // vi.clearAllMocks() is sufficient for clearing call history
+
+  // Clear any intervals or timeouts that might be running
+  for (let i = 1; i < 99999; i++) {
+    clearInterval(i)
+    clearTimeout(i)
+  }
+
+  // Reset fetch mock
+  if (global.fetch && typeof global.fetch === 'function') {
+    ;(global.fetch as any).mockReset?.()
+  }
+
+  // Clear console mocks
+  if (global.console.log && typeof global.console.log === 'function') {
+    ;(global.console.log as any).mockClear?.()
+  }
+  if (global.console.warn && typeof global.console.warn === 'function') {
+    ;(global.console.warn as any).mockClear?.()
+  }
+  if (global.console.info && typeof global.console.info === 'function') {
+    ;(global.console.info as any).mockClear?.()
+  }
+  if (global.console.debug && typeof global.console.debug === 'function') {
+    ;(global.console.debug as any).mockClear?.()
+  }
+
+  // Force garbage collection if available (requires --expose-gc flag)
+  if (global.gc) {
+    global.gc()
+  }
+})

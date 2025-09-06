@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Hono } from 'hono'
 import { syncHandler } from './sync'
 import type { Env } from '../../index'
@@ -46,6 +46,18 @@ describe('Sync Handlers', () => {
     vi.clearAllMocks()
     app = new Hono<{ Bindings: Env; Variables: Variables }>()
     app.route('/api/sync', syncHandler)
+  })
+
+  afterEach(() => {
+    // Clear all mocks and reset mock implementations
+    vi.clearAllMocks()
+    mockDbInstance.getSyncData.mockReset()
+    mockDbInstance.getSyncMetadata.mockReset()
+    mockDbInstance.upsertSyncData.mockReset()
+    mockDbInstance.updateSyncMetadata.mockReset()
+
+    // Clear app instance
+    app = null as any
   })
 
   describe('POST /api/sync/pull', () => {
