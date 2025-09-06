@@ -241,6 +241,31 @@ export function sanitizeEntry(
   }
 }
 
+// Helper function to sanitize and validate repertoire item data
+export function sanitizeRepertoireItem(
+  item: unknown
+): z.infer<typeof RepertoireItemSchema> | null {
+  try {
+    // Parse and validate
+    const validated = RepertoireItemSchema.parse(item)
+
+    // Normalize status to lowercase
+    if (validated.status) {
+      validated.status = validated.status.toLowerCase() as z.infer<
+        typeof RepertoireItemSchema
+      >['status']
+    }
+
+    // Handle field name transformations if needed
+    // (scoreId ↔ score_id is handled in the sync handlers)
+
+    return validated
+  } catch (error) {
+    console.error('Repertoire item validation failed:', error)
+    return null
+  }
+}
+
 // Helper function to validate sync events
 export function validateSyncEvent(
   event: unknown
