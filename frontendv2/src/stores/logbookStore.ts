@@ -147,6 +147,32 @@ const mapToSortedArray = <T extends { createdAt: string }>(
   )
 }
 
+// Safe localStorage helpers for sync operations
+const readEntriesFromDisk = (): Map<string, LogbookEntry> => {
+  try {
+    const raw = localStorage.getItem(ENTRIES_KEY)
+    if (!raw) return new Map()
+    const entries: LogbookEntry[] = JSON.parse(raw)
+    return new Map(entries.map(entry => [entry.id, entry]))
+  } catch (error) {
+    console.error('Failed to read entries from disk:', error)
+    return new Map()
+  }
+}
+
+const writeEntriesMapToDisk = (
+  map: Map<string, LogbookEntry>,
+  immediate = false
+): void => {
+  const entries = Array.from(map.values())
+  const payload = JSON.stringify(entries)
+  if (immediate) {
+    immediateLocalStorageWrite(ENTRIES_KEY, payload)
+  } else {
+    debouncedLocalStorageWrite(ENTRIES_KEY, payload)
+  }
+}
+
 // Helper to check if entries are effectively the same
 const entriesAreEqual = (a: LogbookEntry, b: LogbookEntry): boolean => {
   // Compare relevant fields (exclude timestamps that might differ slightly)
@@ -842,7 +868,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   addEntryFromSync: (entry: LogbookEntry) => {
-    const newEntriesMap = new Map(get().entriesMap)
+    // Start with in-memory map, but hydrate from disk if empty
+    let newEntriesMap = new Map(get().entriesMap)
+    if (newEntriesMap.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newEntriesMap = readEntriesFromDisk()
+    }
 
     // Avoid duplicates and don't overwrite newer local entries
     const existingEntry = newEntriesMap.get(entry.id)
@@ -856,17 +887,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       }
     }
 
+    // Update UI state
     newEntriesMap.set(entry.id, entry)
     set({
       entriesMap: newEntriesMap,
       entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
     })
 
-    // Update localStorage
-    debouncedLocalStorageWrite(
-      ENTRIES_KEY,
-      JSON.stringify(Array.from(newEntriesMap.values()))
-    )
+    // Persist to localStorage by merging with existing disk data
+    const diskMap = readEntriesFromDisk()
+    diskMap.set(entry.id, entry)
+    writeEntriesMapToDisk(diskMap, false) // Use debounced write for add
 
     // Show toast notification if it's a new entry
     if (!existingEntry) {
@@ -878,7 +909,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   updateEntryFromSync: (entry: LogbookEntry) => {
-    const newEntriesMap = new Map(get().entriesMap)
+    // Start with in-memory map, but hydrate from disk if empty
+    let newEntriesMap = new Map(get().entriesMap)
+    if (newEntriesMap.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newEntriesMap = readEntriesFromDisk()
+    }
 
     // Only update if the incoming entry is newer
     const existingEntry = newEntriesMap.get(entry.id)
@@ -890,17 +926,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       return // Local entry is newer, ignore
     }
 
+    // Update UI state
     newEntriesMap.set(entry.id, entry)
     set({
       entriesMap: newEntriesMap,
       entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
     })
 
-    // Update localStorage
-    debouncedLocalStorageWrite(
-      ENTRIES_KEY,
-      JSON.stringify(Array.from(newEntriesMap.values()))
-    )
+    // Persist to localStorage by merging with existing disk data
+    const diskMap = readEntriesFromDisk()
+    diskMap.set(entry.id, entry)
+    writeEntriesMapToDisk(diskMap, false) // Use debounced write for update
 
     console.log(
       '📝 Practice entry updated from another device:',
@@ -909,21 +945,27 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 
   removeEntryFromSync: (entryId: string) => {
-    const newEntriesMap = new Map(get().entriesMap)
+    // Start with in-memory map, but hydrate from disk if empty
+    let newEntriesMap = new Map(get().entriesMap)
+    if (newEntriesMap.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newEntriesMap = readEntriesFromDisk()
+    }
+
     const removedEntry = newEntriesMap.get(entryId)
 
     if (removedEntry) {
+      // Update UI state
       newEntriesMap.delete(entryId)
       set({
         entriesMap: newEntriesMap,
         entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
       })
 
-      // Update localStorage
-      immediateLocalStorageWrite(
-        ENTRIES_KEY,
-        JSON.stringify(Array.from(newEntriesMap.values()))
-      )
+      // Persist to localStorage by merging with existing disk data
+      const diskMap = readEntriesFromDisk()
+      diskMap.delete(entryId)
+      writeEntriesMapToDisk(diskMap, true) // Use immediate write for delete
 
       console.log(
         '🗑️ Practice entry deleted from another device:',
@@ -943,7 +985,13 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     set({ isSyncing: true })
 
     try {
-      const newEntriesMap = new Map(get().entriesMap)
+      // Start with in-memory map, but hydrate from disk if empty
+      let newEntriesMap = new Map(get().entriesMap)
+      if (newEntriesMap.size === 0) {
+        // Memory is empty, hydrate from disk to avoid losing data
+        newEntriesMap = readEntriesFromDisk()
+      }
+
       let changesCount = 0
 
       for (const entry of entries) {
@@ -961,16 +1009,26 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       }
 
       if (changesCount > 0) {
+        // Update UI state
         set({
           entriesMap: newEntriesMap,
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
-        // Update localStorage
-        debouncedLocalStorageWrite(
-          ENTRIES_KEY,
-          JSON.stringify(Array.from(newEntriesMap.values()))
-        )
+        // Persist to localStorage by merging with existing disk data
+        const diskMap = readEntriesFromDisk()
+        for (const entry of entries) {
+          const existingEntry = diskMap.get(entry.id)
+          // Apply Last-Write-Wins to disk data too
+          if (
+            !existingEntry ||
+            new Date(entry.updatedAt).getTime() >
+              new Date(existingEntry.updatedAt).getTime()
+          ) {
+            diskMap.set(entry.id, entry)
+          }
+        }
+        writeEntriesMapToDisk(diskMap, true) // Use immediate write for bulk sync
 
         console.log(`📊 Merged ${changesCount} entries from sync`)
       }
