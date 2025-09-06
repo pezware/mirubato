@@ -8,6 +8,10 @@ import {
 } from '../utils/duplicateCleanup'
 import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
 import { localEventBus } from '../services/localEventBus'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '../utils/scoreIdNormalizer'
 
 interface LogbookState {
   // Data - Using Maps for O(1) access
@@ -1044,6 +1048,12 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     try {
       console.log('[updatePieceName] Starting update:', { oldPiece, newPiece })
 
+      // Generate normalized scoreId for the old piece
+      const oldScoreId = generateNormalizedScoreId(
+        oldPiece.title,
+        oldPiece.composer
+      )
+
       // Update all entries locally first
       const updatedEntriesMap = new Map(get().entriesMap)
       const affectedEntryIds: string[] = []
@@ -1051,10 +1061,14 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       updatedEntriesMap.forEach((entry, id) => {
         let wasUpdated = false
         const updatedPieces = entry.pieces.map(piece => {
-          if (
-            piece.title === oldPiece.title &&
-            (piece.composer || '') === (oldPiece.composer || '')
-          ) {
+          // Generate normalized scoreId for each piece in the entry
+          const pieceScoreId = generateNormalizedScoreId(
+            piece.title,
+            piece.composer
+          )
+
+          // Use normalized comparison
+          if (isSameScore(oldScoreId, pieceScoreId)) {
             wasUpdated = true
             console.log(`[updatePieceName] Found matching piece in entry ${id}`)
             return {
