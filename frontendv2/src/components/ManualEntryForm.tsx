@@ -324,6 +324,7 @@ export default function ManualEntryForm({
       title={entry ? t('logbook:entry.editEntry') : t('logbook:entry.addEntry')}
       size="lg"
       className="sm:max-w-3xl"
+      isMobileOptimized
     >
       <form
         onSubmit={handleSubmit}
@@ -645,9 +646,18 @@ export default function ManualEntryForm({
 
       {/* Duplicate Detection Modal */}
       {duplicateMatches && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-3 sm:p-4 w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
-            <p className="text-stone-700 mb-4 text-sm sm:text-base">
+        <Modal
+          isOpen={true}
+          onClose={() => setDuplicateMatches(null)}
+          title={t(
+            'logbook:entry.duplicateDetection.heading',
+            'Similar pieces found'
+          )}
+          size="md"
+          isMobileOptimized
+        >
+          <div className="space-y-4">
+            <p className="text-stone-700 text-sm sm:text-base">
               {t('logbook:entry.duplicateDetection.similarTo', {
                 title: duplicateMatches.piece.title,
                 composer: duplicateMatches.piece.composer
@@ -656,7 +666,7 @@ export default function ManualEntryForm({
               })}
             </p>
 
-            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 max-h-48 sm:max-h-60 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3">
               {duplicateMatches.matches.map((match, index) => (
                 <div
                   key={index}
@@ -735,7 +745,7 @@ export default function ManualEntryForm({
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end pt-4 border-t border-stone-200">
               <Button
                 variant="ghost"
                 className="w-full sm:w-auto text-sm"
@@ -768,7 +778,7 @@ export default function ManualEntryForm({
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </Modal>
   )

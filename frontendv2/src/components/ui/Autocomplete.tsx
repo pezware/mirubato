@@ -170,7 +170,7 @@ export default function Autocomplete({
           ref={dropdownRef}
           className={cn(
             'absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg',
-            'border border-morandi-stone-200 max-h-60 overflow-auto',
+            'border border-morandi-stone-200 max-h-[45dvh] sm:max-h-60 overflow-auto touch-scroll overscroll-contain',
             dropdownClassName
           )}
         >

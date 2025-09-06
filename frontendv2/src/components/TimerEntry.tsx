@@ -90,6 +90,7 @@ export default function TimerEntry({
       onClose={handleClose}
       title={t('logbook:timer.title')}
       showCloseButton={false} // We'll handle close button ourselves
+      isMobileOptimized
     >
       {/* Position control buttons in the modal's existing header */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1">

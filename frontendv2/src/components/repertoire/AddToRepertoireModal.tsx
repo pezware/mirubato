@@ -239,9 +239,10 @@ export function AddToRepertoireModal({
       onClose={onClose}
       title={t('repertoire:addToRepertoire')}
       size="md"
+      isMobileOptimized
     >
       <div className="space-y-4">
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="space-y-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 w-4 h-4" />
@@ -407,7 +408,7 @@ export function AddToRepertoireModal({
 
                 {/* Existing items list - hide when custom entry is selected */}
                 {!showCustomEntry && (
-                  <div className="max-h-48 overflow-y-auto space-y-2">
+                  <div className="max-h-[40dvh] overflow-y-auto touch-scroll space-y-2">
                     {availableItems.map(item => (
                       <Card
                         key={item.id}
