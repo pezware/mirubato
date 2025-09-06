@@ -159,7 +159,7 @@ Fixed issue where WebSocket wouldn't request full sync despite missing data:
 
 ## Notable Gaps/Behavior
 
-- **WebSocket bulk sync is logbook-only**: sync-worker currently fetches `entity_type='logbook_entry'` for BULK_SYNC. Client supports REPERTOIRE_BULK_SYNC, but it isn't implemented server-side
+- **WebSocket bulk sync now includes repertoire**: sync-worker fetches both `entity_type='logbook_entry'` and `entity_type='repertoire_item'` for BULK_SYNC. Both logbook entries and repertoire pieces are properly sanitized before sending to clients
 - **WebSocket offline queue isn't persisted**: webSocketSync queues in-memory only (docs example shows localStorage persistence)
 - **Window of WebSocket bulk sync**: defaults to last 7 days. Full historical fetch still uses REST `/api/sync/pull` where needed (e.g., repertoire goal initialization), but logbook store doesn't auto-pull all entries on connect
 - **Fixed**: WebSocket now properly requests sync after authentication by clearing `lastSyncTime`

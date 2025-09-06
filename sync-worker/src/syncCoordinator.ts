@@ -312,15 +312,17 @@ export class SyncCoordinator implements DurableObject {
           const pieces = repertoireResults.results
             .map((row: any) => {
               try {
-                return JSON.parse(row.data)
+                const rawData = JSON.parse(row.data)
+                // Sanitize each piece to ensure scoreId/score_id mapping
+                return sanitizeRepertoireItem(rawData)
               } catch {
                 return null
               }
             })
-            .filter(Boolean)
+            .filter(Boolean) // Remove nulls from failed sanitization
 
           if (pieces.length > 0) {
-            // Send repertoire bulk sync event
+            // Send repertoire bulk sync event with sanitized data
             this.sendToClient(clientId, {
               type: 'REPERTOIRE_BULK_SYNC',
               pieces,
