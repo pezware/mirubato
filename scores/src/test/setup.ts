@@ -25,12 +25,14 @@ Object.defineProperty(globalThis, 'crypto', {
         return result
       }),
     } as unknown as SubtleCrypto,
+    // codeql[js/insecure-randomness]: This is test code - cryptographic security not required for test mocks
     getRandomValues: vi.fn((arr: any) => {
       for (let i = 0; i < arr.length; i++) {
         arr[i] = Math.floor(Math.random() * 256)
       }
       return arr
     }),
+    // codeql[js/insecure-randomness]: This is test code - cryptographic security not required for test UUIDs
     randomUUID: () => {
       const hex = '0123456789abcdef'
       let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
