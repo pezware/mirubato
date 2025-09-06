@@ -862,8 +862,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
     })
 
-    // Update localStorage
-    debouncedLocalStorageWrite(
+    // Update localStorage - IMMEDIATE write for sync operations
+    immediateLocalStorageWrite(
       ENTRIES_KEY,
       JSON.stringify(Array.from(newEntriesMap.values()))
     )
@@ -896,8 +896,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
     })
 
-    // Update localStorage
-    debouncedLocalStorageWrite(
+    // Update localStorage - IMMEDIATE write for sync operations
+    immediateLocalStorageWrite(
       ENTRIES_KEY,
       JSON.stringify(Array.from(newEntriesMap.values()))
     )
@@ -966,8 +966,8 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           entries: sortEntriesByTimestamp(Array.from(newEntriesMap.values())),
         })
 
-        // Update localStorage
-        debouncedLocalStorageWrite(
+        // Update localStorage - IMMEDIATE write to prevent data loss
+        immediateLocalStorageWrite(
           ENTRIES_KEY,
           JSON.stringify(Array.from(newEntriesMap.values()))
         )
