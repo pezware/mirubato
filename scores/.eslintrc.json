@@ -20,5 +20,17 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "no-console": ["warn", { "allow": ["warn", "error"] }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/__tests__/**/*.ts", "**/test/**/*.ts"],
+      "parserOptions": {
+        "project": null
+      },
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-extra-semi": "off"
+      }
+    }
+  ]
 }
