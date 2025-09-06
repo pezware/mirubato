@@ -14,7 +14,7 @@ The Mirubato REST API provides comprehensive endpoints for managing practice ses
 
 ## Authentication
 
-Most endpoints require authentication via JWT tokens.
+Most endpoints require JWT authentication. See [Authentication Specification](./authentication.md) for detailed auth flows.
 
 ### Headers
 
@@ -22,14 +22,6 @@ Most endpoints require authentication via JWT tokens.
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
 ```
-
-### Public Endpoints
-
-- `POST /api/auth/login`
-- `POST /api/auth/magic-link`
-- `POST /api/auth/google`
-- `GET /api/auth/verify`
-- `GET /health`
 
 ## Common Response Formats
 
@@ -74,162 +66,18 @@ Content-Type: application/json
 }
 ```
 
-## Authentication Endpoints
+## API Endpoints Overview
 
-### Login with Email/Password
+### Authentication
 
-```http
-POST /api/auth/login
-```
+- `POST /api/auth/login` - Email/password login
+- `POST /api/auth/magic-link` - Send magic link
+- `POST /api/auth/google` - Google OAuth
+- `GET /api/auth/verify` - Verify token
+- `POST /api/auth/refresh` - Refresh token
+- `POST /api/auth/logout` - Logout
 
-**Request Body:**
-
-```json
-{
-  "email": "user@example.com",
-  "password": "secure_password"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "displayName": "John Doe",
-      "role": "user"
-    },
-    "token": "jwt_token",
-    "refreshToken": "refresh_token",
-    "expiresIn": 3600
-  }
-}
-```
-
-### Send Magic Link
-
-```http
-POST /api/auth/magic-link
-```
-
-**Request Body:**
-
-```json
-{
-  "email": "user@example.com"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "message": "Magic link sent to your email"
-  }
-}
-```
-
-### Google OAuth
-
-```http
-POST /api/auth/google
-```
-
-**Request Body:**
-
-```json
-{
-  "credential": "google_id_token"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "user": { ... },
-    "token": "jwt_token",
-    "refreshToken": "refresh_token",
-    "isNewUser": false
-  }
-}
-```
-
-### Verify Token
-
-```http
-GET /api/auth/verify
-```
-
-**Headers:**
-
-```http
-Authorization: Bearer <jwt_token>
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "valid": true,
-    "user": { ... }
-  }
-}
-```
-
-### Refresh Token
-
-```http
-POST /api/auth/refresh
-```
-
-**Request Body:**
-
-```json
-{
-  "refreshToken": "refresh_token"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "token": "new_jwt_token",
-    "refreshToken": "new_refresh_token",
-    "expiresIn": 3600
-  }
-}
-```
-
-### Logout
-
-```http
-POST /api/auth/logout
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "message": "Logged out successfully"
-  }
-}
-```
+See [Authentication](./authentication.md) for detailed specifications.
 
 ## Logbook Endpoints
 
@@ -702,71 +550,13 @@ PUT /api/user/profile
 
 ## Sync Endpoints
 
-### Push Sync Data
+### Data Synchronization
 
-```http
-POST /api/sync/push
-```
+- `POST /api/sync/push` - Push local changes
+- `GET /api/sync/pull` - Pull remote changes
+- `POST /api/sync/resolve` - Resolve conflicts
 
-**Request Body:**
-
-```json
-{
-  "entries": [
-    {
-      "entityType": "logbook",
-      "entityId": "uuid",
-      "data": { ... },
-      "version": 2,
-      "updatedAt": 1701475200
-    }
-  ]
-}
-```
-
-### Pull Sync Data
-
-```http
-GET /api/sync/pull
-```
-
-**Query Parameters:**
-
-- `since` (number): Timestamp to pull changes since
-- `entityType` (string): Filter by entity type
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "entries": [ ... ],
-    "timestamp": 1701475200
-  }
-}
-```
-
-### Resolve Sync Conflicts
-
-```http
-POST /api/sync/resolve
-```
-
-**Request Body:**
-
-```json
-{
-  "conflicts": [
-    {
-      "entityType": "logbook",
-      "entityId": "uuid",
-      "resolution": "local", // or "remote"
-      "data": { ... }
-    }
-  ]
-}
-```
+Real-time sync is handled via WebSocket. See [WebSocket Protocol](./websocket.md) for details.
 
 ## Health & Monitoring
 
@@ -830,10 +620,11 @@ X-RateLimit-Reset: 1701392400
 
 ## Related Documentation
 
-- [Authentication](./authentication.md) - Auth flows in detail
-- [WebSocket API](./websocket.md) - Real-time sync protocol
+- [Authentication](./authentication.md) - Detailed auth flows and security
+- [WebSocket Protocol](./websocket.md) - Real-time sync specification
 - [Service APIs](./service-apis.md) - Inter-service communication
 - [Database Schema](../02-database/schema.md) - Database structure
+- [API Client Examples](./client-examples.md) - Implementation examples
 
 ---
 

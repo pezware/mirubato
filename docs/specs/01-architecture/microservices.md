@@ -328,69 +328,7 @@ export class SyncCoordinator {
 
 ## Inter-Service Communication
 
-### Authentication Flow
-
-All inter-service communication uses JWT tokens for authentication:
-
-```typescript
-// Service-to-service call
-const response = await fetch(`${env.SCORES_URL}/api/internal/score/${id}`, {
-  headers: {
-    Authorization: `Bearer ${serviceToken}`,
-    'X-Service': 'api',
-    'X-Request-ID': crypto.randomUUID(),
-  },
-})
-```
-
-### Service Discovery
-
-Services discover each other through environment variables:
-
-```typescript
-interface ServiceUrls {
-  API_URL: string // api.mirubato.com
-  SCORES_URL: string // scores.mirubato.com
-  DICTIONARY_URL: string // dictionary.mirubato.com
-  SYNC_URL: string // sync.mirubato.com
-}
-```
-
-### Communication Patterns
-
-#### 1. Synchronous HTTP
-
-Used for real-time queries and immediate responses:
-
-```typescript
-// API calling Scores service
-const scoreData = await fetch(`${SCORES_URL}/api/score/${id}`)
-```
-
-#### 2. Asynchronous Queue
-
-Used for heavy processing tasks:
-
-```typescript
-// API queuing PDF processing
-await env.PDF_QUEUE.send({
-  scoreId,
-  operation: 'extract-metadata',
-})
-```
-
-#### 3. WebSocket (Real-time)
-
-Used for live synchronization:
-
-```typescript
-// Client connecting to Sync Worker
-const ws = new WebSocket('wss://sync.mirubato.com')
-ws.onmessage = event => {
-  const update = JSON.parse(event.data)
-  applyUpdate(update)
-}
-```
+Services communicate via HTTP with JWT authentication, queues for async processing, and WebSocket for real-time updates. See [Service APIs](../03-api/service-apis.md) for detailed inter-service communication patterns.
 
 ## Service Health & Monitoring
 
@@ -493,7 +431,8 @@ wrangler rollback --env production
 
 - [System Overview](./overview.md) - High-level architecture
 - [Cloudflare Services](./cloudflare-services.md) - Platform services
-- [API Specification](../03-api/rest-api.md) - Detailed API docs
+- [Service APIs](../03-api/service-apis.md) - Inter-service communication
+- [REST API](../03-api/rest-api.md) - Public API endpoints
 - [WebSocket Protocol](../03-api/websocket.md) - Real-time sync protocol
 
 ---
