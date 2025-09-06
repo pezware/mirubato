@@ -6,6 +6,7 @@
 import {
   validateSyncEvent,
   sanitizeEntry,
+  sanitizeRepertoireItem,
   ResponseEventSchema,
   type LogbookEntrySchema,
   type RepertoireItemSchema,
@@ -251,7 +252,8 @@ export class SyncCoordinator implements DurableObject {
           ? new Date(event.lastSyncTime).getTime()
           : Date.now() - 7 * 24 * 60 * 60 * 1000 // Default to last 7 days
 
-        const results = await this.env.DB.prepare(
+        // Fetch logbook entries
+        const entriesResults = await this.env.DB.prepare(
           `
           SELECT entity_id, data, updated_at 
           FROM sync_data 
@@ -266,8 +268,9 @@ export class SyncCoordinator implements DurableObject {
           .bind(client.userId, lastSyncTime / 1000) // Convert to seconds for SQLite
           .all()
 
-        if (results.results && results.results.length > 0) {
-          const entries = results.results
+        // Send logbook entries if any
+        if (entriesResults.results && entriesResults.results.length > 0) {
+          const entries = entriesResults.results
             .map((row: any) => {
               try {
                 return JSON.parse(row.data)
@@ -285,20 +288,80 @@ export class SyncCoordinator implements DurableObject {
               timestamp: new Date().toISOString(),
             })
             console.log(`📦 Sent ${entries.length} entries to ${clientId}`)
-            return
           }
+        }
+
+        // Fetch repertoire items
+        const repertoireResults = await this.env.DB.prepare(
+          `
+          SELECT entity_id, data, updated_at 
+          FROM sync_data 
+          WHERE user_id = ? 
+            AND entity_type = 'repertoire_item'
+            AND datetime(updated_at) > datetime(?, 'unixepoch', 'subsec')
+            AND deleted_at IS NULL
+          ORDER BY updated_at DESC
+          LIMIT 100
+        `
+        )
+          .bind(client.userId, lastSyncTime / 1000) // Convert to seconds for SQLite
+          .all()
+
+        // Send repertoire items if any
+        if (repertoireResults.results && repertoireResults.results.length > 0) {
+          const pieces = repertoireResults.results
+            .map((row: any) => {
+              try {
+                const rawData = JSON.parse(row.data)
+                // Sanitize each piece to ensure scoreId/score_id mapping
+                return sanitizeRepertoireItem(rawData)
+              } catch {
+                return null
+              }
+            })
+            .filter(Boolean) // Remove nulls from failed sanitization
+
+          if (pieces.length > 0) {
+            // Send repertoire bulk sync event with sanitized data
+            this.sendToClient(clientId, {
+              type: 'REPERTOIRE_BULK_SYNC',
+              pieces,
+              timestamp: new Date().toISOString(),
+            })
+            console.log(
+              `🎵 Sent ${pieces.length} repertoire pieces to ${clientId}`
+            )
+          }
+        }
+
+        // If no data was sent, send a response
+        if (
+          (!entriesResults.results || entriesResults.results.length === 0) &&
+          (!repertoireResults.results || repertoireResults.results.length === 0)
+        ) {
+          this.sendToClient(clientId, {
+            type: 'SYNC_RESPONSE',
+            timestamp: new Date().toISOString(),
+            message: 'No new data to sync',
+          })
         }
       } catch (error) {
         console.error('Failed to fetch sync data:', error)
+        // Fallback response on error
+        this.sendToClient(clientId, {
+          type: 'SYNC_RESPONSE',
+          timestamp: new Date().toISOString(),
+          message: 'Error fetching sync data',
+        })
       }
+    } else {
+      // Fallback response if no database
+      this.sendToClient(clientId, {
+        type: 'SYNC_RESPONSE',
+        timestamp: new Date().toISOString(),
+        message: 'Sync not available',
+      })
     }
-
-    // Fallback response if no data or error
-    this.sendToClient(clientId, {
-      type: 'SYNC_RESPONSE',
-      timestamp: new Date().toISOString(),
-      message: 'No new data to sync',
-    })
   }
 
   private async handleEntryChange(
@@ -433,6 +496,21 @@ export class SyncCoordinator implements DurableObject {
     const sender = this.clients.get(senderId)
     if (!sender) return
 
+    // Sanitize piece data if present
+    if ('piece' in event && event.piece) {
+      const sanitized = sanitizeRepertoireItem(event.piece)
+      if (!sanitized) {
+        console.error(`❌ Failed to sanitize repertoire item from ${senderId}`)
+        this.sendToClient(senderId, {
+          type: 'ERROR',
+          error: 'Invalid repertoire data',
+          timestamp: new Date().toISOString(),
+        })
+        return
+      }
+      event.piece = sanitized
+    }
+
     console.log(
       `🎵 Broadcasting ${event.type} from ${senderId} to ${this.clients.size - 1} other clients`
     )
@@ -472,16 +550,25 @@ export class SyncCoordinator implements DurableObject {
 
       switch (event.type) {
         case 'PIECE_ADDED':
-          entityId = event.piece?.scoreId
+          // Check both scoreId and score_id, fallback to id
+          entityId =
+            event.piece?.scoreId || event.piece?.score_id || event.piece?.id
           data = event.piece
           break
         case 'PIECE_UPDATED':
-          entityId = event.piece?.scoreId
+          // Check both scoreId and score_id, fallback to id
+          entityId =
+            event.piece?.scoreId || event.piece?.score_id || event.piece?.id
           data = event.piece
           break
         case 'PIECE_REMOVED':
         case 'PIECE_DISSOCIATED':
-          entityId = event.scoreId || event.piece?.scoreId
+          // Check all possible ID fields
+          entityId =
+            event.scoreId ||
+            event.piece?.scoreId ||
+            event.piece?.score_id ||
+            event.piece?.id
           isDelete = true
           break
         default:

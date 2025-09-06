@@ -4,34 +4,21 @@ This document outlines the remaining gaps in the sync system and proposed soluti
 
 ## Key Gaps
 
-1. **Repertoire bulk sync**: Server doesn't emit `REPERTOIRE_BULK_SYNC`; client already supports it
+1. ~~**Repertoire bulk sync**~~: ✅ COMPLETED - Server now emits `REPERTOIRE_BULK_SYNC` with proper sanitization
 2. **Offline queue persistence**: WebSocket outbox is in-memory; reload loses unsent events
 3. **Sync window limitations**: 7-day window may miss history without automatic backfill
 4. **LWW nuances**: Client relies on `updatedAt` only; server tracks `version` but doesn't use it fully
 
 ## Proposed Changes
 
-### 1. Repertoire BULK_SYNC Implementation (Priority: High)
+### ~~1. Repertoire BULK_SYNC Implementation~~ ✅ COMPLETED
 
-#### Server-side changes (`sync-worker`)
+This has been fully implemented as of December 2024:
 
-- **File**: `sync-worker/src/syncCoordinator.ts`
-  - Add repertoire fetch to `SYNC_REQUEST` handler
-  - Query D1 `sync_data` with `entity_type='repertoire_piece'` and `updated_at > lastSyncTime`
-  - Emit `REPERTOIRE_BULK_SYNC` as a separate event (keep logbook and repertoire bulks independent)
-- **File**: `sync-worker/src/schemas.ts`
-  - Extend Zod schemas to validate/sanitize repertoire items
-  - Ensure proper type definitions for repertoire pieces
-
-#### Client-side changes
-
-- **File**: `frontendv2/src/services/webSocketSync.ts`
-  - Verify `REPERTOIRE_BULK_SYNC` dispatches to repertoire handlers correctly
-- **File**: `frontendv2/src/stores/repertoireStore.ts`
-  - Add bulk merge path that:
-    - Normalizes `scoreId` via `normalizeExistingScoreId`
-    - Dedups by normalized ID, keeping max(`updatedAt`, `version`)
-    - Writes through to localStorage with proper conflict resolution
+- Server fetches and sends repertoire items in `SYNC_REQUEST` handler
+- All pieces are sanitized through `sanitizeRepertoireItem` before sending
+- Client properly handles `REPERTOIRE_BULK_SYNC` with normalization and deduplication
+- Both `scoreId` and `score_id` fields are maintained for compatibility
 
 ### 2. Persisted WebSocket Outbox (Priority: High)
 
@@ -134,11 +121,18 @@ function shouldAcceptUpdate(existing: Item, incoming: Item): boolean {
 
 ## Open Questions
 
-1. **Event naming**: Confirm `REPERTOIRE_BULK_SYNC` vs `PIECE_BULK_SYNC` (client expects which?)
+1. **Event naming**: ✅ RESOLVED - Using `REPERTOIRE_BULK_SYNC` (implemented in both client and server)
 2. **Version field**: Does server broadcast include `version` today for pieces? If not, add to support improved LWW
 3. **Bulk size limits**: Preferred upper bound per WebSocket frame (current suggestion: 500 items)
 4. **Offline duration**: How long should offline events be retained before dropping? (suggestion: 7 days)
 5. **Backfill trigger**: Should full backfill be automatic or require user confirmation for large datasets?
+
+## Recent Fixes (December 2024)
+
+- **scoreId field mapping**: Added `scoreId` field to RepertoireItemSchema and mapping logic in sanitizer to prevent field stripping
+- **ID field fallback**: saveRepertoireToDatabase now checks scoreId, score_id, and id fields for entity identification
+- **Immediate writes**: Changed repertoire sync writes from debounced to immediate to prevent data loss on browser close
+- **lastSyncTime tracking**: Fixed event names (PIECE_ADDED/REMOVED) and added REPERTOIRE_BULK_SYNC to properly track sync times
 
 ## File Touchpoints Summary
 

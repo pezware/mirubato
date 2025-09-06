@@ -152,6 +152,61 @@ const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
 // Sync debounce timer
 let syncDebounceTimer: NodeJS.Timeout | null = null
 
+// Helper for debouncing functions
+function debounce<T extends (...args: never[]) => void>(
+  func: T,
+  wait: number
+): T & { cancel?: () => void } {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  const debounced = ((...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }) as T
+  return debounced
+}
+
+// Debounced localStorage write (for non-critical updates)
+const debouncedLocalStorageWrite = debounce((key: string, value: string) => {
+  localStorage.setItem(key, value)
+}, 500)
+
+// Immediate localStorage write (for critical operations)
+const immediateLocalStorageWrite = (key: string, value: string) => {
+  localStorage.setItem(key, value)
+}
+
+// Safe localStorage helpers for sync operations
+const readRepertoireFromDisk = (): Map<string, RepertoireItem> => {
+  try {
+    const raw = localStorage.getItem(REPERTOIRE_KEY)
+    if (!raw) return new Map()
+    const items: RepertoireItem[] = JSON.parse(raw)
+    // Normalize score IDs when reading from disk
+    const repertoireMap = new Map<string, RepertoireItem>()
+    items.forEach(item => {
+      const normalizedId = normalizeExistingScoreId(item.scoreId)
+      repertoireMap.set(normalizedId, { ...item, scoreId: normalizedId })
+    })
+    return repertoireMap
+  } catch (error) {
+    console.error('Failed to read repertoire from disk:', error)
+    return new Map()
+  }
+}
+
+const writeRepertoireMapToDisk = (
+  map: Map<string, RepertoireItem>,
+  immediate = false
+): void => {
+  const items = Array.from(map.values())
+  const payload = JSON.stringify(items)
+  if (immediate) {
+    immediateLocalStorageWrite(REPERTOIRE_KEY, payload)
+  } else {
+    debouncedLocalStorageWrite(REPERTOIRE_KEY, payload)
+  }
+}
+
 export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   // Initial state
   repertoire: new Map(),
@@ -1409,53 +1464,110 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   // WebSocket sync event handlers (internal)
   addPieceFromSync: (item: RepertoireItem) => {
     const normalizedId = normalizeExistingScoreId(item.scoreId)
-    set(state => {
-      const newRepertoire = new Map(state.repertoire)
-      // Use normalized ID as key and update the item's scoreId
-      newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
-      return { repertoire: newRepertoire }
-    })
 
-    // Update localStorage
-    const items = Array.from(get().repertoire.values())
-    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+    // Start with in-memory map, but hydrate from disk if empty
+    let newRepertoire = new Map(get().repertoire)
+    if (newRepertoire.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newRepertoire = readRepertoireFromDisk()
+    }
+
+    // Check if we already have this piece and if incoming is newer (LWW)
+    const existingPiece = newRepertoire.get(normalizedId)
+    if (existingPiece) {
+      // Only update if incoming is newer
+      if (
+        new Date(item.updatedAt || 0).getTime() <=
+        new Date(existingPiece.updatedAt || 0).getTime()
+      ) {
+        return // Local piece is newer, ignore
+      }
+    }
+
+    // Add or update with normalized ID
+    newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
+    set({ repertoire: newRepertoire })
+
+    // Persist to localStorage by merging with existing disk data
+    const diskMap = readRepertoireFromDisk()
+    diskMap.set(normalizedId, { ...item, scoreId: normalizedId })
+    writeRepertoireMapToDisk(diskMap, true) // Use immediate write for sync operations
+
+    // Show toast notification if it's a new piece
+    if (!existingPiece) {
+      console.log(
+        '✨ New repertoire piece synced from another device:',
+        item.scoreId
+      )
+    }
   },
 
   updatePieceFromSync: (item: RepertoireItem) => {
     const normalizedId = normalizeExistingScoreId(item.scoreId)
-    set(state => {
-      const newRepertoire = new Map(state.repertoire)
-      const existing = newRepertoire.get(normalizedId)
-      if (existing) {
-        // Merge the updated item with existing data, ensuring normalized scoreId
-        newRepertoire.set(normalizedId, {
-          ...existing,
-          ...item,
-          scoreId: normalizedId,
-        })
-      } else {
-        // Add if it doesn't exist, with normalized scoreId
-        newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
-      }
-      return { repertoire: newRepertoire }
-    })
 
-    // Update localStorage
-    const items = Array.from(get().repertoire.values())
-    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+    // Start with in-memory map, but hydrate from disk if empty
+    let newRepertoire = new Map(get().repertoire)
+    if (newRepertoire.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newRepertoire = readRepertoireFromDisk()
+    }
+
+    // Only update if the incoming piece is newer (LWW)
+    const existingPiece = newRepertoire.get(normalizedId)
+    if (
+      existingPiece &&
+      new Date(item.updatedAt || 0).getTime() <=
+        new Date(existingPiece.updatedAt || 0).getTime()
+    ) {
+      return // Local piece is newer, ignore
+    }
+
+    // Update with normalized ID, preserving local fields if needed
+    const updatedPiece = existingPiece
+      ? { ...existingPiece, ...item, scoreId: normalizedId }
+      : { ...item, scoreId: normalizedId }
+
+    newRepertoire.set(normalizedId, updatedPiece)
+    set({ repertoire: newRepertoire })
+
+    // Persist to localStorage by merging with existing disk data
+    const diskMap = readRepertoireFromDisk()
+    diskMap.set(normalizedId, updatedPiece)
+    writeRepertoireMapToDisk(diskMap, true) // Use immediate write for sync operations
+
+    console.log(
+      '📝 Repertoire piece updated from another device:',
+      item.scoreId
+    )
   },
 
   removePieceFromSync: (scoreId: string) => {
     const normalizedId = normalizeExistingScoreId(scoreId)
-    set(state => {
-      const newRepertoire = new Map(state.repertoire)
-      newRepertoire.delete(normalizedId)
-      return { repertoire: newRepertoire }
-    })
 
-    // Update localStorage
-    const items = Array.from(get().repertoire.values())
-    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+    // Start with in-memory map, but hydrate from disk if empty
+    let newRepertoire = new Map(get().repertoire)
+    if (newRepertoire.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newRepertoire = readRepertoireFromDisk()
+    }
+
+    const removedPiece = newRepertoire.get(normalizedId)
+
+    if (removedPiece) {
+      // Update UI state
+      newRepertoire.delete(normalizedId)
+      set({ repertoire: newRepertoire })
+
+      // Persist to localStorage by merging with existing disk data
+      const diskMap = readRepertoireFromDisk()
+      diskMap.delete(normalizedId)
+      writeRepertoireMapToDisk(diskMap, true) // Use immediate write for delete
+
+      console.log(
+        '🗑️ Repertoire piece removed from another device:',
+        removedPiece.scoreId
+      )
+    }
   },
 
   dissociatePieceFromSync: (scoreId: string) => {
@@ -1465,26 +1577,53 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   },
 
   mergePiecesFromSync: (items: RepertoireItem[]) => {
-    const newRepertoire = new Map<string, RepertoireItem>()
-    const deduplicatedItems: RepertoireItem[] = []
+    // Start with existing repertoire, hydrate from disk if empty
+    let newRepertoire = new Map(get().repertoire)
+    if (newRepertoire.size === 0) {
+      // Memory is empty, hydrate from disk to avoid losing data
+      newRepertoire = readRepertoireFromDisk()
+    }
 
-    // Build map with normalized score IDs, keeping most recent version of duplicates
-    items.forEach(item => {
+    let changesCount = 0
+
+    // Merge incoming items with LWW conflict resolution
+    for (const item of items) {
       const normalizedId = normalizeExistingScoreId(item.scoreId)
-      const existing = newRepertoire.get(normalizedId)
-      if (!existing || item.updatedAt > existing.updatedAt) {
-        const normalizedItem = { ...item, scoreId: normalizedId }
-        newRepertoire.set(normalizedId, normalizedItem)
+      const existingPiece = newRepertoire.get(normalizedId)
+
+      // Add new pieces or update if incoming is newer
+      if (
+        !existingPiece ||
+        new Date(item.updatedAt || 0).getTime() >
+          new Date(existingPiece.updatedAt || 0).getTime()
+      ) {
+        newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
+        changesCount++
       }
-    })
+    }
 
-    // Convert map back to array for localStorage
-    newRepertoire.forEach(item => deduplicatedItems.push(item))
+    // Update UI state if there were changes
+    if (changesCount > 0) {
+      set({ repertoire: newRepertoire })
 
-    set({ repertoire: newRepertoire })
+      // Persist to localStorage by merging with existing disk data
+      const diskMap = readRepertoireFromDisk()
+      for (const item of items) {
+        const normalizedId = normalizeExistingScoreId(item.scoreId)
+        const existingPiece = diskMap.get(normalizedId)
+        // Apply Last-Write-Wins to disk data too
+        if (
+          !existingPiece ||
+          new Date(item.updatedAt || 0).getTime() >
+            new Date(existingPiece.updatedAt || 0).getTime()
+        ) {
+          diskMap.set(normalizedId, { ...item, scoreId: normalizedId })
+        }
+      }
+      writeRepertoireMapToDisk(diskMap, true) // Use immediate write for bulk sync
 
-    // Update localStorage with deduplicated and normalized items
-    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(deduplicatedItems))
+      console.log(`📊 Merged ${changesCount} repertoire pieces from sync`)
+    }
   },
 }))
 

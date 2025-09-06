@@ -88,6 +88,7 @@ export const RepertoireItemSchema = z.object({
   id: z.string(),
   user_id: z.string().optional(),
   score_id: z.string().nullable().optional(),
+  scoreId: z.string().optional(), // Frontend uses scoreId, map to score_id in sanitizer
   title: z.string(),
   composer: z.string().nullable().optional(),
   status: z.enum([
@@ -237,6 +238,37 @@ export function sanitizeEntry(
     return validated
   } catch (error) {
     console.error('Entry validation failed:', error)
+    return null
+  }
+}
+
+// Helper function to sanitize and validate repertoire item data
+export function sanitizeRepertoireItem(
+  item: unknown
+): z.infer<typeof RepertoireItemSchema> | null {
+  try {
+    // Parse and validate
+    const validated = RepertoireItemSchema.parse(item)
+
+    // Normalize status to lowercase
+    if (validated.status) {
+      validated.status = validated.status.toLowerCase() as z.infer<
+        typeof RepertoireItemSchema
+      >['status']
+    }
+
+    // Map scoreId to score_id for database compatibility
+    if (validated.scoreId && !validated.score_id) {
+      validated.score_id = validated.scoreId
+    }
+    // Ensure scoreId is present for frontend compatibility
+    if (validated.score_id && !validated.scoreId) {
+      validated.scoreId = validated.score_id
+    }
+
+    return validated
+  } catch (error) {
+    console.error('Repertoire item validation failed:', error)
     return null
   }
 }

@@ -293,9 +293,11 @@ export class WebSocketSync {
       'ENTRY_UPDATED',
       'ENTRY_DELETED',
       'BULK_SYNC',
-      'PIECE_CREATED',
+      'PIECE_ADDED',
       'PIECE_UPDATED',
-      'PIECE_DELETED',
+      'PIECE_REMOVED',
+      'PIECE_DISSOCIATED',
+      'REPERTOIRE_BULK_SYNC',
     ]
 
     if (dataEvents.includes(event.type)) {
