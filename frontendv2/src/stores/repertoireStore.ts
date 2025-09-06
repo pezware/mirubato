@@ -157,10 +157,10 @@ function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): T & { cancel?: () => void } {
-  let timeout: NodeJS.Timeout | null = null
+  let timeout: ReturnType<typeof setTimeout> | null = null
   const debounced = ((...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout)
-    timeout = window.setTimeout(() => func(...args), wait)
+    timeout = setTimeout(() => func(...args), wait)
   }) as T
   return debounced
 }
@@ -1497,7 +1497,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     if (!existingPiece) {
       console.log(
         '✨ New repertoire piece synced from another device:',
-        item.title || 'Untitled'
+        item.scoreId
       )
     }
   },
@@ -1537,7 +1537,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
     console.log(
       '📝 Repertoire piece updated from another device:',
-      item.title || 'Untitled'
+      item.scoreId
     )
   },
 
@@ -1565,7 +1565,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
       console.log(
         '🗑️ Repertoire piece removed from another device:',
-        removedPiece.title || 'Untitled'
+        removedPiece.scoreId
       )
     }
   },
