@@ -11,6 +11,7 @@ import { nanoid } from 'nanoid'
 import i18n from 'i18next'
 import { normalizeRepertoireIds } from '@/utils/migrations/normalizeRepertoireIds'
 import { isRepertoireNormalizationComplete } from '@/utils/migrations/scoreIdNormalization'
+import { normalizeExistingScoreId } from '@/utils/scoreIdNormalizer'
 import { useAuthStore } from './authStore'
 import { getWebSocketSync, type SyncEvent } from '@/services/webSocketSync'
 import { localEventBus } from '@/services/localEventBus'
@@ -200,10 +201,16 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         metadataMap.set(metadata.id, metadata)
       })
 
-      // Convert array to Map
+      // Convert array to Map with normalized score IDs as keys
       const repertoireMap = new Map<string, RepertoireItem>()
       items.forEach(item => {
-        repertoireMap.set(item.scoreId, item)
+        const normalizedId = normalizeExistingScoreId(item.scoreId)
+        // Keep the most recent item if duplicates exist with different capitalizations
+        const existing = repertoireMap.get(normalizedId)
+        if (!existing || item.updatedAt > existing.updatedAt) {
+          // Update the item's scoreId to the normalized version
+          repertoireMap.set(normalizedId, { ...item, scoreId: normalizedId })
+        }
       })
       set({
         repertoire: repertoireMap,
@@ -222,11 +229,16 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           .then(({ items: serverItems }) => {
             const newRepertoireMap = new Map<string, RepertoireItem>()
 
-            // Build map using scoreId as key, keeping only the most recent if duplicates exist
+            // Build map using normalized scoreId as key, keeping only the most recent if duplicates exist
             serverItems.forEach(item => {
-              const existing = newRepertoireMap.get(item.scoreId)
+              const normalizedId = normalizeExistingScoreId(item.scoreId)
+              const existing = newRepertoireMap.get(normalizedId)
               if (!existing || item.updatedAt > existing.updatedAt) {
-                newRepertoireMap.set(item.scoreId, item)
+                // Update the item's scoreId to the normalized version
+                newRepertoireMap.set(normalizedId, {
+                  ...item,
+                  scoreId: normalizedId,
+                })
               }
             })
 
@@ -261,12 +273,13 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   addToRepertoire: async (scoreId: string, status?: keyof RepertoireStatus) => {
     try {
       const { isLocalMode, repertoire } = get()
+      const normalizedId = normalizeExistingScoreId(scoreId)
 
       if (isLocalMode) {
         // Create locally
         const newItem: RepertoireItem = {
           id: nanoid(),
-          scoreId,
+          scoreId: normalizedId,
           status: status || 'planned',
           difficultyRating: undefined,
           personalNotes: undefined,
@@ -279,7 +292,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         }
 
         const newRepertoire = new Map(repertoire)
-        newRepertoire.set(scoreId, newItem)
+        newRepertoire.set(normalizedId, newItem)
         set({ repertoire: newRepertoire })
 
         // Update localStorage
@@ -290,12 +303,13 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       } else {
         // Use API
         const newItem = await repertoireApi.add({
-          scoreId,
+          scoreId: normalizedId,
           status: status || 'planned',
         })
         set(state => {
           const newRepertoire = new Map(state.repertoire)
-          newRepertoire.set(scoreId, newItem)
+          // Ensure we use normalized ID as the key and in the item
+          newRepertoire.set(normalizedId, { ...newItem, scoreId: normalizedId })
           return { repertoire: newRepertoire }
         })
 
@@ -322,7 +336,8 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   ) => {
     try {
       const { isLocalMode, repertoire, scoreMetadataCache } = get()
-      const existing = repertoire.get(scoreId)
+      const normalizedId = normalizeExistingScoreId(scoreId)
+      const existing = repertoire.get(normalizedId)
       if (!existing) throw new Error('Repertoire item not found')
 
       if (isLocalMode) {
@@ -332,7 +347,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           updates.status !== existing.status
         ) {
           // Get score metadata for the piece
-          const metadata = scoreMetadataCache.get(scoreId)
+          const metadata = scoreMetadataCache.get(normalizedId)
 
           // Import logbookStore dynamically to avoid circular dependency
           const { useLogbookStore } = await import('./logbookStore')
@@ -343,19 +358,19 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
             timestamp: new Date().toISOString(),
             duration: 1, // 1 minute
             type: 'status_change',
-            scoreId: scoreId,
+            scoreId: normalizedId,
             notes: `Status changed: ${existing.status} → ${updates.status}`,
             pieces: metadata
               ? [
                   {
-                    title: metadata.title || scoreId.split('-')[0],
-                    composer: metadata.composer || scoreId.split('-')[1],
+                    title: metadata.title || normalizedId.split('-')[0],
+                    composer: metadata.composer || normalizedId.split('-')[1],
                   },
                 ]
               : [
                   {
-                    title: scoreId.split('-')[0],
-                    composer: scoreId.split('-')[1] || '',
+                    title: normalizedId.split('-')[0],
+                    composer: normalizedId.split('-')[1] || '',
                   },
                 ],
             techniques: [],
@@ -375,7 +390,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           updatedAt: Date.now(),
         }
         const newRepertoire = new Map(repertoire)
-        newRepertoire.set(scoreId, updatedItem)
+        newRepertoire.set(normalizedId, updatedItem)
         set({ repertoire: newRepertoire })
 
         // Update localStorage
@@ -485,11 +500,12 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   removeFromRepertoire: async (scoreId: string) => {
     try {
       const { isLocalMode, repertoire } = get()
+      const normalizedId = normalizeExistingScoreId(scoreId)
 
       if (isLocalMode) {
         // Remove locally
         const newRepertoire = new Map(repertoire)
-        newRepertoire.delete(scoreId)
+        newRepertoire.delete(normalizedId)
         set({ repertoire: newRepertoire })
 
         // Update localStorage
@@ -501,12 +517,12 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           setTimeout(() => reject(new Error('API request timeout')), 15000) // 15 second timeout
         })
 
-        await Promise.race([repertoireApi.remove(scoreId), timeoutPromise])
+        await Promise.race([repertoireApi.remove(normalizedId), timeoutPromise])
 
         // Remove from local state immediately for responsive UI
         set(state => {
           const newRepertoire = new Map(state.repertoire)
-          newRepertoire.delete(scoreId)
+          newRepertoire.delete(normalizedId)
           return { repertoire: newRepertoire }
         })
 
@@ -529,14 +545,15 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   dissociatePieceFromRepertoire: async (scoreId: string) => {
     try {
       const { isLocalMode, repertoire, scoreMetadataCache } = get()
-      const item = repertoire.get(scoreId)
+      const normalizedId = normalizeExistingScoreId(scoreId)
+      const item = repertoire.get(normalizedId)
 
       if (!item) {
         throw new Error('Piece not found in repertoire')
       }
 
       // Get piece metadata for the response
-      const metadata = scoreMetadataCache.get(scoreId)
+      const metadata = scoreMetadataCache.get(normalizedId)
       let pieceTitle = 'Unknown Piece'
       let pieceComposer = ''
 
@@ -681,10 +698,11 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   getRepertoireStats: async (scoreId: string) => {
     try {
       const { isLocalMode } = get()
+      const normalizedId = normalizeExistingScoreId(scoreId)
 
       if (isLocalMode) {
         // Return local stats
-        const item = get().repertoire.get(scoreId)
+        const item = get().repertoire.get(normalizedId)
         if (!item) return null
 
         return {
@@ -1232,20 +1250,23 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   cleanupDuplicates: async () => {
     const { repertoire, isLocalMode } = get()
 
-    // Simple deduplication by scoreId
+    // Deduplication by normalized scoreId
     const seen = new Set<string>()
     const cleaned = new Map<string, RepertoireItem>()
     const duplicates: RepertoireItem[] = []
 
-    // Keep the most recently updated version of each scoreId
+    // Keep the most recently updated version of each normalized scoreId
     const sortedItems = Array.from(repertoire.values()).sort(
       (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
     )
 
     for (const item of sortedItems) {
-      if (!seen.has(item.scoreId)) {
-        seen.add(item.scoreId)
-        cleaned.set(item.scoreId, item)
+      const normalizedId = normalizeExistingScoreId(item.scoreId)
+
+      if (!seen.has(normalizedId)) {
+        seen.add(normalizedId)
+        // Store with normalized ID as key and update the item's scoreId
+        cleaned.set(normalizedId, { ...item, scoreId: normalizedId })
       } else {
         duplicates.push(item)
       }
@@ -1387,9 +1408,11 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
   // WebSocket sync event handlers (internal)
   addPieceFromSync: (item: RepertoireItem) => {
+    const normalizedId = normalizeExistingScoreId(item.scoreId)
     set(state => {
       const newRepertoire = new Map(state.repertoire)
-      newRepertoire.set(item.scoreId, item)
+      // Use normalized ID as key and update the item's scoreId
+      newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
       return { repertoire: newRepertoire }
     })
 
@@ -1399,15 +1422,20 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   },
 
   updatePieceFromSync: (item: RepertoireItem) => {
+    const normalizedId = normalizeExistingScoreId(item.scoreId)
     set(state => {
       const newRepertoire = new Map(state.repertoire)
-      const existing = newRepertoire.get(item.scoreId)
+      const existing = newRepertoire.get(normalizedId)
       if (existing) {
-        // Merge the updated item with existing data
-        newRepertoire.set(item.scoreId, { ...existing, ...item })
+        // Merge the updated item with existing data, ensuring normalized scoreId
+        newRepertoire.set(normalizedId, {
+          ...existing,
+          ...item,
+          scoreId: normalizedId,
+        })
       } else {
-        // Add if it doesn't exist
-        newRepertoire.set(item.scoreId, item)
+        // Add if it doesn't exist, with normalized scoreId
+        newRepertoire.set(normalizedId, { ...item, scoreId: normalizedId })
       }
       return { repertoire: newRepertoire }
     })
@@ -1418,9 +1446,10 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
   },
 
   removePieceFromSync: (scoreId: string) => {
+    const normalizedId = normalizeExistingScoreId(scoreId)
     set(state => {
       const newRepertoire = new Map(state.repertoire)
-      newRepertoire.delete(scoreId)
+      newRepertoire.delete(normalizedId)
       return { repertoire: newRepertoire }
     })
 
@@ -1431,19 +1460,31 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
   dissociatePieceFromSync: (scoreId: string) => {
     // Same as remove for sync purposes - piece is no longer in repertoire
-    get().removePieceFromSync(scoreId)
+    const normalizedId = normalizeExistingScoreId(scoreId)
+    get().removePieceFromSync(normalizedId)
   },
 
   mergePiecesFromSync: (items: RepertoireItem[]) => {
     const newRepertoire = new Map<string, RepertoireItem>()
+    const deduplicatedItems: RepertoireItem[] = []
+
+    // Build map with normalized score IDs, keeping most recent version of duplicates
     items.forEach(item => {
-      newRepertoire.set(item.scoreId, item)
+      const normalizedId = normalizeExistingScoreId(item.scoreId)
+      const existing = newRepertoire.get(normalizedId)
+      if (!existing || item.updatedAt > existing.updatedAt) {
+        const normalizedItem = { ...item, scoreId: normalizedId }
+        newRepertoire.set(normalizedId, normalizedItem)
+      }
     })
+
+    // Convert map back to array for localStorage
+    newRepertoire.forEach(item => deduplicatedItems.push(item))
 
     set({ repertoire: newRepertoire })
 
-    // Update localStorage
-    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+    // Update localStorage with deduplicated and normalized items
+    localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(deduplicatedItems))
   },
 }))
 
