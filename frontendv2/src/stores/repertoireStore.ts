@@ -1491,7 +1491,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     // Persist to localStorage by merging with existing disk data
     const diskMap = readRepertoireFromDisk()
     diskMap.set(normalizedId, { ...item, scoreId: normalizedId })
-    writeRepertoireMapToDisk(diskMap, false) // Use debounced write for add
+    writeRepertoireMapToDisk(diskMap, true) // Use immediate write for sync operations
 
     // Show toast notification if it's a new piece
     if (!existingPiece) {
@@ -1533,7 +1533,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     // Persist to localStorage by merging with existing disk data
     const diskMap = readRepertoireFromDisk()
     diskMap.set(normalizedId, updatedPiece)
-    writeRepertoireMapToDisk(diskMap, false) // Use debounced write for update
+    writeRepertoireMapToDisk(diskMap, true) // Use immediate write for sync operations
 
     console.log(
       '📝 Repertoire piece updated from another device:',

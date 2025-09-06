@@ -17,7 +17,7 @@ This document outlines the remaining gaps in the sync system and proposed soluti
 
 - **File**: `sync-worker/src/syncCoordinator.ts`
   - Add repertoire fetch to `SYNC_REQUEST` handler
-  - Query D1 `sync_data` with `entity_type='repertoire_piece'` and `updated_at > lastSyncTime`
+  - Query D1 `sync_data` with `entity_type='repertoire_item'` and `updated_at > lastSyncTime`
   - Emit `REPERTOIRE_BULK_SYNC` as a separate event (keep logbook and repertoire bulks independent)
 - **File**: `sync-worker/src/schemas.ts`
   - Extend Zod schemas to validate/sanitize repertoire items
@@ -134,11 +134,18 @@ function shouldAcceptUpdate(existing: Item, incoming: Item): boolean {
 
 ## Open Questions
 
-1. **Event naming**: Confirm `REPERTOIRE_BULK_SYNC` vs `PIECE_BULK_SYNC` (client expects which?)
+1. **Event naming**: ✅ RESOLVED - Using `REPERTOIRE_BULK_SYNC` (implemented in both client and server)
 2. **Version field**: Does server broadcast include `version` today for pieces? If not, add to support improved LWW
 3. **Bulk size limits**: Preferred upper bound per WebSocket frame (current suggestion: 500 items)
 4. **Offline duration**: How long should offline events be retained before dropping? (suggestion: 7 days)
 5. **Backfill trigger**: Should full backfill be automatic or require user confirmation for large datasets?
+
+## Recent Fixes (December 2024)
+
+- **scoreId field mapping**: Added `scoreId` field to RepertoireItemSchema and mapping logic in sanitizer to prevent field stripping
+- **ID field fallback**: saveRepertoireToDatabase now checks scoreId, score_id, and id fields for entity identification
+- **Immediate writes**: Changed repertoire sync writes from debounced to immediate to prevent data loss on browser close
+- **lastSyncTime tracking**: Fixed event names (PIECE_ADDED/REMOVED) and added REPERTOIRE_BULK_SYNC to properly track sync times
 
 ## File Touchpoints Summary
 

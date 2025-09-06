@@ -88,6 +88,7 @@ export const RepertoireItemSchema = z.object({
   id: z.string(),
   user_id: z.string().optional(),
   score_id: z.string().nullable().optional(),
+  scoreId: z.string().optional(), // Frontend uses scoreId, map to score_id in sanitizer
   title: z.string(),
   composer: z.string().nullable().optional(),
   status: z.enum([
@@ -256,8 +257,14 @@ export function sanitizeRepertoireItem(
       >['status']
     }
 
-    // Handle field name transformations if needed
-    // (scoreId ↔ score_id is handled in the sync handlers)
+    // Map scoreId to score_id for database compatibility
+    if (validated.scoreId && !validated.score_id) {
+      validated.score_id = validated.scoreId
+    }
+    // Ensure scoreId is present for frontend compatibility
+    if (validated.score_id && !validated.scoreId) {
+      validated.scoreId = validated.score_id
+    }
 
     return validated
   } catch (error) {

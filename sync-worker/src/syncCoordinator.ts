@@ -548,16 +548,25 @@ export class SyncCoordinator implements DurableObject {
 
       switch (event.type) {
         case 'PIECE_ADDED':
-          entityId = event.piece?.scoreId
+          // Check both scoreId and score_id, fallback to id
+          entityId =
+            event.piece?.scoreId || event.piece?.score_id || event.piece?.id
           data = event.piece
           break
         case 'PIECE_UPDATED':
-          entityId = event.piece?.scoreId
+          // Check both scoreId and score_id, fallback to id
+          entityId =
+            event.piece?.scoreId || event.piece?.score_id || event.piece?.id
           data = event.piece
           break
         case 'PIECE_REMOVED':
         case 'PIECE_DISSOCIATED':
-          entityId = event.scoreId || event.piece?.scoreId
+          // Check all possible ID fields
+          entityId =
+            event.scoreId ||
+            event.piece?.scoreId ||
+            event.piece?.score_id ||
+            event.piece?.id
           isDelete = true
           break
         default:
