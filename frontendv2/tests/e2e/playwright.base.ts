@@ -27,25 +27,25 @@ export const test = base.extend({
 
   // Override page to add cleanup
   page: async ({ page }, use) => {
-    // Setup: Clear any existing data
-    await page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear()
-    })
-
     // Use the page
     await use(page)
 
-    // Cleanup: Clear data and close resources
-    await page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear()
-      // Clear any intervals or timeouts that might be running
-      for (let i = 1; i < 99999; i++) {
-        clearInterval(i)
-        clearTimeout(i)
-      }
-    })
+    // Cleanup: Clear data and close resources after test completes
+    // Only clear if page has a valid context (has navigated to a URL)
+    try {
+      await page.evaluate(() => {
+        localStorage.clear()
+        sessionStorage.clear()
+        // Clear any intervals or timeouts that might be running
+        for (let i = 1; i < 99999; i++) {
+          clearInterval(i)
+          clearTimeout(i)
+        }
+      })
+    } catch (error) {
+      // Ignore errors if page context is invalid
+      // This can happen if the test didn't navigate to any page
+    }
   },
 
   // Add custom test fixtures if needed
