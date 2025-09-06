@@ -8,6 +8,10 @@ import Autocomplete from '../ui/Autocomplete'
 import { useAutocomplete } from '../../hooks/useAutocomplete'
 import { formatComposerName } from '../../utils/textFormatting'
 import { useLogbookStore } from '../../stores/logbookStore'
+import {
+  generateNormalizedScoreId,
+  isSameScore,
+} from '../../utils/scoreIdNormalizer'
 
 interface EditPieceModalProps {
   isOpen: boolean
@@ -44,13 +48,21 @@ export const EditPieceModal: React.FC<EditPieceModalProps> = ({
 
   // Calculate how many entries will be affected
   useEffect(() => {
+    // Generate normalized scoreId for the piece being edited
+    const editingScoreId = generateNormalizedScoreId(
+      piece.title,
+      piece.composer
+    )
+
     const count = entries.filter(entry =>
-      entry.pieces.some(
-        p =>
-          p.title === piece.title &&
-          (p.composer || '') === (piece.composer || '')
-      )
+      entry.pieces.some(p => {
+        // Generate normalized scoreId for each piece in the entry
+        const entryPieceScoreId = generateNormalizedScoreId(p.title, p.composer)
+        // Use normalized comparison
+        return isSameScore(editingScoreId, entryPieceScoreId)
+      })
     ).length
+
     setAffectedCount(count)
   }, [entries, piece])
 

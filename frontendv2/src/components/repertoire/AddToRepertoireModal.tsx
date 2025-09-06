@@ -84,7 +84,10 @@ export function AddToRepertoireModal({
 
     entries.forEach(entry => {
       entry.pieces.forEach(piece => {
-        const key = `${piece.title}-${piece.composer || 'Unknown'}`
+        const key = generateNormalizedScoreId(
+          piece.title,
+          piece.composer || null
+        )
         const existing = piecesMap.get(key)
 
         if (existing) {
