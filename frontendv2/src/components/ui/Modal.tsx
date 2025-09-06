@@ -12,6 +12,7 @@ interface ModalProps {
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
   className?: string
+  isMobileOptimized?: boolean
 }
 
 const sizeClasses = {
@@ -31,6 +32,7 @@ export function Modal({
   showCloseButton = true,
   closeOnOverlayClick = true,
   className,
+  isMobileOptimized = false,
 }: ModalProps) {
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -52,7 +54,12 @@ export function Modal({
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div
+            className={cn(
+              'flex min-h-full justify-center p-2 sm:p-4 text-center',
+              isMobileOptimized ? 'items-end sm:items-center' : 'items-center'
+            )}
+          >
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -64,8 +71,10 @@ export function Modal({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-visible rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all',
+                  'w-full transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all',
                   sizeClasses[size],
+                  isMobileOptimized &&
+                    'max-h-[calc(100dvh-env(safe-area-inset-bottom)-1rem)]',
                   className
                 )}
               >
@@ -90,7 +99,14 @@ export function Modal({
                     )}
                   </div>
                 )}
-                {children}
+                <div
+                  className={cn(
+                    isMobileOptimized &&
+                      'max-h-[inherit] overflow-y-auto touch-scroll pr-1 sm:pr-0 -mx-2 px-2'
+                  )}
+                >
+                  {children}
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

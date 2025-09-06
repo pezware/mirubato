@@ -221,4 +221,17 @@
   .scrollbar-thin-auto:hover::-webkit-scrollbar-thumb {
     background-color: #d1d5db;
   }
+
+  /* Touch-friendly scrolling for mobile devices */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* Optional: Contain overscroll behavior */
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
 }
