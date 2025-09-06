@@ -286,8 +286,21 @@ export class WebSocketSync {
   private handleIncomingSync(event: SyncEvent): void {
     this.log('📥 Received sync event:', event.type)
 
-    // Update last sync time
-    this.setLastSyncTime(event.timestamp)
+    // Only update last sync time for data-carrying events
+    // Skip control messages like WELCOME, PONG to avoid missing catch-up syncs
+    const dataEvents = [
+      'ENTRY_CREATED',
+      'ENTRY_UPDATED',
+      'ENTRY_DELETED',
+      'BULK_SYNC',
+      'PIECE_CREATED',
+      'PIECE_UPDATED',
+      'PIECE_DELETED',
+    ]
+
+    if (dataEvents.includes(event.type)) {
+      this.setLastSyncTime(event.timestamp)
+    }
 
     // Emit to event handlers
     const handlers = this.eventHandlers.get(event.type) || []
