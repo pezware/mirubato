@@ -42,7 +42,7 @@ export const test = base.extend({
           clearTimeout(i)
         }
       })
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors if page context is invalid
       // This can happen if the test didn't navigate to any page
     }
