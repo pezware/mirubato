@@ -105,7 +105,7 @@ This document defines Mirubato's deployment strategy using Cloudflare's automati
 **Current State**:
 
 - ✅ Manual deployment via wrangler CLI
-- ✅ Automatic Cloudflare deployment (active for configured projects)
+- ✅ Automatic Github / Cloudflare deployment (active for configured projects)
 
 ### GitHub Actions (Testing Only)
 

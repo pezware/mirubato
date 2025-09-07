@@ -1,40 +1,44 @@
 # System Architecture Overview
 
-## Executive Summary
+**What**: Edge-first music education platform running entirely on Cloudflare Workers.
 
-Mirubato is a comprehensive music education platform built on Cloudflare's edge infrastructure, designed to help musicians improve their sight-reading skills and track their practice journey. The platform combines sophisticated practice tracking, sheet music management, and advanced analytics with real-time synchronization across devices.
+**Why**:
+
+- Musicians need consistent practice tracking across all devices
+- Sheet music management requires specialized PDF processing
+- Global accessibility demands low-latency performance
+- Real-time sync enables seamless multi-device workflows
+
+**How**:
+
+- Five microservices deployed as Cloudflare Workers
+- Edge SQL (D1) for data persistence
+- WebSocket (Durable Objects) for real-time sync
+- AI integration for intelligent features
 
 ## Architecture Principles
 
-### 1. Edge-First Design
+### Edge-First Design
 
-- All services run as Cloudflare Workers at the edge
-- Data and compute colocated near users (300+ locations)
-- Zero cold starts with V8 isolates
-- Automatic global distribution
+**Why**: Sub-50ms response times globally without infrastructure management.
+**How**: All compute runs in Cloudflare's 300+ edge locations using V8 isolates.
 
-### 2. Microservices Architecture
+### Microservices Architecture
 
-- Independent, loosely coupled services
-- Service-specific databases and storage
-- Clear API boundaries
-- Independent deployment and scaling
+**Why**: Independent teams can deploy without coordination.
+**How**: Five services with separate databases, clear API contracts, and isolated failure domains.
 
-### 3. Offline-First Frontend
+### Offline-First Frontend
 
-- Local-first data storage with IndexedDB
-- Optimistic UI updates
-- Background sync queue
-- Progressive Web App capabilities
+**Why**: Musicians practice anywhere, often without reliable internet.
+**How**: IndexedDB for local storage, optimistic updates, and background sync queues.
 
-### 4. Real-Time Synchronization
+### Real-Time Synchronization
 
-- WebSocket-based real-time sync
-- Conflict resolution with timestamps
-- Automatic reconnection
-- Offline queue management
+**Why**: Seamless experience across phone, tablet, and desktop.
+**How**: WebSocket connections via Durable Objects with last-write-wins conflict resolution.
 
-## High-Level Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -47,213 +51,229 @@ Mirubato is a comprehensive music education platform built on Cloudflare's edge 
 ┌───▼──────────┐  ┌──▼──────────┐  ┌▼──────────┐ ┌▼──────────┐ ┌▼──────────┐
 │  Frontend     │  │   API       │  │  Scores   │ │Dictionary │ │Sync Worker│
 │  Worker       │  │   Worker    │  │  Worker   │ │  Worker   │ │  Worker   │
-│ (React SPA)   │  │ (REST API)  │  │(PDF + AI) │ │(AI Terms) │ │(WebSocket)│
+│ (React SPA)   │  │ (Sync API)  │  │(PDF + AI) │ │(AI Terms) │ │(WebSocket)│
 └───┬──────────┘  └──┬──────────┘  └─┬─────────┘ └─┬─────────┘ └─┬─────────┘
     │                 │               │             │             │
 ┌───▼──────────┐  ┌──▼──────────┐  ┌─▼─────────┐ ┌─▼─────────┐ ┌─▼─────────┐
-│ Static Assets │  │ D1 Database │  │D1 + R2    │ │D1 + AI    │ │  Durable  │
-│     (CDN)     │  │  KV Cache   │  │KV + Queue │ │Embeddings │ │  Objects  │
+│    ASSETS     │  │ D1 Database │  │D1 + R2    │ │D1 + KV    │ │  Durable  │
+│   Binding     │  │ KV (Cache)  │  │AI + Queue │ │AI + Queue │ │  Objects  │
 └───────────────┘  └──────────────┘  └───────────┘ └───────────┘ └───────────┘
 ```
 
-## Core Services
+## Core Services Summary
 
-### 1. Frontend Service (`frontendv2`)
+| Service         | Purpose                  | Key Technologies        | Code References                       |
+| --------------- | ------------------------ | ----------------------- | ------------------------------------- |
+| **Frontend**    | React SPA delivery       | Worker + ASSETS binding | `frontendv2/src/index.js`             |
+| **API**         | Auth & sync coordination | Hono, D1, JWT (HS256)   | `api/src/api/routes.ts`               |
+| **Scores**      | PDF processing & AI      | R2, Browser API, AI     | `scores/src/api/handlers/import.ts`   |
+| **Dictionary**  | Music terms with AI      | D1, AI embeddings       | `dictionary/src/routes/dictionary.ts` |
+| **Sync Worker** | Real-time WebSocket      | Durable Objects         | `sync-worker/src/syncCoordinator.ts`  |
 
-- **Purpose**: Serve the React single-page application
-- **Technology**: React 18, TypeScript, Vite, Tailwind CSS
-- **Deployment**: Static assets served via Cloudflare Worker
-- **Key Features**:
-  - Client-side routing
-  - Offline-first with IndexedDB
-  - PWA capabilities
-  - Real-time WebSocket client
-
-### 2. API Service (`api`)
-
-- **Purpose**: Core business logic and data management
-- **Technology**: Hono framework, TypeScript, D1 database
-- **Responsibilities**:
-  - User authentication and sessions
-  - Logbook entries management
-  - Repertoire and goals tracking
-  - Data synchronization
-
-### 3. Scores Service (`scores`)
-
-- **Purpose**: Sheet music management and processing
-- **Technology**: Hono, R2 storage, Cloudflare AI
-- **Responsibilities**:
-  - PDF upload and storage
-  - AI metadata extraction
-  - Collections management
-  - IMSLP integration
-
-### 4. Dictionary Service (`dictionary`)
-
-- **Purpose**: Music terminology and definitions
-- **Technology**: Hono, D1, Cloudflare AI
-- **Responsibilities**:
-  - AI-powered definitions
-  - Semantic search with embeddings
-  - Multi-language support
-  - Quality scoring
-
-### 5. Sync Worker Service (`sync-worker`)
-
-- **Purpose**: Real-time data synchronization
-- **Technology**: Durable Objects, WebSockets
-- **Responsibilities**:
-  - WebSocket connection management
-  - Real-time event broadcasting
-  - Conflict resolution
-  - Device presence tracking
+**Service Details**: See [Microservices Architecture](./microservices.md) for comprehensive service documentation.
 
 ## Technology Stack
 
-| Layer                 | Technology                               | Purpose                            |
-| --------------------- | ---------------------------------------- | ---------------------------------- |
-| **Frontend**          | React 18, TypeScript, Vite, Tailwind CSS | Single-page application            |
-| **State Management**  | Zustand, React Query                     | Client state and server cache      |
-| **UI Components**     | Custom component library, Headless UI    | Consistent design system           |
-| **Backend Framework** | Hono                                     | Lightweight edge-optimized routing |
-| **Database**          | Cloudflare D1 (SQLite)                   | Edge SQL database                  |
-| **Object Storage**    | Cloudflare R2                            | PDF and image storage              |
-| **Cache**             | Cloudflare KV                            | Session and API response caching   |
-| **Queue**             | Cloudflare Queues                        | Async processing                   |
-| **WebSocket**         | Durable Objects                          | Real-time synchronization          |
-| **AI**                | Cloudflare Workers AI                    | Content analysis and generation    |
-| **Analytics**         | Custom implementation                    | Advanced practice analytics        |
+### Cloudflare Platform Services
 
-## Data Flow
+- **Workers**: All microservices (automatic scaling, zero cold starts)
+- **D1**: Edge SQL database (SQLite-compatible)
+- **R2**: Object storage for PDFs and images
+- **KV**: Key-value cache for public API responses
+- **Durable Objects**: WebSocket state management
+- **AI**: LLM for metadata extraction and definitions
+- **Queues**: Async PDF processing
+- **Browser Rendering**: PDF to image conversion
 
-### 1. User Request Flow
+### Application Technologies
 
-```
-User → CDN → Edge Worker → Business Logic → Database/Storage → Response
-```
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
+- **State**: Zustand stores + IndexedDB persistence
+- **Backend**: Hono framework (edge-optimized)
+- **Auth**: JWT (HS256) with HttpOnly cookies
+- **Real-time**: WebSocket with automatic reconnection
 
-### 2. Real-Time Sync Flow
+**Code References**:
 
-```
-Client Action → WebSocket → Durable Object → Broadcast → All Clients
-                    ↓                ↓                        ↓
-              Offline Queue    State Update            UI Update
-```
+- Platform bindings: `*/wrangler.toml`
+- Frontend stack: `frontendv2/package.json`
+- Backend framework: `api/src/index.ts`, `scores/src/index.ts`
 
-### 3. Async Processing Flow
+## Critical Data Flows
+
+### Sync Flow (Primary User Interaction)
 
 ```
-Upload → Queue → Worker → AI Processing → Storage → Index
-           ↓        ↓           ↓            ↓        ↓
-      Validation  Convert   Extract Meta    R2    Search
+Client → API /sync/push → D1 sync_data → WebSocket broadcast → Other devices
+         ↓                      ↓                ↓
+    Offline queue         Conflict resolution  Real-time update
 ```
 
-## Security Architecture
+**Code**: `api/src/api/handlers/sync.ts`, `sync-worker/src/syncCoordinator.ts:189-286`
 
-### Authentication
+### PDF Import Flow
 
-- JWT-based authentication
-- Magic link email authentication
-- Google OAuth integration
-- Secure session management
+```
+Upload → Validation → Browser API/AI → R2 storage → D1 metadata
+           ↓              ↓              ↓            ↓
+      Rate limit    Extract/render   scores bucket  Search index
+```
 
-### Data Protection
+**Code**: `scores/src/api/handlers/import.ts`, `scores/src/api/handlers/import-enhanced.ts`
 
-- Row-level security in database
-- User data isolation
-- Input validation with Zod
-- SQL injection prevention
+### Authentication Flow
 
-### Network Security
+```
+Magic link request → Rate limit → Send email → Verify token → JWT cookie (30d)
+                        ↓            ↓            ↓              ↓
+                  10 req/min    Resend API   15 min expiry  HttpOnly, Secure
+```
 
-- HTTPS everywhere
-- CORS configuration
-- Rate limiting
-- DDoS protection via Cloudflare
+**Code**: `api/src/api/handlers/auth.ts:145-215`
 
-## Performance Characteristics
+## Security Implementation
 
-### Edge Performance
+**Authentication**:
 
-- **Response Time**: < 100ms globally
-- **Zero Cold Starts**: V8 isolates always warm
-- **Auto-Scaling**: Handles millions of requests
-- **Global CDN**: Static assets cached at edge
+- JWT (HS256) with 30-day expiry — `api/src/utils/auth.ts`
+- HttpOnly cookies (SameSite=Lax) — `api/src/api/handlers/auth.ts:246-273`
+- Magic link (15 min expiry) + Google OAuth — `api/src/api/handlers/auth.ts`
 
-### Client Performance
+**Rate Limiting**:
 
-- **First Contentful Paint**: < 1.5s
-- **Time to Interactive**: < 3.0s
-- **Bundle Size**: < 200KB gzipped
-- **Offline Support**: Full functionality offline
+- Auth endpoints: 10 req/min (Cloudflare binding) — `api/src/api/middleware.ts:89-127`
+- Import API: 1 per 10 min (KV-backed) — `scores/src/services/enhancedRateLimiter.ts`
 
-### Database Performance
+**Data Isolation**:
 
-- **Query Time**: < 10ms at edge
-- **Write Performance**: Async with queue
-- **Sync Latency**: < 50ms WebSocket
-- **Cache Hit Rate**: > 90% for hot data
+- User ID validation on all queries — `api/src/api/handlers/sync.ts`
+- Service auth headers (Dictionary) — `dictionary/src/middleware/auth.ts:45-73`
+- CORS with explicit origins — `api/src/index.ts:19-29`
 
-## Scalability Considerations
+## Performance Metrics
 
-### Horizontal Scaling
+**Edge Performance**:
 
-- Services scale independently
-- No shared state between workers
-- Queue-based async processing
-- Database sharding ready
+- Worker CPU: 50ms limit, 10ms p50 typical
+- Memory: 128MB per invocation
+- Cold start: 0ms (V8 isolates always warm)
+- Global latency: <50ms from 300+ locations
 
-### Vertical Scaling
+**Frontend Performance**:
 
-- Cloudflare handles infrastructure
-- Automatic resource allocation
-- No manual scaling required
-- Pay-per-use pricing model
+- Bundle size: ~500KB gzipped
+- Static assets: 1-year cache headers
+- Code splitting: Lazy-loaded routes
+- Offline: IndexedDB with background sync
 
-## Deployment Architecture
+**Database Performance**:
+
+- D1 queries: <10ms for indexed queries
+- KV reads: <10ms globally
+- R2 uploads: 50MB max file size
+- WebSocket: 1MB max message size
+
+**Operational Limits**: See [Microservices Architecture](./microservices.md#operational-limits)
+
+## Scaling Architecture
+
+**Automatic Scaling**:
+
+- Workers scale to millions of requests without configuration
+- Durable Objects provide per-user WebSocket isolation
+- Queues auto-scale with backlog
+- R2/KV scale independently
+
+**Service Bottlenecks**:
+| Service | Constraint | Mitigation |
+|---------|-----------|------------|
+| API | D1 connection pool | Prepared statements, indexes |
+| Scores | AI token limits | Queue batching, caching |
+| Sync | DO memory (128MB) | Per-user isolation |
+
+**Cost Model**:
+
+- Requests: $0.50 per million (10M free)
+- CPU: $0.02 per million ms (30M free)
+- Storage: D1 5GB free, R2 10GB free
+
+## Deployment & Development
 
 ### Environments
 
-- **Local**: Development with Wrangler
-- **Staging**: Pre-production testing
-- **Production**: Live user traffic
+| Environment | Purpose     | Domain               | Persistence |
+| ----------- | ----------- | -------------------- | ----------- |
+| Local       | Development | \*.localhost         | Ephemeral   |
+| Staging     | Testing     | staging.mirubato.com | Persistent  |
+| Production  | Live users  | mirubato.com         | Persistent  |
 
-### CI/CD Pipeline
+### Local Development URLs
+
+```bash
+# Services (from */package.json dev scripts)
+http://www-mirubato.localhost:4000      # Frontend (HMR: 4001)
+http://api-mirubato.localhost:9797      # API
+http://scores-mirubato.localhost:9788   # Scores
+http://dictionary-mirubato.localhost:9799 # Dictionary
+ws://localhost:8787/sync/ws?userId=<id>&token=<jwt> # WebSocket
+
+# Quick start
+./start-scorebook.sh  # Starts all services with test data
+```
+
+**Code References**:
+
+- Port configs: `*/package.json` (dev scripts)
+- Service URLs: `*/wrangler.toml` ([env.local].vars)
+- Frontend API targets: `frontendv2/.env.development`
+- Vite config: `frontendv2/vite.config.ts:68-72`
+
+### Deployment Pipeline
 
 ```
-GitHub Push → GitHub Actions → Build/Test → Wrangler Deploy → Edge
+GitHub Push → GitHub Actions → Wrangler Deploy → Cloudflare Edge
+                    ↓                ↓              ↓
+              Build & Test    Gradual rollout  Instant rollback
 ```
 
-### Zero-Downtime Deployment
+**Zero Downtime**: Workers update atomically with automatic traffic shifting.
 
-- Gradual rollout to subset of traffic
-- Instant rollback capability
-- No cold starts during deployment
-- Atomic updates
+## Monitoring & Health
 
-## Monitoring & Observability
+**Health Endpoints** (all services):
 
-### Health Checks
+- `/health` — Comprehensive status with dependency checks
+- `/livez` — Simple liveness check
+- `/readyz` — Ready to serve traffic
 
-- `/health` - Comprehensive health status
-- `/livez` - Liveness probe
-- `/readyz` - Readiness probe
-- `/metrics` - Prometheus metrics
+**Health Response Structure**:
 
-### Logging
+```typescript
+{
+  service: string,
+  version: "1.7.6",
+  status: "healthy" | "unhealthy",
+  services: {  // Nested health checks
+    database: { status, latency, message },
+    cache: { status, latency },
+    ...
+  }
+}
+```
 
-- Structured JSON logging
-- Distributed tracing
-- Error tracking
-- Performance metrics
+**Code References**:
 
-### Analytics
+- API health: `api/src/api/handlers/health.ts`
+- Scores health: `scores/src/api/handlers/health.ts`
+- Dictionary health: `dictionary/src/api/handlers/health.ts`
+- Sync health: `sync-worker/src/index.ts:57-75`
 
-- Custom analytics engine
-- Real-time dashboards
-- Usage patterns
-- Performance monitoring
+**Observability**:
+
+- Cloudflare Analytics for request metrics
+- Wrangler tail for real-time logs
+- Request ID propagation for tracing
+- Custom metrics via Analytics Engine
 
 ## Related Documentation
 

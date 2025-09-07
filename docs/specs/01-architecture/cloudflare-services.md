@@ -43,10 +43,10 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `api/src/index.ts:278` — Main API export
-- `scores/src/index.ts:392` — Scores service with queue handler
-- `sync-worker/src/index.ts:25-32` — WebSocket upgrade handler
-- `dictionary/src/index.ts:19-24` — Dictionary service with fetch/queue/scheduled handlers
+- `api/src/index.ts` — Main API Worker export
+- `scores/src/index.ts` — Scores service with queue handler
+- `sync-worker/src/index.ts` — WebSocket upgrade handler
+- `dictionary/src/index.ts` — Dictionary service with fetch/queue/scheduled handlers
 
 **Operational Limits**:
 
@@ -83,10 +83,10 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `api/src/utils/database.ts:12-16` — `class DatabaseHelpers`
-- `api/src/api/handlers/repertoire.ts` — CRUD operations
-- `sync-worker/src/syncCoordinator.ts:57` — Bulk sync reads
-- `scores/src/queue-consumer.ts:116-142` — Background writes
+- `api/src/utils/database.ts` — Database helper utilities
+- `api/src/api/handlers/repertoire.ts` — Repertoire CRUD operations
+- `sync-worker/src/syncCoordinator.ts` — Bulk sync database operations
+- `scores/src/queue-consumer.ts` — Background database writes
 
 **Operational Limits**:
 
@@ -123,9 +123,9 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `scores/src/services/uploadService.ts:97` — `uploadToR2(file, env, options)`
-- `scores/src/index.ts:259-336` — R2 file serving endpoint
-- `scores/src/queue-consumer.ts:260-277` — PDF storage workflow
+- `scores/src/services/uploadService.ts` — R2 upload service
+- `scores/src/index.ts` — R2 file serving endpoints
+- `scores/src/queue-consumer.ts` — PDF storage workflow
 
 **Operational Limits**:
 
@@ -161,9 +161,9 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `api/src/utils/cache.ts:122` — `apiCacheMiddleware(c, next)`
-- `scores/src/utils/cache.ts:73` — `addCacheHeaders(response, contentType, options)`
-- `dictionary/src/services/storage/cache-service.ts:8` — `export class CacheService`
+- `api/src/utils/cache.ts` — API cache middleware
+- `scores/src/utils/cache.ts` — Cache header utilities
+- `dictionary/src/services/storage/cache-service.ts` — Cache service class
 
 **Operational Limits**:
 
@@ -201,9 +201,9 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `scores/src/api/handlers/upload.ts:94-98` — Queue message after upload
-- `scores/src/index.ts:394-459` — `queue(batch, env)` consumer
-- `scores/src/queue/pdf-processor.ts:15` — `processPdfScore(message, env)`
+- `scores/src/api/handlers/upload.ts` — Queue producer after upload
+- `scores/src/index.ts` — Queue consumer handler
+- `scores/src/queue/pdf-processor.ts` — PDF processing logic
 
 **Operational Limits**:
 
@@ -242,9 +242,9 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `sync-worker/src/index.ts:25-32` — WebSocket upgrade routing
-- `sync-worker/src/syncCoordinator.ts:47` — `class SyncCoordinator`
-- `sync-worker/src/syncCoordinator.ts:88-112` — Connection management
+- `sync-worker/src/index.ts` — WebSocket upgrade routing
+- `sync-worker/src/syncCoordinator.ts` — SyncCoordinator Durable Object
+- `sync-worker/src/syncCoordinator.ts` — WebSocket connection management
 
 **Operational Limits**:
 
@@ -281,9 +281,9 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `dictionary/src/services/ai/cloudflare-ai-service.ts:16` — `generateStructuredContent(prompt, model, options)`
-- `scores/src/services/cloudflareAiExtractor.ts:12` — `class CloudflareAiExtractor`
-- `dictionary/src/services/ai/cloudflare-ai-service.ts:98` — `generateEmbedding(text, model)`
+- `dictionary/src/services/ai/cloudflare-ai-service.ts` — AI content generation and embeddings
+- `scores/src/services/cloudflareAiExtractor.ts` — Score metadata extraction
+- `dictionary/src/services/ai/embeddings-service.ts` — Semantic search embeddings
 
 **Operational Limits** (typical, subject to Cloudflare limits):
 
@@ -320,9 +320,8 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `scores/src/services/browser-rendering.ts:221` — `renderVexFlowToImage(...)`
-- `scores/src/services/browser-rendering.ts:280` — `generatePDFPreviews(...)`
-- `scores/src/queue/pdf-processor.ts:88-120` — Puppeteer PDF analysis
+- `scores/src/services/browser-rendering.ts` — Browser rendering utilities
+- `scores/src/queue/pdf-processor.ts` — PDF processing with Puppeteer
 
 **Operational Limits** (typical, subject to Cloudflare limits):
 
@@ -358,11 +357,8 @@ This document defines how Mirubato utilizes Cloudflare's edge computing platform
 
 **Code References**:
 
-- `api/wrangler.toml:92-96` — Rate limiter binding (root configuration)
-- `api/wrangler.toml:27-31` — Local environment binding
-- `api/wrangler.toml:57-61` — Staging environment binding
-- `api/wrangler.toml:128-132` — Production environment binding
-- `api/src/api/middleware.ts:57-71` — `rateLimitMiddleware` implementation
+- `api/wrangler.toml` — Rate limiter binding configurations
+- `api/src/api/middleware.ts` — Rate limit middleware implementation
 
 **Configuration**:
 

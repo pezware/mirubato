@@ -61,15 +61,15 @@
 **Technology Stack**:
 
 - React 18 + TypeScript + Vite
-- Tailwind CSS + shadcn/ui components
+- Tailwind CSS + Headless UI components
 - Zustand for state management
 - Native Fetch API for HTTP requests
 
 **Operational Limits**:
 
-- Bundle size: ~500KB gzipped
 - Static assets: Cached at edge for 1 year
 - Service Worker: Offline-first with IndexedDB storage
+- Bundle optimization: Code splitting and lazy loading
 
 ### 2. API Service
 
@@ -446,7 +446,7 @@ ws://sync.mirubato.com/sync/ws?token=<jwt_token>
 
 - Cloudflare Analytics: Request metrics and error rates
 - Structured logs: JSON format with correlation IDs
-- Custom metrics: Performance tracking via Analytics Engine
+- Custom metrics: Analytics Engine (when configured)
 - Alerts: Webhook notifications on health degradation
 
 ## Deployment Strategy
@@ -462,35 +462,17 @@ ws://sync.mirubato.com/sync/ws?token=<jwt_token>
 
 **How**:
 
-- GitHub Actions triggers on push to main
-- Wrangler CLI deploys to Cloudflare edge
-- Automatic traffic shifting for gradual rollout
-- Previous version kept warm for instant rollback
+- Wrangler CLI for deployments
+- Cloudflare automatic deployments (when configured)
+- Atomic updates with instant rollback
+- Previous version kept warm
 
-**Code References**:
-
-- `.github/workflows/deploy-*.yml` — CI/CD pipelines
-- `*/wrangler.toml` — Deployment configurations
-- `package.json` → `version` — Unified version tracking
-
-**Deployment Commands**:
-
-```bash
-# Individual service deployment
-cd [service] && wrangler deploy --env production
-
-# Rollback if issues detected
-wrangler rollback --env production
-
-# View deployment history
-wrangler deployments list --env production
-```
+**Details**: See [Deployment](./deployment.md) for complete deployment procedures, commands, and environment configurations.
 
 **Version Strategy**:
 
 - All services at v1.7.6 (unified December 2024)
 - Backward compatibility maintained
-- No breaking changes without migration path
 - Version in health endpoints for verification
 
 ## Scaling Characteristics
@@ -543,8 +525,8 @@ wrangler deployments list --env production
 **How**:
 
 - Separate databases per service
-- JWT with short expiry (15 min access tokens)
-- Service-specific auth tokens
+- JWT HS256 with 30-day tokens (HttpOnly cookies)
+- Service-specific auth tokens (Dictionary only)
 - Rate limiting at edge
 
 **Code References**:
