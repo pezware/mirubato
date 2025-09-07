@@ -72,14 +72,12 @@ test.describe('Logbook Sync', () => {
       title: 'Structure Test 1',
       composer: 'Test Composer',
       notes: 'Testing data structure',
-      mood: 'satisfied',
     })
 
     await logbookPage.createEntry({
       duration: 45,
       title: 'Structure Test 2',
       notes: 'Another test entry',
-      mood: 'excited',
     })
 
     // Verify data structure
@@ -96,7 +94,6 @@ test.describe('Logbook Sync', () => {
 
     if (firstEntry) {
       expect(firstEntry.duration).toBe(30)
-      expect(firstEntry.mood).toBe('satisfied')
 
       // Check if pieces array exists and has the expected structure
       if (firstEntry.pieces && Array.isArray(firstEntry.pieces)) {

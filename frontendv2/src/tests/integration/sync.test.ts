@@ -271,7 +271,7 @@ describe('Sync Integration Tests', () => {
         techniques: [],
         goalIds: [],
         notes: 'Original notes',
-        mood: 'SATISFIED',
+        mood: null,
         tags: [],
         createdAt: '2024-01-01T09:00:00Z',
         updatedAt: '2024-01-01T10:00:00Z',

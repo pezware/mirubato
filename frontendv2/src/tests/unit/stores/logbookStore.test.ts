@@ -56,7 +56,7 @@ describe('logbookStore', () => {
     techniques: ['scales'],
     goalIds: [],
     notes: 'Test notes',
-    mood: 'SATISFIED',
+    mood: null,
     tags: ['test'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',

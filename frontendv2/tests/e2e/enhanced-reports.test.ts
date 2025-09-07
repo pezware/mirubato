@@ -41,7 +41,6 @@ test.describe('Enhanced Reports', () => {
         title: 'Moonlight Sonata',
         composer: 'Beethoven',
         notes: 'Working on first movement',
-        mood: 'satisfied',
       })
 
       await logbookPage.createEntry({
@@ -49,7 +48,6 @@ test.describe('Enhanced Reports', () => {
         title: 'Clair de Lune',
         composer: 'Debussy',
         notes: 'Practice dynamics',
-        mood: 'excited',
       })
     })
 
