@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  IconMoodAngry,
-  IconMoodNeutral,
-  IconMoodSmile,
-  IconMoodHappy,
-  IconAlertCircle,
-} from '@tabler/icons-react'
+import { IconAlertCircle } from '@tabler/icons-react'
 import { useLogbookStore } from '../stores/logbookStore'
 import { useRepertoireStore } from '../stores/repertoireStore'
 import { useUserPreferences } from '../hooks/useUserPreferences'
@@ -81,9 +75,6 @@ export default function ManualEntryForm({
     entry?.instrument || toLogbookInstrument(getPrimaryInstrument())
   )
   const [notes, setNotes] = useState(entry?.notes || '')
-  const [mood, setMood] = useState<LogbookEntry['mood'] | undefined>(
-    entry?.mood
-  )
   const [pieces, setPieces] = useState(
     entry?.pieces && entry.pieces.length > 0
       ? entry.pieces
@@ -175,7 +166,7 @@ export default function ManualEntryForm({
         techniques: techniques.length > 0 ? techniques : [],
         goalIds: [],
         notes: notes ? notes : null, // Convert empty string to null for D1 compatibility
-        mood: mood || null, // Convert undefined to null for D1 compatibility
+        mood: null, // Mood feature removed for better mobile UX
         tags: tags.length > 0 ? tags : [],
         metadata: {
           source: 'manual',
@@ -524,78 +515,6 @@ export default function ManualEntryForm({
           </div>
         </div>
 
-        {/* Mood */}
-        <div>
-          <label className="block text-sm font-medium text-morandi-stone-700 mb-1">
-            {t('logbook:entry.mood')}
-          </label>
-          <div className="flex gap-px flex-wrap sm:flex-nowrap">
-            {[
-              {
-                value: 'frustrated',
-                icon: <IconMoodAngry size={20} stroke={1.5} />,
-                fullLabel: t('logbook:mood.frustrated'),
-              },
-              {
-                value: 'neutral',
-                icon: <IconMoodNeutral size={20} stroke={1.5} />,
-                fullLabel: t('logbook:mood.neutral'),
-              },
-              {
-                value: 'satisfied',
-                icon: <IconMoodSmile size={20} stroke={1.5} />,
-                fullLabel: t('logbook:mood.satisfied'),
-              },
-              {
-                value: 'excited',
-                icon: <IconMoodHappy size={20} stroke={1.5} />,
-                fullLabel: t('logbook:mood.excited'),
-              },
-            ].map((option, index) => {
-              const isFirst = index === 0
-              const isLast = index === 3
-              const isActive = mood === option.value
-
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() =>
-                    setMood(
-                      isActive
-                        ? undefined
-                        : (option.value as LogbookEntry['mood'])
-                    )
-                  }
-                  data-testid={`mood-button-${option.value.toLowerCase()}`}
-                  className={`
-                    flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer
-                    border border-morandi-stone-300 flex-1 sm:flex-initial
-                    ${
-                      isActive
-                        ? 'bg-morandi-sage-500 text-white border-morandi-sage-500 shadow-sm'
-                        : 'bg-white text-morandi-stone-600 hover:bg-morandi-stone-100'
-                    }
-                    ${isFirst ? 'rounded-l-lg' : ''}
-                    ${isLast ? 'rounded-r-lg' : ''}
-                    ${!isFirst && !isLast ? '-ml-px' : ''}
-                    ${!isFirst ? 'sm:border-l-0' : ''}
-                  `}
-                >
-                  <span
-                    className={
-                      isActive ? 'text-white' : 'text-morandi-stone-600'
-                    }
-                  >
-                    {option.icon}
-                  </span>
-                  <span className="hidden sm:inline">{option.fullLabel}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
         {/* Validation Error Summary */}
         {hasErrors() && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
@@ -609,22 +528,24 @@ export default function ManualEntryForm({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex justify-end gap-4 pt-4 border-t border-morandi-stone-200">
-          <Button type="button" onClick={onClose} variant="secondary">
-            {t('common:cancel')}
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            loading={isSubmitting}
-            leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
-            data-testid="save-entry-button"
-          >
-            {entry
-              ? t('logbook:entry.updateEntry')
-              : t('logbook:entry.saveEntry')}
-          </Button>
+        {/* Actions - Sticky on mobile for better UX */}
+        <div className="sticky bottom-0 -mx-4 px-4 pb-2 pt-4 bg-white border-t border-morandi-stone-200 sm:static sm:mx-0 sm:px-0 sm:pb-0">
+          <div className="flex justify-end gap-4">
+            <Button type="button" onClick={onClose} variant="secondary">
+              {t('common:cancel')}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              leftIcon={!isSubmitting && <span>{entry ? '💾' : '💾'}</span>}
+              data-testid="save-entry-button"
+            >
+              {entry
+                ? t('logbook:entry.updateEntry')
+                : t('logbook:entry.saveEntry')}
+            </Button>
+          </div>
         </div>
       </form>
 

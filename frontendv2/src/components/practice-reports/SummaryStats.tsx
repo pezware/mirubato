@@ -26,8 +26,8 @@ export function SummaryStats({
 
   return (
     <div className="space-y-2" data-testid="summary-stats">
-      {/* Summary Stats Grid - Now 4 stats for better mobile layout */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      {/* Summary Stats Grid - 3 stats for better single-line layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3">
           <p
             className="text-lg font-bold text-morandi-stone-900"
@@ -49,18 +49,6 @@ export function SummaryStats({
           </p>
           <p className="text-xs sm:text-sm text-morandi-stone-600">
             {t('reports:stats.thisWeek')}
-          </p>
-        </div>
-
-        <div className="bg-morandi-peach-50 rounded-lg p-2 sm:p-3">
-          <p
-            className="text-lg font-bold text-morandi-stone-900"
-            data-testid="current-streak"
-          >
-            {analytics.currentStreak}
-          </p>
-          <p className="text-xs sm:text-sm text-morandi-stone-600">
-            {t('reports:currentStreak')}
           </p>
         </div>
 

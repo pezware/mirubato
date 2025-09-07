@@ -41,7 +41,7 @@ describe('Logbook API', () => {
           pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
           techniques: ['scales'],
           goalIds: ['goal1'],
-          mood: 'SATISFIED',
+          mood: null,
           tags: ['morning'],
           createdAt: '2025-06-26T10:00:00Z',
           updatedAt: '2025-06-26T10:00:00Z',
@@ -67,7 +67,7 @@ describe('Logbook API', () => {
           ...mockEntries[0],
           type: 'practice',
           instrument: 'piano',
-          mood: 'satisfied',
+          mood: null,
         },
       ])
     })
@@ -103,7 +103,7 @@ describe('Logbook API', () => {
         pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
         techniques: ['scales'],
         goalIds: ['goal1'],
-        mood: 'SATISFIED',
+        mood: null,
         tags: ['morning'],
       }
 
@@ -186,7 +186,7 @@ describe('Logbook API', () => {
       const mockDate = new Date('2025-06-26T14:00:00Z')
       vi.setSystemTime(mockDate)
 
-      const updates = { duration: 45, mood: 'EXCITED' as const }
+      const updates = { duration: 45 }
 
       ;(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { success: true },

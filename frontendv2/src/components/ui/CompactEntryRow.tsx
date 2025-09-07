@@ -105,6 +105,9 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
     return null
   }
 
+  // Determine if this is a lesson entry for special background
+  const isLesson = type?.toLowerCase() === 'lesson'
+
   return (
     <div
       className={cn(
@@ -119,7 +122,12 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-morandi-purple-600" />
       )}
       <div
-        className="py-3 px-4 hover:bg-morandi-stone-50 transition-colors group cursor-pointer"
+        className={cn(
+          'py-3 px-4 transition-colors group cursor-pointer',
+          isLesson
+            ? 'bg-morandi-purple-50 hover:bg-morandi-purple-100'
+            : 'hover:bg-morandi-stone-50'
+        )}
         onClick={e => {
           // Only toggle notes if clicking on the main area, not buttons
           if (notes && !(e.target as HTMLElement).closest('button')) {
@@ -185,7 +193,7 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                     // Match the color scheme from ManualEntryForm
                     switch (typeLower) {
                       case 'lesson':
-                        return 'bg-morandi-purple-100 text-morandi-purple-700'
+                        return 'bg-morandi-purple-200 text-morandi-purple-800'
                       case 'practice':
                         return 'bg-morandi-sage-100 text-morandi-sage-700'
                       case 'technique':

@@ -43,7 +43,6 @@ test.describe('Enhanced Reports - Core Tests', () => {
         title: 'Test Piece',
         composer: 'Beethoven',
         notes: 'Test notes',
-        mood: 'satisfied',
       })
     })
 

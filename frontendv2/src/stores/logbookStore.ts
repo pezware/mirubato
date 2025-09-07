@@ -7,7 +7,7 @@ import {
   type DuplicateEntry,
 } from '../utils/duplicateCleanup'
 import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
-import { localEventBus } from '../services/localEventBus'
+import { localEventBus, type LocalEventData } from '../services/localEventBus'
 import {
   generateNormalizedScoreId,
   isSameScore,
@@ -42,6 +42,19 @@ interface LogbookState {
 
   // WebSocket sync initialization status
   webSocketInitialized: boolean
+
+  // Internal handler tracking (not exposed to consumers)
+  _wsHandlers?: {
+    entryCreated?: (event: SyncEvent) => void
+    entryUpdated?: (event: SyncEvent) => void
+    entryDeleted?: (event: SyncEvent) => void
+    bulkSync?: (event: SyncEvent) => void
+  }
+  _windowHandlers?: {
+    focus?: () => void
+    beforeunload?: () => void
+  }
+  _initTimer?: NodeJS.Timeout
 
   // Computed getters
   entries: LogbookEntry[]
@@ -355,7 +368,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           const syncedEntry = await logbookApi.createEntry(entry)
 
           // Only update if the server returns a meaningfully different version
-          if (!entriesAreEqual(syncedEntry, entry)) {
+          if (syncedEntry && !entriesAreEqual(syncedEntry, entry)) {
             const syncedEntriesMap = new Map(get().entriesMap)
             // Use the synced entry's ID as the key (in case server changed it)
             syncedEntriesMap.set(syncedEntry.id, syncedEntry)
@@ -470,7 +483,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
           const syncedEntry = await logbookApi.updateEntry(id, updates)
 
           // Only update if the server returns a meaningfully different version
-          if (!entriesAreEqual(syncedEntry, updatedEntry)) {
+          if (syncedEntry && !entriesAreEqual(syncedEntry, updatedEntry)) {
             const syncedEntriesMap = new Map(get().entriesMap)
             // Use synced entry's ID as key (should be same as 'id' but be safe)
             syncedEntriesMap.set(syncedEntry.id, syncedEntry)
@@ -799,33 +812,44 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       set({ realtimeSyncError: null, realtimeSyncStatus: 'connecting' })
 
       const webSocketSync = getWebSocketSync()
+      const state = get()
 
-      // Set up event handlers
-      webSocketSync.on('ENTRY_CREATED', (event: SyncEvent) => {
-        if (event.entry) {
-          get().addEntryFromSync(event.entry)
+      // Only set up handlers if they don't already exist
+      if (!state._wsHandlers) {
+        const handlers = {
+          entryCreated: (event: SyncEvent) => {
+            if (event.entry) {
+              get().addEntryFromSync(event.entry)
+            }
+          },
+          entryUpdated: (event: SyncEvent) => {
+            if (event.entry) {
+              get().updateEntryFromSync(event.entry)
+            }
+          },
+          entryDeleted: (event: SyncEvent) => {
+            if (event.entryId) {
+              get().removeEntryFromSync(event.entryId)
+            }
+          },
+          bulkSync: (event: SyncEvent) => {
+            if (event.entries) {
+              get().mergeEntriesFromSync(event.entries)
+              // Update last sync time after successful bulk sync
+              set({ lastSyncTime: new Date() })
+            }
+          },
         }
-      })
 
-      webSocketSync.on('ENTRY_UPDATED', (event: SyncEvent) => {
-        if (event.entry) {
-          get().updateEntryFromSync(event.entry)
-        }
-      })
+        // Register handlers
+        webSocketSync.on('ENTRY_CREATED', handlers.entryCreated)
+        webSocketSync.on('ENTRY_UPDATED', handlers.entryUpdated)
+        webSocketSync.on('ENTRY_DELETED', handlers.entryDeleted)
+        webSocketSync.on('BULK_SYNC', handlers.bulkSync)
 
-      webSocketSync.on('ENTRY_DELETED', (event: SyncEvent) => {
-        if (event.entryId) {
-          get().removeEntryFromSync(event.entryId)
-        }
-      })
-
-      webSocketSync.on('BULK_SYNC', (event: SyncEvent) => {
-        if (event.entries) {
-          get().mergeEntriesFromSync(event.entries)
-          // Update last sync time after successful bulk sync
-          set({ lastSyncTime: new Date() })
-        }
-      })
+        // Store handler references
+        set({ _wsHandlers: handlers })
+      }
 
       // Get auth token and user info
       const authToken = localStorage.getItem('auth-token')
@@ -863,6 +887,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
   disableRealtimeSync: () => {
     const webSocketSync = getWebSocketSync()
+    const state = get()
+
+    // Remove WebSocket event handlers if they exist
+    if (state._wsHandlers) {
+      webSocketSync.off('ENTRY_CREATED', state._wsHandlers.entryCreated!)
+      webSocketSync.off('ENTRY_UPDATED', state._wsHandlers.entryUpdated!)
+      webSocketSync.off('ENTRY_DELETED', state._wsHandlers.entryDeleted!)
+      webSocketSync.off('BULK_SYNC', state._wsHandlers.bulkSync!)
+      set({ _wsHandlers: undefined })
+    }
+
     webSocketSync.disconnect()
     set({
       isRealtimeSyncEnabled: false,
@@ -1210,13 +1245,25 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
   },
 }))
 
+// Store references to handlers and timers for cleanup
+let pieceDisassociatedHandler:
+  | ((data: LocalEventData<'PIECE_DISSOCIATED'>) => void)
+  | null = null
+let windowFocusHandler: (() => void) | null = null
+let windowBeforeUnloadHandler: (() => void) | null = null
+let initializationTimer: NodeJS.Timeout | null = null
+
 // Register event handler for piece dissociation from repertoire
 // This handles updates when a piece is removed from repertoire but logs should be preserved
 // Skip registration only in test environment
 const isTestEnvironment =
   typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+
 if (!isTestEnvironment) {
-  localEventBus.on('PIECE_DISSOCIATED', ({ updatedEntries }) => {
+  // Create handlers
+  pieceDisassociatedHandler = ({
+    updatedEntries,
+  }: LocalEventData<'PIECE_DISSOCIATED'>) => {
     // Update store state with the modified entries
     useLogbookStore.setState({
       entriesMap: updatedEntries,
@@ -1229,11 +1276,9 @@ if (!isTestEnvironment) {
     // Preserve localStorage sync - write immediately
     const entries = Array.from(updatedEntries.values())
     localStorage.setItem('mirubato:logbook:entries', JSON.stringify(entries))
-  })
+  }
 
-  // Set up WebSocket sync event handlers
-  // Check WebSocket connection on window focus
-  window.addEventListener('focus', () => {
+  windowFocusHandler = () => {
     const store = useLogbookStore.getState()
     if (!store.isLocalMode && localStorage.getItem('auth-token')) {
       // Check if WebSocket is connected, reconnect if needed
@@ -1250,25 +1295,73 @@ if (!isTestEnvironment) {
         store.initializeWebSocketSync()
       }
     }
-  })
+  }
 
-  // Gracefully close WebSocket connection before unload
-  window.addEventListener('beforeunload', () => {
+  windowBeforeUnloadHandler = () => {
     const store = useLogbookStore.getState()
     if (store.isRealtimeSyncEnabled) {
       // Gracefully disconnect WebSocket
       store.disableRealtimeSync()
       console.log('🔌 WebSocket disconnected before unload')
     }
-  })
+  }
+
+  // Register handlers
+  localEventBus.on('PIECE_DISSOCIATED', pieceDisassociatedHandler)
+  window.addEventListener('focus', windowFocusHandler)
+  window.addEventListener('beforeunload', windowBeforeUnloadHandler)
 
   // Initialize WebSocket sync when the store is initialized and user is authenticated
   if (localStorage.getItem('auth-token')) {
-    setTimeout(() => {
+    initializationTimer = setTimeout(() => {
       const store = useLogbookStore.getState()
       if (!store.isLocalMode) {
         store.initializeWebSocketSync()
       }
     }, 1000) // Delay to ensure store is fully initialized
   }
+}
+
+// Export cleanup function for tests
+export const cleanupLogbookStore = () => {
+  // Clear timers
+  if (initializationTimer) {
+    clearTimeout(initializationTimer)
+    initializationTimer = null
+  }
+
+  // Remove event listeners
+  if (pieceDisassociatedHandler) {
+    localEventBus.off('PIECE_DISSOCIATED', pieceDisassociatedHandler)
+    pieceDisassociatedHandler = null
+  }
+
+  if (windowFocusHandler) {
+    window.removeEventListener('focus', windowFocusHandler)
+    windowFocusHandler = null
+  }
+
+  if (windowBeforeUnloadHandler) {
+    window.removeEventListener('beforeunload', windowBeforeUnloadHandler)
+    windowBeforeUnloadHandler = null
+  }
+
+  // Disconnect WebSocket if connected
+  const store = useLogbookStore.getState()
+  if (store.isRealtimeSyncEnabled) {
+    store.disableRealtimeSync()
+  }
+}
+
+// Expose cleanup for tests without importing from setup
+declare global {
+  var __cleanupLogbookStore: (() => void) | undefined
+  var __logbookStoreLoaded: boolean | undefined
+}
+
+try {
+  globalThis.__cleanupLogbookStore = cleanupLogbookStore
+  globalThis.__logbookStoreLoaded = true
+} catch {
+  // noop
 }

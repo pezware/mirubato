@@ -6,6 +6,7 @@ import { authApi } from '../../api/auth'
 import { logbookApi, type LogbookEntry } from '../../api/logbook'
 import { userApi } from '../../api/user'
 import { repertoireApi } from '../../api/repertoire'
+import { goalsApi } from '../../api/goals'
 import { getWebSocketSync } from '../../services/webSocketSync'
 import { createMockWebSocketSync } from '../mocks/webSocketMock'
 
@@ -14,6 +15,7 @@ vi.mock('../../api/auth')
 vi.mock('../../api/logbook')
 vi.mock('../../api/user')
 vi.mock('../../api/repertoire')
+vi.mock('../../api/goals')
 vi.mock('../../services/webSocketSync')
 vi.mock('nanoid', () => ({
   nanoid: vi.fn(() => 'test-id-' + Math.random().toString(36).substr(2, 9)),
@@ -81,10 +83,10 @@ describe('Sync Integration Tests', () => {
 
     // Setup WebSocket mock
     mockWebSocketSync = createMockWebSocketSync()
+    // Make sure the mock is properly set up
     ;(getWebSocketSync as ReturnType<typeof vi.fn>).mockReturnValue(
       mockWebSocketSync
     )
-    mockWebSocketSync.setInstance(mockWebSocketSync)
   })
 
   afterEach(() => {
@@ -124,17 +126,13 @@ describe('Sync Integration Tests', () => {
         language: 'en',
         practiceReminders: false,
       })
-      // Mock repertoire API if it exists
-      if (repertoireApi && repertoireApi.getRepertoire) {
-        ;(
-          repertoireApi.getRepertoire as ReturnType<typeof vi.fn>
-        ).mockResolvedValue([])
-      }
-      if (repertoireApi && repertoireApi.getGoals) {
-        ;(repertoireApi.getGoals as ReturnType<typeof vi.fn>).mockResolvedValue(
-          []
-        )
-      }
+      // Mock repertoire and goals APIs
+      ;(repertoireApi.list as ReturnType<typeof vi.fn>).mockResolvedValue({
+        items: [],
+      })
+      ;(goalsApi.list as ReturnType<typeof vi.fn>).mockResolvedValue({
+        goals: [],
+      })
 
       // Simulate login
       await act(async () => {
@@ -273,7 +271,7 @@ describe('Sync Integration Tests', () => {
         techniques: [],
         goalIds: [],
         notes: 'Original notes',
-        mood: 'SATISFIED',
+        mood: null,
         tags: [],
         createdAt: '2024-01-01T09:00:00Z',
         updatedAt: '2024-01-01T10:00:00Z',

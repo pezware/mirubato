@@ -39,7 +39,6 @@ test.describe('Logbook', () => {
           title: 'Moonlight Sonata',
           composer: 'Beethoven',
           notes: 'Worked on first movement dynamics',
-          mood: 'satisfied',
         })
       })
 
@@ -59,7 +58,6 @@ test.describe('Logbook', () => {
             { title: 'Moonlight Sonata', composer: 'Ludwig van Beethoven' },
           ],
           notes: 'Worked on first movement dynamics',
-          mood: 'satisfied',
         })
       })
     })
@@ -97,7 +95,6 @@ test.describe('Logbook', () => {
           title: 'Sonata No. 11',
           composer: 'Mozart',
           notes: 'Focused on the famous Rondo Alla Turca',
-          mood: 'excited',
         })
       })
 
