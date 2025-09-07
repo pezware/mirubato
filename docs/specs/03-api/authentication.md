@@ -1,134 +1,115 @@
 # Authentication Specification
 
-## Overview
+## Purpose
 
-Mirubato implements multiple authentication methods to provide flexible and secure access: magic links, Google OAuth, and traditional email/password. All methods generate JWT tokens for API access.
+Authentication ensures secure access to Mirubato while maintaining a frictionless user experience. This specification defines the authentication architecture, JWT token management, and session handling across our distributed edge infrastructure.
 
-## Authentication Methods
+## Why Our Authentication Strategy
 
-### 1. Magic Link Authentication
+Traditional password-based auth creates friction for musicians who want to quickly log practice sessions. Our multi-method approach:
 
-Email-based passwordless authentication for enhanced security.
+- **Eliminates password fatigue** with magic links and OAuth
+- **Provides choice** for user preference
+- **Maintains security** without complexity
+- **Works offline** with JWT tokens
+- **Syncs across devices** seamlessly
 
-#### Flow
+## Authentication Architecture
+
+### JWT-Based Token System
+
+**Purpose**: Stateless authentication that works at the edge without database lookups.
+
+```typescript
+interface AuthToken {
+  // Token structure
+  header: {
+    alg: 'HS256'
+    typ: 'JWT'
+  }
+
+  payload: {
+    // User identity
+    sub: string // User ID
+    email: string // Email address
+    name?: string // Display name
+
+    // Session metadata
+    iat: number // Issued at
+    exp: number // Expiration (7 days)
+    jti: string // JWT ID for revocation
+
+    // Auth metadata
+    provider: 'google' | 'magic_link'
+    scope: string[] // Permissions
+  }
+
+  signature: string // HMAC signature
+}
+```
+
+### Authentication Flow
 
 ```mermaid
 sequenceDiagram
     participant User
     participant Frontend
     participant API
-    participant Email
+    participant AuthProvider
     participant D1
 
-    User->>Frontend: Enter email
-    Frontend->>API: POST /api/auth/magic-link
-    API->>D1: Generate token & store
-    API->>Email: Send magic link
-    API-->>Frontend: Success response
-    User->>Email: Click magic link
-    Email->>Frontend: Redirect with token
-    Frontend->>API: GET /api/auth/verify?token=xxx
-    API->>D1: Validate token
-    API-->>Frontend: JWT + User data
-    Frontend->>Frontend: Store JWT
+    User->>Frontend: Choose auth method
+    alt Google OAuth
+        Frontend->>AuthProvider: Redirect to Google
+        AuthProvider->>Frontend: Return with code
+        Frontend->>API: Exchange code for token
+    else Magic Link
+        Frontend->>API: Request magic link
+        API->>AuthProvider: Send email via Resend
+        User->>Frontend: Click link in email
+        Frontend->>API: Verify magic token
+    end
+    API->>D1: Create/update user
+    API->>Frontend: Return JWT + refresh token
+    Frontend->>Frontend: Store tokens securely
 ```
 
-#### Implementation
+## Authentication Methods
 
-```typescript
-// Token generation
-const magicToken = crypto.randomUUID()
-const hashedToken = await hashToken(magicToken)
-const expiresAt = Date.now() + 15 * 60 * 1000 // 15 minutes
+### 1. Magic Link Authentication
 
-// Store in D1
-await env.DB.prepare(
-  `
-  INSERT INTO magic_links (email, token, expires_at)
-  VALUES (?, ?, ?)
-`
-)
-  .bind(email, hashedToken, expiresAt)
-  .run()
+**Purpose**: Passwordless authentication via email for users who prefer not to use OAuth.
 
-// Email template
-const magicLink = `${env.FRONTEND_URL}/auth/verify?token=${magicToken}`
-```
+**Implementation**: See [Third-Party Integrations - Magic Links](../06-integrations/third-party.md#3-magic-link-authentication) for detailed implementation.
 
-### 2. Google OAuth
+**Key Features**:
 
-Integration with Google Sign-In for seamless authentication.
+- 15-minute expiration for security
+- One-time use tokens
+- Secure token hashing with SHA-256
+- Rate limiting to prevent abuse
 
-#### Configuration
+### 2. Google OAuth 2.0
 
-```typescript
-// Frontend: Google Sign-In button
-<GoogleLogin
-  clientId={GOOGLE_CLIENT_ID}
-  onSuccess={handleGoogleLogin}
-  onError={handleError}
-/>
+**Purpose**: Seamless authentication using existing Google accounts.
 
-// Backend: Token verification
-import { OAuth2Client } from 'google-auth-library'
-const client = new OAuth2Client(env.GOOGLE_CLIENT_ID)
+**Implementation**: See [Third-Party Integrations - Google OAuth](../06-integrations/third-party.md#1-google-oauth-20---authentication) for detailed implementation.
 
-async function verifyGoogleToken(idToken: string) {
-  const ticket = await client.verifyIdToken({
-    idToken,
-    audience: env.GOOGLE_CLIENT_ID,
-  })
-  return ticket.getPayload()
-}
-```
+**Key Features**:
 
-#### User Creation/Update
+- No password management
+- Profile data import (name, avatar)
+- Refresh token support
+- Mobile app compatibility
 
-```typescript
-// Check if user exists
-const existingUser = await findUserByEmail(googleUser.email)
+### 3. Future Authentication Methods
 
-if (!existingUser) {
-  // Create new user
-  const newUser = await createUser({
-    email: googleUser.email,
-    displayName: googleUser.name,
-    avatarUrl: googleUser.picture,
-    provider: 'google',
-    providerId: googleUser.sub,
-  })
-  return { user: newUser, isNewUser: true }
-}
+**Planned Additions**:
 
-// Update existing user
-await updateUser(existingUser.id, {
-  lastLoginAt: Date.now(),
-  avatarUrl: googleUser.picture,
-})
-return { user: existingUser, isNewUser: false }
-```
-
-### 3. Email/Password (Traditional)
-
-Standard authentication with secure password handling.
-
-#### Password Security
-
-```typescript
-// Hashing with Argon2
-import { hash, verify } from '@node-rs/argon2'
-
-// Registration
-const hashedPassword = await hash(password, {
-  memoryCost: 19456,
-  timeCost: 2,
-  outputLen: 32,
-  parallelism: 1,
-})
-
-// Login verification
-const isValid = await verify(hashedPassword, inputPassword)
-```
+- Apple Sign-In for iOS users
+- Microsoft Account for education institutions
+- Passkeys (WebAuthn) for passwordless biometric auth
+- SSO/SAML for enterprise customers
 
 ## JWT Token Management
 

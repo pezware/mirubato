@@ -29,7 +29,9 @@ Welcome to the Mirubato technical specifications. This documentation provides co
 - [Architecture](./04-frontend/architecture.md) - React application structure
 - [State Management](./04-frontend/state-management.md) - Zustand stores and data flow
 - [Components](./04-frontend/components.md) - Component library and patterns
-- [UI Design System](./04-frontend/ui-design-system.md) - Typography, colors, and styling
+- [UI Design System](./04-frontend/ui-design-system.md) - Typography, colors, and Morandi aesthetic
+- [Layout Patterns](./04-frontend/layout-patterns.md) - Responsive layouts and navigation
+- [Responsive Design](./04-frontend/responsive-design.md) - Mobile-first approach
 
 ### [05. Features](./05-features/)
 
@@ -42,15 +44,14 @@ Welcome to the Mirubato technical specifications. This documentation provides co
 
 ### [06. Integrations](./06-integrations/)
 
-- [IMSLP](./06-integrations/imslp.md) - Sheet music import from IMSLP
-- [AI Services](./06-integrations/ai-services.md) - AI-powered features
-- [Third Party](./06-integrations/third-party.md) - External service integrations
+- [AI Services](./06-integrations/ai-services.md) - Cloudflare AI for metadata extraction and suggestions
+- [IMSLP](./06-integrations/imslp.md) - Sheet music import from IMSLP library
+- [Third Party](./06-integrations/third-party.md) - Google OAuth, Resend email, and future integrations
 
 ### [07. Operations](./07-operations/)
 
-- [Monitoring](./07-operations/monitoring.md) - Health checks and metrics
-- [Debugging](./07-operations/debugging.md) - Debug strategies and tools
-- [Performance](./07-operations/performance.md) - Optimization and best practices
+- [Monitoring & Debugging](./07-operations/monitoring-debugging.md) - Health checks, logging, and incident response
+- [Performance](./07-operations/performance.md) - Optimization strategies and benchmarks
 
 ### [08. Appendix](./08-appendix/)
 
@@ -70,7 +71,7 @@ If you're new to Mirubato, start with:
 
 - **Backend Developers**: Start with [Microservices](./01-architecture/microservices.md) and [Service APIs](./03-api/service-apis.md)
 - **Frontend Developers**: Check [Frontend Architecture](./04-frontend/architecture.md) and [State Management](./04-frontend/state-management.md)
-- **DevOps**: See [Deployment](./01-architecture/deployment.md) and [Monitoring](./07-operations/monitoring.md)
+- **DevOps**: See [Deployment](./01-architecture/deployment.md) and [Monitoring & Debugging](./07-operations/monitoring-debugging.md)
 
 ## 📊 Current Version
 
@@ -81,12 +82,14 @@ If you're new to Mirubato, start with:
 - Unified typography system
 - Enhanced mobile experience
 
-## 🔄 Recent Updates
+## 🔄 Recent Updates (December 2024)
 
-- **WebSocket Sync**: Replaced polling with real-time sync using Cloudflare Durable Objects
-- **Typography System**: Comprehensive three-font system with semantic components
-- **Performance**: 40% reduction in font loading, optimized bundle sizes
-- **Analytics**: Complete reporting system with advanced visualizations
+- **Complete Specifications**: Added comprehensive operations, integrations, and performance documentation
+- **Third-Party Integrations**: Documented Google OAuth, Resend email service, and magic link authentication
+- **Operations Excellence**: Added monitoring, debugging, and incident response procedures
+- **Performance Optimization**: Detailed strategies for frontend bundle optimization and edge caching
+- **WebSocket Sync**: Real-time synchronization using Cloudflare Durable Objects
+- **Typography System**: Three-font system with Noto Serif, Inter, and Lexend
 
 ## 📝 Contributing
 

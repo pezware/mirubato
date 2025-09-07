@@ -1,8 +1,16 @@
 # REST API Specification
 
-## Overview
+## Purpose
 
-The Mirubato REST API provides comprehensive endpoints for managing practice sessions, repertoire, goals, and user data. All endpoints follow RESTful conventions and return JSON responses.
+The Mirubato REST API enables client applications to manage musical practice data through a consistent, RESTful interface. Built on Cloudflare Workers for global edge performance, the API prioritizes speed, reliability, and offline-first design.
+
+## Why This API Design
+
+- **Edge-first**: Runs globally on Cloudflare's network for <50ms latency
+- **Stateless**: JWT authentication enables horizontal scaling
+- **Predictable**: Consistent patterns across all endpoints
+- **Offline-capable**: Designed for sync and conflict resolution
+- **Type-safe**: Full TypeScript definitions available
 
 ## Base URLs
 
@@ -16,12 +24,23 @@ The Mirubato REST API provides comprehensive endpoints for managing practice ses
 
 Most endpoints require JWT authentication. See [Authentication Specification](./authentication.md) for detailed auth flows.
 
-### Headers
+### Required Headers
 
 ```http
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
+X-Request-ID: <uuid>  # Optional but recommended for tracing
 ```
+
+### Public Endpoints
+
+These endpoints don't require authentication:
+
+- `GET /health` - Health check
+- `GET /api/auth/providers` - List auth methods
+- `POST /api/auth/magic-link` - Request magic link
+- `GET /api/auth/verify` - Verify magic link
+- `POST /api/auth/google` - Google OAuth callback
 
 ## Common Response Formats
 
