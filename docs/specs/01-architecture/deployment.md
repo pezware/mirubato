@@ -35,7 +35,7 @@ This document defines Mirubato's deployment strategy using Cloudflare's automati
 **Code References**:
 
 - Local ports: `start-scorebook.sh:27-29` — API:9797, Scores:9788, Frontend:4000
-- CI triggers: `.github/workflows/ci.yml:4-7` — main and develop branches
+- CI triggers: `.github/workflows/ci.yml:4-7` — main branch and PRs (Note: `develop` exists in CI config but not actively used)
 
 ### Service Configuration
 
@@ -105,7 +105,7 @@ This document defines Mirubato's deployment strategy using Cloudflare's automati
 **Current State**:
 
 - ✅ Manual deployment via wrangler CLI
-- 🔄 Automatic Cloudflare deployment (planned/partially configured)
+- ✅ Automatic Cloudflare deployment (active for configured projects)
 
 ### GitHub Actions (Testing Only)
 
@@ -214,7 +214,7 @@ Each service with D1 has its own migrations:
 - API: `api/migrations/` directory
 - Scores: `scores/migrations/` directory
 - Dictionary: `dictionary/migrations/` directory
-- Sync: `sync-worker/migrations/` directory
+- Sync Worker: Uses API's D1 database (no separate migrations directory)
 
 ```bash
 # Create migration for specific service
@@ -312,8 +312,9 @@ openssl rand -base64 32
 # 2. Update in Cloudflare (zero-downtime)
 wrangler secret put JWT_SECRET --env production
 
-# 3. New deployments automatically use new secret
-# No redeploy needed - Workers pick up on next request
+# 3. Redeploy to ensure Workers use new secret
+wrangler deploy --env production
+# Note: Cloudflare requires deployment for secret propagation
 ```
 
 **Code References**:
@@ -384,9 +385,10 @@ wrangler deploy --env production --compatibility-date "2024-11-01"
 
 **Code References**:
 
-- API health: `api/src/api/routes.ts:278` — Health check handler
-- Scores health: `scores/src/api/routes.ts:15` — Health endpoint
-- Dictionary health: `dictionary/src/api/routes.ts:12` — Health check
+- API health: `api/src/api/handlers/health.ts:76` — GET /health handler
+- Scores health: `scores/src/api/handlers/health.ts:77` — GET /health handler
+- Dictionary health: `dictionary/src/api/handlers/health.ts:41` — GET /health handler
+- Sync health: `sync-worker/src/index.ts:34-46` — GET /health handler
 
 **Health Check URLs**:
 
@@ -424,7 +426,7 @@ curl -I https://api.mirubato.com/health | grep X-Worker-Version
 
 **Code References**:
 
-- Vite config: `frontendv2/vite.config.ts:42-53` — Build optimization settings
+- Vite config: `frontendv2/vite.config.ts:80-98, 141-158` — rollupOptions manualChunks, chunk naming, minify/sourcemap/target
 - Bundle analysis: `frontendv2/package.json:13` — "analyze" script
 
 ### Worker Size Management
