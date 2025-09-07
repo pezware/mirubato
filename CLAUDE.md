@@ -38,9 +38,6 @@ git clone https://github.com/pezware/mirubato.git
 cd mirubato
 pnpm install
 
-# Start all services
-./start-scorebook.sh
-
 # Access the app
 # Frontend: http://www-mirubato.localhost:4000
 # API: http://api-mirubato.localhost:9797
@@ -53,7 +50,6 @@ pnpm install
 ```bash
 # Development
 pnpm install                  # Install dependencies
-./start-scorebook.sh          # Start all services
 pnpm test                     # Run all tests across workspaces
 pnpm run build                # Build all services for production
 

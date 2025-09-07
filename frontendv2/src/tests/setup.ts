@@ -9,6 +9,10 @@ afterEach(() => {
   vi.clearAllMocks()
   // Reset localStorage to prevent test interference
   localStorage.clear()
+  // Clean up store event listeners and timers via global handoff to avoid module import races
+  const glb: any = globalThis as any
+  const storeCleanup = glb.__cleanupLogbookStore
+  if (typeof storeCleanup === 'function') storeCleanup()
 })
 
 // Mock localStorage with actual storage functionality

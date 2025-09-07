@@ -63,6 +63,15 @@ interface RepertoireStore {
     | 'reconnecting'
   realtimeSyncError: string | null
 
+  // Internal handler tracking (not exposed to consumers)
+  _wsHandlers?: {
+    pieceAdded?: (event: SyncEvent) => void
+    pieceUpdated?: (event: SyncEvent) => void
+    pieceRemoved?: (event: SyncEvent) => void
+    pieceDissociated?: (event: SyncEvent) => void
+    bulkSync?: (event: SyncEvent) => void
+  }
+
   // Filters
   statusFilter: 'all' | keyof RepertoireStatus
   goalFilter: 'all' | 'active' | 'completed' | 'no_goals'
@@ -1385,37 +1394,48 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       set({ realtimeSyncError: null, realtimeSyncStatus: 'connecting' })
 
       const webSocketSync = getWebSocketSync()
+      const state = get()
 
-      // Set up event handlers for repertoire events
-      webSocketSync.on('PIECE_ADDED', (event: SyncEvent) => {
-        if (event.piece) {
-          get().addPieceFromSync(event.piece as RepertoireItem)
+      // Only set up handlers if they don't already exist
+      if (!state._wsHandlers) {
+        const handlers = {
+          pieceAdded: (event: SyncEvent) => {
+            if (event.piece) {
+              get().addPieceFromSync(event.piece as RepertoireItem)
+            }
+          },
+          pieceUpdated: (event: SyncEvent) => {
+            if (event.piece) {
+              get().updatePieceFromSync(event.piece as RepertoireItem)
+            }
+          },
+          pieceRemoved: (event: SyncEvent) => {
+            if (event.scoreId) {
+              get().removePieceFromSync(event.scoreId)
+            }
+          },
+          pieceDissociated: (event: SyncEvent) => {
+            if (event.scoreId) {
+              get().dissociatePieceFromSync(event.scoreId)
+            }
+          },
+          bulkSync: (event: SyncEvent) => {
+            if (event.pieces) {
+              get().mergePiecesFromSync(event.pieces as RepertoireItem[])
+            }
+          },
         }
-      })
 
-      webSocketSync.on('PIECE_UPDATED', (event: SyncEvent) => {
-        if (event.piece) {
-          get().updatePieceFromSync(event.piece as RepertoireItem)
-        }
-      })
+        // Register handlers
+        webSocketSync.on('PIECE_ADDED', handlers.pieceAdded)
+        webSocketSync.on('PIECE_UPDATED', handlers.pieceUpdated)
+        webSocketSync.on('PIECE_REMOVED', handlers.pieceRemoved)
+        webSocketSync.on('PIECE_DISSOCIATED', handlers.pieceDissociated)
+        webSocketSync.on('REPERTOIRE_BULK_SYNC', handlers.bulkSync)
 
-      webSocketSync.on('PIECE_REMOVED', (event: SyncEvent) => {
-        if (event.scoreId) {
-          get().removePieceFromSync(event.scoreId)
-        }
-      })
-
-      webSocketSync.on('PIECE_DISSOCIATED', (event: SyncEvent) => {
-        if (event.scoreId) {
-          get().dissociatePieceFromSync(event.scoreId)
-        }
-      })
-
-      webSocketSync.on('REPERTOIRE_BULK_SYNC', (event: SyncEvent) => {
-        if (event.pieces) {
-          get().mergePiecesFromSync(event.pieces as RepertoireItem[])
-        }
-      })
+        // Store handler references
+        set({ _wsHandlers: handlers })
+      }
 
       // Connect with auth
       const authToken = localStorage.getItem('auth-token')
@@ -1453,6 +1473,21 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
 
   disableRealtimeSync: () => {
     const webSocketSync = getWebSocketSync()
+    const state = get()
+
+    // Remove WebSocket event handlers if they exist
+    if (state._wsHandlers) {
+      webSocketSync.off('PIECE_ADDED', state._wsHandlers.pieceAdded!)
+      webSocketSync.off('PIECE_UPDATED', state._wsHandlers.pieceUpdated!)
+      webSocketSync.off('PIECE_REMOVED', state._wsHandlers.pieceRemoved!)
+      webSocketSync.off(
+        'PIECE_DISSOCIATED',
+        state._wsHandlers.pieceDissociated!
+      )
+      webSocketSync.off('REPERTOIRE_BULK_SYNC', state._wsHandlers.bulkSync!)
+      set({ _wsHandlers: undefined })
+    }
+
     webSocketSync.disconnect()
     set({
       isRealtimeSyncEnabled: false,
