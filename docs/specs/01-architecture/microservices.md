@@ -1,431 +1,587 @@
 # Microservices Architecture
 
-## Service Overview
+**What**: Five independent Cloudflare Workers providing domain-specific functionality for music education.
 
-Mirubato employs a microservices architecture with five independent services, each responsible for specific domain functionality. All services run as Cloudflare Workers and communicate via HTTP/WebSocket protocols.
+**Why**:
+
+- Service isolation enables independent deployment and scaling
+- Domain boundaries align with team expertise and feature sets
+- Edge-first architecture provides sub-50ms global latency
+- Worker isolation prevents cascading failures
+
+**How**:
+
+- Each service runs as a Cloudflare Worker with specific bindings
+- Services communicate via HTTP with JWT/service token authentication
+- Real-time updates flow through WebSocket connections
+- Async processing handled by Cloudflare Queues
 
 ## Service Inventory
 
-| Service     | Domain              | Port (Local) | Production URL          | Repository Path |
-| ----------- | ------------------- | ------------ | ----------------------- | --------------- |
-| Frontend    | User Interface      | 4000         | mirubato.com            | `/frontendv2`   |
-| API         | Core Business Logic | 9797         | api.mirubato.com        | `/api`          |
-| Scores      | Sheet Music         | 9788         | scores.mirubato.com     | `/scores`       |
-| Dictionary  | Music Terms         | 9799         | dictionary.mirubato.com | `/dictionary`   |
-| Sync Worker | Real-time Sync      | 9800         | sync.mirubato.com       | `/sync-worker`  |
+| Service     | Domain              | Port (Local) | Production URL          | Primary Bindings           |
+| ----------- | ------------------- | ------------ | ----------------------- | -------------------------- |
+| Frontend    | SPA + Static Assets | 4000¹        | mirubato.com            | ASSETS                     |
+| API         | Core Business Logic | 9797         | api.mirubato.com        | DB, KV, RATE_LIMITER       |
+| Scores      | Sheet Music         | 9788         | scores.mirubato.com     | DB, R2, AI, BROWSER, QUEUE |
+| Dictionary  | Music Terms         | 9799         | dictionary.mirubato.com | DB, KV, AI, QUEUE, R2      |
+| Sync Worker | Real-time Sync      | 8787         | sync.mirubato.com       | DB, SYNC_COORDINATOR       |
+
+¹ Frontend dev server runs on port 5173 (Vite), Worker serves on 4000
+
+**Code References**:
+
+- Service configurations: `*/wrangler.toml` — Worker bindings and environment settings
+- Local ports: `*/package.json` — Dev script configurations
 
 ## Service Details
 
 ### 1. Frontend Service
 
-#### Purpose
+**What**: Cloudflare Worker serving React SPA with ASSETS binding for static files.
 
-Serves the React single-page application and static assets.
+**Why**:
 
-#### Technology Stack
+- Zero cold starts for global SPA delivery
+- Built-in CDN caching for static assets
+- Worker handles SPA routing without origin server
 
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **HTTP Client**: Native Fetch API
+**How**:
 
-#### Key Responsibilities
+- Vite builds React app to static files
+- Worker serves index.html for all client routes
+- ASSETS binding provides static file serving
 
-- Serve SPA with client-side routing
-- Handle static asset delivery
-- Manage service worker for PWA
-- Implement offline-first functionality
+**Code References**:
 
-#### Worker Configuration
+- `frontendv2/src/index.js` — Worker entry point with SPA routing
+- `frontendv2/wrangler.toml` — ASSETS binding configuration
+- `frontendv2/src/services/webSocketSync.ts:24-48` — WebSocket client implementation
+- `frontendv2/src/stores/` — Zustand state management stores
 
-```javascript
-// frontendv2/src/index.js
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url)
+**Technology Stack**:
 
-    // Serve static assets
-    if (url.pathname.startsWith('/assets/')) {
-      return env.ASSETS.fetch(request)
-    }
+- React 18 + TypeScript + Vite
+- Tailwind CSS + shadcn/ui components
+- Zustand for state management
+- Native Fetch API for HTTP requests
 
-    // SPA routing - always return index.html
-    const asset = await env.ASSETS.fetch(
-      new Request(url.origin + '/index.html')
-    )
-    return new Response(asset.body, {
-      ...asset,
-      headers: {
-        ...asset.headers,
-        'Content-Type': 'text/html; charset=utf-8',
-      },
-    })
-  },
-}
-```
+**Operational Limits**:
+
+- Bundle size: ~500KB gzipped
+- Static assets: Cached at edge for 1 year
+- Service Worker: Offline-first with IndexedDB storage
 
 ### 2. API Service
 
-#### Purpose
+**What**: Core business logic server handling authentication, sync, and data operations.
 
-Core business logic, authentication, and data management.
+**Why**:
 
-#### Technology Stack
+- Central authority for user authentication and authorization
+- Sync coordination between client and database
+- Rate limiting protection for auth endpoints
+- Session management with secure cookies
 
-- **Framework**: Hono
-- **Database**: Cloudflare D1
-- **Cache**: Cloudflare KV
-- **Validation**: Zod
-- **Authentication**: JWT
+**How**:
 
-#### Key Responsibilities
+- Hono framework for routing and middleware
+- D1 for user data with sync_data pattern
+- KV for public/API response caching (MUSIC_CATALOG)
+- Cloudflare Rate Limiter for auth protection
 
-- User authentication and authorization
-- Logbook entries CRUD operations
-- Repertoire management
-- Goals tracking
-- Data synchronization coordination
+**Code References**:
 
-#### Core Endpoints
+- `api/src/api/routes.ts` — Complete route definitions
+- `api/src/api/handlers/auth.ts` — Magic link and Google OAuth flows
+- `api/src/api/handlers/sync.ts` — Sync pull/push/batch operations
+- `api/src/api/middleware.ts:89-127` — Rate limit middleware
+- `api/migrations/0001_initial_schema.sql` — Base schema
+- `api/migrations/0008_repertoire_and_annotations.sql` — Current data model
+
+**Core Endpoints**:
 
 ```typescript
-// Authentication
-POST   /api/auth/login
-POST   /api/auth/magic-link
+// Authentication (with rate limiting)
+POST   /api/auth/request-magic-link
+POST   /api/auth/verify-magic-link
 POST   /api/auth/google
-GET    /api/auth/verify
 POST   /api/auth/refresh
 POST   /api/auth/logout
 
-// Logbook
-GET    /api/logbook/entries
-POST   /api/logbook/entries
-PUT    /api/logbook/entries/:id
-DELETE /api/logbook/entries/:id
-POST   /api/logbook/sync
+// Sync API (replaces direct CRUD)
+POST   /api/sync/pull      // Get latest data
+POST   /api/sync/push      // Send changes
+POST   /api/sync/batch     // Bulk operations
+GET    /api/sync/status    // Sync health
 
 // Repertoire
 GET    /api/repertoire
+GET    /api/repertoire/:scoreId/stats
 POST   /api/repertoire
-PUT    /api/repertoire/:id
-DELETE /api/repertoire/:id
+PUT    /api/repertoire/:scoreId
+DELETE /api/repertoire/:scoreId
+DELETE /api/repertoire/:scoreId/dissociate
 
 // Goals
 GET    /api/goals
+GET    /api/goals/:id
 POST   /api/goals
 PUT    /api/goals/:id
+POST   /api/goals/:id/progress
 DELETE /api/goals/:id
 ```
 
-#### Database Schema (Key Tables)
+**Database Tables**:
 
-```sql
--- Users
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  primary_instrument TEXT,
-  role TEXT DEFAULT 'user',
-  created_at INTEGER,
-  updated_at INTEGER
-);
+- `sync_data` — Universal sync table with entity_type discrimination
+- `sync_metadata` — Sync state tracking per user
+- `user_repertoire` — User's repertoire with status tracking
+- `score_annotations` — User notes on scores
+- `goals` & `goal_progress` — Goal tracking system
 
--- Logbook Entries
-CREATE TABLE logbook_entries (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  timestamp INTEGER NOT NULL,
-  duration INTEGER NOT NULL,
-  type TEXT,
-  instrument TEXT,
-  pieces TEXT, -- JSON
-  mood TEXT,
-  notes TEXT,
-  created_at INTEGER,
-  updated_at INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
+**Operational Limits**:
+
+- Rate limit: 10 requests/minute for auth endpoints
+- JWT expiry: 30 days (both access and refresh tokens)
+- Cookie expiry: 30 days on login, 7 days on refresh
+- Cookie security: HttpOnly, Secure, SameSite=Lax
 
 ### 3. Scores Service
 
-#### Purpose
+**What**: Sheet music processor with AI metadata extraction and PDF management.
 
-Sheet music management, PDF processing, and AI-powered metadata extraction.
+**Why**:
 
-#### Technology Stack
+- Specialized PDF processing without blocking main API
+- AI-powered metadata extraction for cataloging
+- R2 storage for cost-effective file hosting
+- Browser rendering for complex PDF operations
 
-- **Framework**: Hono
-- **Storage**: Cloudflare R2
-- **Database**: Cloudflare D1
-- **Queue**: Cloudflare Queues
-- **AI**: Cloudflare Workers AI
+**How**:
 
-#### Key Responsibilities
+- Split processing: Browser API for rendering, AI for metadata
+- R2 for file storage with public/private access
+- Queue-based async processing for large files
+- KV cache for frequently accessed metadata
 
-- PDF upload and storage
-- Multi-page score processing
-- AI metadata extraction
-- IMSLP integration
-- Collections management
-- Score search and discovery
+**Code References**:
 
-#### Core Endpoints
+- `scores/src/api/routes.ts` — All route definitions
+- `scores/src/api/handlers/import.ts` — Main import orchestration
+- `scores/src/api/handlers/import-enhanced.ts` — Enhanced import with AI/Browser API
+- `scores/src/services/enhancedRateLimiter.ts` — KV-backed rate limiting
+- `scores/wrangler.toml` — R2, AI, BROWSER, QUEUE bindings
+
+**Core Endpoints**:
 
 ```typescript
+// Import (all support URL or base64)
+POST   /api/import          // Auto-detect type
+POST   /api/import/images   // Image batch processing
+POST   /api/import/pdf      // PDF with Browser API
+POST   /api/import/imslp    // IMSLP catalog import
+POST   /api/import/batch    // Bulk operations
+
 // Scores Management
 GET    /api/scores
-POST   /api/scores/upload
 GET    /api/scores/:id
 PUT    /api/scores/:id
 DELETE /api/scores/:id
 
-// Collections
-GET    /api/collections
-POST   /api/collections
-PUT    /api/collections/:id
-DELETE /api/collections/:id
-
-// Import
-POST   /api/import/url
-POST   /api/import/imslp
-GET    /api/import/status/:jobId
-
-// Search
+// Search & Discovery
 GET    /api/search
-GET    /api/composers
+
+// Test Data (development)
+GET    /api/test-data/:filename
 ```
 
-#### Processing Pipeline
+**Processing Pipeline**:
 
 ```
-Upload → Validation → Queue → AI Processing → Storage → Index
-            ↓           ↓          ↓            ↓        ↓
-        File Check   Convert   Extract Meta    R2    Search DB
+Input → Validation → Rate Check → Process → Store → Index
+  ↓         ↓            ↓          ↓        ↓       ↓
+URL/B64  Type Check  KV Limiter  AI/Browser  R2    D1 DB
 ```
+
+**Operational Limits**:
+
+- Max file size: 50MB per PDF
+- AI processing: 1000 tokens per extraction
+- Browser rendering: 30 second timeout
+- Rate limit: 1 import per 10 minutes (unauthenticated) with failure backoff and ban
 
 ### 4. Dictionary Service
 
-#### Purpose
+**What**: AI-powered music terminology service with multi-language support.
 
-Music terminology definitions with AI-powered content generation.
+**Why**:
 
-#### Technology Stack
+- Dynamic content generation reduces manual curation
+- Semantic search enables concept discovery
+- Multi-language support for global users
+- Quality scoring ensures accurate definitions
 
-- **Framework**: Hono
-- **Database**: Cloudflare D1
-- **AI**: Cloudflare Workers AI
-- **Cache**: Cloudflare KV
+**How**:
 
-#### Key Responsibilities
+- AI models for definition generation and embeddings
+- KV cache for frequently accessed terms
+- Service-to-service auth with header tokens
+- Batch processing via queues and cron triggers
 
-- AI-generated definitions
-- Multi-language support (6 languages)
-- Semantic search with embeddings
-- Quality scoring
-- Content curation
+**Code References**:
 
-#### Core Endpoints
+- `dictionary/src/routes/dictionary.ts` — All v1 API routes
+- `dictionary/src/api/handlers/terms.ts` — Term generation and retrieval
+- `dictionary/src/api/handlers/search.ts` — Semantic search implementation
+- `dictionary/src/middleware/auth.ts:45-73` — Service auth validation
+- `dictionary/src/index.ts:68-105` — Queue and scheduled handlers
+- `dictionary/wrangler.toml` — Queue and cron trigger configuration
+
+**Core Endpoints** (all prefixed with `/api/v1`):
 
 ```typescript
 // Terms
-GET    /api/terms
-GET    /api/terms/:term
-POST   /api/terms/generate
+GET    /api/v1/terms/:term
+POST   /api/v1/terms/:id/feedback
 
 // Search
-GET    /api/search
-POST   /api/search/semantic
+GET    /api/v1/search
+POST   /api/v1/search/semantic
 
-// Languages
-GET    /api/languages
-GET    /api/terms/:term/translations
+// Batch Operations
+POST   /api/v1/batch        // Bulk term operations
+POST   /api/v1/export       // Export definitions
+POST   /api/v1/enhance      // Enhance with AI (auth required)
 
-// Analytics
-GET    /api/analytics/popular
-POST   /api/analytics/track
+// Admin (service auth required)
+PUT    /api/v1/admin/terms/:term
+DELETE /api/v1/admin/terms/:id
+POST   /api/v1/admin/bulk
+POST   /api/v1/admin/seed/initialize
+POST   /api/v1/admin/seed/process
 ```
 
-#### Content Generation Flow
+**Service Authentication**:
 
-```
-Request → Cache Check → AI Generation → Quality Score → Store
-             ↓              ↓               ↓           ↓
-          KV Cache     GPT/Claude      Validation    D1 + Index
-```
+- Header-based: `X-Service-Name` + `X-Service-Token`
+- Token validation: SHA-256 hash comparison
+- Not JWT-based (unlike user auth)
+
+**Operational Limits**:
+
+- AI generation: 500 tokens per definition
+- Semantic search: 100 results max
+- Cache TTL: 1 hour for popular terms
+- Batch size: 50 terms per request
 
 ### 5. Sync Worker Service
 
-#### Purpose
+**What**: WebSocket server using Durable Objects for real-time per-user synchronization.
 
-Real-time data synchronization across devices using WebSockets.
+**Why**:
 
-#### Technology Stack
+- Real-time sync eliminates 30-second polling overhead
+- Durable Objects provide stateful WebSocket management
+- Per-user isolation prevents data leakage
+- Automatic reconnection handles network interruptions
 
-- **Framework**: Hono with WebSocket support
-- **State**: Cloudflare Durable Objects
-- **Database**: Cloudflare D1
-- **Protocol**: WebSocket
+**How**:
 
-#### Key Responsibilities
+- Worker routes WebSocket upgrades to Durable Objects
+- Each user gets dedicated DO instance for connections
+- Messages persist to D1 with conflict resolution
+- Broadcast limited to same-user devices
 
-- WebSocket connection management
-- Real-time event broadcasting
-- Conflict resolution
-- Device presence tracking
-- Offline queue management
+**Code References**:
 
-#### WebSocket Protocol
+- `sync-worker/src/index.ts:15-55` — WebSocket upgrade handler
+- `sync-worker/src/syncCoordinator.ts` — Durable Object implementation
+- `sync-worker/src/syncCoordinator.ts:189-286` — Database persistence
+- `sync-worker/src/syncCoordinator.ts:288-351` — Message broadcasting
+- `sync-worker/wrangler.toml` — DO binding and migrations
 
-```typescript
-// Message Types
-interface SyncMessage {
-  type: 'SYNC_EVENT' | 'BULK_SYNC' | 'PING' | 'PONG'
-  data: {
-    event?: {
-      type: 'ENTRY_CREATED' | 'ENTRY_UPDATED' | 'ENTRY_DELETED'
-      entity: 'logbook' | 'repertoire' | 'goals'
-      payload: any
-    }
-    entries?: any[]
-    timestamp: number
-  }
-}
+**WebSocket Endpoint**:
+
+```
+ws://localhost:8787/sync/ws?userId=<USER_ID>&token=<JWT_TOKEN>
+wss://sync.mirubato.com/sync/ws?userId=<USER_ID>&token=<JWT_TOKEN>
 ```
 
-#### Durable Object Implementation
+**Message Protocol**:
 
 ```typescript
-export class SyncCoordinator {
-  private sessions: Map<string, WebSocket> = new Map()
+// Logbook Events
+type: 'ENTRY_CREATED' | 'ENTRY_UPDATED' | 'ENTRY_DELETED'
 
-  async handleWebSocket(ws: WebSocket, userId: string) {
-    ws.accept()
-    this.sessions.set(userId, ws)
+// Repertoire Events
+type: 'PIECE_ADDED' | 'PIECE_UPDATED' | 'PIECE_REMOVED' | 'PIECE_DISSOCIATED'
 
-    ws.addEventListener('message', async event => {
-      const message = JSON.parse(event.data)
-      await this.handleSyncMessage(message, userId)
-      this.broadcast(message, userId)
-    })
+// Sync Operations
+type: 'BULK_SYNC' | 'REPERTOIRE_BULK_SYNC' | 'SYNC_REQUEST'
 
-    ws.addEventListener('close', () => {
-      this.sessions.delete(userId)
-    })
-  }
-
-  broadcast(message: any, excludeUserId?: string) {
-    this.sessions.forEach((ws, userId) => {
-      if (userId !== excludeUserId) {
-        ws.send(JSON.stringify(message))
-      }
-    })
-  }
-}
+// Connection Management
+type: 'PING' | 'PONG' | 'WELCOME' | 'ERROR' | 'SYNC_RESPONSE'
 ```
+
+**Persistence Strategy**:
+
+- Upsert to `sync_data` table on every change
+- Soft delete with `deleted_at` timestamp
+- Last-write-wins conflict resolution
+- Direct database writes (no retry queue)
+
+**Operational Limits**:
+
+- Max connections per user: 10 devices
+- Message size: 1MB max
+- Ping interval: 30 seconds
+- Connection timeout: ~5 minutes idle (via alarm-based cleanup)
 
 ## Inter-Service Communication
 
-Services communicate via HTTP with JWT authentication, queues for async processing, and WebSocket for real-time updates. See [Service APIs](../03-api/service-apis.md) for detailed inter-service communication patterns.
+**What**: HTTP-based service mesh with authentication and async processing.
+
+**Why**:
+
+- Loose coupling allows independent deployment
+- Authentication prevents unauthorized access
+- Async queues handle heavy processing without blocking
+
+**How**:
+
+- User requests: JWT tokens in Authorization header
+- Service-to-service: Custom header tokens (Dictionary only, others planned)
+- Async work: Cloudflare Queues for PDF processing
+- Real-time: WebSocket with JWT query param
+
+**Code References**:
+
+- `api/src/api/middleware.ts:34-58` — JWT validation middleware
+- `dictionary/src/middleware/auth.ts:45-73` — Service token validation
+- `scores/src/api/handlers/import.ts` — Queue producer example
+- `sync-worker/src/index.ts:32-36` — WebSocket auth validation
+
+**Communication Patterns**:
+
+```typescript
+// User → API (JWT in cookie/header)
+Authorization: Bearer <jwt_token>
+
+// API → Dictionary (service headers)
+X-Service-Name: api
+X-Service-Token: <hashed_secret>
+
+// Scores → Queue (async processing)
+await env.PDF_QUEUE.send({ scoreId, operation: 'extract' })
+
+// Client → Sync (WebSocket with JWT)
+ws://sync.mirubato.com/sync/ws?token=<jwt_token>
+```
 
 ## Service Health & Monitoring
 
-### Health Check Endpoints
+**What**: Standardized health endpoints across all services for monitoring.
 
-Every service implements standard health checks:
+**Why**:
+
+- Proactive issue detection before user impact
+- Dependency health visibility
+- Deployment verification
+- SLA monitoring
+
+**How**:
+
+- Each service exposes /health, /livez, /readyz endpoints
+- Health checks verify critical dependencies
+- Structured JSON responses for parsing
+- Request ID propagation for tracing
+
+**Code References**:
+
+- `api/src/api/handlers/health.ts` — Comprehensive health implementation
+- `scores/src/api/handlers/health.ts` — Storage and cache checks
+- `dictionary/src/api/handlers/health.ts` — AI and KV health
+- `sync-worker/src/index.ts:57-75` — WebSocket health endpoint
+
+**Health Check Response** (API example):
 
 ```typescript
 // GET /health
 {
   "service": "api",
   "version": "1.7.6",
-  "status": "healthy",
+  "environment": "production",
   "timestamp": "2024-12-01T00:00:00Z",
-  "checks": {
-    "database": "healthy",
-    "cache": "healthy",
-    "dependencies": {
-      "scores": "healthy",
-      "dictionary": "healthy"
+  "status": "healthy",
+  "services": {
+    "database": {
+      "status": "healthy",
+      "latency": 45,
+      "message": "Connection successful"
+    },
+    "kvStore": {
+      "status": "healthy",
+      "latency": 12
+    },
+    "rateLimiter": {
+      "status": "healthy"
+    },
+    "auth": {
+      "status": "healthy",
+      "message": "JWT validation working"
+    },
+    "smokeTests": {
+      "status": "healthy",
+      "tests": ["database_tables", "basic_operations"]
     }
+  },
+  "metadata": {
+    "tables": ["sync_data", "sync_metadata", "users"],
+    "requestId": "uuid"
   }
 }
 ```
 
-### Monitoring Strategy
+**Monitoring Integration**:
 
-- **Uptime Monitoring**: Cloudflare Analytics
-- **Error Tracking**: Structured logging with JSON
-- **Performance Metrics**: Custom analytics engine
-- **Distributed Tracing**: Request ID propagation
+- Cloudflare Analytics: Request metrics and error rates
+- Structured logs: JSON format with correlation IDs
+- Custom metrics: Performance tracking via Analytics Engine
+- Alerts: Webhook notifications on health degradation
 
 ## Deployment Strategy
 
-### Independent Deployment
+**What**: Independent service deployment with zero-downtime updates.
 
-Each service can be deployed independently:
+**Why**:
+
+- Service autonomy enables rapid iteration
+- Rollback capability ensures stability
+- Gradual rollout minimizes risk
+- No coordination required between teams
+
+**How**:
+
+- GitHub Actions triggers on push to main
+- Wrangler CLI deploys to Cloudflare edge
+- Automatic traffic shifting for gradual rollout
+- Previous version kept warm for instant rollback
+
+**Code References**:
+
+- `.github/workflows/deploy-*.yml` — CI/CD pipelines
+- `*/wrangler.toml` — Deployment configurations
+- `package.json` → `version` — Unified version tracking
+
+**Deployment Commands**:
 
 ```bash
-cd api && wrangler deploy --env production
-cd scores && wrangler deploy --env production
-cd dictionary && wrangler deploy --env production
-cd sync-worker && wrangler deploy --env production
-cd frontendv2 && wrangler deploy --env production
-```
+# Individual service deployment
+cd [service] && wrangler deploy --env production
 
-### Version Management
-
-Services maintain backward compatibility:
-
-```typescript
-// API versioning
-app.route('/v1', v1Routes) // Legacy
-app.route('/v2', v2Routes) // Current
-```
-
-### Rollback Strategy
-
-```bash
-# Instant rollback to previous version
+# Rollback if issues detected
 wrangler rollback --env production
+
+# View deployment history
+wrangler deployments list --env production
 ```
+
+**Version Strategy**:
+
+- All services at v1.7.6 (unified December 2024)
+- Backward compatibility maintained
+- No breaking changes without migration path
+- Version in health endpoints for verification
 
 ## Scaling Characteristics
 
-### Horizontal Scaling
+**What**: Automatic edge scaling without configuration.
 
-- Automatic scaling by Cloudflare
-- No configuration required
-- Scales to millions of requests
+**Why**:
 
-### Service-Specific Scaling
+- Handle traffic spikes without intervention
+- Pay only for actual usage
+- No capacity planning required
+- Global distribution by default
 
-- **API**: CPU-bound, scales with user requests
-- **Scores**: I/O-bound, scales with R2 throughput
-- **Dictionary**: Cache-heavy, scales with KV performance
-- **Sync Worker**: Connection-bound, scales with Durable Objects
+**How**:
+
+- Workers auto-scale to millions of requests
+- Durable Objects provide horizontal scaling for WebSockets
+- R2 and KV scale independently
+- Queue consumers scale with backlog
+
+**Service-Specific Patterns**:
+
+| Service     | Bottleneck            | Scaling Factor  | Mitigation                   |
+| ----------- | --------------------- | --------------- | ---------------------------- |
+| API         | D1 queries            | Connection pool | Prepared statements, indexes |
+| Scores      | AI processing         | Token limits    | Queue batching, caching      |
+| Dictionary  | AI generation         | API rate limits | KV cache, batch processing   |
+| Sync Worker | WebSocket connections | DO memory       | Per-user isolation           |
+| Frontend    | Bundle size           | Download time   | Code splitting, CDN cache    |
+
+**Operational Limits**:
+
+- Worker CPU: 50ms per request (10ms p50)
+- Worker Memory: 128MB per invocation
+- Subrequests: 50 per request
+- WebSocket: 1MB message size
+- Durable Object: 128MB memory per instance
 
 ## Security Considerations
 
-### Service Isolation
+**What**: Defense-in-depth security across service boundaries.
 
-- Each service has its own database/storage
-- Services cannot access each other's data directly
-- Communication only through defined APIs
+**Why**:
 
-### Authentication
+- Service compromise doesn't cascade
+- User data remains isolated
+- Rate limiting prevents abuse
+- Audit trail for compliance
 
-- JWT tokens for user authentication
-- Service tokens for inter-service communication
-- Rate limiting per service
+**How**:
 
-### Data Protection
+- Separate databases per service
+- JWT with short expiry (15 min access tokens)
+- Service-specific auth tokens
+- Rate limiting at edge
 
-- Encryption in transit (HTTPS/WSS)
-- Encryption at rest (R2, D1)
-- User data isolation
+**Code References**:
+
+- `api/src/api/middleware.ts:89-127` — Rate limiting implementation
+- `api/src/api/handlers/auth.ts:246-273` — Cookie security settings
+- `api/src/index.ts:19-29` — CORS configuration
+- `scores/src/index.ts:34-44` — CORS allowed origins
+
+**Security Layers**:
+
+1. **Network**:
+   - TLS 1.3 minimum
+   - CORS with explicit origins
+   - WSS for WebSocket
+
+2. **Authentication**:
+   - JWT HS256 signing (shared secret)
+   - HttpOnly, Secure cookies
+   - SameSite=Lax CSRF protection
+
+3. **Authorization**:
+   - User ID validation per request
+   - Service token verification
+   - Role-based access (admin routes)
+
+4. **Rate Limiting**:
+   - Cloudflare Rate Limiter (API auth)
+   - KV-backed limiter (Scores imports)
+   - Per-user connection limits (Sync)
+
+**Failure Modes**:
+
+- Invalid JWT → 401 Unauthorized
+- Rate limit exceeded → 429 Too Many Requests
+- Service token invalid → 403 Forbidden
+- CORS violation → Blocked by browser
 
 ## Related Documentation
 
