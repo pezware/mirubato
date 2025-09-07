@@ -42,7 +42,7 @@ describe('Sync API', () => {
             pieces: [{ title: 'Moonlight Sonata', composer: 'Beethoven' }],
             techniques: ['scales'],
             goalIds: ['goal1'],
-            mood: 'SATISFIED',
+            mood: null,
             tags: ['morning'],
             createdAt: '2025-06-26T10:00:00Z',
             updatedAt: '2025-06-26T10:00:00Z',

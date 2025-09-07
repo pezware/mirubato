@@ -45,12 +45,6 @@ export class LogbookPage {
     return this.page.locator('[data-testid="logbook-entry"]')
   }
 
-  private getMoodButton(
-    mood: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
-  ) {
-    return this.page.locator(`[data-testid="mood-button-${mood}"]`)
-  }
-
   // Helper to dismiss any UI prompts that might block interactions
   async dismissPrompts() {
     // Check for multiple variations of the repertoire prompt
@@ -208,7 +202,6 @@ export class LogbookPage {
     title: string
     composer?: string
     notes?: string
-    mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
   }) {
     // Get initial entry count from localStorage
     const initialCount = await this.page.evaluate(() => {
@@ -245,13 +238,6 @@ export class LogbookPage {
     // Fill notes if provided
     if (data.notes) {
       await this.notesTextarea.fill(data.notes)
-    }
-
-    // Select mood if provided
-    if (data.mood) {
-      // Dismiss any prompts before clicking mood button
-      await this.dismissPrompts()
-      await this.getMoodButton(data.mood).click()
     }
 
     // Dismiss any existing toasts before saving

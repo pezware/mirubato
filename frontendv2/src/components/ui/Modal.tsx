@@ -71,15 +71,20 @@ export function Modal({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all',
+                  'w-full transform rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all',
                   sizeClasses[size],
-                  isMobileOptimized &&
-                    'max-h-[calc(100dvh-env(safe-area-inset-bottom)-1rem)]',
+                  isMobileOptimized && [
+                    'max-h-[85vh]', // Use viewport height for better compatibility
+                    'sm:max-h-[90vh]',
+                    'overflow-hidden', // Panel itself doesn't scroll
+                    'flex flex-col', // Make it a flex container
+                  ],
+                  !isMobileOptimized && 'overflow-hidden',
                   className
                 )}
               >
                 {(title || showCloseButton) && (
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4 flex items-center justify-between flex-shrink-0">
                     {title && (
                       <Dialog.Title
                         as="h3"
@@ -101,8 +106,11 @@ export function Modal({
                 )}
                 <div
                   className={cn(
-                    isMobileOptimized &&
-                      'max-h-[inherit] overflow-y-auto touch-scroll pr-1 sm:pr-0 -mx-2 px-2'
+                    'flex-1 min-h-0', // This is key for flex children to be scrollable
+                    isMobileOptimized
+                      ? 'overflow-y-auto overscroll-contain -mx-4 px-4' // Better scrolling on mobile
+                      : '',
+                    !isMobileOptimized && 'overflow-visible'
                   )}
                 >
                   {children}
