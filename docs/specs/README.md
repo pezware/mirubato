@@ -91,15 +91,193 @@ If you're new to Mirubato, start with:
 - **WebSocket Sync**: Real-time synchronization using Cloudflare Durable Objects
 - **Typography System**: Three-font system with Noto Serif, Inter, and Lexend
 
+## 📝 Documentation Guidelines & Principles
+
+### Core Principles
+
+#### 1. Focus on "Why" Over "How"
+
+- **Explain intent and rationale** behind architectural decisions
+- **Document contracts** between services, not implementation details
+- **Clarify trade-offs** made and alternatives considered
+- **Provide context** for future maintainers to understand decisions
+
+#### 2. Code References Over Code Duplication
+
+- **Use precise file:line references** (e.g., `api/src/index.ts:278`)
+- **Include function signatures only**, not full implementations
+- **Link to actual code** instead of copying it into docs
+- **Keep references updated** when code moves
+
+#### 3. Reality Over Aspiration
+
+- **Document what exists**, not what might be built
+- **Mark planned features clearly** with 🔄 status badges
+- **Remove or update** outdated information immediately
+- **Verify against codebase** before documenting
+
+### Documentation Structure
+
+Each service/feature specification should follow this format:
+
+```markdown
+## [Service Name]
+
+**What**: One-line description of purpose
+
+**Why**:
+
+- Business rationale
+- Technical benefits
+- Problem it solves
+
+**How**:
+
+- Key implementation patterns
+- Integration points
+- Data flow
+
+**Code References**:
+
+- `path/to/file:line` — Function/class signature
+- `path/to/config:line` — Configuration
+
+**Operational Limits**:
+
+- Concrete numbers (CPU: 50ms, Memory: 128MB)
+- Rate limits and quotas
+- Scaling boundaries
+
+**Failure Modes**:
+
+- Common failures → Mitigation strategies
+- Error handling patterns
+- Fallback behaviors
+```
+
+### Writing Guidelines
+
+#### Language & Tone
+
+- **Be concise**: Every word should add value
+- **Be specific**: Use numbers, not "fast" or "scalable"
+- **Be practical**: Focus on what developers need to know
+- **Avoid jargon**: Explain technical terms when first used
+
+#### Code References
+
+- **Always verify** line numbers before committing
+- **Use stable references**: Reference class/function definitions, not usage
+- **Include context**: Add function signature or class name
+- **Update promptly**: When code moves, update references
+
+Example:
+
+```markdown
+✅ GOOD: `api/src/utils/database.ts:12-16` — `class DatabaseHelpers`
+❌ BAD: See database.ts for details
+```
+
+#### Status Indicators
+
+Use clear status badges for features:
+
+- ✅ **Active** - Fully implemented and in production
+- 🔄 **Planned** - Designed but not yet implemented
+- ⚠️ **Deprecated** - Being phased out
+- 🚧 **Experimental** - In development, may change
+
+#### Cross-References
+
+Always link related documentation:
+
+```markdown
+## Related Documentation
+
+- [Service Name](../path/to/doc.md) - Brief description
+- [Feature Name](../path/to/doc.md) - How it relates
+```
+
+### Maintenance Guidelines
+
+#### Regular Reviews
+
+- **Monthly**: Verify code references still accurate
+- **Quarterly**: Review for outdated information
+- **On Deploy**: Update changed features immediately
+- **On Refactor**: Update architectural changes
+
+#### Version Control
+
+- **Small, focused updates**: One topic per commit
+- **Clear commit messages**: "docs: update X to reflect Y"
+- **Link to PRs**: Reference implementation PRs in updates
+- **Track changes**: Update version and date in footer
+
+### Quality Checklist
+
+Before committing documentation:
+
+- [ ] **Accuracy**: All code references verified
+- [ ] **Completeness**: What/Why/How/Code/Ops included
+- [ ] **Clarity**: Would a new developer understand?
+- [ ] **Currency**: Reflects current implementation
+- [ ] **Consistency**: Follows these guidelines
+- [ ] **Cross-refs**: Related docs linked
+- [ ] **Corrections**: Spelling/grammar checked
+
+### Common Pitfalls to Avoid
+
+1. **Don't copy large code blocks** - They become outdated quickly
+2. **Don't document obvious things** - Focus on non-obvious decisions
+3. **Don't mix plans with reality** - Clearly separate current vs future
+4. **Don't assume context** - Provide enough background
+5. **Don't skip "why"** - It's the most important part
+6. **Don't use relative terms** - "Fast" means nothing, "50ms p95" is clear
+7. **Don't document workarounds as features** - Mark them as temporary
+
+### Examples of Good Documentation
+
+#### Good: Explains Why, References Code
+
+```markdown
+### Workers
+
+**What**: Edge runtime environment for all Mirubato microservices.
+
+**Why**:
+
+- Sub-50ms global latency through 300+ edge locations
+- Zero cold starts with V8 isolates
+- Native integration with D1, KV, R2
+
+**Code References**:
+
+- `api/src/index.ts:278` — Main API export
+- `api/wrangler.toml:92-96` — Rate limiter configuration
+```
+
+#### Bad: Too Much Code, No Context
+
+```markdown
+### Workers
+
+Here's how we use Workers:
+
+[500 lines of code]
+```
+
 ## 📝 Contributing
 
 When updating specifications:
 
-1. Keep specs aligned with actual implementation
-2. Update version history when features change
-3. Cross-reference related specifications
-4. Include code examples where helpful
-5. Maintain consistent formatting
+1. **Verify first**: Check code references are accurate
+2. **Explain why**: Document rationale, not just what
+3. **Stay current**: Update docs when code changes
+4. **Cross-reference**: Link related specifications
+5. **Follow structure**: Use What/Why/How/Code/Ops format
+6. **Be specific**: Use numbers and concrete examples
+7. **Mark status**: Clearly indicate Active/Planned/Deprecated
 
 ## 🔗 Related Documentation
 
