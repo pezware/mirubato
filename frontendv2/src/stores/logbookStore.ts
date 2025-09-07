@@ -1354,9 +1354,14 @@ export const cleanupLogbookStore = () => {
 }
 
 // Expose cleanup for tests without importing from setup
+declare global {
+  var __cleanupLogbookStore: (() => void) | undefined
+  var __logbookStoreLoaded: boolean | undefined
+}
+
 try {
-  ;(globalThis as any).__cleanupLogbookStore = cleanupLogbookStore
-  ;(globalThis as any).__logbookStoreLoaded = true
+  globalThis.__cleanupLogbookStore = cleanupLogbookStore
+  globalThis.__logbookStoreLoaded = true
 } catch {
   // noop
 }
