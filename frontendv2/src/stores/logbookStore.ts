@@ -7,7 +7,7 @@ import {
   type DuplicateEntry,
 } from '../utils/duplicateCleanup'
 import { getWebSocketSync, type SyncEvent } from '../services/webSocketSync'
-import { localEventBus } from '../services/localEventBus'
+import { localEventBus, type LocalEventData } from '../services/localEventBus'
 import {
   generateNormalizedScoreId,
   isSameScore,
@@ -1246,7 +1246,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 }))
 
 // Store references to handlers and timers for cleanup
-let pieceDisassociatedHandler: ((data: any) => void) | null = null
+let pieceDisassociatedHandler:
+  | ((data: LocalEventData<'PIECE_DISSOCIATED'>) => void)
+  | null = null
 let windowFocusHandler: (() => void) | null = null
 let windowBeforeUnloadHandler: (() => void) | null = null
 let initializationTimer: NodeJS.Timeout | null = null
@@ -1259,7 +1261,9 @@ const isTestEnvironment =
 
 if (!isTestEnvironment) {
   // Create handlers
-  pieceDisassociatedHandler = ({ updatedEntries }) => {
+  pieceDisassociatedHandler = ({
+    updatedEntries,
+  }: LocalEventData<'PIECE_DISSOCIATED'>) => {
     // Update store state with the modified entries
     useLogbookStore.setState({
       entriesMap: updatedEntries,
