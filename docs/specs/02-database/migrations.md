@@ -2,191 +2,94 @@
 
 ## Overview
 
-Mirubato uses Cloudflare D1's migration system to manage database schema changes across all services. Each service maintains its own migration history, ensuring isolated and versioned database evolution.
+All schema changes are applied via per-service D1 migrations. We do not perform manual database operations. Evolution is additive and non-intrusive; destructive changes are avoided and, if ever necessary, use safe recreate-and-copy patterns in a single migration.
 
-## Migration Architecture
+## Where Migrations Live
 
-### D1 Migration System
+- API: `api/migrations/`
+- Scores: `scores/migrations/`
+- Dictionary: `dictionary/migrations/`
+- Sync Worker: uses the API database; no separate migrations directory
 
-```
-migrations/
-├── api/
-│   ├── 0001_initial_schema.sql
-│   ├── 0002_add_sync_columns.sql
-│   ├── 0003_add_repertoire_tables.sql
-│   └── 0004_add_indexes.sql
-├── scores/
-│   ├── 0001_scores_schema.sql
-│   └── 0002_add_collections.sql
-├── dictionary/
-│   └── 0001_terms_schema.sql
-└── sync-worker/
-    └── 0001_sync_tables.sql
-```
+## Creating Migrations
 
-## Migration Workflow
-
-### Creating Migrations
+Run Wrangler from the service directory you’re modifying:
 
 ```bash
-# Generate new migration file
-wrangler d1 migrations create DB "add_user_preferences"
-
-# This creates: migrations/0005_add_user_preferences.sql
+# Example: add a new index to API DB
+cd api
+wrangler d1 migrations create DB "add_goal_progress_index"
 ```
 
-### Migration File Format
+## Applying Migrations
 
-```sql
--- Migration: 0005_add_user_preferences.sql
--- Created: 2024-12-01
--- Description: Add user preferences table
-
--- Up Migration
-CREATE TABLE IF NOT EXISTS user_preferences (
-  user_id TEXT PRIMARY KEY,
-  theme TEXT DEFAULT 'light',
-  language TEXT DEFAULT 'en',
-  auto_sync BOOLEAN DEFAULT TRUE,
-  sync_interval INTEGER DEFAULT 30000,
-  notifications TEXT DEFAULT '{}', -- JSON
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch()),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_user_preferences_updated
-ON user_preferences(updated_at);
-
--- Add trigger for updated_at
-CREATE TRIGGER update_user_preferences_timestamp
-AFTER UPDATE ON user_preferences
-BEGIN
-  UPDATE user_preferences
-  SET updated_at = unixepoch()
-  WHERE user_id = NEW.user_id;
-END;
-```
-
-### Applying Migrations
+Always test locally and in staging before production:
 
 ```bash
-# Local development
+# Local (Miniflare)
 wrangler d1 migrations apply DB --local
 
-# Staging environment
-wrangler d1 migrations apply DB --env staging
+# Staging (remote)
+wrangler d1 migrations apply DB --env staging --remote
 
-# Production (with confirmation)
-wrangler d1 migrations apply DB --env production
+# Production (remote)
+wrangler d1 migrations apply DB --env production --remote
 ```
 
-## Migration Schemas
+## Patterns and Guidelines
 
-### API Service Migrations
+- Non-intrusive: prefer additive columns/tables; avoid renames/drops
+- Backward-compatible: keep old data readable until clients are updated
+- JSON-friendly: store complex structures as TEXT (JSON)
+- Indexed wisely: add indexes for observed query patterns
+- Triggers: use `updated_at` triggers sparingly to avoid heavy writes
 
-#### Initial Schema (0001)
+## Examples (High-Level)
 
-```sql
--- Users table
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  display_name TEXT,
-  avatar_url TEXT,
-  primary_instrument TEXT,
-  instruments TEXT DEFAULT '[]', -- JSON array
-  role TEXT DEFAULT 'user',
-  provider TEXT DEFAULT 'email',
-  provider_id TEXT,
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch()),
-  deleted_at INTEGER
-);
-
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_provider ON users(provider, provider_id);
-
--- Sessions table
-CREATE TABLE sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  token_hash TEXT UNIQUE NOT NULL,
-  device_info TEXT,
-  ip_address TEXT,
-  user_agent TEXT,
-  created_at INTEGER DEFAULT (unixepoch()),
-  last_activity_at INTEGER DEFAULT (unixepoch()),
-  expires_at INTEGER NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_sessions_token ON sessions(token_hash);
-CREATE INDEX idx_sessions_user ON sessions(user_id);
-CREATE INDEX idx_sessions_expires ON sessions(expires_at);
-```
-
-#### Sync Columns Migration (0002)
+### Add a new history table (API)
 
 ```sql
--- Add sync tracking columns
-ALTER TABLE logbook_entries ADD COLUMN sync_version INTEGER DEFAULT 0;
-ALTER TABLE logbook_entries ADD COLUMN sync_hash TEXT;
-ALTER TABLE logbook_entries ADD COLUMN last_synced_at INTEGER;
-
-ALTER TABLE repertoire_items ADD COLUMN sync_version INTEGER DEFAULT 0;
-ALTER TABLE repertoire_items ADD COLUMN sync_hash TEXT;
-ALTER TABLE repertoire_items ADD COLUMN last_synced_at INTEGER;
-
--- Sync status table
-CREATE TABLE sync_status (
-  entity_type TEXT NOT NULL,
-  entity_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  version INTEGER DEFAULT 0,
-  hash TEXT,
-  last_modified INTEGER,
-  conflict_data TEXT, -- JSON
-  PRIMARY KEY (entity_type, entity_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_sync_status_user ON sync_status(user_id);
-CREATE INDEX idx_sync_status_modified ON sync_status(last_modified);
-```
-
-#### Repertoire Tables Migration (0003)
-
-```sql
--- Repertoire items
-CREATE TABLE repertoire_items (
+-- goal_progress: historical tracking for goals
+CREATE TABLE IF NOT EXISTS goal_progress (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  score_id TEXT,
-  score_title TEXT NOT NULL,
-  score_composer TEXT NOT NULL,
-  normalized_composer TEXT,
-  status TEXT DEFAULT 'planned',
-  status_history TEXT DEFAULT '[]', -- JSON
-  difficulty INTEGER CHECK(difficulty >= 1 AND difficulty <= 10),
+  goal_id TEXT NOT NULL,
+  value REAL NOT NULL,
   notes TEXT,
-  goal_ids TEXT DEFAULT '[]', -- JSON array
-  practice_count INTEGER DEFAULT 0,
-  total_practice_time INTEGER DEFAULT 0,
-  last_practiced_at INTEGER,
-  target_tempo INTEGER,
-  current_tempo INTEGER,
-  performance_date INTEGER,
-  added_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch()),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  session_id TEXT,
+  recorded_at INTEGER NOT NULL
 );
 
-CREATE INDEX idx_repertoire_user ON repertoire_items(user_id);
-CREATE INDEX idx_repertoire_status ON repertoire_items(status);
-CREATE INDEX idx_repertoire_composer ON repertoire_items(normalized_composer);
-CREATE INDEX idx_repertoire_last_practiced ON repertoire_items(last_practiced_at DESC);
+CREATE INDEX IF NOT EXISTS idx_goal_progress_goal_id ON goal_progress(goal_id);
+CREATE INDEX IF NOT EXISTS idx_goal_progress_recorded_at ON goal_progress(recorded_at);
 ```
+
+### Add a new index (Scores)
+
+```sql
+-- Improve composer queries
+CREATE INDEX IF NOT EXISTS idx_scores_composer ON scores(composer);
+```
+
+### Add analytics support (Dictionary)
+
+```sql
+CREATE TABLE IF NOT EXISTS ai_token_usage (
+  date TEXT NOT NULL,
+  model TEXT NOT NULL,
+  tokens INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (date, model)
+);
+
+CREATE INDEX IF NOT EXISTS idx_token_usage_date ON ai_token_usage(date);
+```
+
+## Safety and Policy
+
+- No manual DB access. All changes via migrations.
+- Test locally; verify in staging; then apply to production.
+- Favor additive changes; when unavoidable, use recreate-and-copy in one migration.
+- Keep migrations small, focused, and well-commented.
+
 
 ### Scores Service Migrations
 

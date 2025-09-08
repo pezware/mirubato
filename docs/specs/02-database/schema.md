@@ -2,450 +2,343 @@
 
 ## Overview
 
-Mirubato uses Cloudflare D1 (SQLite) as its edge database solution. The system employs multiple databases across different services for data isolation and independent scaling.
+Mirubato uses Cloudflare D1 (SQLite) with one database per service for isolation and independent evolution. The Sync Worker shares the API’s database; there is no separate Sync DB. Schema changes are additive and applied via migrations only — no manual DB operations.
 
 ## Database Distribution
 
-| Service    | Database Name   | Purpose                              | Tables |
-| ---------- | --------------- | ------------------------------------ | ------ |
-| API        | mirubato-prod   | Core user data and business logic    | 11     |
-| Scores     | scores-prod     | Sheet music metadata and collections | 9      |
-| Dictionary | dictionary-prod | Music terms and definitions          | 6      |
-| Sync       | sync-prod       | Sync coordination and state          | 3      |
+| Service    | DB Binding | Purpose                                         | Reference                 |
+| ---------- | ---------- | ----------------------------------------------- | ------------------------- |
+| API        | `DB`       | Core user data, sync storage, repertoire/goals  | `api/migrations/`         |
+| Scores     | `DB`       | Scores metadata, versions, collections, metrics | `scores/migrations/`      |
+| Dictionary | `DB`       | Dictionary entries, analytics, queues           | `dictionary/migrations/`  |
 
-## API Service Database (mirubato-prod)
+## API Service Database
 
-### Users Table
+### Users
+
+Minimal user identity for auth and ownership.
 
 ```sql
 CREATE TABLE users (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  email TEXT UNIQUE NOT NULL,             -- User email (lowercase)
-  email_verified INTEGER DEFAULT 0,       -- Email verification status
-  display_name TEXT,                      -- User's display name
-  primary_instrument TEXT,                -- Main instrument
-  instruments TEXT,                       -- JSON array of all instruments
-  role TEXT DEFAULT 'user',               -- user, teacher, admin
-  auth_provider TEXT,                     -- magic_link, google
-  google_id TEXT,                         -- Google OAuth ID
-  avatar_url TEXT,                        -- Profile picture URL
-  preferences TEXT,                       -- JSON user preferences
-  last_login_at INTEGER,                  -- Unix timestamp
-  created_at INTEGER NOT NULL,            -- Unix timestamp
-  updated_at INTEGER NOT NULL,            -- Unix timestamp
-  deleted_at INTEGER                      -- Soft delete timestamp
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  auth_provider TEXT DEFAULT 'magic_link' CHECK (auth_provider IN ('magic_link','google')),
+  google_id TEXT UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_google_id ON users(google_id);
-CREATE INDEX idx_users_role ON users(role);
 ```
 
-### Sessions Table
+### Sync Storage
+
+Authoritative store for user entities synced from clients.
 
 ```sql
-CREATE TABLE sessions (
-  id TEXT PRIMARY KEY,                    -- Session ID
-  user_id TEXT NOT NULL,                  -- Foreign key to users
-  token TEXT UNIQUE NOT NULL,             -- JWT token
-  refresh_token TEXT,                     -- Refresh token
-  device_info TEXT,                       -- JSON device information
-  ip_address TEXT,                        -- Client IP
-  expires_at INTEGER NOT NULL,            -- Expiration timestamp
-  created_at INTEGER NOT NULL,            -- Creation timestamp
-  last_used_at INTEGER,                   -- Last activity timestamp
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_sessions_user_id ON sessions(user_id);
-CREATE INDEX idx_sessions_token ON sessions(token);
-CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
-```
-
-### Logbook Entries Table
-
-```sql
-CREATE TABLE logbook_entries (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  user_id TEXT NOT NULL,                  -- Foreign key to users
-  timestamp INTEGER NOT NULL,             -- Practice session timestamp
-  duration INTEGER NOT NULL,              -- Duration in seconds
-  type TEXT CHECK(type IN ('practice', 'performance', 'lesson', 'rehearsal', 'technique')),
-  instrument TEXT,                        -- Instrument played
-  pieces TEXT,                            -- JSON array of pieces
-  techniques TEXT,                       -- JSON array of techniques
-  mood TEXT CHECK(mood IN ('frustrated', 'neutral', 'satisfied', 'excited')),
-  notes TEXT,                             -- Practice notes
-  goal_ids TEXT,                          -- JSON array of goal IDs
-  score_pages TEXT,                      -- JSON array of viewed pages
-  tags TEXT,                              -- JSON array of tags
-  source TEXT,                            -- Entry source (manual, timer, auto)
-  sync_version INTEGER DEFAULT 1,         -- For conflict resolution
-  created_at INTEGER NOT NULL,            -- Creation timestamp
-  updated_at INTEGER NOT NULL,            -- Last update timestamp
-  deleted_at INTEGER,                     -- Soft delete
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_logbook_user_timestamp ON logbook_entries(user_id, timestamp DESC);
-CREATE INDEX idx_logbook_user_created ON logbook_entries(user_id, created_at DESC);
-CREATE INDEX idx_logbook_deleted ON logbook_entries(deleted_at);
-```
-
-### User Repertoire Table
-
-```sql
-CREATE TABLE user_repertoire (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  user_id TEXT NOT NULL,                  -- Foreign key to users
-  score_id TEXT,                          -- Optional link to scores service
-  score_title TEXT NOT NULL,              -- Piece title
-  score_composer TEXT,                    -- Composer name
-  normalized_composer TEXT,               -- Canonicalized composer
-  status TEXT DEFAULT 'planned' CHECK(status IN ('planned', 'learning', 'working', 'polished', 'performance_ready')),
-  status_history TEXT,                    -- JSON array of status changes
-  difficulty INTEGER CHECK(difficulty BETWEEN 1 AND 10),
-  notes TEXT,                             -- Personal notes
-  goal_ids TEXT,                          -- JSON array of linked goals
-  practice_count INTEGER DEFAULT 0,       -- Number of practice sessions
-  total_practice_time INTEGER DEFAULT 0,  -- Total practice time in seconds
-  last_practiced_at INTEGER,              -- Last practice timestamp
-  target_tempo INTEGER,                   -- Target BPM
-  current_tempo INTEGER,                  -- Current achieved BPM
-  performance_date INTEGER,               -- Planned performance date
-  added_at INTEGER NOT NULL,              -- When added to repertoire
-  updated_at INTEGER NOT NULL,            -- Last update
-  deleted_at INTEGER,                     -- Soft delete
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_repertoire_user_status ON user_repertoire(user_id, status);
-CREATE INDEX idx_repertoire_user_composer ON user_repertoire(user_id, normalized_composer);
-CREATE INDEX idx_repertoire_last_practiced ON user_repertoire(user_id, last_practiced_at DESC);
-```
-
-### Goals Table
-
-```sql
-CREATE TABLE goals (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  user_id TEXT NOT NULL,                  -- Foreign key to users
-  title TEXT NOT NULL,                    -- Goal title
-  description TEXT,                       -- Detailed description
-  target_type TEXT CHECK(target_type IN ('duration', 'sessions', 'pieces', 'tempo', 'custom')),
-  target_value INTEGER,                   -- Numeric target
-  target_unit TEXT,                       -- Unit (minutes, count, bpm, etc)
-  current_value INTEGER DEFAULT 0,        -- Current progress
-  deadline INTEGER,                       -- Target completion date
-  piece_ids TEXT,                         -- JSON array of linked pieces
-  recurring TEXT,                         -- Recurrence pattern (daily, weekly, etc)
-  status TEXT DEFAULT 'active' CHECK(status IN ('active', 'paused', 'completed', 'abandoned')),
-  created_at INTEGER NOT NULL,            -- Creation timestamp
-  updated_at INTEGER NOT NULL,            -- Last update
-  completed_at INTEGER,                   -- Completion timestamp
-  deleted_at INTEGER,                     -- Soft delete
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_goals_user_status ON goals(user_id, status);
-CREATE INDEX idx_goals_user_deadline ON goals(user_id, deadline);
-```
-
-### Goal Progress Table
-
-```sql
-CREATE TABLE goal_progress (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  goal_id TEXT NOT NULL,                  -- Foreign key to goals
-  date INTEGER NOT NULL,                  -- Progress date
-  value INTEGER NOT NULL,                 -- Progress value
-  notes TEXT,                             -- Progress notes
-  created_at INTEGER NOT NULL,            -- Creation timestamp
-  FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_goal_progress_goal_date ON goal_progress(goal_id, date DESC);
-```
-
-### Sync Tables
-
-```sql
--- Sync data storage
+-- Entity data (logbook entries, goals, user_preferences, etc.)
 CREATE TABLE sync_data (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  entity_type TEXT NOT NULL,              -- logbook, repertoire, goals
-  entity_id TEXT NOT NULL,                -- Entity UUID
-  data TEXT NOT NULL,                     -- JSON blob
-  version INTEGER DEFAULT 1,              -- Version number
-  updated_at INTEGER NOT NULL,            -- Last update
-  deleted INTEGER DEFAULT 0,              -- Deletion flag
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  data TEXT NOT NULL,              -- JSON
+  checksum TEXT NOT NULL,          -- Content hash for duplicate prevention
+  version INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP,
   UNIQUE(user_id, entity_type, entity_id)
 );
 
-CREATE INDEX idx_sync_data_user_type ON sync_data(user_id, entity_type);
+CREATE INDEX idx_sync_data_user ON sync_data(user_id);
+CREATE INDEX idx_sync_data_type ON sync_data(entity_type);
 CREATE INDEX idx_sync_data_updated ON sync_data(updated_at);
 
--- Sync events log
-CREATE TABLE sync_events (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  event_type TEXT NOT NULL,               -- create, update, delete
-  entity_type TEXT NOT NULL,              -- logbook, repertoire, goals
-  entity_id TEXT NOT NULL,
-  data TEXT,                              -- Event data
-  created_at INTEGER NOT NULL,
-  processed INTEGER DEFAULT 0
+-- Per-user sync metadata
+CREATE TABLE sync_metadata (
+  user_id TEXT PRIMARY KEY,
+  last_sync_token TEXT,
+  last_sync_time TIMESTAMP,
+  device_count INTEGER DEFAULT 1,
+  last_device_id TEXT,
+  sync_conflict_count INTEGER DEFAULT 0
 );
-
-CREATE INDEX idx_sync_events_user ON sync_events(user_id, created_at DESC);
-CREATE INDEX idx_sync_events_processed ON sync_events(processed, created_at);
 ```
 
-### Idempotency Keys Table
+### Idempotency Keys
+
+Support for idempotent sync operations.
 
 ```sql
 CREATE TABLE idempotency_keys (
-  key TEXT PRIMARY KEY,                   -- Idempotency key
+  id TEXT PRIMARY KEY,
+  key TEXT NOT NULL,
   user_id TEXT NOT NULL,
-  response TEXT,                          -- Cached response
-  created_at INTEGER NOT NULL
+  request_hash TEXT NOT NULL,
+  response TEXT NOT NULL,          -- JSON
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL
 );
 
-CREATE INDEX idx_idempotency_user ON idempotency_keys(user_id);
-CREATE INDEX idx_idempotency_created ON idempotency_keys(created_at);
+CREATE INDEX idx_idempotency_lookup ON idempotency_keys(key, user_id);
+CREATE INDEX idx_idempotency_expires ON idempotency_keys(expires_at);
 ```
 
-## Scores Service Database (scores-prod)
+### User Repertoire
 
-### Scores Table
+Lightweight per-user repertoire records.
+
+```sql
+CREATE TABLE user_repertoire (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  score_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'planned' CHECK (status IN ('planned','learning','polished','dropped')),
+  difficulty_rating INTEGER CHECK (difficulty_rating BETWEEN 1 AND 5),
+  personal_notes TEXT,
+  reference_links TEXT,             -- JSON array
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(user_id, score_id)
+);
+
+CREATE INDEX idx_repertoire_user ON user_repertoire(user_id);
+CREATE INDEX idx_repertoire_score ON user_repertoire(score_id);
+CREATE INDEX idx_repertoire_status ON user_repertoire(status);
+```
+
+### Score Annotations
+
+Per-user PDF annotations stored with the API (not in Scores DB).
+
+```sql
+CREATE TABLE score_annotations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  score_id TEXT NOT NULL,
+  page_number INTEGER NOT NULL,
+  annotation_data TEXT NOT NULL,    -- JSON
+  annotation_type TEXT NOT NULL CHECK (annotation_type IN ('highlight','text','drawing','measure_bracket')),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_annotations_user_score ON score_annotations(user_id, score_id);
+CREATE INDEX idx_annotations_page ON score_annotations(score_id, page_number);
+```
+
+### Goals and Progress
+
+Goal records with additive, JSON-friendly fields; separate progress history.
+
+```sql
+-- Goals (columns may include optional: score_id, measures JSON, practice_plan JSON)
+CREATE TABLE goals (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL,
+  target_value INTEGER,
+  current_value INTEGER DEFAULT 0,
+  target_date TEXT,
+  status TEXT DEFAULT 'active',
+  score_id TEXT,
+  measures TEXT,
+  practice_plan TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- Progress history
+CREATE TABLE goal_progress (
+  id TEXT PRIMARY KEY,
+  goal_id TEXT NOT NULL,
+  value REAL NOT NULL,
+  notes TEXT,
+  session_id TEXT,
+  recorded_at INTEGER NOT NULL
+);
+```
+
+## Scores Service Database
+
+### Scores
+
+Canonical metadata for each score (enums simplified here; see migrations for full constraints).
 
 ```sql
 CREATE TABLE scores (
-  id TEXT PRIMARY KEY,                    -- UUID v4
-  title TEXT NOT NULL,                    -- Score title
-  composer TEXT,                          -- Composer name
-  normalized_composer TEXT,               -- Canonicalized composer
-  arranger TEXT,                          -- Arranger name
-  opus TEXT,                              -- Opus number
-  catalog_number TEXT,                    -- Catalog number (BWV, K, etc)
-  difficulty INTEGER CHECK(difficulty BETWEEN 1 AND 10),
-  genre TEXT,                             -- Musical genre
-  period TEXT,                            -- Musical period
-  year_composed INTEGER,                  -- Year of composition
-  duration_seconds INTEGER,               -- Estimated duration
-  page_count INTEGER DEFAULT 1,           -- Number of pages
-  instruments TEXT,                       -- JSON array of instruments
-  key_signature TEXT,                     -- Key signature
-  time_signature TEXT,                    -- Time signature
-  tempo_marking TEXT,                     -- Tempo marking
-  file_url TEXT,                          -- R2 URL for PDF
-  thumbnail_url TEXT,                     -- Thumbnail image URL
-  source TEXT,                            -- upload, imslp, import
-  source_url TEXT,                        -- Original source URL
-  imslp_id TEXT,                          -- IMSLP work ID
-  metadata TEXT,                          -- JSON additional metadata
-  ai_extracted INTEGER DEFAULT 0,         -- AI extraction status
-  user_id TEXT,                           -- Uploader user ID
-  visibility TEXT DEFAULT 'private' CHECK(visibility IN ('public', 'private', 'unlisted')),
-  view_count INTEGER DEFAULT 0,           -- View counter
-  download_count INTEGER DEFAULT 0,       -- Download counter
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  deleted_at INTEGER
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  composer TEXT NOT NULL,
+  opus TEXT,
+  movement TEXT,
+  instrument TEXT NOT NULL,           -- 'PIANO' | 'GUITAR' | 'BOTH'
+  difficulty TEXT NOT NULL,           -- 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  difficulty_level INTEGER,
+  grade_level TEXT,
+  duration_seconds INTEGER,
+  time_signature TEXT,
+  key_signature TEXT,
+  tempo_marking TEXT,
+  suggested_tempo INTEGER,
+  style_period TEXT,
+  source TEXT,
+  imslp_url TEXT,
+  tags TEXT,                          -- JSON
+  metadata TEXT,                      -- JSON
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX idx_scores_composer ON scores(normalized_composer);
-CREATE INDEX idx_scores_user ON scores(user_id);
-CREATE INDEX idx_scores_visibility ON scores(visibility);
-CREATE INDEX idx_scores_title ON scores(title);
 ```
 
-### Score Pages Table
+### Score Versions
+
+```sql
+CREATE TABLE score_versions (
+  id TEXT PRIMARY KEY,
+  score_id TEXT NOT NULL,
+  format TEXT NOT NULL,               -- 'pdf' | 'musicxml' | 'vexflow' | 'image' | 'abc'
+  r2_key TEXT NOT NULL,
+  file_size_bytes INTEGER,
+  page_count INTEGER,
+  resolution TEXT,
+  processing_status TEXT DEFAULT 'pending',
+  processing_error TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Score Pages
 
 ```sql
 CREATE TABLE score_pages (
   id TEXT PRIMARY KEY,
   score_id TEXT NOT NULL,
   page_number INTEGER NOT NULL,
-  image_url TEXT NOT NULL,                -- R2 URL for page image
-  thumbnail_url TEXT,                     -- Thumbnail URL
-  width INTEGER,                          -- Image width
-  height INTEGER,                         -- Image height
-  ocr_text TEXT,                          -- Extracted text
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  width INTEGER,
+  height INTEGER,
+  ocr_text TEXT,
   created_at INTEGER NOT NULL,
-  FOREIGN KEY (score_id) REFERENCES scores(id) ON DELETE CASCADE,
   UNIQUE(score_id, page_number)
 );
-
-CREATE INDEX idx_score_pages_score ON score_pages(score_id, page_number);
 ```
 
-### User Collections Table
+### Collections
+
+Curated collections and user-owned collections (with membership table for scale).
 
 ```sql
+-- Curated collections (platform-managed)
+CREATE TABLE collections (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  instrument TEXT,
+  difficulty TEXT,
+  score_ids TEXT NOT NULL,            -- JSON array of score IDs
+  display_order INTEGER DEFAULT 0,
+  is_featured BOOLEAN DEFAULT FALSE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User collections
 CREATE TABLE user_collections (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
-  visibility TEXT DEFAULT 'private' CHECK(visibility IN ('public', 'private', 'unlisted')),
-  featured INTEGER DEFAULT 0,             -- Featured collection flag
-  cover_image_url TEXT,                   -- Collection cover image
-  score_ids TEXT,                         -- JSON array of score IDs
-  subscriber_count INTEGER DEFAULT 0,     -- Number of subscribers
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  UNIQUE(user_id, name)
+  slug TEXT NOT NULL,
+  visibility TEXT DEFAULT 'private',
+  is_default BOOLEAN DEFAULT FALSE,
+  collection_type TEXT DEFAULT 'personal',
+  score_ids TEXT NOT NULL DEFAULT '[]',
+  tags TEXT DEFAULT '[]',
+  display_order INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, slug)
 );
 
-CREATE INDEX idx_collections_user ON user_collections(user_id);
-CREATE INDEX idx_collections_visibility ON user_collections(visibility, featured);
-```
-
-### Score Annotations Table
-
-```sql
-CREATE TABLE score_annotations (
+CREATE TABLE collection_members (
   id TEXT PRIMARY KEY,
+  collection_id TEXT NOT NULL,
   score_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  page_number INTEGER DEFAULT 1,
-  annotation_data TEXT,                   -- JSON drawing/annotation data
-  annotation_type TEXT,                   -- drawing, text, highlight
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  FOREIGN KEY (score_id) REFERENCES scores(id) ON DELETE CASCADE,
-  UNIQUE(score_id, user_id, page_number)
-);
-
-CREATE INDEX idx_annotations_score_user ON score_annotations(score_id, user_id);
-```
-
-### Composers Table
-
-```sql
-CREATE TABLE composers (
-  id TEXT PRIMARY KEY,
-  canonical_name TEXT UNIQUE NOT NULL,    -- Standardized name
-  aliases TEXT,                           -- JSON array of alternatives
-  birth_year INTEGER,
-  death_year INTEGER,
-  nationality TEXT,
-  period TEXT,                            -- Baroque, Classical, etc
-  wikipedia_url TEXT,
-  imslp_url TEXT,
-  biography TEXT,                         -- Brief biography
-  portrait_url TEXT,                      -- Composer portrait
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-
-CREATE INDEX idx_composers_name ON composers(canonical_name);
-CREATE INDEX idx_composers_period ON composers(period);
-```
-
-## Dictionary Service Database (dictionary-prod)
-
-### Terms Table
-
-```sql
-CREATE TABLE terms (
-  id TEXT PRIMARY KEY,
-  term TEXT NOT NULL,                     -- Musical term
-  language TEXT NOT NULL,                 -- ISO language code
-  definition TEXT NOT NULL,               -- Term definition
-  category TEXT,                          -- tempo, dynamics, technique, etc
-  examples TEXT,                          -- JSON array of usage examples
-  related_terms TEXT,                     -- JSON array of related terms
-  pronunciation TEXT,                     -- IPA pronunciation
-  etymology TEXT,                         -- Word origin
-  difficulty_level INTEGER,               -- Beginner/Intermediate/Advanced
-  quality_score REAL,                     -- AI quality metric (0-1)
-  review_status TEXT DEFAULT 'pending' CHECK(review_status IN ('pending', 'approved', 'rejected')),
-  source TEXT,                            -- ai, manual, import
-  source_model TEXT,                      -- AI model used
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  UNIQUE(term, language)
-);
-
-CREATE INDEX idx_terms_language ON terms(language);
-CREATE INDEX idx_terms_category ON terms(category);
-CREATE INDEX idx_terms_quality ON terms(quality_score DESC);
-CREATE INDEX idx_terms_status ON terms(review_status);
-```
-
-### Term Embeddings Table
-
-```sql
-CREATE TABLE term_embeddings (
-  term_id TEXT PRIMARY KEY,
-  embedding BLOB NOT NULL,                -- Vector embedding
-  model_version TEXT,                     -- Embedding model version
-  created_at INTEGER NOT NULL,
-  FOREIGN KEY (term_id) REFERENCES terms(id) ON DELETE CASCADE
+  display_order INTEGER DEFAULT 0,
+  added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(collection_id, score_id)
 );
 ```
 
-### Term Searches Table
+### Analytics
 
 ```sql
-CREATE TABLE term_searches (
+CREATE TABLE score_analytics (
+  score_id TEXT PRIMARY KEY,
+  view_count INTEGER DEFAULT 0,
+  download_count INTEGER DEFAULT 0,
+  render_count INTEGER DEFAULT 0,
+  last_viewed_at DATETIME
+);
+```
+
+## Dictionary Service Database
+
+### Dictionary Entries
+
+Primary content table for terms across languages and categories.
+
+```sql
+CREATE TABLE dictionary_entries (
   id TEXT PRIMARY KEY,
   term TEXT NOT NULL,
-  language TEXT,
-  user_id TEXT,
-  found INTEGER DEFAULT 1,                -- Whether term was found
-  created_at INTEGER NOT NULL
+  normalized_term TEXT NOT NULL,
+  lang TEXT NOT NULL,
+  type TEXT,
+  definition TEXT NOT NULL,          -- JSON/text
+  metadata TEXT,                     -- JSON (related terms, categories, instruments, etc.)
+  overall_score INTEGER,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(normalized_term, lang)
 );
-
-CREATE INDEX idx_searches_term ON term_searches(term);
-CREATE INDEX idx_searches_created ON term_searches(created_at DESC);
 ```
+
+### Supporting Tables (selected)
+
+- `user_feedback` — ratings/feedback; indexed by `entry_id`, `user_id`.
+- `related_terms` — relations across entries.
+- `search_analytics` — searched terms, result status, timing, lang.
+- `seed_queue` — queued generation items with priority/status.
+- `ai_token_usage` — daily token accounting by model.
+- `manual_review_queue`, `dead_letter_queue`, `recovery_history` — curation and recovery.
+- Analytics tables: `ai_model_usage`, `cache_metrics`, `daily_statistics`, `export_history`.
+- Optional: `term_embeddings` (if enabled by migrations).
 
 ## Data Types & Conventions
 
-### Primary Keys
+- Primary keys are strings (typically nanoid/UUID); generated by the application.
+- Timestamps stored as INTEGER (unixepoch) or TIMESTAMP/DATETIME per migration; access via app helpers.
+- JSON fields stored as TEXT and parsed/stringified at the application layer.
+- Soft deletes via `deleted_at` (when present); queries must filter accordingly.
 
-- All primary keys are UUID v4 strings
-- Generated using `crypto.randomUUID()`
+## Migrations
 
-### Timestamps
-
-- All timestamps are Unix timestamps (seconds since epoch)
-- Stored as INTEGER type
-- Generated using `Math.floor(Date.now() / 1000)`
-
-### JSON Fields
-
-- Complex data stored as JSON strings
-- Parsed/stringified at application layer
-- Examples: arrays, nested objects, metadata
-
-### Soft Deletes
-
-- `deleted_at` field for soft deletes
-- NULL = active, timestamp = deleted
-- Queries filter by `deleted_at IS NULL`
-
-### Indexes
-
-- Primary key automatically indexed
-- Foreign keys indexed for joins
-- Frequently queried fields indexed
-- Composite indexes for common query patterns
-
-## Migration Strategy
-
-See [Migrations](./migrations.md) for detailed migration procedures.
+- All schema changes are additive and applied via per-service migrations. No manual DB operations.
+- See `02-database/migrations.md` for workflow and safety guidelines.
 
 ## Related Documentation
 
-- [Migrations](./migrations.md) - Database migration strategy
-- [Sync Strategy](./sync-strategy.md) - Data synchronization
-- [API Specification](../03-api/rest-api.md) - API endpoints
-- [Microservices](../01-architecture/microservices.md) - Service architecture
+- [Migrations](./migrations.md)
+- [Sync Strategy](./sync-strategy.md)
+- [Microservices](../01-architecture/microservices.md)
 
 ---
 
