@@ -1,88 +1,284 @@
 # Data Synchronization Strategy
 
-## Overview
+**What**: Hybrid sync architecture combining authoritative HTTP endpoints with real-time WebSocket propagation.
 
-Mirubato uses an offline-first sync model combining:
+**Why**:
 
-- Real-time updates via WebSockets and Durable Objects (Sync Worker)
-- Authoritative HTTP sync endpoints in the API service
-- Offline queueing on clients with eventual consistency
+- Offline-first enables practice anywhere
+- Real-time sync provides seamless multi-device experience
+- HTTP fallback ensures durability
+- Idempotency prevents duplicate operations
 
-All operations are idempotent where possible, and schema changes are additive.
+**How**:
+
+- HTTP sync endpoints for authoritative operations
+- WebSocket for real-time device-to-device updates
+- Durable Objects for per-user connection management
+- Last-write-wins conflict resolution
 
 ## Architecture
 
 ```
-Client (IndexedDB/Queue) ↔ API (/api/sync/*) ↔ D1 (sync_data/sync_metadata)
-                         ↕
-                   WebSocket (Sync Worker + DO)
+Client (IndexedDB) ↔ API (/api/sync/*) ↔ D1 (sync_data)
+                    ↕                      ↕
+              WebSocket (Sync Worker) → Durable Object
 ```
 
-### Channels
+**Code References**:
 
-- WebSocket (real-time): best-effort propagation between a user’s devices; stateful per-user DO.
-- HTTP (authoritative): pull/push/batch endpoints maintain the source of truth in D1.
+- HTTP sync: `api/src/api/handlers/sync.ts`
+- WebSocket server: `sync-worker/src/index.ts`
+- Durable Object: `sync-worker/src/syncCoordinator.ts`
+- Client sync: `frontendv2/src/services/syncService.ts`
+- WebSocket client: `frontendv2/src/services/webSocketSync.ts`
 
-## Real-Time Synchronization
+## HTTP Sync (Authoritative)
 
-### WebSocket
+### Endpoints
 
-- Endpoint: `/sync/ws?userId=<id>&token=<jwt>` (local: `ws://localhost:8787`)
-- Auth: JWT (HS256) validated before upgrading; userId in query must match token subject
-- Transport: per-user Durable Object coordinates all device connections
-- Persistence: DO writes recent changes to `sync_data` for recovery/bulk sync
+**Pull Operation**:
 
-Message types (selected):
+- Endpoint: `POST /api/sync/pull`
+- Purpose: Fetch all user data and sync token
+- Returns: Entries, repertoire, goals, sync metadata
+- Code: `api/src/api/handlers/sync.ts:pullHandler`
 
-- Entries: `ENTRY_CREATED` | `ENTRY_UPDATED` | `ENTRY_DELETED`
-- Repertoire: `PIECE_ADDED` | `PIECE_UPDATED` | `PIECE_REMOVED` | `PIECE_DISSOCIATED`
-- Bulk: `BULK_SYNC` | `REPERTOIRE_BULK_SYNC` | `SYNC_REQUEST`
-- Control: `PING` | `PONG` | `WELCOME` | `ERROR` | `SYNC_RESPONSE`
+**Push Operation**:
 
-## Authoritative HTTP Sync
+- Endpoint: `POST /api/sync/push`
+- Purpose: Upsert entries and goals
+- Headers: `X-Idempotency-Key`, `X-Device-ID` (optional)
+- Idempotent: Returns cached response on replay
+- Code: `api/src/api/handlers/sync.ts:pushHandler`
 
-Endpoints (API):
+**Batch Operation**:
 
-- `POST /api/sync/pull` — returns user entries and sync token
-- `POST /api/sync/push` — upserts entries/goals; supports `X-Idempotency-Key` and optional `X-Device-ID`
-- `POST /api/sync/batch` — last-write-wins batch semantics
-- `GET /api/sync/status` — sync metadata and counts
+- Endpoint: `POST /api/sync/batch`
+- Purpose: Bulk upsert with last-write-wins
+- Max size: 1000 items per request
+- Code: `api/src/api/handlers/sync.ts:batchHandler`
 
-Key behaviors:
+**Status Check**:
 
-- Idempotency: if `X-Idempotency-Key` matches prior request hash, cached response is returned (`X-Idempotent-Replay: true`)
-- Duplicate prevention: server checksum dedupes replays
-- Normalization: score IDs normalized from title+composer
-- Conflict model: last-write-wins based on version/checksum; client should refetch and reapply on conflict
+- Endpoint: `GET /api/sync/status`
+- Purpose: Sync metadata and entity counts
+- Code: `api/src/api/handlers/sync.ts:statusHandler`
 
-## Offline-First (Client)
+### Idempotency Implementation
 
-Clients persist entities in IndexedDB and queue changes while offline. On reconnect, the queue flushes through the HTTP endpoints. This is an implementation detail on the client; the server remains stateless per request outside the DO.
+**Request Deduplication**:
 
-Recommendations:
+```typescript
+// Headers used
+X-Idempotency-Key: <client-generated-uuid>
+X-Device-ID: <optional-device-identifier>
 
-- Use exponential backoff for retries and cap attempts
-- Group changes into batches when available
-- Avoid large payloads; chunk by entity type as needed
+// Response header on replay
+X-Idempotent-Replay: true
+```
 
-## Conflict Resolution
+**Storage**:
 
-- Primary: last-write-wins on the server
-- Client guidance: if a write fails with a mismatch/conflict, refresh via `/pull` and reapply local changes
+- Table: `idempotency_keys`
+- TTL: 24 hours default
+- Code: `api/src/services/idempotencyService.ts`
 
-## Sync Optimization
+### Duplicate Prevention
 
-- Batch sync: clients should group changes where possible and use `/api/sync/batch`
-- Deduplication: server-side checksum protects against replayed writes
-- Transport: prefer HTTP for durability; WebSocket for device-to-device propagation
+**Checksum Strategy**:
 
-## Data Consistency
+- Each entity has content checksum
+- Server rejects duplicate checksums
+- Prevents accidental replays
+- Code: `api/src/utils/sync.ts:calculateChecksum`
 
-- Idempotent writes: safe to retry
-- Soft deletes: `deleted_at` used for entity removal in `sync_data`
-- Eventual consistency across devices via real-time + periodic pulls
+## WebSocket Sync (Real-time)
+
+### Connection
+
+**Endpoint**:
+
+```
+ws://localhost:8787/sync/ws?userId=<id>&token=<jwt>
+wss://sync.mirubato.com/sync/ws?userId=<id>&token=<jwt>
+```
+
+**Authentication**:
+
+- JWT validation before WebSocket upgrade
+- userId must match token subject
+- Code: `sync-worker/src/index.ts:handleWebSocketRequest`
+
+### Message Protocol
+
+**Event Types**:
+
+```typescript
+// Logbook events
+;'ENTRY_CREATED' | 'ENTRY_UPDATED' | 'ENTRY_DELETED'
+
+// Repertoire events
+;'PIECE_ADDED' | 'PIECE_UPDATED' | 'PIECE_REMOVED' | 'PIECE_DISSOCIATED'
+
+// Bulk operations
+;'BULK_SYNC' | 'REPERTOIRE_BULK_SYNC' | 'SYNC_REQUEST'
+
+// Connection management
+;'PING' | 'PONG' | 'WELCOME' | 'ERROR' | 'SYNC_RESPONSE'
+```
+
+**Code References**:
+
+- Message handling: `sync-worker/src/syncCoordinator.ts:handleMessage`
+- Broadcasting: `sync-worker/src/syncCoordinator.ts:broadcast`
+- Persistence: `sync-worker/src/syncCoordinator.ts:saveEntryToDatabase`
+
+### Durable Object Coordination
+
+**Per-User Isolation**:
+
+- One DO instance per userId
+- Manages all user's device connections
+- Broadcasts to same-user devices only
+- Code: `sync-worker/src/syncCoordinator.ts`
+
+**Connection Management**:
+
+- Max connections: 10 per user
+- Idle timeout: ~5 minutes (via alarm)
+- Ping interval: 30 seconds
+- Code: `sync-worker/src/syncCoordinator.ts:handleWebSocket`
+
+**Persistence**:
+
+- Writes to D1 on every change
+- Soft deletes with `deleted_at`
+- Recovery on reconnect via bulk sync
+- Code: `sync-worker/src/syncCoordinator.ts:saveToDatabase`
+
+## Client Implementation
+
+### Offline Queue
+
+**Queue Management**:
+
+- Storage: IndexedDB pending_sync table
+- Retry: Exponential backoff (1s, 2s, 4s...)
+- Max retries: 5 attempts
+- Code: `frontendv2/src/services/syncQueue.ts`
+
+**Sync Flow**:
+
+1. Write to local IndexedDB
+2. Queue sync operation
+3. Attempt immediate sync if online
+4. Retry on reconnection
+5. Clear queue on success
+
+### Conflict Resolution
+
+**Strategy**: Last-write-wins based on timestamp
+
+**Client Behavior**:
+
+1. On conflict (409 response), pull latest
+2. Reapply local changes if newer
+3. Discard local if server is newer
+4. Update local version/checksum
+
+**Code**: `frontendv2/src/services/syncService.ts:handleConflict`
+
+## Data Model
+
+### Sync Data Storage
+
+**Table**: `sync_data`
+
+- Universal storage for all entity types
+- Soft deletes via `deleted_at`
+- Version tracking for optimistic locking
+- Code: `api/migrations/0001_initial_schema.sql`
+
+**Entity Types**:
+
+- `logbook_entry` — Practice sessions
+- `goal` — Practice goals
+- `user_preferences` — Settings
+
+### Sync Metadata
+
+**Table**: `sync_metadata`
+
+- Per-user sync state
+- Last sync token and timestamp
+- Device count tracking
+- Code: `api/migrations/0001_initial_schema.sql`
+
+## Optimization Strategies
+
+### Batching
+
+- Group changes by entity type
+- Max 1000 items per batch
+- Use `/api/sync/batch` for bulk operations
+- Code: `frontendv2/src/services/syncService.ts:batchSync`
+
+### Compression
+
+- Gzip for large payloads
+- JSON minification
+- Omit null/undefined fields
+- Code: `api/src/api/middleware.ts` (compression middleware)
+
+### Caching
+
+- ETag support for pull operations
+- Client-side caching of sync tokens
+- KV cache for frequently accessed data
+- Code: `api/src/utils/cache.ts`
+
+## Failure Modes
+
+### Network Failures
+
+| Failure              | Client Behavior     | Server Behavior         |
+| -------------------- | ------------------- | ----------------------- |
+| Offline              | Queue locally       | N/A                     |
+| Timeout              | Exponential backoff | Request continues       |
+| Partial upload       | Retry full batch    | Idempotency protects    |
+| WebSocket disconnect | Auto-reconnect      | DO cleans up connection |
+
+### Data Conflicts
+
+| Conflict          | Resolution             | Code Reference                       |
+| ----------------- | ---------------------- | ------------------------------------ |
+| Version mismatch  | Last-write-wins        | `api/src/utils/sync.ts`              |
+| Duplicate entry   | Checksum dedup         | `api/src/services/syncService.ts`    |
+| Deleted on server | Honor deletion         | `sync-worker/src/syncCoordinator.ts` |
+| Schema mismatch   | Client update required | Version check in response            |
+
+## Monitoring
+
+### Health Endpoints
+
+- API: `/api/sync/status` — Sync health and stats
+- Sync Worker: `/health` — WebSocket service health
+- Code: `api/src/api/handlers/health.ts`, `sync-worker/src/index.ts`
+
+### Metrics Tracked
+
+- Sync latency per operation
+- Conflict rate
+- Queue depth
+- WebSocket connection count
+- Code: `api/src/services/metricsService.ts`
+
+## Related Documentation
+
+- [Database Schema](./schema.md) — Sync data tables
+- [WebSocket Protocol](../03-api/websocket.md) — Message specifications
+- [API Reference](../03-api/rest-api.md) — HTTP endpoint details
 
 ---
 
-Note: This document describes contracts and behaviors. Implementation details in client storage are intentionally abstracted; refer to frontend docs for concrete patterns.
-
+_Last updated: December 2024 | Version 1.7.6_

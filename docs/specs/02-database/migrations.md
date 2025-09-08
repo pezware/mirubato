@@ -1,435 +1,250 @@
-# Database Migrations Specification
+# Database Migrations
 
-## Overview
+**What**: Migration-driven schema evolution using Cloudflare D1 migrations.
 
-All schema changes are applied via per-service D1 migrations. We do not perform manual database operations. Evolution is additive and non-intrusive; destructive changes are avoided and, if ever necessary, use safe recreate-and-copy patterns in a single migration.
+**Why**:
 
-## Where Migrations Live
+- Reproducible schema changes across environments
+- Rollback capability for failed deployments
+- Version control for database evolution
+- No manual database operations allowed
 
-- API: `api/migrations/`
-- Scores: `scores/migrations/`
-- Dictionary: `dictionary/migrations/`
-- Sync Worker: uses the API database; no separate migrations directory
+**How**:
+
+- Numbered SQL files in service migration directories
+- Wrangler CLI for creation and application
+- Test locally → staging → production workflow
+- Additive changes preferred over destructive
+
+## Migration Locations
+
+| Service     | Directory                | Count    | Purpose                        |
+| ----------- | ------------------------ | -------- | ------------------------------ |
+| API         | `api/migrations/`        | 11 files | Users, sync, repertoire, goals |
+| Scores      | `scores/migrations/`     | 18 files | Scores, collections, analytics |
+| Dictionary  | `dictionary/migrations/` | 8 files  | Terms, embeddings, queues      |
+| Sync Worker | (uses API DB)            | N/A      | Shares API database            |
+
+**Code References**:
+
+- Migration files: `*/migrations/*.sql`
+- Wrangler configs: `*/wrangler.toml` (database bindings)
 
 ## Creating Migrations
 
-Run Wrangler from the service directory you’re modifying:
+**Command Structure**:
 
 ```bash
-# Example: add a new index to API DB
+cd [service]
+wrangler d1 migrations create DB "descriptive_name"
+```
+
+**Naming Conventions**:
+
+- Use snake_case: `add_user_preferences`
+- Be descriptive: `add_dropped_status_to_repertoire`
+- Include table name when specific
+- Numbered automatically by Wrangler
+
+**Examples**:
+
+```bash
+# API service
 cd api
-wrangler d1 migrations create DB "add_goal_progress_index"
+wrangler d1 migrations create DB "add_goal_progress_table"
+
+# Scores service
+cd scores
+wrangler d1 migrations create DB "add_normalized_id_column"
 ```
 
 ## Applying Migrations
 
-Always test locally and in staging before production:
+**Environment Progression**:
 
 ```bash
-# Local (Miniflare)
+# 1. Local (Miniflare/SQLite)
 wrangler d1 migrations apply DB --local
 
-# Staging (remote)
-wrangler d1 migrations apply DB --env staging --remote
+# 2. Staging (remote D1)
+wrangler d1 migrations apply DB --env staging
 
-# Production (remote)
-wrangler d1 migrations apply DB --env production --remote
+# 3. Production (remote D1)
+wrangler d1 migrations apply DB --env production
 ```
 
-## Patterns and Guidelines
+**Verification**:
 
-- Non-intrusive: prefer additive columns/tables; avoid renames/drops
-- Backward-compatible: keep old data readable until clients are updated
-- JSON-friendly: store complex structures as TEXT (JSON)
-- Indexed wisely: add indexes for observed query patterns
-- Triggers: use `updated_at` triggers sparingly to avoid heavy writes
+```bash
+# List applied migrations
+wrangler d1 migrations list DB --env production
 
-## Examples (High-Level)
+# Query database directly
+wrangler d1 execute DB --command "SELECT * FROM d1_migrations" --env production
+```
 
-### Add a new history table (API)
+## Migration Patterns
+
+### Additive Changes (Preferred)
+
+**Add Column**:
 
 ```sql
--- goal_progress: historical tracking for goals
+-- Safe: nullable or with default
+ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{}';
+```
+
+**Add Table**:
+
+```sql
+-- Always use IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS goal_progress (
   id TEXT PRIMARY KEY,
   goal_id TEXT NOT NULL,
   value REAL NOT NULL,
-  notes TEXT,
-  session_id TEXT,
   recorded_at INTEGER NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS idx_goal_progress_goal_id ON goal_progress(goal_id);
-CREATE INDEX IF NOT EXISTS idx_goal_progress_recorded_at ON goal_progress(recorded_at);
 ```
 
-### Add a new index (Scores)
+**Add Index**:
 
 ```sql
--- Improve composer queries
+-- Include IF NOT EXISTS
 CREATE INDEX IF NOT EXISTS idx_scores_composer ON scores(composer);
 ```
 
-### Add analytics support (Dictionary)
+### Data Migrations
+
+**Lowercase Conversion** (example from API):
 
 ```sql
-CREATE TABLE IF NOT EXISTS ai_token_usage (
-  date TEXT NOT NULL,
-  model TEXT NOT NULL,
-  tokens INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (date, model)
-);
-
-CREATE INDEX IF NOT EXISTS idx_token_usage_date ON ai_token_usage(date);
+-- Migration 0007: Convert enum values
+UPDATE sync_data
+SET data = json_set(data, '$.mood', lower(json_extract(data, '$.mood')))
+WHERE entity_type = 'logbook_entry';
 ```
 
-## Safety and Policy
-
-- No manual DB access. All changes via migrations.
-- Test locally; verify in staging; then apply to production.
-- Favor additive changes; when unavoidable, use recreate-and-copy in one migration.
-- Keep migrations small, focused, and well-commented.
-
-
-### Scores Service Migrations
-
-#### Scores Schema (0001)
+**Backfill Columns**:
 
 ```sql
--- Scores metadata
-CREATE TABLE scores (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  composer TEXT,
-  normalized_composer TEXT,
-  opus TEXT,
-  key_signature TEXT,
-  time_signature TEXT,
-  tempo_marking TEXT,
-  difficulty INTEGER,
-  pages INTEGER,
-  duration INTEGER, -- seconds
-  instruments TEXT, -- JSON array
-  tags TEXT, -- JSON array
-  file_url TEXT NOT NULL,
-  thumbnail_url TEXT,
-  source TEXT, -- 'upload', 'imslp', 'import'
-  source_url TEXT,
-  is_public BOOLEAN DEFAULT FALSE,
-  ai_metadata TEXT, -- JSON from AI extraction
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE INDEX idx_scores_user ON scores(user_id);
-CREATE INDEX idx_scores_composer ON scores(normalized_composer);
-CREATE INDEX idx_scores_public ON scores(is_public);
-CREATE INDEX idx_scores_created ON scores(created_at DESC);
-
--- Score pages for multi-page PDFs
-CREATE TABLE score_pages (
-  id TEXT PRIMARY KEY,
-  score_id TEXT NOT NULL,
-  page_number INTEGER NOT NULL,
-  image_url TEXT,
-  thumbnail_url TEXT,
-  ocr_text TEXT,
-  FOREIGN KEY (score_id) REFERENCES scores(id) ON DELETE CASCADE,
-  UNIQUE(score_id, page_number)
-);
-```
-
-#### Collections Migration (0002)
-
-```sql
--- Score collections
-CREATE TABLE collections (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  cover_image_url TEXT,
-  is_public BOOLEAN DEFAULT FALSE,
-  score_count INTEGER DEFAULT 0,
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE INDEX idx_collections_user ON collections(user_id);
-CREATE INDEX idx_collections_public ON collections(is_public);
-
--- Collection items junction table
-CREATE TABLE collection_items (
-  collection_id TEXT NOT NULL,
-  score_id TEXT NOT NULL,
-  position INTEGER,
-  added_at INTEGER DEFAULT (unixepoch()),
-  PRIMARY KEY (collection_id, score_id),
-  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
-  FOREIGN KEY (score_id) REFERENCES scores(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_collection_items_score ON collection_items(score_id);
-```
-
-### Dictionary Service Migrations
-
-```sql
--- Terms table
-CREATE TABLE terms (
-  id TEXT PRIMARY KEY,
-  term TEXT NOT NULL,
-  normalized_term TEXT NOT NULL,
-  language TEXT DEFAULT 'en',
-  definition TEXT NOT NULL,
-  pronunciation TEXT,
-  etymology TEXT,
-  category TEXT, -- 'tempo', 'dynamics', 'technique', etc.
-  related_terms TEXT, -- JSON array
-  examples TEXT, -- JSON array
-  translations TEXT, -- JSON object
-  source TEXT DEFAULT 'manual', -- 'manual', 'ai', 'import'
-  usage_count INTEGER DEFAULT 0,
-  created_at INTEGER DEFAULT (unixepoch()),
-  updated_at INTEGER DEFAULT (unixepoch()),
-  UNIQUE(normalized_term, language)
-);
-
-CREATE INDEX idx_terms_normalized ON terms(normalized_term);
-CREATE INDEX idx_terms_category ON terms(category);
-CREATE INDEX idx_terms_language ON terms(language);
-CREATE INDEX idx_terms_usage ON terms(usage_count DESC);
-
--- Search index
-CREATE VIRTUAL TABLE terms_fts USING fts5(
-  term,
-  definition,
-  content=terms,
-  content_rowid=id
-);
-
--- Trigger to keep FTS index updated
-CREATE TRIGGER terms_ai AFTER INSERT ON terms
-BEGIN
-  INSERT INTO terms_fts(rowid, term, definition)
-  VALUES (NEW.id, NEW.term, NEW.definition);
-END;
-```
-
-### Sync Worker Migrations
-
-```sql
--- Active sync sessions
-CREATE TABLE sync_sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  connection_id TEXT UNIQUE NOT NULL,
-  device_info TEXT,
-  connected_at INTEGER DEFAULT (unixepoch()),
-  last_activity INTEGER DEFAULT (unixepoch()),
-  pending_messages INTEGER DEFAULT 0
-);
-
-CREATE INDEX idx_sync_sessions_user ON sync_sessions(user_id);
-CREATE INDEX idx_sync_sessions_activity ON sync_sessions(last_activity);
-
--- Sync queue for offline changes
-CREATE TABLE sync_queue (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id TEXT NOT NULL,
-  operation TEXT NOT NULL, -- 'create', 'update', 'delete'
-  data TEXT NOT NULL, -- JSON
-  version INTEGER,
-  created_at INTEGER DEFAULT (unixepoch()),
-  retry_count INTEGER DEFAULT 0,
-  last_error TEXT,
-  status TEXT DEFAULT 'pending' -- 'pending', 'processing', 'failed'
-);
-
-CREATE INDEX idx_sync_queue_user ON sync_queue(user_id);
-CREATE INDEX idx_sync_queue_status ON sync_queue(status);
-CREATE INDEX idx_sync_queue_created ON sync_queue(created_at);
-```
-
-## Migration Best Practices
-
-### Backward Compatibility
-
-```sql
--- Add nullable columns first
-ALTER TABLE users ADD COLUMN new_feature TEXT;
-
--- Backfill data in application code
--- Then add constraints in next migration
-ALTER TABLE users ALTER COLUMN new_feature SET NOT NULL;
-```
-
-### Safe Index Creation
-
-```sql
--- Create index concurrently (D1 handles this automatically)
-CREATE INDEX IF NOT EXISTS idx_large_table_column
-ON large_table(column);
-
--- Drop unused indexes
-DROP INDEX IF EXISTS idx_old_unused;
-```
-
-### Data Migration Pattern
-
-```sql
--- Step 1: Add new column
-ALTER TABLE scores ADD COLUMN normalized_title TEXT;
-
--- Step 2: Populate with data
+-- Set values for existing rows
 UPDATE scores
-SET normalized_title = LOWER(TRIM(title))
-WHERE normalized_title IS NULL;
-
--- Step 3: Add index
-CREATE INDEX idx_scores_normalized_title
-ON scores(normalized_title);
+SET normalized_id = lower(replace(title || '-' || composer, ' ', '-'))
+WHERE normalized_id IS NULL;
 ```
+
+### Schema Evolution
+
+**Enum Changes**:
+
+```sql
+-- D1 doesn't support ALTER CHECK, use careful migration
+-- Step 1: Add new column
+ALTER TABLE user_repertoire ADD COLUMN status_new TEXT;
+-- Step 2: Copy data with transformation
+UPDATE user_repertoire SET status_new = lower(status);
+-- Step 3: In next migration, drop old and rename
+```
+
+### Destructive Changes (Avoid)
+
+When unavoidable, use recreate pattern:
+
+```sql
+-- Single migration file
+CREATE TABLE new_table AS SELECT * FROM old_table;
+-- Apply transformations
+DROP TABLE old_table;
+ALTER TABLE new_table RENAME TO old_table;
+-- Recreate indexes
+```
+
+## Migration Safety
+
+**Pre-flight Checks**:
+
+- [ ] Test migration locally first
+- [ ] Backup production before major changes
+- [ ] Review for data loss potential
+- [ ] Check for blocking operations
+- [ ] Verify rollback plan
+
+**Common Issues**:
+
+| Issue                | Symptoms        | Solution                       |
+| -------------------- | --------------- | ------------------------------ |
+| Constraint violation | Migration fails | Add data cleanup step          |
+| Missing column       | Query errors    | Use IF EXISTS checks           |
+| Type mismatch        | Data corruption | Test with production-like data |
+| Large table update   | Timeout         | Batch updates, use WHERE       |
+
+## Service-Specific Notes
+
+### API Migrations
+
+- Focus on sync_data integrity
+- Maintain backward compatibility for sync
+- FK constraints not enforced (D1 limitation)
+- Source: `api/migrations/`
+
+### Scores Migrations
+
+- Heavy use of JSON columns for flexibility
+- Composer canonicalization (migration 0017)
+- Collections evolution (0014-0015)
+- Source: `scores/migrations/`
+
+### Dictionary Migrations
+
+- Embedding support added incrementally
+- Queue tables for async processing
+- Analytics tracking tables
+- Source: `dictionary/migrations/`
 
 ## Rollback Strategy
 
-### Manual Rollback
+**D1 Limitations**:
+
+- No automatic rollback mechanism
+- Must write compensating migrations
+
+**Manual Rollback**:
 
 ```sql
--- Keep rollback scripts for each migration
--- migrations/rollback/0005_rollback.sql
-
-DROP TABLE IF EXISTS user_preferences;
-DROP INDEX IF EXISTS idx_user_preferences_updated;
-DROP TRIGGER IF EXISTS update_user_preferences_timestamp;
+-- Create reverse migration
+-- Example: Drop column added in previous migration
+ALTER TABLE users DROP COLUMN preferences;
 ```
 
-### Safe Rollback Process
+**Best Practice**:
 
-```bash
-# 1. Take backup
-wrangler d1 export DB --output backup.sql --env production
+- Keep migrations small and focused
+- Test rollback procedure in staging
+- Document reverse operations
 
-# 2. Apply rollback
-wrangler d1 execute DB --file rollback/0005_rollback.sql --env production
+## Operational Guidelines
 
-# 3. Verify rollback
-wrangler d1 execute DB --command "SELECT * FROM sqlite_master WHERE type='table'" --env production
-```
+**Do**:
 
-## Migration Testing
+- ✅ Use `IF NOT EXISTS` for creates
+- ✅ Add columns as nullable or with defaults
+- ✅ Test with production-like data volumes
+- ✅ Keep migrations idempotent where possible
+- ✅ Comment complex migrations
 
-### Local Testing
+**Don't**:
 
-```bash
-# Reset local database
-rm .wrangler/state/d1/DB.sqlite3
-
-# Apply all migrations fresh
-wrangler d1 migrations apply DB --local
-
-# Test with seed data
-wrangler d1 execute DB --file seed.sql --local
-```
-
-### Staging Validation
-
-```bash
-# Clone production to staging
-wrangler d1 export DB --output prod-backup.sql --env production
-wrangler d1 execute DB --file prod-backup.sql --env staging
-
-# Apply new migration
-wrangler d1 migrations apply DB --env staging
-
-# Run validation tests
-npm run test:migrations -- --env=staging
-```
-
-## Migration Monitoring
-
-### Health Checks
-
-```typescript
-// Check migration status
-async function checkMigrationHealth(env: Env) {
-  const result = await env.DB.prepare(
-    `
-    SELECT name, sql FROM sqlite_master 
-    WHERE type = 'table' 
-    ORDER BY name
-  `
-  ).all()
-
-  const expectedTables = [
-    'users',
-    'sessions',
-    'logbook_entries',
-    'repertoire_items',
-    'goals',
-    'sync_status',
-  ]
-
-  const existingTables = result.results.map(r => r.name)
-  const missingTables = expectedTables.filter(t => !existingTables.includes(t))
-
-  return {
-    healthy: missingTables.length === 0,
-    missingTables,
-    tableCount: existingTables.length,
-  }
-}
-```
-
-### Migration Metrics
-
-```sql
--- Track migration performance
-CREATE TABLE migration_history (
-  version TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  applied_at INTEGER DEFAULT (unixepoch()),
-  execution_time_ms INTEGER,
-  rows_affected INTEGER,
-  success BOOLEAN DEFAULT TRUE,
-  error_message TEXT
-);
-```
-
-## Troubleshooting
-
-### Common Issues
-
-| Issue                         | Cause                         | Solution                                 |
-| ----------------------------- | ----------------------------- | ---------------------------------------- |
-| Migration already applied     | Duplicate migration number    | Check migration history, use next number |
-| Foreign key constraint failed | Referencing non-existent data | Add data checks before constraints       |
-| Index already exists          | Duplicate index creation      | Use IF NOT EXISTS clause                 |
-| Column already exists         | Re-running migration          | Use IF NOT EXISTS or check first         |
-
-### Recovery Procedures
-
-```bash
-# Corrupted database
-wrangler d1 export DB --output recovery.sql --env production
-# Create new database and import
-
-# Failed migration
-# 1. Identify failed migration
-wrangler d1 execute DB --command "SELECT * FROM migration_history WHERE success = 0"
-
-# 2. Fix and reapply
-wrangler d1 execute DB --file fixed-migration.sql --env production
-```
+- ❌ Modify migrations after deployment
+- ❌ Skip environments in progression
+- ❌ Use DROP without careful consideration
+- ❌ Assume FK constraints work (D1 limitation)
+- ❌ Make manual database changes
 
 ## Related Documentation
 
-- [Database Schema](./schema.md) - Complete schema reference
-- [Sync Strategy](./sync-strategy.md) - Data synchronization approach
-- [Cloudflare Services](../01-architecture/cloudflare-services.md) - D1 configuration
+- [Database Schema](./schema.md) — Current schema documentation
+- [Sync Strategy](./sync-strategy.md) — Data synchronization patterns
+- [Cloudflare Services](../01-architecture/cloudflare-services.md) — D1 service details
 
 ---
 
