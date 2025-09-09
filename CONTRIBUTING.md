@@ -51,4 +51,3 @@ Thanks for your interest in contributing! This guide explains how to propose cha
 ---
 
 Last updated: 2025-09-09
-

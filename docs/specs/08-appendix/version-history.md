@@ -17,4 +17,3 @@ For full details and historical entries, see `CHANGELOG.md`.
 ---
 
 Last updated: 2025-09-09 | Version 1.7.6
-

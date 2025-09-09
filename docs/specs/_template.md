@@ -60,4 +60,3 @@ Business and technical rationale; key trade-offs and intent.
 ---
 
 Last updated: 2025-09-09 | Version 1.7.6
-

@@ -455,4 +455,4 @@ Currently, the application is light-mode only with infrastructure in place for f
 
 ---
 
-_Last updated: December 2024 | Version 1.7.6_
+_Last updated: 2025-09-09 | Version 1.7.6_

@@ -1,626 +1,361 @@
-# Components Library Specification
+# UI Components Specification
 
-## Overview
+Status: ✅ Active
 
-Mirubato's component library provides a comprehensive set of reusable React components built with TypeScript, Tailwind CSS, and accessibility best practices. All components follow the Morandi design aesthetic with muted colors and sophisticated typography.
+## What
 
-## Component Architecture
+Reusable React UI components (TypeScript + Tailwind) used across the app, exported from `frontendv2/src/components/ui`. The spec documents intent, usage patterns, and code references — not duplicated code.
 
-### Core Principles
+## Why
 
-1. **Type Safety**: Full TypeScript support with strict typing
-2. **Accessibility**: WCAG 2.1 AA compliance
-3. **Mobile-First**: Responsive design with touch optimization
-4. **Performance**: Code splitting and lazy loading support
-5. **Consistency**: Unified design language across all components
+- Consistent, accessible UI with a single design language
+- Reduce duplication by composing small, well-typed primitives
+- Keep docs stable by linking to code instead of copying it
 
-### File Structure
+## How
 
-```
-components/
-├── ui/                  # Base UI components
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Card.tsx
-│   ├── Modal.tsx
-│   ├── Typography.tsx
-│   └── ...
-├── logbook/            # Feature-specific components
-├── scorebook/
-├── repertoire/
-└── shared/             # Cross-feature components
-```
+- Import from the index: `import { Button, Modal, ... } from '@/components/ui'`
+- Design tokens: Tailwind + Morandi palette; details live in `ui-design-system.md`
+- Accessibility: Headless UI where appropriate; custom components add ARIA/keyboard support
+- Do not copy prop interfaces here; link to source files for truth
 
-## Base UI Components
+---
+
+## Components
+
+Below are usage-focused notes and accurate imports. For full props and styles, see Code References for each component.
 
 ### Button
 
-**Purpose**: Primary interactive element for actions
+- Variants: `primary | secondary | ghost | danger | icon`
+- Sizes: `sm | md | lg | icon-sm | icon-md | icon-lg`
+- Loading disables the button and shows a spinner; no `data-testid` is set by default
 
-```typescript
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'icon'
-  size?: 'sm' | 'md' | 'lg' | 'icon-sm' | 'icon-md' | 'icon-lg'
-  fullWidth?: boolean
-  loading?: boolean
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-}
-```
-
-**Implementation**:
+Usage:
 
 ```tsx
-<Button
-  variant="primary"
-  size="lg"
-  loading={isSubmitting}
-  leftIcon={<SaveIcon />}
->
-  Save Changes
-</Button>
+import { Button } from '@/components/ui'
+
+<Button variant="primary" size="lg" leftIcon={<SaveIcon />}>Save</Button>
+<Button variant="ghost" loading>Loading…</Button>
 ```
 
-**Styling Classes**:
+Code: `frontendv2/src/components/ui/Button.tsx`
+
+### Typography (incl. Music variants)
+
+- Variants include headings, body, and music-specific: `music-title`, `music-title-large`, `music-composer`, `music-composer-large`, `music-metadata`
+- Optional `fontFamily` override: `inter | lexend | serif`
+
+Usage:
 
 ```tsx
-const variants = {
-  primary: 'bg-morandi-sage-500 text-white hover:bg-morandi-sage-400',
-  secondary: 'border border-morandi-stone-300 hover:bg-morandi-stone-100',
-  ghost: 'text-morandi-stone-600 hover:bg-morandi-stone-100',
-  danger: 'bg-red-500 text-white hover:bg-red-600',
-  icon: 'p-0 hover:bg-morandi-stone-100 rounded-full',
-}
+import { Typography, MusicTitle, MusicComposer, MusicMetadata } from '@/components/ui'
+
+<Typography variant="h2">Repertoire</Typography>
+<MusicTitle>Moonlight Sonata</MusicTitle>
+<MusicComposer>Ludwig van Beethoven</MusicComposer>
+<MusicMetadata>Key: C# minor</MusicMetadata>
 ```
 
-### Typography
+Code: `frontendv2/src/components/ui/Typography.tsx`
 
-**Purpose**: Consistent text rendering with three-font system
+### Input & Textarea
 
-```typescript
-// Main Typography component
-interface TypographyProps {
-  variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' |
-           'body-lg' | 'body' | 'body-sm' | 'caption'
-  as?: keyof JSX.IntrinsicElements
-  className?: string
-  children: React.ReactNode
-}
+- Common props: `label`, `error`, `helperText`, `fullWidth`, optional `leftIcon/rightIcon` for `Input`
+- Textarea does not implement `showCharCount` in code
 
-// Music-specific components
-export const MusicTitle: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="font-serif text-lg sm:text-xl font-medium text-morandi-stone-700">
-    {children}
-  </span>
-)
-
-export const MusicComposer: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="font-serif text-base font-normal text-morandi-stone-600">
-    {children}
-  </span>
-)
-
-export const MusicMetadata: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="font-inter text-sm text-morandi-stone-500">
-    {children}
-  </span>
-)
-```
-
-### Input & Form Controls
-
-#### Input
-
-```typescript
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
-  helperText?: string
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  fullWidth?: boolean
-}
-```
-
-**Implementation**:
+Usage:
 
 ```tsx
-<Input
-  label="Duration (minutes)"
-  type="number"
-  value={duration}
-  onChange={e => setDuration(e.target.value)}
-  error={errors.duration}
-  helperText="Enter practice duration"
-  leftIcon={<ClockIcon />}
-/>
+import { Input, Textarea } from '@/components/ui'
+
+<Input id="duration" label="Duration (minutes)" type="number" />
+<Textarea id="notes" label="Notes" rows={4} />
 ```
 
-#### Textarea
+Code: `frontendv2/src/components/ui/Input.tsx`
 
-```typescript
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string
-  error?: string
-  rows?: number
-  maxLength?: number
-  showCharCount?: boolean
-}
+### Select & MultiSelect
+
+- Values are `string | number`; not generic over `T`
+- No `maxItems` prop; mobile friendliness is handled with Tailwind (`max-h-[45dvh]`, `overscroll-contain`)
+
+Usage:
+
+```tsx
+import { Select, MultiSelect } from '@/components/ui'
+
+const options = [ { value: 'piano', label: 'Piano' }, { value: 'guitar', label: 'Guitar' } ]
+<Select label="Instrument" value={instrument} onChange={setInstrument} options={options} />
+<MultiSelect label="Techniques" value={techniques} onChange={setTechniques} options={techniqueOptions} />
 ```
 
-### Card System
+Code: `frontendv2/src/components/ui/Select.tsx`
 
-**Purpose**: Content containers with structured sections
+### Card
 
-```typescript
-// Compound component pattern
-<Card variant="elevated" padding="lg" hoverable>
+- Variants: `default | bordered | elevated | ghost`; optional `padding`, `hoverable`, `onClick`
+
+Usage:
+
+```tsx
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui'
+
+;<Card variant="elevated" padding="md">
   <CardHeader>
-    <CardTitle as="h2">Practice Session</CardTitle>
+    <CardTitle>Practice Session</CardTitle>
     <CardDescription>45 minutes • Piano</CardDescription>
   </CardHeader>
-  <CardContent>
-    <MusicTitle>Moonlight Sonata</MusicTitle>
-    <MusicComposer>Ludwig van Beethoven</MusicComposer>
-  </CardContent>
-  <CardFooter>
-    <Button variant="secondary">Edit</Button>
-    <Button variant="primary">Complete</Button>
-  </CardFooter>
+  <CardContent>…</CardContent>
+  <CardFooter>…</CardFooter>
 </Card>
 ```
 
-**Variants**:
-
-- `default`: Basic white background with border
-- `bordered`: Emphasized border color
-- `elevated`: Shadow for depth
-- `ghost`: Transparent background
+Code: `frontendv2/src/components/ui/Card.tsx`
 
 ### Modal
 
-**Purpose**: Overlays for focused interactions
+- Props: `isOpen`, `onClose`, `title?`, `size`, `showCloseButton?`, `closeOnOverlayClick?`, `isMobileOptimized?`
+- Focus handling and ARIA via Headless UI `Dialog`
 
-```typescript
-interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  isMobileOptimized?: boolean
-  closeOnBackdropClick?: boolean
-  showCloseButton?: boolean
-}
-```
-
-**Implementation**:
+Usage:
 
 ```tsx
-<Modal
-  isOpen={isEditModalOpen}
-  onClose={closeModal}
+import { Modal, ModalBody, ModalFooter, Button } from '@/components/ui'
+
+;<Modal
+  isOpen={isOpen}
+  onClose={close}
   title="Edit Practice Entry"
   size="lg"
   isMobileOptimized
 >
-  <ModalBody>
-    <ManualEntryForm entry={selectedEntry} />
-  </ModalBody>
+  <ModalBody>…</ModalBody>
   <ModalFooter>
-    <Button variant="ghost" onClick={closeModal}>
+    <Button variant="ghost" onClick={close}>
       Cancel
     </Button>
-    <Button variant="primary" type="submit">
-      Save Changes
-    </Button>
+    <Button variant="primary">Save</Button>
   </ModalFooter>
 </Modal>
 ```
 
-### Select Components
+Code: `frontendv2/src/components/ui/Modal.tsx`
 
-#### Single Select
+### Loading
 
-```typescript
-interface SelectProps<T> {
-  label?: string
-  options: Array<{ value: T; label: string; disabled?: boolean }>
-  value: T | null
-  onChange: (value: T) => void
-  placeholder?: string
-  error?: string
-  fullWidth?: boolean
-}
+- `Loading` (spinner/dots/pulse), `LoadingSkeleton`, `LoadingOverlay`
+
+Usage:
+
+```tsx
+import { Loading, LoadingSkeleton, LoadingOverlay } from '@/components/ui'
+
+<Loading size="lg" text="Loading scores…" />
+<LoadingSkeleton className="h-20 w-full" />
+<LoadingOverlay isLoading={isBusy}><Card>…</Card></LoadingOverlay>
 ```
 
-#### Multi-Select
+Code: `frontendv2/src/components/ui/Loading.tsx`
 
-```typescript
-interface MultiSelectProps<T> {
-  label?: string
-  options: Array<{ value: T; label: string }>
-  value: T[]
-  onChange: (values: T[]) => void
-  placeholder?: string
-  maxItems?: number
-}
+### Toasts
+
+- Provider: `ToastProvider` (no props). Use `showToast(message, type?, title?, duration?)` or `toast.success(message, title?)`
+
+Usage:
+
+```tsx
+// App root
+import { ToastProvider } from '@/components/ui'
+;<ToastProvider />
+
+// Anywhere
+import { showToast, toast } from '@/utils/toastManager'
+showToast('Saved!', 'success', undefined, 4000)
+toast.error('Something went wrong')
 ```
 
-**Mobile Optimization**:
-
-```css
-/* Touch-optimized heights */
-.select-option {
-  min-height: 44px; /* iOS touch target */
-  padding: 12px 16px;
-}
-
-/* Mobile dropdown positioning */
-@media (max-width: 640px) {
-  .select-dropdown {
-    max-height: 45dvh;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
-}
-```
-
-## Loading & Feedback Components
-
-### Loading States
-
-```typescript
-// Loading spinner
-<Loading variant="spinner" size="md" text="Loading practice data..." />
-
-// Skeleton placeholder
-<LoadingSkeleton className="h-16 w-full rounded-lg" />
-
-// Loading overlay
-<LoadingOverlay isLoading={isLoading}>
-  <Card>Content that might be loading</Card>
-</LoadingOverlay>
-```
-
-### Toast Notifications
-
-```typescript
-// Setup in app root
-import { ToastProvider } from '@/components/ui/Toast'
-<ToastProvider position="top-right" />
-
-// Usage
-import { showToast } from '@/utils/toastManager'
-
-showToast({
-  type: 'success',
-  title: 'Entry Saved',
-  message: 'Your practice session has been logged.',
-  duration: 5000,
-})
-```
-
-**Toast Types**:
-
-- `success`: Green with checkmark icon
-- `error`: Red with X icon
-- `warning`: Amber with alert icon
-- `info`: Blue with info icon
-
-## Navigation Components
+Code: `frontendv2/src/components/ui/Toast.tsx`, `frontendv2/src/components/ui/ToastProvider.tsx`, `frontendv2/src/utils/toastManager.ts`
 
 ### Tabs
 
-```typescript
-interface Tab {
-  id: string
-  label: string
-  shortLabel?: string // Mobile version
-  icon?: React.ReactNode
-  badge?: number
-}
+- Props: `tabs: { id, label, icon?, shortLabel?, mobileIconOnly? }[]`, `activeTab`, `onTabChange`
+- No `badge` support today
 
-<Tabs
-  tabs={[
-    { id: 'overview', label: 'Overview', icon: <HomeIcon /> },
-    { id: 'analytics', label: 'Analytics', shortLabel: 'Stats' },
-    { id: 'data', label: 'Data Export', shortLabel: 'Export' },
-  ]}
-  activeTab={currentTab}
-  onTabChange={setCurrentTab}
-/>
-```
-
-### Segmented Control
-
-```typescript
-<SegmentedControl
-  options={[
-    { value: 'list', label: 'List', icon: <ListIcon /> },
-    { value: 'grid', label: 'Grid', icon: <GridIcon /> },
-    { value: 'calendar', label: 'Calendar', icon: <CalendarIcon /> },
-  ]}
-  value={viewMode}
-  onChange={setViewMode}
-  fullWidth
-/>
-```
-
-## Data Display Components
-
-### CompactEntryRow
-
-**Purpose**: Display logbook entries in a compact format
-
-```typescript
-interface CompactEntryRowProps {
-  time: string
-  duration: number
-  pieces?: Array<{ title: string; composer: string }>
-  notes?: string
-  mood?: 'frustrated' | 'neutral' | 'satisfied' | 'excited'
-  isSelected?: boolean
-  onEdit?: () => void
-  onDelete?: () => void
-  onSelect?: () => void
-}
-```
-
-**Implementation**:
+Usage:
 
 ```tsx
-<CompactEntryRow
-  time="2:30 PM"
-  duration={45}
-  pieces={[{ title: 'Moonlight Sonata', composer: 'Beethoven' }]}
-  notes="Worked on dynamics in the development section"
-  mood="satisfied"
-  onEdit={() => editEntry(entry.id)}
-  onDelete={() => deleteEntry(entry.id)}
+import { Tabs } from '@/components/ui'
+
+;<Tabs
+  tabs={[
+    { id: 'overview', label: 'Overview' },
+    { id: 'analytics', label: 'Analytics' },
+  ]}
+  activeTab={active}
+  onTabChange={setActive}
 />
 ```
 
-### Tag
+Code: `frontendv2/src/components/ui/Tabs.tsx`
 
-```typescript
-interface TagProps {
-  children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
-  onRemove?: () => void
-  icon?: React.ReactNode
-}
+### SegmentedControl
+
+- Options with `value`, `label`, optional `icon`; supports sizes and `fullWidth`
+
+Usage:
+
+```tsx
+import { SegmentedControl } from '@/components/ui'
+
+;<SegmentedControl
+  options={[
+    { value: 'list', label: 'List' },
+    { value: 'grid', label: 'Grid' },
+  ]}
+  value={mode}
+  onChange={setMode}
+/>
 ```
 
-## Advanced Components
+Code: `frontendv2/src/components/ui/SegmentedControl.tsx`
 
 ### DropdownMenu
 
-```typescript
-interface DropdownMenuItem {
-  label: string
-  onClick: () => void
-  icon?: React.ReactNode
-  variant?: 'default' | 'danger'
-  divider?: boolean
-  disabled?: boolean
-}
+- Controlled component: `isOpen`, `onToggle`, `onClose`. Items support `label`, `onClick`, optional `icon`, `variant: 'default' | 'danger'`
+- Dividers are auto-inserted between differing variants; there is no `divider` flag
 
+Usage:
+
+```tsx
+import { DropdownMenu } from '@/components/ui'
+
+const [open, setOpen] = useState(false)
 <DropdownMenu
-  trigger={<Button variant="icon"><MoreIcon /></Button>}
-  items={[
-    { label: 'Edit', onClick: handleEdit, icon: <EditIcon /> },
-    { divider: true },
-    { label: 'Delete', onClick: handleDelete, variant: 'danger', icon: <TrashIcon /> },
-  ]}
+  items={[{ label: 'Edit', onClick: onEdit }, { label: 'Delete', onClick: onDelete, variant: 'danger' }]}
+  isOpen={open}
+  onToggle={() => setOpen(o => !o)}
+  onClose={() => setOpen(false)}
 />
 ```
+
+Code: `frontendv2/src/components/ui/DropdownMenu.tsx`
+
+### Tag
+
+- Variants: `default | primary | success | warning | danger`; optional `onRemove`, `onClick`, `icon`
+
+Usage:
+
+```tsx
+import { Tag } from '@/components/ui'
+
+;<Tag variant="primary" onRemove={() => {}}>
+  Piano
+</Tag>
+```
+
+Code: `frontendv2/src/components/ui/Tag.tsx`
+
+### CompactEntryRow
+
+- Displays logbook entries compactly; supports `onClick`, optional `notes` toggle, type/instrument tags
+- `mood` is currently a free-form string; `entryId`, `hidePieceInfo`, and `children` are supported
+
+Usage:
+
+```tsx
+import { CompactEntryRow, MusicTitle, MusicComposer } from '@/components/ui'
+
+;<CompactEntryRow
+  time="2:30 PM"
+  duration={45}
+  pieces={[{ title: 'Moonlight Sonata', composer: 'Beethoven' }]}
+  notes="Worked on dynamics"
+  onClick={() => setSelected(id)}
+  onEdit={handleEdit}
+  onDelete={handleDelete}
+/>
+```
+
+Code: `frontendv2/src/components/ui/CompactEntryRow.tsx`
 
 ### ProgressiveImage
 
-**Purpose**: Optimized image loading for sheet music
+- Progressive loading with optional placeholder, blur, and skeleton
 
-```typescript
-<ProgressiveImage
-  src="/scores/moonlight-sonata.jpg"
-  placeholderSrc="/scores/moonlight-sonata-thumb.jpg"
-  alt="Moonlight Sonata page 1"
-  className="w-full h-auto"
-  blurAmount={20}
-  onLoad={() => trackImageLoad()}
-/>
+Usage:
+
+```tsx
+import { ProgressiveImage } from '@/components/ui'
+;<ProgressiveImage src={src} alt="Score page" placeholderSrc={thumb} />
 ```
+
+Code: `frontendv2/src/components/ui/ProgressiveImage.tsx`
 
 ### ClockTimePicker
 
-**Purpose**: Intuitive time selection
+- Time picker with clock UI (HH:MM). Default export in UI index
 
-```typescript
-<ClockTimePicker
-  value={practiceTime} // "14:30"
-  onChange={setPracticeTime}
-  label="Practice Start Time"
-  min="06:00"
-  max="23:00"
-  step={15} // 15-minute increments
-/>
+Usage:
+
+```tsx
+import { ClockTimePicker } from '@/components/ui'
+;<ClockTimePicker value={value} onChange={setValue} />
 ```
 
-## Utility Functions
-
-### Class Name Merging (cn)
-
-```typescript
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
-// Usage
-<div className={cn(
-  'base-classes',
-  isActive && 'active-classes',
-  className // User-provided classes
-)} />
-```
-
-### Focus Management
-
-```typescript
-// Focus trap for modals
-export function useFocusTrap(ref: RefObject<HTMLElement>) {
-  useEffect(() => {
-    const element = ref.current
-    if (!element) return
-
-    const focusableElements = element.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-
-    const firstElement = focusableElements[0] as HTMLElement
-    const lastElement = focusableElements[
-      focusableElements.length - 1
-    ] as HTMLElement
-
-    firstElement?.focus()
-
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-
-      if (e.shiftKey && document.activeElement === firstElement) {
-        e.preventDefault()
-        lastElement?.focus()
-      } else if (!e.shiftKey && document.activeElement === lastElement) {
-        e.preventDefault()
-        firstElement?.focus()
-      }
-    }
-
-    element.addEventListener('keydown', handleTab)
-    return () => element.removeEventListener('keydown', handleTab)
-  }, [ref])
-}
-```
-
-## Testing Patterns
-
-### Component Testing
-
-```typescript
-// Button.test.tsx
-describe('Button', () => {
-  it('renders with correct variant classes', () => {
-    const { container } = render(
-      <Button variant="primary">Test Button</Button>
-    )
-    expect(container.firstChild).toHaveClass('bg-morandi-sage-500')
-  })
-
-  it('shows loading state', () => {
-    const { getByTestId } = render(
-      <Button loading data-testid="btn">Loading</Button>
-    )
-    expect(getByTestId('btn')).toHaveAttribute('disabled')
-    expect(getByTestId('btn-spinner')).toBeInTheDocument()
-  })
-})
-```
-
-### Accessibility Testing
-
-```typescript
-describe('Modal Accessibility', () => {
-  it('traps focus when open', () => {
-    const { getByRole } = render(
-      <Modal isOpen onClose={() => {}}>
-        <button>First</button>
-        <button>Last</button>
-      </Modal>
-    )
-
-    expect(document.activeElement).toBe(getByRole('button', { name: 'First' }))
-  })
-
-  it('restores focus on close', () => {
-    const trigger = document.createElement('button')
-    document.body.appendChild(trigger)
-    trigger.focus()
-
-    const { rerender } = render(<Modal isOpen onClose={() => {}} />)
-    rerender(<Modal isOpen={false} onClose={() => {}} />)
-
-    expect(document.activeElement).toBe(trigger)
-  })
-})
-```
-
-## Performance Optimization
-
-### Code Splitting
-
-```typescript
-// Lazy load heavy components
-const PDFViewer = lazy(() => import('./components/PDFViewer'))
-const ChartView = lazy(() => import('./components/ChartView'))
-
-// Usage with Suspense
-<Suspense fallback={<LoadingSkeleton className="h-96" />}>
-  <PDFViewer scoreId={scoreId} />
-</Suspense>
-```
-
-### Memo and Callbacks
-
-```typescript
-// Memoize expensive components
-export const ExpensiveList = memo(({ items }: { items: Item[] }) => {
-  return items.map(item => <ItemCard key={item.id} {...item} />)
-})
-
-// Stable callbacks
-const handleClick = useCallback((id: string) => {
-  // Handle click
-}, [dependencies])
-```
-
-## Accessibility Guidelines
-
-### ARIA Attributes
-
-```typescript
-// Required ARIA labels
-<Button
-  aria-label="Delete practice entry"
-  aria-describedby="delete-warning"
->
-  <TrashIcon />
-</Button>
-
-// Live regions for dynamic content
-<div aria-live="polite" aria-atomic="true">
-  {entries.length} entries found
-</div>
-```
-
-### Keyboard Navigation
-
-- All interactive elements accessible via Tab
-- Escape closes modals and dropdowns
-- Arrow keys navigate menus and selects
-- Enter/Space activate buttons
-- Shift+Tab for reverse navigation
-
-## Related Documentation
-
-- [UI Design System](./ui-design-system.md) - Colors, typography, spacing
-- [Frontend Architecture](./architecture.md) - Component organization
-- [State Management](./state-management.md) - Component state patterns
-- [Responsive Design](./responsive-design.md) - Mobile optimization
+Code: `frontendv2/src/components/ui/ClockTimePicker.tsx`
 
 ---
 
-_Last updated: December 2024 | Version 1.7.6_
+## Operational Limits
+
+- Dropdowns/menus may close on scroll for tablet UX; large containers can clip non-portal menus
+- Mobile: selects and modals use `dvh`/Tailwind to constrain heights; test on iOS/Android
+- Toasts queue in memory; no persistence across reloads
+
+## Failure Modes
+
+- Missing/invalid props → visual fallback or no-op (e.g., empty select options)
+- Off-screen menus on constrained containers → `DropdownMenu` switches to portal mode
+- Modal overlay click handling uses `closeOnOverlayClick`; set to `false` for destructive flows
+
+## Code References
+
+- `frontendv2/src/components/ui/Button.tsx`
+- `frontendv2/src/components/ui/Typography.tsx`
+- `frontendv2/src/components/ui/Input.tsx`
+- `frontendv2/src/components/ui/Select.tsx`
+- `frontendv2/src/components/ui/Card.tsx`
+- `frontendv2/src/components/ui/Modal.tsx`
+- `frontendv2/src/components/ui/Loading.tsx`
+- `frontendv2/src/components/ui/Toast.tsx`
+- `frontendv2/src/components/ui/ToastProvider.tsx`
+- `frontendv2/src/utils/toastManager.ts`
+- `frontendv2/src/components/ui/Tabs.tsx`
+- `frontendv2/src/components/ui/SegmentedControl.tsx`
+- `frontendv2/src/components/ui/DropdownMenu.tsx`
+- `frontendv2/src/components/ui/Tag.tsx`
+- `frontendv2/src/components/ui/CompactEntryRow.tsx`
+- `frontendv2/src/components/ui/ProgressiveImage.tsx`
+- `frontendv2/src/components/ui/ClockTimePicker.tsx`
+- `frontendv2/src/utils/cn.ts` (class merging helper)
+
+## Related Documentation
+
+- [UI Design System](./ui-design-system.md)
+- [Frontend Architecture](./architecture.md)
+- [State Management](./state-management.md)
+- [Responsive Design](./responsive-design.md)
+
+---
+
+_Last updated: 2025-09-09 | Version 1.7.6_
