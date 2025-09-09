@@ -67,4 +67,4 @@ Zustand powers client-side state (auth, logbook, repertoire, etc.), SWR powers d
 
 ---
 
-Last updated: September 2025 | Version 1.7.6
+Last updated: 2025-09-09 | Version 1.7.6

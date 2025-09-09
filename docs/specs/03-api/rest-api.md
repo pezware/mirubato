@@ -106,4 +106,4 @@ Note: There are no REST endpoints for logbook CRUD; log data is managed via Sync
 
 ---
 
-Last updated: September 2025 | Version from `/openapi.json`
+Last updated: 2025-09-09 | Version from `/openapi.json`

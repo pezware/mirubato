@@ -64,4 +64,4 @@ Planned (not implemented): register, password login, logout-all, password reset,
 
 ---
 
-Last updated: September 2025 | Source of truth: handlers above
+Last updated: 2025-09-09 | Source of truth: handlers above

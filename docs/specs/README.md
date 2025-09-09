@@ -136,4 +136,4 @@ These guidelines keep specs consistent, useful, and current.
 
 ---
 
-_Last updated: Sept 2025 | Version 1.7.6_
+_Last updated: 2025-09-09 | Version 1.7.6_
