@@ -45,4 +45,3 @@ Patterns and contracts for inter-service communication between API, Scores, Dict
 ---
 
 Last updated: September 2025 | Current status reflects production behavior
-

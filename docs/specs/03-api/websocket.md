@@ -53,4 +53,3 @@ Real-time sync is provided by a dedicated Sync Worker using Cloudflare Durable O
 ---
 
 Last updated: September 2025 | Source of truth: sync-worker code
-

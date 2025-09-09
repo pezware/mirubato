@@ -19,10 +19,10 @@ These short examples illustrate common flows. For full schemas, see `/openapi.js
 ## Push Sync Changes with Idempotency
 
 - `curl -X POST "$API_URL/api/sync/push" \
-  -H "Authorization: Bearer $JWT" \
-  -H "Content-Type: application/json" \
-  -H "X-Idempotency-Key: $(uuidgen)" \
-  -d '{"changes": {"entries": [{"id":"e1","timestamp": 1701388800,"duration":600,"type":"practice","instrument":"piano"}]}}'`
+-H "Authorization: Bearer $JWT" \
+-H "Content-Type: application/json" \
+-H "X-Idempotency-Key: $(uuidgen)" \
+-d '{"changes": {"entries": [{"id":"e1","timestamp": 1701388800,"duration":600,"type":"practice","instrument":"piano"}]}}'`
 
 ## Open WebSocket (Browser)
 
@@ -30,10 +30,10 @@ These short examples illustrate common flows. For full schemas, see `/openapi.js
 const url = `wss://sync.mirubato.com/sync/ws?userId=${userId}&token=${jwt}`
 const ws = new WebSocket(url)
 ws.onmessage = e => console.log('WS', e.data)
-ws.onopen = () => ws.send(JSON.stringify({ type: 'PING', timestamp: new Date().toISOString() }))
+ws.onopen = () =>
+  ws.send(JSON.stringify({ type: 'PING', timestamp: new Date().toISOString() }))
 ```
 
 ---
 
 Last updated: September 2025
-
