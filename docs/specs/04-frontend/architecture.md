@@ -57,7 +57,7 @@ frontendv2/
 
 - WebSocket connection managed by `services/webSocketSync.ts`
 - Connects to Sync Worker at `/sync/ws?userId=&token=` (see 03‑API WebSocket)
-- Event types used: ENTRY_CREATED/UPDATED/DELETED, PIECE_* , BULK_SYNC, SYNC_REQUEST
+- Event types used: ENTRY*CREATED/UPDATED/DELETED, PIECE*\* , BULK_SYNC, SYNC_REQUEST
 
 ## Persistence & Offline
 
