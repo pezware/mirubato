@@ -1,8 +1,16 @@
 # Layout Patterns Specification
 
-## Overview
+Status: ✅ Active
 
-This specification defines the layout patterns and structure used throughout Mirubato, including desktop and mobile layouts, navigation patterns, and responsive behavior.
+## What
+
+Layout structure and navigation patterns for desktop and mobile, using Tailwind utilities and shared layout components.
+
+## Why
+
+- Provide a predictable shell across pages
+- Keep mobile UX first-class while retaining efficient desktop navigation
+- Avoid duplication: reference real components/APIs instead of pseudo‑CSS
 
 ## Core Layout Structure
 
@@ -10,12 +18,13 @@ This specification defines the layout patterns and structure used throughout Mir
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                      Top Bar (64px)                      │
-│  Logo    Search                    Actions  User Avatar  │
+│                   (No global Top Bar)                    │
+│  Sidebar provides brand + quick actions; pages add any   │
+│  per‑page headers as needed                              │
 ├────────────┬────────────────────────────────────────────┤
 │            │                                             │
 │  Sidebar   │               Main Content                  │
-│  (240px)   │                                             │
+│  (224px)   │   overflow-y-auto; sticky sections optional │
 │            │  ┌─────────────────────────────────────┐  │
 │  - Home    │  │      Section-Specific Content       │  │
 │  - Logbook │  │                                     │  │
@@ -30,8 +39,7 @@ This specification defines the layout patterns and structure used throughout Mir
 
 ```
 ┌─────────────────────────────────────┐
-│        Top Bar (56px)                │
-│  Logo               Actions  Avatar  │
+│           Optional page header       │
 ├─────────────────────────────────────┤
 │                                     │
 │        Main Content                 │
@@ -41,7 +49,7 @@ This specification defines the layout patterns and structure used throughout Mir
 │                                     │
 │                                     │
 ├─────────────────────────────────────┤
-│     Bottom Tab Bar (56px)           │
+│     Bottom Tabs (56px)              │
 │  Home  Log  Music  Tools  Profile   │
 └─────────────────────────────────────┘
 ```
@@ -50,20 +58,14 @@ This specification defines the layout patterns and structure used throughout Mir
 
 ### AppLayout Component
 
-The main layout wrapper that provides consistent structure:
+- Main shell used by pages. Provides desktop `Sidebar` and mobile `BottomTabs`.
+- Props: `children`, `onNewEntry?`, `onTimerClick?`, `onImportScore?`, `onToolboxAdd?`, `showQuickActions?`
 
-```typescript
-interface AppLayoutProps {
-  children: React.ReactNode
-  onNewEntry?: () => void
-  onTimerClick?: () => void
-  onImportScore?: () => void
-  onToolboxAdd?: () => void
-  showQuickActions?: boolean
-}
+Usage:
 
-// Usage
-<AppLayout showQuickActions={true}>
+```tsx
+import AppLayout from '@/components/layout/AppLayout'
+;<AppLayout showQuickActions>
   <SectionContent />
 </AppLayout>
 ```
@@ -72,11 +74,7 @@ interface AppLayoutProps {
 
 ```
 AppLayout
-├── TopBar (Desktop) / MobileHeader (Mobile)
-│   ├── Logo / Brand
-│   ├── Search (Desktop only)
-│   ├── QuickActions
-│   └── UserMenu
+├── (Optional) Per‑page header within page content
 ├── Sidebar (Desktop only)
 │   ├── Navigation
 │   ├── Collapse Toggle
@@ -93,7 +91,7 @@ AppLayout
 
 #### Sidebar
 
-- **Width**: 240px (expanded), 64px (collapsed)
+- **Width**: 224px (`w-56`) expanded, 64px (`w-16`) collapsed
 - **Position**: Fixed left
 - **Background**: White with border
 - **State Persistence**: LocalStorage for collapse state
@@ -125,12 +123,12 @@ const logbookNav = [
 
 ### Mobile Navigation
 
-#### Bottom Tab Bar
+#### Bottom Tabs
 
 - **Position**: Fixed bottom
-- **Height**: 56px
-- **Icons**: 24px with labels
-- **Active State**: Color change + scale
+- **Height**: 56px (`min-h-[56px]`)
+- **Icons**: 20–24px with labels
+- **Active State**: color emphasis; running timer shows live badge
 
 ```typescript
 // Bottom tab configuration
@@ -147,25 +145,17 @@ const tabs = [
 
 ### Logbook Layout
 
-```typescript
-// Desktop
+```tsx
+// Desktop: Tabs + scrollable content
 <div className="flex flex-col h-full">
-  <SummaryBar stats={stats} />
-  <TabNavigation tabs={['Overview', 'Analytics', 'Data', 'Repertoire']} />
-  <div className="flex-1 overflow-auto p-6">
-    {activeTab === 'overview' && <LogbookEntryList />}
-    {activeTab === 'analytics' && <AnalyticsView />}
-    {/* ... */}
+  <Tabs tabs={tabs} activeTab={active} onTabChange={setActive} />
+  <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+    {active === 'overview' && <LogbookEntryList />}
+    {active === 'analytics' && <AnalyticsView />}
+    {active === 'data' && <DataTableView />}
+    {active === 'repertoire' && <RepertoireView />}
   </div>
-</div>
-
-// Mobile
-<div className="flex flex-col h-full">
-  <SwipeableTabs tabs={tabs} />
-  <ScrollView>
-    <Content />
-  </ScrollView>
-  <FloatingActionButton onClick={onNewEntry} />
+  {/* BottomTabs are provided by AppLayout on mobile */}
 </div>
 ```
 
@@ -193,65 +183,14 @@ const tabs = [
 
 ## Layout Dimensions
 
-### Fixed Dimensions
-
-```scss
-// Desktop
-$sidebar-width: 240px;
-$sidebar-collapsed-width: 64px;
-$topbar-height: 64px;
-
-// Mobile
-$mobile-header-height: 56px;
-$bottom-tabs-height: 56px;
-
-// Common
-$container-max-width: 1280px;
-$content-max-width: 960px;
-```
-
-### Spacing
-
-```scss
-// Container padding
-$container-padding: {
-  mobile: 16px,
-  tablet: 24px,
-  desktop: 32px
-}
-
-// Section spacing
-$section-spacing: {
-  mobile: 24px,
-  tablet: 32px,
-  desktop: 48px
-}
-
-// Card spacing
-$card-padding: {
-  mobile: 16px,
-  desktop: 24px
-}
-```
+- Sidebar: `w-56` (224px) expanded, `w-16` (64px) collapsed
+- BottomTabs: `min-h-[56px]`
+- Containers: Tailwind spacing (`p-4`, `p-6`) with responsive variants (`sm:`, `md:`)
 
 ## Responsive Breakpoints
 
-```scss
-// Breakpoint definitions
-$breakpoints: {
-  sm: 640px,   // Small devices
-  md: 768px,   // Tablets (layout switch point)
-  lg: 1024px,  // Desktops
-  xl: 1280px,  // Large desktops
-  '2xl': 1536px // Extra large screens
-}
-
-// Usage with Tailwind
-// Mobile first: default styles
-// md: Tablet and up (show sidebar)
-// lg: Desktop optimizations
-// xl: Large screen optimizations
-```
+- Tailwind defaults: `sm=640`, `md=768` (sidebar appears), `lg=1024`, `xl=1280`, `2xl=1536`
+- Mobile-first utilities with `md:`/`lg:` variants control layout shifts
 
 ### Layout Behavior by Breakpoint
 
@@ -328,18 +267,8 @@ $breakpoints: {
 
 ## Z-Index Hierarchy
 
-```scss
-$z-index: {
-  dropdown: 1000,
-  sticky: 1020,
-  fixed: 1030,
-  modal-backdrop: 1040,
-  modal: 1050,
-  popover: 1060,
-  tooltip: 1070,
-  toast: 1080
-}
-```
+- Layering via Tailwind utilities; components set appropriate `z-*` values
+- Typical order: dropdown < sticky < fixed < modal-backdrop < modal < toast
 
 ## Accessibility Considerations
 
@@ -377,43 +306,23 @@ $z-index: {
 - Intersection Observer for lazy loading
 - Debounced resize handlers
 
-## Implementation Examples
+## Implementation Notes
 
-### Complete Layout Implementation
+- Use `AppLayout` for page shells; do not re‑implement bottom tabs or sidebar
+- Keep main content scrollable with `overflow-y-auto`; avoid full‑page scroll on desktop
 
-```tsx
-function AppLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const isMobile = useMediaQuery('(max-width: 767px)')
+## Code References
 
-  if (isMobile) {
-    return (
-      <div className="flex flex-col h-screen">
-        <MobileHeader />
-        <main className="flex-1 overflow-y-auto">{children}</main>
-        <BottomTabs />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex h-screen">
-      <Sidebar collapsed={sidebarCollapsed} />
-      <div className="flex flex-col flex-1">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
-  )
-}
-```
+- `frontendv2/src/components/layout/AppLayout.tsx`
+- `frontendv2/src/components/layout/Sidebar.tsx`
+- `frontendv2/src/components/layout/BottomTabs.tsx`
 
 ## Related Documentation
 
-- [UI Design System](./ui-design-system.md) - Colors, typography, components
-- [Responsive Design](./responsive-design.md) - Mobile-first approach
-- [Components](./components.md) - Component implementation
-- [Architecture](./architecture.md) - Frontend architecture
+- [UI Design System](./ui-design-system.md) — Colors, typography, components
+- [Responsive Design](./responsive-design.md) — Mobile-first approach
+- [Components](./components.md) — Component primitives
+- [Architecture](./architecture.md) — Frontend overview
 
 ---
 

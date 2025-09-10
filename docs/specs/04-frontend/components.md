@@ -108,7 +108,6 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui'
-
 ;<Card variant="elevated" padding="md">
   <CardHeader>
     <CardTitle>Practice Session</CardTitle>
@@ -130,7 +129,6 @@ Usage:
 
 ```tsx
 import { Modal, ModalBody, ModalFooter, Button } from '@/components/ui'
-
 ;<Modal
   isOpen={isOpen}
   onClose={close}
@@ -194,7 +192,6 @@ Usage:
 
 ```tsx
 import { Tabs } from '@/components/ui'
-
 ;<Tabs
   tabs={[
     { id: 'overview', label: 'Overview' },
@@ -215,7 +212,6 @@ Usage:
 
 ```tsx
 import { SegmentedControl } from '@/components/ui'
-
 ;<SegmentedControl
   options={[
     { value: 'list', label: 'List' },
@@ -257,7 +253,6 @@ Usage:
 
 ```tsx
 import { Tag } from '@/components/ui'
-
 ;<Tag variant="primary" onRemove={() => {}}>
   Piano
 </Tag>
@@ -274,7 +269,6 @@ Usage:
 
 ```tsx
 import { CompactEntryRow, MusicTitle, MusicComposer } from '@/components/ui'
-
 ;<CompactEntryRow
   time="2:30 PM"
   duration={45}

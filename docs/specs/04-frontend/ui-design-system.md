@@ -1,8 +1,10 @@
 # UI Design System Specification
 
-## Overview
+Status: ✅ Active
 
-Mirubato's UI design system is built on a carefully crafted Morandi color palette, three-font typography system, and consistent component patterns. This specification defines the visual language and design principles used throughout the application.
+## What
+
+Visual language for Mirubato: Morandi palette via Tailwind tokens, three‑font typography, and consistent component patterns.
 
 ## Design Principles
 
@@ -36,153 +38,32 @@ Mirubato's UI design system is built on a carefully crafted Morandi color palett
 
 ## Color System
 
-### Morandi Palette
+### Morandi Palette via Tailwind
 
-The application uses a sophisticated Morandi-inspired color palette with muted, harmonious tones:
+- Defined in `frontendv2/tailwind.config.js` under `theme.extend.colors.morandi.*`
+- Usage examples:
+  - Text: `text-morandi-stone-700`, Muted: `text-morandi-stone-500`
+  - Backgrounds: `bg-morandi-sage-100`, `bg-morandi-stone-50`
+  - Borders: `border-morandi-stone-200`
+  - Accents: `bg-morandi-blush-100`, `text-morandi-navy-600`
 
-#### Primary Colors
+### Semantic Usage
 
-```scss
-// Sage - Primary actions, success states
-$morandi-sage: {
-  50: #f4f5f2,
-  100: #e8ebe4,
-  200: #d4d9cc,
-  300: #b8c2a9,
-  400: #9ca888,
-  500: #818f6d,  // Primary
-  600: #6b7857,
-  700: #555e45
-}
-
-// Stone - Text, borders, neutral elements
-$morandi-stone: {
-  50: #f8f7f6,
-  100: #f0efec,
-  200: #e2dfd9,
-  300: #ccc7bd,
-  400: #b5afa1,
-  500: #9e9789,
-  600: #7a756b,
-  700: #5c5850,  // Primary text
-  900: #3a3632
-}
-
-// Sand - Warnings, featured content
-$morandi-sand: {
-  100: #f5f2ed,
-  200: #e8e2d5,
-  300: #d4c4b0,
-  400: #c1a68b,
-  500: #ad8866
-}
-
-// Navy - Links, information
-$morandi-navy: {
-  100: #e6f0f5,
-  200: #c2d9e6,
-  300: #9ec2d6,
-  400: #7aacc7,
-  500: #2c5282,
-  600: #1e3a5b,
-  700: #1a365d
-}
-```
-
-#### Accent Colors
-
-```scss
-// Additional accent colors for specific use cases
-$morandi-blush: { ... }  // Notifications, alerts
-$morandi-sky: { ... }     // Information states
-$morandi-purple: { ... }  // Special features
-$morandi-rose: { ... }    // Errors, critical states
-$morandi-peach: { ... }   // Warnings, attention
-```
-
-### Semantic Colors
-
-```scss
-// Applied semantic meaning to base colors
-$colors: {
-  primary: $morandi-sage-500,
-  secondary: $morandi-stone-500,
-  success: $morandi-sage-400,
-  warning: $morandi-sand-400,
-  error: $morandi-rose-400,
-  info: $morandi-sky-400,
-
-  // Text colors
-  text-primary: $morandi-stone-700,
-  text-secondary: $morandi-stone-600,
-  text-muted: $morandi-stone-400,
-
-  // Background colors
-  bg-primary: #FAFAF8,
-  bg-secondary: #F5F5F0,
-  bg-tertiary: #EFEFEA,
-
-  // Border colors
-  border-light: $morandi-stone-200,
-  border-medium: $morandi-stone-300,
-  border-dark: $morandi-stone-400
-}
-```
+- Primary action: `bg-morandi-sage-500 text-white hover:bg-morandi-sage-400`
+- Destructive: `bg-red-600 text-white hover:bg-red-700`
+- Informational: `text-morandi-navy-600`
 
 ## Typography System
 
 ### Font Families
 
-Mirubato uses a three-font system optimized for readability and multilingual support:
+- Tailwind font families: `font-inter` (UI), `font-lexend` (headers), `font-serif` (music content)
+- Declared in `tailwind.config.js` (`theme.extend.fontFamily`)
 
-```scss
-// Typography hierarchy
-$fonts: {
-  // Music content - elegant serif
-  serif: 'Noto Serif',      // Titles, composers
+### Variants and Components
 
-  // UI elements - clean sans-serif
-  sans: 'Inter',             // Body text, UI elements
-
-  // Headers - distinctive display font
-  display: 'Lexend'          // Section headers, navigation
-}
-```
-
-### Type Scale
-
-```scss
-// Font sizes following modular scale (1.25 ratio)
-$font-sizes: {
-  xs: 0.75rem,    // 12px
-  sm: 0.875rem,   // 14px
-  base: 1rem,     // 16px
-  lg: 1.125rem,   // 18px
-  xl: 1.25rem,    // 20px
-  '2xl': 1.5rem,  // 24px
-  '3xl': 1.875rem,// 30px
-  '4xl': 2.25rem, // 36px
-  '5xl': 3rem     // 48px
-}
-
-// Font weights
-$font-weights: {
-  light: 300,
-  normal: 400,
-  medium: 500,
-  semibold: 600,
-  bold: 700
-}
-
-// Line heights
-$line-heights: {
-  tight: 1.25,
-  snug: 1.375,
-  normal: 1.5,
-  relaxed: 1.625,
-  loose: 2
-}
-```
+- Use `Typography` component variants for consistency (`h1..h6`, `body`, `caption`, music variants)
+- Responsive sizing with Tailwind: e.g., `text-sm md:text-base lg:text-lg`
 
 ### Typography Components
 
@@ -201,130 +82,23 @@ $line-heights: {
 
 ## Spacing System
 
-### Base Unit
-
-All spacing follows an 8px base unit system:
-
-```scss
-$spacing: {
-  0: 0,
-  1: 0.25rem,  // 4px
-  2: 0.5rem,   // 8px
-  3: 0.75rem,  // 12px
-  4: 1rem,     // 16px
-  5: 1.25rem,  // 20px
-  6: 1.5rem,   // 24px
-  8: 2rem,     // 32px
-  10: 2.5rem,  // 40px
-  12: 3rem,    // 48px
-  16: 4rem,    // 64px
-  20: 5rem,    // 80px
-  24: 6rem     // 96px
-}
-```
-
-### Component Spacing
-
-```scss
-// Consistent padding/margin for components
-$component-spacing: {
-  // Cards
-  card-padding: $spacing-6,           // 24px desktop
-  card-padding-mobile: $spacing-4,    // 16px mobile
-
-  // Buttons
-  button-padding-x: $spacing-6,       // 24px
-  button-padding-y: $spacing-3,       // 12px
-
-  // Forms
-  input-padding-x: $spacing-3,        // 12px
-  input-padding-y: $spacing-2,        // 8px
-
-  // Layout
-  container-padding: $spacing-6,      // 24px
-  section-spacing: $spacing-12,       // 48px
-  element-spacing: $spacing-4         // 16px
-}
-```
+- Tailwind spacing scale (4px base): `p-4` (16px), `p-6` (24px), `gap-4`, etc.
+- Use responsive variants (`sm:p-6`, `md:gap-6`) for larger screens
 
 ## Component Patterns
 
 ### Buttons
 
-```scss
-// Button variants
-.btn-primary {
-  @apply px-6 py-3 
-    bg-morandi-sage-500 
-    text-white 
-    font-medium 
-    rounded-lg 
-    hover:bg-morandi-sage-400 
-    transition-all duration-200
-    disabled:opacity-50;
-}
-
-.btn-secondary {
-  @apply px-6 py-3 
-    border border-morandi-stone-300 
-    text-morandi-stone-600 
-    rounded-lg 
-    hover:bg-morandi-stone-100;
-}
-
-.btn-ghost {
-  @apply px-4 py-2 
-    text-morandi-stone-600 
-    hover:text-morandi-stone-700 
-    hover:bg-morandi-stone-100 
-    rounded-lg;
-}
-```
+- Use `Button` component variants: `primary`, `secondary`, `ghost`, `danger`, `icon`
+- Example: `<Button variant="primary">Save</Button>`
 
 ### Cards
 
-```scss
-.card {
-  @apply p-6 
-    bg-white 
-    rounded-lg 
-    shadow-sm 
-    border border-morandi-stone-200;
-}
-
-.card-hover {
-  @apply card 
-    hover:shadow-md 
-    transition-all duration-200;
-}
-```
+- Use `Card` composition (`CardHeader`, `CardTitle`, `CardContent`, `CardFooter`)
 
 ### Form Elements
 
-```scss
-.input {
-  @apply w-full px-3 py-2 
-    bg-white 
-    border border-morandi-stone-300 
-    rounded-lg 
-    focus:ring-2 
-    focus:ring-morandi-sage-400 
-    focus:border-transparent;
-}
-
-.textarea {
-  @apply input 
-    resize-none;
-}
-
-.select {
-  @apply input 
-    appearance-none 
-    bg-no-repeat 
-    bg-right 
-    pr-10;
-}
-```
+- Use `Input`, `Textarea`, `Select`, `MultiSelect` from the UI library
 
 ## Icons & Imagery
 
@@ -344,55 +118,9 @@ $component-spacing: {
 
 ## Animation & Transitions
 
-### Timing Functions
-
-```scss
-$transitions: {
-  fast: 150ms ease-in-out,
-  base: 200ms ease-in-out,
-  slow: 300ms ease-in-out,
-
-  // Easing functions
-  ease-in: cubic-bezier(0.4, 0, 1, 1),
-  ease-out: cubic-bezier(0, 0, 0.2, 1),
-  ease-in-out: cubic-bezier(0.4, 0, 0.2, 1)
-}
-```
-
-### Animation Patterns
-
-```scss
-// Hover effects
-.hover-lift {
-  transition: transform 200ms ease-in-out;
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
-// Focus effects
-.focus-ring {
-  transition: box-shadow 150ms ease-in-out;
-  &:focus {
-    box-shadow: 0 0 0 3px rgba(129, 143, 109, 0.3);
-  }
-}
-
-// Loading states
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.skeleton {
-  animation: pulse 2s ease-in-out infinite;
-}
-```
+- Tailwind transitions: `transition`, `duration-200`, `ease-in-out`
+- Skeletons: `animate-pulse`
+- Custom keyframes/live in Tailwind config where needed
 
 ## Accessibility
 
@@ -405,25 +133,8 @@ $transitions: {
 
 ### Focus Management
 
-```scss
-// Consistent focus styles
-:focus-visible {
-  outline: 2px solid $morandi-sage-500;
-  outline-offset: 2px;
-}
-
-// Skip links
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  z-index: 100;
-
-  &:focus {
-    top: 0;
-  }
-}
-```
+- Visible focus indicators; use `focus:ring-2` and accessible outlines in components
+- Provide skip links as needed for long pages
 
 ### ARIA Support
 
@@ -432,26 +143,23 @@ $transitions: {
 - Live regions for dynamic content
 - Proper heading hierarchy
 
-## Dark Mode (Future)
+## Dark Mode
 
-Currently, the application is light-mode only with infrastructure in place for future dark mode support:
+- Tailwind is configured with `darkMode: 'class'`
+- Components include `dark:` styles, but no global toggle is exposed today
 
-```scss
-// Dark mode preparation (not yet implemented)
-:root {
-  color-scheme: light;
-}
+## Code References
 
-// Future dark mode colors would use darker Morandi tones
-// maintaining the same muted, sophisticated aesthetic
-```
+- Tailwind config: `frontendv2/tailwind.config.js`
+- Typography component: `frontendv2/src/components/ui/Typography.tsx`
+- UI library overview: `frontendv2/src/components/ui/README.md`
 
 ## Related Documentation
 
-- [Component Library](./components.md) - Component implementation details
-- [Layout Patterns](./layout-patterns.md) - Layout system and grid
-- [Responsive Design](./responsive-design.md) - Breakpoints and mobile patterns
-- [Architecture](./architecture.md) - Frontend architecture
+- [Component Library](./components.md) — Component primitives
+- [Layout Patterns](./layout-patterns.md) — Layout & grid
+- [Responsive Design](./responsive-design.md) — Breakpoints and mobile patterns
+- [Architecture](./architecture.md) — Frontend overview
 
 ---
 

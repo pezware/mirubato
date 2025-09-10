@@ -1,8 +1,10 @@
 # Responsive Design Specification
 
-## Overview
+Status: ✅ Active
 
-Mirubato follows a mobile-first responsive design approach, ensuring optimal user experience across all device sizes from phones to large desktop displays.
+## What
+
+Mobile‑first design guidelines using Tailwind responsive utilities. Focus on real patterns used across the app.
 
 ## Design Philosophy
 
@@ -23,28 +25,7 @@ Mirubato follows a mobile-first responsive design approach, ensuring optimal use
 
 ### Core Breakpoints
 
-```scss
-// Tailwind breakpoints used throughout the application
-$breakpoints: {
-  // Mobile devices (default, no prefix needed)
-  base: 0px,      // All sizes
-
-  // Small devices
-  sm: 640px,      // Large phones, small tablets in portrait
-
-  // Medium devices (Layout switch point)
-  md: 768px,      // Tablets, small laptops
-
-  // Large devices
-  lg: 1024px,     // Desktops, large tablets in landscape
-
-  // Extra large devices
-  xl: 1280px,     // Large desktops
-
-  // 2X Extra large devices
-  '2xl': 1536px   // Ultra-wide monitors
-}
-```
+- Tailwind defaults: `sm=640`, `md=768`, `lg=1024`, `xl=1280`, `2xl=1536`
 
 ### Breakpoint Usage
 
@@ -99,22 +80,8 @@ $breakpoints: {
 
 ```tsx
 // Responsive form layout
-<form
-  className="
-  space-y-4          // Mobile: stacked with spacing
-  md:space-y-6       // Desktop: larger spacing
-"
->
-  <div
-    className="
-    flex 
-    flex-col         // Mobile: stack labels and inputs
-    md:flex-row      // Desktop: side-by-side
-    md:items-center
-    gap-2
-    md:gap-4
-  "
-  >
+<form className="space-y-4 md:space-y-6">
+  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
     <label className="md:w-1/3">Label</label>
     <input className="flex-1" />
   </div>
@@ -151,67 +118,27 @@ function ResponsiveTable({ data }) {
 
 ### Touch Interactions
 
-```scss
-// Touch target sizes
-.touch-target {
-  min-height: 44px; // iOS recommendation
-  min-width: 44px; // Android recommendation
-}
-
-// Touch feedback
-.touchable {
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-  touch-action: manipulation; // Prevent zoom on double tap
-}
-```
+- Minimum target size: ~44px (`min-h-[44px] min-w-[44px]`)
+- Use `touch-action: manipulation` where appropriate for custom controls
 
 ### Swipe Gestures
 
-```tsx
-// Swipeable tabs for mobile
-import { useSwipeable } from 'react-swipeable'
-
-function SwipeableTabs() {
-  const handlers = useSwipeable({
-    onSwipedLeft: () => nextTab(),
-    onSwipedRight: () => prevTab(),
-  })
-
-  return (
-    <div {...handlers}>
-      <TabContent />
-    </div>
-  )
-}
-```
+- Avoid extra libs; prioritize native scrolling and concise tap targets
+- If adding swipe, ensure keyboard/mouse parity and ARIA compliance
 
 ### Mobile Modals
 
 ```tsx
-// Full-screen modals on mobile
-<Modal className="
-  fixed inset-0           // Mobile: full screen
-  md:inset-auto          // Desktop: centered
-  md:max-w-2xl
-  md:mx-auto
-  md:my-8
-  md:rounded-lg
-">
+// Use built-in mobile optimization
+<Modal isMobileOptimized isOpen={open} onClose={close} />
 ```
 
 ## Desktop-Specific Patterns
 
 ### Hover States
 
-```scss
-// Only show hover states on devices with hover capability
-@media (hover: hover) {
-  .hoverable:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
-  }
-}
-```
+- Keep important affordances visible without hover
+- Use subtle hover on devices with hover capability (`@media (hover: hover)`) when needed
 
 ### Multi-Column Layouts
 
@@ -250,24 +177,7 @@ function SwipeableTabs() {
 
 ### Font Sizes
 
-```scss
-// Responsive typography scale
-.text-responsive {
-  // Mobile
-  font-size: 14px;
-  line-height: 1.5;
-
-  @media (min-width: 768px) {
-    font-size: 16px;
-    line-height: 1.6;
-  }
-
-  @media (min-width: 1024px) {
-    font-size: 18px;
-    line-height: 1.7;
-  }
-}
-```
+- Prefer Tailwind responsive text utilities: `text-sm md:text-base lg:text-lg`
 
 ### Heading Hierarchy
 
@@ -285,25 +195,13 @@ function SwipeableTabs() {
 
 ### Responsive Images
 
-```tsx
-// Picture element for art direction
-<picture>
-  <source media="(min-width: 1024px)" srcSet="/hero-desktop.webp" />
-  <source media="(min-width: 768px)" srcSet="/hero-tablet.webp" />
-  <img src="/hero-mobile.webp" alt="Hero" className="w-full h-auto" />
-</picture>
-```
+- Use `className="w-full h-auto"`; prefer modern formats (WebP/AVIF) with `<picture>` if necessary
 
 ### Aspect Ratios
 
 ```tsx
 // Maintain aspect ratios across breakpoints
-<div
-  className="
-  aspect-w-16 aspect-h-9    // 16:9 on all sizes
-  md:aspect-w-4 md:aspect-h-3  // 4:3 on desktop
-"
->
+<div className="aspect-[16/9] md:aspect-[4/3]">
   <img src={url} className="object-cover" />
 </div>
 ```
@@ -321,28 +219,12 @@ function SwipeableTabs() {
 
 ### CSS Containment
 
-```scss
-// Optimize reflow/repaint
-.card {
-  contain: layout style;
-}
-
-.list-item {
-  contain: size layout;
-}
-```
+- Use thoughtfully for large lists; prefer virtualization where needed
 
 ### Responsive Loading
 
-```tsx
-// Load different components based on screen size
-const DynamicComponent = dynamic(() => {
-  if (window.innerWidth < 768) {
-    return import('./MobileComponent')
-  }
-  return import('./DesktopComponent')
-})
-```
+- Prefer CSS/layout changes over code‑splitting by viewport
+- Use React.lazy for heavy components irrespective of screen size
 
 ## Testing Responsive Design
 
@@ -425,29 +307,8 @@ html {
 
 ### Responsive Utilities
 
-```tsx
-// Custom hooks for responsive behavior
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false)
-
-  useEffect(() => {
-    const media = window.matchMedia(query)
-    setMatches(media.matches)
-
-    const listener = () => setMatches(media.matches)
-    media.addEventListener('change', listener)
-
-    return () => media.removeEventListener('change', listener)
-  }, [query])
-
-  return matches
-}
-
-// Usage
-const isMobile = useMediaQuery('(max-width: 767px)')
-const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
-const isDesktop = useMediaQuery('(min-width: 1024px)')
-```
+- Prefer Tailwind breakpoints over JS media queries
+- If needed, implement a local hook; none is shipped in the codebase today
 
 ## Migration Guidelines
 
@@ -468,10 +329,10 @@ const isDesktop = useMediaQuery('(min-width: 1024px)')
 
 ## Related Documentation
 
-- [Layout Patterns](./layout-patterns.md) - Layout system and structure
-- [UI Design System](./ui-design-system.md) - Visual design specifications
-- [Components](./components.md) - Component implementation
-- [Performance](../07-operations/performance.md) - Performance optimization
+- [Layout Patterns](./layout-patterns.md) — Layout system and structure
+- [UI Design System](./ui-design-system.md) — Visual design tokens
+- [Components](./components.md) — Component primitives
+- [Performance](../07-operations/performance.md) — Performance
 
 ---
 
