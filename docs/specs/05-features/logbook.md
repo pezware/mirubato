@@ -1,5 +1,7 @@
 # Logbook Feature Specification
 
+Status: ✅ Active
+
 ## Overview
 
 The Logbook is the core feature of Mirubato, allowing musicians to track their practice sessions with detailed metadata, analytics, and synchronization across devices. It supports manual entry, timer-based tracking, and automatic logging from other features.
@@ -44,11 +46,11 @@ The Logbook is the core feature of Mirubato, allowing musicians to track their p
 - **Purpose**: Real-time practice tracking
 - **Features**:
   - Start/Pause/Stop controls
-  - Auto-pause detection (5 minutes inactivity)
-  - Session persistence (survives browser restart)
-  - Background timer (continues when tab not active)
-  - Piece switching during session
-  - Auto-save every 30 seconds
+  - Reminder notifications (configurable interval)
+  - Session persistence (survives browser refresh)
+  - Background-safe checkpointing; resume on return
+  - Planned: piece switching during session
+  - Periodic local checkpoints to preserve state
 
 #### Auto-Logging
 
@@ -119,7 +121,7 @@ interface Entry {
 piece:"Moonlight Sonata" AND mood:satisfied AND duration:>30
 ```
 
-### 4. Bulk Operations
+### 4. Bulk Operations (Planned)
 
 #### Multi-Select Actions
 
@@ -137,18 +139,7 @@ piece:"Moonlight Sonata" AND mood:satisfied AND duration:>30
 
 ### 5. Data Export
 
-#### Formats
-
-- **CSV**: Spreadsheet-compatible
-- **JSON**: Full data with metadata
-- **PDF**: Formatted report
-
-#### Export Options
-
-- Date range selection
-- Field selection
-- Include/exclude deleted entries
-- Timezone conversion
+- Client-side export in analytics views: CSV and JSON. No PDF export today.
 
 ### 6. Real-Time Synchronization
 
@@ -165,8 +156,9 @@ piece:"Moonlight Sonata" AND mood:satisfied AND duration:>30
 type SyncEvent =
   | { type: 'ENTRY_CREATED'; entry: LogbookEntry }
   | { type: 'ENTRY_UPDATED'; entry: LogbookEntry }
-  | { type: 'ENTRY_DELETED'; id: string }
-  | { type: 'BULK_UPDATE'; entries: LogbookEntry[] }
+  | { type: 'ENTRY_DELETED'; entryId: string }
+  | { type: 'BULK_SYNC'; entries: LogbookEntry[] }
+  | { type: 'SYNC_REQUEST' }
 ```
 
 ### 7. Analytics Integration
@@ -193,78 +185,26 @@ type SyncEvent =
 // Main components
 components/
 ├── logbook/
-│   ├── LogbookEntryList.tsx       // Main list display
+│   ├── PracticeLogsList.tsx       // Main list display
 │   ├── ManualEntryForm.tsx        // Entry form
-│   ├── TimerMode.tsx              // Timer interface
-│   ├── EntryCard.tsx              // Individual entry
 │   ├── DateSeparator.tsx          // Date grouping
-│   └── BulkActions.tsx            // Multi-select toolbar
+│   └── LogbookSplitView.tsx       // Timeline + list
 
 // State management (Zustand)
-stores/logbookStore.ts
-- entries: Map<string, LogbookEntry>
-- addEntry(entry: LogbookEntry): void
-- updateEntry(id: string, updates: Partial<LogbookEntry>): void
-- deleteEntry(id: string): void
-- bulkDelete(ids: string[]): void
-- syncEntries(): Promise<void>
+stores/logbookStore.ts (selected actions)
+- createEntry(data): Promise<void>
+- updateEntry(id, updates): Promise<void>
+- deleteEntry(id): Promise<void>
+- enableRealtimeSync(): Promise<boolean>
 ```
 
-### Data Storage
+### Data & Sync
 
-#### IndexedDB Schema
+- Offline storage: localStorage keys `mirubato:logbook:{entries,goals,scoreMetadata}` with optimistic UI updates.
+- Sync API: `POST /api/sync/pull` (pull entries/goals) and `POST /api/sync/push` (idempotent writes). See 03‑API.
+- Real‑time: WebSocket events for ENTRY\_\* with offline queueing and backoff reconnect.
 
-```typescript
-interface LogbookEntry {
-  id: string
-  userId: string
-  timestamp: number
-  duration: number
-  type: EntryType
-  instrument?: string
-  pieces?: Piece[]
-  techniques?: string[]
-  mood?: Mood
-  notes?: string
-  goalIds?: string[]
-  scorePages?: ScorePage[]
-  tags?: string[]
-  source: 'manual' | 'timer' | 'auto'
-  syncVersion: number
-  createdAt: number
-  updatedAt: number
-  deletedAt?: number
-}
-```
-
-#### Sync Strategy
-
-1. **Local First**: All changes saved to IndexedDB immediately
-2. **Optimistic UI**: Updates reflected instantly
-3. **Background Sync**: Queue changes for server sync
-4. **Conflict Resolution**: Server version wins on conflict
-5. **Offline Support**: Full functionality without connection
-
-### API Endpoints
-
-```typescript
-// CRUD Operations
-GET    /api/logbook/entries?page=1&limit=50
-POST   /api/logbook/entries
-PUT    /api/logbook/entries/:id
-DELETE /api/logbook/entries/:id
-
-// Bulk Operations
-POST   /api/logbook/entries/bulk-delete
-POST   /api/logbook/entries/bulk-update
-
-// Export
-GET    /api/logbook/export?format=csv&from=date&to=date
-
-// Sync
-POST   /api/logbook/sync
-GET    /api/logbook/changes?since=timestamp
-```
+Note: There are no dedicated REST CRUD endpoints for logbook; all writes are via Sync. Export is client‑side (CSV/JSON) in Practice Reports.
 
 ## User Interface
 
@@ -331,7 +271,7 @@ GET    /api/logbook/changes?since=timestamp
 
 ### Caching Strategy
 
-- IndexedDB for offline access
+- LocalStorage for offline access
 - Memory cache for recent entries
 - API response caching
 
@@ -404,6 +344,14 @@ GET    /api/logbook/changes?since=timestamp
 - [Database Schema](../02-database/schema.md) - Data structure
 - [WebSocket Protocol](../03-api/websocket.md) - Real-time sync
 - [Analytics](./analytics.md) - Reporting features
+
+## Code References
+
+- Store/API: `frontendv2/src/stores/logbookStore.ts`, `frontendv2/src/api/logbook.ts`
+- UI: `frontendv2/src/components/logbook/PracticeLogsList.tsx`, `frontendv2/src/components/ManualEntryForm.tsx`, `frontendv2/src/components/logbook/LogbookSplitView.tsx`
+- UI primitives: `frontendv2/src/components/ui/{CompactEntryRow,DateSeparator}.tsx`
+- Timer: `frontendv2/src/contexts/TimerContext.tsx`, `frontendv2/src/components/timer/{TimerWidget,TimerSettings}.tsx`
+- Sync: `frontendv2/src/services/webSocketSync.ts`
 
 ---
 

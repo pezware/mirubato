@@ -1,5 +1,7 @@
 # Dictionary Feature Specification
 
+Status: ✅ Active
+
 ## Purpose
 
 The Dictionary provides instant access to musical terminology, helping musicians understand markings, directions, and concepts encountered in scores and lessons. It combines curated definitions with AI-powered explanations for comprehensive musical literacy support.
@@ -489,7 +491,12 @@ class AIOptimizer {
 - [AI Services](../06-integrations/ai-services.md) - AI explanation generation
 - [Scorebook](./scorebook.md) - Score integration
 - [Database Schema](../02-database/schema.md) - Dictionary tables
-- [Internationalization](../04-frontend/i18n.md) - Multi-language support
+- Internationalization resources: `frontendv2/src/locales/*`, i18n setup in frontend
+
+## Code References
+
+- UI components: `frontendv2/src/components/dictionary/{Dictionary,DictionarySearch,DictionaryResults,DictionaryTerm,DictionaryCategories,DictionaryPopular,DictionaryReferences,SafeExternalLink}.tsx`
+- Autocomplete hook: `frontendv2/src/hooks/useAutocomplete.ts`
 
 ---
 

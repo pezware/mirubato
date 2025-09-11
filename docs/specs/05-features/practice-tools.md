@@ -1,5 +1,7 @@
 # Practice Tools Specification
 
+Status: ✅ Active
+
 ## Purpose
 
 Practice Tools provide essential utilities that musicians need during practice sessions. These tools integrate seamlessly with the practice logging system, automatically tracking usage and contributing to practice analytics.
@@ -57,7 +59,7 @@ interface MetronomeConfig {
 
   // Auto-logging
   autoLog: boolean
-  logThreshold: number // Minimum minutes before logging
+  logThreshold: number // Minimum seconds before logging (default ~60s)
 }
 ```
 
@@ -114,7 +116,7 @@ class MetronomeEngine {
 
 - **Pomodoro Technique**: Built-in break reminders
 - **Section Timing**: Allocate time to different pieces/techniques
-- **Auto-pause Detection**: Recognize when practice stops
+- **Auto-pause Detection (Planned)**: Recognize when practice stops
 - **Session Templates**: Reusable practice structures
 
 **Timer Modes**:
@@ -480,8 +482,15 @@ class ToolCoordinator {
 
 - [Logbook](./logbook.md) - Automatic logging integration
 - [Repertoire](./repertoire.md) - Piece-specific settings
-- [Audio Architecture](../architecture/audio.md) - Web Audio API usage
 - [Mobile Optimization](../04-frontend/responsive-design.md) - Touch interactions
+
+## Code References
+
+- Metronome: `frontendv2/src/services/{metronomeService,patternMetronomeService}.ts`
+- Timer: `frontendv2/src/contexts/TimerContext.tsx`, `frontendv2/src/components/timer/{TimerWidget,TimerSettings}.tsx`
+- Circle of Fifths: `frontendv2/src/components/circle-of-fifths/*`
+- Practice Counter: `frontendv2/src/components/practice-counter/*`
+- Auto-logging: `frontendv2/src/modules/auto-logging/*`
 
 ---
 

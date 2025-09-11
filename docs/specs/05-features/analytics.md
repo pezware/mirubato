@@ -1,5 +1,7 @@
 # Analytics Feature Specification
 
+Status: ✅ Active
+
 ## Purpose
 
 The Analytics system transforms raw practice data into actionable insights, helping musicians understand their practice patterns, identify areas for improvement, and celebrate progress. It answers the critical question: "Am I practicing effectively?"
@@ -388,9 +390,17 @@ async function updateDailyAggregate(date: Date, session: PracticeSession) {
 ## Related Documentation
 
 - [Logbook](./logbook.md) - Data source for analytics
-- [Goals](./goals.md) - Goal tracking integration
+- [03‑API](../03-api/rest-api.md) - Goals endpoints and contracts
 - [Repertoire](./repertoire.md) - Piece-specific analytics
-- [Reports](./reports.md) - Detailed reporting system
+- Practice Reports (UI): see code references below
+
+## Code References
+
+- Views: `frontendv2/src/components/practice-reports/views/{OverviewView,AnalyticsView,DataTableView}.tsx`
+- Tabs & container: `frontendv2/src/components/practice-reports/ReportsTabs.tsx`
+- Charts: `frontendv2/src/components/practice-reports/visualizations/charts/*`
+- Advanced filters/presets: `frontendv2/src/components/practice-reports/advanced/{PeriodPresets,FilterBuilder,GroupingPanel,SortingPanel}.tsx`
+- CSV/JSON Export: `frontendv2/src/components/practice-reports/views/DataTableView.tsx`
 
 ---
 

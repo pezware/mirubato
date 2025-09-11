@@ -1,5 +1,7 @@
 # Repertoire Feature Specification
 
+Status: ✅ Active
+
 ## Purpose
 
 The Repertoire system tracks a musician's journey with each piece of music, from initial interest through mastery and performance. It provides structured progression tracking, intelligent practice suggestions, and comprehensive performance history.
@@ -364,9 +366,16 @@ interface StatusChange {
 ## Related Documentation
 
 - [Logbook](./logbook.md) - Practice session tracking
-- [Goals](./goals.md) - Goal setting and tracking
+- [03‑API](../03-api/rest-api.md) - Goals and Repertoire endpoints
 - [Analytics](./analytics.md) - Progress visualization
 - [Scorebook](./scorebook.md) - Sheet music management
+
+## Code References
+
+- Store/API: `frontendv2/src/stores/repertoireStore.ts`, `frontendv2/src/api/repertoire.ts`
+- UI: `frontendv2/src/components/repertoire/{RepertoireView,RepertoireCard,PieceDetailView,AddToRepertoireModal,CreateGoalModal,EditNotesModal,RepertoireCalendarView}.tsx`
+- Analytics tie-in: `frontendv2/src/components/practice-reports/RepertoireStats.tsx`
+- Helpers: `frontendv2/src/utils/scoreIdNormalizer.ts`
 
 ---
 

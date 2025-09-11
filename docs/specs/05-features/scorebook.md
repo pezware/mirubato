@@ -1,8 +1,16 @@
 # Scorebook Feature Specification
 
+Status: 🚧 Experimental
+
 ## Overview
 
 The Scorebook is Mirubato's comprehensive sheet music management system, providing PDF storage, AI-powered metadata extraction, collection organization, and seamless integration with practice tracking. It leverages Cloudflare R2 for storage and Workers AI for intelligent processing.
+
+## Implementation Notes
+
+- Frontend (this repo): score viewing/controls, imports UI, and collection management live under `frontendv2/src/components/score/*`.
+- Scores service (server): upload/import pipelines, R2 storage, IMSLP scraping, and AI metadata extraction live under `scores/src/**`.
+- Keep this spec focused on intent; see Code References for exact implementations.
 
 ## User Stories
 
@@ -594,5 +602,11 @@ async function streamPDF(url: string) {
 - [Repertoire](./repertoire.md) - Repertoire tracking
 
 ---
+
+## Code References
+
+- Frontend UI: `frontendv2/src/components/score/{ScoreViewer,PdfViewer,AdaptivePdfViewer,ImageScoreViewer,ImportScoreModal,CollectionsManager,ScoreListItem,ScoreManagement,ScoreControls,AddToCollectionModal}.tsx`
+- Scores service API: `scores/src/api/handlers/{upload,import,render,serveR2}.ts`, `scores/src/services/{uploadService,browser-rendering,hybridAiExtractor}.ts`
+- R2 wiring/config: `scores/wrangler.toml`, `scores/src/api/handlers/serveR2.ts`
 
 _Last updated: 2025-09-09 | Version 1.7.6_
