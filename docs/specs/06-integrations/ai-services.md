@@ -1,609 +1,285 @@
+---
+Spec-ID: SPEC-INT-001
+Title: AI Services Integration
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # AI Services Integration Specification
 
-## Purpose
+Status: ✅ Active
 
-AI services enhance Mirubato with intelligent features that would be impossible or impractical to implement with traditional algorithms. These services provide metadata extraction, content generation, intelligent suggestions, and natural language understanding.
+## What
 
-## Why AI Integration Matters
+Strategic integration of AI models for metadata extraction, content generation, and intelligent features using Cloudflare AI and Gemini as fallback.
 
-Manual data entry is the enemy of consistent practice logging. AI eliminates friction by:
+## Why
 
-- **Extracting metadata** from score images automatically
-- **Generating explanations** for musical terms
-- **Providing practice suggestions** based on patterns
-- **Understanding natural language** queries
-- **Identifying patterns** humans might miss
+- Manual data entry creates friction in practice logging
+- Sheet music metadata extraction saves significant user time
+- AI-powered definitions enhance music education experience
+- Edge-deployed AI provides low-latency responses globally
+- Hybrid approach ensures reliability when primary AI fails
 
-## Cloudflare AI Architecture
+## How
 
-### Why Cloudflare AI
+- Primary: Cloudflare Workers AI for edge deployment
+- Fallback: Google Gemini for complex cases
+- Hybrid strategy merges results for higher confidence
+- Service-specific integration (Scores and Dictionary services)
+- Cost management through caching and rate limiting
 
-**Advantages**:
+## Architecture Overview
 
-- **Edge deployment**: AI runs near users globally
-- **No cold starts**: Models stay warm
-- **Cost effective**: Pay per request, not for idle GPUs
-- **Privacy focused**: Data stays in region
-- **Integrated**: Works seamlessly with Workers
+### AI Provider Strategy
+
+| Provider          | Purpose              | Use Cases                             | Cost Model          |
+| ----------------- | -------------------- | ------------------------------------- | ------------------- |
+| **Cloudflare AI** | Primary provider     | Score metadata, term definitions      | Per-request pricing |
+| **Google Gemini** | Fallback/enhancement | Complex scores, detailed explanations | Token-based pricing |
+| **Hybrid**        | Best of both         | Critical extractions                  | Combined costs      |
+
+### Service Integration Points
+
+- **Scores Service**: PDF metadata extraction, visual analysis
+- **Dictionary Service**: Term definitions, multilingual content
+- **API Service**: Future: practice recommendations
+- **Frontend**: Future: natural language search
+
+## Cloudflare AI Integration
 
 ### Available Models
 
-```typescript
-interface CloudflareAIModels {
-  // Vision models (for score analysis)
-  vision: {
-    '@cf/llava-hf/llava-1.5-7b-hf': {
-      purpose: 'Score metadata extraction'
-      inputTypes: ['image']
-      outputType: 'structured-text'
-    }
-  }
+**Vision Models**:
 
-  // Text models (for explanations)
-  text: {
-    '@cf/meta/llama-2-7b-chat-int8': {
-      purpose: 'Term explanations, suggestions'
-      maxTokens: 2048
-      streaming: true
-    }
-  }
+- `@cf/meta/llama-3.2-11b-vision-instruct` - Score image analysis
+- Input: Base64 encoded images
+- Output: Structured metadata
 
-  // Embedding models (for search)
-  embeddings: {
-    '@cf/baai/bge-base-en-v1.5': {
-      purpose: 'Semantic search'
-      dimensions: 768
-    }
-  }
+**Text Models**:
 
-  // Audio models (future)
-  audio: {
-    '@cf/openai/whisper': {
-      purpose: 'Practice session transcription'
-      languages: ['en', 'es', 'fr', 'de', 'it']
-    }
-  }
-}
-```
+- `@cf/meta/llama-3.1-8b-instruct` - Complex explanations
+- `@cf/meta/llama-3.2-3b-instruct` - Quick responses
+- Streaming support for real-time responses
+
+**Embedding Models**:
+
+- `@cf/baai/bge-base-en-v1.5` - Semantic search (768 dimensions)
+- Used for similarity matching in dictionary
+
+### Integration Benefits
+
+- **No cold starts**: Models stay warm at edge
+- **Regional processing**: Data stays in user's region
+- **Integrated billing**: Single Cloudflare invoice
+- **Automatic scaling**: Handles load spikes transparently
 
 ## Core AI Features
 
 ### 1. Score Metadata Extraction
 
-**Purpose**: Extract structured information from sheet music images.
-
-**Implementation Strategy**:
-
-```typescript
-interface ScoreAnalyzer {
-  async analyzeScore(imageUrl: string): Promise<ScoreMetadata> {
-    // Prepare image for AI
-    const imageData = await this.prepareImage(imageUrl)
-
-    // Construct targeted prompt
-    const prompt = this.buildExtractionPrompt()
-
-    // Query vision model
-    const response = await env.AI.run(
-      '@cf/llava-hf/llava-1.5-7b-hf',
-      {
-        image: imageData,
-        prompt: prompt,
-        max_tokens: 512
-      }
-    )
-
-    // Parse and validate response
-    return this.parseAIResponse(response)
-  }
-
-  buildExtractionPrompt(): string {
-    return `Analyze this sheet music image and extract:
-    1. Title of the piece (exact text at top)
-    2. Composer name (usually below title)
-    3. Opus or catalog number if visible
-    4. Key signature (count sharps/flats)
-    5. Time signature (numbers after clef)
-    6. Tempo marking (Italian term or BPM)
-    7. Dynamic markings visible
-    8. Instrument (based on clef and staves)
-
-    Return as JSON with these exact keys:
-    {
-      "title": "...",
-      "composer": "...",
-      "opus": "...",
-      "key": "...",
-      "timeSignature": "...",
-      "tempo": "...",
-      "dynamics": [...],
-      "instrument": "..."
-    }
-
-    If any field is not visible, use null.`
-  }
-
-  parseAIResponse(response: string): ScoreMetadata {
-    try {
-      // AI responses may include explanation text
-      const jsonMatch = response.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('No JSON in response')
-
-      const data = JSON.parse(jsonMatch[0])
-
-      // Validate and normalize
-      return {
-        title: this.cleanTitle(data.title),
-        composer: this.normalizeComposer(data.composer),
-        opus: this.parseOpus(data.opus),
-        key: this.normalizeKey(data.key),
-        timeSignature: this.validateTimeSignature(data.timeSignature),
-        tempo: this.parseTempo(data.tempo),
-        dynamics: this.validateDynamics(data.dynamics),
-        instrument: this.normalizeInstrument(data.instrument),
-        confidence: this.calculateConfidence(data)
-      }
-    } catch (error) {
-      // Fallback to basic extraction
-      return this.basicExtraction(response)
-    }
-  }
-}
-```
-
-**Quality Assurance**:
-
-```typescript
-interface QualityControl {
-  // Confidence scoring
-  calculateConfidence(metadata: ScoreMetadata): number {
-    let score = 0
-    const weights = {
-      title: 0.3,
-      composer: 0.3,
-      key: 0.15,
-      timeSignature: 0.15,
-      tempo: 0.1
-    }
-
-    for (const [field, weight] of Object.entries(weights)) {
-      if (metadata[field] && this.isReasonable(field, metadata[field])) {
-        score += weight
-      }
-    }
-
-    return score
-  }
-
-  // Validation rules
-  isReasonable(field: string, value: any): boolean {
-    switch (field) {
-      case 'timeSignature':
-        return /^\d+\/\d+$/.test(value)
-      case 'key':
-        return this.validKeys.includes(value)
-      case 'tempo':
-        return this.validTempos.includes(value) ||
-               (typeof value === 'number' && value >= 20 && value <= 300)
-      default:
-        return true
-    }
-  }
-}
-```
-
-### 2. Practice Suggestions
-
-**Purpose**: Provide intelligent practice recommendations.
-
-**Suggestion Engine**:
-
-```typescript
-interface PracticeSuggestionAI {
-  async generateSuggestions(
-    context: PracticeContext
-  ): Promise<Suggestion[]> {
-    const prompt = `Given a musician's practice history:
-    - Current repertoire: ${context.repertoire.map(r => r.title).join(', ')}
-    - Recent practice: ${context.recentSessions.map(s => `${s.duration}min on ${s.piece}`).join(', ')}
-    - Goals: ${context.goals.map(g => g.description).join(', ')}
-    - Available time: ${context.availableTime} minutes
-    - Skill level: ${context.level}
-
-    Suggest 3 practice activities optimized for progress.
-    Consider:
-    1. Pieces needing attention (not practiced recently)
-    2. Technical exercises for current challenges
-    3. Goal alignment
-    4. Variety and engagement
-
-    Format each suggestion as:
-    {
-      "activity": "...",
-      "duration": minutes,
-      "reason": "why this helps",
-      "piece": "specific piece if applicable"
-    }`
-
-    const response = await env.AI.run(
-      '@cf/meta/llama-2-7b-chat-int8',
-      { prompt, max_tokens: 500 }
-    )
-
-    return this.parseSuggestions(response)
-  }
-
-  // Learn from feedback
-  async improveWithFeedback(
-    suggestion: Suggestion,
-    feedback: 'accepted' | 'rejected' | 'modified'
-  ) {
-    // Store feedback for pattern analysis
-    await this.storeFeedback({
-      suggestion,
-      feedback,
-      context: this.getCurrentContext(),
-      timestamp: Date.now()
-    })
-
-    // Adjust future suggestions based on patterns
-    if (feedback === 'rejected') {
-      this.adjustWeights(suggestion.type, -0.1)
-    } else if (feedback === 'accepted') {
-      this.adjustWeights(suggestion.type, 0.1)
-    }
-  }
-}
-```
-
-### 3. Natural Language Queries
-
-**Purpose**: Understand and respond to natural language questions.
-
-**Query Understanding**:
-
-```typescript
-interface NaturalLanguageProcessor {
-  async processQuery(query: string): Promise<QueryResult> {
-    // Classify intent
-    const intent = await this.classifyIntent(query)
-
-    switch (intent) {
-      case 'find_score':
-        return this.searchScores(query)
-      case 'practice_stats':
-        return this.generateStats(query)
-      case 'explain_term':
-        return this.explainTerm(query)
-      case 'suggest_practice':
-        return this.suggestPractice(query)
-      default:
-        return this.generalResponse(query)
-    }
-  }
-
-  async classifyIntent(query: string): Promise<Intent> {
-    const prompt = `Classify this music practice query into one category:
-    - find_score: Looking for sheet music
-    - practice_stats: Asking about practice history/statistics
-    - explain_term: Asking about musical terminology
-    - suggest_practice: Asking what to practice
-    - general: Other music-related question
-
-    Query: "${query}"
-
-    Respond with only the category name.`
-
-    const response = await env.AI.run(
-      '@cf/meta/llama-2-7b-chat-int8',
-      { prompt, max_tokens: 10 }
-    )
-
-    return this.parseIntent(response)
-  }
-}
-```
-
-### 4. Pattern Recognition
-
-**Purpose**: Identify trends and patterns in practice data.
-
-**Pattern Analysis**:
-
-```typescript
-interface PatternRecognition {
-  async analyzePracticePatterns(
-    sessions: PracticeSession[]
-  ): Promise<Insights> {
-    // Prepare data for analysis
-    const data = this.prepareDataset(sessions)
-
-    const prompt = `Analyze this practice data and identify patterns:
-    ${JSON.stringify(data, null, 2)}
-
-    Look for:
-    1. Time-of-day preferences
-    2. Duration patterns
-    3. Mood correlations
-    4. Progress indicators
-    5. Fatigue patterns
-    6. Optimal practice conditions
-
-    Provide actionable insights, not just observations.`
-
-    const response = await env.AI.run(
-      '@cf/meta/llama-2-7b-chat-int8',
-      { prompt, max_tokens: 1000 }
-    )
-
-    return this.parseInsights(response)
-  }
-
-  // Generate embeddings for similarity search
-  async generateEmbeddings(text: string): Promise<number[]> {
-    const response = await env.AI.run(
-      '@cf/baai/bge-base-en-v1.5',
-      { text }
-    )
-
-    return response.data[0] // 768-dimensional vector
-  }
-
-  // Find similar practice sessions
-  async findSimilarSessions(
-    session: PracticeSession
-  ): Promise<PracticeSession[]> {
-    const embedding = await this.generateEmbeddings(
-      this.sessionToText(session)
-    )
-
-    // Cosine similarity search in vector database
-    return await this.vectorSearch(embedding, 5)
-  }
-}
-```
-
-## Prompt Engineering Best Practices
-
-### Effective Prompt Structure
-
-```typescript
-class PromptBuilder {
-  build(task: string, context: any): string {
-    return `
-      ${this.role()}
-      ${this.task(task)}
-      ${this.context(context)}
-      ${this.constraints()}
-      ${this.outputFormat()}
-      ${this.examples()}
-    `.trim()
-  }
-
-  role(): string {
-    return 'You are a knowledgeable music teacher assistant.'
-  }
-
-  task(description: string): string {
-    return `Task: ${description}`
-  }
-
-  context(data: any): string {
-    return `Context:\n${JSON.stringify(data, null, 2)}`
-  }
-
-  constraints(): string {
-    return `Constraints:
-    - Be concise and practical
-    - Focus on actionable advice
-    - Consider the user's skill level
-    - Avoid jargon without explanation`
-  }
-
-  outputFormat(): string {
-    return `Output format: JSON with specific keys as shown in examples`
-  }
-
-  examples(): string {
-    return `Example:
-    Input: [example input]
-    Output: [example output]`
-  }
-}
-```
-
-### Response Validation
-
-```typescript
-class ResponseValidator {
-  validate(response: string, schema: Schema): ValidationResult {
-    // Check for required fields
-    const missingFields = this.checkRequired(response, schema)
-    if (missingFields.length > 0) {
-      return { valid: false, errors: missingFields }
-    }
-
-    // Validate data types
-    const typeErrors = this.checkTypes(response, schema)
-    if (typeErrors.length > 0) {
-      return { valid: false, errors: typeErrors }
-    }
-
-    // Check reasonable values
-    const valueErrors = this.checkValues(response, schema)
-    if (valueErrors.length > 0) {
-      return { valid: false, errors: valueErrors }
-    }
-
-    return { valid: true }
-  }
-}
-```
-
-## Cost Management
-
-### Request Optimization
-
-```typescript
-class AIRequestOptimizer {
-  // Batch similar requests
-  async batchRequests(requests: AIRequest[]): Promise<Response[]> {
-    const batched = this.groupSimilar(requests)
-    const responses = await Promise.all(
-      batched.map(batch => this.processBatch(batch))
-    )
-    return this.unbatch(responses, requests)
-  }
-
-  // Cache common queries
-  async cachedQuery(prompt: string): Promise<string> {
-    const cacheKey = this.hashPrompt(prompt)
-
-    // Check cache first
-    const cached = await env.KV.get(cacheKey)
-    if (cached) return cached
-
-    // Query AI
-    const response = await env.AI.run(model, { prompt })
-
-    // Cache for appropriate duration
-    const ttl = this.determineTTL(prompt)
-    await env.KV.put(cacheKey, response, { expirationTtl: ttl })
-
-    return response
-  }
-
-  // Use appropriate model for task
-  selectModel(task: TaskType): ModelConfig {
-    switch (task) {
-      case 'simple_extraction':
-        return { model: 'small', maxTokens: 100 }
-      case 'complex_analysis':
-        return { model: 'large', maxTokens: 1000 }
-      case 'quick_classification':
-        return { model: 'tiny', maxTokens: 10 }
-    }
-  }
-}
-```
-
-### Usage Monitoring
-
-```typescript
-interface AIUsageMetrics {
-  requestCount: number
-  tokenCount: number
-  costEstimate: number
-  averageLatency: number
-  errorRate: number
-  cacheHitRate: number
-
-  // Track per feature
-  byFeature: {
-    scoreExtraction: MetricSet
-    suggestions: MetricSet
-    termExplanations: MetricSet
-    patternAnalysis: MetricSet
-  }
-}
-```
+**Purpose**: Extract structured information from sheet music PDFs
+
+**Process**:
+
+1. Convert PDF first page to image
+2. Analyze with vision model
+3. Extract: title, composer, opus, key, difficulty
+4. Normalize composer names
+5. Assign confidence scores
+
+**Hybrid Approach**:
+
+- Cloudflare AI attempts first (fast, cheap)
+- Gemini fallback on low confidence
+- Merge results for higher accuracy
+
+**Code**: `scores/src/services/hybridAiExtractor.ts`
+
+### 2. Music Term Definitions
+
+**Purpose**: Generate contextual explanations for musical terms
+
+**Multi-language Support**:
+
+- English, Spanish, French, German, Chinese (Traditional & Simplified)
+- Context-aware translations
+- Difficulty-appropriate explanations
+
+**Caching Strategy**:
+
+- KV storage for common terms
+- 30-day TTL for generated content
+- Invalidation on quality feedback
+
+**Code**: `dictionary/src/services/aiDefinitionGenerator.ts`
+
+### 3. Visual Analysis (Active)
+
+**Extracted Features**:
+
+- Notation type (standard, tablature, chord chart)
+- Staff count and complexity
+- Quality assessment (scan quality)
+- Special markings (dynamics, fingerings, lyrics)
+
+**Use Cases**:
+
+- Automatic difficulty assessment
+- Collection categorization
+- Search filtering
+
+### 4. Practice Insights (Planned)
+
+**Future Capabilities**:
+
+- Pattern recognition in practice logs
+- Personalized suggestions
+- Progress predictions
+- Technique recommendations
 
 ## Error Handling
 
-### Graceful Degradation
+### Fallback Strategy
 
-```typescript
-class AIFallback {
-  async executeWithFallback<T>(
-    aiFunction: () => Promise<T>,
-    fallback: () => T
-  ): Promise<T> {
-    try {
-      return await this.withTimeout(aiFunction(), 5000)
-    } catch (error) {
-      this.logError(error)
+1. **Primary Failure**: Cloudflare AI timeout/error
+2. **Automatic Fallback**: Switch to Gemini
+3. **Degraded Mode**: Use filename parsing if both fail
+4. **User Notification**: Show confidence indicators
 
-      // Try simpler approach
-      if (this.canSimplify(aiFunction)) {
-        return await this.simplified(aiFunction)
-      }
+### Rate Limiting
 
-      // Use non-AI fallback
-      return fallback()
-    }
-  }
+- **Per-user limits**: 10 AI requests per minute
+- **Service limits**: 1000 requests per hour total
+- **Queue overflow**: Reject with 429 status
+- **Priority queue**: Premium users (future)
 
-  // Fallback strategies
-  fallbackStrategies = {
-    scoreExtraction: () => this.manualEntry(),
-    suggestions: () => this.ruleBased(),
-    termExplanation: () => this.dictionaryLookup(),
-    patternAnalysis: () => this.statisticalAnalysis(),
-  }
-}
-```
+## Performance Optimization
 
-## Privacy and Ethics
+### Caching Layers
 
-### Data Handling Principles
+1. **Edge Cache**: Cloudflare CDN for images
+2. **KV Cache**: Processed results (7-day TTL)
+3. **Browser Cache**: Local storage for recent results
+4. **Embedding Cache**: Pre-computed vectors
 
-1. **Minimal Data**: Send only necessary context
-2. **No PII**: Strip personal identifiers
-3. **Regional Processing**: Keep data in user's region
-4. **Transparent**: Tell users when AI is used
-5. **Opt-out Available**: Allow disabling AI features
+### Request Optimization
 
-### Responsible AI Use
+- **Batch processing**: Group similar requests
+- **Image compression**: Reduce to 1024x1024 before analysis
+- **Prompt optimization**: Minimized token usage
+- **Streaming responses**: Start rendering before completion
 
-```typescript
-interface ResponsibleAI {
-  // Add disclaimers
-  wrapResponse(response: string, confidence: number): string {
-    if (confidence < 0.7) {
-      return `${response}\n\n*This suggestion is generated by AI and may need verification.*`
-    }
-    return response
-  }
+## Cost Management
 
-  // Filter inappropriate content
-  async filterContent(text: string): Promise<boolean> {
-    // Check for inappropriate content
-    return this.contentFilter.check(text)
-  }
+### Usage Tracking
 
-  // Respect user preferences
-  async checkConsent(userId: string, feature: string): Promise<boolean> {
-    const preferences = await this.getUserPreferences(userId)
-    return preferences.aiFeatures[feature] !== false
-  }
-}
-```
+- **Per-service metrics**: Track by Scores/Dictionary
+- **Per-model costs**: Monitor expensive operations
+- **User attribution**: Future billing integration
+- **Daily limits**: Prevent runaway costs
 
-## Success Metrics
+### Optimization Strategies
 
-**Quality Metrics**:
+- Cache everything possible
+- Use smaller models when sufficient
+- Batch similar requests
+- Implement request coalescing
 
-- Extraction accuracy rate
-- Suggestion acceptance rate
-- Query understanding accuracy
-- Pattern recognition value
-- User satisfaction scores
+## Code References
 
-**Performance Metrics**:
+### Scores Service
 
-- Response latency
+- Hybrid extractor: `scores/src/services/hybridAiExtractor.ts`
+- Cloudflare AI: `scores/src/services/cloudflareAiExtractor.ts`
+- Gemini client: `scores/src/services/geminiAiExtractor.ts`
+- Types: `scores/src/types/ai.ts`
+
+### Dictionary Service
+
+- AI definitions: `dictionary/src/services/aiDefinitionGenerator.ts`
+- Embeddings: `dictionary/src/services/embeddingService.ts`
+- Prompt templates: `dictionary/src/prompts/`
+
+### Configuration
+
+- Environment variables: `*/wrangler.toml` (AI bindings)
+- Model configs: `*/src/config/ai.ts`
+
+## Operational Limits
+
+- **Request timeout**: 10 seconds for AI calls
+- **Image size**: Max 10MB, auto-resize to 1024x1024
+- **Token limits**: 2048 tokens per request
+- **Batch size**: 10 images per batch
+- **Cache duration**: 7 days for results, 30 days for definitions
+
+## Failure Modes
+
+- **Model unavailable**: Fallback to alternate provider
+- **Token limit exceeded**: Truncate prompt, retry
+- **Invalid image format**: Return error, suggest re-upload
+- **Network timeout**: Queue for retry with exponential backoff
+- **Quote exceeded**: Disable AI features, notify user
+
+## Monitoring
+
+### Metrics Tracked
+
+- Request count by model and service
+- Response times (p50, p95, p99)
+- Error rates by type
 - Cache hit rates
-- Error rates
-- Cost per request
-- Token efficiency
+- Token usage and costs
+
+### Alerts
+
+- Error rate > 5%
+- Response time > 5s (p95)
+- Daily cost > $50
+- Cache hit rate < 60%
+
+## Decisions
+
+- **Cloudflare AI primary** (2024-04): Edge deployment, integrated billing
+- **Hybrid approach** (2024-06): Reliability over single provider
+- **Vision over OCR** (2024-07): Better for musical notation
+- **Caching aggressive** (2024-08): Reduce costs, improve speed
+- **No training on user data** (2024-09): Privacy first
+
+## Non-Goals
+
+- Custom model training on user data
+- Real-time audio transcription
+- Music generation/composition
+- Optical music recognition (OMR) to MusicXML
+- User-specific model fine-tuning
+
+## Open Questions
+
+- Should we add OpenAI as third provider?
+- When to implement audio transcription?
+- How to handle non-Western musical notation?
+- Should we cache embeddings indefinitely?
+- How to monetize AI features?
+
+## Security & Privacy Considerations
+
+- **Data isolation**: AI requests contain no PII
+- **Regional processing**: Data stays in user's region
+- **No training**: User data never used for model training
+- **Audit logging**: All AI requests logged without content
+- **Rate limiting**: Prevent abuse and cost overruns
+- **Sanitization**: Remove metadata from uploaded images
 
 ## Related Documentation
 
-- [Scorebook](../05-features/scorebook.md) - Score metadata extraction
-- [Dictionary](../05-features/dictionary.md) - Term explanations
-- [Analytics](../05-features/analytics.md) - Pattern analysis
-- [Cloudflare Services](../01-architecture/cloudflare-services.md) - AI platform
+- [Scorebook Feature](../05-features/scorebook.md) - AI metadata extraction details
+- [Dictionary Feature](../05-features/dictionary.md) - AI term generation
+- [Third-Party Integrations](./third-party.md) - External AI providers
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6

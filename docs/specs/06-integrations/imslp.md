@@ -1,477 +1,302 @@
+---
+Spec-ID: SPEC-INT-002
+Title: IMSLP Integration
+Status: 🚧 Experimental
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # IMSLP Integration Specification
 
-## Purpose
+Status: 🚧 Experimental
 
-The IMSLP (International Music Score Library Project) integration provides access to the world's largest collection of public domain sheet music, allowing users to import scores directly into their Mirubato library without manual downloading and uploading.
+## What
 
-## Why IMSLP Integration Matters
+Direct import of public domain sheet music from IMSLP (International Music Score Library Project) into Mirubato's score library.
 
-IMSLP contains over 700,000 scores of public domain music. Without integration, users must:
+## Why
 
-- Navigate IMSLP's complex interface separately
-- Download PDFs manually
-- Re-upload to Mirubato
-- Enter metadata manually
-- Manage duplicate files
+- IMSLP contains 700,000+ public domain scores
+- Manual download/upload workflow is tedious
+- Automatic metadata extraction from IMSLP pages
+- Legal access to vast classical music repertoire
+- Eliminates duplicate work for common scores
 
-Integration streamlines this into a single search-and-import flow while respecting IMSLP's terms of service.
+## How
+
+- Web scraping with respectful rate limiting
+- MediaWiki API for search functionality
+- CDN URL pattern recognition for PDF access
+- Metadata extraction from structured page data
+- Queue-based processing to prevent timeouts
 
 ## Integration Architecture
 
-### IMSLP's Structure Understanding
+### IMSLP Structure
 
-**Key Concepts**:
+**Key Components**:
 
-- **Work Pages**: Compositions (e.g., "Moonlight Sonata")
+- **Work Pages**: Individual compositions
 - **Score Entries**: Different editions/arrangements
-- **File Entries**: Actual PDF files
-- **Contributor Pages**: Uploader information
-- **Copyright Status**: Varies by country
+- **File Entries**: Actual PDFs with metadata
+- **Copyright Tags**: Regional availability
+- **Contributor Info**: Uploader/editor details
 
-### API Limitations and Workarounds
+### Technical Approach
 
-**Reality**: IMSLP has no official API.
+**No Official API**: IMSLP provides no REST API, requiring:
 
-**Approach**: Respectful web scraping with:
+- MediaWiki API for search
+- HTML parsing for metadata
+- CDN URL pattern matching
+- Respectful scraping practices
 
-- Caching to minimize requests
-- Rate limiting (1 request/second)
-- User-Agent identification
-- Robots.txt compliance
-- CDN URL pattern recognition
+## Core Features
 
-## Core Integration Features
+### 1. Search Integration
 
-### 1. Search Interface
+**Search Methods**:
 
-**Purpose**: Find scores without leaving Mirubato.
+- Direct URL import (paste IMSLP link)
+- Title search via MediaWiki API
+- Composer browsing
+- Opus/catalogue number lookup
 
-**Search Strategy**:
+**Implementation**:
 
-```typescript
-interface IMSLPSearch {
-  // Search methods
-  methods: {
-    directUrl: (url: string) => Promise<Score>
-    workTitle: (title: string) => Promise<Work[]>
-    composer: (name: string) => Promise<Composer>
-    catalogue: (opus: string) => Promise<Work[]>
-  }
+- MediaWiki Special:Search endpoint
+- Results parsing and enrichment
+- Thumbnail generation from first page
 
-  // Search flow
-  async search(query: string): Promise<SearchResult> {
-    // 1. Check if query is IMSLP URL
-    if (this.isIMSLPUrl(query)) {
-      return await this.importDirectUrl(query)
-    }
+**Code**: `scores/src/api/handlers/import.ts`
 
-    // 2. Search IMSLP work pages
-    const searchUrl = `https://imslp.org/wiki/Special:Search?search=${encodeURIComponent(query)}`
-    const results = await this.scrapeSearchResults(searchUrl)
+### 2. Metadata Extraction
 
-    // 3. Parse and enrich results
-    return await this.enrichResults(results)
-  }
-}
-```
+**Extracted Fields**:
 
-**Caching Layer**:
+- Title and subtitle
+- Composer (normalized)
+- Opus/catalogue numbers
+- Instrumentation
+- Key signature
+- Time period
+- Publisher information
+- Copyright status
 
-```typescript
-interface IMSLPCache {
-  // Cache work metadata for 30 days
-  works: Map<string, {
-    data: WorkMetadata
-    timestamp: number
-    ttl: 30 * 24 * 60 * 60 * 1000
-  }>
+**Process**:
 
-  // Cache search results for 1 day
-  searches: Map<string, {
-    results: SearchResult[]
-    timestamp: number
-    ttl: 24 * 60 * 60 * 1000
-  }>
+1. Parse IMSLP page structure
+2. Extract from info boxes
+3. Normalize composer names
+4. Validate copyright status
+5. Generate Mirubato metadata
 
-  // Never cache PDFs (respect copyright)
-}
-```
+### 3. PDF Import Flow
 
-### 2. Work Page Parsing
+**Workflow**:
 
-**Purpose**: Extract structured data from IMSLP pages.
-
-**Data Extraction**:
-
-```typescript
-interface WorkPageParser {
-  async parseWorkPage(url: string): Promise<WorkData> {
-    const html = await this.fetchWithCache(url)
-
-    return {
-      // Basic metadata
-      title: this.extractTitle(html),
-      composer: this.extractComposer(html),
-      opus: this.extractOpusNumber(html),
-      key: this.extractKey(html),
-
-      // Musical metadata
-      instrumentation: this.extractInstrumentation(html),
-      movements: this.extractMovements(html),
-      duration: this.extractDuration(html),
-      yearComposed: this.extractYear(html),
-
-      // Available scores
-      scores: this.extractScoreList(html),
-
-      // Copyright status
-      copyright: this.extractCopyright(html),
-
-      // IMSLP specific
-      workId: this.extractWorkId(url),
-      uploadDate: this.extractUploadDate(html),
-      contributor: this.extractContributor(html)
-    }
-  }
-
-  // Extract score download links
-  extractScoreList(html: string): ScoreEntry[] {
-    // Pattern: PDF links follow predictable structure
-    const pattern = /\/files\/imglnks\/usimg\/[a-f0-9]\/[a-f0-9]{2}\/IMSLP\d+-PMLP\d+-[\w-]+\.pdf/g
-    const matches = html.matchAll(pattern)
-
-    return Array.from(matches).map(match => ({
-      url: `https://imslp.org${match[0]}`,
-      description: this.extractDescription(match),
-      pages: this.extractPageCount(match),
-      fileSize: this.extractFileSize(match),
-      publisher: this.extractPublisher(match)
-    }))
-  }
-}
-```
-
-### 3. Score Import Workflow
-
-**Purpose**: Seamlessly import selected scores.
-
-**Import Process**:
-
-```typescript
-interface IMSLPImporter {
-  async importScore(
-    imslpUrl: string,
-    selectedEdition?: ScoreEntry
-  ): Promise<Score> {
-    // 1. Parse work page
-    const workData = await this.parseWorkPage(imslpUrl)
-
-    // 2. Select edition (or use default)
-    const edition = selectedEdition || this.selectBestEdition(workData.scores)
-
-    // 3. Handle copyright warning
-    await this.showCopyrightNotice(workData.copyright)
-
-    // 4. Download PDF (with progress)
-    const pdfBuffer = await this.downloadWithProgress(edition.url)
-
-    // 5. Process as regular upload
-    const file = new File([pdfBuffer], `${workData.title}.pdf`)
-    const score = await this.scoreService.upload(file)
-
-    // 6. Enrich with IMSLP metadata
-    await this.enrichScore(score, workData)
-
-    // 7. Add attribution
-    score.source = 'imslp'
-    score.sourceUrl = imslpUrl
-    score.attribution = `From IMSLP - ${workData.contributor}`
-
-    return score
-  }
-
-  selectBestEdition(scores: ScoreEntry[]): ScoreEntry {
-    // Prefer: Urtext > Clean scan > Most pages > Newest
-    return scores.sort((a, b) => {
-      if (a.description.includes('Urtext')) return -1
-      if (b.description.includes('Urtext')) return 1
-      if (a.quality > b.quality) return -1
-      if (b.quality > a.quality) return 1
-      return b.pages - a.pages
-    })[0]
-  }
-}
-```
-
-### 4. Copyright Compliance
-
-**Purpose**: Respect copyright laws and IMSLP's terms.
-
-**Copyright Handling**:
-
-```typescript
-interface CopyrightCompliance {
-  // Check copyright status
-  async checkCopyright(work: WorkData): Promise<CopyrightStatus> {
-    return {
-      publicDomainUSA: work.copyright.usa === 'public',
-      publicDomainEU: work.copyright.eu === 'public',
-      publicDomainCanada: work.copyright.canada === 'public',
-      userCountry: await this.detectUserCountry(),
-      canImport: this.canImportInCountry(work.copyright, this.userCountry)
-    }
-  }
-
-  // Show appropriate warning
-  async showCopyrightNotice(status: CopyrightStatus) {
-    if (!status.canImport) {
-      throw new Error(`This work is not in public domain in your country (${status.userCountry})`)
-    }
-
-    if (status.restrictions) {
-      await this.showModal({
-        title: 'Copyright Notice',
-        message: status.restrictions,
-        actions: ['I Understand', 'Cancel']
-      })
-    }
-  }
-
-  // IMSLP attribution
-  generateAttribution(work: WorkData): string {
-    return `This score downloaded from IMSLP (https://imslp.org).
-      Work: ${work.title} by ${work.composer}
-      Contributed by: ${work.contributor}
-      IMSLP Work ID: ${work.workId}
-      Downloaded: ${new Date().toISOString()}`
-  }
-}
-```
-
-### 5. Batch Import
-
-**Purpose**: Import multiple movements or complete collections.
-
-**Batch Features**:
-
-```typescript
-interface BatchImport {
-  // Import complete work (all movements)
-  async importCompleteWork(workUrl: string): Promise<Score[]> {
-    const work = await this.parseWorkPage(workUrl)
-    const scores = []
-
-    for (const movement of work.movements) {
-      const score = await this.importScore(movement.url)
-      score.metadata.movement = movement.number
-      score.metadata.movementTitle = movement.title
-      scores.push(score)
-    }
-
-    // Group as collection
-    await this.createCollection({
-      name: work.title,
-      scores: scores.map(s => s.id),
-      description: `Complete ${work.title} imported from IMSLP`
-    })
-
-    return scores
-  }
-
-  // Import composer collection
-  async importComposerWorks(composer: string, filter?: WorkFilter): Promise<Score[]> {
-    const works = await this.searchComposer(composer)
-    const filtered = filter ? works.filter(filter) : works
-
-    // Rate limit batch imports
-    const scores = []
-    for (const work of filtered) {
-      scores.push(await this.importScore(work.url))
-      await this.delay(2000) // 2 seconds between imports
-    }
-
-    return scores
-  }
-}
-```
-
-## User Interface
-
-### Search Interface
-
-```
-┌─────────────────────────────────────┐
-│ Search IMSLP                        │
-│ ┌─────────────────────────────────┐ │
-│ │ 🔍 Beethoven Sonata...          │ │
-│ └─────────────────────────────────┘ │
-├─────────────────────────────────────┤
-│ Results:                            │
-│ ┌─────────────────────────────────┐ │
-│ │ Piano Sonata No.14 (Moonlight)  │ │
-│ │ Ludwig van Beethoven             │ │
-│ │ 12 editions available            │ │
-│ │ [View] [Quick Import]            │ │
-│ └─────────────────────────────────┘ │
-│ ┌─────────────────────────────────┐ │
-│ │ Piano Sonata No.8 (Pathétique)  │ │
-│ │ Ludwig van Beethoven             │ │
-│ │ 8 editions available             │ │
-│ │ [View] [Quick Import]            │ │
-│ └─────────────────────────────────┘ │
-└─────────────────────────────────────┘
-```
-
-### Edition Selection
-
-```
-┌─────────────────────────────────────┐
-│ Select Edition                      │
-├─────────────────────────────────────┤
-│ ⭐ Urtext Edition (Recommended)     │
-│    Publisher: Henle                 │
-│    Pages: 12 | Size: 1.2MB          │
-│    [Preview] [Import]               │
-├─────────────────────────────────────┤
-│ 📄 First Edition                    │
-│    Publisher: Artaria (1802)        │
-│    Pages: 14 | Size: 3.5MB          │
-│    [Preview] [Import]               │
-├─────────────────────────────────────┤
-│ 🎹 Simplified Arrangement           │
-│    Level: Intermediate              │
-│    Pages: 8 | Size: 0.8MB           │
-│    [Preview] [Import]               │
-└─────────────────────────────────────┘
-```
-
-## Performance Optimization
-
-### Request Management
+1. User provides IMSLP URL or searches
+2. System fetches work page
+3. Extracts available PDF options
+4. User selects preferred edition
+5. Download PDF to R2 storage
+6. Process with AI for additional metadata
+7. Add to user's library
 
 **Rate Limiting**:
 
-```typescript
-class RateLimiter {
-  private lastRequest: number = 0
-  private requestQueue: Promise<any>[] = []
+- 1 import per 10 minutes per user
+- Prevents IMSLP server overload
+- Cached results for common scores
 
-  async throttle<T>(request: () => Promise<T>): Promise<T> {
-    const now = Date.now()
-    const timeSinceLastRequest = now - this.lastRequest
+### 4. Copyright Verification
 
-    if (timeSinceLastRequest < 1000) {
-      await this.delay(1000 - timeSinceLastRequest)
-    }
+**Regional Checks**:
 
-    this.lastRequest = Date.now()
-    return await request()
-  }
-}
+- Verify public domain status
+- Check user's region
+- Display appropriate warnings
+- Block copyrighted content
+
+**Rules**:
+
+- Life + 50/70 years varies by country
+- Special rules for editions
+- Government publications
+- Pre-1929 US works
+
+## Technical Implementation
+
+### URL Patterns
+
+**Work Pages**:
+
+```
+https://imslp.org/wiki/{Work_Title}_(Composer_Name)
 ```
 
-### Caching Strategy
+**PDF CDN**:
 
-**Cache Levels**:
+```
+https://imslp.org/wiki/Special:ImagefromIndex/{file_id}
+https://cdn.imslp.org/images/d/d7/{filename}.pdf
+```
 
-1. **Memory Cache**: Recent searches (1 hour)
-2. **KV Cache**: Work metadata (30 days)
-3. **Local Storage**: User's import history
-4. **No PDF Caching**: Respect copyright
+### Scraping Strategy
+
+**Respectful Practices**:
+
+- User-Agent: "Mirubato/1.7.6"
+- Respect robots.txt
+- 1 second delay between requests
+- Cache aggressively
+- Handle 429/503 gracefully
+
+### Caching
+
+**Cache Layers**:
+
+- Work metadata: 30 days
+- Search results: 24 hours
+- PDF URLs: 7 days
+- Never cache actual PDFs
+
+**Storage**:
+
+- KV for metadata
+- No local PDF storage
+- Link to IMSLP for attribution
 
 ## Error Handling
 
 ### Common Issues
 
-| Issue                  | Cause                   | Solution                       |
-| ---------------------- | ----------------------- | ------------------------------ |
-| Page structure changed | IMSLP updates           | Fallback parsers, notify admin |
-| Rate limited           | Too many requests       | Exponential backoff            |
-| PDF download fails     | CDN issues              | Retry with different mirror    |
-| Copyright blocked      | Geographic restrictions | Clear messaging to user        |
-| Work not found         | Removed or moved        | Search alternatives            |
+| Error           | Cause                  | Solution                   |
+| --------------- | ---------------------- | -------------------------- |
+| Page not found  | Work deleted/moved     | Show error, suggest search |
+| PDF unavailable | Copyright or removed   | Explain restrictions       |
+| Parse failure   | Page structure changed | Fallback to manual entry   |
+| Rate limited    | Too many requests      | Queue and retry            |
+| Network timeout | Slow IMSLP servers     | Retry with backoff         |
 
-### Graceful Degradation
+### Fallback Strategies
 
-```typescript
-class IMSLPFallback {
-  async import(query: string): Promise<Score | null> {
-    try {
-      // Try direct import
-      return await this.directImport(query)
-    } catch (e1) {
-      try {
-        // Try search and import
-        return await this.searchAndImport(query)
-      } catch (e2) {
-        // Provide manual instructions
-        return await this.showManualInstructions(query)
-      }
-    }
-  }
-}
-```
+1. **Parsing fails**: Use filename for title
+2. **No PDFs found**: Show work info only
+3. **Copyright blocked**: Explain restrictions
+4. **Server down**: Cache previous results
 
-## Best Practices
+## Performance Optimization
 
-### For Implementation
+### Request Minimization
 
-1. **Respect IMSLP**: Follow robots.txt, rate limit, attribute
-2. **Cache Aggressively**: Minimize requests to IMSLP
-3. **Handle Changes**: IMSLP structure changes regularly
-4. **Clear Attribution**: Always credit IMSLP and contributors
-5. **Copyright First**: Never bypass copyright checks
+- Cache everything possible
+- Batch metadata lookups
+- Reuse search results
+- Share cache across users for public data
 
-### For Users
+### Queue Processing
 
-1. **Verify Editions**: Check quality before importing
-2. **Respect Copyright**: Only import public domain works
-3. **Report Issues**: IMSLP links change frequently
-4. **Support IMSLP**: Consider donating to IMSLP
-5. **Local Backup**: Keep copies of important scores
+- Async import via Cloudflare Queues
+- Prevents Worker timeout
+- Allows retry on failure
+- Progress tracking
+
+## Code References
+
+- Import handler: `scores/src/api/handlers/import.ts`
+- Enhanced import: `scores/src/api/handlers/import-enhanced.ts`
+- Queue consumer: `scores/src/queue-consumer.ts`
+- Types: `scores/src/types/api.ts`
+
+## Operational Limits
+
+- **Import rate**: 1 per 10 minutes per user
+- **Search cache**: 24 hour TTL
+- **Work cache**: 30 day TTL
+- **Max file size**: 50MB PDFs
+- **Timeout**: 30 seconds for import
+
+## Failure Modes
+
+- **IMSLP down**: Use cached data, show notice
+- **Structure change**: Parsing fails, manual fallback
+- **Copyright violation**: Block import, explain
+- **Rate limit hit**: Queue for later
+- **PDF too large**: Reject with error message
+
+## Monitoring
+
+### Metrics
+
+- Import success rate
+- Average import time
+- Cache hit rates
+- Error frequency by type
+- IMSLP response times
+
+### Alerts
+
+- Success rate < 80%
+- Response time > 10s
+- Parsing errors spike
+- Copyright blocks increase
 
 ## Legal Considerations
 
-### Terms of Service Compliance
+### Terms of Service
 
-- Identify as Mirubato in User-Agent
-- Include IMSLP attribution on all imports
-- Respect copyright laws by country
-- Don't circumvent access restrictions
-- No automated mass downloading
+- Respect IMSLP's non-commercial nature
+- Provide attribution and links
+- Don't redistribute PDFs
+- Honor copyright by region
 
-### Attribution Requirements
+### Attribution
 
-Every imported score must include:
+- Always link back to IMSLP work page
+- Credit contributors
+- Display copyright information
+- Include IMSLP disclaimer
 
-- Link back to IMSLP work page
-- Contributor name
-- Download date
-- IMSLP work ID
+## Decisions
 
-## Success Metrics
+- **Scraping over API** (2024-03): No API available
+- **Queue-based import** (2024-05): Prevent timeouts
+- **No PDF storage** (2024-06): Link to IMSLP instead
+- **Aggressive caching** (2024-07): Minimize requests
+- **Rate limiting** (2024-08): Respect IMSLP servers
 
-**Usage Metrics**:
+## Non-Goals
 
-- Daily IMSLP searches
-- Import success rate
-- Edition selection distribution
-- Error rates by type
+- Bulk import of entire collections
+- Automated daily imports
+- IMSLP account integration
+- Upload to IMSLP from Mirubato
+- Circumventing copyright restrictions
 
-**Value Metrics**:
+## Open Questions
 
-- Time saved vs manual process
-- Score library growth rate
-- User retention correlation
-- Repertoire diversity increase
+- Should we contribute improvements back to IMSLP?
+- How to handle IMSLP URL changes?
+- Should we cache PDFs temporarily?
+- How to detect copyright changes?
+- Partnership opportunities with IMSLP?
+
+## Security & Privacy Considerations
+
+- **No user data to IMSLP**: Anonymous requests only
+- **Copyright compliance**: Strict regional checks
+- **Attribution required**: Legal obligation
+- **Rate limiting**: Prevent abuse
+- **Sanitize inputs**: Prevent XSS from scraped content
 
 ## Related Documentation
 
-- [Scorebook](../05-features/scorebook.md) - Score management system
+- [Scorebook Feature](../05-features/scorebook.md) - Score import details
 - [AI Services](./ai-services.md) - Metadata extraction
 - [Third-Party](./third-party.md) - Other integrations
-- [Legal](../appendix/legal.md) - Copyright compliance
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6

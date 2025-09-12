@@ -1,825 +1,274 @@
+---
+Spec-ID: SPEC-INT-003
+Title: Third-Party Integrations
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # Third-Party Integrations Specification
 
-## Purpose
+Status: ✅ Active
 
-Third-party integrations extend Mirubato's capabilities by leveraging specialized external services for authentication, communication, analytics, and content delivery. These integrations are chosen for their reliability, developer experience, and alignment with our edge-first architecture.
+## What
 
-## Why Third-Party Services Matter
+Strategic integration of external services for authentication, communication, AI enhancement, and future capabilities like payments and analytics.
 
-Building everything in-house would require:
+## Why
 
-- Complex authentication systems with security vulnerabilities
-- Email delivery infrastructure with deliverability challenges
-- Content delivery networks with global presence
-- Analytics platforms with real-time processing
-- Payment processing with compliance requirements
+- Core competency focus on music education, not infrastructure
+- Battle-tested services reduce security and reliability risks
+- Global scale without infrastructure investment
+- Compliance and regulatory requirements handled by specialists
+- Cost-effective compared to in-house development
 
-Third-party services provide battle-tested, compliant, and scalable solutions that let us focus on core music education features.
+## How
 
-## Core Integrations
+- Minimal vendor lock-in through abstraction layers
+- Fallback strategies for critical services
+- Edge-compatible services preferred
+- Privacy-first selection criteria
+- Pay-per-use pricing models
 
-### 1. Google OAuth 2.0 - Authentication
+## Integration Categories
 
-**Purpose**: Provide secure, frictionless authentication without managing passwords.
+### Authentication Services
 
-**Why Google OAuth**:
+**Google OAuth 2.0** (✅ Active)
 
-- **User Trust**: Users trust Google with authentication
-- **No Passwords**: Eliminates password fatigue and security risks
-- **Rich Profile**: Access to name, email, and profile picture
-- **Mobile Ready**: Seamless on all devices
-- **Free Tier**: No cost for authentication
+- **Purpose**: Primary authentication provider
+- **Why Google**: User trust, no password management, mobile-ready
+- **Scope**: OpenID, email, profile
+- **Implementation**: OAuth 2.0 authorization code flow
+- **Code**: `api/src/api/handlers/auth.ts`
 
-**Implementation Architecture**:
+**Magic Links** (✅ Active)
 
-```typescript
-interface GoogleOAuthFlow {
-  // 1. Authorization Request
-  initiateAuth(): string {
-    const params = new URLSearchParams({
-      client_id: env.GOOGLE_CLIENT_ID,
-      redirect_uri: `${env.FRONTEND_URL}/auth/callback`,
-      response_type: 'code',
-      scope: 'openid email profile',
-      access_type: 'offline', // For refresh tokens
-      prompt: 'select_account', // Always show account selector
-      state: generateCSRFToken() // Prevent CSRF attacks
-    })
+- **Purpose**: Passwordless authentication alternative
+- **Why**: Simplicity for non-Google users
+- **Flow**: Email token → 15-minute expiry → JWT session
+- **Rate limiting**: 10 requests per hour
+- **Code**: `api/src/api/handlers/auth.ts:145-215`
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params}`
-  }
+### Communication Services
 
-  // 2. Token Exchange
-  async exchangeCode(code: string): Promise<TokenResponse> {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: env.GOOGLE_CLIENT_ID,
-        client_secret: env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${env.FRONTEND_URL}/auth/callback`,
-        grant_type: 'authorization_code'
-      })
-    })
+**Resend** (✅ Active)
 
-    if (!response.ok) {
-      throw new AuthError('Token exchange failed', response.status)
-    }
+- **Purpose**: Transactional email delivery
+- **Why Resend**: Developer experience, deliverability, edge-compatible
+- **Use cases**: Magic links, notifications (future)
+- **Templates**: React Email components
+- **Code**: `api/src/services/email.ts`
 
-    return response.json()
-  }
+### AI & Content Services
 
-  // 3. Profile Retrieval
-  async getUserProfile(accessToken: string): Promise<GoogleProfile> {
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    })
+**Google Gemini** (✅ Active)
 
-    if (!response.ok) {
-      throw new AuthError('Profile fetch failed', response.status)
-    }
+- **Purpose**: AI fallback for complex score analysis
+- **Why Gemini**: Superior vision capabilities, generous free tier
+- **Models**: gemini-1.5-flash, gemini-1.5-pro
+- **Use cases**: Complex score metadata, detailed explanations
+- **Code**: `scores/src/services/geminiAiExtractor.ts`
 
-    return response.json()
-  }
+### Future Integrations
 
-  // 4. User Creation/Update
-  async handleGoogleAuth(profile: GoogleProfile): Promise<User> {
-    // Check if user exists
-    let user = await db.prepare(
-      'SELECT * FROM users WHERE google_id = ? OR email = ?'
-    ).bind(profile.id, profile.email).first()
+**Payment Processing** (🔄 Planned)
 
-    if (!user) {
-      // Create new user
-      user = await this.createUser({
-        google_id: profile.id,
-        email: profile.email,
-        name: profile.name,
-        picture: profile.picture,
-        created_at: new Date().toISOString()
-      })
-    } else {
-      // Update existing user
-      await this.updateUser(user.id, {
-        google_id: profile.id,
-        picture: profile.picture,
-        last_login: new Date().toISOString()
-      })
-    }
+- **Provider**: Stripe (tentative)
+- **Why**: Industry standard, global support, SCA compliance
+- **Features**: Subscriptions, usage-based billing
+- **Timeline**: Version 2.0
 
-    // Generate JWT
-    return await this.generateAuthTokens(user)
-  }
-}
+**Analytics & Monitoring** (🔄 Planned)
+
+- **Options**: PostHog, Plausible, Sentry
+- **Requirements**: Privacy-focused, GDPR compliant
+- **Metrics**: Usage patterns, error tracking, performance
+
+**Music Services** (🔄 Planned)
+
+- **Spotify/Apple Music**: Practice playlist integration
+- **YouTube**: Video lessons and performances
+- **SoundCloud**: User recordings
+
+## Integration Patterns
+
+### Service Abstraction
+
+Each integration wrapped in service layer:
+
+- Consistent error handling
+- Retry logic with exponential backoff
+- Circuit breaker patterns
+- Metric collection
+
+### Configuration Management
+
+- **Secrets**: Wrangler secrets for API keys
+- **Environment**: Per-environment configurations
+- **Feature flags**: Progressive rollout capability
+
+### Error Handling
+
+**Fallback Strategies**:
+
+1. **Primary fails**: Use fallback service
+2. **Fallback fails**: Degrade gracefully
+3. **All fail**: Queue for retry, notify user
+
+**Example: Authentication**:
+
+- Google OAuth → Magic Link → Error message
+
+### Rate Limiting
+
+Per-service limits enforced:
+
+- Google OAuth: 10K/day free tier
+- Resend: 100/day free, 3000/month paid
+- Gemini: 60 requests/minute
+
+## Cost Analysis
+
+### Current Costs (Monthly)
+
+| Service       | Free Tier | Usage       | Cost |
+| ------------- | --------- | ----------- | ---- |
+| Google OAuth  | Unlimited | ~1000 users | $0   |
+| Resend        | 100/day   | ~50/day     | $0   |
+| Google Gemini | 60/min    | ~100/day    | $0   |
+
+### Projected Costs (10K users)
+
+| Service      | Usage        | Cost         |
+| ------------ | ------------ | ------------ |
+| Google OAuth | 10K users    | $0           |
+| Resend       | 500/day      | $20          |
+| Gemini       | 1000/day     | $50          |
+| Stripe       | Transactions | 2.9% + $0.30 |
+
+## Security Framework
+
+### Authentication Security
+
+- **OAuth 2.0**: Industry standard flow
+- **PKCE**: Protection against code interception
+- **State parameter**: CSRF protection
+- **Secure cookies**: HttpOnly, SameSite, Secure
+
+### API Key Management
+
+- **Storage**: Cloudflare secrets
+- **Rotation**: Quarterly for all keys
+- **Access**: Service-specific bindings
+- **Audit**: All usage logged
+
+### Data Privacy
+
+- **Minimal sharing**: Only required data to third-parties
+- **No PII in logs**: Sanitized before external services
+- **User consent**: Explicit for data sharing
+- **GDPR compliance**: Right to deletion supported
+
+## Monitoring & Reliability
+
+### Health Checks
+
+Each integration monitored:
+
+```
+/health/integrations
+├── google-oauth: status, latency
+├── resend: status, queue depth
+└── gemini: status, quota remaining
 ```
 
-**Security Best Practices**:
+### Failure Detection
 
-```typescript
-interface GoogleOAuthSecurity {
-  // CSRF Protection
-  validateState(state: string, session: string): boolean {
-    const expectedState = this.hashState(session)
-    return timingSafeEqual(state, expectedState)
-  }
+- Response time > 5s
+- Error rate > 1%
+- Quota approaching limit
+- Service deprecation notices
 
-  // Token Validation
-  async validateIdToken(idToken: string): Promise<TokenPayload> {
-    const { OAuth2Client } = await import('google-auth-library')
-    const client = new OAuth2Client(env.GOOGLE_CLIENT_ID)
+### Incident Response
 
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: env.GOOGLE_CLIENT_ID
-    })
+1. Automatic fallback activation
+2. User notification if degraded
+3. Manual intervention threshold
+4. Post-incident review
 
-    const payload = ticket.getPayload()
+## Code References
 
-    // Verify critical claims
-    if (payload.aud !== env.GOOGLE_CLIENT_ID) {
-      throw new Error('Invalid audience')
-    }
+### Authentication
 
-    if (payload.iss !== 'accounts.google.com' &&
-        payload.iss !== 'https://accounts.google.com') {
-      throw new Error('Invalid issuer')
-    }
+- Google OAuth: `api/src/api/handlers/auth.ts:274-344`
+- Magic links: `api/src/api/handlers/auth.ts:145-215`
+- JWT utilities: `api/src/utils/auth.ts`
 
-    return payload
-  }
+### Email
 
-  // Secure Storage
-  storeTokens(tokens: TokenSet): void {
-    // Never store tokens in localStorage
-    // Use httpOnly cookies or secure session storage
-    this.session.set('access_token', tokens.access_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: tokens.expires_in
-    })
+- Resend client: `api/src/services/email.ts`
+- Templates: `api/src/templates/`
 
-    if (tokens.refresh_token) {
-      // Store refresh token encrypted in database
-      this.storeRefreshToken(user.id, this.encrypt(tokens.refresh_token))
-    }
-  }
-}
-```
+### AI Services
 
-### 2. Resend - Email Service
+- Gemini client: `scores/src/services/geminiAiExtractor.ts`
+- Hybrid strategy: `scores/src/services/hybridAiExtractor.ts`
 
-**Purpose**: Reliable transactional email delivery for magic links and notifications.
+## Operational Limits
 
-**Why Resend (not SendGrid)**:
+- **Google OAuth**: 10K users/day free
+- **Resend**: 100 emails/day free, 3000/month paid
+- **Gemini**: 60 requests/minute, 1M tokens/day
+- **Future Stripe**: No limits, pay per transaction
 
-- **Developer Experience**: Simple, modern API
-- **Edge Compatible**: Works perfectly with Cloudflare Workers
-- **Cost Effective**: Better pricing for our volume
-- **React Email**: Beautiful email templates with React
-- **Deliverability**: Excellent inbox placement
+## Failure Modes
 
-**Email Types and Templates**:
+- **OAuth unavailable**: Fall back to magic links
+- **Email delivery fails**: Retry queue, show in-app code
+- **AI quota exceeded**: Disable AI features, manual entry
+- **Payment fails**: Retry with different method
 
-```typescript
-interface EmailTemplates {
-  // Magic Link Authentication
-  magicLink: {
-    template: (link: string) => ReactEmail
-    subject: 'Sign in to Mirubato'
-    priority: 'high'
-    expiry: '15 minutes'
-  }
+## Decisions
 
-  // Welcome Email
-  welcome: {
-    template: (user: User) => ReactEmail
-    subject: 'Welcome to Mirubato! 🎼'
-    priority: 'normal'
-    includeOnboarding: true
-  }
+- **Google OAuth primary** (2024-02): User trust and simplicity
+- **Resend over SendGrid** (2024-03): Better DX, edge support
+- **Gemini for vision** (2024-06): Superior to GPT-4V for music
+- **No analytics yet** (2024-08): Privacy-first approach
+- **Stripe planned** (2024-10): Industry standard for payments
 
-  // Practice Reminders
-  practiceReminder: {
-    template: (user: User, lastPractice: Date) => ReactEmail
-    subject: 'Time to practice! Your instruments are waiting'
-    priority: 'low'
-    unsubscribable: true
-  }
+## Non-Goals
 
-  // Goal Achievement
-  goalAchieved: {
-    template: (goal: Goal) => ReactEmail
-    subject: `Congratulations! You achieved "${goal.title}"`
-    priority: 'normal'
-    celebratory: true
-  }
+- Social media authentication (Facebook, Twitter)
+- Enterprise SSO (SAML, LDAP)
+- Custom email infrastructure
+- Self-hosted analytics
+- Cryptocurrency payments
 
-  // Weekly Summary
-  weeklySummary: {
-    template: (stats: WeeklyStats) => ReactEmail
-    subject: 'Your weekly practice summary'
-    priority: 'low'
-    unsubscribable: true
-  }
-}
-```
+## Open Questions
 
-**Resend Integration**:
+- Should we add Apple Sign In for iOS users?
+- When to implement subscription billing?
+- Which analytics platform respects privacy best?
+- Should we integrate music streaming APIs?
+- How to handle GDPR data portability?
 
-```typescript
-class ResendEmailService {
-  private client: Resend
-  private rateLimiter: RateLimiter
+## Security & Privacy Considerations
 
-  constructor(apiKey: string) {
-    this.client = new Resend(apiKey)
-    this.rateLimiter = new RateLimiter({
-      maxPerSecond: 10,
-      maxPerMinute: 100,
-    })
-  }
-
-  async send(email: EmailRequest): Promise<EmailResponse> {
-    // Check rate limits
-    await this.rateLimiter.check(email.to)
-
-    // Validate email
-    if (!this.isValidEmail(email.to)) {
-      throw new ValidationError('Invalid email address')
-    }
-
-    // Check suppression list
-    if (await this.isSuppressed(email.to)) {
-      return { suppressed: true, reason: 'User unsubscribed' }
-    }
-
-    try {
-      const response = await this.client.emails.send({
-        from: 'Mirubato <noreply@mirubato.com>',
-        to: [email.to],
-        subject: email.subject,
-        react: email.template, // React Email component
-        headers: {
-          'X-Entity-Ref-ID': crypto.randomUUID(),
-          'X-Priority': email.priority || 'normal',
-        },
-        tags: [
-          { name: 'type', value: email.type },
-          { name: 'user_id', value: email.userId },
-        ],
-      })
-
-      // Track delivery
-      await this.trackEmail({
-        id: response.id,
-        to: email.to,
-        type: email.type,
-        sentAt: new Date(),
-      })
-
-      return response
-    } catch (error) {
-      // Handle specific errors
-      if (error.statusCode === 429) {
-        throw new RateLimitError('Email rate limit exceeded')
-      }
-
-      if (error.statusCode === 422) {
-        throw new ValidationError('Invalid email content')
-      }
-
-      // Log and rethrow
-      console.error('Email send failed:', error)
-      throw error
-    }
-  }
-
-  // Batch sending for notifications
-  async sendBatch(emails: EmailRequest[]): Promise<BatchResponse> {
-    const chunks = this.chunkEmails(emails, 100) // Resend batch limit
-    const results = []
-
-    for (const chunk of chunks) {
-      const batchResponse = await this.client.batch.send(
-        chunk.map(email => ({
-          from: 'Mirubato <noreply@mirubato.com>',
-          to: email.to,
-          subject: email.subject,
-          react: email.template,
-        }))
-      )
-
-      results.push(batchResponse)
-
-      // Respect rate limits between batches
-      await this.delay(1000)
-    }
-
-    return this.consolidateResults(results)
-  }
-}
-```
-
-**Email Deliverability Best Practices**:
-
-```typescript
-interface DeliverabilityOptimization {
-  // Domain Configuration
-  dnsRecords: {
-    spf: 'v=spf1 include:amazonses.com ~all',
-    dkim: 'resend._domainkey.mirubato.com',
-    dmarc: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@mirubato.com'
-  },
-
-  // Bounce Handling
-  async handleBounce(webhook: ResendWebhook) {
-    if (webhook.type === 'email.bounced') {
-      const bounce = webhook.data
-
-      if (bounce.bounce_type === 'hard') {
-        // Permanent failure - suppress email
-        await this.suppressEmail(bounce.email, 'hard_bounce')
-      } else {
-        // Temporary failure - retry later
-        await this.scheduleRetry(bounce.email, bounce.email_id)
-      }
-    }
-  },
-
-  // Complaint Handling
-  async handleComplaint(webhook: ResendWebhook) {
-    if (webhook.type === 'email.complained') {
-      // User marked as spam - immediately suppress
-      await this.suppressEmail(webhook.data.email, 'spam_complaint')
-      await this.notifyAdmin('Spam complaint received', webhook.data)
-    }
-  },
-
-  // Engagement Tracking
-  async trackEngagement(webhook: ResendWebhook) {
-    const events = ['email.opened', 'email.clicked']
-
-    if (events.includes(webhook.type)) {
-      await this.updateEngagement({
-        email: webhook.data.email,
-        event: webhook.type,
-        timestamp: webhook.created_at
-      })
-    }
-  }
-}
-```
-
-### 3. Magic Link Authentication
-
-**Purpose**: Passwordless authentication via email for users who prefer not to use OAuth.
-
-**Why Magic Links**:
-
-- **No Password Fatigue**: Users don't need another password
-- **Security**: No passwords to leak or crack
-- **Simplicity**: Just click a link in email
-- **Mobile Friendly**: Works seamlessly across devices
-
-**Implementation Flow**:
-
-```typescript
-interface MagicLinkAuth {
-  // Generate secure token
-  async generateMagicLink(email: string): Promise<string> {
-    // Validate email
-    if (!this.isValidEmail(email)) {
-      throw new ValidationError('Invalid email address')
-    }
-
-    // Create or find user
-    let user = await db.prepare(
-      'SELECT * FROM users WHERE email = ?'
-    ).bind(email).first()
-
-    if (!user) {
-      user = await this.createUser({
-        email,
-        auth_method: 'magic_link'
-      })
-    }
-
-    // Generate secure token
-    const token = this.generateSecureToken()
-    const hashedToken = await this.hashToken(token)
-
-    // Store with expiry
-    await db.prepare(`
-      INSERT INTO magic_links (user_id, token_hash, expires_at)
-      VALUES (?, ?, datetime('now', '+15 minutes'))
-    `).bind(user.id, hashedToken).run()
-
-    // Build magic link
-    const magicLink = `${env.FRONTEND_URL}/auth/verify?token=${token}`
-
-    // Send email
-    await this.emailService.send({
-      to: email,
-      type: 'magic_link',
-      template: MagicLinkTemplate({ link: magicLink }),
-      priority: 'high'
-    })
-
-    return { success: true, message: 'Check your email' }
-  }
-
-  // Verify and authenticate
-  async verifyMagicLink(token: string): Promise<AuthResponse> {
-    const hashedToken = await this.hashToken(token)
-
-    // Find valid token
-    const link = await db.prepare(`
-      SELECT ml.*, u.*
-      FROM magic_links ml
-      JOIN users u ON ml.user_id = u.id
-      WHERE ml.token_hash = ?
-        AND ml.expires_at > datetime('now')
-        AND ml.used_at IS NULL
-    `).bind(hashedToken).first()
-
-    if (!link) {
-      throw new AuthError('Invalid or expired link')
-    }
-
-    // Mark as used
-    await db.prepare(`
-      UPDATE magic_links
-      SET used_at = datetime('now')
-      WHERE token_hash = ?
-    `).bind(hashedToken).run()
-
-    // Generate session
-    return await this.createSession(link.user_id)
-  }
-
-  // Security utilities
-  generateSecureToken(): string {
-    return base64url(crypto.getRandomValues(new Uint8Array(32)))
-  }
-
-  async hashToken(token: string): Promise<string> {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(token + env.MAGIC_LINK_SECRET)
-    const hash = await crypto.subtle.digest('SHA-256', data)
-    return base64url(new Uint8Array(hash))
-  }
-}
-```
-
-### 4. Browser Automation (Future)
-
-**Purpose**: Advanced features like automated sheet music import and practice recording.
-
-**Potential Integrations**:
-
-```typescript
-interface FutureIntegrations {
-  // Browserless.io - Headless browser automation
-  browserless: {
-    purpose: 'Screenshot sheet music, PDF rendering'
-    useCase: 'Generate previews of uploaded scores'
-    cost: '$50/month for 1000 hours'
-  }
-
-  // Stripe - Payment processing
-  stripe: {
-    purpose: 'Premium subscriptions, one-time purchases'
-    useCase: 'Monetization when ready'
-    cost: '2.9% + $0.30 per transaction'
-  }
-
-  // PostHog - Product analytics
-  posthog: {
-    purpose: 'User behavior tracking, feature adoption'
-    useCase: 'Understand how users practice'
-    cost: 'Free up to 1M events/month'
-  }
-
-  // Sentry - Error tracking
-  sentry: {
-    purpose: 'Real-time error monitoring'
-    useCase: 'Catch issues before users report'
-    cost: 'Free up to 5K errors/month'
-  }
-
-  // Algolia - Search
-  algolia: {
-    purpose: 'Instant search across scores and repertoire'
-    useCase: 'When catalog grows large'
-    cost: '$0.50 per 1000 requests'
-  }
-}
-```
-
-## Integration Configuration
-
-### Environment Variables
-
-```typescript
-interface IntegrationConfig {
-  // Google OAuth
-  GOOGLE_CLIENT_ID: string // OAuth app client ID
-  GOOGLE_CLIENT_SECRET: string // OAuth app secret
-  GOOGLE_REDIRECT_URI: string // Callback URL
-
-  // Resend Email
-  RESEND_API_KEY: string // API key for Resend
-  RESEND_WEBHOOK_SECRET: string // Webhook signature verification
-  RESEND_FROM_EMAIL: string // Verified sender email
-
-  // Magic Links
-  MAGIC_LINK_SECRET: string // Secret for token hashing
-  MAGIC_LINK_TTL: number // Expiry time in seconds
-
-  // Feature Flags
-  ENABLE_GOOGLE_AUTH: boolean // Toggle Google OAuth
-  ENABLE_MAGIC_LINKS: boolean // Toggle magic links
-  ENABLE_EMAIL_NOTIFICATIONS: boolean // Toggle email notifications
-}
-```
-
-### Security Configuration
-
-```typescript
-interface SecurityConfig {
-  // CORS Settings
-  cors: {
-    origins: ['https://mirubato.com', 'http://localhost:4000']
-    credentials: true
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
-
-  // Rate Limiting
-  rateLimits: {
-    auth: { requests: 5; window: '15m' }
-    email: { requests: 10; window: '1h' }
-    api: { requests: 100; window: '1m' }
-  }
-
-  // Token Settings
-  tokens: {
-    jwt: { algorithm: 'HS256'; expiry: '7d' }
-    refresh: { expiry: '30d'; rotate: true }
-    magicLink: { expiry: '15m'; oneTime: true }
-  }
-
-  // Content Security Policy
-  csp: {
-    'default-src': ["'self'"]
-    'script-src': ["'self'", 'https://accounts.google.com']
-    'connect-src': ["'self'", 'https://api.resend.com']
-    'img-src': ["'self'", 'https://lh3.googleusercontent.com']
-  }
-}
-```
-
-## Error Handling
-
-### Integration Failures
-
-```typescript
-class IntegrationErrorHandler {
-  async handle(error: IntegrationError): Promise<Response> {
-    // Log error with context
-    console.error({
-      service: error.service,
-      operation: error.operation,
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    })
-
-    // Service-specific handling
-    switch (error.service) {
-      case 'google_oauth':
-        return this.handleOAuthError(error)
-
-      case 'resend':
-        return this.handleEmailError(error)
-
-      case 'magic_link':
-        return this.handleMagicLinkError(error)
-
-      default:
-        return this.handleGenericError(error)
-    }
-  }
-
-  handleOAuthError(error: OAuthError): Response {
-    const errorMessages = {
-      invalid_grant: 'Authorization code expired. Please try again.',
-      access_denied: 'You denied access. Please try again.',
-      invalid_client: 'Configuration error. Please contact support.',
-      rate_limit: 'Too many attempts. Please wait and try again.',
-    }
-
-    const message = errorMessages[error.code] || 'Authentication failed'
-
-    return new Response(
-      JSON.stringify({
-        error: 'oauth_error',
-        message,
-        retry: error.retryable,
-      }),
-      { status: error.status || 400 }
-    )
-  }
-
-  handleEmailError(error: EmailError): Response {
-    // Don't expose email failures to user
-    if (error.type === 'delivery_failed') {
-      // Queue for retry
-      this.queueEmailRetry(error.email)
-
-      // Return success to user
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Check your email',
-        })
-      )
-    }
-
-    return new Response(
-      JSON.stringify({
-        error: 'email_error',
-        message: 'Unable to send email. Please try again.',
-      }),
-      { status: 500 }
-    )
-  }
-}
-```
-
-### Fallback Strategies
-
-```typescript
-interface FallbackStrategies {
-  // OAuth Fallback
-  authFallback: async (error: OAuthError) => {
-    // If Google OAuth fails, offer magic link
-    return {
-      fallback: 'magic_link',
-      message: 'Google sign-in unavailable. Use email sign-in instead?'
-    }
-  },
-
-  // Email Fallback
-  emailFallback: async (error: EmailError) => {
-    // If Resend fails, try backup provider or queue
-    if (env.BACKUP_EMAIL_PROVIDER) {
-      return await this.sendViaBackup(error.email)
-    }
-
-    // Queue for later delivery
-    await this.queueEmail(error.email)
-    return { queued: true }
-  },
-
-  // Service Degradation
-  degradedMode: {
-    // Continue working with reduced functionality
-    oauth: false,      // Disable OAuth, use magic links only
-    email: 'queue',    // Queue emails for later delivery
-    analytics: false,  // Disable analytics tracking
-    search: 'basic'    // Fall back to basic search
-  }
-}
-```
-
-## Monitoring and Analytics
-
-### Integration Health Metrics
-
-```typescript
-interface IntegrationMetrics {
-  // OAuth Metrics
-  oauth: {
-    successRate: number // Successful auth / attempts
-    averageLatency: number // Time to complete flow
-    errorRate: number // Failed auths / attempts
-    userConversion: number // Completed / started
-  }
-
-  // Email Metrics
-  email: {
-    deliveryRate: number // Delivered / sent
-    openRate: number // Opened / delivered
-    clickRate: number // Clicked / opened
-    bounceRate: number // Bounced / sent
-    complaintRate: number // Complaints / delivered
-  }
-
-  // Magic Link Metrics
-  magicLink: {
-    requestRate: number // Links requested / day
-    verificationRate: number // Links verified / sent
-    expiryRate: number // Expired / sent
-    averageTimeToClick: number // Time from send to verify
-  }
-}
-```
-
-### Alerting Rules
-
-```typescript
-interface AlertingRules {
-  // Critical Alerts
-  critical: [
-    { metric: 'oauth.errorRate'; threshold: 0.1; window: '5m' },
-    { metric: 'email.deliveryRate'; threshold: 0.8; window: '15m' },
-    { metric: 'magicLink.verificationRate'; threshold: 0.5; window: '1h' },
-  ]
-
-  // Warning Alerts
-  warning: [
-    { metric: 'oauth.averageLatency'; threshold: 3000; window: '10m' },
-    { metric: 'email.bounceRate'; threshold: 0.05; window: '1d' },
-    { metric: 'email.complaintRate'; threshold: 0.001; window: '1d' },
-  ]
-
-  // Info Alerts
-  info: [
-    { metric: 'oauth.userConversion'; threshold: 0.7; window: '1d' },
-    { metric: 'email.openRate'; threshold: 0.2; window: '1w' },
-  ]
-}
-```
-
-## Best Practices
-
-### For Implementation
-
-1. **API Keys Security**: Never commit API keys, use environment variables
-2. **Graceful Degradation**: Always have fallbacks for external services
-3. **Rate Limiting**: Respect third-party rate limits
-4. **Error Handling**: Don't expose internal errors to users
-5. **Monitoring**: Track integration health proactively
-6. **Documentation**: Keep integration docs current
-7. **Testing**: Mock external services in tests
-
-### For Operations
-
-1. **Regular Audits**: Review API usage and costs monthly
-2. **Update Dependencies**: Keep SDKs and libraries current
-3. **Monitor Quotas**: Set up alerts before hitting limits
-4. **Backup Providers**: Have alternatives ready
-5. **Incident Response**: Document recovery procedures
-
-## Cost Management
-
-### Current Monthly Costs (Estimated)
-
-| Service      | Free Tier     | Current Usage | Monthly Cost |
-| ------------ | ------------- | ------------- | ------------ |
-| Google OAuth | Unlimited     | 500 users/mo  | $0           |
-| Resend       | 3,000 emails  | 2,000 emails  | $0           |
-| Cloudflare   | 100k requests | 50k requests  | $0           |
-| **Total**    |               |               | **$0**       |
-
-### Scaling Costs
-
-| Users     | OAuth | Email (Resend) | Total/Month |
-| --------- | ----- | -------------- | ----------- |
-| 1,000     | $0    | $0             | $0          |
-| 10,000    | $0    | $20            | $20         |
-| 100,000   | $0    | $200           | $200        |
-| 1,000,000 | $0    | $2,000         | $2,000      |
-
-## Success Metrics
-
-**Integration Quality**:
-
-- API response times < 500ms
-- Error rates < 1%
-- Uptime > 99.9%
-
-**User Experience**:
-
-- OAuth completion > 80%
-- Email delivery > 95%
-- Magic link verification > 70%
-
-**Business Value**:
-
-- User signup conversion > 60%
-- Authentication success > 95%
-- Support tickets < 1% of users
+- **Vendor security**: Only SOC 2 compliant services
+- **Data minimization**: Request minimal scopes
+- **Audit logging**: Track all third-party calls
+- **Incident response**: Vendor status monitoring
+- **Compliance**: GDPR, CCPA considerations
+- **User control**: Opt-out and data deletion
 
 ## Related Documentation
 
-- [Authentication](../03-api/authentication.md) - Auth system design
-- [API Routes](../03-api/rest-api.md) - API endpoints
-- [Security](../appendix/security.md) - Security practices
-- [Operations](./operations.md) - Monitoring and debugging
+- [Authentication](../03-api/authentication.md) - Auth implementation
+- [AI Services](./ai-services.md) - AI integration details
+- [IMSLP Integration](./imslp.md) - Content integration
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6
