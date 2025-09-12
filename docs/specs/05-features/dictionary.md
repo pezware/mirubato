@@ -315,7 +315,9 @@ interface DictionaryTerm {
 
 ### Search Indexing
 
-**Full-Text Search Setup**:
+Status: 🔄 Planned for FTS5; current implementation uses indexed columns with LIKE + embeddings for semantic search.
+
+**Full-Text Search Setup (Planned)**:
 
 ```sql
 -- SQLite FTS5 for full-text search
@@ -501,3 +503,13 @@ class AIOptimizer {
 ---
 
 _Last updated: 2025-09-09 | Version 1.7.6_
+
+## Operational Limits
+
+- Query performance: LIKE + indexed columns used today; FTS planned.
+- AI usage: responses cached selectively; heavy AI usage limited by providers.
+
+## Failure Modes
+
+- No exact match: fallback to AI explanation when enabled.
+- Language mismatch: returns highest-quality available language when requested not found.

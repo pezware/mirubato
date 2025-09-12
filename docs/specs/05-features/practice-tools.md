@@ -27,7 +27,7 @@ Integrated tools solve this by automatically capturing tool usage as part of the
 
 - **Visual + Audio**: Some musicians need visual cues in loud environments
 - **Pattern Programming**: Complex rhythms need more than basic beats
-- **Auto-logging**: Track when and how metronome practice occurs
+- **Auto-logging**: Track when and how metronome practice occurs (currently disabled)
 - **Tempo Ramping**: Gradually increase tempo for technique building
 
 **Essential Features**:
@@ -157,6 +157,8 @@ interface PracticeSession {
 5. **Automatic Logging**: Create logbook entry on completion
 
 **Integration with Logbook**:
+
+Implementation note: Currently, timer completion opens Manual Entry prefilled with duration/start time; it does not auto-create an entry.
 
 ```typescript
 interface TimerLogbookIntegration {
@@ -334,6 +336,8 @@ interface PracticeCounter {
 
 ### Automatic Usage Logging
 
+Note: Metronome auto-logging is currently disabled.
+
 **What Gets Logged**:
 
 ```typescript
@@ -495,3 +499,13 @@ class ToolCoordinator {
 ---
 
 _Last updated: 2025-09-09 | Version 1.7.6_
+
+## Operational Limits
+
+- Audio contexts must be user-initiated on web; background audio varies by platform.
+- Mobile battery/performance: long-running metronome or timers may be throttled.
+
+## Failure Modes
+
+- Background restrictions can pause audio/timers; checkpointing mitigates loss.
+- Auto-logging disabled for metronome; counter logs directly; timer uses manual entry flow.

@@ -47,7 +47,7 @@ interface ScoreUpload {
     direct: 'Drag & drop or file picker'
     url: 'Import from URL'
     imslp: 'IMSLP integration'
-    scan: 'Mobile camera scan'
+    scan: 'Mobile camera scan' // Planned
   }
 }
 
@@ -115,7 +115,7 @@ interface IMSLPImport {
 
 ```typescript
 interface AIMetadataExtraction {
-  model: '@cf/llava-hf/llava-1.5-7b-hf' // Vision model
+  model: '@cf/meta/llama-3.2-11b-vision-instruct' // Workers AI vision model
 
   async extractFromImage(imageUrl: string): Promise<ScoreMetadata> {
     const response = await env.AI.run(model, {
@@ -149,6 +149,8 @@ interface ScoreMetadata {
 ```
 
 #### OCR for Text Extraction
+
+Status: 🔄 Planned
 
 ```typescript
 async function extractTextFromPDF(pdfUrl: string): Promise<string> {
@@ -224,6 +226,8 @@ class CollectionManager {
 ```
 
 ### 4. Score Viewer
+
+Annotations: 🔄 Planned (annotation layer disabled in current PdfViewer)
 
 #### PDF Rendering
 
@@ -410,6 +414,8 @@ interface ScorePractice {
 ```
 
 #### Practice Mode
+
+Status: 🔄 Planned
 
 ```typescript
 interface PracticeMode {
@@ -604,6 +610,18 @@ async function streamPDF(url: string) {
 ---
 
 ## Code References
+
+## Operational Limits
+
+- File upload: up to ~50MB and ~100 pages per PDF (see upload constraints).
+- Rendering: client-side PDF rendering; very large PDFs may impact performance.
+- AI extraction: uses Workers AI; quality depends on source scan quality.
+
+## Failure Modes
+
+- IMSLP scraping may fail or return incomplete metadata; import still proceeds.
+- AI extraction may be low confidence; fallbacks derive title from filename.
+- R2 availability or network errors can delay preview generation.
 
 - Frontend UI: `frontendv2/src/components/score/{ScoreViewer,PdfViewer,AdaptivePdfViewer,ImageScoreViewer,ImportScoreModal,CollectionsManager,ScoreListItem,ScoreManagement,ScoreControls,AddToCollectionModal}.tsx`
 - Scores service API: `scores/src/api/handlers/{upload,import,render,serveR2}.ts`, `scores/src/services/{uploadService,browser-rendering,hybridAiExtractor}.ts`

@@ -46,6 +46,7 @@ The Logbook is the core feature of Mirubato, allowing musicians to track their p
 - **Purpose**: Real-time practice tracking
 - **Features**:
   - Start/Pause/Stop controls
+  - On stop: opens Manual Entry prefilled with duration/start time (no auto-save)
   - Reminder notifications (configurable interval)
   - Session persistence (survives browser refresh)
   - Background-safe checkpointing; resume on return
@@ -54,10 +55,12 @@ The Logbook is the core feature of Mirubato, allowing musicians to track their p
 
 #### Auto-Logging
 
+- Status: 🔄 Planned where noted
 - **Sources**:
-  - Metronome usage (> 5 minutes)
-  - Scorebook practice sessions
-  - Practice counter completions
+  - Practice counter completions (✅ Active)
+  - Scorebook practice sessions (🔄 Planned)
+  - Metronome usage (🔄 Planned; currently disabled)
+- **Threshold**: Default 60s (configurable per tool)
 - **Data Captured**:
   - Duration
   - Associated piece (if applicable)
@@ -103,6 +106,8 @@ interface Entry {
 - **Filtering**: By date range, instrument, piece
 
 ### 3. Search & Filtering
+
+Status: 🔄 Planned
 
 #### Filter Options
 
@@ -337,6 +342,18 @@ Note: There are no dedicated REST CRUD endpoints for logbook; all writes are via
 - Fitness tracker integration
 - Music streaming service links
 - Teacher assignment system
+
+## Operational Limits
+
+- Local storage: entries/goals cached in `localStorage` (~5–10MB typical browser limits).
+- Real-time: WebSocket reconnects with backoff; offline events are queued until reconnect.
+- Export: CSV/JSON generated client-side; very large datasets may be slow.
+
+## Failure Modes
+
+- Sync push/pull fails: local writes persist; retries occur on next attempt.
+- WebSocket disconnects: falls back to offline queue; reconnects automatically.
+- Timer persistence unavailable: background checkpointing disabled if `localStorage` is blocked.
 
 ## Related Documentation
 

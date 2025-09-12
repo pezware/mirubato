@@ -221,7 +221,7 @@ interface GoalAnalytics {
 
 - CSV for spreadsheet analysis
 - JSON for programmatic access
-- PDF for sharing/printing
+- PDF (🔄 Planned)
 - API access for third-party tools
 
 ## Visualization Guidelines
@@ -405,3 +405,13 @@ async function updateDailyAggregate(date: Date, session: PracticeSession) {
 ---
 
 _Last updated: 2025-09-09 | Version 1.7.6_
+
+## Operational Limits
+
+- Analytics computed client-side; very large histories may be slower on first render.
+- Caching: derived data cached in-memory; invalidated on data changes.
+
+## Failure Modes
+
+- Missing data windows: charts adapt gracefully; tooltips note “no data”.
+- Export errors: client warns when no data available for CSV/JSON.

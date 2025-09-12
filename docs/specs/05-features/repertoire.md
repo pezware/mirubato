@@ -24,8 +24,10 @@ The Repertoire feature solves these problems by providing a structured, data-dri
 **Purpose**: Reflect the natural learning curve of mastering a musical piece.
 
 ```
-Planned → Learning → Working → Polished → Performance Ready
+Planned → Learning → Polished
 ```
+
+Planned statuses: Working, Performance Ready (🔄 Planned)
 
 **Why this progression?**
 
@@ -111,6 +113,8 @@ Where:
 
 ### 3. Smart Practice Suggestions
 
+Status: 🔄 Planned
+
 **What**: AI-driven recommendations for what to practice next.
 
 **Why**: Optimize practice time by focusing on pieces that need attention most.
@@ -136,6 +140,8 @@ interface PracticeSuggestion {
 ```
 
 ### 4. Performance Preparation
+
+Status: 🔄 Planned
 
 **What**: Specialized tracking for pieces being prepared for performance.
 
@@ -229,11 +235,14 @@ Primary View: Status-grouped cards
 
 ### Core Data Model
 
-**Why this structure?**
+Implementation note: Current store/API fields are:
 
-- **Denormalized for performance**: Avoid joins for common queries
-- **History tracking built-in**: Status changes are immutable log
-- **Flexible metadata**: JSON fields for piece-specific data
+- `id`, `scoreId`, `status` (`planned|learning|polished|dropped`),
+- `difficultyRating?`, `personalNotes?`, `referenceLinks?`,
+- `practiceCount`, `totalPracticeTime`, `lastPracticed?`,
+- `createdAt`, `updatedAt`.
+
+Planned model extensions (status history, performance planning, tempos) are outlined below.
 
 ```typescript
 interface RepertoireItem {
@@ -380,3 +389,13 @@ interface StatusChange {
 ---
 
 _Last updated: 2025-09-09 | Version 1.7.6_
+
+## Operational Limits
+
+- Items and stats cached client-side; large repertoires can affect initial load.
+- Real-time events supported for repertoire; offline changes merge on reconnect.
+
+## Failure Modes
+
+- Logbook link failures: practice still saved; repertoire stats update on next sync.
+- Status mismatches: unknown statuses default to `planned|learning|polished|dropped`.
