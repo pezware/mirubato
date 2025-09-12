@@ -1,867 +1,332 @@
+---
+Spec-ID: SPEC-OPS-002
+Title: Performance Optimization
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # Performance Optimization Specification
 
-## Purpose
+Status: ✅ Active
 
-Performance directly impacts user experience, engagement, and retention. This specification defines strategies for achieving and maintaining optimal performance across Mirubato's edge-first architecture, focusing on real-world music education workflows.
+## What
 
-## Why Performance Matters for Musicians
+Comprehensive performance optimization strategy for edge-first music education platform, focusing on real-world musician workflows and global low-latency delivery.
 
-Musicians practice in focused sessions where interruptions break concentration:
+## Why
 
-- **Loading delays** disrupt practice flow
-- **Slow responses** frustrate during logging
-- **Laggy interfaces** interfere with timing-critical tools
-- **Failed syncs** cause data anxiety
+- Musicians need uninterrupted practice flow
+- Loading delays break concentration
+- Slow responses frustrate during logging
+- Poor performance impacts retention
+- Edge computing enables global <50ms latency
 
-Every millisecond matters when capturing the nuances of practice sessions.
+## How
+
+- Edge-first architecture with Cloudflare Workers
+- Aggressive caching at multiple layers
+- Code splitting and lazy loading
+- Offline-first with IndexedDB
+- Performance budgets and monitoring
 
 ## Performance Targets
 
 ### User-Centric Metrics
 
-```typescript
-interface PerformanceTargets {
-  // Core Web Vitals
-  LCP: 2.5 // Largest Contentful Paint (seconds)
-  FID: 100 // First Input Delay (milliseconds)
-  CLS: 0.1 // Cumulative Layout Shift (score)
+**Core Web Vitals**:
 
-  // Application-specific
-  practiceLogSave: 500 // ms - Critical for flow
-  scoreLoad: 2000 // ms - PDF rendering
-  searchResults: 300 // ms - Instant feel
-  syncComplete: 1000 // ms - Background operation
-  metronomeLatency: 10 // ms - Audio precision
+- **LCP** (Largest Contentful Paint): < 2.5s
+- **FID** (First Input Delay): < 100ms
+- **CLS** (Cumulative Layout Shift): < 0.1
 
-  // Perceived performance
-  timeToInteractive: 3000 // ms - App usable
-  offlineReady: 5000 // ms - Cache populated
-}
-```
+**Application-Specific**:
+
+- Practice log save: < 500ms (critical for flow)
+- Score PDF load: < 2s (first page visible)
+- Search results: < 300ms (instant feel)
+- Sync completion: < 1s (background)
+- Metronome latency: < 10ms (audio precision)
+
+**Perceived Performance**:
+
+- Time to Interactive: < 3s
+- Offline ready: < 5s (cache populated)
+- Route transitions: < 200ms
 
 ### Technical Metrics
 
-```typescript
-interface TechnicalTargets {
-  // API Performance
-  api: {
-    p50: 50 // ms - Median
-    p95: 200 // ms - Most requests
-    p99: 500 // ms - Tail latency
-  }
+**API Performance**:
 
-  // Database Performance
-  database: {
-    simpleQuery: 10 // ms - SELECT by ID
-    complexQuery: 100 // ms - JOINs and aggregations
-    writeOperation: 50 // ms - INSERT/UPDATE
-  }
+- P50 latency: < 50ms
+- P95 latency: < 200ms
+- P99 latency: < 500ms
 
-  // Resource Usage
-  resources: {
-    bundleSize: 500 // KB - Initial JS
-    memoryUsage: 50 // MB - Runtime
-    cpuTime: 50 // ms - Per request
-    cacheRatio: 0.8 // 80% cache hits
-  }
-}
-```
+**Database Performance**:
 
-## Frontend Performance
+- Simple query: < 10ms (SELECT by ID)
+- Complex query: < 100ms (JOINs)
+- Write operation: < 50ms
 
-### 1. Bundle Optimization
+**Resource Targets**:
 
-**Purpose**: Minimize JavaScript payload and parse time.
+- Initial bundle: < 500KB gzipped
+- Memory usage: < 50MB runtime
+- CPU time: < 50ms per request
+- Cache hit ratio: > 80%
 
-**Implementation Strategy**:
+## Frontend Optimization
 
-```typescript
-// Vite configuration for optimal bundling
-export default defineConfig({
-  build: {
-    // Code splitting strategy
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Vendor chunks - rarely change
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui', 'clsx', 'tailwind-merge'],
-          'data-vendor': ['zustand', 'immer', 'axios'],
+### Bundle Strategy
 
-          // Feature chunks - lazy loaded
-          'pdf-viewer': ['pdfjs-dist'],
-          'music-notation': ['vexflow', 'abcjs'],
-          analytics: ['chart.js', 'date-fns'],
-        },
+**Code Splitting**:
 
-        // Consistent chunk naming for caching
-        chunkFileNames: chunkInfo => {
-          const facadeModuleId = chunkInfo.facadeModuleId
-            ? chunkInfo.facadeModuleId.split('/').pop()
-            : 'chunk'
-          return `js/${facadeModuleId}-[hash].js`
-        },
-      },
-    },
-
-    // Compression
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.log
-        drop_debugger: true, // Remove debugger
-        pure_funcs: ['console.log', 'console.info'],
-        passes: 2, // Extra compression pass
-      },
-      mangle: {
-        safari10: true, // Safari compatibility
-      },
-    },
-
-    // Tree shaking
-    treeShake: {
-      moduleSideEffects: false,
-      propertyReadSideEffects: false,
-    },
-  },
-})
-```
-
-### 2. Lazy Loading & Code Splitting
-
-**Purpose**: Load code only when needed.
-
-**Route-based Splitting**:
-
-```typescript
-// Lazy load route components
-const routes = [
-  {
-    path: '/',
-    component: lazy(() => import('./pages/Home')),
-    preload: true  // Preload critical routes
-  },
-  {
-    path: '/logbook',
-    component: lazy(() =>
-      import(/* webpackPrefetch: true */ './pages/Logbook')
-    )
-  },
-  {
-    path: '/scorebook',
-    component: lazy(() => import('./pages/Scorebook'))
-  },
-  {
-    path: '/analytics',
-    component: lazy(() => import('./pages/Analytics'))
-  }
-]
-
-// Component-level splitting
-const PDFViewer = lazy(() =>
-  import(/* webpackChunkName: "pdf-viewer" */ './components/PDFViewer')
-)
-
-const MusicNotation = lazy(() =>
-  import(/* webpackChunkName: "music-notation" */ './components/MusicNotation')
-)
-
-// Preload on hover/focus
-function PreloadableLink({ to, children }) {
-  const preload = () => {
-    const route = routes.find(r => r.path === to)
-    if (route?.component) {
-      route.component.preload()
-    }
-  }
-
-  return (
-    <Link
-      to={to}
-      onMouseEnter={preload}
-      onFocus={preload}
-    >
-      {children}
-    </Link>
-  )
-}
-```
-
-### 3. React Performance Patterns
-
-**Purpose**: Minimize unnecessary renders and computations.
+- Route-based splitting (lazy load routes)
+- Component-based (heavy components on demand)
+- Vendor separation (stable dependencies)
+- Feature chunks (PDF viewer, charts)
 
 **Optimization Techniques**:
 
-```typescript
-// Memoization strategies
-const MemoizedComponent = memo(({ data }) => {
-  // Expensive computations
-  const processed = useMemo(() =>
-    expensiveProcessing(data),
-    [data]
-  )
-
-  // Stable callbacks
-  const handleClick = useCallback((id) => {
-    doSomething(id)
-  }, [])
-
-  // Virtualization for large lists
-  const rowVirtualizer = useVirtualizer({
-    count: data.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 50,
-    overscan: 5
-  })
-
-  return (
-    <div ref={parentRef}>
-      {rowVirtualizer.getVirtualItems().map(virtualRow => (
-        <div key={virtualRow.index}>
-          {data[virtualRow.index]}
-        </div>
-      ))}
-    </div>
-  )
-}, (prevProps, nextProps) => {
-  // Custom comparison for memo
-  return prevProps.data.id === nextProps.data.id
-})
-
-// State colocation
-function OptimizedForm() {
-  // Local state for high-frequency updates
-  const [localValue, setLocalValue] = useState('')
-
-  // Debounced global state update
-  const updateGlobal = useDebouncedCallback(
-    (value) => globalStore.update(value),
-    500
-  )
-
-  return (
-    <input
-      value={localValue}
-      onChange={(e) => {
-        setLocalValue(e.target.value)
-        updateGlobal(e.target.value)
-      }}
-    />
-  )
-}
-```
-
-### 4. Asset Optimization
-
-**Purpose**: Minimize network payload for images, fonts, and media.
-
-**Image Optimization**:
-
-```typescript
-// Responsive image loading
-function OptimizedImage({ src, alt }) {
-  return (
-    <picture>
-      <source
-        srcSet={`${src}?w=400 400w, ${src}?w=800 800w`}
-        media="(max-width: 768px)"
-        type="image/webp"
-      />
-      <source
-        srcSet={`${src}?w=800 800w, ${src}?w=1600 1600w`}
-        media="(min-width: 769px)"
-        type="image/webp"
-      />
-      <img
-        src={`${src}?w=800`}
-        alt={alt}
-        loading="lazy"
-        decoding="async"
-      />
-    </picture>
-  )
-}
-
-// Font optimization
-const fontStrategy = {
-  // Critical fonts - preload
-  preload: [
-    '/fonts/inter-var.woff2',      // UI font
-    '/fonts/noto-serif-var.woff2'  // Music titles
-  ],
-
-  // Non-critical - lazy load
-  lazy: [
-    '/fonts/lexend-var.woff2'      // Headers
-  ],
-
-  // Font display strategy
-  css: `
-    @font-face {
-      font-family: 'Inter';
-      src: url('/fonts/inter-var.woff2') format('woff2');
-      font-display: swap;  /* Show fallback immediately */
-      unicode-range: U+0000-00FF; /* Latin only initially */
-    }
-  `
-}
-```
-
-## Backend Performance
-
-### 1. Edge Computing Optimization
-
-**Purpose**: Leverage Cloudflare's global network for minimal latency.
-
-**Edge Strategies**:
-
-```typescript
-class EdgeOptimization {
-  // Smart routing based on user location
-  async routeRequest(request: Request): Promise<Response> {
-    const country = request.headers.get('CF-IPCountry')
-    const colo = request.cf?.colo
-
-    // Route to nearest data center
-    if (this.isDataSensitive(request)) {
-      // Keep in region for compliance
-      return this.routeToRegion(country)
-    }
-
-    // Use closest edge for compute
-    return this.handleAtEdge(request, colo)
-  }
-
-  // Cache at edge location
-  async cacheAtEdge(key: string, data: any): Promise<void> {
-    const cache = caches.default
-
-    // Create cache response with proper headers
-    const response = new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
-        'CDN-Cache-Control': 'max-age=7200',
-        'X-Cache-Key': key,
-        'X-Cache-Time': new Date().toISOString(),
-      },
-    })
-
-    // Store in edge cache
-    await cache.put(new Request(`https://cache.mirubato.com/${key}`), response)
-  }
-
-  // Coalesce duplicate requests
-  private pendingRequests = new Map()
-
-  async coalesceRequest(key: string, fetcher: () => Promise<any>) {
-    // Check if request is already pending
-    if (this.pendingRequests.has(key)) {
-      return this.pendingRequests.get(key)
-    }
-
-    // Start new request
-    const promise = fetcher().finally(() => {
-      this.pendingRequests.delete(key)
-    })
-
-    this.pendingRequests.set(key, promise)
-    return promise
-  }
-}
-```
-
-### 2. Database Query Optimization
-
-**Purpose**: Minimize D1 query latency and resource usage.
-
-**Query Optimization**:
-
-```typescript
-class QueryOptimizer {
-  // Prepared statement caching
-  private statements = new Map()
-
-  async prepare(sql: string): Promise<D1PreparedStatement> {
-    if (!this.statements.has(sql)) {
-      this.statements.set(sql, db.prepare(sql))
-    }
-    return this.statements.get(sql)
-  }
-
-  // Batch operations
-  async batchInsert(table: string, records: any[]): Promise<void> {
-    const chunks = this.chunk(records, 100) // D1 batch limit
-
-    for (const chunk of chunks) {
-      const placeholders = chunk
-        .map(
-          () =>
-            `(${Object.keys(chunk[0])
-              .map(() => '?')
-              .join(',')})`
-        )
-        .join(',')
-
-      const sql = `
-        INSERT INTO ${table} 
-        (${Object.keys(chunk[0]).join(',')})
-        VALUES ${placeholders}
-      `
-
-      const params = chunk.flatMap(record => Object.values(record))
-      await db
-        .prepare(sql)
-        .bind(...params)
-        .run()
-    }
-  }
-
-  // Query result caching
-  async cachedQuery<T>(
-    sql: string,
-    params: any[],
-    ttl: number = 300
-  ): Promise<T> {
-    const cacheKey = this.getCacheKey(sql, params)
-
-    // Check cache
-    const cached = await kv.get(cacheKey, 'json')
-    if (cached) return cached as T
-
-    // Execute query
-    const result = await db
-      .prepare(sql)
-      .bind(...params)
-      .first()
-
-    // Cache result
-    await kv.put(cacheKey, JSON.stringify(result), {
-      expirationTtl: ttl,
-    })
-
-    return result as T
-  }
-
-  // Index usage verification
-  async verifyIndexUsage(sql: string): Promise<boolean> {
-    const plan = await db.prepare(`EXPLAIN QUERY PLAN ${sql}`).all()
-
-    // Check for table scans
-    const hasTableScan = plan.results.some(row =>
-      row.detail?.includes('SCAN TABLE')
-    )
-
-    if (hasTableScan) {
-      console.warn(`Query uses table scan: ${sql}`)
-      return false
-    }
-
-    return true
-  }
-}
-```
-
-### 3. API Response Optimization
-
-**Purpose**: Minimize response size and time.
-
-**Response Strategies**:
-
-```typescript
-class ResponseOptimizer {
-  // Compression
-  async compress(response: Response): Promise<Response> {
-    const acceptEncoding = request.headers.get('Accept-Encoding') || ''
-
-    if (acceptEncoding.includes('br')) {
-      // Brotli compression
-      return new Response(await this.brotliCompress(await response.text()), {
-        headers: {
-          ...response.headers,
-          'Content-Encoding': 'br',
-        },
-      })
-    } else if (acceptEncoding.includes('gzip')) {
-      // Gzip compression
-      return new Response(await this.gzipCompress(await response.text()), {
-        headers: {
-          ...response.headers,
-          'Content-Encoding': 'gzip',
-        },
-      })
-    }
-
-    return response
-  }
-
-  // Pagination
-  async paginate(
-    query: string,
-    page: number = 1,
-    limit: number = 20
-  ): Promise<PaginatedResponse> {
-    const offset = (page - 1) * limit
-
-    // Get total count
-    const countResult = await db
-      .prepare(query.replace(/SELECT .* FROM/, 'SELECT COUNT(*) as count FROM'))
-      .first()
-
-    // Get page data
-    const dataResult = await db
-      .prepare(`${query} LIMIT ? OFFSET ?`)
-      .bind(limit, offset)
-      .all()
-
-    return {
-      data: dataResult.results,
-      meta: {
-        page,
-        limit,
-        total: countResult.count,
-        totalPages: Math.ceil(countResult.count / limit),
-      },
-    }
-  }
-
-  // Field filtering
-  filterFields(data: any, fields?: string[]): any {
-    if (!fields || fields.length === 0) return data
-
-    if (Array.isArray(data)) {
-      return data.map(item => this.pick(item, fields))
-    }
-
-    return this.pick(data, fields)
-  }
-
-  // ETag support
-  async withETag(data: any): Promise<Response> {
-    const etag = await this.generateETag(data)
-
-    // Check if client has current version
-    if (request.headers.get('If-None-Match') === etag) {
-      return new Response(null, { status: 304 })
-    }
-
-    return new Response(JSON.stringify(data), {
-      headers: {
-        ETag: etag,
-        'Cache-Control': 'private, must-revalidate',
-      },
-    })
-  }
-}
-```
-
-## Caching Strategy
-
-### 1. Multi-Layer Cache Architecture
-
-**Purpose**: Minimize latency through strategic caching.
-
-```typescript
-interface CacheLayers {
-  // L1: In-memory (request lifetime)
-  memory: {
-    size: '10MB'
-    ttl: 'request'
-    use: 'Hot data, computed values'
-  }
-
-  // L2: KV Store (edge location)
-  kv: {
-    size: 'unlimited'
-    ttl: '5-60 minutes'
-    use: 'User sessions, API responses'
-  }
-
-  // L3: CDN Cache (global)
-  cdn: {
-    size: 'unlimited'
-    ttl: '1-24 hours'
-    use: 'Static assets, public data'
-  }
-
-  // L4: Browser Cache (client)
-  browser: {
-    size: '50MB'
-    ttl: '1-7 days'
-    use: 'Assets, offline data'
-  }
-}
-
-// Cache invalidation strategy
-class CacheInvalidation {
-  // Tag-based invalidation
-  async invalidateByTag(tag: string): Promise<void> {
-    // Clear KV entries with tag
-    const keys = await kv.list({ prefix: `tag:${tag}:` })
-    await Promise.all(keys.keys.map(key => kv.delete(key.name)))
-
-    // Purge CDN cache
-    await this.purgeCDN({ tag })
-  }
-
-  // Time-based invalidation
-  scheduleInvalidation(key: string, ttl: number): void {
-    setTimeout(() => this.invalidate(key), ttl * 1000)
-  }
-
-  // Event-based invalidation
-  async onDataChange(event: DataChangeEvent): Promise<void> {
-    const affectedKeys = this.getAffectedKeys(event)
-    await Promise.all(affectedKeys.map(key => this.invalidate(key)))
-  }
-}
-```
-
-### 2. Cache Warming
-
-**Purpose**: Preload cache with frequently accessed data.
-
-```typescript
-class CacheWarming {
-  // Warm cache on deployment
-  async warmOnDeploy(): Promise<void> {
-    const criticalQueries = [
-      'SELECT * FROM instruments',
-      'SELECT * FROM composers ORDER BY name',
-      'SELECT * FROM popular_scores LIMIT 20',
-    ]
-
-    for (const query of criticalQueries) {
-      const result = await db.prepare(query).all()
-      await this.cacheResult(query, result)
-    }
-  }
-
-  // Predictive warming
-  async predictiveWarm(userId: string): Promise<void> {
-    // Analyze user patterns
-    const patterns = await this.analyzeUserPatterns(userId)
-
-    // Preload likely next actions
-    if (patterns.usuallyViewsRepertoire) {
-      await this.warmRepertoire(userId)
-    }
-
-    if (patterns.oftenChecksStats) {
-      await this.warmAnalytics(userId)
-    }
-  }
-
-  // Background warming
-  async backgroundWarm(): Promise<void> {
-    // Use Cron trigger for off-peak warming
-    const staleKeys = await this.findStaleKeys()
-
-    for (const key of staleKeys) {
-      // Refresh cache before expiry
-      await this.refresh(key)
-
-      // Spread load
-      await this.delay(100)
-    }
-  }
-}
-```
+- Tree shaking for dead code elimination
+- Minification and compression
+- Dynamic imports for optional features
+- Preload critical resources
+
+**Implementation**: Vite with manual chunks configuration
+
+### Loading Performance
+
+**Progressive Enhancement**:
+
+1. Critical CSS inline
+2. Shell UI immediate
+3. Core JS interactive
+4. Enhanced features progressive
+5. Offline capability last
+
+**Asset Optimization**:
+
+- Images: WebP with JPEG fallback
+- Fonts: Subset and preload
+- Icons: SVG sprites
+- Code: Brotli compression
+
+### Runtime Performance
+
+**React Optimizations**:
+
+- Memo for expensive components
+- Virtual scrolling for long lists
+- Debounced inputs
+- Optimistic UI updates
+
+**State Management**:
+
+- Zustand for minimal overhead
+- Selective subscriptions
+- Computed values cached
+- Batch state updates
+
+## Backend Optimization
+
+### Edge Computing
+
+**Cloudflare Workers Benefits**:
+
+- No cold starts (V8 isolates warm)
+- Global distribution (300+ locations)
+- Automatic scaling
+- Sub-50ms latency worldwide
+
+**Service Architecture**:
+
+- Microservices for isolation
+- Independent scaling
+- Service-specific optimization
+- Failure isolation
+
+### Database Performance
+
+**D1 Optimization**:
+
+- Prepared statements
+- Appropriate indexes
+- Query optimization
+- Connection pooling
+
+**Query Patterns**:
+
+- Batch operations when possible
+- Avoid N+1 queries
+- Use projections (SELECT specific columns)
+- Pagination for large results
+
+### Caching Strategy
+
+**Multi-Layer Caching**:
+
+1. **Browser Cache**: Static assets (1 year)
+2. **Service Worker**: App shell and data
+3. **CDN Cache**: Cloudflare edge
+4. **KV Cache**: API responses
+5. **Database Cache**: Query results
+
+**Cache Invalidation**:
+
+- Version-based for assets
+- TTL for dynamic content
+- Event-based for user data
+- Manual purge for critical updates
 
 ## Network Optimization
 
-### 1. Request Optimization
+### Request Optimization
 
-**Purpose**: Minimize network round trips and payload size.
+**Strategies**:
 
-```typescript
-class NetworkOptimizer {
-  // Request batching
-  async batchRequests(requests: APIRequest[]): Promise<any[]> {
-    const response = await fetch('/api/batch', {
-      method: 'POST',
-      body: JSON.stringify({ requests }),
-      headers: { 'Content-Type': 'application/json' },
-    })
+- HTTP/2 multiplexing
+- Request coalescing
+- Batch API calls
+- GraphQL for flexible queries (future)
 
-    return response.json()
-  }
+**Compression**:
 
-  // GraphQL-style field selection
-  async fetchWithFields(endpoint: string, fields: string[]): Promise<any> {
-    const params = new URLSearchParams({
-      fields: fields.join(','),
-    })
+- Brotli for text assets
+- WebP for images
+- Streaming for large responses
+- Range requests for PDFs
 
-    return fetch(`${endpoint}?${params}`)
-  }
+### Real-time Performance
 
-  // HTTP/2 Server Push
-  pushAssets(response: Response): Response {
-    response.headers.append('Link', '</app.js>; rel=preload; as=script')
-    response.headers.append('Link', '</app.css>; rel=preload; as=style')
-    return response
-  }
+**WebSocket Optimization**:
 
-  // Connection pooling
-  private connections = new Map()
+- Connection pooling
+- Message batching
+- Binary protocols for efficiency
+- Heartbeat optimization
 
-  getConnection(origin: string): Connection {
-    if (!this.connections.has(origin)) {
-      this.connections.set(origin, new Connection(origin))
-    }
-    return this.connections.get(origin)
-  }
-}
-```
+**Sync Strategy**:
 
-### 2. Progressive Enhancement
+- Differential sync (changes only)
+- Compression for payloads
+- Conflict-free data types
+- Queue for offline changes
 
-**Purpose**: Provide basic functionality immediately, enhance progressively.
+## Monitoring & Measurement
 
-```typescript
-// Progressive data loading
-function ProgressiveList() {
-  const [items, setItems] = useState([])
-  const [enhanced, setEnhanced] = useState(false)
+### Performance Budgets
 
-  // Load basic data immediately
-  useEffect(() => {
-    fetchBasicItems().then(setItems)
-  }, [])
+**Enforcement**:
 
-  // Enhance with additional data
-  useEffect(() => {
-    if (items.length > 0 && !enhanced) {
-      enhanceItems(items).then(enhanced => {
-        setItems(enhanced)
-        setEnhanced(true)
-      })
-    }
-  }, [items, enhanced])
+- Build-time checks
+- Runtime monitoring
+- Automated alerts
+- PR blocking for violations
 
-  return <ItemList items={items} enhanced={enhanced} />
-}
+**Budget Allocation**:
 
-// Progressive image loading
-function ProgressiveImage({ src, placeholder }) {
-  const [currentSrc, setCurrentSrc] = useState(placeholder)
+- JavaScript: 300KB
+- CSS: 50KB
+- Images: 200KB
+- Fonts: 100KB
+- Total: 650KB
 
-  useEffect(() => {
-    // Load low quality immediately
-    const lowQuality = new Image()
-    lowQuality.src = `${src}?q=10&w=50`
-    lowQuality.onload = () => setCurrentSrc(lowQuality.src)
+### Metrics Collection
 
-    // Load high quality in background
-    const highQuality = new Image()
-    highQuality.src = src
-    highQuality.onload = () => setCurrentSrc(highQuality.src)
-  }, [src])
+**Real User Monitoring (RUM)**:
 
-  return <img src={currentSrc} loading="lazy" />
-}
-```
+- Core Web Vitals tracking
+- Custom metrics (practice save time)
+- Geographic performance
+- Device-specific metrics
 
-## Monitoring & Optimization Cycle
+**Synthetic Monitoring**:
 
-### Performance Monitoring
+- Lighthouse CI in pipeline
+- WebPageTest automation
+- Custom user journey tests
 
-```typescript
-class PerformanceMonitor {
-  // Real User Monitoring (RUM)
-  collectRUM(): void {
-    // Web Vitals
-    new PerformanceObserver(list => {
-      for (const entry of list.getEntries()) {
-        this.sendMetric({
-          name: entry.name,
-          value: entry.startTime,
-          type: 'web-vital',
-        })
-      }
-    }).observe({ entryTypes: ['largest-contentful-paint'] })
+## Mobile Optimization
 
-    // Custom metrics
-    performance.mark('practice-session-start')
-    // ... user practices ...
-    performance.mark('practice-session-end')
-    performance.measure(
-      'practice-session-duration',
-      'practice-session-start',
-      'practice-session-end'
-    )
-  }
+### Mobile-First Design
 
-  // Synthetic monitoring
-  async runSynthetic(): Promise<SyntheticResults> {
-    const tests = [
-      this.testCriticalPath(),
-      this.testAPIEndpoints(),
-      this.testDatabaseQueries(),
-      this.testCachePerformance(),
-    ]
+**Strategies**:
 
-    return Promise.all(tests)
-  }
+- Touch-optimized interactions
+- Reduced data usage
+- Offline resilience
+- Battery efficiency
 
-  // Alerting thresholds
-  checkThresholds(metrics: Metrics): Alert[] {
-    const alerts = []
+**Specific Optimizations**:
 
-    if (metrics.p95 > 500) {
-      alerts.push({
-        level: 'warning',
-        message: 'P95 latency exceeds 500ms',
-      })
-    }
+- Image lazy loading
+- Reduced animations
+- Simplified UI on small screens
+- Network-aware loading
 
-    if (metrics.errorRate > 0.01) {
-      alerts.push({
-        level: 'critical',
-        message: 'Error rate exceeds 1%',
-      })
-    }
+## Code References
 
-    return alerts
-  }
-}
-```
+- Bundle config: `frontendv2/vite.config.ts`
+- Service Worker: `frontendv2/src/service-worker.ts`
+- Cache utilities: `*/src/utils/cache.ts`
+- Performance monitoring: `frontendv2/src/utils/performance.ts`
 
-## Success Metrics
+## Operational Limits
 
-**User Experience**:
+- Max bundle size: 1MB uncompressed
+- Max request time: 10s (Worker limit)
+- Max memory: 128MB (Worker limit)
+- Cache size: 50MB (browser)
+- Concurrent requests: 6 (browser)
 
-- Page load time < 2 seconds
-- Time to interactive < 3 seconds
-- Practice log save < 500ms
-- Zero perceived lag in metronome
-- Offline capability within 5 seconds
+## Failure Modes
 
-**Technical Excellence**:
+- **Cache miss cascade**: Too many origin requests
+- **Bundle bloat**: Slow initial load
+- **Memory leaks**: Page becomes sluggish
+- **Network congestion**: Sync queue overflow
+- **CPU throttling**: Janky animations
 
-- API p95 latency < 200ms
-- Cache hit ratio > 80%
-- Zero downtime deployments
-- Bundle size < 500KB
-- Memory usage < 50MB
+## Decisions
 
-**Business Impact**:
+- **Edge-first architecture** (2024-01): Global low latency
+- **Vite over Webpack** (2024-02): Faster builds, better DX
+- **IndexedDB over localStorage** (2024-03): Better performance for large data
+- **WebSocket over polling** (2025-07): Real-time with less overhead
+- **500KB bundle target** (2024-05): Balance features vs load time
 
-- Session duration increase
-- Practice frequency improvement
-- User retention rate
-- Feature adoption speed
-- Support ticket reduction
+## Non-Goals
+
+- Server-side rendering (edge SPA is sufficient)
+- Native mobile apps (PWA approach)
+- IE11 support (modern browsers only)
+- Perfect offline (eventual consistency acceptable)
+- Sub-10ms latency (physics limits)
+
+## Open Questions
+
+- Should we implement service-side rendering for SEO?
+- When to add CDN for static assets beyond Cloudflare?
+- How aggressive should cache invalidation be?
+- Need for WebAssembly for heavy computations?
+- Trade-offs for offline vs bundle size?
+
+## Security & Privacy Considerations
+
+- **Cache security**: No sensitive data in public caches
+- **Performance monitoring**: No PII in metrics
+- **Compression**: Avoid BREACH attacks
+- **Resource timing**: Prevent timing attacks
+- **Bundle analysis**: No secrets in client code
 
 ## Related Documentation
 
-- [Architecture](../01-architecture/overview.md) - System design
-- [Monitoring](./monitoring-debugging.md) - Observability
-- [Frontend](../04-frontend/architecture.md) - Client optimization
-- [Database](../02-database/schema.md) - Query performance
+- [Monitoring & Debugging](./monitoring-debugging.md) - Performance monitoring
+- [Architecture Overview](../01-architecture/overview.md) - System design
+- [Frontend Architecture](../04-frontend/architecture.md) - Client optimization
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6
