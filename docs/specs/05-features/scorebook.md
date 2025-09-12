@@ -1,16 +1,34 @@
+---
+Spec-ID: SPEC-FEAT-002
+Title: Scorebook - Sheet Music Management
+Status: 🚧 Experimental
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # Scorebook Feature Specification
 
 Status: 🚧 Experimental
 
-## Overview
+## What
 
-The Scorebook is Mirubato's comprehensive sheet music management system, providing PDF storage, AI-powered metadata extraction, collection organization, and seamless integration with practice tracking. It leverages Cloudflare R2 for storage and Workers AI for intelligent processing.
+Comprehensive sheet music management system with PDF storage, AI metadata extraction, collection organization, and practice integration.
 
-## Implementation Notes
+## Why
 
-- Frontend (this repo): score viewing/controls, imports UI, and collection management live under `frontendv2/src/components/score/*`.
-- Scores service (server): upload/import pipelines, R2 storage, IMSLP scraping, and AI metadata extraction live under `scores/src/**`.
-- Keep this spec focused on intent; see Code References for exact implementations.
+- Musicians need organized digital sheet music libraries
+- Manual metadata entry is time-consuming and error-prone
+- IMSLP integration enables access to public domain scores
+- Practice tracking requires tight score integration
+
+## How
+
+- Upload PDFs to Cloudflare R2 storage
+- Extract metadata using Workers AI
+- Organize into collections and repertoire
+- Integrate with practice logging
+- Enable IMSLP import for public domain scores
 
 ## User Stories
 
@@ -35,596 +53,236 @@ The Scorebook is Mirubato's comprehensive sheet music management system, providi
 
 #### File Upload
 
-```typescript
-interface ScoreUpload {
-  // Supported formats
-  formats: ['pdf', 'jpg', 'png', 'jpeg']
-  maxFileSize: 50 * 1024 * 1024 // 50MB
-  maxPages: 100
+- **Supported formats**: PDF, JPG, PNG, JPEG
+- **Max file size**: 50MB
+- **Max pages**: 100 per PDF
+- **Upload methods**: Direct upload, URL import, IMSLP integration, mobile scan (planned)
 
-  // Upload methods
-  methods: {
-    direct: 'Drag & drop or file picker'
-    url: 'Import from URL'
-    imslp: 'IMSLP integration'
-    scan: 'Mobile camera scan' // Planned
-  }
-}
+**Upload Workflow**:
 
-// Upload workflow
-async function uploadScore(file: File): Promise<Score> {
-  // 1. Validate file
-  validateFile(file)
+1. Validate file format and size
+2. Generate unique score ID
+3. Upload to R2 storage
+4. Extract metadata via AI
+5. Generate thumbnail preview
+6. Save metadata to database
 
-  // 2. Generate unique ID
-  const scoreId = crypto.randomUUID()
-
-  // 3. Upload to R2
-  const fileUrl = await uploadToR2(file, scoreId)
-
-  // 4. Extract metadata
-  const metadata = await extractMetadata(fileUrl)
-
-  // 5. Generate preview
-  const thumbnail = await generateThumbnail(fileUrl)
-
-  // 6. Save to database
-  return await saveScore({
-    id: scoreId,
-    title: metadata.title || file.name,
-    composer: metadata.composer,
-    fileUrl,
-    thumbnailUrl: thumbnail,
-    pages: metadata.pageCount,
-  })
-}
-```
+**Code**: `scores/src/api/handlers/upload.ts`, `scores/src/services/uploadService.ts`
 
 #### IMSLP Integration
 
-```typescript
-interface IMSLPImport {
-  searchUrl: 'https://imslp.org/wiki/Special:Search'
-  apiUrl: 'https://imslp.org/api.php'
+- **Search API**: MediaWiki API for catalog search
+- **Import flow**: Scrape page → Extract PDF URL → Download → Process
+- **Metadata extraction**: Title, composer, opus, key from page structure
+- **Rate limiting**: 1 import per 10 minutes per user
 
-  async search(query: string): Promise<IMSLPResult[]> {
-    // Search IMSLP catalog
-    const results = await fetch(`${this.apiUrl}?action=query&list=search&srsearch=${query}`)
-    return parseIMSLPResults(results)
-  }
-
-  async import(imslpUrl: string): Promise<Score> {
-    // 1. Fetch IMSLP page
-    const pageData = await fetchIMSLPPage(imslpUrl)
-
-    // 2. Extract PDF URL
-    const pdfUrl = extractPDFUrl(pageData)
-
-    // 3. Download PDF
-    const pdfBuffer = await downloadPDF(pdfUrl)
-
-    // 4. Process as regular upload
-    return uploadScore(new File([pdfBuffer], 'score.pdf'))
-  }
-}
-```
+**Code**: `scores/src/api/handlers/import.ts`, `scores/src/services/imslpScraper.ts`
 
 ### 2. AI Metadata Extraction
 
-#### Cloudflare AI Integration
+#### Hybrid AI Approach
 
-```typescript
-interface AIMetadataExtraction {
-  model: '@cf/meta/llama-3.2-11b-vision-instruct' // Workers AI vision model
+- **Primary**: Cloudflare Workers AI for text extraction
+- **Fallback**: OpenAI GPT-3.5 for complex scores
+- **Extraction targets**: Title, composer, opus, key, tempo, difficulty
+- **Confidence scoring**: Weights AI responses by reliability
 
-  async extractFromImage(imageUrl: string): Promise<ScoreMetadata> {
-    const response = await env.AI.run(model, {
-      image: await fetch(imageUrl).then(r => r.arrayBuffer()),
-      prompt: `Extract the following from this sheet music:
-        - Title of the piece
-        - Composer name
-        - Opus number if visible
-        - Key signature
-        - Time signature
-        - Tempo marking
-        - Instrument(s)
-        Return as JSON.`,
-    })
+**Processing Pipeline**:
 
-    return parseAIResponse(response)
-  }
-}
+1. Convert first page to image
+2. Run OCR and pattern matching
+3. Extract structured metadata
+4. Normalize composer names
+5. Assign confidence scores
 
-interface ScoreMetadata {
-  title?: string
-  composer?: string
-  opus?: string
-  key?: string // 'C major', 'A minor', etc.
-  timeSignature?: string // '4/4', '3/4', etc.
-  tempo?: string // 'Allegro', 'Andante', etc.
-  instruments?: string[]
-  difficulty?: number // 1-10 scale
-  period?: string // 'Baroque', 'Classical', 'Romantic', etc.
-}
-```
+**Code**: `scores/src/services/hybridAiExtractor.ts`, `scores/src/services/ai/cloudflareAi.ts`
 
-#### OCR for Text Extraction
+### 3. Collections & Organization
 
-Status: 🔄 Planned
+#### System Collections
 
-```typescript
-async function extractTextFromPDF(pdfUrl: string): Promise<string> {
-  // Use Cloudflare's Browser Rendering API
-  const browser = await env.BROWSER.fetch(pdfUrl)
+- **Curated collections**: Platform-managed, featured collections
+- **Categories**: Beginner, Classical, Romantic, Modern, Etudes, Seasonal
+- **Metadata**: Name, description, cover image, featured flag
+- **Management**: Admin-only creation and curation
 
-  // Extract text from each page
-  const pages = await browser.pdf.getPages()
-  const textContent = await Promise.all(pages.map(page => page.extractText()))
+**Code**: `scores/src/api/handlers/collections.ts`
 
-  return textContent.join('\n')
-}
-```
+#### User Collections
 
-### 3. Collections Management
+- **Personal libraries**: User-created collections
+- **Visibility levels**: Private, public, shared
+- **Sharing**: Generate shareable links
+- **Collaboration**: Future support for shared editing
 
-#### Collection Structure
-
-```typescript
-interface Collection {
-  id: string
-  name: string
-  description?: string
-  coverImageUrl?: string
-  isPublic: boolean
-  scoreIds: string[]
-  tags: string[]
-  createdBy: string
-  sharedWith: string[] // User IDs
-  createdAt: number
-  updatedAt: number
-}
-
-// Collection operations
-class CollectionManager {
-  async createCollection(data: Partial<Collection>): Promise<Collection> {
-    const collection = {
-      id: crypto.randomUUID(),
-      name: data.name!,
-      description: data.description,
-      isPublic: data.isPublic || false,
-      scoreIds: [],
-      tags: data.tags || [],
-      createdBy: this.userId,
-      sharedWith: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-
-    await db.collections.add(collection)
-    return collection
-  }
-
-  async addToCollection(collectionId: string, scoreIds: string[]) {
-    const collection = await db.collections.get(collectionId)
-    collection.scoreIds = [...new Set([...collection.scoreIds, ...scoreIds])]
-    collection.updatedAt = Date.now()
-    await db.collections.update(collectionId, collection)
-  }
-
-  async shareCollection(collectionId: string, userIds: string[]) {
-    const collection = await db.collections.get(collectionId)
-    collection.sharedWith = [...new Set([...collection.sharedWith, ...userIds])]
-    await db.collections.update(collectionId, collection)
-
-    // Send notifications
-    await notifyUsers(
-      userIds,
-      `Collection "${collection.name}" shared with you`
-    )
-  }
-}
-```
+**Code**: `scores/src/api/handlers/user-collections.ts`
 
 ### 4. Score Viewer
 
-Annotations: 🔄 Planned (annotation layer disabled in current PdfViewer)
-
 #### PDF Rendering
 
-```typescript
-interface PDFViewer {
-  // Using PDF.js or similar
-  currentPage: number
-  totalPages: number
-  zoom: number
-  rotation: 0 | 90 | 180 | 270
+- **Adaptive rendering**: PDF.js for desktop, images for mobile
+- **Page navigation**: Thumbnails, page numbers, keyboard shortcuts
+- **Zoom controls**: Fit width, fit page, custom zoom
+- **Full-screen mode**: Distraction-free viewing
 
-  // Navigation
-  goToPage(page: number): void
-  nextPage(): void
-  previousPage(): void
-
-  // View modes
-  viewMode: 'single' | 'double' | 'continuous'
-  fitMode: 'width' | 'height' | 'page'
-
-  // Annotations
-  annotations: Annotation[]
-  addAnnotation(annotation: Annotation): void
-  removeAnnotation(id: string): void
-}
-
-interface Annotation {
-  id: string
-  page: number
-  type: 'highlight' | 'text' | 'drawing'
-  position: { x: number; y: number }
-  content: string | Path2D
-  color: string
-  createdAt: number
-}
-```
+**Code**: `frontendv2/src/components/score/PdfViewer.tsx`, `frontendv2/src/components/score/AdaptivePdfViewer.tsx`
 
 #### Mobile Optimization
 
-```typescript
-// Touch gestures for mobile
-class MobilePDFViewer {
-  // Pinch to zoom
-  handlePinch(scale: number) {
-    this.zoom = Math.max(0.5, Math.min(3, this.zoom * scale))
-  }
+- **Image-based rendering**: Pre-rendered pages as images
+- **Progressive loading**: Load pages as needed
+- **Touch gestures**: Pinch to zoom, swipe to navigate
+- **Offline caching**: IndexedDB storage for offline viewing
 
-  // Swipe to change pages
-  handleSwipe(direction: 'left' | 'right') {
-    if (direction === 'left') this.nextPage()
-    if (direction === 'right') this.previousPage()
-  }
+**Code**: `frontendv2/src/components/score/ImageScoreViewer.tsx`
 
-  // Double tap to zoom
-  handleDoubleTap(point: { x: number; y: number }) {
-    if (this.zoom === 1) {
-      this.zoomTo(2, point)
-    } else {
-      this.zoomTo(1, { x: 0.5, y: 0.5 })
-    }
-  }
-}
-```
+### 5. Practice Integration
 
-### 5. Search & Discovery
+#### Score-Based Practice Logging
 
-#### Advanced Search
+- **Quick log**: One-click practice session creation
+- **Auto-fill metadata**: Score title, composer pre-populated
+- **Page tracking**: Record which pages were practiced
+- **Duration tracking**: Automatic or manual timer
 
-```typescript
-interface ScoreSearch {
-  // Search fields
-  query?: string // Full-text search
-  composer?: string
-  period?: string
-  instrument?: string
-  difficulty?: { min: number; max: number }
-  key?: string
-  timeSignature?: string
+**Code**: `frontendv2/src/components/score/ScoreListItem.tsx`
 
-  // Filters
-  hasAudio?: boolean
-  hasVideo?: boolean
-  isPublic?: boolean
-  inCollection?: string
+#### Practice Mode (Planned)
 
-  // Sorting
-  sortBy: 'relevance' | 'title' | 'composer' | 'difficulty' | 'recent'
-  order: 'asc' | 'desc'
-}
+- **Metronome integration**: Sync with practice timer
+- **Auto-scroll**: Configurable scroll speed
+- **Annotation overlay**: Mark problem spots
+- **Session recording**: Audio/video capture
 
-async function searchScores(params: ScoreSearch): Promise<Score[]> {
-  let query = db.scores.where('userId').equals(this.userId)
+### 6. Repertoire Management
 
-  if (params.composer) {
-    query = query.and(score =>
-      score.normalizedComposer?.includes(params.composer!.toLowerCase())
-    )
-  }
+#### Status Tracking
 
-  if (params.difficulty) {
-    query = query.and(
-      score =>
-        score.difficulty >= params.difficulty!.min &&
-        score.difficulty <= params.difficulty!.max
-    )
-  }
+- **Status levels**: Planned → Learning → Working → Polished → Performance Ready
+- **Difficulty rating**: Personal assessment 1-10
+- **Personal notes**: Free-form text per piece
+- **Progress history**: Timeline of status changes
 
-  const results = await query.toArray()
+**Code**: `api/src/api/handlers/repertoire.ts`
 
-  // Apply full-text search if needed
-  if (params.query) {
-    return searchWithFTS(results, params.query)
-  }
+#### Analytics
 
-  return sortResults(results, params.sortBy, params.order)
-}
-```
+- **Practice metrics**: Total time, session count, last practiced
+- **Progress tracking**: Status change frequency
+- **Difficulty progression**: Track skill development
+- **Goal integration**: Link pieces to practice goals
 
-#### Composer Canonicalization
+## Architecture
 
-```typescript
-// Standardize composer names
-const COMPOSER_CANONICAL = {
-  Bach: 'Johann Sebastian Bach',
-  'J.S. Bach': 'Johann Sebastian Bach',
-  Beethoven: 'Ludwig van Beethoven',
-  'L. van Beethoven': 'Ludwig van Beethoven',
-  Mozart: 'Wolfgang Amadeus Mozart',
-  'W.A. Mozart': 'Wolfgang Amadeus Mozart',
-  // ... extensive mapping
-}
+### Storage
 
-function normalizeComposer(input: string): string {
-  // Check canonical mapping
-  if (COMPOSER_CANONICAL[input]) {
-    return COMPOSER_CANONICAL[input]
-  }
+- **R2 Buckets**: PDF files and generated images
+- **D1 Database**: Metadata, collections, user data
+- **KV Cache**: Rendered pages, search results
 
-  // Fuzzy matching for variations
-  const normalized = input.trim().toLowerCase()
-  for (const [key, value] of Object.entries(COMPOSER_CANONICAL)) {
-    if (normalized.includes(key.toLowerCase())) {
-      return value
-    }
-  }
+### Processing
 
-  return input
-}
-```
-
-### 6. Practice Integration
-
-#### Link to Logbook
-
-```typescript
-interface ScorePractice {
-  scoreId: string
-  pages: number[] // Pages practiced
-  duration: number
-  notes?: string
-
-  async logPractice(data: ScorePractice) {
-    // Create logbook entry
-    const entry = await logbookStore.addEntry({
-      type: 'practice',
-      duration: data.duration,
-      scorePages: [{
-        scoreId: data.scoreId,
-        pages: data.pages,
-      }],
-      notes: data.notes,
-    })
-
-    // Update score stats
-    await this.updateScoreStats(data.scoreId, {
-      totalPracticeTime: increment(data.duration),
-      lastPracticedAt: Date.now(),
-      practiceCount: increment(1),
-    })
-
-    return entry
-  }
-}
-```
-
-#### Practice Mode
-
-Status: 🔄 Planned
-
-```typescript
-interface PracticeMode {
-  score: Score
-  currentPage: number
-  metronomeEnabled: boolean
-  metronomeBPM: number
-  timerRunning: boolean
-  startTime: number
-
-  // Auto-scroll
-  autoScroll: boolean
-  scrollSpeed: number // pixels per second
-
-  // Annotations during practice
-  practiceNotes: Map<number, string> // Page -> notes
-  problemSpots: Array<{
-    page: number
-    measure: number
-    description: string
-  }>
-
-  async finishPractice() {
-    const duration = Date.now() - this.startTime
-
-    // Log practice session
-    await this.logPractice({
-      scoreId: this.score.id,
-      pages: Array.from(this.practiceNotes.keys()),
-      duration,
-      notes: Array.from(this.practiceNotes.values()).join('\n'),
-    })
-
-    // Save problem spots for next time
-    await this.saveProblemSpots(this.score.id, this.problemSpots)
-  }
-}
-```
-
-## User Interface
-
-### Desktop Layout
-
-```
-┌─────────────────────────────────────────────────┐
-│ [Upload] [Import IMSLP] [Search] [Filter] [View] │
-├─────────────────────────────────────────────────┤
-│ Collections      │  Scores Grid/List              │
-│ ┌─────────────┐  │  ┌──────┐ ┌──────┐ ┌──────┐ │
-│ │ All Scores   │  │  │      │ │      │ │      │ │
-│ │ Classical    │  │  │Score │ │Score │ │Score │ │
-│ │ Romantic     │  │  │Thumb │ │Thumb │ │Thumb │ │
-│ │ Modern       │  │  └──────┘ └──────┘ └──────┘ │
-│ │ + Collection │  │  Title     Title     Title    │
-│ └─────────────┘  │  Composer  Composer  Composer │
-└─────────────────────────────────────────────────┘
-```
-
-### Mobile Layout
-
-```
-┌─────────────────┐
-│ Scorebook    [+] │
-├─────────────────┤
-│ [All] [Recent]   │
-│ [Collections]    │
-├─────────────────┤
-│ ┌─────────────┐  │
-│ │ Score Card  │  │
-│ │ Thumbnail   │  │
-│ │ Title       │  │
-│ │ Composer    │  │
-│ └─────────────┘  │
-│ ┌─────────────┐  │
-│ │ Score Card  │  │
-│ └─────────────┘  │
-└─────────────────┘
-```
-
-## Data Storage
-
-### R2 Bucket Structure
-
-```
-mirubato-scores/
-├── scores/
-│   ├── {userId}/
-│   │   ├── {scoreId}/
-│   │   │   ├── original.pdf
-│   │   │   ├── page-1.jpg
-│   │   │   ├── page-2.jpg
-│   │   │   └── thumbnail.jpg
-├── temp/
-│   └── uploads/
-└── public/
-    └── shared/
-```
-
-### Database Schema
-
-```typescript
-interface ScoreRecord {
-  id: string
-  userId: string
-  title: string
-  composer?: string
-  normalizedComposer?: string
-  opus?: string
-  key?: string
-  timeSignature?: string
-  tempo?: string
-  difficulty?: number
-  pages: number
-  duration?: number // estimated performance time
-  instruments?: string[]
-  tags?: string[]
-  fileUrl: string // R2 URL
-  thumbnailUrl?: string
-  source: 'upload' | 'imslp' | 'import'
-  sourceUrl?: string // Original source
-  isPublic: boolean
-  aiMetadata?: object // Raw AI extraction
-  practiceStats?: {
-    totalTime: number
-    sessionCount: number
-    lastPracticed: number
-  }
-  createdAt: number
-  updatedAt: number
-}
-```
-
-## Performance Optimization
-
-### Lazy Loading
-
-```typescript
-// Load scores progressively
-const PAGE_SIZE = 20
-
-async function loadScores(page = 0) {
-  const scores = await db.scores
-    .orderBy('createdAt')
-    .reverse()
-    .offset(page * PAGE_SIZE)
-    .limit(PAGE_SIZE)
-    .toArray()
-
-  // Preload thumbnails
-  scores.forEach(score => {
-    if (score.thumbnailUrl) {
-      new Image().src = score.thumbnailUrl
-    }
-  })
-
-  return scores
-}
-```
-
-### PDF Optimization
-
-```typescript
-// Stream large PDFs
-async function streamPDF(url: string) {
-  const response = await fetch(url)
-  const reader = response.body!.getReader()
-  const chunks: Uint8Array[] = []
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    chunks.push(value)
-
-    // Start rendering after first chunk
-    if (chunks.length === 1) {
-      renderFirstPage(chunks[0])
-    }
-  }
-
-  return new Blob(chunks, { type: 'application/pdf' })
-}
-```
-
-## Related Documentation
-
-- [Scores Service API](../03-api/service-apis.md#scores-service-api) - Backend implementation
-- [AI Services](../06-integrations/ai-services.md) - AI metadata extraction
-- [IMSLP Integration](../06-integrations/imslp.md) - Sheet music import
-- [Repertoire](./repertoire.md) - Repertoire tracking
-
----
+- **Queue-based**: Async processing for imports and rendering
+- **Workers AI**: Metadata extraction and OCR
+- **Browser Rendering API**: PDF to image conversion
 
 ## Code References
 
+### Frontend Components
+
+- Score viewing: `frontendv2/src/components/score/ScoreViewer.tsx`
+- PDF rendering: `frontendv2/src/components/score/PdfViewer.tsx`
+- Mobile viewer: `frontendv2/src/components/score/ImageScoreViewer.tsx`
+- Import modal: `frontendv2/src/components/score/ImportScoreModal.tsx`
+- Collections: `frontendv2/src/components/score/CollectionsManager.tsx`
+
+### Backend Services
+
+- Upload handler: `scores/src/api/handlers/upload.ts`
+- Import handler: `scores/src/api/handlers/import.ts`
+- AI extraction: `scores/src/services/hybridAiExtractor.ts`
+- IMSLP scraper: `scores/src/services/imslpScraper.ts`
+- R2 storage: `scores/src/api/handlers/serveR2.ts`
+
+### Database
+
+- Scores table: `scores/migrations/0001_initial_schema.sql`
+- Collections: `scores/migrations/0011_create_user_collections_table.sql`
+- Analytics: `scores/migrations/0001_initial_schema.sql`
+
 ## Operational Limits
 
-- File upload: up to ~50MB and ~100 pages per PDF (see upload constraints).
-- Rendering: client-side PDF rendering; very large PDFs may impact performance.
-- AI extraction: uses Workers AI; quality depends on source scan quality.
+- **File size**: 50MB maximum per PDF
+- **Page count**: 100 pages maximum per PDF
+- **Import rate**: 1 IMSLP import per 10 minutes
+- **Collection size**: 1000 scores per collection
+- **Render timeout**: 30 seconds for PDF processing
+- **AI extraction**: 10 seconds timeout
 
 ## Failure Modes
 
-- IMSLP scraping may fail or return incomplete metadata; import still proceeds.
-- AI extraction may be low confidence; fallbacks derive title from filename.
-- R2 availability or network errors can delay preview generation.
+- **Upload failures**: Network interruption → Retry with resume
+- **AI extraction fails**: Low confidence → Fallback to filename parsing
+- **IMSLP unavailable**: Scraping fails → Manual metadata entry
+- **R2 unavailable**: Storage errors → Queue for retry
+- **PDF corrupt**: Rendering fails → Show error, allow re-upload
+- **Rate limit hit**: Too many imports → Show cooldown timer
 
-- Frontend UI: `frontendv2/src/components/score/{ScoreViewer,PdfViewer,AdaptivePdfViewer,ImageScoreViewer,ImportScoreModal,CollectionsManager,ScoreListItem,ScoreManagement,ScoreControls,AddToCollectionModal}.tsx`
-- Scores service API: `scores/src/api/handlers/{upload,import,render,serveR2}.ts`, `scores/src/services/{uploadService,browser-rendering,hybridAiExtractor}.ts`
-- R2 wiring/config: `scores/wrangler.toml`, `scores/src/api/handlers/serveR2.ts`
+## Performance Optimization
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+### Caching Strategy
+
+- **KV cache**: Rendered pages cached for 7 days
+- **Browser cache**: Static assets with long TTL
+- **IndexedDB**: Offline score storage
+
+### Rendering Optimization
+
+- **Lazy loading**: Render pages on demand
+- **Progressive enhancement**: Low-res preview → High-res on zoom
+- **Streaming**: Start rendering before full download
+
+## Decisions
+
+- **R2 over D1 for files** (2024-03): Binary storage optimized for large files
+- **Hybrid AI approach** (2024-06): Cloudflare AI primary, OpenAI fallback
+- **Image rendering for mobile** (2024-07): Better performance than PDF.js
+- **Queue-based processing** (2024-08): Prevents timeout on large files
+- **Composer canonicalization** (2024-09): Consistent naming across system
+
+## Non-Goals
+
+- Music notation editing (view-only)
+- MIDI/MusicXML playback (PDF focus)
+- Copyright content detection (user responsibility)
+- Optical music recognition (OMR)
+- Real-time collaboration on scores
+
+## Open Questions
+
+- Should we support ABC notation or LilyPond formats?
+- How to handle very large scores (>100 pages)?
+- When to implement annotation persistence?
+- Should we add score recommendation engine?
+- How to monetize premium features?
+
+## Security & Privacy Considerations
+
+- **File validation**: Check MIME types and magic bytes
+- **Virus scanning**: Consider ClamAV integration
+- **Access control**: User can only access own scores
+- **Sharing permissions**: Explicit consent for public scores
+- **CORS policies**: Restrict R2 access to app domain
+- **Rate limiting**: Prevent abuse of AI and import features
+
+## Related Documentation
+
+- [Scores Service API](../03-api/service-apis.md#scores-service-api)
+- [AI Services](../06-integrations/ai-services.md)
+- [IMSLP Integration](../06-integrations/imslp.md)
+- [Repertoire](./repertoire.md)
+
+---
+
+Last updated: 2025-09-11 | Version 1.7.6

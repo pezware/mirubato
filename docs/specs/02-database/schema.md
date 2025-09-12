@@ -1,15 +1,28 @@
+---
+Spec-ID: SPEC-DB-001
+Title: Database Schema Design
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # Database Schema Specification
 
-**What**: Service-isolated D1 databases with migration-driven schema evolution.
+Status: ✅ Active
 
-**Why**:
+## What
+
+Service-isolated D1 databases with migration-driven schema evolution.
+
+## Why
 
 - Service autonomy enables independent schema changes
 - D1 provides edge SQL with automatic replication
 - Migration-only changes ensure reproducible deployments
 - JSON columns provide flexibility without schema changes
 
-**How**:
+## How
 
 - Each service owns its D1 database binding
 - All changes via numbered SQL migrations
@@ -262,6 +275,42 @@
 - Performance: updated_at for sync
 - Search: composer, instrument, difficulty
 
+## Failure Modes
+
+- **Migration failures**: Rollback to previous version, restore from backup
+- **D1 connection exhaustion**: Connection pooling, prepared statements
+- **2GB database limit**: Archive old data, implement data retention policies
+- **Query timeout (10s)**: Add indexes, optimize queries, paginate results
+
+## Decisions
+
+- **D1 over PostgreSQL** (2024-01): Edge-native SQL with automatic replication
+- **Service-isolated databases** (2024-02): Enables independent schema evolution
+- **Soft deletes in sync_data** (2024-03): Preserve audit trail and enable recovery
+- **JSON for flexible fields** (2024-04): Avoid frequent schema changes
+- **No foreign key constraints** (2024-05): D1 limitation, enforce in application
+
+## Non-Goals
+
+- Cross-service JOINs (service isolation principle)
+- Database-level replication (handled by Cloudflare)
+- Stored procedures/triggers (limited D1 support)
+- Full-text search (use KV or external service)
+
+## Open Questions
+
+- When to implement data archival for the 2GB limit?
+- Should we add read replicas for analytics queries?
+- How to handle schema versioning for mobile/offline clients?
+
+## Security & Privacy Considerations
+
+- **User isolation**: All queries filtered by user_id
+- **No PII in logs**: Query parameters sanitized
+- **Encryption**: Data encrypted at rest by Cloudflare
+- **Retention**: Soft deletes preserve data for recovery
+- **Access control**: Service-level database isolation
+
 ## Related Documentation
 
 - [Migrations](./migrations.md) — Migration strategy and procedures
@@ -270,4 +319,4 @@
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6

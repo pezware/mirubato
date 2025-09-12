@@ -1,3 +1,12 @@
+---
+Spec-ID: SPEC-API-001
+Title: REST API Specification
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # REST API Specification
 
 Status: ✅ Active
@@ -97,6 +106,34 @@ Note: There are no REST endpoints for logbook CRUD; log data is managed via Sync
 - Goals: `api/src/api/handlers/goals.ts`
 - Health: `api/src/api/handlers/health.ts`
 
+## Decisions
+
+- **JWT over sessions** (2024-01): Stateless auth for edge computing
+- **Sync-centric design** (2024-03): Offline-first requires batch sync operations
+- **Idempotency keys** (2024-08): Prevent duplicate sync operations
+- **Cookie + Bearer auth** (2024-04): Support both browser and API clients
+
+## Non-Goals
+
+- GraphQL API (REST is sufficient)
+- Webhook callbacks (use WebSocket for real-time)
+- Pagination (client-side filtering preferred)
+- API versioning (single version, backward compatible)
+
+## Open Questions
+
+- Should we add OpenAPI client generation?
+- When to implement rate limit headers?
+- How to handle API deprecation notices?
+
+## Security & Privacy Considerations
+
+- **Auth**: JWT in HttpOnly cookies, 30-day expiry
+- **CORS**: Explicit origin allowlist
+- **Rate limiting**: Applied per endpoint
+- **Data isolation**: User ID validated on all queries
+- **Audit**: Request IDs for tracing
+
 ## Related Documentation
 
 - [Authentication](./authentication.md)
@@ -106,4 +143,4 @@ Note: There are no REST endpoints for logbook CRUD; log data is managed via Sync
 
 ---
 
-Last updated: 2025-09-09 | Version from `/openapi.json`
+Last updated: 2025-09-11 | Version 1.7.6

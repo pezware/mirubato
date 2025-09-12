@@ -1,10 +1,33 @@
+---
+Spec-ID: SPEC-FEAT-001
+Title: Logbook - Practice Tracking
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # Logbook Feature Specification
 
 Status: ✅ Active
 
-## Overview
+## What
 
-The Logbook is the core feature of Mirubato, allowing musicians to track their practice sessions with detailed metadata, analytics, and synchronization across devices. It supports manual entry, timer-based tracking, and automatic logging from other features.
+Core practice tracking system with manual entry, timer mode, auto-logging, and cross-device synchronization.
+
+## Why
+
+- Musicians need to track practice consistency and progress
+- Manual entry alone is cumbersome; timer and auto-logging improve compliance
+- Analytics help identify patterns and motivate improvement
+- Cross-device sync enables logging from any device
+
+## How
+
+- Store practice sessions in sync_data table as entity_type='logbook_entry'
+- Real-time WebSocket sync for instant updates across devices
+- Offline-first with IndexedDB and sync queue
+- Analytics via aggregation of practice data
 
 ## User Stories
 
@@ -71,26 +94,13 @@ The Logbook is the core feature of Mirubato, allowing musicians to track their p
 
 #### List View
 
-```typescript
-interface LogbookEntryDisplay {
-  // Grouped by date
-  date: string // "Today", "Yesterday", "December 1, 2024"
-  totalDuration: number // Daily total
-  entries: Entry[]
-}
-
-interface Entry {
-  id: string
-  time: string // "2:30 PM"
-  duration: string // "45 min"
-  type: EntryType
-  instrument?: string
-  pieces?: string // "Composer - Title" format
-  mood?: Mood
-  notes?: string // Collapsible
-  tags?: string[]
-}
-```
+- **Grouping**: Entries grouped by date with daily totals
+- **Date headers**: "Today", "Yesterday", or specific dates
+- **Entry display**: Time, duration, type, instrument, pieces
+- **Piece format**: "Composer - Title" display
+- **Collapsible notes**: Notes hidden by default, expandable
+- **Tags**: Visual tag badges
+- **Quick actions**: Edit, delete, duplicate
 
 #### Calendar View
 
@@ -122,9 +132,10 @@ Status: 🔄 Planned
 
 #### Search Syntax
 
-```
-piece:"Moonlight Sonata" AND mood:satisfied AND duration:>30
-```
+- **Field search**: piece:"Moonlight Sonata"
+- **Operators**: AND, OR, NOT
+- **Comparisons**: duration:>30
+- **Wildcards**: composer:Beethoven\*
 
 ### 4. Bulk Operations (Planned)
 
@@ -157,14 +168,13 @@ piece:"Moonlight Sonata" AND mood:satisfied AND duration:>30
 
 #### Sync Events
 
-```typescript
-type SyncEvent =
-  | { type: 'ENTRY_CREATED'; entry: LogbookEntry }
-  | { type: 'ENTRY_UPDATED'; entry: LogbookEntry }
-  | { type: 'ENTRY_DELETED'; entryId: string }
-  | { type: 'BULK_SYNC'; entries: LogbookEntry[] }
-  | { type: 'SYNC_REQUEST' }
-```
+- **ENTRY_CREATED**: New practice session added
+- **ENTRY_UPDATED**: Existing entry modified
+- **ENTRY_DELETED**: Entry removed
+- **BULK_SYNC**: Multiple entries synchronized
+- **SYNC_REQUEST**: Client requests full sync
+
+````
 
 ### 7. Analytics Integration
 
@@ -201,7 +211,7 @@ stores/logbookStore.ts (selected actions)
 - updateEntry(id, updates): Promise<void>
 - deleteEntry(id): Promise<void>
 - enableRealtimeSync(): Promise<boolean>
-```
+````
 
 ### Data & Sync
 
@@ -355,21 +365,52 @@ Note: There are no dedicated REST CRUD endpoints for logbook; all writes are via
 - WebSocket disconnects: falls back to offline queue; reconnects automatically.
 - Timer persistence unavailable: background checkpointing disabled if `localStorage` is blocked.
 
-## Related Documentation
-
-- [API Specification](../03-api/rest-api.md) - API endpoints
-- [Database Schema](../02-database/schema.md) - Data structure
-- [WebSocket Protocol](../03-api/websocket.md) - Real-time sync
-- [Analytics](./analytics.md) - Reporting features
-
 ## Code References
 
 - Store/API: `frontendv2/src/stores/logbookStore.ts`, `frontendv2/src/api/logbook.ts`
-- UI: `frontendv2/src/components/logbook/PracticeLogsList.tsx`, `frontendv2/src/components/ManualEntryForm.tsx`, `frontendv2/src/components/logbook/LogbookSplitView.tsx`
-- UI primitives: `frontendv2/src/components/ui/{CompactEntryRow,DateSeparator}.tsx`
-- Timer: `frontendv2/src/contexts/TimerContext.tsx`, `frontendv2/src/components/timer/{TimerWidget,TimerSettings}.tsx`
+- UI: `frontendv2/src/components/logbook/PracticeLogsList.tsx`, `frontendv2/src/components/ManualEntryForm.tsx`
+- Timer: `frontendv2/src/contexts/TimerContext.tsx`, `frontendv2/src/components/timer/TimerWidget.tsx`
 - Sync: `frontendv2/src/services/webSocketSync.ts`
+
+## Decisions
+
+- **Sync-based storage** (2024-03): All data in sync_data table for unified sync
+- **WebSocket over polling** (2025-07): Real-time sync replaced 30-second polling
+- **Collapsible notes** (2025-08): Better mobile UX with expandable notes
+- **No auto-save on timer** (2024-05): User control over entry creation
+- **Last-write-wins** (2024-04): Simple conflict resolution for offline sync
+
+## Non-Goals
+
+- Social features (comments, likes, follows)
+- Audio/video recording within app
+- Automatic transcription
+- Teacher assignment workflow
+- Payment/subscription tracking
+
+## Open Questions
+
+- Should we add audio recording attachments?
+- How to handle practice reminders effectively?
+- When to implement bulk operations?
+- Should we add practice templates?
+- How to gamify without being intrusive?
+
+## Security & Privacy Considerations
+
+- **Data isolation**: User can only access own entries
+- **Sync validation**: User ID verified on all sync operations
+- **Export control**: User can export only their data
+- **No analytics tracking**: No third-party analytics on practice data
+- **Encryption**: TLS in transit, encrypted at rest in Cloudflare
+
+## Related Documentation
+
+- [API Specification](../03-api/rest-api.md)
+- [Database Schema](../02-database/schema.md)
+- [WebSocket Protocol](../03-api/websocket.md)
+- [Analytics](./analytics.md)
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6

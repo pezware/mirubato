@@ -1,15 +1,28 @@
+---
+Spec-ID: SPEC-ARCH-001
+Title: System Architecture Overview
+Status: ✅ Active
+Owner: @pezware
+Last-Reviewed: 2025-09-11
+Version: 1.7.6
+---
+
 # System Architecture Overview
 
-**What**: Edge-first music education platform running entirely on Cloudflare Workers.
+Status: ✅ Active
 
-**Why**:
+## What
+
+Edge-first music education platform running entirely on Cloudflare Workers.
+
+## Why
 
 - Musicians need consistent practice tracking across all devices
 - Sheet music management requires specialized PDF processing
 - Global accessibility demands low-latency performance
 - Real-time sync enables seamless multi-device workflows
 
-**How**:
+## How
 
 - Five microservices deployed as Cloudflare Workers
 - Edge SQL (D1) for data persistence
@@ -275,6 +288,36 @@ GitHub Push → GitHub Actions → Wrangler Deploy → Cloudflare Edge
 - Request ID propagation for tracing
 - Custom metrics via Analytics Engine
 
+## Decisions
+
+- **Edge-first over traditional cloud** (2024-01): Chose Cloudflare Workers for global performance without infrastructure management
+- **Microservices over monolith** (2024-02): Enables independent scaling and deployment of features
+- **WebSocket via Durable Objects** (2025-07): Replaced polling with real-time sync for better UX (PR #521)
+- **JWT with HS256** (2024-03): Simpler than RS256, sufficient for our security needs
+- **IndexedDB for offline** (2024-04): Better performance than localStorage for large datasets
+
+## Non-Goals
+
+- Multi-tenancy (single user per account only)
+- Native mobile apps (PWA-only strategy)
+- Self-hosting support (Cloudflare-specific architecture)
+- End-to-end encryption (trust Cloudflare's security)
+- Federated authentication providers beyond Google
+
+## Open Questions
+
+- Should we implement user data export for GDPR compliance?
+- When to add subscription/payment processing?
+- How to handle >50MB PDF files given R2 limits?
+
+## Security & Privacy Considerations
+
+- **Data sensitivity**: Musical practice data is low-sensitivity PII
+- **Auth**: JWT tokens expire after 30 days, magic links after 15 minutes
+- **Encryption**: TLS in transit, encrypted at rest in Cloudflare
+- **Logging**: No PII in logs, 30-day retention
+- **User isolation**: Strict user_id validation on all queries
+
 ## Related Documentation
 
 - [Cloudflare Services](./cloudflare-services.md) - Detailed Cloudflare service usage
@@ -284,4 +327,4 @@ GitHub Push → GitHub Actions → Wrangler Deploy → Cloudflare Edge
 
 ---
 
-_Last updated: 2025-09-09 | Version 1.7.6_
+Last updated: 2025-09-11 | Version 1.7.6
