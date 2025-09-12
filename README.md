@@ -23,15 +23,14 @@ cd ../scores && pnpm run dev    # Scores: scores-mirubato.localhost:9788
 
 ## Documentation
 
-| Type            | Link                                                         | Description                         |
-| --------------- | ------------------------------------------------------------ | ----------------------------------- |
-| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**   | **Complete REST API reference**     |
-| 📖 Development  | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                 | Setup and deployment instructions   |
-| 🏗️ Architecture | [Design Docs](docs/DESIGN.md)                                | System design and architecture      |
-| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                 | Debugging and troubleshooting       |
-| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs) | Sheet music and content API         |
-| 🔄 User Flows   | [User Flow Diagrams](docs/USER_FLOWS.md)                     | Complete user journey documentation |
-| 🎯 Repertoire   | [Repertoire & Goals](docs/REPERTOIRE_GOALS_PLAN.md)          | Feature implementation details      |
+| Type            | Link                                                            | Description                     |
+| --------------- | --------------------------------------------------------------- | ------------------------------- |
+| **🔗 API Docs** | **[api.mirubato.com/docs](https://api.mirubato.com/docs)**      | **Complete REST API reference** |
+| 📖 Specs        | [Technical Specifications](docs/specs/)                         | Comprehensive documentation     |
+| 🏗️ Architecture | [Architecture Overview](docs/specs/01-architecture/overview.md) | System design and architecture  |
+| 📋 Debug        | [Debug Guide](docs/DEBUG.md)                                    | Debugging and troubleshooting   |
+| 🎵 Scores API   | [scores.mirubato.com/docs](https://scores.mirubato.com/docs)    | Sheet music and content API     |
+| 🗺️ Roadmap      | [Product Roadmap](docs/specs/08-appendix/roadmap.md)            | Development plans and timeline  |
 
 ## Technology Stack
 
