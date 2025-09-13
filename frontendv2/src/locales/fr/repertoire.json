@@ -1,6 +1,7 @@
 {
   "activeGoals": "Objectifs Actifs",
   "activePieces": "Pièces actives",
+  "active": "Actives",
   "activeRepertoire": "Répertoire actif",
   "addCustomPiece": "Ajouter une Pièce Personnalisée",
   "addCustomPieceDescription": "Ajouter une pièce qui n'est pas dans la bibliothèque",
@@ -119,6 +120,7 @@
   "pieceTitle": "Titre de la Pièce",
   "pieceTitlePlaceholder": "ex. Nocturne en Mi bémol Majeur",
   "polishedPieces": "Pièces Polies",
+  "polished": "Polies",
   "practiceThisWeek": "Pratique Cette Semaine",
   "practicedTimes": "Pratiqué {{count}} fois",
   "practicedToday": "Pratiqué aujourd'hui",
@@ -168,6 +170,7 @@
   "targetValuePlaceholder": "ex. 30",
   "titleRequired": "Le titre de la pièce est obligatoire",
   "totalPieces": "Total de Pièces",
+  "total": "Total",
   "totalPractice": "Pratique totale",
   "totalRepertoire": "Répertoire Total",
   "totalSessions": "total",

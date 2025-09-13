@@ -305,6 +305,7 @@
     "avgPerDay": "每日平均",
     "avgSession": "平均時長",
     "hours": "{{hours}} 小時",
+    "hoursOnly": "{{hours}}小時",
     "longestDay": "最長的一天",
     "minutes": "{{minutes}} 分鐘",
     "session_one": "{{count}} 次練習",

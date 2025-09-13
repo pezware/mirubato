@@ -305,6 +305,7 @@
     "avgPerDay": "Promedio por día",
     "avgSession": "Sesión promedio",
     "hours": "{{hours}}h",
+    "hoursOnly": "{{hours}}h",
     "longestDay": "Día más largo",
     "minutes": "{{minutes}}m",
     "session_one": "{{count}} sesión",

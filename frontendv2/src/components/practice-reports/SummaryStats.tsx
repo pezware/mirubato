@@ -24,11 +24,37 @@ export function SummaryStats({
     )
   }
 
+  // Custom formatting for Total stat when > 100 hours
+  const formatTotalDuration = () => {
+    const totalMinutes = getTimePeriodTotal()
+    const totalHours = totalMinutes / 60
+
+    if (totalHours >= 100) {
+      // Round up for mobile display (e.g., 100.33 hours → 101h)
+      const roundedHours = Math.ceil(totalHours)
+
+      return (
+        <>
+          {/* Mobile: Show hours only when >= 100 hours */}
+          <span className="block sm:hidden">
+            {t('reports:stats.hoursOnly', { hours: roundedHours })}
+          </span>
+          {/* Desktop: Show full format */}
+          <span className="hidden sm:block">
+            {formatDuration(totalMinutes)}
+          </span>
+        </>
+      )
+    }
+    // Under 100 hours: use standard format
+    return formatDuration(totalMinutes)
+  }
+
   return (
     <div className="space-y-2" data-testid="summary-stats">
       {/* Summary Stats Grid - 3 stats for better single-line layout */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3">
+        <div className="bg-morandi-stone-50 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
           <p
             className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="today-practice-time"
@@ -43,7 +69,7 @@ export function SummaryStats({
           </p>
         </div>
 
-        <div className="bg-morandi-stone-100 rounded-lg p-2 sm:p-3">
+        <div className="bg-morandi-stone-100 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
           <p
             className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="week-practice-time"
@@ -58,12 +84,12 @@ export function SummaryStats({
           </p>
         </div>
 
-        <div className="bg-morandi-rose-50 rounded-lg p-2 sm:p-3">
+        <div className="bg-morandi-rose-50 rounded-lg p-2 sm:p-3 flex flex-col justify-center items-center">
           <p
             className="text-lg font-bold text-morandi-stone-900 text-center"
             data-testid="total-practice-time"
           >
-            {formatDuration(getTimePeriodTotal())}
+            {formatTotalDuration()}
           </p>
           <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             <span className="block sm:hidden">{t('reports:stats.total')}</span>
