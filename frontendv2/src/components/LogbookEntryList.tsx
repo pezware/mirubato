@@ -401,7 +401,7 @@ export default function LogbookEntryList({
                   entryId={entry.id}
                   time={formatTime(entry.timestamp)}
                   duration={entry.duration}
-                  type={t(`common:music.${entry.type.toLowerCase()}`)}
+                  type={entry.type}
                   instrument={entry.instrument || undefined}
                   isSelected={selectedEntry?.id === entry.id}
                   onEdit={() => handleEdit(entry)}
