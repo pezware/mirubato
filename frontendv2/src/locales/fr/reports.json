@@ -312,6 +312,9 @@
     "sessions": "{{count}} sessions",
     "thisWeek": "Cette semaine",
     "todaysPractice": "Pratique d'aujourd'hui",
+    "today": "Aujourd'hui",
+    "week": "Semaine",
+    "total": "Total",
     "totalDays": "Jours totaux",
     "totalPractice": "Pratique totale",
     "totalTime": "Temps total"
