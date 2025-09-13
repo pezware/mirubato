@@ -305,6 +305,7 @@
     "avgPerDay": "每日平均",
     "avgSession": "平均时长",
     "hours": "{{hours}}小时",
+    "hoursOnly": "{{hours}}小时",
     "longestDay": "最长的一天",
     "minutes": "{{minutes}}分钟",
     "session_one": "{{count}} 次练习",
@@ -312,6 +313,9 @@
     "sessions": "{{count}} 次练习",
     "thisWeek": "本周",
     "todaysPractice": "今日练习",
+    "today": "今日",
+    "week": "本周",
+    "total": "总计",
     "totalDays": "总天数",
     "totalPractice": "总练习时间",
     "totalTime": "总时间"

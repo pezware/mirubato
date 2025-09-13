@@ -306,6 +306,7 @@
     "avgPerDay": "Avg Per Day",
     "avgSession": "Avg Session",
     "hours": "{{hours}}h",
+    "hoursOnly": "{{hours}}h",
     "longestDay": "Longest Day",
     "minutes": "{{minutes}}m",
     "session_one": "{{count}} session",
@@ -313,6 +314,9 @@
     "sessions": "{{count}} sessions",
     "thisWeek": "This Week",
     "todaysPractice": "Today's Practice",
+    "today": "Today",
+    "week": "This Week",
+    "total": "Total",
     "totalDays": "Total Days",
     "totalPractice": "Total Practice",
     "totalTime": "Total Time"

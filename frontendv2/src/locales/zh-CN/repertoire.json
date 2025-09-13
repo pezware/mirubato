@@ -1,6 +1,7 @@
 {
   "activeGoals": "进行中的目标",
   "activePieces": "活跃曲目",
+  "active": "活跃",
   "activeRepertoire": "活跃曲目库",
   "addCustomPiece": "添加自定义曲目",
   "addCustomPieceDescription": "添加不在曲库中的曲目",
@@ -119,6 +120,7 @@
   "pieceTitle": "曲目名称",
   "pieceTitlePlaceholder": "例如：降E大调夜曲",
   "polishedPieces": "完善曲目",
+  "polished": "完善",
   "practiceThisWeek": "本周练习",
   "practicedTimes": "已练习 {{count}} 次",
   "practicedToday": "今天已练习",
@@ -168,6 +170,7 @@
   "targetValuePlaceholder": "例如：30",
   "titleRequired": "曲目名称为必填",
   "totalPieces": "总曲目数",
+  "total": "总计",
   "totalPractice": "总练习时间",
   "totalRepertoire": "曲目总数",
   "totalSessions": "总计",

@@ -1,6 +1,7 @@
 {
   "activeGoals": "Objetivos Activos",
   "activePieces": "Piezas Activas",
+  "active": "Activas",
   "activeRepertoire": "Repertorio Activo",
   "addCustomPiece": "Añadir Pieza Personalizada",
   "addCustomPieceDescription": "Añadir una pieza que no está en la biblioteca",
@@ -119,6 +120,7 @@
   "pieceTitle": "Título de la Pieza",
   "pieceTitlePlaceholder": "ej. Nocturno en Mi bemol Mayor",
   "polishedPieces": "Piezas Pulidas",
+  "polished": "Pulidas",
   "practiceThisWeek": "Práctica Esta Semana",
   "practicedTimes": "Practicado {{count}} veces",
   "practicedToday": "Practicado hoy",
@@ -168,6 +170,7 @@
   "targetValuePlaceholder": "ej. 30",
   "titleRequired": "El título de la pieza es obligatorio",
   "totalPieces": "Total de Piezas",
+  "total": "Total",
   "totalPractice": "Práctica Total",
   "totalRepertoire": "Repertorio Total",
   "totalSessions": "total",
