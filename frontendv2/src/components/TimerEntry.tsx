@@ -146,7 +146,7 @@ export default function TimerEntry({
           {!isRunning ? (
             <Button
               onClick={start}
-              variant={seconds > 0 ? "info" : "primary"}
+              variant={seconds > 0 ? 'info' : 'primary'}
               size="lg"
               className="flex items-center justify-center gap-2 w-full"
             >
