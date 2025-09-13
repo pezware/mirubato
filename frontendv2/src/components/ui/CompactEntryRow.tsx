@@ -207,7 +207,7 @@ export const CompactEntryRow: React.FC<CompactEntryRowProps> = ({
                     }
                   })()}`}
                 >
-                  {type}
+                  {type === 'status_change' ? type : t(`common:music.${type}`)}
                 </span>
               )}
               {instrument && (

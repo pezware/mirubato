@@ -188,5 +188,27 @@ export default {
     'bg-morandi-navy-400', // Learning (medium)
     'bg-morandi-navy-300', // Planned (lightest)
     'bg-gray-300', // Dropped/default
+    // Technique tag colors
+    'bg-morandi-blush-100',
+    'bg-morandi-peach-100',
+    'bg-sand-100',
+    'text-sand-800',
+    // Summary stats colors
+    'bg-morandi-stone-50',
+    'bg-morandi-stone-100',
+    'bg-morandi-rose-50',
+    // Type badge colors for practice entry types
+    'bg-morandi-purple-200',
+    'text-morandi-purple-800',
+    'bg-morandi-sage-100',
+    'text-morandi-sage-700',
+    'bg-morandi-sand-100',
+    'text-morandi-sand-700',
+    'bg-morandi-blush-100',
+    'text-morandi-blush-700',
+    'bg-morandi-stone-200',
+    'text-morandi-stone-700',
+    'bg-orange-200',
+    'text-orange-800',
   ],
 }
