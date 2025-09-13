@@ -34,7 +34,9 @@ export function RepertoireStats({ repertoireItems }: RepertoireStatsProps) {
           </p>
           <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             <span className="block sm:hidden">{t('repertoire:total')}</span>
-            <span className="hidden sm:block">{t('repertoire:totalPieces')}</span>
+            <span className="hidden sm:block">
+              {t('repertoire:totalPieces')}
+            </span>
           </p>
         </div>
 
@@ -47,7 +49,9 @@ export function RepertoireStats({ repertoireItems }: RepertoireStatsProps) {
           </p>
           <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             <span className="block sm:hidden">{t('repertoire:active')}</span>
-            <span className="hidden sm:block">{t('repertoire:activePieces')}</span>
+            <span className="hidden sm:block">
+              {t('repertoire:activePieces')}
+            </span>
           </p>
         </div>
 
@@ -60,7 +64,9 @@ export function RepertoireStats({ repertoireItems }: RepertoireStatsProps) {
           </p>
           <p className="text-xs sm:text-sm text-morandi-stone-600 text-center leading-tight">
             <span className="block sm:hidden">{t('repertoire:polished')}</span>
-            <span className="hidden sm:block">{t('repertoire:polishedPieces')}</span>
+            <span className="hidden sm:block">
+              {t('repertoire:polishedPieces')}
+            </span>
           </p>
         </div>
       </div>
