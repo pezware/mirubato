@@ -210,5 +210,17 @@ export default {
     'text-morandi-stone-700',
     'bg-orange-200',
     'text-orange-800',
+    // Timer button colors (warning and info variants)
+    'bg-morandi-peach-100',
+    'bg-morandi-peach-200',
+    'text-morandi-peach-700',
+    'border-morandi-peach-200',
+    'hover:bg-morandi-peach-200',
+    'focus:ring-morandi-peach-400',
+    'bg-morandi-sky-200',
+    'bg-morandi-sky-300',
+    'text-morandi-sky-700',
+    'hover:bg-morandi-sky-300',
+    'focus:ring-morandi-sky-400',
   ],
 }

@@ -146,7 +146,7 @@ export default function TimerEntry({
           {!isRunning ? (
             <Button
               onClick={start}
-              variant="primary"
+              variant={seconds > 0 ? "info" : "primary"}
               size="lg"
               className="flex items-center justify-center gap-2 w-full"
             >
@@ -181,7 +181,7 @@ export default function TimerEntry({
 
               <Button
                 onClick={reset}
-                variant="ghost"
+                variant="warning"
                 size="lg"
                 className="flex items-center justify-center gap-2 w-full"
               >
