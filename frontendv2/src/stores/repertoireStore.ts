@@ -1122,8 +1122,14 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
       // Track overall sync success
       let hasErrors = false
       const syncSummary = {
-        repertoire: { added: 0, updated: 0, deleted: 0, dissociated: 0, errors: 0 },
-        goals: { added: 0, skipped: 0, errors: 0 }
+        repertoire: {
+          added: 0,
+          updated: 0,
+          deleted: 0,
+          dissociated: 0,
+          errors: 0,
+        },
+        goals: { added: 0, skipped: 0, errors: 0 },
       }
 
       try {
@@ -1143,7 +1149,10 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
               // Ignore 404 errors (already deleted on server)
               const error = err as { response?: { status?: number } }
               if (error.response?.status !== 404) {
-                console.error(`Failed to delete repertoire item ${scoreId}:`, err)
+                console.error(
+                  `Failed to delete repertoire item ${scoreId}:`,
+                  err
+                )
                 syncSummary.repertoire.errors++
                 hasErrors = true
               } else {
@@ -1274,7 +1283,6 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
             )
           )
 
-
           for (const goal of localGoals) {
             try {
               // Create a unique key based on title and scoreId to check for duplicates
@@ -1315,9 +1323,15 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           // Don't show success toast - sync should be silent when successful
         } else {
           // Keep local mode if there were errors
-          console.error('⚠️ Repertoire sync had errors, staying in local mode:', syncSummary)
+          console.error(
+            '⚠️ Repertoire sync had errors, staying in local mode:',
+            syncSummary
+          )
           showToast(
-            i18n.t('repertoire.syncPartialError', 'Some items failed to sync. Please retry.'),
+            i18n.t(
+              'repertoire.syncPartialError',
+              'Some items failed to sync. Please retry.'
+            ),
             'warning'
           )
           throw new Error('Partial sync failure')

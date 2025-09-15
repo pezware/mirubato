@@ -1272,18 +1272,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     // Get goals to push and sanitize their status for server compatibility
     const goalsToSync = Array.from(state.goalsMap.values()).map(goal => {
       // Sanitize goal status to match server schema
-      // Server only accepts: active, completed, abandoned
-      let sanitizedStatus = goal.status
-      if (goal.status === 'paused') {
-        sanitizedStatus = 'active' // Map paused to active
-      } else if (goal.status === 'cancelled') {
-        sanitizedStatus = 'abandoned' // Map cancelled to abandoned
-      }
-
-      return {
-        ...goal,
-        status: sanitizedStatus,
-      }
+      // Server accepts: active, completed, paused, cancelled
+      // Just keep the status as-is since client and server match
+      return goal
     })
 
     // Check if there's anything to push
@@ -1374,8 +1365,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               pushedCount++
             } else if (result.conflicts && result.conflicts.length > 0) {
               // Entry exists but with conflict
+              const conflict = result.conflicts[0] as any
               console.log(
-                `⚠️ Entry ${entryId} has conflict: ${result.conflicts[0].reason || 'duplicate'}`
+                `⚠️ Entry ${entryId} has conflict: ${conflict.reason || `version mismatch (local: ${conflict.localVersion}, remote: ${conflict.remoteVersion})` || 'duplicate'}`
               )
               pushedCount++ // Count as partial success
             }
@@ -1400,7 +1392,10 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
                   )
                   pushedCount++ // Count as successful since it exists
                 } else {
-                  console.error(`❌ Failed to push entry ${entryId}:`, createError)
+                  console.error(
+                    `❌ Failed to push entry ${entryId}:`,
+                    createError
+                  )
                   failedCount++
                 }
               })
