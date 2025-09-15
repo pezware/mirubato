@@ -157,9 +157,50 @@ const REPERTOIRE_KEY = 'mirubato:repertoire:items'
 const GOALS_KEY = 'mirubato:repertoire:goals'
 const SCORE_METADATA_KEY = 'mirubato:repertoire:scoreMetadata'
 const SORT_PREFERENCE_KEY = 'mirubato:repertoire:sortPreference'
+const DELETED_REPERTOIRE_KEY = 'mirubato:repertoire:deletedItems'
+const DISSOCIATED_PIECES_KEY = 'mirubato:repertoire:dissociatedPieces'
 
 // Sync debounce timer
 let syncDebounceTimer: NodeJS.Timeout | null = null
+
+// Helper functions for deletion tracking
+const getDeletedRepertoire = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem(DELETED_REPERTOIRE_KEY)
+    return stored ? new Set(JSON.parse(stored)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+const addToDeletedRepertoire = (scoreId: string): void => {
+  const deleted = getDeletedRepertoire()
+  deleted.add(normalizeExistingScoreId(scoreId))
+  localStorage.setItem(DELETED_REPERTOIRE_KEY, JSON.stringify([...deleted]))
+}
+
+const clearDeletedRepertoire = (): void => {
+  localStorage.removeItem(DELETED_REPERTOIRE_KEY)
+}
+
+const getDissociatedPieces = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem(DISSOCIATED_PIECES_KEY)
+    return stored ? new Set(JSON.parse(stored)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+const addToDissociatedPieces = (scoreId: string): void => {
+  const dissociated = getDissociatedPieces()
+  dissociated.add(normalizeExistingScoreId(scoreId))
+  localStorage.setItem(DISSOCIATED_PIECES_KEY, JSON.stringify([...dissociated]))
+}
+
+const clearDissociatedPieces = (): void => {
+  localStorage.removeItem(DISSOCIATED_PIECES_KEY)
+}
 
 // Helper for debouncing functions
 function debounce<T extends (...args: never[]) => void>(
@@ -575,6 +616,9 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
         // Update localStorage
         const items = Array.from(newRepertoire.values())
         localStorage.setItem(REPERTOIRE_KEY, JSON.stringify(items))
+
+        // Track deletion for later sync
+        addToDeletedRepertoire(normalizedId)
       } else {
         // Use API with timeout protection
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -679,6 +723,9 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
           delete (updatedEntry as { [key: string]: unknown }).scoreId
           updatedEntries.set(entry.id, updatedEntry)
         })
+
+        // Track dissociation for later sync
+        addToDissociatedPieces(normalizedId)
 
         // Emit event for logbook store to handle its own state update
         // This maintains separation of concerns and avoids circular dependency
@@ -1072,7 +1119,73 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
     })
 
     async function performSync() {
+      // Track overall sync success
+      let hasErrors = false
+      const syncSummary = {
+        repertoire: { added: 0, updated: 0, deleted: 0, dissociated: 0, errors: 0 },
+        goals: { added: 0, skipped: 0, errors: 0 }
+      }
+
       try {
+        // First, handle deletions and dissociations
+        const deletedItems = getDeletedRepertoire()
+        const dissociatedItems = getDissociatedPieces()
+
+        // Push deletions
+        if (deletedItems.size > 0) {
+          console.log(`Syncing ${deletedItems.size} deleted repertoire items`)
+
+          for (const scoreId of deletedItems) {
+            try {
+              await repertoireApi.remove(scoreId)
+              syncSummary.repertoire.deleted++
+            } catch (err) {
+              // Ignore 404 errors (already deleted on server)
+              const error = err as { response?: { status?: number } }
+              if (error.response?.status !== 404) {
+                console.error(`Failed to delete repertoire item ${scoreId}:`, err)
+                syncSummary.repertoire.errors++
+                hasErrors = true
+              } else {
+                syncSummary.repertoire.deleted++ // Count 404 as success
+              }
+            }
+          }
+
+          // Clear deleted items only if all deletions succeeded
+          if (!hasErrors) {
+            clearDeletedRepertoire()
+          }
+        }
+
+        // Push dissociations
+        if (dissociatedItems.size > 0) {
+          console.log(`Syncing ${dissociatedItems.size} dissociated pieces`)
+
+          for (const scoreId of dissociatedItems) {
+            try {
+              await repertoireApi.dissociate(scoreId)
+              syncSummary.repertoire.dissociated++
+            } catch (err) {
+              // Ignore 404 errors (already dissociated on server)
+              const error = err as { response?: { status?: number } }
+              if (error.response?.status !== 404) {
+                console.error(`Failed to dissociate piece ${scoreId}:`, err)
+                syncSummary.repertoire.errors++
+                hasErrors = true
+              } else {
+                syncSummary.repertoire.dissociated++ // Count 404 as success
+              }
+            }
+          }
+
+          // Clear dissociated items only if all dissociations succeeded
+          if (!hasErrors) {
+            clearDissociatedPieces()
+          }
+        }
+
+        // Then sync additions and updates (existing code)
         // Sync repertoire items
         const localRepertoireItems = Array.from(repertoire.values())
         if (localRepertoireItems.length > 0) {
@@ -1088,12 +1201,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
             serverItems.items.map(item => item.scoreId)
           )
 
-          // Track sync results
-          const syncResults = {
-            added: 0,
-            updated: 0,
-            errors: 0,
-          }
+          // Use the syncSummary.repertoire object instead of local syncResults
 
           for (const item of localRepertoireItems) {
             try {
@@ -1120,7 +1228,7 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
                       }
                     }) || undefined,
                 })
-                syncResults.added++
+                syncSummary.repertoire.added++
               } else {
                 // Update on server - sanitize data to match API validation
                 await repertoireApi.update(item.scoreId, {
@@ -1141,15 +1249,16 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
                       }
                     }) || undefined,
                 })
-                syncResults.updated++
+                syncSummary.repertoire.updated++
               }
             } catch (err) {
               console.warn('Failed to sync repertoire item:', item.scoreId, err)
-              syncResults.errors++
+              syncSummary.repertoire.errors++
+              hasErrors = true
             }
           }
 
-          console.log('Repertoire sync completed:', syncResults)
+          console.log('Repertoire sync completed:', syncSummary.repertoire)
         }
 
         // Sync goals
@@ -1165,11 +1274,6 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
             )
           )
 
-          const goalSyncResults = {
-            added: 0,
-            skipped: 0,
-            errors: 0,
-          }
 
           for (const goal of localGoals) {
             try {
@@ -1186,25 +1290,38 @@ export const useRepertoireStore = create<RepertoireStore>((set, get) => ({
                   scoreId: goal.scoreId,
                   milestones: goal.milestones,
                 })
-                goalSyncResults.added++
+                syncSummary.goals.added++
               } else {
-                goalSyncResults.skipped++
+                syncSummary.goals.skipped++
               }
             } catch (err) {
               console.warn('Failed to sync goal:', goal.title, err)
-              goalSyncResults.errors++
+              syncSummary.goals.errors++
+              hasErrors = true
             }
           }
 
-          console.log('Goals sync completed:', goalSyncResults)
+          console.log('Goals sync completed:', syncSummary.goals)
         }
 
-        // After successful sync, reload from server
-        await get().loadRepertoire()
-        await get().loadGoals()
+        // Only proceed if sync was successful (no errors)
+        if (!hasErrors) {
+          // After successful sync, reload from server
+          await get().loadRepertoire()
+          await get().loadGoals()
 
-        set({ isLocalMode: false })
-        // Don't show success toast - sync should be silent when successful
+          set({ isLocalMode: false })
+          console.log('✅ Repertoire sync completed successfully:', syncSummary)
+          // Don't show success toast - sync should be silent when successful
+        } else {
+          // Keep local mode if there were errors
+          console.error('⚠️ Repertoire sync had errors, staying in local mode:', syncSummary)
+          showToast(
+            i18n.t('repertoire.syncPartialError', 'Some items failed to sync. Please retry.'),
+            'warning'
+          )
+          throw new Error('Partial sync failure')
+        }
       } catch (error) {
         console.error('Error syncing repertoire data:', error)
         // Keep local mode if sync fails
