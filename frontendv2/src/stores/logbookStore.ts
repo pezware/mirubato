@@ -1365,10 +1365,17 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
               pushedCount++
             } else if (result.conflicts && result.conflicts.length > 0) {
               // Entry exists but with conflict
-              const conflict = result.conflicts[0] as any
-              console.log(
-                `⚠️ Entry ${entryId} has conflict: ${conflict.reason || `version mismatch (local: ${conflict.localVersion}, remote: ${conflict.remoteVersion})` || 'duplicate'}`
-              )
+              const conflict = result.conflicts[0] as {
+                entityId: string
+                localVersion?: number
+                remoteVersion?: number
+                reason?: string
+              }
+              const conflictMessage = conflict.reason ||
+                (conflict.localVersion !== undefined && conflict.remoteVersion !== undefined
+                  ? `version mismatch (local: ${conflict.localVersion}, remote: ${conflict.remoteVersion})`
+                  : 'duplicate')
+              console.log(`⚠️ Entry ${entryId} has conflict: ${conflictMessage}`)
               pushedCount++ // Count as partial success
             }
           })
