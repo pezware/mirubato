@@ -42,6 +42,26 @@ Fixed issue where local entries created before authentication weren't synced to 
   - Handles 409 duplicates gracefully (server deduplication works correctly)
 - **Result**: True bidirectional sync - local-first data preserved after sign-in
 
+### Repertoire Deletion Sync Fix
+
+Fixed issue where repertoire deletions and dissociations made offline weren't synced:
+
+- **Problem**: Offline repertoire deletions weren't tracked, causing deleted items to reappear after login
+- **Solution**: Added deletion tracking similar to logbook entries
+- **Implementation**:
+  - Added `DELETED_REPERTOIRE_KEY` and `DISSOCIATED_PIECES_KEY` for tracking
+  - `removeFromRepertoire()` and `dissociatePieceFromRepertoire()` track deletions in local mode
+  - `syncLocalData()` pushes deletions/dissociations before adds/updates
+  - Improved error handling: stays in local mode if sync partially fails
+- **Result**: Complete bidirectional sync for repertoire with no data loss
+
+### Additional Improvements
+
+- **Goal status sanitization**: Maps client statuses (paused→active, cancelled→abandoned) to prevent server validation errors
+- **Timestamp preservation**: Uses sync API in fallback to maintain original createdAt timestamps
+- **Batch-first strategy**: Attempts efficient batch sync, falls back to individual operations if needed
+- **Comprehensive error handling**: Partial failures don't corrupt state or lose local data
+
 ## High-Level Flow
 
 - **Local-first**: Entries and repertoire load from localStorage first; stores update immediately on user actions.
