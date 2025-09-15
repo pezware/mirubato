@@ -86,6 +86,7 @@ interface LogbookState {
 
   // Actions - WebSocket Sync
   initializeWebSocketSync: () => Promise<void>
+  pushLocalEntriesToServer: () => Promise<{ pushed: number; failed: number }>
 
   // Actions - Real-time Sync
   enableRealtimeSync: () => Promise<boolean>
@@ -1242,6 +1243,101 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       console.error('❌ Error initializing WebSocket sync:', error)
       set({ webSocketInitialized: false })
     }
+  },
+
+  // Push all local entries to server (used after authentication)
+  pushLocalEntriesToServer: async () => {
+    const state = get()
+
+    // Don't push if in local mode or not authenticated
+    if (state.isLocalMode || !localStorage.getItem('auth-token')) {
+      return { pushed: 0, failed: 0 }
+    }
+
+    console.log('📤 Pushing local entries to server...')
+
+    // Get all local entries from memory or disk
+    let entriesToPush = new Map(state.entriesMap)
+    if (entriesToPush.size === 0) {
+      // If memory is empty, load from disk
+      entriesToPush = readEntriesFromDisk()
+    }
+
+    if (entriesToPush.size === 0) {
+      console.log('📭 No local entries to push')
+      return { pushed: 0, failed: 0 }
+    }
+
+    console.log(`📊 Found ${entriesToPush.size} local entries to sync`)
+
+    let pushedCount = 0
+    let failedCount = 0
+    const pushPromises: Promise<void>[] = []
+
+    // Push each entry to the server
+    for (const [entryId, entry] of entriesToPush) {
+      const pushPromise = logbookApi
+        .createEntry(entry)
+        .then(syncedEntry => {
+          if (syncedEntry) {
+            pushedCount++
+            // Update the entry with server response if different
+            if (!entriesAreEqual(syncedEntry, entry)) {
+              const updatedMap = new Map(get().entriesMap)
+              updatedMap.set(syncedEntry.id, syncedEntry)
+              set({
+                entriesMap: updatedMap,
+                entries: sortEntriesByTimestamp(
+                  Array.from(updatedMap.values())
+                ),
+              })
+            }
+          }
+        })
+        .catch(error => {
+          // Check if it's a duplicate error (409) which is acceptable
+          if (error.response?.status === 409) {
+            console.log(
+              `⚠️ Entry ${entryId} already exists on server (duplicate)`
+            )
+            pushedCount++ // Count as successful since it exists
+          } else {
+            console.error(`❌ Failed to push entry ${entryId}:`, error)
+            failedCount++
+          }
+        })
+
+      pushPromises.push(pushPromise)
+    }
+
+    // Wait for all pushes to complete
+    await Promise.allSettled(pushPromises)
+
+    // Also push goals to server
+    const goalsToSync = state.goalsMap
+    if (goalsToSync.size > 0) {
+      console.log(`📊 Syncing ${goalsToSync.size} goals to server`)
+      for (const [goalId, goal] of goalsToSync) {
+        try {
+          await logbookApi.updateGoal(goalId, goal)
+        } catch (error) {
+          // Ignore 409 conflicts for goals
+          const err = error as { response?: { status?: number } }
+          if (err.response?.status !== 409) {
+            console.error(`❌ Failed to sync goal ${goalId}:`, error)
+          }
+        }
+      }
+    }
+
+    console.log(
+      `✅ Push complete: ${pushedCount} entries pushed, ${failedCount} failed`
+    )
+
+    // Write updated entries to disk
+    writeEntriesMapToDisk(get().entriesMap, true)
+
+    return { pushed: pushedCount, failed: failedCount }
   },
 }))
 

@@ -22,13 +22,25 @@ Three commits addressed critical WebSocket sync issues that were causing data lo
    - Prevents data loss when browser closed immediately after WebSocket sync
    - Ensures sync data is persisted before browser can be closed
 
-### Incomplete Sync Fix (Current)
+### Incomplete Sync Fix
 
 Fixed issue where WebSocket wouldn't request full sync despite missing data:
 
 - **Problem**: `lastSyncTime` persisted even when entries were missing/incomplete in localStorage
 - **Solution**: Clear `lastSyncTime` on every successful authentication (authStore.ts)
 - **Result**: Forces SYNC_REQUEST on WebSocket connection after login, ensuring complete data sync
+
+### Bidirectional Sync Fix (Latest)
+
+Fixed issue where local entries created before authentication weren't synced to server:
+
+- **Problem**: SYNC_REQUEST only pulled data from server, never pushed local entries
+- **Solution**: Added `pushLocalEntriesToServer()` method called after authentication
+- **Implementation**:
+  - logbookStore.ts: New method pushes all local entries to server via REST API
+  - authStore.ts: Calls push method after successful auth (before WebSocket init)
+  - Handles 409 duplicates gracefully (server deduplication works correctly)
+- **Result**: True bidirectional sync - local-first data preserved after sign-in
 
 ## High-Level Flow
 
