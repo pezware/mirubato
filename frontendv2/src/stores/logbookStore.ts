@@ -1371,11 +1371,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
                 remoteVersion?: number
                 reason?: string
               }
-              const conflictMessage = conflict.reason ||
-                (conflict.localVersion !== undefined && conflict.remoteVersion !== undefined
+              const conflictMessage =
+                conflict.reason ||
+                (conflict.localVersion !== undefined &&
+                conflict.remoteVersion !== undefined
                   ? `version mismatch (local: ${conflict.localVersion}, remote: ${conflict.remoteVersion})`
                   : 'duplicate')
-              console.log(`⚠️ Entry ${entryId} has conflict: ${conflictMessage}`)
+              console.log(
+                `⚠️ Entry ${entryId} has conflict: ${conflictMessage}`
+              )
               pushedCount++ // Count as partial success
             }
           })
