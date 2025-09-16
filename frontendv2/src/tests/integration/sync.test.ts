@@ -240,7 +240,10 @@ describe('Sync Integration Tests', () => {
       expect(mockWebSocketSync.send).toHaveBeenCalled()
       const sentData = mockWebSocketSync.send.mock.calls[0][0]
       expect(sentData.type).toBe('ENTRY_CREATED')
-      expect(sentData.entry).toMatchObject(newEntry)
+      expect(sentData.entry).toMatchObject({
+        ...newEntry,
+        timestamp: '2024-01-01T10:00:00.000Z',
+      })
 
       // Device 2: Receive the sync event
       const syncedEntry = {

@@ -684,16 +684,21 @@ describe('logbookStore', () => {
           await useLogbookStore.getState().createEntry(newEntry)
         })
 
-        expect(mockWebSocketSync.send).toHaveBeenCalledWith({
-          type: 'ENTRY_CREATED',
-          entry: expect.objectContaining({
-            id: 'test-id-123',
-            duration: 30,
-            type: 'PRACTICE',
-            instrument: 'PIANO',
-            timestamp: '2024-01-01T00:00:00Z',
-          }),
-          timestamp: expect.any(String),
+        const sentPayload = mockWebSocketSync.send.mock.calls[0][0]
+        expect(sentPayload.type).toBe('ENTRY_CREATED')
+        expect(sentPayload.timestamp).toEqual(expect.any(String))
+        expect(sentPayload.entry).toMatchObject({
+          id: 'test-id-123',
+          duration: 30,
+          type: 'PRACTICE',
+          instrument: 'PIANO',
+          pieces: [
+            {
+              title: 'New Piece',
+              composer: 'Composer',
+            },
+          ],
+          timestamp: '2024-01-01T00:00:00.000Z',
         })
       })
 
