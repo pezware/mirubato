@@ -850,4 +850,65 @@ describe('logbookStore', () => {
       })
     })
   })
+
+  describe('pushLocalEntriesToServer', () => {
+    it('normalizes legacy timestamps before pushing data', async () => {
+      const legacyEntry: LogbookEntry = {
+        id: 'legacy-entry-1',
+        timestamp: '2025-06-23 16:23:00',
+        duration: 30,
+        type: 'practice',
+        instrument: 'piano',
+        pieces: [],
+        techniques: [],
+        goalIds: [],
+        notes: '',
+        mood: null,
+        tags: [],
+        metadata: { source: 'manual' },
+        createdAt: '2025-06-23 16:23:00',
+        updatedAt: '2025-06-23 16:23:00',
+      }
+
+      localStorageData['auth-token'] = 'token'
+      localStorageData['mirubato:logbook:entries'] = JSON.stringify([
+        legacyEntry,
+      ])
+
+      act(() => {
+        useLogbookStore.setState({
+          entriesMap: new Map([[legacyEntry.id, legacyEntry]]),
+          entries: [legacyEntry],
+          isLocalMode: false,
+        })
+      })
+
+      mockSyncApi.push.mockResolvedValue({
+        success: true,
+        syncToken: 'sync-token',
+        conflicts: [],
+      })
+
+      await act(async () => {
+        await useLogbookStore.getState().pushLocalEntriesToServer()
+      })
+
+      expect(mockSyncApi.push).toHaveBeenCalledTimes(1)
+      const pushPayload = mockSyncApi.push.mock.calls[0][0]
+      const pushedEntry = pushPayload.changes.entries[0] as LogbookEntry
+      expect(pushedEntry.timestamp).toBe('2025-06-23T16:23:00.000Z')
+      expect(pushedEntry.createdAt).toBe('2025-06-23T16:23:00.000Z')
+      expect(pushedEntry.updatedAt).toBe('2025-06-23T16:23:00.000Z')
+
+      const storedEntries = JSON.parse(
+        localStorageData['mirubato:logbook:entries']
+      ) as LogbookEntry[]
+      expect(storedEntries[0].timestamp).toBe('2025-06-23T16:23:00.000Z')
+
+      const stateAfter = useLogbookStore.getState()
+      expect(stateAfter.entriesMap.get(legacyEntry.id)?.timestamp).toBe(
+        '2025-06-23T16:23:00.000Z'
+      )
+    })
+  })
 })
