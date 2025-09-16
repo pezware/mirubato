@@ -684,16 +684,21 @@ describe('logbookStore', () => {
           await useLogbookStore.getState().createEntry(newEntry)
         })
 
-        expect(mockWebSocketSync.send).toHaveBeenCalledWith({
-          type: 'ENTRY_CREATED',
-          entry: expect.objectContaining({
-            id: 'test-id-123',
-            duration: 30,
-            type: 'PRACTICE',
-            instrument: 'PIANO',
-            timestamp: '2024-01-01T00:00:00Z',
-          }),
-          timestamp: expect.any(String),
+        const sentPayload = mockWebSocketSync.send.mock.calls[0][0]
+        expect(sentPayload.type).toBe('ENTRY_CREATED')
+        expect(sentPayload.timestamp).toEqual(expect.any(String))
+        expect(sentPayload.entry).toMatchObject({
+          id: 'test-id-123',
+          duration: 30,
+          type: 'PRACTICE',
+          instrument: 'PIANO',
+          pieces: [
+            {
+              title: 'New Piece',
+              composer: 'Composer',
+            },
+          ],
+          timestamp: '2024-01-01T00:00:00.000Z',
         })
       })
 
@@ -848,6 +853,67 @@ describe('logbookStore', () => {
         )
         expect(state.entriesMap.has('new-entry-1')).toBe(true)
       })
+    })
+  })
+
+  describe('pushLocalEntriesToServer', () => {
+    it('normalizes legacy timestamps before pushing data', async () => {
+      const legacyEntry: LogbookEntry = {
+        id: 'legacy-entry-1',
+        timestamp: '2025-06-23 16:23:00',
+        duration: 30,
+        type: 'practice',
+        instrument: 'piano',
+        pieces: [],
+        techniques: [],
+        goalIds: [],
+        notes: '',
+        mood: null,
+        tags: [],
+        metadata: { source: 'manual' },
+        createdAt: '2025-06-23 16:23:00',
+        updatedAt: '2025-06-23 16:23:00',
+      }
+
+      localStorageData['auth-token'] = 'token'
+      localStorageData['mirubato:logbook:entries'] = JSON.stringify([
+        legacyEntry,
+      ])
+
+      act(() => {
+        useLogbookStore.setState({
+          entriesMap: new Map([[legacyEntry.id, legacyEntry]]),
+          entries: [legacyEntry],
+          isLocalMode: false,
+        })
+      })
+
+      mockSyncApi.push.mockResolvedValue({
+        success: true,
+        syncToken: 'sync-token',
+        conflicts: [],
+      })
+
+      await act(async () => {
+        await useLogbookStore.getState().pushLocalEntriesToServer()
+      })
+
+      expect(mockSyncApi.push).toHaveBeenCalledTimes(1)
+      const pushPayload = mockSyncApi.push.mock.calls[0][0]
+      const pushedEntry = pushPayload.changes.entries[0] as LogbookEntry
+      expect(pushedEntry.timestamp).toBe('2025-06-23T16:23:00.000Z')
+      expect(pushedEntry.createdAt).toBe('2025-06-23T16:23:00.000Z')
+      expect(pushedEntry.updatedAt).toBe('2025-06-23T16:23:00.000Z')
+
+      const storedEntries = JSON.parse(
+        localStorageData['mirubato:logbook:entries']
+      ) as LogbookEntry[]
+      expect(storedEntries[0].timestamp).toBe('2025-06-23T16:23:00.000Z')
+
+      const stateAfter = useLogbookStore.getState()
+      expect(stateAfter.entriesMap.get(legacyEntry.id)?.timestamp).toBe(
+        '2025-06-23T16:23:00.000Z'
+      )
     })
   })
 })

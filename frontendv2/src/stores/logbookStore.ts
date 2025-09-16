@@ -156,6 +156,96 @@ const immediateLocalStorageWrite = (key: string, value: string) => {
   localStorage.setItem(key, value)
 }
 
+const LEGACY_DATETIME_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/i
+
+function normalizeToIsoString(
+  value?: string | number | null
+): string | undefined {
+  if (value === null || value === undefined) return undefined
+
+  if (typeof value === 'number') {
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) return date.toISOString()
+    return undefined
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) return undefined
+
+    let candidate = trimmed
+    if (LEGACY_DATETIME_REGEX.test(trimmed)) {
+      candidate = `${trimmed.replace(' ', 'T')}Z`
+    }
+
+    let date = new Date(candidate)
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString()
+    }
+
+    if (!trimmed.includes('T')) {
+      date = new Date(trimmed.replace(' ', 'T'))
+      if (!Number.isNaN(date.getTime())) {
+        return date.toISOString()
+      }
+    }
+
+    if (/^\d+$/.test(trimmed)) {
+      // Legacy builds sometimes stored raw epoch milliseconds as strings
+      const millis = Number(trimmed)
+      if (!Number.isNaN(millis)) {
+        const epochDate = new Date(millis)
+        if (!Number.isNaN(epochDate.getTime())) {
+          return epochDate.toISOString()
+        }
+      }
+    }
+  }
+
+  return undefined
+}
+
+function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
+  const cleanEntry = Object.fromEntries(
+    Object.entries(entry).filter(([_, value]) => value !== undefined)
+  ) as LogbookEntry
+
+  const normalizedTimestamp =
+    normalizeToIsoString(cleanEntry.timestamp) || cleanEntry.timestamp
+  const normalizedCreatedAt =
+    normalizeToIsoString(cleanEntry.createdAt) ||
+    cleanEntry.createdAt ||
+    normalizedTimestamp
+  const normalizedUpdatedAt =
+    normalizeToIsoString(cleanEntry.updatedAt) ||
+    cleanEntry.updatedAt ||
+    normalizedTimestamp
+
+  return {
+    ...cleanEntry,
+    timestamp: normalizedTimestamp,
+    createdAt: normalizedCreatedAt,
+    updatedAt: normalizedUpdatedAt,
+    notes: cleanEntry.notes || null,
+    mood: cleanEntry.mood || null,
+    scoreId: cleanEntry.scoreId || undefined,
+    scoreTitle: cleanEntry.scoreTitle || undefined,
+    scoreComposer: cleanEntry.scoreComposer || undefined,
+    autoTracked: cleanEntry.autoTracked || undefined,
+    pieces:
+      cleanEntry.pieces?.map(p => ({
+        ...p,
+        composer: p.composer || null,
+        measures: p.measures || null,
+        tempo: p.tempo || null,
+      })) || [],
+    techniques: cleanEntry.techniques || [],
+    goalIds: cleanEntry.goalIds || [],
+    tags: cleanEntry.tags || [],
+    metadata: cleanEntry.metadata || { source: 'manual' },
+  }
+}
+
 // Helper to convert Map to sorted array
 const mapToSortedArray = <T extends { createdAt: string }>(
   map: Map<string, T>
@@ -171,7 +261,8 @@ const readEntriesFromDisk = (): Map<string, LogbookEntry> => {
     const raw = localStorage.getItem(ENTRIES_KEY)
     if (!raw) return new Map()
     const entries: LogbookEntry[] = JSON.parse(raw)
-    return new Map(entries.map(entry => [entry.id, entry]))
+    const sanitizedEntries = entries.map(entry => sanitizeEntryForSync(entry))
+    return new Map(sanitizedEntries.map(entry => [entry.id, entry]))
   } catch (error) {
     console.error('Failed to read entries from disk:', error)
     return new Map()
@@ -212,37 +303,6 @@ const sortEntriesByTimestamp = (entries: LogbookEntry[]): LogbookEntry[] => {
   return entries.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   )
-}
-
-// Sanitize entry for WebSocket sync to match API requirements
-const sanitizeEntryForSync = (entry: LogbookEntry): LogbookEntry => {
-  // Filter out undefined values first
-  const cleanEntry = Object.fromEntries(
-    Object.entries(entry).filter(([_, value]) => value !== undefined)
-  ) as LogbookEntry
-
-  return {
-    ...cleanEntry,
-    // Ensure proper null/undefined handling for optional fields
-    notes: cleanEntry.notes || null,
-    mood: cleanEntry.mood || null,
-    scoreId: cleanEntry.scoreId || undefined,
-    scoreTitle: cleanEntry.scoreTitle || undefined,
-    scoreComposer: cleanEntry.scoreComposer || undefined,
-    autoTracked: cleanEntry.autoTracked || undefined,
-    // Sanitize nested objects
-    pieces:
-      cleanEntry.pieces?.map(p => ({
-        ...p,
-        composer: p.composer || null,
-        measures: p.measures || null,
-        tempo: p.tempo || null,
-      })) || [],
-    techniques: cleanEntry.techniques || [],
-    goalIds: cleanEntry.goalIds || [],
-    tags: cleanEntry.tags || [],
-    metadata: cleanEntry.metadata || { source: 'manual' },
-  }
 }
 
 // Deletion tracking helpers
@@ -1290,12 +1350,30 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
 
     console.log('📤 Pushing local data to server...')
 
-    // Get all local entries from memory or disk
-    let entriesToPush = new Map(state.entriesMap)
-    if (entriesToPush.size === 0) {
-      // If memory is empty, load from disk
-      entriesToPush = readEntriesFromDisk()
+    // Get all local entries from memory or disk and normalize timestamps
+    let entriesSourceMap = new Map(state.entriesMap)
+    if (entriesSourceMap.size === 0) {
+      entriesSourceMap = readEntriesFromDisk()
     }
+
+    const sanitizedEntriesMap = new Map<string, LogbookEntry>()
+    for (const entry of entriesSourceMap.values()) {
+      const sanitizedEntry = sanitizeEntryForSync(entry)
+      sanitizedEntriesMap.set(sanitizedEntry.id, sanitizedEntry)
+    }
+
+    if (sanitizedEntriesMap.size > 0) {
+      // Persist the normalized timestamps back into store state for consistency
+      const sortedSanitized = sortEntriesByTimestamp(
+        Array.from(sanitizedEntriesMap.values())
+      )
+      set({
+        entriesMap: sanitizedEntriesMap,
+        entries: sortedSanitized,
+      })
+    }
+
+    const entriesToPush = sanitizedEntriesMap
 
     // Get deleted entries to push
     const deletedEntriesStr = localStorage.getItem(DELETED_ENTRIES_KEY)
