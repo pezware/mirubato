@@ -937,7 +937,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     // Persist to localStorage by merging with existing disk data
     const diskMap = readEntriesFromDisk()
     diskMap.set(entry.id, entry)
-    writeEntriesMapToDisk(diskMap, false) // Use debounced write for add
+    writeEntriesMapToDisk(diskMap, true) // Use immediate write for sync operations
 
     // Show toast notification if it's a new entry
     if (!existingEntry) {
@@ -976,7 +976,7 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
     // Persist to localStorage by merging with existing disk data
     const diskMap = readEntriesFromDisk()
     diskMap.set(entry.id, entry)
-    writeEntriesMapToDisk(diskMap, false) // Use debounced write for update
+    writeEntriesMapToDisk(diskMap, true) // Use immediate write for sync operations
 
     console.log(
       '📝 Practice entry updated from another device:',
@@ -1232,6 +1232,34 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       if (success) {
         set({ webSocketInitialized: true })
         console.log('✅ WebSocket sync initialized successfully')
+
+        // If this device has no local entries yet, perform a full historical pull once
+        try {
+          const currentState = get()
+          const stored = localStorage.getItem(ENTRIES_KEY)
+          const diskCount = stored ? (JSON.parse(stored) as unknown[]).length : 0
+
+          if (currentState.entriesMap.size === 0 && diskCount === 0) {
+            console.log('📥 No local entries found. Performing full logbook pull...')
+            const { syncApi } = await import('../api/sync')
+            const data = await syncApi.pull()
+
+            if (Array.isArray(data.entries) && data.entries.length > 0) {
+              // Merge using existing LWW logic and persist to disk
+              get().mergeEntriesFromSync(data.entries)
+              // Record last sync time to avoid immediate redundant SYNC_REQUESTs
+              localStorage.setItem(
+                'mirubato:lastSyncTime',
+                data.timestamp || new Date().toISOString()
+              )
+              console.log(`✅ Pulled ${data.entries.length} entries from server`)
+            } else {
+              console.log('ℹ️ Full pull returned no entries')
+            }
+          }
+        } catch (pullError) {
+          console.warn('⚠️ Full logbook pull failed:', pullError)
+        }
       } else {
         console.warn(
           '⚠️ WebSocket sync initialization failed, falling back to manual sync'
