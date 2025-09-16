@@ -316,6 +316,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         setLocalMode(false) // Switch to online mode when authenticated
 
+        // Push local entries to server before WebSocket sync
+        // This ensures local-first data is preserved
+        if (logbookStore.pushLocalEntriesToServer) {
+          try {
+            const pushResult = await logbookStore.pushLocalEntriesToServer()
+            console.log(
+              `📤 Pushed ${pushResult.pushed} local entries to server (${pushResult.failed} failed)`
+            )
+          } catch (error) {
+            console.warn('Failed to push local entries to server:', error)
+            // Continue - this shouldn't block authentication
+          }
+        }
+
         // Initialize WebSocket sync for authenticated users
         // WebSocket will handle logbook sync via SYNC_REQUEST on connection
         await logbookStore.initializeWebSocketSync()
@@ -419,6 +433,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         setLocalMode(false) // Switch to online mode when authenticated
+
+        // Push local entries to server before WebSocket sync
+        // This ensures local-first data is preserved
+        if (logbookStore.pushLocalEntriesToServer) {
+          try {
+            const pushResult = await logbookStore.pushLocalEntriesToServer()
+            console.log(
+              `📤 Pushed ${pushResult.pushed} local entries to server (${pushResult.failed} failed)`
+            )
+          } catch (error) {
+            console.warn('Failed to push local entries to server:', error)
+            // Continue - this shouldn't block authentication
+          }
+        }
 
         // Initialize WebSocket sync for authenticated users
         // WebSocket will handle logbook sync via SYNC_REQUEST on connection
@@ -671,6 +699,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
 
           setLocalMode(false)
+
+          // Push local entries to server before WebSocket sync
+          // This ensures local-first data is preserved
+          if (logbookStore.pushLocalEntriesToServer) {
+            try {
+              const pushResult = await logbookStore.pushLocalEntriesToServer()
+              console.log(
+                `📤 Pushed ${pushResult.pushed} local entries to server (${pushResult.failed} failed)`
+              )
+            } catch (error) {
+              console.warn('Failed to push local entries to server:', error)
+              // Continue - this shouldn't block authentication
+            }
+          }
 
           // Initialize WebSocket sync for authenticated users
           // WebSocket will handle logbook sync via SYNC_REQUEST on connection

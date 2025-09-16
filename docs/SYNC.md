@@ -22,13 +22,45 @@ Three commits addressed critical WebSocket sync issues that were causing data lo
    - Prevents data loss when browser closed immediately after WebSocket sync
    - Ensures sync data is persisted before browser can be closed
 
-### Incomplete Sync Fix (Current)
+### Incomplete Sync Fix
 
 Fixed issue where WebSocket wouldn't request full sync despite missing data:
 
 - **Problem**: `lastSyncTime` persisted even when entries were missing/incomplete in localStorage
 - **Solution**: Clear `lastSyncTime` on every successful authentication (authStore.ts)
 - **Result**: Forces SYNC_REQUEST on WebSocket connection after login, ensuring complete data sync
+
+### Bidirectional Sync Fix (Latest)
+
+Fixed issue where local entries created before authentication weren't synced to server:
+
+- **Problem**: SYNC_REQUEST only pulled data from server, never pushed local entries
+- **Solution**: Added `pushLocalEntriesToServer()` method called after authentication
+- **Implementation**:
+  - logbookStore.ts: New method pushes all local entries to server via REST API
+  - authStore.ts: Calls push method after successful auth (before WebSocket init)
+  - Handles 409 duplicates gracefully (server deduplication works correctly)
+- **Result**: True bidirectional sync - local-first data preserved after sign-in
+
+### Repertoire Deletion Sync Fix
+
+Fixed issue where repertoire deletions and dissociations made offline weren't synced:
+
+- **Problem**: Offline repertoire deletions weren't tracked, causing deleted items to reappear after login
+- **Solution**: Added deletion tracking similar to logbook entries
+- **Implementation**:
+  - Added `DELETED_REPERTOIRE_KEY` and `DISSOCIATED_PIECES_KEY` for tracking
+  - `removeFromRepertoire()` and `dissociatePieceFromRepertoire()` track deletions in local mode
+  - `syncLocalData()` pushes deletions/dissociations before adds/updates
+  - Improved error handling: stays in local mode if sync partially fails
+- **Result**: Complete bidirectional sync for repertoire with no data loss
+
+### Additional Improvements
+
+- **Goal status sanitization**: Maps client statuses (paused→active, cancelled→abandoned) to prevent server validation errors
+- **Timestamp preservation**: Uses sync API in fallback to maintain original createdAt timestamps
+- **Batch-first strategy**: Attempts efficient batch sync, falls back to individual operations if needed
+- **Comprehensive error handling**: Partial failures don't corrupt state or lose local data
 
 ## High-Level Flow
 

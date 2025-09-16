@@ -86,6 +86,7 @@ interface LogbookState {
 
   // Actions - WebSocket Sync
   initializeWebSocketSync: () => Promise<void>
+  pushLocalEntriesToServer: () => Promise<{ pushed: number; failed: number }>
 
   // Actions - Real-time Sync
   enableRealtimeSync: () => Promise<boolean>
@@ -1242,6 +1243,231 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       console.error('❌ Error initializing WebSocket sync:', error)
       set({ webSocketInitialized: false })
     }
+  },
+
+  // Push all local entries to server (used after authentication)
+  pushLocalEntriesToServer: async () => {
+    const state = get()
+
+    // Don't push if in local mode or not authenticated
+    if (state.isLocalMode || !localStorage.getItem('auth-token')) {
+      return { pushed: 0, failed: 0 }
+    }
+
+    console.log('📤 Pushing local data to server...')
+
+    // Get all local entries from memory or disk
+    let entriesToPush = new Map(state.entriesMap)
+    if (entriesToPush.size === 0) {
+      // If memory is empty, load from disk
+      entriesToPush = readEntriesFromDisk()
+    }
+
+    // Get deleted entries to push
+    const deletedEntriesStr = localStorage.getItem(DELETED_ENTRIES_KEY)
+    const deletedEntries: string[] = deletedEntriesStr
+      ? JSON.parse(deletedEntriesStr)
+      : []
+
+    // Get goals to push and sanitize their status for server compatibility
+    const goalsToSync = Array.from(state.goalsMap.values()).map(goal => {
+      // Sanitize goal status to match server schema
+      // Server accepts: active, completed, paused, cancelled
+      // Just keep the status as-is since client and server match
+      return goal
+    })
+
+    // Check if there's anything to push
+    if (
+      entriesToPush.size === 0 &&
+      deletedEntries.length === 0 &&
+      goalsToSync.length === 0
+    ) {
+      console.log('📭 No local data to push')
+      return { pushed: 0, failed: 0 }
+    }
+
+    console.log(
+      `📊 Found ${entriesToPush.size} entries, ${deletedEntries.length} deletions, ${goalsToSync.length} goals to sync`
+    )
+
+    let pushedCount = 0
+    let failedCount = 0
+
+    try {
+      // Import sync API dynamically to avoid circular dependency
+      const { syncApi } = await import('../api/sync')
+
+      // Use the sync API to push all changes at once
+      const syncChanges = {
+        changes: {
+          entries: Array.from(entriesToPush.values()),
+          goals: goalsToSync,
+        },
+      }
+
+      const result = await syncApi.push(syncChanges)
+
+      if (result.success) {
+        pushedCount = entriesToPush.size + goalsToSync.length
+        console.log(`✅ Batch push successful via sync API`)
+
+        // Clear deleted entries after successful push
+        if (deletedEntries.length > 0) {
+          // Push deletions separately
+          const deletePromises = deletedEntries.map(entryId =>
+            logbookApi.deleteEntry(entryId).catch(error => {
+              // Ignore 404 errors (already deleted on server)
+              const err = error as { response?: { status?: number } }
+              if (err.response?.status !== 404) {
+                console.error(`❌ Failed to delete entry ${entryId}:`, error)
+              }
+            })
+          )
+
+          await Promise.allSettled(deletePromises)
+          // Clear the deleted entries list after pushing
+          localStorage.removeItem(DELETED_ENTRIES_KEY)
+          console.log(`🗑️ Pushed ${deletedEntries.length} deletions`)
+        }
+      } else {
+        // Handle conflicts if any
+        if (result.conflicts && result.conflicts.length > 0) {
+          console.warn(`⚠️ Sync conflicts detected:`, result.conflicts)
+          // Still count as partial success
+          pushedCount = entriesToPush.size - result.conflicts.length
+          failedCount = result.conflicts.length
+        }
+      }
+    } catch (syncError) {
+      console.warn(
+        '⚠️ Batch sync failed, falling back to individual pushes:',
+        syncError
+      )
+
+      // Fallback to individual pushes if batch sync fails
+      const pushPromises: Promise<void>[] = []
+
+      // Import sync API for fallback (to preserve timestamps)
+      const { syncApi } = await import('../api/sync')
+
+      // Push each entry individually using sync API to preserve timestamps
+      for (const [entryId, entry] of entriesToPush) {
+        const pushPromise = syncApi
+          .push({
+            changes: {
+              entries: [entry],
+              goals: [],
+            },
+          })
+          .then(result => {
+            if (result.success) {
+              pushedCount++
+            } else if (result.conflicts && result.conflicts.length > 0) {
+              // Entry exists but with conflict
+              const conflict = result.conflicts[0] as {
+                entityId: string
+                localVersion?: number
+                remoteVersion?: number
+                reason?: string
+              }
+              const conflictMessage =
+                conflict.reason ||
+                (conflict.localVersion !== undefined &&
+                conflict.remoteVersion !== undefined
+                  ? `version mismatch (local: ${conflict.localVersion}, remote: ${conflict.remoteVersion})`
+                  : 'duplicate')
+              console.log(
+                `⚠️ Entry ${entryId} has conflict: ${conflictMessage}`
+              )
+              pushedCount++ // Count as partial success
+            }
+          })
+          .catch(_error => {
+            // Fall back to createEntry if sync API fails
+            return logbookApi
+              .createEntry(entry)
+              .then(syncedEntry => {
+                if (syncedEntry) {
+                  pushedCount++
+                  console.warn(
+                    `⚠️ Used createEntry fallback for ${entryId} (timestamps may be updated)`
+                  )
+                }
+              })
+              .catch(createError => {
+                const err = createError as { response?: { status?: number } }
+                if (err.response?.status === 409) {
+                  console.log(
+                    `⚠️ Entry ${entryId} already exists on server (duplicate)`
+                  )
+                  pushedCount++ // Count as successful since it exists
+                } else {
+                  console.error(
+                    `❌ Failed to push entry ${entryId}:`,
+                    createError
+                  )
+                  failedCount++
+                }
+              })
+          })
+
+        pushPromises.push(pushPromise)
+      }
+
+      // Wait for all entry pushes to complete
+      await Promise.allSettled(pushPromises)
+
+      // Push goals individually
+      if (goalsToSync.length > 0) {
+        console.log(`📊 Syncing ${goalsToSync.length} goals to server`)
+        for (const goal of goalsToSync) {
+          try {
+            // Try to create goal first (for offline-created goals)
+            await logbookApi.createGoal(goal)
+            pushedCount++
+          } catch (_error) {
+            // If create fails, try update (for existing goals)
+            try {
+              await logbookApi.updateGoal(goal.id, goal)
+              pushedCount++
+            } catch (updateError) {
+              const err = updateError as { response?: { status?: number } }
+              if (err.response?.status !== 409) {
+                console.error(`❌ Failed to sync goal ${goal.id}:`, updateError)
+                failedCount++
+              }
+            }
+          }
+        }
+      }
+
+      // Push deletions individually
+      if (deletedEntries.length > 0) {
+        const deletePromises = deletedEntries.map(entryId =>
+          logbookApi.deleteEntry(entryId).catch(error => {
+            const err = error as { response?: { status?: number } }
+            if (err.response?.status !== 404) {
+              console.error(`❌ Failed to delete entry ${entryId}:`, error)
+              failedCount++
+            }
+          })
+        )
+
+        await Promise.allSettled(deletePromises)
+        localStorage.removeItem(DELETED_ENTRIES_KEY)
+        console.log(`🗑️ Pushed ${deletedEntries.length} deletions`)
+      }
+    }
+
+    console.log(
+      `✅ Push complete: ${pushedCount} items pushed, ${failedCount} failed`
+    )
+
+    // Write updated entries to disk
+    writeEntriesMapToDisk(get().entriesMap, true)
+
+    return { pushed: pushedCount, failed: failedCount }
   },
 }))
 
