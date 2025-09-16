@@ -113,21 +113,92 @@ export const logbookApi = {
   },
 
   createEntry: async (entry: CreateEntryData) => {
+    const nowIso = new Date().toISOString()
+
+    const normalizeDateValue = (
+      value: string | number | null | undefined,
+      fallback: string
+    ): string => {
+      if (value === null || value === undefined) {
+        return fallback
+      }
+
+      if (typeof value === 'number') {
+        const fromNumber = new Date(value)
+        return Number.isNaN(fromNumber.getTime())
+          ? fallback
+          : fromNumber.toISOString()
+      }
+
+      const trimmed = value.trim()
+      if (!trimmed) {
+        return fallback
+      }
+
+      // Collapse stray whitespace before timezone offsets (e.g. "2025-09-16T18:03:00 -05:00")
+      const normalizedOffset = trimmed.replace(/\s+([+-]\d{2}:?\d{2})$/, '$1')
+      let parsed = new Date(normalizedOffset)
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toISOString()
+      }
+
+      if (!trimmed.includes('T')) {
+        parsed = new Date(trimmed.replace(' ', 'T'))
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed.toISOString()
+        }
+      }
+
+      return fallback
+    }
+
+    const legacyEntry = entry as CreateEntryData & {
+      timestamp?: string | number | null
+      createdAt?: string | number | null
+      updatedAt?: string | number | null
+    }
+
+    const normalizedTimestamp = normalizeDateValue(
+      legacyEntry.timestamp,
+      nowIso
+    )
+    const normalizedCreatedAt = normalizeDateValue(
+      legacyEntry.createdAt,
+      nowIso
+    )
+    const normalizedUpdatedAt = normalizeDateValue(
+      legacyEntry.updatedAt,
+      nowIso
+    )
+
     const newEntry: LogbookEntry = {
       ...entry,
-      // Use the ID from the client if provided, otherwise generate a new one
       id:
         entry.id ||
         `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      // Ensure fields are properly typed for D1
+      timestamp: normalizedTimestamp,
+      duration: entry.duration ?? 0,
+      type: (entry.type ?? 'practice') as LogbookEntry['type'],
+      instrument: entry.instrument || 'piano',
+      createdAt: normalizedCreatedAt,
+      updatedAt: normalizedUpdatedAt,
       notes: entry.notes || null,
       mood: entry.mood || null,
       scoreId: entry.scoreId || undefined,
       scoreTitle: entry.scoreTitle || undefined,
       scoreComposer: entry.scoreComposer || undefined,
       autoTracked: entry.autoTracked || undefined,
+      pieces:
+        entry.pieces?.map(piece => ({
+          ...piece,
+          composer: piece.composer || null,
+          measures: piece.measures || null,
+          tempo: piece.tempo ?? null,
+        })) || [],
+      techniques: entry.techniques || [],
+      goalIds: entry.goalIds || [],
+      tags: entry.tags || [],
+      metadata: entry.metadata || { source: 'manual' },
     }
 
     const response = await apiClient.post<{ success: boolean }>(

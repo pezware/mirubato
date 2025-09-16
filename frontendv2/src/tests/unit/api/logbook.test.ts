@@ -96,7 +96,7 @@ describe('Logbook API', () => {
   describe('createEntry', () => {
     const mockEntryData: Omit<LogbookEntry, 'id' | 'createdAt' | 'updatedAt'> =
       {
-        timestamp: '2025-06-26T10:00:00Z',
+        timestamp: '2025-06-26T10:00:00.000Z',
         duration: 30,
         type: 'PRACTICE',
         instrument: 'PIANO',
@@ -116,17 +116,19 @@ describe('Logbook API', () => {
 
       const result = await logbookApi.createEntry(mockEntryData)
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/sync/push', {
-        changes: {
-          entries: [
-            expect.objectContaining({
-              ...mockEntryData,
-              id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
-              createdAt: '2025-06-26T12:00:00.000Z',
-              updatedAt: '2025-06-26T12:00:00.000Z',
-            }),
-          ],
-        },
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      const postedPayload = (apiClient.post as ReturnType<typeof vi.fn>).mock
+        .calls[0][1]
+      const postedEntry = postedPayload.changes.entries[0] as LogbookEntry
+
+      expect(postedEntry).toMatchObject({
+        ...mockEntryData,
+        id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
+        createdAt: '2025-06-26T12:00:00.000Z',
+        updatedAt: '2025-06-26T12:00:00.000Z',
+        metadata: { source: 'manual' },
+        notes: null,
+        mood: null,
       })
 
       expect(result).toMatchObject({
@@ -135,6 +137,37 @@ describe('Logbook API', () => {
         createdAt: '2025-06-26T12:00:00.000Z',
         updatedAt: '2025-06-26T12:00:00.000Z',
       })
+
+      vi.useRealTimers()
+    })
+
+    it('should preserve provided identifiers and timestamps when supplied', async () => {
+      ;(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: { success: true },
+      })
+
+      const legacyEntry = {
+        id: 'entry_legacy',
+        timestamp: '2025-09-16T18:03:00 -05:00',
+        duration: 45,
+        type: 'PRACTICE',
+        instrument: 'PIANO',
+        pieces: [],
+        techniques: [],
+        goalIds: [],
+        tags: [],
+      } as Parameters<typeof logbookApi.createEntry>[0]
+
+      await logbookApi.createEntry(legacyEntry)
+
+      const postedEntry = (apiClient.post as ReturnType<typeof vi.fn>).mock
+        .calls[0][1].changes.entries[0] as LogbookEntry
+
+      expect(postedEntry.id).toBe('entry_legacy')
+      expect(postedEntry.timestamp).toBe('2025-09-16T23:03:00.000Z')
+      expect(postedEntry.duration).toBe(45)
+      expect(postedEntry.type).toBe('PRACTICE')
+      expect(postedEntry.instrument).toBe('PIANO')
 
       vi.useRealTimers()
     })

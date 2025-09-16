@@ -174,6 +174,9 @@ function normalizeToIsoString(
     if (!trimmed) return undefined
 
     let candidate = trimmed
+
+    // Normalize strings that include a space before the timezone offset
+    candidate = candidate.replace(/\s+([+-]\d{2}:?\d{2})$/, '$1')
     if (LEGACY_DATETIME_REGEX.test(trimmed)) {
       candidate = `${trimmed.replace(' ', 'T')}Z`
     }
