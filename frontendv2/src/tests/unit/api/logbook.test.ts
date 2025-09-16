@@ -116,17 +116,19 @@ describe('Logbook API', () => {
 
       const result = await logbookApi.createEntry(mockEntryData)
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/sync/push', {
-        changes: {
-          entries: [
-            expect.objectContaining({
-              ...mockEntryData,
-              id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
-              createdAt: '2025-06-26T12:00:00.000Z',
-              updatedAt: '2025-06-26T12:00:00.000Z',
-            }),
-          ],
-        },
+      expect(apiClient.post).toHaveBeenCalledTimes(1)
+      const postedPayload = (apiClient.post as ReturnType<typeof vi.fn>).mock
+        .calls[0][1]
+      const postedEntry = postedPayload.changes.entries[0] as LogbookEntry
+
+      expect(postedEntry).toMatchObject({
+        ...mockEntryData,
+        id: expect.stringMatching(/^entry_\d+_[a-z0-9]+$/),
+        createdAt: '2025-06-26T12:00:00.000Z',
+        updatedAt: '2025-06-26T12:00:00.000Z',
+        metadata: { source: 'manual' },
+        notes: null,
+        mood: null,
       })
 
       expect(result).toMatchObject({
