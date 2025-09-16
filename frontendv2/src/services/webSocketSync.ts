@@ -70,6 +70,13 @@ export class WebSocketSync {
       options.enableLogging ?? process.env.NODE_ENV === 'development'
     this.disableReconnect = options.disableReconnect ?? false
     this.webSocketFactory = webSocketFactory
+
+    // Load any persisted offline events on creation
+    try {
+      this.loadOfflineQueueFromDisk()
+    } catch {
+      // noop
+    }
   }
 
   /**
@@ -116,8 +123,19 @@ export class WebSocketSync {
       this.log('📤 Sent sync event:', event.type)
     } else {
       // Queue for later when connection is restored
+      if (!this.isMutationEvent(event)) {
+        // Don't persist non-mutation/control messages
+        this.log(
+          '⏭️ Skipping offline queue for non-mutation event:',
+          event.type
+        )
+        return
+      }
       this.log('📦 Queuing offline event:', event.type)
+      // Add to queue, then dedupe and persist
       this.offlineQueue.push(event)
+      this.offlineQueue = this.pruneAndDedupeQueue(this.offlineQueue)
+      this.persistOfflineQueue()
     }
   }
 
@@ -358,12 +376,16 @@ export class WebSocketSync {
   }
 
   private flushOfflineQueue(): void {
+    // Load persisted queue again in case other tabs added events
+    this.loadOfflineQueueFromDisk()
     if (this.offlineQueue.length === 0) return
 
     this.log(`📤 Sending ${this.offlineQueue.length} queued events`)
 
     const events = [...this.offlineQueue]
     this.offlineQueue = []
+    // Clear persisted queue before sending to avoid duplicates if the app closes mid-send
+    this.clearPersistedOfflineQueue()
 
     events.forEach(event => this.send(event))
   }
@@ -400,6 +422,133 @@ export class WebSocketSync {
 
   private setLastSyncTime(timestamp: string): void {
     localStorage.setItem('mirubato:lastSyncTime', timestamp)
+  }
+
+  // --- Offline queue persistence helpers ---
+  private getOfflineQueueKey(): string {
+    return 'mirubato:ws:offlineQueue'
+  }
+
+  private isMutationEvent(event: SyncEvent): boolean {
+    const mutationTypes = new Set([
+      'ENTRY_CREATED',
+      'ENTRY_UPDATED',
+      'ENTRY_DELETED',
+      'PIECE_ADDED',
+      'PIECE_UPDATED',
+      'PIECE_REMOVED',
+      'PIECE_DISSOCIATED',
+    ])
+    return mutationTypes.has(event.type)
+  }
+
+  private getEntityKey(event: SyncEvent): string | null {
+    switch (event.type) {
+      case 'ENTRY_CREATED':
+      case 'ENTRY_UPDATED':
+        return event.entry?.id || null
+      case 'ENTRY_DELETED':
+        return event.entryId || null
+      case 'PIECE_ADDED':
+      case 'PIECE_UPDATED':
+        // Try multiple fields for robustness
+        return (
+          (
+            event as unknown as {
+              piece?: { scoreId?: string; score_id?: string }
+            }
+          ).piece?.scoreId ||
+          (event as unknown as { piece?: { score_id?: string } }).piece
+            ?.score_id ||
+          null
+        )
+      case 'PIECE_REMOVED':
+      case 'PIECE_DISSOCIATED':
+        return event.scoreId || null
+      default:
+        return null
+    }
+  }
+
+  private pruneAndDedupeQueue(events: SyncEvent[]): SyncEvent[] {
+    // TTL: 48 hours
+    const TTL_MS = 48 * 60 * 60 * 1000
+    const now = Date.now()
+
+    // Dedupe by type + entity key keeping the latest by timestamp
+    const map = new Map<string, SyncEvent>()
+    for (const e of events) {
+      const keyEntity = this.getEntityKey(e)
+      if (!keyEntity) continue
+      const key = `${e.type}:${keyEntity}`
+      const existing = map.get(key)
+      if (!existing) {
+        map.set(key, e)
+        continue
+      }
+
+      const existingTs = new Date(existing.timestamp).getTime() || 0
+      const currentTs = new Date(e.timestamp).getTime() || 0
+      if (currentTs >= existingTs) {
+        map.set(key, e)
+      }
+    }
+
+    // Prune by TTL
+    const pruned = Array.from(map.values()).filter(e => {
+      const ts = new Date(e.timestamp).getTime() || 0
+      return now - ts <= TTL_MS
+    })
+
+    // Limit queue size to avoid unbounded growth
+    const MAX = 200
+    if (pruned.length > MAX) {
+      // Keep the most recent MAX events
+      pruned.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+      return pruned.slice(0, MAX)
+    }
+    return pruned
+  }
+
+  private loadOfflineQueueFromDisk(): void {
+    try {
+      const raw = localStorage.getItem(this.getOfflineQueueKey())
+      if (!raw) return
+      const stored: Array<{ event: SyncEvent; queuedAt: string }> =
+        JSON.parse(raw)
+      // Validate shape and rebuild events
+      const events = stored
+        .map(item => item?.event)
+        .filter(Boolean) as SyncEvent[]
+      this.offlineQueue = this.pruneAndDedupeQueue(events)
+    } catch (e) {
+      this.log('⚠️ Failed to load offline queue:', e)
+      // If corrupted, clear it
+      this.clearPersistedOfflineQueue()
+    }
+  }
+
+  private persistOfflineQueue(): void {
+    try {
+      const wrapped = this.offlineQueue.map(ev => ({
+        event: ev,
+        queuedAt: new Date().toISOString(),
+      }))
+      localStorage.setItem(this.getOfflineQueueKey(), JSON.stringify(wrapped))
+    } catch (e) {
+      this.log('⚠️ Failed to persist offline queue:', e)
+    }
+  }
+
+  private clearPersistedOfflineQueue(): void {
+    try {
+      localStorage.removeItem(this.getOfflineQueueKey())
+    } catch {
+      // noop
+    }
   }
 
   private log(...args: unknown[]): void {
