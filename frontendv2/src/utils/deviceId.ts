@@ -116,6 +116,26 @@ export function generateIdempotencyKey(
 }
 
 /**
+ * Generate a deterministic idempotency key for the same request content
+ * Useful for operations like /api/sync/push to safely replay on retry.
+ */
+export function generateDeterministicIdempotencyKey(
+  method: string,
+  url: string,
+  data?: unknown
+): string {
+  const deviceId = getOrCreateDeviceId()
+
+  const normalizedData = deepSort(data)
+  const contentString = normalizedData ? JSON.stringify(normalizedData) : ''
+  const urlHash = simpleHash(url)
+  const contentHash = simpleHash(contentString)
+
+  const key = `${deviceId}_${method}_${urlHash}_${contentHash}`
+  return key.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64)
+}
+
+/**
  * Simple hash function for content hashing
  * Not cryptographically secure, but sufficient for idempotency keys
  */
@@ -130,6 +150,23 @@ function simpleHash(str: string): string {
   }
 
   return Math.abs(hash).toString(36)
+}
+
+// Recursively sort object keys for stable hashing
+function deepSort<T>(value: T): T {
+  if (value === null || value === undefined) return value
+  if (Array.isArray(value)) return value.map(v => deepSort(v)) as unknown as T
+  if (typeof value === 'object') {
+    const obj = value as unknown as Record<string, unknown>
+    const sorted: Record<string, unknown> = {}
+    Object.keys(obj)
+      .sort()
+      .forEach(k => {
+        sorted[k] = deepSort(obj[k])
+      })
+    return sorted as unknown as T
+  }
+  return value
 }
 
 /**

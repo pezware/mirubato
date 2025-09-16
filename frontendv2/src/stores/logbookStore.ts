@@ -1237,10 +1237,14 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
         try {
           const currentState = get()
           const stored = localStorage.getItem(ENTRIES_KEY)
-          const diskCount = stored ? (JSON.parse(stored) as unknown[]).length : 0
+          const diskCount = stored
+            ? (JSON.parse(stored) as unknown[]).length
+            : 0
 
           if (currentState.entriesMap.size === 0 && diskCount === 0) {
-            console.log('📥 No local entries found. Performing full logbook pull...')
+            console.log(
+              '📥 No local entries found. Performing full logbook pull...'
+            )
             const { syncApi } = await import('../api/sync')
             const data = await syncApi.pull()
 
@@ -1252,7 +1256,9 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
                 'mirubato:lastSyncTime',
                 data.timestamp || new Date().toISOString()
               )
-              console.log(`✅ Pulled ${data.entries.length} entries from server`)
+              console.log(
+                `✅ Pulled ${data.entries.length} entries from server`
+              )
             } else {
               console.log('ℹ️ Full pull returned no entries')
             }

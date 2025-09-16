@@ -1,5 +1,9 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
-import { getOrCreateDeviceId, generateIdempotencyKey } from '../utils/deviceId'
+import {
+  getOrCreateDeviceId,
+  generateIdempotencyKey,
+  generateDeterministicIdempotencyKey,
+} from '../utils/deviceId'
 
 // Determine API URL based on environment
 const getApiUrl = () => {
@@ -46,11 +50,22 @@ apiClient.interceptors.request.use(
 
       // Add idempotency key for sync operations and entry creation
       if (config.url && isIdempotentOperation(config.url)) {
-        const idempotencyKey = generateIdempotencyKey(
-          config.method.toUpperCase(),
-          config.url,
-          config.data
-        )
+        // Use deterministic keys for sync operations so retries replay cached response
+        const useDeterministic =
+          config.url.includes('/api/sync/push') ||
+          config.url.includes('/api/sync/batch')
+
+        const idempotencyKey = useDeterministic
+          ? generateDeterministicIdempotencyKey(
+              config.method.toUpperCase(),
+              config.url,
+              config.data
+            )
+          : generateIdempotencyKey(
+              config.method.toUpperCase(),
+              config.url,
+              config.data
+            )
         config.headers['X-Idempotency-Key'] = idempotencyKey
 
         // Debug logging for sync operations
@@ -73,6 +88,7 @@ apiClient.interceptors.request.use(
 function isIdempotentOperation(url: string): boolean {
   const idempotentPaths = [
     '/api/sync/push',
+    '/api/sync/batch',
     '/api/logbook',
     '/api/goals',
     '/api/repertoire',
