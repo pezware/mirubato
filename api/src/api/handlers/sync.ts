@@ -170,21 +170,19 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
           }
 
           // Normalize createdAt/updatedAt field names
-          if (
-            (transformedEntry as { createdAt?: string }).createdAt &&
-            !(transformedEntry as { created_at?: string }).created_at
-          ) {
-            ;(transformedEntry as { created_at?: string }).created_at = (
-              transformedEntry as { createdAt?: string }
-            ).createdAt
+          const timestampFields = transformedEntry as {
+            createdAt?: string
+            created_at?: string
+            updatedAt?: string
+            updated_at?: string
           }
-          if (
-            (transformedEntry as { updatedAt?: string }).updatedAt &&
-            !(transformedEntry as { updated_at?: string }).updated_at
-          ) {
-            ;(transformedEntry as { updated_at?: string }).updated_at = (
-              transformedEntry as { updatedAt?: string }
-            ).updatedAt
+
+          if (timestampFields.createdAt && !timestampFields.created_at) {
+            timestampFields.created_at = timestampFields.createdAt
+          }
+
+          if (timestampFields.updatedAt && !timestampFields.updated_at) {
+            timestampFields.updated_at = timestampFields.updatedAt
           }
 
           // Check if this is a deletion request
