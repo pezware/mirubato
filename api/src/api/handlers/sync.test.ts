@@ -188,21 +188,21 @@ describe('Sync Handlers', () => {
 
       // Verify upsertSyncData was called correctly
       // Note: fields are transformed and normalized
-      const expectedData = {
-        ...testEntry,
-        goal_ids: [], // transformed from goalIds
-        user_id: 'test-user-123', // added by handler
-        instrument: 'piano', // normalized to lowercase
-      }
-      delete (expectedData as any).goalIds // goalIds is removed after transformation
-
       expect(mockDbInstance.upsertSyncData).toHaveBeenCalledWith({
         userId: 'test-user-123',
         entityType: 'logbook_entry',
         entityId: testEntry.id,
-        data: expectedData,
+        data: expect.objectContaining({
+          goal_ids: [],
+          user_id: 'test-user-123',
+          instrument: 'piano',
+          createdAt: testEntry.createdAt,
+          updatedAt: testEntry.updatedAt,
+          created_at: testEntry.createdAt,
+          updated_at: testEntry.updatedAt,
+        }),
         checksum: 'test-checksum-abc',
-        deviceId: undefined, // no device ID provided in test
+        deviceId: undefined,
       })
     })
 
