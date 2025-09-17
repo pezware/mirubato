@@ -169,6 +169,22 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             delete transformedEntry.goalIds
           }
 
+          // Normalize createdAt/updatedAt field names
+          const timestampFields = transformedEntry as {
+            createdAt?: string
+            created_at?: string
+            updatedAt?: string
+            updated_at?: string
+          }
+
+          if (timestampFields.createdAt && !timestampFields.created_at) {
+            timestampFields.created_at = timestampFields.createdAt
+          }
+
+          if (timestampFields.updatedAt && !timestampFields.updated_at) {
+            timestampFields.updated_at = timestampFields.updatedAt
+          }
+
           // Check if this is a deletion request
           if (transformedEntry.deletedAt) {
             // Handle soft delete more efficiently

@@ -69,6 +69,7 @@ export const LogbookEntrySchema = z.object({
   session_id: z.string().nullable().optional(),
   metadata: z.record(z.unknown()).nullable().optional(),
   created_at: TimestampSchema.optional(),
+  createdAt: z.string().datetime().optional(),
   updated_at: TimestampSchema.optional(),
   updatedAt: z.string().datetime().optional(), // Support frontend's updatedAt
   sync_version: z.number().int().default(1).optional(),
