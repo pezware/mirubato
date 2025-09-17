@@ -174,7 +174,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             (transformedEntry as { createdAt?: string }).createdAt &&
             !(transformedEntry as { created_at?: string }).created_at
           ) {
-            (transformedEntry as { created_at?: string }).created_at = (
+            ;(transformedEntry as { created_at?: string }).created_at = (
               transformedEntry as { createdAt?: string }
             ).createdAt
           }
@@ -182,7 +182,7 @@ syncHandler.post('/push', validateBody(schemas.syncChanges), async c => {
             (transformedEntry as { updatedAt?: string }).updatedAt &&
             !(transformedEntry as { updated_at?: string }).updated_at
           ) {
-            (transformedEntry as { updated_at?: string }).updated_at = (
+            ;(transformedEntry as { updated_at?: string }).updated_at = (
               transformedEntry as { updatedAt?: string }
             ).updatedAt
           }
