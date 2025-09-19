@@ -447,13 +447,16 @@ export class SyncCoordinator implements DurableObject {
             'logbook_entry',
             entry.id,
             JSON.stringify(entry),
-            this.calculateChecksum(entry),
+            await this.calculateChecksum(entry),
             entry.device_id || 'sync-worker',
             1
           )
           .run()
 
         console.log(`✅ Saved entry ${entry.id} to database`)
+
+        // Update sync_metadata
+        await this.updateSyncMetadata(userId)
       } else if (event.type === 'ENTRY_DELETED') {
         const entryId = event.entryId
         if (!entryId) return
@@ -470,6 +473,9 @@ export class SyncCoordinator implements DurableObject {
           .run()
 
         console.log(`✅ Marked entry ${entryId} as deleted in database`)
+
+        // Update sync_metadata
+        await this.updateSyncMetadata(userId)
       }
     } catch (error) {
       console.error('Database operation failed:', error)
@@ -477,16 +483,28 @@ export class SyncCoordinator implements DurableObject {
     }
   }
 
-  private calculateChecksum(data: any): string {
-    // Simple checksum for now - can be improved
-    const str = JSON.stringify(data)
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i)
-      hash = (hash << 5) - hash + char
-      hash = hash & hash // Convert to 32bit integer
+  private async calculateChecksum(data: any): Promise<string> {
+    // Sort object keys to ensure consistent checksums regardless of key order
+    const sortObject = (obj: unknown): unknown => {
+      if (obj === null || typeof obj !== 'object') return obj
+      if (Array.isArray(obj)) return obj.map(sortObject)
+
+      const sorted: Record<string, unknown> = {}
+      Object.keys(obj)
+        .sort()
+        .forEach(key => {
+          sorted[key] = sortObject((obj as Record<string, unknown>)[key])
+        })
+      return sorted
     }
-    return hash.toString(16)
+
+    const sortedData = sortObject(data)
+    const jsonString = JSON.stringify(sortedData)
+    const encoder = new TextEncoder()
+    const dataBuffer = encoder.encode(jsonString)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
   private async handlePieceChange(
@@ -528,6 +546,43 @@ export class SyncCoordinator implements DurableObject {
       if (clientId !== senderId && client.userId === sender.userId) {
         this.sendToClient(clientId, event)
       }
+    }
+  }
+
+  private async updateSyncMetadata(userId: string): Promise<void> {
+    if (!this.env.DB) return
+
+    try {
+      // Count connected devices for this user
+      let deviceCount = 0
+      for (const client of this.clients.values()) {
+        if (client.userId === userId) {
+          deviceCount++
+        }
+      }
+
+      // Generate sync token based on current timestamp
+      const syncToken = `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+      // Update sync_metadata table
+      await this.env.DB.prepare(
+        `
+        INSERT INTO sync_metadata (user_id, last_sync_token, last_sync_time, device_count)
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        ON CONFLICT(user_id)
+        DO UPDATE SET
+          last_sync_token = excluded.last_sync_token,
+          last_sync_time = CURRENT_TIMESTAMP,
+          device_count = excluded.device_count
+        `
+      )
+        .bind(userId, syncToken, deviceCount)
+        .run()
+
+      console.log(`📝 Updated sync_metadata for user ${userId}`)
+    } catch (error) {
+      console.error('Failed to update sync_metadata:', error)
+      // Non-critical error, don't throw
     }
   }
 
@@ -617,13 +672,16 @@ export class SyncCoordinator implements DurableObject {
             entityType,
             entityId,
             JSON.stringify(data),
-            this.calculateChecksum(data),
+            await this.calculateChecksum(data),
             data.device_id || 'sync-worker',
             1
           )
           .run()
 
         console.log(`✅ Saved repertoire item ${entityId} to database`)
+
+        // Update sync_metadata
+        await this.updateSyncMetadata(userId)
       }
     } catch (error) {
       console.error('Repertoire database operation failed:', error)

@@ -4,6 +4,11 @@
  */
 
 import { z } from 'zod'
+import {
+  generateNormalizedScoreId,
+  parseScoreId,
+  normalizeExistingScoreId,
+} from './utils/scoreIdNormalizer'
 
 // Enum types matching the backend schema
 const LogbookEntryType = z.enum([
@@ -235,6 +240,44 @@ export function sanitizeEntry(
       validated.mood = validated.mood.toLowerCase() as z.infer<typeof MoodType>
     }
 
+    // Normalize score IDs if pieces are present
+    if (validated.pieces && Array.isArray(validated.pieces)) {
+      validated.pieces = validated.pieces.map((piece: any) => {
+        if (piece && typeof piece === 'object' && piece.title) {
+          // Generate normalized scoreId from piece title and composer
+          const scoreId = generateNormalizedScoreId(piece.title, piece.composer)
+          return {
+            ...piece,
+            id: scoreId, // Add normalized scoreId to each piece
+          }
+        }
+        return piece
+      })
+    }
+
+    // Also normalize standalone scoreId field if present
+    if (validated.scoreId && typeof validated.scoreId === 'string') {
+      const parsed = parseScoreId(validated.scoreId)
+      validated.scoreId = generateNormalizedScoreId(
+        parsed.title,
+        parsed.composer || undefined
+      )
+    }
+
+    // Normalize scoreTitle and scoreComposer if present (for backward compatibility)
+    if (validated.scoreTitle && typeof validated.scoreTitle === 'string') {
+      const scoreComposer =
+        typeof validated.scoreComposer === 'string'
+          ? validated.scoreComposer
+          : ''
+      const normalizedScoreId = generateNormalizedScoreId(
+        validated.scoreTitle as string,
+        scoreComposer
+      )
+      // Add the normalized scoreId to the entry
+      validated.scoreId = normalizedScoreId
+    }
+
     return validated
   } catch (error) {
     console.error('Entry validation failed:', error)
@@ -255,6 +298,11 @@ export function sanitizeRepertoireItem(
       validated.status = validated.status.toLowerCase() as z.infer<
         typeof RepertoireItemSchema
       >['status']
+    }
+
+    // Normalize scoreId if present
+    if (validated.scoreId && typeof validated.scoreId === 'string') {
+      validated.scoreId = normalizeExistingScoreId(validated.scoreId)
     }
 
     // Map scoreId to score_id for database compatibility
