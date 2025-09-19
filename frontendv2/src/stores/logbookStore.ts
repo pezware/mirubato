@@ -11,6 +11,7 @@ import { localEventBus, type LocalEventData } from '../services/localEventBus'
 import {
   generateNormalizedScoreId,
   isSameScore,
+  parseScoreId,
 } from '../utils/scoreIdNormalizer'
 
 interface LogbookState {
@@ -224,6 +225,45 @@ function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
     cleanEntry.updatedAt ||
     normalizedTimestamp
 
+  // Normalize pieces with scoreIds
+  const normalizedPieces =
+    cleanEntry.pieces?.map(p => {
+      const scoreId = p.id || generateNormalizedScoreId(p.title, p.composer)
+      return {
+        ...p,
+        id: scoreId,
+        composer: p.composer || null,
+        measures: p.measures || null,
+        tempo: p.tempo || null,
+      }
+    }) || []
+
+  // Normalize standalone scoreId if present
+  let normalizedScoreId = cleanEntry.scoreId
+  if (normalizedScoreId && typeof normalizedScoreId === 'string') {
+    const parsed = parseScoreId(normalizedScoreId)
+    normalizedScoreId = generateNormalizedScoreId(
+      parsed.title,
+      parsed.composer || undefined
+    )
+  }
+
+  // Normalize scoreTitle/scoreComposer if present (backward compatibility)
+  if (
+    !normalizedScoreId &&
+    cleanEntry.scoreTitle &&
+    typeof cleanEntry.scoreTitle === 'string'
+  ) {
+    const scoreComposer =
+      typeof cleanEntry.scoreComposer === 'string'
+        ? cleanEntry.scoreComposer
+        : ''
+    normalizedScoreId = generateNormalizedScoreId(
+      cleanEntry.scoreTitle,
+      scoreComposer
+    )
+  }
+
   return {
     ...cleanEntry,
     timestamp: normalizedTimestamp,
@@ -231,17 +271,11 @@ function sanitizeEntryForSync(entry: LogbookEntry): LogbookEntry {
     updatedAt: normalizedUpdatedAt,
     notes: cleanEntry.notes || null,
     mood: cleanEntry.mood || null,
-    scoreId: cleanEntry.scoreId || undefined,
+    scoreId: normalizedScoreId || undefined,
     scoreTitle: cleanEntry.scoreTitle || undefined,
     scoreComposer: cleanEntry.scoreComposer || undefined,
     autoTracked: cleanEntry.autoTracked || undefined,
-    pieces:
-      cleanEntry.pieces?.map(p => ({
-        ...p,
-        composer: p.composer || null,
-        measures: p.measures || null,
-        tempo: p.tempo || null,
-      })) || [],
+    pieces: normalizedPieces,
     techniques: cleanEntry.techniques || [],
     goalIds: cleanEntry.goalIds || [],
     tags: cleanEntry.tags || [],
@@ -1413,10 +1447,36 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       // Import sync API dynamically to avoid circular dependency
       const { syncApi } = await import('../api/sync')
 
-      // Use the sync API to push all changes at once
+      // Prepare batch sync data including deletions
+      const syncEntries = Array.from(entriesToPush.values())
+
+      // Mark deleted entries with deletedAt field for batch processing
+      // Create proper LogbookEntry objects with all required fields
+      const currentTime = new Date().toISOString()
+      const deletionEntries: LogbookEntry[] = deletedEntries.map(entryId => ({
+        id: entryId,
+        timestamp: currentTime,
+        duration: 0,
+        type: 'practice' as const,
+        instrument: 'piano',
+        pieces: [],
+        techniques: [],
+        goalIds: [],
+        tags: [],
+        notes: null,
+        mood: null,
+        metadata: { source: 'manual' },
+        createdAt: currentTime,
+        updatedAt: currentTime,
+        deletedAt: currentTime, // Mark as deleted
+      }))
+
+      // Combine updates and deletions
+      const allEntries = [...syncEntries, ...deletionEntries]
+
       const syncChanges = {
         changes: {
-          entries: Array.from(entriesToPush.values()),
+          entries: allEntries,
           goals: goalsToSync,
         },
       }
@@ -1424,26 +1484,15 @@ export const useLogbookStore = create<LogbookState>((set, get) => ({
       const result = await syncApi.push(syncChanges)
 
       if (result.success) {
-        pushedCount = entriesToPush.size + goalsToSync.length
-        console.log(`✅ Batch push successful via sync API`)
+        pushedCount =
+          entriesToPush.size + deletedEntries.length + goalsToSync.length
+        console.log(
+          `✅ Batch push successful via sync API (including ${deletedEntries.length} deletions)`
+        )
 
         // Clear deleted entries after successful push
         if (deletedEntries.length > 0) {
-          // Push deletions separately
-          const deletePromises = deletedEntries.map(entryId =>
-            logbookApi.deleteEntry(entryId).catch(error => {
-              // Ignore 404 errors (already deleted on server)
-              const err = error as { response?: { status?: number } }
-              if (err.response?.status !== 404) {
-                console.error(`❌ Failed to delete entry ${entryId}:`, error)
-              }
-            })
-          )
-
-          await Promise.allSettled(deletePromises)
-          // Clear the deleted entries list after pushing
           localStorage.removeItem(DELETED_ENTRIES_KEY)
-          console.log(`🗑️ Pushed ${deletedEntries.length} deletions`)
         }
       } else {
         // Handle conflicts if any
